@@ -1,0 +1,383 @@
+<?php
+
+namespace App\Http\Controllers\Admin;
+
+use App\Http\Controllers\Controller;
+use App\Models\GalleryImage;
+use App\Models\HeroSlide;
+use App\Models\MediaFolder;
+use App\Models\MediaLibrary;
+use App\Models\News;
+use App\Models\Partner;
+use App\Models\Project;
+use App\Models\SiteSetting;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
+
+class MediaLibraryController extends Controller
+{
+    /**
+     * Maps a morphed model class to how it should be labelled and linked
+     * back to from the media browser, and which module governs access to
+     * it (null means admin-only, since it's not a toggleable content module).
+     */
+    private const OWNERS = [
+        GalleryImage::class => ['label' => 'Zdjęcie w galerii', 'route' => 'admin.galeria.edit', 'param' => 'galleryImage', 'module' => 'gallery'],
+        HeroSlide::class => ['label' => 'Slajd hero', 'route' => 'admin.hero.edit', 'param' => 'heroSlide', 'module' => 'hero'],
+        Project::class => ['label' => 'Projekt', 'route' => 'admin.projekty.edit', 'param' => 'project', 'module' => 'projects'],
+        News::class => ['label' => 'Aktualność', 'route' => 'admin.newsy.edit', 'param' => 'news', 'module' => 'news'],
+        Partner::class => ['label' => 'Partner', 'route' => 'admin.partnerzy.edit', 'param' => 'partner', 'module' => 'partners'],
+        SiteSetting::class => ['label' => 'Ustawienia strony', 'route' => 'admin.ustawienia.edit', 'param' => null, 'module' => null],
+        MediaLibrary::class => ['label' => 'Biblioteka plików', 'route' => null, 'param' => null, 'module' => null],
+    ];
+
+    /**
+     * How to derive a screen-reader-friendly description of each owner's
+     * media from its own fields, since the file name alone (a generated
+     * hash) tells a screen reader user nothing about what the image shows.
+     */
+    private const ALT_SOURCES = [
+        GalleryImage::class => 'caption',
+        HeroSlide::class => 'title',
+        Project::class => 'image_alt_or_title',
+        News::class => 'image_alt_or_title',
+        Partner::class => 'name',
+        SiteSetting::class => 'site_name',
+        MediaLibrary::class => null,
+    ];
+
+    public function index(Request $request)
+    {
+        $folder = $request->filled('folder') ? MediaFolder::findOrFail($request->integer('folder')) : null;
+        $showArchived = $request->boolean('archived');
+
+        $subfolders = MediaFolder::where('parent_id', $folder?->id)->orderBy('name')->get();
+
+        $media = Media::query()
+            ->whereIn('model_type', $this->accessibleModelTypes())
+            ->where('media_folder_id', $folder?->id)
+            ->when($showArchived,
+                fn ($query) => $query->whereNotNull('archived_at'),
+                fn ($query) => $query->whereNull('archived_at'))
+            ->latest()
+            ->paginate(24)
+            ->withQueryString()
+            ->through(function (Media $media) {
+                $model = $media->model_type::find($media->model_id);
+
+                return [
+                    'id' => $media->id,
+                    'url' => $media->getUrl(),
+                    'is_image' => str_starts_with($media->mime_type, 'image/'),
+                    'file_name' => $media->file_name,
+                    'size' => $media->human_readable_size,
+                    'collection' => $media->collection_name,
+                    'created_at' => $media->created_at,
+                    'archived' => $media->archived_at !== null,
+                    'owner' => $this->describeOwner($media, $model),
+                    'alt' => $this->describeAlt($media, $model),
+                ];
+            });
+
+        return view('admin.media.index', [
+            'media' => $media,
+            'folder' => $folder,
+            'showArchived' => $showArchived,
+            'breadcrumbs' => $folder ? $folder->path() : [],
+            'subfolders' => $subfolders,
+            'allFolders' => MediaFolder::orderBy('name')->get(),
+            'folderTree' => $this->folderTree(),
+        ]);
+    }
+
+    /**
+     * All folders grouped by their parent id (root folders under the '' key),
+     * so the sidebar tree partial can render the whole hierarchy recursively
+     * without an N+1 query per branch. Each folder carries a count of its
+     * non-archived files for the badge shown next to it.
+     */
+    private function folderTree()
+    {
+        return MediaFolder::query()
+            ->withCount(['media' => fn ($query) => $query->whereNull('archived_at')])
+            ->orderBy('name')
+            ->get()
+            ->groupBy('parent_id');
+    }
+
+    /**
+     * Lightweight JSON list of every accessible image, for the "insert from
+     * library" picker in the content editor. Not folder-scoped — the editor
+     * just needs to find any image regardless of how it's organized.
+     */
+    public function imagesJson()
+    {
+        $images = Media::query()
+            ->whereIn('model_type', $this->accessibleModelTypes())
+            ->where('mime_type', 'like', 'image/%')
+            ->whereNull('archived_at')
+            ->latest()
+            ->limit(300)
+            ->get()
+            ->map(function (Media $media) {
+                $model = $media->model_type::find($media->model_id);
+
+                return [
+                    'id' => $media->id,
+                    'url' => $media->getUrl(),
+                    'file_name' => $media->file_name,
+                    'alt' => $this->describeAlt($media, $model),
+                ];
+            });
+
+        return response()->json($images);
+    }
+
+    /**
+     * Proxies a photo search to the Unsplash API so the access key never
+     * reaches the browser. Requires UNSPLASH_ACCESS_KEY to be configured.
+     */
+    public function unsplashSearch(Request $request)
+    {
+        $accessKey = config('services.unsplash.access_key');
+
+        abort_unless($accessKey, 501, 'Integracja z Unsplash nie jest skonfigurowana — brak UNSPLASH_ACCESS_KEY.');
+
+        $data = $request->validate([
+            'q' => ['required', 'string', 'max:100'],
+        ]);
+
+        $response = Http::withHeaders(['Authorization' => "Client-ID {$accessKey}"])
+            ->get('https://api.unsplash.com/search/photos', [
+                'query' => $data['q'],
+                'per_page' => 24,
+                'orientation' => 'landscape',
+            ]);
+
+        abort_unless($response->successful(), 502, 'Nie udało się połączyć z Unsplash.');
+
+        $results = collect($response->json('results'))->map(fn ($photo) => [
+            'id' => $photo['id'],
+            'thumb_url' => $photo['urls']['small'],
+            'full_url' => $photo['urls']['regular'],
+            'alt' => $photo['alt_description'] ?: $photo['description'] ?: 'Zdjęcie z Unsplash',
+            'author_name' => $photo['user']['name'],
+            'author_url' => $photo['user']['links']['html'].'?utm_source=feer&utm_medium=referral',
+            'download_location' => $photo['links']['download_location'],
+        ]);
+
+        return response()->json($results);
+    }
+
+    /**
+     * Downloads a chosen Unsplash photo server-side and saves it into the
+     * media library like any other upload, crediting the photographer in
+     * the alt text per Unsplash's API guidelines. Also pings the photo's
+     * download_location, which Unsplash requires whenever a photo is used.
+     */
+    public function unsplashImport(Request $request)
+    {
+        $accessKey = config('services.unsplash.access_key');
+
+        abort_unless($accessKey, 501, 'Integracja z Unsplash nie jest skonfigurowana — brak UNSPLASH_ACCESS_KEY.');
+
+        $data = $request->validate([
+            'full_url' => ['required', 'url'],
+            'download_location' => ['required', 'url'],
+            'author_name' => ['required', 'string', 'max:255'],
+            'folder_id' => ['nullable', 'exists:media_folders,id'],
+        ]);
+
+        Http::withHeaders(['Authorization' => "Client-ID {$accessKey}"])->get($data['download_location']);
+
+        $media = MediaLibrary::instance()
+            ->addMediaFromUrl($data['full_url'])
+            ->usingFileName(\Illuminate\Support\Str::random(20).'.jpg')
+            ->withCustomProperties(['unsplash_author' => $data['author_name']])
+            ->toMediaCollection('files');
+
+        if (! empty($data['folder_id'])) {
+            $media->update(['media_folder_id' => $data['folder_id']]);
+        }
+
+        return response()->json([
+            'id' => $media->id,
+            'url' => $media->getUrl(),
+            'file_name' => $media->file_name,
+            'alt' => 'Zdjęcie: '.$data['author_name'].' / Unsplash',
+        ]);
+    }
+
+    public function store(Request $request)
+    {
+        $data = $request->validate([
+            'file' => ['required', 'file', 'max:10240'],
+            'folder_id' => ['nullable', 'exists:media_folders,id'],
+        ]);
+
+        $media = MediaLibrary::instance()->addMediaFromRequest('file')->toMediaCollection('files');
+
+        if (! empty($data['folder_id'])) {
+            $media->update(['media_folder_id' => $data['folder_id']]);
+        }
+
+        return redirect()->route('admin.multimedia.index', ['folder' => $data['folder_id'] ?? null])
+            ->with('status', 'Plik został przesłany.');
+    }
+
+    public function move(Request $request, Media $media)
+    {
+        abort_unless(in_array($media->model_type, $this->accessibleModelTypes()), 403);
+
+        $data = $request->validate([
+            'folder_id' => ['nullable', 'exists:media_folders,id'],
+        ]);
+
+        $media->update(['media_folder_id' => $data['folder_id'] ?? null]);
+
+        return redirect()->back()->with('status', 'Plik został przeniesiony.');
+    }
+
+    /**
+     * Hides a file from the library (and the editor's image picker) without
+     * deleting it — a soft "archive" the user can undo via restore().
+     */
+    public function archive(Media $media)
+    {
+        abort_unless(in_array($media->model_type, $this->accessibleModelTypes()), 403);
+
+        $media->update(['archived_at' => now()]);
+
+        return redirect()->back()->with('status', 'Plik został schowany do archiwum.');
+    }
+
+    /**
+     * Brings a previously archived file back into the active library.
+     */
+    public function restore(Media $media)
+    {
+        abort_unless(in_array($media->model_type, $this->accessibleModelTypes()), 403);
+
+        $media->update(['archived_at' => null]);
+
+        return redirect()->back()->with('status', 'Plik został przywrócony z archiwum.');
+    }
+
+    public function destroy(Media $media)
+    {
+        abort_unless(in_array($media->model_type, $this->accessibleModelTypes()), 403);
+
+        $media->delete();
+
+        return redirect()->route('admin.multimedia.index')->with('status', 'Plik został usunięty.');
+    }
+
+    public function storeFolder(Request $request)
+    {
+        $data = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'parent_id' => ['nullable', 'exists:media_folders,id'],
+        ]);
+
+        $folder = MediaFolder::create($data);
+
+        return redirect()->route('admin.multimedia.index', ['folder' => $data['parent_id'] ?? null])
+            ->with('status', "Folder „{$folder->name}” został utworzony.");
+    }
+
+    public function updateFolder(Request $request, MediaFolder $folder)
+    {
+        $data = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+        ]);
+
+        $folder->update($data);
+
+        return redirect()->route('admin.multimedia.index', ['folder' => $folder->parent_id])
+            ->with('status', 'Folder został zmieniony.');
+    }
+
+    /**
+     * Removes a folder, moving its files and direct subfolders up to the
+     * parent (or the root) first so nothing is lost — the files here may be
+     * live content images, so we never delete them along with the folder.
+     */
+    public function destroyFolder(MediaFolder $folder)
+    {
+        $parentId = $folder->parent_id;
+        $name = $folder->name;
+        $hadContent = $folder->media()->exists() || $folder->children()->exists();
+
+        $folder->media()->update(['media_folder_id' => $parentId]);
+        $folder->children()->update(['parent_id' => $parentId]);
+
+        $folder->delete();
+
+        return redirect()->route('admin.multimedia.index', ['folder' => $parentId])
+            ->with('status', $hadContent
+                ? "Folder „{$name}” został usunięty, a jego zawartość przeniesiono wyżej."
+                : "Folder „{$name}” został usunięty.");
+    }
+
+    /**
+     * Model classes whose media the current user is allowed to see/manage,
+     * based on their role and user group's module permissions. The media
+     * library's own standalone uploads are always visible — they aren't
+     * gated behind a toggleable content module.
+     */
+    private function accessibleModelTypes(): array
+    {
+        $user = auth()->user();
+
+        return collect(self::OWNERS)
+            ->filter(fn ($owner, $modelType) => $modelType === MediaLibrary::class
+                ? true
+                : ($owner['module'] === null ? $user->isAdmin() : $user->canAccessModule($owner['module'])))
+            ->keys()
+            ->all();
+    }
+
+    private function describeOwner(Media $media, $model): array
+    {
+        $owner = self::OWNERS[$media->model_type] ?? null;
+
+        if (! $owner) {
+            return ['label' => class_basename($media->model_type), 'url' => null, 'standalone' => false];
+        }
+
+        return [
+            'label' => $owner['label'],
+            'url' => $model && $owner['route']
+                ? route($owner['route'], $owner['param'] ? [$owner['param'] => $media->model_id] : [])
+                : null,
+            'standalone' => $media->model_type === MediaLibrary::class,
+        ];
+    }
+
+    /**
+     * A screen-reader-friendly description of what the file shows, pulled
+     * from the owning record's own descriptive field. Falls back to the
+     * owner label ("Zdjęcie w galerii") when the record has nothing set,
+     * or no longer exists (an orphaned file).
+     */
+    private function describeAlt(Media $media, $model): string
+    {
+        $owner = self::OWNERS[$media->model_type] ?? null;
+        $fallback = $owner['label'] ?? class_basename($media->model_type);
+
+        if (! $model) {
+            return $fallback;
+        }
+
+        $source = self::ALT_SOURCES[$media->model_type] ?? null;
+
+        $text = match ($source) {
+            'image_alt_or_title' => $model->image_alt ?: $model->title,
+            null => null,
+            default => $model->{$source} ?? null,
+        };
+
+        return $text ?: $fallback;
+    }
+}

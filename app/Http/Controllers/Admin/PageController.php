@@ -1,0 +1,283 @@
+<?php
+
+namespace App\Http\Controllers\Admin;
+
+use App\Http\Controllers\Controller;
+use App\Models\Page;
+use App\Models\Project;
+use Illuminate\Http\Request;
+use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
+
+class PageController extends Controller
+{
+    public function index()
+    {
+        $pages = Page::with('parent')->orderBy('order')->orderBy('title')->get();
+
+        return view('admin.pages.index', compact('pages'));
+    }
+
+    public function create()
+    {
+        return view('admin.pages.form', [
+            'page' => new Page,
+            'parentOptions' => Page::orderBy('title')->get(),
+            'projectOptions' => Project::orderBy('title')->get(),
+        ]);
+    }
+
+    public function store(Request $request)
+    {
+        $data = $this->validated($request);
+        $data['slug'] = $this->uniqueSlug($data['slug'] !== '' ? $data['slug'] : $data['title']);
+
+        Page::create($data);
+
+        return redirect()->route('admin.podstrony.index')->with('status', 'Strona została utworzona.');
+    }
+
+    public function edit(Page $page)
+    {
+        return view('admin.pages.form', [
+            'page' => $page,
+            'parentOptions' => Page::where('id', '!=', $page->id)->orderBy('title')->get(),
+            'projectOptions' => Project::orderBy('title')->get(),
+        ]);
+    }
+
+    public function update(Request $request, Page $page)
+    {
+        $data = $this->validated($request);
+        $data['slug'] = $this->uniqueSlug($data['slug'] !== '' ? $data['slug'] : $data['title'], $page->id);
+
+        $page->update($data);
+
+        return redirect()->route('admin.podstrony.index')->with('status', 'Strona została zaktualizowana.');
+    }
+
+    public function destroy(Page $page)
+    {
+        if ($page->is_system) {
+            return redirect()->route('admin.podstrony.index')->with('error', 'Strony systemowej nie można usunąć.');
+        }
+
+        $page->delete();
+
+        return redirect()->route('admin.podstrony.index')->with('status', 'Strona została usunięta.');
+    }
+
+    public function toggleVisibility(Page $page)
+    {
+        $page->update(['is_published' => ! $page->is_published]);
+
+        $message = $page->is_published
+            ? "Strona „{$page->title}” została opublikowana."
+            : "Strona „{$page->title}” została ukryta.";
+
+        return redirect()->route('admin.podstrony.index')->with('status', $message);
+    }
+
+    public function toggleDisabled(Page $page)
+    {
+        $page->update(['is_disabled' => ! $page->is_disabled]);
+
+        $message = $page->is_disabled
+            ? "Strona „{$page->title}” została wyłączona."
+            : "Strona „{$page->title}” została ponownie włączona.";
+
+        return redirect()->route('admin.podstrony.index')->with('status', $message);
+    }
+
+    public function updateOrder(Request $request, Page $page)
+    {
+        $data = $request->validate([
+            'order' => ['required', 'integer', 'min:0'],
+        ]);
+
+        $page->update(['order' => $data['order']]);
+
+        return redirect()->route('admin.podstrony.index')->with('status', "Zmieniono kolejność strony „{$page->title}”.");
+    }
+
+    public function clone(Page $page)
+    {
+        $clone = $page->replicate();
+        $clone->title = "{$page->title} (kopia)";
+        $clone->slug = $this->uniqueSlug($clone->title);
+        $clone->is_published = false;
+        $clone->is_system = false;
+        $clone->save();
+
+        return redirect()->route('admin.podstrony.edit', $clone)->with('status', "Strona została sklonowana jako „{$clone->title}”. Jest zapisana jako szkic.");
+    }
+
+    private function validated(Request $request): array
+    {
+        $data = $request->validate([
+            'parent_id' => ['nullable', 'exists:pages,id'],
+            'project_id' => ['nullable', 'exists:projects,id'],
+            'project_display' => ['nullable', Rule::in(array_keys(Page::PROJECT_DISPLAYS))],
+            'title' => ['required', 'string', 'max:255'],
+            'slug' => ['nullable', 'string', 'max:255'],
+            'content' => ['nullable', 'string'],
+            'order' => ['nullable', 'integer', 'min:0'],
+            'disabled_message' => ['nullable', 'string', 'max:2000'],
+            'wip_mode' => ['nullable', Rule::in(array_keys(Page::WIP_MODES))],
+            'wip_message' => ['nullable', 'string', 'max:2000'],
+            'type' => ['required', Rule::in(array_keys(Page::TYPES))],
+            'event_mode' => ['nullable', Rule::in(array_keys(Page::EVENT_MODES))],
+            'event_when' => ['nullable', 'string', 'max:255'],
+            'event_location' => ['nullable', 'string', 'max:255'],
+            'event_how_to_join' => ['nullable', 'string', 'max:2000'],
+            'event_registration_url' => ['nullable', 'url', 'max:255'],
+            'schedule_change_notice' => ['nullable', 'string', 'max:2000'],
+            'schedule_items' => ['nullable', 'array'],
+            'schedule_items.*.date' => ['nullable', 'string', 'max:255'],
+            'schedule_items.*.time' => ['nullable', 'string', 'max:255'],
+            'schedule_items.*.location' => ['nullable', 'string', 'max:255'],
+            'schedule_items.*.note' => ['nullable', 'string', 'max:500'],
+            'about_motto' => ['nullable', 'string', 'max:1000'],
+            'about_motto_author' => ['nullable', 'string', 'max:255'],
+            'about_intro' => ['nullable', 'string', 'max:5000'],
+            'about_stats' => ['nullable', 'array'],
+            'about_stats.*.value' => ['nullable', 'string', 'max:50'],
+            'about_stats.*.label' => ['nullable', 'string', 'max:120'],
+            'about_timeline' => ['nullable', 'array'],
+            'about_timeline.*.year' => ['nullable', 'string', 'max:20'],
+            'about_timeline.*.text' => ['nullable', 'string', 'max:500'],
+            'about_values' => ['nullable', 'array'],
+            'about_values.*.icon' => ['nullable', 'string', 'max:100'],
+            'about_values.*.title' => ['nullable', 'string', 'max:120'],
+            'about_values.*.text' => ['nullable', 'string', 'max:500'],
+            'about_team' => ['nullable', 'array'],
+            'about_team.*.name' => ['nullable', 'string', 'max:120'],
+            'about_team.*.role' => ['nullable', 'string', 'max:120'],
+            'about_team.*.photo' => ['nullable', 'string', 'max:1000'],
+            'about_section_order' => ['sometimes', 'array'],
+            'about_section_order.*' => ['integer'],
+        ]);
+
+        $data['parent_id'] = $data['parent_id'] ?: null;
+        $data['project_id'] = $data['project_id'] ?: null;
+        $data['project_display'] = $data['project_id'] ? ($data['project_display'] ?? 'link') : 'link';
+        $data['slug'] = trim($data['slug'] ?? '');
+        $data['is_published'] = $request->boolean('is_published');
+        $data['show_in_menu'] = $request->boolean('show_in_menu');
+        $data['is_system'] = $request->boolean('is_system');
+        $data['order'] = $data['order'] ?? 0;
+
+        // Availability controls: "disable page" and "under construction" mode.
+        $data['is_disabled'] = $request->boolean('is_disabled');
+        $data['disabled_message'] = trim((string) ($data['disabled_message'] ?? '')) ?: null;
+        $data['wip_mode'] = $data['wip_mode'] ?? null;
+        // A message without a mode selected would never surface — drop it.
+        $data['wip_message'] = $data['wip_mode']
+            ? (trim((string) ($data['wip_message'] ?? '')) ?: null)
+            : null;
+
+        // Event details only apply to event pages; clear them otherwise so a
+        // page switched back to "standard" doesn't keep stale event data.
+        if ($data['type'] !== 'event') {
+            $data['event_mode'] = null;
+            $data['event_when'] = null;
+            $data['event_location'] = null;
+            $data['event_how_to_join'] = null;
+            $data['event_registration_url'] = null;
+        }
+
+        // Schedule details only apply to schedule pages. Build the ordered list
+        // of entries, dropping rows where every field is empty, and clear
+        // everything when the page is not a schedule.
+        if ($data['type'] === 'schedule') {
+            $items = [];
+            foreach ((array) $request->input('schedule_items', []) as $row) {
+                $date = trim((string) ($row['date'] ?? ''));
+                $time = trim((string) ($row['time'] ?? ''));
+                $location = trim((string) ($row['location'] ?? ''));
+                $note = trim((string) ($row['note'] ?? ''));
+
+                if ($date === '' && $time === '' && $location === '' && $note === '') {
+                    continue;
+                }
+
+                $items[] = [
+                    'date' => $date,
+                    'time' => $time,
+                    'location' => $location,
+                    'note' => $note,
+                    'changed' => ! empty($row['changed']),
+                ];
+            }
+            $data['schedule_items'] = $items ?: null;
+            $data['schedule_pending'] = $request->boolean('schedule_pending');
+        } else {
+            $data['schedule_items'] = null;
+            $data['schedule_change_notice'] = null;
+            $data['schedule_pending'] = false;
+        }
+
+        // "O organizacji" details only apply to about pages. Build the repeater
+        // sections (dropping fully-empty rows) and clear everything otherwise.
+        if ($data['type'] === 'about') {
+            $data['about_stats'] = $this->compactRows($request->input('about_stats', []), ['value', 'label']);
+            $data['about_timeline'] = $this->compactRows($request->input('about_timeline', []), ['year', 'text']);
+            $data['about_values'] = $this->compactRows($request->input('about_values', []), ['icon', 'title', 'text']);
+            $data['about_team'] = $this->compactRows($request->input('about_team', []), ['name', 'role', 'photo']);
+
+            $positions = $request->input('about_section_order', []);
+            $data['about_section_order'] = collect(array_keys(Page::ABOUT_SECTIONS))
+                ->sortBy(fn ($key) => $positions[$key] ?? 999)
+                ->values()
+                ->all();
+        } else {
+            $data['about_motto'] = null;
+            $data['about_motto_author'] = null;
+            $data['about_intro'] = null;
+            $data['about_section_order'] = null;
+            $data['about_stats'] = null;
+            $data['about_timeline'] = null;
+            $data['about_values'] = null;
+            $data['about_team'] = null;
+        }
+
+        return $data;
+    }
+
+    /**
+     * Trim a repeater's rows to the given keys and drop any row whose fields are
+     * all empty. Returns null when nothing is left, so the JSON column stays clean.
+     */
+    private function compactRows($rows, array $keys): ?array
+    {
+        $out = [];
+        foreach ((array) $rows as $row) {
+            $clean = [];
+            foreach ($keys as $key) {
+                $clean[$key] = trim((string) ($row[$key] ?? ''));
+            }
+            if (implode('', $clean) !== '') {
+                $out[] = $clean;
+            }
+        }
+
+        return $out ?: null;
+    }
+
+    private function uniqueSlug(string $source, ?int $ignoreId = null): string
+    {
+        $base = Str::slug($source) ?: 'strona';
+        $slug = $base;
+        $suffix = 2;
+
+        $isTaken = fn (string $candidate) => in_array($candidate, Page::RESERVED_SLUGS, true)
+            || Page::where('slug', $candidate)->when($ignoreId, fn ($q) => $q->where('id', '!=', $ignoreId))->exists();
+
+        while ($isTaken($slug)) {
+            $slug = "{$base}-{$suffix}";
+            $suffix++;
+        }
+
+        return $slug;
+    }
+}

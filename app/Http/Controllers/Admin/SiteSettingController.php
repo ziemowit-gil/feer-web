@@ -1,0 +1,218 @@
+<?php
+
+namespace App\Http\Controllers\Admin;
+
+use App\Http\Controllers\Controller;
+use App\Models\SiteSetting;
+use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
+
+class SiteSettingController extends Controller
+{
+    public function edit()
+    {
+        return view('admin.settings.edit', ['settings' => SiteSetting::current()]);
+    }
+
+    public function update(Request $request)
+    {
+        $data = $request->validate([
+            'site_name' => ['required', 'string', 'max:255'],
+            'tagline' => ['nullable', 'string', 'max:255'],
+            'brand_color' => ['required', 'regex:/^#[0-9a-fA-F]{6}$/'],
+            'header_layout' => ['required', Rule::in(array_keys(SiteSetting::HEADER_LAYOUTS))],
+            'content_editor' => ['required', Rule::in(array_keys(SiteSetting::EDITORS))],
+            'microsoft_login_enabled' => ['sometimes', 'boolean'],
+            'microsoft_client_id' => ['nullable', 'string', 'max:255'],
+            'microsoft_client_secret' => ['nullable', 'string', 'max:1000'],
+            'microsoft_tenant_id' => ['nullable', 'string', 'max:255'],
+            'mail_transport' => ['required', Rule::in(array_keys(SiteSetting::MAIL_TRANSPORTS))],
+            'mail_from_address' => ['nullable', 'email', 'max:255'],
+            'mail_from_name' => ['nullable', 'string', 'max:255'],
+            'mail_host' => ['nullable', 'string', 'max:255'],
+            'mail_port' => ['nullable', 'integer', 'min:1', 'max:65535'],
+            'mail_username' => ['nullable', 'string', 'max:255'],
+            'mail_password' => ['nullable', 'string', 'max:1000'],
+            'mail_encryption' => ['nullable', Rule::in(['', 'tls', 'ssl'])],
+            'show_coordinators' => ['sometimes', 'boolean'],
+            'ngo_color' => ['nullable', 'regex:/^#[0-9a-fA-F]{6}$/'],
+            'logo' => ['nullable', 'image', 'max:2048'],
+            'remove_logo' => ['sometimes', 'boolean'],
+            'logo_alt' => ['nullable', 'string', 'max:255'],
+            'logo_only' => ['sometimes', 'boolean'],
+            'meta_description' => ['nullable', 'string', 'max:300'],
+            'og_image' => ['nullable', 'image', 'max:2048'],
+            'remove_og_image' => ['sometimes', 'boolean'],
+            'allow_indexing' => ['sometimes', 'boolean'],
+            'bip_url' => ['nullable', 'string', 'max:255'],
+            'facebook_url' => ['nullable', 'string', 'max:255'],
+            'twitter_url' => ['nullable', 'string', 'max:255'],
+            'instagram_url' => ['nullable', 'string', 'max:255'],
+            'linkedin_url' => ['nullable', 'string', 'max:255'],
+            'youtube_url' => ['nullable', 'string', 'max:255'],
+            'substack_url' => ['nullable', 'string', 'max:255'],
+            'show_topbar_bip' => ['sometimes', 'boolean'],
+            'show_topbar_social' => ['sometimes', 'boolean'],
+            'contact_address' => ['required', 'string', 'max:255'],
+            'contact_city' => ['required', 'string', 'max:255'],
+            'contact_email' => ['required', 'email', 'max:255'],
+            'contact_phone' => ['nullable', 'string', 'max:50'],
+            'contact_intro' => ['nullable', 'string', 'max:5000'],
+            'contact_box_text' => ['nullable', 'string', 'max:1000'],
+            'contact_box_link_label' => ['nullable', 'string', 'max:100'],
+            'contact_box_link_url' => ['nullable', 'string', 'max:255'],
+            'contact_box_visible_from' => ['nullable', 'date'],
+            'contact_box_visible_until' => ['nullable', 'date', 'after_or_equal:contact_box_visible_from'],
+            'homepage_banner_text' => ['nullable', 'string', 'max:1000'],
+            'homepage_banner_link_label' => ['nullable', 'string', 'max:100'],
+            'homepage_banner_link_url' => ['nullable', 'string', 'max:255'],
+            'homepage_banner_visible_from' => ['nullable', 'date'],
+            'homepage_banner_visible_until' => ['nullable', 'date', 'after_or_equal:homepage_banner_visible_from'],
+            'krs_number' => ['nullable', 'string', 'max:50'],
+            'nip_number' => ['nullable', 'string', 'max:50'],
+            'regon_number' => ['nullable', 'string', 'max:50'],
+            'projects_intro' => ['nullable', 'string', 'max:5000'],
+            'materials_intro' => ['nullable', 'string', 'max:5000'],
+            'materials_notice' => ['nullable', 'string', 'max:5000'],
+            'bank_account_number' => ['nullable', 'string', 'max:50'],
+            'bank_account_tax_number' => ['nullable', 'string', 'max:50'],
+            'support_intro' => ['nullable', 'string', 'max:5000'],
+            'support_quick_transfer_url' => ['nullable', 'string', 'max:255'],
+            'support_buycoffee_url' => ['nullable', 'string', 'max:255'],
+            'support_image' => ['nullable', 'image', 'max:4096'],
+            'remove_support_image' => ['sometimes', 'boolean'],
+            'news_default_image' => ['nullable', 'image', 'max:4096'],
+            'remove_news_default_image' => ['sometimes', 'boolean'],
+            'support_hero_badge' => ['nullable', 'string', 'max:100'],
+            'support_hero_title' => ['nullable', 'string', 'max:255'],
+            'support_hero_subtitle' => ['nullable', 'string', 'max:500'],
+            'support_hero_cta_label' => ['nullable', 'string', 'max:100'],
+            'support_benefits_title' => ['nullable', 'string', 'max:255'],
+            'support_benefits_subtitle' => ['nullable', 'string', 'max:500'],
+            'support_benefit1_icon' => ['nullable', 'string', 'max:100'],
+            'support_benefit1_title' => ['nullable', 'string', 'max:255'],
+            'support_benefit1_text' => ['nullable', 'string', 'max:500'],
+            'support_benefit2_icon' => ['nullable', 'string', 'max:100'],
+            'support_benefit2_title' => ['nullable', 'string', 'max:255'],
+            'support_benefit2_text' => ['nullable', 'string', 'max:500'],
+            'support_benefit3_icon' => ['nullable', 'string', 'max:100'],
+            'support_benefit3_title' => ['nullable', 'string', 'max:255'],
+            'support_benefit3_text' => ['nullable', 'string', 'max:500'],
+            'support_methods_title' => ['nullable', 'string', 'max:255'],
+            'support_method1_title' => ['nullable', 'string', 'max:255'],
+            'support_method1_account_label' => ['nullable', 'string', 'max:100'],
+            'support_method1_tax_label' => ['nullable', 'string', 'max:100'],
+            'support_method1_transfer_label' => ['nullable', 'string', 'max:100'],
+            'support_transfer_title' => ['nullable', 'string', 'max:255'],
+            'support_method2_title' => ['nullable', 'string', 'max:255'],
+            'support_method2_text' => ['nullable', 'string', 'max:500'],
+            'support_method2_cta_label' => ['nullable', 'string', 'max:100'],
+            'support_method3_title' => ['nullable', 'string', 'max:255'],
+            'support_method3_text' => ['nullable', 'string', 'max:500'],
+            'support_method3_cta_label' => ['nullable', 'string', 'max:100'],
+            'support_outro_title' => ['nullable', 'string', 'max:255'],
+            'support_outro_subtitle' => ['nullable', 'string', 'max:500'],
+            'enabled_modules' => ['sometimes', 'array'],
+            'enabled_modules.*' => ['string', Rule::in(array_keys(SiteSetting::MODULES))],
+            'section_order' => ['sometimes', 'array'],
+            'section_order.*' => ['integer'],
+        ]);
+
+        $data['allow_indexing'] = $request->boolean('allow_indexing');
+        $data['logo_only'] = $request->boolean('logo_only');
+        $data['microsoft_login_enabled'] = $request->boolean('microsoft_login_enabled');
+
+        // Puste pole sekretu = zostaw zapisany (nie renderujemy go w formularzu).
+        if (blank($data['microsoft_client_secret'] ?? null)) {
+            unset($data['microsoft_client_secret']);
+        }
+        // Puste hasło SMTP = zostaw zapisane (analogicznie do sekretu Microsoft).
+        if (blank($data['mail_password'] ?? null)) {
+            unset($data['mail_password']);
+        }
+        $data['mail_encryption'] = filled($data['mail_encryption'] ?? null) ? $data['mail_encryption'] : null;
+        $data['show_coordinators'] = $request->boolean('show_coordinators');
+        $data['show_topbar_bip'] = $request->boolean('show_topbar_bip');
+        $data['show_topbar_social'] = $request->boolean('show_topbar_social');
+        $data['disabled_modules'] = array_values(array_diff(
+            array_keys(SiteSetting::MODULES),
+            $request->input('enabled_modules', [])
+        ));
+
+        $sectionPositions = $request->input('section_order', []);
+        $data['homepage_section_order'] = collect(array_keys(SiteSetting::HOMEPAGE_SECTIONS))
+            ->sortBy(fn ($key) => $sectionPositions[$key] ?? 999)
+            ->values()
+            ->all();
+
+        $settings = SiteSetting::current();
+
+        $data['brand_color'] = $settings->contrastSafeColor($data['brand_color']);
+
+        // Kolor NGO także pilnujemy pod kątem kontrastu (używany jak text-brand na białym).
+        $data['ngo_color'] = filled($data['ngo_color'] ?? null)
+            ? $settings->contrastSafeColor($data['ngo_color'])
+            : null;
+
+        unset($data['logo'], $data['remove_logo'], $data['og_image'], $data['remove_og_image'], $data['support_image'], $data['remove_support_image'], $data['news_default_image'], $data['remove_news_default_image'], $data['enabled_modules'], $data['section_order']);
+
+        $colorWasAdjusted = $data['brand_color'] !== $request->input('brand_color');
+
+        $settings->update($data);
+
+        if ($request->hasFile('logo')) {
+            $settings->addMediaFromRequest('logo')->toMediaCollection('logo');
+        } elseif ($request->boolean('remove_logo')) {
+            $settings->clearMediaCollection('logo');
+        }
+
+        if ($request->hasFile('og_image')) {
+            $settings->addMediaFromRequest('og_image')->toMediaCollection('og_image');
+        } elseif ($request->boolean('remove_og_image')) {
+            $settings->clearMediaCollection('og_image');
+        }
+
+        if ($request->hasFile('support_image')) {
+            $settings->addMediaFromRequest('support_image')->toMediaCollection('support_image');
+        } elseif ($request->boolean('remove_support_image')) {
+            $settings->clearMediaCollection('support_image');
+        }
+
+        if ($request->hasFile('news_default_image')) {
+            $settings->addMediaFromRequest('news_default_image')->toMediaCollection('news_default_image');
+        } elseif ($request->boolean('remove_news_default_image')) {
+            $settings->clearMediaCollection('news_default_image');
+        }
+
+        $status = $colorWasAdjusted
+            ? "Ustawienia zostały zapisane. Kolor przewodni był zbyt jasny dla kontrastu WCAG, więc został automatycznie przyciemniony do {$data['brand_color']}."
+            : 'Ustawienia zostały zapisane.';
+
+        return redirect()->route('admin.ustawienia.edit')->with('status', $status);
+    }
+
+    /**
+     * Wyślij testową wiadomość na podany adres, korzystając z aktualnie
+     * zapisanej konfiguracji poczty (nadpisanej już w AppServiceProvider).
+     */
+    public function mailTest(Request $request)
+    {
+        $data = $request->validate([
+            'test_email' => ['required', 'email', 'max:255'],
+        ]);
+
+        try {
+            \Illuminate\Support\Facades\Mail::raw(
+                'To jest testowa wiadomość ze strony '.SiteSetting::current()->site_name.'. '
+                .'Jeśli ją widzisz, konfiguracja poczty działa poprawnie.',
+                fn ($message) => $message->to($data['test_email'])->subject('Test konfiguracji poczty')
+            );
+        } catch (\Throwable $e) {
+            return redirect()->route('admin.ustawienia.edit')
+                ->with('error', 'Nie udało się wysłać wiadomości testowej: '.$e->getMessage());
+        }
+
+        return redirect()->route('admin.ustawienia.edit')
+            ->with('status', 'Wysłano wiadomość testową na adres '.$data['test_email'].'.');
+    }
+}

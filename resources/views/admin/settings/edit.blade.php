@@ -1,0 +1,1006 @@
+@extends('admin.layout')
+
+@section('title', 'Ustawienia strony')
+
+@section('content')
+    <div x-data="{ tab: 'general' }" class="max-w-3xl space-y-6">
+    <form method="POST" action="{{ route('admin.ustawienia.update') }}" enctype="multipart/form-data"
+        class="rounded-lg border border-gray-200 bg-white p-6">
+        @csrf
+        @method('PUT')
+
+        @php
+            $tabs = [
+                'general' => 'Ogólne',
+                'seo' => 'SEO',
+                'contact' => 'Kontakt',
+                'social' => 'Media i BIP',
+                'registry' => 'Dane rejestrowe',
+                'support' => 'Wesprzyj nas',
+                'content' => 'Projekty',
+                'modules' => 'Moduły',
+                'homepage' => 'Strona główna',
+                'login' => 'Logowanie',
+                'mail' => 'Poczta',
+            ];
+        @endphp
+
+        <nav aria-label="Sekcje ustawień" class="mb-6 flex flex-wrap gap-1 rounded-lg border border-gray-200 bg-gray-50 p-1 text-sm font-bold">
+            @foreach ($tabs as $key => $label)
+                <button type="button" @click="tab = '{{ $key }}'"
+                    :class="tab === '{{ $key }}' ? 'bg-brand text-white' : 'text-muted hover:bg-gray-100'"
+                    class="rounded px-3 py-1.5">
+                    {{ $label }}
+                </button>
+            @endforeach
+        </nav>
+
+        <div x-show="tab === 'general'" x-cloak class="space-y-6">
+        <div>
+            <label for="site_name" class="mb-1 block text-sm font-bold">Nazwa strony</label>
+            <input type="text" id="site_name" name="site_name" value="{{ old('site_name', $settings->site_name) }}" required
+                class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+            @error('site_name') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+        </div>
+
+        <div>
+            <label for="tagline" class="mb-1 block text-sm font-bold">Podtytuł (tagline)</label>
+            <input type="text" id="tagline" name="tagline" value="{{ old('tagline', $settings->tagline) }}"
+                class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+            <p class="mt-1 text-xs text-muted">Wyświetlany w nagłówku pod nazwą strony.</p>
+            @error('tagline') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+        </div>
+
+        <div>
+            <label for="brand_color" class="mb-1 block text-sm font-bold">Kolor przewodni</label>
+            <div class="flex flex-wrap items-center gap-3">
+                <input type="color" id="brand_color" name="brand_color" value="{{ old('brand_color', $settings->brand_color) }}"
+                    class="h-10 w-16 rounded border-gray-300">
+                <input type="text" id="brand_color_text" value="{{ old('brand_color', $settings->brand_color) }}"
+                    oninput="document.getElementById('brand_color').value = this.value"
+                    class="w-32 rounded border-gray-300 font-mono text-sm focus:border-brand focus:ring-brand">
+                <span id="contrast-badge" class="rounded-full px-3 py-1 text-xs font-bold"></span>
+                <button type="button" id="contrast-fix-button" hidden
+                    class="rounded border border-brand px-3 py-1 text-xs font-bold text-brand hover:bg-brand-light">
+                    Dostosuj automatycznie
+                </button>
+            </div>
+            <p class="mt-1 text-xs text-muted">Ciemniejszy i jaśniejszy odcień zostaną obliczone automatycznie. Kontrast liczony jest wobec bieli — tak jak kolor jest używany na przyciskach i linkach. Zbyt jasny kolor zostanie automatycznie przyciemniony do wymaganego kontrastu przy zapisie.</p>
+            @error('brand_color') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+        </div>
+
+        <div>
+            <label for="ngo_color_text" class="mb-1 block text-sm font-bold">Kolor dla grupy „NGO” <span class="font-normal text-muted">(opcjonalnie)</span></label>
+            <div class="flex flex-wrap items-center gap-3">
+                <input type="color" id="ngo_color_picker" value="{{ old('ngo_color', $settings->ngo_color ?: '#1f6feb') }}"
+                    oninput="document.getElementById('ngo_color_text').value = this.value"
+                    class="h-10 w-16 rounded border-gray-300" aria-label="Wybierz kolor NGO">
+                <input type="text" id="ngo_color_text" name="ngo_color" value="{{ old('ngo_color', $settings->ngo_color) }}"
+                    placeholder="np. #1f6feb — puste = brak"
+                    oninput="if (/^#[0-9a-fA-F]{6}$/.test(this.value)) document.getElementById('ngo_color_picker').value = this.value"
+                    class="w-48 rounded border-gray-300 font-mono text-sm focus:border-brand focus:ring-brand">
+            </div>
+            <p class="mt-1 text-xs text-muted">Używany na stronach projektów i aktualności oznaczonych jako skierowane do NGO. Zostaw puste, aby zawsze używać koloru przewodniego. Zbyt jasny kolor zostanie przyciemniony przy zapisie (kontrast WCAG).</p>
+            @error('ngo_color') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+        </div>
+
+        <div>
+            <label for="header_layout" class="mb-1 block text-sm font-bold">Układ menu głównego</label>
+            <select id="header_layout" name="header_layout" class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                @foreach (\App\Models\SiteSetting::HEADER_LAYOUTS as $value => $label)
+                    <option value="{{ $value }}" {{ old('header_layout', $settings->header_layout) === $value ? 'selected' : '' }}>{{ $label }}</option>
+                @endforeach
+            </select>
+            <p class="mt-1 text-xs text-muted">Wariant „Pasek w kolorze marki” przenosi menu na osobny pełnej szerokości pasek w kolorze przewodnim strony (patrz pole wyżej).</p>
+            @error('header_layout') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+        </div>
+
+        <div>
+            <label for="content_editor" class="mb-1 block text-sm font-bold">Edytor treści (strony, aktualności, projekty)</label>
+            <select id="content_editor" name="content_editor" class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                @foreach (\App\Models\SiteSetting::EDITORS as $value => $label)
+                    <option value="{{ $value }}" {{ old('content_editor', $settings->content_editor) === $value ? 'selected' : '' }}>{{ $label }}</option>
+                @endforeach
+            </select>
+            @error('content_editor') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+        </div>
+
+        <div>
+            <p class="mb-1 text-sm font-bold">Logo</p>
+            @if ($settings->logoUrl())
+                <div class="mb-2 flex items-center gap-3">
+                    <img src="{{ $settings->logoUrl() }}" alt="Logo" class="h-14 w-14 rounded object-contain">
+                    <label class="flex items-center gap-2 text-sm text-muted">
+                        <input type="checkbox" name="remove_logo" value="1" class="rounded border-gray-300 text-brand focus:ring-brand">
+                        Usuń logo (wróć do domyślnego znaczka)
+                    </label>
+                </div>
+            @endif
+            <input type="file" name="logo" accept="image/*" class="block w-full cursor-pointer text-sm text-muted file:mr-3 file:cursor-pointer file:rounded file:border-0 file:bg-brand file:px-4 file:py-2 file:text-sm file:font-bold file:text-white hover:file:bg-brand-dark">
+            @error('logo') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+
+            <div class="mt-3">
+                <label for="logo_alt" class="mb-1 block text-sm font-bold">Tekst alternatywny logo <span class="font-normal text-muted">(opcjonalnie)</span></label>
+                <input type="text" id="logo_alt" name="logo_alt" value="{{ old('logo_alt', $settings->logo_alt) }}"
+                    placeholder="{{ $settings->site_name }}"
+                    class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                <p class="mt-1 text-xs text-muted">Opis logo dla czytników ekranu (WCAG). Puste = nazwa strony.</p>
+                @error('logo_alt') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+            </div>
+
+            <label class="mt-3 flex items-start gap-2 text-sm">
+                <input type="checkbox" name="logo_only" value="1" @checked(old('logo_only', $settings->logo_only)) class="mt-0.5 rounded border-gray-300 text-brand focus:ring-brand">
+                <span>
+                    <span class="font-bold">Pokazuj samo logo</span>
+                    <span class="block text-xs text-muted">Ukrywa nazwę strony i podtytuł w nagłówku. Działa tylko, gdy logo jest wgrane.</span>
+                </span>
+            </label>
+        </div>
+        </div>
+
+        <div x-show="tab === 'seo'" x-cloak class="space-y-6">
+            <div class="mb-5">
+                <label for="meta_description" class="mb-1 block text-sm font-bold">Domyślny opis strony (meta description)</label>
+                <textarea id="meta_description" name="meta_description" rows="3" maxlength="300"
+                    class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">{{ old('meta_description', $settings->meta_description) }}</textarea>
+                <p class="mt-1 text-xs text-muted">Używany, gdy strona/artykuł nie ma własnego opisu. Widoczny w wynikach Google i podglądach linków.</p>
+                @error('meta_description') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+            </div>
+
+            <div class="mb-5">
+                <p class="mb-1 text-sm font-bold">Domyślny obrazek udostępniania (Open Graph)</p>
+                @if ($settings->ogImageUrl())
+                    <div class="mb-2 flex items-center gap-3">
+                        <img src="{{ $settings->ogImageUrl() }}" alt="Obrazek OG" class="h-14 w-24 rounded object-cover">
+                        <label class="flex items-center gap-2 text-sm text-muted">
+                            <input type="checkbox" name="remove_og_image" value="1" class="rounded border-gray-300 text-brand focus:ring-brand">
+                            Usuń obrazek
+                        </label>
+                    </div>
+                @endif
+                <input type="file" name="og_image" accept="image/*" class="block w-full cursor-pointer text-sm text-muted file:mr-3 file:cursor-pointer file:rounded file:border-0 file:bg-brand file:px-4 file:py-2 file:text-sm file:font-bold file:text-white hover:file:bg-brand-dark">
+                <p class="mt-1 text-xs text-muted">Pojawia się w podglądzie linku na Facebooku, LinkedInie i Messengerze (zalecane 1200×630 px).</p>
+                @error('og_image') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+            </div>
+
+            <label class="flex items-center gap-2 text-sm">
+                <input type="checkbox" name="allow_indexing" value="1" {{ old('allow_indexing', $settings->allow_indexing) ? 'checked' : '' }}
+                    class="rounded border-gray-300 text-brand focus:ring-brand">
+                Zezwól wyszukiwarkom na indeksowanie strony
+            </label>
+            <p class="mt-1 text-xs text-muted">Odznacz, aby ukryć całą stronę przed Google (np. na czas prac testowych).</p>
+        </div>
+
+        <div x-show="tab === 'registry'" x-cloak>
+            <p class="mb-4 text-xs text-muted">Wyświetlane w stopce strony. Puste pola zostają ukryte.</p>
+
+            <div class="grid gap-4 sm:grid-cols-3">
+                <div>
+                    <label for="krs_number" class="mb-1 block text-sm font-bold">Numer KRS</label>
+                    <input type="text" id="krs_number" name="krs_number" value="{{ old('krs_number', $settings->krs_number) }}"
+                        class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                    @error('krs_number') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                </div>
+                <div>
+                    <label for="nip_number" class="mb-1 block text-sm font-bold">NIP</label>
+                    <input type="text" id="nip_number" name="nip_number" value="{{ old('nip_number', $settings->nip_number) }}"
+                        class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                    @error('nip_number') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                </div>
+                <div>
+                    <label for="regon_number" class="mb-1 block text-sm font-bold">REGON</label>
+                    <input type="text" id="regon_number" name="regon_number" value="{{ old('regon_number', $settings->regon_number) }}"
+                        class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                    @error('regon_number') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                </div>
+            </div>
+        </div>
+
+        <div x-show="tab === 'support'" x-cloak class="space-y-5">
+            @php $sd = \App\Models\SiteSetting::SUPPORT_DEFAULTS; @endphp
+            <p class="text-xs text-muted">Wyświetlane na podstronie <a href="{{ route('support.show') }}" target="_blank" rel="noopener" class="text-brand underline">/wsparcie</a>. Puste pola pokazują tekst domyślny (widoczny jako podpowiedź).</p>
+
+            <div>
+                <p class="mb-1 text-sm font-bold">Zdjęcie nagłówka <span class="font-normal text-muted">(opcjonalnie)</span></p>
+                @if ($settings->supportImageUrl())
+                    <div class="mb-2 flex items-center gap-3">
+                        <img src="{{ $settings->supportImageUrl() }}" alt="Zdjęcie nagłówka strony wsparcia" class="h-20 w-32 rounded object-cover">
+                        <label class="flex items-center gap-2 text-sm text-muted">
+                            <input type="checkbox" name="remove_support_image" value="1" class="rounded border-gray-300 text-brand focus:ring-brand">
+                            Usuń zdjęcie
+                        </label>
+                    </div>
+                @endif
+                <input type="file" name="support_image" accept="image/*" class="block w-full cursor-pointer text-sm text-muted file:mr-3 file:cursor-pointer file:rounded file:border-0 file:bg-brand file:px-4 file:py-2 file:text-sm file:font-bold file:text-white hover:file:bg-brand-dark">
+                <p class="mt-1 text-xs text-muted">Wyświetlane jako duże zdjęcie w tle nagłówka strony (zalecane min. 1600×500 px).</p>
+                @error('support_image') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+            </div>
+
+            <div class="border-t border-gray-100 pt-5">
+                <p class="mb-3 text-sm font-bold">Nagłówek strony</p>
+                <div class="space-y-4">
+                    <div>
+                        <label for="support_hero_badge" class="mb-1 block text-sm font-bold">Etykieta (badge)</label>
+                        <input type="text" id="support_hero_badge" name="support_hero_badge" value="{{ old('support_hero_badge', $settings->support_hero_badge) }}"
+                            placeholder="{{ $sd['support_hero_badge'] }}" class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                        @error('support_hero_badge') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </div>
+                    <div>
+                        <label for="support_hero_title" class="mb-1 block text-sm font-bold">Tytuł (H1)</label>
+                        <input type="text" id="support_hero_title" name="support_hero_title" value="{{ old('support_hero_title', $settings->support_hero_title) }}"
+                            placeholder="{{ $sd['support_hero_title'] }}" class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                        @error('support_hero_title') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </div>
+                    <div>
+                        <label for="support_hero_subtitle" class="mb-1 block text-sm font-bold">Podtytuł</label>
+                        <textarea id="support_hero_subtitle" name="support_hero_subtitle" rows="2"
+                            placeholder="{{ $sd['support_hero_subtitle'] }}" class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">{{ old('support_hero_subtitle', $settings->support_hero_subtitle) }}</textarea>
+                        @error('support_hero_subtitle') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </div>
+                    <div>
+                        <label for="support_hero_cta_label" class="mb-1 block text-sm font-bold">Tekst przycisku „Wpłać teraz”</label>
+                        <input type="text" id="support_hero_cta_label" name="support_hero_cta_label" value="{{ old('support_hero_cta_label', $settings->support_hero_cta_label) }}"
+                            placeholder="{{ $sd['support_hero_cta_label'] }}" class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                        <p class="mt-1 text-xs text-muted">Przycisk pojawia się tylko, gdy ustawiono link do szybkiego przelewu (poniżej).</p>
+                        @error('support_hero_cta_label') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </div>
+                </div>
+            </div>
+
+            <div class="border-t border-gray-100 pt-5">
+                <p class="mb-3 text-sm font-bold">Sekcja „Dlaczego warto nas wspierać”</p>
+                <div class="space-y-4">
+                    <div>
+                        <label for="support_benefits_title" class="mb-1 block text-sm font-bold">Tytuł sekcji</label>
+                        <input type="text" id="support_benefits_title" name="support_benefits_title" value="{{ old('support_benefits_title', $settings->support_benefits_title) }}"
+                            placeholder="{{ $sd['support_benefits_title'] }}" class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                        @error('support_benefits_title') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </div>
+                    <div>
+                        <label for="support_benefits_subtitle" class="mb-1 block text-sm font-bold">Opis sekcji</label>
+                        <textarea id="support_benefits_subtitle" name="support_benefits_subtitle" rows="2"
+                            placeholder="{{ $sd['support_benefits_subtitle'] }}" class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">{{ old('support_benefits_subtitle', $settings->support_benefits_subtitle) }}</textarea>
+                        @error('support_benefits_subtitle') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </div>
+
+                    @foreach (['1', '2', '3'] as $i)
+                        <div class="rounded border border-gray-200 p-4">
+                            <p class="mb-2 text-xs font-bold uppercase tracking-wide text-muted">Karta {{ $i }}</p>
+                            <div class="grid gap-3 sm:grid-cols-[10rem_1fr]">
+                                <div>
+                                    <label for="support_benefit{{ $i }}_icon" class="mb-1 block text-sm font-bold">Ikona</label>
+                                    <input type="text" id="support_benefit{{ $i }}_icon" name="support_benefit{{ $i }}_icon" value="{{ old('support_benefit'.$i.'_icon', $settings->{'support_benefit'.$i.'_icon'}) }}"
+                                        placeholder="{{ $sd['support_benefit'.$i.'_icon'] }}" class="w-full rounded border-gray-300 font-mono text-xs focus:border-brand focus:ring-brand">
+                                    <p class="mt-1 text-xs text-muted">Klasa <a href="https://fontawesome.com/search?o=r&m=free" target="_blank" rel="noopener" class="text-brand underline">Font Awesome</a>.</p>
+                                    @error('support_benefit'.$i.'_icon') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                                </div>
+                                <div>
+                                    <label for="support_benefit{{ $i }}_title" class="mb-1 block text-sm font-bold">Tytuł</label>
+                                    <input type="text" id="support_benefit{{ $i }}_title" name="support_benefit{{ $i }}_title" value="{{ old('support_benefit'.$i.'_title', $settings->{'support_benefit'.$i.'_title'}) }}"
+                                        placeholder="{{ $sd['support_benefit'.$i.'_title'] }}" class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                                    @error('support_benefit'.$i.'_title') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                                </div>
+                            </div>
+                            <div class="mt-3">
+                                <label for="support_benefit{{ $i }}_text" class="mb-1 block text-sm font-bold">Opis</label>
+                                <textarea id="support_benefit{{ $i }}_text" name="support_benefit{{ $i }}_text" rows="2"
+                                    placeholder="{{ $sd['support_benefit'.$i.'_text'] }}" class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">{{ old('support_benefit'.$i.'_text', $settings->{'support_benefit'.$i.'_text'}) }}</textarea>
+                                @error('support_benefit'.$i.'_text') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+
+            <div class="border-t border-gray-100 pt-5">
+                <label for="support_methods_title" class="mb-1 block text-sm font-bold">Tytuł sekcji „Jak możesz pomóc”</label>
+                <input type="text" id="support_methods_title" name="support_methods_title" value="{{ old('support_methods_title', $settings->support_methods_title) }}"
+                    placeholder="{{ $sd['support_methods_title'] }}" class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                @error('support_methods_title') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+            </div>
+
+            <div>
+                <label for="editor-support_intro" class="mb-1 block text-sm font-bold">Wstęp <span class="font-normal text-muted">(opcjonalnie)</span></label>
+                @include('admin.partials.editor', ['name' => 'support_intro', 'value' => old('support_intro', $settings->support_intro)])
+                @error('support_intro') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+            </div>
+
+            <div class="border-t border-gray-100 pt-5">
+                <p class="mb-3 text-sm font-bold">1. Darowizna na cele statutowe</p>
+                <div class="space-y-4">
+                    <div>
+                        <label for="support_method1_title" class="mb-1 block text-sm font-bold">Tytuł karty</label>
+                        <input type="text" id="support_method1_title" name="support_method1_title" value="{{ old('support_method1_title', $settings->support_method1_title) }}"
+                            placeholder="{{ $sd['support_method1_title'] }}" class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                        @error('support_method1_title') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </div>
+                    <div class="grid gap-4 sm:grid-cols-2">
+                        <div>
+                            <label for="bank_account_number" class="mb-1 block text-sm font-bold">Numer konta <span class="font-normal text-muted">(opcjonalnie)</span></label>
+                            <input type="text" id="bank_account_number" name="bank_account_number" value="{{ old('bank_account_number', $settings->bank_account_number) }}"
+                                placeholder="PL00 0000 0000 0000 0000 0000 0000"
+                                class="w-full rounded border-gray-300 font-mono text-sm focus:border-brand focus:ring-brand">
+                            @error('bank_account_number') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                            <label for="support_method1_account_label" class="mb-1 mt-2 block text-xs font-bold text-muted">Etykieta pola</label>
+                            <input type="text" id="support_method1_account_label" name="support_method1_account_label" value="{{ old('support_method1_account_label', $settings->support_method1_account_label) }}"
+                                placeholder="{{ $sd['support_method1_account_label'] }}" class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                            @error('support_method1_account_label') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                        </div>
+                        <div>
+                            <label for="bank_account_tax_number" class="mb-1 block text-sm font-bold">Konto na 1,5% podatku <span class="font-normal text-muted">(opcjonalnie)</span></label>
+                            <input type="text" id="bank_account_tax_number" name="bank_account_tax_number" value="{{ old('bank_account_tax_number', $settings->bank_account_tax_number) }}"
+                                placeholder="zostaw puste, jeśli takie samo jak wyżej"
+                                class="w-full rounded border-gray-300 font-mono text-sm focus:border-brand focus:ring-brand">
+                            @error('bank_account_tax_number') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                            <label for="support_method1_tax_label" class="mb-1 mt-2 block text-xs font-bold text-muted">Etykieta pola</label>
+                            <input type="text" id="support_method1_tax_label" name="support_method1_tax_label" value="{{ old('support_method1_tax_label', $settings->support_method1_tax_label) }}"
+                                placeholder="{{ $sd['support_method1_tax_label'] }}" class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                            @error('support_method1_tax_label') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                        </div>
+                    </div>
+                    <div>
+                        <label for="support_transfer_title" class="mb-1 block text-sm font-bold">Tytuł przelewu <span class="font-normal text-muted">(opcjonalnie)</span></label>
+                        <input type="text" id="support_transfer_title" name="support_transfer_title" value="{{ old('support_transfer_title', $settings->support_transfer_title) }}"
+                            placeholder="{{ $sd['support_transfer_title'] }}" class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                        <p class="mt-1 text-xs text-muted">Sugerowany tytuł przelewu dla darczyńcy (z przyciskiem „Kopiuj tytuł"). Zostaw puste, aby ukryć.</p>
+                        @error('support_transfer_title') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                        <label for="support_method1_transfer_label" class="mb-1 mt-2 block text-xs font-bold text-muted">Etykieta pola</label>
+                        <input type="text" id="support_method1_transfer_label" name="support_method1_transfer_label" value="{{ old('support_method1_transfer_label', $settings->support_method1_transfer_label) }}"
+                            placeholder="{{ $sd['support_method1_transfer_label'] }}" class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                        @error('support_method1_transfer_label') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </div>
+                </div>
+            </div>
+
+            <div class="border-t border-gray-100 pt-5">
+                <p class="mb-3 text-sm font-bold">2. Szybki przelew</p>
+                <div class="space-y-4">
+                    <div>
+                        <label for="support_method2_title" class="mb-1 block text-sm font-bold">Tytuł karty</label>
+                        <input type="text" id="support_method2_title" name="support_method2_title" value="{{ old('support_method2_title', $settings->support_method2_title) }}"
+                            placeholder="{{ $sd['support_method2_title'] }}" class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                        @error('support_method2_title') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </div>
+                    <div>
+                        <label for="support_method2_text" class="mb-1 block text-sm font-bold">Opis</label>
+                        <textarea id="support_method2_text" name="support_method2_text" rows="2"
+                            placeholder="{{ $sd['support_method2_text'] }}" class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">{{ old('support_method2_text', $settings->support_method2_text) }}</textarea>
+                        @error('support_method2_text') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </div>
+                    <div>
+                        <label for="support_quick_transfer_url" class="mb-1 block text-sm font-bold">Link do szybkiego przelewu <span class="font-normal text-muted">(opcjonalnie)</span></label>
+                        <input type="text" id="support_quick_transfer_url" name="support_quick_transfer_url" value="{{ old('support_quick_transfer_url', $settings->support_quick_transfer_url) }}"
+                            placeholder="np. link do Przelewy24, Tpay lub PayPal.me"
+                            class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                        @error('support_quick_transfer_url') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </div>
+                    <div>
+                        <label for="support_method2_cta_label" class="mb-1 block text-sm font-bold">Tekst przycisku</label>
+                        <input type="text" id="support_method2_cta_label" name="support_method2_cta_label" value="{{ old('support_method2_cta_label', $settings->support_method2_cta_label) }}"
+                            placeholder="{{ $sd['support_method2_cta_label'] }}" class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                        @error('support_method2_cta_label') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </div>
+                </div>
+            </div>
+
+            <div class="border-t border-gray-100 pt-5">
+                <p class="mb-3 text-sm font-bold">3. BuyCoffee</p>
+                <div class="space-y-4">
+                    <div>
+                        <label for="support_method3_title" class="mb-1 block text-sm font-bold">Tytuł karty</label>
+                        <input type="text" id="support_method3_title" name="support_method3_title" value="{{ old('support_method3_title', $settings->support_method3_title) }}"
+                            placeholder="{{ $sd['support_method3_title'] }}" class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                        @error('support_method3_title') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </div>
+                    <div>
+                        <label for="support_method3_text" class="mb-1 block text-sm font-bold">Opis</label>
+                        <textarea id="support_method3_text" name="support_method3_text" rows="2"
+                            placeholder="{{ $sd['support_method3_text'] }}" class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">{{ old('support_method3_text', $settings->support_method3_text) }}</textarea>
+                        @error('support_method3_text') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </div>
+                    <div>
+                        <label for="support_buycoffee_url" class="mb-1 block text-sm font-bold">Link do profilu BuyCoffee <span class="font-normal text-muted">(opcjonalnie)</span></label>
+                        <input type="text" id="support_buycoffee_url" name="support_buycoffee_url" value="{{ old('support_buycoffee_url', $settings->support_buycoffee_url) }}"
+                            placeholder="np. https://buycoffee.to/nazwa"
+                            class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                        @error('support_buycoffee_url') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </div>
+                    <div>
+                        <label for="support_method3_cta_label" class="mb-1 block text-sm font-bold">Tekst przycisku</label>
+                        <input type="text" id="support_method3_cta_label" name="support_method3_cta_label" value="{{ old('support_method3_cta_label', $settings->support_method3_cta_label) }}"
+                            placeholder="{{ $sd['support_method3_cta_label'] }}" class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                        @error('support_method3_cta_label') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </div>
+                </div>
+            </div>
+
+            <div class="border-t border-gray-100 pt-5">
+                <p class="mb-3 text-sm font-bold">Ramka na dole strony</p>
+                <div class="space-y-4">
+                    <div>
+                        <label for="support_outro_title" class="mb-1 block text-sm font-bold">Tytuł</label>
+                        <input type="text" id="support_outro_title" name="support_outro_title" value="{{ old('support_outro_title', $settings->support_outro_title) }}"
+                            placeholder="{{ $sd['support_outro_title'] }}" class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                        @error('support_outro_title') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </div>
+                    <div>
+                        <label for="support_outro_subtitle" class="mb-1 block text-sm font-bold">Podtytuł</label>
+                        <input type="text" id="support_outro_subtitle" name="support_outro_subtitle" value="{{ old('support_outro_subtitle', $settings->support_outro_subtitle) }}"
+                            placeholder="{{ $sd['support_outro_subtitle'] }}" class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                        @error('support_outro_subtitle') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div x-show="tab === 'contact'" x-cloak>
+            <p class="mb-4 text-xs text-muted">Wyświetlane w sekcji „Kontakt” na dole strony głównej oraz na podstronie <a href="{{ route('contact.show') }}" target="_blank" rel="noopener" class="text-brand underline">/kontakt</a>.</p>
+
+            <div class="mb-4">
+                <label for="editor-contact_intro" class="mb-1 block text-sm font-bold">Wstęp na stronie kontakt <span class="font-normal text-muted">(opcjonalnie)</span></label>
+                @include('admin.partials.editor', ['name' => 'contact_intro', 'value' => old('contact_intro', $settings->contact_intro)])
+                @error('contact_intro') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+            </div>
+
+            <label class="mb-4 flex items-start gap-2 rounded-lg border border-gray-200 bg-gray-50 p-3 text-sm">
+                <input type="hidden" name="show_coordinators" value="0">
+                <input type="checkbox" name="show_coordinators" value="1" @checked(old('show_coordinators', $settings->show_coordinators)) class="mt-0.5 rounded border-gray-300 text-brand focus:ring-brand">
+                <span>
+                    <span class="font-bold">Pokazuj koordynatorów projektów</span>
+                    <span class="block text-xs text-muted">Główny wyłącznik danych koordynatorów na stronie „Kontakt” oraz na stronach projektów. Poszczególne projekty mają dodatkowo własny przełącznik.</span>
+                </span>
+            </label>
+
+            <div class="grid gap-4 sm:grid-cols-2">
+                <div>
+                    <label for="contact_address" class="mb-1 block text-sm font-bold">Adres (ulica i numer)</label>
+                    <input type="text" id="contact_address" name="contact_address" value="{{ old('contact_address', $settings->contact_address) }}" required
+                        class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                    @error('contact_address') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                </div>
+
+                <div>
+                    <label for="contact_city" class="mb-1 block text-sm font-bold">Kod pocztowy i miasto</label>
+                    <input type="text" id="contact_city" name="contact_city" value="{{ old('contact_city', $settings->contact_city) }}" required
+                        class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                    @error('contact_city') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                </div>
+
+                <div>
+                    <label for="contact_email" class="mb-1 block text-sm font-bold">E-mail kontaktowy</label>
+                    <input type="email" id="contact_email" name="contact_email" value="{{ old('contact_email', $settings->contact_email) }}" required
+                        class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                    @error('contact_email') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                </div>
+
+                <div>
+                    <label for="contact_phone" class="mb-1 block text-sm font-bold">Telefon <span class="font-normal text-muted">(opcjonalnie)</span></label>
+                    <input type="text" id="contact_phone" name="contact_phone" value="{{ old('contact_phone', $settings->contact_phone) }}" placeholder="np. +48 123 456 789"
+                        class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                    @error('contact_phone') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                </div>
+            </div>
+
+            {{-- Box informacyjny pod danymi kontaktowymi (np. „zmiany w kontakcie”) --}}
+            <div class="mt-8 space-y-4 rounded-lg border border-gray-200 bg-gray-50 p-5">
+                <div>
+                    <p class="text-sm font-bold text-ink">Box informacyjny pod danymi kontaktowymi</p>
+                    <p class="mt-0.5 text-xs text-muted">Wyróżniony box z tekstem i opcjonalnym linkiem (jak przycisk CTA), pokazywany pod danymi kontaktowymi na podstronie <a href="{{ route('contact.show') }}" target="_blank" rel="noopener" class="text-brand underline">/kontakt</a> — np. gdy zmienia się adres lub godziny. Zostaw tekst pusty, aby ukryć box.</p>
+                </div>
+
+                <div>
+                    <label for="contact_box_text" class="mb-1 block text-sm font-bold">Treść boxa</label>
+                    <textarea id="contact_box_text" name="contact_box_text" rows="3"
+                        placeholder="np. Od 1 września zmieniamy adres biura."
+                        class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">{{ old('contact_box_text', $settings->contact_box_text) }}</textarea>
+                    @error('contact_box_text') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                </div>
+
+                <div class="grid gap-4 sm:grid-cols-2">
+                    <div>
+                        <label for="contact_box_link_label" class="mb-1 block text-sm font-bold">Tekst linku <span class="font-normal text-muted">(opcjonalnie)</span></label>
+                        <input type="text" id="contact_box_link_label" name="contact_box_link_label" value="{{ old('contact_box_link_label', $settings->contact_box_link_label) }}"
+                            placeholder="np. Zobacz szczegóły"
+                            class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                        @error('contact_box_link_label') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </div>
+
+                    <div>
+                        <label for="contact_box_link_url" class="mb-1 block text-sm font-bold">Adres linku <span class="font-normal text-muted">(opcjonalnie)</span></label>
+                        <input type="text" id="contact_box_link_url" name="contact_box_link_url" value="{{ old('contact_box_link_url', $settings->contact_box_link_url) }}"
+                            placeholder="np. /aktualnosci lub https://…"
+                            class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                        @error('contact_box_link_url') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </div>
+
+                    <div>
+                        <label for="contact_box_visible_from" class="mb-1 block text-sm font-bold">Pokaż od <span class="font-normal text-muted">(opcjonalnie)</span></label>
+                        <input type="datetime-local" id="contact_box_visible_from" name="contact_box_visible_from"
+                            value="{{ old('contact_box_visible_from', $settings->contact_box_visible_from?->format('Y-m-d\TH:i')) }}"
+                            class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                        <p class="mt-1 text-xs text-muted">Pusto = box widoczny od razu.</p>
+                        @error('contact_box_visible_from') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </div>
+
+                    <div>
+                        <label for="contact_box_visible_until" class="mb-1 block text-sm font-bold">Ukryj po <span class="font-normal text-muted">(opcjonalnie)</span></label>
+                        <input type="datetime-local" id="contact_box_visible_until" name="contact_box_visible_until"
+                            value="{{ old('contact_box_visible_until', $settings->contact_box_visible_until?->format('Y-m-d\TH:i')) }}"
+                            class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                        <p class="mt-1 text-xs text-muted">Pusto = box widoczny bezterminowo.</p>
+                        @error('contact_box_visible_until') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div x-show="tab === 'social'" x-cloak>
+            <p class="mb-4 text-xs text-muted">Wypełnione linki pojawią się w górnym pasku i stopce. Puste pola zostają ukryte, zamiast prowadzić donikąd.</p>
+
+            <div class="mb-5 flex flex-wrap gap-4">
+                <label class="flex items-center gap-2 text-sm">
+                    <input type="checkbox" name="show_topbar_bip" value="1" {{ old('show_topbar_bip', $settings->show_topbar_bip) ? 'checked' : '' }}
+                        class="rounded border-gray-300 text-brand focus:ring-brand">
+                    Pokaż link BIP w górnym pasku
+                </label>
+                <label class="flex items-center gap-2 text-sm">
+                    <input type="checkbox" name="show_topbar_social" value="1" {{ old('show_topbar_social', $settings->show_topbar_social) ? 'checked' : '' }}
+                        class="rounded border-gray-300 text-brand focus:ring-brand">
+                    Pokaż ikony mediów społecznościowych w górnym pasku
+                </label>
+            </div>
+            <p class="mb-4 text-xs text-muted">Dotyczy tylko górnego paska nad logo. Ikony mediów społecznościowych w stopce pozostają widoczne niezależnie od tego ustawienia (BIP nie jest wyświetlany w stopce).</p>
+
+            <div class="grid gap-4 sm:grid-cols-2">
+                <div>
+                    <label for="bip_url" class="mb-1 block text-sm font-bold">BIP</label>
+                    <input type="text" id="bip_url" name="bip_url" value="{{ old('bip_url', $settings->bip_url) }}" placeholder="https://bip..."
+                        class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                    @error('bip_url') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                </div>
+
+                <div>
+                    <label for="facebook_url" class="mb-1 block text-sm font-bold">Facebook</label>
+                    <input type="text" id="facebook_url" name="facebook_url" value="{{ old('facebook_url', $settings->facebook_url) }}" placeholder="https://facebook.com/..."
+                        class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                    @error('facebook_url') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                </div>
+
+                <div>
+                    <label for="twitter_url" class="mb-1 block text-sm font-bold">Twitter / X</label>
+                    <input type="text" id="twitter_url" name="twitter_url" value="{{ old('twitter_url', $settings->twitter_url) }}" placeholder="https://x.com/..."
+                        class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                    @error('twitter_url') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                </div>
+
+                <div>
+                    <label for="instagram_url" class="mb-1 block text-sm font-bold">Instagram</label>
+                    <input type="text" id="instagram_url" name="instagram_url" value="{{ old('instagram_url', $settings->instagram_url) }}" placeholder="https://instagram.com/..."
+                        class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                    @error('instagram_url') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                </div>
+
+                <div>
+                    <label for="linkedin_url" class="mb-1 block text-sm font-bold">LinkedIn</label>
+                    <input type="text" id="linkedin_url" name="linkedin_url" value="{{ old('linkedin_url', $settings->linkedin_url) }}" placeholder="https://linkedin.com/company/..."
+                        class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                    @error('linkedin_url') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                </div>
+
+                <div>
+                    <label for="youtube_url" class="mb-1 block text-sm font-bold">YouTube</label>
+                    <input type="text" id="youtube_url" name="youtube_url" value="{{ old('youtube_url', $settings->youtube_url) }}" placeholder="https://youtube.com/@..."
+                        class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                    @error('youtube_url') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                </div>
+
+                <div>
+                    <label for="substack_url" class="mb-1 block text-sm font-bold">Substack (blog)</label>
+                    <input type="text" id="substack_url" name="substack_url" value="{{ old('substack_url', $settings->substack_url) }}" placeholder="https://fundacjafeer.substack.com"
+                        class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                    <p class="mt-1 text-xs text-muted">Adres profilu Substack. Najnowsze wpisy pojawią się na stronie głównej w sekcji „O tym piszemy” (kolejność ustawisz w zakładce „Strona główna”).</p>
+                    @error('substack_url') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                </div>
+            </div>
+        </div>
+
+        <div x-show="tab === 'content'" x-cloak class="space-y-6">
+            <div>
+                <label for="editor-projects_intro" class="mb-1 block text-sm font-bold">Tekst wprowadzający na stronie projektów <span class="font-normal text-muted">(opcjonalnie)</span></label>
+                <p class="mb-2 text-xs text-muted">Wyświetlany pod nagłówkiem na stronie <a href="{{ route('projects.index') }}" target="_blank" rel="noopener" class="text-brand underline">/projekty</a> i na stronach kategorii.</p>
+                @include('admin.partials.editor', ['name' => 'projects_intro', 'value' => old('projects_intro', $settings->projects_intro)])
+                @error('projects_intro') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+            </div>
+
+            <div class="border-t border-gray-100 pt-6">
+                <label for="editor-materials_intro" class="mb-1 block text-sm font-bold">Tekst wprowadzający na stronie materiałów <span class="font-normal text-muted">(opcjonalnie)</span></label>
+                <p class="mb-2 text-xs text-muted">Wyświetlany pod nagłówkiem na stronie <a href="{{ route('materials.index') }}" target="_blank" rel="noopener" class="text-brand underline">/materialy</a>.</p>
+                @include('admin.partials.editor', ['name' => 'materials_intro', 'value' => old('materials_intro', $settings->materials_intro)])
+                @error('materials_intro') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+            </div>
+
+            <div class="border-t border-gray-100 pt-6">
+                <p class="mb-1 text-sm font-bold">Domyślne zdjęcie newsa <span class="font-normal text-muted">(opcjonalnie)</span></p>
+                @if ($settings->newsDefaultImageUrl())
+                    <div class="mb-2 flex items-center gap-3">
+                        <img src="{{ $settings->newsDefaultImageUrl() }}" alt="Domyślne zdjęcie newsa" class="h-20 w-32 rounded object-cover">
+                        <label class="flex items-center gap-2 text-sm text-muted">
+                            <input type="checkbox" name="remove_news_default_image" value="1" class="rounded border-gray-300 text-brand focus:ring-brand">
+                            Usuń
+                        </label>
+                    </div>
+                @endif
+                <input type="file" name="news_default_image" accept="image/*" class="block w-full cursor-pointer text-sm text-muted file:mr-3 file:cursor-pointer file:rounded file:border-0 file:bg-brand file:px-4 file:py-2 file:text-sm file:font-bold file:text-white hover:file:bg-brand-dark">
+                <p class="mt-1 text-xs text-muted">Używane dla newsów bez własnego zdjęcia (lista aktualności, strona główna, sekcja na stronie projektu).</p>
+                @error('news_default_image') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+            </div>
+
+            <div class="border-t border-gray-100 pt-6">
+                <label for="editor-materials_notice" class="mb-1 block text-sm font-bold">Informacja w ramce (materiały) <span class="font-normal text-muted">(opcjonalnie)</span></label>
+                <p class="mb-2 text-xs text-muted">Wyróżniona ramka informacyjna na stronie materiałów (np. ważny komunikat, warunki korzystania).</p>
+                @include('admin.partials.editor', ['name' => 'materials_notice', 'value' => old('materials_notice', $settings->materials_notice)])
+                @error('materials_notice') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+            </div>
+        </div>
+
+        <div x-show="tab === 'modules'" x-cloak>
+            <p class="mb-4 text-xs text-muted">Wyłącz moduł, aby ukryć go z panelu i strony publicznej. Adresy powiązane z wyłączonym modułem przestaną działać (błąd 404), dopóki nie zostanie ponownie włączony.</p>
+
+            @php
+                $defaultEnabledModules = array_diff(array_keys(\App\Models\SiteSetting::MODULES), $settings->disabled_modules ?? []);
+                $enabledModules = old('enabled_modules', $defaultEnabledModules);
+            @endphp
+
+            <div class="grid gap-3 sm:grid-cols-2">
+                @foreach (\App\Models\SiteSetting::MODULES as $key => $label)
+                    <label class="flex items-center gap-2 text-sm">
+                        <input type="checkbox" name="enabled_modules[]" value="{{ $key }}" {{ in_array($key, $enabledModules) ? 'checked' : '' }}
+                            class="rounded border-gray-300 text-brand focus:ring-brand">
+                        {{ $label }}
+                    </label>
+                @endforeach
+            </div>
+        </div>
+
+        <div x-show="tab === 'homepage'" x-cloak>
+            <p class="mb-4 text-xs text-muted">Zmień kolejność, w jakiej sekcje pojawiają się na stronie głównej. Sekcja "Kontakt" zawsze zostaje na końcu.</p>
+
+            <ul id="section-order-list" class="space-y-2">
+                @foreach ($settings->orderedHomepageSections() as $key)
+                    <li data-section="{{ $key }}" class="flex items-center justify-between rounded border border-gray-200 bg-gray-50 px-3 py-2 text-sm">
+                        <span class="font-medium">{{ \App\Models\SiteSetting::HOMEPAGE_SECTIONS[$key] ?? $key }}</span>
+                        <span class="flex items-center gap-1">
+                            <button type="button" data-move="up" class="flex h-7 w-7 items-center justify-center rounded text-muted hover:bg-gray-200 hover:text-brand" aria-label="Przenieś wyżej">
+                                <i class="fa-solid fa-arrow-up" aria-hidden="true"></i>
+                            </button>
+                            <button type="button" data-move="down" class="flex h-7 w-7 items-center justify-center rounded text-muted hover:bg-gray-200 hover:text-brand" aria-label="Przenieś niżej">
+                                <i class="fa-solid fa-arrow-down" aria-hidden="true"></i>
+                            </button>
+                        </span>
+                        <input type="hidden" name="section_order[{{ $key }}]" value="0">
+                    </li>
+                @endforeach
+            </ul>
+
+            {{-- Pasek informacyjny na górze strony głównej --}}
+            <div class="mt-8 space-y-4 rounded-lg border border-gray-200 bg-gray-50 p-5">
+                <div>
+                    <p class="text-sm font-bold text-ink">Pasek informacyjny na stronie głównej</p>
+                    <p class="mt-0.5 text-xs text-muted">Wyróżniony pasek z tekstem i opcjonalnym linkiem, pokazywany na samej górze strony głównej — np. ważny komunikat lub zaproszenie na wydarzenie. Zostaw tekst pusty, aby ukryć pasek.</p>
+                </div>
+
+                <div>
+                    <label for="homepage_banner_text" class="mb-1 block text-sm font-bold">Treść paska</label>
+                    <textarea id="homepage_banner_text" name="homepage_banner_text" rows="2"
+                        placeholder="np. Zapraszamy na bezpłatny webinar o dostępności — 12 marca."
+                        class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">{{ old('homepage_banner_text', $settings->homepage_banner_text) }}</textarea>
+                    @error('homepage_banner_text') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                </div>
+
+                <div class="grid gap-4 sm:grid-cols-2">
+                    <div>
+                        <label for="homepage_banner_link_label" class="mb-1 block text-sm font-bold">Tekst linku <span class="font-normal text-muted">(opcjonalnie)</span></label>
+                        <input type="text" id="homepage_banner_link_label" name="homepage_banner_link_label" value="{{ old('homepage_banner_link_label', $settings->homepage_banner_link_label) }}"
+                            placeholder="np. Zapisz się"
+                            class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                        @error('homepage_banner_link_label') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </div>
+
+                    <div>
+                        <label for="homepage_banner_link_url" class="mb-1 block text-sm font-bold">Adres linku <span class="font-normal text-muted">(opcjonalnie)</span></label>
+                        <input type="text" id="homepage_banner_link_url" name="homepage_banner_link_url" value="{{ old('homepage_banner_link_url', $settings->homepage_banner_link_url) }}"
+                            placeholder="np. /aktualnosci lub https://…"
+                            class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                        @error('homepage_banner_link_url') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </div>
+
+                    <div>
+                        <label for="homepage_banner_visible_from" class="mb-1 block text-sm font-bold">Pokaż od <span class="font-normal text-muted">(opcjonalnie)</span></label>
+                        <input type="datetime-local" id="homepage_banner_visible_from" name="homepage_banner_visible_from"
+                            value="{{ old('homepage_banner_visible_from', $settings->homepage_banner_visible_from?->format('Y-m-d\TH:i')) }}"
+                            class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                        <p class="mt-1 text-xs text-muted">Pusto = pasek widoczny od razu.</p>
+                        @error('homepage_banner_visible_from') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </div>
+
+                    <div>
+                        <label for="homepage_banner_visible_until" class="mb-1 block text-sm font-bold">Ukryj po <span class="font-normal text-muted">(opcjonalnie)</span></label>
+                        <input type="datetime-local" id="homepage_banner_visible_until" name="homepage_banner_visible_until"
+                            value="{{ old('homepage_banner_visible_until', $settings->homepage_banner_visible_until?->format('Y-m-d\TH:i')) }}"
+                            class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                        <p class="mt-1 text-xs text-muted">Pusto = pasek widoczny bezterminowo.</p>
+                        @error('homepage_banner_visible_until') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div x-show="tab === 'login'" x-cloak class="space-y-6" x-data="{ msEnabled: {{ old('microsoft_login_enabled', $settings->microsoft_login_enabled) ? 'true' : 'false' }} }">
+            <div>
+                <h2 class="text-base font-bold text-ink">Logowanie przez Microsoft 365</h2>
+                <p class="mt-1 text-xs text-muted">
+                    Pozwala zalogować się do panelu kontem Microsoft 365 (Laravel Socialite). Dostęp otrzymują wyłącznie
+                    użytkownicy już istniejący w zakładce „Użytkownicy" (dopasowanie po adresie e-mail). Aplikację rejestruje się
+                    w <span class="font-medium">Microsoft Entra ID → App registrations</span>, a jako Redirect URI podaj:
+                </p>
+                <code class="mt-2 block break-all rounded bg-gray-50 px-3 py-2 text-xs text-ink">{{ url('/auth/microsoft/callback') }}</code>
+            </div>
+
+            <label class="flex items-center gap-2 text-sm font-medium">
+                <input type="hidden" name="microsoft_login_enabled" value="0">
+                <input type="checkbox" name="microsoft_login_enabled" value="1" x-model="msEnabled"
+                    {{ old('microsoft_login_enabled', $settings->microsoft_login_enabled) ? 'checked' : '' }}
+                    class="rounded border-gray-300 text-brand focus:ring-brand">
+                Włącz logowanie przez Microsoft 365
+            </label>
+
+            <div class="space-y-5" x-show="msEnabled" x-cloak>
+                <div>
+                    <label for="microsoft_client_id" class="mb-1 block text-sm font-bold">Client ID</label>
+                    <input type="text" id="microsoft_client_id" name="microsoft_client_id" autocomplete="off"
+                        value="{{ old('microsoft_client_id', $settings->microsoft_client_id) }}"
+                        class="w-full rounded border-gray-300 font-mono text-sm focus:border-brand focus:ring-brand">
+                    <p class="mt-1 text-xs text-muted">Application (client) ID z Microsoft Entra ID.</p>
+                    @error('microsoft_client_id') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                </div>
+
+                <div>
+                    <label for="microsoft_client_secret" class="mb-1 block text-sm font-bold">Client Secret</label>
+                    <input type="password" id="microsoft_client_secret" name="microsoft_client_secret" autocomplete="new-password"
+                        placeholder="{{ $settings->microsoft_client_secret ? '•••••••• (zapisany — zostaw puste, aby nie zmieniać)' : '' }}"
+                        class="w-full rounded border-gray-300 font-mono text-sm focus:border-brand focus:ring-brand">
+                    <p class="mt-1 text-xs text-muted">Wartość sekretu (nie „Secret ID"). Przechowywana w bazie w postaci zaszyfrowanej.</p>
+                    @error('microsoft_client_secret') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                </div>
+
+                <div>
+                    <label for="microsoft_tenant_id" class="mb-1 block text-sm font-bold">Tenant ID</label>
+                    <input type="text" id="microsoft_tenant_id" name="microsoft_tenant_id" autocomplete="off"
+                        value="{{ old('microsoft_tenant_id', $settings->microsoft_tenant_id) }}"
+                        placeholder="common"
+                        class="w-full rounded border-gray-300 font-mono text-sm focus:border-brand focus:ring-brand">
+                    <p class="mt-1 text-xs text-muted">Directory (tenant) ID fundacji zawęża logowanie do jej domeny. Puste = „common" (dowolne konto Microsoft).</p>
+                    @error('microsoft_tenant_id') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                </div>
+
+                <p class="rounded border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
+                    Pozostawione puste pola dziedziczą wartości z pliku <code>.env</code>, jeśli tam je ustawiono.
+                </p>
+            </div>
+        </div>
+
+        <div x-show="tab === 'mail'" x-cloak class="space-y-6" x-data="{ transport: '{{ old('mail_transport', $settings->mail_transport ?: 'default') }}' }">
+            <div>
+                <h2 class="text-base font-bold text-ink">Wysyłka poczty</h2>
+                <p class="mt-1 text-xs text-muted">
+                    Konfiguracja bramki e-mail (m.in. formularz kontaktowy). Wybierz „Dziedzicz z serwera”, aby użyć ustawień
+                    z pliku <code>.env</code>, albo skonfiguruj własny serwer SMTP poniżej.
+                </p>
+            </div>
+
+            <div>
+                <label for="mail_transport" class="mb-1 block text-sm font-bold">Tryb wysyłki</label>
+                <select id="mail_transport" name="mail_transport" x-model="transport"
+                    class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                    @foreach (\App\Models\SiteSetting::MAIL_TRANSPORTS as $value => $label)
+                        <option value="{{ $value }}" {{ old('mail_transport', $settings->mail_transport ?: 'default') === $value ? 'selected' : '' }}>{{ $label }}</option>
+                    @endforeach
+                </select>
+                @error('mail_transport') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+            </div>
+
+            <div class="grid gap-5 sm:grid-cols-2">
+                <div>
+                    <label for="mail_from_address" class="mb-1 block text-sm font-bold">Adres nadawcy</label>
+                    <input type="email" id="mail_from_address" name="mail_from_address" value="{{ old('mail_from_address', $settings->mail_from_address) }}"
+                        placeholder="np. kontakt@feer.org.pl"
+                        class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                    <p class="mt-1 text-xs text-muted">Puste = wartość z <code>.env</code>.</p>
+                    @error('mail_from_address') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                </div>
+                <div>
+                    <label for="mail_from_name" class="mb-1 block text-sm font-bold">Nazwa nadawcy</label>
+                    <input type="text" id="mail_from_name" name="mail_from_name" value="{{ old('mail_from_name', $settings->mail_from_name) }}"
+                        placeholder="{{ $settings->site_name }}"
+                        class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                    @error('mail_from_name') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                </div>
+            </div>
+
+            <div class="space-y-5 rounded-lg border border-gray-200 p-4" x-show="transport === 'smtp'" x-cloak>
+                <p class="text-sm font-bold text-ink">Ustawienia serwera SMTP</p>
+                <div class="grid gap-5 sm:grid-cols-2">
+                    <div>
+                        <label for="mail_host" class="mb-1 block text-sm font-bold">Host</label>
+                        <input type="text" id="mail_host" name="mail_host" value="{{ old('mail_host', $settings->mail_host) }}"
+                            placeholder="np. smtp.example.com"
+                            class="w-full rounded border-gray-300 font-mono text-sm focus:border-brand focus:ring-brand">
+                        @error('mail_host') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </div>
+                    <div>
+                        <label for="mail_port" class="mb-1 block text-sm font-bold">Port</label>
+                        <input type="number" id="mail_port" name="mail_port" value="{{ old('mail_port', $settings->mail_port) }}"
+                            placeholder="587" min="1" max="65535"
+                            class="w-full rounded border-gray-300 font-mono text-sm focus:border-brand focus:ring-brand">
+                        @error('mail_port') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </div>
+                    <div>
+                        <label for="mail_username" class="mb-1 block text-sm font-bold">Użytkownik</label>
+                        <input type="text" id="mail_username" name="mail_username" autocomplete="off" value="{{ old('mail_username', $settings->mail_username) }}"
+                            class="w-full rounded border-gray-300 font-mono text-sm focus:border-brand focus:ring-brand">
+                        @error('mail_username') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </div>
+                    <div>
+                        <label for="mail_password" class="mb-1 block text-sm font-bold">Hasło</label>
+                        <input type="password" id="mail_password" name="mail_password" autocomplete="new-password"
+                            placeholder="{{ $settings->mail_password ? '•••••••• (zapisane — zostaw puste, aby nie zmieniać)' : '' }}"
+                            class="w-full rounded border-gray-300 font-mono text-sm focus:border-brand focus:ring-brand">
+                        <p class="mt-1 text-xs text-muted">Przechowywane w bazie w postaci zaszyfrowanej.</p>
+                        @error('mail_password') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </div>
+                    <div>
+                        <label for="mail_encryption" class="mb-1 block text-sm font-bold">Szyfrowanie</label>
+                        <select id="mail_encryption" name="mail_encryption" class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                            @foreach (\App\Models\SiteSetting::MAIL_ENCRYPTIONS as $value => $label)
+                                <option value="{{ $value }}" {{ old('mail_encryption', (string) $settings->mail_encryption) === (string) $value ? 'selected' : '' }}>{{ $label }}</option>
+                            @endforeach
+                        </select>
+                        @error('mail_encryption') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </div>
+                </div>
+            </div>
+
+            <p class="rounded border border-blue-200 bg-blue-50 px-3 py-2 text-xs text-blue-800">
+                Integracja z Microsoft 365 (Azure / Graph) zostanie dodana w kolejnym kroku. Na razie dla skrzynek Microsoft
+                użyj SMTP (o ile tenant ma włączone uwierzytelnianie SMTP AUTH).
+            </p>
+        </div>
+
+        <div class="flex items-center gap-3 border-t border-gray-100 pt-5">
+            <button type="submit" class="rounded bg-brand px-5 py-2 text-sm font-bold text-white hover:bg-brand-dark">Zapisz</button>
+        </div>
+    </form>
+
+    {{-- Test poczty: osobny formularz (nie można zagnieżdżać formularzy), widoczny w zakładce „Poczta”. --}}
+    <form method="POST" action="{{ route('admin.ustawienia.mail-test') }}" x-show="tab === 'mail'" x-cloak
+        class="rounded-lg border border-gray-200 bg-white p-6">
+        @csrf
+        <h2 class="mb-1 text-base font-bold text-ink">Wyślij wiadomość testową</h2>
+        <p class="mb-3 text-xs text-muted">Najpierw zapisz ustawienia powyżej, a następnie sprawdź wysyłkę na wybrany adres.</p>
+        <div class="flex flex-wrap items-end gap-3">
+            <div class="grow">
+                <label for="test_email" class="mb-1 block text-sm font-bold">Adres e-mail</label>
+                <input type="email" id="test_email" name="test_email" required value="{{ old('test_email', $settings->contact_email) }}"
+                    class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                @error('test_email') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+            </div>
+            <button type="submit" class="rounded border border-brand px-4 py-2 text-sm font-bold text-brand hover:bg-brand-light">Wyślij test</button>
+        </div>
+    </form>
+    </div>
+
+    <script>
+        (function () {
+            // Mirrors App\Models\SiteSetting::contrastRatio() so the admin gets
+            // live WCAG 2.2 feedback (4.5:1 minimum for normal text) before saving.
+            function relativeLuminance(hex) {
+                const [r, g, b] = [0, 2, 4].map((i) => {
+                    const channel = parseInt(hex.slice(i, i + 2), 16) / 255;
+                    return channel <= 0.03928 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4;
+                });
+                return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+            }
+
+            function contrastWithWhite(hex) {
+                const clean = hex.replace('#', '');
+                if (clean.length !== 6) return null;
+                const l1 = relativeLuminance(clean);
+                const l2 = 1; // white
+                return (l2 + 0.05) / (l1 + 0.05);
+            }
+
+            // Mirrors App\Models\SiteSetting::shade() / contrastSafeColor() so the
+            // preview matches exactly what the server will save.
+            function shade(hex, amount) {
+                const clean = hex.replace('#', '');
+                if (clean.length !== 6) return hex;
+                const target = amount < 0 ? 0 : 255;
+                const ratio = Math.abs(amount);
+                const mix = (channel) => Math.max(0, Math.min(255, Math.round(channel + (target - channel) * ratio)));
+                const channels = [0, 2, 4].map((i) => parseInt(clean.slice(i, i + 2), 16));
+                return '#' + channels.map((c) => mix(c).toString(16).padStart(2, '0')).join('');
+            }
+
+            function contrastSafeColor(hex) {
+                for (let step = 0; step <= 20; step++) {
+                    const candidate = step === 0 ? hex : shade(hex, -0.05 * step);
+                    const ratio = contrastWithWhite(candidate);
+                    if (ratio !== null && ratio >= 4.5) return candidate;
+                }
+                return '#000000';
+            }
+
+            const badge = document.getElementById('contrast-badge');
+            const textInput = document.getElementById('brand_color_text');
+            const colorInput = document.getElementById('brand_color');
+            const fixButton = document.getElementById('contrast-fix-button');
+
+            function update() {
+                const ratio = contrastWithWhite(colorInput.value);
+                if (ratio === null) {
+                    badge.textContent = '';
+                    fixButton.hidden = true;
+                    return;
+                }
+                const passes = ratio >= 4.5;
+                badge.textContent = `${ratio.toFixed(2)}:1 ${passes ? '— OK (WCAG AA)' : '— za niski kontrast'}`;
+                badge.className = `rounded-full px-3 py-1 text-xs font-bold ${passes ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`;
+                fixButton.hidden = passes;
+            }
+
+            fixButton.addEventListener('click', () => {
+                const safe = contrastSafeColor(colorInput.value);
+                colorInput.value = safe;
+                textInput.value = safe;
+                update();
+            });
+
+            colorInput.addEventListener('input', () => {
+                textInput.value = colorInput.value;
+                update();
+            });
+            textInput.addEventListener('input', update);
+            update();
+        })();
+
+        (function () {
+            const list = document.getElementById('section-order-list');
+            if (!list) return;
+
+            function renumber() {
+                [...list.children].forEach((li, index) => {
+                    li.querySelector('input[type="hidden"]').value = index;
+                });
+            }
+
+            list.addEventListener('click', (event) => {
+                const button = event.target.closest('[data-move]');
+                if (!button) return;
+
+                const li = button.closest('li');
+                const sibling = button.dataset.move === 'up' ? li.previousElementSibling : li.nextElementSibling;
+
+                if (sibling) {
+                    if (button.dataset.move === 'up') {
+                        list.insertBefore(li, sibling);
+                    } else {
+                        list.insertBefore(sibling, li);
+                    }
+                    renumber();
+                }
+            });
+
+            renumber();
+        })();
+    </script>
+@endsection

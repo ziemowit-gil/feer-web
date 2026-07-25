@@ -1,0 +1,84 @@
+<?php
+
+namespace App\Http\Controllers\Admin;
+
+use App\Http\Controllers\Controller;
+use App\Models\NewsCategory;
+use Illuminate\Http\Request;
+use Illuminate\Support\Str;
+
+class NewsCategoryController extends Controller
+{
+    public function index()
+    {
+        $newsCategories = NewsCategory::withCount('news')->orderBy('order')->orderBy('name')->get();
+
+        return view('admin.news-categories.index', compact('newsCategories'));
+    }
+
+    public function create()
+    {
+        return view('admin.news-categories.form', ['newsCategory' => new NewsCategory]);
+    }
+
+    public function store(Request $request)
+    {
+        $data = $this->validated($request);
+        $data['slug'] = $this->uniqueSlug($data['slug'] !== '' ? $data['slug'] : $data['name']);
+
+        NewsCategory::create($data);
+
+        return redirect()->route('admin.kategorie-newsow.index')->with('status', 'Kategoria newsów została utworzona.');
+    }
+
+    public function edit(NewsCategory $newsCategory)
+    {
+        return view('admin.news-categories.form', compact('newsCategory'));
+    }
+
+    public function update(Request $request, NewsCategory $newsCategory)
+    {
+        $data = $this->validated($request);
+        $data['slug'] = $this->uniqueSlug($data['slug'] !== '' ? $data['slug'] : $data['name'], $newsCategory->id);
+
+        $newsCategory->update($data);
+
+        return redirect()->route('admin.kategorie-newsow.index')->with('status', 'Kategoria newsów została zaktualizowana.');
+    }
+
+    public function destroy(NewsCategory $newsCategory)
+    {
+        $newsCategory->delete();
+
+        return redirect()->route('admin.kategorie-newsow.index')->with('status', 'Kategoria newsów została usunięta.');
+    }
+
+    private function validated(Request $request): array
+    {
+        $data = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'slug' => ['nullable', 'string', 'max:255'],
+            'order' => ['nullable', 'integer', 'min:0'],
+            'color' => ['nullable', 'regex:/^#[0-9a-fA-F]{6}$/'],
+        ]);
+
+        $data['slug'] = trim($data['slug'] ?? '');
+        $data['order'] = $data['order'] ?? 0;
+
+        return $data;
+    }
+
+    private function uniqueSlug(string $source, ?int $ignoreId = null): string
+    {
+        $base = Str::slug($source) ?: 'kategoria';
+        $slug = $base;
+        $suffix = 2;
+
+        while (NewsCategory::where('slug', $slug)->when($ignoreId, fn ($q) => $q->where('id', '!=', $ignoreId))->exists()) {
+            $slug = "{$base}-{$suffix}";
+            $suffix++;
+        }
+
+        return $slug;
+    }
+}

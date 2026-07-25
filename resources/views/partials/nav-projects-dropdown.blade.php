@@ -1,0 +1,53 @@
+@php $mobile ??= false; @endphp
+
+<li class="relative" x-data="{ open: false }"
+    @mouseenter="if (!{{ $mobile ? 'true' : 'false' }}) open = true" @mouseleave="if (!{{ $mobile ? 'true' : 'false' }}) open = false"
+    @focusin="open = true"
+    @focusout="if (! $el.contains($event.relatedTarget)) open = false"
+    @keydown.escape="open = false; $refs.projectsTrigger.focus()"
+    @click.outside="open = false">
+    <button type="button" x-ref="projectsTrigger" @click="open = !open"
+        aria-haspopup="true" :aria-expanded="open.toString()"
+        class="flex w-full items-center gap-1 border-b-2 py-2 uppercase transition-colors hover:border-brand hover:text-brand focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-current {{ $item->isCurrent() ? 'border-brand text-brand' : 'border-transparent' }} {{ $mobile ? 'justify-between' : 'pb-1' }}" :class="open ? 'border-brand text-brand' : ''">
+        {{ $item->label }} <i class="fa-solid fa-chevron-down text-[10px]" aria-hidden="true"></i>
+    </button>
+
+    <div x-show="open" x-cloak x-transition
+        @class([
+            'z-50 rounded-lg border border-gray-200 py-2 normal-case tracking-normal shadow-lg',
+            'bg-white/90 backdrop-blur-sm' => $item->is_transparent_dropdown,
+            'bg-white' => ! $item->is_transparent_dropdown,
+            'absolute left-0 top-full mt-1 w-60' => ! $mobile,
+            'static mt-1 w-full' => $mobile,
+        ])>
+        @forelse (($navCategories ?? collect()) as $category)
+            <div class="group/cat relative">
+                <a href="{{ route('categories.show', $category) }}" class="flex items-center justify-between px-4 py-2 text-sm font-bold text-ink hover:bg-gray-50 hover:text-brand focus:bg-gray-50">
+                    {{ $category->name }}
+                    @if (! $mobile && $category->publishedProjects->isNotEmpty())
+                        <i class="fa-solid fa-chevron-right text-xs text-muted" aria-hidden="true"></i>
+                    @endif
+                </a>
+
+                @if (! $mobile && $category->publishedProjects->isNotEmpty())
+                    <div class="invisible absolute left-full top-0 z-50 ml-1 w-60 rounded-lg border border-gray-200 bg-white py-2 opacity-0 shadow-lg transition group-hover/cat:visible group-hover/cat:opacity-100 group-focus-within/cat:visible group-focus-within/cat:opacity-100">
+                        @foreach ($category->publishedProjects as $project)
+                            <a href="{{ route('projects.show', $project) }}" class="block px-4 py-2 text-sm font-medium normal-case text-ink hover:bg-gray-50 hover:text-brand focus:bg-gray-50">
+                                {{ $project->title }}
+                            </a>
+                        @endforeach
+                    </div>
+                @endif
+            </div>
+        @empty
+            <p class="px-4 py-2 text-sm normal-case text-muted">Brak kategorii projektów.</p>
+        @endforelse
+
+        <div class="mt-1 border-t border-gray-100 pt-1">
+            <a href="{{ route('projects.index') }}" class="block px-4 py-2 text-sm font-bold normal-case text-brand hover:bg-gray-50 focus:bg-gray-50">Wszystkie projekty →</a>
+            @if ($navHasProjectArchive ?? false)
+                <a href="{{ route('projects.archive') }}" class="block px-4 py-2 text-sm font-bold normal-case text-brand hover:bg-gray-50 focus:bg-gray-50">To już zrobiliśmy →</a>
+            @endif
+        </div>
+    </div>
+</li>

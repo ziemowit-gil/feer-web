@@ -1,0 +1,152 @@
+@import 'tailwindcss';
+@plugin '@tailwindcss/forms';
+@plugin '@tailwindcss/typography';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+
+@theme {
+    --font-sans: 'Ubuntu', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+        'Segoe UI Symbol', 'Noto Color Emoji';
+    --font-heading: 'Montserrat', ui-sans-serif, system-ui, sans-serif;
+
+    --color-brand: #c31432;
+    --color-brand-dark: #8f0e24;
+    --color-brand-light: #fdecee;
+    --color-ink: #1a1a1a;
+    /* gray-600 rather than gray-500: keeps secondary text above the WCAG AA
+       4.5:1 threshold on white, gray-50/100 and brand-light backgrounds. */
+    --color-muted: #4b5563;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-heading);
+}
+
+html.contrast {
+    filter: invert(1) hue-rotate(180deg);
+    background: #000;
+}
+html.contrast img,
+html.contrast video {
+    filter: invert(1) hue-rotate(180deg);
+}
+html {
+    font-size: var(--a11y-font-size, 100%);
+}
+
+[x-cloak] {
+    display: none !important;
+}
+
+/* Alternative "brand bar" main nav (SiteSetting::HEADER_LAYOUTS['brand_bar']).
+   The nav partials assume a white header (text-ink, hover/current in brand
+   color), which disappears against a brand-colored bar — override every
+   top-level trigger to stay legible, without touching the dropdown panels
+   (always white) nested one level deeper. */
+.nav-on-brand > li > a,
+.nav-on-brand > li > button {
+    color: #fff;
+}
+.nav-on-brand > li > a:hover,
+.nav-on-brand > li > button:hover,
+.nav-on-brand > li > a.text-brand,
+.nav-on-brand > li > button.text-brand {
+    color: #fff;
+}
+.nav-on-brand > li > a.border-brand,
+.nav-on-brand > li > button.border-brand,
+.nav-on-brand > li > a:hover,
+.nav-on-brand > li > button:hover {
+    border-color: #fff;
+}
+.nav-on-brand > li > a.bg-brand,
+.nav-on-brand > li > a.bg-brand-dark {
+    background-color: #fff;
+    color: var(--color-brand);
+}
+
+/* Highlights blockquotes (e.g. a mission/motto pull-quote) inside rich text
+   content, instead of the typography plugin's plain italic default. */
+.prose blockquote {
+    border-left-color: var(--color-brand);
+    background-color: var(--color-brand-light);
+    border-radius: 0.5rem;
+    padding: 1.25rem 1.5rem;
+    font-size: 1.25rem;
+    font-style: normal;
+    font-weight: 700;
+    color: var(--color-ink);
+}
+.prose blockquote p:first-of-type::before,
+.prose blockquote p:last-of-type::after {
+    content: none;
+}
+
+/* Call-to-action button insertable from the content editor. Overrides the
+   typography plugin's plain underlined link style so it reads as a button. */
+.prose .cta-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background-color: var(--color-brand);
+    color: #fff;
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: 1.0625rem;
+    text-decoration: none;
+    border-radius: 9999px;
+    padding: 0.875rem 1.75rem;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
+    transition: transform 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+}
+.prose .cta-button::after {
+    content: '\2192';
+}
+.prose .cta-button:hover {
+    background-color: var(--color-brand-dark);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.28);
+    transform: translateY(-1px);
+}
+
+/* Two-column layout block insertable from the content editor. Columns stay
+   in source (reading) order — WCAG 1.3.2 — and stack on narrow viewports
+   instead of being clipped or requiring horizontal scroll — WCAG 1.4.10. */
+.content-columns {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.5rem;
+    margin: 1.5rem 0;
+}
+@media (max-width: 640px) {
+    .content-columns {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Boxed/framed text block insertable from the content editor ("Wstaw tekst
+   z ramką"). A calm, bordered callout that stands apart from surrounding text. */
+.prose .content-box,
+.content-box {
+    border: 1px solid var(--color-brand);
+    border-left-width: 4px;
+    border-radius: 0.5rem;
+    background-color: var(--color-brand-light);
+    padding: 1rem 1.25rem;
+    margin: 1.5rem 0;
+}
+.prose .content-box > :first-child,
+.content-box > :first-child {
+    margin-top: 0;
+}
+.prose .content-box > :last-child,
+.content-box > :last-child {
+    margin-bottom: 0;
+}
+
+/* WCAG 2.2 — 2.4.11/2.4.13: focus must always be clearly visible, regardless of
+   any focus:outline-none utility a component happens to use. */
+:focus-visible {
+    outline: 3px solid #c31432;
+    outline-offset: 2px;
+}

@@ -1,0 +1,49 @@
+<?php
+
+namespace App\Http\Controllers\Admin;
+
+use App\Http\Controllers\Controller;
+use App\Models\Attachment;
+use App\Models\News;
+use App\Models\Page;
+use Illuminate\Http\Request;
+
+class AttachmentController extends Controller
+{
+    public function storeForPage(Request $request, Page $page)
+    {
+        $this->storeFor($request, $page);
+
+        return redirect()->route('admin.podstrony.edit', $page)->with('status', 'Plik został dodany.');
+    }
+
+    public function storeForNews(Request $request, News $news)
+    {
+        $this->storeFor($request, $news);
+
+        return redirect()->route('admin.newsy.edit', $news)->with('status', 'Plik został dodany.');
+    }
+
+    public function destroy(Attachment $attachment)
+    {
+        $attachment->delete();
+
+        return redirect()->back()->with('status', 'Plik został usunięty.');
+    }
+
+    private function storeFor(Request $request, Page|News $attachable): void
+    {
+        $data = $request->validate([
+            'label' => ['required', 'string', 'max:255'],
+            'file' => ['required', 'file', 'max:10240'],
+            'order' => ['nullable', 'integer', 'min:0'],
+        ]);
+
+        $attachment = $attachable->attachments()->create([
+            'label' => $data['label'],
+            'order' => $data['order'] ?? 0,
+        ]);
+
+        $attachment->addMediaFromRequest('file')->toMediaCollection('file');
+    }
+}

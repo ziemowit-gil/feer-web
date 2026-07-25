@@ -1,0 +1,483 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\InteractsWithMedia;
+
+class SiteSetting extends Model implements HasMedia
+{
+    use InteractsWithMedia;
+
+    /**
+     * Toggleable content modules, keyed by the identifier used in
+     * `disabled_modules` and the `module:` route middleware.
+     */
+    public const MODULES = [
+        'pages' => 'Podstrony',
+        'news' => 'Aktualności',
+        'polls' => 'Ankiety',
+        'hero' => 'Slajder (hero)',
+        'gallery' => 'Galeria',
+        'projects' => 'Projekty',
+        'quick_actions' => 'Szybkie akcje',
+        'partners' => 'Partnerzy',
+        'materials' => 'Materiały edukacyjne',
+        'support' => 'Wesprzyj nas',
+    ];
+
+    /**
+     * Reorderable sections of the homepage. "ankieta" bundles the poll and
+     * quick-actions blocks, which always render side by side as one section.
+     */
+    public const HOMEPAGE_SECTIONS = [
+        'hero' => 'Slajder (hero)',
+        'news' => 'Aktualności',
+        'ankieta' => 'Ankieta i szybkie akcje',
+        'gallery' => 'Galeria',
+        'substack' => 'O tym piszemy (Substack)',
+    ];
+
+    /**
+     * Layouts for the main navigation bar, keyed by the value stored in
+     * `header_layout`.
+     */
+    public const HEADER_LAYOUTS = [
+        'classic' => 'Klasyczny (menu na białym tle, obok logo)',
+        'brand_bar' => 'Pasek w kolorze marki (menu na osobnym pasku pod logo)',
+        'brand_bar_inline' => 'Pasek w kolorze marki (menu w jednym rzędzie z logo)',
+    ];
+
+    /**
+     * Rich text editor used for page/news/project content fields.
+     */
+    public const EDITORS = [
+        'tinymce' => 'TinyMCE',
+        'ckeditor' => 'CKEditor 5',
+    ];
+
+    /**
+     * Target audience of a project/news, driving which colour palette its page
+     * uses: the default brand colour or the dedicated NGO colour.
+     */
+    public const AUDIENCES = [
+        'brand' => 'Kolor marki (domyślny)',
+        'ngo' => 'NGO (dedykowany kolor)',
+    ];
+
+    /**
+     * Mail gateway modes selectable in the admin panel. "default" keeps the
+     * .env configuration; "smtp" uses the panel-provided SMTP settings.
+     */
+    public const MAIL_TRANSPORTS = [
+        'default' => 'Dziedzicz z serwera (.env)',
+        'smtp' => 'Własny serwer SMTP',
+    ];
+
+    /**
+     * SMTP encryption options; empty value means no encryption.
+     */
+    public const MAIL_ENCRYPTIONS = [
+        '' => 'Brak',
+        'tls' => 'TLS (STARTTLS)',
+        'ssl' => 'SSL',
+    ];
+
+    protected $fillable = [
+        'site_name', 'tagline', 'brand_color', 'meta_description', 'allow_indexing', 'disabled_modules', 'homepage_section_order',
+        'bip_url', 'facebook_url', 'twitter_url', 'instagram_url', 'linkedin_url', 'youtube_url', 'substack_url',
+        'contact_address', 'contact_city', 'contact_email', 'contact_phone', 'contact_intro',
+        'contact_box_text', 'contact_box_link_label', 'contact_box_link_url', 'contact_box_visible_from', 'contact_box_visible_until',
+        'homepage_banner_text', 'homepage_banner_link_label', 'homepage_banner_link_url', 'homepage_banner_visible_from', 'homepage_banner_visible_until',
+        'newsletter_code', 'header_layout', 'show_topbar_bip', 'show_topbar_social', 'content_editor',
+        'microsoft_login_enabled', 'microsoft_client_id', 'microsoft_client_secret', 'microsoft_tenant_id',
+        'mail_transport', 'mail_from_address', 'mail_from_name', 'mail_host', 'mail_port', 'mail_username', 'mail_password', 'mail_encryption',
+        'show_coordinators', 'ngo_color',
+        'logo_alt', 'logo_only',
+        'krs_number', 'nip_number', 'regon_number', 'projects_intro', 'materials_intro', 'materials_notice',
+        'bank_account_number', 'bank_account_tax_number',
+        'support_intro', 'support_quick_transfer_url', 'support_buycoffee_url',
+        'support_hero_badge', 'support_hero_title', 'support_hero_subtitle', 'support_hero_cta_label',
+        'support_benefits_title', 'support_benefits_subtitle',
+        'support_benefit1_icon', 'support_benefit1_title', 'support_benefit1_text',
+        'support_benefit2_icon', 'support_benefit2_title', 'support_benefit2_text',
+        'support_benefit3_icon', 'support_benefit3_title', 'support_benefit3_text',
+        'support_methods_title',
+        'support_method1_title', 'support_method1_account_label', 'support_method1_tax_label',
+        'support_transfer_title', 'support_method1_transfer_label',
+        'support_method2_title', 'support_method2_text', 'support_method2_cta_label',
+        'support_method3_title', 'support_method3_text', 'support_method3_cta_label',
+        'support_outro_title', 'support_outro_subtitle',
+    ];
+
+    /**
+     * Built-in copy for the /wsparcie page. Each of these fields is editable in
+     * the admin settings; when its column is empty the value here is shown, so
+     * the page renders identically before an admin ever touches it.
+     */
+    public const SUPPORT_DEFAULTS = [
+        'support_hero_badge' => 'Wesprzyj nas',
+        'support_hero_title' => 'Twoje wsparcie tworzy świat bez barier cyfrowych',
+        'support_hero_subtitle' => 'Dzięki Tobie więcej osób zyska dostęp do wiedzy i niezależności. Każda forma wsparcia realnie napędza nasze działania.',
+        'support_hero_cta_label' => 'Wpłać teraz',
+
+        'support_benefits_title' => 'Dlaczego warto nas wspierać',
+        'support_benefits_subtitle' => 'Działamy na rzecz dostępności cyfrowej i edukacji. Oto, co umożliwia Twoje wsparcie.',
+        'support_benefit1_icon' => 'fa-solid fa-universal-access',
+        'support_benefit1_title' => 'Dostępność dla każdego',
+        'support_benefit1_text' => 'Usuwamy bariery cyfrowe, aby z internetu mogły swobodnie korzystać osoby z niepełnosprawnościami.',
+        'support_benefit2_icon' => 'fa-solid fa-graduation-cap',
+        'support_benefit2_title' => 'Edukacja i narzędzia',
+        'support_benefit2_text' => 'Finansujemy szkolenia, audyty WCAG oraz otwarte narzędzia dostępne bezpłatnie dla wszystkich.',
+        'support_benefit3_icon' => 'fa-solid fa-hand-holding-heart',
+        'support_benefit3_title' => 'Niezależność działań',
+        'support_benefit3_text' => 'Darowizny pozwalają nam działać niezależnie i reagować tam, gdzie wsparcie jest najbardziej potrzebne.',
+
+        'support_methods_title' => 'Jak możesz pomóc',
+        'support_method1_title' => 'Darowizna na cele statutowe',
+        'support_method1_account_label' => 'Numer konta',
+        'support_method1_tax_label' => 'Konto na 1,5% podatku',
+        'support_method1_transfer_label' => 'Tytuł przelewu',
+        'support_transfer_title' => 'Darowizna na cele statutowe',
+        'support_method2_title' => 'Szybki przelew',
+        'support_method2_text' => 'Wpłać darowiznę od razu, bez przepisywania numeru konta.',
+        'support_method2_cta_label' => 'Przejdź do szybkiego przelewu',
+        'support_method3_title' => 'BuyCoffee',
+        'support_method3_text' => 'Postaw nam kawę i wesprzyj naszą pracę drobną kwotą.',
+        'support_method3_cta_label' => 'Postaw kawę',
+
+        'support_outro_title' => 'Każda złotówka przybliża nas do świata bez barier.',
+        'support_outro_subtitle' => 'Dziękujemy, że jesteś częścią tej zmiany.',
+    ];
+
+    /**
+     * The editable value of a /wsparcie text field, falling back to the built-in
+     * default when the admin has left it blank.
+     */
+    public function supportText(string $key): string
+    {
+        $value = $this->{$key} ?? null;
+
+        return trim((string) $value) !== '' ? $value : (self::SUPPORT_DEFAULTS[$key] ?? '');
+    }
+
+    /**
+     * Whether any registry number is set, so the footer widget can hide
+     * itself cleanly instead of rendering an empty box.
+     */
+    public function hasRegistryData(): bool
+    {
+        return (bool) ($this->krs_number || $this->nip_number || $this->regon_number);
+    }
+
+    protected $casts = [
+        'allow_indexing' => 'boolean',
+        'disabled_modules' => 'array',
+        'homepage_section_order' => 'array',
+        'show_topbar_bip' => 'boolean',
+        'show_topbar_social' => 'boolean',
+        'logo_only' => 'boolean',
+        'microsoft_login_enabled' => 'boolean',
+        'microsoft_client_secret' => 'encrypted',
+        'mail_password' => 'encrypted',
+        'mail_port' => 'integer',
+        'show_coordinators' => 'boolean',
+        'contact_box_visible_from' => 'datetime',
+        'contact_box_visible_until' => 'datetime',
+        'homepage_banner_visible_from' => 'datetime',
+        'homepage_banner_visible_until' => 'datetime',
+    ];
+
+    /**
+     * Whether the optional contact notice box should currently be shown: it
+     * needs some content, and — if a schedule is set — "now" must fall within
+     * the visible-from / visible-until window (either bound may be open).
+     */
+    public function contactBoxIsVisible(): bool
+    {
+        $hasContent = filled($this->contact_box_text)
+            || (filled($this->contact_box_link_label) && filled($this->contact_box_link_url));
+
+        if (! $hasContent) {
+            return false;
+        }
+
+        $now = now();
+
+        if ($this->contact_box_visible_from && $now->lt($this->contact_box_visible_from)) {
+            return false;
+        }
+
+        if ($this->contact_box_visible_until && $now->gt($this->contact_box_visible_until)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Whether the optional homepage information bar should currently be shown:
+     * it needs some text, and — if a schedule is set — "now" must fall within
+     * the visible-from / visible-until window (either bound may be open).
+     */
+    public function homepageBannerIsVisible(): bool
+    {
+        if (blank($this->homepage_banner_text)) {
+            return false;
+        }
+
+        $now = now();
+
+        if ($this->homepage_banner_visible_from && $now->lt($this->homepage_banner_visible_from)) {
+            return false;
+        }
+
+        if ($this->homepage_banner_visible_until && $now->gt($this->homepage_banner_visible_until)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Konfiguracja logowania Microsoft 365 dla Laravel Socialite. Wartości
+     * z panelu mają pierwszeństwo, a puste pola dziedziczą z config/services
+     * (czyli z .env), więc obie metody konfiguracji mogą współistnieć.
+     */
+    public function microsoftConfig(): array
+    {
+        return [
+            'client_id' => $this->microsoft_client_id ?: config('services.microsoft.client_id'),
+            'client_secret' => $this->microsoft_client_secret ?: config('services.microsoft.client_secret'),
+            'tenant' => $this->microsoft_tenant_id ?: config('services.microsoft.tenant', 'common'),
+            'redirect' => config('services.microsoft.redirect') ?: url('/auth/microsoft/callback'),
+        ];
+    }
+
+    /**
+     * Czy logowanie MS365 jest aktywne: włączone przełącznikiem i faktycznie
+     * skonfigurowane (są Client ID oraz Client Secret — z panelu lub z .env).
+     */
+    public function microsoftLoginEnabled(): bool
+    {
+        if (! $this->microsoft_login_enabled) {
+            return false;
+        }
+
+        $config = $this->microsoftConfig();
+
+        return filled($config['client_id']) && filled($config['client_secret']);
+    }
+
+    /**
+     * Alt text for the logo image: the admin-provided value, falling back to
+     * the site name so the logo is never unlabelled (WCAG 1.1.1).
+     */
+    public function logoAltText(): string
+    {
+        return trim((string) $this->logo_alt) !== '' ? $this->logo_alt : $this->site_name;
+    }
+
+    /**
+     * Whether the header should show the logo on its own, hiding the site name
+     * and tagline. Only takes effect when a logo is actually uploaded.
+     */
+    public function showLogoOnly(): bool
+    {
+        return $this->logo_only && $this->logoUrl() !== null;
+    }
+
+    private static ?self $cached = null;
+
+    public static function current(): self
+    {
+        return static::$cached ??= static::query()->firstOrCreate(['id' => 1]);
+    }
+
+    protected static function booted(): void
+    {
+        static::saved(fn () => static::$cached = null);
+    }
+
+    public function registerMediaCollections(): void
+    {
+        $this->addMediaCollection('logo')->singleFile();
+        $this->addMediaCollection('og_image')->singleFile();
+        $this->addMediaCollection('support_image')->singleFile();
+        $this->addMediaCollection('news_default_image')->singleFile();
+    }
+
+    /**
+     * Fallback image shown for news without their own photo.
+     */
+    public function newsDefaultImageUrl(): ?string
+    {
+        return $this->getFirstMediaUrl('news_default_image') ?: null;
+    }
+
+    public function isModuleEnabled(string $module): bool
+    {
+        return ! in_array($module, $this->disabled_modules ?? [], true);
+    }
+
+    /**
+     * The homepage section keys in the order they should render. Falls back
+     * to the default declaration order, and silently drops/ignores any saved
+     * keys that no longer exist so a future code change can't break the page.
+     */
+    public function orderedHomepageSections(): array
+    {
+        $defined = array_keys(self::HOMEPAGE_SECTIONS);
+        $saved = array_values(array_intersect($this->homepage_section_order ?? [], $defined));
+
+        return array_values(array_unique(array_merge($saved, $defined)));
+    }
+
+    public function logoUrl(): ?string
+    {
+        return $this->getFirstMediaUrl('logo') ?: null;
+    }
+
+    public function ogImageUrl(): ?string
+    {
+        return $this->getFirstMediaUrl('og_image') ?: null;
+    }
+
+    public function supportImageUrl(): ?string
+    {
+        return $this->getFirstMediaUrl('support_image') ?: null;
+    }
+
+    public function brandColorDark(): string
+    {
+        return $this->shade($this->brand_color, -0.25);
+    }
+
+    public function brandColorLight(): string
+    {
+        return $this->shade($this->brand_color, 0.92);
+    }
+
+    /**
+     * Whether the panel provides its own mail gateway (i.e. we should override
+     * the .env mail configuration at runtime).
+     */
+    public function mailConfigured(): bool
+    {
+        return $this->mail_transport === 'smtp';
+    }
+
+    /**
+     * The brand palette ([color, dark, light]) for the given hex, falling back
+     * to the site brand colour. Used to recolour a page for a target audience.
+     */
+    public function brandPalette(?string $hex = null): array
+    {
+        $base = ($hex && \App\Support\Color::isValid($hex)) ? $hex : $this->brand_color;
+
+        // Fresh SiteSetting rows created via firstOrCreate() can return a null
+        // brand_color on the in-memory model even though the column has a DB
+        // default — fall back so colour maths never receives null.
+        if (! \App\Support\Color::isValid($base)) {
+            $base = '#c31432';
+        }
+
+        return [
+            'color' => $base,
+            'dark' => $this->shade($base, -0.25),
+            'light' => $this->shade($base, 0.92),
+        ];
+    }
+
+    /**
+     * The effective brand colour for a target audience: the NGO colour for
+     * "ngo" (when a valid one is set), otherwise the default brand colour.
+     */
+    public function audienceColor(?string $audience): string
+    {
+        return $audience === 'ngo' && \App\Support\Color::isValid($this->ngo_color)
+            ? $this->ngo_color
+            : $this->brand_color;
+    }
+
+    /**
+     * WCAG 2.2 contrast ratio (1–21) of the brand color against white, used
+     * wherever it appears as button/link text on a white background.
+     */
+    public function brandContrastWithWhite(): float
+    {
+        return $this->contrastRatio($this->brand_color, '#ffffff');
+    }
+
+    public function brandMeetsMinimumContrast(): bool
+    {
+        return $this->brandContrastWithWhite() >= 4.5;
+    }
+
+    /**
+     * Darken the given color, step by step, until it reaches the WCAG AA
+     * minimum contrast (4.5:1) against white. Returns it unchanged if it
+     * already passes, so a compliant color is never altered.
+     */
+    public function contrastSafeColor(string $hex): string
+    {
+        for ($step = 0; $step <= 20; $step++) {
+            $candidate = $step === 0 ? $hex : $this->shade($hex, -0.05 * $step);
+
+            if ($this->contrastRatio($candidate, '#ffffff') >= 4.5) {
+                return $candidate;
+            }
+        }
+
+        return '#000000';
+    }
+
+    private function contrastRatio(string $hexA, string $hexB): float
+    {
+        $luminanceA = $this->relativeLuminance($hexA);
+        $luminanceB = $this->relativeLuminance($hexB);
+
+        $lighter = max($luminanceA, $luminanceB);
+        $darker = min($luminanceA, $luminanceB);
+
+        return round(($lighter + 0.05) / ($darker + 0.05), 2);
+    }
+
+    private function relativeLuminance(string $hex): float
+    {
+        $hex = ltrim($hex, '#');
+
+        if (strlen($hex) !== 6) {
+            return 0;
+        }
+
+        [$r, $g, $b] = array_map(function ($part) {
+            $channel = hexdec($part) / 255;
+
+            return $channel <= 0.03928 ? $channel / 12.92 : (($channel + 0.055) / 1.055) ** 2.4;
+        }, str_split($hex, 2));
+
+        return 0.2126 * $r + 0.7152 * $g + 0.0722 * $b;
+    }
+
+    /**
+     * Mix a hex color towards black (negative $amount) or white (positive $amount).
+     */
+    private function shade(string $hex, float $amount): string
+    {
+        $hex = ltrim($hex, '#');
+
+        if (strlen($hex) !== 6) {
+            return '#'.$hex;
+        }
+
+        [$r, $g, $b] = array_map(fn ($part) => hexdec($part), str_split($hex, 2));
+        $target = $amount < 0 ? 0 : 255;
+        $ratio = abs($amount);
+
+        $mix = fn ($channel) => (int) round($channel + ($target - $channel) * $ratio);
+
+        return sprintf('#%02x%02x%02x', $mix($r), $mix($g), $mix($b));
+    }
+}
