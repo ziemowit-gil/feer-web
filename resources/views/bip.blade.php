@@ -5,18 +5,14 @@
 
 @section('content')
     @php
-        $bipDefault = "Co do zasady organizacje pozarządowe nie mają obowiązku prowadzenia Biuletynu Informacji Publicznej. Wiele z nich i tak publikuje jednak sprawozdania i najważniejsze dokumenty, działając w duchu przejrzystości.\n\nMy — aby nie mieszać bieżącej działalności z kwestiami formalnymi — prowadzimy je w osobnym, dedykowanym Biuletynie. Dzięki temu nasze działania pozostają czytelne dla odbiorców, a dokumentacja formalna jest zawsze dostępna w trwałej, ustandaryzowanej formie.";
+        $bipDefault = "Prowadzimy Biuletyn Informacji Publicznej, choć organizacje pozarządowe co do zasady nie mają takiego obowiązku. Wiele z nich i tak publikuje sprawozdania i najważniejsze dokumenty — my robimy to świadomie i konsekwentnie.\n\nRobimy to, aby oddzielić naszą bieżącą działalność od spraw formalnych. Na tej stronie pokazujemy, co robimy: projekty, wydarzenia i efekty pracy. W Biuletynie zbieramy natomiast dokumenty urzędowe, sprawozdania i informacje wymagane prawem — w jednym, trwałym i ustandaryzowanym miejscu.\n\nDzięki temu obie części pozostają przejrzyste, a Ty łatwo znajdziesz to, czego szukasz.";
+        $bipLogo = $siteSettings->bipLogoUrl() ?: asset('img/bip-logo.svg');
     @endphp
 
     <section class="bg-gray-50 px-4 py-16">
         <div class="mx-auto max-w-2xl overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
             <div class="border-b border-gray-100 px-8 pt-10 pb-8 text-center">
-                @if ($siteSettings->bipLogoUrl())
-                    <img src="{{ $siteSettings->bipLogoUrl() }}" alt="Logo Biuletynu Informacji Publicznej" class="mx-auto mb-5 h-16 w-auto object-contain">
-                @else
-                    {{-- Wbudowany znak „BIP”, gdy nie wgrano oficjalnego logo. --}}
-                    <span class="mx-auto mb-5 flex h-16 w-24 items-center justify-center rounded-lg bg-brand text-2xl font-extrabold tracking-widest text-white" aria-hidden="true">BIP</span>
-                @endif
+                <img src="{{ $bipLogo }}" alt="Logo Biuletynu Informacji Publicznej" class="mx-auto mb-5 h-20 w-auto object-contain">
                 <h1 class="text-2xl font-bold text-ink md:text-3xl">Biuletyn Informacji Publicznej</h1>
             </div>
 
