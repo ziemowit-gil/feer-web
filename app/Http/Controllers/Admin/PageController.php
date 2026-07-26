@@ -193,6 +193,11 @@ class PageController extends Controller
             'about_timeline.*.text' => ['nullable', 'string', 'max:500'],
             'about_timeline.*.url' => ['nullable', 'string', 'max:255'],
             'about_timeline.*.label' => ['nullable', 'string', 'max:120'],
+            'about_timeline.*.url2' => ['nullable', 'string', 'max:255'],
+            'about_timeline.*.label2' => ['nullable', 'string', 'max:120'],
+            'about_timeline.*.url3' => ['nullable', 'string', 'max:255'],
+            'about_timeline.*.label3' => ['nullable', 'string', 'max:120'],
+            'about_timeline.*.color' => ['nullable', 'string', 'max:7'],
             'about_values' => ['nullable', 'array'],
             'about_values.*.icon' => ['nullable', 'string', 'max:100'],
             'about_values.*.title' => ['nullable', 'string', 'max:120'],
@@ -288,7 +293,7 @@ class PageController extends Controller
         // sections (dropping fully-empty rows) and clear everything otherwise.
         if ($data['type'] === 'about') {
             $data['about_stats'] = $this->compactRows($request->input('about_stats', []), ['value', 'label']);
-            $data['about_timeline'] = $this->compactRows($request->input('about_timeline', []), ['year', 'text', 'url', 'label']);
+            $data['about_timeline'] = $this->compactRows($request->input('about_timeline', []), ['year', 'text', 'url', 'label', 'url2', 'label2', 'url3', 'label3', 'color']);
             $data['about_values'] = $this->compactRows($request->input('about_values', []), ['icon', 'title', 'text']);
             $data['about_team'] = $this->compactRows($request->input('about_team', []), ['name', 'role', 'photo', 'bio', 'facebook', 'instagram', 'linkedin']);
 

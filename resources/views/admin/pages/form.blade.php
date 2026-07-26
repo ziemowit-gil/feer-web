@@ -245,11 +245,13 @@
                         </div>
                     </div>
 
-                    <div data-about-fields class="space-y-6 border-t border-gray-100 pt-5 {{ $currentType === 'about' ? '' : 'hidden' }}">
+                    <div data-about-fields class="space-y-3 border-t border-gray-100 pt-5 {{ $currentType === 'about' ? '' : 'hidden' }}">
                         <p class="text-sm font-bold uppercase tracking-wide text-muted">O organizacji</p>
+                        <p class="text-xs text-muted">Rozwiń wybraną sekcję, aby ją wypełnić. Puste sekcje są automatycznie pomijane na stronie.</p>
 
-                        <div>
-                            <p class="mb-1 text-sm font-bold">Kolejność sekcji na stronie</p>
+                        <details open class="rounded-lg border border-gray-200">
+                            <summary class="cursor-pointer rounded-lg px-4 py-3 text-sm font-bold text-ink hover:bg-gray-50">Kolejność sekcji</summary>
+                            <div class="border-t border-gray-100 px-4 py-4">
                             <p class="mb-3 text-xs text-muted">Zmień kolejność wyświetlania sekcji. Nagłówek (tytuł i motto) zawsze pozostaje na górze; puste sekcje są automatycznie pomijane.</p>
                             <ul id="about-section-order-list" class="space-y-2 sm:max-w-md">
                                 @foreach ($page->orderedAboutSections() as $key)
@@ -267,8 +269,12 @@
                                     </li>
                                 @endforeach
                             </ul>
-                        </div>
+                            </div>
+                        </details>
 
+                        <details class="rounded-lg border border-gray-200">
+                            <summary class="cursor-pointer rounded-lg px-4 py-3 text-sm font-bold text-ink hover:bg-gray-50">Motto i wstęp</summary>
+                            <div class="space-y-4 border-t border-gray-100 px-4 py-4">
                         <div>
                             <label for="about_motto" class="mb-1 block text-sm font-bold">Motto <span class="font-normal text-muted">(opcjonalnie)</span></label>
                             <textarea id="about_motto" name="about_motto" rows="2" placeholder="np. Tworzymy świat bez barier cyfrowych."
@@ -289,7 +295,12 @@
                             <p class="mt-1 text-xs text-muted">Tekst wstępu jako zwykłe pole (bez edytora). Wyświetli się obok zdjęć u góry strony. Pole „Treść” (edytor) możesz zostawić puste.</p>
                             @error('about_intro') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                         </div>
+                            </div>
+                        </details>
 
+                        <details class="rounded-lg border border-gray-200">
+                            <summary class="cursor-pointer rounded-lg px-4 py-3 text-sm font-bold text-ink hover:bg-gray-50">Dokumenty i sprawozdania</summary>
+                            <div class="space-y-4 border-t border-gray-100 px-4 py-4">
                         <div class="space-y-4 rounded-lg border border-gray-200 bg-gray-50/60 p-4">
                             <p class="text-sm font-bold text-ink"><i class="fa-solid fa-folder-open text-muted" aria-hidden="true"></i> Sekcja „Dokumenty i sprawozdania”</p>
 
@@ -325,10 +336,13 @@
                                 Zdjęcia (2–3 obok wstępu + galeria) dodasz po zapisaniu strony — pojawi się zakładka „Galeria”.
                             </p>
                         @endif
+                            </div>
+                        </details>
 
-                        {{-- Statystyki --}}
-                        <div data-repeater class="border-t border-gray-100 pt-4">
-                            <p class="mb-1 text-sm font-bold">Statystyki (liczby)</p>
+                        <details class="rounded-lg border border-gray-200">
+                            <summary class="cursor-pointer rounded-lg px-4 py-3 text-sm font-bold text-ink hover:bg-gray-50">Statystyki (liczby)</summary>
+                            <div class="border-t border-gray-100 px-4 py-4">
+                        <div data-repeater>
                             <p class="mb-3 text-xs text-muted">np. „12 lat” + „doświadczenia”. Puste wiersze są pomijane.</p>
                             <div data-repeater-rows class="space-y-2">
                                 @foreach ($aboutStats as $i => $row)
@@ -348,10 +362,13 @@
                                 </div>
                             </template>
                         </div>
+                            </div>
+                        </details>
 
-                        {{-- Wartości / kafelki --}}
-                        <div data-repeater class="border-t border-gray-100 pt-4">
-                            <p class="mb-1 text-sm font-bold">Wartości / kafelki</p>
+                        <details class="rounded-lg border border-gray-200">
+                            <summary class="cursor-pointer rounded-lg px-4 py-3 text-sm font-bold text-ink hover:bg-gray-50">Wartości / kafelki</summary>
+                            <div class="border-t border-gray-100 px-4 py-4">
+                        <div data-repeater>
                             <p class="mb-3 text-xs text-muted">Ikona (klasa Font Awesome, np. <code>fa-solid fa-heart</code>) + tytuł + opis.</p>
                             <div data-repeater-rows class="space-y-2">
                                 @foreach ($aboutValues as $i => $row)
@@ -373,11 +390,14 @@
                                 </div>
                             </template>
                         </div>
+                            </div>
+                        </details>
 
-                        {{-- Oś czasu --}}
-                        <div data-repeater class="border-t border-gray-100 pt-4">
-                            <p class="mb-1 text-sm font-bold">Oś czasu (historia)</p>
-                            <p class="mb-3 text-xs text-muted">Rok / etap + opis oraz opcjonalny link (np. do relacji, wpisu w social media). Puste wiersze są pomijane.</p>
+                        <details class="rounded-lg border border-gray-200">
+                            <summary class="cursor-pointer rounded-lg px-4 py-3 text-sm font-bold text-ink hover:bg-gray-50">Oś czasu (historia)</summary>
+                            <div class="border-t border-gray-100 px-4 py-4">
+                        <div data-repeater>
+                            <p class="mb-3 text-xs text-muted">Rok / etap + opis, opcjonalny link oraz kolor znacznika na osi. Puste wiersze są pomijane.</p>
                             <div data-repeater-rows class="space-y-3">
                                 @foreach ($aboutTimeline as $i => $row)
                                     <div data-repeater-row class="space-y-2 rounded-lg border border-gray-200 bg-gray-50 p-4">
@@ -385,11 +405,18 @@
                                             <input type="text" name="about_timeline[{{ $i }}][year]" value="{{ $row['year'] ?? '' }}" placeholder="Rok, np. 2015" aria-label="Rok wpisu osi czasu {{ $i + 1 }}" class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
                                             <input type="text" name="about_timeline[{{ $i }}][text]" value="{{ $row['text'] ?? '' }}" placeholder="Opis wydarzenia" aria-label="Opis wpisu osi czasu {{ $i + 1 }}" class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
                                         </div>
-                                        <div class="grid gap-2 sm:grid-cols-[3fr_2fr]">
-                                            <input type="url" name="about_timeline[{{ $i }}][url]" value="{{ $row['url'] ?? '' }}" placeholder="Link (opcjonalnie), np. https://facebook.com/..." aria-label="Link wpisu osi czasu {{ $i + 1 }}" class="w-full rounded border-gray-300 text-xs focus:border-brand focus:ring-brand">
-                                            <input type="text" name="about_timeline[{{ $i }}][label]" value="{{ $row['label'] ?? '' }}" placeholder="Etykieta linku (opcjonalnie)" aria-label="Etykieta linku wpisu osi czasu {{ $i + 1 }}" class="w-full rounded border-gray-300 text-xs focus:border-brand focus:ring-brand">
-                                        </div>
-                                        <div class="text-right">
+                                        <p class="text-xs font-medium text-muted">Linki zewnętrzne (maks. 3)</p>
+                                        @for ($l = 1; $l <= 3; $l++)
+                                            @php $lk = $l === 1 ? '' : $l; @endphp
+                                            <div class="grid gap-2 sm:grid-cols-[3fr_2fr]">
+                                                <input type="url" name="about_timeline[{{ $i }}][url{{ $lk }}]" value="{{ $row['url'.$lk] ?? '' }}" placeholder="Link {{ $l }} (URL)" aria-label="Link {{ $l }} wpisu osi czasu {{ $i + 1 }}" class="w-full rounded border-gray-300 text-xs focus:border-brand focus:ring-brand">
+                                                <input type="text" name="about_timeline[{{ $i }}][label{{ $lk }}]" value="{{ $row['label'.$lk] ?? '' }}" placeholder="Etykieta linku {{ $l }}" aria-label="Etykieta linku {{ $l }} wpisu osi czasu {{ $i + 1 }}" class="w-full rounded border-gray-300 text-xs focus:border-brand focus:ring-brand">
+                                            </div>
+                                        @endfor
+                                        <div class="flex items-center justify-between gap-2">
+                                            <label class="flex items-center gap-2 text-xs text-muted">Kolor znacznika
+                                                <input type="color" name="about_timeline[{{ $i }}][color]" value="{{ $row['color'] ?? $siteSettings->brand_color }}" aria-label="Kolor znacznika na osi czasu {{ $i + 1 }}" class="h-8 w-12 rounded border-gray-300">
+                                            </label>
                                             <button type="button" data-repeater-remove class="inline-flex items-center gap-1.5 rounded p-1.5 text-xs font-bold text-muted hover:bg-red-50 hover:text-red-600" aria-label="Usuń wpis osi czasu"><i class="fa-solid fa-trash" aria-hidden="true"></i> Usuń</button>
                                         </div>
                                     </div>
@@ -402,20 +429,30 @@
                                         <input type="text" name="about_timeline[__INDEX__][year]" placeholder="Rok, np. 2015" aria-label="Rok wpisu osi czasu" class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
                                         <input type="text" name="about_timeline[__INDEX__][text]" placeholder="Opis wydarzenia" aria-label="Opis wpisu osi czasu" class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
                                     </div>
-                                    <div class="grid gap-2 sm:grid-cols-[3fr_2fr]">
-                                        <input type="url" name="about_timeline[__INDEX__][url]" placeholder="Link (opcjonalnie), np. https://facebook.com/..." aria-label="Link wpisu osi czasu" class="w-full rounded border-gray-300 text-xs focus:border-brand focus:ring-brand">
-                                        <input type="text" name="about_timeline[__INDEX__][label]" placeholder="Etykieta linku (opcjonalnie)" aria-label="Etykieta linku wpisu osi czasu" class="w-full rounded border-gray-300 text-xs focus:border-brand focus:ring-brand">
-                                    </div>
-                                    <div class="text-right">
+                                    <p class="text-xs font-medium text-muted">Linki zewnętrzne (maks. 3)</p>
+                                    @for ($l = 1; $l <= 3; $l++)
+                                        @php $lk = $l === 1 ? '' : $l; @endphp
+                                        <div class="grid gap-2 sm:grid-cols-[3fr_2fr]">
+                                            <input type="url" name="about_timeline[__INDEX__][url{{ $lk }}]" placeholder="Link {{ $l }} (URL)" aria-label="Link {{ $l }} wpisu osi czasu" class="w-full rounded border-gray-300 text-xs focus:border-brand focus:ring-brand">
+                                            <input type="text" name="about_timeline[__INDEX__][label{{ $lk }}]" placeholder="Etykieta linku {{ $l }}" aria-label="Etykieta linku {{ $l }} wpisu osi czasu" class="w-full rounded border-gray-300 text-xs focus:border-brand focus:ring-brand">
+                                        </div>
+                                    @endfor
+                                    <div class="flex items-center justify-between gap-2">
+                                        <label class="flex items-center gap-2 text-xs text-muted">Kolor znacznika
+                                            <input type="color" name="about_timeline[__INDEX__][color]" value="{{ $siteSettings->brand_color }}" aria-label="Kolor znacznika na osi czasu" class="h-8 w-12 rounded border-gray-300">
+                                        </label>
                                         <button type="button" data-repeater-remove class="inline-flex items-center gap-1.5 rounded p-1.5 text-xs font-bold text-muted hover:bg-red-50 hover:text-red-600" aria-label="Usuń wpis osi czasu"><i class="fa-solid fa-trash" aria-hidden="true"></i> Usuń</button>
                                     </div>
                                 </div>
                             </template>
                         </div>
+                            </div>
+                        </details>
 
-                        {{-- Zespół --}}
-                        <div data-repeater class="border-t border-gray-100 pt-4">
-                            <p class="mb-1 text-sm font-bold">Zespół</p>
+                        <details class="rounded-lg border border-gray-200">
+                            <summary class="cursor-pointer rounded-lg px-4 py-3 text-sm font-bold text-ink hover:bg-gray-50">Zespół</summary>
+                            <div class="border-t border-gray-100 px-4 py-4">
+                        <div data-repeater>
                             <p class="mb-3 text-xs text-muted">Każda osoba: imię i nazwisko, „Co robi w FEER", „Trochę o mnie" oraz opcjonalnie linki do social media. Zdjęcie — wklej adres URL obrazu z Multimediów; puste = inicjały.</p>
                             <div data-repeater-rows class="space-y-3">
                                 @foreach ($aboutTeam as $i => $row)
@@ -457,10 +494,13 @@
                                 </div>
                             </template>
                         </div>
+                            </div>
+                        </details>
 
-                        {{-- Nasi partnerzy: wybór logotypów --}}
-                        <div class="border-t border-gray-100 pt-4">
-                            <p class="mb-1 text-sm font-bold">Nasi partnerzy</p>
+                        <details class="rounded-lg border border-gray-200">
+                            <summary class="cursor-pointer rounded-lg px-4 py-3 text-sm font-bold text-ink hover:bg-gray-50">Nasi partnerzy</summary>
+                            <div class="border-t border-gray-100 px-4 py-4">
+                        <div>
                             <p class="mb-3 text-xs text-muted">Zaznacz partnerów, których loga pokazać w sekcji „Nasi partnerzy — wspierają nas”. Partnerów dodajesz w module <a href="{{ route('admin.partnerzy.index') }}" class="text-brand underline">Partnerzy</a>.</p>
                             @php $selectedPartners = array_map('intval', (array) old('about_partner_ids', $page->about_partner_ids ?? [])); @endphp
                             @if ($partnerOptions->isEmpty())
@@ -481,6 +521,8 @@
                                 </div>
                             @endif
                         </div>
+                            </div>
+                        </details>
                     </div>
 
                     {{-- FAQ — pytania i odpowiedzi --}}

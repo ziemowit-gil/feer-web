@@ -281,20 +281,35 @@
                 <h2 class="mb-10 text-center text-2xl font-bold text-ink md:text-3xl">Nasza historia</h2>
                 <ol class="relative ml-3 space-y-8 border-l-2 border-brand/30 pl-8">
                     @foreach ($aboutTimeline as $entry)
+                        @php
+                            $tlColor = \App\Support\Color::isValid($entry['color'] ?? null) ? $entry['color'] : null;
+                            $tlYearColor = $tlColor ? $siteSettings->contrastSafeColor($tlColor) : null;
+                        @endphp
                         <li class="relative">
-                            <span class="absolute -left-[41px] top-1 flex h-5 w-5 items-center justify-center rounded-full border-4 border-white bg-brand ring-1 ring-brand/30" aria-hidden="true"></span>
+                            <span class="absolute -left-[41px] top-1 flex h-5 w-5 items-center justify-center rounded-full border-4 border-white {{ $tlColor ? '' : 'bg-brand' }}" aria-hidden="true" @if ($tlColor) style="background-color: {{ $tlColor }};" @endif></span>
                             @if (! empty($entry['year']))
-                                <p class="text-sm font-bold uppercase tracking-widest text-brand">{{ $entry['year'] }}</p>
+                                <p class="text-sm font-bold uppercase tracking-widest {{ $tlYearColor ? '' : 'text-brand' }}" @if ($tlYearColor) style="color: {{ $tlYearColor }};" @endif>{{ $entry['year'] }}</p>
                             @endif
                             @if (! empty($entry['text']))
                                 <p class="mt-1 leading-relaxed text-ink">{{ $entry['text'] }}</p>
                             @endif
-                            @if (! empty($entry['url']))
-                                <a href="{{ $entry['url'] }}" target="_blank" rel="noopener"
-                                    class="mt-2 inline-flex items-center gap-1.5 text-sm font-bold text-brand hover:text-brand-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
-                                    <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i>
-                                    {{ $entry['label'] ?: 'Zobacz więcej' }}
-                                </a>
+                            @php
+                                $tlLinks = collect([
+                                    ['url' => $entry['url'] ?? null, 'label' => $entry['label'] ?? null],
+                                    ['url' => $entry['url2'] ?? null, 'label' => $entry['label2'] ?? null],
+                                    ['url' => $entry['url3'] ?? null, 'label' => $entry['label3'] ?? null],
+                                ])->filter(fn ($l) => ! empty($l['url']));
+                            @endphp
+                            @if ($tlLinks->isNotEmpty())
+                                <div class="mt-2 flex flex-wrap gap-x-4 gap-y-1">
+                                    @foreach ($tlLinks as $link)
+                                        <a href="{{ $link['url'] }}" target="_blank" rel="noopener"
+                                            class="inline-flex items-center gap-1.5 text-sm font-bold text-brand hover:text-brand-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
+                                            <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i>
+                                            {{ $link['label'] ?: 'Zobacz więcej' }}
+                                        </a>
+                                    @endforeach
+                                </div>
                             @endif
                         </li>
                     @endforeach

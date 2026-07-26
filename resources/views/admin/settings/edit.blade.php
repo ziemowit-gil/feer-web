@@ -682,10 +682,9 @@
                     @error('bip_url') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
 
                     <div class="mt-3">
-                        <label for="bip_intro" class="mb-1 block text-sm font-bold">Tekst na stronie <code>/bip</code> <span class="font-normal text-muted">(opcjonalnie)</span></label>
-                        <textarea id="bip_intro" name="bip_intro" rows="4" placeholder="Informacja, dlaczego BIP prowadzimy osobno. Puste = tekst domyślny."
-                            class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">{{ old('bip_intro', $settings->bip_intro) }}</textarea>
-                        <p class="mt-1 text-xs text-muted">Wyświetlany nad przyciskiem „Przejdź do BIP”. Skróty <code>/instagram</code> i <code>/fb</code> przekierowują do adresów z pól obok.</p>
+                        <label class="mb-1 block text-sm font-bold">Treść strony <code>/bip</code> <span class="font-normal text-muted">(opcjonalnie)</span></label>
+                        @include('admin.partials.editor', ['name' => 'bip_intro', 'value' => old('bip_intro', $settings->bip_intro)])
+                        <p class="mt-1 text-xs text-muted">Pełny opis Biuletynu — możesz formatować (nagłówki, listy, pogrubienia, linki). Puste = domyślny opis. Skróty <code>/instagram</code> i <code>/fb</code> przekierowują do adresów z pól obok.</p>
                         @error('bip_intro') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
 
