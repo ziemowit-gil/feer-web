@@ -289,6 +289,13 @@
                             @if (! empty($entry['text']))
                                 <p class="mt-1 leading-relaxed text-ink">{{ $entry['text'] }}</p>
                             @endif
+                            @if (! empty($entry['url']))
+                                <a href="{{ $entry['url'] }}" target="_blank" rel="noopener"
+                                    class="mt-2 inline-flex items-center gap-1.5 text-sm font-bold text-brand hover:text-brand-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
+                                    <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i>
+                                    {{ $entry['label'] ?: 'Zobacz więcej' }}
+                                </a>
+                            @endif
                         </li>
                     @endforeach
                 </ol>
