@@ -17,6 +17,7 @@
                 <tr>
                     <th class="px-4 py-3">Tytuł</th>
                     <th class="px-4 py-3">Slug</th>
+                    <th class="px-4 py-3">Typ</th>
                     <th class="px-4 py-3">Kolejność</th>
                     <th class="px-4 py-3">Status</th>
                     <th class="px-4 py-3 text-right">Akcje</th>
@@ -35,6 +36,15 @@
                             @endif
                         </td>
                         <td class="px-4 py-3 text-muted">/{{ $page->slug }}</td>
+                        <td class="px-4 py-3">
+                            @php
+                                $typeIcons = ['standard' => 'fa-file-lines', 'event' => 'fa-calendar-day', 'schedule' => 'fa-calendar-days', 'about' => 'fa-people-group', 'faq' => 'fa-circle-question', 'bip_move' => 'fa-landmark'];
+                            @endphp
+                            <span class="inline-flex items-center gap-1.5 rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-ink" title="Typ strony">
+                                <i class="fa-solid {{ $typeIcons[$page->type] ?? 'fa-file-lines' }} text-muted" aria-hidden="true"></i>
+                                {{ \App\Models\Page::TYPES[$page->type] ?? $page->type }}
+                            </span>
+                        </td>
                         <td class="px-4 py-3">
                             <form method="POST" action="{{ route('admin.podstrony.kolejnosc', $page) }}" class="flex items-center gap-1">
                                 @csrf
@@ -103,7 +113,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="5" class="px-4 py-6 text-center text-muted">Brak stron. Dodaj pierwszą powyżej.</td>
+                        <td colspan="6" class="px-4 py-6 text-center text-muted">Brak stron. Dodaj pierwszą powyżej.</td>
                     </tr>
                 @endforelse
             </tbody>

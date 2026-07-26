@@ -348,7 +348,6 @@
 
         @case('documents')
         {{-- Dokumenty i sprawozdania: wybrane pliki + odnośnik do BIP po resztę --}}
-        @php $docsBip = $page->about_documents_bip_url ?: $siteSettings->bip_url; @endphp
         @if ($page->attachments->isNotEmpty() || filled($page->about_documents_intro))
             <section class="mx-auto max-w-6xl px-4 py-16" aria-label="Dokumenty i sprawozdania">
                 <h2 class="mb-10 text-center text-2xl font-bold text-ink md:text-3xl">Dokumenty i sprawozdania</h2>
@@ -357,9 +356,7 @@
                         @if (filled($page->about_documents_intro))
                             {!! nl2br(e($page->about_documents_intro)) !!}
                         @endif
-                        @if ($docsBip)
-                            <p class="mt-4 text-sm text-muted">Pozostałe dokumenty publikujemy w <a href="{{ $docsBip }}" target="_blank" rel="noopener" class="font-bold text-brand hover:text-brand-dark">Biuletynie Informacji Publicznej</a>.</p>
-                        @endif
+                        <p class="mt-4 text-sm text-muted">Pozostałe dokumenty publikujemy w <a href="{{ route('bip') }}" class="font-bold text-brand hover:text-brand-dark">Biuletynie Informacji Publicznej</a>.</p>
                     </div>
                     <div>
                         @if ($page->attachments->isNotEmpty())
@@ -377,12 +374,10 @@
                         @else
                             <p class="text-sm text-muted">Nie dodano jeszcze dokumentów. Wgraj je w zakładce „Pliki do pobrania”.</p>
                         @endif
-                        @if ($docsBip)
-                            <a href="{{ $docsBip }}" target="_blank" rel="noopener"
-                                class="mt-6 flex items-center justify-center gap-2 rounded-full border-2 border-ink px-6 py-3 font-bold text-ink transition hover:border-brand hover:text-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
-                                Zobacz wszystkie <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
-                            </a>
-                        @endif
+                        <a href="{{ route('bip') }}"
+                            class="mt-6 flex items-center justify-center gap-2 rounded-full border-2 border-ink px-6 py-3 font-bold text-ink transition hover:border-brand hover:text-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
+                            Zobacz wszystkie <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+                        </a>
                     </div>
                 </div>
             </section>

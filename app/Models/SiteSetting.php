@@ -347,6 +347,12 @@ class SiteSetting extends Model implements HasMedia
         $this->addMediaCollection('og_image')->singleFile();
         $this->addMediaCollection('support_image')->singleFile();
         $this->addMediaCollection('news_default_image')->singleFile();
+        $this->addMediaCollection('bip_logo')->singleFile();
+    }
+
+    public function bipLogoUrl(): ?string
+    {
+        return $this->getFirstMediaUrl('bip_logo') ?: null;
     }
 
     /**

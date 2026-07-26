@@ -688,6 +688,22 @@
                         <p class="mt-1 text-xs text-muted">Wyświetlany nad przyciskiem „Przejdź do BIP”. Skróty <code>/instagram</code> i <code>/fb</code> przekierowują do adresów z pól obok.</p>
                         @error('bip_intro') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
+
+                    <div class="mt-3">
+                        <p class="mb-1 text-sm font-bold">Logo BIP <span class="font-normal text-muted">(opcjonalnie)</span></p>
+                        @if ($settings->bipLogoUrl())
+                            <div class="mb-2 flex items-center gap-3">
+                                <img src="{{ $settings->bipLogoUrl() }}" alt="Logo BIP" class="h-12 w-auto rounded bg-white object-contain p-1 ring-1 ring-gray-200">
+                                <label class="flex items-center gap-2 text-sm text-muted">
+                                    <input type="checkbox" name="remove_bip_logo" value="1" class="rounded border-gray-300 text-brand focus:ring-brand">
+                                    Usuń logo BIP
+                                </label>
+                            </div>
+                        @endif
+                        <input type="file" name="bip_logo" accept="image/*" class="block w-full cursor-pointer text-sm text-muted file:mr-3 file:cursor-pointer file:rounded file:border-0 file:bg-brand file:px-4 file:py-2 file:text-sm file:font-bold file:text-white hover:file:bg-brand-dark">
+                        <p class="mt-1 text-xs text-muted">Oficjalne logo BIP na stronie <code>/bip</code>. Puste = wbudowany znak „BIP”.</p>
+                        @error('bip_logo') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </div>
                 </div>
 
                 <div>

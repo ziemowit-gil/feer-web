@@ -300,15 +300,6 @@
                                 @error('about_documents_intro') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                             </div>
 
-                            <div>
-                                <label for="about_documents_bip_url" class="mb-1 block text-sm font-bold">Odnośnik „Zobacz wszystkie” (BIP / repozytorium)</label>
-                                <input type="url" id="about_documents_bip_url" name="about_documents_bip_url" value="{{ old('about_documents_bip_url', $page->about_documents_bip_url) }}"
-                                    placeholder="https://bip... — puste = BIP z ustawień serwisu"
-                                    class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
-                                <p class="mt-1 text-xs text-muted">Przycisk „po więcej” pod listą prowadzi tutaj. Puste = globalny adres BIP z Ustawień serwisu.</p>
-                                @error('about_documents_bip_url') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
-                            </div>
-
                             <div class="border-t border-gray-200 pt-3">
                                 <p class="text-sm font-bold text-ink">Pliki do pokazania na liście</p>
                                 <p class="mt-0.5 text-xs text-muted">Wgraj tu tylko wybrane dokumenty (np. najnowsze sprawozdanie, Standardy Ochrony Małoletnich, statut) — reszta zostaje w BIP pod przyciskiem powyżej.</p>

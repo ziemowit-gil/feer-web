@@ -93,6 +93,8 @@ class SiteSettingController extends Controller
             'remove_support_image' => ['sometimes', 'boolean'],
             'news_default_image' => ['nullable', 'image', 'max:4096'],
             'remove_news_default_image' => ['sometimes', 'boolean'],
+            'bip_logo' => ['nullable', 'image', 'max:2048'],
+            'remove_bip_logo' => ['sometimes', 'boolean'],
             'support_hero_badge' => ['nullable', 'string', 'max:100'],
             'support_hero_title' => ['nullable', 'string', 'max:255'],
             'support_hero_subtitle' => ['nullable', 'string', 'max:500'],
@@ -188,7 +190,7 @@ class SiteSettingController extends Controller
             ->values()
             ->all() ?: null;
 
-        unset($data['logo'], $data['remove_logo'], $data['og_image'], $data['remove_og_image'], $data['support_image'], $data['remove_support_image'], $data['news_default_image'], $data['remove_news_default_image'], $data['enabled_modules'], $data['section_order']);
+        unset($data['logo'], $data['remove_logo'], $data['og_image'], $data['remove_og_image'], $data['support_image'], $data['remove_support_image'], $data['news_default_image'], $data['remove_news_default_image'], $data['bip_logo'], $data['remove_bip_logo'], $data['enabled_modules'], $data['section_order']);
 
         $colorWasAdjusted = $data['brand_color'] !== $request->input('brand_color');
 
@@ -216,6 +218,12 @@ class SiteSettingController extends Controller
             $settings->addMediaFromRequest('news_default_image')->toMediaCollection('news_default_image');
         } elseif ($request->boolean('remove_news_default_image')) {
             $settings->clearMediaCollection('news_default_image');
+        }
+
+        if ($request->hasFile('bip_logo')) {
+            $settings->addMediaFromRequest('bip_logo')->toMediaCollection('bip_logo');
+        } elseif ($request->boolean('remove_bip_logo')) {
+            $settings->clearMediaCollection('bip_logo');
         }
 
         $status = $colorWasAdjusted
