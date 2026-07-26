@@ -418,7 +418,7 @@
                                             <label class="flex items-center gap-2 text-xs text-muted">Kolor znacznika
                                                 <input type="color" name="about_timeline[{{ $i }}][color]" value="{{ $row['color'] ?? $siteSettings->brand_color }}" aria-label="Kolor znacznika na osi czasu {{ $i + 1 }}" class="h-8 w-12 rounded border-gray-300">
                                             </label>
-                                            <button type="button" data-repeater-remove class="inline-flex items-center gap-1.5 rounded p-1.5 text-xs font-bold text-muted hover:bg-red-50 hover:text-red-600" aria-label="Usuń wpis osi czasu"><i class="fa-solid fa-trash" aria-hidden="true"></i> Usuń</button>
+                                            <div class="flex items-center gap-1"><button type="button" data-repeater-move="up" class="rounded p-1.5 text-muted hover:bg-gray-100 hover:text-brand" aria-label="Przenieś wpis wyżej"><i class="fa-solid fa-arrow-up" aria-hidden="true"></i></button><button type="button" data-repeater-move="down" class="rounded p-1.5 text-muted hover:bg-gray-100 hover:text-brand" aria-label="Przenieś wpis niżej"><i class="fa-solid fa-arrow-down" aria-hidden="true"></i></button><button type="button" data-repeater-remove class="inline-flex items-center gap-1.5 rounded p-1.5 text-xs font-bold text-muted hover:bg-red-50 hover:text-red-600" aria-label="Usuń wpis osi czasu"><i class="fa-solid fa-trash" aria-hidden="true"></i> Usuń</button></div>
                                         </div>
                                     </div>
                                 @endforeach
@@ -442,7 +442,7 @@
                                         <label class="flex items-center gap-2 text-xs text-muted">Kolor znacznika
                                             <input type="color" name="about_timeline[__INDEX__][color]" value="{{ $siteSettings->brand_color }}" aria-label="Kolor znacznika na osi czasu" class="h-8 w-12 rounded border-gray-300">
                                         </label>
-                                        <button type="button" data-repeater-remove class="inline-flex items-center gap-1.5 rounded p-1.5 text-xs font-bold text-muted hover:bg-red-50 hover:text-red-600" aria-label="Usuń wpis osi czasu"><i class="fa-solid fa-trash" aria-hidden="true"></i> Usuń</button>
+                                        <div class="flex items-center gap-1"><button type="button" data-repeater-move="up" class="rounded p-1.5 text-muted hover:bg-gray-100 hover:text-brand" aria-label="Przenieś wpis wyżej"><i class="fa-solid fa-arrow-up" aria-hidden="true"></i></button><button type="button" data-repeater-move="down" class="rounded p-1.5 text-muted hover:bg-gray-100 hover:text-brand" aria-label="Przenieś wpis niżej"><i class="fa-solid fa-arrow-down" aria-hidden="true"></i></button><button type="button" data-repeater-remove class="inline-flex items-center gap-1.5 rounded p-1.5 text-xs font-bold text-muted hover:bg-red-50 hover:text-red-600" aria-label="Usuń wpis osi czasu"><i class="fa-solid fa-trash" aria-hidden="true"></i> Usuń</button></div>
                                     </div>
                                 </div>
                             </template>
@@ -853,11 +853,33 @@
                         rows.appendChild(wrapper.firstElementChild);
                     });
                 }
+                // Przelicz indeksy nazw pól wg kolejności w DOM, aby zapisana
+                // kolejność odpowiadała tej na ekranie (po przenoszeniu wierszy).
+                const reindex = function () {
+                    rows.querySelectorAll('[data-repeater-row]').forEach(function (row, n) {
+                        row.querySelectorAll('[name]').forEach(function (el) {
+                            el.name = el.name.replace(/^([^\[]+)\[[^\]]*\]/, '$1[' + n + ']');
+                        });
+                    });
+                };
+
                 rep.addEventListener('click', function (e) {
                     const remove = e.target.closest('[data-repeater-remove]');
                     if (remove) {
                         const row = remove.closest('[data-repeater-row]');
                         if (row) row.remove();
+                        return;
+                    }
+                    const move = e.target.closest('[data-repeater-move]');
+                    if (move) {
+                        const row = move.closest('[data-repeater-row]');
+                        if (!row) return;
+                        if (move.dataset.repeaterMove === 'up' && row.previousElementSibling) {
+                            rows.insertBefore(row, row.previousElementSibling);
+                        } else if (move.dataset.repeaterMove === 'down' && row.nextElementSibling) {
+                            rows.insertBefore(row.nextElementSibling, row);
+                        }
+                        reindex();
                     }
                 });
             });
