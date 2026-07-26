@@ -290,12 +290,39 @@
                             @error('about_intro') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                         </div>
 
-                        <div>
-                            <label for="about_documents_intro" class="mb-1 block text-sm font-bold">Wstęp — „Dokumenty i sprawozdania”</label>
-                            <textarea id="about_documents_intro" name="about_documents_intro" rows="4" placeholder="Opis nad listą dokumentów, np. dlaczego udostępniacie sprawozdania."
-                                class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">{{ old('about_documents_intro', $page->about_documents_intro) }}</textarea>
-                            <p class="mt-1 text-xs text-muted">Pliki w tej sekcji pobierają się z zakładki „Pliki do pobrania” (wgraj np. Standardy Ochrony Małoletnich, sprawozdanie za 2025, statut). Przycisk „Zobacz wszystkie” prowadzi do adresu BIP z ustawień serwisu.</p>
-                            @error('about_documents_intro') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                        <div class="space-y-4 rounded-lg border border-gray-200 bg-gray-50/60 p-4">
+                            <p class="text-sm font-bold text-ink"><i class="fa-solid fa-folder-open text-muted" aria-hidden="true"></i> Sekcja „Dokumenty i sprawozdania”</p>
+
+                            <div>
+                                <label for="about_documents_intro" class="mb-1 block text-sm font-bold">Wstęp (opis nad listą)</label>
+                                <textarea id="about_documents_intro" name="about_documents_intro" rows="4" placeholder="Opis nad listą dokumentów, np. dlaczego udostępniacie sprawozdania."
+                                    class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">{{ old('about_documents_intro', $page->about_documents_intro) }}</textarea>
+                                @error('about_documents_intro') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                            </div>
+
+                            <div>
+                                <label for="about_documents_bip_url" class="mb-1 block text-sm font-bold">Odnośnik „Zobacz wszystkie” (BIP / repozytorium)</label>
+                                <input type="url" id="about_documents_bip_url" name="about_documents_bip_url" value="{{ old('about_documents_bip_url', $page->about_documents_bip_url) }}"
+                                    placeholder="https://bip... — puste = BIP z ustawień serwisu"
+                                    class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                                <p class="mt-1 text-xs text-muted">Przycisk „po więcej” pod listą prowadzi tutaj. Puste = globalny adres BIP z Ustawień serwisu.</p>
+                                @error('about_documents_bip_url') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                            </div>
+
+                            <div class="border-t border-gray-200 pt-3">
+                                <p class="text-sm font-bold text-ink">Pliki do pokazania na liście</p>
+                                <p class="mt-0.5 text-xs text-muted">Wgraj tu tylko wybrane dokumenty (np. najnowsze sprawozdanie, Standardy Ochrony Małoletnich, statut) — reszta zostaje w BIP pod przyciskiem powyżej.</p>
+                                @if ($page->exists)
+                                    <button type="button" data-goto-files class="mt-2 inline-flex items-center gap-2 rounded border border-brand px-3 py-1.5 text-sm font-bold text-brand hover:bg-brand-light">
+                                        <i class="fa-solid fa-paperclip" aria-hidden="true"></i> Dodaj / zarządzaj plikami
+                                        @if ($page->attachments->isNotEmpty())
+                                            <span class="rounded-full bg-brand px-1.5 text-xs font-bold text-white">{{ $page->attachments->count() }}</span>
+                                        @endif
+                                    </button>
+                                @else
+                                    <p class="mt-1 text-xs font-medium text-amber-700">Zapisz stronę, aby móc wgrać pliki (pojawi się zakładka „Pliki do pobrania”).</p>
+                                @endif
+                            </div>
                         </div>
 
                         @if ($page->exists)
@@ -359,22 +386,38 @@
                         {{-- Oś czasu --}}
                         <div data-repeater class="border-t border-gray-100 pt-4">
                             <p class="mb-1 text-sm font-bold">Oś czasu (historia)</p>
-                            <p class="mb-3 text-xs text-muted">Rok / etap + opis. Puste wiersze są pomijane.</p>
-                            <div data-repeater-rows class="space-y-2">
+                            <p class="mb-3 text-xs text-muted">Rok / etap + opis oraz opcjonalny link (np. do relacji, wpisu w social media). Puste wiersze są pomijane.</p>
+                            <div data-repeater-rows class="space-y-3">
                                 @foreach ($aboutTimeline as $i => $row)
-                                    <div data-repeater-row class="grid gap-2 sm:grid-cols-[1fr_3fr_auto]">
-                                        <input type="text" name="about_timeline[{{ $i }}][year]" value="{{ $row['year'] ?? '' }}" placeholder="Rok, np. 2015" aria-label="Rok wpisu osi czasu {{ $i + 1 }}" class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
-                                        <input type="text" name="about_timeline[{{ $i }}][text]" value="{{ $row['text'] ?? '' }}" placeholder="Opis wydarzenia" aria-label="Opis wpisu osi czasu {{ $i + 1 }}" class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
-                                        <button type="button" data-repeater-remove class="rounded p-2 text-muted hover:bg-red-50 hover:text-red-600" aria-label="Usuń wpis osi czasu"><i class="fa-solid fa-trash" aria-hidden="true"></i></button>
+                                    <div data-repeater-row class="space-y-2 rounded-lg border border-gray-200 bg-gray-50 p-4">
+                                        <div class="grid gap-2 sm:grid-cols-[1fr_3fr]">
+                                            <input type="text" name="about_timeline[{{ $i }}][year]" value="{{ $row['year'] ?? '' }}" placeholder="Rok, np. 2015" aria-label="Rok wpisu osi czasu {{ $i + 1 }}" class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                                            <input type="text" name="about_timeline[{{ $i }}][text]" value="{{ $row['text'] ?? '' }}" placeholder="Opis wydarzenia" aria-label="Opis wpisu osi czasu {{ $i + 1 }}" class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                                        </div>
+                                        <div class="grid gap-2 sm:grid-cols-[3fr_2fr]">
+                                            <input type="url" name="about_timeline[{{ $i }}][url]" value="{{ $row['url'] ?? '' }}" placeholder="Link (opcjonalnie), np. https://facebook.com/..." aria-label="Link wpisu osi czasu {{ $i + 1 }}" class="w-full rounded border-gray-300 text-xs focus:border-brand focus:ring-brand">
+                                            <input type="text" name="about_timeline[{{ $i }}][label]" value="{{ $row['label'] ?? '' }}" placeholder="Etykieta linku (opcjonalnie)" aria-label="Etykieta linku wpisu osi czasu {{ $i + 1 }}" class="w-full rounded border-gray-300 text-xs focus:border-brand focus:ring-brand">
+                                        </div>
+                                        <div class="text-right">
+                                            <button type="button" data-repeater-remove class="inline-flex items-center gap-1.5 rounded p-1.5 text-xs font-bold text-muted hover:bg-red-50 hover:text-red-600" aria-label="Usuń wpis osi czasu"><i class="fa-solid fa-trash" aria-hidden="true"></i> Usuń</button>
+                                        </div>
                                     </div>
                                 @endforeach
                             </div>
                             <button type="button" data-repeater-add class="mt-2 inline-flex items-center gap-2 rounded border border-brand px-3 py-1.5 text-sm font-bold text-brand hover:bg-brand-light"><i class="fa-solid fa-plus"></i> Dodaj wpis</button>
                             <template data-repeater-template>
-                                <div data-repeater-row class="grid gap-2 sm:grid-cols-[1fr_3fr_auto]">
-                                    <input type="text" name="about_timeline[__INDEX__][year]" placeholder="Rok, np. 2015" aria-label="Rok wpisu osi czasu" class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
-                                    <input type="text" name="about_timeline[__INDEX__][text]" placeholder="Opis wydarzenia" aria-label="Opis wpisu osi czasu" class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
-                                    <button type="button" data-repeater-remove class="rounded p-2 text-muted hover:bg-red-50 hover:text-red-600" aria-label="Usuń wpis osi czasu"><i class="fa-solid fa-trash" aria-hidden="true"></i></button>
+                                <div data-repeater-row class="space-y-2 rounded-lg border border-gray-200 bg-gray-50 p-4">
+                                    <div class="grid gap-2 sm:grid-cols-[1fr_3fr]">
+                                        <input type="text" name="about_timeline[__INDEX__][year]" placeholder="Rok, np. 2015" aria-label="Rok wpisu osi czasu" class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                                        <input type="text" name="about_timeline[__INDEX__][text]" placeholder="Opis wydarzenia" aria-label="Opis wpisu osi czasu" class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                                    </div>
+                                    <div class="grid gap-2 sm:grid-cols-[3fr_2fr]">
+                                        <input type="url" name="about_timeline[__INDEX__][url]" placeholder="Link (opcjonalnie), np. https://facebook.com/..." aria-label="Link wpisu osi czasu" class="w-full rounded border-gray-300 text-xs focus:border-brand focus:ring-brand">
+                                        <input type="text" name="about_timeline[__INDEX__][label]" placeholder="Etykieta linku (opcjonalnie)" aria-label="Etykieta linku wpisu osi czasu" class="w-full rounded border-gray-300 text-xs focus:border-brand focus:ring-brand">
+                                    </div>
+                                    <div class="text-right">
+                                        <button type="button" data-repeater-remove class="inline-flex items-center gap-1.5 rounded p-1.5 text-xs font-bold text-muted hover:bg-red-50 hover:text-red-600" aria-label="Usuń wpis osi czasu"><i class="fa-solid fa-trash" aria-hidden="true"></i> Usuń</button>
+                                    </div>
                                 </div>
                             </template>
                         </div>
@@ -736,6 +779,15 @@
                     }
                 });
             });
+
+            // --- "Dodaj / zarządzaj plikami" → przełącz na zakładkę Pliki ---
+            const gotoFiles = document.querySelector('[data-goto-files]');
+            if (gotoFiles) {
+                gotoFiles.addEventListener('click', function () {
+                    const btn = document.querySelector('[data-ftab-btn="pliki"]');
+                    if (btn) btn.click();
+                });
+            }
 
             // --- About section order (move up / down) ---------------------
             const orderList = document.getElementById('about-section-order-list');

@@ -73,7 +73,7 @@ class Page extends Model
         'is_disabled', 'disabled_message', 'wip_mode', 'wip_message',
         'type', 'event_mode', 'event_when', 'event_location', 'event_how_to_join', 'event_registration_url',
         'schedule_items', 'schedule_change_notice', 'schedule_pending',
-        'about_motto', 'about_motto_author', 'about_intro', 'about_stats', 'about_timeline', 'about_values', 'about_team', 'about_section_order', 'about_partner_ids', 'about_documents_intro',
+        'about_motto', 'about_motto_author', 'about_intro', 'about_stats', 'about_timeline', 'about_values', 'about_team', 'about_section_order', 'about_partner_ids', 'about_documents_intro', 'about_documents_bip_url',
         'faq_intro', 'faq_items', 'bip_move_url', 'bip_move_note', 'show_gallery',
     ];
 
