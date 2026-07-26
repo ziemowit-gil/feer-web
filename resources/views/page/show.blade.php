@@ -297,31 +297,12 @@
         @break
 
         @case('team')
-        {{-- Zespół --}}
+        {{-- Zespół — kolorowe karty --}}
         @if ($aboutTeam->isNotEmpty())
             <section class="bg-gray-50 px-4 py-16" aria-label="Nasz zespół">
                 <div class="mx-auto max-w-5xl">
                     <h2 class="mb-10 text-center text-2xl font-bold text-ink md:text-3xl">Nasz zespół</h2>
-                    <ul class="grid grid-cols-2 gap-8 sm:grid-cols-3 lg:grid-cols-4">
-                        @foreach ($aboutTeam as $person)
-                            <li class="text-center">
-                                @if (! empty($person['photo']))
-                                    <img src="{{ $person['photo'] }}" alt="{{ $person['name'] ?? '' }}" loading="lazy"
-                                        class="mx-auto mb-4 h-32 w-32 rounded-full object-cover ring-4 ring-white shadow-sm">
-                                @else
-                                    <span class="mx-auto mb-4 flex h-32 w-32 items-center justify-center rounded-full bg-brand text-3xl font-bold text-white ring-4 ring-white shadow-sm" aria-hidden="true">
-                                        {{ \Illuminate\Support\Str::of($person['name'] ?? '?')->explode(' ')->map(fn ($w) => mb_substr($w, 0, 1))->take(2)->implode('') }}
-                                    </span>
-                                @endif
-                                @if (! empty($person['name']))
-                                    <p class="font-bold text-ink">{{ $person['name'] }}</p>
-                                @endif
-                                @if (! empty($person['role']))
-                                    <p class="text-sm text-muted">{{ $person['role'] }}</p>
-                                @endif
-                            </li>
-                        @endforeach
-                    </ul>
+                    @include('partials.team', ['members' => $aboutTeam])
                 </div>
             </section>
         @endif
@@ -358,16 +339,48 @@
         @endif
         @break
 
+        @case('documents')
+        {{-- Dokumenty i sprawozdania: wybrane pliki + odnośnik do BIP po resztę --}}
+        @if ($page->attachments->isNotEmpty() || filled($page->about_documents_intro))
+            <section class="mx-auto max-w-6xl px-4 py-16" aria-label="Dokumenty i sprawozdania">
+                <h2 class="mb-10 text-center text-2xl font-bold text-ink md:text-3xl">Dokumenty i sprawozdania</h2>
+                <div class="grid gap-10 lg:grid-cols-2">
+                    <div class="prose max-w-none text-ink">
+                        @if (filled($page->about_documents_intro))
+                            {!! nl2br(e($page->about_documents_intro)) !!}
+                        @endif
+                        @if ($siteSettings->bip_url)
+                            <p class="mt-4 text-sm text-muted">Pozostałe dokumenty publikujemy w <a href="{{ $siteSettings->bip_url }}" target="_blank" rel="noopener" class="font-bold text-brand hover:text-brand-dark">Biuletynie Informacji Publicznej</a>.</p>
+                        @endif
+                    </div>
+                    <div>
+                        @if ($page->attachments->isNotEmpty())
+                            <ul class="divide-y divide-gray-100">
+                                @foreach ($page->attachments as $doc)
+                                    <li class="flex items-center justify-between gap-4 py-4">
+                                        <span class="min-w-0 font-medium text-ink">{{ $doc->label }}</span>
+                                        <a href="{{ $doc->file_url }}" download aria-label="Pobierz: {{ $doc->label }}"
+                                            class="inline-flex flex-none items-center gap-2 font-bold text-brand hover:text-brand-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
+                                            Pobierz <i class="fa-solid fa-download" aria-hidden="true"></i>
+                                        </a>
+                                    </li>
+                                @endforeach
+                            </ul>
+                        @endif
+                        @if ($siteSettings->bip_url)
+                            <a href="{{ $siteSettings->bip_url }}" target="_blank" rel="noopener"
+                                class="mt-6 flex items-center justify-center gap-2 rounded-full border-2 border-ink px-6 py-3 font-bold text-ink transition hover:border-brand hover:text-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
+                                Zobacz wszystkie <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+                            </a>
+                        @endif
+                    </div>
+                </div>
+            </section>
+        @endif
+        @break
+
         @endswitch
         @endforeach
-
-        @if ($page->attachments->isNotEmpty())
-            <div class="mx-auto max-w-3xl px-4 py-8">
-                @include('partials.page-gallery', ['page' => $page])
-
-        @include('partials.attachments-list', ['attachments' => $page->attachments])
-            </div>
-        @endif
     </article>
 
     <script>

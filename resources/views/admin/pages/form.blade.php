@@ -290,6 +290,14 @@
                             @error('about_intro') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                         </div>
 
+                        <div>
+                            <label for="about_documents_intro" class="mb-1 block text-sm font-bold">Wstęp — „Dokumenty i sprawozdania”</label>
+                            <textarea id="about_documents_intro" name="about_documents_intro" rows="4" placeholder="Opis nad listą dokumentów, np. dlaczego udostępniacie sprawozdania."
+                                class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">{{ old('about_documents_intro', $page->about_documents_intro) }}</textarea>
+                            <p class="mt-1 text-xs text-muted">Pliki w tej sekcji pobierają się z zakładki „Pliki do pobrania” (wgraj np. Standardy Ochrony Małoletnich, sprawozdanie za 2025, statut). Przycisk „Zobacz wszystkie” prowadzi do adresu BIP z ustawień serwisu.</p>
+                            @error('about_documents_intro') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                        </div>
+
                         @if ($page->exists)
                             <p class="rounded border border-blue-200 bg-blue-50 px-3 py-2 text-xs text-blue-800">
                                 Zdjęcia dodaj w zakładce „Galeria”. Pierwsze 2–3 zdjęcia pojawią się obok wstępu; pozostałe w sekcji galerii poniżej.
@@ -374,24 +382,44 @@
                         {{-- Zespół --}}
                         <div data-repeater class="border-t border-gray-100 pt-4">
                             <p class="mb-1 text-sm font-bold">Zespół</p>
-                            <p class="mb-3 text-xs text-muted">Imię i nazwisko + rola. Zdjęcie (opcjonalnie) — wklej adres URL obrazu z Multimediów; puste = inicjały.</p>
-                            <div data-repeater-rows class="space-y-2">
+                            <p class="mb-3 text-xs text-muted">Każda osoba: imię i nazwisko, „Co robi w FEER", „Trochę o mnie" oraz opcjonalnie linki do social media. Zdjęcie — wklej adres URL obrazu z Multimediów; puste = inicjały.</p>
+                            <div data-repeater-rows class="space-y-3">
                                 @foreach ($aboutTeam as $i => $row)
-                                    <div data-repeater-row class="grid gap-2 sm:grid-cols-[1fr_1fr_2fr_auto]">
-                                        <input type="text" name="about_team[{{ $i }}][name]" value="{{ $row['name'] ?? '' }}" placeholder="Imię i nazwisko" aria-label="Imię członka zespołu {{ $i + 1 }}" class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
-                                        <input type="text" name="about_team[{{ $i }}][role]" value="{{ $row['role'] ?? '' }}" placeholder="Rola / stanowisko" aria-label="Rola członka zespołu {{ $i + 1 }}" class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                                    <div data-repeater-row class="space-y-2 rounded-lg border border-gray-200 bg-gray-50 p-4">
+                                        <div class="grid gap-2 sm:grid-cols-2">
+                                            <input type="text" name="about_team[{{ $i }}][name]" value="{{ $row['name'] ?? '' }}" placeholder="Imię i nazwisko" aria-label="Imię członka zespołu {{ $i + 1 }}" class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                                            <input type="text" name="about_team[{{ $i }}][role]" value="{{ $row['role'] ?? '' }}" placeholder="Co robi w FEER" aria-label="Co robi w FEER — członek zespołu {{ $i + 1 }}" class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                                        </div>
                                         <input type="text" name="about_team[{{ $i }}][photo]" value="{{ $row['photo'] ?? '' }}" placeholder="URL zdjęcia (opcjonalnie)" aria-label="Zdjęcie członka zespołu {{ $i + 1 }}" class="w-full rounded border-gray-300 text-xs focus:border-brand focus:ring-brand">
-                                        <button type="button" data-repeater-remove class="rounded p-2 text-muted hover:bg-red-50 hover:text-red-600" aria-label="Usuń członka zespołu"><i class="fa-solid fa-trash" aria-hidden="true"></i></button>
+                                        <textarea name="about_team[{{ $i }}][bio]" rows="2" placeholder="Trochę o mnie" aria-label="Trochę o mnie — członek zespołu {{ $i + 1 }}" class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">{{ $row['bio'] ?? '' }}</textarea>
+                                        <div class="grid gap-2 sm:grid-cols-3">
+                                            <input type="url" name="about_team[{{ $i }}][facebook]" value="{{ $row['facebook'] ?? '' }}" placeholder="Facebook (URL)" aria-label="Facebook — członek zespołu {{ $i + 1 }}" class="w-full rounded border-gray-300 text-xs focus:border-brand focus:ring-brand">
+                                            <input type="url" name="about_team[{{ $i }}][instagram]" value="{{ $row['instagram'] ?? '' }}" placeholder="Instagram (URL)" aria-label="Instagram — członek zespołu {{ $i + 1 }}" class="w-full rounded border-gray-300 text-xs focus:border-brand focus:ring-brand">
+                                            <input type="url" name="about_team[{{ $i }}][linkedin]" value="{{ $row['linkedin'] ?? '' }}" placeholder="LinkedIn (URL)" aria-label="LinkedIn — członek zespołu {{ $i + 1 }}" class="w-full rounded border-gray-300 text-xs focus:border-brand focus:ring-brand">
+                                        </div>
+                                        <div class="text-right">
+                                            <button type="button" data-repeater-remove class="inline-flex items-center gap-1.5 rounded p-1.5 text-xs font-bold text-muted hover:bg-red-50 hover:text-red-600" aria-label="Usuń członka zespołu"><i class="fa-solid fa-trash" aria-hidden="true"></i> Usuń</button>
+                                        </div>
                                     </div>
                                 @endforeach
                             </div>
                             <button type="button" data-repeater-add class="mt-2 inline-flex items-center gap-2 rounded border border-brand px-3 py-1.5 text-sm font-bold text-brand hover:bg-brand-light"><i class="fa-solid fa-plus"></i> Dodaj osobę</button>
                             <template data-repeater-template>
-                                <div data-repeater-row class="grid gap-2 sm:grid-cols-[1fr_1fr_2fr_auto]">
-                                    <input type="text" name="about_team[__INDEX__][name]" placeholder="Imię i nazwisko" aria-label="Imię członka zespołu" class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
-                                    <input type="text" name="about_team[__INDEX__][role]" placeholder="Rola / stanowisko" aria-label="Rola członka zespołu" class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                                <div data-repeater-row class="space-y-2 rounded-lg border border-gray-200 bg-gray-50 p-4">
+                                    <div class="grid gap-2 sm:grid-cols-2">
+                                        <input type="text" name="about_team[__INDEX__][name]" placeholder="Imię i nazwisko" aria-label="Imię członka zespołu" class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                                        <input type="text" name="about_team[__INDEX__][role]" placeholder="Co robi w FEER" aria-label="Co robi w FEER" class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                                    </div>
                                     <input type="text" name="about_team[__INDEX__][photo]" placeholder="URL zdjęcia (opcjonalnie)" aria-label="Zdjęcie członka zespołu" class="w-full rounded border-gray-300 text-xs focus:border-brand focus:ring-brand">
-                                    <button type="button" data-repeater-remove class="rounded p-2 text-muted hover:bg-red-50 hover:text-red-600" aria-label="Usuń członka zespołu"><i class="fa-solid fa-trash" aria-hidden="true"></i></button>
+                                    <textarea name="about_team[__INDEX__][bio]" rows="2" placeholder="Trochę o mnie" aria-label="Trochę o mnie" class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand"></textarea>
+                                    <div class="grid gap-2 sm:grid-cols-3">
+                                        <input type="url" name="about_team[__INDEX__][facebook]" placeholder="Facebook (URL)" aria-label="Facebook" class="w-full rounded border-gray-300 text-xs focus:border-brand focus:ring-brand">
+                                        <input type="url" name="about_team[__INDEX__][instagram]" placeholder="Instagram (URL)" aria-label="Instagram" class="w-full rounded border-gray-300 text-xs focus:border-brand focus:ring-brand">
+                                        <input type="url" name="about_team[__INDEX__][linkedin]" placeholder="LinkedIn (URL)" aria-label="LinkedIn" class="w-full rounded border-gray-300 text-xs focus:border-brand focus:ring-brand">
+                                    </div>
+                                    <div class="text-right">
+                                        <button type="button" data-repeater-remove class="inline-flex items-center gap-1.5 rounded p-1.5 text-xs font-bold text-muted hover:bg-red-50 hover:text-red-600" aria-label="Usuń członka zespołu"><i class="fa-solid fa-trash" aria-hidden="true"></i> Usuń</button>
+                                    </div>
                                 </div>
                             </template>
                         </div>

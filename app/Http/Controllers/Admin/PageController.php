@@ -199,10 +199,15 @@ class PageController extends Controller
             'about_team.*.name' => ['nullable', 'string', 'max:120'],
             'about_team.*.role' => ['nullable', 'string', 'max:120'],
             'about_team.*.photo' => ['nullable', 'string', 'max:1000'],
+            'about_team.*.bio' => ['nullable', 'string', 'max:1000'],
+            'about_team.*.facebook' => ['nullable', 'string', 'max:255'],
+            'about_team.*.instagram' => ['nullable', 'string', 'max:255'],
+            'about_team.*.linkedin' => ['nullable', 'string', 'max:255'],
             'about_section_order' => ['sometimes', 'array'],
             'about_section_order.*' => ['integer'],
             'about_partner_ids' => ['nullable', 'array'],
             'about_partner_ids.*' => ['integer', 'exists:partners,id'],
+            'about_documents_intro' => ['nullable', 'string', 'max:5000'],
             'faq_intro' => ['nullable', 'string', 'max:2000'],
             'faq_items' => ['nullable', 'array'],
             'faq_items.*.question' => ['nullable', 'string', 'max:255'],
@@ -282,7 +287,7 @@ class PageController extends Controller
             $data['about_stats'] = $this->compactRows($request->input('about_stats', []), ['value', 'label']);
             $data['about_timeline'] = $this->compactRows($request->input('about_timeline', []), ['year', 'text']);
             $data['about_values'] = $this->compactRows($request->input('about_values', []), ['icon', 'title', 'text']);
-            $data['about_team'] = $this->compactRows($request->input('about_team', []), ['name', 'role', 'photo']);
+            $data['about_team'] = $this->compactRows($request->input('about_team', []), ['name', 'role', 'photo', 'bio', 'facebook', 'instagram', 'linkedin']);
 
             $positions = $request->input('about_section_order', []);
             $data['about_section_order'] = collect(array_keys(Page::ABOUT_SECTIONS))
@@ -301,6 +306,7 @@ class PageController extends Controller
             $data['about_values'] = null;
             $data['about_team'] = null;
             $data['about_partner_ids'] = null;
+            $data['about_documents_intro'] = null;
         }
 
         // FAQ: lista par pytanie/odpowiedź (puste wiersze pomijane); poza typem FAQ czyścimy.
