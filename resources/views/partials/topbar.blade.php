@@ -12,6 +12,10 @@
                 <i class="fa-solid fa-circle-half-stroke" aria-hidden="true"></i> Wersja kontrastowa
             </button>
 
+            <button type="button" data-a11y-animations class="flex min-h-6 items-center gap-1 hover:text-brand" aria-pressed="false">
+                <i class="fa-solid fa-film" aria-hidden="true"></i> Wyłącz animacje
+            </button>
+
             <form action="#" class="flex items-center" role="search">
                 <label for="site-search" class="sr-only">Wyszukaj w serwisie</label>
                 <input id="site-search" type="search" placeholder="Wyszukaj w serwisie" class="w-40 rounded-l border border-gray-300 px-2 py-1 focus:outline-none focus:ring-1 focus:ring-brand">

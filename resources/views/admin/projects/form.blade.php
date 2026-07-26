@@ -76,12 +76,27 @@
                     <div>
                         <label for="audience" class="mb-1 block text-sm font-bold">Grupa docelowa (kolorystyka)</label>
                         <select id="audience" name="audience" class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand sm:w-1/2">
-                            @foreach (\App\Models\SiteSetting::AUDIENCES as $value => $label)
+                            @foreach ($siteSettings->audienceOptions() as $value => $label)
                                 <option value="{{ $value }}" {{ old('audience', $project->audience ?? 'brand') === $value ? 'selected' : '' }}>{{ $label }}</option>
                             @endforeach
                         </select>
-                        <p class="mt-1 text-xs text-muted">Wybór „NGO” zmienia kolorystykę strony projektu na dedykowany kolor (ustawiany w Ustawienia → Ogólne). Domyślnie używany jest kolor marki.</p>
+                        <p class="mt-1 text-xs text-muted">Zmienia kolorystykę strony projektu na kolor wybranej submarki (definiowane w Ustawienia → Kolory). Domyślnie używany jest kolor marki.</p>
                         @error('audience') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </div>
+
+                    <div>
+                        <label for="accent_color_text" class="mb-1 block text-sm font-bold">Własny kolor akcentu <span class="font-normal text-muted">(opcjonalnie)</span></label>
+                        <div class="flex flex-wrap items-center gap-3">
+                            <input type="color" id="accent_color_picker" value="{{ old('accent_color', $project->accent_color ?: '#c31432') }}"
+                                oninput="document.getElementById('accent_color_text').value = this.value"
+                                class="h-10 w-16 rounded border-gray-300" aria-label="Wybierz własny kolor akcentu">
+                            <input type="text" id="accent_color_text" name="accent_color" value="{{ old('accent_color', $project->accent_color) }}"
+                                placeholder="np. #0d7d4d — puste = jak wyżej"
+                                oninput="if (/^#[0-9a-fA-F]{6}$/.test(this.value)) document.getElementById('accent_color_picker').value = this.value"
+                                class="w-48 rounded border-gray-300 font-mono text-sm focus:border-brand focus:ring-brand">
+                        </div>
+                        <p class="mt-1 text-xs text-muted">Nadpisuje kolorystykę tej strony dowolnym kolorem (ma pierwszeństwo przed grupą docelowaną powyżej). Zbyt jasny kolor zostanie przyciemniony przy zapisie (kontrast WCAG). Puste = kolor z grupy docelowej.</p>
+                        @error('accent_color') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
                 </div>
 

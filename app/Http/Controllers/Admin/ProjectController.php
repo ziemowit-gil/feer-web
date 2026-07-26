@@ -78,7 +78,8 @@ class ProjectController extends Controller
             'slug' => ['nullable', 'string', 'max:255'],
             'excerpt' => ['nullable', 'string', 'max:255'],
             'for_whom' => ['nullable', 'string', 'max:255'],
-            'audience' => ['nullable', Rule::in(array_keys(SiteSetting::AUDIENCES))],
+            'audience' => ['nullable', Rule::in(array_keys(SiteSetting::current()->audienceOptions()))],
+            'accent_color' => ['nullable', 'regex:/^#[0-9a-fA-F]{6}$/'],
             'since' => ['nullable', 'string', 'max:255'],
             'image_alt' => ['nullable', 'string', 'max:255'],
             'content' => ['nullable', 'string'],
@@ -101,6 +102,10 @@ class ProjectController extends Controller
         $data['slug'] = trim($data['slug'] ?? '');
         $data['order'] = $data['order'] ?? 0;
         $data['audience'] = $data['audience'] ?? 'brand';
+        // Własny kolor akcentu pilnujemy pod kątem kontrastu WCAG (jak brand/NGO).
+        $data['accent_color'] = filled($data['accent_color'] ?? null)
+            ? SiteSetting::current()->contrastSafeColor($data['accent_color'])
+            : null;
         $data['is_published'] = $request->boolean('is_published');
         $data['is_completed'] = $request->boolean('is_completed');
         $data['is_featured_contact'] = $request->boolean('is_featured_contact');

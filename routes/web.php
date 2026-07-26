@@ -148,6 +148,8 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(
     Route::get('multimedia/obrazy', [MediaLibraryController::class, 'imagesJson'])->name('multimedia.images');
     Route::get('multimedia/unsplash', [MediaLibraryController::class, 'unsplashSearch'])->name('multimedia.unsplash.search');
     Route::post('multimedia/unsplash', [MediaLibraryController::class, 'unsplashImport'])->name('multimedia.unsplash.import');
+    Route::get('multimedia/eksport', [MediaLibraryController::class, 'export'])->name('multimedia.export');
+    Route::post('multimedia/import', [MediaLibraryController::class, 'import'])->name('multimedia.import');
     Route::post('multimedia', [MediaLibraryController::class, 'store'])->name('multimedia.store');
     Route::put('multimedia/{media}/folder', [MediaLibraryController::class, 'move'])->name('multimedia.move');
     Route::put('multimedia/{media}/archiwizuj', [MediaLibraryController::class, 'archive'])->name('multimedia.archive');

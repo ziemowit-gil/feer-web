@@ -8,6 +8,7 @@ use App\Models\Page;
 use App\Models\Project;
 use App\Models\SiteSetting;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 use SocialiteProviders\Manager\SocialiteWasCalled;
@@ -36,7 +37,9 @@ class AppServiceProvider extends ServiceProvider
         // Konfiguracja poczty z panelu nadpisuje .env (SMTP). Owinięte w try/catch,
         // bo tabela ustawień może jeszcze nie istnieć (np. podczas instalacji).
         try {
-            $this->applyMailConfig(SiteSetting::current());
+            $settings = SiteSetting::current();
+            $this->applySiteUrl($settings);
+            $this->applyMailConfig($settings);
         } catch (\Throwable $e) {
             // Brak zmigrowanej bazy / ustawień — zostajemy przy konfiguracji z .env.
         }
@@ -88,6 +91,29 @@ class AppServiceProvider extends ServiceProvider
         });
 
         View::composer('*', fn ($view) => $view->with('siteSettings', SiteSetting::current()));
+    }
+
+    /**
+     * Nadpisz główny adres strony (config('app.url') oraz root URL generatora
+     * linków) wartością ustawioną w panelu. Dzięki temu linki bezwzględne
+     * (sitemap, e-maile, powiadomienia) używają adresu z panelu zamiast APP_URL.
+     * Puste pole = dziedziczenie z .env, jak dotychczas.
+     */
+    private function applySiteUrl(SiteSetting $settings): void
+    {
+        $url = trim((string) $settings->site_url);
+
+        if ($url === '' || ! filter_var($url, FILTER_VALIDATE_URL)) {
+            return;
+        }
+
+        $url = rtrim($url, '/');
+        config(['app.url' => $url]);
+        URL::forceRootUrl($url);
+
+        if (str_starts_with($url, 'https://')) {
+            URL::forceScheme('https');
+        }
     }
 
     /**

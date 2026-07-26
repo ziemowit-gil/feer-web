@@ -24,8 +24,17 @@ class MediaLibraryTest extends TestCase
     {
         Storage::fake('public');
 
+        return $this->storeFile();
+    }
+
+    /**
+     * Adds a fake image to the library without re-faking the disk, so several
+     * files can coexist in one test (Storage::fake resets the disk each call).
+     */
+    private function storeFile(string $name = 'photo.jpg'): Media
+    {
         return MediaLibrary::instance()
-            ->addMedia(UploadedFile::fake()->image('photo.jpg'))
+            ->addMedia(UploadedFile::fake()->image($name))
             ->toMediaCollection('files');
     }
 
@@ -141,5 +150,155 @@ class MediaLibraryTest extends TestCase
 
         $this->assertDatabaseMissing('media_folders', ['id' => $folder->id]);
         $this->assertNull($media->fresh()->media_folder_id);
+    }
+
+    public function test_export_bundles_files_into_a_zip_mirroring_the_folder_tree(): void
+    {
+        Storage::fake('public');
+        $admin = $this->admin();
+
+        $folder = MediaFolder::create(['name' => 'Wydarzenia']);
+        $rootFile = $this->storeFile('root.jpg');
+        $folderFile = $this->storeFile('event.jpg');
+        $folderFile->update(['media_folder_id' => $folder->id]);
+
+        $response = $this->actingAs($admin)->get(route('admin.multimedia.export'));
+
+        $response->assertOk();
+        $response->assertHeader('content-type', 'application/zip');
+
+        $entries = $this->zipEntries($response->getFile()->getPathname());
+
+        $this->assertContains($rootFile->file_name, $entries);
+        $this->assertContains('Wydarzenia/'.$folderFile->file_name, $entries);
+    }
+
+    public function test_export_scoped_to_a_folder_makes_that_folder_the_archive_root(): void
+    {
+        Storage::fake('public');
+        $admin = $this->admin();
+
+        $parent = MediaFolder::create(['name' => 'Rok 2026']);
+        $child = MediaFolder::create(['name' => 'Lipiec', 'parent_id' => $parent->id]);
+
+        $parentFile = $this->storeFile('parent.jpg');
+        $parentFile->update(['media_folder_id' => $parent->id]);
+        $childFile = $this->storeFile('child.jpg');
+        $childFile->update(['media_folder_id' => $child->id]);
+
+        $response = $this->actingAs($admin)->get(route('admin.multimedia.export', ['folder' => $parent->id]));
+
+        $response->assertOk();
+        $entries = $this->zipEntries($response->getFile()->getPathname());
+
+        // Relative to the scoped folder: parent file at the root, child nested.
+        $this->assertContains($parentFile->file_name, $entries);
+        $this->assertContains('Lipiec/'.$childFile->file_name, $entries);
+    }
+
+    public function test_export_with_no_files_returns_404(): void
+    {
+        Storage::fake('public');
+
+        $this->actingAs($this->admin())
+            ->get(route('admin.multimedia.export'))
+            ->assertNotFound();
+    }
+
+    public function test_import_recreates_files_and_folders_from_a_zip(): void
+    {
+        Storage::fake('public');
+        $admin = $this->admin();
+
+        $zip = $this->makeZip([
+            'raport.txt' => 'hello',
+            'Zdjęcia/foto.jpg' => 'imagebytes',
+        ]);
+
+        $this->actingAs($admin)
+            ->post(route('admin.multimedia.import'), [
+                'archive' => new UploadedFile($zip, 'paczka.zip', 'application/zip', null, true),
+            ])
+            ->assertRedirect();
+
+        $this->assertDatabaseHas('media', ['file_name' => 'raport.txt', 'model_type' => MediaLibrary::class]);
+
+        $folder = MediaFolder::where('name', 'Zdjęcia')->first();
+        $this->assertNotNull($folder);
+        $this->assertDatabaseHas('media', ['file_name' => 'foto.jpg', 'media_folder_id' => $folder->id]);
+    }
+
+    public function test_import_targets_the_chosen_folder(): void
+    {
+        Storage::fake('public');
+        $admin = $this->admin();
+        $target = MediaFolder::create(['name' => 'Docelowy']);
+
+        $zip = $this->makeZip(['plik.pdf' => 'pdfbytes']);
+
+        $this->actingAs($admin)
+            ->post(route('admin.multimedia.import'), [
+                'archive' => new UploadedFile($zip, 'paczka.zip', 'application/zip', null, true),
+                'folder_id' => $target->id,
+            ])
+            ->assertRedirect(route('admin.multimedia.index', ['folder' => $target->id]));
+
+        $this->assertDatabaseHas('media', ['file_name' => 'plik.pdf', 'media_folder_id' => $target->id]);
+    }
+
+    public function test_import_skips_executable_and_hidden_files(): void
+    {
+        Storage::fake('public');
+        $admin = $this->admin();
+
+        $zip = $this->makeZip([
+            'safe.jpg' => 'ok',
+            'evil.php' => '<?php echo 1;',
+            '__MACOSX/._safe.jpg' => 'junk',
+        ]);
+
+        $this->actingAs($admin)
+            ->post(route('admin.multimedia.import'), [
+                'archive' => new UploadedFile($zip, 'paczka.zip', 'application/zip', null, true),
+            ])
+            ->assertRedirect();
+
+        $this->assertDatabaseHas('media', ['file_name' => 'safe.jpg']);
+        $this->assertDatabaseMissing('media', ['file_name' => 'evil.php']);
+        $this->assertSame(1, Media::count());
+    }
+
+    /**
+     * Reads the entry names out of a ZIP file on disk.
+     */
+    private function zipEntries(string $path): array
+    {
+        $zip = new \ZipArchive;
+        $zip->open($path);
+
+        $entries = [];
+        for ($i = 0; $i < $zip->numFiles; $i++) {
+            $entries[] = $zip->statIndex($i)['name'];
+        }
+        $zip->close();
+
+        return $entries;
+    }
+
+    /**
+     * Builds a temp ZIP file with the given [entry => contents] map.
+     */
+    private function makeZip(array $files): string
+    {
+        $path = tempnam(sys_get_temp_dir(), 'test-zip-').'.zip';
+        $zip = new \ZipArchive;
+        $zip->open($path, \ZipArchive::CREATE | \ZipArchive::OVERWRITE);
+
+        foreach ($files as $name => $contents) {
+            $zip->addFromString($name, $contents);
+        }
+        $zip->close();
+
+        return $path;
     }
 }

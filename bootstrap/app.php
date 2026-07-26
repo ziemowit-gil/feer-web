@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Middleware\EnsureModuleEnabled;
+use App\Http\Middleware\EnsureSiteAvailable;
 use App\Http\Middleware\EnsureUserCanAccessModule;
 use App\Http\Middleware\EnsureUserIsAdmin;
 use Illuminate\Foundation\Application;
@@ -19,6 +20,12 @@ return Application::configure(basePath: dirname(__DIR__))
             'admin' => EnsureUserIsAdmin::class,
             'module' => EnsureModuleEnabled::class,
             'module-access' => EnsureUserCanAccessModule::class,
+        ]);
+
+        // Tryb konserwacji — dopięty na końcu grupy „web” (po starcie sesji, więc
+        // rozpoznaje zalogowanych użytkowników panelu).
+        $middleware->web(append: [
+            EnsureSiteAvailable::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

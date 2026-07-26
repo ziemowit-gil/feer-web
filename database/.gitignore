@@ -1,1 +1,5 @@
-*.sqlite*
+# Bazy SQLite są wersjonowane (instalacja testowa / kopia i migracja treści).
+# Pliki tymczasowe silnika SQLite (WAL/SHM/journal) pozostają ignorowane.
+*.sqlite-wal
+*.sqlite-shm
+*.sqlite-journal

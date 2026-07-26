@@ -13,7 +13,10 @@ use App\Models\Project;
 use App\Models\SiteSetting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Str;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use ZipArchive;
 
 class MediaLibraryController extends Controller
 {
@@ -193,7 +196,7 @@ class MediaLibraryController extends Controller
 
         $media = MediaLibrary::instance()
             ->addMediaFromUrl($data['full_url'])
-            ->usingFileName(\Illuminate\Support\Str::random(20).'.jpg')
+            ->usingFileName(Str::random(20).'.jpg')
             ->withCustomProperties(['unsplash_author' => $data['author_name']])
             ->toMediaCollection('files');
 
@@ -224,6 +227,137 @@ class MediaLibraryController extends Controller
 
         return redirect()->route('admin.multimedia.index', ['folder' => $data['folder_id'] ?? null])
             ->with('status', 'Plik został przesłany.');
+    }
+
+    /**
+     * Streams a ZIP of the accessible, non-archived files as a backup/transfer
+     * bundle. When a folder is given the export is scoped to that folder and
+     * its descendants, and the folder itself becomes the archive root; the
+     * on-disk folder structure is mirrored inside the ZIP so an import can
+     * later recreate it.
+     */
+    public function export(Request $request): BinaryFileResponse
+    {
+        $folder = $request->filled('folder') ? MediaFolder::findOrFail($request->integer('folder')) : null;
+
+        $scopedFolderIds = $folder ? $this->descendantFolderIds($folder) : null;
+
+        $query = Media::query()
+            ->whereIn('model_type', $this->accessibleModelTypes())
+            ->whereNull('archived_at')
+            ->when($scopedFolderIds !== null, fn ($q) => $q->whereIn('media_folder_id', $scopedFolderIds));
+
+        abort_if($query->clone()->doesntExist(), 404, 'Brak plików do wyeksportowania.');
+
+        $folders = MediaFolder::all()->keyBy('id');
+
+        $zipPath = tempnam(sys_get_temp_dir(), 'media-export-').'.zip';
+        $zip = new ZipArchive;
+        $zip->open($zipPath, ZipArchive::CREATE | ZipArchive::OVERWRITE);
+
+        $usedEntries = [];
+
+        $query->orderBy('id')->chunk(100, function ($chunk) use ($zip, $folders, $folder, &$usedEntries) {
+            foreach ($chunk as $media) {
+                $source = $media->getPath();
+
+                if (! is_file($source)) {
+                    continue;
+                }
+
+                $dir = $this->folderPath($media->media_folder_id, $folder?->id, $folders);
+                $entry = $this->uniqueEntry(trim(($dir !== '' ? $dir.'/' : '').$media->file_name, '/'), $usedEntries);
+
+                $zip->addFile($source, $entry);
+            }
+        });
+
+        $zip->close();
+
+        $name = 'multimedia-'.($folder ? Str::slug($folder->name).'-' : '').now()->format('Y-m-d').'.zip';
+
+        return response()->download($zipPath, $name, ['Content-Type' => 'application/zip'])
+            ->deleteFileAfterSend(true);
+    }
+
+    /**
+     * Imports every file inside an uploaded ZIP into the library as standalone
+     * files, recreating the archive's folder structure underneath the chosen
+     * folder. Content is extracted to a temp file and handed to the media
+     * library rather than written to a path derived from the entry name, so a
+     * crafted archive cannot escape its directory (zip-slip). Executable/script
+     * files are rejected since library files are served from the public disk.
+     */
+    public function import(Request $request)
+    {
+        $data = $request->validate([
+            'archive' => ['required', 'file', 'mimes:zip', 'max:512000'],
+            'folder_id' => ['nullable', 'exists:media_folders,id'],
+        ], [], ['archive' => 'archiwum ZIP']);
+
+        $zip = new ZipArchive;
+
+        if ($zip->open($request->file('archive')->getRealPath()) !== true) {
+            return redirect()->back()->withErrors(['archive' => 'Nie udało się otworzyć archiwum ZIP.']);
+        }
+
+        $library = MediaLibrary::instance();
+        $baseFolderId = $data['folder_id'] ?? null;
+        $folderCache = [];
+        $imported = 0;
+        $skipped = 0;
+
+        for ($i = 0; $i < $zip->numFiles; $i++) {
+            $entryName = $zip->statIndex($i)['name'];
+            $baseName = basename($entryName);
+
+            // Skip directory entries, dotfiles, macOS resource forks and
+            // anything with a script/executable extension.
+            if (str_ends_with($entryName, '/')
+                || $baseName === ''
+                || str_starts_with($baseName, '.')
+                || str_contains($entryName, '__MACOSX/')
+                || $this->isBlockedFile($baseName)) {
+                $skipped++;
+
+                continue;
+            }
+
+            $stream = $zip->getStream($entryName);
+
+            if (! $stream) {
+                $skipped++;
+
+                continue;
+            }
+
+            $tmp = tempnam(sys_get_temp_dir(), 'media-import-');
+            file_put_contents($tmp, $stream);
+            fclose($stream);
+
+            try {
+                $folderId = $this->resolveImportFolder(dirname($entryName), $baseFolderId, $folderCache);
+
+                $media = $library->addMedia($tmp)
+                    ->usingFileName($baseName)
+                    ->toMediaCollection('files');
+
+                if ($folderId) {
+                    $media->update(['media_folder_id' => $folderId]);
+                }
+
+                $imported++;
+            } catch (\Throwable) {
+                @unlink($tmp);
+                $skipped++;
+            }
+        }
+
+        $zip->close();
+
+        return redirect()->route('admin.multimedia.index', ['folder' => $baseFolderId])
+            ->with('status', "Zaimportowano plików: {$imported}."
+                .($skipped > 0 ? " Pominięto: {$skipped} (foldery, pliki ukryte lub niedozwolone)." : ''));
     }
 
     public function move(Request $request, Media $media)
@@ -318,6 +452,140 @@ class MediaLibraryController extends Controller
             ->with('status', $hadContent
                 ? "Folder „{$name}” został usunięty, a jego zawartość przeniesiono wyżej."
                 : "Folder „{$name}” został usunięty.");
+    }
+
+    /**
+     * The id of a folder plus every folder nested beneath it, so an export
+     * scoped to one folder can gather files from the whole subtree in a
+     * single query.
+     */
+    private function descendantFolderIds(MediaFolder $folder): array
+    {
+        $byParent = MediaFolder::all()->groupBy('parent_id');
+        $ids = [$folder->id];
+        $queue = [$folder->id];
+
+        while ($queue) {
+            $parentId = array_shift($queue);
+            foreach ($byParent->get($parentId, collect()) as $child) {
+                $ids[] = $child->id;
+                $queue[] = $child->id;
+            }
+        }
+
+        return $ids;
+    }
+
+    /**
+     * The slash-separated folder path a file should live at inside an export
+     * ZIP, walking up the folder chain. Stops at $stopId (exclusive) so a
+     * folder-scoped export is relative to that folder; walks to the root when
+     * $stopId is null. Segment names are sanitised into safe path components.
+     */
+    private function folderPath(?int $folderId, ?int $stopId, $folders): string
+    {
+        $segments = [];
+
+        while ($folderId !== null && $folderId !== $stopId && ($folder = $folders->get($folderId))) {
+            array_unshift($segments, $this->sanitizeSegment($folder->name));
+            $folderId = $folder->parent_id;
+        }
+
+        return implode('/', array_filter($segments));
+    }
+
+    /**
+     * Finds or creates the folder chain described by a ZIP entry's directory
+     * path, nested under the import's target folder, returning the id of the
+     * deepest folder. Paths already resolved this run are cached so sibling
+     * files don't re-query. Returns the base folder id for root-level files.
+     */
+    private function resolveImportFolder(string $dir, ?int $baseFolderId, array &$cache): ?int
+    {
+        $dir = trim(str_replace('\\', '/', $dir), '/');
+
+        if ($dir === '' || $dir === '.') {
+            return $baseFolderId;
+        }
+
+        $parentId = $baseFolderId;
+        $key = (string) $baseFolderId;
+
+        foreach (explode('/', $dir) as $rawSegment) {
+            $segment = $this->sanitizeSegment($rawSegment);
+
+            if ($segment === '' || $segment === '.' || $segment === '..') {
+                continue;
+            }
+
+            $key .= '/'.$segment;
+
+            if (isset($cache[$key])) {
+                $parentId = $cache[$key];
+
+                continue;
+            }
+
+            $folder = MediaFolder::firstOrCreate(['name' => $segment, 'parent_id' => $parentId]);
+            $cache[$key] = $folder->id;
+            $parentId = $folder->id;
+        }
+
+        return $parentId;
+    }
+
+    /**
+     * Whether a file should be refused on import because it could be executed
+     * when served from the public disk. Library files are static content, so
+     * scripts and binaries have no legitimate place here.
+     */
+    private function isBlockedFile(string $fileName): bool
+    {
+        $blocked = ['php', 'phtml', 'php3', 'php4', 'php5', 'phar', 'phps',
+            'exe', 'sh', 'bat', 'cmd', 'com', 'cgi', 'pl', 'py', 'js', 'jsp',
+            'asp', 'aspx', 'htaccess'];
+
+        return in_array(strtolower(pathinfo($fileName, PATHINFO_EXTENSION)), $blocked, true);
+    }
+
+    /**
+     * Collapses a folder name into a single safe path segment (no slashes or
+     * traversal), so a folder called "a/b" or ".." can't reshape the archive
+     * layout on export or the folder tree on import.
+     */
+    private function sanitizeSegment(string $name): string
+    {
+        return trim(str_replace(['/', '\\', '..'], ['-', '-', ''], $name));
+    }
+
+    /**
+     * Ensures each ZIP entry name is unique by suffixing " (2)", " (3)", …
+     * before the extension when two files share a name within the same
+     * exported folder.
+     */
+    private function uniqueEntry(string $entry, array &$used): string
+    {
+        if (! isset($used[$entry])) {
+            $used[$entry] = true;
+
+            return $entry;
+        }
+
+        $dir = str_contains($entry, '/') ? Str::beforeLast($entry, '/').'/' : '';
+        $file = str_contains($entry, '/') ? Str::afterLast($entry, '/') : $entry;
+        $ext = pathinfo($file, PATHINFO_EXTENSION);
+        $stem = $ext !== '' ? Str::beforeLast($file, '.') : $file;
+        $suffix = $ext !== '' ? '.'.$ext : '';
+
+        $i = 2;
+        do {
+            $candidate = $dir.$stem.' ('.$i.')'.$suffix;
+            $i++;
+        } while (isset($used[$candidate]));
+
+        $used[$candidate] = true;
+
+        return $candidate;
     }
 
     /**

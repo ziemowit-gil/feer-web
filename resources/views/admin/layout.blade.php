@@ -149,9 +149,27 @@
                         <i class="fa-solid fa-photo-film {{ $iconClass('admin.multimedia.*') }}"></i> Multimedia
                     </a>
                     @if (auth()->user()->isAdmin())
-                        <a href="{{ route('admin.ustawienia.edit') }}" class="{{ $itemClass('admin.ustawienia.*') }}">
-                            <i class="fa-solid fa-palette {{ $iconClass('admin.ustawienia.*') }}"></i> Ustawienia strony
-                        </a>
+                        <div x-data="{ open: {{ request()->routeIs('admin.ustawienia.*') ? 'true' : 'false' }} }">
+                            <div class="flex items-center {{ $itemClass('admin.ustawienia.*') }}">
+                                <a href="{{ route('admin.ustawienia.edit') }}" class="flex min-w-0 flex-1 items-center gap-3">
+                                    <i class="fa-solid fa-palette {{ $iconClass('admin.ustawienia.*') }}"></i> Ustawienia strony
+                                </a>
+                                <button type="button" @click="open = !open" :aria-expanded="open" aria-controls="nav-settings-sub"
+                                    class="-my-2 -mr-1 flex items-center rounded p-2 text-gray-400 hover:text-brand">
+                                    <span class="sr-only">Rozwiń sekcje ustawień</span>
+                                    <i class="fa-solid fa-chevron-down text-[0.6rem] transition-transform duration-200" :class="{ 'rotate-180': open }"></i>
+                                </button>
+                            </div>
+                            <div id="nav-settings-sub" x-show="open" @unless (request()->routeIs('admin.ustawienia.*')) style="display: none" @endunless
+                                class="mt-1 space-y-0.5 border-l border-gray-200 pl-3">
+                                @foreach (\App\Models\SiteSetting::SETTINGS_TABS as $tabKey => $tabLabel)
+                                    <a href="{{ route('admin.ustawienia.edit', ['tab' => $tabKey]) }}"
+                                        class="block rounded-lg px-3 py-1.5 text-sm {{ request()->routeIs('admin.ustawienia.*') && request('tab', 'general') === $tabKey ? 'bg-brand-light font-semibold text-brand' : 'text-muted hover:bg-gray-100 hover:text-brand' }}">
+                                        {{ $tabLabel }}
+                                    </a>
+                                @endforeach
+                            </div>
+                        </div>
                         <a href="{{ route('admin.newsletter.edit') }}" class="{{ $itemClass('admin.newsletter.*') }}">
                             <i class="fa-solid fa-envelope {{ $iconClass('admin.newsletter.*') }}"></i> Newsletter
                         </a>

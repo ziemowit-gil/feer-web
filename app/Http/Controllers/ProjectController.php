@@ -44,7 +44,8 @@ class ProjectController extends Controller
         abort_unless($project->is_published, 404);
         $project->load('category', 'publishedPages');
 
-        $brandColor = SiteSetting::current()->audienceColor($project->audience);
+        // Własny kolor akcentu ma priorytet; w przeciwnym razie preset grupy docelowej.
+        $brandColor = $project->accent_color ?: SiteSetting::current()->audienceColor($project->audience);
 
         return view('projects.show', compact('project', 'brandColor'));
     }

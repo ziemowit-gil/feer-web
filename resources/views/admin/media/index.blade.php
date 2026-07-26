@@ -73,6 +73,25 @@
                             {{ $showArchived ? 'Pokaż aktywne pliki' : 'Pokaż archiwum' }}
                         </a>
 
+                        <a href="{{ route('admin.multimedia.export', ['folder' => $folder?->id]) }}"
+                            class="rounded border border-gray-300 px-3 py-2 text-xs font-bold text-muted hover:bg-gray-100">
+                            <i class="fa-solid fa-file-zipper" aria-hidden="true"></i>
+                            {{ $folder ? 'Eksportuj folder' : 'Eksportuj wszystko' }}
+                        </a>
+
+                        <form method="POST" action="{{ route('admin.multimedia.import') }}" enctype="multipart/form-data"
+                            x-data class="flex items-center gap-2">
+                            @csrf
+                            <input type="hidden" name="folder_id" value="{{ $folder?->id }}">
+                            <label class="sr-only" for="media-import">Zaimportuj archiwum ZIP z plikami</label>
+                            <input type="file" name="archive" id="media-import" accept=".zip" required
+                                @change="$el.form.requestSubmit()"
+                                class="cursor-pointer text-sm text-muted file:mr-3 file:cursor-pointer file:rounded file:border-0 file:bg-gray-100 file:px-4 file:py-2 file:text-sm file:font-bold file:text-ink hover:file:bg-gray-200">
+                            <button type="submit" class="rounded border border-gray-300 px-3 py-2 text-xs font-bold text-muted hover:bg-gray-100">
+                                <i class="fa-solid fa-file-import" aria-hidden="true"></i> Importuj ZIP
+                            </button>
+                        </form>
+
                         <form method="POST" action="{{ route('admin.multimedia.store') }}" enctype="multipart/form-data" class="flex items-center gap-2">
                             @csrf
                             <input type="hidden" name="folder_id" value="{{ $folder?->id }}">
@@ -84,6 +103,7 @@
                     </div>
                 </div>
                 @error('file') <p class="mb-4 text-sm text-red-600">{{ $message }}</p> @enderror
+                @error('archive') <p class="mb-4 text-sm text-red-600">{{ $message }}</p> @enderror
                 @error('name') <p class="mb-4 text-sm text-red-600">{{ $message }}</p> @enderror
 
                 @if ($showArchived)

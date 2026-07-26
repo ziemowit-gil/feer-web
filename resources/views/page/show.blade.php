@@ -53,7 +53,9 @@
                         </div>
                     @endif
 
-                    @include('partials.attachments-list', ['attachments' => $page->attachments])
+                    @include('partials.page-gallery', ['page' => $page])
+
+        @include('partials.attachments-list', ['attachments' => $page->attachments])
                 </div>
 
                 @if ($page->event_when || $page->event_location || $page->event_registration_url)
@@ -125,7 +127,9 @@
 
                 @include('partials.schedule', ['page' => $page, 'showHeading' => true])
 
-                @include('partials.attachments-list', ['attachments' => $page->attachments])
+                @include('partials.page-gallery', ['page' => $page])
+
+        @include('partials.attachments-list', ['attachments' => $page->attachments])
             </div>
 
             @if ($menuSiblings->isNotEmpty())
@@ -323,12 +327,45 @@
         @endif
         @break
 
+        @case('partners')
+        {{-- Nasi partnerzy — wybrane logotypy --}}
+        @php $aboutPartners = $page->aboutPartners(); @endphp
+        @if ($aboutPartners->isNotEmpty())
+            <section class="bg-gray-50 px-4 py-16" aria-label="Nasi partnerzy">
+                <div class="mx-auto max-w-5xl text-center">
+                    <h2 class="mb-2 text-2xl font-bold text-ink md:text-3xl">Nasi partnerzy — wspierają nas</h2>
+                    <p class="mb-10 text-muted">Dziękujemy organizacjom i instytucjom, które nas wspierają.</p>
+                    <ul class="flex flex-wrap items-center justify-center gap-x-12 gap-y-8">
+                        @foreach ($aboutPartners as $partner)
+                            <li>
+                                @php
+                                    $logo = $partner->logo_url
+                                        ? '<img src="'.e($partner->logo_url).'" alt="'.e($partner->name).'" loading="lazy" class="h-16 w-auto max-w-[180px] object-contain">'
+                                        : '<span class="text-lg font-bold text-ink">'.e($partner->name).'</span>';
+                                @endphp
+                                @if ($partner->url)
+                                    <a href="{{ $partner->url }}" target="_blank" rel="noopener"
+                                        class="block transition hover:opacity-75 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+                                        title="{{ $partner->name }}">{!! $logo !!}</a>
+                                @else
+                                    {!! $logo !!}
+                                @endif
+                            </li>
+                        @endforeach
+                    </ul>
+                </div>
+            </section>
+        @endif
+        @break
+
         @endswitch
         @endforeach
 
         @if ($page->attachments->isNotEmpty())
             <div class="mx-auto max-w-3xl px-4 py-8">
-                @include('partials.attachments-list', ['attachments' => $page->attachments])
+                @include('partials.page-gallery', ['page' => $page])
+
+        @include('partials.attachments-list', ['attachments' => $page->attachments])
             </div>
         @endif
     </article>
@@ -373,6 +410,64 @@
         })();
     </script>
 
+    @elseif ($page->isFaq())
+    <section class="mx-auto max-w-3xl px-4 py-12">
+        <div class="mb-5">
+            <span class="inline-flex items-center gap-1.5 rounded-full bg-brand-light px-3 py-1 text-sm font-bold text-brand">
+                <i class="fa-solid fa-circle-question" aria-hidden="true"></i> Najczęściej zadawane pytania
+            </span>
+        </div>
+
+        <h1 class="mb-6 text-3xl font-bold text-ink">{{ $page->title }}</h1>
+
+        @if ($page->content)
+            <div class="prose mb-6 max-w-none text-ink">{!! $page->content !!}</div>
+        @endif
+
+        @include('partials.faq', ['page' => $page, 'faqLdJson' => true])
+
+        @include('partials.page-gallery', ['page' => $page])
+
+        @include('partials.attachments-list', ['attachments' => $page->attachments])
+    </section>
+    @elseif ($page->isBipMove())
+    @php $bipUrl = $page->bip_move_url ?: $siteSettings->bip_url; @endphp
+
+    <section class="mx-auto max-w-2xl px-4 py-16">
+        <div class="rounded-2xl border border-gray-200 bg-white p-8 text-center shadow-sm md:p-12">
+            <img src="{{ asset('img/bip-logo.svg') }}" alt="Logo Biuletynu Informacji Publicznej (BIP)"
+                class="mx-auto mb-6 h-20 w-auto md:h-24">
+
+            <p class="mb-2 text-xs font-bold uppercase tracking-widest text-brand">Biuletyn Informacji Publicznej</p>
+            <h1 class="mb-4 text-2xl font-bold text-ink md:text-3xl">{{ $page->title }}</h1>
+
+            @if ($page->content)
+                <div class="prose mx-auto mb-6 max-w-none text-ink">{!! $page->content !!}</div>
+            @endif
+
+            <p class="mb-6 leading-relaxed text-muted">
+                Szukasz dokumentów albo sprawozdań naszej fundacji? Zebraliśmy je
+                w <strong class="font-bold text-ink">Biuletynie Informacji Publicznej (BIP)</strong>. Dzięki temu tutaj
+                możemy po prostu opowiadać o tym, co robimy i dla kogo, a papiery masz pod ręką w jednym, uporządkowanym
+                miejscu. Nasz BIP dopiero się rozkręca — zaglądaj śmiało i dziękujemy za wyrozumiałość.
+            </p>
+
+            @if (filled($page->bip_move_note))
+                <p class="mx-auto mb-6 max-w-md rounded-lg bg-gray-50 px-4 py-3 text-sm leading-relaxed text-muted">{!! nl2br(e($page->bip_move_note)) !!}</p>
+            @endif
+
+            @if ($bipUrl)
+                <a href="{{ $bipUrl }}" target="_blank" rel="noopener"
+                    class="inline-flex items-center justify-center gap-2 rounded-lg bg-brand px-6 py-3 font-bold text-white transition hover:bg-brand-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
+                    <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i> Przejdź do BIP
+                </a>
+            @else
+                <p class="text-sm text-muted">
+                    <i class="fa-solid fa-circle-info" aria-hidden="true"></i> Adres BIP zostanie udostępniony wkrótce.
+                </p>
+            @endif
+        </div>
+    </section>
     @else
     @php $menuSiblings = $page->menuSiblings(); @endphp
 
@@ -382,7 +477,9 @@
                 <h1 class="mb-6 text-3xl font-bold text-ink">{{ $page->title }}</h1>
                 <div class="prose max-w-none text-ink">{!! $page->content !!}</div>
 
-                @include('partials.attachments-list', ['attachments' => $page->attachments])
+                @include('partials.page-gallery', ['page' => $page])
+
+        @include('partials.attachments-list', ['attachments' => $page->attachments])
             </div>
 
             @if ($menuSiblings->isNotEmpty())

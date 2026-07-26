@@ -83,7 +83,8 @@ class NewsController extends Controller
             'title' => ['required', 'string', 'max:255'],
             'slug' => ['nullable', 'string', 'max:255'],
             'excerpt' => ['nullable', 'string', 'max:255'],
-            'audience' => ['nullable', Rule::in(array_keys(SiteSetting::AUDIENCES))],
+            'audience' => ['nullable', Rule::in(array_keys(SiteSetting::current()->audienceOptions()))],
+            'accent_color' => ['nullable', 'regex:/^#[0-9a-fA-F]{6}$/'],
             'image_alt' => ['nullable', 'string', 'max:255'],
             'content' => ['nullable', 'string'],
             'published_at' => ['required', 'date'],
@@ -92,6 +93,10 @@ class NewsController extends Controller
 
         $data['slug'] = trim($data['slug'] ?? '');
         $data['audience'] = $data['audience'] ?? 'brand';
+        // Własny kolor akcentu pilnujemy pod kątem kontrastu WCAG (jak brand/NGO).
+        $data['accent_color'] = filled($data['accent_color'] ?? null)
+            ? SiteSetting::current()->contrastSafeColor($data['accent_color'])
+            : null;
         $data['is_published'] = $request->boolean('is_published');
         $data['is_featured'] = $request->boolean('is_featured');
         unset($data['image']);

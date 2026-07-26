@@ -1,2 +1,3 @@
-*
-!.gitignore
+# Media (grafiki, uploady biblioteki mediów) są wersjonowane na potrzeby
+# kopii zapasowej i migracji treści między instalacjami.
+# Wcześniej cały katalog był ignorowany (`*`).

@@ -19,7 +19,8 @@ class NewsController extends Controller
         abort_unless($news->is_published && $news->published_at <= now(), 404);
         $news->load(['category', 'tags']);
 
-        $brandColor = SiteSetting::current()->audienceColor($news->audience);
+        // Własny kolor akcentu ma priorytet; w przeciwnym razie preset grupy docelowej.
+        $brandColor = $news->accent_color ?: SiteSetting::current()->audienceColor($news->audience);
 
         return view('news.show', compact('news', 'brandColor'));
     }

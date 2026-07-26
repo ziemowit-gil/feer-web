@@ -24,6 +24,7 @@ class PageController extends Controller
             'page' => new Page,
             'parentOptions' => Page::orderBy('title')->get(),
             'projectOptions' => Project::orderBy('title')->get(),
+            'partnerOptions' => \App\Models\Partner::orderBy('order')->orderBy('name')->get(),
         ]);
     }
 
@@ -39,15 +40,24 @@ class PageController extends Controller
 
     public function edit(Page $page)
     {
+        if ($response = $this->denyIfLocked($page)) {
+            return $response;
+        }
+
         return view('admin.pages.form', [
             'page' => $page,
             'parentOptions' => Page::where('id', '!=', $page->id)->orderBy('title')->get(),
             'projectOptions' => Project::orderBy('title')->get(),
+            'partnerOptions' => \App\Models\Partner::orderBy('order')->orderBy('name')->get(),
         ]);
     }
 
     public function update(Request $request, Page $page)
     {
+        if ($response = $this->denyIfLocked($page)) {
+            return $response;
+        }
+
         $data = $this->validated($request);
         $data['slug'] = $this->uniqueSlug($data['slug'] !== '' ? $data['slug'] : $data['title'], $page->id);
 
@@ -58,6 +68,10 @@ class PageController extends Controller
 
     public function destroy(Page $page)
     {
+        if ($response = $this->denyIfLocked($page)) {
+            return $response;
+        }
+
         if ($page->is_system) {
             return redirect()->route('admin.podstrony.index')->with('error', 'Strony systemowej nie można usunąć.');
         }
@@ -69,6 +83,10 @@ class PageController extends Controller
 
     public function toggleVisibility(Page $page)
     {
+        if ($response = $this->denyIfLocked($page)) {
+            return $response;
+        }
+
         $page->update(['is_published' => ! $page->is_published]);
 
         $message = $page->is_published
@@ -80,6 +98,10 @@ class PageController extends Controller
 
     public function toggleDisabled(Page $page)
     {
+        if ($response = $this->denyIfLocked($page)) {
+            return $response;
+        }
+
         $page->update(['is_disabled' => ! $page->is_disabled]);
 
         $message = $page->is_disabled
@@ -91,6 +113,10 @@ class PageController extends Controller
 
     public function updateOrder(Request $request, Page $page)
     {
+        if ($response = $this->denyIfLocked($page)) {
+            return $response;
+        }
+
         $data = $request->validate([
             'order' => ['required', 'integer', 'min:0'],
         ]);
@@ -102,14 +128,33 @@ class PageController extends Controller
 
     public function clone(Page $page)
     {
+        if ($response = $this->denyIfLocked($page)) {
+            return $response;
+        }
+
         $clone = $page->replicate();
         $clone->title = "{$page->title} (kopia)";
         $clone->slug = $this->uniqueSlug($clone->title);
         $clone->is_published = false;
         $clone->is_system = false;
+        $clone->is_locked = false;
         $clone->save();
 
         return redirect()->route('admin.podstrony.edit', $clone)->with('status', "Strona została sklonowana jako „{$clone->title}”. Jest zapisana jako szkic.");
+    }
+
+    /**
+     * Zablokowanej treści nie mogą edytować osoby inne niż administrator.
+     * Zwraca przekierowanie z komunikatem, gdy dostęp trzeba odmówić.
+     */
+    private function denyIfLocked(Page $page): ?\Illuminate\Http\RedirectResponse
+    {
+        if ($page->is_locked && ! request()->user()->isAdmin()) {
+            return redirect()->route('admin.podstrony.index')
+                ->with('error', "Strona „{$page->title}” została zablokowana do edycji przez administratora.");
+        }
+
+        return null;
     }
 
     private function validated(Request $request): array
@@ -156,6 +201,14 @@ class PageController extends Controller
             'about_team.*.photo' => ['nullable', 'string', 'max:1000'],
             'about_section_order' => ['sometimes', 'array'],
             'about_section_order.*' => ['integer'],
+            'about_partner_ids' => ['nullable', 'array'],
+            'about_partner_ids.*' => ['integer', 'exists:partners,id'],
+            'faq_intro' => ['nullable', 'string', 'max:2000'],
+            'faq_items' => ['nullable', 'array'],
+            'faq_items.*.question' => ['nullable', 'string', 'max:255'],
+            'faq_items.*.answer' => ['nullable', 'string', 'max:5000'],
+            'bip_move_url' => ['nullable', 'url', 'max:255'],
+            'bip_move_note' => ['nullable', 'string', 'max:2000'],
         ]);
 
         $data['parent_id'] = $data['parent_id'] ?: null;
@@ -165,6 +218,12 @@ class PageController extends Controller
         $data['is_published'] = $request->boolean('is_published');
         $data['show_in_menu'] = $request->boolean('show_in_menu');
         $data['is_system'] = $request->boolean('is_system');
+        $data['show_gallery'] = $request->boolean('show_gallery');
+        // Flagę „zablokuj do edycji” może ustawiać/zdejmować wyłącznie administrator.
+        // Dla pozostałych nie dotykamy jej (przy tworzeniu = false, przy edycji zachowana).
+        if ($request->user()->isAdmin()) {
+            $data['is_locked'] = $request->boolean('is_locked');
+        }
         $data['order'] = $data['order'] ?? 0;
 
         // Availability controls: "disable page" and "under construction" mode.
@@ -230,6 +289,8 @@ class PageController extends Controller
                 ->sortBy(fn ($key) => $positions[$key] ?? 999)
                 ->values()
                 ->all();
+
+            $data['about_partner_ids'] = array_values(array_map('intval', (array) $request->input('about_partner_ids', []))) ?: null;
         } else {
             $data['about_motto'] = null;
             $data['about_motto_author'] = null;
@@ -239,6 +300,24 @@ class PageController extends Controller
             $data['about_timeline'] = null;
             $data['about_values'] = null;
             $data['about_team'] = null;
+            $data['about_partner_ids'] = null;
+        }
+
+        // FAQ: lista par pytanie/odpowiedź (puste wiersze pomijane); poza typem FAQ czyścimy.
+        if ($data['type'] === 'faq') {
+            $data['faq_items'] = $this->compactRows($request->input('faq_items', []), ['question', 'answer']);
+        } else {
+            $data['faq_intro'] = null;
+            $data['faq_items'] = null;
+        }
+
+        // Bip-Move: komunikat o przeniesieniu do BIP; poza typem czyścimy pola.
+        if ($data['type'] !== 'bip_move') {
+            $data['bip_move_url'] = null;
+            $data['bip_move_note'] = null;
+        } else {
+            $data['bip_move_url'] = trim((string) ($data['bip_move_url'] ?? '')) ?: null;
+            $data['bip_move_note'] = trim((string) ($data['bip_move_note'] ?? '')) ?: null;
         }
 
         return $data;

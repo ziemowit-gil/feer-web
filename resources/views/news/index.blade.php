@@ -14,7 +14,7 @@
 
         <div class="grid gap-8 md:grid-cols-3">
             @forelse ($news as $item)
-                @php $ngoAccent = ($item->audience ?? 'brand') === 'ngo' ? $siteSettings->audienceColor('ngo') : null; @endphp
+                @php $ngoAccent = $item->accent_color ?: (($item->audience ?? 'brand') === 'ngo' ? $siteSettings->audienceColor('ngo') : null); @endphp
                 <a href="{{ route('news.show', $item) }}"
                     @class([
                         'group block',

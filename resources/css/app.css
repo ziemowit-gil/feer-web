@@ -35,6 +35,19 @@ html {
     font-size: var(--a11y-font-size, 100%);
 }
 
+/* Opcja dostępności „Wyłącz animacje” (WCAG 2.3.3 Animation from Interactions).
+   Skracamy czas do zera zamiast usuwać animacje przez `none`, aby zdarzenia
+   transitionend/animationend nadal się wyzwalały i logika na nich oparta nie
+   zawisła. Autoprzewijanie karuzeli hero jest dodatkowo wstrzymywane w JS. */
+html.no-animations *,
+html.no-animations *::before,
+html.no-animations *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+}
+
 [x-cloak] {
     display: none !important;
 }

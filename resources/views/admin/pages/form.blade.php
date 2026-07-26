@@ -13,6 +13,7 @@
         $aboutTimeline = array_values((array) old('about_timeline', $page->about_timeline ?? []));
         $aboutValues = array_values((array) old('about_values', $page->about_values ?? []));
         $aboutTeam = array_values((array) old('about_team', $page->about_team ?? []));
+        $faqItems = array_values((array) old('faq_items', $page->faq_items ?? []));
     @endphp
 
     <div data-page-form-tabs>
@@ -394,6 +395,97 @@
                                 </div>
                             </template>
                         </div>
+
+                        {{-- Nasi partnerzy: wybór logotypów --}}
+                        <div class="border-t border-gray-100 pt-4">
+                            <p class="mb-1 text-sm font-bold">Nasi partnerzy</p>
+                            <p class="mb-3 text-xs text-muted">Zaznacz partnerów, których loga pokazać w sekcji „Nasi partnerzy — wspierają nas”. Partnerów dodajesz w module <a href="{{ route('admin.partnerzy.index') }}" class="text-brand underline">Partnerzy</a>.</p>
+                            @php $selectedPartners = array_map('intval', (array) old('about_partner_ids', $page->about_partner_ids ?? [])); @endphp
+                            @if ($partnerOptions->isEmpty())
+                                <p class="rounded border border-gray-200 bg-gray-50 px-3 py-2 text-xs text-muted">Brak partnerów — dodaj ich najpierw w module „Partnerzy”.</p>
+                            @else
+                                <div class="grid gap-2 sm:grid-cols-2">
+                                    @foreach ($partnerOptions as $partner)
+                                        <label class="flex items-center gap-3 rounded border border-gray-200 p-2 text-sm hover:bg-gray-50">
+                                            <input type="checkbox" name="about_partner_ids[]" value="{{ $partner->id }}"
+                                                @checked(in_array($partner->id, $selectedPartners, true))
+                                                class="rounded border-gray-300 text-brand focus:ring-brand">
+                                            @if ($partner->logo_url)
+                                                <img src="{{ $partner->logo_url }}" alt="" class="h-8 w-16 flex-none object-contain">
+                                            @endif
+                                            <span class="min-w-0 truncate font-medium text-ink">{{ $partner->name }}</span>
+                                        </label>
+                                    @endforeach
+                                </div>
+                            @endif
+                        </div>
+                    </div>
+
+                    {{-- FAQ — pytania i odpowiedzi --}}
+                    <div data-faq-fields class="space-y-5 border-t border-gray-100 pt-5 {{ $currentType === 'faq' ? '' : 'hidden' }}">
+                        <p class="text-sm font-bold uppercase tracking-wide text-muted">FAQ — pytania i odpowiedzi</p>
+
+                        <div>
+                            <label for="faq_intro" class="mb-1 block text-sm font-bold">Wstęp <span class="font-normal text-muted">(opcjonalnie)</span></label>
+                            <textarea id="faq_intro" name="faq_intro" rows="3" placeholder="Krótkie wprowadzenie nad listą pytań."
+                                class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">{{ old('faq_intro', $page->faq_intro) }}</textarea>
+                            <p class="mt-1 text-xs text-muted">Wyświetli się nad listą pytań. Pole „Treść” (edytor) możesz zostawić puste.</p>
+                            @error('faq_intro') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                        </div>
+
+                        <div data-repeater>
+                            <p class="mb-1 text-sm font-bold">Pytania i odpowiedzi</p>
+                            <p class="mb-3 text-xs text-muted">Każda para tworzy zwijany element (akordeon) na stronie. Puste wiersze są pomijane; kolejność odpowiada kolejności na liście.</p>
+                            <div data-repeater-rows class="space-y-3">
+                                @foreach ($faqItems as $i => $row)
+                                    <div data-repeater-row class="space-y-2 rounded-lg border border-gray-200 bg-gray-50 p-4">
+                                        <input type="text" name="faq_items[{{ $i }}][question]" value="{{ $row['question'] ?? '' }}" placeholder="Pytanie" aria-label="Pytanie {{ $i + 1 }}"
+                                            class="w-full rounded border-gray-300 text-sm font-bold focus:border-brand focus:ring-brand">
+                                        <textarea name="faq_items[{{ $i }}][answer]" rows="3" placeholder="Odpowiedź" aria-label="Odpowiedź {{ $i + 1 }}"
+                                            class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">{{ $row['answer'] ?? '' }}</textarea>
+                                        <div class="text-right">
+                                            <button type="button" data-repeater-remove class="inline-flex items-center gap-1.5 rounded p-2 text-xs font-bold text-muted hover:bg-red-50 hover:text-red-600" aria-label="Usuń pytanie {{ $i + 1 }}"><i class="fa-solid fa-trash" aria-hidden="true"></i> Usuń</button>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                            <button type="button" data-repeater-add class="mt-3 inline-flex items-center gap-2 rounded border border-brand px-3 py-1.5 text-sm font-bold text-brand hover:bg-brand-light"><i class="fa-solid fa-plus"></i> Dodaj pytanie</button>
+                            <template data-repeater-template>
+                                <div data-repeater-row class="space-y-2 rounded-lg border border-gray-200 bg-gray-50 p-4">
+                                    <input type="text" name="faq_items[__INDEX__][question]" placeholder="Pytanie" aria-label="Pytanie"
+                                        class="w-full rounded border-gray-300 text-sm font-bold focus:border-brand focus:ring-brand">
+                                    <textarea name="faq_items[__INDEX__][answer]" rows="3" placeholder="Odpowiedź" aria-label="Odpowiedź"
+                                        class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand"></textarea>
+                                    <div class="text-right">
+                                        <button type="button" data-repeater-remove class="inline-flex items-center gap-1.5 rounded p-2 text-xs font-bold text-muted hover:bg-red-50 hover:text-red-600" aria-label="Usuń pytanie"><i class="fa-solid fa-trash" aria-hidden="true"></i> Usuń</button>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+
+                    {{-- Bip-Move — komunikat o przeniesieniu do BIP --}}
+                    <div data-bipmove-fields class="space-y-5 border-t border-gray-100 pt-5 {{ $currentType === 'bip_move' ? '' : 'hidden' }}">
+                        <p class="text-sm font-bold uppercase tracking-wide text-muted">Przeniesiono do BIP</p>
+                        <p class="rounded border border-blue-200 bg-blue-50 px-3 py-2 text-xs text-blue-800">
+                            Ten typ wyświetla gotowy komunikat, że treść została przeniesiona do Biuletynu Informacji Publicznej, wraz z oficjalnym logo BIP i wyjaśnieniem oddzielenia warstwy reprezentacyjnej od formalnej. Poniżej możesz doprecyzować link i dodatkową informację.
+                        </p>
+
+                        <div>
+                            <label for="bip_move_url" class="mb-1 block text-sm font-bold">Bezpośredni link do treści w BIP <span class="font-normal text-muted">(opcjonalnie)</span></label>
+                            <input type="url" id="bip_move_url" name="bip_move_url" value="{{ old('bip_move_url', $page->bip_move_url) }}"
+                                placeholder="https://bip… — puste = ogólny adres BIP z Ustawień"
+                                class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                            <p class="mt-1 text-xs text-muted">Puste = przycisk poprowadzi do ogólnego adresu BIP z „Ustawienia → Media i BIP”. W polu „Treść” (edytor) możesz dodać własny opis nad komunikatem.</p>
+                            @error('bip_move_url') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                        </div>
+
+                        <div>
+                            <label for="bip_move_note" class="mb-1 block text-sm font-bold">Dodatkowa informacja <span class="font-normal text-muted">(opcjonalnie)</span></label>
+                            <textarea id="bip_move_note" name="bip_move_note" rows="3" placeholder="np. W BIP znajdziesz sprawozdania, statut i dokumenty formalne fundacji."
+                                class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">{{ old('bip_move_note', $page->bip_move_note) }}</textarea>
+                            @error('bip_move_note') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                        </div>
                     </div>
                 </div>
             </div>
@@ -465,10 +557,30 @@
                                     class="rounded border-gray-300 text-brand focus:ring-brand">
                                 <span class="text-sm font-bold">Strona systemowa</span>
                             </label>
+
+                            @if (auth()->user()->isAdmin())
+                                <label class="flex items-center gap-2">
+                                    <input type="hidden" name="is_locked" value="0">
+                                    <input type="checkbox" name="is_locked" value="1" {{ old('is_locked', $page->is_locked ?? false) ? 'checked' : '' }}
+                                        class="rounded border-gray-300 text-brand focus:ring-brand">
+                                    <span class="flex items-center gap-1 text-sm font-bold"><i class="fa-solid fa-lock text-muted" aria-hidden="true"></i> Zablokuj treść do edycji przez innych</span>
+                                </label>
+                            @endif
+
+                            <label class="flex items-center gap-2 {{ $currentType === 'about' ? 'hidden' : '' }}" data-gallery-toggle>
+                                <input type="hidden" name="show_gallery" value="0">
+                                <input type="checkbox" name="show_gallery" value="1" {{ old('show_gallery', $page->show_gallery ?? false) ? 'checked' : '' }}
+                                    class="rounded border-gray-300 text-brand focus:ring-brand">
+                                <span class="text-sm font-bold">Pokaż galerię zdjęć</span>
+                            </label>
                         </div>
+                        <p class="text-xs text-muted {{ $currentType === 'about' ? 'hidden' : '' }}" data-gallery-toggle>„Pokaż galerię zdjęć” wyświetla na stronie zdjęcia dodane w zakładce „Galeria”. Typ „O organizacji” ma własną, osobną galerię (sterowaną kolejnością sekcji), więc ten przełącznik go nie dotyczy.</p>
                     </div>
                     <p class="text-xs text-muted">„Dodaj do menu” dotyczy tylko stron głównych (bez rodzica i bez projektu) — widoczne w głównej nawigacji strony.</p>
                     <p class="text-xs text-muted">„Strona systemowa” to wymagana strona serwisu (np. deklaracja dostępności, polityka prywatności, mapa strony) — oznaczonej w ten sposób strony nie można usunąć.</p>
+                    @if (auth()->user()->isAdmin())
+                        <p class="text-xs text-muted">„Zablokuj treść do edycji przez innych” — po zaznaczeniu tylko administrator może edytować, klonować lub usunąć tę stronę. Flagę ustawia i zdejmuje wyłącznie administrator.</p>
+                    @endif
                 </div>
 
                 {{-- ==================== DOSTĘPNOŚĆ STRONY ==================== --}}
@@ -556,11 +668,19 @@
             const eventFields = document.querySelector('[data-event-fields]');
             const scheduleFields = document.querySelector('[data-schedule-fields]');
             const aboutFields = document.querySelector('[data-about-fields]');
+            const faqFields = document.querySelector('[data-faq-fields]');
+            const bipMoveFields = document.querySelector('[data-bipmove-fields]');
             if (typeSelect) {
                 typeSelect.addEventListener('change', function () {
                     if (eventFields) eventFields.classList.toggle('hidden', typeSelect.value !== 'event');
                     if (scheduleFields) scheduleFields.classList.toggle('hidden', typeSelect.value !== 'schedule');
                     if (aboutFields) aboutFields.classList.toggle('hidden', typeSelect.value !== 'about');
+                    if (faqFields) faqFields.classList.toggle('hidden', typeSelect.value !== 'faq');
+                    if (bipMoveFields) bipMoveFields.classList.toggle('hidden', typeSelect.value !== 'bip_move');
+                    // Galeria „O organizacji” jest osobna — ukryj generyczny przełącznik dla tego typu.
+                    document.querySelectorAll('[data-gallery-toggle]').forEach(function (el) {
+                        el.classList.toggle('hidden', typeSelect.value === 'about');
+                    });
                 });
             }
 

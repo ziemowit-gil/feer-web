@@ -28,6 +28,28 @@ class SiteSetting extends Model implements HasMedia
     ];
 
     /**
+     * Tabs of the site-settings admin screen, keyed by the value used in the
+     * `?tab=` query param and the in-page Alpine state. Single source of truth
+     * shared by the settings form and the sidebar sub-menu, so the two never
+     * drift apart.
+     */
+    public const SETTINGS_TABS = [
+        'general' => 'Ogólne',
+        'colors' => 'Kolory',
+        'maintenance' => 'Serwis',
+        'seo' => 'SEO',
+        'contact' => 'Kontakt',
+        'social' => 'Media i BIP',
+        'registry' => 'Dane rejestrowe',
+        'support' => 'Wesprzyj nas',
+        'content' => 'Projekty',
+        'modules' => 'Moduły',
+        'homepage' => 'Strona główna',
+        'login' => 'Logowanie',
+        'mail' => 'Poczta',
+    ];
+
+    /**
      * Reorderable sections of the homepage. "ankieta" bundles the poll and
      * quick-actions blocks, which always render side by side as one section.
      */
@@ -87,13 +109,14 @@ class SiteSetting extends Model implements HasMedia
     protected $fillable = [
         'site_name', 'tagline', 'brand_color', 'meta_description', 'allow_indexing', 'disabled_modules', 'homepage_section_order',
         'bip_url', 'facebook_url', 'twitter_url', 'instagram_url', 'linkedin_url', 'youtube_url', 'substack_url',
-        'contact_address', 'contact_city', 'contact_email', 'contact_phone', 'contact_intro',
+        'contact_address', 'contact_city', 'contact_email', 'contact_phone', 'contact_intro', 'contact_bank_accounts',
         'contact_box_text', 'contact_box_link_label', 'contact_box_link_url', 'contact_box_visible_from', 'contact_box_visible_until',
         'homepage_banner_text', 'homepage_banner_link_label', 'homepage_banner_link_url', 'homepage_banner_visible_from', 'homepage_banner_visible_until',
         'newsletter_code', 'header_layout', 'show_topbar_bip', 'show_topbar_social', 'content_editor',
+        'site_url', 'maintenance_mode', 'maintenance_message',
         'microsoft_login_enabled', 'microsoft_client_id', 'microsoft_client_secret', 'microsoft_tenant_id',
         'mail_transport', 'mail_from_address', 'mail_from_name', 'mail_host', 'mail_port', 'mail_username', 'mail_password', 'mail_encryption',
-        'show_coordinators', 'ngo_color',
+        'show_coordinators', 'ngo_color', 'sub_brands',
         'logo_alt', 'logo_only',
         'krs_number', 'nip_number', 'regon_number', 'projects_intro', 'materials_intro', 'materials_notice',
         'bank_account_number', 'bank_account_tax_number',
@@ -175,14 +198,17 @@ class SiteSetting extends Model implements HasMedia
         'allow_indexing' => 'boolean',
         'disabled_modules' => 'array',
         'homepage_section_order' => 'array',
+        'contact_bank_accounts' => 'array',
         'show_topbar_bip' => 'boolean',
         'show_topbar_social' => 'boolean',
         'logo_only' => 'boolean',
+        'maintenance_mode' => 'boolean',
         'microsoft_login_enabled' => 'boolean',
         'microsoft_client_secret' => 'encrypted',
         'mail_password' => 'encrypted',
         'mail_port' => 'integer',
         'show_coordinators' => 'boolean',
+        'sub_brands' => 'array',
         'contact_box_visible_from' => 'datetime',
         'contact_box_visible_until' => 'datetime',
         'homepage_banner_visible_from' => 'datetime',
@@ -261,6 +287,12 @@ class SiteSetting extends Model implements HasMedia
      */
     public function microsoftLoginEnabled(): bool
     {
+        // Podczas przerwy technicznej logowanie SSO jest całkowicie zablokowane,
+        // aby w tym czasie nikt niepowołany nie dostał się do panelu.
+        if ($this->maintenance_mode) {
+            return false;
+        }
+
         if (! $this->microsoft_login_enabled) {
             return false;
         }
@@ -268,6 +300,15 @@ class SiteSetting extends Model implements HasMedia
         $config = $this->microsoftConfig();
 
         return filled($config['client_id']) && filled($config['client_secret']);
+    }
+
+    /** Domyślny komunikat trybu konserwacji, gdy admin nie podał własnego. */
+    public const DEFAULT_MAINTENANCE_MESSAGE = 'Trwa przerwa techniczna. Wprowadzamy zmiany na stronie — zapraszamy wkrótce.';
+
+    /** Treść komunikatu przerwy technicznej (własna lub domyślna). */
+    public function maintenanceMessage(): string
+    {
+        return trim((string) $this->maintenance_message) ?: self::DEFAULT_MAINTENANCE_MESSAGE;
     }
 
     /**
@@ -391,14 +432,57 @@ class SiteSetting extends Model implements HasMedia
     }
 
     /**
+     * Named sub-brand colours (managed in Ustawienia → Kolory), cleaned to the
+     * valid entries only: [{name, color}].
+     */
+    public function subBrands(): array
+    {
+        return collect($this->sub_brands ?? [])
+            ->filter(fn ($s) => filled($s['name'] ?? null) && \App\Support\Color::isValid($s['color'] ?? ''))
+            ->map(fn ($s) => ['name' => $s['name'], 'color' => $s['color']])
+            ->values()
+            ->all();
+    }
+
+    /**
+     * Options for the "colour scheme" (audience) picker on projects/news: the
+     * brand colour, the built-in NGO sub-brand, and every named sub-brand.
+     * Sub-brands are keyed "sub:<name>" so audienceColor() can resolve them.
+     */
+    public function audienceOptions(): array
+    {
+        $options = [
+            'brand' => 'Kolor marki (domyślny)',
+            'ngo' => 'NGO',
+        ];
+
+        foreach ($this->subBrands() as $subBrand) {
+            $options['sub:'.$subBrand['name']] = $subBrand['name'];
+        }
+
+        return $options;
+    }
+
+    /**
      * The effective brand colour for a target audience: the NGO colour for
-     * "ngo" (when a valid one is set), otherwise the default brand colour.
+     * "ngo", a named sub-brand for "sub:<name>", otherwise the brand colour.
      */
     public function audienceColor(?string $audience): string
     {
-        return $audience === 'ngo' && \App\Support\Color::isValid($this->ngo_color)
-            ? $this->ngo_color
-            : $this->brand_color;
+        if ($audience === 'ngo' && \App\Support\Color::isValid($this->ngo_color)) {
+            return $this->ngo_color;
+        }
+
+        if ($audience && str_starts_with($audience, 'sub:')) {
+            $name = substr($audience, 4);
+            foreach ($this->subBrands() as $subBrand) {
+                if ($subBrand['name'] === $name) {
+                    return $subBrand['color'];
+                }
+            }
+        }
+
+        return $this->brand_color;
     }
 
     /**

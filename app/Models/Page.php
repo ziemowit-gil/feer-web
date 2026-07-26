@@ -26,6 +26,8 @@ class Page extends Model
         'event' => 'Wydarzenie',
         'schedule' => 'Harmonogram zajęć / spotkań',
         'about' => 'O organizacji',
+        'faq' => 'FAQ (pytania i odpowiedzi)',
+        'bip_move' => 'Przeniesiono do BIP',
     ];
 
     /** How an event is held. */
@@ -42,6 +44,7 @@ class Page extends Model
         'timeline' => 'Oś czasu',
         'team' => 'Zespół',
         'gallery' => 'Galeria',
+        'partners' => 'Nasi partnerzy',
     ];
 
     /** How a page attached to a project is surfaced on that project's page. */
@@ -65,11 +68,12 @@ class Page extends Model
     public const DEFAULT_WIP_NOTICE_MESSAGE = 'Wprowadzamy zmiany na tej stronie — nie wszystkie elementy mogą jeszcze działać poprawnie.';
 
     protected $fillable = [
-        'parent_id', 'project_id', 'project_display', 'title', 'slug', 'content', 'is_published', 'show_in_menu', 'is_system', 'order',
+        'parent_id', 'project_id', 'project_display', 'title', 'slug', 'content', 'is_published', 'show_in_menu', 'is_system', 'is_locked', 'order',
         'is_disabled', 'disabled_message', 'wip_mode', 'wip_message',
         'type', 'event_mode', 'event_when', 'event_location', 'event_how_to_join', 'event_registration_url',
         'schedule_items', 'schedule_change_notice', 'schedule_pending',
-        'about_motto', 'about_motto_author', 'about_intro', 'about_stats', 'about_timeline', 'about_values', 'about_team', 'about_section_order',
+        'about_motto', 'about_motto_author', 'about_intro', 'about_stats', 'about_timeline', 'about_values', 'about_team', 'about_section_order', 'about_partner_ids',
+        'faq_intro', 'faq_items', 'bip_move_url', 'bip_move_note', 'show_gallery',
     ];
 
     protected $casts = [
@@ -77,6 +81,8 @@ class Page extends Model
         'is_disabled' => 'boolean',
         'show_in_menu' => 'boolean',
         'is_system' => 'boolean',
+        'is_locked' => 'boolean',
+        'show_gallery' => 'boolean',
         'schedule_items' => 'array',
         'schedule_pending' => 'boolean',
         'about_stats' => 'array',
@@ -84,6 +90,8 @@ class Page extends Model
         'about_values' => 'array',
         'about_team' => 'array',
         'about_section_order' => 'array',
+        'about_partner_ids' => 'array',
+        'faq_items' => 'array',
     ];
 
     public function isEvent(): bool
@@ -101,6 +109,16 @@ class Page extends Model
         return $this->type === 'about';
     }
 
+    public function isFaq(): bool
+    {
+        return $this->type === 'faq';
+    }
+
+    public function isBipMove(): bool
+    {
+        return $this->type === 'bip_move';
+    }
+
     /**
      * The "about" section keys in the order they should render, falling back to
      * the default order and silently dropping any saved key that no longer
@@ -112,6 +130,20 @@ class Page extends Model
         $saved = array_values(array_intersect($this->about_section_order ?? [], $defined));
 
         return array_values(array_unique(array_merge($saved, $defined)));
+    }
+
+    /** Selected partners for the "about" page's "Nasi partnerzy" section, kept in the chosen order. */
+    public function aboutPartners()
+    {
+        $ids = array_values(array_filter((array) ($this->about_partner_ids ?? [])));
+
+        if (empty($ids)) {
+            return collect();
+        }
+
+        return Partner::whereIn('id', $ids)->get()
+            ->sortBy(fn ($partner) => array_search($partner->id, $ids))
+            ->values();
     }
 
     public function eventModeLabel(): ?string

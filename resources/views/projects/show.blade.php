@@ -117,12 +117,16 @@
                 @endif
 
                 @if ($project->content)
-                    <h2 class="mb-3 text-xl font-bold text-ink">Opis projektu</h2>
+                    <h2 class="mb-3 flex items-center gap-2 text-xl font-bold text-ink">
+                        <i class="fa-solid fa-circle-info text-brand" aria-hidden="true"></i> Opis projektu
+                    </h2>
                     <div class="prose mb-8 max-w-none text-ink">{!! $project->content !!}</div>
                 @endif
 
                 @if ($project->why)
-                    <h2 class="mb-3 text-xl font-bold text-ink">Dlaczego to robimy</h2>
+                    <h2 class="mb-3 flex items-center gap-2 text-xl font-bold text-ink">
+                        <i class="fa-solid fa-lightbulb text-brand" aria-hidden="true"></i> Dlaczego to robimy
+                    </h2>
                     <div class="prose max-w-none text-ink">{{ $project->why }}</div>
                 @endif
 
@@ -141,18 +145,26 @@
 
                 {{-- Project subpages shown inline as sections in the body --}}
                 @foreach ($inlinePages as $subpage)
-                    <div class="mt-8">
-                        <h2 class="mb-3 text-xl font-bold text-ink">{{ $subpage->title }}</h2>
+                    @php
+                        $anchor = $subpage->isSchedule() ? 'harmonogram-'.$subpage->id : ($subpage->isFaq() ? 'faq-'.$subpage->id : null);
+                        $subIcon = $subpage->isSchedule() ? 'fa-calendar-days' : ($subpage->isFaq() ? 'fa-circle-question' : 'fa-file-lines');
+                    @endphp
+                    <section @if ($anchor) id="{{ $anchor }}" @endif class="mt-8 scroll-mt-24 rounded-2xl border border-gray-200 p-6">
+                        <h2 class="mb-4 flex items-center gap-2 text-xl font-bold text-ink">
+                            <i class="fa-solid {{ $subIcon }} text-brand" aria-hidden="true"></i> {{ $subpage->title }}
+                        </h2>
                         @if ($subpage->content)
                             <div class="prose max-w-none text-ink">{!! $subpage->content !!}</div>
                         @endif
                         @if ($subpage->isSchedule())
                             @include('partials.schedule', ['page' => $subpage, 'showHeading' => false])
+                        @elseif ($subpage->isFaq())
+                            @include('partials.faq', ['page' => $subpage])
                         @endif
-                        <a href="{{ route('page.show', $subpage) }}" class="mt-3 inline-flex items-center gap-2 text-sm font-bold text-brand hover:text-brand-dark">
+                        <a href="{{ route('page.show', $subpage) }}" class="mt-4 inline-flex items-center gap-2 text-sm font-bold text-brand hover:text-brand-dark">
                             Otwórz jako osobną stronę <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
                         </a>
-                    </div>
+                    </section>
                 @endforeach
 
                 {{-- Project subpages shown as tabs --}}
@@ -173,6 +185,8 @@
                                 @endif
                                 @if ($subpage->isSchedule())
                                     @include('partials.schedule', ['page' => $subpage, 'showHeading' => false])
+                                @elseif ($subpage->isFaq())
+                                    @include('partials.faq', ['page' => $subpage])
                                 @endif
                                 <a href="{{ route('page.show', $subpage) }}" class="mt-3 inline-flex items-center gap-2 text-sm font-bold text-brand hover:text-brand-dark">
                                     Otwórz jako osobną stronę <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>

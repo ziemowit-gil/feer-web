@@ -47,6 +47,23 @@ if (contrastButton) {
     });
 }
 
+// Wyłączanie animacji: klasa `no-animations` na <html> zeruje animacje i przejścia
+// (CSS), a zdarzenie `a11y-animations-changed` pozwala też wstrzymać karuzelę hero.
+const animationsButton = document.querySelector('[data-a11y-animations]');
+if (animationsButton) {
+    if (localStorage.getItem('a11y-animations') === '1') {
+        document.documentElement.classList.add('no-animations');
+        animationsButton.setAttribute('aria-pressed', 'true');
+    }
+
+    animationsButton.addEventListener('click', () => {
+        const isDisabled = document.documentElement.classList.toggle('no-animations');
+        animationsButton.setAttribute('aria-pressed', String(isDisabled));
+        localStorage.setItem('a11y-animations', isDisabled ? '1' : '0');
+        window.dispatchEvent(new CustomEvent('a11y-animations-changed', { detail: { disabled: isDisabled } }));
+    });
+}
+
 // Karuzela hero
 const heroSlider = document.querySelector('[data-hero-slider]');
 if (heroSlider) {
@@ -55,10 +72,13 @@ if (heroSlider) {
     const toggleButton = heroSlider.querySelector('[data-hero-toggle]');
     const toggleIcon = heroSlider.querySelector('[data-hero-toggle-icon]');
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    // Auto-advance stays off when the OS asks for reduced motion OR the user
+    // turned animations off in the accessibility bar.
+    const motionDisabled = prefersReducedMotion || localStorage.getItem('a11y-animations') === '1';
 
     let activeIndex = 0;
     let timer;
-    let userPaused = prefersReducedMotion;
+    let userPaused = motionDisabled;
 
     function showSlide(index) {
         slides[activeIndex].classList.add('opacity-0', 'pointer-events-none');
@@ -116,6 +136,10 @@ if (heroSlider) {
     heroSlider.addEventListener('focusout', () => restartTimer());
 
     setPaused(userPaused);
+
+    // React to the accessibility "disable animations" toggle in real time:
+    // pause auto-advance when animations go off, resume when turned back on.
+    window.addEventListener('a11y-animations-changed', (event) => setPaused(event.detail.disabled));
 }
 
 // Przewijanie galerii

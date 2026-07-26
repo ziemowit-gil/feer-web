@@ -3,26 +3,21 @@
 @section('title', 'Ustawienia strony')
 
 @section('content')
-    <div x-data="{ tab: 'general' }" class="max-w-3xl space-y-6">
+    @php
+        $initialTab = in_array(request('tab'), array_keys(\App\Models\SiteSetting::SETTINGS_TABS), true)
+            ? request('tab')
+            : 'general';
+    @endphp
+    <div x-data="{ tab: '{{ $initialTab }}' }"
+        x-init="$watch('tab', value => history.replaceState(null, '', '?tab=' + value))"
+        class="max-w-3xl space-y-6">
     <form method="POST" action="{{ route('admin.ustawienia.update') }}" enctype="multipart/form-data"
         class="rounded-lg border border-gray-200 bg-white p-6">
         @csrf
         @method('PUT')
 
         @php
-            $tabs = [
-                'general' => 'Ogólne',
-                'seo' => 'SEO',
-                'contact' => 'Kontakt',
-                'social' => 'Media i BIP',
-                'registry' => 'Dane rejestrowe',
-                'support' => 'Wesprzyj nas',
-                'content' => 'Projekty',
-                'modules' => 'Moduły',
-                'homepage' => 'Strona główna',
-                'login' => 'Logowanie',
-                'mail' => 'Poczta',
-            ];
+            $tabs = \App\Models\SiteSetting::SETTINGS_TABS;
         @endphp
 
         <nav aria-label="Sekcje ustawień" class="mb-6 flex flex-wrap gap-1 rounded-lg border border-gray-200 bg-gray-50 p-1 text-sm font-bold">
@@ -49,39 +44,6 @@
                 class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
             <p class="mt-1 text-xs text-muted">Wyświetlany w nagłówku pod nazwą strony.</p>
             @error('tagline') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
-        </div>
-
-        <div>
-            <label for="brand_color" class="mb-1 block text-sm font-bold">Kolor przewodni</label>
-            <div class="flex flex-wrap items-center gap-3">
-                <input type="color" id="brand_color" name="brand_color" value="{{ old('brand_color', $settings->brand_color) }}"
-                    class="h-10 w-16 rounded border-gray-300">
-                <input type="text" id="brand_color_text" value="{{ old('brand_color', $settings->brand_color) }}"
-                    oninput="document.getElementById('brand_color').value = this.value"
-                    class="w-32 rounded border-gray-300 font-mono text-sm focus:border-brand focus:ring-brand">
-                <span id="contrast-badge" class="rounded-full px-3 py-1 text-xs font-bold"></span>
-                <button type="button" id="contrast-fix-button" hidden
-                    class="rounded border border-brand px-3 py-1 text-xs font-bold text-brand hover:bg-brand-light">
-                    Dostosuj automatycznie
-                </button>
-            </div>
-            <p class="mt-1 text-xs text-muted">Ciemniejszy i jaśniejszy odcień zostaną obliczone automatycznie. Kontrast liczony jest wobec bieli — tak jak kolor jest używany na przyciskach i linkach. Zbyt jasny kolor zostanie automatycznie przyciemniony do wymaganego kontrastu przy zapisie.</p>
-            @error('brand_color') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
-        </div>
-
-        <div>
-            <label for="ngo_color_text" class="mb-1 block text-sm font-bold">Kolor dla grupy „NGO” <span class="font-normal text-muted">(opcjonalnie)</span></label>
-            <div class="flex flex-wrap items-center gap-3">
-                <input type="color" id="ngo_color_picker" value="{{ old('ngo_color', $settings->ngo_color ?: '#1f6feb') }}"
-                    oninput="document.getElementById('ngo_color_text').value = this.value"
-                    class="h-10 w-16 rounded border-gray-300" aria-label="Wybierz kolor NGO">
-                <input type="text" id="ngo_color_text" name="ngo_color" value="{{ old('ngo_color', $settings->ngo_color) }}"
-                    placeholder="np. #1f6feb — puste = brak"
-                    oninput="if (/^#[0-9a-fA-F]{6}$/.test(this.value)) document.getElementById('ngo_color_picker').value = this.value"
-                    class="w-48 rounded border-gray-300 font-mono text-sm focus:border-brand focus:ring-brand">
-            </div>
-            <p class="mt-1 text-xs text-muted">Używany na stronach projektów i aktualności oznaczonych jako skierowane do NGO. Zostaw puste, aby zawsze używać koloru przewodniego. Zbyt jasny kolor zostanie przyciemniony przy zapisie (kontrast WCAG).</p>
-            @error('ngo_color') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
         </div>
 
         <div>
@@ -136,6 +98,117 @@
                 </span>
             </label>
         </div>
+        </div>
+
+        <div x-show="tab === 'colors'" x-cloak class="space-y-6">
+            @php $subBrands = array_values((array) old('sub_brands', $settings->sub_brands ?? [])); @endphp
+            <p class="text-xs text-muted">Kolor przewodni strony oraz nazwane kolory submarek dla różnych treści (projektów i aktualności). Każdy kolor jest przy zapisie przyciemniany do kontrastu WCAG AA wobec bieli.</p>
+
+            <div>
+                <label for="brand_color" class="mb-1 block text-sm font-bold">Kolor przewodni (marka)</label>
+                <div class="flex flex-wrap items-center gap-3">
+                    <input type="color" id="brand_color" name="brand_color" value="{{ old('brand_color', $settings->brand_color) }}"
+                        class="h-10 w-16 rounded border-gray-300">
+                    <input type="text" id="brand_color_text" value="{{ old('brand_color', $settings->brand_color) }}"
+                        oninput="document.getElementById('brand_color').value = this.value"
+                        class="w-32 rounded border-gray-300 font-mono text-sm focus:border-brand focus:ring-brand">
+                    <span id="contrast-badge" class="rounded-full px-3 py-1 text-xs font-bold"></span>
+                    <button type="button" id="contrast-fix-button" hidden
+                        class="rounded border border-brand px-3 py-1 text-xs font-bold text-brand hover:bg-brand-light">
+                        Dostosuj automatycznie
+                    </button>
+                </div>
+                <p class="mt-1 text-xs text-muted">Ciemniejszy i jaśniejszy odcień zostaną obliczone automatycznie. Kontrast liczony jest wobec bieli — tak jak kolor jest używany na przyciskach i linkach.</p>
+                @error('brand_color') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+            </div>
+
+            <div class="border-t border-gray-100 pt-5">
+                <label for="ngo_color_text" class="mb-1 block text-sm font-bold">Kolor submarki „NGO” <span class="font-normal text-muted">(opcjonalnie)</span></label>
+                <div class="flex flex-wrap items-center gap-3">
+                    <input type="color" id="ngo_color_picker" value="{{ old('ngo_color', $settings->ngo_color ?: '#1f6feb') }}"
+                        oninput="document.getElementById('ngo_color_text').value = this.value"
+                        class="h-10 w-16 rounded border-gray-300" aria-label="Wybierz kolor NGO">
+                    <input type="text" id="ngo_color_text" name="ngo_color" value="{{ old('ngo_color', $settings->ngo_color) }}"
+                        placeholder="np. #1f6feb — puste = brak"
+                        oninput="if (/^#[0-9a-fA-F]{6}$/.test(this.value)) document.getElementById('ngo_color_picker').value = this.value"
+                        class="w-48 rounded border-gray-300 font-mono text-sm focus:border-brand focus:ring-brand">
+                </div>
+                <p class="mt-1 text-xs text-muted">Wbudowana submarka „NGO”, wybierana przy projektach i aktualnościach. Zostaw puste, aby używać koloru przewodniego.</p>
+                @error('ngo_color') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+            </div>
+
+            <div class="border-t border-gray-100 pt-5" data-subbrands>
+                <p class="mb-1 text-sm font-bold">Kolory submarek</p>
+                <p class="mb-3 text-xs text-muted">Zdefiniuj nazwane kolory dla różnych rodzajów treści (np. „Seniorzy”, „Szkoły”, „Wolontariat”). Pojawią się do wyboru w polu „Grupa docelowa (kolorystyka)” przy projektach i aktualnościach. Puste wiersze są pomijane.</p>
+                <div data-subbrands-rows class="space-y-2">
+                    @foreach ($subBrands as $i => $sb)
+                        <div data-subbrands-row class="flex flex-wrap items-center gap-2">
+                            <input type="color" value="{{ $sb['color'] ?? '#1f6feb' }}" oninput="this.nextElementSibling.value = this.value"
+                                class="h-10 w-14 flex-none rounded border-gray-300" aria-label="Kolor submarki {{ $i + 1 }}">
+                            <input type="text" name="sub_brands[{{ $i }}][color]" value="{{ $sb['color'] ?? '' }}" placeholder="#1f6feb"
+                                oninput="if (/^#[0-9a-fA-F]{6}$/.test(this.value)) this.previousElementSibling.value = this.value"
+                                class="w-32 rounded border-gray-300 font-mono text-sm focus:border-brand focus:ring-brand" aria-label="Kod koloru submarki {{ $i + 1 }}">
+                            <input type="text" name="sub_brands[{{ $i }}][name]" value="{{ $sb['name'] ?? '' }}" placeholder="Nazwa, np. Seniorzy"
+                                class="min-w-0 flex-1 rounded border-gray-300 text-sm focus:border-brand focus:ring-brand" aria-label="Nazwa submarki {{ $i + 1 }}">
+                            <button type="button" data-subbrands-remove class="rounded p-2 text-muted hover:bg-red-50 hover:text-red-600" aria-label="Usuń submarkę {{ $i + 1 }}"><i class="fa-solid fa-trash" aria-hidden="true"></i></button>
+                        </div>
+                    @endforeach
+                </div>
+                <button type="button" data-subbrands-add class="mt-3 inline-flex items-center gap-2 rounded border border-brand px-3 py-1.5 text-sm font-bold text-brand hover:bg-brand-light"><i class="fa-solid fa-plus"></i> Dodaj kolor submarki</button>
+                <template data-subbrands-template>
+                    <div data-subbrands-row class="flex flex-wrap items-center gap-2">
+                        <input type="color" value="#1f6feb" oninput="this.nextElementSibling.value = this.value"
+                            class="h-10 w-14 flex-none rounded border-gray-300" aria-label="Kolor submarki">
+                        <input type="text" name="sub_brands[__INDEX__][color]" placeholder="#1f6feb"
+                            oninput="if (/^#[0-9a-fA-F]{6}$/.test(this.value)) this.previousElementSibling.value = this.value"
+                            class="w-32 rounded border-gray-300 font-mono text-sm focus:border-brand focus:ring-brand" aria-label="Kod koloru submarki">
+                        <input type="text" name="sub_brands[__INDEX__][name]" placeholder="Nazwa, np. Seniorzy"
+                            class="min-w-0 flex-1 rounded border-gray-300 text-sm focus:border-brand focus:ring-brand" aria-label="Nazwa submarki">
+                        <button type="button" data-subbrands-remove class="rounded p-2 text-muted hover:bg-red-50 hover:text-red-600" aria-label="Usuń submarkę"><i class="fa-solid fa-trash" aria-hidden="true"></i></button>
+                    </div>
+                </template>
+            </div>
+        </div>
+
+        <div x-show="tab === 'maintenance'" x-cloak class="space-y-6" x-data="{ maintenance: {{ old('maintenance_mode', $settings->maintenance_mode) ? 'true' : 'false' }} }">
+            <div>
+                <label for="site_url" class="mb-1 block text-sm font-bold">Główny adres strony (Site URL)</label>
+                <input type="url" id="site_url" name="site_url" value="{{ old('site_url', $settings->site_url) }}"
+                    placeholder="{{ config('app.url') }}"
+                    class="w-full rounded border-gray-300 font-mono text-sm focus:border-brand focus:ring-brand">
+                <p class="mt-1 text-xs text-muted">Adres używany do budowania linków bezwzględnych (mapa strony, e-maile, powiadomienia, adres powrotny logowania Microsoft). Puste = wartość <code>APP_URL</code> z pliku <code>.env</code>. Zmieniaj tylko, gdy wiesz, że domena serwisu jest inna niż wykrywana automatycznie.</p>
+                @error('site_url') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+            </div>
+
+            <div class="border-t border-gray-100 pt-6">
+                <h2 class="text-base font-bold text-ink">Tryb konserwacji (przerwa techniczna)</h2>
+                <p class="mt-1 text-xs text-muted">Po włączeniu zwykli użytkownicy zobaczą komunikat o przerwie technicznej. Zalogowani administratorzy dalej mają dostęp do panelu i strony, aby móc wyłączyć tryb.</p>
+
+                <label class="mt-4 flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm">
+                    <input type="hidden" name="maintenance_mode" value="0">
+                    <input type="checkbox" name="maintenance_mode" value="1" x-model="maintenance"
+                        @checked(old('maintenance_mode', $settings->maintenance_mode))
+                        class="mt-0.5 rounded border-gray-300 text-brand focus:ring-brand">
+                    <span>
+                        <span class="font-bold text-amber-900">Włącz tryb konserwacji</span>
+                        <span class="block text-xs text-amber-800">Strona publiczna zostanie zastąpiona komunikatem o przerwie technicznej (HTTP 503).</span>
+                    </span>
+                </label>
+
+                <div class="mt-4" x-show="maintenance" x-cloak>
+                    <label for="maintenance_message" class="mb-1 block text-sm font-bold">Komunikat dla użytkowników</label>
+                    <textarea id="maintenance_message" name="maintenance_message" rows="3"
+                        placeholder="{{ \App\Models\SiteSetting::DEFAULT_MAINTENANCE_MESSAGE }}"
+                        class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">{{ old('maintenance_message', $settings->maintenance_message) }}</textarea>
+                    <p class="mt-1 text-xs text-muted">Puste = komunikat domyślny (widoczny jako podpowiedź).</p>
+                    @error('maintenance_message') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                </div>
+
+                <p class="mt-4 flex items-start gap-2 rounded border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-800" x-show="maintenance" x-cloak>
+                    <i class="fa-solid fa-shield-halved mt-0.5" aria-hidden="true"></i>
+                    <span>W trybie konserwacji <strong>logowanie przez Microsoft 365 jest całkowicie zablokowane</strong>. Zaloguj się loginem i hasłem, aby wyłączyć tryb.</span>
+                </p>
+            </div>
         </div>
 
         <div x-show="tab === 'seo'" x-cloak class="space-y-6">
@@ -479,6 +552,55 @@
                         class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
                     @error('contact_phone') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                 </div>
+            </div>
+
+            {{-- Rachunki bankowe pokazywane na podstronie /kontakt --}}
+            @php
+                $bankAccounts = old('contact_bank_accounts', $settings->contact_bank_accounts ?: []);
+                if (empty($bankAccounts)) {
+                    $bankAccounts = [['number' => '', 'purpose' => '']];
+                }
+            @endphp
+            <div class="mt-8 space-y-4 rounded-lg border border-gray-200 bg-gray-50 p-5"
+                x-data="{ accounts: {{ \Illuminate\Support\Js::from(array_values($bankAccounts)) }} }">
+                <div>
+                    <p class="text-sm font-bold text-ink">Numery rachunków bankowych</p>
+                    <p class="mt-0.5 text-xs text-muted">Lista rachunków pokazywana na podstronie <a href="{{ route('contact.show') }}" target="_blank" rel="noopener" class="text-brand underline">/kontakt</a>. Przy każdym rachunku podaj opis — do czego służy i co można na niego wpłacić. Zostaw numer pusty, aby usunąć wiersz przy zapisie.</p>
+                </div>
+
+                <template x-for="(account, index) in accounts" :key="index">
+                    <div class="rounded border border-gray-200 bg-white p-4">
+                        <div class="flex items-center justify-between">
+                            <p class="text-xs font-bold uppercase tracking-wide text-muted" x-text="'Rachunek ' + (index + 1)"></p>
+                            <button type="button" @click="accounts.splice(index, 1)"
+                                class="inline-flex items-center gap-1 text-xs font-bold text-red-600 hover:text-red-700">
+                                <i class="fa-solid fa-trash-can" aria-hidden="true"></i> Usuń
+                            </button>
+                        </div>
+                        <div class="mt-3 space-y-3">
+                            <div>
+                                <label :for="'contact_bank_account_number_' + index" class="mb-1 block text-sm font-bold">Numer konta</label>
+                                <input type="text" :id="'contact_bank_account_number_' + index"
+                                    :name="'contact_bank_accounts[' + index + '][number]'" x-model="account.number"
+                                    placeholder="PL00 0000 0000 0000 0000 0000 0000"
+                                    class="w-full rounded border-gray-300 font-mono text-sm focus:border-brand focus:ring-brand">
+                            </div>
+                            <div>
+                                <label :for="'contact_bank_account_purpose_' + index" class="mb-1 block text-sm font-bold">Do czego służy / co można wpłacić</label>
+                                <textarea :id="'contact_bank_account_purpose_' + index"
+                                    :name="'contact_bank_accounts[' + index + '][purpose]'" x-model="account.purpose" rows="2"
+                                    placeholder="np. Darowizny na cele statutowe — wsparcie bieżących działań fundacji"
+                                    class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+
+                <button type="button" @click="accounts.push({ number: '', purpose: '' })"
+                    class="inline-flex items-center gap-2 rounded border border-brand px-3 py-1.5 text-sm font-bold text-brand hover:bg-brand hover:text-white">
+                    <i class="fa-solid fa-plus" aria-hidden="true"></i> Dodaj rachunek
+                </button>
+                @error('contact_bank_accounts') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
             </div>
 
             {{-- Box informacyjny pod danymi kontaktowymi (np. „zmiany w kontakcie”) --}}
@@ -1001,6 +1123,33 @@
             });
 
             renumber();
+        })();
+
+        (function () {
+            // Repeater kolorów submarek (Ustawienia → Kolory).
+            const wrap = document.querySelector('[data-subbrands]');
+            if (!wrap) return;
+            const rows = wrap.querySelector('[data-subbrands-rows]');
+            const template = wrap.querySelector('[data-subbrands-template]');
+            const addBtn = wrap.querySelector('[data-subbrands-add]');
+            if (!rows || !template) return;
+            let nextIndex = rows.querySelectorAll('[data-subbrands-row]').length;
+
+            if (addBtn) {
+                addBtn.addEventListener('click', function () {
+                    const html = template.innerHTML.replace(/__INDEX__/g, String(nextIndex++));
+                    const el = document.createElement('div');
+                    el.innerHTML = html.trim();
+                    rows.appendChild(el.firstElementChild);
+                });
+            }
+            wrap.addEventListener('click', function (e) {
+                const remove = e.target.closest('[data-subbrands-remove]');
+                if (remove) {
+                    const row = remove.closest('[data-subbrands-row]');
+                    if (row) row.remove();
+                }
+            });
         })();
     </script>
 @endsection

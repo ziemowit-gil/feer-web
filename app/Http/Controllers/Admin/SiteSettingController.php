@@ -19,6 +19,9 @@ class SiteSettingController extends Controller
         $data = $request->validate([
             'site_name' => ['required', 'string', 'max:255'],
             'tagline' => ['nullable', 'string', 'max:255'],
+            'site_url' => ['nullable', 'url', 'max:255'],
+            'maintenance_mode' => ['sometimes', 'boolean'],
+            'maintenance_message' => ['nullable', 'string', 'max:2000'],
             'brand_color' => ['required', 'regex:/^#[0-9a-fA-F]{6}$/'],
             'header_layout' => ['required', Rule::in(array_keys(SiteSetting::HEADER_LAYOUTS))],
             'content_editor' => ['required', Rule::in(array_keys(SiteSetting::EDITORS))],
@@ -36,6 +39,9 @@ class SiteSettingController extends Controller
             'mail_encryption' => ['nullable', Rule::in(['', 'tls', 'ssl'])],
             'show_coordinators' => ['sometimes', 'boolean'],
             'ngo_color' => ['nullable', 'regex:/^#[0-9a-fA-F]{6}$/'],
+            'sub_brands' => ['nullable', 'array'],
+            'sub_brands.*.name' => ['nullable', 'string', 'max:60'],
+            'sub_brands.*.color' => ['nullable', 'regex:/^#[0-9a-fA-F]{6}$/'],
             'logo' => ['nullable', 'image', 'max:2048'],
             'remove_logo' => ['sometimes', 'boolean'],
             'logo_alt' => ['nullable', 'string', 'max:255'],
@@ -58,6 +64,9 @@ class SiteSettingController extends Controller
             'contact_email' => ['required', 'email', 'max:255'],
             'contact_phone' => ['nullable', 'string', 'max:50'],
             'contact_intro' => ['nullable', 'string', 'max:5000'],
+            'contact_bank_accounts' => ['nullable', 'array'],
+            'contact_bank_accounts.*.number' => ['nullable', 'string', 'max:80'],
+            'contact_bank_accounts.*.purpose' => ['nullable', 'string', 'max:500'],
             'contact_box_text' => ['nullable', 'string', 'max:1000'],
             'contact_box_link_label' => ['nullable', 'string', 'max:100'],
             'contact_box_link_url' => ['nullable', 'string', 'max:255'],
@@ -120,6 +129,8 @@ class SiteSettingController extends Controller
 
         $data['allow_indexing'] = $request->boolean('allow_indexing');
         $data['logo_only'] = $request->boolean('logo_only');
+        $data['maintenance_mode'] = $request->boolean('maintenance_mode');
+        $data['site_url'] = filled($data['site_url'] ?? null) ? rtrim($data['site_url'], '/') : null;
         $data['microsoft_login_enabled'] = $request->boolean('microsoft_login_enabled');
 
         // Puste pole sekretu = zostaw zapisany (nie renderujemy go w formularzu).
@@ -134,6 +145,17 @@ class SiteSettingController extends Controller
         $data['show_coordinators'] = $request->boolean('show_coordinators');
         $data['show_topbar_bip'] = $request->boolean('show_topbar_bip');
         $data['show_topbar_social'] = $request->boolean('show_topbar_social');
+
+        // Rachunki bankowe: przycinamy pola, odrzucamy wiersze bez numeru
+        // (pusty wiersz-zalążek z formularza) i przenumerowujemy listę.
+        $data['contact_bank_accounts'] = collect($request->input('contact_bank_accounts', []))
+            ->map(fn ($row) => [
+                'number' => trim((string) ($row['number'] ?? '')),
+                'purpose' => trim((string) ($row['purpose'] ?? '')),
+            ])
+            ->filter(fn ($row) => $row['number'] !== '')
+            ->values()
+            ->all();
         $data['disabled_modules'] = array_values(array_diff(
             array_keys(SiteSetting::MODULES),
             $request->input('enabled_modules', [])
@@ -153,6 +175,17 @@ class SiteSettingController extends Controller
         $data['ngo_color'] = filled($data['ngo_color'] ?? null)
             ? $settings->contrastSafeColor($data['ngo_color'])
             : null;
+
+        // Kolory submarek: odrzucamy puste wiersze i pilnujemy kontrastu każdego koloru.
+        $data['sub_brands'] = collect($request->input('sub_brands', []))
+            ->map(fn ($s) => [
+                'name' => trim((string) ($s['name'] ?? '')),
+                'color' => trim((string) ($s['color'] ?? '')),
+            ])
+            ->filter(fn ($s) => $s['name'] !== '' && preg_match('/^#[0-9a-fA-F]{6}$/', $s['color']))
+            ->map(fn ($s) => ['name' => $s['name'], 'color' => $settings->contrastSafeColor($s['color'])])
+            ->values()
+            ->all() ?: null;
 
         unset($data['logo'], $data['remove_logo'], $data['og_image'], $data['remove_og_image'], $data['support_image'], $data['remove_support_image'], $data['news_default_image'], $data['remove_news_default_image'], $data['enabled_modules'], $data['section_order']);
 
