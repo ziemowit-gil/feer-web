@@ -13,6 +13,7 @@
         $aboutTimeline = array_values((array) old('about_timeline', $page->about_timeline ?? []));
         $aboutValues = array_values((array) old('about_values', $page->about_values ?? []));
         $aboutTeam = array_values((array) old('about_team', $page->about_team ?? []));
+        $aboutPress = array_values((array) old('about_press', $page->about_press ?? []));
         $faqItems = array_values((array) old('faq_items', $page->faq_items ?? []));
     @endphp
 
@@ -521,6 +522,54 @@
                                 </div>
                             @endif
                         </div>
+                            </div>
+                        </details>
+
+                        <details class="rounded-lg border border-gray-200">
+                            <summary class="cursor-pointer rounded-lg px-4 py-3 text-sm font-bold text-ink hover:bg-gray-50">My w mediach</summary>
+                            <div class="space-y-4 border-t border-gray-100 px-4 py-4">
+                                <div>
+                                    <label for="about_press_intro" class="mb-1 block text-sm font-bold">Wstęp</label>
+                                    <textarea id="about_press_intro" name="about_press_intro" rows="3" placeholder="Krótki wstęp nad wzmiankami prasowymi."
+                                        class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">{{ old('about_press_intro', $page->about_press_intro) }}</textarea>
+                                    @error('about_press_intro') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                                </div>
+
+                                <div data-repeater>
+                                    <p class="mb-3 text-xs text-muted">Wklej link do artykułu — obrazek i tytuł pobiorą się automatycznie ze strony (og:image) przy zapisie. Możesz je nadpisać ręcznie.</p>
+                                    <div data-repeater-rows class="space-y-3">
+                                        @foreach ($aboutPress as $i => $row)
+                                            <div data-repeater-row class="space-y-2 rounded-lg border border-gray-200 bg-gray-50 p-4">
+                                                @if (! empty($row['image']))
+                                                    <img src="{{ $row['image'] }}" alt="" class="h-24 w-full max-w-xs rounded object-cover">
+                                                @endif
+                                                <input type="url" name="about_press[{{ $i }}][url]" value="{{ $row['url'] ?? '' }}" placeholder="Link do artykułu (URL)" aria-label="Link wzmianki {{ $i + 1 }}" class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                                                <div class="grid gap-2 sm:grid-cols-2">
+                                                    <input type="text" name="about_press[{{ $i }}][title]" value="{{ $row['title'] ?? '' }}" placeholder="Tytuł (pobierze się automatycznie)" aria-label="Tytuł wzmianki {{ $i + 1 }}" class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                                                    <input type="text" name="about_press[{{ $i }}][source]" value="{{ $row['source'] ?? '' }}" placeholder="Źródło, np. Gazeta Wyborcza" aria-label="Źródło wzmianki {{ $i + 1 }}" class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                                                </div>
+                                                <input type="text" name="about_press[{{ $i }}][image]" value="{{ $row['image'] ?? '' }}" placeholder="URL obrazka (pobierze się automatycznie)" aria-label="Obrazek wzmianki {{ $i + 1 }}" class="w-full rounded border-gray-300 text-xs focus:border-brand focus:ring-brand">
+                                                <div class="text-right">
+                                                    <button type="button" data-repeater-remove class="inline-flex items-center gap-1.5 rounded p-1.5 text-xs font-bold text-muted hover:bg-red-50 hover:text-red-600" aria-label="Usuń wzmiankę"><i class="fa-solid fa-trash" aria-hidden="true"></i> Usuń</button>
+                                                </div>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                    <button type="button" data-repeater-add class="mt-2 inline-flex items-center gap-2 rounded border border-brand px-3 py-1.5 text-sm font-bold text-brand hover:bg-brand-light"><i class="fa-solid fa-plus"></i> Dodaj wzmiankę</button>
+                                    <template data-repeater-template>
+                                        <div data-repeater-row class="space-y-2 rounded-lg border border-gray-200 bg-gray-50 p-4">
+                                            <input type="url" name="about_press[__INDEX__][url]" placeholder="Link do artykułu (URL)" aria-label="Link wzmianki" class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                                            <div class="grid gap-2 sm:grid-cols-2">
+                                                <input type="text" name="about_press[__INDEX__][title]" placeholder="Tytuł (pobierze się automatycznie)" aria-label="Tytuł wzmianki" class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                                                <input type="text" name="about_press[__INDEX__][source]" placeholder="Źródło, np. Gazeta Wyborcza" aria-label="Źródło wzmianki" class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                                            </div>
+                                            <input type="text" name="about_press[__INDEX__][image]" placeholder="URL obrazka (pobierze się automatycznie)" aria-label="Obrazek wzmianki" class="w-full rounded border-gray-300 text-xs focus:border-brand focus:ring-brand">
+                                            <div class="text-right">
+                                                <button type="button" data-repeater-remove class="inline-flex items-center gap-1.5 rounded p-1.5 text-xs font-bold text-muted hover:bg-red-50 hover:text-red-600" aria-label="Usuń wzmiankę"><i class="fa-solid fa-trash" aria-hidden="true"></i> Usuń</button>
+                                            </div>
+                                        </div>
+                                    </template>
+                                </div>
                             </div>
                         </details>
                     </div>

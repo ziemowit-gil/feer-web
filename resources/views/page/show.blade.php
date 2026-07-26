@@ -399,6 +399,42 @@
         @endif
         @break
 
+        @case('press')
+        {{-- Piszą o nas — wzmianki prasowe z obrazkiem (og:image) --}}
+        @php $aboutPress = collect($page->about_press ?? [])->filter(fn ($p) => ! empty($p['url']) || ! empty($p['title'])); @endphp
+        @if ($aboutPress->isNotEmpty() || filled($page->about_press_intro))
+            <section class="bg-gray-50 px-4 py-16" aria-label="My w mediach">
+                <div class="mx-auto max-w-5xl">
+                    <h2 class="mb-3 text-center text-2xl font-bold text-ink md:text-3xl">My w mediach</h2>
+                    @if (filled($page->about_press_intro))
+                        <p class="mx-auto mb-10 max-w-2xl text-center text-muted">{{ $page->about_press_intro }}</p>
+                    @endif
+                    @if ($aboutPress->isNotEmpty())
+                        <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                            @foreach ($aboutPress as $item)
+                                <a href="{{ $item['url'] ?: '#' }}" @if (! empty($item['url'])) target="_blank" rel="noopener" @endif
+                                    class="group flex flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
+                                    @if (! empty($item['image']))
+                                        <img src="{{ $item['image'] }}" alt="" loading="lazy" class="h-40 w-full object-cover">
+                                    @else
+                                        <span class="flex h-40 w-full items-center justify-center bg-brand-light text-3xl text-brand" aria-hidden="true"><i class="fa-solid fa-newspaper"></i></span>
+                                    @endif
+                                    <div class="flex flex-1 flex-col p-5">
+                                        @if (! empty($item['source']))
+                                            <span class="mb-1 text-xs font-bold uppercase tracking-widest text-brand">{{ $item['source'] }}</span>
+                                        @endif
+                                        <span class="font-bold text-ink group-hover:text-brand">{{ $item['title'] ?: $item['url'] }}</span>
+                                        <span class="mt-3 inline-flex items-center gap-1.5 text-sm font-bold text-brand">Czytaj <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i></span>
+                                    </div>
+                                </a>
+                            @endforeach
+                        </div>
+                    @endif
+                </div>
+            </section>
+        @endif
+        @break
+
         @endswitch
         @endforeach
     </article>

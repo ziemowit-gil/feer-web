@@ -216,6 +216,12 @@ class PageController extends Controller
             'about_partner_ids.*' => ['integer', 'exists:partners,id'],
             'about_documents_intro' => ['nullable', 'string', 'max:5000'],
             'about_documents_bip_url' => ['nullable', 'string', 'max:255'],
+            'about_press_intro' => ['nullable', 'string', 'max:5000'],
+            'about_press' => ['nullable', 'array'],
+            'about_press.*.url' => ['nullable', 'string', 'max:500'],
+            'about_press.*.title' => ['nullable', 'string', 'max:255'],
+            'about_press.*.source' => ['nullable', 'string', 'max:120'],
+            'about_press.*.image' => ['nullable', 'string', 'max:1000'],
             'faq_intro' => ['nullable', 'string', 'max:2000'],
             'faq_items' => ['nullable', 'array'],
             'faq_items.*.question' => ['nullable', 'string', 'max:255'],
@@ -304,6 +310,22 @@ class PageController extends Controller
                 ->all();
 
             $data['about_partner_ids'] = array_values(array_map('intval', (array) $request->input('about_partner_ids', []))) ?: null;
+
+            // „Piszą o nas": wzmianki prasowe. Dla wpisów z linkiem, ale bez
+            // obrazka/tytułu, pobieramy je ze strony (og:image / og:title).
+            $press = $this->compactRows($request->input('about_press', []), ['url', 'title', 'source', 'image']);
+            foreach (($press ?? []) as $i => $item) {
+                if (! empty($item['url']) && (empty($item['image']) || empty($item['title']))) {
+                    $og = $this->scrapeOgData($item['url']);
+                    if (empty($item['image']) && ! empty($og['image'])) {
+                        $press[$i]['image'] = $og['image'];
+                    }
+                    if (empty($item['title']) && ! empty($og['title'])) {
+                        $press[$i]['title'] = $og['title'];
+                    }
+                }
+            }
+            $data['about_press'] = $press;
         } else {
             $data['about_motto'] = null;
             $data['about_motto_author'] = null;
@@ -316,6 +338,8 @@ class PageController extends Controller
             $data['about_partner_ids'] = null;
             $data['about_documents_intro'] = null;
             $data['about_documents_bip_url'] = null;
+            $data['about_press_intro'] = null;
+            $data['about_press'] = null;
         }
 
         // FAQ: lista par pytanie/odpowiedź (puste wiersze pomijane); poza typem FAQ czyścimy.
@@ -356,6 +380,57 @@ class PageController extends Controller
         }
 
         return $out ?: null;
+    }
+
+    /**
+     * Pobierz og:image i og:title ze wskazanego adresu (sekcja „Piszą o nas”).
+     * Odporne na błędy — przy niepowodzeniu zwraca puste wartości.
+     */
+    private function scrapeOgData(string $url): array
+    {
+        $empty = ['image' => null, 'title' => null];
+
+        if (! preg_match('#^https?://#i', $url)) {
+            return $empty;
+        }
+
+        try {
+            $response = \Illuminate\Support\Facades\Http::timeout(6)
+                ->withHeaders(['User-Agent' => 'Mozilla/5.0 (compatible; FEERbot/1.0; +og-scraper)'])
+                ->get($url);
+
+            if (! $response->ok()) {
+                return $empty;
+            }
+
+            $html = $response->body();
+
+            return [
+                'image' => $this->metaContent($html, ['og:image', 'twitter:image', 'twitter:image:src']),
+                'title' => $this->metaContent($html, ['og:title', 'twitter:title']),
+            ];
+        } catch (\Throwable $e) {
+            return $empty;
+        }
+    }
+
+    /**
+     * Wyłuskaj zawartość pierwszego pasującego <meta> (property lub name) z HTML.
+     */
+    private function metaContent(string $html, array $keys): ?string
+    {
+        foreach ($keys as $key) {
+            $k = preg_quote($key, '#');
+            if (preg_match('#<meta[^>]+(?:property|name)=["\']'.$k.'["\'][^>]+content=["\']([^"\']+)["\']#i', $html, $m)
+                || preg_match('#<meta[^>]+content=["\']([^"\']+)["\'][^>]+(?:property|name)=["\']'.$k.'["\']#i', $html, $m)) {
+                $value = trim(html_entity_decode($m[1], ENT_QUOTES | ENT_HTML5));
+                if ($value !== '') {
+                    return $value;
+                }
+            }
+        }
+
+        return null;
     }
 
     private function uniqueSlug(string $source, ?int $ignoreId = null): string
