@@ -140,23 +140,26 @@
             <div class="mt-12 border-t border-gray-100 pt-8">
                 <h2 class="mb-2 text-xl font-bold text-ink">Numery rachunków bankowych</h2>
                 <p class="mb-5 max-w-2xl text-sm text-muted">Przy każdym rachunku opisujemy, do czego służy i co można na niego wpłacić.</p>
-                <ul class="divide-y divide-gray-100 rounded-lg border border-gray-100">
+                <div class="grid gap-4 sm:grid-cols-2">
                     @foreach ($siteSettings->contact_bank_accounts as $account)
-                        <li class="px-4 py-3.5">
-                            @if (!empty($account['purpose']))
-                                <p class="text-sm font-medium text-ink">{{ $account['purpose'] }}</p>
-                            @endif
-                            <div class="{{ !empty($account['purpose']) ? 'mt-1' : '' }} flex flex-wrap items-center gap-x-3 gap-y-1">
+                        <div class="flex items-start gap-4 rounded-2xl border border-gray-200 bg-gray-50/60 p-5">
+                            <span class="flex h-11 w-11 flex-none items-center justify-center rounded-full bg-brand-light text-brand" aria-hidden="true">
+                                <i class="fa-solid fa-building-columns"></i>
+                            </span>
+                            <div class="min-w-0">
+                                @if (!empty($account['purpose']))
+                                    <p class="font-bold text-ink">{{ $account['purpose'] }}</p>
+                                @endif
                                 {{-- Pełny numer w jednej linii; na wąskich ekranach przewija się poziomo we własnym polu zamiast zawijać. --}}
-                                <p class="min-w-0 flex-1 overflow-x-auto whitespace-nowrap font-mono text-sm text-ink">{{ $account['number'] }}</p>
+                                <p class="{{ !empty($account['purpose']) ? 'mt-1' : '' }} overflow-x-auto whitespace-nowrap font-mono text-sm text-ink">{{ $account['number'] }}</p>
                                 <button type="button" data-copy-button data-copy-value="{{ $account['number'] }}"
-                                    class="inline-flex flex-none items-center gap-1 text-xs font-medium text-brand hover:text-brand-dark">
-                                    <i class="fa-regular fa-copy" aria-hidden="true"></i> Kopiuj
+                                    class="mt-2.5 inline-flex items-center gap-1.5 rounded-full border border-brand px-3 py-1 text-xs font-bold text-brand transition hover:bg-brand-light">
+                                    <i class="fa-regular fa-copy" aria-hidden="true"></i> Kopiuj numer
                                 </button>
                             </div>
-                        </li>
+                        </div>
                     @endforeach
-                </ul>
+                </div>
             </div>
         @endif
 
