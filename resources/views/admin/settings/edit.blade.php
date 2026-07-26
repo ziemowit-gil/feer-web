@@ -678,7 +678,16 @@
                     <label for="bip_url" class="mb-1 block text-sm font-bold">BIP</label>
                     <input type="text" id="bip_url" name="bip_url" value="{{ old('bip_url', $settings->bip_url) }}" placeholder="https://bip..."
                         class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                    <p class="mt-1 text-xs text-muted">Adres Biuletynu. Dostępny też pod skrótem <code>/bip</code> (strona-pośrednik z informacją poniżej).</p>
                     @error('bip_url') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+
+                    <div class="mt-3">
+                        <label for="bip_intro" class="mb-1 block text-sm font-bold">Tekst na stronie <code>/bip</code> <span class="font-normal text-muted">(opcjonalnie)</span></label>
+                        <textarea id="bip_intro" name="bip_intro" rows="4" placeholder="Informacja, dlaczego BIP prowadzimy osobno. Puste = tekst domyślny."
+                            class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">{{ old('bip_intro', $settings->bip_intro) }}</textarea>
+                        <p class="mt-1 text-xs text-muted">Wyświetlany nad przyciskiem „Przejdź do BIP”. Skróty <code>/instagram</code> i <code>/fb</code> przekierowują do adresów z pól obok.</p>
+                        @error('bip_intro') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </div>
                 </div>
 
                 <div>

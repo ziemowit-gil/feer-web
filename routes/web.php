@@ -35,6 +35,7 @@ use App\Http\Controllers\PageController;
 use App\Http\Controllers\PollVoteController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProjectController;
+use App\Http\Controllers\ShortcutController;
 use App\Http\Controllers\SitemapController;
 use App\Http\Controllers\SupportController;
 use Illuminate\Support\Facades\Route;
@@ -72,6 +73,12 @@ Route::post('/wiem-feer/{article:slug}/komentarz', [BlogCommentController::class
 Route::get('/newsletter', [NewsletterController::class, 'index'])->name('newsletter.show');
 
 Route::get('/wsparcie', [SupportController::class, 'index'])->name('support.show')->middleware('module:support');
+
+// Sztywne skróty: /bip (strona-pośrednik z informacją), /instagram i /fb (przekierowania).
+Route::get('/bip', [ShortcutController::class, 'bip'])->name('bip');
+Route::get('/instagram', [ShortcutController::class, 'instagram'])->name('shortcut.instagram');
+Route::get('/fb', [ShortcutController::class, 'facebook'])->name('shortcut.fb');
+Route::get('/facebook', [ShortcutController::class, 'facebook'])->name('shortcut.facebook');
 
 Route::get('/kontakt', [ContactController::class, 'index'])->name('contact.show');
 Route::post('/kontakt', [ContactController::class, 'store'])->name('contact.store')->middleware('throttle:5,1');

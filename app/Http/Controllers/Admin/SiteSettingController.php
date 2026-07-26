@@ -51,6 +51,7 @@ class SiteSettingController extends Controller
             'remove_og_image' => ['sometimes', 'boolean'],
             'allow_indexing' => ['sometimes', 'boolean'],
             'bip_url' => ['nullable', 'string', 'max:255'],
+            'bip_intro' => ['nullable', 'string', 'max:5000'],
             'facebook_url' => ['nullable', 'string', 'max:255'],
             'twitter_url' => ['nullable', 'string', 'max:255'],
             'instagram_url' => ['nullable', 'string', 'max:255'],

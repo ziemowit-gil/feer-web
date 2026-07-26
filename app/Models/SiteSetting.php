@@ -108,7 +108,7 @@ class SiteSetting extends Model implements HasMedia
 
     protected $fillable = [
         'site_name', 'tagline', 'brand_color', 'meta_description', 'allow_indexing', 'disabled_modules', 'homepage_section_order',
-        'bip_url', 'facebook_url', 'twitter_url', 'instagram_url', 'linkedin_url', 'youtube_url', 'substack_url',
+        'bip_url', 'bip_intro', 'facebook_url', 'twitter_url', 'instagram_url', 'linkedin_url', 'youtube_url', 'substack_url',
         'contact_address', 'contact_city', 'contact_email', 'contact_phone', 'contact_intro', 'contact_bank_accounts',
         'contact_box_text', 'contact_box_link_label', 'contact_box_link_url', 'contact_box_visible_from', 'contact_box_visible_until',
         'homepage_banner_text', 'homepage_banner_link_label', 'homepage_banner_link_url', 'homepage_banner_visible_from', 'homepage_banner_visible_until',
