@@ -552,6 +552,21 @@
                         </details>
 
                         <details class="rounded-lg border border-gray-200">
+                            <summary class="cursor-pointer rounded-lg px-4 py-3 text-sm font-bold text-ink hover:bg-gray-50">Odnośnik do FAQ</summary>
+                            <div class="border-t border-gray-100 px-4 py-4">
+                                <label for="about_faq_page_id" class="mb-1 block text-sm font-bold">Strona z pytaniami (FAQ)</label>
+                                <select id="about_faq_page_id" name="about_faq_page_id" class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand sm:max-w-md">
+                                    <option value="">— nie pokazuj odnośnika —</option>
+                                    @foreach ($parentOptions as $option)
+                                        <option value="{{ $option->id }}" {{ (int) old('about_faq_page_id', $page->about_faq_page_id) === $option->id ? 'selected' : '' }}>{{ $option->title }}</option>
+                                    @endforeach
+                                </select>
+                                <p class="mt-1 text-xs text-muted">Po wybraniu na stronie „O organizacji" pojawi się sekcja z odnośnikiem do FAQ. Kolejność sekcji ustawisz w „Kolejność sekcji" (pozycja „Odnośnik do FAQ").</p>
+                                @error('about_faq_page_id') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                            </div>
+                        </details>
+
+                        <details class="rounded-lg border border-gray-200">
                             <summary class="cursor-pointer rounded-lg px-4 py-3 text-sm font-bold text-ink hover:bg-gray-50">My w mediach</summary>
                             <div class="space-y-4 border-t border-gray-100 px-4 py-4">
                                 <div>

@@ -57,6 +57,7 @@ class Page extends Model
         'partners' => 'Nasi partnerzy',
         'press' => 'My w mediach',
         'documents' => 'Dokumenty i sprawozdania',
+        'faq' => 'Odnośnik do FAQ',
     ];
 
     /** How a page attached to a project is surfaced on that project's page. */
@@ -84,7 +85,7 @@ class Page extends Model
         'is_disabled', 'disabled_message', 'wip_mode', 'wip_message',
         'type', 'event_mode', 'event_when', 'event_location', 'event_how_to_join', 'event_registration_url',
         'schedule_items', 'schedule_change_notice', 'schedule_pending',
-        'about_motto', 'about_motto_author', 'about_intro', 'about_stats', 'about_timeline', 'about_values', 'about_team', 'about_section_order', 'about_partner_ids', 'about_documents_intro', 'about_documents_bip_url', 'about_press_intro', 'about_press',
+        'about_motto', 'about_motto_author', 'about_intro', 'about_stats', 'about_timeline', 'about_values', 'about_team', 'about_section_order', 'about_partner_ids', 'about_documents_intro', 'about_documents_bip_url', 'about_press_intro', 'about_press', 'about_faq_page_id',
         'faq_intro', 'faq_items', 'bip_move_url', 'bip_move_note', 'show_gallery',
         'access_mode', 'access_password', 'hub_hero', 'hub_intro', 'hub_links',
         'legacy_name', 'legacy_intro',
@@ -192,6 +193,16 @@ class Page extends Model
         $saved = array_values(array_intersect($this->about_section_order ?? [], $defined));
 
         return array_values(array_unique(array_merge($saved, $defined)));
+    }
+
+    /** Opublikowana strona FAQ podpięta do „O organizacji" (sekcja odnośnika), albo null. */
+    public function aboutFaqPage(): ?Page
+    {
+        if (! $this->about_faq_page_id) {
+            return null;
+        }
+
+        return static::where('id', $this->about_faq_page_id)->where('is_published', true)->first();
     }
 
     /** Selected partners for the "about" page's "Nasi partnerzy" section, kept in the chosen order. */

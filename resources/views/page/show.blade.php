@@ -441,6 +441,27 @@
         @endif
         @break
 
+        @case('faq')
+        {{-- Odnośnik do strony FAQ --}}
+        @php $aboutFaqPage = $page->aboutFaqPage(); @endphp
+        @if ($aboutFaqPage)
+            <section class="mx-auto max-w-4xl px-4 py-12">
+                <div class="flex flex-col items-center gap-4 rounded-2xl bg-brand-light p-8 text-center sm:flex-row sm:justify-between sm:text-left">
+                    <div>
+                        <h2 class="flex items-center gap-2 text-xl font-bold text-ink">
+                            <i class="fa-solid fa-circle-question text-brand" aria-hidden="true"></i> Masz pytania?
+                        </h2>
+                        <p class="mt-1 text-muted">Odpowiedzi na najczęstsze pytania zebraliśmy w jednym miejscu.</p>
+                    </div>
+                    <a href="{{ route('page.show', $aboutFaqPage) }}"
+                        class="inline-flex shrink-0 items-center gap-2 rounded-lg bg-brand px-6 py-3 font-bold text-white hover:bg-brand-dark focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
+                        {{ $aboutFaqPage->title }} <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+                    </a>
+                </div>
+            </section>
+        @endif
+        @break
+
         @endswitch
         @endforeach
     </article>
