@@ -43,15 +43,6 @@
     @include('partials.topbar')
     @include('partials.header')
 
-    @if ($siteSettings->hasExtraBrandColors())
-        {{-- Pasek identyfikacji marki: segmenty w kolorach z palety (dekoracja). --}}
-        <div class="flex h-1.5 w-full" aria-hidden="true">
-            @foreach ($siteSettings->brandPaletteColors() as $paletteColor)
-                <span class="flex-1" style="background-color: {{ $paletteColor }}"></span>
-            @endforeach
-        </div>
-    @endif
-
     <main id="main-content" class="flex-1">
         @hasSection('breadcrumbs')
             @yield('breadcrumbs')
