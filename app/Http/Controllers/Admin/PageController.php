@@ -212,6 +212,8 @@ class PageController extends Controller
             'about_team.*.facebook' => ['nullable', 'string', 'max:255'],
             'about_team.*.instagram' => ['nullable', 'string', 'max:255'],
             'about_team.*.linkedin' => ['nullable', 'string', 'max:255'],
+            'about_team_photos' => ['nullable', 'array'],
+            'about_team_photos.*' => ['nullable', 'image', 'max:4096'],
             'about_section_order' => ['sometimes', 'array'],
             'about_section_order.*' => ['integer'],
             'about_partner_ids' => ['nullable', 'array'],
@@ -304,7 +306,19 @@ class PageController extends Controller
             $data['about_stats'] = $this->compactRows($request->input('about_stats', []), ['value', 'label']);
             $data['about_timeline'] = $this->compactRows($request->input('about_timeline', []), ['year', 'text', 'url', 'label', 'url2', 'label2', 'url3', 'label3', 'color']);
             $data['about_values'] = $this->compactRows($request->input('about_values', []), ['icon', 'title', 'text']);
-            $data['about_team'] = $this->compactRows($request->input('about_team', []), ['name', 'role', 'photo', 'bio', 'facebook', 'instagram', 'linkedin']);
+
+            // Zdjęcia zespołu: wgrane pliki (mapowane po indeksie wiersza) mają
+            // pierwszeństwo nad ręcznie wpisanym URL. Robimy to PRZED compactRows,
+            // dopóki indeksy plików pasują do surowych wierszy formularza.
+            $teamRows = $request->input('about_team', []);
+            foreach ((array) $request->file('about_team_photos', []) as $index => $file) {
+                if ($file && isset($teamRows[$index])) {
+                    $teamRows[$index]['photo'] = \Illuminate\Support\Facades\Storage::disk('public')->url(
+                        $file->store('zespol', 'public')
+                    );
+                }
+            }
+            $data['about_team'] = $this->compactRows($teamRows, ['name', 'role', 'photo', 'bio', 'facebook', 'instagram', 'linkedin']);
 
             $positions = $request->input('about_section_order', []);
             $data['about_section_order'] = collect(array_keys(Page::ABOUT_SECTIONS))

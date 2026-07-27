@@ -49,7 +49,7 @@
             @endif
         </div>
 
-        <form method="POST" action="{{ $page->exists ? route('admin.podstrony.update', $page) : route('admin.podstrony.store') }}" class="space-y-6">
+        <form method="POST" action="{{ $page->exists ? route('admin.podstrony.update', $page) : route('admin.podstrony.store') }}" enctype="multipart/form-data" class="space-y-6">
             @csrf
             @if ($page->exists) @method('PUT') @endif
 
@@ -462,7 +462,18 @@
                                             <input type="text" name="about_team[{{ $i }}][name]" value="{{ $row['name'] ?? '' }}" placeholder="Imię i nazwisko" aria-label="Imię członka zespołu {{ $i + 1 }}" class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
                                             <input type="text" name="about_team[{{ $i }}][role]" value="{{ $row['role'] ?? '' }}" placeholder="Co robi w FEER" aria-label="Co robi w FEER — członek zespołu {{ $i + 1 }}" class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
                                         </div>
-                                        <input type="text" name="about_team[{{ $i }}][photo]" value="{{ $row['photo'] ?? '' }}" placeholder="URL zdjęcia (opcjonalnie)" aria-label="Zdjęcie członka zespołu {{ $i + 1 }}" class="w-full rounded border-gray-300 text-xs focus:border-brand focus:ring-brand">
+                                        <div class="flex items-center gap-3 rounded-lg border border-gray-200 bg-white p-2">
+                                            @if (! empty($row['photo']))
+                                                <img src="{{ $row['photo'] }}" alt="" class="h-12 w-12 shrink-0 rounded-full object-cover">
+                                            @else
+                                                <span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-gray-100 text-gray-400" aria-hidden="true"><i class="fa-solid fa-user"></i></span>
+                                            @endif
+                                            <div class="min-w-0 flex-1 space-y-1">
+                                                <input type="file" name="about_team_photos[{{ $i }}]" accept="image/*" aria-label="Wgraj zdjęcie członka zespołu {{ $i + 1 }}"
+                                                    class="block w-full cursor-pointer text-xs text-muted file:mr-2 file:cursor-pointer file:rounded file:border-0 file:bg-brand file:px-3 file:py-1 file:text-xs file:font-bold file:text-white hover:file:bg-brand-dark">
+                                                <input type="text" name="about_team[{{ $i }}][photo]" value="{{ $row['photo'] ?? '' }}" placeholder="…albo wklej URL zdjęcia" aria-label="URL zdjęcia członka zespołu {{ $i + 1 }}" class="w-full rounded border-gray-300 text-xs focus:border-brand focus:ring-brand">
+                                            </div>
+                                        </div>
                                         <textarea name="about_team[{{ $i }}][bio]" rows="2" placeholder="Trochę o mnie" aria-label="Trochę o mnie — członek zespołu {{ $i + 1 }}" class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">{{ $row['bio'] ?? '' }}</textarea>
                                         <div class="grid gap-2 sm:grid-cols-3">
                                             <input type="url" name="about_team[{{ $i }}][facebook]" value="{{ $row['facebook'] ?? '' }}" placeholder="Facebook (URL)" aria-label="Facebook — członek zespołu {{ $i + 1 }}" class="w-full rounded border-gray-300 text-xs focus:border-brand focus:ring-brand">
@@ -482,7 +493,14 @@
                                         <input type="text" name="about_team[__INDEX__][name]" placeholder="Imię i nazwisko" aria-label="Imię członka zespołu" class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
                                         <input type="text" name="about_team[__INDEX__][role]" placeholder="Co robi w FEER" aria-label="Co robi w FEER" class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
                                     </div>
-                                    <input type="text" name="about_team[__INDEX__][photo]" placeholder="URL zdjęcia (opcjonalnie)" aria-label="Zdjęcie członka zespołu" class="w-full rounded border-gray-300 text-xs focus:border-brand focus:ring-brand">
+                                    <div class="flex items-center gap-3 rounded-lg border border-gray-200 bg-white p-2">
+                                        <span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-gray-100 text-gray-400" aria-hidden="true"><i class="fa-solid fa-user"></i></span>
+                                        <div class="min-w-0 flex-1 space-y-1">
+                                            <input type="file" name="about_team_photos[__INDEX__]" accept="image/*" aria-label="Wgraj zdjęcie członka zespołu"
+                                                class="block w-full cursor-pointer text-xs text-muted file:mr-2 file:cursor-pointer file:rounded file:border-0 file:bg-brand file:px-3 file:py-1 file:text-xs file:font-bold file:text-white hover:file:bg-brand-dark">
+                                            <input type="text" name="about_team[__INDEX__][photo]" placeholder="…albo wklej URL zdjęcia" aria-label="URL zdjęcia członka zespołu" class="w-full rounded border-gray-300 text-xs focus:border-brand focus:ring-brand">
+                                        </div>
+                                    </div>
                                     <textarea name="about_team[__INDEX__][bio]" rows="2" placeholder="Trochę o mnie" aria-label="Trochę o mnie" class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand"></textarea>
                                     <div class="grid gap-2 sm:grid-cols-3">
                                         <input type="url" name="about_team[__INDEX__][facebook]" placeholder="Facebook (URL)" aria-label="Facebook" class="w-full rounded border-gray-300 text-xs focus:border-brand focus:ring-brand">

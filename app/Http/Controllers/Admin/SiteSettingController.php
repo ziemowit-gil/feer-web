@@ -35,6 +35,7 @@ class SiteSettingController extends Controller
             'microsoft_client_id' => ['nullable', 'string', 'max:255'],
             'microsoft_client_secret' => ['nullable', 'string', 'max:1000'],
             'microsoft_tenant_id' => ['nullable', 'string', 'max:255'],
+            'unsplash_access_key' => ['nullable', 'string', 'max:1000'],
             'mail_transport' => ['required', Rule::in(array_keys(SiteSetting::MAIL_TRANSPORTS))],
             'mail_from_address' => ['nullable', 'email', 'max:255'],
             'mail_from_name' => ['nullable', 'string', 'max:255'],
@@ -203,6 +204,9 @@ class SiteSettingController extends Controller
         // Puste hasło SMTP = zostaw zapisane (analogicznie do sekretu Microsoft).
         if (blank($data['mail_password'] ?? null)) {
             unset($data['mail_password']);
+        }
+        if (blank($data['unsplash_access_key'] ?? null)) {
+            unset($data['unsplash_access_key']);
         }
         $data['mail_encryption'] = filled($data['mail_encryption'] ?? null) ? $data['mail_encryption'] : null;
         $data['show_coordinators'] = $request->boolean('show_coordinators');

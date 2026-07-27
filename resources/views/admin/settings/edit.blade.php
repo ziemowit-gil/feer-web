@@ -60,6 +60,15 @@
         </div>
 
         <div>
+            <label for="unsplash_access_key" class="mb-1 block text-sm font-bold">Klucz Unsplash (Access Key)</label>
+            <input type="password" id="unsplash_access_key" name="unsplash_access_key" autocomplete="new-password"
+                placeholder="{{ $settings->unsplash_access_key ? '•••••••• (zapisany — zostaw puste, aby nie zmieniać)' : 'Wklej Access Key z unsplash.com/developers' }}"
+                class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+            <p class="mt-1 text-xs text-muted">Umożliwia wyszukiwanie i import zdjęć z Unsplash w module Multimedia. Darmowy klucz: <a href="https://unsplash.com/developers" target="_blank" rel="noopener" class="text-brand underline">unsplash.com/developers</a>. Puste = wartość z pliku <code>.env</code>.</p>
+            @error('unsplash_access_key') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+        </div>
+
+        <div>
             <p class="mb-1 text-sm font-bold">Logo</p>
             @if ($settings->logoUrl())
                 <div class="mb-2 flex items-center gap-3">

@@ -143,7 +143,7 @@ class MediaLibraryController extends Controller
      */
     public function unsplashSearch(Request $request)
     {
-        $accessKey = config('services.unsplash.access_key');
+        $accessKey = SiteSetting::current()->unsplashAccessKey();
 
         abort_unless($accessKey, 501, 'Integracja z Unsplash nie jest skonfigurowana — brak UNSPLASH_ACCESS_KEY.');
 
@@ -181,7 +181,7 @@ class MediaLibraryController extends Controller
      */
     public function unsplashImport(Request $request)
     {
-        $accessKey = config('services.unsplash.access_key');
+        $accessKey = SiteSetting::current()->unsplashAccessKey();
 
         abort_unless($accessKey, 501, 'Integracja z Unsplash nie jest skonfigurowana — brak UNSPLASH_ACCESS_KEY.');
 
