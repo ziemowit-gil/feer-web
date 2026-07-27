@@ -5,8 +5,9 @@
     <a href="{{ $item->url }}" class="block px-4 py-2 text-sm font-bold normal-case {{ $item->isCurrent() ? 'text-brand' : 'text-ink' }} hover:bg-gray-50 hover:text-brand focus:bg-gray-50">
         {{ $item->label }}
     </a>
-@elseif (($linkedPage = $item->linkedPage()) && $linkedPage->publishedChildren->isNotEmpty())
-    {{-- Link do strony z podstronami → automatyczne submenu z jej dziećmi. --}}
+@elseif (($linkedPage = $item->linkedPage()) && ($linkedPage->publishedChildren->isNotEmpty() || ($linkedPage->type === 'about' && $siteSettings->isModuleEnabled('faq'))))
+    {{-- Link do strony z podstronami → automatyczne submenu z jej dziećmi.
+         Strona „O organizacji" dostaje w submenu także pozycję FAQ. --}}
     @include('partials.nav-page-dropdown', ['page' => $linkedPage, 'label' => $item->label, 'mobile' => $mobile, 'transparent' => $item->is_transparent_dropdown])
 @else
     <li>

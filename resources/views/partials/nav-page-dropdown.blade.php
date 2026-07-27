@@ -37,5 +37,12 @@
                 {{ $child->title }}
             </a>
         @endforeach
+
+        {{-- Strona „O organizacji": FAQ zawsze jako pozycja submenu (gdy moduł włączony). --}}
+        @if ($page->type === 'about' && $siteSettings->isModuleEnabled('faq'))
+            <a href="{{ route('faq.index') }}" class="block px-4 py-2 text-sm font-medium normal-case {{ request()->routeIs('faq.index') ? 'text-brand' : 'text-ink' }} hover:bg-gray-50 hover:text-brand focus:bg-gray-50">
+                Najczęstsze pytania (FAQ)
+            </a>
+        @endif
     </div>
 </li>
