@@ -40,7 +40,7 @@
             $projectRoutes = ['admin.kategorie.*', 'admin.projekty.*'];
             // „Skrzynka" — wszystko, co przychodzi od odwiedzających i czeka na obsługę.
             $inboxRoutes = ['admin.zgloszenia-spotkania.*', 'admin.zgloszenia-barier.*', 'admin.zapisy-materialy.*', 'admin.komentarze-bloga.*'];
-            $systemRoutes = ['admin.multimedia.*', 'admin.ustawienia.*', 'admin.newsletter.*', 'admin.uzytkownicy.*', 'admin.grupy.*'];
+            $systemRoutes = ['admin.multimedia.*', 'admin.ustawienia.*', 'admin.newsletter.*', 'admin.uzytkownicy.*', 'admin.grupy.*', 'admin.tresc.*'];
         @endphp
 
         <nav class="flex-1 space-y-1.5 overflow-y-auto px-3 py-4 text-sm font-medium">
@@ -218,6 +218,9 @@
                         </a>
                         <a href="{{ route('admin.grupy.index') }}" class="{{ $itemClass('admin.grupy.*') }}">
                             <i class="fa-solid fa-user-group {{ $iconClass('admin.grupy.*') }}"></i> Grupy użytkowników
+                        </a>
+                        <a href="{{ route('admin.tresc.index') }}" class="{{ $itemClass('admin.tresc.*') }}">
+                            <i class="fa-solid fa-right-left {{ $iconClass('admin.tresc.*') }}"></i> Przenoszenie treści
                         </a>
                     @endif
                 </div>

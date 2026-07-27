@@ -515,10 +515,11 @@
             @endif
 
             <p class="mb-6 leading-relaxed text-muted">
-                Szukasz dokumentów albo sprawozdań naszej fundacji? Zebraliśmy je
-                w <strong class="font-bold text-ink">Biuletynie Informacji Publicznej (BIP)</strong>. Dzięki temu tutaj
-                możemy po prostu opowiadać o tym, co robimy i dla kogo, a papiery masz pod ręką w jednym, uporządkowanym
-                miejscu. Nasz BIP dopiero się rozkręca — zaglądaj śmiało i dziękujemy za wyrozumiałość.
+                Dokumenty i sprawozdania naszej fundacji publikujemy w <strong class="font-bold text-ink">Biuletynie
+                Informacji Publicznej (BIP)</strong> — oficjalnym, uporządkowanym miejscu gromadzącym najważniejsze
+                informacje o naszej działalności. Dzięki temu na tej stronie możemy skupić się na przedstawianiu tego,
+                co i dla kogo robimy. Nasz Biuletyn wciąż się rozwija — serdecznie zachęcamy do regularnego odwiedzania
+                i dziękujemy za wyrozumiałość.
             </p>
 
             @if (filled($page->bip_move_note))

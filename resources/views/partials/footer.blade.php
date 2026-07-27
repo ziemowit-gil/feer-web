@@ -31,7 +31,11 @@
                 @endif
                 <span>
                     <span class="block">&copy; {{ now()->year }} {{ $siteSettings->site_name }}</span>
-                    
+                    <span class="block text-xs">
+                        Napędza <span class="font-bold">weCMS</span> · autor:
+                        <a href="mailto:ziemowit.gil@feer.org.pl" class="hover:text-brand">Ziemowit Gil</a>
+                    </span>
+                </span>
             </div>
 
             <nav aria-label="Linki stopki">

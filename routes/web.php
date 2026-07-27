@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\AttachmentController as AdminAttachmentController;
 use App\Http\Controllers\Admin\CategoryController as AdminCategoryController;
+use App\Http\Controllers\Admin\ContentPortabilityController as AdminContentPortabilityController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\EducationalMaterialController as AdminEducationalMaterialController;
 use App\Http\Controllers\Admin\EventController as AdminEventController;
@@ -46,6 +47,7 @@ use App\Http\Controllers\PageController;
 use App\Http\Controllers\PollVoteController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProjectController;
+use App\Http\Controllers\SearchController;
 use App\Http\Controllers\ShortcutController;
 use App\Http\Controllers\SitemapController;
 use App\Http\Controllers\SupportController;
@@ -93,6 +95,8 @@ Route::middleware('module:events')->group(function () {
 });
 
 Route::get('/faq', [FaqController::class, 'index'])->name('faq.index')->middleware('module:faq');
+
+Route::get('/szukaj', [SearchController::class, 'index'])->name('search');
 
 Route::get('/newsletter', [NewsletterController::class, 'index'])->name('newsletter.show');
 
@@ -236,6 +240,11 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(
         Route::patch('pozycje-menu/{navItem}/kolejnosc', [NavItemController::class, 'updateOrder'])->name('pozycje-menu.kolejnosc');
 
         Route::resource('grupy', AdminUserGroupController::class)->parameters(['grupy' => 'group'])->except('show');
+
+        // Przenośność treści (eksport/import) między instalacjami.
+        Route::get('tresc', [AdminContentPortabilityController::class, 'index'])->name('tresc.index');
+        Route::get('tresc/eksport', [AdminContentPortabilityController::class, 'export'])->name('tresc.export');
+        Route::post('tresc/import', [AdminContentPortabilityController::class, 'import'])->name('tresc.import');
     });
 
     Route::middleware('admin')->group(function () {
