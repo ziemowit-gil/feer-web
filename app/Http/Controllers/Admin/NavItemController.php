@@ -111,7 +111,9 @@ class NavItemController extends Controller
             'module' => ['nullable', Rule::in(array_keys(SiteSetting::MODULES))],
             'parent_id' => [
                 'nullable',
-                Rule::exists('nav_items', 'id')->whereIn('type', ['dropdown', 'link'])->where('is_button', false)->whereNull('parent_id'),
+                // Uwaga: w regule exists używamy 0 zamiast false — wartość false
+                // binduje się w weryfikatorze obecności jako '' i reguła zawsze zawodzi.
+                Rule::exists('nav_items', 'id')->whereIn('type', ['dropdown', 'link'])->where('is_button', 0)->whereNull('parent_id'),
             ],
             'order' => ['nullable', 'integer', 'min:0'],
             'button_color' => ['nullable', 'regex:/^#[0-9a-fA-F]{6}$/'],
