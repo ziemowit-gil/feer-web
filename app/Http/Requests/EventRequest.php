@@ -43,6 +43,8 @@ class EventRequest extends FormRequest
             'faqs' => ['nullable', 'array'],
             'faqs.*.question' => ['nullable', 'string', 'max:255'],
             'faqs.*.answer' => ['nullable', 'string', 'max:2000'],
+            'global_faqs' => ['nullable', 'array'],
+            'global_faqs.*' => ['integer', 'exists:faqs,id'],
         ];
     }
 

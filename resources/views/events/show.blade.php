@@ -107,13 +107,17 @@
             </section>
         @endif
 
-        @if ($event->faqs->isNotEmpty())
+        @php
+            // Własne FAQ wydarzenia + dopięte pytania z globalnego FAQ (tylko opublikowane).
+            $eventFaqs = $event->faqs->concat($event->globalFaqs->where('is_published', true));
+        @endphp
+        @if ($eventFaqs->isNotEmpty())
             <section aria-labelledby="faq" class="mb-8">
                 <h2 id="faq" class="flex items-center gap-2 text-xl font-bold text-ink">
                     <i class="fa-solid fa-circle-question" aria-hidden="true" style="color: var(--accent)"></i> Najczęstsze pytania
                 </h2>
                 <div class="mt-3 space-y-2">
-                    @foreach ($event->faqs as $faq)
+                    @foreach ($eventFaqs as $faq)
                         <details class="group rounded-xl border border-gray-200 bg-white [&[open]]:border-gray-300">
                             <summary class="flex cursor-pointer list-none items-center justify-between gap-3 px-5 py-4 font-bold text-ink [&::-webkit-details-marker]:hidden">
                                 <span>{{ $faq->question }}</span>

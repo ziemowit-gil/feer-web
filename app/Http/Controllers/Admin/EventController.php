@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\EventRequest;
 use App\Models\Event;
+use App\Models\Faq;
 use App\Models\News;
 use App\Models\SiteSetting;
 use Illuminate\Support\Str;
@@ -20,11 +21,14 @@ class EventController extends Controller
 
     public function create()
     {
-        return view('admin.events.form', ['event' => new Event([
-            'type' => 'szkolenie',
-            'mode' => 'stacjonarnie',
-            'registration_cta_label' => 'Zapisz się',
-        ])]);
+        return view('admin.events.form', [
+            'event' => new Event([
+                'type' => 'szkolenie',
+                'mode' => 'stacjonarnie',
+                'registration_cta_label' => 'Zapisz się',
+            ]),
+            'allFaqs' => $this->faqOptions(),
+        ]);
     }
 
     public function store(EventRequest $request)
@@ -35,13 +39,22 @@ class EventController extends Controller
         $event = Event::create($data);
         $this->syncFacilitatorPhoto($request, $event);
         $this->syncFaqs($request, $event);
+        $event->globalFaqs()->sync($request->input('global_faqs', []));
 
         return redirect()->route('admin.wydarzenia.index')->with('status', 'Wydarzenie zostało dodane.');
     }
 
     public function edit(Event $event)
     {
-        return view('admin.events.form', compact('event'));
+        return view('admin.events.form', ['event' => $event, 'allFaqs' => $this->faqOptions()]);
+    }
+
+    /** Globalne pytania FAQ do dopięcia (puste, gdy moduł FAQ wyłączony). */
+    private function faqOptions()
+    {
+        return SiteSetting::current()->isModuleEnabled('faq')
+            ? Faq::orderBy('category')->orderBy('order')->orderBy('id')->get()
+            : collect();
     }
 
     public function update(EventRequest $request, Event $event)
@@ -52,6 +65,7 @@ class EventController extends Controller
         $event->update($data);
         $this->syncFacilitatorPhoto($request, $event);
         $this->syncFaqs($request, $event);
+        $event->globalFaqs()->sync($request->input('global_faqs', []));
 
         return redirect()->route('admin.wydarzenia.index')->with('status', 'Wydarzenie zostało zaktualizowane.');
     }
@@ -147,7 +161,7 @@ class EventController extends Controller
         $data['registration_cta_label'] = trim((string) ($data['registration_cta_label'] ?? '')) ?: 'Zapisz się';
 
         // Pliki, FAQ i pomocnicze pola obsługujemy osobno.
-        unset($data['facilitator_photo'], $data['remove_facilitator_photo'], $data['faqs']);
+        unset($data['facilitator_photo'], $data['remove_facilitator_photo'], $data['faqs'], $data['global_faqs']);
 
         return $data;
     }

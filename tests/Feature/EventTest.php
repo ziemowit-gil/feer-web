@@ -166,6 +166,25 @@ class EventTest extends TestCase
             ->assertSee('Czy otrzymam zaświadczenie?');
     }
 
+    public function test_admin_can_attach_global_faqs_to_an_event(): void
+    {
+        $faq = \App\Models\Faq::create(['question' => 'Czy szkolenia są płatne?', 'answer' => 'Zwykle nie.', 'category' => 'Szkolenia']);
+
+        $this->actingAs($this->admin())
+            ->post(route('admin.wydarzenia.store'), $this->payload([
+                'global_faqs' => [$faq->id],
+            ]))
+            ->assertRedirect(route('admin.wydarzenia.index'));
+
+        $event = Event::firstWhere('title', 'Szkolenie z dostępności cyfrowej (WCAG)');
+
+        $this->assertTrue($event->globalFaqs->contains($faq->id));
+
+        $this->get(route('events.show', $event))
+            ->assertOk()
+            ->assertSee('Czy szkolenia są płatne?');
+    }
+
     public function test_events_nav_type_points_to_the_listing(): void
     {
         $this->actingAs($this->admin())

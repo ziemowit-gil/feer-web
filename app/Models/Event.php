@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
@@ -51,6 +52,14 @@ class Event extends Model implements HasMedia
     public function faqs(): HasMany
     {
         return $this->hasMany(EventFaq::class)->orderBy('order')->orderBy('id');
+    }
+
+    /** Pytania z globalnego FAQ dopięte do tego wydarzenia. */
+    public function globalFaqs(): BelongsToMany
+    {
+        return $this->belongsToMany(Faq::class, 'event_global_faq')
+            ->orderBy('faqs.order')
+            ->orderBy('faqs.id');
     }
 
     public function registerMediaCollections(): void

@@ -208,6 +208,28 @@
                 class="inline-flex items-center gap-2 rounded border border-dashed border-gray-300 px-4 py-2 text-sm font-bold text-brand hover:border-brand hover:bg-brand-light">
                 <i class="fa-solid fa-plus" aria-hidden="true"></i> Dodaj pytanie
             </button>
+
+            @if (($allFaqs ?? collect())->isNotEmpty())
+                @php $attachedFaqIds = old('global_faqs', $event->exists ? $event->globalFaqs->pluck('id')->all() : []); @endphp
+                <div class="mt-2 border-t border-gray-100 pt-4">
+                    <p class="text-sm font-bold text-ink">Dopnij pytania z globalnego FAQ <span class="font-normal text-muted">(opcjonalnie)</span></p>
+                    <p class="mb-2 text-xs text-muted">Zaznacz istniejące pytania z <a href="{{ route('admin.faq.index') }}" class="text-brand underline">FAQ</a>, aby pokazać je też na stronie tego wydarzenia.</p>
+                    <div class="max-h-56 space-y-1 overflow-auto rounded border border-gray-200 p-2">
+                        @foreach ($allFaqs as $faq)
+                            <label class="flex items-start gap-2 rounded px-2 py-1.5 hover:bg-gray-50">
+                                <input type="checkbox" name="global_faqs[]" value="{{ $faq->id }}"
+                                    {{ in_array($faq->id, $attachedFaqIds) ? 'checked' : '' }}
+                                    class="mt-0.5 rounded border-gray-300 text-brand focus:ring-brand">
+                                <span class="text-sm">
+                                    <span class="font-medium text-ink">{{ $faq->question }}</span>
+                                    @if ($faq->category)<span class="ml-1 text-xs text-muted">({{ $faq->category }})</span>@endif
+                                    @unless ($faq->is_published)<span class="ml-1 text-xs font-bold text-amber-600">szkic</span>@endunless
+                                </span>
+                            </label>
+                        @endforeach
+                    </div>
+                </div>
+            @endif
         </fieldset>
 
         {{-- Publikacja --}}
