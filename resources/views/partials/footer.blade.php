@@ -31,10 +31,12 @@
                 @endif
                 <span>
                     <span class="block">&copy; {{ now()->year }} {{ $siteSettings->site_name }}</span>
-                    <span class="block text-xs">
-                        Napędza <span class="font-bold">weCMS</span> · autor:
-                        <a href="mailto:ziemowit.gil@feer.org.pl" class="hover:text-brand">Ziemowit Gil</a>
-                    </span>
+                    @if ($siteSettings->show_cms_credit ?? true)
+                        <span class="block text-xs">
+                            Napędza <span class="font-bold">weCMS</span> · autor:
+                            <a href="mailto:ziemowit.gil@feer.org.pl" class="hover:text-brand">Ziemowit Gil</a>
+                        </span>
+                    @endif
                 </span>
             </div>
 

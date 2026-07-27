@@ -38,6 +38,7 @@ class SiteSettingController extends Controller
             'unsplash_access_key' => ['nullable', 'string', 'max:1000'],
             'cookie_banner_enabled' => ['sometimes', 'boolean'],
             'cookie_banner_text' => ['nullable', 'string', 'max:1000'],
+            'show_cms_credit' => ['sometimes', 'boolean'],
             'mail_transport' => ['required', Rule::in(array_keys(SiteSetting::MAIL_TRANSPORTS))],
             'mail_from_address' => ['nullable', 'email', 'max:255'],
             'mail_from_name' => ['nullable', 'string', 'max:255'],
@@ -218,6 +219,7 @@ class SiteSettingController extends Controller
         $data['contact_schedule_enabled'] = $request->boolean('contact_schedule_enabled');
         $data['support_show_partners'] = $request->boolean('support_show_partners');
         $data['cookie_banner_enabled'] = $request->boolean('cookie_banner_enabled');
+        $data['show_cms_credit'] = $request->boolean('show_cms_credit');
 
         // Rachunki bankowe: przycinamy pola, odrzucamy wiersze bez numeru
         // (pusty wiersz-zalążek z formularza) i przenumerowujemy listę.

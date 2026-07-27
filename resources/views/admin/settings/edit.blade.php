@@ -85,6 +85,13 @@
             </div>
         </div>
 
+        <label class="flex items-center gap-2 rounded-lg border border-gray-200 bg-gray-50 p-4">
+            <input type="hidden" name="show_cms_credit" value="0">
+            <input type="checkbox" name="show_cms_credit" value="1" {{ old('show_cms_credit', $settings->show_cms_credit ?? true) ? 'checked' : '' }}
+                class="rounded border-gray-300 text-brand focus:ring-brand">
+            <span class="text-sm font-bold">Pokaż nazwę CMS w stopce („weCMS · autor…")</span>
+        </label>
+
         <div>
             <p class="mb-1 text-sm font-bold">Logo</p>
             @if ($settings->logoUrl())
