@@ -652,7 +652,7 @@
                             <select id="parent_id" name="parent_id" class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
                                 <option value="">— brak (strona główna) —</option>
                                 @foreach ($parentOptions as $option)
-                                    <option value="{{ $option->id }}" {{ (int) old('parent_id', $page->parent_id) === $option->id ? 'selected' : '' }}>
+                                    <option value="{{ $option->id }}" {{ (int) old('parent_id', $page->parent_id ?? request('parent_id')) === $option->id ? 'selected' : '' }}>
                                         {{ $option->title }}
                                     </option>
                                 @endforeach

@@ -74,7 +74,13 @@
                             @endif
                         </td>
                         <td class="px-4 py-3">
-                            <div class="flex justify-end gap-3">
+                            <div class="flex items-center justify-end gap-3">
+                                @unless ($page->parent_id)
+                                    <a href="{{ route('admin.podstrony.create', ['parent_id' => $page->id]) }}"
+                                        class="inline-flex items-center gap-1 text-xs font-bold text-brand hover:text-brand-dark" title="Dodaj podstronę jako podrzędną w „{{ $page->title }}”">
+                                        <i class="fa-solid fa-plus" aria-hidden="true"></i> podstrona
+                                    </a>
+                                @endunless
                                 <a href="{{ route('page.show', $page) }}" target="_blank" class="text-muted hover:text-brand" title="Podgląd"><i class="fa-solid fa-eye"></i></a>
                                 <a href="{{ route('admin.podstrony.edit', $page) }}" class="text-muted hover:text-brand" title="Edytuj"><i class="fa-solid fa-pen"></i></a>
                                 <form method="POST" action="{{ route('admin.podstrony.clone', $page) }}">

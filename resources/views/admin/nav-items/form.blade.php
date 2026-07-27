@@ -4,7 +4,7 @@
 
 @section('content')
     <form method="POST" action="{{ $navItem->exists ? route('admin.pozycje-menu.update', $navItem) : route('admin.pozycje-menu.store') }}"
-        x-data="{ type: '{{ old('type', $navItem->type ?? 'link') }}', parentId: '{{ old('parent_id', $navItem->parent_id) }}', location: '{{ old('location', $navItem->location ?? 'main') }}', isButton: {{ old('is_button', $navItem->is_button ?? false) ? 'true' : 'false' }} }"
+        x-data="{ type: '{{ old('type', $navItem->type ?? 'link') }}', parentId: '{{ old('parent_id', $navItem->parent_id ?? request('parent_id')) }}', location: '{{ old('location', $navItem->location ?? request('location', 'main')) }}', isButton: {{ old('is_button', $navItem->is_button ?? false) ? 'true' : 'false' }} }"
         class="max-w-xl space-y-5 rounded-lg border border-gray-200 bg-white p-6">
         @csrf
         @if ($navItem->exists) @method('PUT') @endif
@@ -64,7 +64,7 @@
             <select id="parent_id" name="parent_id" x-model="parentId" class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
                 <option value="">— pozycja główna (na pasku menu) —</option>
                 @foreach ($parentOptions as $option)
-                    <option value="{{ $option->id }}" {{ (string) old('parent_id', $navItem->parent_id) === (string) $option->id ? 'selected' : '' }}>{{ $option->label }}</option>
+                    <option value="{{ $option->id }}" {{ (string) old('parent_id', $navItem->parent_id ?? request('parent_id')) === (string) $option->id ? 'selected' : '' }}>{{ $option->label }}</option>
                 @endforeach
             </select>
             @error('parent_id') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
