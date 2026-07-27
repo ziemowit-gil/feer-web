@@ -615,6 +615,20 @@
                         <div data-repeater>
                             <p class="mb-1 text-sm font-bold">Pytania i odpowiedzi</p>
                             <p class="mb-3 text-xs text-muted">Każda para tworzy zwijany element (akordeon) na stronie. W odpowiedzi możesz dodać <strong>linki</strong> (przycisk łańcucha w edytorze) oraz pogrubienia i listy. Puste wiersze są pomijane; kolejność odpowiada kolejności na liście.</p>
+
+                            @php $faqLinkPages = \App\Models\Page::where('is_published', true)->whereNotIn('type', ['internal', 'internal_hub'])->orderBy('title')->get(['slug', 'title']); @endphp
+                            @if ($faqLinkPages->isNotEmpty())
+                                <div class="mb-3">
+                                    <label class="sr-only" for="faq-page-link">Wstaw link do podstrony</label>
+                                    <select id="faq-page-link" data-faq-page-link class="rounded border-gray-300 text-xs focus:border-brand focus:ring-brand">
+                                        <option value="">Wstaw link do podstrony w serwisie&hellip;</option>
+                                        @foreach ($faqLinkPages as $p)
+                                            <option value="/{{ $p->slug }}" data-title="{{ $p->title }}">{{ $p->title }}</option>
+                                        @endforeach
+                                    </select>
+                                    <span class="ml-2 text-xs text-muted">Najpierw kliknij w treść odpowiedzi, potem wybierz stronę.</span>
+                                </div>
+                            @endif
                             <div data-repeater-rows class="space-y-3">
                                 @foreach ($faqItems as $i => $row)
                                     <div data-repeater-row class="space-y-2 rounded-lg border border-gray-200 bg-gray-50 p-4">
@@ -1293,6 +1307,25 @@
                     new MutationObserver(initAll).observe(rows, { childList: true });
                 }
             });
+
+            // Wstawianie linku do podstrony w serwisie w aktywne pole odpowiedzi.
+            const pageLink = container.querySelector('[data-faq-page-link]');
+            if (pageLink) {
+                pageLink.addEventListener('change', function () {
+                    var url = this.value;
+                    var title = this.selectedOptions[0] ? this.selectedOptions[0].dataset.title : url;
+                    this.selectedIndex = 0;
+                    if (!url || !window.tinymce) return;
+
+                    var ed = window.tinymce.activeEditor;
+                    if (ed && ed.targetElm && ed.targetElm.matches && ed.targetElm.matches('textarea[data-faq-answer]')) {
+                        ed.insertContent('<a href="' + url + '">' + title + '</a>');
+                        ed.save();
+                    } else {
+                        alert('Najpierw kliknij w treść odpowiedzi, w której chcesz wstawić link.');
+                    }
+                });
+            }
 
             // Przepisz treść edytorów do textarea tuż przed wysłaniem formularza.
             const form = container.closest('form');
