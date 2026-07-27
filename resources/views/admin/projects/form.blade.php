@@ -138,6 +138,61 @@
                     </div>
                 </div>
 
+                <div class="space-y-4 rounded-lg border border-gray-200 bg-white p-6"
+                    x-data="{ paid: {{ old('is_paid', $project->is_paid ?? false) ? 'true' : 'false' }} }">
+                    <label class="flex items-center gap-2">
+                        <input type="hidden" name="is_paid" value="0">
+                        <input type="checkbox" name="is_paid" value="1" x-model="paid"
+                            class="rounded border-gray-300 text-brand focus:ring-brand">
+                        <span class="text-sm font-bold">Projekt odpłatny — pokaż cennik na stronie projektu</span>
+                    </label>
+
+                    <div x-show="paid" x-cloak data-pricing>
+                        <p class="mb-2 text-sm font-bold uppercase tracking-wide text-muted">Cennik</p>
+                        <p class="mb-3 text-xs text-muted">Pozycja + cena (i opcjonalnie krótki opis). Puste wiersze są pomijane.</p>
+                        @php $pricingRows = array_values((array) old('pricing', $project->pricing ?? [])); @endphp
+                        <div data-pricing-rows class="space-y-2">
+                            @foreach ($pricingRows as $i => $row)
+                                <div data-pricing-row class="grid gap-2 sm:grid-cols-[2fr_1fr_2fr_auto]">
+                                    <input type="text" name="pricing[{{ $i }}][item]" value="{{ $row['item'] ?? '' }}" placeholder="Pozycja / usługa" aria-label="Pozycja cennika {{ $i + 1 }}" class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                                    <input type="text" name="pricing[{{ $i }}][price]" value="{{ $row['price'] ?? '' }}" placeholder="Cena, np. 200 zł" aria-label="Cena {{ $i + 1 }}" class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                                    <input type="text" name="pricing[{{ $i }}][note]" value="{{ $row['note'] ?? '' }}" placeholder="Opis (opcjonalnie)" aria-label="Opis pozycji {{ $i + 1 }}" class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                                    <button type="button" data-pricing-remove class="rounded p-2 text-muted hover:bg-red-50 hover:text-red-600" aria-label="Usuń pozycję cennika"><i class="fa-solid fa-trash" aria-hidden="true"></i></button>
+                                </div>
+                            @endforeach
+                        </div>
+                        <button type="button" data-pricing-add class="mt-3 inline-flex items-center gap-2 rounded border border-brand px-3 py-1.5 text-sm font-bold text-brand hover:bg-brand-light"><i class="fa-solid fa-plus"></i> Dodaj pozycję</button>
+                        <template data-pricing-template>
+                            <div data-pricing-row class="grid gap-2 sm:grid-cols-[2fr_1fr_2fr_auto]">
+                                <input type="text" name="pricing[__INDEX__][item]" placeholder="Pozycja / usługa" aria-label="Pozycja cennika" class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                                <input type="text" name="pricing[__INDEX__][price]" placeholder="Cena, np. 200 zł" aria-label="Cena" class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                                <input type="text" name="pricing[__INDEX__][note]" placeholder="Opis (opcjonalnie)" aria-label="Opis pozycji" class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                                <button type="button" data-pricing-remove class="rounded p-2 text-muted hover:bg-red-50 hover:text-red-600" aria-label="Usuń pozycję cennika"><i class="fa-solid fa-trash" aria-hidden="true"></i></button>
+                            </div>
+                        </template>
+                    </div>
+
+                    <script>
+                        (function () {
+                            var wrap = document.currentScript.closest('[data-pricing]') || document.querySelector('[data-pricing]');
+                            if (!wrap) return;
+                            var rows = wrap.querySelector('[data-pricing-rows]');
+                            var tpl = wrap.querySelector('[data-pricing-template]');
+                            var add = wrap.querySelector('[data-pricing-add]');
+                            var n = rows.querySelectorAll('[data-pricing-row]').length;
+                            if (add) add.addEventListener('click', function () {
+                                var html = tpl.innerHTML.replace(/__INDEX__/g, String(n++));
+                                var d = document.createElement('div'); d.innerHTML = html.trim();
+                                rows.appendChild(d.firstElementChild);
+                            });
+                            wrap.addEventListener('click', function (e) {
+                                var rm = e.target.closest('[data-pricing-remove]');
+                                if (rm) { var r = rm.closest('[data-pricing-row]'); if (r) r.remove(); }
+                            });
+                        })();
+                    </script>
+                </div>
+
                 <div class="space-y-5 rounded-lg border border-gray-200 bg-white p-6">
                     <p class="text-sm font-bold uppercase tracking-wide text-muted">Zdjęcie</p>
                     <div class="grid gap-5 sm:grid-cols-2">

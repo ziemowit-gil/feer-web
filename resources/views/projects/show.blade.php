@@ -205,6 +205,30 @@
                     </div>
                 @endif
 
+                @php $pricing = collect($project->pricing ?? [])->filter(fn ($p) => filled($p['item'] ?? null) || filled($p['price'] ?? null)); @endphp
+                @if ($project->is_paid && $pricing->isNotEmpty())
+                    <div class="mt-8 rounded-lg border border-gray-200 p-6">
+                        <h2 class="mb-4 flex items-center gap-2 text-xl font-bold text-ink">
+                            <i class="fa-solid fa-tag text-brand" aria-hidden="true"></i> Cennik
+                        </h2>
+                        <ul class="divide-y divide-gray-100">
+                            @foreach ($pricing as $row)
+                                <li class="flex items-baseline justify-between gap-4 py-2.5">
+                                    <span class="min-w-0">
+                                        <span class="font-medium text-ink">{{ $row['item'] }}</span>
+                                        @if (filled($row['note'] ?? null))
+                                            <span class="block text-sm text-muted">{{ $row['note'] }}</span>
+                                        @endif
+                                    </span>
+                                    @if (filled($row['price'] ?? null))
+                                        <span class="shrink-0 font-bold text-brand">{{ $row['price'] }}</span>
+                                    @endif
+                                </li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
+
                 @if ($siteSettings->isModuleEnabled('news') && $project->publishedNews->isNotEmpty())
                     <div class="mt-10 border-t border-gray-200 pt-8">
                         <h2 class="mb-4 flex items-center gap-2 text-xl font-bold text-ink">

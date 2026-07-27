@@ -97,6 +97,10 @@ class ProjectController extends Controller
             'custom_section_content_2' => ['nullable', 'string'],
             'custom_section_title_3' => ['nullable', 'string', 'max:255'],
             'custom_section_content_3' => ['nullable', 'string'],
+            'pricing' => ['nullable', 'array'],
+            'pricing.*.item' => ['nullable', 'string', 'max:255'],
+            'pricing.*.price' => ['nullable', 'string', 'max:100'],
+            'pricing.*.note' => ['nullable', 'string', 'max:255'],
         ]);
 
         $data['slug'] = trim($data['slug'] ?? '');
@@ -108,6 +112,23 @@ class ProjectController extends Controller
             : null;
         $data['is_published'] = $request->boolean('is_published');
         $data['is_completed'] = $request->boolean('is_completed');
+
+        // Odpłatny + cennik: pomijamy puste wiersze; gdy nieodpłatny — czyścimy.
+        $data['is_paid'] = $request->boolean('is_paid');
+        if ($data['is_paid']) {
+            $pricing = [];
+            foreach ((array) $request->input('pricing', []) as $row) {
+                $item = trim((string) ($row['item'] ?? ''));
+                $price = trim((string) ($row['price'] ?? ''));
+                $note = trim((string) ($row['note'] ?? ''));
+                if ($item !== '' || $price !== '') {
+                    $pricing[] = ['item' => $item, 'price' => $price, 'note' => $note];
+                }
+            }
+            $data['pricing'] = $pricing ?: null;
+        } else {
+            $data['pricing'] = null;
+        }
         $data['is_featured_contact'] = $request->boolean('is_featured_contact');
         $data['show_coordinator'] = $request->boolean('show_coordinator');
         $data['show_legacy_box'] = $request->boolean('show_legacy_box');
