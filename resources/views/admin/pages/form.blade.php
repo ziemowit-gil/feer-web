@@ -75,7 +75,9 @@
                         </div>
                     </div>
 
-                    <div>
+                    {{-- Główny edytor treści — ukryty dla typów bez swobodnej treści
+                         („O organizacji" i „Przeniesiono do BIP" mają własne pola). --}}
+                    <div data-content-field class="{{ in_array($currentType, ['about', 'bip_move'], true) ? 'hidden' : '' }}">
                         <label class="mb-1 block text-sm font-bold">Treść</label>
                         @include('admin.partials.editor', ['name' => 'content', 'value' => old('content', $page->content)])
                         @error('content') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
@@ -293,7 +295,7 @@
                             <label for="about_intro" class="mb-1 block text-sm font-bold">Wstęp</label>
                             <textarea id="about_intro" name="about_intro" rows="5" placeholder="Krótkie wprowadzenie o organizacji. Kolejne akapity oddzielaj pustą linią."
                                 class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">{{ old('about_intro', $page->about_intro) }}</textarea>
-                            <p class="mt-1 text-xs text-muted">Tekst wstępu jako zwykłe pole (bez edytora). Wyświetli się obok zdjęć u góry strony. Pole „Treść” (edytor) możesz zostawić puste.</p>
+                            <p class="mt-1 text-xs text-muted">Tekst wstępu jako zwykłe pole (bez edytora). Wyświetli się obok zdjęć u góry strony.</p>
                             @error('about_intro') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                         </div>
                             </div>
@@ -683,7 +685,7 @@
                             <input type="url" id="bip_move_url" name="bip_move_url" value="{{ old('bip_move_url', $page->bip_move_url) }}"
                                 placeholder="https://bip… — puste = ogólny adres BIP z Ustawień"
                                 class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
-                            <p class="mt-1 text-xs text-muted">Puste = przycisk poprowadzi do ogólnego adresu BIP z „Ustawienia → Media i BIP”. W polu „Treść” (edytor) możesz dodać własny opis nad komunikatem.</p>
+                            <p class="mt-1 text-xs text-muted">Puste = przycisk poprowadzi do ogólnego adresu BIP z „Ustawienia → Media i BIP”. Dodatkowy opis wpiszesz w polu „Dodatkowa informacja” poniżej.</p>
                             @error('bip_move_url') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                         </div>
 
@@ -1048,6 +1050,7 @@
             const internalFields = document.querySelector('[data-internal-fields]');
             const hubFields = document.querySelector('[data-hub-fields]');
             const legacyFields = document.querySelector('[data-legacy-fields]');
+            const contentField = document.querySelector('[data-content-field]');
             if (typeSelect) {
                 typeSelect.addEventListener('change', function () {
                     if (eventFields) eventFields.classList.toggle('hidden', typeSelect.value !== 'event');
@@ -1058,6 +1061,7 @@
                     if (internalFields) internalFields.classList.toggle('hidden', ! ['internal', 'internal_hub'].includes(typeSelect.value));
                     if (hubFields) hubFields.classList.toggle('hidden', typeSelect.value !== 'internal_hub');
                     if (legacyFields) legacyFields.classList.toggle('hidden', typeSelect.value !== 'legacy');
+                    if (contentField) contentField.classList.toggle('hidden', ['about', 'bip_move'].includes(typeSelect.value));
                     // Galeria „O organizacji” jest osobna — ukryj generyczny przełącznik dla tego typu.
                     document.querySelectorAll('[data-gallery-toggle]').forEach(function (el) {
                         el.classList.toggle('hidden', typeSelect.value === 'about');
