@@ -7,6 +7,8 @@
         'facebook' => ['fa-brands fa-facebook-f', 'Facebook'],
         'instagram' => ['fa-brands fa-instagram', 'Instagram'],
         'linkedin' => ['fa-brands fa-linkedin-in', 'LinkedIn'],
+        'website' => ['fa-solid fa-globe', 'Strona WWW'],
+        'substack' => ['fa-solid fa-newspaper', 'Substack'],
     ];
 @endphp
 

@@ -64,11 +64,15 @@ class TeamPhotoUploadTest extends TestCase
             ->put(route('admin.podstrony.update', $page), [
                 'title' => 'O nas', 'slug' => 'o-nas', 'type' => 'about', 'is_published' => '1', 'parent_id' => '', 'project_id' => '',
                 'about_team' => [
-                    ['name' => 'Jan', 'role' => 'Prezes', 'photo' => 'https://example.com/jan.jpg'],
+                    ['name' => 'Jan', 'role' => 'Prezes', 'photo' => 'https://example.com/jan.jpg',
+                     'website' => 'https://jan.example.com', 'substack' => 'https://jan.substack.com'],
                 ],
             ])
             ->assertRedirect();
 
-        $this->assertSame('https://example.com/jan.jpg', $page->fresh()->about_team[0]['photo']);
+        $saved = $page->fresh()->about_team[0];
+        $this->assertSame('https://example.com/jan.jpg', $saved['photo']);
+        $this->assertSame('https://jan.example.com', $saved['website']);
+        $this->assertSame('https://jan.substack.com', $saved['substack']);
     }
 }

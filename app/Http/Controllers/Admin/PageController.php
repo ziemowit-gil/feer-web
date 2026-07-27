@@ -212,6 +212,8 @@ class PageController extends Controller
             'about_team.*.facebook' => ['nullable', 'string', 'max:255'],
             'about_team.*.instagram' => ['nullable', 'string', 'max:255'],
             'about_team.*.linkedin' => ['nullable', 'string', 'max:255'],
+            'about_team.*.website' => ['nullable', 'string', 'max:255'],
+            'about_team.*.substack' => ['nullable', 'string', 'max:255'],
             'about_team_photos' => ['nullable', 'array'],
             'about_team_photos.*' => ['nullable', 'image', 'max:4096'],
             'about_section_order' => ['sometimes', 'array'],
@@ -318,7 +320,7 @@ class PageController extends Controller
                     );
                 }
             }
-            $data['about_team'] = $this->compactRows($teamRows, ['name', 'role', 'photo', 'bio', 'facebook', 'instagram', 'linkedin']);
+            $data['about_team'] = $this->compactRows($teamRows, ['name', 'role', 'photo', 'bio', 'facebook', 'instagram', 'linkedin', 'website', 'substack']);
 
             $positions = $request->input('about_section_order', []);
             $data['about_section_order'] = collect(array_keys(Page::ABOUT_SECTIONS))

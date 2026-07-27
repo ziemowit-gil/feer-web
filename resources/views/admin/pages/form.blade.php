@@ -479,8 +479,12 @@
                                             <input type="url" name="about_team[{{ $i }}][facebook]" value="{{ $row['facebook'] ?? '' }}" placeholder="Facebook (URL)" aria-label="Facebook — członek zespołu {{ $i + 1 }}" class="w-full rounded border-gray-300 text-xs focus:border-brand focus:ring-brand">
                                             <input type="url" name="about_team[{{ $i }}][instagram]" value="{{ $row['instagram'] ?? '' }}" placeholder="Instagram (URL)" aria-label="Instagram — członek zespołu {{ $i + 1 }}" class="w-full rounded border-gray-300 text-xs focus:border-brand focus:ring-brand">
                                             <input type="url" name="about_team[{{ $i }}][linkedin]" value="{{ $row['linkedin'] ?? '' }}" placeholder="LinkedIn (URL)" aria-label="LinkedIn — członek zespołu {{ $i + 1 }}" class="w-full rounded border-gray-300 text-xs focus:border-brand focus:ring-brand">
+                                            <input type="url" name="about_team[{{ $i }}][website]" value="{{ $row['website'] ?? '' }}" placeholder="Własna strona WWW (URL)" aria-label="Własna strona WWW — członek zespołu {{ $i + 1 }}" class="w-full rounded border-gray-300 text-xs focus:border-brand focus:ring-brand">
+                                            <input type="url" name="about_team[{{ $i }}][substack]" value="{{ $row['substack'] ?? '' }}" placeholder="Substack (URL)" aria-label="Substack — członek zespołu {{ $i + 1 }}" class="w-full rounded border-gray-300 text-xs focus:border-brand focus:ring-brand">
                                         </div>
-                                        <div class="text-right">
+                                        <div class="flex items-center justify-end gap-1">
+                                            <button type="button" data-repeater-move="up" class="rounded p-1.5 text-muted hover:bg-gray-100 hover:text-brand" aria-label="Przenieś osobę wyżej"><i class="fa-solid fa-arrow-up" aria-hidden="true"></i></button>
+                                            <button type="button" data-repeater-move="down" class="rounded p-1.5 text-muted hover:bg-gray-100 hover:text-brand" aria-label="Przenieś osobę niżej"><i class="fa-solid fa-arrow-down" aria-hidden="true"></i></button>
                                             <button type="button" data-repeater-remove class="inline-flex items-center gap-1.5 rounded p-1.5 text-xs font-bold text-muted hover:bg-red-50 hover:text-red-600" aria-label="Usuń członka zespołu"><i class="fa-solid fa-trash" aria-hidden="true"></i> Usuń</button>
                                         </div>
                                     </div>
@@ -506,8 +510,12 @@
                                         <input type="url" name="about_team[__INDEX__][facebook]" placeholder="Facebook (URL)" aria-label="Facebook" class="w-full rounded border-gray-300 text-xs focus:border-brand focus:ring-brand">
                                         <input type="url" name="about_team[__INDEX__][instagram]" placeholder="Instagram (URL)" aria-label="Instagram" class="w-full rounded border-gray-300 text-xs focus:border-brand focus:ring-brand">
                                         <input type="url" name="about_team[__INDEX__][linkedin]" placeholder="LinkedIn (URL)" aria-label="LinkedIn" class="w-full rounded border-gray-300 text-xs focus:border-brand focus:ring-brand">
+                                        <input type="url" name="about_team[__INDEX__][website]" placeholder="Własna strona WWW (URL)" aria-label="Własna strona WWW" class="w-full rounded border-gray-300 text-xs focus:border-brand focus:ring-brand">
+                                        <input type="url" name="about_team[__INDEX__][substack]" placeholder="Substack (URL)" aria-label="Substack" class="w-full rounded border-gray-300 text-xs focus:border-brand focus:ring-brand">
                                     </div>
-                                    <div class="text-right">
+                                    <div class="flex items-center justify-end gap-1">
+                                        <button type="button" data-repeater-move="up" class="rounded p-1.5 text-muted hover:bg-gray-100 hover:text-brand" aria-label="Przenieś osobę wyżej"><i class="fa-solid fa-arrow-up" aria-hidden="true"></i></button>
+                                        <button type="button" data-repeater-move="down" class="rounded p-1.5 text-muted hover:bg-gray-100 hover:text-brand" aria-label="Przenieś osobę niżej"><i class="fa-solid fa-arrow-down" aria-hidden="true"></i></button>
                                         <button type="button" data-repeater-remove class="inline-flex items-center gap-1.5 rounded p-1.5 text-xs font-bold text-muted hover:bg-red-50 hover:text-red-600" aria-label="Usuń członka zespołu"><i class="fa-solid fa-trash" aria-hidden="true"></i> Usuń</button>
                                     </div>
                                 </div>
