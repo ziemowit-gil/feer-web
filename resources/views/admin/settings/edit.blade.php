@@ -16,19 +16,11 @@
         @csrf
         @method('PUT')
 
-        @php
-            $tabs = \App\Models\SiteSetting::SETTINGS_TABS;
-        @endphp
-
-        <nav aria-label="Sekcje ustawień" class="mb-6 flex flex-wrap gap-1 rounded-lg border border-gray-200 bg-gray-50 p-1 text-sm font-bold">
-            @foreach ($tabs as $key => $label)
-                <button type="button" @click="tab = '{{ $key }}'"
-                    :class="tab === '{{ $key }}' ? 'bg-brand text-white' : 'text-muted hover:bg-gray-100'"
-                    class="rounded px-3 py-1.5">
-                    {{ $label }}
-                </button>
-            @endforeach
-        </nav>
+        {{-- Zakładki ustawień są w bocznym menu panelu (Ustawienia → …).
+             Sekcje przełączamy przez ?tab=… ustawiane z menu bocznego. --}}
+        <p class="mb-6 text-sm text-muted">
+            Wybierz sekcję ustawień z menu po lewej. Zmiany zapisz przyciskiem na dole — dotyczą wszystkich sekcji.
+        </p>
 
         <div x-show="tab === 'general'" x-cloak class="space-y-6">
         <div>

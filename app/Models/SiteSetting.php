@@ -688,10 +688,16 @@ class SiteSetting extends Model implements HasMedia
      */
     public function audienceOptions(): array
     {
-        $options = [
-            'brand' => 'Kolor marki (domyślny)',
-            'ngo' => 'NGO',
-        ];
+        $options = ['brand' => 'Kolor marki (domyślny)'];
+
+        // Dodatkowe kolory identyfikacji (2–4) — dostępne, gdy zdefiniowane.
+        foreach ([2, 3, 4] as $n) {
+            if (\App\Support\Color::isValid($this->{'brand_color_'.$n})) {
+                $options['brand'.$n] = 'Kolor marki '.$n;
+            }
+        }
+
+        $options['ngo'] = 'NGO';
 
         foreach ($this->subBrands() as $subBrand) {
             $options['sub:'.$subBrand['name']] = $subBrand['name'];
@@ -708,6 +714,14 @@ class SiteSetting extends Model implements HasMedia
     {
         if ($audience === 'ngo' && \App\Support\Color::isValid($this->ngo_color)) {
             return $this->ngo_color;
+        }
+
+        // Dodatkowe kolory marki: „brand2"/„brand3"/„brand4".
+        if (in_array($audience, ['brand2', 'brand3', 'brand4'], true)) {
+            $hex = $this->{'brand_color_'.substr($audience, 5)} ?? null;
+            if (\App\Support\Color::isValid($hex)) {
+                return $hex;
+            }
         }
 
         if ($audience && str_starts_with($audience, 'sub:')) {
