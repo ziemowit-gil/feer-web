@@ -35,6 +35,9 @@
                 @endforeach
             </select>
             @error('type') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+            <p class="mt-1 text-xs text-muted" x-show="type === 'volunteering'" x-cloak>
+                Pozycja prowadzi automatycznie do listy ogłoszeń o wolontariacie (/wolontariat) i ukrywa się, gdy moduł jest wyłączony. Możesz wyróżnić ją jako przycisk (CTA) poniżej.
+            </p>
         </div>
 
         <div x-show="type === 'link' || location === 'footer'" x-cloak>
@@ -78,13 +81,13 @@
             @error('module') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
         </div>
 
-        <label class="flex items-center gap-2" x-show="type === 'link' && parentId === ''" x-cloak>
+        <label class="flex items-center gap-2" x-show="(type === 'link' || type === 'volunteering') && parentId === ''" x-cloak>
             <input type="checkbox" name="is_button" value="1" x-model="isButton" {{ old('is_button', $navItem->is_button ?? false) ? 'checked' : '' }}
                 class="rounded border-gray-300 text-brand focus:ring-brand">
             <span class="text-sm font-bold">Wyróżnij jako przycisk (CTA)</span>
         </label>
 
-        <div x-show="type === 'link' && parentId === '' && isButton" x-cloak>
+        <div x-show="(type === 'link' || type === 'volunteering') && parentId === '' && isButton" x-cloak>
             @php $buttonColor = old('button_color', $navItem->button_color); @endphp
             <label for="button_color" class="mb-1 block text-sm font-bold">Kolor przycisku <span class="font-normal text-muted">(opcjonalnie)</span></label>
             <div class="flex items-center gap-3" x-data="{ color: '{{ $buttonColor ?: '#2563eb' }}', enabled: {{ $buttonColor ? 'true' : 'false' }} }">
@@ -103,7 +106,7 @@
             @error('button_color') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
         </div>
 
-        <label class="flex items-center gap-2" x-show="type !== 'link'" x-cloak>
+        <label class="flex items-center gap-2" x-show="type === 'dropdown' || type === 'projects' || type === 'pages'" x-cloak>
             <input type="checkbox" name="is_transparent_dropdown" value="1" {{ old('is_transparent_dropdown', $navItem->is_transparent_dropdown ?? false) ? 'checked' : '' }}
                 class="rounded border-gray-300 text-brand focus:ring-brand">
             <span class="text-sm font-bold">Przezroczyste tło rozwijanego panelu</span>

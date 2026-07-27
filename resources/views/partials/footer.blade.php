@@ -41,6 +41,7 @@
                             <li><a href="{{ $item->url }}" class="hover:text-brand">{{ $item->label }}</a></li>
                         @endforeach
                     @endif
+                    <li><a href="{{ route('accessibility.show') }}" class="hover:text-brand">Deklaracja dostępności</a></li>
                     <li><a href="{{ route('sitemap.page') }}" class="hover:text-brand">Mapa strony</a></li>
                 </ul>
             </nav>

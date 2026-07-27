@@ -14,6 +14,8 @@ class NavItem extends Model
         'dropdown' => 'Rozwijane menu (własne podpozycje)',
         'projects' => 'Menu projektów (automatyczne z kategorii)',
         'pages' => 'Menu podstron (automatyczne z podstron)',
+        'volunteering' => 'Ogłoszenia o wolontariacie',
+        'events' => 'Szkolenia i wydarzenia',
     ];
 
     /**
@@ -57,6 +59,44 @@ class NavItem extends Model
     public function isDropdown(): bool
     {
         return in_array($this->type, ['dropdown', 'projects', 'pages'], true);
+    }
+
+    /**
+     * Strona, na którą wskazuje ten link (jeśli to wewnętrzny link do podstrony).
+     * Dzięki temu zwykły link automatycznie dostaje submenu z opublikowanymi
+     * podstronami. Zwraca null dla przycisków CTA, linków zewnętrznych, kotwic
+     * oraz adresów, które nie odpowiadają istniejącej opublikowanej stronie.
+     */
+    public function linkedPage(): ?Page
+    {
+        if ($this->type !== 'link' || $this->is_button || blank($this->url)) {
+            return null;
+        }
+
+        $url = $this->url;
+
+        if (Str::startsWith($url, '#')) {
+            return null;
+        }
+
+        // Linki zewnętrzne pomijamy; wewnętrzny bezwzględny sprowadzamy do ścieżki.
+        if (Str::startsWith($url, ['http://', 'https://'])) {
+            if (! Str::startsWith($url, url('/'))) {
+                return null;
+            }
+            $url = Str::after($url, rtrim(url('/'), '/'));
+        }
+
+        $path = ltrim((string) parse_url($url, PHP_URL_PATH), '/');
+
+        // Tylko adresy jednoczłonowe /{slug} (podstrony żyją na najwyższym poziomie).
+        if ($path === '' || str_contains($path, '/')) {
+            return null;
+        }
+
+        return Page::where('slug', $path)->where('is_published', true)
+            ->with('publishedChildren')
+            ->first();
     }
 
     /**

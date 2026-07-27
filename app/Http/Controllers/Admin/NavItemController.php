@@ -116,6 +116,21 @@ class NavItemController extends Controller
 
         $data['url'] = ($data['url'] ?? null) ?: '#';
 
+        // Typ „Ogłoszenia o wolontariacie" kieruje zawsze na listę /wolontariat
+        // i automatycznie chowa się, gdy moduł wolontariatu jest wyłączony.
+        // Renderuje się jak zwykły link (może być przyciskiem CTA).
+        if ($data['type'] === 'volunteering') {
+            $data['url'] = route('volunteer.index');
+            $data['module'] = 'volunteering';
+        }
+
+        // Typ „Szkolenia i wydarzenia" kieruje zawsze na listę /wydarzenia
+        // i chowa się, gdy moduł wydarzeń jest wyłączony (jak wolontariat).
+        if ($data['type'] === 'events') {
+            $data['url'] = route('events.index');
+            $data['module'] = 'events';
+        }
+
         // The footer only ever renders plain links — no dropdowns/submenus.
         if ($data['location'] === 'footer') {
             $data['type'] = 'link';
@@ -123,8 +138,9 @@ class NavItemController extends Controller
         }
 
         // Dropdown/projects triggers open a panel instead of navigating, and
-        // can't themselves be nested inside another dropdown.
-        if (in_array($data['type'], ['dropdown', 'projects'], true)) {
+        // can't themselves be nested inside another dropdown. The volunteering
+        // type is always a top-level link/CTA, so it can't be nested either.
+        if (in_array($data['type'], ['dropdown', 'projects', 'volunteering', 'events'], true)) {
             $data['parent_id'] = null;
         }
 

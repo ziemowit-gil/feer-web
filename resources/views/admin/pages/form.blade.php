@@ -712,6 +712,23 @@
                             </label>
 
                             @if (auth()->user()->isAdmin())
+                                <label class="flex items-start gap-2">
+                                    <input type="hidden" name="is_locked" value="0">
+                                    <input type="checkbox" name="is_locked" value="1" {{ old('is_locked', $page->is_locked ?? false) ? 'checked' : '' }}
+                                        class="mt-0.5 rounded border-gray-300 text-brand focus:ring-brand">
+                                    <span>
+                                        <span class="block text-sm font-bold"><i class="fa-solid fa-lock text-brand" aria-hidden="true"></i> Zablokuj treść do edycji przez innych</span>
+                                        <span class="block text-xs text-muted">Tylko administrator będzie mógł edytować, ukrywać lub usuwać tę stronę. Opcję widzą i zmieniają wyłącznie administratorzy.</span>
+                                    </span>
+                                </label>
+                            @elseif ($page->is_locked ?? false)
+                                <p class="flex items-start gap-2 rounded border border-amber-200 bg-amber-50 px-2 py-1.5 text-xs text-amber-800">
+                                    <i class="fa-solid fa-lock mt-0.5" aria-hidden="true"></i>
+                                    <span>Ta strona jest zablokowana do edycji przez administratora.</span>
+                                </p>
+                            @endif
+
+                            @if (auth()->user()->isAdmin())
                                 <label class="flex items-center gap-2">
                                     <input type="hidden" name="is_locked" value="0">
                                     <input type="checkbox" name="is_locked" value="1" {{ old('is_locked', $page->is_locked ?? false) ? 'checked' : '' }}

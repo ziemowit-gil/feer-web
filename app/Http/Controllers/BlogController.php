@@ -8,12 +8,23 @@ class BlogController extends Controller
 {
     public function index()
     {
-        $articles = BlogArticle::published()
+        // Najnowszy wpis prezentujemy jako wyróżniony (hero) na pierwszej stronie.
+        $featured = BlogArticle::published()
             ->orderByDesc('published_at')
             ->orderByDesc('created_at')
-            ->paginate(9);
+            ->first();
 
-        return view('blog.index', compact('articles'));
+        $query = BlogArticle::published()
+            ->orderByDesc('published_at')
+            ->orderByDesc('created_at');
+
+        if ($featured) {
+            $query->whereKeyNot($featured->getKey());
+        }
+
+        $articles = $query->paginate(8)->withQueryString();
+
+        return view('blog.index', compact('articles', 'featured'));
     }
 
     public function show(BlogArticle $article)

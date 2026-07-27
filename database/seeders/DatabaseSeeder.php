@@ -242,6 +242,8 @@ class DatabaseSeeder extends Seeder
                 ->usingFileName(Str::slug($data['name']).'.png')
                 ->toMediaCollection('logo');
         }
+
+        $this->call(EventSeeder::class);
     }
 
     private function downloadImage(string $url, string $directory): ?string

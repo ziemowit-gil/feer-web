@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Event;
 use App\Models\GalleryImage;
 use App\Models\HeroSlide;
 use App\Models\News;
@@ -23,6 +24,10 @@ class HomeController extends Controller
             ? News::published()->with('category')->orderByDesc('published_at')->limit(3)->get()
             : collect();
 
+        $events = $settings->isModuleEnabled('events')
+            ? Event::upcoming()->limit(3)->get()
+            : collect();
+
         $poll = $settings->isModuleEnabled('polls') ? Poll::active() : null;
 
         $quickLinks = $settings->isModuleEnabled('quick_actions') ? QuickAction::orderBy('order')->get() : collect();
@@ -35,6 +40,6 @@ class HomeController extends Controller
 
         $sectionOrder = $settings->orderedHomepageSections();
 
-        return view('home', compact('slides', 'news', 'poll', 'quickLinks', 'gallery', 'partners', 'sectionOrder', 'substackPosts'));
+        return view('home', compact('slides', 'news', 'events', 'poll', 'quickLinks', 'gallery', 'partners', 'sectionOrder', 'substackPosts'));
     }
 }

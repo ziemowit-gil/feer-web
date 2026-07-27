@@ -24,6 +24,8 @@ class SiteSetting extends Model implements HasMedia
         'quick_actions' => 'Szybkie akcje',
         'partners' => 'Partnerzy',
         'materials' => 'Materiały edukacyjne',
+        'volunteering' => 'Wolontariat',
+        'events' => 'Szkolenia i wydarzenia',
         'support' => 'Wesprzyj nas',
     ];
 
@@ -41,6 +43,7 @@ class SiteSetting extends Model implements HasMedia
         'contact' => 'Kontakt',
         'social' => 'Media i BIP',
         'registry' => 'Dane rejestrowe',
+        'accessibility' => 'Dostępność',
         'support' => 'Wesprzyj nas',
         'content' => 'Projekty',
         'modules' => 'Moduły',
@@ -56,6 +59,7 @@ class SiteSetting extends Model implements HasMedia
     public const HOMEPAGE_SECTIONS = [
         'hero' => 'Slajder (hero)',
         'news' => 'Aktualności',
+        'events' => 'Szkolenia i wydarzenia',
         'ankieta' => 'Ankieta i szybkie akcje',
         'gallery' => 'Galeria',
         'substack' => 'O tym piszemy (Substack)',
@@ -95,6 +99,7 @@ class SiteSetting extends Model implements HasMedia
     public const MAIL_TRANSPORTS = [
         'default' => 'Dziedzicz z serwera (.env)',
         'smtp' => 'Własny serwer SMTP',
+        'sendmail' => 'Wbudowana poczta PHP (sendmail)',
     ];
 
     /**
@@ -107,9 +112,13 @@ class SiteSetting extends Model implements HasMedia
     ];
 
     protected $fillable = [
-        'site_name', 'tagline', 'brand_color', 'meta_description', 'allow_indexing', 'disabled_modules', 'homepage_section_order',
+        'site_name', 'tagline', 'brand_color', 'meta_description', 'allow_indexing', 'disabled_modules', 'homepage_section_order', 'events_home_color',
         'bip_url', 'bip_intro', 'facebook_url', 'twitter_url', 'instagram_url', 'linkedin_url', 'youtube_url', 'substack_url',
         'contact_address', 'contact_city', 'contact_email', 'contact_phone', 'contact_intro', 'contact_bank_accounts',
+        'contact_meeting_title', 'contact_online_meeting_url', 'contact_online_meeting_label', 'contact_online_meeting_text',
+        'contact_schedule_title', 'contact_schedule', 'contact_remote_note', 'contact_meeting_notify_email',
+        'contact_edelivery_address',
+        'contact_shipping_note', 'contact_paczkomat_code', 'contact_paczkomat_address', 'contact_paczkomat_location', 'contact_shipping_phone', 'contact_shipping_visible',
         'contact_box_text', 'contact_box_link_label', 'contact_box_link_url', 'contact_box_visible_from', 'contact_box_visible_until',
         'homepage_banner_text', 'homepage_banner_link_label', 'homepage_banner_link_url', 'homepage_banner_visible_from', 'homepage_banner_visible_until',
         'newsletter_code', 'header_layout', 'show_topbar_bip', 'show_topbar_social', 'content_editor',
@@ -119,8 +128,16 @@ class SiteSetting extends Model implements HasMedia
         'show_coordinators', 'ngo_color', 'sub_brands',
         'logo_alt', 'logo_only',
         'krs_number', 'nip_number', 'regon_number', 'projects_intro', 'materials_intro', 'materials_notice',
+        'accessibility_entity_name', 'accessibility_status', 'accessibility_status_note',
+        'accessibility_page_published_at', 'accessibility_page_updated_at', 'accessibility_declaration_date',
+        'accessibility_review_method', 'accessibility_contact_name', 'accessibility_contact_email',
+        'accessibility_contact_phone', 'accessibility_architectural',
         'bank_account_number', 'bank_account_tax_number',
         'support_intro', 'support_quick_transfer_url', 'support_buycoffee_url',
+        'support_wplacam_url', 'support_method4_title', 'support_method4_text', 'support_method4_cta_label',
+        'support_show_partners', 'support_testimonial_quote', 'support_testimonial_author', 'support_testimonial_role',
+        'support_fundraiser_title', 'support_fundraiser_text', 'support_fundraiser_goal', 'support_fundraiser_raised',
+        'support_fundraiser_url', 'support_fundraiser_cta_label',
         'support_hero_badge', 'support_hero_title', 'support_hero_subtitle', 'support_hero_cta_label',
         'support_benefits_title', 'support_benefits_subtitle',
         'support_benefit1_icon', 'support_benefit1_title', 'support_benefit1_text',
@@ -169,6 +186,9 @@ class SiteSetting extends Model implements HasMedia
         'support_method3_title' => 'BuyCoffee',
         'support_method3_text' => 'Postaw nam kawę i wesprzyj naszą pracę drobną kwotą.',
         'support_method3_cta_label' => 'Postaw kawę',
+        'support_method4_title' => 'wpłacam.ngo.pl',
+        'support_method4_text' => 'Bezpieczna wpłata online przez zaufany portal dla organizacji pozarządowych.',
+        'support_method4_cta_label' => 'Wpłać przez wpłacam.ngo.pl',
 
         'support_outro_title' => 'Każda złotówka przybliża nas do świata bez barier.',
         'support_outro_subtitle' => 'Dziękujemy, że jesteś częścią tej zmiany.',
@@ -199,8 +219,13 @@ class SiteSetting extends Model implements HasMedia
         'disabled_modules' => 'array',
         'homepage_section_order' => 'array',
         'contact_bank_accounts' => 'array',
+        'contact_schedule' => 'array',
         'show_topbar_bip' => 'boolean',
         'show_topbar_social' => 'boolean',
+        'contact_shipping_visible' => 'boolean',
+        'support_show_partners' => 'boolean',
+        'support_fundraiser_goal' => 'integer',
+        'support_fundraiser_raised' => 'integer',
         'logo_only' => 'boolean',
         'maintenance_mode' => 'boolean',
         'microsoft_login_enabled' => 'boolean',
@@ -213,7 +238,146 @@ class SiteSetting extends Model implements HasMedia
         'contact_box_visible_until' => 'datetime',
         'homepage_banner_visible_from' => 'datetime',
         'homepage_banner_visible_until' => 'datetime',
+        'accessibility_page_published_at' => 'date',
+        'accessibility_page_updated_at' => 'date',
+        'accessibility_declaration_date' => 'date',
     ];
+
+    /** Status zgodności z ustawą o dostępności cyfrowej (deklaracja dostępności). */
+    public const ACCESSIBILITY_STATUSES = [
+        'compliant' => 'Zgodna',
+        'partially' => 'Częściowo zgodna',
+        'none' => 'Niezgodna',
+    ];
+
+    /** Sposób sporządzenia deklaracji: samoocena podmiotu lub audyt zewnętrzny. */
+    public const ACCESSIBILITY_REVIEW_METHODS = [
+        'self' => 'samooceny podmiotu publicznego',
+        'external' => 'oceny podmiotu zewnętrznego',
+    ];
+
+    /** Nazwa podmiotu w deklaracji dostępności — własna lub nazwa strony. */
+    public function accessibilityEntityName(): string
+    {
+        return trim((string) $this->accessibility_entity_name) ?: $this->site_name;
+    }
+
+    /** Adres e-mail do zgłaszania barier — dedykowany lub ogólny kontaktowy. */
+    public function accessibilityContactEmail(): ?string
+    {
+        return filled($this->accessibility_contact_email)
+            ? $this->accessibility_contact_email
+            : ($this->contact_email ?: null);
+    }
+
+    /** Telefon do zgłaszania barier — dedykowany lub ogólny kontaktowy. */
+    public function accessibilityContactPhone(): ?string
+    {
+        return filled($this->accessibility_contact_phone)
+            ? $this->accessibility_contact_phone
+            : ($this->contact_phone ?: null);
+    }
+
+    /** Czytelna etykieta statusu zgodności. */
+    public function accessibilityStatusLabel(): string
+    {
+        return self::ACCESSIBILITY_STATUSES[$this->accessibility_status] ?? self::ACCESSIBILITY_STATUSES['partially'];
+    }
+
+    /**
+     * Polish plural weekday names for recurring schedule entries, keyed by the
+     * ISO weekday number (1 = Monday … 7 = Sunday) stored in the schedule.
+     */
+    public const WEEKDAYS = [
+        1 => 'poniedziałki',
+        2 => 'wtorki',
+        3 => 'środy',
+        4 => 'czwartki',
+        5 => 'piątki',
+        6 => 'soboty',
+        7 => 'niedziele',
+    ];
+
+    /**
+     * The stationary schedule, normalised for display: each entry gets its next
+     * occurrence (a Carbon date), a human "when" label and a place/note. One-off
+     * dates already in the past are dropped, the list is sorted by soonest, and
+     * the first (nearest) entry is flagged `is_next` so the view can highlight it.
+     *
+     * Entry shape in `contact_schedule`:
+     *   ['type' => 'date',   'date' => 'Y-m-d', 'time' => '10:00–14:00', 'where' => '…', 'note' => '…']
+     *   ['type' => 'weekly', 'weekday' => 1..7,  'time' => '…',          'where' => '…', 'note' => '…']
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    public function contactScheduleUpcoming(): array
+    {
+        $today = now()->startOfDay();
+        $result = [];
+
+        foreach ($this->contact_schedule ?? [] as $entry) {
+            $type = $entry['type'] ?? 'date';
+            $time = trim((string) ($entry['time'] ?? ''));
+            $where = trim((string) ($entry['where'] ?? ''));
+            $note = trim((string) ($entry['note'] ?? ''));
+            $timeSuffix = $time !== '' ? ', '.$time : '';
+
+            if ($type === 'weekly') {
+                $weekday = (int) ($entry['weekday'] ?? 0);
+                if (! isset(self::WEEKDAYS[$weekday])) {
+                    continue;
+                }
+                // Soonest upcoming occurrence of this weekday, today included.
+                $next = $today->copy()->addDays((($weekday - $today->isoWeekday()) + 7) % 7);
+                $label = 'W '.self::WEEKDAYS[$weekday].$timeSuffix;
+                $recurring = true;
+            } else {
+                $date = trim((string) ($entry['date'] ?? ''));
+                if ($date === '') {
+                    continue;
+                }
+                try {
+                    $next = \Illuminate\Support\Carbon::parse($date)->startOfDay();
+                } catch (\Throwable) {
+                    continue;
+                }
+                if ($next->lt($today)) {
+                    continue; // przeszły jednorazowy termin — nie pokazujemy
+                }
+                $label = $next->locale('pl')->isoFormat('D MMMM YYYY').$timeSuffix;
+                $recurring = false;
+            }
+
+            $result[] = [
+                'next' => $next,
+                'when_label' => $label,
+                'where' => $where,
+                'note' => $note,
+                'recurring' => $recurring,
+                'is_next' => false,
+            ];
+        }
+
+        usort($result, fn ($a, $b) => $a['next'] <=> $b['next']);
+
+        if ($result !== []) {
+            $result[0]['is_next'] = true;
+        }
+
+        return $result;
+    }
+
+    /**
+     * Recipient for "Daj znać, że przyjdziesz" notices and the CC copy of
+     * schedule-change notifications: the dedicated address if set, else the
+     * general contact inbox.
+     */
+    public function meetingNotifyEmail(): ?string
+    {
+        return filled($this->contact_meeting_notify_email)
+            ? $this->contact_meeting_notify_email
+            : ($this->contact_email ?: null);
+    }
 
     /**
      * Whether the optional contact notice box should currently be shown: it
@@ -348,6 +512,33 @@ class SiteSetting extends Model implements HasMedia
         $this->addMediaCollection('support_image')->singleFile();
         $this->addMediaCollection('news_default_image')->singleFile();
         $this->addMediaCollection('bip_logo')->singleFile();
+        // Osobna galeria dla strony „Wesprzyj nas" (wiele zdjęć, niezależna od
+        // głównej galerii strony) — kolaż „działamy" jako dowód aktywności.
+        $this->addMediaCollection('support_gallery');
+    }
+
+    /** Zdjęcia dedykowanej galerii strony „Wesprzyj nas" (posortowane). */
+    public function supportGalleryImages(): \Illuminate\Support\Collection
+    {
+        return $this->getMedia('support_gallery');
+    }
+
+    /** Czy pokazać blok zbiórki na /wsparcie (potrzebny tytuł i cel > 0). */
+    public function hasFundraiser(): bool
+    {
+        return filled($this->support_fundraiser_title) && (int) $this->support_fundraiser_goal > 0;
+    }
+
+    /** Postęp zbiórki w procentach (0–100), przycięty do celu. */
+    public function fundraiserProgress(): int
+    {
+        $goal = (int) $this->support_fundraiser_goal;
+
+        if ($goal <= 0) {
+            return 0;
+        }
+
+        return (int) min(100, round(((int) $this->support_fundraiser_raised / $goal) * 100));
     }
 
     public function bipLogoUrl(): ?string
@@ -366,6 +557,17 @@ class SiteSetting extends Model implements HasMedia
     public function isModuleEnabled(string $module): bool
     {
         return ! in_array($module, $this->disabled_modules ?? [], true);
+    }
+
+    /**
+     * Kolor akcentu sekcji „Szkolenia i wydarzenia" na stronie głównej: własny
+     * (z kontrolą kontrastu WCAG) albo — gdy nie ustawiono — kolor marki.
+     */
+    public function eventsHomeAccent(): string
+    {
+        return \App\Support\Color::isValid($this->events_home_color)
+            ? $this->contrastSafeColor($this->events_home_color)
+            : $this->brandPalette()['color'];
     }
 
     /**
@@ -488,7 +690,10 @@ class SiteSetting extends Model implements HasMedia
             }
         }
 
-        return $this->brand_color;
+        // Świeże wiersze (firstOrCreate) mogą mieć null w brand_color mimo
+        // domyślnej wartości kolumny — zwróć bezpieczny fallback, aby typ zwrotu
+        // (string) był zawsze dotrzymany (por. brandPalette()).
+        return \App\Support\Color::isValid($this->brand_color) ? $this->brand_color : '#c31432';
     }
 
     /**

@@ -75,6 +75,22 @@ class NewsController extends Controller
         return redirect()->route('admin.newsy.index')->with('status', 'News został usunięty.');
     }
 
+    public function clone(News $news)
+    {
+        $clone = $news->replicate();
+        $clone->title = "{$news->title} (kopia)";
+        $clone->slug = $this->uniqueSlug($clone->title);
+        $clone->is_published = false;
+        $clone->is_featured = false;
+        $clone->save();
+
+        // Kopiujemy tagi; zdjęcie (media) trzeba wgrać ponownie — jak przy klonowaniu stron.
+        $clone->tags()->sync($news->tags->pluck('id')->all());
+
+        return redirect()->route('admin.newsy.edit', $clone)
+            ->with('status', "News został sklonowany jako „{$clone->title}”. Jest zapisany jako szkic (bez zdjęcia — dodaj je ponownie).");
+    }
+
     private function validated(Request $request): array
     {
         $data = $request->validate([

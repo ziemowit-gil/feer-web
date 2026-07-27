@@ -269,9 +269,174 @@
             </div>
         </div>
 
+        <div x-show="tab === 'accessibility'" x-cloak class="space-y-6">
+            <p class="text-xs text-muted">Zmienne części <a href="{{ route('accessibility.show') }}" target="_blank" rel="noopener" class="text-brand underline">deklaracji dostępności</a>. Stały, prawny szkielet deklaracji jest wbudowany — tu uzupełniasz tylko dane podmiotu, status i kontakt do zgłoszeń barier.</p>
+
+            <div>
+                <label for="accessibility_entity_name" class="mb-1 block text-sm font-bold">Nazwa podmiotu</label>
+                <input type="text" id="accessibility_entity_name" name="accessibility_entity_name" value="{{ old('accessibility_entity_name', $settings->accessibility_entity_name) }}" placeholder="{{ $settings->site_name }}"
+                    class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                <p class="mt-1 text-xs text-muted">Puste = nazwa strony ({{ $settings->site_name }}).</p>
+                @error('accessibility_entity_name') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+            </div>
+
+            <div>
+                <label for="accessibility_status" class="mb-1 block text-sm font-bold">Status zgodności z ustawą</label>
+                <select id="accessibility_status" name="accessibility_status" class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                    @foreach (\App\Models\SiteSetting::ACCESSIBILITY_STATUSES as $value => $label)
+                        <option value="{{ $value }}" {{ old('accessibility_status', $settings->accessibility_status) === $value ? 'selected' : '' }}>{{ $label }}</option>
+                    @endforeach
+                </select>
+                @error('accessibility_status') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+            </div>
+
+            <div>
+                <label for="accessibility_status_note" class="mb-1 block text-sm font-bold">Uzasadnienie / wyłączenia <span class="font-normal text-muted">(opcjonalnie)</span></label>
+                <textarea id="accessibility_status_note" name="accessibility_status_note" rows="4" placeholder="Np. które elementy nie są jeszcze dostępne i dlaczego."
+                    class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">{{ old('accessibility_status_note', $settings->accessibility_status_note) }}</textarea>
+                @error('accessibility_status_note') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+            </div>
+
+            <div class="grid gap-4 sm:grid-cols-3">
+                <div>
+                    <label for="accessibility_page_published_at" class="mb-1 block text-sm font-bold">Data publikacji strony</label>
+                    <input type="date" id="accessibility_page_published_at" name="accessibility_page_published_at" value="{{ old('accessibility_page_published_at', $settings->accessibility_page_published_at?->format('Y-m-d')) }}"
+                        class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                    @error('accessibility_page_published_at') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                </div>
+                <div>
+                    <label for="accessibility_page_updated_at" class="mb-1 block text-sm font-bold">Ostatnia istotna aktualizacja</label>
+                    <input type="date" id="accessibility_page_updated_at" name="accessibility_page_updated_at" value="{{ old('accessibility_page_updated_at', $settings->accessibility_page_updated_at?->format('Y-m-d')) }}"
+                        class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                    @error('accessibility_page_updated_at') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                </div>
+                <div>
+                    <label for="accessibility_declaration_date" class="mb-1 block text-sm font-bold">Data sporządzenia deklaracji</label>
+                    <input type="date" id="accessibility_declaration_date" name="accessibility_declaration_date" value="{{ old('accessibility_declaration_date', $settings->accessibility_declaration_date?->format('Y-m-d')) }}"
+                        class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                    @error('accessibility_declaration_date') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                </div>
+            </div>
+
+            <div>
+                <label for="accessibility_review_method" class="mb-1 block text-sm font-bold">Sposób sporządzenia deklaracji</label>
+                <select id="accessibility_review_method" name="accessibility_review_method" class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                    @foreach (\App\Models\SiteSetting::ACCESSIBILITY_REVIEW_METHODS as $value => $label)
+                        <option value="{{ $value }}" {{ old('accessibility_review_method', $settings->accessibility_review_method) === $value ? 'selected' : '' }}>{{ ucfirst($label) }}</option>
+                    @endforeach
+                </select>
+                @error('accessibility_review_method') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+            </div>
+
+            <div class="grid gap-4 sm:grid-cols-3">
+                <div>
+                    <label for="accessibility_contact_name" class="mb-1 block text-sm font-bold">Osoba do kontaktu</label>
+                    <input type="text" id="accessibility_contact_name" name="accessibility_contact_name" value="{{ old('accessibility_contact_name', $settings->accessibility_contact_name) }}"
+                        class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                    @error('accessibility_contact_name') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                </div>
+                <div>
+                    <label for="accessibility_contact_email" class="mb-1 block text-sm font-bold">E-mail do zgłoszeń</label>
+                    <input type="email" id="accessibility_contact_email" name="accessibility_contact_email" value="{{ old('accessibility_contact_email', $settings->accessibility_contact_email) }}" placeholder="{{ $settings->contact_email }}"
+                        class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                    <p class="mt-1 text-xs text-muted">Puste = ogólny e-mail kontaktowy. Tu trafiają zgłoszenia barier.</p>
+                    @error('accessibility_contact_email') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                </div>
+                <div>
+                    <label for="accessibility_contact_phone" class="mb-1 block text-sm font-bold">Telefon do zgłoszeń</label>
+                    <input type="text" id="accessibility_contact_phone" name="accessibility_contact_phone" value="{{ old('accessibility_contact_phone', $settings->accessibility_contact_phone) }}" placeholder="{{ $settings->contact_phone }}"
+                        class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                    @error('accessibility_contact_phone') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                </div>
+            </div>
+
+            <div>
+                <label for="accessibility_architectural" class="mb-1 block text-sm font-bold">Dostępność architektoniczna <span class="font-normal text-muted">(opcjonalnie)</span></label>
+                <textarea id="accessibility_architectural" name="accessibility_architectural" rows="5" placeholder="Opis dostępności budynku/siedziby: wejście, windy, toalety, miejsca parkingowe, pętla indukcyjna itp."
+                    class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">{{ old('accessibility_architectural', $settings->accessibility_architectural) }}</textarea>
+                @error('accessibility_architectural') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+            </div>
+        </div>
+
         <div x-show="tab === 'support'" x-cloak class="space-y-5">
             @php $sd = \App\Models\SiteSetting::SUPPORT_DEFAULTS; @endphp
             <p class="text-xs text-muted">Wyświetlane na podstronie <a href="{{ route('support.show') }}" target="_blank" rel="noopener" class="text-brand underline">/wsparcie</a>. Puste pola pokazują tekst domyślny (widoczny jako podpowiedź).</p>
+
+            <div class="space-y-4 rounded-lg border border-gray-200 bg-gray-50 p-5">
+                <p class="text-sm font-bold text-ink">Zbiórka na cele FEER</p>
+                <p class="-mt-2 text-xs text-muted">Podaj tytuł i cel (kwotę), aby na stronie pojawił się pasek postępu zbiórki. Pusty cel = brak bloku.</p>
+                <div class="grid gap-4 sm:grid-cols-2">
+                    <div>
+                        <label for="support_fundraiser_title" class="mb-1 block text-sm font-bold">Tytuł zbiórki</label>
+                        <input type="text" id="support_fundraiser_title" name="support_fundraiser_title" value="{{ old('support_fundraiser_title', $settings->support_fundraiser_title) }}"
+                            placeholder="np. Wyposażenie pracowni cyfrowej" class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                        @error('support_fundraiser_title') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </div>
+                    <div>
+                        <label for="support_fundraiser_url" class="mb-1 block text-sm font-bold">Link do wpłaty na zbiórkę</label>
+                        <input type="text" id="support_fundraiser_url" name="support_fundraiser_url" value="{{ old('support_fundraiser_url', $settings->support_fundraiser_url) }}"
+                            placeholder="np. https://wplacam.ngo.pl/..." class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                        @error('support_fundraiser_url') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </div>
+                </div>
+                <div>
+                    <label for="support_fundraiser_text" class="mb-1 block text-sm font-bold">Opis <span class="font-normal text-muted">(opcjonalnie)</span></label>
+                    <textarea id="support_fundraiser_text" name="support_fundraiser_text" rows="2"
+                        placeholder="Na co zbieramy i dlaczego to ważne." class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">{{ old('support_fundraiser_text', $settings->support_fundraiser_text) }}</textarea>
+                    @error('support_fundraiser_text') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                </div>
+                <div class="grid gap-4 sm:grid-cols-3">
+                    <div>
+                        <label for="support_fundraiser_goal" class="mb-1 block text-sm font-bold">Cel (zł)</label>
+                        <input type="number" id="support_fundraiser_goal" name="support_fundraiser_goal" value="{{ old('support_fundraiser_goal', $settings->support_fundraiser_goal) }}" min="0"
+                            class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                        @error('support_fundraiser_goal') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </div>
+                    <div>
+                        <label for="support_fundraiser_raised" class="mb-1 block text-sm font-bold">Zebrano (zł)</label>
+                        <input type="number" id="support_fundraiser_raised" name="support_fundraiser_raised" value="{{ old('support_fundraiser_raised', $settings->support_fundraiser_raised) }}" min="0"
+                            class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                        <p class="mt-1 text-xs text-muted">Aktualizuj ręcznie.</p>
+                        @error('support_fundraiser_raised') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </div>
+                    <div>
+                        <label for="support_fundraiser_cta_label" class="mb-1 block text-sm font-bold">Tekst przycisku</label>
+                        <input type="text" id="support_fundraiser_cta_label" name="support_fundraiser_cta_label" value="{{ old('support_fundraiser_cta_label', $settings->support_fundraiser_cta_label) }}"
+                            placeholder="Wesprzyj zbiórkę" class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                        @error('support_fundraiser_cta_label') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </div>
+                </div>
+            </div>
+
+            <div class="space-y-4 rounded-lg border border-gray-200 bg-gray-50 p-5">
+                <p class="text-sm font-bold text-ink">Social proof — cytat</p>
+                <div>
+                    <label for="support_testimonial_quote" class="mb-1 block text-sm font-bold">Cytat <span class="font-normal text-muted">(opcjonalnie)</span></label>
+                    <textarea id="support_testimonial_quote" name="support_testimonial_quote" rows="2"
+                        placeholder="np. „Dzięki FEER mama nauczyła się rozmawiać z wnukami przez wideo.”" class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">{{ old('support_testimonial_quote', $settings->support_testimonial_quote) }}</textarea>
+                    @error('support_testimonial_quote') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                </div>
+                <div class="grid gap-4 sm:grid-cols-2">
+                    <div>
+                        <label for="support_testimonial_author" class="mb-1 block text-sm font-bold">Autor</label>
+                        <input type="text" id="support_testimonial_author" name="support_testimonial_author" value="{{ old('support_testimonial_author', $settings->support_testimonial_author) }}"
+                            placeholder="np. Anna, uczestniczka warsztatów" class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                        @error('support_testimonial_author') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </div>
+                    <div>
+                        <label for="support_testimonial_role" class="mb-1 block text-sm font-bold">Rola / kontekst</label>
+                        <input type="text" id="support_testimonial_role" name="support_testimonial_role" value="{{ old('support_testimonial_role', $settings->support_testimonial_role) }}"
+                            placeholder="np. darczyńca, wolontariuszka" class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                        @error('support_testimonial_role') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </div>
+                </div>
+            </div>
+
+            <label class="flex items-center gap-2 rounded-lg border border-gray-200 bg-gray-50 p-5">
+                <input type="checkbox" name="support_show_partners" value="1" {{ old('support_show_partners', $settings->support_show_partners) ? 'checked' : '' }}
+                    class="rounded border-gray-300 text-brand focus:ring-brand">
+                <span class="text-sm font-bold">Pokaż logotypy partnerów („Zaufali nam") na stronie wsparcia</span>
+            </label>
 
             <div>
                 <p class="mb-1 text-sm font-bold">Zdjęcie nagłówka <span class="font-normal text-muted">(opcjonalnie)</span></p>
@@ -287,6 +452,31 @@
                 <input type="file" name="support_image" accept="image/*" class="block w-full cursor-pointer text-sm text-muted file:mr-3 file:cursor-pointer file:rounded file:border-0 file:bg-brand file:px-4 file:py-2 file:text-sm file:font-bold file:text-white hover:file:bg-brand-dark">
                 <p class="mt-1 text-xs text-muted">Wyświetlane jako duże zdjęcie w tle nagłówka strony (zalecane min. 1600×500 px).</p>
                 @error('support_image') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+            </div>
+
+            <div class="border-t border-gray-100 pt-5">
+                <p class="mb-1 text-sm font-bold">Galeria „działamy" (osobna od głównej galerii)</p>
+                <p class="mb-3 text-xs text-muted">Zdjęcia w mozaikowym kolażu na stronie wsparcia — dowód realnych działań. Wyświetlanych jest do 7 pierwszych.</p>
+
+                @if ($settings->supportGalleryImages()->isNotEmpty())
+                    <div class="mb-3 grid grid-cols-3 gap-3 sm:grid-cols-4">
+                        @foreach ($settings->supportGalleryImages() as $media)
+                            <label class="group relative block cursor-pointer overflow-hidden rounded-lg border border-gray-200">
+                                <img src="{{ $media->getUrl() }}" alt="" class="h-24 w-full object-cover">
+                                <span class="absolute inset-x-0 bottom-0 flex items-center justify-center gap-1.5 bg-black/60 py-1 text-xs font-bold text-white opacity-0 transition group-hover:opacity-100">
+                                    <input type="checkbox" name="remove_support_gallery[]" value="{{ $media->id }}" class="rounded border-gray-300 text-red-600 focus:ring-red-500">
+                                    Usuń
+                                </span>
+                            </label>
+                        @endforeach
+                    </div>
+                    <p class="mb-3 text-xs text-muted">Zaznacz zdjęcia do usunięcia i zapisz.</p>
+                @endif
+
+                <input type="file" name="support_gallery[]" accept="image/*" multiple
+                    class="block w-full cursor-pointer text-sm text-muted file:mr-3 file:cursor-pointer file:rounded file:border-0 file:bg-brand file:px-4 file:py-2 file:text-sm file:font-bold file:text-white hover:file:bg-brand-dark">
+                <p class="mt-1 text-xs text-muted">Możesz wybrać kilka zdjęć naraz. Dodane pojawią się po zapisaniu.</p>
+                @error('support_gallery.*') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
             </div>
 
             <div class="border-t border-gray-100 pt-5">
@@ -488,6 +678,38 @@
             </div>
 
             <div class="border-t border-gray-100 pt-5">
+                <p class="mb-3 text-sm font-bold">4. wpłacam.ngo.pl</p>
+                <div class="space-y-4">
+                    <div>
+                        <label for="support_method4_title" class="mb-1 block text-sm font-bold">Tytuł karty</label>
+                        <input type="text" id="support_method4_title" name="support_method4_title" value="{{ old('support_method4_title', $settings->support_method4_title) }}"
+                            placeholder="{{ $sd['support_method4_title'] }}" class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                        @error('support_method4_title') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </div>
+                    <div>
+                        <label for="support_method4_text" class="mb-1 block text-sm font-bold">Opis</label>
+                        <textarea id="support_method4_text" name="support_method4_text" rows="2"
+                            placeholder="{{ $sd['support_method4_text'] }}" class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">{{ old('support_method4_text', $settings->support_method4_text) }}</textarea>
+                        @error('support_method4_text') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </div>
+                    <div>
+                        <label for="support_wplacam_url" class="mb-1 block text-sm font-bold">Link do wpłaty (wpłacam.ngo.pl) <span class="font-normal text-muted">(opcjonalnie)</span></label>
+                        <input type="text" id="support_wplacam_url" name="support_wplacam_url" value="{{ old('support_wplacam_url', $settings->support_wplacam_url) }}"
+                            placeholder="np. https://wplacam.ngo.pl/wesprzyj/nazwa"
+                            class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                        <p class="mt-1 text-xs text-muted">Karta pojawi się na stronie /wsparcie po podaniu linku.</p>
+                        @error('support_wplacam_url') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </div>
+                    <div>
+                        <label for="support_method4_cta_label" class="mb-1 block text-sm font-bold">Tekst przycisku</label>
+                        <input type="text" id="support_method4_cta_label" name="support_method4_cta_label" value="{{ old('support_method4_cta_label', $settings->support_method4_cta_label) }}"
+                            placeholder="{{ $sd['support_method4_cta_label'] }}" class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                        @error('support_method4_cta_label') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </div>
+                </div>
+            </div>
+
+            <div class="border-t border-gray-100 pt-5">
                 <p class="mb-3 text-sm font-bold">Ramka na dole strony</p>
                 <div class="space-y-4">
                     <div>
@@ -554,6 +776,67 @@
                 </div>
             </div>
 
+            <div class="mt-4">
+                <label for="contact_edelivery_address" class="mb-1 block text-sm font-bold">Adres do e-Doręczeń <span class="font-normal text-muted">(opcjonalnie)</span></label>
+                <input type="text" id="contact_edelivery_address" name="contact_edelivery_address" value="{{ old('contact_edelivery_address', $settings->contact_edelivery_address) }}"
+                    placeholder="AE:PL-12345-67890-ABCDE-12"
+                    class="w-full rounded border-gray-300 font-mono text-sm focus:border-brand focus:ring-brand">
+                <p class="mt-1 text-xs text-muted">Adres do doręczeń elektronicznych (ADE). Pokaże się w danych kontaktowych na podstronie <a href="{{ route('contact.show') }}" target="_blank" rel="noopener" class="text-brand underline">/kontakt</a>. Zostaw puste, aby ukryć.</p>
+                @error('contact_edelivery_address') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+            </div>
+
+            {{-- Przesyłki: paczka / list / paczkomat --}}
+            <div class="mt-8 space-y-4 rounded-lg border border-gray-200 bg-gray-50 p-5">
+                <div>
+                    <p class="text-sm font-bold text-ink">Przesyłki (paczka, list, paczkomat)</p>
+                    <p class="mt-0.5 text-xs text-muted">Informacja na podstronie <a href="{{ route('contact.show') }}" target="_blank" rel="noopener" class="text-brand underline">/kontakt</a> o nadawaniu do nas przesyłek. Zostaw pola puste, aby ukryć cały blok.</p>
+                </div>
+
+                <label class="flex items-center gap-2">
+                    <input type="checkbox" name="contact_shipping_visible" value="1" {{ old('contact_shipping_visible', $settings->contact_shipping_visible ?? true) ? 'checked' : '' }}
+                        class="rounded border-gray-300 text-brand focus:ring-brand">
+                    <span class="text-sm font-bold">Pokaż sekcję „Wyślij do nas przesyłkę" na stronie kontaktu</span>
+                </label>
+
+                <div>
+                    <label for="contact_shipping_note" class="mb-1 block text-sm font-bold">Tekst wstępny <span class="font-normal text-muted">(opcjonalnie)</span></label>
+                    <input type="text" id="contact_shipping_note" name="contact_shipping_note" value="{{ old('contact_shipping_note', $settings->contact_shipping_note) }}"
+                        placeholder="np. Możesz nadać do nas paczkę lub list — również na paczkomat."
+                        class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                    @error('contact_shipping_note') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                </div>
+
+                <div class="rounded border border-gray-200 bg-white p-4">
+                    <p class="mb-3 text-xs font-bold uppercase tracking-wide text-muted">Paczkomat InPost</p>
+                    <div class="grid gap-3 sm:grid-cols-2">
+                        <div>
+                            <label for="contact_paczkomat_code" class="mb-1 block text-sm font-bold">Kod paczkomatu</label>
+                            <input type="text" id="contact_paczkomat_code" name="contact_paczkomat_code" value="{{ old('contact_paczkomat_code', $settings->contact_paczkomat_code) }}"
+                                placeholder="np. NSA22M" class="w-full rounded border-gray-300 font-mono text-sm focus:border-brand focus:ring-brand">
+                            @error('contact_paczkomat_code') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                        </div>
+                        <div>
+                            <label for="contact_shipping_phone" class="mb-1 block text-sm font-bold">Telefon do przesyłki</label>
+                            <input type="text" id="contact_shipping_phone" name="contact_shipping_phone" value="{{ old('contact_shipping_phone', $settings->contact_shipping_phone) }}"
+                                placeholder="np. 601 350 487" class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                            @error('contact_shipping_phone') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                        </div>
+                        <div class="sm:col-span-2">
+                            <label for="contact_paczkomat_address" class="mb-1 block text-sm font-bold">Adres paczkomatu</label>
+                            <input type="text" id="contact_paczkomat_address" name="contact_paczkomat_address" value="{{ old('contact_paczkomat_address', $settings->contact_paczkomat_address) }}"
+                                placeholder="np. Barbackiego 81, 33-300 Nowy Sącz" class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                            @error('contact_paczkomat_address') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                        </div>
+                        <div class="sm:col-span-2">
+                            <label for="contact_paczkomat_location" class="mb-1 block text-sm font-bold">Lokalizacja / wskazówka dojścia <span class="font-normal text-muted">(opcjonalnie)</span></label>
+                            <input type="text" id="contact_paczkomat_location" name="contact_paczkomat_location" value="{{ old('contact_paczkomat_location', $settings->contact_paczkomat_location) }}"
+                                placeholder="np. Boczna ściana sklepu przy parkingu" class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                            @error('contact_paczkomat_location') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             {{-- Rachunki bankowe pokazywane na podstronie /kontakt --}}
             @php
                 $bankAccounts = old('contact_bank_accounts', $settings->contact_bank_accounts ?: []);
@@ -601,6 +884,167 @@
                     <i class="fa-solid fa-plus" aria-hidden="true"></i> Dodaj rachunek
                 </button>
                 @error('contact_bank_accounts') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+            </div>
+
+            {{-- Sekcja „Spotkajmy się”: online (zalecane) + harmonogram stacjonarny --}}
+            @php
+                $schedule = old('contact_schedule', $settings->contact_schedule ?: []);
+                if (empty($schedule)) {
+                    $schedule = [['type' => 'date', 'date' => '', 'weekday' => 1, 'time' => '', 'where' => '', 'note' => '']];
+                }
+                $weekdayOptions = [1 => 'Poniedziałek', 2 => 'Wtorek', 3 => 'Środa', 4 => 'Czwartek', 5 => 'Piątek', 6 => 'Sobota', 7 => 'Niedziela'];
+            @endphp
+            <div class="mt-8 space-y-4 rounded-lg border border-gray-200 bg-gray-50 p-5">
+                <div>
+                    <p class="text-sm font-bold text-ink">Spotkajmy się (online i stacjonarnie)</p>
+                    <p class="mt-0.5 text-xs text-muted">Sekcja na podstronie <a href="{{ route('contact.show') }}" target="_blank" rel="noopener" class="text-brand underline">/kontakt</a>: spotkanie online (opcja zalecana, z linkiem do rezerwacji terminu) oraz harmonogram stacjonarny (kiedy i gdzie jesteśmy, np. w Krakowie). Puste pola = dana część sekcji się nie pokaże.</p>
+                </div>
+
+                <div>
+                    <label for="contact_meeting_title" class="mb-1 block text-sm font-bold">Tytuł sekcji</label>
+                    <input type="text" id="contact_meeting_title" name="contact_meeting_title" value="{{ old('contact_meeting_title', $settings->contact_meeting_title) }}"
+                        placeholder="Spotkajmy się" class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                    @error('contact_meeting_title') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                </div>
+
+                <div>
+                    <label for="contact_remote_note" class="mb-1 block text-sm font-bold">Informacja „na co dzień działamy zdalnie” <span class="font-normal text-muted">(opcjonalnie)</span></label>
+                    <input type="text" id="contact_remote_note" name="contact_remote_note" value="{{ old('contact_remote_note', $settings->contact_remote_note) }}"
+                        placeholder="np. Na co dzień działamy zdalnie — dlatego najszybciej złapiesz nas online."
+                        class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                    <p class="mt-1 text-xs text-muted">Krótka ciekawostka/informacja nad opcjami spotkania. Zostaw puste, aby ukryć.</p>
+                    @error('contact_remote_note') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                </div>
+
+                <div class="rounded border border-gray-200 bg-white p-4">
+                    <p class="mb-3 text-xs font-bold uppercase tracking-wide text-muted">Spotkanie online <span class="ml-1 rounded-full bg-brand-light px-2 py-0.5 text-[0.65rem] normal-case text-brand">opcja zalecana</span></p>
+                    <div class="space-y-3">
+                        <div>
+                            <label for="contact_online_meeting_text" class="mb-1 block text-sm font-bold">Tekst zachęty <span class="font-normal text-muted">(opcjonalnie)</span></label>
+                            <input type="text" id="contact_online_meeting_text" name="contact_online_meeting_text" value="{{ old('contact_online_meeting_text', $settings->contact_online_meeting_text) }}"
+                                placeholder="np. Najwygodniej spotkać się online — wybierz dogodny termin."
+                                class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                            @error('contact_online_meeting_text') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                        </div>
+                        <div class="grid gap-3 sm:grid-cols-2">
+                            <div>
+                                <label for="contact_online_meeting_url" class="mb-1 block text-sm font-bold">Link do rezerwacji terminu</label>
+                                <input type="text" id="contact_online_meeting_url" name="contact_online_meeting_url" value="{{ old('contact_online_meeting_url', $settings->contact_online_meeting_url) }}"
+                                    placeholder="np. https://calendly.com/…"
+                                    class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                                <p class="mt-1 text-xs text-muted">Bez linku przycisk się nie pokaże.</p>
+                                @error('contact_online_meeting_url') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                            </div>
+                            <div>
+                                <label for="contact_online_meeting_label" class="mb-1 block text-sm font-bold">Tekst przycisku</label>
+                                <input type="text" id="contact_online_meeting_label" name="contact_online_meeting_label" value="{{ old('contact_online_meeting_label', $settings->contact_online_meeting_label) }}"
+                                    placeholder="Wybierz dogodny termin"
+                                    class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                                @error('contact_online_meeting_label') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <label for="contact_meeting_notify_email" class="mb-1 block text-sm font-bold">Adres do zgłoszeń „Daj znać, że przyjdziesz” <span class="font-normal text-muted">(opcjonalnie)</span></label>
+                    <input type="email" id="contact_meeting_notify_email" name="contact_meeting_notify_email" value="{{ old('contact_meeting_notify_email', $settings->contact_meeting_notify_email) }}"
+                        placeholder="{{ $settings->contact_email ?: 'np. kontakt@feer.org.pl' }}"
+                        class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                    <p class="mt-1 text-xs text-muted">Tu trafiają zgłoszenia z formularza oraz kopia (DW) powiadomień o zmianie terminu. Puste = adres kontaktowy z sekcji wyżej.</p>
+                    @error('contact_meeting_notify_email') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                </div>
+
+                <div class="rounded border border-gray-200 bg-white p-4" x-data="{ items: {{ \Illuminate\Support\Js::from(array_values($schedule)) }} }">
+                    <p class="mb-3 text-xs font-bold uppercase tracking-wide text-muted">Harmonogram stacjonarny (kiedy i gdzie jesteśmy)</p>
+                    <div class="mb-3">
+                        <label for="contact_schedule_title" class="mb-1 block text-sm font-bold">Tytuł harmonogramu</label>
+                        <input type="text" id="contact_schedule_title" name="contact_schedule_title" value="{{ old('contact_schedule_title', $settings->contact_schedule_title) }}"
+                            placeholder="Kiedy i gdzie jesteśmy w Krakowie"
+                            class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                        @error('contact_schedule_title') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </div>
+
+                    <template x-for="(item, index) in items" :key="index">
+                        <div class="mb-3 rounded border border-gray-200 p-3">
+                            <div class="flex items-center justify-between">
+                                <p class="text-xs font-bold uppercase tracking-wide text-muted" x-text="'Termin ' + (index + 1)"></p>
+                                <button type="button" @click="items.splice(index, 1)"
+                                    class="inline-flex items-center gap-1 text-xs font-bold text-red-600 hover:text-red-700">
+                                    <i class="fa-solid fa-trash-can" aria-hidden="true"></i> Usuń
+                                </button>
+                            </div>
+
+                            <input type="hidden" :name="'contact_schedule[' + index + '][type]'" x-model="item.type">
+
+                            <div class="mt-2 grid gap-3 sm:grid-cols-2">
+                                <div>
+                                    <label :for="'contact_schedule_type_' + index" class="mb-1 block text-sm font-bold">Rodzaj</label>
+                                    <select :id="'contact_schedule_type_' + index" x-model="item.type"
+                                        class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                                        <option value="date">Konkretna data</option>
+                                        <option value="weekly">Co tydzień (dzień tygodnia)</option>
+                                    </select>
+                                </div>
+                                <div x-show="item.type === 'date'">
+                                    <label :for="'contact_schedule_date_' + index" class="mb-1 block text-sm font-bold">Data</label>
+                                    <input type="date" :id="'contact_schedule_date_' + index"
+                                        :name="'contact_schedule[' + index + '][date]'" x-model="item.date"
+                                        class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                                </div>
+                                <div x-show="item.type === 'weekly'" x-cloak>
+                                    <label :for="'contact_schedule_weekday_' + index" class="mb-1 block text-sm font-bold">Dzień tygodnia</label>
+                                    <select :id="'contact_schedule_weekday_' + index"
+                                        :name="'contact_schedule[' + index + '][weekday]'" x-model="item.weekday"
+                                        class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                                        @foreach ($weekdayOptions as $num => $name)
+                                            <option value="{{ $num }}">{{ $name }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="mt-2 grid gap-3 sm:grid-cols-2">
+                                <div>
+                                    <label :for="'contact_schedule_time_' + index" class="mb-1 block text-sm font-bold">Godziny <span class="font-normal text-muted">(opcjonalnie)</span></label>
+                                    <input type="text" :id="'contact_schedule_time_' + index"
+                                        :name="'contact_schedule[' + index + '][time]'" x-model="item.time"
+                                        placeholder="np. 10:00–14:00"
+                                        class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                                </div>
+                                <div>
+                                    <label :for="'contact_schedule_where_' + index" class="mb-1 block text-sm font-bold">Gdzie</label>
+                                    <input type="text" :id="'contact_schedule_where_' + index"
+                                        :name="'contact_schedule[' + index + '][where]'" x-model="item.where"
+                                        placeholder="np. Kraków, ul. Przykładowa 1"
+                                        class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                                </div>
+                            </div>
+                            <div class="mt-2">
+                                <label :for="'contact_schedule_note_' + index" class="mb-1 block text-sm font-bold">Dopisek <span class="font-normal text-muted">(opcjonalnie)</span></label>
+                                <input type="text" :id="'contact_schedule_note_' + index"
+                                    :name="'contact_schedule[' + index + '][note]'" x-model="item.note"
+                                    placeholder="np. wejście od podwórza, zapisy mailowo"
+                                    class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                            </div>
+                        </div>
+                    </template>
+
+                    <button type="button" @click="items.push({ type: 'date', date: '', weekday: 1, time: '', where: '', note: '' })"
+                        class="inline-flex items-center gap-2 rounded border border-brand px-3 py-1.5 text-sm font-bold text-brand hover:bg-brand hover:text-white">
+                        <i class="fa-solid fa-plus" aria-hidden="true"></i> Dodaj termin
+                    </button>
+                    @error('contact_schedule') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                </div>
+
+                <label class="flex items-start gap-2 rounded-lg border border-gray-200 bg-white p-3 text-sm">
+                    <input type="hidden" name="notify_schedule_change" value="0">
+                    <input type="checkbox" name="notify_schedule_change" value="1" @checked(old('notify_schedule_change')) class="mt-0.5 rounded border-gray-300 text-brand focus:ring-brand">
+                    <span>
+                        <span class="font-bold">Powiadom zapisanych o zmianie terminu</span>
+                        <span class="block text-xs text-muted">Po zapisaniu ustawień wyśle e-mail z aktualnym harmonogramem do osób, które wypełniły „Daj znać, że przyjdziesz”, z kopią (DW) na adres powyżej. Zaznacz tylko, gdy termin faktycznie się zmienił.</span>
+                    </span>
+                </label>
             </div>
 
             {{-- Box informacyjny pod danymi kontaktowymi (np. „zmiany w kontakcie”) --}}
@@ -828,6 +1272,22 @@
                 @endforeach
             </ul>
 
+            {{-- Kolor sekcji „Szkolenia i wydarzenia" na stronie głównej --}}
+            <div class="mt-6 rounded-lg border border-gray-200 bg-gray-50 p-5">
+                <label for="events_home_color_text" class="mb-1 block text-sm font-bold">Kolor sekcji „Szkolenia i wydarzenia”</label>
+                <p class="mb-2 text-xs text-muted">Akcent bloku wydarzeń na stronie głównej. Zostaw pusty, aby użyć koloru marki. Zbyt jasny kolor zostanie przyciemniony dla kontrastu (WCAG).</p>
+                <div class="flex items-center gap-2">
+                    <input type="color" id="events_home_color_picker" value="{{ old('events_home_color', $settings->events_home_color ?: $settings->brand_color) }}"
+                        oninput="document.getElementById('events_home_color_text').value = this.value"
+                        class="h-10 w-14 cursor-pointer rounded border-gray-300">
+                    <input type="text" id="events_home_color_text" name="events_home_color" value="{{ old('events_home_color', $settings->events_home_color) }}"
+                        placeholder="#RRGGBB (puste = kolor marki)" pattern="^#[0-9a-fA-F]{6}$"
+                        oninput="if (/^#[0-9a-fA-F]{6}$/.test(this.value)) document.getElementById('events_home_color_picker').value = this.value"
+                        class="w-56 rounded border-gray-300 focus:border-brand focus:ring-brand">
+                </div>
+                @error('events_home_color') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+            </div>
+
             {{-- Pasek informacyjny na górze strony głównej --}}
             <div class="mt-8 space-y-4 rounded-lg border border-gray-200 bg-gray-50 p-5">
                 <div>
@@ -953,6 +1413,9 @@
                     @endforeach
                 </select>
                 @error('mail_transport') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                <p class="mt-2 text-xs text-muted" x-show="transport === 'sendmail'" x-cloak>
+                    Poczta wysyłana wbudowanym mechanizmem PHP (sendmail) — bez konfiguracji SMTP. Działa, jeśli serwer/hosting ma skonfigurowaną lokalną wysyłkę poczty.
+                </p>
             </div>
 
             <div class="grid gap-5 sm:grid-cols-2">

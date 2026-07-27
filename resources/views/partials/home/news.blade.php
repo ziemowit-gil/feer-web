@@ -2,7 +2,7 @@
 <section id="aktualnosci" class="mx-auto max-w-6xl px-4 py-12">
     <div class="mb-6 flex flex-wrap items-end justify-between gap-4">
         <h2 class="text-2xl font-bold text-ink">Aktualności</h2>
-        <a href="{{ route('news.index') }}" class="rounded bg-brand px-4 py-2 text-xs font-bold uppercase tracking-wide text-white hover:bg-brand-dark">Zobacz wszystkie</a>
+        <a href="{{ route('news.index') }}" class="rounded bg-brand px-4 py-2 text-xs font-bold uppercase tracking-wide text-white hover:bg-brand-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">Zobacz wszystkie</a>
     </div>
 
     <div class="grid gap-8 md:grid-cols-3">

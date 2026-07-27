@@ -35,9 +35,11 @@
 
             // Every route a section owns — used to auto-expand the section that
             // holds the current page while the rest start collapsed.
-            $contentRoutes = ['admin.podstrony.*', 'admin.pozycje-menu.*', 'admin.newsy.*', 'admin.kategorie-newsow.*', 'admin.ankiety.*', 'admin.materialy-edukacyjne.*', 'admin.zapisy-materialy.*', 'admin.wiem-feer.*', 'admin.komentarze-bloga.*'];
+            $contentRoutes = ['admin.podstrony.*', 'admin.os-czasu.*', 'admin.pozycje-menu.*', 'admin.newsy.*', 'admin.kategorie-newsow.*', 'admin.ankiety.*', 'admin.materialy-edukacyjne.*', 'admin.wolontariat.*', 'admin.wydarzenia.*', 'admin.wiem-feer.*'];
             $appearanceRoutes = ['admin.hero.*', 'admin.galeria.*', 'admin.szybkie-akcje.*', 'admin.partnerzy.*'];
             $projectRoutes = ['admin.kategorie.*', 'admin.projekty.*'];
+            // „Skrzynka" — wszystko, co przychodzi od odwiedzających i czeka na obsługę.
+            $inboxRoutes = ['admin.zgloszenia-spotkania.*', 'admin.zgloszenia-barier.*', 'admin.zapisy-materialy.*', 'admin.komentarze-bloga.*'];
             $systemRoutes = ['admin.multimedia.*', 'admin.ustawienia.*', 'admin.newsletter.*', 'admin.uzytkownicy.*', 'admin.grupy.*'];
         @endphp
 
@@ -57,6 +59,9 @@
                         <a href="{{ route('admin.podstrony.index') }}" class="{{ $itemClass(['admin.podstrony.*', 'admin.pozycje-menu.*']) }}">
                             <i class="fa-solid fa-file-lines {{ $iconClass(['admin.podstrony.*', 'admin.pozycje-menu.*']) }}"></i> Strony i menu
                         </a>
+                        <a href="{{ route('admin.os-czasu.edit') }}" class="{{ $itemClass('admin.os-czasu.*') }}">
+                            <i class="fa-solid fa-timeline {{ $iconClass('admin.os-czasu.*') }}"></i> Oś czasu (historia)
+                        </a>
                     @endif
                     @if ($can('news'))
                         <a href="{{ route('admin.newsy.index') }}" class="{{ $itemClass('admin.newsy.*') }}">
@@ -75,15 +80,19 @@
                         <a href="{{ route('admin.materialy-edukacyjne.index') }}" class="{{ $itemClass('admin.materialy-edukacyjne.*') }}">
                             <i class="fa-solid fa-graduation-cap {{ $iconClass('admin.materialy-edukacyjne.*') }}"></i> Materiały edukacyjne
                         </a>
-                        <a href="{{ route('admin.zapisy-materialy.index') }}" class="{{ $itemClass('admin.zapisy-materialy.*') }}">
-                            <i class="fa-solid fa-envelope-open-text {{ $iconClass('admin.zapisy-materialy.*') }}"></i> Zapisy (materiały)
+                    @endif
+                    @if ($can('volunteering'))
+                        <a href="{{ route('admin.wolontariat.index') }}" class="{{ $itemClass('admin.wolontariat.*') }}">
+                            <i class="fa-solid fa-hands-helping {{ $iconClass('admin.wolontariat.*') }}"></i> Wolontariat
+                        </a>
+                    @endif
+                    @if ($can('events'))
+                        <a href="{{ route('admin.wydarzenia.index') }}" class="{{ $itemClass('admin.wydarzenia.*') }}">
+                            <i class="fa-solid fa-calendar-days {{ $iconClass('admin.wydarzenia.*') }}"></i> Szkolenia i wydarzenia
                         </a>
                     @endif
                     <a href="{{ route('admin.wiem-feer.index') }}" class="{{ $itemClass('admin.wiem-feer.*') }}">
                         <i class="fa-solid fa-feather-pointed {{ $iconClass('admin.wiem-feer.*') }}"></i> Wiem FEER (blog)
-                    </a>
-                    <a href="{{ route('admin.komentarze-bloga.index') }}" class="{{ $itemClass('admin.komentarze-bloga.*') }}">
-                        <i class="fa-solid fa-comments {{ $iconClass('admin.komentarze-bloga.*') }}"></i> Komentarze (blog)
                     </a>
                 </div>
             </div>
@@ -137,6 +146,32 @@
                     </div>
                 </div>
             @endif
+
+            <div x-data="{ open: {{ request()->routeIs($inboxRoutes) ? 'true' : 'false' }} }">
+                <button type="button" @click="open = !open" :aria-expanded="open" aria-controls="nav-section-inbox"
+                    class="flex w-full items-center justify-between rounded-lg px-3 py-2 text-xs font-bold uppercase tracking-wider text-muted transition-colors hover:bg-gray-100 hover:text-ink">
+                    <span>Skrzynka</span>
+                    <i class="fa-solid fa-chevron-down text-[0.6rem] text-gray-400 transition-transform duration-200" :class="{ 'rotate-180': open }"></i>
+                </button>
+                <div id="nav-section-inbox" x-show="open" @unless (request()->routeIs($inboxRoutes)) style="display: none" @endunless class="mt-1 space-y-1">
+                    @if (auth()->user()->isAdmin())
+                        <a href="{{ route('admin.zgloszenia-spotkania.index') }}" class="{{ $itemClass('admin.zgloszenia-spotkania.*') }}">
+                            <i class="fa-solid fa-handshake-angle {{ $iconClass('admin.zgloszenia-spotkania.*') }}"></i> Zgłoszenia (spotkania)
+                        </a>
+                        <a href="{{ route('admin.zgloszenia-barier.index') }}" class="{{ $itemClass('admin.zgloszenia-barier.*') }}">
+                            <i class="fa-solid fa-universal-access {{ $iconClass('admin.zgloszenia-barier.*') }}"></i> Zgłoszenia barier
+                        </a>
+                    @endif
+                    @if ($can('materials'))
+                        <a href="{{ route('admin.zapisy-materialy.index') }}" class="{{ $itemClass('admin.zapisy-materialy.*') }}">
+                            <i class="fa-solid fa-envelope-open-text {{ $iconClass('admin.zapisy-materialy.*') }}"></i> Zapisy (materiały)
+                        </a>
+                    @endif
+                    <a href="{{ route('admin.komentarze-bloga.index') }}" class="{{ $itemClass('admin.komentarze-bloga.*') }}">
+                        <i class="fa-solid fa-comments {{ $iconClass('admin.komentarze-bloga.*') }}"></i> Komentarze (blog)
+                    </a>
+                </div>
+            </div>
 
             <div x-data="{ open: {{ request()->routeIs($systemRoutes) ? 'true' : 'false' }} }">
                 <button type="button" @click="open = !open" :aria-expanded="open" aria-controls="nav-section-system"

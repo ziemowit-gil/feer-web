@@ -4,10 +4,12 @@ use App\Http\Controllers\Admin\AttachmentController as AdminAttachmentController
 use App\Http\Controllers\Admin\CategoryController as AdminCategoryController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\EducationalMaterialController as AdminEducationalMaterialController;
+use App\Http\Controllers\Admin\EventController as AdminEventController;
 use App\Http\Controllers\Admin\GalleryImageController;
 use App\Http\Controllers\Admin\HeroSlideController;
 use App\Http\Controllers\Admin\MaterialSubscriberController as AdminMaterialSubscriberController;
 use App\Http\Controllers\Admin\MediaLibraryController;
+use App\Http\Controllers\Admin\MeetingSignupController as AdminMeetingSignupController;
 use App\Http\Controllers\Admin\NavItemController;
 use App\Http\Controllers\Admin\NewsCategoryController as AdminNewsCategoryController;
 use App\Http\Controllers\Admin\NewsController as AdminNewsController;
@@ -18,17 +20,24 @@ use App\Http\Controllers\Admin\PartnerController as AdminPartnerController;
 use App\Http\Controllers\Admin\PollController as AdminPollController;
 use App\Http\Controllers\Admin\ProjectController as AdminProjectController;
 use App\Http\Controllers\Admin\QuickActionController as AdminQuickActionController;
+use App\Http\Controllers\Admin\AccessibilityReportController as AdminAccessibilityReportController;
 use App\Http\Controllers\Admin\SiteSettingController;
+use App\Http\Controllers\Admin\TimelineController as AdminTimelineController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\Admin\UserGroupController as AdminUserGroupController;
+use App\Http\Controllers\Admin\VolunteerAdController as AdminVolunteerAdController;
+use App\Http\Controllers\AccessibilityController;
+use App\Http\Controllers\AccessibilityReportController;
 use App\Http\Controllers\Admin\BlogArticleController as AdminBlogArticleController;
 use App\Http\Controllers\Admin\BlogCommentController as AdminBlogCommentController;
 use App\Http\Controllers\BlogController;
 use App\Http\Controllers\BlogCommentController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\EducationalMaterialController;
+use App\Http\Controllers\EventController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\MaterialSubscriberController;
+use App\Http\Controllers\MeetingSignupController;
 use App\Http\Controllers\NewsController;
 use App\Http\Controllers\NewsletterController;
 use App\Http\Controllers\PageController;
@@ -38,6 +47,7 @@ use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\ShortcutController;
 use App\Http\Controllers\SitemapController;
 use App\Http\Controllers\SupportController;
+use App\Http\Controllers\VolunteerController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -70,6 +80,16 @@ Route::get('/wiem-feer/{article:slug}', [BlogController::class, 'show'])->name('
 Route::post('/wiem-feer/{article:slug}/komentarz', [BlogCommentController::class, 'store'])
     ->name('blog.comments.store')->middleware('throttle:5,1');
 
+Route::middleware('module:volunteering')->group(function () {
+    Route::get('/wolontariat', [VolunteerController::class, 'index'])->name('volunteer.index');
+    Route::get('/wolontariat/{ad:slug}', [VolunteerController::class, 'show'])->name('volunteer.show');
+});
+
+Route::middleware('module:events')->group(function () {
+    Route::get('/wydarzenia', [EventController::class, 'index'])->name('events.index');
+    Route::get('/wydarzenia/{event:slug}', [EventController::class, 'show'])->name('events.show');
+});
+
 Route::get('/newsletter', [NewsletterController::class, 'index'])->name('newsletter.show');
 
 Route::get('/wsparcie', [SupportController::class, 'index'])->name('support.show')->middleware('module:support');
@@ -80,8 +100,13 @@ Route::get('/instagram', [ShortcutController::class, 'instagram'])->name('shortc
 Route::get('/fb', [ShortcutController::class, 'facebook'])->name('shortcut.fb');
 Route::get('/facebook', [ShortcutController::class, 'facebook'])->name('shortcut.facebook');
 
+// Deklaracja dostępności (ustawa o dostępności cyfrowej) + formularz zgłaszania barier.
+Route::get('/deklaracja-dostepnosci', [AccessibilityController::class, 'show'])->name('accessibility.show');
+Route::post('/deklaracja-dostepnosci/zglos', [AccessibilityReportController::class, 'store'])->name('accessibility.report')->middleware('throttle:5,1');
+
 Route::get('/kontakt', [ContactController::class, 'index'])->name('contact.show');
 Route::post('/kontakt', [ContactController::class, 'store'])->name('contact.store')->middleware('throttle:5,1');
+Route::post('/kontakt/przyjde', [MeetingSignupController::class, 'store'])->name('meeting.signup')->middleware('throttle:5,1');
 
 Route::redirect('/dashboard', '/admin')->middleware(['auth', 'verified'])->name('dashboard');
 
@@ -104,6 +129,10 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(
         Route::patch('podstrony/{page}/kolejnosc', [AdminPageController::class, 'updateOrder'])->name('podstrony.kolejnosc');
         Route::patch('podstrony/{page}/widocznosc', [AdminPageController::class, 'toggleVisibility'])->name('podstrony.widocznosc');
         Route::patch('podstrony/{page}/wylacz', [AdminPageController::class, 'toggleDisabled'])->name('podstrony.wylacz');
+
+        // Oś czasu (historia) strony „O organizacji" jako osobna pozycja w menu.
+        Route::get('os-czasu', [AdminTimelineController::class, 'edit'])->name('os-czasu.edit');
+        Route::put('os-czasu/{page}', [AdminTimelineController::class, 'update'])->name('os-czasu.update');
     });
 
     Route::middleware(['module:hero', 'module-access:hero'])->group(function () {
@@ -122,6 +151,7 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(
     Route::middleware(['module:news', 'module-access:news'])->group(function () {
         Route::resource('newsy', AdminNewsController::class)->parameters(['newsy' => 'news'])->except('show');
         Route::post('newsy/{news}/pliki', [AdminAttachmentController::class, 'storeForNews'])->name('newsy.pliki.store');
+        Route::post('newsy/{news}/klonuj', [AdminNewsController::class, 'clone'])->name('newsy.klonuj');
         Route::resource('kategorie-newsow', AdminNewsCategoryController::class)->parameters(['kategorie-newsow' => 'newsCategory'])->except('show');
     });
 
@@ -142,6 +172,15 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(
         Route::get('zapisy-materialy', [AdminMaterialSubscriberController::class, 'index'])->name('zapisy-materialy.index');
         Route::get('zapisy-materialy/eksport', [AdminMaterialSubscriberController::class, 'export'])->name('zapisy-materialy.export');
         Route::delete('zapisy-materialy/{subscriber}', [AdminMaterialSubscriberController::class, 'destroy'])->name('zapisy-materialy.destroy');
+    });
+
+    Route::middleware(['module:volunteering', 'module-access:volunteering'])->group(function () {
+        Route::resource('wolontariat', AdminVolunteerAdController::class)->parameters(['wolontariat' => 'wolontariat'])->except('show');
+    });
+
+    Route::middleware(['module:events', 'module-access:events'])->group(function () {
+        Route::resource('wydarzenia', AdminEventController::class)->parameters(['wydarzenia' => 'event'])->except('show');
+        Route::post('wydarzenia/{event}/na-aktualnosc', [AdminEventController::class, 'toNews'])->name('wydarzenia.na-aktualnosc');
     });
 
     // Blog „Wiem FEER" — dostępny dla każdego użytkownika panelu (jak multimedia).
@@ -173,6 +212,14 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(
         Route::get('ustawienia', [SiteSettingController::class, 'edit'])->name('ustawienia.edit');
         Route::put('ustawienia', [SiteSettingController::class, 'update'])->name('ustawienia.update');
         Route::post('ustawienia/test-poczty', [SiteSettingController::class, 'mailTest'])->name('ustawienia.mail-test');
+
+        Route::get('zgloszenia-spotkania', [AdminMeetingSignupController::class, 'index'])->name('zgloszenia-spotkania.index');
+        Route::get('zgloszenia-spotkania/eksport', [AdminMeetingSignupController::class, 'export'])->name('zgloszenia-spotkania.export');
+        Route::delete('zgloszenia-spotkania/{signup}', [AdminMeetingSignupController::class, 'destroy'])->name('zgloszenia-spotkania.destroy');
+
+        Route::get('zgloszenia-barier', [AdminAccessibilityReportController::class, 'index'])->name('zgloszenia-barier.index');
+        Route::get('zgloszenia-barier/eksport', [AdminAccessibilityReportController::class, 'export'])->name('zgloszenia-barier.export');
+        Route::delete('zgloszenia-barier/{report}', [AdminAccessibilityReportController::class, 'destroy'])->name('zgloszenia-barier.destroy');
 
         Route::get('newsletter', [AdminNewsletterController::class, 'edit'])->name('newsletter.edit');
         Route::put('newsletter', [AdminNewsletterController::class, 'update'])->name('newsletter.update');

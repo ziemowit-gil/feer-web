@@ -129,6 +129,14 @@ class AppServiceProvider extends ServiceProvider
             config(['mail.from.name' => $settings->mail_from_name]);
         }
 
+        // Wbudowana poczta PHP: użyj mailera „sendmail" (pipe do binarki systemowej),
+        // bez potrzeby konfigurowania SMTP. Odpowiednik funkcji mail() na hostingu.
+        if ($settings->mail_transport === 'sendmail') {
+            config(['mail.default' => 'sendmail']);
+
+            return;
+        }
+
         if (! $settings->mailConfigured()) {
             return;
         }

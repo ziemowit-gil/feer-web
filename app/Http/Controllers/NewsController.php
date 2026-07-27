@@ -3,15 +3,26 @@
 namespace App\Http\Controllers;
 
 use App\Models\News;
+use App\Models\NewsCategory;
 use App\Models\SiteSetting;
+use Illuminate\Http\Request;
 
 class NewsController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $news = News::published()->with(['category', 'tags'])->orderByDesc('published_at')->paginate(9);
+        $categories = NewsCategory::orderBy('order')->orderBy('name')->get();
+        $activeCategory = $request->query('kategoria')
+            ? $categories->firstWhere('slug', $request->query('kategoria'))
+            : null;
 
-        return view('news.index', compact('news'));
+        $news = News::published()->with(['category', 'tags'])
+            ->when($activeCategory, fn ($q) => $q->where('news_category_id', $activeCategory->id))
+            ->orderByDesc('published_at')
+            ->paginate(9)
+            ->withQueryString();
+
+        return view('news.index', compact('news', 'categories', 'activeCategory'));
     }
 
     public function show(News $news)

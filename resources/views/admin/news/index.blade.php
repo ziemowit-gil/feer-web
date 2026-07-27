@@ -54,6 +54,10 @@
                             <div class="flex justify-end gap-3">
                                 <a href="{{ route('news.show', $item) }}" target="_blank" class="text-muted hover:text-brand" title="Podgląd"><i class="fa-solid fa-eye"></i></a>
                                 <a href="{{ route('admin.newsy.edit', $item) }}" class="text-muted hover:text-brand" title="Edytuj"><i class="fa-solid fa-pen"></i></a>
+                                <form method="POST" action="{{ route('admin.newsy.klonuj', $item) }}">
+                                    @csrf
+                                    <button type="submit" class="text-muted hover:text-brand" title="Klonuj"><i class="fa-solid fa-copy"></i></button>
+                                </form>
                                 <form method="POST" action="{{ route('admin.newsy.destroy', $item) }}" onsubmit="return confirm('Usunąć news &quot;{{ $item->title }}&quot;?');">
                                     @csrf
                                     @method('DELETE')
