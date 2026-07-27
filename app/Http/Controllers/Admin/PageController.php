@@ -171,6 +171,8 @@ class PageController extends Controller
             'wip_mode' => ['nullable', Rule::in(array_keys(Page::WIP_MODES))],
             'wip_message' => ['nullable', 'string', 'max:2000'],
             'type' => ['required', Rule::in(array_keys(Page::TYPES))],
+            'access_mode' => ['nullable', Rule::in(array_keys(Page::ACCESS_MODES))],
+            'access_password' => ['nullable', 'string', 'max:255'],
             'event_mode' => ['nullable', Rule::in(array_keys(Page::EVENT_MODES))],
             'event_when' => ['nullable', 'string', 'max:255'],
             'event_location' => ['nullable', 'string', 'max:255'],
@@ -235,6 +237,7 @@ class PageController extends Controller
         $data['project_display'] = $data['project_id'] ? ($data['project_display'] ?? 'link') : 'link';
         $data['slug'] = trim($data['slug'] ?? '');
         $data['is_published'] = $request->boolean('is_published');
+        $data['is_archived'] = $request->boolean('is_archived');
         $data['show_in_menu'] = $request->boolean('show_in_menu');
         $data['is_system'] = $request->boolean('is_system');
         $data['show_gallery'] = $request->boolean('show_gallery');
@@ -357,6 +360,25 @@ class PageController extends Controller
         } else {
             $data['bip_move_url'] = trim((string) ($data['bip_move_url'] ?? '')) ?: null;
             $data['bip_move_note'] = trim((string) ($data['bip_move_note'] ?? '')) ?: null;
+        }
+
+        // Wewnętrzna: tryb dostępu + hasło. Puste hasło przy edycji = bez zmian
+        // (usuwamy klucz, by nie nadpisać). Poza tym typem czyścimy dostęp.
+        $newPassword = trim((string) ($data['access_password'] ?? ''));
+        unset($data['access_password']);
+
+        if ($data['type'] === 'internal') {
+            $data['access_mode'] = $data['access_mode'] ?? 'password';
+
+            if ($data['access_mode'] === 'microsoft') {
+                $data['access_password'] = null; // logowanie zamiast hasła
+            } elseif ($newPassword !== '') {
+                $data['access_password'] = \Illuminate\Support\Facades\Hash::make($newPassword);
+            }
+            // password puste przy edycji → klucz nieobecny → hasło bez zmian.
+        } else {
+            $data['access_mode'] = null;
+            $data['access_password'] = null;
         }
 
         return $data;

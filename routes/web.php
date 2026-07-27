@@ -255,6 +255,9 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(
 
 require __DIR__.'/auth.php';
 
+// Odblokowanie strony wewnętrznej hasłem (przed catch-all, dwuczłonowa ścieżka).
+Route::post('/{page:slug}/odblokuj', [PageController::class, 'unlock'])->name('page.unlock')->middleware('module:pages');
+
 // Catch-all for top-level pages (e.g. /fundacja instead of /strona/fundacja).
 // Kept last so every more specific route above always wins; a page whose
 // slug collides with one of those is unreachable here, which is why

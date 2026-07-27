@@ -16,6 +16,10 @@
 
 @section('content')
     <section class="mx-auto max-w-2xl px-4 py-12">
+        @if ($news->is_archived)
+            @include('partials.archival-notice', ['date' => $news->published_at])
+        @endif
+
         <div class="mb-3 flex flex-wrap items-center gap-3 text-sm">
             <span class="text-muted">{{ $news->published_at->format('d.m.Y') }}</span>
             @if ($news->updated_at->gt($news->published_at))

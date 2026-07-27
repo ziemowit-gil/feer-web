@@ -31,6 +31,7 @@ class SearchController extends Controller
 
             if ($settings->isModuleEnabled('pages')) {
                 $groups['Strony'] = Page::where('is_published', true)->where('is_disabled', false)
+                    ->where('type', '!=', 'internal')
                     ->where(fn ($w) => $w->where('title', 'like', $like)->orWhere('content', 'like', $like))
                     ->orderBy('title')->limit(self::PER_GROUP)->get()
                     ->map(fn ($p) => $this->item($p->title, route('page.show', $p), $p->content));

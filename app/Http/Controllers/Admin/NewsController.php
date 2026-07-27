@@ -115,6 +115,7 @@ class NewsController extends Controller
             : null;
         $data['is_published'] = $request->boolean('is_published');
         $data['is_featured'] = $request->boolean('is_featured');
+        $data['is_archived'] = $request->boolean('is_archived');
         unset($data['image']);
 
         return $data;

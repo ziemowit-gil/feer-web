@@ -23,6 +23,12 @@
         </div>
     @endif
 
+    @if ($page->is_archived)
+        <div class="mx-auto max-w-4xl px-4 pt-8">
+            @include('partials.archival-notice', ['date' => $page->created_at])
+        </div>
+    @endif
+
     @if ($page->isEvent())
         <section class="mx-auto max-w-4xl px-4 py-12">
             <div class="mb-5 flex flex-wrap items-center gap-2">

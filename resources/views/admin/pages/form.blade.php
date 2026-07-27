@@ -640,14 +640,124 @@
                             @error('bip_move_note') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                         </div>
                     </div>
+
+                    <div data-internal-fields class="space-y-5 border-t border-gray-100 pt-5 {{ $currentType === 'internal' ? '' : 'hidden' }}"
+                        x-data="{ mode: '{{ old('access_mode', $page->access_mode ?? 'password') }}' }">
+                        <p class="text-sm font-bold uppercase tracking-wide text-muted">Dostęp do strony wewnętrznej</p>
+                        <p class="rounded border border-blue-200 bg-blue-50 px-3 py-2 text-xs text-blue-800">
+                            Strona jest opublikowana, ale jej treść zobaczą tylko osoby autoryzowane — hasłem lub po zalogowaniu (Microsoft 365 / konto panelu), zależnie od trybu poniżej.
+                        </p>
+
+                        <div>
+                            <label for="access_mode" class="mb-1 block text-sm font-bold">Tryb dostępu</label>
+                            <select id="access_mode" name="access_mode" x-model="mode" class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                                @foreach (\App\Models\Page::ACCESS_MODES as $value => $labelText)
+                                    <option value="{{ $value }}" {{ old('access_mode', $page->access_mode ?? 'password') === $value ? 'selected' : '' }}>{{ $labelText }}</option>
+                                @endforeach
+                            </select>
+                            @error('access_mode') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                        </div>
+
+                        <div x-show="mode === 'password'" x-cloak>
+                            <label for="access_password" class="mb-1 block text-sm font-bold">Hasło dostępu</label>
+                            <input type="text" id="access_password" name="access_password" autocomplete="off"
+                                placeholder="{{ $page->exists && filled($page->access_password) ? 'Ustawione — wpisz nowe, aby zmienić' : 'Wpisz hasło' }}"
+                                class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                            <p class="mt-1 text-xs text-muted">@if ($page->exists && filled($page->access_password)) Puste pole = hasło bez zmian. @else Odwiedzający poda to hasło, aby odblokować stronę. @endif</p>
+                            @error('access_password') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                        </div>
+
+                        <p x-show="mode === 'microsoft'" x-cloak class="text-xs text-muted">
+                            Treść zobaczą wyłącznie zalogowani użytkownicy panelu (m.in. przez Microsoft 365). Niezalogowani zostaną przekierowani do logowania.
+                        </p>
+                    </div>
                 </div>
             </div>
 
             {{-- ==================== PUBLIKACJA I POWIĄZANIA ==================== --}}
             <div data-ftab-panel="ustawienia" class="hidden space-y-6">
-                <div class="space-y-5 rounded-lg border border-gray-200 bg-white p-6">
-                    <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-                        <div class="lg:col-span-2">
+                {{-- Karta: widoczność i status --}}
+                <div class="rounded-lg border border-gray-200 bg-white p-6">
+                    <div class="mb-4">
+                        <h2 class="text-base font-bold text-ink">Widoczność i status</h2>
+                        <p class="mt-0.5 text-xs text-muted">Decyduje, czy i jak strona pojawia się w serwisie.</p>
+                    </div>
+
+                    <div class="grid gap-3 sm:grid-cols-2">
+                        <label class="flex items-start gap-3 rounded-lg border border-gray-200 p-3">
+                            <input type="checkbox" name="is_published" value="1" {{ old('is_published', $page->is_published ?? true) ? 'checked' : '' }}
+                                class="mt-0.5 rounded border-gray-300 text-brand focus:ring-brand">
+                            <span>
+                                <span class="block text-sm font-bold">Opublikowana</span>
+                                <span class="block text-xs text-muted">Strona jest dostępna publicznie.</span>
+                            </span>
+                        </label>
+
+                        <label class="flex items-start gap-3 rounded-lg border border-gray-200 p-3">
+                            <input type="checkbox" name="is_archived" value="1" {{ old('is_archived', $page->is_archived ?? false) ? 'checked' : '' }}
+                                class="mt-0.5 rounded border-gray-300 text-brand focus:ring-brand">
+                            <span>
+                                <span class="flex items-center gap-1 text-sm font-bold"><i class="fa-solid fa-clock-rotate-left text-muted" aria-hidden="true"></i> Treść archiwalna</span>
+                                <span class="block text-xs text-muted">Pokazuje baner, że treść może być nieaktualna (pozostaje w wyszukiwarce).</span>
+                            </span>
+                        </label>
+
+                        <label class="flex items-start gap-3 rounded-lg border border-gray-200 p-3">
+                            <input type="checkbox" name="show_in_menu" value="1" {{ old('show_in_menu', $page->show_in_menu ?? true) ? 'checked' : '' }}
+                                class="mt-0.5 rounded border-gray-300 text-brand focus:ring-brand">
+                            <span>
+                                <span class="block text-sm font-bold">Dodaj do menu</span>
+                                <span class="block text-xs text-muted">Tylko strony główne (bez rodzica i projektu) trafiają do nawigacji.</span>
+                            </span>
+                        </label>
+
+                        <label class="flex items-start gap-3 rounded-lg border border-gray-200 p-3">
+                            <input type="checkbox" name="is_system" value="1" {{ old('is_system', $page->is_system ?? false) ? 'checked' : '' }}
+                                class="mt-0.5 rounded border-gray-300 text-brand focus:ring-brand">
+                            <span>
+                                <span class="block text-sm font-bold">Strona systemowa</span>
+                                <span class="block text-xs text-muted">Wymagana strona serwisu — nie można jej usunąć.</span>
+                            </span>
+                        </label>
+
+                        <label class="flex items-start gap-3 rounded-lg border border-gray-200 p-3 {{ $currentType === 'about' ? 'hidden' : '' }}" data-gallery-toggle>
+                            <input type="hidden" name="show_gallery" value="0">
+                            <input type="checkbox" name="show_gallery" value="1" {{ old('show_gallery', $page->show_gallery ?? false) ? 'checked' : '' }}
+                                class="mt-0.5 rounded border-gray-300 text-brand focus:ring-brand">
+                            <span>
+                                <span class="block text-sm font-bold">Pokaż galerię zdjęć</span>
+                                <span class="block text-xs text-muted">Wyświetla zdjęcia z zakładki „Galeria”.</span>
+                            </span>
+                        </label>
+
+                        @if (auth()->user()->isAdmin())
+                            <label class="flex items-start gap-3 rounded-lg border border-gray-200 p-3">
+                                <input type="hidden" name="is_locked" value="0">
+                                <input type="checkbox" name="is_locked" value="1" {{ old('is_locked', $page->is_locked ?? false) ? 'checked' : '' }}
+                                    class="mt-0.5 rounded border-gray-300 text-brand focus:ring-brand">
+                                <span>
+                                    <span class="flex items-center gap-1 text-sm font-bold"><i class="fa-solid fa-lock text-brand" aria-hidden="true"></i> Zablokuj do edycji</span>
+                                    <span class="block text-xs text-muted">Edytować, klonować i usuwać może tylko administrator.</span>
+                                </span>
+                            </label>
+                        @elseif ($page->is_locked ?? false)
+                            <p class="flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs text-amber-800">
+                                <i class="fa-solid fa-lock mt-0.5" aria-hidden="true"></i>
+                                <span>Ta strona jest zablokowana do edycji przez administratora.</span>
+                            </p>
+                        @endif
+                    </div>
+                </div>
+
+                {{-- Karta: powiązania i kolejność --}}
+                <div class="rounded-lg border border-gray-200 bg-white p-6">
+                    <div class="mb-4">
+                        <h2 class="text-base font-bold text-ink">Powiązania i kolejność</h2>
+                        <p class="mt-0.5 text-xs text-muted">Umiejscowienie strony w strukturze serwisu.</p>
+                    </div>
+
+                    <div class="grid gap-5 sm:grid-cols-2">
+                        <div>
                             <label for="parent_id" class="mb-1 block text-sm font-bold">Nadrzędna strona</label>
                             <select id="parent_id" name="parent_id" class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
                                 <option value="">— brak (strona główna) —</option>
@@ -657,11 +767,11 @@
                                     </option>
                                 @endforeach
                             </select>
-                            <p class="mt-1 text-xs text-muted">Strony z tym samym rodzicem tworzą wspólne, osobne podmenu widoczne na stronie.</p>
+                            <p class="mt-1 text-xs text-muted">Strony z tym samym rodzicem tworzą wspólne, osobne podmenu.</p>
                             @error('parent_id') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                         </div>
 
-                        <div class="lg:col-span-2">
+                        <div>
                             <label for="project_id" class="mb-1 block text-sm font-bold">Powiąż z projektem</label>
                             <select id="project_id" name="project_id" data-project-select class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
                                 <option value="">— brak —</option>
@@ -671,18 +781,18 @@
                                     </option>
                                 @endforeach
                             </select>
-                            <p class="mt-1 text-xs text-muted">Jeśli wybierzesz projekt, ta strona stanie się stroną tego projektu — zachowa własny adres, a dodatkowo pojawi się na stronie projektu.</p>
+                            <p class="mt-1 text-xs text-muted">Strona zachowa własny adres, a dodatkowo pojawi się na stronie projektu.</p>
                             @error('project_id') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                         </div>
 
-                        <div class="lg:col-span-4 {{ $hasProject ? '' : 'hidden' }}" data-project-display-wrap>
+                        <div class="sm:col-span-2 {{ $hasProject ? '' : 'hidden' }}" data-project-display-wrap>
                             <label for="project_display" class="mb-1 block text-sm font-bold">Jak pokazać na stronie projektu</label>
                             <select id="project_display" name="project_display" class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand sm:w-2/3">
                                 @foreach (\App\Models\Page::PROJECT_DISPLAYS as $value => $label)
                                     <option value="{{ $value }}" {{ old('project_display', $page->project_display ?? 'link') === $value ? 'selected' : '' }}>{{ $label }}</option>
                                 @endforeach
                             </select>
-                            <p class="mt-1 text-xs text-muted">Strona zawsze ma własny adres. Tu wybierasz, jak jej treść pojawia się na stronie projektu: jako sam odnośnik, jako zakładka albo jako sekcja w treści.</p>
+                            <p class="mt-1 text-xs text-muted">Jako sam odnośnik, jako zakładka albo jako sekcja w treści projektu.</p>
                             @error('project_display') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                         </div>
 
@@ -690,67 +800,9 @@
                             <label for="order" class="mb-1 block text-sm font-bold">Kolejność</label>
                             <input type="number" id="order" name="order" min="0" value="{{ old('order', $page->order) }}"
                                 class="w-28 rounded border-gray-300 focus:border-brand focus:ring-brand">
+                            <p class="mt-1 text-xs text-muted">Mniejsza liczba = wyżej.</p>
                         </div>
-
-                        <div class="flex flex-col justify-center gap-2 lg:col-span-3">
-                            <label class="flex items-center gap-2">
-                                <input type="checkbox" name="is_published" value="1" {{ old('is_published', $page->is_published ?? true) ? 'checked' : '' }}
-                                    class="rounded border-gray-300 text-brand focus:ring-brand">
-                                <span class="text-sm font-bold">Opublikowana</span>
-                            </label>
-
-                            <label class="flex items-center gap-2">
-                                <input type="checkbox" name="show_in_menu" value="1" {{ old('show_in_menu', $page->show_in_menu ?? true) ? 'checked' : '' }}
-                                    class="rounded border-gray-300 text-brand focus:ring-brand">
-                                <span class="text-sm font-bold">Dodaj do menu</span>
-                            </label>
-
-                            <label class="flex items-center gap-2">
-                                <input type="checkbox" name="is_system" value="1" {{ old('is_system', $page->is_system ?? false) ? 'checked' : '' }}
-                                    class="rounded border-gray-300 text-brand focus:ring-brand">
-                                <span class="text-sm font-bold">Strona systemowa</span>
-                            </label>
-
-                            @if (auth()->user()->isAdmin())
-                                <label class="flex items-start gap-2">
-                                    <input type="hidden" name="is_locked" value="0">
-                                    <input type="checkbox" name="is_locked" value="1" {{ old('is_locked', $page->is_locked ?? false) ? 'checked' : '' }}
-                                        class="mt-0.5 rounded border-gray-300 text-brand focus:ring-brand">
-                                    <span>
-                                        <span class="block text-sm font-bold"><i class="fa-solid fa-lock text-brand" aria-hidden="true"></i> Zablokuj treść do edycji przez innych</span>
-                                        <span class="block text-xs text-muted">Tylko administrator będzie mógł edytować, ukrywać lub usuwać tę stronę. Opcję widzą i zmieniają wyłącznie administratorzy.</span>
-                                    </span>
-                                </label>
-                            @elseif ($page->is_locked ?? false)
-                                <p class="flex items-start gap-2 rounded border border-amber-200 bg-amber-50 px-2 py-1.5 text-xs text-amber-800">
-                                    <i class="fa-solid fa-lock mt-0.5" aria-hidden="true"></i>
-                                    <span>Ta strona jest zablokowana do edycji przez administratora.</span>
-                                </p>
-                            @endif
-
-                            @if (auth()->user()->isAdmin())
-                                <label class="flex items-center gap-2">
-                                    <input type="hidden" name="is_locked" value="0">
-                                    <input type="checkbox" name="is_locked" value="1" {{ old('is_locked', $page->is_locked ?? false) ? 'checked' : '' }}
-                                        class="rounded border-gray-300 text-brand focus:ring-brand">
-                                    <span class="flex items-center gap-1 text-sm font-bold"><i class="fa-solid fa-lock text-muted" aria-hidden="true"></i> Zablokuj treść do edycji przez innych</span>
-                                </label>
-                            @endif
-
-                            <label class="flex items-center gap-2 {{ $currentType === 'about' ? 'hidden' : '' }}" data-gallery-toggle>
-                                <input type="hidden" name="show_gallery" value="0">
-                                <input type="checkbox" name="show_gallery" value="1" {{ old('show_gallery', $page->show_gallery ?? false) ? 'checked' : '' }}
-                                    class="rounded border-gray-300 text-brand focus:ring-brand">
-                                <span class="text-sm font-bold">Pokaż galerię zdjęć</span>
-                            </label>
-                        </div>
-                        <p class="text-xs text-muted {{ $currentType === 'about' ? 'hidden' : '' }}" data-gallery-toggle>„Pokaż galerię zdjęć” wyświetla na stronie zdjęcia dodane w zakładce „Galeria”. Typ „O organizacji” ma własną, osobną galerię (sterowaną kolejnością sekcji), więc ten przełącznik go nie dotyczy.</p>
                     </div>
-                    <p class="text-xs text-muted">„Dodaj do menu” dotyczy tylko stron głównych (bez rodzica i bez projektu) — widoczne w głównej nawigacji strony.</p>
-                    <p class="text-xs text-muted">„Strona systemowa” to wymagana strona serwisu (np. deklaracja dostępności, polityka prywatności, mapa strony) — oznaczonej w ten sposób strony nie można usunąć.</p>
-                    @if (auth()->user()->isAdmin())
-                        <p class="text-xs text-muted">„Zablokuj treść do edycji przez innych” — po zaznaczeniu tylko administrator może edytować, klonować lub usunąć tę stronę. Flagę ustawia i zdejmuje wyłącznie administrator.</p>
-                    @endif
                 </div>
 
                 {{-- ==================== DOSTĘPNOŚĆ STRONY ==================== --}}
@@ -840,6 +892,7 @@
             const aboutFields = document.querySelector('[data-about-fields]');
             const faqFields = document.querySelector('[data-faq-fields]');
             const bipMoveFields = document.querySelector('[data-bipmove-fields]');
+            const internalFields = document.querySelector('[data-internal-fields]');
             if (typeSelect) {
                 typeSelect.addEventListener('change', function () {
                     if (eventFields) eventFields.classList.toggle('hidden', typeSelect.value !== 'event');
@@ -847,6 +900,7 @@
                     if (aboutFields) aboutFields.classList.toggle('hidden', typeSelect.value !== 'about');
                     if (faqFields) faqFields.classList.toggle('hidden', typeSelect.value !== 'faq');
                     if (bipMoveFields) bipMoveFields.classList.toggle('hidden', typeSelect.value !== 'bip_move');
+                    if (internalFields) internalFields.classList.toggle('hidden', typeSelect.value !== 'internal');
                     // Galeria „O organizacji” jest osobna — ukryj generyczny przełącznik dla tego typu.
                     document.querySelectorAll('[data-gallery-toggle]').forEach(function (el) {
                         el.classList.toggle('hidden', typeSelect.value === 'about');

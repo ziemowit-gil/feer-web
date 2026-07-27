@@ -147,6 +147,11 @@
                             class="rounded border-gray-300 text-amber-500 focus:ring-amber-400">
                         <span class="flex items-center gap-1 text-sm font-bold"><i class="fa-solid fa-star text-amber-400" aria-hidden="true"></i> Wyróżnij news</span>
                     </label>
+                    <label class="flex items-center gap-2">
+                        <input type="checkbox" name="is_archived" value="1" {{ old('is_archived', $news->is_archived ?? false) ? 'checked' : '' }}
+                            class="rounded border-gray-300 text-brand focus:ring-brand">
+                        <span class="flex items-center gap-1 text-sm font-bold"><i class="fa-solid fa-clock-rotate-left text-muted" aria-hidden="true"></i> Treść archiwalna</span>
+                    </label>
                 </div>
             </div>
             <p class="text-xs text-muted">Wyróżniony news jest prezentowany w złotej ramce na liście aktualności, stronie głównej i stronie projektu.</p>
