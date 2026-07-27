@@ -4,6 +4,7 @@ use App\Http\Middleware\EnsureModuleEnabled;
 use App\Http\Middleware\EnsureSiteAvailable;
 use App\Http\Middleware\EnsureUserCanAccessModule;
 use App\Http\Middleware\EnsureUserIsAdmin;
+use App\Http\Middleware\HandleRedirects;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -20,6 +21,12 @@ return Application::configure(basePath: dirname(__DIR__))
             'admin' => EnsureUserIsAdmin::class,
             'module' => EnsureModuleEnabled::class,
             'module-access' => EnsureUserCanAccessModule::class,
+        ]);
+
+        // Ręczne przekierowania 301 — na początku grupy „web”, by zadziałały
+        // zanim routing zwróci 404.
+        $middleware->web(prepend: [
+            HandleRedirects::class,
         ]);
 
         // Tryb konserwacji — dopięty na końcu grupy „web” (po starcie sesji, więc

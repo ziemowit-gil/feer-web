@@ -31,6 +31,7 @@ class Page extends Model
         'bip_move' => 'Przeniesiono do BIP',
         'internal' => 'Wewnętrzna (dostęp ograniczony)',
         'internal_hub' => 'Wewnętrzna: Panel współpracownika',
+        'legacy' => 'Prezentacja tego, co było',
     ];
 
     /** Tryby dostępu do strony wewnętrznej. */
@@ -86,6 +87,7 @@ class Page extends Model
         'about_motto', 'about_motto_author', 'about_intro', 'about_stats', 'about_timeline', 'about_values', 'about_team', 'about_section_order', 'about_partner_ids', 'about_documents_intro', 'about_documents_bip_url', 'about_press_intro', 'about_press',
         'faq_intro', 'faq_items', 'bip_move_url', 'bip_move_note', 'show_gallery',
         'access_mode', 'access_password', 'hub_hero', 'hub_intro', 'hub_links',
+        'legacy_name', 'legacy_intro',
     ];
 
     protected $casts = [
@@ -143,6 +145,11 @@ class Page extends Model
     public function isInternalHub(): bool
     {
         return $this->type === 'internal_hub';
+    }
+
+    public function isLegacy(): bool
+    {
+        return $this->type === 'legacy';
     }
 
     /** Czy strona jest chroniona dostępem (zwykła wewnętrzna lub panel współpracownika). */

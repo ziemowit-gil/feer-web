@@ -181,6 +181,8 @@ class PageController extends Controller
             'hub_links.*.url' => ['nullable', 'string', 'max:500'],
             'hub_links.*.description' => ['nullable', 'string', 'max:255'],
             'hub_links.*.icon' => ['nullable', 'string', 'max:100'],
+            'legacy_name' => ['nullable', 'string', 'max:255'],
+            'legacy_intro' => ['nullable', 'string', 'max:2000'],
             'event_mode' => ['nullable', Rule::in(array_keys(Page::EVENT_MODES))],
             'event_when' => ['nullable', 'string', 'max:255'],
             'event_location' => ['nullable', 'string', 'max:255'],
@@ -425,6 +427,15 @@ class PageController extends Controller
         }
 
         unset($data['hub_hero_file']);
+
+        // „Prezentacja tego, co było": nazwa poprzednika + wstęp; poza typem czyścimy.
+        if ($data['type'] === 'legacy') {
+            $data['legacy_name'] = trim((string) ($data['legacy_name'] ?? '')) ?: null;
+            $data['legacy_intro'] = trim((string) ($data['legacy_intro'] ?? '')) ?: null;
+        } else {
+            $data['legacy_name'] = null;
+            $data['legacy_intro'] = null;
+        }
 
         return $data;
     }

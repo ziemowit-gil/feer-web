@@ -125,7 +125,7 @@ class SiteSetting extends Model implements HasMedia
         'newsletter_code', 'header_layout', 'show_topbar_bip', 'show_topbar_social', 'content_editor',
         'site_url', 'maintenance_mode', 'maintenance_message',
         'microsoft_login_enabled', 'microsoft_client_id', 'microsoft_client_secret', 'microsoft_tenant_id',
-        'unsplash_access_key',
+        'unsplash_access_key', 'cookie_banner_enabled', 'cookie_banner_text',
         'mail_transport', 'mail_from_address', 'mail_from_name', 'mail_host', 'mail_port', 'mail_username', 'mail_password', 'mail_encryption',
         'show_coordinators', 'ngo_color', 'sub_brands',
         'logo_alt', 'logo_only',
@@ -226,6 +226,7 @@ class SiteSetting extends Model implements HasMedia
         'show_topbar_bip' => 'boolean',
         'show_topbar_social' => 'boolean',
         'contact_shipping_visible' => 'boolean',
+        'cookie_banner_enabled' => 'boolean',
         'support_show_partners' => 'boolean',
         'support_fundraiser_goal' => 'integer',
         'support_fundraiser_raised' => 'integer',
@@ -495,6 +496,15 @@ class SiteSetting extends Model implements HasMedia
     public function showLogoOnly(): bool
     {
         return $this->logo_only && $this->logoUrl() !== null;
+    }
+
+    /** Domyślny tekst banera cookies, gdy admin nie podał własnego. */
+    public const DEFAULT_COOKIE_BANNER_TEXT = 'Ta strona używa plików cookies, aby zapewnić najlepsze działanie serwisu. Korzystając z witryny, zgadzasz się na ich użycie.';
+
+    /** Treść banera cookies (własna lub domyślna). */
+    public function cookieBannerText(): string
+    {
+        return trim((string) $this->cookie_banner_text) ?: self::DEFAULT_COOKIE_BANNER_TEXT;
     }
 
     /** Klucz Unsplash: z panelu, a gdy pusty — z konfiguracji (.env). */

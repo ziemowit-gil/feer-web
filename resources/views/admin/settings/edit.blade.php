@@ -68,6 +68,23 @@
             @error('unsplash_access_key') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
         </div>
 
+        <div class="space-y-3 rounded-lg border border-gray-200 bg-gray-50 p-4">
+            <label class="flex items-center gap-2">
+                <input type="hidden" name="cookie_banner_enabled" value="0">
+                <input type="checkbox" name="cookie_banner_enabled" value="1" {{ old('cookie_banner_enabled', $settings->cookie_banner_enabled ?? true) ? 'checked' : '' }}
+                    class="rounded border-gray-300 text-brand focus:ring-brand">
+                <span class="text-sm font-bold">Pokaż baner o plikach cookies</span>
+            </label>
+            <div>
+                <label for="cookie_banner_text" class="mb-1 block text-sm font-bold">Tekst banera <span class="font-normal text-muted">(opcjonalnie)</span></label>
+                <textarea id="cookie_banner_text" name="cookie_banner_text" rows="2"
+                    placeholder="{{ \App\Models\SiteSetting::DEFAULT_COOKIE_BANNER_TEXT }}"
+                    class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">{{ old('cookie_banner_text', $settings->cookie_banner_text) }}</textarea>
+                <p class="mt-1 text-xs text-muted">Baner z przyciskiem „Akceptuję" i linkiem do polityki prywatności. Puste = tekst domyślny.</p>
+                @error('cookie_banner_text') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+            </div>
+        </div>
+
         <div>
             <p class="mb-1 text-sm font-bold">Logo</p>
             @if ($settings->logoUrl())

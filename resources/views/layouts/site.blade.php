@@ -54,5 +54,6 @@
     @include('partials.footer')
 
     @include('partials.lightbox')
+    @include('partials.cookie-banner')
 </body>
 </html>

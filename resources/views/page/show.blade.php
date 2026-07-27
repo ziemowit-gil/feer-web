@@ -588,6 +588,29 @@
             <p class="text-center text-muted">Brak dodanych linków. Dodaj je w panelu (edycja strony → Panel współpracownika).</p>
         @endif
     </section>
+    @elseif ($page->isLegacy())
+    <section class="border-b border-gray-200 bg-gray-50">
+        <div class="mx-auto max-w-4xl px-4 py-12 text-center md:py-16">
+            <span class="mb-3 inline-flex items-center gap-2 rounded-full bg-brand-light px-3 py-1 text-sm font-bold text-brand">
+                <i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i> Kontynuujemy tę działalność
+            </span>
+            <h1 class="text-3xl font-bold text-ink md:text-4xl">{{ $page->title }}</h1>
+            @if (filled($page->legacy_name))
+                <p class="mt-2 text-lg font-bold text-muted">{{ $page->legacy_name }}</p>
+            @endif
+            @if (filled($page->legacy_intro))
+                <p class="mx-auto mt-3 max-w-2xl text-muted">{{ $page->legacy_intro }}</p>
+            @endif
+        </div>
+    </section>
+
+    <section class="mx-auto max-w-4xl px-4 py-12">
+        @if ($page->content)
+            <div class="prose max-w-none text-ink">{!! $page->content !!}</div>
+        @endif
+        @include('partials.page-gallery', ['page' => $page])
+        @include('partials.attachments-list', ['attachments' => $page->attachments])
+    </section>
     @else
     @php
         $menuSiblings = $page->menuSiblings();

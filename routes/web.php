@@ -22,6 +22,7 @@ use App\Http\Controllers\Admin\PartnerController as AdminPartnerController;
 use App\Http\Controllers\Admin\PollController as AdminPollController;
 use App\Http\Controllers\Admin\ProjectController as AdminProjectController;
 use App\Http\Controllers\Admin\QuickActionController as AdminQuickActionController;
+use App\Http\Controllers\Admin\RedirectController as AdminRedirectController;
 use App\Http\Controllers\Admin\AccessibilityReportController as AdminAccessibilityReportController;
 use App\Http\Controllers\Admin\SiteSettingController;
 use App\Http\Controllers\Admin\TimelineController as AdminTimelineController;
@@ -245,6 +246,14 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(
         Route::get('tresc', [AdminContentPortabilityController::class, 'index'])->name('tresc.index');
         Route::get('tresc/eksport', [AdminContentPortabilityController::class, 'export'])->name('tresc.export');
         Route::post('tresc/import', [AdminContentPortabilityController::class, 'import'])->name('tresc.import');
+
+        // Przekierowania 301.
+        Route::get('przekierowania', [AdminRedirectController::class, 'index'])->name('przekierowania.index');
+        Route::post('przekierowania', [AdminRedirectController::class, 'store'])->name('przekierowania.store');
+        Route::put('przekierowania/{przekierowanie}', [AdminRedirectController::class, 'update'])->name('przekierowania.update');
+        Route::delete('przekierowania/{przekierowanie}', [AdminRedirectController::class, 'destroy'])->name('przekierowania.destroy');
+        Route::get('przekierowania-eksport', [AdminRedirectController::class, 'export'])->name('przekierowania.export');
+        Route::post('przekierowania-import', [AdminRedirectController::class, 'import'])->name('przekierowania.import');
     });
 
     Route::middleware('admin')->group(function () {

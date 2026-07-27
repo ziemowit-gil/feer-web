@@ -40,7 +40,7 @@
             $projectRoutes = ['admin.kategorie.*', 'admin.projekty.*'];
             // „Skrzynka" — wszystko, co przychodzi od odwiedzających i czeka na obsługę.
             $inboxRoutes = ['admin.zgloszenia-spotkania.*', 'admin.zgloszenia-barier.*', 'admin.zapisy-materialy.*', 'admin.komentarze-bloga.*'];
-            $systemRoutes = ['admin.multimedia.*', 'admin.ustawienia.*', 'admin.newsletter.*', 'admin.uzytkownicy.*', 'admin.grupy.*', 'admin.tresc.*'];
+            $systemRoutes = ['admin.multimedia.*', 'admin.ustawienia.*', 'admin.newsletter.*', 'admin.uzytkownicy.*', 'admin.grupy.*', 'admin.tresc.*', 'admin.przekierowania.*'];
         @endphp
 
         <nav class="flex-1 space-y-1.5 overflow-y-auto px-3 py-4 text-sm font-medium">
@@ -221,6 +221,9 @@
                         </a>
                         <a href="{{ route('admin.tresc.index') }}" class="{{ $itemClass('admin.tresc.*') }}">
                             <i class="fa-solid fa-right-left {{ $iconClass('admin.tresc.*') }}"></i> Przenoszenie treści
+                        </a>
+                        <a href="{{ route('admin.przekierowania.index') }}" class="{{ $itemClass('admin.przekierowania.*') }}">
+                            <i class="fa-solid fa-signs-post {{ $iconClass('admin.przekierowania.*') }}"></i> Przekierowania 301
                         </a>
                     @endif
                 </div>
