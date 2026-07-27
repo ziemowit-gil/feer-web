@@ -27,7 +27,7 @@
                     <i class="fa-solid fa-chevron-down flex-none text-muted transition-transform duration-200 group-open:rotate-180" aria-hidden="true"></i>
                 </summary>
                 @if (! empty($item['answer']))
-                    <div class="px-5 pb-5 leading-relaxed text-muted">{!! nl2br(e($item['answer'])) !!}</div>
+                    <div class="prose max-w-none px-5 pb-5 leading-relaxed text-muted">{!! $item['answer'] !!}</div>
                 @endif
             </details>
         @endforeach

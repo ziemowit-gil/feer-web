@@ -12,8 +12,8 @@ class PageController extends Controller
     {
         abort_unless($page->is_published, 404);
 
-        // Strona wewnętrzna: sprawdź autoryzację (zalogowanie lub hasło).
-        if ($page->isInternal() && ! $page->accessGranted()) {
+        // Strona wewnętrzna (także „Panel współpracownika"): sprawdź autoryzację.
+        if ($page->isAccessRestricted() && ! $page->accessGranted()) {
             if ($page->access_mode === 'microsoft') {
                 // Wymagamy zalogowania (MS365 loguje do konta panelu).
                 return redirect()->guest(route('login'));
@@ -28,7 +28,7 @@ class PageController extends Controller
     /** Odblokowanie strony wewnętrznej hasłem (zapis w sesji). */
     public function unlock(Request $request, Page $page)
     {
-        abort_unless($page->isInternal() && $page->access_mode === 'password', 404);
+        abort_unless($page->isAccessRestricted() && $page->access_mode === 'password', 404);
 
         $request->validate(['access_password' => ['required', 'string']]);
 

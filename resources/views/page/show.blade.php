@@ -544,11 +544,58 @@
             @endif
         </div>
     </section>
-    @else
-    @php $menuSiblings = $page->menuSiblings(); @endphp
+    @elseif ($page->isInternalHub())
+    @php $hubLinks = collect($page->hub_links ?? [])->filter(fn ($l) => filled($l['label'] ?? null) && filled($l['url'] ?? null)); @endphp
+
+    <section class="relative overflow-hidden {{ $page->hub_hero ? 'text-white' : 'bg-brand text-white' }}"
+        @if ($page->hub_hero) style="background-image: linear-gradient(0deg, rgba(0,0,0,.65), rgba(0,0,0,.35)), url('{{ $page->hub_hero }}'); background-size: cover; background-position: center;" @endif>
+        <div class="mx-auto max-w-5xl px-4 py-20 text-center md:py-28">
+            <span class="mb-3 inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-sm font-bold backdrop-blur">
+                <i class="fa-solid fa-users-gear" aria-hidden="true"></i> Panel współpracownika
+            </span>
+            <h1 class="text-3xl font-bold md:text-4xl">{{ $page->title }}</h1>
+            @if (filled($page->hub_intro))
+                <p class="mx-auto mt-3 max-w-2xl text-white/90">{{ $page->hub_intro }}</p>
+            @endif
+        </div>
+    </section>
 
     <section class="mx-auto max-w-5xl px-4 py-12">
-        <div class="grid gap-10 {{ $menuSiblings->isNotEmpty() ? 'md:grid-cols-[1fr_220px]' : '' }}">
+        @if ($page->content)
+            <div class="prose mx-auto mb-10 max-w-none text-ink">{!! $page->content !!}</div>
+        @endif
+
+        @if ($hubLinks->isNotEmpty())
+            <ul class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                @foreach ($hubLinks as $link)
+                    <li>
+                        <a href="{{ $link['url'] }}" target="_blank" rel="noopener"
+                            class="group flex h-full items-start gap-3 rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition hover:border-brand hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
+                            <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-brand-light text-lg text-brand" aria-hidden="true">
+                                <i class="{{ filled($link['icon'] ?? null) ? $link['icon'] : 'fa-solid fa-arrow-up-right-from-square' }}"></i>
+                            </span>
+                            <span class="min-w-0">
+                                <span class="block font-bold text-ink group-hover:text-brand">{{ $link['label'] }}</span>
+                                @if (filled($link['description'] ?? null))
+                                    <span class="mt-0.5 block text-sm text-muted">{{ $link['description'] }}</span>
+                                @endif
+                            </span>
+                        </a>
+                    </li>
+                @endforeach
+            </ul>
+        @else
+            <p class="text-center text-muted">Brak dodanych linków. Dodaj je w panelu (edycja strony → Panel współpracownika).</p>
+        @endif
+    </section>
+    @else
+    @php
+        $menuSiblings = $page->menuSiblings();
+        $showSideNav = ($page->show_side_nav ?? true) && $menuSiblings->isNotEmpty();
+    @endphp
+
+    <section class="mx-auto max-w-5xl px-4 py-12">
+        <div class="grid gap-10 {{ $showSideNav ? 'md:grid-cols-[1fr_220px]' : '' }}">
             <div>
                 <h1 class="mb-6 text-3xl font-bold text-ink">{{ $page->title }}</h1>
                 <div class="prose max-w-none text-ink">{!! $page->content !!}</div>
@@ -558,7 +605,7 @@
         @include('partials.attachments-list', ['attachments' => $page->attachments])
             </div>
 
-            @if ($menuSiblings->isNotEmpty())
+            @if ($showSideNav)
                 @include('partials.page-local-nav', ['menuSiblings' => $menuSiblings])
             @endif
         </div>

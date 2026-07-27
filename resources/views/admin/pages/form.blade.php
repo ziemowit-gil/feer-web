@@ -620,7 +620,7 @@
                                     <div data-repeater-row class="space-y-2 rounded-lg border border-gray-200 bg-gray-50 p-4">
                                         <input type="text" name="faq_items[{{ $i }}][question]" value="{{ $row['question'] ?? '' }}" placeholder="Pytanie" aria-label="Pytanie {{ $i + 1 }}"
                                             class="w-full rounded border-gray-300 text-sm font-bold focus:border-brand focus:ring-brand">
-                                        <textarea name="faq_items[{{ $i }}][answer]" rows="3" placeholder="Odpowiedź" aria-label="Odpowiedź {{ $i + 1 }}"
+                                        <textarea name="faq_items[{{ $i }}][answer]" rows="3" placeholder="Odpowiedź" aria-label="Odpowiedź {{ $i + 1 }}" data-faq-answer
                                             class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">{{ $row['answer'] ?? '' }}</textarea>
                                         <div class="text-right">
                                             <button type="button" data-repeater-remove class="inline-flex items-center gap-1.5 rounded p-2 text-xs font-bold text-muted hover:bg-red-50 hover:text-red-600" aria-label="Usuń pytanie {{ $i + 1 }}"><i class="fa-solid fa-trash" aria-hidden="true"></i> Usuń</button>
@@ -633,7 +633,7 @@
                                 <div data-repeater-row class="space-y-2 rounded-lg border border-gray-200 bg-gray-50 p-4">
                                     <input type="text" name="faq_items[__INDEX__][question]" placeholder="Pytanie" aria-label="Pytanie"
                                         class="w-full rounded border-gray-300 text-sm font-bold focus:border-brand focus:ring-brand">
-                                    <textarea name="faq_items[__INDEX__][answer]" rows="3" placeholder="Odpowiedź" aria-label="Odpowiedź"
+                                    <textarea name="faq_items[__INDEX__][answer]" rows="3" placeholder="Odpowiedź" aria-label="Odpowiedź" data-faq-answer
                                         class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand"></textarea>
                                     <div class="text-right">
                                         <button type="button" data-repeater-remove class="inline-flex items-center gap-1.5 rounded p-2 text-xs font-bold text-muted hover:bg-red-50 hover:text-red-600" aria-label="Usuń pytanie"><i class="fa-solid fa-trash" aria-hidden="true"></i> Usuń</button>
@@ -667,7 +667,7 @@
                         </div>
                     </div>
 
-                    <div data-internal-fields class="space-y-5 border-t border-gray-100 pt-5 {{ $currentType === 'internal' ? '' : 'hidden' }}"
+                    <div data-internal-fields class="space-y-5 border-t border-gray-100 pt-5 {{ in_array($currentType, ['internal', 'internal_hub'], true) ? '' : 'hidden' }}"
                         x-data="{ mode: '{{ old('access_mode', $page->access_mode ?? 'password') }}' }">
                         <p class="text-sm font-bold uppercase tracking-wide text-muted">Dostęp do strony wewnętrznej</p>
                         <p class="rounded border border-blue-200 bg-blue-50 px-3 py-2 text-xs text-blue-800">
@@ -696,6 +696,75 @@
                         <p x-show="mode === 'microsoft'" x-cloak class="text-xs text-muted">
                             Treść zobaczą wyłącznie zalogowani użytkownicy panelu (m.in. przez Microsoft 365). Niezalogowani zostaną przekierowani do logowania.
                         </p>
+                    </div>
+
+                    {{-- Panel współpracownika: hero + wstęp + kafelki linków do systemów --}}
+                    @php $hubLinks = array_values((array) old('hub_links', $page->hub_links ?? [])); @endphp
+                    <div data-hub-fields class="space-y-5 border-t border-gray-100 pt-5 {{ $currentType === 'internal_hub' ? '' : 'hidden' }}">
+                        <p class="text-sm font-bold uppercase tracking-wide text-muted">Panel współpracownika</p>
+
+                        <div>
+                            <label class="mb-1 block text-sm font-bold">Obraz hero (u góry panelu)</label>
+                            <div class="flex items-center gap-3 rounded-lg border border-gray-200 bg-white p-2">
+                                @if (! empty($page->hub_hero))
+                                    <img src="{{ $page->hub_hero }}" alt="" class="h-14 w-24 shrink-0 rounded object-cover">
+                                @else
+                                    <span class="flex h-14 w-24 shrink-0 items-center justify-center rounded bg-gray-100 text-gray-400" aria-hidden="true"><i class="fa-solid fa-image"></i></span>
+                                @endif
+                                <div class="min-w-0 flex-1 space-y-1">
+                                    <input type="file" name="hub_hero_file" accept="image/*" aria-label="Wgraj obraz hero"
+                                        class="block w-full cursor-pointer text-xs text-muted file:mr-2 file:cursor-pointer file:rounded file:border-0 file:bg-brand file:px-3 file:py-1 file:text-xs file:font-bold file:text-white hover:file:bg-brand-dark">
+                                    <input type="text" name="hub_hero" value="{{ old('hub_hero', $page->hub_hero) }}" placeholder="…albo wklej URL obrazu" class="w-full rounded border-gray-300 text-xs focus:border-brand focus:ring-brand">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label for="hub_intro" class="mb-1 block text-sm font-bold">Wstęp</label>
+                            <textarea id="hub_intro" name="hub_intro" rows="2" placeholder="np. Zbiór linków do systemów i narzędzi dla współpracowników FEER."
+                                class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">{{ old('hub_intro', $page->hub_intro) }}</textarea>
+                        </div>
+
+                        <div data-repeater>
+                            <p class="mb-2 text-sm font-bold">Kafelki linków do systemów</p>
+                            <div data-repeater-rows class="space-y-3">
+                                @foreach ($hubLinks as $i => $row)
+                                    <div data-repeater-row class="space-y-2 rounded-lg border border-gray-200 bg-gray-50 p-4">
+                                        <div class="grid gap-2 sm:grid-cols-[2fr_3fr]">
+                                            <input type="text" name="hub_links[{{ $i }}][label]" value="{{ $row['label'] ?? '' }}" placeholder="Nazwa systemu" aria-label="Nazwa linku {{ $i + 1 }}" class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                                            <input type="url" name="hub_links[{{ $i }}][url]" value="{{ $row['url'] ?? '' }}" placeholder="Adres (URL)" aria-label="Adres linku {{ $i + 1 }}" class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                                        </div>
+                                        <div class="grid gap-2 sm:grid-cols-[3fr_2fr]">
+                                            <input type="text" name="hub_links[{{ $i }}][description]" value="{{ $row['description'] ?? '' }}" placeholder="Krótki opis (opcjonalnie)" aria-label="Opis linku {{ $i + 1 }}" class="w-full rounded border-gray-300 text-xs focus:border-brand focus:ring-brand">
+                                            <input type="text" name="hub_links[{{ $i }}][icon]" value="{{ $row['icon'] ?? '' }}" placeholder="Ikona, np. fa-solid fa-envelope" aria-label="Ikona linku {{ $i + 1 }}" class="w-full rounded border-gray-300 text-xs focus:border-brand focus:ring-brand">
+                                        </div>
+                                        <div class="flex items-center justify-end gap-1">
+                                            <button type="button" data-repeater-move="up" class="rounded p-1.5 text-muted hover:bg-gray-100 hover:text-brand" aria-label="Wyżej"><i class="fa-solid fa-arrow-up" aria-hidden="true"></i></button>
+                                            <button type="button" data-repeater-move="down" class="rounded p-1.5 text-muted hover:bg-gray-100 hover:text-brand" aria-label="Niżej"><i class="fa-solid fa-arrow-down" aria-hidden="true"></i></button>
+                                            <button type="button" data-repeater-remove class="inline-flex items-center gap-1.5 rounded p-1.5 text-xs font-bold text-muted hover:bg-red-50 hover:text-red-600" aria-label="Usuń link"><i class="fa-solid fa-trash" aria-hidden="true"></i> Usuń</button>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                            <button type="button" data-repeater-add class="mt-2 inline-flex items-center gap-2 rounded border border-brand px-3 py-1.5 text-sm font-bold text-brand hover:bg-brand-light"><i class="fa-solid fa-plus"></i> Dodaj link</button>
+                            <template data-repeater-template>
+                                <div data-repeater-row class="space-y-2 rounded-lg border border-gray-200 bg-gray-50 p-4">
+                                    <div class="grid gap-2 sm:grid-cols-[2fr_3fr]">
+                                        <input type="text" name="hub_links[__INDEX__][label]" placeholder="Nazwa systemu" aria-label="Nazwa linku" class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                                        <input type="url" name="hub_links[__INDEX__][url]" placeholder="Adres (URL)" aria-label="Adres linku" class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                                    </div>
+                                    <div class="grid gap-2 sm:grid-cols-[3fr_2fr]">
+                                        <input type="text" name="hub_links[__INDEX__][description]" placeholder="Krótki opis (opcjonalnie)" aria-label="Opis linku" class="w-full rounded border-gray-300 text-xs focus:border-brand focus:ring-brand">
+                                        <input type="text" name="hub_links[__INDEX__][icon]" placeholder="Ikona, np. fa-solid fa-envelope" aria-label="Ikona linku" class="w-full rounded border-gray-300 text-xs focus:border-brand focus:ring-brand">
+                                    </div>
+                                    <div class="flex items-center justify-end gap-1">
+                                        <button type="button" data-repeater-move="up" class="rounded p-1.5 text-muted hover:bg-gray-100 hover:text-brand" aria-label="Wyżej"><i class="fa-solid fa-arrow-up" aria-hidden="true"></i></button>
+                                        <button type="button" data-repeater-move="down" class="rounded p-1.5 text-muted hover:bg-gray-100 hover:text-brand" aria-label="Niżej"><i class="fa-solid fa-arrow-down" aria-hidden="true"></i></button>
+                                        <button type="button" data-repeater-remove class="inline-flex items-center gap-1.5 rounded p-1.5 text-xs font-bold text-muted hover:bg-red-50 hover:text-red-600" aria-label="Usuń link"><i class="fa-solid fa-trash" aria-hidden="true"></i> Usuń</button>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -734,6 +803,16 @@
                             <span>
                                 <span class="block text-sm font-bold">Dodaj do menu</span>
                                 <span class="block text-xs text-muted">Tylko strony główne (bez rodzica i projektu) trafiają do nawigacji.</span>
+                            </span>
+                        </label>
+
+                        <label class="flex items-start gap-3 rounded-lg border border-gray-200 p-3">
+                            <input type="hidden" name="show_side_nav" value="0">
+                            <input type="checkbox" name="show_side_nav" value="1" {{ old('show_side_nav', $page->show_side_nav ?? true) ? 'checked' : '' }}
+                                class="mt-0.5 rounded border-gray-300 text-brand focus:ring-brand">
+                            <span>
+                                <span class="block text-sm font-bold">Boczne drzewo nawigacji</span>
+                                <span class="block text-xs text-muted">Pokazuje z boku listę podstron w tym dziale. Wyłącz dla stron bez rozbudowanej struktury.</span>
                             </span>
                         </label>
 
@@ -919,6 +998,7 @@
             const faqFields = document.querySelector('[data-faq-fields]');
             const bipMoveFields = document.querySelector('[data-bipmove-fields]');
             const internalFields = document.querySelector('[data-internal-fields]');
+            const hubFields = document.querySelector('[data-hub-fields]');
             if (typeSelect) {
                 typeSelect.addEventListener('change', function () {
                     if (eventFields) eventFields.classList.toggle('hidden', typeSelect.value !== 'event');
@@ -926,7 +1006,8 @@
                     if (aboutFields) aboutFields.classList.toggle('hidden', typeSelect.value !== 'about');
                     if (faqFields) faqFields.classList.toggle('hidden', typeSelect.value !== 'faq');
                     if (bipMoveFields) bipMoveFields.classList.toggle('hidden', typeSelect.value !== 'bip_move');
-                    if (internalFields) internalFields.classList.toggle('hidden', typeSelect.value !== 'internal');
+                    if (internalFields) internalFields.classList.toggle('hidden', ! ['internal', 'internal_hub'].includes(typeSelect.value));
+                    if (hubFields) hubFields.classList.toggle('hidden', typeSelect.value !== 'internal_hub');
                     // Galeria „O organizacji” jest osobna — ukryj generyczny przełącznik dla tego typu.
                     document.querySelectorAll('[data-gallery-toggle]').forEach(function (el) {
                         el.classList.toggle('hidden', typeSelect.value === 'about');
@@ -1137,6 +1218,61 @@
                 if (!firstErrorKey) firstErrorKey = key;
             });
             if (firstErrorKey) activate(firstErrorKey);
+        })();
+    </script>
+
+    {{-- Lekki WYSIWYG (TinyMCE) na odpowiedziach FAQ — także dla nowo dodanych wierszy. --}}
+    <script>
+        (function () {
+            const container = document.querySelector('[data-faq-fields]');
+            if (!container) return;
+
+            function initOne(ta) {
+                if (ta.dataset.mceReady) return;
+                ta.dataset.mceReady = '1';
+                window.tinymce.init({
+                    target: ta,
+                    license_key: 'gpl',
+                    menubar: false,
+                    statusbar: false,
+                    branding: false,
+                    convert_urls: false,
+                    height: 200,
+                    plugins: 'link lists',
+                    toolbar: 'bold italic | bullist numlist | link',
+                    setup: function (ed) { ed.on('change keyup', function () { ed.save(); }); },
+                });
+            }
+
+            function initAll() {
+                container.querySelectorAll('textarea[data-faq-answer]').forEach(initOne);
+            }
+
+            function withTiny(cb) {
+                if (window.tinymce) return cb();
+                window.__tinymceInitQueue = window.__tinymceInitQueue || [];
+                window.__tinymceInitQueue.push(cb);
+                if (!window.__tinymceLoading) {
+                    window.__tinymceLoading = true;
+                    const s = document.createElement('script');
+                    s.src = 'https://cdn.jsdelivr.net/npm/tinymce@7/tinymce.min.js';
+                    s.referrerPolicy = 'origin';
+                    s.onload = function () { (window.__tinymceInitQueue || []).forEach(function (f) { f(); }); window.__tinymceInitQueue = []; };
+                    document.head.appendChild(s);
+                }
+            }
+
+            withTiny(function () {
+                initAll();
+                const rows = container.querySelector('[data-repeater-rows]');
+                if (rows && window.MutationObserver) {
+                    new MutationObserver(initAll).observe(rows, { childList: true });
+                }
+            });
+
+            // Przepisz treść edytorów do textarea tuż przed wysłaniem formularza.
+            const form = container.closest('form');
+            if (form) form.addEventListener('submit', function () { if (window.tinymce) window.tinymce.triggerSave(); });
         })();
     </script>
 @endsection

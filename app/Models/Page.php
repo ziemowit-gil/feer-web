@@ -30,6 +30,7 @@ class Page extends Model
         'faq' => 'FAQ (pytania i odpowiedzi)',
         'bip_move' => 'Przeniesiono do BIP',
         'internal' => 'Wewnętrzna (dostęp ograniczony)',
+        'internal_hub' => 'Wewnętrzna: Panel współpracownika',
     ];
 
     /** Tryby dostępu do strony wewnętrznej. */
@@ -78,13 +79,13 @@ class Page extends Model
     public const DEFAULT_WIP_NOTICE_MESSAGE = 'Wprowadzamy zmiany na tej stronie — nie wszystkie elementy mogą jeszcze działać poprawnie.';
 
     protected $fillable = [
-        'parent_id', 'project_id', 'project_display', 'title', 'slug', 'content', 'is_published', 'is_archived', 'show_in_menu', 'is_system', 'is_locked', 'order',
+        'parent_id', 'project_id', 'project_display', 'title', 'slug', 'content', 'is_published', 'is_archived', 'show_in_menu', 'show_side_nav', 'is_system', 'is_locked', 'order',
         'is_disabled', 'disabled_message', 'wip_mode', 'wip_message',
         'type', 'event_mode', 'event_when', 'event_location', 'event_how_to_join', 'event_registration_url',
         'schedule_items', 'schedule_change_notice', 'schedule_pending',
         'about_motto', 'about_motto_author', 'about_intro', 'about_stats', 'about_timeline', 'about_values', 'about_team', 'about_section_order', 'about_partner_ids', 'about_documents_intro', 'about_documents_bip_url', 'about_press_intro', 'about_press',
         'faq_intro', 'faq_items', 'bip_move_url', 'bip_move_note', 'show_gallery',
-        'access_mode', 'access_password',
+        'access_mode', 'access_password', 'hub_hero', 'hub_intro', 'hub_links',
     ];
 
     protected $casts = [
@@ -92,6 +93,7 @@ class Page extends Model
         'is_archived' => 'boolean',
         'is_disabled' => 'boolean',
         'show_in_menu' => 'boolean',
+        'show_side_nav' => 'boolean',
         'is_system' => 'boolean',
         'is_locked' => 'boolean',
         'show_gallery' => 'boolean',
@@ -101,6 +103,7 @@ class Page extends Model
         'about_timeline' => 'array',
         'about_values' => 'array',
         'about_team' => 'array',
+        'hub_links' => 'array',
         'about_section_order' => 'array',
         'about_partner_ids' => 'array',
         'about_press' => 'array',
@@ -137,6 +140,17 @@ class Page extends Model
         return $this->type === 'internal';
     }
 
+    public function isInternalHub(): bool
+    {
+        return $this->type === 'internal_hub';
+    }
+
+    /** Czy strona jest chroniona dostępem (zwykła wewnętrzna lub panel współpracownika). */
+    public function isAccessRestricted(): bool
+    {
+        return in_array($this->type, ['internal', 'internal_hub'], true);
+    }
+
     /**
      * Czy dostęp do tej strony wewnętrznej jest już przyznany bieżącemu
      * odwiedzającemu: dla trybu „microsoft" — zalogowanie; dla trybu „hasło" —
@@ -144,7 +158,7 @@ class Page extends Model
      */
     public function accessGranted(): bool
     {
-        if (! $this->isInternal()) {
+        if (! $this->isAccessRestricted()) {
             return true;
         }
 

@@ -173,6 +173,14 @@ class PageController extends Controller
             'type' => ['required', Rule::in(array_keys(Page::TYPES))],
             'access_mode' => ['nullable', Rule::in(array_keys(Page::ACCESS_MODES))],
             'access_password' => ['nullable', 'string', 'max:255'],
+            'hub_hero' => ['nullable', 'string', 'max:1000'],
+            'hub_hero_file' => ['nullable', 'image', 'max:4096'],
+            'hub_intro' => ['nullable', 'string', 'max:2000'],
+            'hub_links' => ['nullable', 'array'],
+            'hub_links.*.label' => ['nullable', 'string', 'max:120'],
+            'hub_links.*.url' => ['nullable', 'string', 'max:500'],
+            'hub_links.*.description' => ['nullable', 'string', 'max:255'],
+            'hub_links.*.icon' => ['nullable', 'string', 'max:100'],
             'event_mode' => ['nullable', Rule::in(array_keys(Page::EVENT_MODES))],
             'event_when' => ['nullable', 'string', 'max:255'],
             'event_location' => ['nullable', 'string', 'max:255'],
@@ -231,7 +239,7 @@ class PageController extends Controller
             'faq_intro' => ['nullable', 'string', 'max:2000'],
             'faq_items' => ['nullable', 'array'],
             'faq_items.*.question' => ['nullable', 'string', 'max:255'],
-            'faq_items.*.answer' => ['nullable', 'string', 'max:5000'],
+            'faq_items.*.answer' => ['nullable', 'string', 'max:20000'],
             'bip_move_url' => ['nullable', 'url', 'max:255'],
             'bip_move_note' => ['nullable', 'string', 'max:2000'],
         ]);
@@ -243,6 +251,7 @@ class PageController extends Controller
         $data['is_published'] = $request->boolean('is_published');
         $data['is_archived'] = $request->boolean('is_archived');
         $data['show_in_menu'] = $request->boolean('show_in_menu');
+        $data['show_side_nav'] = $request->boolean('show_side_nav');
         $data['is_system'] = $request->boolean('is_system');
         $data['show_gallery'] = $request->boolean('show_gallery');
         // Flagę „zablokuj do edycji” może ustawiać/zdejmować wyłącznie administrator.
@@ -383,7 +392,7 @@ class PageController extends Controller
         $newPassword = trim((string) ($data['access_password'] ?? ''));
         unset($data['access_password']);
 
-        if ($data['type'] === 'internal') {
+        if (in_array($data['type'], ['internal', 'internal_hub'], true)) {
             $data['access_mode'] = $data['access_mode'] ?? 'password';
 
             if ($data['access_mode'] === 'microsoft') {
@@ -396,6 +405,26 @@ class PageController extends Controller
             $data['access_mode'] = null;
             $data['access_password'] = null;
         }
+
+        // Panel współpracownika: hero (wgrany plik ma pierwszeństwo nad URL),
+        // wstęp i kafelki linków. Poza tym subtypem czyścimy pola.
+        if ($data['type'] === 'internal_hub') {
+            if ($request->hasFile('hub_hero_file')) {
+                $data['hub_hero'] = \Illuminate\Support\Facades\Storage::disk('public')->url(
+                    $request->file('hub_hero_file')->store('panel', 'public')
+                );
+            } else {
+                $data['hub_hero'] = trim((string) ($data['hub_hero'] ?? '')) ?: null;
+            }
+            $data['hub_intro'] = trim((string) ($data['hub_intro'] ?? '')) ?: null;
+            $data['hub_links'] = $this->compactRows($request->input('hub_links', []), ['label', 'url', 'description', 'icon']);
+        } else {
+            $data['hub_hero'] = null;
+            $data['hub_intro'] = null;
+            $data['hub_links'] = null;
+        }
+
+        unset($data['hub_hero_file']);
 
         return $data;
     }
