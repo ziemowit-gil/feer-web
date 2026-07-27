@@ -19,15 +19,15 @@
 @endif
 
 @if ($faqItems->isNotEmpty())
-    <div class="divide-y divide-gray-200 overflow-hidden rounded-xl border border-gray-200">
+    <div class="grid items-start gap-4 md:grid-cols-2">
         @foreach ($faqItems as $item)
-            <details class="group [&_summary::-webkit-details-marker]:hidden">
+            <details class="group overflow-hidden rounded-xl border border-gray-200 [&_summary::-webkit-details-marker]:hidden">
                 <summary class="flex cursor-pointer list-none items-center justify-between gap-4 px-5 py-4 text-left font-bold text-ink hover:bg-gray-50 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-brand">
                     <span>{{ $item['question'] ?? '' }}</span>
                     <i class="fa-solid fa-chevron-down flex-none text-muted transition-transform duration-200 group-open:rotate-180" aria-hidden="true"></i>
                 </summary>
                 @if (! empty($item['answer']))
-                    <div class="prose max-w-none px-5 pb-5 leading-relaxed text-muted">{!! $item['answer'] !!}</div>
+                    <div class="prose max-w-none border-t border-gray-100 px-5 py-4 leading-relaxed text-muted">{!! $item['answer'] !!}</div>
                 @endif
             </details>
         @endforeach
