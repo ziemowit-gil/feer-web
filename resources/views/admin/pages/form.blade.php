@@ -614,7 +614,7 @@
 
                         <div data-repeater>
                             <p class="mb-1 text-sm font-bold">Pytania i odpowiedzi</p>
-                            <p class="mb-3 text-xs text-muted">Każda para tworzy zwijany element (akordeon) na stronie. Puste wiersze są pomijane; kolejność odpowiada kolejności na liście.</p>
+                            <p class="mb-3 text-xs text-muted">Każda para tworzy zwijany element (akordeon) na stronie. W odpowiedzi możesz dodać <strong>linki</strong> (przycisk łańcucha w edytorze) oraz pogrubienia i listy. Puste wiersze są pomijane; kolejność odpowiada kolejności na liście.</p>
                             <div data-repeater-rows class="space-y-3">
                                 @foreach ($faqItems as $i => $row)
                                     <div data-repeater-row class="space-y-2 rounded-lg border border-gray-200 bg-gray-50 p-4">
@@ -1260,8 +1260,10 @@
                     branding: false,
                     convert_urls: false,
                     height: 200,
-                    plugins: 'link lists',
-                    toolbar: 'bold italic | bullist numlist | link',
+                    plugins: 'link lists autolink',
+                    toolbar: 'bold italic | bullist numlist | link unlink | removeformat',
+                    link_default_target: '_blank',
+                    link_assume_external_targets: true,
                     setup: function (ed) { ed.on('change keyup', function () { ed.save(); }); },
                 });
             }
