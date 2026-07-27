@@ -60,7 +60,7 @@
         </div>
 
         <div x-show="type === 'link' && location === 'main'" x-cloak>
-            <label for="parent_id" class="mb-1 block text-sm font-bold">Podpozycja rozwijanego menu</label>
+            <label for="parent_id" class="mb-1 block text-sm font-bold">Podpozycja w menu (pod „Rozwijanym menu" lub linkiem)</label>
             <select id="parent_id" name="parent_id" x-model="parentId" class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
                 <option value="">— pozycja główna (na pasku menu) —</option>
                 @foreach ($parentOptions as $option)

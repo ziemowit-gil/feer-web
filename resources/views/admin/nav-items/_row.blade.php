@@ -47,7 +47,7 @@
     </td>
     <td class="px-4 py-3">
         <div class="flex justify-end gap-3">
-            @if (! $child && $item->type === 'dropdown')
+            @if (! $child && ! $item->is_button && in_array($item->type, ['dropdown', 'link'], true))
                 <a href="{{ route('admin.pozycje-menu.create', ['parent_id' => $item->id, 'location' => $item->location]) }}"
                     class="inline-flex items-center gap-1 text-xs font-bold text-brand hover:text-brand-dark" title="Dodaj pozycję jako podpozycję w „{{ $item->label }}”">
                     <i class="fa-solid fa-plus" aria-hidden="true"></i> podpozycja

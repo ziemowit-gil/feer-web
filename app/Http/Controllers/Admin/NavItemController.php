@@ -90,7 +90,10 @@ class NavItemController extends Controller
             return collect();
         }
 
-        return NavItem::where('type', 'dropdown')
+        // Rodzicem podpozycji może być „Rozwijane menu" albo zwykły link
+        // (np. do istniejącej strony) — ale nie przycisk CTA.
+        return NavItem::whereIn('type', ['dropdown', 'link'])
+            ->where('is_button', false)
             ->where('location', 'main')
             ->whereNull('parent_id')
             ->when($editing?->exists, fn ($query) => $query->where('id', '!=', $editing->id))
@@ -108,7 +111,7 @@ class NavItemController extends Controller
             'module' => ['nullable', Rule::in(array_keys(SiteSetting::MODULES))],
             'parent_id' => [
                 'nullable',
-                Rule::exists('nav_items', 'id')->where('type', 'dropdown')->whereNull('parent_id'),
+                Rule::exists('nav_items', 'id')->whereIn('type', ['dropdown', 'link'])->where('is_button', false)->whereNull('parent_id'),
             ],
             'order' => ['nullable', 'integer', 'min:0'],
             'button_color' => ['nullable', 'regex:/^#[0-9a-fA-F]{6}$/'],
