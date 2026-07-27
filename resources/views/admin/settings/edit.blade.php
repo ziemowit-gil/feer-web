@@ -955,9 +955,27 @@
                     @error('contact_meeting_notify_email') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                 </div>
 
-                <div class="rounded border border-gray-200 bg-white p-4" x-data="{ items: {{ \Illuminate\Support\Js::from(array_values($schedule)) }} }">
+                <div class="rounded border border-gray-200 bg-white p-4" x-data="{ items: {{ \Illuminate\Support\Js::from(array_values($schedule)) }}, scheduleOn: {{ old('contact_schedule_enabled', $settings->contact_schedule_enabled) ? 'true' : 'false' }} }">
                     <p class="mb-3 text-xs font-bold uppercase tracking-wide text-muted">Harmonogram stacjonarny (kiedy i gdzie jesteśmy)</p>
-                    <div class="mb-3">
+
+                    <label class="mb-3 flex items-start gap-2">
+                        <input type="checkbox" name="contact_schedule_enabled" value="1" x-model="scheduleOn"
+                            class="mt-0.5 rounded border-gray-300 text-brand focus:ring-brand">
+                        <span>
+                            <span class="text-sm font-bold">Umożliw wybór terminu spotkania</span>
+                            <span class="block text-xs text-muted">Gdy wyłączone, na stronie kontakt zamiast harmonogramu i przycisków pokażemy komunikat poniżej.</span>
+                        </span>
+                    </label>
+
+                    <div class="mb-3" x-show="! scheduleOn" x-cloak>
+                        <label for="contact_no_schedule_note" class="mb-1 block text-sm font-bold">Komunikat, gdy brak terminów</label>
+                        <input type="text" id="contact_no_schedule_note" name="contact_no_schedule_note" value="{{ old('contact_no_schedule_note', $settings->contact_no_schedule_note) }}"
+                            placeholder="Jeszcze nie ustaliliśmy żadnych terminów."
+                            class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                        @error('contact_no_schedule_note') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </div>
+
+                    <div class="mb-3" x-show="scheduleOn" x-cloak>
                         <label for="contact_schedule_title" class="mb-1 block text-sm font-bold">Tytuł harmonogramu</label>
                         <input type="text" id="contact_schedule_title" name="contact_schedule_title" value="{{ old('contact_schedule_title', $settings->contact_schedule_title) }}"
                             placeholder="Kiedy i gdzie jesteśmy w Krakowie"

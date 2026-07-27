@@ -40,6 +40,9 @@ class EventRequest extends FormRequest
             'is_featured' => ['sometimes', 'boolean'],
             'order' => ['nullable', 'integer', 'min:0'],
             'slug' => ['nullable', 'string', 'max:200'],
+            'faqs' => ['nullable', 'array'],
+            'faqs.*.question' => ['nullable', 'string', 'max:255'],
+            'faqs.*.answer' => ['nullable', 'string', 'max:2000'],
         ];
     }
 

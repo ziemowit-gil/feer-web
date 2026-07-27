@@ -154,13 +154,17 @@
             $onlineText = $siteSettings->contact_online_meeting_text ?: 'Najwygodniej spotkać się online — umów rozmowę w dogodnym dla Ciebie terminie.';
             $remoteNote = $siteSettings->contact_remote_note;
             $scheduleTitle = $siteSettings->contact_schedule_title ?: 'Kiedy i gdzie jesteśmy w Krakowie';
+            $scheduleEnabled = $siteSettings->contact_schedule_enabled;
             $scheduleItems = $siteSettings->contactScheduleUpcoming();
             $showOnline = filled($onlineUrl);
-            $showSchedule = ! empty($scheduleItems);
+            $showSchedule = $scheduleEnabled && ! empty($scheduleItems);
+            // Gdy wybór terminu wyłączony — zamiast harmonogramu i przycisków komunikat.
+            $showNoSchedule = ! $scheduleEnabled;
+            $noScheduleNote = $siteSettings->contact_no_schedule_note ?: 'Jeszcze nie ustaliliśmy żadnych terminów.';
             $onlineExternal = $showOnline && \Illuminate\Support\Str::startsWith($onlineUrl, ['http://', 'https://']);
         @endphp
 
-        @if ($showOnline || $showSchedule || filled($remoteNote))
+        @if ($showOnline || $showSchedule || $showNoSchedule || filled($remoteNote))
             <div id="spotkania" class="mt-12 scroll-mt-24 border-t border-gray-100 pt-8">
                 <h2 class="mb-4 text-xl font-bold text-ink">{{ $meetingTitle }}</h2>
 
@@ -187,6 +191,19 @@
                         <i class="fa-solid fa-house-laptop mt-0.5 flex-none text-brand" aria-hidden="true"></i>
                         <span>{{ $remoteNote }}</span>
                     </p>
+                @endif
+
+                {{-- Wybór terminu wyłączony w ustawieniach — komunikat zamiast przycisków. --}}
+                @if ($showNoSchedule)
+                    <div class="flex flex-col gap-4 rounded-lg border border-gray-200 p-5 sm:flex-row sm:items-center">
+                        <span class="flex h-11 w-11 flex-none items-center justify-center rounded-full bg-brand-light text-brand" aria-hidden="true">
+                            <i class="fa-solid fa-calendar-xmark"></i>
+                        </span>
+                        <div>
+                            <h3 class="text-lg font-bold text-ink">{{ $scheduleTitle }}</h3>
+                            <p class="mt-0.5 max-w-xl text-sm text-muted">{{ $noScheduleNote }}</p>
+                        </div>
+                    </div>
                 @endif
 
                 {{-- W Krakowie: harmonogram + formularz w wyskakującym okienku (modal).

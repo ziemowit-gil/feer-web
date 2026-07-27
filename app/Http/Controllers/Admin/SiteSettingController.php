@@ -85,6 +85,8 @@ class SiteSettingController extends Controller
             'contact_remote_note' => ['nullable', 'string', 'max:255'],
             'contact_meeting_notify_email' => ['nullable', 'email', 'max:255'],
             'contact_schedule_title' => ['nullable', 'string', 'max:255'],
+            'contact_schedule_enabled' => ['sometimes', 'boolean'],
+            'contact_no_schedule_note' => ['nullable', 'string', 'max:255'],
             'contact_schedule' => ['nullable', 'array'],
             'contact_schedule.*.type' => ['nullable', Rule::in(['date', 'weekly'])],
             'contact_schedule.*.date' => ['nullable', 'date'],
@@ -204,6 +206,7 @@ class SiteSettingController extends Controller
         $data['show_topbar_bip'] = $request->boolean('show_topbar_bip');
         $data['show_topbar_social'] = $request->boolean('show_topbar_social');
         $data['contact_shipping_visible'] = $request->boolean('contact_shipping_visible');
+        $data['contact_schedule_enabled'] = $request->boolean('contact_schedule_enabled');
         $data['support_show_partners'] = $request->boolean('support_show_partners');
 
         // Rachunki bankowe: przycinamy pola, odrzucamy wiersze bez numeru

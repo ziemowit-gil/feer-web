@@ -107,6 +107,25 @@
             </section>
         @endif
 
+        @if ($event->faqs->isNotEmpty())
+            <section aria-labelledby="faq" class="mb-8">
+                <h2 id="faq" class="flex items-center gap-2 text-xl font-bold text-ink">
+                    <i class="fa-solid fa-circle-question" aria-hidden="true" style="color: var(--accent)"></i> Najczęstsze pytania
+                </h2>
+                <div class="mt-3 space-y-2">
+                    @foreach ($event->faqs as $faq)
+                        <details class="group rounded-xl border border-gray-200 bg-white [&[open]]:border-gray-300">
+                            <summary class="flex cursor-pointer list-none items-center justify-between gap-3 px-5 py-4 font-bold text-ink [&::-webkit-details-marker]:hidden">
+                                <span>{{ $faq->question }}</span>
+                                <i class="fa-solid fa-chevron-down flex-none text-sm text-muted transition-transform group-open:rotate-180" aria-hidden="true"></i>
+                            </summary>
+                            <div class="px-5 pb-4 -mt-1 whitespace-pre-line text-gray-700">{{ $faq->answer }}</div>
+                        </details>
+                    @endforeach
+                </div>
+            </section>
+        @endif
+
         <section aria-labelledby="zapisy" class="rounded-xl border-2 p-6" style="border-color: color-mix(in srgb, var(--accent) 30%, white)">
             <h2 id="zapisy" class="flex items-center gap-2 text-xl font-bold text-ink">
                 <i class="fa-solid fa-paper-plane" aria-hidden="true" style="color: var(--accent)"></i> Zapisy i kontakt

@@ -34,6 +34,7 @@ class EventController extends Controller
 
         $event = Event::create($data);
         $this->syncFacilitatorPhoto($request, $event);
+        $this->syncFaqs($request, $event);
 
         return redirect()->route('admin.wydarzenia.index')->with('status', 'Wydarzenie zostało dodane.');
     }
@@ -50,6 +51,7 @@ class EventController extends Controller
 
         $event->update($data);
         $this->syncFacilitatorPhoto($request, $event);
+        $this->syncFaqs($request, $event);
 
         return redirect()->route('admin.wydarzenia.index')->with('status', 'Wydarzenie zostało zaktualizowane.');
     }
@@ -144,10 +146,28 @@ class EventController extends Controller
         $data['order'] = $data['order'] ?? 0;
         $data['registration_cta_label'] = trim((string) ($data['registration_cta_label'] ?? '')) ?: 'Zapisz się';
 
-        // Pliki i pomocnicze pola obsługujemy osobno (media-library).
-        unset($data['facilitator_photo'], $data['remove_facilitator_photo']);
+        // Pliki, FAQ i pomocnicze pola obsługujemy osobno.
+        unset($data['facilitator_photo'], $data['remove_facilitator_photo'], $data['faqs']);
 
         return $data;
+    }
+
+    /**
+     * Zsynchronizuj FAQ wydarzenia: usuwamy dotychczasowe i zapisujemy na nowo
+     * (pomijając wiersze bez pytania), zachowując kolejność z formularza.
+     */
+    private function syncFaqs(EventRequest $request, Event $event): void
+    {
+        $event->faqs()->delete();
+
+        collect($request->input('faqs', []))
+            ->map(fn ($row) => [
+                'question' => trim((string) ($row['question'] ?? '')),
+                'answer' => trim((string) ($row['answer'] ?? '')),
+            ])
+            ->filter(fn ($row) => $row['question'] !== '' && $row['answer'] !== '')
+            ->values()
+            ->each(fn ($row, $i) => $event->faqs()->create($row + ['order' => $i]));
     }
 
     /** Wgraj/usuń zdjęcie prowadzącej (kolekcja jednoplikowa). */

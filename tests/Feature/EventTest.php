@@ -145,6 +145,27 @@ class EventTest extends TestCase
         $this->assertStringContainsString('Termin:', $news->content);
     }
 
+    public function test_admin_can_add_faqs_and_they_render_on_the_event_page(): void
+    {
+        $this->actingAs($this->admin())
+            ->post(route('admin.wydarzenia.store'), $this->payload([
+                'faqs' => [
+                    ['question' => 'Czy otrzymam zaświadczenie?', 'answer' => 'Tak, imienne.'],
+                    ['question' => '', 'answer' => ''], // pusty wiersz — pomijany
+                ],
+            ]))
+            ->assertRedirect(route('admin.wydarzenia.index'));
+
+        $event = Event::firstWhere('title', 'Szkolenie z dostępności cyfrowej (WCAG)');
+
+        $this->assertSame(1, $event->faqs()->count());
+
+        $this->get(route('events.show', $event))
+            ->assertOk()
+            ->assertSee('Najczęstsze pytania')
+            ->assertSee('Czy otrzymam zaświadczenie?');
+    }
+
     public function test_events_nav_type_points_to_the_listing(): void
     {
         $this->actingAs($this->admin())

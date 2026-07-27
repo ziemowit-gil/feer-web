@@ -180,6 +180,36 @@
             </div>
         </fieldset>
 
+        {{-- FAQ szkolenia --}}
+        @php
+            $faqsInit = old('faqs', $event->exists
+                ? $event->faqs->map(fn ($f) => ['question' => $f->question, 'answer' => $f->answer])->values()->all()
+                : []);
+        @endphp
+        <fieldset class="space-y-4 rounded-lg border border-gray-200 bg-white p-6"
+            x-data="{ faqs: {{ \Illuminate\Support\Js::from(array_values($faqsInit)) }} }">
+            <legend class="px-2 text-sm font-bold text-brand">FAQ — najczęstsze pytania <span class="font-normal text-muted">(opcjonalnie)</span></legend>
+            <p class="text-xs text-muted">Pytania i odpowiedzi pojawią się jako rozwijana lista na stronie wydarzenia.</p>
+
+            <template x-for="(faq, i) in faqs" :key="i">
+                <div class="rounded-lg border border-gray-200 p-4">
+                    <div class="mb-2 flex items-center justify-between">
+                        <span class="text-xs font-bold uppercase tracking-wide text-muted" x-text="'Pytanie ' + (i + 1)"></span>
+                        <button type="button" @click="faqs.splice(i, 1)" class="text-xs font-bold text-red-600 hover:underline">Usuń</button>
+                    </div>
+                    <input type="text" :name="`faqs[${i}][question]`" x-model="faq.question" maxlength="255" placeholder="np. Czy otrzymam zaświadczenie?"
+                        class="mb-2 w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                    <textarea :name="`faqs[${i}][answer]`" x-model="faq.answer" rows="3" maxlength="2000" placeholder="Odpowiedź na pytanie."
+                        class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand"></textarea>
+                </div>
+            </template>
+
+            <button type="button" @click="faqs.push({ question: '', answer: '' })"
+                class="inline-flex items-center gap-2 rounded border border-dashed border-gray-300 px-4 py-2 text-sm font-bold text-brand hover:border-brand hover:bg-brand-light">
+                <i class="fa-solid fa-plus" aria-hidden="true"></i> Dodaj pytanie
+            </button>
+        </fieldset>
+
         {{-- Publikacja --}}
         <div class="rounded-lg border border-gray-200 bg-white p-6">
             <div class="mb-4">
