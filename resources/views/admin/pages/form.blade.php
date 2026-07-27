@@ -554,15 +554,14 @@
                         <details class="rounded-lg border border-gray-200">
                             <summary class="cursor-pointer rounded-lg px-4 py-3 text-sm font-bold text-ink hover:bg-gray-50">Odnośnik do FAQ</summary>
                             <div class="border-t border-gray-100 px-4 py-4">
-                                <label for="about_faq_page_id" class="mb-1 block text-sm font-bold">Strona z pytaniami (FAQ)</label>
-                                <select id="about_faq_page_id" name="about_faq_page_id" class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand sm:max-w-md">
-                                    <option value="">— nie pokazuj odnośnika —</option>
-                                    @foreach ($parentOptions as $option)
-                                        <option value="{{ $option->id }}" {{ (int) old('about_faq_page_id', $page->about_faq_page_id) === $option->id ? 'selected' : '' }}>{{ $option->title }}</option>
-                                    @endforeach
-                                </select>
-                                <p class="mt-1 text-xs text-muted">Po wybraniu na stronie „O organizacji" pojawi się sekcja z odnośnikiem do FAQ. Kolejność sekcji ustawisz w „Kolejność sekcji" (pozycja „Odnośnik do FAQ").</p>
-                                @error('about_faq_page_id') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                                <label class="flex items-center gap-2">
+                                    <input type="hidden" name="about_faq_visible" value="0">
+                                    <input type="checkbox" name="about_faq_visible" value="1" {{ old('about_faq_visible', $page->about_faq_visible ?? false) ? 'checked' : '' }}
+                                        class="rounded border-gray-300 text-brand focus:ring-brand">
+                                    <span class="text-sm font-bold">Pokaż odnośnik do FAQ</span>
+                                </label>
+                                <p class="mt-1 text-xs text-muted">Na stronie „O organizacji" pojawi się sekcja „Masz pytania?" z przyciskiem prowadzącym do <code>/faq</code>. Kolejność ustawisz w „Kolejność sekcji" (pozycja „Odnośnik do FAQ").</p>
+                                @error('about_faq_visible') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                             </div>
                         </details>
 

@@ -230,7 +230,7 @@ class PageController extends Controller
             'about_section_order.*' => ['integer'],
             'about_partner_ids' => ['nullable', 'array'],
             'about_partner_ids.*' => ['integer', 'exists:partners,id'],
-            'about_faq_page_id' => ['nullable', 'integer', 'exists:pages,id'],
+            'about_faq_visible' => ['sometimes', 'boolean'],
             'about_documents_intro' => ['nullable', 'string', 'max:5000'],
             'about_documents_bip_url' => ['nullable', 'string', 'max:255'],
             'about_press_intro' => ['nullable', 'string', 'max:5000'],
@@ -341,7 +341,7 @@ class PageController extends Controller
                 ->all();
 
             $data['about_partner_ids'] = array_values(array_map('intval', (array) $request->input('about_partner_ids', []))) ?: null;
-            $data['about_faq_page_id'] = $request->input('about_faq_page_id') ?: null;
+            $data['about_faq_visible'] = $request->boolean('about_faq_visible');
 
             // „Piszą o nas": wzmianki prasowe. Dla wpisów z linkiem, ale bez
             // obrazka/tytułu, pobieramy je ze strony (og:image / og:title).
