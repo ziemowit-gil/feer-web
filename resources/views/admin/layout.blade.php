@@ -35,7 +35,7 @@
 
             // Every route a section owns — used to auto-expand the section that
             // holds the current page while the rest start collapsed.
-            $contentRoutes = ['admin.podstrony.*', 'admin.os-czasu.*', 'admin.pozycje-menu.*', 'admin.newsy.*', 'admin.kategorie-newsow.*', 'admin.ankiety.*', 'admin.materialy-edukacyjne.*', 'admin.wolontariat.*', 'admin.wydarzenia.*', 'admin.wiem-feer.*'];
+            $contentRoutes = ['admin.podstrony.*', 'admin.os-czasu.*', 'admin.pozycje-menu.*', 'admin.newsy.*', 'admin.kategorie-newsow.*', 'admin.ankiety.*', 'admin.materialy-edukacyjne.*', 'admin.wolontariat.*', 'admin.wydarzenia.*', 'admin.faq.*', 'admin.wiem-feer.*'];
             $appearanceRoutes = ['admin.hero.*', 'admin.galeria.*', 'admin.szybkie-akcje.*', 'admin.partnerzy.*'];
             $projectRoutes = ['admin.kategorie.*', 'admin.projekty.*'];
             // „Skrzynka" — wszystko, co przychodzi od odwiedzających i czeka na obsługę.
@@ -89,6 +89,11 @@
                     @if ($can('events'))
                         <a href="{{ route('admin.wydarzenia.index') }}" class="{{ $itemClass('admin.wydarzenia.*') }}">
                             <i class="fa-solid fa-calendar-days {{ $iconClass('admin.wydarzenia.*') }}"></i> Szkolenia i wydarzenia
+                        </a>
+                    @endif
+                    @if ($can('faq'))
+                        <a href="{{ route('admin.faq.index') }}" class="{{ $itemClass('admin.faq.*') }}">
+                            <i class="fa-solid fa-circle-question {{ $iconClass('admin.faq.*') }}"></i> FAQ
                         </a>
                     @endif
                     <a href="{{ route('admin.wiem-feer.index') }}" class="{{ $itemClass('admin.wiem-feer.*') }}">

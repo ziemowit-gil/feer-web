@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\CategoryController as AdminCategoryController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\EducationalMaterialController as AdminEducationalMaterialController;
 use App\Http\Controllers\Admin\EventController as AdminEventController;
+use App\Http\Controllers\Admin\FaqController as AdminFaqController;
 use App\Http\Controllers\Admin\GalleryImageController;
 use App\Http\Controllers\Admin\HeroSlideController;
 use App\Http\Controllers\Admin\MaterialSubscriberController as AdminMaterialSubscriberController;
@@ -35,6 +36,7 @@ use App\Http\Controllers\BlogCommentController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\EducationalMaterialController;
 use App\Http\Controllers\EventController;
+use App\Http\Controllers\FaqController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\MaterialSubscriberController;
 use App\Http\Controllers\MeetingSignupController;
@@ -89,6 +91,8 @@ Route::middleware('module:events')->group(function () {
     Route::get('/wydarzenia', [EventController::class, 'index'])->name('events.index');
     Route::get('/wydarzenia/{event:slug}', [EventController::class, 'show'])->name('events.show');
 });
+
+Route::get('/faq', [FaqController::class, 'index'])->name('faq.index')->middleware('module:faq');
 
 Route::get('/newsletter', [NewsletterController::class, 'index'])->name('newsletter.show');
 
@@ -181,6 +185,10 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(
     Route::middleware(['module:events', 'module-access:events'])->group(function () {
         Route::resource('wydarzenia', AdminEventController::class)->parameters(['wydarzenia' => 'event'])->except('show');
         Route::post('wydarzenia/{event}/na-aktualnosc', [AdminEventController::class, 'toNews'])->name('wydarzenia.na-aktualnosc');
+    });
+
+    Route::middleware(['module:faq', 'module-access:faq'])->group(function () {
+        Route::resource('faq', AdminFaqController::class)->parameters(['faq' => 'faq'])->except('show');
     });
 
     // Blog „Wiem FEER" — dostępny dla każdego użytkownika panelu (jak multimedia).

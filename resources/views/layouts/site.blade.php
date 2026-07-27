@@ -29,6 +29,9 @@
             --color-brand: {{ $brandPalette['color'] }};
             --color-brand-dark: {{ $brandPalette['dark'] }};
             --color-brand-light: {{ $brandPalette['light'] }};
+            --color-brand-2: {{ $siteSettings->brandColorN(2) }};
+            --color-brand-3: {{ $siteSettings->brandColorN(3) }};
+            --color-brand-4: {{ $siteSettings->brandColorN(4) }};
         }
     </style>
 </head>
@@ -39,6 +42,15 @@
 
     @include('partials.topbar')
     @include('partials.header')
+
+    @if ($siteSettings->hasExtraBrandColors())
+        {{-- Pasek identyfikacji marki: segmenty w kolorach z palety (dekoracja). --}}
+        <div class="flex h-1.5 w-full" aria-hidden="true">
+            @foreach ($siteSettings->brandPaletteColors() as $paletteColor)
+                <span class="flex-1" style="background-color: {{ $paletteColor }}"></span>
+            @endforeach
+        </div>
+    @endif
 
     <main id="main-content" class="flex-1">
         @hasSection('breadcrumbs')

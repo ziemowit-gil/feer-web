@@ -26,6 +26,7 @@ class SiteSetting extends Model implements HasMedia
         'materials' => 'Materiały edukacyjne',
         'volunteering' => 'Wolontariat',
         'events' => 'Szkolenia i wydarzenia',
+        'faq' => 'FAQ (najczęstsze pytania)',
         'support' => 'Wesprzyj nas',
     ];
 
@@ -112,7 +113,7 @@ class SiteSetting extends Model implements HasMedia
     ];
 
     protected $fillable = [
-        'site_name', 'tagline', 'brand_color', 'meta_description', 'allow_indexing', 'disabled_modules', 'homepage_section_order', 'events_home_color',
+        'site_name', 'tagline', 'brand_color', 'brand_color_2', 'brand_color_3', 'brand_color_4', 'meta_description', 'allow_indexing', 'disabled_modules', 'homepage_section_order', 'events_home_color',
         'bip_url', 'bip_intro', 'facebook_url', 'twitter_url', 'instagram_url', 'linkedin_url', 'youtube_url', 'substack_url',
         'contact_address', 'contact_city', 'contact_email', 'contact_phone', 'contact_intro', 'contact_bank_accounts',
         'contact_meeting_title', 'contact_online_meeting_url', 'contact_online_meeting_label', 'contact_online_meeting_text',
@@ -558,6 +559,33 @@ class SiteSetting extends Model implements HasMedia
     public function isModuleEnabled(string $module): bool
     {
         return ! in_array($module, $this->disabled_modules ?? [], true);
+    }
+
+    /**
+     * Efektywny n-ty kolor marki (2–4): własny (jeśli ustawiony i poprawny) albo
+     * fallback do koloru głównego — dzięki temu zmienne CSS zawsze mają wartość.
+     */
+    public function brandColorN(int $n): string
+    {
+        $hex = $this->{'brand_color_'.$n} ?? null;
+
+        return \App\Support\Color::isValid($hex) ? $hex : $this->brandPalette()['color'];
+    }
+
+    /** Wszystkie ustawione kolory identyfikacji (główny + 2–4), do paska/akcentów. */
+    public function brandPaletteColors(): array
+    {
+        return collect([$this->brand_color, $this->brand_color_2, $this->brand_color_3, $this->brand_color_4])
+            ->filter(fn ($c) => \App\Support\Color::isValid($c))
+            ->values()
+            ->all();
+    }
+
+    /** Czy zdefiniowano dodatkowe kolory marki (poza głównym). */
+    public function hasExtraBrandColors(): bool
+    {
+        return collect([$this->brand_color_2, $this->brand_color_3, $this->brand_color_4])
+            ->contains(fn ($c) => \App\Support\Color::isValid($c));
     }
 
     /**

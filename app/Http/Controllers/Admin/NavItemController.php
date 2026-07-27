@@ -131,6 +131,12 @@ class NavItemController extends Controller
             $data['module'] = 'events';
         }
 
+        // Typ „FAQ" kieruje zawsze na stronę /faq i chowa się, gdy moduł wyłączony.
+        if ($data['type'] === 'faq') {
+            $data['url'] = route('faq.index');
+            $data['module'] = 'faq';
+        }
+
         // The footer only ever renders plain links — no dropdowns/submenus.
         if ($data['location'] === 'footer') {
             $data['type'] = 'link';
@@ -140,7 +146,7 @@ class NavItemController extends Controller
         // Dropdown/projects triggers open a panel instead of navigating, and
         // can't themselves be nested inside another dropdown. The volunteering
         // type is always a top-level link/CTA, so it can't be nested either.
-        if (in_array($data['type'], ['dropdown', 'projects', 'volunteering', 'events'], true)) {
+        if (in_array($data['type'], ['dropdown', 'projects', 'volunteering', 'events', 'faq'], true)) {
             $data['parent_id'] = null;
         }
 

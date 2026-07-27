@@ -13,6 +13,12 @@
     --color-brand: #c31432;
     --color-brand-dark: #8f0e24;
     --color-brand-light: #fdecee;
+    /* Dodatkowe kolory identyfikacji marki (2–4). Wartości nadpisywane w
+       runtime z ustawień; tu domyślne, aby Tailwind wygenerował utility
+       (bg-brand-2, text-brand-3, border-brand-4 itd.). */
+    --color-brand-2: #0075cf;
+    --color-brand-3: #e6006f;
+    --color-brand-4: #f5a800;
     --color-ink: #1a1a1a;
     /* gray-600 rather than gray-500: keeps secondary text above the WCAG AA
        4.5:1 threshold on white, gray-50/100 and brand-light backgrounds. */

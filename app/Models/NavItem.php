@@ -16,6 +16,7 @@ class NavItem extends Model
         'pages' => 'Menu podstron (automatyczne z podstron)',
         'volunteering' => 'Ogłoszenia o wolontariacie',
         'events' => 'Szkolenia i wydarzenia',
+        'faq' => 'FAQ (najczęstsze pytania)',
     ];
 
     /**

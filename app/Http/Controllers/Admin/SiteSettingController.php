@@ -26,6 +26,9 @@ class SiteSettingController extends Controller
             'maintenance_mode' => ['sometimes', 'boolean'],
             'maintenance_message' => ['nullable', 'string', 'max:2000'],
             'brand_color' => ['required', 'regex:/^#[0-9a-fA-F]{6}$/'],
+            'brand_color_2' => ['nullable', 'regex:/^#[0-9a-fA-F]{6}$/'],
+            'brand_color_3' => ['nullable', 'regex:/^#[0-9a-fA-F]{6}$/'],
+            'brand_color_4' => ['nullable', 'regex:/^#[0-9a-fA-F]{6}$/'],
             'header_layout' => ['required', Rule::in(array_keys(SiteSetting::HEADER_LAYOUTS))],
             'content_editor' => ['required', Rule::in(array_keys(SiteSetting::EDITORS))],
             'microsoft_login_enabled' => ['sometimes', 'boolean'],
@@ -253,6 +256,11 @@ class SiteSettingController extends Controller
         $settings = SiteSetting::current();
 
         $data['brand_color'] = $settings->contrastSafeColor($data['brand_color']);
+
+        // Dodatkowe kolory marki: puste = null, w przeciwnym razie kontrast AA na białym.
+        foreach (['brand_color_2', 'brand_color_3', 'brand_color_4'] as $key) {
+            $data[$key] = filled($data[$key] ?? null) ? $settings->contrastSafeColor($data[$key]) : null;
+        }
 
         // Kolor NGO także pilnujemy pod kątem kontrastu (używany jak text-brand na białym).
         $data['ngo_color'] = filled($data['ngo_color'] ?? null)

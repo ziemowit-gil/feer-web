@@ -123,6 +123,29 @@
             </div>
 
             <div class="border-t border-gray-100 pt-5">
+                <p class="mb-1 text-sm font-bold">Dodatkowe kolory marki (identyfikacja)</p>
+                <p class="mb-3 text-xs text-muted">Kolory 2–4 z identyfikacji wizualnej, korespondujące z kolorem przewodnim. Dostępne w kodzie jako <code class="rounded bg-gray-100 px-1">brand-2/3/4</code> i użyte jako pasek akcentu pod nagłówkiem. Puste = niewykorzystane. Zbyt jasny kolor zostanie przyciemniony dla kontrastu (WCAG).</p>
+                <div class="grid gap-4 sm:grid-cols-3">
+                    @foreach ([2, 3, 4] as $n)
+                        @php $val = old('brand_color_'.$n, $settings->{'brand_color_'.$n}); @endphp
+                        <div>
+                            <label for="brand_color_{{ $n }}_text" class="mb-1 block text-xs font-bold text-muted">Kolor {{ $n }}</label>
+                            <div class="flex items-center gap-2">
+                                <input type="color" id="brand_color_{{ $n }}_picker" value="{{ $val ?: $settings->brand_color }}"
+                                    oninput="document.getElementById('brand_color_{{ $n }}_text').value = this.value"
+                                    class="h-10 w-12 flex-none rounded border-gray-300" aria-label="Wybierz kolor {{ $n }} marki">
+                                <input type="text" id="brand_color_{{ $n }}_text" name="brand_color_{{ $n }}" value="{{ $val }}"
+                                    placeholder="#RRGGBB" pattern="^#[0-9a-fA-F]{6}$"
+                                    oninput="if (/^#[0-9a-fA-F]{6}$/.test(this.value)) document.getElementById('brand_color_{{ $n }}_picker').value = this.value"
+                                    class="w-full rounded border-gray-300 font-mono text-sm focus:border-brand focus:ring-brand">
+                            </div>
+                            @error('brand_color_'.$n) <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+
+            <div class="border-t border-gray-100 pt-5">
                 <label for="ngo_color_text" class="mb-1 block text-sm font-bold">Kolor submarki „NGO” <span class="font-normal text-muted">(opcjonalnie)</span></label>
                 <div class="flex flex-wrap items-center gap-3">
                     <input type="color" id="ngo_color_picker" value="{{ old('ngo_color', $settings->ngo_color ?: '#1f6feb') }}"
