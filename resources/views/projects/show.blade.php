@@ -296,26 +296,25 @@
                         </ul>
                     </div>
                 @endif
-                {{-- Kontakt w sprawie projektu — w głównym nurcie, nie z boku. --}}
+                {{-- Kontakt w sprawie projektu — jako zwykła sekcja treści (jak „Opis
+                     projektu"), w głównym nurcie i pełną szerokością, nie jako kafelek z boku. --}}
                 @if (! $project->is_completed && $project->showsCoordinator())
-                    <div class="mt-10 rounded-2xl border border-brand/20 bg-brand-light p-6">
-                        <h2 class="mb-3 flex items-center gap-2 text-lg font-bold text-ink">
+                    <div class="mt-10 border-t border-gray-200 pt-8">
+                        <h2 class="mb-3 flex items-center gap-2 text-xl font-bold text-ink">
                             <i class="fa-solid fa-envelope text-brand" aria-hidden="true"></i> Kontakt w sprawie projektu
                         </h2>
-                        <div class="flex flex-wrap items-center gap-x-8 gap-y-2 text-sm">
+                        <div class="space-y-1.5 text-ink">
                             @if ($project->coordinator_name)
-                                <p class="font-medium text-ink">{{ $project->coordinator_name }}</p>
+                                <p class="font-medium">{{ $project->coordinator_name }}</p>
                             @endif
                             <p>
-                                <a href="mailto:{{ $project->contactEmail() }}" class="break-all font-medium text-brand hover:text-brand-dark">
-                                    <i class="fa-solid fa-envelope" aria-hidden="true"></i> {{ $project->contactEmail() }}
-                                </a>
+                                <i class="fa-solid fa-envelope mr-1.5 text-brand" aria-hidden="true"></i>
+                                <a href="mailto:{{ $project->contactEmail() }}" class="break-all font-medium text-brand hover:text-brand-dark">{{ $project->contactEmail() }}</a>
                             </p>
                             @if ($project->coordinator_phone)
                                 <p>
-                                    <a href="tel:{{ $project->coordinator_phone }}" class="font-medium text-brand hover:text-brand-dark">
-                                        <i class="fa-solid fa-phone" aria-hidden="true"></i> {{ $project->coordinator_phone }}
-                                    </a>
+                                    <i class="fa-solid fa-phone mr-1.5 text-brand" aria-hidden="true"></i>
+                                    <a href="tel:{{ $project->coordinator_phone }}" class="font-medium text-brand hover:text-brand-dark">{{ $project->coordinator_phone }}</a>
                                 </p>
                             @endif
                         </div>
