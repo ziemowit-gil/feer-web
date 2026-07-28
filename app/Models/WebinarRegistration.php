@@ -7,9 +7,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class WebinarRegistration extends Model
 {
-    protected $fillable = ['landing_page_id', 'name', 'email', 'phone', 'consent', 'forwarded'];
+    protected $fillable = ['landing_page_id', 'name', 'email', 'phone', 'consent', 'extra', 'forwarded'];
 
-    protected $casts = ['consent' => 'boolean', 'forwarded' => 'boolean'];
+    protected $casts = ['consent' => 'boolean', 'forwarded' => 'boolean', 'extra' => 'array'];
 
     public function landingPage(): BelongsTo
     {

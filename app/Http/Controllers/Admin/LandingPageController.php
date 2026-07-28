@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\LandingPageRequest;
 use App\Models\LandingPage;
+use Illuminate\Support\Str;
 
 class LandingPageController extends Controller
 {
@@ -61,7 +62,46 @@ class LandingPageController extends Controller
         }
 
         $data['section_order'] = array_values($data['section_order'] ?? []);
+        $data['form_fields'] = $this->normalizeFields($data['form_fields'] ?? []);
 
         return $data;
+    }
+
+    /**
+     * Nadaje każdemu dodatkowemu polu stabilny, unikalny klucz (ze slug etykiety)
+     * i zamienia listę opcji z tekstu (po przecinku) na tablicę.
+     *
+     * @param  array<int, array<string, mixed>>  $rows
+     */
+    private function normalizeFields(array $rows): array
+    {
+        $used = [];
+
+        return collect($rows)
+            ->filter(fn ($f) => filled($f['label'] ?? null))
+            ->map(function ($f) use (&$used) {
+                $key = Str::slug($f['label'], '_') ?: 'pole';
+                $base = $key;
+                $n = 1;
+                while (in_array($key, $used, true)) {
+                    $key = $base.'_'.(++$n);
+                }
+                $used[] = $key;
+
+                $type = in_array($f['type'] ?? '', array_keys(LandingPage::FIELD_TYPES), true) ? $f['type'] : 'text';
+                $options = $type === 'select'
+                    ? array_values(array_filter(array_map('trim', explode(',', (string) ($f['options'] ?? '')))))
+                    : [];
+
+                return [
+                    'key' => $key,
+                    'label' => trim($f['label']),
+                    'type' => $type,
+                    'required' => ! empty($f['required']),
+                    'options' => $options,
+                ];
+            })
+            ->values()
+            ->all();
     }
 }

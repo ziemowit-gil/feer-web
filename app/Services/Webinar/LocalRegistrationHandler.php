@@ -19,6 +19,7 @@ class LocalRegistrationHandler implements RegistrationHandler
             'email' => $data['email'],
             'phone' => $data['phone'] ?? null,
             'consent' => (bool) ($data['consent'] ?? false),
+            'extra' => $data['extra'] ?? [],
         ]);
 
         if ($this->forward($page, $registration)) {

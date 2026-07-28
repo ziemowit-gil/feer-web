@@ -25,6 +25,7 @@ class LandingPageRequest extends FormRequest
             'hero_title' => ['required', 'string', 'max:255'],
             'hero_lead' => ['nullable', 'string', 'max:1000'],
             'hero_cta_label' => ['nullable', 'string', 'max:60'],
+            'hero_cta_url' => ['nullable', 'string', 'max:2048'],
             'hero_image_url' => ['nullable', 'string', 'max:2048'],
             'event_start' => ['nullable', 'date'],
             'event_location' => ['nullable', 'string', 'max:150'],
@@ -52,6 +53,12 @@ class LandingPageRequest extends FormRequest
             'form_intro' => ['nullable', 'string', 'max:500'],
             'form_success' => ['nullable', 'string', 'max:500'],
             'form_consent_label' => ['nullable', 'string', 'max:500'],
+
+            'form_fields' => ['nullable', 'array'],
+            'form_fields.*.label' => ['nullable', 'string', 'max:150'],
+            'form_fields.*.type' => ['nullable', Rule::in(array_keys(\App\Models\LandingPage::FIELD_TYPES))],
+            'form_fields.*.required' => ['nullable'],
+            'form_fields.*.options' => ['nullable', 'string', 'max:500'],
         ];
     }
 }

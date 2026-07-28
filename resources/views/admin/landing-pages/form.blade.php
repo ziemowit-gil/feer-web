@@ -8,6 +8,13 @@
     $benefits = old('benefits', $page->benefits ?? []);
     $agenda = old('agenda', $page->agenda ?? []);
     $order = old('section_order', $page->orderedSections());
+    // Opcje listy edytujemy jako tekst po przecinku; klucz nadaje kontroler.
+    $formFields = collect(old('form_fields', $page->form_fields ?? []))->map(fn ($f) => [
+        'label' => $f['label'] ?? '',
+        'type' => $f['type'] ?? 'text',
+        'required' => ! empty($f['required']),
+        'options' => is_array($f['options'] ?? null) ? implode(', ', $f['options']) : ($f['options'] ?? ''),
+    ])->values()->all();
 @endphp
 
 @section('content')
@@ -22,6 +29,7 @@
             speakers: {{ Js::from($speakers) }},
             benefits: {{ Js::from($benefits) }},
             agenda: {{ Js::from($agenda) }},
+            fields: {{ Js::from($formFields) }},
             order: {{ Js::from($order) }},
             labels: { speakers: 'Prelegenci', benefits: 'Korzyści', agenda: 'Agenda' },
             move(i, d) { const n = i + d; if (n < 0 || n >= this.order.length) return; [this.order[i], this.order[n]] = [this.order[n], this.order[i]]; }
@@ -78,6 +86,11 @@
                 <div>
                     <label for="hero_cta_label" class="mb-1 block text-sm font-bold">Tekst przycisku</label>
                     <input id="hero_cta_label" name="hero_cta_label" value="{{ old('hero_cta_label', $page->hero_cta_label ?? 'Zarejestruj się') }}" class="{{ $inp }}">
+                </div>
+                <div class="sm:col-span-2">
+                    <label for="hero_cta_url" class="mb-1 block text-sm font-bold">Własny link przycisku <span class="font-normal text-muted">(opcjonalnie)</span></label>
+                    <input id="hero_cta_url" name="hero_cta_url" value="{{ old('hero_cta_url', $page->hero_cta_url) }}" placeholder="https://… (zewnętrzny system zapisu)" class="{{ $inp }}">
+                    <p class="mt-1 text-xs text-muted">Puste = przycisk przewija do formularza na stronie. Podany adres = przycisk prowadzi do zewnętrznego systemu zapisu.</p>
                 </div>
                 <div>
                     <label for="hero_image_url" class="mb-1 block text-sm font-bold">URL obrazka <span class="font-normal text-muted">(z biblioteki mediów)</span></label>
@@ -174,6 +187,33 @@
             <div>
                 <label for="form_success" class="mb-1 block text-sm font-bold">Komunikat po zapisaniu</label>
                 <textarea id="form_success" name="form_success" rows="2" class="{{ $inp }}">{{ old('form_success', $page->form_success) }}</textarea>
+            </div>
+
+            {{-- Dodatkowe pola formularza (przekazywane do zewnętrznego API) --}}
+            <div class="border-t border-gray-100 pt-4">
+                <p class="mb-1 text-sm font-bold text-ink">Dodatkowe pola formularza</p>
+                <p class="mb-3 text-xs text-muted">Trafiają do zgłoszenia (kolumna <code>extra</code>) i są przekazywane do systemu zapisu przez API.</p>
+                <div class="space-y-3">
+                    <template x-for="(f, i) in fields" :key="i">
+                        <div class="grid gap-2 rounded border border-gray-200 p-3 sm:grid-cols-2">
+                            <input :name="`form_fields[${i}][label]`" x-model="f.label" placeholder="Etykieta pola (np. Organizacja)" class="{{ $inp }}">
+                            <select :name="`form_fields[${i}][type]`" x-model="f.type" class="{{ $inp }}">
+                                @foreach (\App\Models\LandingPage::FIELD_TYPES as $val => $lbl)
+                                    <option value="{{ $val }}">{{ $lbl }}</option>
+                                @endforeach
+                            </select>
+                            <input :name="`form_fields[${i}][options]`" x-model="f.options" x-show="f.type === 'select'" x-cloak placeholder="Opcje po przecinku: Tak, Nie, Może" class="{{ $inp }} sm:col-span-2">
+                            <label class="flex items-center gap-2 text-sm text-muted">
+                                <input type="checkbox" :name="`form_fields[${i}][required]`" x-model="f.required" value="1" class="rounded border-gray-300 text-brand focus-visible:ring-2 focus-visible:ring-brand">
+                                Pole wymagane
+                            </label>
+                            <button type="button" @click="fields.splice(i, 1)" class="justify-self-end rounded text-sm text-red-600 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600">Usuń pole</button>
+                        </div>
+                    </template>
+                    <button type="button" @click="fields.push({ label: '', type: 'text', required: false, options: '' })" class="rounded border border-dashed border-gray-300 px-3 py-2 text-sm font-bold text-brand hover:bg-brand-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                        <i class="fa-solid fa-plus" aria-hidden="true"></i> Dodaj pole
+                    </button>
+                </div>
             </div>
         </fieldset>
 

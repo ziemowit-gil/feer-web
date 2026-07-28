@@ -35,10 +35,11 @@
                     </dl>
                 @endif
 
-                <a href="#rejestracja"
+                @php($ctaExternal = filled($page->hero_cta_url))
+                <a href="{{ $ctaExternal ? $page->hero_cta_url : '#rejestracja' }}" @if ($ctaExternal) target="_blank" rel="noopener" @endif
                     class="mt-8 inline-flex items-center gap-2 rounded-xl bg-white px-6 py-3 text-base font-bold text-brand shadow-lg transition-transform hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-brand">
                     {{ $page->hero_cta_label ?: 'Zarejestruj się' }}
-                    <i class="fa-solid fa-arrow-down" aria-hidden="true"></i>
+                    <i class="fa-solid {{ $ctaExternal ? 'fa-arrow-up-right-from-square' : 'fa-arrow-down' }}" aria-hidden="true"></i>
                 </a>
             </div>
 
@@ -130,7 +131,8 @@
                 <p class="mb-8 text-center text-muted">{{ $page->form_intro }}</p>
             @endif
 
-            <div x-data="lpRegister(@js(route('lp.register', $page->slug)), @js(csrf_token()))"
+            @php($extraInit = collect($page->formFields())->mapWithKeys(fn ($f) => [$f['key'] => $f['type'] === 'checkbox' ? false : ''])->all())
+            <div x-data="lpRegister(@js(route('lp.register', $page->slug)), @js(csrf_token()), @js($extraInit))"
                 class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm sm:p-8">
 
                 {{-- Sukces --}}
@@ -163,6 +165,34 @@
                             class="w-full rounded-lg border-gray-300 focus-visible:border-brand focus-visible:ring-2 focus-visible:ring-brand">
                     </div>
 
+                    {{-- Dodatkowe pola zdefiniowane w panelu (przekazywane do API) --}}
+                    @foreach ($page->formFields() as $f)
+                        @php($fkey = $f['key'])
+                        @if ($f['type'] === 'checkbox')
+                            <label class="flex items-start gap-2 text-sm text-muted">
+                                <input type="checkbox" x-model="form.extra['{{ $fkey }}']" class="mt-0.5 rounded border-gray-300 text-brand focus-visible:ring-2 focus-visible:ring-brand">
+                                <span>{{ $f['label'] }}@if ($f['required'])<span class="text-red-600" aria-hidden="true">*</span>@endif</span>
+                            </label>
+                        @else
+                            <div>
+                                <label for="lp-x-{{ $fkey }}" class="mb-1 block text-sm font-bold text-ink">{{ $f['label'] }}@if ($f['required'])<span class="text-red-600" aria-hidden="true">*</span>@endif</label>
+                                @if ($f['type'] === 'select')
+                                    <select id="lp-x-{{ $fkey }}" x-model="form.extra['{{ $fkey }}']" @if ($f['required']) required @endif
+                                        class="w-full rounded-lg border-gray-300 focus-visible:border-brand focus-visible:ring-2 focus-visible:ring-brand">
+                                        <option value="">— wybierz —</option>
+                                        @foreach (($f['options'] ?? []) as $opt)
+                                            <option value="{{ $opt }}">{{ $opt }}</option>
+                                        @endforeach
+                                    </select>
+                                @else
+                                    <input id="lp-x-{{ $fkey }}" type="{{ $f['type'] }}" x-model="form.extra['{{ $fkey }}']" @if ($f['required']) required @endif
+                                        class="w-full rounded-lg border-gray-300 focus-visible:border-brand focus-visible:ring-2 focus-visible:ring-brand">
+                                @endif
+                            </div>
+                        @endif
+                        <p x-show="errors['extra.{{ $fkey }}']" x-cloak class="mt-1 text-sm text-red-700" x-text="errors['extra.{{ $fkey }}']"></p>
+                    @endforeach
+
                     <label class="flex items-start gap-2 text-sm text-muted">
                         <input type="checkbox" name="consent" x-model="form.consent" value="1" class="mt-0.5 rounded border-gray-300 text-brand focus-visible:ring-2 focus-visible:ring-brand">
                         <span>{{ $page->form_consent_label ?: 'Wyrażam zgodę na przetwarzanie moich danych w celu rejestracji na webinar (RODO).' }}</span>
@@ -181,10 +211,10 @@
 
     <script>
         document.addEventListener('alpine:init', () => {
-            Alpine.data('lpRegister', (endpoint, csrf) => ({
+            Alpine.data('lpRegister', (endpoint, csrf, extraInit = {}) => ({
                 state: 'idle', // idle | loading | success | error
                 message: '',
-                form: { name: '', email: '', phone: '', consent: false },
+                form: { name: '', email: '', phone: '', consent: false, extra: { ...extraInit } },
                 errors: {},
 
                 async submit() {

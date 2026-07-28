@@ -10,12 +10,21 @@ class LandingPage extends Model
 {
     public const SECTIONS = ['speakers' => 'Prelegenci', 'benefits' => 'Korzyści', 'agenda' => 'Agenda'];
 
+    /** Dostępne typy dodatkowych pól formularza (klucz = typ, wartość = etykieta). */
+    public const FIELD_TYPES = [
+        'text' => 'Tekst',
+        'email' => 'E-mail',
+        'tel' => 'Telefon',
+        'select' => 'Lista wyboru',
+        'checkbox' => 'Zgoda / pole wyboru',
+    ];
+
     protected $fillable = [
         'slug', 'title', 'is_published',
-        'hero_eyebrow', 'hero_title', 'hero_lead', 'hero_cta_label', 'hero_image_url',
+        'hero_eyebrow', 'hero_title', 'hero_lead', 'hero_cta_label', 'hero_cta_url', 'hero_image_url',
         'event_start', 'event_location',
         'speakers', 'benefits', 'agenda', 'section_order',
-        'form_title', 'form_intro', 'form_success', 'form_consent_label',
+        'form_title', 'form_intro', 'form_success', 'form_consent_label', 'form_fields',
     ];
 
     protected $casts = [
@@ -25,7 +34,17 @@ class LandingPage extends Model
         'benefits' => 'array',
         'agenda' => 'array',
         'section_order' => 'array',
+        'form_fields' => 'array',
     ];
+
+    /** Znormalizowane dodatkowe pola formularza (tylko z kluczem i etykietą). */
+    public function formFields(): array
+    {
+        return collect($this->form_fields ?? [])
+            ->filter(fn ($f) => filled($f['key'] ?? null) && filled($f['label'] ?? null))
+            ->values()
+            ->all();
+    }
 
     public function registrations(): HasMany
     {
