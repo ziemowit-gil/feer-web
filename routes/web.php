@@ -238,7 +238,7 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(
         Route::put('newsletter', [AdminNewsletterController::class, 'update'])->name('newsletter.update');
 
         Route::resource('pozycje-menu', NavItemController::class)->parameters(['pozycje-menu' => 'navItem'])->except('show');
-        Route::patch('pozycje-menu/{navItem}/kolejnosc', [NavItemController::class, 'updateOrder'])->name('pozycje-menu.kolejnosc');
+        Route::patch('pozycje-menu/{navItem}/przenies', [NavItemController::class, 'move'])->name('pozycje-menu.przenies');
 
         Route::resource('grupy', AdminUserGroupController::class)->parameters(['grupy' => 'group'])->except('show');
 

@@ -254,13 +254,13 @@
 
         <main class="p-6">
             @if (session('status'))
-                <div class="mb-4 rounded border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
+                <div role="status" aria-live="polite" class="mb-4 rounded border border-green-300 bg-green-50 px-4 py-3 text-sm text-green-800">
                     {{ session('status') }}
                 </div>
             @endif
 
             @if (session('error'))
-                <div class="mb-4 rounded border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                <div role="alert" class="mb-4 rounded border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-800">
                     {{ session('error') }}
                 </div>
             @endif
