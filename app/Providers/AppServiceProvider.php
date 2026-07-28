@@ -21,7 +21,12 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        // Obsługa zapisu na webinar — domyślnie lokalna. Podmień to wiązanie,
+        // aby przekierować zapisy do zewnętrznego systemu (izolacja integracji).
+        $this->app->bind(
+            \App\Services\Webinar\RegistrationHandler::class,
+            \App\Services\Webinar\LocalRegistrationHandler::class,
+        );
     }
 
     /**

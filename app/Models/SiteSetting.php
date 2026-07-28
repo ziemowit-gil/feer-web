@@ -28,6 +28,9 @@ class SiteSetting extends Model implements HasMedia
         'events' => 'Szkolenia i wydarzenia',
         'faq' => 'FAQ (najczęstsze pytania)',
         'support' => 'Wesprzyj nas',
+        'reports' => 'Sprawozdania roczne',
+        'blog' => 'Wiem FEER (blog)',
+        'landing' => 'Landing page (webinary)',
     ];
 
     /**

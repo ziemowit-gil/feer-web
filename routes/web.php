@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\Admin\AnnualReportController as AdminAnnualReportController;
+use App\Http\Controllers\Admin\LandingPageController as AdminLandingPageController;
 use App\Http\Controllers\Admin\AttachmentController as AdminAttachmentController;
 use App\Http\Controllers\Admin\CategoryController as AdminCategoryController;
 use App\Http\Controllers\Admin\ContentPortabilityController as AdminContentPortabilityController;
@@ -40,6 +42,8 @@ use App\Http\Controllers\EducationalMaterialController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\FaqController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\LandingPageController;
+use App\Http\Controllers\ReportController;
 use App\Http\Controllers\MaterialSubscriberController;
 use App\Http\Controllers\MeetingSignupController;
 use App\Http\Controllers\NewsController;
@@ -80,10 +84,12 @@ Route::middleware('module:materials')->group(function () {
 });
 
 // Blog „Wiem FEER" — artykuły z komentarzami (osobna baza SQLite).
-Route::get('/wiem-feer', [BlogController::class, 'index'])->name('blog.index');
-Route::get('/wiem-feer/{article:slug}', [BlogController::class, 'show'])->name('blog.show');
-Route::post('/wiem-feer/{article:slug}/komentarz', [BlogCommentController::class, 'store'])
-    ->name('blog.comments.store')->middleware('throttle:5,1');
+Route::middleware('module:blog')->group(function () {
+    Route::get('/wiem-feer', [BlogController::class, 'index'])->name('blog.index');
+    Route::get('/wiem-feer/{article:slug}', [BlogController::class, 'show'])->name('blog.show');
+    Route::post('/wiem-feer/{article:slug}/komentarz', [BlogCommentController::class, 'store'])
+        ->name('blog.comments.store')->middleware('throttle:5,1');
+});
 
 Route::middleware('module:volunteering')->group(function () {
     Route::get('/wolontariat', [VolunteerController::class, 'index'])->name('volunteer.index');
@@ -96,6 +102,13 @@ Route::middleware('module:events')->group(function () {
 });
 
 Route::get('/faq', [FaqController::class, 'index'])->name('faq.index')->middleware('module:faq');
+
+Route::get('/sprawozdania', [ReportController::class, 'index'])->name('reports.index')->middleware('module:reports');
+
+Route::middleware('module:landing')->group(function () {
+    Route::get('/lp/{slug}', [LandingPageController::class, 'show'])->name('lp.show');
+    Route::post('/lp/{slug}/rejestracja', [LandingPageController::class, 'register'])->name('lp.register')->middleware('throttle:10,1');
+});
 
 Route::get('/szukaj', [SearchController::class, 'index'])->name('search');
 
@@ -196,12 +209,23 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(
         Route::resource('faq', AdminFaqController::class)->parameters(['faq' => 'faq'])->except('show');
     });
 
-    // Blog „Wiem FEER" — dostępny dla każdego użytkownika panelu (jak multimedia).
-    Route::resource('wiem-feer', AdminBlogArticleController::class)->parameters(['wiem-feer' => 'article'])->except('show');
-    Route::patch('wiem-feer/{article}/wylacz', [AdminBlogArticleController::class, 'toggleDisabled'])->name('wiem-feer.wylacz');
-    Route::get('komentarze-bloga', [AdminBlogCommentController::class, 'index'])->name('komentarze-bloga.index');
-    Route::patch('komentarze-bloga/{comment}/zatwierdz', [AdminBlogCommentController::class, 'approve'])->name('komentarze-bloga.approve');
-    Route::delete('komentarze-bloga/{comment}', [AdminBlogCommentController::class, 'destroy'])->name('komentarze-bloga.destroy');
+    Route::middleware(['module:reports', 'module-access:reports'])->group(function () {
+        Route::resource('sprawozdania', AdminAnnualReportController::class)->parameters(['sprawozdania' => 'annualReport'])->except('show');
+    });
+
+    Route::middleware(['module:landing', 'module-access:landing'])->group(function () {
+        Route::resource('lp', AdminLandingPageController::class)->parameters(['lp' => 'landing'])->except('show');
+    });
+
+    // Blog „Wiem FEER" — gdy moduł włączony, dostępny dla każdego użytkownika
+    // panelu (jak multimedia); wyłączenie modułu chowa całą sekcję.
+    Route::middleware('module:blog')->group(function () {
+        Route::resource('wiem-feer', AdminBlogArticleController::class)->parameters(['wiem-feer' => 'article'])->except('show');
+        Route::patch('wiem-feer/{article}/wylacz', [AdminBlogArticleController::class, 'toggleDisabled'])->name('wiem-feer.wylacz');
+        Route::get('komentarze-bloga', [AdminBlogCommentController::class, 'index'])->name('komentarze-bloga.index');
+        Route::patch('komentarze-bloga/{comment}/zatwierdz', [AdminBlogCommentController::class, 'approve'])->name('komentarze-bloga.approve');
+        Route::delete('komentarze-bloga/{comment}', [AdminBlogCommentController::class, 'destroy'])->name('komentarze-bloga.destroy');
+    });
 
     Route::get('multimedia', [MediaLibraryController::class, 'index'])->name('multimedia.index');
     Route::get('multimedia/obrazy', [MediaLibraryController::class, 'imagesJson'])->name('multimedia.images');

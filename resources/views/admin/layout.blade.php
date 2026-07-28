@@ -35,7 +35,7 @@
 
             // Every route a section owns — used to auto-expand the section that
             // holds the current page while the rest start collapsed.
-            $contentRoutes = ['admin.podstrony.*', 'admin.os-czasu.*', 'admin.pozycje-menu.*', 'admin.newsy.*', 'admin.kategorie-newsow.*', 'admin.ankiety.*', 'admin.materialy-edukacyjne.*', 'admin.wolontariat.*', 'admin.wydarzenia.*', 'admin.faq.*', 'admin.wiem-feer.*'];
+            $contentRoutes = ['admin.podstrony.*', 'admin.os-czasu.*', 'admin.pozycje-menu.*', 'admin.newsy.*', 'admin.kategorie-newsow.*', 'admin.ankiety.*', 'admin.materialy-edukacyjne.*', 'admin.wolontariat.*', 'admin.wydarzenia.*', 'admin.faq.*', 'admin.sprawozdania.*', 'admin.lp.*', 'admin.wiem-feer.*'];
             $appearanceRoutes = ['admin.hero.*', 'admin.galeria.*', 'admin.szybkie-akcje.*', 'admin.partnerzy.*'];
             $projectRoutes = ['admin.kategorie.*', 'admin.projekty.*'];
             // „Skrzynka" — wszystko, co przychodzi od odwiedzających i czeka na obsługę.
@@ -96,9 +96,21 @@
                             <i class="fa-solid fa-circle-question {{ $iconClass('admin.faq.*') }}"></i> FAQ
                         </a>
                     @endif
-                    <a href="{{ route('admin.wiem-feer.index') }}" class="{{ $itemClass('admin.wiem-feer.*') }}">
-                        <i class="fa-solid fa-feather-pointed {{ $iconClass('admin.wiem-feer.*') }}"></i> Wiem FEER (blog)
-                    </a>
+                    @if ($can('reports'))
+                        <a href="{{ route('admin.sprawozdania.index') }}" class="{{ $itemClass('admin.sprawozdania.*') }}">
+                            <i class="fa-solid fa-file-invoice {{ $iconClass('admin.sprawozdania.*') }}"></i> Sprawozdania
+                        </a>
+                    @endif
+                    @if ($can('landing'))
+                        <a href="{{ route('admin.lp.index') }}" class="{{ $itemClass('admin.lp.*') }}">
+                            <i class="fa-solid fa-bullhorn {{ $iconClass('admin.lp.*') }}"></i> Landing pages
+                        </a>
+                    @endif
+                    @if ($siteSettings->isModuleEnabled('blog'))
+                        <a href="{{ route('admin.wiem-feer.index') }}" class="{{ $itemClass('admin.wiem-feer.*') }}">
+                            <i class="fa-solid fa-feather-pointed {{ $iconClass('admin.wiem-feer.*') }}"></i> Wiem FEER (blog)
+                        </a>
+                    @endif
                 </div>
             </div>
 
@@ -172,9 +184,11 @@
                             <i class="fa-solid fa-envelope-open-text {{ $iconClass('admin.zapisy-materialy.*') }}"></i> Zapisy (materiały)
                         </a>
                     @endif
-                    <a href="{{ route('admin.komentarze-bloga.index') }}" class="{{ $itemClass('admin.komentarze-bloga.*') }}">
-                        <i class="fa-solid fa-comments {{ $iconClass('admin.komentarze-bloga.*') }}"></i> Komentarze (blog)
-                    </a>
+                    @if ($siteSettings->isModuleEnabled('blog'))
+                        <a href="{{ route('admin.komentarze-bloga.index') }}" class="{{ $itemClass('admin.komentarze-bloga.*') }}">
+                            <i class="fa-solid fa-comments {{ $iconClass('admin.komentarze-bloga.*') }}"></i> Komentarze (blog)
+                        </a>
+                    @endif
                 </div>
             </div>
 
