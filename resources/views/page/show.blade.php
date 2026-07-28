@@ -189,7 +189,7 @@
                     </div>
 
                     @if ($introPhotos->isNotEmpty())
-                        <div class="grid grid-cols-2 gap-3">
+                        <div class="grid grid-cols-2 gap-3" data-lightbox>
                             @foreach ($introPhotos as $photo)
                                 @php $spanFull = $introPhotos->count() === 1 || ($introPhotos->count() === 3 && $loop->first); @endphp
                                 <figure class="overflow-hidden rounded-2xl shadow-sm {{ $spanFull ? 'col-span-2' : '' }}">
@@ -233,7 +233,7 @@
         @if ($galleryPhotos->isNotEmpty())
             <section class="mx-auto max-w-6xl px-4 py-16">
                 <h2 class="mb-8 text-center text-2xl font-bold text-ink md:text-3xl">Galeria</h2>
-                <div class="grid auto-rows-[160px] grid-cols-2 gap-3 md:auto-rows-[220px] md:grid-cols-4">
+                <div class="grid auto-rows-[160px] grid-cols-2 gap-3 md:auto-rows-[220px] md:grid-cols-4" data-lightbox>
                     @foreach ($galleryPhotos as $image)
                         <figure class="group relative overflow-hidden rounded-2xl {{ $loop->first ? 'col-span-2 row-span-2' : '' }}">
                             <img src="{{ $image->image_url }}" alt="{{ $image->alt }}" loading="lazy"

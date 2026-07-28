@@ -55,8 +55,6 @@ class MediaLibraryController extends Controller
         $folder = $request->filled('folder') ? MediaFolder::findOrFail($request->integer('folder')) : null;
         $showArchived = $request->boolean('archived');
 
-        $subfolders = MediaFolder::where('parent_id', $folder?->id)->orderBy('name')->get();
-
         $media = Media::query()
             ->whereIn('model_type', $this->accessibleModelTypes())
             ->where('media_folder_id', $folder?->id)
@@ -88,7 +86,6 @@ class MediaLibraryController extends Controller
             'folder' => $folder,
             'showArchived' => $showArchived,
             'breadcrumbs' => $folder ? $folder->path() : [],
-            'subfolders' => $subfolders,
             'allFolders' => MediaFolder::orderBy('name')->get(),
             'folderTree' => $this->folderTree(),
         ]);
@@ -212,21 +209,81 @@ class MediaLibraryController extends Controller
         ]);
     }
 
+    /**
+     * Uploads one or more files into the library in a single request. The
+     * upload form sends `files[]`, so a user can pick or drag several files
+     * at once; each is added to the standalone library and dropped into the
+     * current folder.
+     */
     public function store(Request $request)
     {
+        $request->validate([
+            'files' => ['required', 'array', 'min:1'],
+            'files.*' => ['file', 'max:10240'],
+            'folder_id' => ['nullable', 'exists:media_folders,id'],
+        ], [], ['files.*' => 'plik']);
+
+        $folderId = $request->input('folder_id') ?: null;
+        $library = MediaLibrary::instance();
+        $count = 0;
+
+        foreach ($request->file('files', []) as $file) {
+            $media = $library->addMedia($file)->toMediaCollection('files');
+
+            if ($folderId) {
+                $media->update(['media_folder_id' => $folderId]);
+            }
+
+            $count++;
+        }
+
+        return redirect()->route('admin.multimedia.index', ['folder' => $folderId])
+            ->with('status', $count === 1 ? 'Plik został przesłany.' : "Przesłano plików: {$count}.");
+    }
+
+    /**
+     * Applies a single action to a batch of selected files at once — delete,
+     * archive, restore, or move to a folder. Only files whose owning model the
+     * user may manage are touched; ids they aren't allowed to see are silently
+     * dropped. Deletion goes through the model so Spatie also removes the file
+     * from disk; the reversible actions use a mass update.
+     */
+    public function bulk(Request $request)
+    {
         $data = $request->validate([
-            'file' => ['required', 'file', 'max:10240'],
+            'action' => ['required', 'in:delete,archive,restore,move'],
+            'ids' => ['required', 'array', 'min:1'],
+            'ids.*' => ['integer'],
             'folder_id' => ['nullable', 'exists:media_folders,id'],
         ]);
 
-        $media = MediaLibrary::instance()->addMediaFromRequest('file')->toMediaCollection('files');
+        $items = Media::query()
+            ->whereIn('id', $data['ids'])
+            ->whereIn('model_type', $this->accessibleModelTypes())
+            ->get();
 
-        if (! empty($data['folder_id'])) {
-            $media->update(['media_folder_id' => $data['folder_id']]);
+        if ($items->isEmpty()) {
+            return redirect()->back()->with('error', 'Nie znaleziono plików do przetworzenia.');
         }
 
-        return redirect()->route('admin.multimedia.index', ['folder' => $data['folder_id'] ?? null])
-            ->with('status', 'Plik został przesłany.');
+        $count = $items->count();
+        $ids = $items->pluck('id');
+
+        match ($data['action']) {
+            'delete' => $items->each->delete(),
+            'archive' => Media::whereIn('id', $ids)->update(['archived_at' => now()]),
+            'restore' => Media::whereIn('id', $ids)->update(['archived_at' => null]),
+            'move' => Media::whereIn('id', $ids)->update(['media_folder_id' => $data['folder_id'] ?? null]),
+        };
+
+        $message = match ($data['action']) {
+            'delete' => "Usunięto plików: {$count}.",
+            'archive' => "Schowano do archiwum plików: {$count}.",
+            'restore' => "Przywrócono z archiwum plików: {$count}.",
+            'move' => "Przeniesiono plików: {$count}.",
+        };
+
+        return redirect()->back()->with('status', $message);
     }
 
     /**
@@ -251,33 +308,91 @@ class MediaLibraryController extends Controller
 
         $folders = MediaFolder::all()->keyBy('id');
 
-        $zipPath = tempnam(sys_get_temp_dir(), 'media-export-').'.zip';
-        $zip = new ZipArchive;
-        $zip->open($zipPath, ZipArchive::CREATE | ZipArchive::OVERWRITE);
-
-        $usedEntries = [];
-
-        $query->orderBy('id')->chunk(100, function ($chunk) use ($zip, $folders, $folder, &$usedEntries) {
-            foreach ($chunk as $media) {
-                $source = $media->getPath();
-
-                if (! is_file($source)) {
-                    continue;
+        $zipPath = $this->buildZip(function (ZipArchive $zip, array &$used) use ($query, $folders, $folder) {
+            $query->orderBy('id')->chunk(100, function ($chunk) use ($zip, $folders, $folder, &$used) {
+                foreach ($chunk as $media) {
+                    $dir = $this->folderPath($media->media_folder_id, $folder?->id, $folders);
+                    $this->addMediaToZip($zip, $media, $dir, $used);
                 }
-
-                $dir = $this->folderPath($media->media_folder_id, $folder?->id, $folders);
-                $entry = $this->uniqueEntry(trim(($dir !== '' ? $dir.'/' : '').$media->file_name, '/'), $usedEntries);
-
-                $zip->addFile($source, $entry);
-            }
+            });
         });
-
-        $zip->close();
 
         $name = 'multimedia-'.($folder ? Str::slug($folder->name).'-' : '').now()->format('Y-m-d').'.zip';
 
         return response()->download($zipPath, $name, ['Content-Type' => 'application/zip'])
             ->deleteFileAfterSend(true);
+    }
+
+    /**
+     * Streams a ZIP of just the files the user ticked in the browser, mirroring
+     * each file's full folder path (from the library root) inside the archive
+     * so an ad-hoc selection spanning several folders stays organised. Only
+     * accessible files are included.
+     */
+    public function exportSelected(Request $request): BinaryFileResponse
+    {
+        $data = $request->validate([
+            'ids' => ['required', 'array', 'min:1'],
+            'ids.*' => ['integer'],
+        ]);
+
+        $media = Media::query()
+            ->whereIn('id', $data['ids'])
+            ->whereIn('model_type', $this->accessibleModelTypes())
+            ->orderBy('id')
+            ->get();
+
+        abort_if($media->isEmpty(), 404, 'Brak plików do wyeksportowania.');
+
+        $folders = MediaFolder::all()->keyBy('id');
+
+        $zipPath = $this->buildZip(function (ZipArchive $zip, array &$used) use ($media, $folders) {
+            foreach ($media as $item) {
+                $dir = $this->folderPath($item->media_folder_id, null, $folders);
+                $this->addMediaToZip($zip, $item, $dir, $used);
+            }
+        });
+
+        $name = 'multimedia-zaznaczone-'.now()->format('Y-m-d').'.zip';
+
+        return response()->download($zipPath, $name, ['Content-Type' => 'application/zip'])
+            ->deleteFileAfterSend(true);
+    }
+
+    /**
+     * Opens a fresh temp ZIP, lets the caller add entries to it (sharing the
+     * "unique entry name" bookkeeping via the by-reference $used map), then
+     * closes it and returns the path on disk for streaming.
+     */
+    private function buildZip(\Closure $addEntries): string
+    {
+        $zipPath = tempnam(sys_get_temp_dir(), 'media-export-').'.zip';
+        $zip = new ZipArchive;
+        $zip->open($zipPath, ZipArchive::CREATE | ZipArchive::OVERWRITE);
+
+        $used = [];
+        $addEntries($zip, $used);
+
+        $zip->close();
+
+        return $zipPath;
+    }
+
+    /**
+     * Adds one media file to the ZIP at the given folder path, skipping files
+     * whose source is missing on disk and de-duplicating colliding names.
+     */
+    private function addMediaToZip(ZipArchive $zip, Media $media, string $dir, array &$used): void
+    {
+        $source = $media->getPath();
+
+        if (! is_file($source)) {
+            return;
+        }
+
+        $entry = $this->uniqueEntry(trim(($dir !== '' ? $dir.'/' : '').$media->file_name, '/'), $used);
+
+        $zip->addFile($source, $entry);
     }
 
     /**

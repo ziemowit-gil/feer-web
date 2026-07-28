@@ -210,6 +210,8 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(
     Route::get('multimedia/eksport', [MediaLibraryController::class, 'export'])->name('multimedia.export');
     Route::post('multimedia/import', [MediaLibraryController::class, 'import'])->name('multimedia.import');
     Route::post('multimedia', [MediaLibraryController::class, 'store'])->name('multimedia.store');
+    Route::post('multimedia/zbiorczo', [MediaLibraryController::class, 'bulk'])->name('multimedia.bulk');
+    Route::post('multimedia/eksport-zaznaczonych', [MediaLibraryController::class, 'exportSelected'])->name('multimedia.export-selected');
     Route::put('multimedia/{media}/folder', [MediaLibraryController::class, 'move'])->name('multimedia.move');
     Route::put('multimedia/{media}/archiwizuj', [MediaLibraryController::class, 'archive'])->name('multimedia.archive');
     Route::put('multimedia/{media}/przywroc', [MediaLibraryController::class, 'restore'])->name('multimedia.restore');

@@ -111,7 +111,7 @@
     @if ($photos->isNotEmpty())
         <section class="mx-auto max-w-5xl px-4 pt-14">
             <h2 class="mb-6 text-2xl font-bold text-ink">Zobacz nas w działaniu</h2>
-            <div class="grid auto-rows-[8rem] grid-cols-2 gap-3 sm:auto-rows-[10rem] sm:grid-cols-4">
+            <div class="grid auto-rows-[8rem] grid-cols-2 gap-3 sm:auto-rows-[10rem] sm:grid-cols-4" data-lightbox>
                 @foreach ($photos as $i => $photo)
                     <div class="overflow-hidden rounded-lg {{ $i === 0 ? 'col-span-2 row-span-2' : '' }}">
                         <img src="{{ $photo->getUrl() }}" alt="{{ $siteSettings->site_name }} w działaniu"

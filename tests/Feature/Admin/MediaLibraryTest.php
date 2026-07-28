@@ -268,6 +268,127 @@ class MediaLibraryTest extends TestCase
         $this->assertSame(1, Media::count());
     }
 
+    public function test_store_uploads_multiple_files_at_once(): void
+    {
+        Storage::fake('public');
+        $admin = $this->admin();
+        $folder = MediaFolder::create(['name' => 'Wgrane']);
+
+        $this->actingAs($admin)
+            ->post(route('admin.multimedia.store'), [
+                'folder_id' => $folder->id,
+                'files' => [
+                    UploadedFile::fake()->image('a.jpg'),
+                    UploadedFile::fake()->image('b.jpg'),
+                    UploadedFile::fake()->image('c.jpg'),
+                ],
+            ])
+            ->assertRedirect(route('admin.multimedia.index', ['folder' => $folder->id]));
+
+        $this->assertSame(3, Media::count());
+        $this->assertSame(3, Media::where('media_folder_id', $folder->id)->count());
+    }
+
+    public function test_index_offers_bulk_selection_and_multi_upload(): void
+    {
+        $this->uploadFile();
+
+        $this->actingAs($this->admin())->get(route('admin.multimedia.index'))
+            ->assertOk()
+            ->assertSee('Zaznacz wszystkie na tej stronie')
+            ->assertSee('Przeciągnij pliki tutaj lub kliknij, aby wybrać');
+    }
+
+    public function test_bulk_deletes_selected_files(): void
+    {
+        Storage::fake('public');
+        $admin = $this->admin();
+        $a = $this->storeFile('a.jpg');
+        $b = $this->storeFile('b.jpg');
+        $c = $this->storeFile('c.jpg');
+
+        $this->actingAs($admin)
+            ->post(route('admin.multimedia.bulk'), [
+                'action' => 'delete',
+                'ids' => [$a->id, $b->id],
+            ])
+            ->assertRedirect();
+
+        $this->assertDatabaseMissing('media', ['id' => $a->id]);
+        $this->assertDatabaseMissing('media', ['id' => $b->id]);
+        $this->assertDatabaseHas('media', ['id' => $c->id]);
+    }
+
+    public function test_bulk_archives_and_restores_selected_files(): void
+    {
+        Storage::fake('public');
+        $admin = $this->admin();
+        $a = $this->storeFile('a.jpg');
+        $b = $this->storeFile('b.jpg');
+
+        $this->actingAs($admin)
+            ->post(route('admin.multimedia.bulk'), [
+                'action' => 'archive',
+                'ids' => [$a->id, $b->id],
+            ])
+            ->assertRedirect();
+
+        $this->assertNotNull($a->fresh()->archived_at);
+        $this->assertNotNull($b->fresh()->archived_at);
+
+        $this->actingAs($admin)
+            ->post(route('admin.multimedia.bulk'), [
+                'action' => 'restore',
+                'ids' => [$a->id, $b->id],
+            ])
+            ->assertRedirect();
+
+        $this->assertNull($a->fresh()->archived_at);
+        $this->assertNull($b->fresh()->archived_at);
+    }
+
+    public function test_bulk_moves_selected_files_to_a_folder(): void
+    {
+        Storage::fake('public');
+        $admin = $this->admin();
+        $folder = MediaFolder::create(['name' => 'Cel']);
+        $a = $this->storeFile('a.jpg');
+        $b = $this->storeFile('b.jpg');
+
+        $this->actingAs($admin)
+            ->post(route('admin.multimedia.bulk'), [
+                'action' => 'move',
+                'ids' => [$a->id, $b->id],
+                'folder_id' => $folder->id,
+            ])
+            ->assertRedirect();
+
+        $this->assertSame($folder->id, $a->fresh()->media_folder_id);
+        $this->assertSame($folder->id, $b->fresh()->media_folder_id);
+    }
+
+    public function test_export_selected_bundles_only_the_chosen_files(): void
+    {
+        Storage::fake('public');
+        $admin = $this->admin();
+        $a = $this->storeFile('a.jpg');
+        $b = $this->storeFile('b.jpg');
+        $c = $this->storeFile('c.jpg');
+
+        $response = $this->actingAs($admin)->post(route('admin.multimedia.export-selected'), [
+            'ids' => [$a->id, $c->id],
+        ]);
+
+        $response->assertOk();
+        $response->assertHeader('content-type', 'application/zip');
+
+        $entries = $this->zipEntries($response->getFile()->getPathname());
+
+        $this->assertContains($a->file_name, $entries);
+        $this->assertContains($c->file_name, $entries);
+        $this->assertNotContains($b->file_name, $entries);
+    }
+
     /**
      * Reads the entry names out of a ZIP file on disk.
      */

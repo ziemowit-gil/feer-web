@@ -31,7 +31,7 @@
 
         @php $img = $news->imageUrlOrDefault(); @endphp
         @if ($img)
-            <img src="{{ $img }}" alt="{{ $news->image_alt ?: 'Zdjęcie ilustracyjne: '.$news->title }}" class="mb-6 h-64 w-full rounded-lg object-cover">
+            <img src="{{ $img }}" alt="{{ $news->image_alt ?: 'Zdjęcie ilustracyjne: '.$news->title }}" data-lightbox class="mb-6 h-64 w-full rounded-lg object-cover">
         @endif
 
         <div class="prose max-w-none text-ink">{!! $news->content !!}</div>

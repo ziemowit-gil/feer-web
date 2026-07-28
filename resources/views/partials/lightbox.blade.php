@@ -38,7 +38,12 @@
         let lastFocused = null;
 
         function groupFor(img) {
-            const scope = img.closest('[data-gallery-track]') || img.closest('.prose');
+            // Prev/next grouping scope: a gallery track, a container opted-in with
+            // data-lightbox (but not the image itself — a bare img[data-lightbox]
+            // stays a singleton), or the surrounding prose.
+            const scope = img.closest('[data-gallery-track]')
+                || img.closest('[data-lightbox]:not(img)')
+                || img.closest('.prose');
             if (!scope) return [img];
             return Array.from(scope.querySelectorAll('img')).filter(function (i) { return triggers.indexOf(i) !== -1; });
         }

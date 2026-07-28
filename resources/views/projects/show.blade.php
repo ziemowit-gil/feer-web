@@ -35,7 +35,7 @@
             ? ($schedulePage->project_display === 'inline' ? '#harmonogram-'.$schedulePage->id : route('page.show', $schedulePage))
             : null;
     @endphp
-    <section class="mx-auto max-w-6xl px-4 py-12">
+    <section class="mx-auto max-w-4xl px-4 py-12">
         <a href="{{ route('categories.show', $project->category) }}" class="mb-2 inline-block text-sm font-bold uppercase tracking-wide text-brand hover:text-brand-dark">
             {{ $project->category->name }}
         </a>
@@ -62,8 +62,39 @@
             </div>
         @endif
 
-        <div class="grid gap-10 md:grid-cols-[1fr_280px]">
-            <div class="min-w-0">
+        @php
+            $catName = trim($project->category->name);
+            $forWhom = trim((string) $project->for_whom);
+            // „Dla kogo” bywa tym samym, co kategoria (taksonomia projektów jest wg
+            // odbiorcy, np. „Dla NGO”), więc pokazujemy je tylko, gdy wnosi coś ponad
+            // nazwę kategorii — inaczej grupa docelowa dublowałaby się z plakietką.
+            $showForWhom = $forWhom !== ''
+                && mb_strtolower($forWhom) !== mb_strtolower($catName)
+                && mb_strtolower($forWhom) !== mb_strtolower(trim(\Illuminate\Support\Str::after($catName, 'Dla ')));
+        @endphp
+
+        @if ($showForWhom || $project->since)
+            <dl class="mb-8 flex flex-wrap gap-x-10 gap-y-4 rounded-xl border border-gray-200 bg-gray-50 px-5 py-4 text-sm">
+                @if ($showForWhom)
+                    <div>
+                        <dt class="mb-0.5 flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-muted">
+                            <i class="fa-solid fa-users text-brand" aria-hidden="true"></i> Dla kogo
+                        </dt>
+                        <dd class="font-medium text-ink">{{ $project->for_whom }}</dd>
+                    </div>
+                @endif
+                @if ($project->since)
+                    <div>
+                        <dt class="mb-0.5 flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-muted">
+                            <i class="fa-solid fa-calendar-days text-brand" aria-hidden="true"></i> Od kiedy
+                        </dt>
+                        <dd class="font-medium text-ink">{{ $project->since }}</dd>
+                    </div>
+                @endif
+            </dl>
+        @endif
+
+        <div class="min-w-0">
                 @if ($project->sections_as_tabs && $customSections->isNotEmpty())
                     <div class="mb-8" data-project-tabs>
                         <div class="mb-5 flex flex-wrap gap-1 border-b border-gray-200" role="tablist">
@@ -113,7 +144,7 @@
                 @endif
 
                 @if ($project->image_url)
-                    <img src="{{ $project->image_url }}" alt="{{ $project->image_alt ?: 'Zdjęcie ilustracyjne: '.$project->title }}" class="mb-8 h-72 w-full rounded-lg object-cover">
+                    <img src="{{ $project->image_url }}" alt="{{ $project->image_alt ?: 'Zdjęcie ilustracyjne: '.$project->title }}" data-lightbox class="mb-8 h-72 w-full rounded-lg object-cover">
                 @endif
 
                 @if ($project->content)
@@ -265,46 +296,49 @@
                         </ul>
                     </div>
                 @endif
-            </div>
-
-            <aside aria-label="Informacje o projekcie" class="space-y-6 md:border-l md:border-gray-200 md:pl-8">
-                @if ($project->for_whom || $project->since)
-                    <div class="space-y-4 text-sm">
-                        @if ($project->for_whom)
-                            <div>
-                                <p class="mb-0.5 flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-muted">
-                                    <i class="fa-solid fa-users text-brand" aria-hidden="true"></i> Dla kogo
+                {{-- Kontakt w sprawie projektu — w głównym nurcie, nie z boku. --}}
+                @if (! $project->is_completed && $project->showsCoordinator())
+                    <div class="mt-10 rounded-2xl border border-brand/20 bg-brand-light p-6">
+                        <h2 class="mb-3 flex items-center gap-2 text-lg font-bold text-ink">
+                            <i class="fa-solid fa-envelope text-brand" aria-hidden="true"></i> Kontakt w sprawie projektu
+                        </h2>
+                        <div class="flex flex-wrap items-center gap-x-8 gap-y-2 text-sm">
+                            @if ($project->coordinator_name)
+                                <p class="font-medium text-ink">{{ $project->coordinator_name }}</p>
+                            @endif
+                            <p>
+                                <a href="mailto:{{ $project->contactEmail() }}" class="break-all font-medium text-brand hover:text-brand-dark">
+                                    <i class="fa-solid fa-envelope" aria-hidden="true"></i> {{ $project->contactEmail() }}
+                                </a>
+                            </p>
+                            @if ($project->coordinator_phone)
+                                <p>
+                                    <a href="tel:{{ $project->coordinator_phone }}" class="font-medium text-brand hover:text-brand-dark">
+                                        <i class="fa-solid fa-phone" aria-hidden="true"></i> {{ $project->coordinator_phone }}
+                                    </a>
                                 </p>
-                                <p class="text-ink">{{ $project->for_whom }}</p>
-                            </div>
-                        @endif
-                        @if ($project->since)
-                            <div>
-                                <p class="mb-0.5 flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-muted">
-                                    <i class="fa-solid fa-calendar-days text-brand" aria-hidden="true"></i> Od kiedy
-                                </p>
-                                <p class="text-ink">{{ $project->since }}</p>
-                            </div>
-                        @endif
+                            @endif
+                        </div>
                     </div>
                 @endif
 
                 @if ($linkPages->isNotEmpty())
-                    <div class="rounded-lg border border-gray-200 bg-gray-50 p-4">
-                        <p class="mb-2 flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-muted">
+                    <div class="mt-8 rounded-xl border border-gray-200 p-6">
+                        <h2 class="mb-3 flex items-center gap-2 text-lg font-bold text-ink">
                             <i class="fa-solid fa-file-lines text-brand" aria-hidden="true"></i> Strony projektu
-                        </p>
-                        <ul class="space-y-1.5 text-sm">
+                        </h2>
+                        <ul class="flex flex-wrap gap-2 text-sm">
                             @foreach ($linkPages as $projectPage)
                                 <li>
                                     @if ($projectPage->isSchedule())
-                                        {{-- A schedule page stands out as a call-to-action button. --}}
+                                        {{-- Harmonogram wyróżnia się jako przycisk-wezwanie do działania. --}}
                                         <a href="{{ route('page.show', $projectPage) }}"
-                                            class="flex items-center justify-center gap-2 rounded-lg bg-brand px-3 py-2.5 text-center font-bold text-white transition hover:bg-brand-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
+                                            class="inline-flex items-center gap-2 rounded-lg bg-brand px-4 py-2 font-bold text-white transition hover:bg-brand-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
                                             <i class="fa-solid fa-calendar-days" aria-hidden="true"></i> {{ $projectPage->title }}
                                         </a>
                                     @else
-                                        <a href="{{ route('page.show', $projectPage) }}" class="block rounded px-2 py-1.5 font-medium text-ink hover:bg-white hover:text-brand">
+                                        <a href="{{ route('page.show', $projectPage) }}"
+                                            class="inline-flex items-center gap-2 rounded-lg border border-gray-200 px-4 py-2 font-medium text-ink transition hover:border-brand/40 hover:text-brand">
                                             {{ $projectPage->title }}
                                         </a>
                                     @endif
@@ -314,24 +348,12 @@
                     </div>
                 @endif
 
-                @if (! $project->is_completed && $project->showsCoordinator())
-                    <div class="rounded-lg border border-gray-200 bg-gray-50 p-4 text-sm">
-                        <p class="font-bold text-ink">Kontakt w sprawie projektu</p>
-                        @if ($project->coordinator_name)
-                            <p class="text-muted">{{ $project->coordinator_name }}</p>
-                        @endif
-                        <p class="mt-1"><a href="mailto:{{ $project->contactEmail() }}" class="break-all text-brand hover:text-brand-dark">{{ $project->contactEmail() }}</a></p>
-                        @if ($project->coordinator_phone)
-                            <p><a href="tel:{{ $project->coordinator_phone }}" class="text-brand hover:text-brand-dark">{{ $project->coordinator_phone }}</a></p>
-                        @endif
-                    </div>
-                @endif
-
-                <a href="{{ route('projects.index') }}" class="inline-flex items-center gap-2 text-sm font-bold text-brand hover:text-brand-dark">
-                    <i class="fa-solid fa-arrow-left" aria-hidden="true"></i> Wszystkie projekty
-                </a>
-            </aside>
-        </div>
+                <div class="mt-10 border-t border-gray-200 pt-6">
+                    <a href="{{ route('projects.index') }}" class="inline-flex items-center gap-2 text-sm font-bold text-brand hover:text-brand-dark">
+                        <i class="fa-solid fa-arrow-left" aria-hidden="true"></i> Wszystkie projekty
+                    </a>
+                </div>
+            </div>
     </section>
 
     <script>
