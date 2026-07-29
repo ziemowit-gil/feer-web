@@ -22,18 +22,27 @@
         $can = fn (string $module) => $siteSettings->isModuleEnabled($module) && auth()->user()->canAccessModule($module);
     @endphp
 
-    @if ($can('news') || $can('events'))
-        <div class="mt-6 flex flex-wrap gap-3">
-            @if ($can('news'))
-                <a href="{{ route('admin.newsy.create') }}" class="inline-flex items-center gap-2 rounded-lg bg-brand px-4 py-2 text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
-                    <i class="fa-solid fa-plus" aria-hidden="true"></i> Nowy news
-                </a>
-            @endif
-            @if ($can('events'))
-                <a href="{{ route('admin.wydarzenia.create') }}" class="inline-flex items-center gap-2 rounded-lg bg-brand px-4 py-2 text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
-                    <i class="fa-solid fa-plus" aria-hidden="true"></i> Nowe wydarzenie
-                </a>
-            @endif
+    @php
+        // Pasek szybkich skrótów „utwórz…" — tylko moduły dostępne dla użytkownika.
+        $shortcuts = [];
+        if ($can('news')) $shortcuts[] = ['route' => route('admin.newsy.create'), 'label' => 'Nowy news', 'icon' => 'fa-newspaper'];
+        if ($can('events')) $shortcuts[] = ['route' => route('admin.wydarzenia.create'), 'label' => 'Nowe wydarzenie', 'icon' => 'fa-calendar-days'];
+        if ($can('pages')) $shortcuts[] = ['route' => route('admin.podstrony.create'), 'label' => 'Nowa strona', 'icon' => 'fa-file-lines'];
+        if ($can('landing')) $shortcuts[] = ['route' => route('admin.lp.create'), 'label' => 'Nowy landing page', 'icon' => 'fa-bullhorn'];
+        if ($can('reports')) $shortcuts[] = ['route' => route('admin.sprawozdania.create'), 'label' => 'Nowe sprawozdanie', 'icon' => 'fa-file-invoice'];
+        if ($siteSettings->isModuleEnabled('blog')) $shortcuts[] = ['route' => route('admin.wiem-feer.create'), 'label' => 'Nowy wpis bloga', 'icon' => 'fa-feather-pointed'];
+    @endphp
+
+    @if ($shortcuts)
+        <div class="mt-6 rounded-lg border border-gray-200 bg-white p-4">
+            <p class="mb-3 text-xs font-bold uppercase tracking-wider text-muted">Szybkie skróty</p>
+            <div class="flex flex-wrap gap-2">
+                @foreach ($shortcuts as $s)
+                    <a href="{{ $s['route'] }}" class="inline-flex items-center gap-2 rounded-lg border border-gray-200 px-3 py-2 text-sm font-bold text-ink transition-colors hover:border-brand hover:bg-brand-light hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                        <i class="fa-solid {{ $s['icon'] }} text-brand" aria-hidden="true"></i> {{ $s['label'] }}
+                    </a>
+                @endforeach
+            </div>
         </div>
     @endif
 
