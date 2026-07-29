@@ -15,6 +15,7 @@ class Project extends Model implements HasMedia
 
     protected $fillable = [
         'category_id', 'title', 'slug', 'excerpt', 'for_whom', 'audience', 'accent_color', 'since', 'image_alt', 'content', 'why', 'outcomes', 'is_published', 'is_completed', 'is_paid', 'pricing', 'order',
+        'meta_title', 'meta_description',
         'coordinator_name', 'coordinator_email', 'coordinator_phone', 'is_featured_contact', 'show_coordinator',
         'custom_sections', 'sections_as_tabs', 'show_legacy_box', 'legacy_url',
     ];

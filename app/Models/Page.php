@@ -82,6 +82,7 @@ class Page extends Model
 
     protected $fillable = [
         'parent_id', 'project_id', 'project_display', 'title', 'slug', 'content', 'is_published', 'is_archived', 'show_in_menu', 'show_side_nav', 'is_system', 'is_locked', 'order',
+        'meta_title', 'meta_description',
         'is_disabled', 'disabled_message', 'wip_mode', 'wip_message',
         'type', 'event_mode', 'event_when', 'event_location', 'event_how_to_join', 'event_registration_url',
         'schedule_items', 'schedule_change_notice', 'schedule_pending',

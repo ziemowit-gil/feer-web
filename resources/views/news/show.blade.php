@@ -1,7 +1,22 @@
 @extends('layouts.site')
 
-@section('title', $news->title . ' — ' . $siteSettings->site_name)
-@section('meta_description', $news->excerpt)
+@section('title', ($news->meta_title ?: $news->title) . ' — ' . $siteSettings->site_name)
+@section('meta_description', $news->meta_description ?: $news->excerpt)
+
+@push('structured_data')
+    <script type="application/ld+json">
+        {!! json_encode(array_filter([
+            '@context' => 'https://schema.org',
+            '@type' => 'NewsArticle',
+            'headline' => $news->title,
+            'description' => $news->excerpt,
+            'datePublished' => optional($news->published_at)->toIso8601String(),
+            'image' => method_exists($news, 'getFirstMediaUrl') ? ($news->getFirstMediaUrl('image') ?: null) : null,
+            'author' => ['@type' => 'Organization', 'name' => $siteSettings->site_name],
+            'publisher' => ['@type' => 'Organization', 'name' => $siteSettings->site_name],
+        ]), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}
+    </script>
+@endpush
 @if ($news->image_url)
     @section('og_image', $news->image_url)
 @endif

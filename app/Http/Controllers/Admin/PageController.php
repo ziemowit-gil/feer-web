@@ -178,6 +178,8 @@ class PageController extends Controller
             'project_display' => ['nullable', Rule::in(array_keys(Page::PROJECT_DISPLAYS))],
             'title' => ['required', 'string', 'max:255'],
             'slug' => ['nullable', 'string', 'max:255'],
+            'meta_title' => ['nullable', 'string', 'max:255'],
+            'meta_description' => ['nullable', 'string', 'max:300'],
             'content' => ['nullable', 'string'],
             'order' => ['nullable', 'integer', 'min:0'],
             'disabled_message' => ['nullable', 'string', 'max:2000'],

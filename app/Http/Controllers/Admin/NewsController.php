@@ -120,6 +120,8 @@ class NewsController extends Controller
             'project_id' => ['nullable', 'exists:projects,id'],
             'title' => ['required', 'string', 'max:255'],
             'slug' => ['nullable', 'string', 'max:255'],
+            'meta_title' => ['nullable', 'string', 'max:255'],
+            'meta_description' => ['nullable', 'string', 'max:300'],
             'excerpt' => ['nullable', 'string', 'max:255'],
             'audience' => ['nullable', Rule::in(array_keys(SiteSetting::current()->audienceOptions()))],
             'accent_color' => ['nullable', 'regex:/^#[0-9a-fA-F]{6}$/'],

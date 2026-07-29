@@ -1,7 +1,7 @@
 @extends('layouts.site')
 
-@section('title', $project->title . ' — ' . $siteSettings->site_name)
-@section('meta_description', $project->excerpt)
+@section('title', ($project->meta_title ?: $project->title) . ' — ' . $siteSettings->site_name)
+@section('meta_description', $project->meta_description ?: $project->excerpt)
 @if ($project->image_url)
     @section('og_image', $project->image_url)
 @endif

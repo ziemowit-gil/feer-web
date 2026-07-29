@@ -3,6 +3,26 @@
 @section('title', $event->title . ' — ' . $siteSettings->site_name)
 @section('meta_description', $event->lead)
 
+@push('structured_data')
+    <script type="application/ld+json">
+        {!! json_encode(array_filter([
+            '@context' => 'https://schema.org',
+            '@type' => 'Event',
+            'name' => $event->title,
+            'description' => $event->lead,
+            'startDate' => optional($event->starts_at)->toIso8601String(),
+            'endDate' => optional($event->ends_at)->toIso8601String(),
+            'eventAttendanceMode' => $event->mode === 'zdalnie'
+                ? 'https://schema.org/OnlineEventAttendanceMode'
+                : 'https://schema.org/OfflineEventAttendanceMode',
+            'location' => $event->mode === 'zdalnie'
+                ? array_filter(['@type' => 'VirtualLocation', 'url' => $event->online_url])
+                : array_filter(['@type' => 'Place', 'name' => $event->location]),
+            'organizer' => ['@type' => 'Organization', 'name' => $siteSettings->site_name],
+        ]), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}
+    </script>
+@endpush
+
 @section('breadcrumbs')
     @include('partials.breadcrumbs', ['items' => [
         ['label' => 'Szkolenia i wydarzenia', 'url' => route('events.index')],

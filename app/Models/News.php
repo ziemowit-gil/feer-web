@@ -19,6 +19,7 @@ class News extends Model implements HasMedia
 
     protected $fillable = [
         'news_category_id', 'project_id', 'title', 'slug', 'excerpt', 'audience', 'accent_color', 'image_alt', 'content', 'published_at', 'is_published', 'is_featured', 'is_archived',
+        'meta_title', 'meta_description',
     ];
 
     protected $casts = [

@@ -7,6 +7,7 @@
 
     <meta name="description" content="{{ trim($__env->yieldContent('meta_description', $siteSettings->meta_description)) }}">
     <meta name="robots" content="{{ $siteSettings->allow_indexing ? 'index, follow' : 'noindex, nofollow' }}">
+    <link rel="canonical" href="{{ url()->current() }}">
 
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="{{ $siteSettings->site_name }}">
@@ -34,6 +35,19 @@
             --color-brand-4: {{ $siteSettings->brandColorN(4) }};
         }
     </style>
+
+    {{-- Dane strukturalne: organizacja (globalnie) + slot na typ strony (Article/Event) --}}
+    <script type="application/ld+json">
+        {!! json_encode(array_filter([
+            '@context' => 'https://schema.org',
+            '@type' => 'Organization',
+            'name' => $siteSettings->site_name,
+            'url' => url('/'),
+            'logo' => $siteSettings->logoUrl(),
+            'email' => $siteSettings->contact_email,
+        ]), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}
+    </script>
+    @stack('structured_data')
 </head>
 <body class="flex min-h-screen flex-col bg-white text-ink antialiased">
     <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-[100] focus:rounded focus:bg-brand focus:px-4 focus:py-2 focus:text-sm focus:font-bold focus:text-white">

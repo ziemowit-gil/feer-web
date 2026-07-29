@@ -93,6 +93,8 @@ class ProjectController extends Controller
             'category_id' => ['required', 'exists:categories,id'],
             'title' => ['required', 'string', 'max:255'],
             'slug' => ['nullable', 'string', 'max:255'],
+            'meta_title' => ['nullable', 'string', 'max:255'],
+            'meta_description' => ['nullable', 'string', 'max:300'],
             'excerpt' => ['nullable', 'string', 'max:255'],
             'for_whom' => ['nullable', 'string', 'max:255'],
             'audience' => ['nullable', Rule::in(array_keys(SiteSetting::current()->audienceOptions()))],

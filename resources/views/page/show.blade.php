@@ -1,7 +1,7 @@
 @extends('layouts.site')
 
-@section('title', $page->title . ' — ' . $siteSettings->site_name)
-@section('meta_description', \Illuminate\Support\Str::limit(trim(strip_tags(str_replace('<', ' <', $page->content))), 160))
+@section('title', ($page->meta_title ?: $page->title) . ' — ' . $siteSettings->site_name)
+@section('meta_description', $page->meta_description ?: \Illuminate\Support\Str::limit(trim(strip_tags(str_replace('<', ' <', $page->content))), 160))
 
 @section('breadcrumbs')
     @include('partials.breadcrumbs', ['items' => array_filter([
