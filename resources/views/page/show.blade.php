@@ -658,6 +658,11 @@
         <div class="grid gap-10 {{ $showSideNav ? 'md:grid-cols-[1fr_220px]' : '' }}">
             <div>
                 <h1 class="mb-6 text-3xl font-bold text-ink">{{ $page->title }}</h1>
+
+                @isset($szoKomunikaty)
+                    @include('partials.strefa-notice', ['szoPanelUrl' => $szoPanelUrl ?? null])
+                @endisset
+
                 <div class="prose max-w-none text-ink">{!! $page->content !!}</div>
 
                 @isset($szoKomunikaty)

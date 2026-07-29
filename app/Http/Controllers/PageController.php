@@ -34,10 +34,13 @@ class PageController extends Controller
         // W strefie współpracownika dokładamy komunikaty z systemu SZO. Tu jest już
         // po kontroli dostępu, więc trafią tylko do zalogowanego współpracownika.
         if ($page->slug === self::STREFA_SLUG) {
-            $szoUrl = SiteSetting::current()->szoKomunikatyUrl();
+            $settings = SiteSetting::current();
+            $szoUrl = $settings->szoKomunikatyUrl();
             $data['szoKomunikaty'] = $szoUrl
                 ? SzoKomunikaty::fetch($szoUrl)
                 : ['ok' => false, 'items' => []];
+            // Adres pełnego Panelu Współpracownika (SZO) do komunikatu na stronie.
+            $data['szoPanelUrl'] = $settings->szoPanelUrl();
         }
 
         return response()->view('page.show', $data);

@@ -556,6 +556,16 @@ class SiteSetting extends Model implements HasMedia
         return rtrim(trim($this->szo_api_url), '/').'/api/komunikaty/list.php';
     }
 
+    /**
+     * Adres Panelu Współpracownika w Systemie Zarządzania Organizacją (adres
+     * bazowy SZO) albo null, gdy brak konfiguracji — pełny dostęp jest tam,
+     * a strefa na stronie pokazuje tylko komunikaty i odnośniki.
+     */
+    public function szoPanelUrl(): ?string
+    {
+        return $this->szoConfigured() ? rtrim(trim($this->szo_api_url), '/') : null;
+    }
+
     /** Czy uwierzytelnianie kluczem YubiKey jest skonfigurowane (Yubico API). */
     public function yubicoConfigured(): bool
     {
