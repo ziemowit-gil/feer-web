@@ -108,6 +108,7 @@ Route::get('/sprawozdania', [ReportController::class, 'index'])->name('reports.i
 Route::middleware('module:landing')->group(function () {
     Route::get('/lp/{slug}', [LandingPageController::class, 'show'])->name('lp.show');
     Route::post('/lp/{slug}/rejestracja', [LandingPageController::class, 'register'])->name('lp.register')->middleware('throttle:10,1');
+    Route::get('/lp/{slug}/kalendarz.ics', [LandingPageController::class, 'calendar'])->name('lp.calendar');
 });
 
 Route::get('/szukaj', [SearchController::class, 'index'])->name('search');
@@ -216,6 +217,8 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(
 
     Route::middleware(['module:landing', 'module-access:landing'])->group(function () {
         Route::resource('lp', AdminLandingPageController::class)->parameters(['lp' => 'landing'])->except('show');
+        Route::get('lp/{landing}/zapisy', [AdminLandingPageController::class, 'registrations'])->name('lp.registrations');
+        Route::get('lp/{landing}/zapisy/eksport', [AdminLandingPageController::class, 'exportRegistrations'])->name('lp.registrations.export');
     });
 
     // Blog „Wiem FEER" — gdy moduł włączony, dostępny dla każdego użytkownika

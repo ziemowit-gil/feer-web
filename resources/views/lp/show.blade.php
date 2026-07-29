@@ -36,11 +36,19 @@
                 @endif
 
                 @php($ctaExternal = filled($page->hero_cta_url))
-                <a href="{{ $ctaExternal ? $page->hero_cta_url : '#rejestracja' }}" @if ($ctaExternal) target="_blank" rel="noopener" @endif
-                    class="mt-8 inline-flex items-center gap-2 rounded-xl bg-white px-6 py-3 text-base font-bold text-brand shadow-lg transition-transform hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-brand">
-                    {{ $page->hero_cta_label ?: 'Zarejestruj się' }}
-                    <i class="fa-solid {{ $ctaExternal ? 'fa-arrow-up-right-from-square' : 'fa-arrow-down' }}" aria-hidden="true"></i>
-                </a>
+                <div class="mt-8 flex flex-wrap items-center gap-4">
+                    <a href="{{ $ctaExternal ? $page->hero_cta_url : '#rejestracja' }}" @if ($ctaExternal) target="_blank" rel="noopener" @endif
+                        class="inline-flex items-center gap-2 rounded-xl bg-white px-6 py-3 text-base font-bold text-brand shadow-lg transition-transform hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-brand">
+                        {{ $page->hero_cta_label ?: 'Zarejestruj się' }}
+                        <i class="fa-solid {{ $ctaExternal ? 'fa-arrow-up-right-from-square' : 'fa-arrow-down' }}" aria-hidden="true"></i>
+                    </a>
+                    @if ($page->event_start)
+                        <a href="{{ route('lp.calendar', $page->slug) }}"
+                            class="inline-flex items-center gap-2 rounded-xl border border-white/40 px-5 py-3 text-sm font-bold text-white transition-colors hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white">
+                            <i class="fa-regular fa-calendar-plus" aria-hidden="true"></i> Dodaj do kalendarza
+                        </a>
+                    @endif
+                </div>
             </div>
 
             @if ($page->hero_image_url)

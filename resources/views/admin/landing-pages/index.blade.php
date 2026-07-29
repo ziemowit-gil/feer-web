@@ -28,7 +28,11 @@
                         <td class="px-4 py-3">
                             <a href="{{ route('lp.show', $page->slug) }}" target="_blank" rel="noopener" class="text-brand hover:text-brand-dark">/lp/{{ $page->slug }}</a>
                         </td>
-                        <td class="px-4 py-3 text-muted">{{ $page->registrations_count }}</td>
+                        <td class="px-4 py-3">
+                            <a href="{{ route('admin.lp.registrations', $page) }}" class="font-bold text-brand hover:text-brand-dark">
+                                {{ $page->registrations_count }} <span class="font-normal text-muted">zapisów</span>
+                            </a>
+                        </td>
                         <td class="px-4 py-3">
                             @if ($page->is_published)
                                 <span class="rounded-full bg-green-100 px-2 py-0.5 text-xs font-bold text-green-700">Opublikowany</span>
