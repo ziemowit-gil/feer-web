@@ -16,33 +16,59 @@
     // preserves (and which is styled as a highlighted box on the front-end).
     $boxHtml = '<div class="content-box"><p>Wpisz tutaj tekst w ramce&hellip;</p></div><p>&nbsp;</p>';
     $boxHtmlForCk = '<blockquote><p>Wpisz tutaj tekst w ramce&hellip;</p></blockquote><p>&nbsp;</p>';
+
+    // Snippety wstawiane jednym, wspólnym mechanizmem (data-insert-key).
+    $editorSnippets = [
+        'red' => '<p><a href="#" class="cta-button cta-red">Przycisk</a></p><p>&nbsp;</p>',
+        'green' => '<p><a href="#" class="cta-button cta-green">Przycisk</a></p><p>&nbsp;</p>',
+        'accentLeft' => '<div class="accent-section accent-left"><p>Treść w kolorowej sekcji&hellip;</p></div><p>&nbsp;</p>',
+        'accentRight' => '<div class="accent-section accent-right"><p>Treść w kolorowej sekcji&hellip;</p></div><p>&nbsp;</p>',
+    ];
+
     $pages = \App\Models\Page::where('is_published', true)->orderBy('title')->get();
 @endphp
 
-<div class="mb-2 flex flex-wrap items-center gap-2">
-    @if ($useCkEditor)
-        <button type="button" id="{{ $editorId }}-columns" class="rounded border border-gray-300 px-3 py-1.5 text-xs font-bold text-ink hover:border-brand hover:text-brand"
-            title="W CKEditor wstawia tabelę 1×2 — silnik nie zachowuje niestandardowych znaczników div bez dodatkowego pluginu.">
-            <i class="fa-solid fa-table-columns" aria-hidden="true"></i> Wstaw układ 2 kolumn
+@php $mi = 'flex w-full items-center gap-2 rounded px-3 py-2 text-left text-xs font-bold text-ink hover:bg-brand-light hover:text-brand'; @endphp
+<div id="{{ $editorId }}-toolbar" class="mb-2 flex flex-wrap items-center gap-2">
+    {{-- Menu „Wstaw" — zgrupowane akcje wstawiania bloków --}}
+    <div class="relative" x-data="{ open: false }" @click.outside="open = false" @keydown.escape="open = false">
+        <button type="button" @click="open = !open" :aria-expanded="open"
+            class="inline-flex items-center gap-2 rounded border border-gray-300 px-3 py-1.5 text-xs font-bold text-ink hover:border-brand hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+            <i class="fa-solid fa-plus" aria-hidden="true"></i> Wstaw <i class="fa-solid fa-chevron-down text-[0.6rem]" aria-hidden="true"></i>
         </button>
-    @endif
-    <button type="button" id="{{ $editorId }}-media" class="rounded border border-gray-300 px-3 py-1.5 text-xs font-bold text-ink hover:border-brand hover:text-brand">
-        <i class="fa-solid fa-images" aria-hidden="true"></i> Wstaw obraz z biblioteki
-    </button>
-    <button type="button" id="{{ $editorId }}-cta" class="rounded border border-gray-300 px-3 py-1.5 text-xs font-bold text-ink hover:border-brand hover:text-brand">
-        <i class="fa-solid fa-square" aria-hidden="true"></i> Wstaw przycisk CTA
-    </button>
-    <button type="button" id="{{ $editorId }}-box" class="rounded border border-gray-300 px-3 py-1.5 text-xs font-bold text-ink hover:border-brand hover:text-brand">
-        <i class="fa-solid fa-vector-square" aria-hidden="true"></i> Wstaw tekst z ramką
-    </button>
-    @if ($pages->isNotEmpty())
-        <select id="{{ $editorId }}-page-link" class="rounded border border-gray-300 px-2 py-1.5 text-xs font-bold text-ink focus:border-brand focus:ring-brand">
-            <option value="">Wstaw link do strony&hellip;</option>
-            @foreach ($pages as $page)
-                <option value="/{{ $page->slug }}" data-title="{{ $page->title }}">{{ $page->title }}</option>
-            @endforeach
-        </select>
-    @endif
+        <div x-show="open" x-cloak class="absolute left-0 z-20 mt-1 w-60 rounded-lg border border-gray-200 bg-white p-1 shadow-lg" role="menu">
+            <button type="button" id="{{ $editorId }}-media" @click="open = false" class="{{ $mi }}"><i class="fa-solid fa-images w-4 text-center" aria-hidden="true"></i> Obraz z biblioteki</button>
+            <button type="button" id="{{ $editorId }}-cta" @click="open = false" class="{{ $mi }}"><i class="fa-solid fa-square w-4 text-center text-brand" aria-hidden="true"></i> Przycisk CTA</button>
+            <button type="button" data-insert-key="red" @click="open = false" class="{{ $mi }}"><i class="fa-solid fa-square w-4 text-center" style="color:#c81e1e" aria-hidden="true"></i> Przycisk czerwony</button>
+            <button type="button" data-insert-key="green" @click="open = false" class="{{ $mi }}"><i class="fa-solid fa-square w-4 text-center" style="color:#15803d" aria-hidden="true"></i> Przycisk zielony</button>
+            <button type="button" id="{{ $editorId }}-box" @click="open = false" class="{{ $mi }}"><i class="fa-solid fa-vector-square w-4 text-center" aria-hidden="true"></i> Tekst z ramką</button>
+            @if ($useCkEditor)
+                <button type="button" id="{{ $editorId }}-columns" @click="open = false" class="{{ $mi }}"><i class="fa-solid fa-table-columns w-4 text-center" aria-hidden="true"></i> Układ 2 kolumn</button>
+            @endif
+            <button type="button" data-insert-key="accentLeft" @click="open = false" class="{{ $mi }}"><i class="fa-solid fa-align-left w-4 text-center" aria-hidden="true"></i> Sekcja akcentu (lewo)</button>
+            <button type="button" data-insert-key="accentRight" @click="open = false" class="{{ $mi }}"><i class="fa-solid fa-align-right w-4 text-center" aria-hidden="true"></i> Sekcja akcentu (prawo)</button>
+        </div>
+    </div>
+
+    {{-- Menu „Wstaw link" --}}
+    <div class="relative" x-data="{ open: false }" @click.outside="open = false" @keydown.escape="open = false">
+        <button type="button" @click="open = !open" :aria-expanded="open"
+            class="inline-flex items-center gap-2 rounded border border-gray-300 px-3 py-1.5 text-xs font-bold text-ink hover:border-brand hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+            <i class="fa-solid fa-link" aria-hidden="true"></i> Wstaw link <i class="fa-solid fa-chevron-down text-[0.6rem]" aria-hidden="true"></i>
+        </button>
+        <div x-show="open" x-cloak class="absolute left-0 z-20 mt-1 w-64 rounded-lg border border-gray-200 bg-white p-2 shadow-lg" role="menu">
+            <button type="button" id="{{ $editorId }}-ext-link" @click="open = false" class="{{ $mi }}"><i class="fa-solid fa-arrow-up-right-from-square w-4 text-center" aria-hidden="true"></i> Link zewnętrzny (nowa karta)</button>
+            @if ($pages->isNotEmpty())
+                <label for="{{ $editorId }}-page-link" class="mt-2 block px-3 pb-1 text-[0.65rem] font-bold uppercase tracking-wide text-muted">Link do strony</label>
+                <select id="{{ $editorId }}-page-link" @change="open = false" class="w-full rounded border-gray-300 px-2 py-1.5 text-xs font-bold text-ink focus:border-brand focus:ring-brand">
+                    <option value="">— wybierz stronę —</option>
+                    @foreach ($pages as $page)
+                        <option value="/{{ $page->slug }}" data-title="{{ $page->title }}">{{ $page->title }}</option>
+                    @endforeach
+                </select>
+            @endif
+        </div>
+    </div>
 </div>
 
 <textarea name="{{ $name }}" id="{{ $editorId }}" rows="14"
@@ -306,6 +332,24 @@
                         editor.editing.view.focus();
                     });
 
+                    var ckSnippets = {!! json_encode($editorSnippets) !!};
+                    document.getElementById('{{ $editorId }}-toolbar').querySelectorAll('[data-insert-key]').forEach(function (b) {
+                        b.addEventListener('click', function () {
+                            var vf = editor.data.processor.toView(ckSnippets[b.dataset.insertKey]);
+                            editor.model.insertContent(editor.data.toModel(vf));
+                            editor.editing.view.focus();
+                        });
+                    });
+
+                    document.getElementById('{{ $editorId }}-ext-link').addEventListener('click', function () {
+                        var url = window.prompt('Adres URL (link zewnętrzny):', 'https://');
+                        if (!url) return;
+                        var text = window.prompt('Tekst linku:', url) || url;
+                        var vf = editor.data.processor.toView('<a href="' + url + '" target="_blank" rel="noopener noreferrer external">' + text + '</a>');
+                        editor.model.insertContent(editor.data.toModel(vf));
+                        editor.editing.view.focus();
+                    });
+
                     var pageLinkSelect = document.getElementById('{{ $editorId }}-page-link');
                     if (pageLinkSelect) {
                         pageLinkSelect.addEventListener('change', function () {
@@ -393,6 +437,20 @@
 
                             document.getElementById('{{ $editorId }}-box').addEventListener('click', function () {
                                 editor.insertContent({!! json_encode($boxHtml) !!});
+                            });
+
+                            var tinySnippets = {!! json_encode($editorSnippets) !!};
+                            document.getElementById('{{ $editorId }}-toolbar').querySelectorAll('[data-insert-key]').forEach(function (b) {
+                                b.addEventListener('click', function () {
+                                    editor.insertContent(tinySnippets[b.dataset.insertKey]);
+                                });
+                            });
+
+                            document.getElementById('{{ $editorId }}-ext-link').addEventListener('click', function () {
+                                var url = window.prompt('Adres URL (link zewnętrzny):', 'https://');
+                                if (!url) return;
+                                var text = window.prompt('Tekst linku:', url) || url;
+                                editor.insertContent('<a href="' + url + '" target="_blank" rel="noopener noreferrer external">' + text + '</a>');
                             });
 
                             var pageLinkSelect = document.getElementById('{{ $editorId }}-page-link');

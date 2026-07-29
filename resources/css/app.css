@@ -163,6 +163,48 @@ html.no-animations *::after {
     margin-bottom: 0;
 }
 
+/* Warianty kolorystyczne przycisku CTA (edytor: „Przycisk czerwony/zielony").
+   Odcienie dobrane pod kontrast AA białego tekstu (WCAG 1.4.3). */
+.prose .cta-button.cta-red {
+    background-color: #c81e1e;
+}
+.prose .cta-button.cta-red:hover {
+    background-color: #a11616;
+}
+.prose .cta-button.cta-green {
+    background-color: #15803d;
+}
+.prose .cta-button.cta-green:hover {
+    background-color: #106030;
+}
+
+/* Kolorowa sekcja w kolorze akcentu, wyrównana do lewej lub prawej ("Sekcja
+   akcentu"). Na wąskich ekranach zawsze pełna szerokość (WCAG 1.4.10). */
+.prose .accent-section {
+    background-color: var(--color-brand-light);
+    border-left: 4px solid var(--color-brand);
+    border-radius: 0.5rem;
+    padding: 1rem 1.25rem;
+    margin: 1.5rem 0;
+}
+.prose .accent-section > :first-child { margin-top: 0; }
+.prose .accent-section > :last-child { margin-bottom: 0; }
+@media (min-width: 768px) {
+    .prose .accent-section.accent-left { float: left; width: 45%; margin: 0.5rem 1.5rem 1rem 0; }
+    .prose .accent-section.accent-right { float: right; width: 45%; margin: 0.5rem 0 1rem 1.5rem; }
+}
+
+/* Oznaczenie linków otwieranych w nowej karcie (poza przyciskami CTA) —
+   czytelny sygnał, że link opuszcza bieżącą stronę. */
+.prose a[target="_blank"]:not(.cta-button)::after {
+    content: '\f35d';
+    font-family: 'Font Awesome 6 Free';
+    font-weight: 900;
+    font-size: 0.7em;
+    margin-left: 0.3em;
+    vertical-align: baseline;
+}
+
 /* WCAG 2.2 — 2.4.11/2.4.13: focus must always be clearly visible, regardless of
    any focus:outline-none utility a component happens to use. */
 :focus-visible {
