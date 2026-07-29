@@ -159,3 +159,21 @@ const pdfThumbs = document.querySelectorAll('canvas[data-pdf-thumb]');
 if (pdfThumbs.length) {
     import('./pdf-thumbs.js').then((module) => module.renderPdfThumbs(pdfThumbs));
 }
+
+// WCAG 3.2.5 (G201): każdemu linkowi otwieranemu w nowej karcie dodaj ukryty
+// dla wzroku dopisek „(link otwiera się w nowej karcie)" — czytniki ekranu
+// odczytają go razem z tekstem linku. Wizualny sygnał (ikonę) zapewnia CSS.
+// Przy okazji domykamy bezpieczeństwo: rel=noopener.
+document.querySelectorAll('a[target="_blank"]').forEach((link) => {
+    if (link.dataset.newtabNoted) return;
+    link.dataset.newtabNoted = '1';
+
+    const rel = (link.getAttribute('rel') || '').split(/\s+/).filter(Boolean);
+    if (!rel.includes('noopener')) rel.push('noopener');
+    link.setAttribute('rel', rel.join(' '));
+
+    const note = document.createElement('span');
+    note.className = 'sr-only';
+    note.textContent = ' (link otwiera się w nowej karcie)';
+    link.appendChild(note);
+});
