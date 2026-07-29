@@ -264,6 +264,7 @@ Route::middleware(['auth', 'verified', '2fa'])->prefix('admin')->name('admin.')-
         Route::get('ustawienia', [SiteSettingController::class, 'edit'])->name('ustawienia.edit');
         Route::put('ustawienia', [SiteSettingController::class, 'update'])->name('ustawienia.update');
         Route::post('ustawienia/test-poczty', [SiteSettingController::class, 'mailTest'])->name('ustawienia.mail-test');
+        Route::post('ustawienia/strefa-nadpisz', [SiteSettingController::class, 'overwriteStrefa'])->name('strefa.overwrite');
 
         Route::get('zgloszenia-spotkania', [AdminMeetingSignupController::class, 'index'])->name('zgloszenia-spotkania.index');
         Route::get('zgloszenia-spotkania/eksport', [AdminMeetingSignupController::class, 'export'])->name('zgloszenia-spotkania.export');

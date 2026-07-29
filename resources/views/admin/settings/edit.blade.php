@@ -11,6 +11,30 @@
     <div x-data="{ tab: '{{ $initialTab }}' }"
         x-init="$watch('tab', value => history.replaceState(null, '', '?tab=' + value))"
         class="max-w-3xl space-y-6">
+    @if (! empty($strefaConflict))
+        <div role="alert" class="rounded-lg border border-amber-300 bg-amber-50 p-4">
+            <div class="flex items-start gap-3">
+                <i class="fa-solid fa-triangle-exclamation mt-0.5 text-lg text-amber-600" aria-hidden="true"></i>
+                <div class="flex-1">
+                    <h2 class="font-bold text-amber-900">Adres <code>/strefa</code> jest już zajęty</h2>
+                    <p class="mt-1 text-sm text-amber-800">
+                        Ten adres zajmuje strona „<strong>{{ $strefaConflict->title }}</strong>"
+                        (typ: {{ \App\Models\Page::TYPES[$strefaConflict->type] ?? $strefaConflict->type }}), więc
+                        strefa współpracownika nie działa. Potwierdź, aby ją nadpisać — strona zostanie przełączona na
+                        wewnętrzną z logowaniem Microsoft 365. Dotychczasowa treść zostanie zachowana.
+                    </p>
+                    <form method="POST" action="{{ route('admin.strefa.overwrite') }}" class="mt-3"
+                        onsubmit="return confirm('Nadpisać stronę /strefa jako strefę współpracownika? Strona „{{ $strefaConflict->title }}” stanie się stroną wewnętrzną (logowanie MS365).')">
+                        @csrf
+                        <button type="submit"
+                            class="inline-flex items-center gap-2 rounded bg-amber-600 px-4 py-2 text-sm font-bold text-white transition hover:bg-amber-700 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2">
+                            <i class="fa-solid fa-arrows-rotate" aria-hidden="true"></i> Potwierdź i nadpisz
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    @endif
     <form method="POST" action="{{ route('admin.ustawienia.update') }}" enctype="multipart/form-data"
         class="rounded-lg border border-gray-200 bg-white p-6">
         @csrf

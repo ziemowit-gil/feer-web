@@ -5,7 +5,9 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Mail\ScheduleChangeMail;
 use App\Models\MeetingSignup;
+use App\Models\Page;
 use App\Models\SiteSetting;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\Rule;
@@ -14,7 +16,38 @@ class SiteSettingController extends Controller
 {
     public function edit()
     {
-        return view('admin.settings.edit', ['settings' => SiteSetting::current()]);
+        return view('admin.settings.edit', [
+            'settings' => SiteSetting::current(),
+            // Gdy adres /strefa zajmuje inna strona — panel pokaże prośbę o nadpisanie.
+            'strefaConflict' => Page::strefaSlugConflict(),
+        ]);
+    }
+
+    /**
+     * Nadpisuje stronę spod adresu /strefa jako „Strefę współpracownika"
+     * (strona wewnętrzna, logowanie MS365). Wywoływane, gdy administrator
+     * potwierdzi komunikat o zajętym adresie. Treść strony jest zachowywana,
+     * jeśli istnieje; w przeciwnym razie ustawiana jest treść domyślna.
+     */
+    public function overwriteStrefa(): RedirectResponse
+    {
+        $page = Page::query()->where('slug', Page::STREFA_SLUG)->first() ?? new Page(['slug' => Page::STREFA_SLUG]);
+
+        $previousTitle = $page->exists ? $page->title : null;
+
+        $page->forceFill(Page::strefaAttributes());
+
+        if (blank($page->content)) {
+            $page->content = Page::STREFA_DEFAULT_CONTENT;
+        }
+
+        $page->save();
+
+        $message = $previousTitle
+            ? "Adres /strefa został nadpisany jako „Strefa współpracownika” (poprzednio: „{$previousTitle}”)."
+            : 'Utworzono „Strefę współpracownika” pod adresem /strefa.';
+
+        return redirect()->route('admin.ustawienia.edit', ['tab' => 'login'])->with('status', $message);
     }
 
     public function update(Request $request)

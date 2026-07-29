@@ -45,6 +45,53 @@ class Page extends Model
         'microsoft' => 'Zalogowanie do strefy wewnętrznej (Microsoft 365)',
     ];
 
+    /** Slug automatycznie zakładanej strony „Strefa współpracownika" (/strefa). */
+    public const STREFA_SLUG = 'strefa';
+
+    /** Domyślna treść strefy, gdy nadpisywana strona nie ma własnej treści. */
+    public const STREFA_DEFAULT_CONTENT = '<p>Witamy w strefie współpracownika. Poniżej znajdziesz wewnętrzne '
+        .'komunikaty i materiały dostępne tylko dla zalogowanych osób.</p>';
+
+    /**
+     * Kanoniczne atrybuty strony „Strefa współpracownika": strona wewnętrzna
+     * z logowaniem MS365, systemowa (chroniona przed usunięciem), poza menu.
+     * Wspólne dla automatycznego zakładania i nadpisywania przez administratora.
+     *
+     * @return array<string, mixed>
+     */
+    public static function strefaAttributes(): array
+    {
+        return [
+            'title' => 'Strefa współpracownika',
+            'type' => 'internal',
+            'access_mode' => 'microsoft',
+            'is_published' => true,
+            'is_system' => true,
+            'show_in_menu' => false,
+            'meta_title' => 'Strefa współpracownika',
+        ];
+    }
+
+    /** Czy ta strona jest prawidłową strefą współpracownika (wewnętrzna + MS365). */
+    public function isStrefaZone(): bool
+    {
+        return $this->slug === self::STREFA_SLUG
+            && $this->type === 'internal'
+            && $this->access_mode === 'microsoft';
+    }
+
+    /**
+     * Strona zajmująca adres /strefa w sposób kolidujący ze strefą współpracownika
+     * (istnieje, ale nie jest stroną wewnętrzną z logowaniem MS365), albo null gdy
+     * konfliktu nie ma. Podstawa komunikatu „potwierdź i nadpisz" w panelu.
+     */
+    public static function strefaSlugConflict(): ?self
+    {
+        $page = static::query()->where('slug', self::STREFA_SLUG)->first();
+
+        return ($page && ! $page->isStrefaZone()) ? $page : null;
+    }
+
     /** How an event is held. */
     public const EVENT_MODES = [
         'onsite' => 'Stacjonarne',
