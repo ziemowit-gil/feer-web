@@ -15,11 +15,33 @@ use Illuminate\Validation\Rule;
 
 class NewsController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $news = News::with(['category', 'tags'])->orderByDesc('published_at')->get();
+        $status = $request->query('status', '');
+        $category = $request->query('category', '');
+        $sort = $request->query('sort', 'date_desc');
 
-        return view('admin.news.index', compact('news'));
+        [$col, $dir] = match ($sort) {
+            'title_asc' => ['title', 'asc'],
+            'title_desc' => ['title', 'desc'],
+            'date_asc' => ['published_at', 'asc'],
+            default => ['published_at', 'desc'],
+        };
+
+        $news = News::with(['category', 'tags'])
+            ->when($status === 'published', fn ($q) => $q->where('is_published', true))
+            ->when($status === 'draft', fn ($q) => $q->where('is_published', false))
+            ->when($category !== '', fn ($q) => $q->where('news_category_id', $category))
+            ->orderBy($col, $dir)
+            ->get();
+
+        return view('admin.news.index', [
+            'news' => $news,
+            'categories' => NewsCategory::orderBy('order')->orderBy('name')->get(),
+            'status' => $status,
+            'category' => $category,
+            'sort' => $sort,
+        ]);
     }
 
     public function create()

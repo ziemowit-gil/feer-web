@@ -11,6 +11,13 @@
         </a>
     </div>
 
+    @include('admin.partials.list-filters', [
+        'action' => route('admin.podstrony.index'),
+        'status' => $status,
+        'sort' => $sort,
+        'sortOptions' => ['default' => 'Domyślne (kolejność)', 'title_asc' => 'Tytuł A–Z', 'title_desc' => 'Tytuł Z–A'],
+    ])
+
     <div class="overflow-hidden rounded-lg border border-gray-200 bg-white">
         <table class="w-full text-left text-sm">
             <thead class="bg-gray-50 text-xs font-bold uppercase text-muted">

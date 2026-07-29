@@ -12,11 +12,28 @@ use Illuminate\Validation\Rule;
 
 class ProjectController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $projects = Project::with('category')->orderBy('order')->orderBy('title')->get();
+        $status = $request->query('status', '');
+        $category = $request->query('category', '');
+        $sort = $request->query('sort', 'default');
 
-        return view('admin.projects.index', compact('projects'));
+        $projects = Project::with('category')
+            ->when($status === 'published', fn ($q) => $q->where('is_published', true))
+            ->when($status === 'draft', fn ($q) => $q->where('is_published', false))
+            ->when($category !== '', fn ($q) => $q->where('category_id', $category))
+            ->when($sort === 'title_asc', fn ($q) => $q->orderBy('title'))
+            ->when($sort === 'title_desc', fn ($q) => $q->orderByDesc('title'))
+            ->when($sort === 'default', fn ($q) => $q->orderBy('order')->orderBy('title'))
+            ->get();
+
+        return view('admin.projects.index', [
+            'projects' => $projects,
+            'categories' => Category::orderBy('order')->orderBy('name')->get(),
+            'status' => $status,
+            'category' => $category,
+            'sort' => $sort,
+        ]);
     }
 
     public function create()

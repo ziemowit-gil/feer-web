@@ -11,11 +11,24 @@ use Illuminate\Validation\Rule;
 
 class PageController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $pages = Page::with('parent')->orderBy('order')->orderBy('title')->get();
+        $status = $request->query('status', '');
+        $sort = $request->query('sort', 'default');
 
-        return view('admin.pages.index', compact('pages'));
+        $pages = Page::with('parent')
+            ->when($status === 'published', fn ($q) => $q->where('is_published', true))
+            ->when($status === 'draft', fn ($q) => $q->where('is_published', false))
+            ->when($sort === 'title_asc', fn ($q) => $q->orderBy('title'))
+            ->when($sort === 'title_desc', fn ($q) => $q->orderByDesc('title'))
+            ->when($sort === 'default', fn ($q) => $q->orderBy('order')->orderBy('title'))
+            ->get();
+
+        return view('admin.pages.index', [
+            'pages' => $pages,
+            'status' => $status,
+            'sort' => $sort,
+        ]);
     }
 
     public function create()
