@@ -46,6 +46,12 @@
                                         <button type="submit" class="text-muted hover:text-brand" title="Utwórz aktualność na podstawie wydarzenia"><i class="fa-solid fa-newspaper"></i></button>
                                     </form>
                                 @endif
+                                @if ($siteSettings->isModuleEnabled('landing'))
+                                    <form method="POST" action="{{ route('admin.wydarzenia.na-landing', $event) }}" onsubmit="return confirm('Utworzyć landing page na podstawie „{{ $event->title }}”? Powstanie szkic do przejrzenia.');">
+                                        @csrf
+                                        <button type="submit" class="text-muted hover:text-brand" title="Utwórz landing page na podstawie wydarzenia"><i class="fa-solid fa-bullhorn"></i></button>
+                                    </form>
+                                @endif
                                 <a href="{{ route('admin.wydarzenia.edit', $event) }}" class="text-brand hover:text-brand-dark" title="Edytuj"><i class="fa-solid fa-pen"></i></a>
                                 <form method="POST" action="{{ route('admin.wydarzenia.destroy', $event) }}" onsubmit="return confirm('Usunąć wydarzenie &quot;{{ $event->title }}&quot;?');">
                                     @csrf

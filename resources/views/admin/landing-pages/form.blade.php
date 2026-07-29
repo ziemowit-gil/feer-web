@@ -32,8 +32,22 @@
             fields: {{ Js::from($formFields) }},
             order: {{ Js::from($order) }},
             labels: { speakers: 'Prelegenci', benefits: 'Korzyści', agenda: 'Agenda' },
-            move(i, d) { const n = i + d; if (n < 0 || n >= this.order.length) return; [this.order[i], this.order[n]] = [this.order[n], this.order[i]]; }
+            move(i, d) { const n = i + d; if (n < 0 || n >= this.order.length) return; [this.order[i], this.order[n]] = [this.order[n], this.order[i]]; },
+            picker: { open: false, loaded: false, images: [], targetId: null },
+            openPicker(id) {
+                this.picker.targetId = id;
+                this.picker.open = true;
+                if (this.picker.loaded) return;
+                fetch({{ Js::from(route('admin.multimedia.images')) }}, { headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' } })
+                    .then(r => r.json()).then(imgs => { this.picker.images = imgs; this.picker.loaded = true; }).catch(() => {});
+            },
+            choosePicker(url) {
+                const el = document.getElementById(this.picker.targetId);
+                if (el) { el.value = url; el.dispatchEvent(new Event('input', { bubbles: true })); }
+                this.picker.open = false;
+            }
         }"
+        @keydown.escape.window="picker.open = false"
         class="max-w-3xl space-y-6">
         @csrf
         @if ($page->exists) @method('PUT') @endif
@@ -93,8 +107,13 @@
                     <p class="mt-1 text-xs text-muted">Puste = przycisk przewija do formularza na stronie. Podany adres = przycisk prowadzi do zewnętrznego systemu zapisu.</p>
                 </div>
                 <div>
-                    <label for="hero_image_url" class="mb-1 block text-sm font-bold">URL obrazka <span class="font-normal text-muted">(z biblioteki mediów)</span></label>
-                    <input id="hero_image_url" name="hero_image_url" value="{{ old('hero_image_url', $page->hero_image_url) }}" placeholder="/storage/…" class="{{ $inp }}">
+                    <label for="hero_image_url" class="mb-1 block text-sm font-bold">Obrazek hero <span class="font-normal text-muted">(z biblioteki mediów)</span></label>
+                    <div class="flex items-center gap-3">
+                        <input id="hero_image_url" x-ref="heroImg" name="hero_image_url" value="{{ old('hero_image_url', $page->hero_image_url) }}" placeholder="/storage/…" class="{{ $inp }}">
+                        <button type="button" @click="openPicker('hero_image_url')" class="flex-none rounded border border-gray-300 px-3 py-2 text-sm font-bold text-brand hover:bg-brand-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                            <i class="fa-solid fa-photo-film" aria-hidden="true"></i> Wybierz
+                        </button>
+                    </div>
                 </div>
             </div>
         </fieldset>
@@ -127,7 +146,12 @@
                 <div class="grid gap-2 rounded border border-gray-200 p-3 sm:grid-cols-2">
                     <input :name="`speakers[${i}][name]`" x-model="s.name" placeholder="Imię i nazwisko" class="{{ $inp }}">
                     <input :name="`speakers[${i}][role]`" x-model="s.role" placeholder="Rola / tytuł" class="{{ $inp }}">
-                    <input :name="`speakers[${i}][photo]`" x-model="s.photo" placeholder="URL zdjęcia" class="{{ $inp }} sm:col-span-2">
+                    <div class="flex items-center gap-2 sm:col-span-2">
+                        <input :id="`speaker_photo_${i}`" :name="`speakers[${i}][photo]`" x-model="s.photo" placeholder="URL zdjęcia (z biblioteki)" class="{{ $inp }}">
+                        <button type="button" @click="openPicker(`speaker_photo_${i}`)" class="flex-none rounded border border-gray-300 px-3 py-2 text-sm font-bold text-brand hover:bg-brand-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                            <i class="fa-solid fa-photo-film" aria-hidden="true"></i> Wybierz
+                        </button>
+                    </div>
                     <textarea :name="`speakers[${i}][bio]`" x-model="s.bio" rows="2" placeholder="Bio" class="{{ $inp }} sm:col-span-2"></textarea>
                     <button type="button" @click="speakers.splice(i, 1)" class="justify-self-start rounded text-sm text-red-600 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600 sm:col-span-2">Usuń prelegenta</button>
                 </div>
@@ -220,6 +244,31 @@
         <div class="flex items-center gap-3">
             <button type="submit" class="rounded bg-brand px-5 py-2 text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">Zapisz</button>
             <a href="{{ route('admin.lp.index') }}" class="rounded text-sm text-muted hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">Anuluj</a>
+        </div>
+
+        {{-- Modal wyboru obrazu z biblioteki mediów --}}
+        <div x-show="picker.open" x-cloak class="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto p-4" style="display: none">
+            <div class="fixed inset-0 bg-ink/60" @click="picker.open = false" aria-hidden="true"></div>
+            <div role="dialog" aria-modal="true" aria-label="Wybierz obraz z biblioteki mediów" class="relative z-10 my-6 w-full max-w-3xl rounded-lg border border-gray-200 bg-white shadow-xl">
+                <div class="flex items-center justify-between border-b border-gray-100 px-5 py-3">
+                    <h2 class="font-bold text-ink">Biblioteka mediów</h2>
+                    <button type="button" @click="picker.open = false" class="rounded p-2 text-muted hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                        <i class="fa-solid fa-xmark" aria-hidden="true"></i><span class="sr-only">Zamknij</span>
+                    </button>
+                </div>
+                <div class="max-h-[70vh] overflow-y-auto p-4">
+                    <p x-show="!picker.loaded" class="py-8 text-center text-muted">Ładowanie…</p>
+                    <p x-show="picker.loaded && picker.images.length === 0" x-cloak class="py-8 text-center text-muted">Brak obrazów w bibliotece.</p>
+                    <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
+                        <template x-for="img in picker.images" :key="img.id">
+                            <button type="button" @click="choosePicker(img.url)" :title="img.file_name"
+                                class="group overflow-hidden rounded-lg border border-gray-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                                <img :src="img.url" :alt="img.alt" loading="lazy" class="aspect-square w-full object-cover transition group-hover:opacity-80">
+                            </button>
+                        </template>
+                    </div>
+                </div>
+            </div>
         </div>
     </form>
 @endsection

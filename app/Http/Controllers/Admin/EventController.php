@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\EventRequest;
 use App\Models\Event;
 use App\Models\Faq;
+use App\Models\LandingPage;
 use App\Models\News;
 use App\Models\SiteSetting;
 use Illuminate\Support\Str;
@@ -103,6 +104,53 @@ class EventController extends Controller
 
         return redirect()->route('admin.newsy.edit', $news)
             ->with('status', "Utworzono aktualność „{$news->title}” na podstawie wydarzenia. Zapisana jako szkic — sprawdź treść i opublikuj.");
+    }
+
+    /**
+     * Tworzy landing page webinaru na podstawie wydarzenia (szkic do przejrzenia),
+     * przenosząc termin, miejsce, opis, prowadzącego i link zapisu.
+     */
+    public function toLanding(Event $event)
+    {
+        abort_unless(SiteSetting::current()->isModuleEnabled('landing'), 404);
+
+        $landing = LandingPage::create([
+            'slug' => $this->uniqueLandingSlug($event->slug),
+            'title' => $event->title,
+            'is_published' => false,
+            'hero_eyebrow' => Event::TYPES[$event->type] ?? null,
+            'hero_title' => $event->title,
+            'hero_lead' => $event->lead,
+            'hero_cta_label' => $event->registration_cta_label ?: 'Zapisz się',
+            'hero_cta_url' => $event->registration_url,
+            'event_start' => $event->starts_at,
+            'event_location' => $event->location ?: ($event->mode === 'zdalnie' ? 'Online' : $event->modeLabel()),
+            'speakers' => $event->hasFacilitator() ? [[
+                'name' => $event->facilitator_name,
+                'role' => $event->facilitator_role,
+                'bio' => $event->facilitator_bio,
+                'photo' => $event->getFirstMediaUrl('facilitator_photo') ?: '',
+            ]] : [],
+            'section_order' => ['speakers', 'benefits', 'agenda'],
+            'form_title' => 'Zapisz się na: '.$event->title,
+        ]);
+
+        return redirect()->route('admin.lp.edit', $landing)
+            ->with('status', 'Utworzono landing page na podstawie wydarzenia. Zapisany jako szkic — uzupełnij treść i opublikuj.');
+    }
+
+    /** Unikalny slug landing page'a wyprowadzony ze sluga wydarzenia. */
+    private function uniqueLandingSlug(string $base): string
+    {
+        $base = $base ?: 'landing';
+        $slug = $base;
+        $i = 1;
+
+        while (LandingPage::where('slug', $slug)->exists()) {
+            $slug = $base.'-'.(++$i);
+        }
+
+        return $slug;
     }
 
     /** Treść newsa (HTML) złożona z pól wydarzenia; dane użytkownika escapujemy. */

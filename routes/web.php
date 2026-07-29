@@ -203,6 +203,7 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(
     Route::middleware(['module:events', 'module-access:events'])->group(function () {
         Route::resource('wydarzenia', AdminEventController::class)->parameters(['wydarzenia' => 'event'])->except('show');
         Route::post('wydarzenia/{event}/na-aktualnosc', [AdminEventController::class, 'toNews'])->name('wydarzenia.na-aktualnosc');
+        Route::post('wydarzenia/{event}/na-landing', [AdminEventController::class, 'toLanding'])->name('wydarzenia.na-landing');
     });
 
     Route::middleware(['module:faq', 'module-access:faq'])->group(function () {
