@@ -1487,6 +1487,19 @@
                     <p class="mt-1 text-xs text-muted">Domeny po przecinku. Puste = dowolne konto z tenanta skonfigurowanego w Azure.</p>
                     @error('member_allowed_domains') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                 </div>
+
+                <div class="mt-4" x-show="memberEnabled" x-cloak>
+                    <label for="szo_api_url" class="mb-1 block text-sm font-bold">Adres systemu SZO</label>
+                    <input type="url" id="szo_api_url" name="szo_api_url" autocomplete="off" inputmode="url"
+                        value="{{ old('szo_api_url', $settings->szo_api_url) }}"
+                        placeholder="np. https://szo.feer.org.pl"
+                        class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                    <p class="mt-1 text-xs text-muted">
+                        Adres bazowy. Strefa współpracownika pobiera z niego komunikaty
+                        (<code class="text-ink">GET {adres}/api/komunikaty/list.php</code>). Puste = strefa nie pokazuje komunikatów.
+                    </p>
+                    @error('szo_api_url') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                </div>
             </div>
 
             {{-- ===================== 2FA panelu + YubiKey ===================== --}}

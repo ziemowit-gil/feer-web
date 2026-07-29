@@ -37,6 +37,7 @@ class SiteSettingController extends Controller
             'microsoft_tenant_id' => ['nullable', 'string', 'max:255'],
             'member_login_enabled' => ['sometimes', 'boolean'],
             'member_allowed_domains' => ['nullable', 'string', 'max:500'],
+            'szo_api_url' => ['nullable', 'url', 'max:255'],
             'yubico_client_id' => ['nullable', 'string', 'max:255'],
             'yubico_secret_key' => ['nullable', 'string', 'max:1000'],
             'two_factor_required_admins' => ['sometimes', 'boolean'],

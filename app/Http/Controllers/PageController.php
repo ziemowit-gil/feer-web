@@ -3,11 +3,16 @@
 namespace App\Http\Controllers;
 
 use App\Models\Page;
+use App\Models\SiteSetting;
+use App\Support\SzoKomunikaty;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 
 class PageController extends Controller
 {
+    /** Slug automatycznie zakładanej strony „Strefa współpracownika". */
+    private const STREFA_SLUG = 'strefa';
+
     public function show(Page $page)
     {
         abort_unless($page->is_published, 404);
@@ -24,7 +29,18 @@ class PageController extends Controller
             return response()->view('page.locked', compact('page'), 403);
         }
 
-        return response()->view('page.show', compact('page'));
+        $data = ['page' => $page];
+
+        // W strefie współpracownika dokładamy komunikaty z systemu SZO. Tu jest już
+        // po kontroli dostępu, więc trafią tylko do zalogowanego współpracownika.
+        if ($page->slug === self::STREFA_SLUG) {
+            $szoUrl = SiteSetting::current()->szoKomunikatyUrl();
+            $data['szoKomunikaty'] = $szoUrl
+                ? SzoKomunikaty::fetch($szoUrl)
+                : ['ok' => false, 'items' => []];
+        }
+
+        return response()->view('page.show', $data);
     }
 
     /** Odblokowanie strony wewnętrznej hasłem (zapis w sesji). */

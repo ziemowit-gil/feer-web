@@ -660,6 +660,10 @@
                 <h1 class="mb-6 text-3xl font-bold text-ink">{{ $page->title }}</h1>
                 <div class="prose max-w-none text-ink">{!! $page->content !!}</div>
 
+                @isset($szoKomunikaty)
+                    @include('partials.strefa-komunikaty', ['szoKomunikaty' => $szoKomunikaty])
+                @endisset
+
                 @include('partials.page-gallery', ['page' => $page])
 
         @include('partials.attachments-list', ['attachments' => $page->attachments])
