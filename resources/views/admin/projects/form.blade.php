@@ -26,6 +26,10 @@
                     class="-mb-px border-b-2 border-transparent px-4 py-2 text-sm font-bold text-muted hover:text-brand">
                     <i class="fa-solid fa-address-card" aria-hidden="true"></i> Koordynator i archiwum
                 </button>
+                <button type="button" data-ftab-btn="seo" role="tab" aria-selected="false"
+                    class="-mb-px border-b-2 border-transparent px-4 py-2 text-sm font-bold text-muted hover:text-brand">
+                    <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i> SEO
+                </button>
             </div>
 
             {{-- ============================ PODSTAWOWE ============================ --}}
@@ -352,9 +356,12 @@
                     </div>
                 </div>
             </div>
-        </div>
 
-        @include('admin.partials.seo-fields', ['model' => $project])
+            {{-- ==================== SEO ==================== --}}
+            <div data-ftab-panel="seo" class="hidden space-y-6">
+                @include('admin.partials.seo-fields', ['model' => $project])
+            </div>
+        </div>
 
         <div class="flex items-center gap-3">
             <button type="submit" class="rounded bg-brand px-5 py-2 text-sm font-bold text-white hover:bg-brand-dark">Zapisz</button>
