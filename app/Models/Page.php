@@ -35,7 +35,7 @@ class Page extends Model
         'faq' => 'FAQ (pytania i odpowiedzi)',
         'bip_move' => 'Przeniesiono do BIP',
         'internal' => 'Wewnętrzna (dostęp ograniczony)',
-        'internal_hub' => 'Wewnętrzna: Panel współpracownika',
+        'internal_hub' => 'Strefa współpracownika (wewnętrzny panel: komunikaty i odnośniki)',
         'legacy' => 'Prezentacja tego, co było',
     ];
 
