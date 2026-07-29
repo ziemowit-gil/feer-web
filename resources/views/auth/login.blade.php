@@ -1,5 +1,7 @@
 <x-guest-layout>
     @section('title', 'Logowanie')
+    @section('brand_heading', 'Panel administracyjny')
+    @section('brand_lead', 'Zaloguj się, aby zarządzać treścią serwisu ' . $siteSettings->site_name . '.')
 
     <div class="mb-6 flex flex-col items-center text-center">
         <span class="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-brand-light text-brand">

@@ -2,6 +2,7 @@
 
 use App\Http\Middleware\EnsureModuleEnabled;
 use App\Http\Middleware\EnsureSiteAvailable;
+use App\Http\Middleware\EnsureTwoFactorSetup;
 use App\Http\Middleware\EnsureUserCanAccessModule;
 use App\Http\Middleware\EnsureUserIsAdmin;
 use App\Http\Middleware\HandleRedirects;
@@ -21,6 +22,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'admin' => EnsureUserIsAdmin::class,
             'module' => EnsureModuleEnabled::class,
             'module-access' => EnsureUserCanAccessModule::class,
+            '2fa' => EnsureTwoFactorSetup::class,
         ]);
 
         // Ręczne przekierowania 301 — na początku grupy „web”, by zadziałały

@@ -26,7 +26,22 @@ class AuthenticatedSessionController extends Controller
     {
         $request->authenticate();
 
+        $user = Auth::user();
+
+        // Jeśli konto ma włączone 2FA — wyloguj i wymagaj drugiego składnika
+        // przed pełnym zalogowaniem (dane oczekujące trzymamy w sesji).
+        if ($user->hasTwoFactorEnabled()) {
+            $remember = $request->boolean('remember');
+            Auth::guard('web')->logout();
+
+            $request->session()->put('login.2fa.user_id', $user->id);
+            $request->session()->put('login.2fa.remember', $remember);
+
+            return redirect()->route('two-factor.login');
+        }
+
         $request->session()->regenerate();
+        $request->session()->put('login_method', 'password');
 
         return redirect()->intended(route('dashboard', absolute: false));
     }

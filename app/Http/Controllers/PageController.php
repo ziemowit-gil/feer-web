@@ -15,8 +15,10 @@ class PageController extends Controller
         // Strona wewnętrzna (także „Panel współpracownika"): sprawdź autoryzację.
         if ($page->isAccessRestricted() && ! $page->accessGranted()) {
             if ($page->access_mode === 'microsoft') {
-                // Wymagamy zalogowania (MS365 loguje do konta panelu).
-                return redirect()->guest(route('login'));
+                // Osobne logowanie do strefy wewnętrznej (MS365, guard „member").
+                session(['url.intended' => url()->current()]);
+
+                return redirect()->route('member.login');
             }
 
             return response()->view('page.locked', compact('page'), 403);

@@ -2,7 +2,10 @@
 
 namespace App\Models;
 
+use App\Support\Color;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 
@@ -128,6 +131,7 @@ class SiteSetting extends Model implements HasMedia
         'newsletter_code', 'header_layout', 'show_topbar_bip', 'show_topbar_social', 'content_editor',
         'site_url', 'maintenance_mode', 'maintenance_message',
         'microsoft_login_enabled', 'microsoft_client_id', 'microsoft_client_secret', 'microsoft_tenant_id',
+        'member_login_enabled', 'member_allowed_domains', 'yubico_client_id', 'yubico_secret_key', 'two_factor_required_admins',
         'unsplash_access_key', 'cookie_banner_enabled', 'cookie_banner_text', 'show_cms_credit',
         'mail_transport', 'mail_from_address', 'mail_from_name', 'mail_host', 'mail_port', 'mail_username', 'mail_password', 'mail_encryption',
         'show_coordinators', 'ngo_color', 'sub_brands',
@@ -238,6 +242,9 @@ class SiteSetting extends Model implements HasMedia
         'maintenance_mode' => 'boolean',
         'microsoft_login_enabled' => 'boolean',
         'microsoft_client_secret' => 'encrypted',
+        'member_login_enabled' => 'boolean',
+        'yubico_secret_key' => 'encrypted',
+        'two_factor_required_admins' => 'boolean',
         'unsplash_access_key' => 'encrypted',
         'mail_password' => 'encrypted',
         'mail_port' => 'integer',
@@ -346,7 +353,7 @@ class SiteSetting extends Model implements HasMedia
                     continue;
                 }
                 try {
-                    $next = \Illuminate\Support\Carbon::parse($date)->startOfDay();
+                    $next = Carbon::parse($date)->startOfDay();
                 } catch (\Throwable) {
                     continue;
                 }
@@ -475,6 +482,67 @@ class SiteSetting extends Model implements HasMedia
         return filled($config['client_id']) && filled($config['client_secret']);
     }
 
+    /**
+     * Konfiguracja MS365 dla logowania współpracowników do stron wewnętrznych.
+     * Reużywa tej samej aplikacji Azure co panel, ale z osobnym adresem powrotu
+     * (redirect URI), aby callback trafił do guardu „member".
+     */
+    public function memberMicrosoftConfig(): array
+    {
+        return array_merge($this->microsoftConfig(), [
+            'redirect' => url('/strefa/microsoft/callback'),
+        ]);
+    }
+
+    /** Czy osobne logowanie do stron wewnętrznych (MS365) jest aktywne. */
+    public function memberLoginEnabled(): bool
+    {
+        if ($this->maintenance_mode || ! $this->member_login_enabled) {
+            return false;
+        }
+
+        $config = $this->memberMicrosoftConfig();
+
+        return filled($config['client_id']) && filled($config['client_secret']);
+    }
+
+    /**
+     * Dozwolone domeny e-mail dla logowania współpracowników (małe litery).
+     * Pusta lista = dowolne konto z tenanta skonfigurowanego w Azure.
+     *
+     * @return array<int, string>
+     */
+    public function memberAllowedDomains(): array
+    {
+        return collect(explode(',', (string) $this->member_allowed_domains))
+            ->map(fn ($domain) => strtolower(trim(ltrim($domain, '@'))))
+            ->filter()
+            ->unique()
+            ->values()
+            ->all();
+    }
+
+    /** Czy podany e-mail należy do dozwolonej domeny (lub gdy brak ograniczeń). */
+    public function memberEmailAllowed(?string $email): bool
+    {
+        $domains = $this->memberAllowedDomains();
+
+        if (empty($domains)) {
+            return true;
+        }
+
+        $emailDomain = strtolower(trim((string) strrchr((string) $email, '@')));
+        $emailDomain = ltrim($emailDomain, '@');
+
+        return in_array($emailDomain, $domains, true);
+    }
+
+    /** Czy uwierzytelnianie kluczem YubiKey jest skonfigurowane (Yubico API). */
+    public function yubicoConfigured(): bool
+    {
+        return filled($this->yubico_client_id) && filled($this->yubico_secret_key);
+    }
+
     /** Domyślny komunikat trybu konserwacji, gdy admin nie podał własnego. */
     public const DEFAULT_MAINTENANCE_MESSAGE = 'Trwa przerwa techniczna. Wprowadzamy zmiany na stronie — zapraszamy wkrótce.';
 
@@ -544,7 +612,7 @@ class SiteSetting extends Model implements HasMedia
     }
 
     /** Zdjęcia dedykowanej galerii strony „Wesprzyj nas" (posortowane). */
-    public function supportGalleryImages(): \Illuminate\Support\Collection
+    public function supportGalleryImages(): Collection
     {
         return $this->getMedia('support_gallery');
     }
@@ -593,14 +661,14 @@ class SiteSetting extends Model implements HasMedia
     {
         $hex = $this->{'brand_color_'.$n} ?? null;
 
-        return \App\Support\Color::isValid($hex) ? $hex : $this->brandPalette()['color'];
+        return Color::isValid($hex) ? $hex : $this->brandPalette()['color'];
     }
 
     /** Wszystkie ustawione kolory identyfikacji (główny + 2–4), do paska/akcentów. */
     public function brandPaletteColors(): array
     {
         return collect([$this->brand_color, $this->brand_color_2, $this->brand_color_3, $this->brand_color_4])
-            ->filter(fn ($c) => \App\Support\Color::isValid($c))
+            ->filter(fn ($c) => Color::isValid($c))
             ->values()
             ->all();
     }
@@ -609,7 +677,7 @@ class SiteSetting extends Model implements HasMedia
     public function hasExtraBrandColors(): bool
     {
         return collect([$this->brand_color_2, $this->brand_color_3, $this->brand_color_4])
-            ->contains(fn ($c) => \App\Support\Color::isValid($c));
+            ->contains(fn ($c) => Color::isValid($c));
     }
 
     /**
@@ -618,7 +686,7 @@ class SiteSetting extends Model implements HasMedia
      */
     public function eventsHomeAccent(): string
     {
-        return \App\Support\Color::isValid($this->events_home_color)
+        return Color::isValid($this->events_home_color)
             ? $this->contrastSafeColor($this->events_home_color)
             : $this->brandPalette()['color'];
     }
@@ -676,12 +744,12 @@ class SiteSetting extends Model implements HasMedia
      */
     public function brandPalette(?string $hex = null): array
     {
-        $base = ($hex && \App\Support\Color::isValid($hex)) ? $hex : $this->brand_color;
+        $base = ($hex && Color::isValid($hex)) ? $hex : $this->brand_color;
 
         // Fresh SiteSetting rows created via firstOrCreate() can return a null
         // brand_color on the in-memory model even though the column has a DB
         // default — fall back so colour maths never receives null.
-        if (! \App\Support\Color::isValid($base)) {
+        if (! Color::isValid($base)) {
             $base = '#c31432';
         }
 
@@ -699,7 +767,7 @@ class SiteSetting extends Model implements HasMedia
     public function subBrands(): array
     {
         return collect($this->sub_brands ?? [])
-            ->filter(fn ($s) => filled($s['name'] ?? null) && \App\Support\Color::isValid($s['color'] ?? ''))
+            ->filter(fn ($s) => filled($s['name'] ?? null) && Color::isValid($s['color'] ?? ''))
             ->map(fn ($s) => ['name' => $s['name'], 'color' => $s['color']])
             ->values()
             ->all();
@@ -716,7 +784,7 @@ class SiteSetting extends Model implements HasMedia
 
         // Dodatkowe kolory identyfikacji (2–4) — dostępne, gdy zdefiniowane.
         foreach ([2, 3, 4] as $n) {
-            if (\App\Support\Color::isValid($this->{'brand_color_'.$n})) {
+            if (Color::isValid($this->{'brand_color_'.$n})) {
                 $options['brand'.$n] = 'Kolor marki '.$n;
             }
         }
@@ -736,14 +804,14 @@ class SiteSetting extends Model implements HasMedia
      */
     public function audienceColor(?string $audience): string
     {
-        if ($audience === 'ngo' && \App\Support\Color::isValid($this->ngo_color)) {
+        if ($audience === 'ngo' && Color::isValid($this->ngo_color)) {
             return $this->ngo_color;
         }
 
         // Dodatkowe kolory marki: „brand2"/„brand3"/„brand4".
         if (in_array($audience, ['brand2', 'brand3', 'brand4'], true)) {
             $hex = $this->{'brand_color_'.substr($audience, 5)} ?? null;
-            if (\App\Support\Color::isValid($hex)) {
+            if (Color::isValid($hex)) {
                 return $hex;
             }
         }
@@ -760,7 +828,7 @@ class SiteSetting extends Model implements HasMedia
         // Świeże wiersze (firstOrCreate) mogą mieć null w brand_color mimo
         // domyślnej wartości kolumny — zwróć bezpieczny fallback, aby typ zwrotu
         // (string) był zawsze dotrzymany (por. brandPalette()).
-        return \App\Support\Color::isValid($this->brand_color) ? $this->brand_color : '#c31432';
+        return Color::isValid($this->brand_color) ? $this->brand_color : '#c31432';
     }
 
     /**

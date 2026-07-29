@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Auth\MemberMicrosoftAuthController;
 use App\Http\Controllers\Admin\ActivityController as AdminActivityController;
 use App\Http\Controllers\Admin\AnnualReportController as AdminAnnualReportController;
 use App\Http\Controllers\Admin\ApprovalController as AdminApprovalController;
@@ -142,7 +143,7 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(function () {
+Route::middleware(['auth', 'verified', '2fa'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/', [AdminDashboardController::class, 'index'])->name('dashboard');
 
     Route::middleware(['module:pages', 'module-access:pages'])->group(function () {
@@ -305,6 +306,15 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(
 });
 
 require __DIR__.'/auth.php';
+
+// Strefa wewnętrzna: osobne logowanie współpracowników przez Microsoft 365
+// (guard „member"), niezależne od logowania do panelu.
+Route::prefix('strefa')->group(function () {
+    Route::get('logowanie', [MemberMicrosoftAuthController::class, 'create'])->name('member.login');
+    Route::get('microsoft/redirect', [MemberMicrosoftAuthController::class, 'redirect'])->name('member.microsoft.redirect');
+    Route::get('microsoft/callback', [MemberMicrosoftAuthController::class, 'callback'])->name('member.microsoft.callback');
+    Route::post('wyloguj', [MemberMicrosoftAuthController::class, 'destroy'])->name('member.logout');
+});
 
 // Odblokowanie strony wewnętrznej hasłem (przed catch-all, dwuczłonowa ścieżka).
 Route::post('/{page:slug}/odblokuj', [PageController::class, 'unlock'])->name('page.unlock')->middleware('module:pages');

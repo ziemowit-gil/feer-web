@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\Approvable;
+use App\Models\Concerns\LogsActivity;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -9,8 +11,8 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 class Page extends Model
 {
-    use \App\Models\Concerns\Approvable;
-    use \App\Models\Concerns\LogsActivity;
+    use Approvable;
+    use LogsActivity;
 
     /**
      * Top-level URL segments already used by other routes. Pages render at
@@ -20,7 +22,7 @@ class Page extends Model
     public const RESERVED_SLUGS = [
         'strona', 'projekty', 'aktualnosci', 'newsletter', 'wsparcie', 'materialy', 'kontakt',
         'bip', 'instagram', 'fb', 'facebook',
-        'dashboard', 'profile', 'admin', 'login', 'logout', 'ankieta',
+        'dashboard', 'profile', 'admin', 'login', 'logout', 'ankieta', 'strefa',
         'forgot-password', 'reset-password', 'verify-email', 'confirm-password',
     ];
 
@@ -40,7 +42,7 @@ class Page extends Model
     /** Tryby dostępu do strony wewnętrznej. */
     public const ACCESS_MODES = [
         'password' => 'Hasło',
-        'microsoft' => 'Zalogowanie (Microsoft 365 / konto panelu)',
+        'microsoft' => 'Zalogowanie do strefy wewnętrznej (Microsoft 365)',
     ];
 
     /** How an event is held. */
@@ -177,7 +179,9 @@ class Page extends Model
         }
 
         if ($this->access_mode === 'microsoft') {
-            return auth()->check();
+            // Dostęp przez osobny guard współpracowników (strefa wewnętrzna),
+            // niezależny od logowania do panelu.
+            return auth('member')->check();
         }
 
         // Tryb hasła: brak ustawionego hasła = brak blokady (nie zamykamy przez pomyłkę).

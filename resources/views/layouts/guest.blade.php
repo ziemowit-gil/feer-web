@@ -10,32 +10,58 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="relative flex min-h-screen items-center justify-center overflow-hidden bg-gray-50 px-4 py-10 text-ink antialiased">
-    <div class="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
-        <div class="absolute -top-32 -left-32 h-96 w-96 rounded-full bg-brand/10 blur-3xl"></div>
-        <div class="absolute -right-32 -bottom-32 h-96 w-96 rounded-full bg-brand/10 blur-3xl"></div>
-        <div class="absolute inset-0 bg-[radial-gradient(circle_at_1px_1px,theme(colors.gray.300)_1px,transparent_0)] bg-[length:24px_24px] opacity-[0.15]"></div>
-    </div>
+<body class="min-h-screen bg-white text-ink antialiased">
+    <div class="flex min-h-screen flex-col lg:flex-row">
+        {{-- ===================== Panel brandowy (lewa strona) ===================== --}}
+        <aside class="relative flex flex-col justify-between overflow-hidden bg-gradient-to-br from-brand to-brand-dark px-8 py-10 text-white lg:w-1/2 lg:px-16 lg:py-16">
+            {{-- Delikatny wzór w tle (dekoracyjny) --}}
+            <div class="pointer-events-none absolute inset-0 opacity-20" aria-hidden="true">
+                <div class="absolute -left-24 -top-24 h-96 w-96 rounded-full bg-white/20 blur-3xl"></div>
+                <div class="absolute -bottom-32 -right-16 h-96 w-96 rounded-full bg-white/10 blur-3xl"></div>
+                <div class="absolute inset-0 bg-[radial-gradient(circle_at_1px_1px,rgba(255,255,255,0.35)_1px,transparent_0)] bg-[length:26px_26px]"></div>
+            </div>
 
-    <div class="relative w-full max-w-sm">
-        <a href="{{ route('home') }}" class="mb-6 flex flex-col items-center gap-2 text-center">
-            @if ($siteSettings->logoUrl())
-                <img src="{{ $siteSettings->logoUrl() }}" alt="{{ $siteSettings->site_name }}" class="h-14 w-14 rounded-xl object-contain shadow-sm ring-1 ring-gray-900/5">
-            @else
-                <span class="flex h-14 w-14 items-center justify-center rounded-xl bg-gradient-to-br from-brand to-brand-dark text-xl font-bold text-white shadow-sm">{{ mb_substr($siteSettings->site_name, 0, 1) }}</span>
-            @endif
-            <span class="font-bold text-ink">{{ $siteSettings->site_name }}</span>
-        </a>
+            <div class="relative">
+                <a href="{{ route('home') }}" class="inline-flex items-center gap-3">
+                    @if ($siteSettings->logoUrl())
+                        <img src="{{ $siteSettings->logoUrl() }}" alt="" class="h-12 w-12 rounded-xl bg-white/95 object-contain p-1 shadow-sm">
+                    @else
+                        <span class="flex h-12 w-12 items-center justify-center rounded-xl bg-white/95 text-xl font-bold text-brand shadow-sm">{{ mb_substr($siteSettings->site_name, 0, 1) }}</span>
+                    @endif
+                    <span class="text-lg font-bold">{{ $siteSettings->site_name }}</span>
+                </a>
+            </div>
 
-        <div class="rounded-2xl border border-gray-200/70 bg-white/90 p-8 shadow-xl shadow-gray-900/5 backdrop-blur-sm">
-            {{ $slot }}
-        </div>
+            <div class="relative hidden lg:block">
+                <h2 class="max-w-md text-3xl font-bold leading-tight">@yield('brand_heading', 'Witaj ponownie')</h2>
+                <p class="mt-4 max-w-md text-white/80">@yield('brand_lead', 'Zaloguj się, aby kontynuować.')</p>
+            </div>
 
-        <p class="mt-6 text-center text-sm text-muted">
-            <a href="{{ route('home') }}" class="inline-flex items-center gap-1.5 transition hover:text-brand">
-                <i class="fa-solid fa-arrow-left"></i> Wróć do strony głównej
-            </a>
-        </p>
+            <div class="relative hidden text-sm text-white/70 lg:block">
+                © {{ date('Y') }} {{ $siteSettings->site_name }}
+            </div>
+        </aside>
+
+        {{-- ===================== Formularz (prawa strona) ===================== --}}
+        <main class="flex flex-1 items-center justify-center px-4 py-10 sm:px-8">
+            <div class="w-full max-w-md">
+                {{-- Logo widoczne na mobile (panel brandowy jest tam skrócony) --}}
+                <a href="{{ route('home') }}" class="mb-8 flex items-center justify-center gap-2 lg:hidden">
+                    @if ($siteSettings->logoUrl())
+                        <img src="{{ $siteSettings->logoUrl() }}" alt="" class="h-10 w-10 rounded-lg object-contain ring-1 ring-gray-900/5">
+                    @endif
+                    <span class="font-bold text-ink">{{ $siteSettings->site_name }}</span>
+                </a>
+
+                {{ $slot }}
+
+                <p class="mt-8 text-center text-sm text-muted">
+                    <a href="{{ route('home') }}" class="inline-flex items-center gap-1.5 transition hover:text-brand">
+                        <i class="fa-solid fa-arrow-left" aria-hidden="true"></i> Wróć do strony głównej
+                    </a>
+                </p>
+            </div>
+        </main>
     </div>
 </body>
 </html>

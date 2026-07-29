@@ -64,6 +64,8 @@ class MicrosoftAuthController extends Controller
         Auth::login($user, remember: true);
 
         request()->session()->regenerate();
+        // MS365 ma własne MFA — logowanie przez SSO pomija nasze 2FA.
+        request()->session()->put('login_method', 'microsoft');
 
         return redirect()->intended(route('dashboard', absolute: false));
     }

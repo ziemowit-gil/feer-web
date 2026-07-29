@@ -35,6 +35,11 @@ class SiteSettingController extends Controller
             'microsoft_client_id' => ['nullable', 'string', 'max:255'],
             'microsoft_client_secret' => ['nullable', 'string', 'max:1000'],
             'microsoft_tenant_id' => ['nullable', 'string', 'max:255'],
+            'member_login_enabled' => ['sometimes', 'boolean'],
+            'member_allowed_domains' => ['nullable', 'string', 'max:500'],
+            'yubico_client_id' => ['nullable', 'string', 'max:255'],
+            'yubico_secret_key' => ['nullable', 'string', 'max:1000'],
+            'two_factor_required_admins' => ['sometimes', 'boolean'],
             'unsplash_access_key' => ['nullable', 'string', 'max:1000'],
             'cookie_banner_enabled' => ['sometimes', 'boolean'],
             'cookie_banner_text' => ['nullable', 'string', 'max:1000'],
@@ -116,12 +121,12 @@ class SiteSettingController extends Controller
             'nip_number' => ['nullable', 'string', 'max:50'],
             'regon_number' => ['nullable', 'string', 'max:50'],
             'accessibility_entity_name' => ['nullable', 'string', 'max:255'],
-            'accessibility_status' => ['nullable', Rule::in(array_keys(\App\Models\SiteSetting::ACCESSIBILITY_STATUSES))],
+            'accessibility_status' => ['nullable', Rule::in(array_keys(SiteSetting::ACCESSIBILITY_STATUSES))],
             'accessibility_status_note' => ['nullable', 'string', 'max:5000'],
             'accessibility_page_published_at' => ['nullable', 'date'],
             'accessibility_page_updated_at' => ['nullable', 'date'],
             'accessibility_declaration_date' => ['nullable', 'date'],
-            'accessibility_review_method' => ['nullable', Rule::in(array_keys(\App\Models\SiteSetting::ACCESSIBILITY_REVIEW_METHODS))],
+            'accessibility_review_method' => ['nullable', Rule::in(array_keys(SiteSetting::ACCESSIBILITY_REVIEW_METHODS))],
             'accessibility_contact_name' => ['nullable', 'string', 'max:255'],
             'accessibility_contact_email' => ['nullable', 'email', 'max:255'],
             'accessibility_contact_phone' => ['nullable', 'string', 'max:50'],
@@ -199,10 +204,16 @@ class SiteSettingController extends Controller
         $data['maintenance_mode'] = $request->boolean('maintenance_mode');
         $data['site_url'] = filled($data['site_url'] ?? null) ? rtrim($data['site_url'], '/') : null;
         $data['microsoft_login_enabled'] = $request->boolean('microsoft_login_enabled');
+        $data['member_login_enabled'] = $request->boolean('member_login_enabled');
+        $data['two_factor_required_admins'] = $request->boolean('two_factor_required_admins');
 
         // Puste pole sekretu = zostaw zapisany (nie renderujemy go w formularzu).
         if (blank($data['microsoft_client_secret'] ?? null)) {
             unset($data['microsoft_client_secret']);
+        }
+        // Puste pole klucza Yubico = zostaw zapisane (analogicznie do sekretu Microsoft).
+        if (blank($data['yubico_secret_key'] ?? null)) {
+            unset($data['yubico_secret_key']);
         }
         // Puste hasło SMTP = zostaw zapisane (analogicznie do sekretu Microsoft).
         if (blank($data['mail_password'] ?? null)) {
@@ -393,7 +404,7 @@ class SiteSettingController extends Controller
         ]);
 
         try {
-            \Illuminate\Support\Facades\Mail::raw(
+            Mail::raw(
                 'To jest testowa wiadomość ze strony '.SiteSetting::current()->site_name.'. '
                 .'Jeśli ją widzisz, konfiguracja poczty działa poprawnie.',
                 fn ($message) => $message->to($data['test_email'])->subject('Test konfiguracji poczty')

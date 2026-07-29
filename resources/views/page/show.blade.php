@@ -14,6 +14,23 @@
 @endsection
 
 @section('content')
+    @if ($page->isAccessRestricted() && $page->access_mode === 'microsoft' && auth('member')->check())
+        <div class="border-b border-brand/20 bg-brand-light">
+            <div class="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-2 px-4 py-2 text-sm">
+                <span class="flex items-center gap-2 text-brand-dark">
+                    <i class="fa-solid fa-user-shield" aria-hidden="true"></i>
+                    Strefa wewnętrzna — zalogowano jako <strong>{{ auth('member')->user()->email }}</strong>
+                </span>
+                <form method="POST" action="{{ route('member.logout') }}">
+                    @csrf
+                    <button type="submit" class="inline-flex items-center gap-1.5 font-medium text-brand transition hover:text-brand-dark">
+                        <i class="fa-solid fa-right-from-bracket" aria-hidden="true"></i> Wyloguj ze strefy
+                    </button>
+                </form>
+            </div>
+        </div>
+    @endif
+
     @if ($page->showsPlaceholder())
     @include('partials.unavailable-notice', ['entity' => $page])
     @else

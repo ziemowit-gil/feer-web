@@ -8,6 +8,8 @@ use App\Http\Controllers\Auth\MicrosoftAuthController;
 use App\Http\Controllers\Auth\NewPasswordController;
 use App\Http\Controllers\Auth\PasswordController;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
+use App\Http\Controllers\Auth\TwoFactorChallengeController;
+use App\Http\Controllers\Auth\TwoFactorSettingController;
 use App\Http\Controllers\Auth\VerifyEmailController;
 use Illuminate\Support\Facades\Route;
 
@@ -34,6 +36,13 @@ Route::middleware('guest')->group(function () {
 
     Route::post('reset-password', [NewPasswordController::class, 'store'])
         ->name('password.store');
+
+    // Drugi składnik logowania hasłem (po weryfikacji hasła, przed pełnym zalogowaniem).
+    Route::get('two-factor-challenge', [TwoFactorChallengeController::class, 'create'])
+        ->name('two-factor.login');
+
+    Route::post('two-factor-challenge', [TwoFactorChallengeController::class, 'store'])
+        ->middleware('throttle:6,1');
 });
 
 Route::middleware('auth')->group(function () {
@@ -54,6 +63,14 @@ Route::middleware('auth')->group(function () {
     Route::post('confirm-password', [ConfirmablePasswordController::class, 'store']);
 
     Route::put('password', [PasswordController::class, 'update'])->name('password.update');
+
+    // Zarządzanie 2FA na stronie profilu.
+    Route::post('two-factor/enable', [TwoFactorSettingController::class, 'enable'])->name('two-factor.enable');
+    Route::post('two-factor/confirm', [TwoFactorSettingController::class, 'confirm'])->name('two-factor.confirm');
+    Route::delete('two-factor', [TwoFactorSettingController::class, 'disable'])->name('two-factor.disable');
+    Route::post('two-factor/recovery-codes', [TwoFactorSettingController::class, 'regenerateRecovery'])->name('two-factor.recovery');
+    Route::post('two-factor/yubikey', [TwoFactorSettingController::class, 'addYubikey'])->name('two-factor.yubikey.add');
+    Route::delete('two-factor/yubikey', [TwoFactorSettingController::class, 'removeYubikey'])->name('two-factor.yubikey.remove');
 
     Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])
         ->name('logout');

@@ -1459,6 +1459,72 @@
                     Pozostawione puste pola dziedziczą wartości z pliku <code>.env</code>, jeśli tam je ustawiono.
                 </p>
             </div>
+
+            {{-- ===================== Strefa wewnętrzna (współpracownicy) ===================== --}}
+            <div class="border-t border-gray-200 pt-6" x-data="{ memberEnabled: {{ old('member_login_enabled', $settings->member_login_enabled) ? 'true' : 'false' }} }">
+                <h2 class="text-base font-bold text-ink">Logowanie do stron wewnętrznych (strefa współpracownika)</h2>
+                <p class="mt-1 text-xs text-muted">
+                    Osobne logowanie przez Microsoft 365 dla stron wewnętrznych — niezależne od kont panelu (osobny guard i tabela).
+                    Konto współpracownika jest zakładane automatycznie przy pierwszym logowaniu. Reużywa tej samej aplikacji Azure co
+                    panel — dodaj w niej także drugi Redirect URI:
+                </p>
+                <code class="mt-2 block break-all rounded bg-gray-50 px-3 py-2 text-xs text-ink">{{ url('/strefa/microsoft/callback') }}</code>
+
+                <label class="mt-4 flex items-center gap-2 text-sm font-medium">
+                    <input type="hidden" name="member_login_enabled" value="0">
+                    <input type="checkbox" name="member_login_enabled" value="1" x-model="memberEnabled"
+                        {{ old('member_login_enabled', $settings->member_login_enabled) ? 'checked' : '' }}
+                        class="rounded border-gray-300 text-brand focus:ring-brand">
+                    Włącz logowanie do strefy wewnętrznej
+                </label>
+
+                <div class="mt-4" x-show="memberEnabled" x-cloak>
+                    <label for="member_allowed_domains" class="mb-1 block text-sm font-bold">Dozwolone domeny e-mail</label>
+                    <input type="text" id="member_allowed_domains" name="member_allowed_domains" autocomplete="off"
+                        value="{{ old('member_allowed_domains', $settings->member_allowed_domains) }}"
+                        placeholder="np. feer.org.pl, wspolpraca.feer.org.pl"
+                        class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                    <p class="mt-1 text-xs text-muted">Domeny po przecinku. Puste = dowolne konto z tenanta skonfigurowanego w Azure.</p>
+                    @error('member_allowed_domains') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                </div>
+            </div>
+
+            {{-- ===================== 2FA panelu + YubiKey ===================== --}}
+            <div class="border-t border-gray-200 pt-6">
+                <h2 class="text-base font-bold text-ink">Uwierzytelnianie dwuetapowe (2FA) panelu</h2>
+                <p class="mt-1 text-xs text-muted">
+                    Dotyczy logowania hasłem. Użytkownicy konfigurują TOTP i klucze YubiKey na swoim profilu. Logowanie przez
+                    Microsoft 365 pomija ten krok (MS ma własne MFA).
+                </p>
+
+                <label class="mt-4 flex items-center gap-2 text-sm font-medium">
+                    <input type="hidden" name="two_factor_required_admins" value="0">
+                    <input type="checkbox" name="two_factor_required_admins" value="1"
+                        {{ old('two_factor_required_admins', $settings->two_factor_required_admins) ? 'checked' : '' }}
+                        class="rounded border-gray-300 text-brand focus:ring-brand">
+                    Wymagaj 2FA od administratorów (logujących się hasłem)
+                </label>
+
+                <div class="mt-5 space-y-5">
+                    <p class="text-sm font-bold text-ink">Klucze YubiKey (Yubico OTP)</p>
+                    <p class="-mt-3 text-xs text-muted">Dane API z <a href="https://upgrade.yubico.com/getapikey/" target="_blank" rel="noopener" class="text-brand underline">upgrade.yubico.com/getapikey</a> (link otwiera się w nowej karcie).</p>
+                    <div>
+                        <label for="yubico_client_id" class="mb-1 block text-sm font-bold">Yubico Client ID</label>
+                        <input type="text" id="yubico_client_id" name="yubico_client_id" autocomplete="off"
+                            value="{{ old('yubico_client_id', $settings->yubico_client_id) }}"
+                            class="w-full rounded border-gray-300 font-mono text-sm focus:border-brand focus:ring-brand">
+                        @error('yubico_client_id') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </div>
+                    <div>
+                        <label for="yubico_secret_key" class="mb-1 block text-sm font-bold">Yubico Secret Key</label>
+                        <input type="password" id="yubico_secret_key" name="yubico_secret_key" autocomplete="new-password"
+                            placeholder="{{ $settings->yubico_secret_key ? '•••••••• (zapisany — zostaw puste, aby nie zmieniać)' : '' }}"
+                            class="w-full rounded border-gray-300 font-mono text-sm focus:border-brand focus:ring-brand">
+                        <p class="mt-1 text-xs text-muted">Przechowywany w bazie w postaci zaszyfrowanej.</p>
+                        @error('yubico_secret_key') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </div>
+                </div>
+            </div>
         </div>
 
         <div x-show="tab === 'mail'" x-cloak class="space-y-6" x-data="{ transport: '{{ old('mail_transport', $settings->mail_transport ?: 'default') }}' }">
