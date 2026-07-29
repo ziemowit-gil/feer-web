@@ -4,8 +4,62 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "1e547d229720b3998a31ac8d4687ec99",
+    "content-hash": "fc0c468cc7fa0c98b512bf70ac49b532",
     "packages": [
+        {
+            "name": "bitbeans/yubikey",
+            "version": "dev-master",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/bitbeans/Yubikey.git",
+                "reference": "4a55a24e3b2160ab0109e7c9f1aee2443393a301"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/bitbeans/Yubikey/zipball/4a55a24e3b2160ab0109e7c9f1aee2443393a301",
+                "reference": "4a55a24e3b2160ab0109e7c9f1aee2443393a301",
+                "shasum": ""
+            },
+            "require": {
+                "illuminate/support": ">=5",
+                "php": ">=5.4.0"
+            },
+            "default-branch": true,
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Bitbeans\\Yubikey\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Jonathan Thuau",
+                    "email": "jonathan@monarobase.net",
+                    "homepage": "http://monarobase.net",
+                    "role": "Developer"
+                },
+                {
+                    "name": "Christian Hermann",
+                    "email": "c.hermann@bitbeans.de",
+                    "homepage": "https://github.com/bitbeans",
+                    "role": "Developer"
+                }
+            ],
+            "description": "Yubikey for Laravel",
+            "keywords": [
+                "laravel",
+                "yubikey"
+            ],
+            "support": {
+                "issues": "https://github.com/bitbeans/Yubikey/issues",
+                "source": "https://github.com/bitbeans/Yubikey/tree/master"
+            },
+            "time": "2021-08-03T06:27:19+00:00"
+        },
         {
             "name": "brick/math",
             "version": "0.18.0",
@@ -3214,6 +3268,126 @@
                 }
             ],
             "time": "2026-06-14T23:24:10+00:00"
+        },
+        {
+            "name": "pragmarx/google2fa",
+            "version": "v9.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/antonioribeiro/google2fa.git",
+                "reference": "e6bc62dd6ae83acc475f57912e27466019a1f2cf"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/antonioribeiro/google2fa/zipball/e6bc62dd6ae83acc475f57912e27466019a1f2cf",
+                "reference": "e6bc62dd6ae83acc475f57912e27466019a1f2cf",
+                "shasum": ""
+            },
+            "require": {
+                "paragonie/constant_time_encoding": "^1.0|^2.0|^3.0",
+                "php": "^7.1|^8.0"
+            },
+            "require-dev": {
+                "phpstan/phpstan": "^1.9",
+                "phpunit/phpunit": "^7.5.15|^8.5|^9.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "PragmaRX\\Google2FA\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Antonio Carlos Ribeiro",
+                    "email": "acr@antoniocarlosribeiro.com",
+                    "role": "Creator & Designer"
+                }
+            ],
+            "description": "A One Time Password Authentication package, compatible with Google Authenticator.",
+            "keywords": [
+                "2fa",
+                "Authentication",
+                "Two Factor Authentication",
+                "google2fa"
+            ],
+            "support": {
+                "issues": "https://github.com/antonioribeiro/google2fa/issues",
+                "source": "https://github.com/antonioribeiro/google2fa/tree/v9.0.0"
+            },
+            "time": "2025-09-19T22:51:08+00:00"
+        },
+        {
+            "name": "pragmarx/google2fa-qrcode",
+            "version": "v4.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/antonioribeiro/google2fa-qrcode.git",
+                "reference": "16159f84fa0838c276f35d46de57fd90dfbb385c"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/antonioribeiro/google2fa-qrcode/zipball/16159f84fa0838c276f35d46de57fd90dfbb385c",
+                "reference": "16159f84fa0838c276f35d46de57fd90dfbb385c",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^8.1",
+                "pragmarx/google2fa": "^8.0|^9.0"
+            },
+            "require-dev": {
+                "bacon/bacon-qr-code": "^2.0|^3.0",
+                "chillerlan/php-qrcode": "^5.0|^6.0",
+                "khanamiryan/qrcode-detector-decoder": "^1.0",
+                "phpstan/phpstan": "^2.0",
+                "phpunit/phpunit": "~9|~10|~11|~12|~13"
+            },
+            "suggest": {
+                "bacon/bacon-qr-code": "For QR Code generation, requires imagick",
+                "chillerlan/php-qrcode": "For QR Code generation"
+            },
+            "type": "library",
+            "extra": {
+                "component": "package",
+                "branch-alias": {
+                    "dev-master": "1.0-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "PragmaRX\\Google2FAQRCode\\": "src/",
+                    "PragmaRX\\Google2FAQRCode\\Tests\\": "tests/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Antonio Carlos Ribeiro",
+                    "email": "acr@antoniocarlosribeiro.com",
+                    "role": "Creator & Designer"
+                }
+            ],
+            "description": "QR Code package for Google2FA",
+            "keywords": [
+                "2fa",
+                "Authentication",
+                "Two Factor Authentication",
+                "google2fa",
+                "qr code",
+                "qrcode"
+            ],
+            "support": {
+                "issues": "https://github.com/antonioribeiro/google2fa-qrcode/issues",
+                "source": "https://github.com/antonioribeiro/google2fa-qrcode/tree/v4.0.0"
+            },
+            "time": "2026-05-08T19:24:44+00:00"
         },
         {
             "name": "psr/clock",
@@ -9715,7 +9889,9 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": {},
+    "stability-flags": {
+        "bitbeans/yubikey": 20
+    },
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {

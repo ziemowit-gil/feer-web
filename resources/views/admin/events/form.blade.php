@@ -185,9 +185,21 @@
             $faqsInit = old('faqs', $event->exists
                 ? $event->faqs->map(fn ($f) => ['question' => $f->question, 'answer' => $f->answer])->values()->all()
                 : []);
+            $globalFaqOptions = ($allFaqs ?? collect())->map(fn ($f) => [
+                'question' => $f->question,
+                'answer' => $f->answer,
+                'category' => $f->category,
+                'is_published' => (bool) $f->is_published,
+            ])->values()->all();
         @endphp
         <fieldset class="space-y-4 rounded-lg border border-gray-200 bg-white p-6"
-            x-data="{ faqs: {{ \Illuminate\Support\Js::from(array_values($faqsInit)) }} }">
+            x-data="{
+                faqs: {{ \Illuminate\Support\Js::from(array_values($faqsInit)) }},
+                globalFaqs: {{ \Illuminate\Support\Js::from($globalFaqOptions) }},
+                pickerOpen: false,
+                isAdded(f) { return this.faqs.some((x) => (x.question || '').trim() === f.question.trim()); },
+                addGlobal(f) { if (!this.isAdded(f)) this.faqs.push({ question: f.question, answer: f.answer }); },
+            }">
             <legend class="px-2 text-sm font-bold text-brand">FAQ — najczęstsze pytania <span class="font-normal text-muted">(opcjonalnie)</span></legend>
             <p class="text-xs text-muted">Pytania i odpowiedzi pojawią się jako rozwijana lista na stronie wydarzenia.</p>
 
@@ -204,32 +216,45 @@
                 </div>
             </template>
 
-            <button type="button" @click="faqs.push({ question: '', answer: '' })"
-                class="inline-flex items-center gap-2 rounded border border-dashed border-gray-300 px-4 py-2 text-sm font-bold text-brand hover:border-brand hover:bg-brand-light">
-                <i class="fa-solid fa-plus" aria-hidden="true"></i> Dodaj pytanie
-            </button>
+            <div class="flex flex-wrap items-center gap-2">
+                <button type="button" @click="faqs.push({ question: '', answer: '' })"
+                    class="inline-flex items-center gap-2 rounded border border-dashed border-gray-300 px-4 py-2 text-sm font-bold text-brand hover:border-brand hover:bg-brand-light">
+                    <i class="fa-solid fa-plus" aria-hidden="true"></i> Dodaj pytanie
+                </button>
 
-            @if (($allFaqs ?? collect())->isNotEmpty())
-                @php $attachedFaqIds = old('global_faqs', $event->exists ? $event->globalFaqs->pluck('id')->all() : []); @endphp
-                <div class="mt-2 border-t border-gray-100 pt-4">
-                    <p class="text-sm font-bold text-ink">Dopnij pytania z globalnego FAQ <span class="font-normal text-muted">(opcjonalnie)</span></p>
-                    <p class="mb-2 text-xs text-muted">Zaznacz istniejące pytania z <a href="{{ route('admin.faq.index') }}" class="text-brand underline">FAQ</a>, aby pokazać je też na stronie tego wydarzenia.</p>
-                    <div class="max-h-56 space-y-1 overflow-auto rounded border border-gray-200 p-2">
-                        @foreach ($allFaqs as $faq)
-                            <label class="flex items-start gap-2 rounded px-2 py-1.5 hover:bg-gray-50">
-                                <input type="checkbox" name="global_faqs[]" value="{{ $faq->id }}"
-                                    {{ in_array($faq->id, $attachedFaqIds) ? 'checked' : '' }}
-                                    class="mt-0.5 rounded border-gray-300 text-brand focus:ring-brand">
-                                <span class="text-sm">
-                                    <span class="font-medium text-ink">{{ $faq->question }}</span>
-                                    @if ($faq->category)<span class="ml-1 text-xs text-muted">({{ $faq->category }})</span>@endif
-                                    @unless ($faq->is_published)<span class="ml-1 text-xs font-bold text-amber-600">szkic</span>@endunless
-                                </span>
-                            </label>
-                        @endforeach
+                <template x-if="globalFaqs.length">
+                    <button type="button" @click="pickerOpen = !pickerOpen" :aria-expanded="pickerOpen" aria-controls="global-faq-picker"
+                        class="inline-flex items-center gap-2 rounded border border-dashed border-gray-300 px-4 py-2 text-sm font-bold text-brand hover:border-brand hover:bg-brand-light">
+                        <i class="fa-solid fa-list-check" aria-hidden="true"></i> Dodaj z globalnego FAQ
+                    </button>
+                </template>
+            </div>
+
+            <template x-if="globalFaqs.length">
+                <div id="global-faq-picker" x-show="pickerOpen" x-cloak @keydown.escape="pickerOpen = false"
+                    class="rounded-lg border border-gray-200 bg-gray-50 p-4">
+                    <div class="mb-2 flex items-start justify-between gap-3">
+                        <p class="text-xs text-muted">Wybierz pytania z <a href="{{ route('admin.faq.index') }}" class="text-brand underline">globalnego FAQ</a> — treść zostanie skopiowana do listy powyżej i możesz ją dowolnie zmienić dla tego wydarzenia.</p>
+                        <button type="button" @click="pickerOpen = false" class="flex-none text-xs font-bold text-muted hover:text-ink">Zamknij</button>
                     </div>
+                    <ul class="max-h-56 space-y-1 overflow-auto rounded border border-gray-200 bg-white p-2">
+                        <template x-for="(f, gi) in globalFaqs" :key="gi">
+                            <li class="flex items-start justify-between gap-3 rounded px-2 py-1.5 hover:bg-gray-50">
+                                <span class="text-sm">
+                                    <span class="font-medium text-ink" x-text="f.question"></span>
+                                    <span class="ml-1 text-xs text-muted" x-show="f.category" x-text="'(' + f.category + ')'"></span>
+                                    <span class="ml-1 text-xs font-bold text-amber-600" x-show="!f.is_published">szkic</span>
+                                </span>
+                                <button type="button" @click="addGlobal(f)" :disabled="isAdded(f)"
+                                    class="flex-none rounded px-2 py-1 text-xs font-bold text-brand hover:bg-brand-light disabled:cursor-default disabled:text-muted disabled:hover:bg-transparent">
+                                    <span x-show="!isAdded(f)"><i class="fa-solid fa-plus" aria-hidden="true"></i> Dodaj</span>
+                                    <span x-show="isAdded(f)"><i class="fa-solid fa-check" aria-hidden="true"></i> Dodane</span>
+                                </button>
+                            </li>
+                        </template>
+                    </ul>
                 </div>
-            @endif
+            </template>
         </fieldset>
 
         {{-- Publikacja --}}

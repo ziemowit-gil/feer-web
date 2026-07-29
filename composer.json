@@ -7,9 +7,11 @@
     "license": "MIT",
     "require": {
         "php": "^8.3",
+        "bitbeans/yubikey": "dev-master@dev",
         "laravel/framework": "^13.8",
         "laravel/socialite": "^5.29",
         "laravel/tinker": "^3.0",
+        "pragmarx/google2fa-qrcode": "^4.0",
         "socialiteproviders/microsoft": "^4.10",
         "spatie/laravel-medialibrary": "^11.23",
         "spatie/laravel-sitemap": "^8.2"

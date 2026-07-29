@@ -40,7 +40,6 @@ class EventController extends Controller
         $event = Event::create($data);
         $this->syncFacilitatorPhoto($request, $event);
         $this->syncFaqs($request, $event);
-        $event->globalFaqs()->sync($request->input('global_faqs', []));
 
         return redirect()->route('admin.wydarzenia.index')->with('status', 'Wydarzenie zostało dodane.');
     }
@@ -66,7 +65,6 @@ class EventController extends Controller
         $event->update($data);
         $this->syncFacilitatorPhoto($request, $event);
         $this->syncFaqs($request, $event);
-        $event->globalFaqs()->sync($request->input('global_faqs', []));
 
         return redirect()->route('admin.wydarzenia.index')->with('status', 'Wydarzenie zostało zaktualizowane.');
     }
@@ -209,7 +207,7 @@ class EventController extends Controller
         $data['registration_cta_label'] = trim((string) ($data['registration_cta_label'] ?? '')) ?: 'Zapisz się';
 
         // Pliki, FAQ i pomocnicze pola obsługujemy osobno.
-        unset($data['facilitator_photo'], $data['remove_facilitator_photo'], $data['faqs'], $data['global_faqs']);
+        unset($data['facilitator_photo'], $data['remove_facilitator_photo'], $data['faqs']);
 
         return $data;
     }

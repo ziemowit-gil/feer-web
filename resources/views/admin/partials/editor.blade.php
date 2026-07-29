@@ -26,6 +26,8 @@
     ];
 
     $pages = \App\Models\Page::where('is_published', true)->orderBy('title')->get();
+    // Schedule pages, offered as ready-made CTA buttons ("Sprawdź harmonogram").
+    $schedulePages = \App\Models\Page::where('is_published', true)->where('type', 'schedule')->orderBy('title')->get();
 @endphp
 
 @php $mi = 'flex w-full items-center gap-2 rounded px-3 py-2 text-left text-xs font-bold text-ink hover:bg-brand-light hover:text-brand'; @endphp
@@ -64,6 +66,15 @@
                     <option value="">— wybierz stronę —</option>
                     @foreach ($pages as $page)
                         <option value="/{{ $page->slug }}" data-title="{{ $page->title }}">{{ $page->title }}</option>
+                    @endforeach
+                </select>
+            @endif
+            @if ($schedulePages->isNotEmpty())
+                <label for="{{ $editorId }}-schedule-cta" class="mt-2 block px-3 pb-1 text-[0.65rem] font-bold uppercase tracking-wide text-muted">Przycisk CTA do harmonogramu</label>
+                <select id="{{ $editorId }}-schedule-cta" @change="open = false" class="w-full rounded border-gray-300 px-2 py-1.5 text-xs font-bold text-ink focus:border-brand focus:ring-brand">
+                    <option value="">— wybierz harmonogram —</option>
+                    @foreach ($schedulePages as $sp)
+                        <option value="/{{ $sp->slug }}" data-title="{{ $sp->title }}">{{ $sp->title }}</option>
                     @endforeach
                 </select>
             @endif
@@ -364,6 +375,20 @@
                         });
                     }
 
+                    var scheduleCtaSelect = document.getElementById('{{ $editorId }}-schedule-cta');
+                    if (scheduleCtaSelect) {
+                        scheduleCtaSelect.addEventListener('change', function () {
+                            if (!this.value) return;
+                            var title = this.selectedOptions[0].dataset.title;
+                            var html = '<p><a href="' + this.value + '" class="cta-button">' + title + '</a></p>';
+                            var viewFragment = editor.data.processor.toView(html);
+                            var modelFragment = editor.data.toModel(viewFragment);
+                            editor.model.insertContent(modelFragment);
+                            editor.editing.view.focus();
+                            this.selectedIndex = 0;
+                        });
+                    }
+
                     modal.addEventListener('media-picked', function (event) {
                         var image = event.detail;
                         var html = '<img src="' + image.url + '" alt="' + image.alt.replace(/&/g, '&amp;').replace(/"/g, '&quot;') + '">';
@@ -409,6 +434,7 @@
                 var boxHtml = {!! json_encode($boxHtml) !!};
                 var columnsHtml = {!! json_encode($columnsHtml) !!};
                 var pageLinks = {!! json_encode($pages->map(fn ($p) => ['url' => '/'.$p->slug, 'title' => $p->title])->values()) !!};
+                var scheduleLinks = {!! json_encode($schedulePages->map(fn ($p) => ['url' => '/'.$p->slug, 'title' => $p->title])->values()) !!};
 
                 function checkA11y(html) {
                     var doc = new DOMParser().parseFromString(html, 'text/html');
@@ -497,6 +523,13 @@
                                     items.push({ type: 'nestedmenuitem', text: 'Link do strony', getSubmenuItems: function () {
                                         return pageLinks.map(function (p) {
                                             return { type: 'menuitem', text: p.title, onAction: function () { editor.insertContent('<a href="' + p.url + '">' + p.title + '</a>'); } };
+                                        });
+                                    } });
+                                }
+                                if (scheduleLinks.length) {
+                                    items.push({ type: 'nestedmenuitem', text: 'Przycisk CTA do harmonogramu', getSubmenuItems: function () {
+                                        return scheduleLinks.map(function (p) {
+                                            return { type: 'menuitem', text: p.title, onAction: function () { editor.insertContent('<p><a href="' + p.url + '" class="cta-button">' + p.title + '</a></p>'); } };
                                         });
                                     } });
                                 }

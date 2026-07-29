@@ -62,30 +62,32 @@
                 </div>
             </div>
 
-            <div>
-                <label for="audience" class="mb-1 block text-sm font-bold">Grupa docelowa (kolorystyka)</label>
-                <select id="audience" name="audience" class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand sm:w-1/2">
-                    @foreach ($siteSettings->audienceOptions() as $value => $label)
-                        <option value="{{ $value }}" {{ old('audience', $news->audience ?? 'brand') === $value ? 'selected' : '' }}>{{ $label }}</option>
-                    @endforeach
-                </select>
-                <p class="mt-1 text-xs text-muted">Zmienia kolorystykę strony aktualności na kolor wybranej submarki (Ustawienia → Kolory).</p>
-                @error('audience') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
-            </div>
-
-            <div>
-                <label for="accent_color_text" class="mb-1 block text-sm font-bold">Własny kolor akcentu <span class="font-normal text-muted">(opcjonalnie)</span></label>
-                <div class="flex flex-wrap items-center gap-3">
-                    <input type="color" id="accent_color_picker" value="{{ old('accent_color', $news->accent_color ?: '#c31432') }}"
-                        oninput="document.getElementById('accent_color_text').value = this.value"
-                        class="h-10 w-16 rounded border-gray-300" aria-label="Wybierz własny kolor akcentu">
-                    <input type="text" id="accent_color_text" name="accent_color" value="{{ old('accent_color', $news->accent_color) }}"
-                        placeholder="np. #0d7d4d — puste = jak wyżej"
-                        oninput="if (/^#[0-9a-fA-F]{6}$/.test(this.value)) document.getElementById('accent_color_picker').value = this.value"
-                        class="w-48 rounded border-gray-300 font-mono text-sm focus:border-brand focus:ring-brand">
+            <div class="grid gap-5 sm:grid-cols-2">
+                <div>
+                    <label for="audience" class="mb-1 block text-sm font-bold">Grupa docelowa (kolorystyka)</label>
+                    <select id="audience" name="audience" class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                        @foreach ($siteSettings->audienceOptions() as $value => $label)
+                            <option value="{{ $value }}" {{ old('audience', $news->audience ?? 'brand') === $value ? 'selected' : '' }}>{{ $label }}</option>
+                        @endforeach
+                    </select>
+                    <p class="mt-1 text-xs text-muted">Zmienia kolorystykę strony aktualności na kolor wybranej submarki (Ustawienia → Kolory).</p>
+                    @error('audience') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                 </div>
-                <p class="mt-1 text-xs text-muted">Nadpisuje kolorystykę tej strony dowolnym kolorem (ma pierwszeństwo przed grupą docelowaną powyżej). Zbyt jasny kolor zostanie przyciemniony przy zapisie (kontrast WCAG). Puste = kolor z grupy docelowej.</p>
-                @error('accent_color') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+
+                <div>
+                    <label for="accent_color_text" class="mb-1 block text-sm font-bold">Własny kolor akcentu <span class="font-normal text-muted">(opcjonalnie)</span></label>
+                    <div class="flex flex-wrap items-center gap-3">
+                        <input type="color" id="accent_color_picker" value="{{ old('accent_color', $news->accent_color ?: '#c31432') }}"
+                            oninput="document.getElementById('accent_color_text').value = this.value"
+                            class="h-10 w-16 rounded border-gray-300" aria-label="Wybierz własny kolor akcentu">
+                        <input type="text" id="accent_color_text" name="accent_color" value="{{ old('accent_color', $news->accent_color) }}"
+                            placeholder="np. #0d7d4d — puste = jak obok"
+                            oninput="if (/^#[0-9a-fA-F]{6}$/.test(this.value)) document.getElementById('accent_color_picker').value = this.value"
+                            class="w-48 rounded border-gray-300 font-mono text-sm focus:border-brand focus:ring-brand">
+                    </div>
+                    <p class="mt-1 text-xs text-muted">Nadpisuje kolorystykę tej strony dowolnym kolorem (ma pierwszeństwo przed grupą docelową obok). Zbyt jasny kolor zostanie przyciemniony przy zapisie (kontrast WCAG). Puste = kolor z grupy docelowej.</p>
+                    @error('accent_color') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                </div>
             </div>
 
             <div>
@@ -96,12 +98,13 @@
         </div>
 
         <div class="space-y-5 rounded-lg border border-gray-200 bg-white p-6">
+            @php $categoryColor = optional($newsCategories->firstWhere('id', old('news_category_id', $news->news_category_id)))->badgeColor(); @endphp
             <div class="grid gap-5 sm:grid-cols-3">
                 <div>
                     <label for="news_category_id" class="mb-1 block text-sm font-bold">Kategoria</label>
                     <div class="flex items-center gap-2">
-                        <span id="category-color-preview" class="h-5 w-5 flex-none rounded-full border border-gray-200"
-                            style="background-color: {{ optional($newsCategories->firstWhere('id', old('news_category_id', $news->news_category_id)))->badgeColor() }}"></span>
+                        <span id="category-color-preview" @class(['h-5 w-5 flex-none rounded-full ring-1 ring-gray-900/10', 'hidden' => empty($categoryColor)])
+                            style="background-color: {{ $categoryColor }}" aria-hidden="true"></span>
                         <select id="news_category_id" name="news_category_id" class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
                             <option value="">— brak —</option>
                             @foreach ($newsCategories as $category)
@@ -135,8 +138,11 @@
                         class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
                     @error('published_at') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                 </div>
+            </div>
 
-                <div class="flex flex-col justify-center gap-2">
+            <fieldset class="rounded-lg border border-gray-200 bg-gray-50/70 p-4">
+                <legend class="px-1 text-sm font-bold text-ink">Status publikacji</legend>
+                <div class="flex flex-wrap gap-x-6 gap-y-3">
                     <label class="flex items-center gap-2">
                         <input type="checkbox" name="is_published" value="1" {{ old('is_published', $news->is_published ?? true) ? 'checked' : '' }}
                             class="rounded border-gray-300 text-brand focus:ring-brand">
@@ -153,8 +159,8 @@
                         <span class="flex items-center gap-1 text-sm font-bold"><i class="fa-solid fa-clock-rotate-left text-muted" aria-hidden="true"></i> Treść archiwalna</span>
                     </label>
                 </div>
-            </div>
-            <p class="text-xs text-muted">Wyróżniony news jest prezentowany w złotej ramce na liście aktualności, stronie głównej i stronie projektu.</p>
+                <p class="mt-3 text-xs text-muted">Wyróżniony news jest prezentowany w złotej ramce na liście aktualności, stronie głównej i stronie projektu.</p>
+            </fieldset>
 
             <div class="grid gap-5 sm:grid-cols-2">
                 <div class="space-y-3">
@@ -176,7 +182,17 @@
                         @error('image') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
 
-                    <div class="rounded-lg border border-dashed border-gray-300 p-3" x-data="unsplashPicker('{{ route('admin.multimedia.unsplash.search') }}')">
+                    <div>
+                        <label for="image_alt" class="mb-1 block text-sm font-bold">Opis alternatywny zdjęcia</label>
+                        <input type="text" id="image_alt" name="image_alt" value="{{ old('image_alt', $news->image_alt) }}"
+                            placeholder="np. Uczestnicy warsztatu przy laptopach w sali szkoleniowej"
+                            class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                        <p class="mt-1 text-xs text-muted">Opisz, co przedstawia zdjęcie — czytają to osoby korzystające z czytników ekranu.</p>
+                        @error('image_alt') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </div>
+                </div>
+
+                <div class="rounded-lg border border-dashed border-gray-300 p-3" x-data="unsplashPicker('{{ route('admin.multimedia.unsplash.search') }}')">
                         <p class="mb-2 text-sm font-bold"><i class="fa-solid fa-camera-retro text-muted" aria-hidden="true"></i> …lub pobierz z Unsplash</p>
                         @if (config('services.unsplash.access_key'))
                             <div class="flex gap-2">
@@ -217,16 +233,6 @@
                             <p class="text-xs text-muted">Aby pobierać zdjęcia z Unsplash, ustaw <code class="rounded bg-gray-100 px-1">UNSPLASH_ACCESS_KEY</code> w pliku <code class="rounded bg-gray-100 px-1">.env</code> (darmowy klucz: unsplash.com/developers).</p>
                         @endif
                     </div>
-                </div>
-
-                <div>
-                    <label for="image_alt" class="mb-1 block text-sm font-bold">Opis alternatywny zdjęcia</label>
-                    <input type="text" id="image_alt" name="image_alt" value="{{ old('image_alt', $news->image_alt) }}"
-                        placeholder="np. Uczestnicy warsztatu przy laptopach w sali szkoleniowej"
-                        class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
-                    <p class="mt-1 text-xs text-muted">Opisz, co przedstawia zdjęcie — czytają to osoby korzystające z czytników ekranu.</p>
-                    @error('image_alt') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
-                </div>
             </div>
         </div>
 
@@ -272,8 +278,10 @@
         })();
 
         document.getElementById('news_category_id').addEventListener('change', function (event) {
-            const option = event.target.selectedOptions[0];
-            document.getElementById('category-color-preview').style.backgroundColor = option.dataset.color || 'transparent';
+            const color = event.target.selectedOptions[0].dataset.color || '';
+            const preview = document.getElementById('category-color-preview');
+            preview.style.backgroundColor = color;
+            preview.classList.toggle('hidden', color === '');
         });
 
         document.getElementById('image').addEventListener('change', function (event) {

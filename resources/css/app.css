@@ -102,8 +102,9 @@ html.no-animations *::after {
     content: none;
 }
 
-/* Call-to-action button insertable from the content editor. Overrides the
-   typography plugin's plain underlined link style so it reads as a button. */
+/* Call-to-action button insertable from the content editor. Matches the
+   site's primary pill button (rounded-full brand button, flat, with a
+   focus-visible ring) so editor CTAs read as native buttons — WCAG 2.4.7. */
 .prose .cta-button {
     display: inline-flex;
     align-items: center;
@@ -112,20 +113,26 @@ html.no-animations *::after {
     color: #fff;
     font-family: var(--font-heading);
     font-weight: 700;
-    font-size: 1.0625rem;
+    font-size: 1rem;
+    line-height: 1.25;
     text-decoration: none;
     border-radius: 9999px;
-    padding: 0.875rem 1.75rem;
-    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
-    transition: transform 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+    padding: 0.75rem 1.75rem;
+    transition: background-color 0.15s ease;
 }
 .prose .cta-button::after {
     content: '\2192';
+    transition: transform 0.15s ease;
 }
 .prose .cta-button:hover {
     background-color: var(--color-brand-dark);
-    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.28);
-    transform: translateY(-1px);
+}
+.prose .cta-button:hover::after {
+    transform: translateX(2px);
+}
+.prose .cta-button:focus-visible {
+    outline: 2px solid var(--color-brand);
+    outline-offset: 2px;
 }
 
 /* Two-column layout block insertable from the content editor. Columns stay

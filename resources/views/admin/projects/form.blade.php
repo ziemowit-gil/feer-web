@@ -77,36 +77,38 @@
                         </div>
                     </div>
 
-                    <div>
-                        <label for="audience" class="mb-1 block text-sm font-bold">Grupa docelowa (kolorystyka)</label>
-                        <select id="audience" name="audience" class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand sm:w-1/2">
-                            @foreach ($siteSettings->audienceOptions() as $value => $label)
-                                <option value="{{ $value }}" {{ old('audience', $project->audience ?? 'brand') === $value ? 'selected' : '' }}>{{ $label }}</option>
-                            @endforeach
-                        </select>
-                        <p class="mt-1 text-xs text-muted">Zmienia kolorystykę strony projektu na kolor wybranej submarki (definiowane w Ustawienia → Kolory). Domyślnie używany jest kolor marki.</p>
-                        @error('audience') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
-                    </div>
-
-                    <div>
-                        <label for="accent_color_text" class="mb-1 block text-sm font-bold">Własny kolor akcentu <span class="font-normal text-muted">(opcjonalnie)</span></label>
-                        <div class="flex flex-wrap items-center gap-3">
-                            <input type="color" id="accent_color_picker" value="{{ old('accent_color', $project->accent_color ?: '#c31432') }}"
-                                oninput="document.getElementById('accent_color_text').value = this.value"
-                                class="h-10 w-16 rounded border-gray-300" aria-label="Wybierz własny kolor akcentu">
-                            <input type="text" id="accent_color_text" name="accent_color" value="{{ old('accent_color', $project->accent_color) }}"
-                                placeholder="np. #0d7d4d — puste = jak wyżej"
-                                oninput="if (/^#[0-9a-fA-F]{6}$/.test(this.value)) document.getElementById('accent_color_picker').value = this.value"
-                                class="w-48 rounded border-gray-300 font-mono text-sm focus:border-brand focus:ring-brand">
+                    <div class="grid gap-5 sm:grid-cols-2">
+                        <div>
+                            <label for="audience" class="mb-1 block text-sm font-bold">Grupa docelowa (kolorystyka)</label>
+                            <select id="audience" name="audience" class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                                @foreach ($siteSettings->audienceOptions() as $value => $label)
+                                    <option value="{{ $value }}" {{ old('audience', $project->audience ?? 'brand') === $value ? 'selected' : '' }}>{{ $label }}</option>
+                                @endforeach
+                            </select>
+                            <p class="mt-1 text-xs text-muted">Zmienia kolorystykę strony projektu na kolor wybranej submarki (definiowane w Ustawienia → Kolory). Domyślnie używany jest kolor marki.</p>
+                            @error('audience') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                         </div>
-                        <p class="mt-1 text-xs text-muted">Nadpisuje kolorystykę tej strony dowolnym kolorem (ma pierwszeństwo przed grupą docelowaną powyżej). Zbyt jasny kolor zostanie przyciemniony przy zapisie (kontrast WCAG). Puste = kolor z grupy docelowej.</p>
-                        @error('accent_color') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+
+                        <div>
+                            <label for="accent_color_text" class="mb-1 block text-sm font-bold">Własny kolor akcentu <span class="font-normal text-muted">(opcjonalnie)</span></label>
+                            <div class="flex flex-wrap items-center gap-3">
+                                <input type="color" id="accent_color_picker" value="{{ old('accent_color', $project->accent_color ?: '#c31432') }}"
+                                    oninput="document.getElementById('accent_color_text').value = this.value"
+                                    class="h-10 w-16 rounded border-gray-300" aria-label="Wybierz własny kolor akcentu">
+                                <input type="text" id="accent_color_text" name="accent_color" value="{{ old('accent_color', $project->accent_color) }}"
+                                    placeholder="np. #0d7d4d — puste = jak obok"
+                                    oninput="if (/^#[0-9a-fA-F]{6}$/.test(this.value)) document.getElementById('accent_color_picker').value = this.value"
+                                    class="w-48 rounded border-gray-300 font-mono text-sm focus:border-brand focus:ring-brand">
+                            </div>
+                            <p class="mt-1 text-xs text-muted">Nadpisuje kolorystykę tej strony dowolnym kolorem (ma pierwszeństwo przed grupą docelową obok). Zbyt jasny kolor zostanie przyciemniony przy zapisie (kontrast WCAG). Puste = kolor z grupy docelowej.</p>
+                            @error('accent_color') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                        </div>
                     </div>
                 </div>
 
                 <div class="space-y-5 rounded-lg border border-gray-200 bg-white p-6">
                     <p class="text-sm font-bold uppercase tracking-wide text-muted">Publikacja</p>
-                    <div class="grid gap-5 sm:grid-cols-3">
+                    <div class="grid gap-5 sm:grid-cols-2">
                         <div>
                             <label for="category_id" class="mb-1 block text-sm font-bold">Kategoria</label>
                             <select id="category_id" name="category_id" required class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
@@ -125,20 +127,20 @@
                             <input type="number" id="order" name="order" min="0" value="{{ old('order', $project->order) }}"
                                 class="w-28 rounded border-gray-300 focus:border-brand focus:ring-brand">
                         </div>
+                    </div>
 
-                        <div class="flex flex-col justify-center gap-2">
-                            <label class="flex items-center gap-2">
-                                <input type="checkbox" name="is_published" value="1" {{ old('is_published', $project->is_published ?? true) ? 'checked' : '' }}
-                                    class="rounded border-gray-300 text-brand focus:ring-brand">
-                                <span class="text-sm font-bold">Opublikowany</span>
-                            </label>
+                    <div class="flex flex-wrap gap-x-6 gap-y-3 border-t border-gray-100 pt-4">
+                        <label class="flex items-center gap-2">
+                            <input type="checkbox" name="is_published" value="1" {{ old('is_published', $project->is_published ?? true) ? 'checked' : '' }}
+                                class="rounded border-gray-300 text-brand focus:ring-brand">
+                            <span class="text-sm font-bold">Opublikowany</span>
+                        </label>
 
-                            <label class="flex items-center gap-2">
-                                <input type="checkbox" name="is_completed" value="1" {{ old('is_completed', $project->is_completed ?? false) ? 'checked' : '' }}
-                                    class="rounded border-gray-300 text-brand focus:ring-brand">
-                                <span class="text-sm font-bold">Projekt już zrealizowany</span>
-                            </label>
-                        </div>
+                        <label class="flex items-center gap-2">
+                            <input type="checkbox" name="is_completed" value="1" {{ old('is_completed', $project->is_completed ?? false) ? 'checked' : '' }}
+                                class="rounded border-gray-300 text-brand focus:ring-brand">
+                            <span class="text-sm font-bold">Projekt już zrealizowany</span>
+                        </label>
                     </div>
                 </div>
 
@@ -200,29 +202,29 @@
                 <div class="space-y-5 rounded-lg border border-gray-200 bg-white p-6">
                     <p class="text-sm font-bold uppercase tracking-wide text-muted">Zdjęcie</p>
                     <div class="grid gap-5 sm:grid-cols-2">
-                        <div class="space-y-3">
-                            @if ($project->exists && $project->image_url)
-                                <div>
-                                    <p class="mb-1 text-sm font-bold">Obecne zdjęcie</p>
-                                    <img src="{{ $project->image_url }}" alt="{{ $project->image_alt ?: $project->title }}" class="h-32 w-full rounded object-cover">
-                                </div>
-                            @endif
+                        @if ($project->exists && $project->image_url)
+                            <div class="sm:row-span-2">
+                                <p class="mb-1 text-sm font-bold">Obecne zdjęcie</p>
+                                <img src="{{ $project->image_url }}" alt="{{ $project->image_alt ?: $project->title }}" class="h-40 w-full rounded object-cover">
+                            </div>
+                        @endif
 
+                        <div class="space-y-4">
                             <div>
                                 <label for="image" class="mb-1 block text-sm font-bold">{{ $project->exists ? 'Zmień zdjęcie' : 'Zdjęcie' }}</label>
                                 <input type="file" id="image" name="image" accept="image/*"
                                     class="block w-full cursor-pointer text-sm text-muted file:mr-3 file:cursor-pointer file:rounded file:border-0 file:bg-brand file:px-4 file:py-2 file:text-sm file:font-bold file:text-white hover:file:bg-brand-dark">
                                 @error('image') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                             </div>
-                        </div>
 
-                        <div>
-                            <label for="image_alt" class="mb-1 block text-sm font-bold">Opis alternatywny zdjęcia</label>
-                            <input type="text" id="image_alt" name="image_alt" value="{{ old('image_alt', $project->image_alt) }}"
-                                placeholder="np. Zespół podczas audytu dostępności strony internetowej"
-                                class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
-                            <p class="mt-1 text-xs text-muted">Opisz, co przedstawia zdjęcie — czytają to osoby korzystające z czytników ekranu.</p>
-                            @error('image_alt') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                            <div>
+                                <label for="image_alt" class="mb-1 block text-sm font-bold">Opis alternatywny zdjęcia</label>
+                                <input type="text" id="image_alt" name="image_alt" value="{{ old('image_alt', $project->image_alt) }}"
+                                    placeholder="np. Zespół podczas audytu dostępności strony internetowej"
+                                    class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                                <p class="mt-1 text-xs text-muted">Opisz, co przedstawia zdjęcie — czytają to osoby korzystające z czytników ekranu.</p>
+                                @error('image_alt') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                            </div>
                         </div>
                     </div>
                 </div>
