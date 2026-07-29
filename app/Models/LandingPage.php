@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class LandingPage extends Model
 {
+    use \App\Models\Concerns\LogsActivity;
+
     public const SECTIONS = ['speakers' => 'Prelegenci', 'benefits' => 'Korzyści', 'agenda' => 'Agenda'];
 
     /** Dostępne typy dodatkowych pól formularza (klucz = typ, wartość = etykieta). */

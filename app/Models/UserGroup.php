@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class UserGroup extends Model
 {
+    use \App\Models\Concerns\LogsActivity;
+
     protected $fillable = ['name', 'modules', 'can_approve'];
 
     protected $casts = [

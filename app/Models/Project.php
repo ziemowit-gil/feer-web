@@ -12,6 +12,7 @@ use Spatie\MediaLibrary\InteractsWithMedia;
 class Project extends Model implements HasMedia
 {
     use \App\Models\Concerns\Approvable;
+    use \App\Models\Concerns\LogsActivity;
     use InteractsWithMedia;
 
     protected $fillable = [

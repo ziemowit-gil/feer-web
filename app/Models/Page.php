@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
 class Page extends Model
 {
     use \App\Models\Concerns\Approvable;
+    use \App\Models\Concerns\LogsActivity;
 
     /**
      * Top-level URL segments already used by other routes. Pages render at

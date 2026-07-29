@@ -12,6 +12,7 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
 class AnnualReport extends Model implements HasMedia
 {
     use InteractsWithMedia;
+    use \App\Models\Concerns\LogsActivity;
 
     /**
      * Dwa rodzaje sprawozdań (klucz = nazwa kolekcji mediów / prefiks kolumn).

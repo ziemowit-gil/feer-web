@@ -17,6 +17,7 @@ class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
+    use \App\Models\Concerns\LogsActivity;
 
     public const ROLE_ADMIN = 'admin';
 
