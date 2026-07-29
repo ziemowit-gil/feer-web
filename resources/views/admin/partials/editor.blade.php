@@ -29,7 +29,7 @@
 @endphp
 
 @php $mi = 'flex w-full items-center gap-2 rounded px-3 py-2 text-left text-xs font-bold text-ink hover:bg-brand-light hover:text-brand'; @endphp
-<div id="{{ $editorId }}-toolbar" class="mb-2 flex flex-wrap items-center gap-2">
+<div id="{{ $editorId }}-toolbar" class="mb-2 flex-wrap items-center gap-2 {{ $useCkEditor ? 'flex' : 'hidden' }}">
     {{-- Menu „Wstaw" — zgrupowane akcje wstawiania bloków --}}
     <div class="relative" x-data="{ open: false }" @click.outside="open = false" @keydown.escape="open = false">
         <button type="button" @click="open = !open" :aria-expanded="open"
@@ -404,6 +404,38 @@
             function initEditor() {
                 var modal = document.getElementById('{{ $editorId }}-media-modal');
 
+                var snippets = {!! json_encode($editorSnippets) !!};
+                var ctaHtml = {!! json_encode($ctaHtml) !!};
+                var boxHtml = {!! json_encode($boxHtml) !!};
+                var columnsHtml = {!! json_encode($columnsHtml) !!};
+                var pageLinks = {!! json_encode($pages->map(fn ($p) => ['url' => '/'.$p->slug, 'title' => $p->title])->values()) !!};
+
+                function checkA11y(html) {
+                    var doc = new DOMParser().parseFromString(html, 'text/html');
+                    var problems = [];
+                    doc.querySelectorAll('img').forEach(function (img) {
+                        if (!img.hasAttribute('alt')) problems.push('Obraz bez atrybutu alt (dodaj opis alternatywny).');
+                    });
+                    var levels = [];
+                    doc.querySelectorAll('h1,h2,h3,h4,h5,h6').forEach(function (h) { levels.push(parseInt(h.tagName[1], 10)); });
+                    for (var i = 1; i < levels.length; i++) {
+                        if (levels[i] - levels[i - 1] > 1) { problems.push('Przeskok w kolejności nagłówków (H' + levels[i - 1] + ' → H' + levels[i] + ').'); break; }
+                    }
+                    var generic = ['kliknij tutaj', 'tutaj', 'klik', 'czytaj więcej', 'więcej', 'link', 'zobacz'];
+                    doc.querySelectorAll('a').forEach(function (a) {
+                        var t = (a.textContent || '').trim().toLowerCase();
+                        if (t === '') problems.push('Link bez tekstu (czytnik ekranu przeczyta sam adres).');
+                        else if (generic.indexOf(t) !== -1) problems.push('Nieopisowy tekst linku: „' + a.textContent.trim() + '".');
+                    });
+                    if (!problems.length) {
+                        return '<p style="color:#15803d;font-weight:700">✓ Nie wykryto problemów z dostępnością treści.</p>';
+                    }
+                    var seen = {}, list = '';
+                    problems.forEach(function (p) { if (!seen[p]) { seen[p] = 1; list += '<li>' + p + '</li>'; } });
+                    return '<p style="font-weight:700;margin-bottom:.5rem">Wykryto potencjalne problemy z dostępnością:</p>'
+                        + '<ul style="margin-left:1.25rem;list-style:disc">' + list + '</ul>';
+                }
+
                 tinymce.init({
                     selector: '#{{ $editorId }}',
                     license_key: 'gpl',
@@ -412,56 +444,86 @@
                     statusbar: false,
                     branding: false,
                     convert_urls: false,
-                    plugins: 'link lists table code',
-                    toolbar: 'blocks | bold italic underline | forecolor backcolor | bullist numlist | link table columns | code',
+                    plugins: 'advlist autolink lists link image charmap preview searchreplace visualblocks code fullscreen media table help wordcount accordion emoticons autosave quickbars',
+                    toolbar: 'undo redo | blocks | bold italic underline forecolor backcolor | alignleft aligncenter alignright | bullist numlist | link table media accordion | insertmenu linkmenu | removeformat charmap emoticons | searchreplace visualblocks fullscreen preview | a11ycheck help | code',
+                    toolbar_mode: 'wrap',
+                    statusbar: true,
+                    elementpath: false,
+                    // Autozapis roboczy w przeglądarce — po awarii można przywrócić wersję.
+                    autosave_interval: '20s',
+                    autosave_restore_when_empty: true,
+                    autosave_retention: '1440m',
+                    // Szybki pasek zaznaczenia; bez natrętnego paska wstawiania.
+                    quickbars_insert_toolbar: false,
+                    quickbars_selection_toolbar: 'bold italic link',
+                    // Czyszczenie wklejeń (np. z Worda): usuwamy style inline i śmieciowe
+                    // klasy/znaczniki „mso", żeby treść trzymała spójny wygląd serwisu.
+                    paste_merge_formats: true,
+                    paste_postprocess: function (editor, args) {
+                        args.node.querySelectorAll('[style]').forEach(function (el) { el.removeAttribute('style'); });
+                        args.node.querySelectorAll('[class]').forEach(function (el) {
+                            if (/(^|\s)mso/i.test(el.className) || /Mso/.test(el.className)) el.removeAttribute('class');
+                        });
+                        args.node.querySelectorAll('o\\:p').forEach(function (el) { el.remove(); });
+                    },
                     setup: function (editor) {
-                        editor.ui.registry.addButton('columns', {
-                            text: 'Kolumny',
-                            icon: 'table',
-                            tooltip: 'Wstaw układ 2 kolumn',
+                        editor.ui.registry.addMenuButton('insertmenu', {
+                            text: 'Wstaw', icon: 'plus', tooltip: 'Wstaw element',
+                            fetch: function (cb) {
+                                cb([
+                                    { type: 'menuitem', text: 'Obraz z biblioteki', icon: 'image', onAction: function () { document.getElementById('{{ $editorId }}-media').click(); } },
+                                    { type: 'menuitem', text: 'Przycisk CTA', onAction: function () { editor.insertContent(ctaHtml); } },
+                                    { type: 'menuitem', text: 'Przycisk czerwony', onAction: function () { editor.insertContent(snippets.red); } },
+                                    { type: 'menuitem', text: 'Przycisk zielony', onAction: function () { editor.insertContent(snippets.green); } },
+                                    { type: 'menuitem', text: 'Tekst z ramką', onAction: function () { editor.insertContent(boxHtml); } },
+                                    { type: 'menuitem', text: 'Sekcja akcentu (lewo)', onAction: function () { editor.insertContent(snippets.accentLeft); } },
+                                    { type: 'menuitem', text: 'Sekcja akcentu (prawo)', onAction: function () { editor.insertContent(snippets.accentRight); } },
+                                    { type: 'menuitem', text: 'Układ 2 kolumn', onAction: function () { editor.insertContent(columnsHtml); } },
+                                    { type: 'menuitem', text: 'Linia pozioma', onAction: function () { editor.insertContent('<hr>'); } },
+                                ]);
+                            },
+                        });
+
+                        editor.ui.registry.addMenuButton('linkmenu', {
+                            text: 'Wstaw link', icon: 'link', tooltip: 'Wstaw link',
+                            fetch: function (cb) {
+                                var items = [{ type: 'menuitem', text: 'Link zewnętrzny (nowa karta)', onAction: function () {
+                                    var url = window.prompt('Adres URL (link zewnętrzny):', 'https://');
+                                    if (!url) return;
+                                    var text = window.prompt('Tekst linku:', url) || url;
+                                    editor.insertContent('<a href="' + url + '" target="_blank" rel="noopener noreferrer external">' + text + '</a>');
+                                } }];
+                                if (pageLinks.length) {
+                                    items.push({ type: 'nestedmenuitem', text: 'Link do strony', getSubmenuItems: function () {
+                                        return pageLinks.map(function (p) {
+                                            return { type: 'menuitem', text: p.title, onAction: function () { editor.insertContent('<a href="' + p.url + '">' + p.title + '</a>'); } };
+                                        });
+                                    } });
+                                }
+                                cb(items);
+                            },
+                        });
+
+                        editor.ui.registry.addButton('a11ycheck', {
+                            text: 'Dostępność', tooltip: 'Sprawdź dostępność treści',
                             onAction: function () {
-                                editor.insertContent({!! json_encode($columnsHtml) !!});
+                                editor.windowManager.open({
+                                    title: 'Kontrola dostępności',
+                                    body: { type: 'panel', items: [{ type: 'htmlpanel', html: checkA11y(editor.getContent()) }] },
+                                    buttons: [{ type: 'cancel', text: 'Zamknij', buttonType: 'primary' }],
+                                });
                             },
                         });
 
                         editor.on('init', function () {
                             modal.addEventListener('media-picked', function (event) {
                                 var image = event.detail;
-                                var html = '<img src="' + image.url + '" alt="' + image.alt.replace(/&/g, '&amp;').replace(/"/g, '&quot;') + '">';
-                                editor.insertContent(html);
+                                // Wymuszenie alt: przy wstawianiu obrazu pytamy o opis alternatywny.
+                                var alt = window.prompt('Opis alternatywny (alt) — opisz obraz dla osób niewidomych.\nZostaw puste tylko dla obrazu czysto dekoracyjnego:', image.alt || '');
+                                if (alt === null) return; // anulowano — nie wstawiaj
+                                var safeAlt = alt.replace(/&/g, '&amp;').replace(/"/g, '&quot;');
+                                editor.insertContent('<img src="' + image.url + '" alt="' + safeAlt + '">');
                             });
-
-                            document.getElementById('{{ $editorId }}-cta').addEventListener('click', function () {
-                                editor.insertContent({!! json_encode($ctaHtml) !!});
-                            });
-
-                            document.getElementById('{{ $editorId }}-box').addEventListener('click', function () {
-                                editor.insertContent({!! json_encode($boxHtml) !!});
-                            });
-
-                            var tinySnippets = {!! json_encode($editorSnippets) !!};
-                            document.getElementById('{{ $editorId }}-toolbar').querySelectorAll('[data-insert-key]').forEach(function (b) {
-                                b.addEventListener('click', function () {
-                                    editor.insertContent(tinySnippets[b.dataset.insertKey]);
-                                });
-                            });
-
-                            document.getElementById('{{ $editorId }}-ext-link').addEventListener('click', function () {
-                                var url = window.prompt('Adres URL (link zewnętrzny):', 'https://');
-                                if (!url) return;
-                                var text = window.prompt('Tekst linku:', url) || url;
-                                editor.insertContent('<a href="' + url + '" target="_blank" rel="noopener noreferrer external">' + text + '</a>');
-                            });
-
-                            var pageLinkSelect = document.getElementById('{{ $editorId }}-page-link');
-                            if (pageLinkSelect) {
-                                pageLinkSelect.addEventListener('change', function () {
-                                    if (!this.value) return;
-                                    var title = this.selectedOptions[0].dataset.title;
-                                    editor.insertContent('<p><a href="' + this.value + '">' + title + '</a></p>');
-                                    this.selectedIndex = 0;
-                                });
-                            }
                         });
                     },
                 });
