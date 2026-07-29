@@ -39,4 +39,11 @@
             Logowanie do strefy wewnętrznej jest obecnie wyłączone. Skontaktuj się z administratorem.
         </div>
     @endif
+
+    @if ($siteSettings->szoTozsamoscUrl())
+        <div class="mt-6 border-t border-gray-200 pt-6 text-center">
+            @include('partials.strefa-tozsamosc', ['margin' => false])
+            <p class="text-xs text-muted">Zarządzaj swoim kontem i danymi logowania współpracownika.</p>
+        </div>
+    @endif
 </x-guest-layout>

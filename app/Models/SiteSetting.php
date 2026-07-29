@@ -566,6 +566,17 @@ class SiteSetting extends Model implements HasMedia
         return $this->szoConfigured() ? rtrim(trim($this->szo_api_url), '/') : null;
     }
 
+    /**
+     * Adres zarządzania tożsamością współpracownika w SZO
+     * ({adres bazowy SZO}/tozsamosc) albo null, gdy brak konfiguracji SZO.
+     */
+    public function szoTozsamoscUrl(): ?string
+    {
+        $base = $this->szoPanelUrl();
+
+        return $base ? $base.'/tozsamosc' : null;
+    }
+
     /** Czy uwierzytelnianie kluczem YubiKey jest skonfigurowane (Yubico API). */
     public function yubicoConfigured(): bool
     {

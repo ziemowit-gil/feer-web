@@ -598,6 +598,8 @@
     </section>
 
     <section class="mx-auto max-w-5xl px-4 py-12">
+        @include('partials.strefa-tozsamosc')
+
         @if ($page->content)
             <div class="prose mx-auto mb-10 max-w-none text-ink">{!! $page->content !!}</div>
         @endif
@@ -661,6 +663,7 @@
 
                 @isset($szoKomunikaty)
                     @include('partials.strefa-notice', ['szoPanelUrl' => $szoPanelUrl ?? null])
+                    @include('partials.strefa-tozsamosc')
                 @endisset
 
                 <div class="prose max-w-none text-ink">{!! $page->content !!}</div>
