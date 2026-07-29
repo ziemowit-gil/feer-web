@@ -310,7 +310,6 @@ require __DIR__.'/auth.php';
 // Strefa wewnętrzna: osobne logowanie współpracowników przez Microsoft 365
 // (guard „member"), niezależne od logowania do panelu.
 Route::prefix('strefa')->group(function () {
-    Route::get('/', fn () => redirect()->route('member.login'))->name('member.home');
     Route::get('logowanie', [MemberMicrosoftAuthController::class, 'create'])->name('member.login');
     Route::get('microsoft/redirect', [MemberMicrosoftAuthController::class, 'redirect'])->name('member.microsoft.redirect');
     Route::get('microsoft/callback', [MemberMicrosoftAuthController::class, 'callback'])->name('member.microsoft.callback');
