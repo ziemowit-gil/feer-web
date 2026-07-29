@@ -13,13 +13,14 @@ use Spatie\MediaLibrary\InteractsWithMedia;
 
 class News extends Model implements HasMedia
 {
+    use \App\Models\Concerns\Approvable;
     use InteractsWithMedia;
 
     protected $table = 'news';
 
     protected $fillable = [
         'news_category_id', 'project_id', 'title', 'slug', 'excerpt', 'audience', 'accent_color', 'image_alt', 'content', 'published_at', 'is_published', 'is_featured', 'is_archived',
-        'meta_title', 'meta_description',
+        'meta_title', 'meta_description', 'pending_approval', 'submitted_by_id',
     ];
 
     protected $casts = [
@@ -27,6 +28,7 @@ class News extends Model implements HasMedia
         'is_published' => 'boolean',
         'is_archived' => 'boolean',
         'is_featured' => 'boolean',
+        'pending_approval' => 'boolean',
     ];
 
     public function category(): BelongsTo

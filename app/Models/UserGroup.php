@@ -7,10 +7,11 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class UserGroup extends Model
 {
-    protected $fillable = ['name', 'modules'];
+    protected $fillable = ['name', 'modules', 'can_approve'];
 
     protected $casts = [
         'modules' => 'array',
+        'can_approve' => 'boolean',
     ];
 
     public function users(): HasMany

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Concerns\HandlesContentApproval;
 use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Models\Project;
@@ -12,6 +13,8 @@ use Illuminate\Validation\Rule;
 
 class ProjectController extends Controller
 {
+    use HandlesContentApproval;
+
     public function index(Request $request)
     {
         $status = $request->query('status', '');
@@ -172,7 +175,7 @@ class ProjectController extends Controller
 
         unset($data['image']);
 
-        return $data;
+        return $this->applyApprovalWorkflow($data);
     }
 
     private function uniqueSlug(string $source, ?int $ignoreId = null): string

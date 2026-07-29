@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Concerns\HandlesContentApproval;
 use App\Http\Controllers\Controller;
 use App\Models\Page;
 use App\Models\Project;
@@ -11,6 +12,8 @@ use Illuminate\Validation\Rule;
 
 class PageController extends Controller
 {
+    use HandlesContentApproval;
+
     public function index(Request $request)
     {
         $status = $request->query('status', '');
@@ -455,7 +458,7 @@ class PageController extends Controller
             $data['legacy_intro'] = null;
         }
 
-        return $data;
+        return $this->applyApprovalWorkflow($data);
     }
 
     /**

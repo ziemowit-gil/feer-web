@@ -9,6 +9,8 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 class Page extends Model
 {
+    use \App\Models\Concerns\Approvable;
+
     /**
      * Top-level URL segments already used by other routes. Pages render at
      * the site root (e.g. /fundacja), so a page can't take one of these
@@ -82,7 +84,7 @@ class Page extends Model
 
     protected $fillable = [
         'parent_id', 'project_id', 'project_display', 'title', 'slug', 'content', 'is_published', 'is_archived', 'show_in_menu', 'show_side_nav', 'is_system', 'is_locked', 'order',
-        'meta_title', 'meta_description',
+        'meta_title', 'meta_description', 'pending_approval', 'submitted_by_id',
         'is_disabled', 'disabled_message', 'wip_mode', 'wip_message',
         'type', 'event_mode', 'event_when', 'event_location', 'event_how_to_join', 'event_registration_url',
         'schedule_items', 'schedule_change_notice', 'schedule_pending',
@@ -95,6 +97,7 @@ class Page extends Model
     protected $casts = [
         'is_published' => 'boolean',
         'is_archived' => 'boolean',
+        'pending_approval' => 'boolean',
         'is_disabled' => 'boolean',
         'show_in_menu' => 'boolean',
         'show_side_nav' => 'boolean',

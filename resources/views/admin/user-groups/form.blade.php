@@ -32,6 +32,16 @@
             @error('modules') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
         </div>
 
+        <div class="border-t border-gray-100 pt-5">
+            <label class="flex items-start gap-2">
+                <input type="checkbox" name="can_approve" value="1" {{ old('can_approve', $group->can_approve ?? false) ? 'checked' : '' }}
+                    class="mt-0.5 rounded border-gray-300 text-brand focus:ring-brand">
+                <span class="text-sm font-bold">Moderator / akceptant treści
+                    <span class="block font-normal text-muted">Może zatwierdzać i publikować treści. Bez tego uprawnienia treści zgłoszone przez tę grupę trafiają do kolejki „Do zatwierdzenia" i czekają na publikację.</span>
+                </span>
+            </label>
+        </div>
+
         <div class="flex items-center gap-3 border-t border-gray-100 pt-5">
             <button type="submit" class="rounded bg-brand px-5 py-2 text-sm font-bold text-white hover:bg-brand-dark">Zapisz</button>
             <a href="{{ route('admin.grupy.index') }}" class="text-sm text-muted hover:text-brand">Anuluj</a>

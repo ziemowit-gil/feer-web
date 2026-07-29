@@ -55,9 +55,11 @@ class UserGroupController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'modules' => ['sometimes', 'array'],
             'modules.*' => ['string', Rule::in(array_keys(SiteSetting::MODULES))],
+            'can_approve' => ['sometimes', 'boolean'],
         ]);
 
         $data['modules'] = $data['modules'] ?? [];
+        $data['can_approve'] = $request->boolean('can_approve');
 
         return $data;
     }

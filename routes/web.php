@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\AnnualReportController as AdminAnnualReportController;
+use App\Http\Controllers\Admin\ApprovalController as AdminApprovalController;
 use App\Http\Controllers\Admin\LandingPageController as AdminLandingPageController;
 use App\Http\Controllers\Admin\AttachmentController as AdminAttachmentController;
 use App\Http\Controllers\Admin\CategoryController as AdminCategoryController;
@@ -214,6 +215,11 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(
     Route::middleware(['module:reports', 'module-access:reports'])->group(function () {
         Route::resource('sprawozdania', AdminAnnualReportController::class)->parameters(['sprawozdania' => 'annualReport'])->except('show');
     });
+
+    // Kolejka moderacji — dostęp pilnuje kontroler (canApproveContent).
+    Route::get('zatwierdzanie', [AdminApprovalController::class, 'index'])->name('zatwierdzanie.index');
+    Route::post('zatwierdzanie/{type}/{id}/zatwierdz', [AdminApprovalController::class, 'approve'])->name('zatwierdzanie.approve');
+    Route::post('zatwierdzanie/{type}/{id}/odrzuc', [AdminApprovalController::class, 'reject'])->name('zatwierdzanie.reject');
 
     Route::middleware(['module:landing', 'module-access:landing'])->group(function () {
         Route::resource('lp', AdminLandingPageController::class)->parameters(['lp' => 'landing'])->except('show');

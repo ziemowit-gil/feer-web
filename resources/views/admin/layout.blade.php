@@ -48,6 +48,17 @@
                 <i class="fa-solid fa-gauge {{ $iconClass('admin.dashboard') }}"></i> Dashboard
             </a>
 
+            @if (auth()->user()->canApproveContent())
+                @php $pendingApprovals = \App\Http\Controllers\Admin\ApprovalController::pendingCount(); @endphp
+                <a href="{{ route('admin.zatwierdzanie.index') }}" class="{{ $itemClass('admin.zatwierdzanie.*') }}">
+                    <i class="fa-solid fa-clipboard-check {{ $iconClass('admin.zatwierdzanie.*') }}"></i>
+                    <span class="flex-1">Do zatwierdzenia</span>
+                    @if ($pendingApprovals > 0)
+                        <span class="rounded-full bg-brand px-2 py-0.5 text-xs font-bold text-white">{{ $pendingApprovals }}</span>
+                    @endif
+                </a>
+            @endif
+
             <div x-data="{ open: {{ request()->routeIs($contentRoutes) ? 'true' : 'false' }} }">
                 <button type="button" @click="open = !open" :aria-expanded="open" aria-controls="nav-section-content"
                     class="flex w-full items-center justify-between rounded-lg px-3 py-2 text-xs font-bold uppercase tracking-wider text-muted transition-colors hover:bg-gray-100 hover:text-ink">

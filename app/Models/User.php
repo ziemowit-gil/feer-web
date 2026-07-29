@@ -53,4 +53,14 @@ class User extends Authenticatable
     {
         return $this->isAdmin() || ($this->group && $this->group->hasModule($module));
     }
+
+    /**
+     * Czy użytkownik może zatwierdzać i publikować treść. Admin zawsze może;
+     * pozostali — tylko gdy ich grupa ma uprawnienie moderatora/akceptanta.
+     * Edytor bez tego uprawnienia zgłasza treść „do zatwierdzenia".
+     */
+    public function canApproveContent(): bool
+    {
+        return $this->isAdmin() || ($this->group && $this->group->can_approve);
+    }
 }

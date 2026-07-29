@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Concerns\HandlesContentApproval;
 use App\Http\Controllers\Controller;
 use App\Models\News;
 use App\Models\NewsCategory;
@@ -15,6 +16,8 @@ use Illuminate\Validation\Rule;
 
 class NewsController extends Controller
 {
+    use HandlesContentApproval;
+
     public function index(Request $request)
     {
         $status = $request->query('status', '');
@@ -142,7 +145,7 @@ class NewsController extends Controller
         $data['is_archived'] = $request->boolean('is_archived');
         unset($data['image']);
 
-        return $data;
+        return $this->applyApprovalWorkflow($data);
     }
 
     /**
