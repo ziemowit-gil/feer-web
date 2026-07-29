@@ -28,6 +28,32 @@
     $pages = \App\Models\Page::where('is_published', true)->orderBy('title')->get();
     // Schedule pages, offered as ready-made CTA buttons ("Sprawdź harmonogram").
     $schedulePages = \App\Models\Page::where('is_published', true)->where('type', 'schedule')->orderBy('title')->get();
+
+    // Wydarzenia do wstawienia jako „ramka z wydarzeniem". Snippet składamy po
+    // stronie serwera (poprawne etykiety terminu/typu), a edytor tylko go wstawia.
+    // TinyMCE zachowuje <div class="event-box">; CKEditor rozbija nieznane <div>y,
+    // więc dostaje wariant na <blockquote> (który i tak wygląda jak ramka).
+    $eventsForBox = \App\Models\Event::where('is_published', true)->orderByDesc('starts_at')->get();
+    $eventBoxMeta = fn ($e) => collect([
+        $e->typeLabel(),
+        $e->starts_at ? $e->dateRangeLabel() : null,
+        $e->location ?: $e->modeLabel(),
+    ])->filter()->map(fn ($p) => e($p))->implode(' · ');
+    $eventBoxHtml = fn ($e) => '<div class="event-box">'
+        .'<p class="event-box-meta">'.$eventBoxMeta($e).'</p>'
+        .'<p class="event-box-title"><a href="/wydarzenia/'.e($e->slug).'">'.e($e->title).'</a></p>'
+        .'<p><a href="/wydarzenia/'.e($e->slug).'" class="cta-button">Szczegóły wydarzenia</a></p>'
+        .'</div><p>&nbsp;</p>';
+    $eventBoxHtmlCk = fn ($e) => '<blockquote>'
+        .'<p><strong>'.e($e->title).'</strong><br>'.$eventBoxMeta($e).'</p>'
+        .'<p><a href="/wydarzenia/'.e($e->slug).'">Szczegóły wydarzenia →</a></p>'
+        .'</blockquote><p>&nbsp;</p>';
+    $eventBoxOptions = $eventsForBox->map(fn ($e) => [
+        'slug' => $e->slug,
+        'title' => $e->title,
+        'html' => $eventBoxHtml($e),
+        'htmlCk' => $eventBoxHtmlCk($e),
+    ])->values();
 @endphp
 
 @php $mi = 'flex w-full items-center gap-2 rounded px-3 py-2 text-left text-xs font-bold text-ink hover:bg-brand-light hover:text-brand'; @endphp
@@ -49,6 +75,15 @@
             @endif
             <button type="button" data-insert-key="accentLeft" @click="open = false" class="{{ $mi }}"><i class="fa-solid fa-align-left w-4 text-center" aria-hidden="true"></i> Sekcja akcentu (lewo)</button>
             <button type="button" data-insert-key="accentRight" @click="open = false" class="{{ $mi }}"><i class="fa-solid fa-align-right w-4 text-center" aria-hidden="true"></i> Sekcja akcentu (prawo)</button>
+            @if ($eventBoxOptions->isNotEmpty())
+                <label for="{{ $editorId }}-event-box" class="mt-2 block px-3 pb-1 text-[0.65rem] font-bold uppercase tracking-wide text-muted">Ramka z wydarzeniem</label>
+                <select id="{{ $editorId }}-event-box" @change="open = false" class="w-full rounded border-gray-300 px-2 py-1.5 text-xs font-bold text-ink focus:border-brand focus:ring-brand">
+                    <option value="">— wybierz wydarzenie —</option>
+                    @foreach ($eventBoxOptions as $ev)
+                        <option value="{{ $ev['slug'] }}">{{ $ev['title'] }}</option>
+                    @endforeach
+                </select>
+            @endif
         </div>
     </div>
 
@@ -389,6 +424,19 @@
                         });
                     }
 
+                    var eventBoxSelect = document.getElementById('{{ $editorId }}-event-box');
+                    if (eventBoxSelect) {
+                        var eventBoxesCk = {!! json_encode($eventBoxOptions->pluck('htmlCk', 'slug')) !!};
+                        eventBoxSelect.addEventListener('change', function () {
+                            if (!this.value || !eventBoxesCk[this.value]) return;
+                            var viewFragment = editor.data.processor.toView(eventBoxesCk[this.value]);
+                            var modelFragment = editor.data.toModel(viewFragment);
+                            editor.model.insertContent(modelFragment);
+                            editor.editing.view.focus();
+                            this.selectedIndex = 0;
+                        });
+                    }
+
                     modal.addEventListener('media-picked', function (event) {
                         var image = event.detail;
                         var html = '<img src="' + image.url + '" alt="' + image.alt.replace(/&/g, '&amp;').replace(/"/g, '&quot;') + '">';
@@ -435,6 +483,7 @@
                 var columnsHtml = {!! json_encode($columnsHtml) !!};
                 var pageLinks = {!! json_encode($pages->map(fn ($p) => ['url' => '/'.$p->slug, 'title' => $p->title])->values()) !!};
                 var scheduleLinks = {!! json_encode($schedulePages->map(fn ($p) => ['url' => '/'.$p->slug, 'title' => $p->title])->values()) !!};
+                var eventBoxes = {!! json_encode($eventBoxOptions->map(fn ($o) => ['title' => $o['title'], 'html' => $o['html']])->values()) !!};
 
                 function checkA11y(html) {
                     var doc = new DOMParser().parseFromString(html, 'text/html');
@@ -496,7 +545,7 @@
                         editor.ui.registry.addMenuButton('insertmenu', {
                             text: 'Wstaw', icon: 'plus', tooltip: 'Wstaw element',
                             fetch: function (cb) {
-                                cb([
+                                var items = [
                                     { type: 'menuitem', text: 'Obraz z biblioteki', icon: 'image', onAction: function () { document.getElementById('{{ $editorId }}-media').click(); } },
                                     { type: 'menuitem', text: 'Przycisk CTA', onAction: function () { editor.insertContent(ctaHtml); } },
                                     { type: 'menuitem', text: 'Przycisk czerwony', onAction: function () { editor.insertContent(snippets.red); } },
@@ -506,7 +555,15 @@
                                     { type: 'menuitem', text: 'Sekcja akcentu (prawo)', onAction: function () { editor.insertContent(snippets.accentRight); } },
                                     { type: 'menuitem', text: 'Układ 2 kolumn', onAction: function () { editor.insertContent(columnsHtml); } },
                                     { type: 'menuitem', text: 'Linia pozioma', onAction: function () { editor.insertContent('<hr>'); } },
-                                ]);
+                                ];
+                                if (eventBoxes.length) {
+                                    items.push({ type: 'nestedmenuitem', text: 'Ramka z wydarzeniem', getSubmenuItems: function () {
+                                        return eventBoxes.map(function (ev) {
+                                            return { type: 'menuitem', text: ev.title, onAction: function () { editor.insertContent(ev.html); } };
+                                        });
+                                    } });
+                                }
+                                cb(items);
                             },
                         });
 
