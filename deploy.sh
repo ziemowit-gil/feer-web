@@ -10,14 +10,22 @@
 #   ./deploy.sh
 #
 # Zmienne środowiskowe (opcjonalne):
-#   PHP_BIN   binarka PHP CLI            (domyślnie: php85)
+#   PHP_BIN   binarka PHP CLI            (domyślnie: php84, a gdy niedostępna — php85)
 #   NPM_BIN   binarka npm                (domyślnie: /opt/alt/alt-nodejs20/root/usr/bin/npm)
 #   BRANCH    gałąź do pobrania          (domyślnie: main)
 #
 # Przykład lokalnego testu:  PHP_BIN=php NPM_BIN=npm ./deploy.sh
 set -euo pipefail
 
-PHP_BIN="${PHP_BIN:-php85}"
+# Wybór binarki PHP: preferuj php84, w razie porażki użyj php85.
+# Jawnie ustawiona zmienna PHP_BIN wyłącza automatyczny wybór.
+if [ -z "${PHP_BIN:-}" ]; then
+    if php84 -v >/dev/null 2>&1; then
+        PHP_BIN="php84"
+    else
+        PHP_BIN="php85"
+    fi
+fi
 NPM_BIN="${NPM_BIN:-/opt/alt/alt-nodejs20/root/usr/bin/npm}"
 BRANCH="${BRANCH:-main}"
 DB="database/database.sqlite"
