@@ -25,7 +25,7 @@ class Banner extends Model
 
     public function zones(): BelongsToMany
     {
-        return $this->belongsToMany(BannerZone::class)
+        return $this->belongsToMany(BannerZone::class, 'banner_zone_banner')
             ->withPivot('priority')
             ->withTimestamps();
     }
@@ -34,11 +34,14 @@ class Banner extends Model
     public function scopeActiveForZone(Builder $query, string $zone): Builder
     {
         return $query
-            ->whereHas('zones', fn (Builder $z) => $z->where('slug', $zone))
-            ->where('is_active', true)
-            ->where(fn (Builder $q) => $q->whereNull('starts_at')->orWhere('starts_at', '<=', now()))
-            ->where(fn (Builder $q) => $q->whereNull('ends_at')->orWhere('ends_at', '>=', now()))
-            ->orderByPivot('priority', 'desc');
+            ->select('banners.*')
+            ->join('banner_zone_banner', 'banner_zone_banner.banner_id', '=', 'banners.id')
+            ->join('banner_zones', 'banner_zones.id', '=', 'banner_zone_banner.banner_zone_id')
+            ->where('banner_zones.slug', $zone)
+            ->where('banners.is_active', true)
+            ->where(fn (Builder $q) => $q->whereNull('banners.starts_at')->orWhere('banners.starts_at', '<=', now()))
+            ->where(fn (Builder $q) => $q->whereNull('banners.ends_at')->orWhere('banners.ends_at', '>=', now()))
+            ->orderByDesc('banner_zone_banner.priority');
     }
 
     /** Współczynnik kliknięć (CTR) w procentach. */
