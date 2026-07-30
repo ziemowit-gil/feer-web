@@ -58,7 +58,10 @@ if [ -n "$BACKUP" ]; then
 fi
 
 # 5. Budowa assetów frontu (Tailwind/Vite).
+# Dołóż katalog npm/node do PATH, żeby skrypty (vite → #!/usr/bin/env node)
+# znalazły binarkę `node` z tej samej dystrybucji Node.
 echo "▶ Budowa assetów (npm ci && npm run build)"
+export PATH="$(dirname "$NPM_BIN"):$PATH"
 if [ -f package-lock.json ]; then
     "$NPM_BIN" ci
 else
