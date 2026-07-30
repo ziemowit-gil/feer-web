@@ -4,6 +4,7 @@ use App\Http\Controllers\Auth\MemberMicrosoftAuthController;
 use App\Http\Controllers\Admin\ActivityController as AdminActivityController;
 use App\Http\Controllers\Admin\AnnualReportController as AdminAnnualReportController;
 use App\Http\Controllers\Admin\ApprovalController as AdminApprovalController;
+use App\Http\Controllers\Admin\RevisionController as AdminRevisionController;
 use App\Http\Controllers\Admin\LinkCheckController as AdminLinkCheckController;
 use App\Http\Controllers\Admin\LandingPageController as AdminLandingPageController;
 use App\Http\Controllers\Admin\AttachmentController as AdminAttachmentController;
@@ -159,6 +160,10 @@ Route::middleware('auth')->group(function () {
 
 Route::middleware(['auth', 'verified', '2fa'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/', [AdminDashboardController::class, 'index'])->name('dashboard');
+
+    // Historia zmian treści (dostęp weryfikowany per moduł w kontrolerze).
+    Route::get('historia/{type}/{id}', [AdminRevisionController::class, 'index'])->name('historia.index');
+    Route::post('historia/{type}/{id}/przywroc/{revision}', [AdminRevisionController::class, 'restore'])->name('historia.restore');
 
     Route::middleware(['module:pages', 'module-access:pages'])->group(function () {
         Route::resource('podstrony', AdminPageController::class)->parameters(['podstrony' => 'page']);

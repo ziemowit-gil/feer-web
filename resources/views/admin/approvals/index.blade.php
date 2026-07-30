@@ -35,10 +35,16 @@
                                     </button>
                                 </form>
                                 <form method="POST" action="{{ route('admin.zatwierdzanie.reject', ['type' => $item['type'], 'id' => $item['id']]) }}"
-                                    onsubmit="return confirm('Odrzucić i cofnąć „{{ $item['title'] }}” do szkicu?');">
+                                    x-data="{ open: false }"
+                                    @submit="if (! open) { $event.preventDefault(); open = true; $nextTick(() => $refs.reason.focus()); }"
+                                    class="flex items-center gap-2">
                                     @csrf
+                                    <label x-show="open" x-cloak class="sr-only" for="reason-{{ $item['type'] }}-{{ $item['id'] }}">Powód odrzucenia (opcjonalnie)</label>
+                                    <input x-show="open" x-cloak x-ref="reason" id="reason-{{ $item['type'] }}-{{ $item['id'] }}"
+                                        type="text" name="reason" maxlength="1000" placeholder="Powód (opcjonalnie)"
+                                        class="w-44 rounded border-gray-300 text-xs focus:border-red-500 focus:ring-red-500">
                                     <button type="submit" class="rounded border border-gray-300 px-3 py-1.5 text-xs font-bold text-muted hover:border-red-400 hover:text-red-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600">
-                                        Odrzuć
+                                        <span x-text="open ? 'Potwierdź odrzucenie' : 'Odrzuć'">Odrzuć</span>
                                     </button>
                                 </form>
                             </div>

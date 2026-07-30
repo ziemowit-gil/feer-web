@@ -14,7 +14,13 @@ class Page extends Model
     use Approvable;
     use \App\Models\Concerns\HasEtr;
     use \App\Models\Concerns\HasPreviewLink;
+    use \App\Models\Concerns\HasRevisions;
     use LogsActivity;
+
+    public function revisionFields(): array
+    {
+        return ['title', 'slug', 'content', 'meta_title', 'meta_description'];
+    }
 
     protected function previewRouteName(): string
     {

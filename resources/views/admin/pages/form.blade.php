@@ -53,6 +53,15 @@
             @endif
         </div>
 
+        @if ($page->exists)
+            <div class="mb-3 flex justify-end">
+                <a href="{{ route('admin.historia.index', ['type' => 'page', 'id' => $page->id]) }}"
+                    class="text-sm font-bold text-muted hover:text-brand">
+                    <i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i> Historia zmian
+                </a>
+            </div>
+        @endif
+
         <form method="POST" action="{{ $page->exists ? route('admin.podstrony.update', $page) : route('admin.podstrony.store') }}" enctype="multipart/form-data" class="space-y-6">
             @csrf
             @if ($page->exists) @method('PUT') @endif

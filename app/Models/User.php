@@ -88,4 +88,17 @@ class User extends Authenticatable
     {
         return $this->isAdmin() || ($this->group && $this->group->can_approve);
     }
+
+    /**
+     * Użytkownicy uprawnieni do akceptacji treści: administratorzy oraz
+     * członkowie grup z uprawnieniem `can_approve`. Odbiorcy powiadomień
+     * o treści zgłoszonej do zatwierdzenia.
+     */
+    public function scopeApprovers(\Illuminate\Database\Eloquent\Builder $query): \Illuminate\Database\Eloquent\Builder
+    {
+        return $query->where(function (\Illuminate\Database\Eloquent\Builder $q) {
+            $q->where('role', self::ROLE_ADMIN)
+                ->orWhereHas('group', fn ($g) => $g->where('can_approve', true));
+        });
+    }
 }

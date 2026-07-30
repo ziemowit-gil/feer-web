@@ -16,10 +16,16 @@ class News extends Model implements HasMedia
     use \App\Models\Concerns\Approvable;
     use \App\Models\Concerns\HasEtr;
     use \App\Models\Concerns\HasPreviewLink;
+    use \App\Models\Concerns\HasRevisions;
     use \App\Models\Concerns\LogsActivity;
     use InteractsWithMedia;
 
     protected $table = 'news';
+
+    public function revisionFields(): array
+    {
+        return ['title', 'slug', 'excerpt', 'content', 'meta_title', 'meta_description'];
+    }
 
     protected function previewRouteName(): string
     {

@@ -12,8 +12,14 @@ use Spatie\MediaLibrary\InteractsWithMedia;
 class Project extends Model implements HasMedia
 {
     use \App\Models\Concerns\Approvable;
+    use \App\Models\Concerns\HasRevisions;
     use \App\Models\Concerns\LogsActivity;
     use InteractsWithMedia;
+
+    public function revisionFields(): array
+    {
+        return ['title', 'slug', 'excerpt', 'for_whom', 'content', 'why', 'outcomes', 'meta_title', 'meta_description'];
+    }
 
     protected $fillable = [
         'category_id', 'title', 'slug', 'excerpt', 'for_whom', 'audience', 'accent_color', 'since', 'image_alt', 'content', 'why', 'outcomes', 'is_published', 'is_completed', 'is_paid', 'pricing', 'order',

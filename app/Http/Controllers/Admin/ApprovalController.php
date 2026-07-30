@@ -6,6 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Models\News;
 use App\Models\Page;
 use App\Models\Project;
+use App\Notifications\ContentApproved;
+use App\Notifications\ContentRejected;
+use Illuminate\Http\Request;
 
 class ApprovalController extends Controller
 {
@@ -40,16 +43,34 @@ class ApprovalController extends Controller
 
     public function approve(string $type, int $id)
     {
-        $this->resolve($type, $id)->update(['is_published' => true, 'pending_approval' => false]);
+        $model = $this->resolve($type, $id);
+        $model->update(['is_published' => true, 'pending_approval' => false]);
+
+        $this->notifyAuthor($model, new ContentApproved($model, $model->approvalLabel()));
 
         return back()->with('status', 'Treść została zatwierdzona i opublikowana.');
     }
 
-    public function reject(string $type, int $id)
+    public function reject(Request $request, string $type, int $id)
     {
-        $this->resolve($type, $id)->update(['pending_approval' => false]);
+        $reason = $request->validate(['reason' => 'nullable|string|max:1000'])['reason'] ?? null;
+
+        $model = $this->resolve($type, $id);
+        $model->update(['pending_approval' => false]);
+
+        $this->notifyAuthor($model, new ContentRejected($model, $model->approvalLabel(), $reason));
 
         return back()->with('status', 'Treść odrzucona — wróciła do wersji roboczej (szkicu).');
+    }
+
+    /** Powiadom autora zgłoszenia, jeśli jest znany i ma adres e-mail. */
+    private function notifyAuthor($model, $notification): void
+    {
+        $author = $model->submittedBy;
+
+        if ($author && filled($author->email)) {
+            $author->notify($notification);
+        }
     }
 
     private function resolve(string $type, int $id)

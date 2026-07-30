@@ -3,6 +3,15 @@
 @section('title', $project->exists ? 'Edytuj projekt' : 'Nowy projekt')
 
 @section('content')
+    @if ($project->exists)
+        <div class="mb-3 flex justify-end">
+            <a href="{{ route('admin.historia.index', ['type' => 'project', 'id' => $project->id]) }}"
+                class="text-sm font-bold text-muted hover:text-brand">
+                <i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i> Historia zmian
+            </a>
+        </div>
+    @endif
+
     <form method="POST" action="{{ $project->exists ? route('admin.projekty.update', $project) : route('admin.projekty.store') }}"
         enctype="multipart/form-data" class="space-y-6">
         @csrf
