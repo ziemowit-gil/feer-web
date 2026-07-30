@@ -21,11 +21,16 @@ class BannerZone extends Component
             fn () => BannerZoneModel::where('slug', $name)->value('max_concurrent') ?? 1
         );
 
-        $this->banners = Cache::remember(
-            "banner_zone_{$name}",
-            now()->addMinutes(10),
-            fn () => Banner::activeForZone($name)->limit($maxConcurrent)->get()
-        );
+        // Nie przypisujemy surowej wartości z cache do typowanej właściwości:
+        // uszkodzony/nieaktualny wpis może zdeserializować się do __PHP_Incomplete_Class.
+        $cached = Cache::get("banner_zone_{$name}");
+
+        if (! $cached instanceof Collection) {
+            $cached = Banner::activeForZone($name)->limit($maxConcurrent)->get();
+            Cache::put("banner_zone_{$name}", $cached, now()->addMinutes(10));
+        }
+
+        $this->banners = $cached;
     }
 
     public function render(): View
