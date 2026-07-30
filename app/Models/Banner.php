@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 class Banner extends Model
 {
     protected $fillable = [
-        'name', 'type', 'image_path', 'image_alt',
+        'name', 'type', 'image_path', 'image_alt', 'width', 'height',
         'link_url', 'link_target', 'html_content',
         'is_active', 'starts_at', 'ends_at', 'conditions',
     ];
@@ -19,6 +19,8 @@ class Banner extends Model
         'starts_at'   => 'datetime',
         'ends_at'     => 'datetime',
         'conditions'  => 'array',
+        'width'       => 'integer',
+        'height'      => 'integer',
         'impressions' => 'integer',
         'clicks'      => 'integer',
     ];

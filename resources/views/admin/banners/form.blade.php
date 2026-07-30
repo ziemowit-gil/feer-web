@@ -88,6 +88,24 @@
                         <p class="mt-1 text-xs text-muted">Wymagany dla dostępności. Jeśli baner jest czysto dekoracyjny, zostaw puste.</p>
                     </div>
 
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label for="width" class="mb-1 block text-sm font-bold">Szerokość (px)</label>
+                            <input id="width" type="number" name="width" min="1" max="2000"
+                                value="{{ old('width', $banner->width) }}"
+                                class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                        </div>
+                        <div>
+                            <label for="height" class="mb-1 block text-sm font-bold">Wysokość (px)</label>
+                            <input id="height" type="number" name="height" min="1" max="2000"
+                                value="{{ old('height', $banner->height) }}"
+                                class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                        </div>
+                        <p class="col-span-2 -mt-1 text-xs text-muted">
+                            Opcjonalne. Zostaw puste, aby użyć naturalnego rozmiaru grafiki. Na wąskich ekranach baner i tak skaluje się do szerokości kontenera.
+                        </p>
+                    </div>
+
                     <div>
                         <label for="link_url" class="mb-1 block text-sm font-bold">URL docelowy (kliknięcie)</label>
                         <input id="link_url" type="url" name="link_url"
