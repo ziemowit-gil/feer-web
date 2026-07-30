@@ -59,6 +59,12 @@
                 </a>
             @endif
 
+            @if ($can('news') || $can('events'))
+                <a href="{{ route('admin.kalendarz.index') }}" class="{{ $itemClass('admin.kalendarz.*') }}">
+                    <i class="fa-solid fa-calendar-days {{ $iconClass('admin.kalendarz.*') }}"></i> Kalendarz redakcyjny
+                </a>
+            @endif
+
             <div x-data="{ open: {{ request()->routeIs($contentRoutes) ? 'true' : 'false' }} }">
                 <button type="button" @click="open = !open" :aria-expanded="open" aria-controls="nav-section-content"
                     class="flex w-full items-center justify-between rounded-lg px-3 py-2 text-xs font-bold uppercase tracking-wider text-muted transition-colors hover:bg-gray-100 hover:text-ink">
@@ -291,13 +297,46 @@
     <div class="flex-1">
         <header class="flex items-center justify-between gap-4 border-b border-gray-200 bg-white px-6 py-4">
             <h1 class="text-xl font-bold">@yield('title', 'Panel administracyjny')</h1>
-            <button type="button" onclick="window.dispatchEvent(new CustomEvent('open-command-palette'))"
-                class="flex items-center gap-2 rounded-lg border border-gray-300 px-3 py-2 text-sm text-muted hover:border-brand hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
-                aria-label="Szukaj w panelu (Ctrl+K)">
-                <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
-                <span class="hidden sm:inline">Szukaj…</span>
-                <kbd class="hidden rounded border border-gray-300 bg-gray-50 px-1.5 text-xs sm:inline">Ctrl K</kbd>
-            </button>
+            <div class="flex items-center gap-3">
+                <button type="button" onclick="window.dispatchEvent(new CustomEvent('open-command-palette'))"
+                    class="flex items-center gap-2 rounded-lg border border-gray-300 px-3 py-2 text-sm text-muted hover:border-brand hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+                    aria-label="Szukaj w panelu (Ctrl+K)">
+                    <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+                    <span class="hidden sm:inline">Szukaj…</span>
+                    <kbd class="hidden rounded border border-gray-300 bg-gray-50 px-1.5 text-xs sm:inline">Ctrl K</kbd>
+                </button>
+
+                @php
+                    $notifItems = \App\Support\AdminNotifications::items(auth()->user());
+                    $notifCount = array_sum(array_column($notifItems, 'count'));
+                @endphp
+                <div x-data="{ open: false, markSeen() { fetch('{{ route('admin.powiadomienia.seen') }}', { method: 'POST', headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'X-Requested-With': 'XMLHttpRequest' } }); } }"
+                    class="relative">
+                    <button type="button" @click="open = ! open; if (open) markSeen()" :aria-expanded="open.toString()"
+                        class="relative rounded-lg border border-gray-300 px-3 py-2 text-muted hover:border-brand hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+                        aria-label="Powiadomienia{{ $notifCount ? ' (' . $notifCount . ' nowych)' : '' }}">
+                        <i class="fa-regular fa-bell" aria-hidden="true"></i>
+                        @if ($notifCount)
+                            <span class="absolute -right-1 -top-1 flex h-5 min-w-[1.25rem] items-center justify-center rounded-full bg-red-600 px-1 text-xs font-bold text-white">{{ $notifCount > 99 ? '99+' : $notifCount }}</span>
+                        @endif
+                    </button>
+                    <div x-show="open" x-cloak @click.outside="open = false" @keydown.escape="open = false"
+                        class="absolute right-0 z-50 mt-2 w-72 overflow-hidden rounded-lg border border-gray-200 bg-white shadow-xl"
+                        role="menu" aria-label="Powiadomienia">
+                        <div class="border-b border-gray-100 px-4 py-2 text-xs font-bold uppercase tracking-wide text-muted">Powiadomienia</div>
+                        @forelse ($notifItems as $it)
+                            <a href="{{ $it['url'] }}" role="menuitem"
+                                class="flex items-center gap-3 px-4 py-3 text-sm text-ink hover:bg-gray-50">
+                                <i class="fa-solid {{ $it['icon'] }} w-4 text-center text-gray-400" aria-hidden="true"></i>
+                                <span class="flex-1">{{ $it['label'] }}</span>
+                                <span class="rounded-full bg-brand/10 px-2 py-0.5 text-xs font-bold text-brand">{{ $it['count'] }}</span>
+                            </a>
+                        @empty
+                            <p class="px-4 py-6 text-center text-sm text-muted">Brak nowych powiadomień.</p>
+                        @endforelse
+                    </div>
+                </div>
+            </div>
         </header>
 
         <main class="p-6">

@@ -54,6 +54,7 @@
         </div>
 
         @if ($page->exists)
+            @include('admin.partials.edit-lock', ['lockType' => 'page', 'lockId' => $page->id])
             <div class="mb-3 flex justify-end">
                 <a href="{{ route('admin.historia.index', ['type' => 'page', 'id' => $page->id]) }}"
                     class="text-sm font-bold text-muted hover:text-brand">

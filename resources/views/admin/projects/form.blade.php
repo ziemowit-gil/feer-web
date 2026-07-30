@@ -4,6 +4,7 @@
 
 @section('content')
     @if ($project->exists)
+        @include('admin.partials.edit-lock', ['lockType' => 'project', 'lockId' => $project->id])
         <div class="mb-3 flex justify-end">
             <a href="{{ route('admin.historia.index', ['type' => 'project', 'id' => $project->id]) }}"
                 class="text-sm font-bold text-muted hover:text-brand">

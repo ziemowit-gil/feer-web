@@ -5,6 +5,7 @@
 @section('content')
     <div data-editor-tabs>
         @if ($news->exists)
+            @include('admin.partials.edit-lock', ['lockType' => 'news', 'lockId' => $news->id])
             <div class="mb-3 flex justify-end">
                 <a href="{{ route('admin.historia.index', ['type' => 'news', 'id' => $news->id]) }}"
                     class="text-sm font-bold text-muted hover:text-brand">

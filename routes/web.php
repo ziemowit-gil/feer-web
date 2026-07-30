@@ -4,6 +4,9 @@ use App\Http\Controllers\Auth\MemberMicrosoftAuthController;
 use App\Http\Controllers\Admin\ActivityController as AdminActivityController;
 use App\Http\Controllers\Admin\AnnualReportController as AdminAnnualReportController;
 use App\Http\Controllers\Admin\ApprovalController as AdminApprovalController;
+use App\Http\Controllers\Admin\CalendarController as AdminCalendarController;
+use App\Http\Controllers\Admin\EditLockController as AdminEditLockController;
+use App\Http\Controllers\Admin\NotificationController as AdminNotificationController;
 use App\Http\Controllers\Admin\RevisionController as AdminRevisionController;
 use App\Http\Controllers\Admin\SearchController as AdminSearchController;
 use App\Http\Controllers\Admin\TrashController as AdminTrashController;
@@ -169,6 +172,15 @@ Route::middleware(['auth', 'verified', '2fa'])->prefix('admin')->name('admin.')-
 
     // Globalna wyszukiwarka panelu (paleta poleceń).
     Route::get('szukaj', AdminSearchController::class)->name('search');
+
+    // Centrum powiadomień — oznaczanie jako przejrzane.
+    Route::post('powiadomienia/widziano', [AdminNotificationController::class, 'seen'])->name('powiadomienia.seen');
+
+    // Blokada równoczesnej edycji (heartbeat, dostęp per moduł w kontrolerze).
+    Route::post('blokada-edycji', AdminEditLockController::class)->name('edit-lock');
+
+    // Kalendarz redakcyjny.
+    Route::get('kalendarz', [AdminCalendarController::class, 'index'])->name('kalendarz.index');
 
     // Kosz — miękkie usuwanie treści (dostęp per moduł w kontrolerze).
     Route::get('kosz', [AdminTrashController::class, 'index'])->name('kosz.index');
