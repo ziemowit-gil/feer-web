@@ -244,12 +244,16 @@ Route::middleware(['auth', 'verified', '2fa'])->prefix('admin')->name('admin.')-
 
     Route::middleware(['module:volunteering', 'module-access:volunteering'])->group(function () {
         Route::resource('wolontariat', AdminVolunteerAdController::class)->parameters(['wolontariat' => 'wolontariat'])->except('show');
+        Route::put('wolontariat/{wolontariat}/archiwizuj', [AdminVolunteerAdController::class, 'archive'])->name('wolontariat.archive');
+        Route::put('wolontariat/{wolontariat}/przywroc', [AdminVolunteerAdController::class, 'restore'])->name('wolontariat.restore');
     });
 
     Route::middleware(['module:events', 'module-access:events'])->group(function () {
         Route::resource('wydarzenia', AdminEventController::class)->parameters(['wydarzenia' => 'event'])->except('show');
         Route::post('wydarzenia/{event}/na-aktualnosc', [AdminEventController::class, 'toNews'])->name('wydarzenia.na-aktualnosc');
         Route::post('wydarzenia/{event}/na-landing', [AdminEventController::class, 'toLanding'])->name('wydarzenia.na-landing');
+        Route::put('wydarzenia/{event}/archiwizuj', [AdminEventController::class, 'archive'])->name('wydarzenia.archive');
+        Route::put('wydarzenia/{event}/przywroc', [AdminEventController::class, 'restore'])->name('wydarzenia.restore');
     });
 
     Route::middleware(['module:faq', 'module-access:faq'])->group(function () {

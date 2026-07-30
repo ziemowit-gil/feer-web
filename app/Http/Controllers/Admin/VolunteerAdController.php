@@ -5,15 +5,41 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\VolunteerAdRequest;
 use App\Models\VolunteerAd;
+use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
 class VolunteerAdController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $ads = VolunteerAd::orderBy('order')->latest('id')->get();
+        $showArchived = $request->boolean('archived');
 
-        return view('admin.volunteer-ads.index', compact('ads'));
+        $ads = VolunteerAd::when($showArchived,
+            fn ($q) => $q->whereNotNull('archived_at'),
+            fn ($q) => $q->whereNull('archived_at'))
+            ->orderBy('order')
+            ->latest('id')
+            ->get();
+
+        $archivedCount = VolunteerAd::whereNotNull('archived_at')->count();
+
+        return view('admin.volunteer-ads.index', compact('ads', 'showArchived', 'archivedCount'));
+    }
+
+    /** Schowaj ogłoszenie z domyślnej listy (ręczna archiwizacja). */
+    public function archive(VolunteerAd $wolontariat)
+    {
+        $wolontariat->update(['archived_at' => now()]);
+
+        return redirect()->back()->with('status', 'Ogłoszenie zostało zarchiwizowane.');
+    }
+
+    /** Przywróć ogłoszenie z archiwum na aktywną listę. */
+    public function restore(VolunteerAd $wolontariat)
+    {
+        $wolontariat->update(['archived_at' => null]);
+
+        return redirect()->back()->with('status', 'Ogłoszenie zostało przywrócone z archiwum.');
     }
 
     public function create()

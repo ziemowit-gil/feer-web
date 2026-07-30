@@ -9,15 +9,40 @@ use App\Models\Faq;
 use App\Models\LandingPage;
 use App\Models\News;
 use App\Models\SiteSetting;
+use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
 class EventController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $events = Event::orderByDesc('starts_at')->get();
+        $showArchived = $request->boolean('archived');
 
-        return view('admin.events.index', compact('events'));
+        $events = Event::when($showArchived,
+            fn ($q) => $q->whereNotNull('archived_at'),
+            fn ($q) => $q->whereNull('archived_at'))
+            ->orderByDesc('starts_at')
+            ->get();
+
+        $archivedCount = Event::whereNotNull('archived_at')->count();
+
+        return view('admin.events.index', compact('events', 'showArchived', 'archivedCount'));
+    }
+
+    /** Schowaj wydarzenie z domyślnej listy (ręczna archiwizacja). */
+    public function archive(Event $event)
+    {
+        $event->update(['archived_at' => now()]);
+
+        return redirect()->back()->with('status', 'Wydarzenie zostało zarchiwizowane.');
+    }
+
+    /** Przywróć wydarzenie z archiwum na aktywną listę. */
+    public function restore(Event $event)
+    {
+        $event->update(['archived_at' => null]);
+
+        return redirect()->back()->with('status', 'Wydarzenie zostało przywrócone z archiwum.');
     }
 
     public function create()

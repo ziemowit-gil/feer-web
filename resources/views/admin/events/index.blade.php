@@ -5,10 +5,25 @@
 @section('content')
     <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
         <p class="text-sm text-muted">Szkolenia i wydarzenia (strona <a href="{{ route('events.index') }}" target="_blank" rel="noopener" class="text-brand underline">/wydarzenia</a>).</p>
-        <a href="{{ route('admin.wydarzenia.create') }}" class="rounded bg-brand px-4 py-2 text-sm font-bold text-white hover:bg-brand-dark">
-            <i class="fa-solid fa-plus"></i> Dodaj wydarzenie
-        </a>
+        <div class="flex items-center gap-3">
+            @if ($showArchived || $archivedCount > 0)
+                <a href="{{ route('admin.wydarzenia.index', ['archived' => $showArchived ? null : 1]) }}"
+                    class="rounded border px-3 py-2 text-sm font-bold {{ $showArchived ? 'border-brand bg-brand-light text-brand' : 'border-gray-300 text-muted hover:bg-gray-100' }}">
+                    <i class="fa-solid fa-box-archive" aria-hidden="true"></i>
+                    {{ $showArchived ? 'Pokaż aktywne' : 'Archiwum ('.$archivedCount.')' }}
+                </a>
+            @endif
+            <a href="{{ route('admin.wydarzenia.create') }}" class="rounded bg-brand px-4 py-2 text-sm font-bold text-white hover:bg-brand-dark">
+                <i class="fa-solid fa-plus"></i> Dodaj wydarzenie
+            </a>
+        </div>
     </div>
+
+    @if ($showArchived)
+        <p class="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-2 text-sm text-amber-800">
+            <i class="fa-solid fa-box-archive" aria-hidden="true"></i> Widok archiwum — zakończone wydarzenia schowane z domyślnej listy.
+        </p>
+    @endif
 
     <div class="overflow-x-auto rounded-lg border border-gray-200 bg-white">
         <table class="w-full text-left text-sm">
@@ -53,6 +68,19 @@
                                     </form>
                                 @endif
                                 <a href="{{ route('admin.wydarzenia.edit', $event) }}" class="text-brand hover:text-brand-dark" title="Edytuj"><i class="fa-solid fa-pen"></i></a>
+                                @if ($event->archived_at)
+                                    <form method="POST" action="{{ route('admin.wydarzenia.restore', $event) }}">
+                                        @csrf
+                                        @method('PUT')
+                                        <button type="submit" class="text-muted hover:text-brand" title="Przywróć z archiwum"><i class="fa-solid fa-box-open"></i></button>
+                                    </form>
+                                @else
+                                    <form method="POST" action="{{ route('admin.wydarzenia.archive', $event) }}" title="Zarchiwizuj">
+                                        @csrf
+                                        @method('PUT')
+                                        <button type="submit" class="text-muted hover:text-brand" title="Zarchiwizuj (schowaj z listy)"><i class="fa-solid fa-box-archive"></i></button>
+                                    </form>
+                                @endif
                                 <form method="POST" action="{{ route('admin.wydarzenia.destroy', $event) }}" onsubmit="return confirm('Usunąć wydarzenie &quot;{{ $event->title }}&quot;?');">
                                     @csrf
                                     @method('DELETE')

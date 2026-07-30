@@ -34,7 +34,7 @@ class Event extends Model implements HasMedia
         'type', 'mode', 'location', 'online_url',
         'starts_at', 'ends_at',
         'registration_url', 'registration_cta_label', 'contact_email', 'price_info',
-        'audience', 'is_published', 'is_featured', 'order',
+        'audience', 'is_published', 'is_featured', 'order', 'archived_at',
     ];
 
     protected $casts = [
@@ -42,6 +42,7 @@ class Event extends Model implements HasMedia
         'ends_at' => 'datetime',
         'is_published' => 'boolean',
         'is_featured' => 'boolean',
+        'archived_at' => 'datetime',
     ];
 
     public function getRouteKeyName(): string

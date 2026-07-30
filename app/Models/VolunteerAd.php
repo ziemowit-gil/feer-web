@@ -19,7 +19,7 @@ class VolunteerAd extends Model
         'q_beneficiaries', 'q_tasks', 'q_mode', 'q_location', 'q_schedule',
         'q_time_commitment', 'q_benefits', 'q_how_to_apply',
         'application_url', 'application_cta_label', 'contact_name', 'contact_email',
-        'audience', 'is_published', 'closes_at', 'order',
+        'audience', 'is_published', 'closes_at', 'order', 'archived_at',
     ];
 
     protected $casts = [
@@ -27,6 +27,7 @@ class VolunteerAd extends Model
         'q_benefits' => 'array',
         'is_published' => 'boolean',
         'closes_at' => 'date',
+        'archived_at' => 'datetime',
     ];
 
     public function getRouteKeyName(): string
