@@ -2,9 +2,9 @@
 
 namespace Tests\Feature;
 
+use App\Models\Member;
 use App\Models\Page;
 use App\Models\SiteSetting;
-use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
@@ -54,11 +54,14 @@ class InternalPageTest extends TestCase
             'is_published' => true, 'access_mode' => 'microsoft', 'content' => 'Sekcja zalogowanych',
         ]);
 
-        // Gość → przekierowanie do logowania.
-        $this->get('/dla-zalogowanych')->assertRedirect(route('login'));
+        // Gość → przekierowanie do logowania strefy wewnętrznej (guard „member", MS365).
+        $this->get('/dla-zalogowanych')->assertRedirect(route('member.login'));
 
-        // Zalogowany → dostęp.
-        $this->actingAs(User::factory()->create())
+        // Zalogowany współpracownik (guard „member") → dostęp.
+        $member = Member::create([
+            'name' => 'Współpracownik', 'email' => 'wsp@feer.org.pl', 'microsoft_id' => 'ms-test-1',
+        ]);
+        $this->actingAs($member, 'member')
             ->get('/dla-zalogowanych')->assertOk()->assertSee('Sekcja zalogowanych');
     }
 

@@ -588,7 +588,7 @@
         @if ($page->hub_hero) style="background-image: linear-gradient(0deg, rgba(0,0,0,.65), rgba(0,0,0,.35)), url('{{ $page->hub_hero }}'); background-size: cover; background-position: center;" @endif>
         <div class="mx-auto max-w-5xl px-4 py-20 text-center md:py-28">
             <span class="mb-3 inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-sm font-bold backdrop-blur">
-                <i class="fa-solid fa-users-gear" aria-hidden="true"></i> Panel współpracownika
+                <i class="fa-solid fa-users-gear" aria-hidden="true"></i> Strefa współpracownika
             </span>
             <h1 class="text-3xl font-bold md:text-4xl">{{ $page->title }}</h1>
             @if (filled($page->hub_intro))
@@ -598,11 +598,19 @@
     </section>
 
     <section class="mx-auto max-w-5xl px-4 py-12">
+        @isset($szoKomunikaty)
+            @include('partials.strefa-notice', ['szoPanelUrl' => $szoPanelUrl ?? null])
+        @endisset
+
         @include('partials.strefa-tozsamosc')
 
         @if ($page->content)
             <div class="prose mx-auto mb-10 max-w-none text-ink">{!! $page->content !!}</div>
         @endif
+
+        @isset($szoKomunikaty)
+            @include('partials.strefa-komunikaty', ['szoKomunikaty' => $szoKomunikaty])
+        @endisset
 
         @if ($hubLinks->isNotEmpty())
             <ul class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -624,7 +632,7 @@
                 @endforeach
             </ul>
         @else
-            <p class="text-center text-muted">Brak dodanych linków. Dodaj je w panelu (edycja strony → Panel współpracownika).</p>
+            <p class="text-center text-muted">Brak dodanych linków. Dodaj je w panelu (edycja strony → Strefa współpracownika).</p>
         @endif
     </section>
     @elseif ($page->isLegacy())
@@ -661,16 +669,7 @@
             <div>
                 <h1 class="mb-6 text-3xl font-bold text-ink">{{ $page->title }}</h1>
 
-                @isset($szoKomunikaty)
-                    @include('partials.strefa-notice', ['szoPanelUrl' => $szoPanelUrl ?? null])
-                    @include('partials.strefa-tozsamosc')
-                @endisset
-
                 <div class="prose max-w-none text-ink">{!! $page->content !!}</div>
-
-                @isset($szoKomunikaty)
-                    @include('partials.strefa-komunikaty', ['szoKomunikaty' => $szoKomunikaty])
-                @endisset
 
                 @include('partials.page-gallery', ['page' => $page])
 

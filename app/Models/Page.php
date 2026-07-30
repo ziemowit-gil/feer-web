@@ -53,9 +53,10 @@ class Page extends Model
         .'komunikaty i materiały dostępne tylko dla zalogowanych osób.</p>';
 
     /**
-     * Kanoniczne atrybuty strony „Strefa współpracownika": strona wewnętrzna
-     * z logowaniem MS365, systemowa (chroniona przed usunięciem), poza menu.
-     * Wspólne dla automatycznego zakładania i nadpisywania przez administratora.
+     * Kanoniczne atrybuty strony „Strefa współpracownika": wewnętrzny panel
+     * (internal_hub — hero, odnośniki, komunikaty SZO) z logowaniem MS365,
+     * systemowa (chroniona przed usunięciem), poza menu. Wspólne dla
+     * automatycznego zakładania i nadpisywania przez administratora.
      *
      * @return array<string, mixed>
      */
@@ -63,7 +64,7 @@ class Page extends Model
     {
         return [
             'title' => 'Strefa współpracownika',
-            'type' => 'internal',
+            'type' => 'internal_hub',
             'access_mode' => 'microsoft',
             'is_published' => true,
             'is_system' => true,
@@ -72,11 +73,11 @@ class Page extends Model
         ];
     }
 
-    /** Czy ta strona jest prawidłową strefą współpracownika (wewnętrzna + MS365). */
+    /** Czy ta strona jest prawidłową strefą współpracownika (panel wewnętrzny + MS365). */
     public function isStrefaZone(): bool
     {
         return $this->slug === self::STREFA_SLUG
-            && $this->type === 'internal'
+            && $this->type === 'internal_hub'
             && $this->access_mode === 'microsoft';
     }
 
