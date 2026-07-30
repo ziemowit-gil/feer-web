@@ -15,7 +15,7 @@ class BannerZone extends Model
 
     public function banners(): BelongsToMany
     {
-        return $this->belongsToMany(Banner::class)
+        return $this->belongsToMany(Banner::class, 'banner_zone_banner')
             ->withPivot('priority')
             ->withTimestamps();
     }
