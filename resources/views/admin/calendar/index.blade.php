@@ -42,7 +42,7 @@
             </div>
             <div class="grid grid-cols-7 gap-px rounded-b-lg bg-gray-200">
                 @foreach ($days as $day)
-                    <div class="min-h-[7rem] bg-white p-1.5 {{ $day['inMonth'] ? '' : 'bg-gray-50/60' }}">
+                    <div class="min-w-0 min-h-[7rem] bg-white p-1.5 {{ $day['inMonth'] ? '' : 'bg-gray-50/60' }}">
                         <div class="mb-1 flex items-center justify-between">
                             <span class="inline-flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold
                                 {{ $day['isToday'] ? 'bg-brand text-white' : ($day['inMonth'] ? 'text-ink' : 'text-gray-400') }}">
