@@ -7,6 +7,7 @@ use App\Models\Banner;
 use App\Models\BannerZone;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
@@ -37,6 +38,7 @@ class BannerController extends Controller
         }
 
         $this->syncZones($request, $banner);
+        $this->flushZoneCache();
 
         return redirect()->route('admin.banery.index')
             ->with('status', 'Baner „' . $banner->name . '" został dodany.');
@@ -64,6 +66,7 @@ class BannerController extends Controller
 
         $banner->save();
         $this->syncZones($request, $banner);
+        $this->flushZoneCache();
 
         return redirect()->route('admin.banery.index')
             ->with('status', 'Baner „' . $banner->name . '" został zaktualizowany.');
@@ -75,6 +78,7 @@ class BannerController extends Controller
             Storage::disk('public')->delete($banner->image_path);
         }
         $banner->delete();
+        $this->flushZoneCache();
 
         return redirect()->route('admin.banery.index')
             ->with('status', 'Baner został usunięty.');
@@ -83,6 +87,7 @@ class BannerController extends Controller
     public function toggle(Banner $banner): RedirectResponse
     {
         $banner->update(['is_active' => ! $banner->is_active]);
+        $this->flushZoneCache();
 
         $msg = $banner->is_active ? 'aktywowany' : 'wyłączony';
 
@@ -129,5 +134,13 @@ class BannerController extends Controller
             $sync[(int) $id] = ['priority' => (int) $request->input("priority.{$id}", 0)];
         }
         $banner->zones()->sync($sync);
+    }
+
+    /** Wyczyść zbuforowane listy bannerów wszystkich stref (front cachuje je 10 min). */
+    private function flushZoneCache(): void
+    {
+        BannerZone::pluck('slug')->each(
+            fn (string $slug) => Cache::forget("banner_zone_{$slug}")
+        );
     }
 }

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\BannerZone;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\View\View;
 
 class BannerZoneController extends Controller
@@ -52,6 +53,7 @@ class BannerZoneController extends Controller
         ]);
 
         $strefaBanneru->update($request->only('slug', 'label', 'description', 'max_concurrent'));
+        $this->flushZoneCache($strefaBanneru->slug);
 
         return redirect()->route('admin.strefy-bannerow.index')
             ->with('status', 'Strefa „' . $strefaBanneru->label . '" została zaktualizowana.');
@@ -59,9 +61,18 @@ class BannerZoneController extends Controller
 
     public function destroy(BannerZone $strefaBanneru): RedirectResponse
     {
+        $slug = $strefaBanneru->slug;
         $strefaBanneru->delete();
+        $this->flushZoneCache($slug);
 
         return redirect()->route('admin.strefy-bannerow.index')
             ->with('status', 'Strefa została usunięta.');
+    }
+
+    /** Wyczyść zbuforowane dane strefy (lista bannerów + max_concurrent). */
+    private function flushZoneCache(string $slug): void
+    {
+        Cache::forget("banner_zone_{$slug}");
+        Cache::forget("banner_zone_max_{$slug}");
     }
 }
