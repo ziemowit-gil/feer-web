@@ -6,13 +6,7 @@
     <div data-editor-tabs>
         @if ($news->exists)
             @include('admin.partials.edit-lock', ['lockType' => 'news', 'lockId' => $news->id])
-            <div class="mb-3 flex justify-end">
-                <a href="{{ route('admin.historia.index', ['type' => 'news', 'id' => $news->id]) }}"
-                    class="text-sm font-bold text-muted hover:text-brand">
-                    <i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i> Historia zmian
-                </a>
-            </div>
-            <div class="mb-6 flex gap-1 border-b border-gray-200">
+            <div class="mb-6 flex flex-wrap gap-1 border-b border-gray-200">
                 <button type="button" data-tab-btn="edit" class="-mb-px border-b-2 border-brand px-4 py-2 text-sm font-bold text-brand">
                     <i class="fa-solid fa-pen-to-square" aria-hidden="true"></i> Treść
                 </button>
@@ -28,6 +22,10 @@
                         <span class="ml-1 rounded-full bg-gray-100 px-1.5 py-0.5 text-xs">{{ $news->attachments->count() }}</span>
                     @endif
                 </button>
+                <a href="{{ route('admin.historia.index', ['type' => 'news', 'id' => $news->id]) }}"
+                    class="ml-auto -mb-px border-b-2 border-transparent px-4 py-2 text-sm font-bold text-muted hover:text-brand">
+                    <i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i> Historia zmian
+                </a>
             </div>
         @endif
 

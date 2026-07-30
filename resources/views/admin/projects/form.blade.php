@@ -5,12 +5,6 @@
 @section('content')
     @if ($project->exists)
         @include('admin.partials.edit-lock', ['lockType' => 'project', 'lockId' => $project->id])
-        <div class="mb-3 flex justify-end">
-            <a href="{{ route('admin.historia.index', ['type' => 'project', 'id' => $project->id]) }}"
-                class="text-sm font-bold text-muted hover:text-brand">
-                <i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i> Historia zmian
-            </a>
-        </div>
     @endif
 
     <form method="POST" action="{{ $project->exists ? route('admin.projekty.update', $project) : route('admin.projekty.store') }}"
@@ -40,6 +34,12 @@
                     class="-mb-px border-b-2 border-transparent px-4 py-2 text-sm font-bold text-muted hover:text-brand">
                     <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i> SEO
                 </button>
+                @if ($project->exists)
+                    <a href="{{ route('admin.historia.index', ['type' => 'project', 'id' => $project->id]) }}"
+                        class="ml-auto -mb-px border-b-2 border-transparent px-4 py-2 text-sm font-bold text-muted hover:text-brand">
+                        <i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i> Historia zmian
+                    </a>
+                @endif
             </div>
 
             {{-- ============================ PODSTAWOWE ============================ --}}

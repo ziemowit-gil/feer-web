@@ -50,17 +50,15 @@
                         <span class="ml-1 rounded-full bg-gray-100 px-1.5 py-0.5 text-xs">{{ $page->images->count() }}</span>
                     @endif
                 </button>
+                <a href="{{ route('admin.historia.index', ['type' => 'page', 'id' => $page->id]) }}"
+                    class="ml-auto -mb-px border-b-2 border-transparent px-4 py-2 text-sm font-bold text-muted hover:text-brand">
+                    <i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i> Historia zmian
+                </a>
             @endif
         </div>
 
         @if ($page->exists)
             @include('admin.partials.edit-lock', ['lockType' => 'page', 'lockId' => $page->id])
-            <div class="mb-3 flex justify-end">
-                <a href="{{ route('admin.historia.index', ['type' => 'page', 'id' => $page->id]) }}"
-                    class="text-sm font-bold text-muted hover:text-brand">
-                    <i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i> Historia zmian
-                </a>
-            </div>
         @endif
 
         <form method="POST" action="{{ $page->exists ? route('admin.podstrony.update', $page) : route('admin.podstrony.store') }}" enctype="multipart/form-data" class="space-y-6">
