@@ -9,6 +9,12 @@
                 <button type="button" data-tab-btn="edit" class="-mb-px border-b-2 border-brand px-4 py-2 text-sm font-bold text-brand">
                     <i class="fa-solid fa-pen-to-square" aria-hidden="true"></i> Treść
                 </button>
+                <button type="button" data-tab-btn="etr" class="-mb-px border-b-2 border-transparent px-4 py-2 text-sm font-bold text-muted hover:text-brand">
+                    <i class="fa-solid fa-book-open-reader" aria-hidden="true"></i> ETR
+                    @if ($news->etr?->is_enabled)
+                        <span class="ml-1 rounded-full bg-sky-100 px-1.5 py-0.5 text-xs text-sky-700">aktywna</span>
+                    @endif
+                </button>
                 <button type="button" data-tab-btn="files" class="-mb-px border-b-2 border-transparent px-4 py-2 text-sm font-bold text-muted hover:text-brand">
                     <i class="fa-solid fa-paperclip" aria-hidden="true"></i> Pliki do pobrania
                     @if ($news->attachments->isNotEmpty())
@@ -246,6 +252,61 @@
         </div>{{-- /tab-panel: edit --}}
 
         @if ($news->exists)
+            <div data-tab-panel="etr" class="hidden">
+                @php $etrModel = $news->etr; @endphp
+                <div class="mb-4 rounded-xl border border-sky-100 bg-sky-50 p-4 text-sm text-sky-800">
+                    <strong>Wersja ETR (łatwa do czytania)</strong> — uproszczony tekst dla osób z trudnościami w czytaniu.
+                    Gdy włączysz ETR, na stronie artykułu pojawi się przycisk pozwalający przełączyć się na prostszą wersję.
+                    <a href="{{ route('etr.about') }}" target="_blank" class="ml-1 underline hover:text-sky-900">Co to jest ETR? →</a>
+                </div>
+
+                <form method="POST" action="{{ route('admin.etr.update', ['type' => 'news', 'id' => $news->id]) }}"
+                    class="space-y-5 rounded-lg border border-gray-200 bg-white p-6">
+                    @csrf @method('PUT')
+
+                    <label class="flex items-center gap-2">
+                        <input type="checkbox" name="is_enabled" value="1"
+                            {{ old('is_enabled', $etrModel?->is_enabled ?? false) ? 'checked' : '' }}
+                            class="rounded border-gray-300 text-sky-600 focus:ring-sky-500">
+                        <span class="font-bold text-ink">Włącz wersję ETR dla tego artykułu</span>
+                    </label>
+
+                    <div>
+                        <label for="etr_title" class="mb-1 block text-sm font-bold">Tytuł (uproszczony) <span class="font-normal text-muted">— opcjonalny, zastąpi oryginalny tytuł w widoku ETR</span></label>
+                        <input type="text" id="etr_title" name="etr_title"
+                            value="{{ old('etr_title', $etrModel?->etr_title) }}"
+                            placeholder="{{ $news->title }}"
+                            class="w-full rounded border-gray-300 focus:border-sky-500 focus:ring-sky-500">
+                    </div>
+
+                    <div>
+                        <label for="etr_summary" class="mb-1 block text-sm font-bold">Wstęp <span class="font-normal text-muted">— 1–3 zdania prostym językiem</span></label>
+                        <textarea id="etr_summary" name="etr_summary" rows="3"
+                            placeholder="Krótkie, proste wyjaśnienie o czym jest ten artykuł."
+                            class="w-full rounded border-gray-300 focus:border-sky-500 focus:ring-sky-500">{{ old('etr_summary', $etrModel?->etr_summary) }}</textarea>
+                    </div>
+
+                    <div>
+                        <label for="etr_content" class="mb-1 block text-sm font-bold">Treść ETR <span class="font-normal text-muted">— prosty tekst, jedno zdanie w akapicie</span></label>
+                        <textarea id="etr_content" name="etr_content" rows="12"
+                            placeholder="Pisz prostymi słowami.&#10;&#10;Krótkie zdania.&#10;&#10;Jedna myśl — jeden akapit."
+                            class="w-full rounded border-gray-300 font-mono text-sm focus:border-sky-500 focus:ring-sky-500">{{ old('etr_content', $etrModel?->etr_content) }}</textarea>
+                        <p class="mt-1 text-xs text-muted">Puste wiersze tworzą nowe akapity. Nie używaj formatowania HTML.</p>
+                    </div>
+
+                    <div class="flex items-center gap-3">
+                        <button type="submit" class="rounded bg-sky-600 px-5 py-2 text-sm font-bold text-white hover:bg-sky-700">Zapisz ETR</button>
+                        @if ($etrModel)
+                            <form method="POST" action="{{ route('admin.etr.destroy', ['type' => 'news', 'id' => $news->id]) }}"
+                                onsubmit="return confirm('Usuń całą wersję ETR tego artykułu?')">
+                                @csrf @method('DELETE')
+                                <button type="submit" class="text-sm font-bold text-red-600 hover:text-red-700">Usuń ETR</button>
+                            </form>
+                        @endif
+                    </div>
+                </form>
+            </div>
+
             <div data-tab-panel="files" class="hidden">
                 @include('admin.partials.attachments', [
                     'attachments' => $news->attachments,

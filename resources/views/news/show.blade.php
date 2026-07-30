@@ -30,27 +30,31 @@
 @endsection
 
 @section('content')
-    <section class="mx-auto max-w-2xl px-4 py-12">
+    <section class="mx-auto max-w-2xl px-4 py-12" x-data="{ etr: false }">
         @if ($news->is_archived)
             @include('partials.archival-notice', ['date' => $news->published_at])
         @endif
 
-        <div class="mb-3 flex flex-wrap items-center gap-3 text-sm">
-            <span class="text-muted">{{ $news->published_at->format('d.m.Y') }}</span>
-            @if ($news->updated_at->gt($news->published_at))
-                <span class="text-muted">&middot; Zaktualizowano: {{ $news->updated_at->format('d.m.Y') }}</span>
+        @include('partials.etr-toggle', ['etr' => $news->etr, 'title' => $news->title])
+
+        <div x-show="!etr">
+            <div class="mb-3 flex flex-wrap items-center gap-3 text-sm">
+                <span class="text-muted">{{ $news->published_at->format('d.m.Y') }}</span>
+                @if ($news->updated_at->gt($news->published_at))
+                    <span class="text-muted">&middot; Zaktualizowano: {{ $news->updated_at->format('d.m.Y') }}</span>
+                @endif
+            </div>
+
+            <h1 class="mb-6 text-3xl font-bold text-ink">{{ $news->title }}</h1>
+
+            @php $img = $news->imageUrlOrDefault(); @endphp
+            @if ($img)
+                <img src="{{ $img }}" alt="{{ $news->image_alt ?: 'Zdjęcie ilustracyjne: '.$news->title }}" data-lightbox class="mb-6 h-64 w-full rounded-lg object-cover">
             @endif
+
+            <div class="prose max-w-none text-ink">{!! $news->content !!}</div>
+
+            @include('partials.attachments-list', ['attachments' => $news->attachments])
         </div>
-
-        <h1 class="mb-6 text-3xl font-bold text-ink">{{ $news->title }}</h1>
-
-        @php $img = $news->imageUrlOrDefault(); @endphp
-        @if ($img)
-            <img src="{{ $img }}" alt="{{ $news->image_alt ?: 'Zdjęcie ilustracyjne: '.$news->title }}" data-lightbox class="mb-6 h-64 w-full rounded-lg object-cover">
-        @endif
-
-        <div class="prose max-w-none text-ink">{!! $news->content !!}</div>
-
-        @include('partials.attachments-list', ['attachments' => $news->attachments])
     </section>
 @endsection

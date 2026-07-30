@@ -14,6 +14,7 @@ use Spatie\MediaLibrary\InteractsWithMedia;
 class News extends Model implements HasMedia
 {
     use \App\Models\Concerns\Approvable;
+    use \App\Models\Concerns\HasEtr;
     use \App\Models\Concerns\LogsActivity;
     use InteractsWithMedia;
 

@@ -63,10 +63,14 @@ use App\Http\Controllers\SupportController;
 use App\Http\Controllers\BannerTrackingController;
 use App\Http\Controllers\Admin\BannerController as AdminBannerController;
 use App\Http\Controllers\Admin\BannerZoneController as AdminBannerZoneController;
+use App\Http\Controllers\Admin\EtrController as AdminEtrController;
+use App\Http\Controllers\EtrController;
 use App\Http\Controllers\VolunteerController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
+
+Route::get('/etr', [EtrController::class, 'about'])->name('etr.about');
 
 Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap');
 Route::get('/mapa-strony', [SitemapController::class, 'page'])->name('sitemap.page');
@@ -304,6 +308,10 @@ Route::middleware(['auth', 'verified', '2fa'])->prefix('admin')->name('admin.')-
         Route::delete('przekierowania/{przekierowanie}', [AdminRedirectController::class, 'destroy'])->name('przekierowania.destroy');
         Route::get('przekierowania-eksport', [AdminRedirectController::class, 'export'])->name('przekierowania.export');
         Route::post('przekierowania-import', [AdminRedirectController::class, 'import'])->name('przekierowania.import');
+
+        // ETR — wersja łatwa do czytania (polimorficzna, dotyczy newsów i podstron).
+        Route::put('etr/{type}/{id}', [AdminEtrController::class, 'update'])->name('admin.etr.update');
+        Route::delete('etr/{type}/{id}', [AdminEtrController::class, 'destroy'])->name('admin.etr.destroy');
 
         // Bannery i strefy wyświetlania.
         Route::resource('banery', AdminBannerController::class)

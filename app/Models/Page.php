@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
 class Page extends Model
 {
     use Approvable;
+    use \App\Models\Concerns\HasEtr;
     use LogsActivity;
 
     /**
