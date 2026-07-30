@@ -11,12 +11,14 @@
 #
 # Zmienne środowiskowe (opcjonalne):
 #   PHP_BIN   binarka PHP CLI            (domyślnie: php85)
+#   NPM_BIN   binarka npm                (domyślnie: /opt/alt/alt-nodejs20/root/usr/bin/npm)
 #   BRANCH    gałąź do pobrania          (domyślnie: main)
 #
-# Przykład lokalnego testu:  PHP_BIN=php ./deploy.sh
+# Przykład lokalnego testu:  PHP_BIN=php NPM_BIN=npm ./deploy.sh
 set -euo pipefail
 
 PHP_BIN="${PHP_BIN:-php85}"
+NPM_BIN="${NPM_BIN:-/opt/alt/alt-nodejs20/root/usr/bin/npm}"
 BRANCH="${BRANCH:-main}"
 DB="database/database.sqlite"
 
@@ -47,7 +49,16 @@ if [ -n "$BACKUP" ]; then
     echo "  ✔ Przywrócono bazę z kopii"
 fi
 
-# 5. Migracje i czyszczenie cache.
+# 5. Budowa assetów frontu (Tailwind/Vite).
+echo "▶ Budowa assetów (npm ci && npm run build)"
+if [ -f package-lock.json ]; then
+    "$NPM_BIN" ci
+else
+    "$NPM_BIN" install
+fi
+"$NPM_BIN" run build
+
+# 6. Migracje i czyszczenie cache.
 echo "▶ Migracje i cache"
 "$PHP_BIN" artisan migrate --force
 "$PHP_BIN" artisan route:clear
