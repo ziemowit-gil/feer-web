@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\BlogArticle;
+use Illuminate\Http\Request;
 
 class BlogController extends Controller
 {
@@ -27,12 +28,13 @@ class BlogController extends Controller
         return view('blog.index', compact('articles', 'featured'));
     }
 
-    public function show(BlogArticle $article)
+    public function show(Request $request, BlogArticle $article)
     {
-        abort_unless($article->isVisible(), 404);
+        $preview = $this->isPreviewRequest($request);
+        abort_unless($article->isVisible() || $preview, 404);
 
         $article->load('approvedComments');
 
-        return view('blog.show', compact('article'));
+        return view('blog.show', compact('article', 'preview'));
     }
 }

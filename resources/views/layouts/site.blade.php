@@ -54,6 +54,10 @@
         Przejdź do treści
     </a>
 
+    @if (! empty($preview))
+        @include('partials.preview-bar')
+    @endif
+
     @include('partials.topbar')
     @include('partials.header')
 

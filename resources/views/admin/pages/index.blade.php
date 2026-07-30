@@ -88,7 +88,11 @@
                                         <i class="fa-solid fa-plus" aria-hidden="true"></i> podstrona
                                     </a>
                                 @endunless
-                                <a href="{{ route('page.show', $page) }}" target="_blank" class="text-muted hover:text-brand" title="Podgląd"><i class="fa-solid fa-eye"></i></a>
+                                @if ($page->is_published)
+                                    <a href="{{ route('page.show', $page) }}" target="_blank" class="text-muted hover:text-brand" title="Podgląd"><i class="fa-solid fa-eye"></i></a>
+                                @else
+                                    <a href="{{ $page->previewUrl() }}" target="_blank" rel="noopener" class="text-amber-600 hover:text-amber-700" title="Podgląd wersji roboczej (link ważny 14 dni)"><i class="fa-solid fa-eye"></i></a>
+                                @endif
                                 <a href="{{ route('admin.podstrony.edit', $page) }}" class="text-muted hover:text-brand" title="Edytuj"><i class="fa-solid fa-pen"></i></a>
                                 <form method="POST" action="{{ route('admin.podstrony.clone', $page) }}">
                                     @csrf

@@ -53,6 +53,8 @@
                             <div class="flex justify-end gap-3">
                                 @if ($article->isVisible())
                                     <a href="{{ route('blog.show', $article) }}" target="_blank" rel="noopener" class="text-muted hover:text-brand" title="Zobacz na stronie"><i class="fa-solid fa-up-right-from-square"></i></a>
+                                @else
+                                    <a href="{{ $article->previewUrl() }}" target="_blank" rel="noopener" class="text-amber-600 hover:text-amber-700" title="Podgląd wersji roboczej (link ważny 14 dni)"><i class="fa-solid fa-eye"></i></a>
                                 @endif
                                 <a href="{{ route('admin.wiem-feer.edit', $article) }}" class="text-muted hover:text-brand" title="Edytuj"><i class="fa-solid fa-pen"></i></a>
                                 <form method="POST" action="{{ route('admin.wiem-feer.wylacz', $article) }}">

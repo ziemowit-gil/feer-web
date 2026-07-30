@@ -13,9 +13,10 @@ class PageController extends Controller
     /** Slug automatycznie zakładanej strony „Strefa współpracownika". */
     private const STREFA_SLUG = 'strefa';
 
-    public function show(Page $page)
+    public function show(Request $request, Page $page)
     {
-        abort_unless($page->is_published, 404);
+        $preview = $this->isPreviewRequest($request);
+        abort_unless($page->is_published || $preview, 404);
 
         // Strona wewnętrzna (także „Panel współpracownika"): sprawdź autoryzację.
         if ($page->isAccessRestricted() && ! $page->accessGranted()) {
@@ -29,7 +30,7 @@ class PageController extends Controller
             return response()->view('page.locked', compact('page'), 403);
         }
 
-        $data = ['page' => $page];
+        $data = ['page' => $page, 'preview' => $preview];
 
         // W strefie współpracownika dokładamy komunikaty z systemu SZO. Tu jest już
         // po kontroli dostępu, więc trafią tylko do zalogowanego współpracownika.

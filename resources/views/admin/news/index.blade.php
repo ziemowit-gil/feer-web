@@ -61,7 +61,11 @@
                         </td>
                         <td class="px-4 py-3">
                             <div class="flex justify-end gap-3">
-                                <a href="{{ route('news.show', $item) }}" target="_blank" class="text-muted hover:text-brand" title="Podgląd"><i class="fa-solid fa-eye"></i></a>
+                                @if ($item->is_published && $item->published_at <= now())
+                                    <a href="{{ route('news.show', $item) }}" target="_blank" class="text-muted hover:text-brand" title="Podgląd"><i class="fa-solid fa-eye"></i></a>
+                                @else
+                                    <a href="{{ $item->previewUrl() }}" target="_blank" rel="noopener" class="text-amber-600 hover:text-amber-700" title="Podgląd wersji roboczej (link ważny 14 dni)"><i class="fa-solid fa-eye"></i></a>
+                                @endif
                                 <a href="{{ route('admin.newsy.edit', $item) }}" class="text-muted hover:text-brand" title="Edytuj"><i class="fa-solid fa-pen"></i></a>
                                 <form method="POST" action="{{ route('admin.newsy.klonuj', $item) }}">
                                     @csrf

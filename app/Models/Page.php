@@ -13,7 +13,18 @@ class Page extends Model
 {
     use Approvable;
     use \App\Models\Concerns\HasEtr;
+    use \App\Models\Concerns\HasPreviewLink;
     use LogsActivity;
+
+    protected function previewRouteName(): string
+    {
+        return 'page.show';
+    }
+
+    protected function previewRouteParam(): string
+    {
+        return 'page';
+    }
 
     /**
      * Top-level URL segments already used by other routes. Pages render at

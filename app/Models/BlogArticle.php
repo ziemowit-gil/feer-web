@@ -8,10 +8,22 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class BlogArticle extends Model
 {
+    use \App\Models\Concerns\HasPreviewLink;
+
     /**
      * Articles live in the dedicated "Wiem FEER" blog database.
      */
     protected $connection = 'blog';
+
+    protected function previewRouteName(): string
+    {
+        return 'blog.show';
+    }
+
+    protected function previewRouteParam(): string
+    {
+        return 'article';
+    }
 
     /** "Under construction" modes — full-screen notice vs. an info banner over the body. */
     public const WIP_MODES = [

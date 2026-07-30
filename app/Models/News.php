@@ -15,10 +15,21 @@ class News extends Model implements HasMedia
 {
     use \App\Models\Concerns\Approvable;
     use \App\Models\Concerns\HasEtr;
+    use \App\Models\Concerns\HasPreviewLink;
     use \App\Models\Concerns\LogsActivity;
     use InteractsWithMedia;
 
     protected $table = 'news';
+
+    protected function previewRouteName(): string
+    {
+        return 'news.show';
+    }
+
+    protected function previewRouteParam(): string
+    {
+        return 'news';
+    }
 
     protected $fillable = [
         'news_category_id', 'project_id', 'title', 'slug', 'excerpt', 'audience', 'accent_color', 'image_alt', 'content', 'published_at', 'is_published', 'is_featured', 'is_archived',
