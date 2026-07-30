@@ -3,7 +3,7 @@
     $inlineOnBrand = $headerLayout === 'brand_bar_inline';
 @endphp
 
-<header class="  $inlineOnBrand ? 'bg-brand border-transparent' : 'bg-white' }}" x-data="{ mobileOpen: false }" @keydown.escape="mobileOpen = false">
+<header class="{{ $inlineOnBrand ? 'bg-brand border-transparent' : 'bg-white' }}" x-data="{ mobileOpen: false }" @keydown.escape="mobileOpen = false">
     <div class="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-4">
         <a href="{{ route('home') }}" class="flex items-center gap-3">
             @if ($siteSettings->logoUrl())

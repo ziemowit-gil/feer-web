@@ -3,7 +3,7 @@
          Zgodność (WCAG): region z aria-label, focus na przycisku, kontrast. --}}
     <div data-cookie-banner hidden
         class="fixed inset-x-0 bottom-0 z-[150] border-t border-gray-200 bg-white/95 p-4 shadow-[0_-2px_12px_rgba(0,0,0,.08)] backdrop-blur"
-        role="region" aria-label="Informacja o plikach cookies">
+        role="region" aria-label="Informacja o plikach cookies" aria-live="polite">
         <div class="mx-auto flex max-w-5xl flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
             <p class="text-sm text-ink">
                 {{ $siteSettings->cookieBannerText() }}

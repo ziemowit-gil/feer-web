@@ -36,7 +36,7 @@
             // Every route a section owns — used to auto-expand the section that
             // holds the current page while the rest start collapsed.
             $contentRoutes = ['admin.podstrony.*', 'admin.os-czasu.*', 'admin.pozycje-menu.*', 'admin.newsy.*', 'admin.kategorie-newsow.*', 'admin.ankiety.*', 'admin.materialy-edukacyjne.*', 'admin.wolontariat.*', 'admin.wydarzenia.*', 'admin.faq.*', 'admin.sprawozdania.*', 'admin.lp.*', 'admin.wiem-feer.*'];
-            $appearanceRoutes = ['admin.hero.*', 'admin.galeria.*', 'admin.szybkie-akcje.*', 'admin.partnerzy.*'];
+            $appearanceRoutes = ['admin.hero.*', 'admin.galeria.*', 'admin.szybkie-akcje.*', 'admin.partnerzy.*', 'admin.banery.*', 'admin.strefy-bannerow.*'];
             $projectRoutes = ['admin.kategorie.*', 'admin.projekty.*'];
             // „Skrzynka" — wszystko, co przychodzi od odwiedzających i czeka na obsługę.
             $inboxRoutes = ['admin.zgloszenia-spotkania.*', 'admin.zgloszenia-barier.*', 'admin.zapisy-materialy.*', 'admin.komentarze-bloga.*'];
@@ -153,6 +153,9 @@
                                 <i class="fa-solid fa-handshake {{ $iconClass('admin.partnerzy.*') }}"></i> Partnerzy
                             </a>
                         @endif
+                        <a href="{{ route('admin.banery.index') }}" class="{{ $itemClass(['admin.banery.*', 'admin.strefy-bannerow.*']) }}">
+                            <i class="fa-solid fa-rectangle-ad {{ $iconClass(['admin.banery.*', 'admin.strefy-bannerow.*']) }}"></i> Bannery
+                        </a>
                     </div>
                 </div>
             @endif

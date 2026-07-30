@@ -136,6 +136,7 @@ class SiteSetting extends Model implements HasMedia
         'mail_transport', 'mail_from_address', 'mail_from_name', 'mail_host', 'mail_port', 'mail_username', 'mail_password', 'mail_encryption',
         'show_coordinators', 'ngo_color', 'sub_brands',
         'logo_alt', 'logo_only',
+        'news_layout', 'volunteer_layout',
         'krs_number', 'nip_number', 'regon_number', 'projects_intro', 'materials_intro', 'materials_notice',
         'accessibility_entity_name', 'accessibility_status', 'accessibility_status_note',
         'accessibility_page_published_at', 'accessibility_page_updated_at', 'accessibility_declaration_date',

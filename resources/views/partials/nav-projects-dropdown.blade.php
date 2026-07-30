@@ -1,18 +1,17 @@
 @php $mobile ??= false; @endphp
 
-<li class="relative" x-data="{ open: false }"
+<li class="relative" x-data="{ open: false }" x-id="['dropdown']"
     @mouseenter="if (!{{ $mobile ? 'true' : 'false' }}) open = true" @mouseleave="if (!{{ $mobile ? 'true' : 'false' }}) open = false"
-    @focusin="open = true"
     @focusout="if (! $el.contains($event.relatedTarget)) open = false"
     @keydown.escape="open = false; $refs.projectsTrigger.focus()"
     @click.outside="open = false">
     <button type="button" x-ref="projectsTrigger" @click="open = !open"
-        aria-haspopup="true" :aria-expanded="open.toString()"
+        :aria-expanded="open.toString()" :aria-controls="$id('dropdown')"
         class="flex w-full items-center gap-1 border-b-2 py-2 uppercase transition-colors hover:border-brand hover:text-brand focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-current {{ $item->isCurrent() ? 'border-brand text-brand' : 'border-transparent' }} {{ $mobile ? 'justify-between' : 'pb-1' }}" :class="open ? 'border-brand text-brand' : ''">
         {{ $item->label }} <i class="fa-solid fa-chevron-down text-[10px]" aria-hidden="true"></i>
     </button>
 
-    <div x-show="open" x-cloak x-transition
+    <div :id="$id('dropdown')" x-show="open" x-cloak x-transition
         @class([
             'z-50 rounded-lg border border-gray-200 py-2 normal-case tracking-normal shadow-lg',
             'bg-white/90 backdrop-blur-sm' => $item->is_transparent_dropdown,

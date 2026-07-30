@@ -1316,6 +1316,42 @@
             </div>
 
             <div class="border-t border-gray-100 pt-6">
+                <p class="mb-3 text-sm font-bold">Układ listy aktualności</p>
+                <div class="flex gap-6">
+                    <label class="flex cursor-pointer items-center gap-2">
+                        <input type="radio" name="news_layout" value="grid"
+                            {{ old('news_layout', $settings->news_layout ?? 'grid') === 'grid' ? 'checked' : '' }}
+                            class="border-gray-300 text-brand focus:ring-brand">
+                        <span class="text-sm"><i class="fa-solid fa-grip text-muted"></i> Siatka (domyślna)</span>
+                    </label>
+                    <label class="flex cursor-pointer items-center gap-2">
+                        <input type="radio" name="news_layout" value="list"
+                            {{ old('news_layout', $settings->news_layout ?? 'grid') === 'list' ? 'checked' : '' }}
+                            class="border-gray-300 text-brand focus:ring-brand">
+                        <span class="text-sm"><i class="fa-solid fa-list text-muted"></i> Lista</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="border-t border-gray-100 pt-6">
+                <p class="mb-3 text-sm font-bold">Układ listy ofert wolontariatu</p>
+                <div class="flex gap-6">
+                    <label class="flex cursor-pointer items-center gap-2">
+                        <input type="radio" name="volunteer_layout" value="grid"
+                            {{ old('volunteer_layout', $settings->volunteer_layout ?? 'grid') === 'grid' ? 'checked' : '' }}
+                            class="border-gray-300 text-brand focus:ring-brand">
+                        <span class="text-sm"><i class="fa-solid fa-grip text-muted"></i> Siatka (domyślna)</span>
+                    </label>
+                    <label class="flex cursor-pointer items-center gap-2">
+                        <input type="radio" name="volunteer_layout" value="list"
+                            {{ old('volunteer_layout', $settings->volunteer_layout ?? 'grid') === 'list' ? 'checked' : '' }}
+                            class="border-gray-300 text-brand focus:ring-brand">
+                        <span class="text-sm"><i class="fa-solid fa-list text-muted"></i> Lista</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="border-t border-gray-100 pt-6">
                 <label for="editor-materials_notice" class="mb-1 block text-sm font-bold">Informacja w ramce (materiały) <span class="font-normal text-muted">(opcjonalnie)</span></label>
                 <p class="mb-2 text-xs text-muted">Wyróżniona ramka informacyjna na stronie materiałów (np. ważny komunikat, warunki korzystania).</p>
                 @include('admin.partials.editor', ['name' => 'materials_notice', 'value' => old('materials_notice', $settings->materials_notice)])

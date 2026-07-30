@@ -8,9 +8,8 @@
     $isCurrent = $item->isCurrent() || $item->children->contains(fn ($c) => $c->isCurrent());
 @endphp
 
-<li class="relative" x-data="{ open: false }"
+<li class="relative" x-data="{ open: false }" x-id="['dropdown']"
     @mouseenter="if (!{{ $mobile ? 'true' : 'false' }}) open = true" @mouseleave="if (!{{ $mobile ? 'true' : 'false' }}) open = false"
-    @focusin="open = true"
     @focusout="if (! $el.contains($event.relatedTarget)) open = false"
     @keydown.escape="open = false; $refs.linkTrigger.focus()"
     @click.outside="open = false">
@@ -23,13 +22,13 @@
         </a>
         {{-- Strzałka rozwija/zamyka podmenu (działa też na mobile). --}}
         <button type="button" @click="open = !open" x-ref="linkToggle"
-            aria-haspopup="true" :aria-expanded="open.toString()" aria-label="Rozwiń podmenu: {{ $item->label }}"
+            :aria-expanded="open.toString()" :aria-controls="$id('dropdown')" aria-label="Rozwiń podmenu: {{ $item->label }}"
             class="flex items-center px-1 text-brand hover:text-brand focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-current {{ $mobile ? 'py-2' : 'pt-2' }}">
             <i class="fa-solid fa-chevron-down text-[10px] transition-transform" :class="open ? 'rotate-180' : ''" aria-hidden="true"></i>
         </button>
     </div>
 
-    <div x-show="open" x-cloak x-transition
+    <div :id="$id('dropdown')" x-show="open" x-cloak x-transition
         @class([
             'z-50 rounded-lg border border-gray-200 py-2 normal-case tracking-normal shadow-lg',
             'bg-white/90 backdrop-blur-sm' => $transparent,

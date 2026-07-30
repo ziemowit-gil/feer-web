@@ -18,7 +18,7 @@
 
             <form action="{{ route('search') }}" method="GET" class="flex items-center" role="search">
                 <label for="site-search" class="sr-only">Wyszukaj w serwisie</label>
-                <input id="site-search" type="search" name="q" value="{{ request('q') }}" placeholder="Wyszukaj w serwisie" class="w-40 rounded-l border border-gray-300 px-2 py-1 focus:outline-none focus:ring-1 focus:ring-brand">
+                <input id="site-search" type="search" name="q" value="{{ request('q') }}" placeholder="Wyszukaj w serwisie" autocomplete="off" class="w-40 rounded-l border border-gray-300 px-2 py-1 focus:outline-none focus:ring-1 focus:ring-brand">
                 <button type="submit" class="flex min-h-6 min-w-6 items-center justify-center rounded-r border border-l-0 border-gray-300 bg-white hover:text-brand" aria-label="Szukaj">
                     <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
                 </button>

@@ -21,6 +21,8 @@
         </div>
     @endif
 
+    <x-banner-zone name="footer" />
+
     <div class="border-t border-gray-200 bg-gray-50">
         <div class="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-4 py-6 text-sm text-muted">
             <div class="flex items-center gap-2">

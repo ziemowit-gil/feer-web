@@ -193,6 +193,8 @@ class SiteSettingController extends Controller
             'support_gallery.*' => ['image', 'max:4096'],
             'remove_support_gallery' => ['nullable', 'array'],
             'remove_support_gallery.*' => ['integer'],
+            'news_layout' => ['nullable', 'in:grid,list'],
+            'volunteer_layout' => ['nullable', 'in:grid,list'],
             'news_default_image' => ['nullable', 'image', 'max:4096'],
             'remove_news_default_image' => ['sometimes', 'boolean'],
             'bip_logo' => ['nullable', 'image', 'max:2048'],

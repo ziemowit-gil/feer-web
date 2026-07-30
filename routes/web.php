@@ -60,6 +60,9 @@ use App\Http\Controllers\SearchController;
 use App\Http\Controllers\ShortcutController;
 use App\Http\Controllers\SitemapController;
 use App\Http\Controllers\SupportController;
+use App\Http\Controllers\BannerTrackingController;
+use App\Http\Controllers\Admin\BannerController as AdminBannerController;
+use App\Http\Controllers\Admin\BannerZoneController as AdminBannerZoneController;
 use App\Http\Controllers\VolunteerController;
 use Illuminate\Support\Facades\Route;
 
@@ -130,6 +133,13 @@ Route::get('/facebook', [ShortcutController::class, 'facebook'])->name('shortcut
 // Deklaracja dostępności (ustawa o dostępności cyfrowej) + formularz zgłaszania barier.
 Route::get('/deklaracja-dostepnosci', [AccessibilityController::class, 'show'])->name('accessibility.show');
 Route::post('/deklaracja-dostepnosci/zglos', [AccessibilityReportController::class, 'store'])->name('accessibility.report')->middleware('throttle:5,1');
+
+// Śledzenie bannerów (wyświetlenia + kliknięcia).
+Route::post('/b/imp/{banner}', [BannerTrackingController::class, 'impression'])
+    ->name('banner.impression')
+    ->middleware('throttle:120,1');
+Route::get('/b/click/{banner}', [BannerTrackingController::class, 'click'])
+    ->name('banner.click');
 
 Route::get('/kontakt', [ContactController::class, 'index'])->name('contact.show');
 Route::post('/kontakt', [ContactController::class, 'store'])->name('contact.store')->middleware('throttle:5,1');
@@ -294,6 +304,16 @@ Route::middleware(['auth', 'verified', '2fa'])->prefix('admin')->name('admin.')-
         Route::delete('przekierowania/{przekierowanie}', [AdminRedirectController::class, 'destroy'])->name('przekierowania.destroy');
         Route::get('przekierowania-eksport', [AdminRedirectController::class, 'export'])->name('przekierowania.export');
         Route::post('przekierowania-import', [AdminRedirectController::class, 'import'])->name('przekierowania.import');
+
+        // Bannery i strefy wyświetlania.
+        Route::resource('banery', AdminBannerController::class)
+            ->parameters(['banery' => 'banner'])
+            ->except('show');
+        Route::post('banery/{banner}/toggle', [AdminBannerController::class, 'toggle'])
+            ->name('banery.toggle');
+        Route::resource('strefy-bannerow', AdminBannerZoneController::class)
+            ->parameters(['strefy-bannerow' => 'strefaBanneru'])
+            ->except('show');
     });
 
     Route::middleware('admin')->group(function () {
