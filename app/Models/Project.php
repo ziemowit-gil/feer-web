@@ -14,6 +14,7 @@ class Project extends Model implements HasMedia
     use \App\Models\Concerns\Approvable;
     use \App\Models\Concerns\HasRevisions;
     use \App\Models\Concerns\LogsActivity;
+    use \Illuminate\Database\Eloquent\SoftDeletes;
     use InteractsWithMedia;
 
     public function revisionFields(): array

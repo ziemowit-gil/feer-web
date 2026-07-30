@@ -15,6 +15,7 @@ class Page extends Model
     use \App\Models\Concerns\HasEtr;
     use \App\Models\Concerns\HasPreviewLink;
     use \App\Models\Concerns\HasRevisions;
+    use \Illuminate\Database\Eloquent\SoftDeletes;
     use LogsActivity;
 
     public function revisionFields(): array

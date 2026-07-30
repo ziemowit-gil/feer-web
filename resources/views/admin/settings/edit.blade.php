@@ -314,6 +314,18 @@
                 Zezwól wyszukiwarkom na indeksowanie strony
             </label>
             <p class="mt-1 text-xs text-muted">Odznacz, aby ukryć całą stronę przed Google (np. na czas prac testowych).</p>
+
+            <div class="mt-5 border-t border-gray-100 pt-5">
+                <label for="ga_measurement_id" class="mb-1 block text-sm font-bold">Google Analytics 4 — identyfikator pomiaru</label>
+                <input type="text" id="ga_measurement_id" name="ga_measurement_id"
+                    value="{{ old('ga_measurement_id', $settings->ga_measurement_id) }}"
+                    placeholder="G-XXXXXXXXXX" pattern="G-[A-Za-z0-9]+"
+                    class="w-full max-w-xs rounded border-gray-300 font-mono focus:border-brand focus:ring-brand">
+                <p class="mt-1 text-xs text-muted">
+                    Zostaw puste, aby wyłączyć. Kod śledzenia ładuje się dopiero po akceptacji cookies (RODO), z anonimizacją IP.
+                </p>
+                @error('ga_measurement_id') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+            </div>
         </div>
 
         <div x-show="tab === 'registry'" x-cloak>

@@ -5,6 +5,8 @@ use App\Http\Controllers\Admin\ActivityController as AdminActivityController;
 use App\Http\Controllers\Admin\AnnualReportController as AdminAnnualReportController;
 use App\Http\Controllers\Admin\ApprovalController as AdminApprovalController;
 use App\Http\Controllers\Admin\RevisionController as AdminRevisionController;
+use App\Http\Controllers\Admin\SearchController as AdminSearchController;
+use App\Http\Controllers\Admin\TrashController as AdminTrashController;
 use App\Http\Controllers\Admin\LinkCheckController as AdminLinkCheckController;
 use App\Http\Controllers\Admin\LandingPageController as AdminLandingPageController;
 use App\Http\Controllers\Admin\AttachmentController as AdminAttachmentController;
@@ -164,6 +166,14 @@ Route::middleware(['auth', 'verified', '2fa'])->prefix('admin')->name('admin.')-
     // Historia zmian treści (dostęp weryfikowany per moduł w kontrolerze).
     Route::get('historia/{type}/{id}', [AdminRevisionController::class, 'index'])->name('historia.index');
     Route::post('historia/{type}/{id}/przywroc/{revision}', [AdminRevisionController::class, 'restore'])->name('historia.restore');
+
+    // Globalna wyszukiwarka panelu (paleta poleceń).
+    Route::get('szukaj', AdminSearchController::class)->name('search');
+
+    // Kosz — miękkie usuwanie treści (dostęp per moduł w kontrolerze).
+    Route::get('kosz', [AdminTrashController::class, 'index'])->name('kosz.index');
+    Route::post('kosz/{type}/{id}/przywroc', [AdminTrashController::class, 'restore'])->name('kosz.restore');
+    Route::delete('kosz/{type}/{id}', [AdminTrashController::class, 'forceDelete'])->name('kosz.force');
 
     Route::middleware(['module:pages', 'module-access:pages'])->group(function () {
         Route::resource('podstrony', AdminPageController::class)->parameters(['podstrony' => 'page']);

@@ -18,6 +18,7 @@ class News extends Model implements HasMedia
     use \App\Models\Concerns\HasPreviewLink;
     use \App\Models\Concerns\HasRevisions;
     use \App\Models\Concerns\LogsActivity;
+    use \Illuminate\Database\Eloquent\SoftDeletes;
     use InteractsWithMedia;
 
     protected $table = 'news';

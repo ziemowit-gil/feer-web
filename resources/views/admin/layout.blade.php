@@ -259,6 +259,13 @@
                         <a href="{{ route('admin.dziennik.index') }}" class="{{ $itemClass('admin.dziennik.*') }}">
                             <i class="fa-solid fa-clock-rotate-left {{ $iconClass('admin.dziennik.*') }}"></i> Dziennik zdarzeń
                         </a>
+                        @php $trashCount = \App\Http\Controllers\Admin\TrashController::count(); @endphp
+                        <a href="{{ route('admin.kosz.index') }}" class="{{ $itemClass('admin.kosz.*') }}">
+                            <i class="fa-solid fa-trash-can {{ $iconClass('admin.kosz.*') }}"></i> Kosz
+                            @if ($trashCount > 0)
+                                <span class="ml-auto rounded-full bg-gray-200 px-2 py-0.5 text-xs font-bold text-gray-700">{{ $trashCount }}</span>
+                            @endif
+                        </a>
                     @endif
                 </div>
             </div>
@@ -282,8 +289,15 @@
     </aside>
 
     <div class="flex-1">
-        <header class="flex items-center justify-between border-b border-gray-200 bg-white px-6 py-4">
+        <header class="flex items-center justify-between gap-4 border-b border-gray-200 bg-white px-6 py-4">
             <h1 class="text-xl font-bold">@yield('title', 'Panel administracyjny')</h1>
+            <button type="button" onclick="window.dispatchEvent(new CustomEvent('open-command-palette'))"
+                class="flex items-center gap-2 rounded-lg border border-gray-300 px-3 py-2 text-sm text-muted hover:border-brand hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+                aria-label="Szukaj w panelu (Ctrl+K)">
+                <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+                <span class="hidden sm:inline">Szukaj…</span>
+                <kbd class="hidden rounded border border-gray-300 bg-gray-50 px-1.5 text-xs sm:inline">Ctrl K</kbd>
+            </button>
         </header>
 
         <main class="p-6">
@@ -302,6 +316,79 @@
             @yield('content')
         </main>
     </div>
+
+    {{-- Globalna wyszukiwarka panelu (paleta poleceń Ctrl/⌘+K) --}}
+    <div x-data="commandPalette()"
+         @open-command-palette.window="openPalette()"
+         @keydown.window="hotkey($event)"
+         x-show="open" x-cloak
+         class="fixed inset-0 z-[200] flex items-start justify-center bg-black/40 p-4 pt-[10vh]"
+         role="dialog" aria-modal="true" aria-label="Wyszukiwarka panelu"
+         @click.self="close()">
+        <div class="w-full max-w-xl overflow-hidden rounded-xl bg-white shadow-2xl" @click.stop>
+            <div class="flex items-center gap-3 border-b border-gray-200 px-4">
+                <i class="fa-solid fa-magnifying-glass text-gray-400" aria-hidden="true"></i>
+                <input x-ref="input" x-model="q" @input="onInput()" type="text"
+                    @keydown.arrow-down.prevent="move(1)" @keydown.arrow-up.prevent="move(-1)"
+                    @keydown.enter.prevent="go(results[active])" @keydown.escape.prevent="close()"
+                    placeholder="Szukaj stron, newsów, projektów, sekcji…"
+                    aria-label="Szukaj w panelu" autocomplete="off"
+                    class="w-full border-0 py-3 text-sm focus:ring-0">
+                <span x-show="loading" class="text-xs text-muted">…</span>
+            </div>
+            <ul class="max-h-80 overflow-y-auto py-2" role="listbox">
+                <template x-for="(item, i) in results" :key="i">
+                    <li role="option" :aria-selected="i === active"
+                        @click="go(item)" @mouseenter="active = i"
+                        :class="i === active ? 'bg-brand/10 text-brand' : 'text-ink'"
+                        class="flex cursor-pointer items-center gap-3 px-4 py-2 text-sm">
+                        <i class="fa-solid w-4 text-center text-gray-400" :class="item.icon" aria-hidden="true"></i>
+                        <span class="min-w-0 flex-1 truncate" x-text="item.title"></span>
+                        <span class="shrink-0 rounded bg-gray-100 px-2 py-0.5 text-xs text-muted" x-text="item.label"></span>
+                    </li>
+                </template>
+                <li x-show="! loading && q.trim().length >= 2 && results.length === 0"
+                    class="px-4 py-6 text-center text-sm text-muted">
+                    Brak wyników.
+                </li>
+                <li x-show="q.trim().length < 2"
+                    class="px-4 py-6 text-center text-sm text-muted">
+                    Wpisz co najmniej 2 znaki. ↑↓ nawigacja, Enter otwiera, Esc zamyka.
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        function commandPalette() {
+            return {
+                open: false, q: '', results: [], active: 0, loading: false, timer: null,
+                openPalette() { this.open = true; this.$nextTick(() => this.$refs.input && this.$refs.input.focus()); },
+                close() { this.open = false; this.q = ''; this.results = []; this.active = 0; },
+                hotkey(e) {
+                    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); this.open ? this.close() : this.openPalette(); }
+                },
+                onInput() {
+                    clearTimeout(this.timer);
+                    const term = this.q.trim();
+                    if (term.length < 2) { this.results = []; this.loading = false; return; }
+                    this.loading = true;
+                    this.timer = setTimeout(() => this.search(term), 200);
+                },
+                async search(term) {
+                    try {
+                        const res = await fetch('{{ route('admin.search') }}?q=' + encodeURIComponent(term), { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+                        const data = await res.json();
+                        this.results = data.results || [];
+                        this.active = 0;
+                    } catch (err) { this.results = []; }
+                    this.loading = false;
+                },
+                move(d) { if (this.results.length) { this.active = (this.active + d + this.results.length) % this.results.length; } },
+                go(item) { if (item) { window.location.href = item.url; } },
+            };
+        }
+    </script>
 
 </body>
 </html>

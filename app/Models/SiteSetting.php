@@ -119,7 +119,7 @@ class SiteSetting extends Model implements HasMedia
     ];
 
     protected $fillable = [
-        'site_name', 'tagline', 'brand_color', 'brand_color_2', 'brand_color_3', 'brand_color_4', 'meta_description', 'allow_indexing', 'disabled_modules', 'homepage_section_order', 'events_home_color',
+        'site_name', 'tagline', 'brand_color', 'brand_color_2', 'brand_color_3', 'brand_color_4', 'meta_description', 'allow_indexing', 'ga_measurement_id', 'disabled_modules', 'homepage_section_order', 'events_home_color',
         'bip_url', 'bip_intro', 'facebook_url', 'twitter_url', 'instagram_url', 'linkedin_url', 'youtube_url', 'substack_url',
         'contact_address', 'contact_city', 'contact_email', 'contact_phone', 'contact_intro', 'contact_bank_accounts',
         'contact_meeting_title', 'contact_online_meeting_url', 'contact_online_meeting_label', 'contact_online_meeting_text',

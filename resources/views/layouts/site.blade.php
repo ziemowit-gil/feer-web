@@ -48,6 +48,7 @@
         ]), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}
     </script>
     @stack('structured_data')
+    @include('partials.analytics')
 </head>
 <body class="flex min-h-screen flex-col bg-white text-ink antialiased">
     <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-[100] focus:rounded focus:bg-brand focus:px-4 focus:py-2 focus:text-sm focus:font-bold focus:text-white">

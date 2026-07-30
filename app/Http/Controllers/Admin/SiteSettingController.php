@@ -99,6 +99,7 @@ class SiteSettingController extends Controller
             'og_image' => ['nullable', 'image', 'max:2048'],
             'remove_og_image' => ['sometimes', 'boolean'],
             'allow_indexing' => ['sometimes', 'boolean'],
+            'ga_measurement_id' => ['nullable', 'string', 'max:32', 'regex:/^G-[A-Za-z0-9]+$/'],
             'bip_url' => ['nullable', 'string', 'max:255'],
             'bip_intro' => ['nullable', 'string', 'max:20000'],
             'facebook_url' => ['nullable', 'string', 'max:255'],
