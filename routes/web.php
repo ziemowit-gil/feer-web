@@ -325,8 +325,8 @@ Route::middleware(['auth', 'verified', '2fa'])->prefix('admin')->name('admin.')-
         Route::post('przekierowania-import', [AdminRedirectController::class, 'import'])->name('przekierowania.import');
 
         // ETR — wersja łatwa do czytania (polimorficzna, dotyczy newsów i podstron).
-        Route::put('etr/{type}/{id}', [AdminEtrController::class, 'update'])->name('admin.etr.update');
-        Route::delete('etr/{type}/{id}', [AdminEtrController::class, 'destroy'])->name('admin.etr.destroy');
+        Route::put('etr/{type}/{id}', [AdminEtrController::class, 'update'])->name('etr.update');
+        Route::delete('etr/{type}/{id}', [AdminEtrController::class, 'destroy'])->name('etr.destroy');
 
         // Bannery i strefy wyświetlania.
         Route::resource('banery', AdminBannerController::class)
