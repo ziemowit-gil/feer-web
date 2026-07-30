@@ -45,7 +45,7 @@
                     )->values();
                     $isCurrent = $changedFields->isEmpty();
                 @endphp
-                <li x-data="{ open: false }" class="rounded-lg border border-gray-200 bg-white">
+                <li x-data="{ open: false, mode: 'split' }" class="rounded-lg border border-gray-200 bg-white">
                     <div class="flex flex-wrap items-center justify-between gap-3 p-4">
                         <div class="text-sm">
                             <span class="font-bold text-ink">{{ $revision->created_at?->format('Y-m-d H:i') }}</span>
@@ -76,10 +76,46 @@
 
                     @unless ($isCurrent)
                         <div x-show="open" x-cloak class="border-t border-gray-100 p-4">
+                            <div class="mb-3 flex items-center gap-2">
+                                <span class="text-xs font-bold text-muted">Widok:</span>
+                                <div class="flex items-center rounded border border-gray-300" role="group" aria-label="Tryb porównania">
+                                    <button type="button" @click="mode = 'split'"
+                                        :class="mode === 'split' ? 'bg-brand-light text-brand' : 'text-muted hover:bg-gray-100'"
+                                        class="rounded-l px-3 py-1.5 text-xs font-bold">
+                                        <i class="fa-solid fa-table-columns" aria-hidden="true"></i> Obok siebie
+                                    </button>
+                                    <button type="button" @click="mode = 'unified'"
+                                        :class="mode === 'unified' ? 'bg-brand-light text-brand' : 'text-muted hover:bg-gray-100'"
+                                        class="rounded-r border-l border-gray-300 px-3 py-1.5 text-xs font-bold">
+                                        <i class="fa-solid fa-bars" aria-hidden="true"></i> W jednej kolumnie
+                                    </button>
+                                </div>
+                            </div>
+
                             @foreach ($changedFields as $field)
                                 <div class="mb-4 last:mb-0">
                                     <p class="mb-1 text-xs font-bold uppercase tracking-wide text-muted">{{ $fieldLabels[$field] ?? $field }}</p>
-                                    <div class="overflow-x-auto rounded border border-gray-200 bg-gray-50 font-mono text-xs leading-relaxed">
+
+                                    {{-- Widok obok siebie (split): stara treść po lewej, obecna po prawej --}}
+                                    <div x-show="mode === 'split'" class="overflow-x-auto rounded border border-gray-200">
+                                        <div class="min-w-[40rem]">
+                                            <div class="grid grid-cols-2 border-b border-gray-200 bg-gray-50 text-[11px] font-bold text-muted">
+                                                <div class="border-r border-gray-200 px-3 py-1">Ta wersja ({{ $revision->created_at?->format('Y-m-d H:i') }})</div>
+                                                <div class="px-3 py-1">Obecna treść</div>
+                                            </div>
+                                            <div class="font-mono text-xs leading-relaxed">
+                                                @foreach (\App\Support\LineDiff::sideBySide($revision->data[$field] ?? null, $model->{$field}) as $row)
+                                                    <div class="grid grid-cols-2">
+                                                        <div class="whitespace-pre-wrap border-r border-gray-100 px-3 {{ in_array($row['type'], ['del', 'change']) ? 'bg-red-50 text-red-800' : ($row['type'] === 'same' ? 'text-gray-500' : 'bg-gray-50') }}">{{ $row['left'] }}{{ $row['left'] === null ? ' ' : '' }}</div>
+                                                        <div class="whitespace-pre-wrap px-3 {{ in_array($row['type'], ['add', 'change']) ? 'bg-green-50 text-green-800' : ($row['type'] === 'same' ? 'text-gray-500' : 'bg-gray-50') }}">{{ $row['right'] }}{{ $row['right'] === null ? ' ' : '' }}</div>
+                                                    </div>
+                                                @endforeach
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {{-- Widok w jednej kolumnie (unified) --}}
+                                    <div x-show="mode === 'unified'" x-cloak class="overflow-x-auto rounded border border-gray-200 bg-gray-50 font-mono text-xs leading-relaxed">
                                         @foreach (\App\Support\LineDiff::compare($revision->data[$field] ?? null, $model->{$field}) as $line)
                                             @if ($line['type'] === 'del')
                                                 <div class="whitespace-pre-wrap bg-red-50 px-3 text-red-800"><span class="select-none text-red-400">− </span>{{ $line['text'] }}</div>
@@ -90,9 +126,10 @@
                                             @endif
                                         @endforeach
                                     </div>
+
                                     <p class="mt-1 text-[11px] text-muted">
-                                        <span class="text-red-700">− ta wersja</span> ·
-                                        <span class="text-green-700">+ obecna treść</span>
+                                        <span class="text-red-700">Ta wersja</span> ·
+                                        <span class="text-green-700">Obecna treść</span>
                                     </p>
                                 </div>
                             @endforeach

@@ -53,6 +53,47 @@ class LineDiff
         return $diff;
     }
 
+    /**
+     * Ten sam diff ułożony w dwie kolumny (stara treść po lewej, nowa po
+     * prawej). Kolejne usunięcia parujemy z następującymi po nich dodaniami
+     * w jednym wierszu, żeby zmiana czytała się jak klasyczny widok „split”;
+     * niesparowane usunięcia/dodania zostają w swojej kolumnie, a druga jest
+     * pusta.
+     *
+     * @return array<int, array{left: ?string, right: ?string, type: 'same'|'change'|'del'|'add'}>
+     */
+    public static function sideBySide(?string $old, ?string $new): array
+    {
+        $rows = [];
+        $pendingDel = [];
+
+        $flush = function () use (&$rows, &$pendingDel) {
+            foreach ($pendingDel as $text) {
+                $rows[] = ['left' => $text, 'right' => null, 'type' => 'del'];
+            }
+            $pendingDel = [];
+        };
+
+        foreach (self::compare($old, $new) as $line) {
+            if ($line['type'] === 'same') {
+                $flush();
+                $rows[] = ['left' => $line['text'], 'right' => $line['text'], 'type' => 'same'];
+            } elseif ($line['type'] === 'del') {
+                $pendingDel[] = $line['text'];
+            } else { // add
+                if ($pendingDel !== []) {
+                    $rows[] = ['left' => array_shift($pendingDel), 'right' => $line['text'], 'type' => 'change'];
+                } else {
+                    $rows[] = ['left' => null, 'right' => $line['text'], 'type' => 'add'];
+                }
+            }
+        }
+
+        $flush();
+
+        return $rows;
+    }
+
     /** Czy dwie wartości się różnią (po normalizacji). */
     public static function changed(?string $old, ?string $new): bool
     {
