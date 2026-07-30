@@ -1,5 +1,8 @@
 *.log
 .DS_Store
+/database/database.sqlite
+/database/database.sqlite-shm
+/database/database.sqlite-wal
 .env
 .env.backup
 .env.production
