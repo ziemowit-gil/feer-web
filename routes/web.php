@@ -283,6 +283,7 @@ Route::middleware(['auth', 'verified', '2fa'])->prefix('admin')->name('admin.')-
 
     Route::get('multimedia', [MediaLibraryController::class, 'index'])->name('multimedia.index');
     Route::get('multimedia/obrazy', [MediaLibraryController::class, 'imagesJson'])->name('multimedia.images');
+    Route::get('multimedia/audyt-alt', [MediaLibraryController::class, 'altAudit'])->name('multimedia.alt-audit');
     Route::get('multimedia/unsplash', [MediaLibraryController::class, 'unsplashSearch'])->name('multimedia.unsplash.search');
     Route::post('multimedia/unsplash', [MediaLibraryController::class, 'unsplashImport'])->name('multimedia.unsplash.import');
     Route::get('multimedia/eksport', [MediaLibraryController::class, 'export'])->name('multimedia.export');
@@ -290,6 +291,7 @@ Route::middleware(['auth', 'verified', '2fa'])->prefix('admin')->name('admin.')-
     Route::post('multimedia', [MediaLibraryController::class, 'store'])->name('multimedia.store');
     Route::post('multimedia/zbiorczo', [MediaLibraryController::class, 'bulk'])->name('multimedia.bulk');
     Route::post('multimedia/eksport-zaznaczonych', [MediaLibraryController::class, 'exportSelected'])->name('multimedia.export-selected');
+    Route::put('multimedia/{media}/alt', [MediaLibraryController::class, 'updateAlt'])->name('multimedia.alt');
     Route::put('multimedia/{media}/folder', [MediaLibraryController::class, 'move'])->name('multimedia.move');
     Route::put('multimedia/{media}/archiwizuj', [MediaLibraryController::class, 'archive'])->name('multimedia.archive');
     Route::put('multimedia/{media}/przywroc', [MediaLibraryController::class, 'restore'])->name('multimedia.restore');

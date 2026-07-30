@@ -12,6 +12,8 @@ use App\Models\Partner;
 use App\Models\Project;
 use App\Models\SiteSetting;
 use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
@@ -739,18 +741,37 @@ class MediaLibraryController extends Controller
     }
 
     /**
-     * A screen-reader-friendly description of what the file shows, pulled
-     * from the owning record's own descriptive field. Falls back to the
-     * owner label ("Zdjęcie w galerii") when the record has nothing set,
-     * or no longer exists (an orphaned file).
+     * A screen-reader-friendly description of what the file shows. Falls back
+     * to the owner label ("Zdjęcie w galerii") only when there is no real
+     * description anywhere, so a file still has *something* in the picker.
      */
     private function describeAlt(Media $media, $model): string
     {
         $owner = self::OWNERS[$media->model_type] ?? null;
         $fallback = $owner['label'] ?? class_basename($media->model_type);
 
+        return $this->resolveAltText($media, $model) ?: $fallback;
+    }
+
+    /**
+     * The real, human-written alt description of a file, or null when none
+     * exists (so the audit can tell a genuine description apart from the
+     * generic owner-label fallback). Priority: an alt saved directly on the
+     * file, then an imported Unsplash photo's credit, then the owning
+     * record's own descriptive field.
+     */
+    private function resolveAltText(Media $media, $model): ?string
+    {
+        if (filled($own = $media->getCustomProperty('alt'))) {
+            return $own;
+        }
+
+        if (filled($author = $media->getCustomProperty('unsplash_author'))) {
+            return 'Zdjęcie: '.$author.' / Unsplash';
+        }
+
         if (! $model) {
-            return $fallback;
+            return null;
         }
 
         $source = self::ALT_SOURCES[$media->model_type] ?? null;
@@ -761,6 +782,96 @@ class MediaLibraryController extends Controller
             default => $model->{$source} ?? null,
         };
 
-        return $text ?: $fallback;
+        return filled($text) ? $text : null;
+    }
+
+    /**
+     * Audyt dostępności: obrazy w bibliotece bez żadnego opisu alternatywnego
+     * (ani zapisanego na pliku, ani wynikającego z rekordu właściciela).
+     * Filtrujemy w PHP, bo opis bywa liczony z pól różnych modeli, więc
+     * właścicieli doładowujemy hurtowo, żeby uniknąć zapytań N+1.
+     */
+    public function altAudit()
+    {
+        $missing = $this->missingAltMedia();
+        $perPage = 30;
+        $page = Paginator::resolveCurrentPage();
+
+        $rows = $missing->forPage($page, $perPage)->map(function (Media $media) {
+            $model = $media->relationLoaded('_owner') ? $media->getRelation('_owner') : null;
+
+            return [
+                'id' => $media->id,
+                'url' => $media->getUrl(),
+                'file_name' => $media->file_name,
+                'size' => $media->human_readable_size,
+                'owner' => $this->describeOwner($media, $model),
+            ];
+        })->values();
+
+        $paginator = new LengthAwarePaginator($rows, $missing->count(), $perPage, $page, [
+            'path' => Paginator::resolveCurrentPath(),
+            'query' => request()->query(),
+        ]);
+
+        return view('admin.media.alt-audit', [
+            'rows' => $paginator,
+            'total' => $missing->count(),
+        ]);
+    }
+
+    /**
+     * Zapisuje opis alternatywny bezpośrednio na pliku (custom property).
+     * Ma pierwszeństwo nad opisem wyprowadzanym z rekordu właściciela, więc
+     * działa też dla plików wgranych wprost do biblioteki, które nie mają
+     * żadnego pola opisowego. Pusty opis usuwa właściwość.
+     */
+    public function updateAlt(Request $request, Media $media)
+    {
+        abort_unless(in_array($media->model_type, $this->accessibleModelTypes()), 403);
+
+        $data = $request->validate([
+            'alt' => ['nullable', 'string', 'max:255'],
+        ]);
+
+        $alt = trim((string) ($data['alt'] ?? ''));
+
+        if ($alt === '') {
+            $media->forgetCustomProperty('alt');
+        } else {
+            $media->setCustomProperty('alt', $alt);
+        }
+
+        $media->save();
+
+        return redirect()->back()->with('status', 'Opis alternatywny został zapisany.');
+    }
+
+    /**
+     * Dostępne, niezarchiwizowane obrazy bez realnego opisu alternatywnego,
+     * z doładowanym (i podpiętym jako relacja `_owner`) rekordem właściciela.
+     *
+     * @return \Illuminate\Support\Collection<int, Media>
+     */
+    private function missingAltMedia()
+    {
+        $media = Media::query()
+            ->whereIn('model_type', $this->accessibleModelTypes())
+            ->where('mime_type', 'like', 'image/%')
+            ->whereNull('archived_at')
+            ->latest()
+            ->get();
+
+        $owners = [];
+        foreach ($media->groupBy('model_type') as $type => $group) {
+            $owners[$type] = $type::whereIn('id', $group->pluck('model_id')->unique())->get()->keyBy('id');
+        }
+
+        return $media->filter(function (Media $item) use ($owners) {
+            $model = $owners[$item->model_type][$item->model_id] ?? null;
+            $item->setRelation('_owner', $model);
+
+            return blank($this->resolveAltText($item, $model));
+        })->values();
     }
 }

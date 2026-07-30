@@ -87,6 +87,12 @@
                             {{ $showArchived ? 'Pokaż aktywne pliki' : 'Pokaż archiwum' }}
                         </a>
 
+                        <a href="{{ route('admin.multimedia.alt-audit') }}"
+                            class="rounded border border-gray-300 px-3 py-2 text-xs font-bold text-muted hover:bg-gray-100">
+                            <i class="fa-solid fa-universal-access" aria-hidden="true"></i>
+                            Audyt alt-text
+                        </a>
+
                         <a href="{{ route('admin.multimedia.export', ['folder' => $folder?->id]) }}"
                             class="rounded border border-gray-300 px-3 py-2 text-xs font-bold text-muted hover:bg-gray-100">
                             <i class="fa-solid fa-file-zipper" aria-hidden="true"></i>
