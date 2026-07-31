@@ -79,6 +79,51 @@ class VolunteerAdController extends Controller
         return redirect()->route('admin.wolontariat.index')->with('status', 'Ogłoszenie zostało usunięte.');
     }
 
+    public function clone(VolunteerAd $wolontariat)
+    {
+        $clone = $wolontariat->replicate();
+        $clone->title = "{$wolontariat->title} (kopia)";
+        $clone->slug = $this->uniqueSlug($clone->title);
+        $clone->is_published = false;
+        $clone->closes_at = null;
+        $clone->archived_at = null;
+        $clone->save();
+
+        return redirect()->route('admin.wolontariat.edit', $clone)
+            ->with('status', 'Ogłoszenie zostało sklonowane jako "' . $clone->title . '". Jest zapisane jako szkic — uzupełnij termin zgłoszeń.');
+    }
+
+    public function bulk(Request $request)
+    {
+        $data = $request->validate([
+            'action' => ['required', 'in:archive,restore,delete'],
+            'ids' => ['required', 'array', 'min:1'],
+            'ids.*' => ['integer'],
+        ]);
+
+        $ads = VolunteerAd::whereIn('id', $data['ids'])->get();
+
+        if ($ads->isEmpty()) {
+            return redirect()->back()->with('error', 'Nie znaleziono ogłoszeń do przetworzenia.');
+        }
+
+        $count = $ads->count();
+
+        match ($data['action']) {
+            'archive' => VolunteerAd::whereIn('id', $ads->pluck('id'))->update(['archived_at' => now()]),
+            'restore' => VolunteerAd::whereIn('id', $ads->pluck('id'))->update(['archived_at' => null]),
+            'delete' => $ads->each->delete(),
+        };
+
+        $message = match ($data['action']) {
+            'archive' => "Zarchiwizowano ogłoszeń: {$count}.",
+            'restore' => "Przywrócono z archiwum ogłoszeń: {$count}.",
+            'delete' => "Usunięto ogłoszeń: {$count}.",
+        };
+
+        return redirect()->back()->with('status', $message);
+    }
+
     /** Znormalizowane dane z żądania (checkbox publikacji, domyślne wartości). */
     private function prepared(VolunteerAdRequest $request): array
     {

@@ -7,7 +7,12 @@
 @endphp
 
 @section('content')
-    <form method="POST" action="{{ $action }}" enctype="multipart/form-data" class="max-w-3xl space-y-6"
+    @include('admin.partials.template-panel', [
+        'templateType'   => 'event',
+        'templateFields' => ['type', 'mode', 'location', 'online_url', 'audience', 'registration_cta_label', 'contact_email', 'price_info'],
+    ])
+
+    <form method="POST" action="{{ $action }}" enctype="multipart/form-data" class="mt-4 max-w-3xl space-y-6"
         x-data="{ mode: @js(old('mode', $event->mode ?: 'stacjonarnie')) }">
         @csrf
         @if ($event->exists) @method('PUT') @endif

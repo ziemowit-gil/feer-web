@@ -57,6 +57,10 @@
                                     <a href="{{ $article->previewUrl() }}" target="_blank" rel="noopener" class="text-amber-600 hover:text-amber-700" title="Podgląd wersji roboczej (link ważny 14 dni)"><i class="fa-solid fa-eye"></i></a>
                                 @endif
                                 <a href="{{ route('admin.wiem-feer.edit', $article) }}" class="text-muted hover:text-brand" title="Edytuj"><i class="fa-solid fa-pen"></i></a>
+                                <form method="POST" action="{{ route('admin.wiem-feer.klonuj', $article) }}">
+                                    @csrf
+                                    <button type="submit" class="text-muted hover:text-brand" title="Klonuj jako szkic"><i class="fa-solid fa-copy"></i></button>
+                                </form>
                                 <form method="POST" action="{{ route('admin.wiem-feer.wylacz', $article) }}">
                                     @csrf
                                     @method('PATCH')

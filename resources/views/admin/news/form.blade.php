@@ -30,8 +30,13 @@
         @endif
 
         <div data-tab-panel="edit">
+    @include('admin.partials.template-panel', [
+        'templateType'   => 'news',
+        'templateFields' => ['news_category_id', 'project_id', 'audience', 'accent_color', 'excerpt', 'content', 'meta_title', 'meta_description'],
+    ])
+
     <form method="POST" action="{{ $news->exists ? route('admin.newsy.update', $news) : route('admin.newsy.store') }}"
-        enctype="multipart/form-data" class="space-y-6">
+        enctype="multipart/form-data" class="mt-4 space-y-6">
         @csrf
         @if ($news->exists) @method('PUT') @endif
 

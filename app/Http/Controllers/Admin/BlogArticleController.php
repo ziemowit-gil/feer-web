@@ -57,6 +57,20 @@ class BlogArticleController extends Controller
         return redirect()->route('admin.wiem-feer.index')->with('status', 'Artykuł został usunięty.');
     }
 
+    public function clone(BlogArticle $article)
+    {
+        $clone = $article->replicate();
+        $clone->title = "{$article->title} (kopia)";
+        $clone->slug = $this->uniqueSlug($clone->title);
+        $clone->is_published = false;
+        $clone->is_disabled = true;
+        $clone->published_at = null;
+        $clone->save();
+
+        return redirect()->route('admin.wiem-feer.edit', $clone)
+            ->with('status', 'Artykuł został sklonowany jako "' . $clone->title . '". Jest zapisany jako wyłączony.');
+    }
+
     public function toggleDisabled(BlogArticle $article)
     {
         $article->update(['is_disabled' => ! $article->is_disabled]);

@@ -40,6 +40,7 @@ use App\Http\Controllers\Admin\SiteSettingController;
 use App\Http\Controllers\Admin\TimelineController as AdminTimelineController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\Admin\UserGroupController as AdminUserGroupController;
+use App\Http\Controllers\Admin\ContentTemplateController as AdminContentTemplateController;
 use App\Http\Controllers\Admin\VolunteerAdController as AdminVolunteerAdController;
 use App\Http\Controllers\AccessibilityController;
 use App\Http\Controllers\AccessibilityReportController;
@@ -179,6 +180,13 @@ Route::middleware(['auth', 'verified', '2fa'])->prefix('admin')->name('admin.')-
     // Blokada równoczesnej edycji (heartbeat, dostęp per moduł w kontrolerze).
     Route::post('blokada-edycji', AdminEditLockController::class)->name('edit-lock');
 
+    // Szablony treści — API JSON (dla JS w formularzach) + zarządzanie.
+    Route::get('szablony', [AdminContentTemplateController::class, 'index'])->name('szablony.index');
+    Route::get('szablony/zarzadzaj', [AdminContentTemplateController::class, 'manage'])->name('szablony.manage');
+    Route::get('szablony/{template}/dane', [AdminContentTemplateController::class, 'load'])->name('szablony.load');
+    Route::post('szablony', [AdminContentTemplateController::class, 'store'])->name('szablony.store');
+    Route::delete('szablony/{template}', [AdminContentTemplateController::class, 'destroy'])->name('szablony.destroy');
+
     // Kalendarz redakcyjny.
     Route::get('kalendarz', [AdminCalendarController::class, 'index'])->name('kalendarz.index');
 
@@ -220,6 +228,7 @@ Route::middleware(['auth', 'verified', '2fa'])->prefix('admin')->name('admin.')-
         Route::resource('newsy', AdminNewsController::class)->parameters(['newsy' => 'news'])->except('show');
         Route::post('newsy/{news}/pliki', [AdminAttachmentController::class, 'storeForNews'])->name('newsy.pliki.store');
         Route::post('newsy/{news}/klonuj', [AdminNewsController::class, 'clone'])->name('newsy.klonuj');
+        Route::post('newsy/zbiorczo', [AdminNewsController::class, 'bulk'])->name('newsy.bulk');
         Route::resource('kategorie-newsow', AdminNewsCategoryController::class)->parameters(['kategorie-newsow' => 'newsCategory'])->except('show');
     });
 
@@ -246,6 +255,8 @@ Route::middleware(['auth', 'verified', '2fa'])->prefix('admin')->name('admin.')-
         Route::resource('wolontariat', AdminVolunteerAdController::class)->parameters(['wolontariat' => 'wolontariat'])->except('show');
         Route::put('wolontariat/{wolontariat}/archiwizuj', [AdminVolunteerAdController::class, 'archive'])->name('wolontariat.archive');
         Route::put('wolontariat/{wolontariat}/przywroc', [AdminVolunteerAdController::class, 'restore'])->name('wolontariat.restore');
+        Route::post('wolontariat/{wolontariat}/klonuj', [AdminVolunteerAdController::class, 'clone'])->name('wolontariat.klonuj');
+        Route::post('wolontariat/zbiorczo', [AdminVolunteerAdController::class, 'bulk'])->name('wolontariat.bulk');
     });
 
     Route::middleware(['module:events', 'module-access:events'])->group(function () {
@@ -254,6 +265,8 @@ Route::middleware(['auth', 'verified', '2fa'])->prefix('admin')->name('admin.')-
         Route::post('wydarzenia/{event}/na-landing', [AdminEventController::class, 'toLanding'])->name('wydarzenia.na-landing');
         Route::put('wydarzenia/{event}/archiwizuj', [AdminEventController::class, 'archive'])->name('wydarzenia.archive');
         Route::put('wydarzenia/{event}/przywroc', [AdminEventController::class, 'restore'])->name('wydarzenia.restore');
+        Route::post('wydarzenia/{event}/klonuj', [AdminEventController::class, 'clone'])->name('wydarzenia.klonuj');
+        Route::post('wydarzenia/zbiorczo', [AdminEventController::class, 'bulk'])->name('wydarzenia.bulk');
     });
 
     Route::middleware(['module:faq', 'module-access:faq'])->group(function () {
@@ -280,6 +293,7 @@ Route::middleware(['auth', 'verified', '2fa'])->prefix('admin')->name('admin.')-
     Route::middleware('module:blog')->group(function () {
         Route::resource('wiem-feer', AdminBlogArticleController::class)->parameters(['wiem-feer' => 'article'])->except('show');
         Route::patch('wiem-feer/{article}/wylacz', [AdminBlogArticleController::class, 'toggleDisabled'])->name('wiem-feer.wylacz');
+        Route::post('wiem-feer/{article}/klonuj', [AdminBlogArticleController::class, 'clone'])->name('wiem-feer.klonuj');
         Route::get('komentarze-bloga', [AdminBlogCommentController::class, 'index'])->name('komentarze-bloga.index');
         Route::patch('komentarze-bloga/{comment}/zatwierdz', [AdminBlogCommentController::class, 'approve'])->name('komentarze-bloga.approve');
         Route::delete('komentarze-bloga/{comment}', [AdminBlogCommentController::class, 'destroy'])->name('komentarze-bloga.destroy');

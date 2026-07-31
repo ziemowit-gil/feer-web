@@ -80,6 +80,7 @@ class SiteSetting extends Model implements HasMedia
         'classic' => 'Klasyczny (menu na białym tle, obok logo)',
         'brand_bar' => 'Pasek w kolorze marki (menu na osobnym pasku pod logo)',
         'brand_bar_inline' => 'Pasek w kolorze marki (menu w jednym rzędzie z logo)',
+        'wide_mission' => 'Szeroka belka (logo | misja | social) — menu na pasku poniżej',
     ];
 
     /**

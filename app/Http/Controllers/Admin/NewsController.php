@@ -116,6 +116,39 @@ class NewsController extends Controller
             ->with('status', "News został sklonowany jako „{$clone->title}”. Jest zapisany jako szkic (bez zdjęcia — dodaj je ponownie).");
     }
 
+    public function bulk(Request $request)
+    {
+        $data = $request->validate([
+            'action' => ['required', 'in:trash,publish,unpublish,archive'],
+            'ids' => ['required', 'array', 'min:1'],
+            'ids.*' => ['integer'],
+        ]);
+
+        $news = News::withTrashed()->whereIn('id', $data['ids'])->get();
+
+        if ($news->isEmpty()) {
+            return redirect()->back()->with('error', 'Nie znaleziono newsów do przetworzenia.');
+        }
+
+        $count = $news->count();
+
+        match ($data['action']) {
+            'trash' => $news->each->delete(),
+            'publish' => News::whereIn('id', $news->pluck('id'))->update(['is_published' => true]),
+            'unpublish' => News::whereIn('id', $news->pluck('id'))->update(['is_published' => false]),
+            'archive' => News::whereIn('id', $news->pluck('id'))->update(['is_archived' => true]),
+        };
+
+        $message = match ($data['action']) {
+            'trash' => "Przeniesiono do kosza newsów: {$count}.",
+            'publish' => "Opublikowano newsów: {$count}.",
+            'unpublish' => "Cofnięto publikację newsów: {$count}.",
+            'archive' => "Zarchiwizowano newsów: {$count}.",
+        };
+
+        return redirect()->back()->with('status', $message);
+    }
+
     private function validated(Request $request): array
     {
         $data = $request->validate([

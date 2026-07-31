@@ -1,8 +1,108 @@
 @php
     $headerLayout = $siteSettings->header_layout;
     $inlineOnBrand = $headerLayout === 'brand_bar_inline';
+    $wideMission   = $headerLayout === 'wide_mission';
 @endphp
 
+@if ($wideMission)
+{{-- ─── Layout: Szeroka belka (logo | misja | social) ───────────────────── --}}
+<header x-data="{ mobileOpen: false }" @keydown.escape="mobileOpen = false">
+
+    {{-- Górna belka: logo · misja · social --}}
+    <div class="border-b border-gray-100 bg-white">
+        <div class="mx-auto flex max-w-6xl items-center gap-6 px-4 py-4">
+
+            {{-- Logo --}}
+            <a href="{{ route('home') }}" class="flex flex-none items-center gap-3" aria-label="{{ $siteSettings->site_name }} — strona główna">
+                @if ($siteSettings->logoUrl())
+                    <img src="{{ $siteSettings->logoUrl() }}" alt="{{ $siteSettings->logoAltText() }}"
+                        class="h-14 w-auto max-w-[12rem] rounded object-contain">
+                @else
+                    <span class="flex h-12 w-12 flex-none items-center justify-center rounded bg-brand text-xl font-bold text-white">{{ mb_substr($siteSettings->site_name, 0, 1) }}</span>
+                @endif
+                @unless ($siteSettings->showLogoOnly())
+                    <span class="hidden leading-tight sm:block">
+                        <span class="block font-bold text-ink">{{ $siteSettings->site_name }}</span>
+                    </span>
+                @endunless
+            </a>
+
+            {{-- Misja — centralna część --}}
+            @if ($siteSettings->tagline)
+                <p class="hidden flex-1 text-center text-sm font-medium leading-snug text-muted md:block">
+                    {{ $siteSettings->tagline }}
+                </p>
+            @else
+                <span class="flex-1" aria-hidden="true"></span>
+            @endif
+
+            {{-- Social media --}}
+            @php
+                $socials = array_filter([
+                    'facebook'  => [$siteSettings->facebook_url,  'bi bi-facebook',  'Facebook'],
+                    'instagram' => [$siteSettings->instagram_url, 'bi bi-instagram', 'Instagram'],
+                    'youtube'   => [$siteSettings->youtube_url,   'bi bi-youtube',   'YouTube'],
+                    'linkedin'  => [$siteSettings->linkedin_url,  'bi bi-linkedin',  'LinkedIn'],
+                    'twitter'   => [$siteSettings->twitter_url,   'bi bi-twitter-x', 'Twitter / X'],
+                    'substack'  => [$siteSettings->substack_url,  'bi bi-substack',  'Substack'],
+                ], fn ($s) => !empty($s[0]));
+            @endphp
+
+            @if ($socials)
+                <nav aria-label="Media społecznościowe" class="hidden flex-none items-center gap-3 sm:flex">
+                    @foreach ($socials as [$url, $icon, $label])
+                        <a href="{{ $url }}" target="_blank" rel="noopener"
+                            class="flex min-h-10 min-w-10 items-center justify-center rounded-full border border-gray-200 text-lg text-muted transition hover:border-brand hover:text-brand"
+                            aria-label="{{ $label }}">
+                            <i class="{{ $icon }}" aria-hidden="true"></i>
+                        </a>
+                    @endforeach
+                </nav>
+            @endif
+
+            {{-- Hamburger (mobile) --}}
+            <button type="button"
+                class="flex min-h-11 min-w-11 items-center justify-center rounded text-xl text-ink hover:text-brand lg:hidden"
+                @click="mobileOpen = !mobileOpen"
+                aria-controls="main-nav-panel"
+                :aria-expanded="mobileOpen.toString()"
+                aria-label="Otwórz/zamknij menu">
+                <i class="fa-solid" :class="mobileOpen ? 'fa-xmark' : 'fa-bars'" aria-hidden="true"></i>
+            </button>
+        </div>
+    </div>
+
+    {{-- Pasek nawigacji --}}
+    <nav aria-label="Menu główne" class="hidden bg-brand lg:block">
+        <div class="mx-auto flex max-w-6xl justify-center px-4">
+            @include('partials.main-nav-items', ['onBrand' => true])
+        </div>
+    </nav>
+
+    {{-- Mobile: misja + social + menu --}}
+    <div x-show="mobileOpen" x-cloak id="main-nav-panel" class="border-t border-gray-200 bg-white lg:hidden">
+        @if ($siteSettings->tagline)
+            <p class="border-b border-gray-100 px-4 py-3 text-sm text-muted">{{ $siteSettings->tagline }}</p>
+        @endif
+        @if ($socials)
+            <div class="flex flex-wrap gap-3 border-b border-gray-100 px-4 py-3">
+                @foreach ($socials as [$url, $icon, $label])
+                    <a href="{{ $url }}" target="_blank" rel="noopener"
+                        class="flex min-h-10 min-w-10 items-center justify-center rounded-full border border-gray-200 text-lg text-muted hover:border-brand hover:text-brand"
+                        aria-label="{{ $label }}">
+                        <i class="{{ $icon }}" aria-hidden="true"></i>
+                    </a>
+                @endforeach
+            </div>
+        @endif
+        <div class="px-4 pb-4">
+            @include('partials.main-nav-items', ['mobile' => true])
+        </div>
+    </div>
+</header>
+
+@else
+{{-- ─── Dotychczasowe layouty (classic / brand_bar / brand_bar_inline) ──── --}}
 <header class="{{ $inlineOnBrand ? 'bg-brand border-transparent' : 'bg-white' }}" x-data="{ mobileOpen: false }" @keydown.escape="mobileOpen = false">
     <div class="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-4">
         <a href="{{ route('home') }}" class="flex items-center gap-3">
@@ -46,3 +146,4 @@
         @include('partials.main-nav-items', ['mobile' => true])
     </nav>
 </header>
+@endif

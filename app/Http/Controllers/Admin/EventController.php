@@ -101,6 +101,57 @@ class EventController extends Controller
         return redirect()->route('admin.wydarzenia.index')->with('status', 'Wydarzenie zostało usunięte.');
     }
 
+    public function clone(Event $event)
+    {
+        $clone = $event->replicate();
+        $clone->title = "{$event->title} (kopia)";
+        $clone->slug = $this->uniqueSlug($clone->title);
+        $clone->is_published = false;
+        $clone->is_featured = false;
+        $clone->starts_at = null;
+        $clone->ends_at = null;
+        $clone->archived_at = null;
+        $clone->save();
+
+        foreach ($event->faqs()->get() as $faq) {
+            $clone->faqs()->create($faq->only(['question', 'answer', 'order']));
+        }
+
+        return redirect()->route('admin.wydarzenia.edit', $clone)
+            ->with('status', 'Wydarzenie zostało sklonowane jako "' . $clone->title . '". Jest zapisane jako szkic — uzupełnij termin.');
+    }
+
+    public function bulk(Request $request)
+    {
+        $data = $request->validate([
+            'action' => ['required', 'in:archive,restore,delete'],
+            'ids' => ['required', 'array', 'min:1'],
+            'ids.*' => ['integer'],
+        ]);
+
+        $events = Event::whereIn('id', $data['ids'])->get();
+
+        if ($events->isEmpty()) {
+            return redirect()->back()->with('error', 'Nie znaleziono wydarzeń do przetworzenia.');
+        }
+
+        $count = $events->count();
+
+        match ($data['action']) {
+            'archive' => Event::whereIn('id', $events->pluck('id'))->update(['archived_at' => now()]),
+            'restore' => Event::whereIn('id', $events->pluck('id'))->update(['archived_at' => null]),
+            'delete' => $events->each->delete(),
+        };
+
+        $message = match ($data['action']) {
+            'archive' => "Zarchiwizowano wydarzeń: {$count}.",
+            'restore' => "Przywrócono z archiwum wydarzeń: {$count}.",
+            'delete' => "Usunięto wydarzeń: {$count}.",
+        };
+
+        return redirect()->back()->with('status', $message);
+    }
+
     /**
      * Utwórz aktualność (News) na podstawie wydarzenia — jako szkic do
      * przejrzenia. Treść składamy z terminu, miejsca, opisu, prowadzącej
