@@ -2,7 +2,7 @@
 
 @if ($item->parent_id)
     {{-- Nested row inside a dropdown panel — no <li>, the panel isn't a list. --}}
-    <a href="{{ $item->url }}" class="block px-4 py-2 text-sm font-bold normal-case {{ $item->isCurrent() ? 'text-brand' : 'text-ink' }} hover:bg-gray-50 hover:text-brand focus:bg-gray-50">
+    <a href="{{ $item->url }}" class="block px-4 py-2 text-sm font-medium normal-case {{ $item->isCurrent() ? 'text-brand' : 'text-ink' }} hover:bg-gray-50 hover:text-brand focus:bg-gray-50">
         {{ $item->label }}
     </a>
 @elseif (! $item->is_button && (

@@ -48,11 +48,13 @@
                 ], fn ($s) => !empty($s[0]));
             @endphp
 
-            {{-- Prawa kolumna: social + WCAG (górny wiersz), konto + wesprzyj (dolny) --}}
+            {{-- Prawa kolumna: social + CTA (góra), konto + wesprzyj (dół) --}}
+            {{-- WCAG jest w osobnym pasku na samej górze — tu go nie powtarzamy --}}
+            @php $navBtn = ($navItems ?? collect())->first(fn ($i) => $i->is_button); @endphp
             <div class="hidden flex-none flex-col items-end gap-1.5 sm:flex">
 
-                {{-- Wiersz 1: social media + separator + WCAG --}}
-                <div class="flex items-center gap-6">
+                {{-- Wiersz 1: social media + separator + przycisk CTA --}}
+                <div class="flex items-center gap-4">
                     @if ($socials)
                         <nav aria-label="Media społecznościowe" class="flex items-center gap-2">
                             @foreach ($socials as [$url, $icon, $label])
@@ -63,32 +65,18 @@
                                 </a>
                             @endforeach
                         </nav>
-                        <div class="h-8 w-px bg-gray-200" aria-hidden="true"></div>
                     @endif
 
-                    <div role="group" aria-label="Ustawienia dostępności" class="flex items-center gap-1">
-                        <div role="group" aria-label="Rozmiar czcionki" class="flex items-center">
-                            <button type="button" data-a11y-font="down"
-                                class="flex min-h-9 min-w-9 items-center justify-center rounded-l border border-gray-200 text-sm text-muted transition hover:border-brand hover:text-brand"
-                                aria-label="Zmniejsz czcionkę">A-</button>
-                            <button type="button" data-a11y-font="reset"
-                                class="flex min-h-9 min-w-9 items-center justify-center border-y border-gray-200 text-sm text-muted transition hover:border-brand hover:text-brand"
-                                aria-label="Domyślny rozmiar czcionki">A</button>
-                            <button type="button" data-a11y-font="up"
-                                class="flex min-h-9 min-w-9 items-center justify-center rounded-r border border-gray-200 text-sm text-muted transition hover:border-brand hover:text-brand"
-                                aria-label="Zwiększ czcionkę">A+</button>
-                        </div>
-                        <button type="button" data-a11y-contrast
-                            class="flex min-h-9 min-w-9 items-center justify-center rounded border border-gray-200 text-muted transition hover:border-brand hover:text-brand"
-                            aria-pressed="false" aria-label="Wersja kontrastowa">
-                            <i class="fa-solid fa-circle-half-stroke" aria-hidden="true"></i>
-                        </button>
-                        <button type="button" data-a11y-animations
-                            class="flex min-h-9 min-w-9 items-center justify-center rounded border border-gray-200 text-muted transition hover:border-brand hover:text-brand"
-                            aria-pressed="false" aria-label="Wyłącz animacje">
-                            <i class="fa-solid fa-film" aria-hidden="true"></i>
-                        </button>
-                    </div>
+                    @if ($navBtn)
+                        @if ($socials)
+                            <div class="h-8 w-px bg-gray-200" aria-hidden="true"></div>
+                        @endif
+                        <a href="{{ $navBtn->url }}"
+                            class="inline-flex items-center gap-1.5 rounded-full bg-brand px-4 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-brand-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
+                            <i class="fa-solid fa-hands-holding-heart text-xs" aria-hidden="true"></i>
+                            {{ $navBtn->label }}
+                        </a>
+                    @endif
                 </div>
 
                 {{-- Wiersz 2: numer konta + link Wesprzyj --}}
