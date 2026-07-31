@@ -202,6 +202,7 @@ class SiteSettingController extends Controller
             'wide_mission_show_mission' => ['sometimes', 'boolean'],
             'wide_mission_highlight_account' => ['sometimes', 'boolean'],
             'wide_mission_nav_align' => ['nullable', 'in:left,center'],
+            'wide_mission_search_in_nav' => ['sometimes', 'boolean'],
             'volunteer_layout' => ['nullable', 'in:grid,list'],
             'news_default_image' => ['nullable', 'image', 'max:4096'],
             'remove_news_default_image' => ['sometimes', 'boolean'],

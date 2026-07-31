@@ -127,8 +127,18 @@
 
     {{-- Pasek nawigacji — biała kreska u dołu oddziela od paska ogłoszenia --}}
     <nav aria-label="Menu główne" class="hidden border-b border-white/25 bg-brand shadow-sm lg:block">
-        <div @class(['mx-auto max-w-6xl px-4 flex', 'justify-center' => ($siteSettings->wide_mission_nav_align ?? 'left') === 'center'])>
+        <div @class(['mx-auto max-w-6xl px-4 flex items-center', 'justify-center' => ($siteSettings->wide_mission_nav_align ?? 'left') === 'center'])>
             @include('partials.main-nav-items', ['onBrand' => true])
+            @if ($siteSettings->wide_mission_search_in_nav ?? false)
+                <form action="{{ route('search') }}" method="GET" class="ml-auto flex shrink-0 items-center py-1" role="search">
+                    <label for="nav-search" class="sr-only">Wyszukaj w serwisie</label>
+                    <input id="nav-search" type="search" name="q" value="{{ request('q') }}" placeholder="Szukaj…" autocomplete="off"
+                        class="w-36 rounded-l border-0 bg-white/15 px-3 py-1.5 text-sm text-white placeholder:text-white/60 focus:bg-white/25 focus:outline-none focus:ring-1 focus:ring-white/50">
+                    <button type="submit" class="flex min-h-8 min-w-8 items-center justify-center rounded-r bg-white/15 text-white hover:bg-white/25 focus-visible:outline-2 focus-visible:outline-white" aria-label="Szukaj">
+                        <i class="fa-solid fa-magnifying-glass text-xs" aria-hidden="true"></i>
+                    </button>
+                </form>
+            @endif
         </div>
     </nav>
 
