@@ -28,9 +28,16 @@
             </a>
 
             {{-- Misja — centralna część --}}
-            @if ($siteSettings->tagline)
+            @php
+                $wmMission = null;
+                if ($siteSettings->wide_mission_show_mission) {
+                    $wmMission = \App\Models\Page::where('type', 'about')->value('about_motto');
+                }
+                $wmMission = $wmMission ?: $siteSettings->tagline;
+            @endphp
+            @if ($wmMission)
                 <p class="hidden flex-1 text-center text-sm font-medium leading-snug text-muted md:block">
-                    {{ $siteSettings->tagline }}
+                    {{ $wmMission }}
                 </p>
             @else
                 <span class="flex-1" aria-hidden="true"></span>
