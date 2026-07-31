@@ -53,7 +53,7 @@ class SiteSetting extends Model implements HasMedia
 
     public const SETTINGS_TABS = [
         'general' => 'Ogólne',
-        'header'  => 'Header',
+        'header'  => 'Wide',
         'colors' => 'Kolory',
         'maintenance' => 'Serwis',
         'seo' => 'SEO',
