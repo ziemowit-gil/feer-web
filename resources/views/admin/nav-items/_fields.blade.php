@@ -27,6 +27,14 @@
 </div>
 
 <div x-show="form.location === 'main'" x-cloak>
+    <label for="nav-icon" class="mb-1 block text-sm font-bold">Ikona <span class="font-normal text-muted">(opcjonalnie — używana w stylu nav „Ikony + etykiety")</span></label>
+    <input type="text" id="nav-icon" name="icon" x-model="form.icon" placeholder="np. bi-house-door"
+        class="w-full rounded border-gray-300 font-mono text-sm focus-visible:border-brand focus-visible:ring-2 focus-visible:ring-brand">
+    <p class="mt-1 text-xs text-muted">Klasa Bootstrap Icons bez prefiksu <code>bi</code> — np. <code>bi-people</code>, <code>bi-envelope</code>. Pełna lista: <a href="https://icons.getbootstrap.com/" target="_blank" rel="noopener" class="text-brand underline">icons.getbootstrap.com</a></p>
+    @error('icon') <p class="mt-1 text-sm text-red-700">{{ $message }}</p> @enderror
+</div>
+
+<div x-show="form.location === 'main'" x-cloak>
     <label for="nav-type" class="mb-1 block text-sm font-bold">Typ pozycji</label>
     <select id="nav-type" name="type" x-model="form.type"
         class="w-full rounded border-gray-300 focus-visible:border-brand focus-visible:ring-2 focus-visible:ring-brand">

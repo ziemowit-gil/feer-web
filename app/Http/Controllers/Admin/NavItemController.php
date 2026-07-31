@@ -290,6 +290,7 @@ class NavItemController extends Controller
     {
         $data = $request->validate([
             'label' => ['required', 'string', 'max:255'],
+            'icon' => ['nullable', 'string', 'max:100'],
             'url' => ['nullable', 'string', 'max:255'],
             'type' => ['required', Rule::in(array_keys(NavItem::TYPES))],
             'location' => ['required', Rule::in(array_keys(NavItem::LOCATIONS))],

@@ -29,7 +29,7 @@ class NavItem extends Model
     ];
 
     protected $fillable = [
-        'parent_id', 'label', 'url', 'type', 'module', 'location',
+        'parent_id', 'label', 'icon', 'url', 'type', 'module', 'location',
         'is_button', 'is_transparent_dropdown', 'is_active', 'order', 'button_color',
     ];
 

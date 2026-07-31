@@ -119,7 +119,7 @@
                 open: false,
                 trigger: null,
                 form: {
-                    editingId: '', action: storeUrl, label: '', url: '', type: 'link',
+                    editingId: '', action: storeUrl, label: '', icon: '', url: '', type: 'link',
                     location: 'main', parentId: '', module: '', isButton: false,
                     buttonColor: '#2563eb', buttonColorEnabled: false,
                     isTransparent: false, isActive: true,
@@ -163,6 +163,7 @@
                         editingId: d.id || '',
                         action: d.action,
                         label: d.label || '',
+                        icon: d.icon || '',
                         url: d.url || '',
                         type: d.type || 'link',
                         location: d.location || 'main',

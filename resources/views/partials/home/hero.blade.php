@@ -4,6 +4,7 @@
         ? $quickLinks->take(4)
         : collect();
     $hasSidebar = $sidebarLinks->isNotEmpty();
+    $sidebarStyle = $siteSettings->wide_mission_sidebar_style ?? 'colored';
 @endphp
 
 @if ($siteSettings->isModuleEnabled('hero') && $slides->isNotEmpty())
@@ -54,6 +55,30 @@
 </section>
 
 @if ($hasSidebar)
+@if ($sidebarStyle === 'cards')
+{{-- Styl: białe karty w siatce 2-kolumnowej --}}
+<nav aria-label="Na skróty" class="hidden w-64 flex-col md:flex lg:w-80">
+    <div class="grid h-full grid-cols-2">
+        @foreach ($sidebarLinks as $link)
+            @php
+                $tileHex = \App\Support\Color::isValid($link->color ?? '') ? $link->color : '#f59e0b';
+                $qa = \App\Support\Color::button($tileHex);
+            @endphp
+            <a href="{{ $link->url }}"
+                class="flex flex-1 flex-col items-center justify-center gap-2 border border-gray-200 bg-white px-3 py-4 text-center text-ink transition hover:border-brand hover:shadow-inner focus-visible:outline-2 focus-visible:outline-brand">
+                @if ($link->icon)
+                    <span class="flex h-12 w-12 flex-none items-center justify-center rounded-full text-2xl"
+                        style="background-color: {{ $tileHex }}; color: {{ $qa['text'] }};">
+                        <i class="bi {{ $link->icon }}" aria-hidden="true"></i>
+                    </span>
+                @endif
+                <span class="text-[11px] font-bold uppercase leading-snug tracking-wide">{{ $link->label }}</span>
+            </a>
+        @endforeach
+    </div>
+</nav>
+@else
+{{-- Styl: kolorowe kafle pełnej wysokości (domyślny) --}}
 <nav aria-label="Na skróty" class="hidden w-48 flex-col md:flex lg:w-56">
     @foreach ($sidebarLinks as $link)
         @php
@@ -70,6 +95,7 @@
         </a>
     @endforeach
 </nav>
+@endif
 </div>
 @endif
 

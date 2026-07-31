@@ -241,6 +241,35 @@
                     <span class="text-sm font-bold">Skróty w sidebarze hero <span class="font-normal text-muted">(moduł „Szybkie Akcje" obok slidera; slider przyjmuje mniejsze wymiary)</span></span>
                 </label>
 
+                <div>
+                    <label class="mb-1 block text-sm font-bold">Styl sidebara skrótów</label>
+                    <div class="flex flex-wrap gap-3">
+                        @foreach (['colored' => 'Kolorowe kafle', 'cards' => 'Białe karty (ikona + etykieta)'] as $sv => $sl)
+                            <label class="flex cursor-pointer items-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2.5 has-[:checked]:border-brand has-[:checked]:bg-brand-light">
+                                <input type="radio" name="wide_mission_sidebar_style" value="{{ $sv }}"
+                                    {{ old('wide_mission_sidebar_style', $settings->wide_mission_sidebar_style ?? 'colored') === $sv ? 'checked' : '' }}
+                                    class="text-brand focus:ring-brand">
+                                <span class="text-sm font-bold">{{ $sl }}</span>
+                            </label>
+                        @endforeach
+                    </div>
+                </div>
+
+                <div>
+                    <label class="mb-1 block text-sm font-bold">Substyl paska nawigacji</label>
+                    <div class="flex flex-wrap gap-3">
+                        @foreach (['brand_bar' => 'Pasek koloru marki (domyślny)', 'icons_white' => 'Biały pasek — ikony + etykiety'] as $nv => $nl)
+                            <label class="flex cursor-pointer items-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2.5 has-[:checked]:border-brand has-[:checked]:bg-brand-light">
+                                <input type="radio" name="wide_mission_nav_style" value="{{ $nv }}"
+                                    {{ old('wide_mission_nav_style', $settings->wide_mission_nav_style ?? 'brand_bar') === $nv ? 'checked' : '' }}
+                                    class="text-brand focus:ring-brand">
+                                <span class="text-sm font-bold">{{ $nl }}</span>
+                            </label>
+                        @endforeach
+                    </div>
+                    <p class="mt-1 text-xs text-muted">Biały pasek wymaga ustawienia ikon w pozycjach menu (zakładka Menu → pole Ikona).</p>
+                </div>
+
                 <div class="grid gap-4 sm:grid-cols-2">
                     <div>
                         <label class="mb-1 block text-sm font-bold">Social media 1</label>

@@ -126,6 +126,7 @@
                 data-id="{{ $item->id }}"
                 data-action="{{ route('admin.pozycje-menu.update', $item) }}"
                 data-label="{{ $item->label }}"
+                data-icon="{{ $item->icon }}"
                 data-url="{{ $item->url }}"
                 data-type="{{ $item->type }}"
                 data-location="{{ $item->location }}"
