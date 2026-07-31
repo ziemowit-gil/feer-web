@@ -8,7 +8,7 @@
             ? request('tab')
             : 'general';
     @endphp
-    <div x-data="{ tab: '{{ $initialTab }}', wm_layout: '{{ old('header_layout', $settings->header_layout ?? 'classic') }}' }"
+    <div x-data="{ tab: '{{ $initialTab }}', wm_layout: '{{ old('header_layout', $settings->header_layout ?? 'classic') }}', wideModal: false, wideCode: '', wideCodeError: false, prevLayout: '{{ old('header_layout', $settings->header_layout ?? 'classic') }}' }"
         x-init="$watch('tab', value => history.replaceState(null, '', '?tab=' + value))"
         class="max-w-3xl space-y-6">
     @if (! empty($strefaConflict))
@@ -144,15 +144,51 @@
                 <div class="grid gap-3 sm:grid-cols-2">
                     @foreach (\App\Models\SiteSetting::HEADER_LAYOUTS as $layoutValue => $layoutLabel)
                     <label class="flex cursor-pointer items-start gap-3 rounded-lg border p-3 transition has-[:checked]:border-brand has-[:checked]:bg-brand-light">
+                        @if ($layoutValue === 'wide_mission')
+                        <input type="radio" name="header_layout" value="wide_mission"
+                            :checked="wm_layout === 'wide_mission'"
+                            @click.prevent="if (wm_layout !== 'wide_mission') { prevLayout = wm_layout; wideCode = ''; wideCodeError = false; wideModal = true; }"
+                            class="mt-0.5 border-gray-300 text-brand focus:ring-brand">
+                        @else
                         <input type="radio" name="header_layout" value="{{ $layoutValue }}"
                             {{ old('header_layout', $settings->header_layout ?? 'classic') === $layoutValue ? 'checked' : '' }}
                             x-model="wm_layout"
                             class="mt-0.5 border-gray-300 text-brand focus:ring-brand">
+                        @endif
                         <span class="text-sm leading-snug">{{ $layoutLabel }}</span>
                     </label>
                     @endforeach
                 </div>
                 @error('header_layout') <p class="mt-2 text-sm text-red-600">{{ $message }}</p> @enderror
+            </div>
+
+            {{-- Modal: sekretny kod do aktywacji stylu Wide --}}
+            <div x-show="wideModal" x-cloak
+                 class="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+                 @keydown.escape.window="wm_layout = prevLayout; wideModal = false">
+                <div class="w-80 rounded-xl bg-white p-6 shadow-xl" @click.stop>
+                    <h3 class="mb-1 text-base font-bold">Styl Wide — tylko dla FER</h3>
+                    <p class="mb-4 text-sm text-muted">Ten układ jest zarezerwowany. Podaj sekretny kod, aby go aktywować.</p>
+                    <input type="text" x-model="wideCode" x-ref="wideCodeInput"
+                           x-init="$watch('wideModal', v => { if (v) $nextTick(() => $refs.wideCodeInput.focus()) })"
+                           @keydown.enter="wideCode === '151197' ? (wm_layout = 'wide_mission', wideModal = false) : (wideCodeError = true)"
+                           placeholder="Sekretny kod"
+                           autocomplete="off"
+                           class="mb-2 w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                    <p x-show="wideCodeError" x-cloak class="mb-3 text-sm text-red-600">Nieprawidłowy kod. Spróbuj ponownie.</p>
+                    <div class="flex gap-2">
+                        <button type="button"
+                                @click="wideCode === '151197' ? (wm_layout = 'wide_mission', wideModal = false) : (wideCodeError = true)"
+                                class="flex-1 rounded bg-brand px-3 py-2 text-sm font-bold text-white hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-1">
+                            Aktywuj
+                        </button>
+                        <button type="button"
+                                @click="wm_layout = prevLayout; wideModal = false; wideCode = ''; wideCodeError = false"
+                                class="flex-1 rounded bg-gray-100 px-3 py-2 text-sm font-bold text-gray-700 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-1">
+                            Anuluj
+                        </button>
+                    </div>
+                </div>
             </div>
 
             <div x-show="wm_layout === 'wide_mission'" x-cloak
