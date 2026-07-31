@@ -4,24 +4,6 @@
 
 @section('content')
 
-    @if ($siteSettings->homepageBannerIsVisible())
-        <div class="bg-brand text-white" role="region" aria-label="Ważna informacja">
-            <div class="mx-auto flex max-w-6xl flex-wrap items-center justify-center gap-x-3 gap-y-1 px-4 py-3 text-center text-sm font-medium">
-                <span class="inline-flex items-center gap-2">
-                    <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
-                    {{ $siteSettings->homepage_banner_text }}
-                </span>
-                @if (filled($siteSettings->homepage_banner_link_label) && filled($siteSettings->homepage_banner_link_url))
-                    <a href="{{ $siteSettings->homepage_banner_link_url }}"
-                        class="inline-flex items-center gap-1.5 rounded-full bg-white px-3 py-1 text-xs font-bold text-brand underline-offset-2 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">
-                        {{ $siteSettings->homepage_banner_link_label }}
-                        <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
-                    </a>
-                @endif
-            </div>
-        </div>
-    @endif
-
     @foreach ($sectionOrder as $section)
         @include('partials.home.'.$section)
     @endforeach
