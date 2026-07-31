@@ -21,6 +21,7 @@
     $editorSnippets = [
         'red' => '<p><a href="#" class="cta-button cta-red">Przycisk</a></p><p>&nbsp;</p>',
         'green' => '<p><a href="#" class="cta-button cta-green">Przycisk</a></p><p>&nbsp;</p>',
+        'bip' => '<div class="bip-link-box"><p><img src="/img/bip-logo.svg" alt="Logo Biuletynu Informacji Publicznej (BIP)"></p><p>Więcej informacji o naszej fundacji oraz dokumenty formalne publikujemy w Biuletynie Informacji Publicznej.</p><p><a href="/bip" class="cta-button">Więcej informacji w BIP</a></p></div><p>&nbsp;</p>',
         'accentLeft' => '<div class="accent-section accent-left"><p>Treść w kolorowej sekcji&hellip;</p></div><p>&nbsp;</p>',
         'accentRight' => '<div class="accent-section accent-right"><p>Treść w kolorowej sekcji&hellip;</p></div><p>&nbsp;</p>',
     ];
@@ -69,6 +70,7 @@
             <button type="button" id="{{ $editorId }}-cta" @click="open = false" class="{{ $mi }}"><i class="fa-solid fa-square w-4 text-center text-brand" aria-hidden="true"></i> Przycisk CTA</button>
             <button type="button" data-insert-key="red" @click="open = false" class="{{ $mi }}"><i class="fa-solid fa-square w-4 text-center" style="color:#c81e1e" aria-hidden="true"></i> Przycisk czerwony</button>
             <button type="button" data-insert-key="green" @click="open = false" class="{{ $mi }}"><i class="fa-solid fa-square w-4 text-center" style="color:#15803d" aria-hidden="true"></i> Przycisk zielony</button>
+            <button type="button" data-insert-key="bip" @click="open = false" class="{{ $mi }}"><i class="fa-solid fa-landmark w-4 text-center text-muted" aria-hidden="true"></i> Więcej informacji w BIP</button>
             <button type="button" id="{{ $editorId }}-box" @click="open = false" class="{{ $mi }}"><i class="fa-solid fa-vector-square w-4 text-center" aria-hidden="true"></i> Tekst z ramką</button>
             @if ($useCkEditor)
                 <button type="button" id="{{ $editorId }}-columns" @click="open = false" class="{{ $mi }}"><i class="fa-solid fa-table-columns w-4 text-center" aria-hidden="true"></i> Układ 2 kolumn</button>
@@ -550,6 +552,7 @@
                                     { type: 'menuitem', text: 'Przycisk CTA', onAction: function () { editor.insertContent(ctaHtml); } },
                                     { type: 'menuitem', text: 'Przycisk czerwony', onAction: function () { editor.insertContent(snippets.red); } },
                                     { type: 'menuitem', text: 'Przycisk zielony', onAction: function () { editor.insertContent(snippets.green); } },
+                                    { type: 'menuitem', text: 'Więcej informacji w BIP', onAction: function () { editor.insertContent(snippets.bip); } },
                                     { type: 'menuitem', text: 'Tekst z ramką', onAction: function () { editor.insertContent(boxHtml); } },
                                     { type: 'menuitem', text: 'Sekcja akcentu (lewo)', onAction: function () { editor.insertContent(snippets.accentLeft); } },
                                     { type: 'menuitem', text: 'Sekcja akcentu (prawo)', onAction: function () { editor.insertContent(snippets.accentRight); } },

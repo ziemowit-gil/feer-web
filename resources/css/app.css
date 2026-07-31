@@ -211,6 +211,32 @@ html.no-animations *::after {
     margin-bottom: 0;
 }
 
+/* Kafelek BIP wstawiany z edytora — link do strony-pośrednika /bip. */
+.prose .bip-link-box,
+.bip-link-box {
+    border: 1px solid var(--color-brand);
+    border-radius: 0.75rem;
+    background-color: var(--color-brand-light);
+    padding: 1.5rem;
+    margin: 1.5rem 0;
+    text-align: center;
+}
+.prose .bip-link-box > :first-child,
+.bip-link-box > :first-child {
+    margin-top: 0;
+}
+.prose .bip-link-box > :last-child,
+.bip-link-box > :last-child {
+    margin-bottom: 0;
+}
+.prose .bip-link-box img,
+.bip-link-box img {
+    height: 3.5rem;
+    width: auto;
+    display: block;
+    margin: 0 auto 0.75rem;
+}
+
 /* Warianty kolorystyczne przycisku CTA (edytor: „Przycisk czerwony/zielony").
    Odcienie dobrane pod kontrast AA białego tekstu (WCAG 1.4.3). */
 .prose .cta-button.cta-red {
@@ -258,17 +284,6 @@ html.no-animations *::after {
 :focus-visible {
     outline: 3px solid #c31432;
     outline-offset: 2px;
-}
-
-/* W pasku marki (wide_mission / brand_bar) lista nawigacyjna zajmuje całą
-   dostępną szerokość, co pozwala na przesunięcie przycisków CTA na prawo. */
-.nav-on-brand {
-    width: 100%;
-}
-/* Pierwszy przycisk CTA (is_button → li.nav-btn-item) leci na prawą stronę;
-   kolejne przyciski CTA naturalnie grupują się obok (margin-left: 0). */
-.nav-on-brand > li.nav-btn-item:not(.nav-btn-item ~ .nav-btn-item) {
-    margin-left: auto;
 }
 
 /* Nawigacja na kolorowym tle (onBrand=true): hover i aktywny stan w białym,

@@ -8,7 +8,7 @@
             ? request('tab')
             : 'general';
     @endphp
-    <div x-data="{ tab: '{{ $initialTab }}' }"
+    <div x-data="{ tab: '{{ $initialTab }}', wm_layout: '{{ old('header_layout', $settings->header_layout ?? 'classic') }}' }"
         x-init="$watch('tab', value => history.replaceState(null, '', '?tab=' + value))"
         class="max-w-3xl space-y-6">
     @if (! empty($strefaConflict))
@@ -60,17 +60,6 @@
                 class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
             <p class="mt-1 text-xs text-muted">Wyświetlany w nagłówku pod nazwą strony.</p>
             @error('tagline') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
-        </div>
-
-        <div>
-            <label for="header_layout" class="mb-1 block text-sm font-bold">Układ menu głównego</label>
-            <select id="header_layout" name="header_layout" class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
-                @foreach (\App\Models\SiteSetting::HEADER_LAYOUTS as $value => $label)
-                    <option value="{{ $value }}" {{ old('header_layout', $settings->header_layout) === $value ? 'selected' : '' }}>{{ $label }}</option>
-                @endforeach
-            </select>
-            <p class="mt-1 text-xs text-muted">Wariant „Pasek w kolorze marki” przenosi menu na osobny pełnej szerokości pasek w kolorze przewodnim strony (patrz pole wyżej).</p>
-            @error('header_layout') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
         </div>
 
         <div>
@@ -147,6 +136,72 @@
                 </span>
             </label>
         </div>
+        </div>
+
+        <div x-show="tab === 'header'" x-cloak class="space-y-6">
+            <div>
+                <p class="mb-3 text-sm font-bold">Układ nagłówka strony</p>
+                <div class="grid gap-3 sm:grid-cols-2">
+                    @foreach (\App\Models\SiteSetting::HEADER_LAYOUTS as $layoutValue => $layoutLabel)
+                    <label class="flex cursor-pointer items-start gap-3 rounded-lg border p-3 transition has-[:checked]:border-brand has-[:checked]:bg-brand-light">
+                        <input type="radio" name="header_layout" value="{{ $layoutValue }}"
+                            {{ old('header_layout', $settings->header_layout ?? 'classic') === $layoutValue ? 'checked' : '' }}
+                            x-model="wm_layout"
+                            class="mt-0.5 border-gray-300 text-brand focus:ring-brand">
+                        <span class="text-sm leading-snug">{{ $layoutLabel }}</span>
+                    </label>
+                    @endforeach
+                </div>
+                @error('header_layout') <p class="mt-2 text-sm text-red-600">{{ $message }}</p> @enderror
+            </div>
+
+            <div x-show="wm_layout === 'wide_mission'" x-cloak
+                class="rounded-xl border border-brand-light bg-brand-light/30 p-5 space-y-5">
+                <p class="text-sm font-bold text-brand">Ustawienia nagłówka WOŚP</p>
+
+                <div class="grid gap-4 sm:grid-cols-2">
+                    <div>
+                        <label class="mb-1 block text-sm font-bold">Social media 1</label>
+                        <select name="wide_mission_social_1" class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                            <option value="">— brak —</option>
+                            @foreach (\App\Models\SiteSetting::SOCIAL_KEYS as $smKey => $smMeta)
+                                <option value="{{ $smKey }}" {{ old('wide_mission_social_1', $settings->wide_mission_social_1) === $smKey ? 'selected' : '' }}>{{ $smMeta['label'] }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div>
+                        <label class="mb-1 block text-sm font-bold">Social media 2</label>
+                        <select name="wide_mission_social_2" class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                            <option value="">— brak —</option>
+                            @foreach (\App\Models\SiteSetting::SOCIAL_KEYS as $smKey => $smMeta)
+                                <option value="{{ $smKey }}" {{ old('wide_mission_social_2', $settings->wide_mission_social_2) === $smKey ? 'selected' : '' }}>{{ $smMeta['label'] }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label for="wide_mission_cta_label" class="mb-1 block text-sm font-bold">
+                        Etykieta przycisku CTA
+                        <span class="font-normal text-muted">(opcjonalnie)</span>
+                    </label>
+                    <input type="text" id="wide_mission_cta_label" name="wide_mission_cta_label"
+                        value="{{ old('wide_mission_cta_label', $settings->wide_mission_cta_label) }}"
+                        placeholder="np. Wolontariat" maxlength="80"
+                        class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                </div>
+                <div>
+                    <label for="wide_mission_cta_url" class="mb-1 block text-sm font-bold">
+                        Link przycisku CTA
+                        <span class="font-normal text-muted">(opcjonalnie)</span>
+                    </label>
+                    <input type="text" id="wide_mission_cta_url" name="wide_mission_cta_url"
+                        value="{{ old('wide_mission_cta_url', $settings->wide_mission_cta_url) }}"
+                        placeholder="https://..."
+                        class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                    <p class="mt-1 text-xs text-muted">Przycisk pojawi się obok ikon social media w górnym pasku nagłówka.</p>
+                </div>
+            </div>
         </div>
 
         <div x-show="tab === 'colors'" x-cloak class="space-y-6">

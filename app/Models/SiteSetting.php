@@ -42,8 +42,18 @@ class SiteSetting extends Model implements HasMedia
      * shared by the settings form and the sidebar sub-menu, so the two never
      * drift apart.
      */
+    public const SOCIAL_KEYS = [
+        'facebook'  => ['label' => 'Facebook',   'icon' => 'bi bi-facebook'],
+        'instagram' => ['label' => 'Instagram',  'icon' => 'bi bi-instagram'],
+        'youtube'   => ['label' => 'YouTube',    'icon' => 'bi bi-youtube'],
+        'linkedin'  => ['label' => 'LinkedIn',   'icon' => 'bi bi-linkedin'],
+        'twitter'   => ['label' => 'Twitter / X','icon' => 'bi bi-twitter-x'],
+        'substack'  => ['label' => 'Substack',   'icon' => 'bi bi-substack'],
+    ];
+
     public const SETTINGS_TABS = [
         'general' => 'Ogólne',
+        'header'  => 'Header',
         'colors' => 'Kolory',
         'maintenance' => 'Serwis',
         'seo' => 'SEO',
@@ -80,7 +90,7 @@ class SiteSetting extends Model implements HasMedia
         'classic' => 'Klasyczny (menu na białym tle, obok logo)',
         'brand_bar' => 'Pasek w kolorze marki (menu na osobnym pasku pod logo)',
         'brand_bar_inline' => 'Pasek w kolorze marki (menu w jednym rzędzie z logo)',
-        'wide_mission' => 'Szeroka belka (logo | misja | social) — menu na pasku poniżej',
+        'wide_mission' => 'Nagłówek WOŚP (logo | misja | 2×social + CTA) — menu na pasku poniżej',
     ];
 
     /**
@@ -138,6 +148,7 @@ class SiteSetting extends Model implements HasMedia
         'show_coordinators', 'ngo_color', 'sub_brands',
         'logo_alt', 'logo_only',
         'news_layout', 'volunteer_layout',
+        'wide_mission_social_1', 'wide_mission_social_2', 'wide_mission_cta_label', 'wide_mission_cta_url',
         'krs_number', 'nip_number', 'regon_number', 'projects_intro', 'materials_intro', 'materials_notice',
         'accessibility_entity_name', 'accessibility_status', 'accessibility_status_note',
         'accessibility_page_published_at', 'accessibility_page_updated_at', 'accessibility_declaration_date',
