@@ -155,7 +155,12 @@
                             x-model="wm_layout"
                             class="mt-0.5 border-gray-300 text-brand focus:ring-brand">
                         @endif
-                        <span class="text-sm leading-snug">{{ $layoutLabel }}</span>
+                        <span class="text-sm leading-snug">
+                            {{ $layoutLabel }}
+                            @if ($layoutValue === 'wide_mission')
+                            <span class="ml-1 rounded-full bg-gray-200 px-2 py-0.5 text-[0.65rem] font-semibold text-gray-600">🔒 FER</span>
+                            @endif
+                        </span>
                     </label>
                     @endforeach
                 </div>
