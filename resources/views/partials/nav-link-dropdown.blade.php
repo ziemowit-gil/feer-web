@@ -13,8 +13,9 @@
     @focusout="if (! $el.contains($event.relatedTarget)) open = false"
     @keydown.escape="open = false; $refs.linkTrigger.focus()"
     @click.outside="open = false">
-    <div class="flex items-center gap-1 border-b-2 transition-colors {{ $isCurrent ? 'border-brand text-brand' : 'border-transparent' }} {{ $mobile ? 'w-full justify-between' : 'pb-1' }}"
-        :class="open ? 'border-brand text-brand' : ''">
+    @php $ob = $onBrand ?? false; @endphp
+    <div class="flex items-center gap-1 border-b-2 transition-colors {{ $isCurrent ? ($ob ? 'border-white' : 'border-brand text-brand') : 'border-transparent' }} {{ $mobile ? 'w-full justify-between' : 'pb-1' }}"
+        :class="open ? '{{ $ob ? 'border-white' : 'border-brand text-brand' }}' : ''">
         {{-- Nagłówek działa jak zwykły link — klik prowadzi pod adres pozycji. --}}
         <a href="{{ $item->url }}" x-ref="linkTrigger"
             class="uppercase transition-colors hover:text-brand focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-current {{ $mobile ? 'py-2' : 'pt-2' }}">

@@ -30,9 +30,10 @@
                 </a>
             @endif
         @else
+            @php $activeClasses = $item->isCurrent() ? ($onBrand ?? false ? 'border-white' : 'border-brand text-brand') : 'border-transparent'; @endphp
             <a href="{{ $item->url }}"
                 {{ $item->isCurrent() ? 'aria-current="page"' : '' }}
-                class="block border-b-2 py-2 transition-colors hover:border-brand hover:text-brand focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-current {{ $item->isCurrent() ? 'border-brand text-brand' : 'border-transparent' }} {{ $mobile ? '' : 'pb-1' }}">
+                class="block border-b-2 py-2 transition-colors hover:border-brand hover:text-brand focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-current {{ $activeClasses }} {{ $mobile ? '' : 'pb-1' }}">
                 {{ $item->label }}
             </a>
         @endif

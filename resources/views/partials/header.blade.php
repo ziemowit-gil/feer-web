@@ -48,17 +48,51 @@
                 ], fn ($s) => !empty($s[0]));
             @endphp
 
-            @if ($socials)
-                <nav aria-label="Media społecznościowe" class="hidden flex-none items-center gap-3 sm:flex">
-                    @foreach ($socials as [$url, $icon, $label])
-                        <a href="{{ $url }}" target="_blank" rel="noopener"
-                            class="flex min-h-10 min-w-10 items-center justify-center rounded-full border border-gray-200 text-lg text-muted transition hover:border-brand hover:text-brand"
-                            aria-label="{{ $label }}">
-                            <i class="{{ $icon }}" aria-hidden="true"></i>
-                        </a>
-                    @endforeach
-                </nav>
-            @endif
+            {{-- Social media + WCAG controls --}}
+            <div class="hidden flex-none items-center gap-6 sm:flex">
+
+                @if ($socials)
+                    <nav aria-label="Media społecznościowe" class="flex items-center gap-2">
+                        @foreach ($socials as [$url, $icon, $label])
+                            <a href="{{ $url }}" target="_blank" rel="noopener"
+                                class="flex min-h-10 min-w-10 items-center justify-center rounded-full border border-gray-200 text-lg text-muted transition hover:border-brand hover:text-brand"
+                                aria-label="{{ $label }}">
+                                <i class="{{ $icon }}" aria-hidden="true"></i>
+                            </a>
+                        @endforeach
+                    </nav>
+                @endif
+
+                {{-- Separator --}}
+                <div class="h-8 w-px bg-gray-200" aria-hidden="true"></div>
+
+                {{-- Kontrolki dostępności WCAG --}}
+                <div role="group" aria-label="Ustawienia dostępności" class="flex items-center gap-1">
+                    <div role="group" aria-label="Rozmiar czcionki" class="flex items-center">
+                        <button type="button" data-a11y-font="down"
+                            class="flex min-h-9 min-w-9 items-center justify-center rounded-l border border-gray-200 text-sm text-muted transition hover:border-brand hover:text-brand"
+                            aria-label="Zmniejsz czcionkę">A-</button>
+                        <button type="button" data-a11y-font="reset"
+                            class="flex min-h-9 min-w-9 items-center justify-center border-y border-gray-200 text-sm text-muted transition hover:border-brand hover:text-brand"
+                            aria-label="Domyślny rozmiar czcionki">A</button>
+                        <button type="button" data-a11y-font="up"
+                            class="flex min-h-9 min-w-9 items-center justify-center rounded-r border border-gray-200 text-sm text-muted transition hover:border-brand hover:text-brand"
+                            aria-label="Zwiększ czcionkę">A+</button>
+                    </div>
+
+                    <button type="button" data-a11y-contrast
+                        class="flex min-h-9 min-w-9 items-center justify-center rounded border border-gray-200 text-muted transition hover:border-brand hover:text-brand"
+                        aria-pressed="false" aria-label="Wersja kontrastowa">
+                        <i class="fa-solid fa-circle-half-stroke" aria-hidden="true"></i>
+                    </button>
+
+                    <button type="button" data-a11y-animations
+                        class="flex min-h-9 min-w-9 items-center justify-center rounded border border-gray-200 text-muted transition hover:border-brand hover:text-brand"
+                        aria-pressed="false" aria-label="Wyłącz animacje">
+                        <i class="fa-solid fa-film" aria-hidden="true"></i>
+                    </button>
+                </div>
+            </div>
 
             {{-- Hamburger (mobile) --}}
             <button type="button"
@@ -84,17 +118,43 @@
         @if ($siteSettings->tagline)
             <p class="border-b border-gray-100 px-4 py-3 text-sm text-muted">{{ $siteSettings->tagline }}</p>
         @endif
-        @if ($socials)
-            <div class="flex flex-wrap gap-3 border-b border-gray-100 px-4 py-3">
-                @foreach ($socials as [$url, $icon, $label])
-                    <a href="{{ $url }}" target="_blank" rel="noopener"
-                        class="flex min-h-10 min-w-10 items-center justify-center rounded-full border border-gray-200 text-lg text-muted hover:border-brand hover:text-brand"
-                        aria-label="{{ $label }}">
-                        <i class="{{ $icon }}" aria-hidden="true"></i>
-                    </a>
-                @endforeach
+        <div class="flex flex-wrap items-center gap-4 border-b border-gray-100 px-4 py-3">
+            @if ($socials)
+                <nav aria-label="Media społecznościowe" class="flex flex-wrap gap-2">
+                    @foreach ($socials as [$url, $icon, $label])
+                        <a href="{{ $url }}" target="_blank" rel="noopener"
+                            class="flex min-h-10 min-w-10 items-center justify-center rounded-full border border-gray-200 text-lg text-muted hover:border-brand hover:text-brand"
+                            aria-label="{{ $label }}">
+                            <i class="{{ $icon }}" aria-hidden="true"></i>
+                        </a>
+                    @endforeach
+                </nav>
+            @endif
+
+            <div role="group" aria-label="Ustawienia dostępności" class="flex items-center gap-2">
+                <div role="group" aria-label="Rozmiar czcionki" class="flex items-center">
+                    <button type="button" data-a11y-font="down"
+                        class="flex min-h-9 min-w-9 items-center justify-center rounded-l border border-gray-200 text-sm text-muted hover:border-brand hover:text-brand"
+                        aria-label="Zmniejsz czcionkę">A-</button>
+                    <button type="button" data-a11y-font="reset"
+                        class="flex min-h-9 min-w-9 items-center justify-center border-y border-gray-200 text-sm text-muted hover:border-brand hover:text-brand"
+                        aria-label="Domyślny rozmiar czcionki">A</button>
+                    <button type="button" data-a11y-font="up"
+                        class="flex min-h-9 min-w-9 items-center justify-center rounded-r border border-gray-200 text-sm text-muted hover:border-brand hover:text-brand"
+                        aria-label="Zwiększ czcionkę">A+</button>
+                </div>
+                <button type="button" data-a11y-contrast
+                    class="flex min-h-9 min-w-9 items-center justify-center rounded border border-gray-200 text-muted hover:border-brand hover:text-brand"
+                    aria-pressed="false" aria-label="Wersja kontrastowa">
+                    <i class="fa-solid fa-circle-half-stroke" aria-hidden="true"></i>
+                </button>
+                <button type="button" data-a11y-animations
+                    class="flex min-h-9 min-w-9 items-center justify-center rounded border border-gray-200 text-muted hover:border-brand hover:text-brand"
+                    aria-pressed="false" aria-label="Wyłącz animacje">
+                    <i class="fa-solid fa-film" aria-hidden="true"></i>
+                </button>
             </div>
-        @endif
+        </div>
         <div class="px-4 pb-4">
             @include('partials.main-nav-items', ['mobile' => true])
         </div>
