@@ -91,6 +91,58 @@
                             @endif
                         @endforelse
                     </ul>
+                @elseif (($siteSettings->news_layout ?? 'grid') === 'cards')
+                    {{-- ── Widok karty 3-kolumnowe (magazynowy) ── --}}
+                    <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                        @forelse ($news as $item)
+                            @php $img = $item->imageUrlOrDefault(); @endphp
+                            <article class="group flex flex-col overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm transition hover:shadow-md">
+                                <a href="{{ route('news.show', $item) }}" class="block overflow-hidden" tabindex="-1" aria-hidden="true">
+                                    @if ($img)
+                                        <img src="{{ $img }}" alt="" class="h-48 w-full object-cover transition group-hover:scale-105">
+                                    @else
+                                        <div class="h-48 w-full bg-brand-light"></div>
+                                    @endif
+                                </a>
+
+                                <div class="flex flex-1 flex-col p-4">
+                                    <div class="mb-2 flex items-center justify-between text-xs text-muted">
+                                        <span class="flex items-center gap-1">
+                                            <i class="fa-regular fa-clock text-brand" aria-hidden="true"></i>
+                                            <time datetime="{{ $item->published_at->toDateString() }}">
+                                                {{ $item->published_at->format('d - m - Y') }}
+                                            </time>
+                                        </span>
+                                        <i class="fa-solid fa-rss opacity-40" aria-hidden="true"></i>
+                                    </div>
+
+                                    <h3 class="mb-2 font-bold leading-snug text-ink">
+                                        <a href="{{ route('news.show', $item) }}"
+                                            class="hover:text-brand focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
+                                            {{ $item->title }}
+                                        </a>
+                                    </h3>
+
+                                    @if ($item->excerpt)
+                                        <p class="mb-4 line-clamp-3 text-sm text-muted">{{ $item->excerpt }}</p>
+                                    @endif
+
+                                    <div class="mt-auto">
+                                        <a href="{{ route('news.show', $item) }}"
+                                            class="inline-block rounded border border-gray-300 px-5 py-2 text-xs font-bold uppercase tracking-wide text-ink transition hover:border-brand hover:text-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
+                                            Więcej
+                                        </a>
+                                    </div>
+                                </div>
+                            </article>
+                        @empty
+                            @if ($activeCategory)
+                                <p class="text-muted sm:col-span-3">Brak aktualności w kategorii „{{ $activeCategory->name }}". <a href="{{ route('news.index') }}" class="font-bold text-brand hover:text-brand-dark">Zobacz wszystkie →</a></p>
+                            @else
+                                <p class="text-muted sm:col-span-3">Brak opublikowanych newsów.</p>
+                            @endif
+                        @endforelse
+                    </div>
                 @else
                     {{-- ── Widok siatka (domyślny) ── --}}
                     <div class="grid gap-8 sm:grid-cols-2">

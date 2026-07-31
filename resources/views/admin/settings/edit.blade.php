@@ -1342,6 +1342,12 @@
                             class="border-gray-300 text-brand focus:ring-brand">
                         <span class="text-sm"><i class="fa-solid fa-list text-muted"></i> Lista</span>
                     </label>
+                    <label class="flex cursor-pointer items-center gap-2">
+                        <input type="radio" name="news_layout" value="cards"
+                            {{ old('news_layout', $settings->news_layout ?? 'grid') === 'cards' ? 'checked' : '' }}
+                            class="border-gray-300 text-brand focus:ring-brand">
+                        <span class="text-sm"><i class="fa-solid fa-table-cells-large text-muted"></i> Karty 3-kolumnowe</span>
+                    </label>
                 </div>
             </div>
 
