@@ -8,7 +8,7 @@
             ? request('tab')
             : 'general';
     @endphp
-    <div x-data="{ tab: '{{ $initialTab }}', wm_layout: '{{ old('header_layout', $settings->header_layout ?? 'classic') }}', wideModal: false, wideCode: '', wideCodeError: false, prevLayout: '{{ old('header_layout', $settings->header_layout ?? 'classic') }}' }"
+    <div x-data="{ tab: '{{ $initialTab }}', wm_layout: '{{ old('header_layout', $settings->header_layout ?? 'classic') }}', wideModal: {{ $errors->has('wide_activation_code') && old('header_layout') === 'wide_mission' ? 'true' : 'false' }}, wideCode: '', wideCodeError: false, prevLayout: '{{ old('header_layout', $settings->header_layout ?? 'classic') }}' }"
         x-init="$watch('tab', value => history.replaceState(null, '', '?tab=' + value))"
         class="max-w-3xl space-y-6">
     @if (! empty($strefaConflict))
@@ -166,6 +166,14 @@
                     </label>
                     @endforeach
                 </div>
+                <input type="hidden" name="wide_activation_code" x-bind:value="wideCode">
+                @error('wide_activation_code')
+                <p class="mt-2 text-sm text-red-600">
+                    {{ $message }}
+                    <button type="button" @click="wideCode = ''; wideModal = true"
+                            class="ml-2 underline hover:no-underline focus:outline-none">Wprowadź ponownie</button>
+                </p>
+                @enderror
                 @error('header_layout') <p class="mt-2 text-sm text-red-600">{{ $message }}</p> @enderror
             </div>
 
@@ -178,14 +186,13 @@
                     <p class="mb-4 text-sm text-muted">Ten układ jest zarezerwowany. Podaj sekretny kod, aby go aktywować.</p>
                     <input type="text" x-model="wideCode" x-ref="wideCodeInput"
                            x-init="$watch('wideModal', v => { if (v) $nextTick(() => $refs.wideCodeInput.focus()) })"
-                           @keydown.enter="wideCode === '151197' ? (wm_layout = 'wide_mission', wideModal = false) : (wideCodeError = true)"
+                           @keydown.enter="wm_layout = 'wide_mission'; wideModal = false"
                            placeholder="Sekretny kod"
                            autocomplete="off"
                            class="mb-2 w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
-                    <p x-show="wideCodeError" x-cloak class="mb-3 text-sm text-red-600">Nieprawidłowy kod. Spróbuj ponownie.</p>
                     <div class="flex gap-2">
                         <button type="button"
-                                @click="wideCode === '151197' ? (wm_layout = 'wide_mission', wideModal = false) : (wideCodeError = true)"
+                                @click="wm_layout = 'wide_mission'; wideModal = false"
                                 class="flex-1 rounded bg-brand px-3 py-2 text-sm font-bold text-white hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-1">
                             Aktywuj
                         </button>

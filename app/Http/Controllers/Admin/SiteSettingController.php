@@ -323,6 +323,14 @@ class SiteSettingController extends Controller
 
         $settings = SiteSetting::current();
 
+        if ($data['header_layout'] === 'wide_mission' && $settings->header_layout !== 'wide_mission') {
+            if ($request->input('wide_activation_code') !== $settings->wide_code) {
+                return back()
+                    ->withErrors(['wide_activation_code' => 'Nieprawidłowy kod aktywacyjny stylu Wide.'])
+                    ->withInput();
+            }
+        }
+
         $data['brand_color'] = $settings->contrastSafeColor($data['brand_color']);
 
         // Dodatkowe kolory marki: puste = null, w przeciwnym razie kontrast AA na białym.
