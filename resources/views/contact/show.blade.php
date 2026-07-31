@@ -295,11 +295,18 @@
                                                 @error('name', 'meeting') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                                             </div>
                                             <div>
-                                                <label for="mtg-email" class="mb-1 block text-sm font-bold">E-mail</label>
-                                                <input type="email" id="mtg-email" name="email" value="{{ old('email') }}" required
+                                                <label for="mtg-phone" class="mb-1 block text-sm font-bold">Telefon <span class="font-normal text-muted">(opcjonalnie)</span></label>
+                                                <input type="tel" id="mtg-phone" name="phone" value="{{ old('phone') }}" autocomplete="tel"
                                                     class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
-                                                @error('email', 'meeting') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                                                @error('phone', 'meeting') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                                             </div>
+                                        </div>
+
+                                        <div>
+                                            <label for="mtg-email" class="mb-1 block text-sm font-bold">E-mail</label>
+                                            <input type="email" id="mtg-email" name="email" value="{{ old('email') }}" required
+                                                class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                                            @error('email', 'meeting') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                                         </div>
 
                                         <div>

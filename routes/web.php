@@ -156,6 +156,10 @@ Route::get('/kontakt', [ContactController::class, 'index'])->name('contact.show'
 Route::post('/kontakt', [ContactController::class, 'store'])->name('contact.store')->middleware('throttle:5,1');
 Route::post('/kontakt/przyjde', [MeetingSignupController::class, 'store'])->name('meeting.signup')->middleware('throttle:5,1');
 
+// Samodzielny moduł rezerwacji spotkań (bez panelu CMS, dostępny publicznie).
+Route::get('/rezerwuj-spotkanie-modul', [MeetingSignupController::class, 'publicShow'])->name('booking.show');
+Route::post('/rezerwuj-spotkanie-modul', [MeetingSignupController::class, 'publicStore'])->name('booking.store')->middleware('throttle:5,1');
+
 Route::redirect('/dashboard', '/admin')->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
@@ -390,6 +394,17 @@ Route::prefix('strefa')->group(function () {
     Route::get('microsoft/redirect', [MemberMicrosoftAuthController::class, 'redirect'])->name('member.microsoft.redirect');
     Route::get('microsoft/callback', [MemberMicrosoftAuthController::class, 'callback'])->name('member.microsoft.callback');
     Route::post('wyloguj', [MemberMicrosoftAuthController::class, 'destroy'])->name('member.logout');
+});
+
+// Panel zarządzania rezerwacjami/terminami — dostęp przez Microsoft 365 (guard „member").
+Route::prefix('rezerwacje')->name('rezerwacje.')->group(function () {
+    Route::get('/',                                    [\App\Http\Controllers\ReserwacjeController::class, 'index'])->name('index');
+    Route::post('/termin',                             [\App\Http\Controllers\ReserwacjeController::class, 'storeTermin'])->name('termin.store');
+    Route::post('/termin/{index}',                     [\App\Http\Controllers\ReserwacjeController::class, 'destroyTermin'])->name('termin.destroy');
+    Route::post('/powiadom',                           [\App\Http\Controllers\ReserwacjeController::class, 'notify'])->name('notify');
+    Route::post('/zgloszenie/{signup}/potwierdz',      [\App\Http\Controllers\ReserwacjeController::class, 'confirmSignup'])->name('signup.confirm');
+    Route::post('/zgloszenie/{signup}/usun',           [\App\Http\Controllers\ReserwacjeController::class, 'destroySignup'])->name('signup.destroy');
+    Route::get('/eksport',                             [\App\Http\Controllers\ReserwacjeController::class, 'export'])->name('export');
 });
 
 // Odblokowanie strony wewnętrznej hasłem (przed catch-all, dwuczłonowa ścieżka).
