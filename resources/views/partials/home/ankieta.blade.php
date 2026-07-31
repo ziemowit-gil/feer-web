@@ -1,7 +1,6 @@
 @php
-    $quickLinksHere = $siteSettings->header_layout !== 'wide_mission' || $quickLinks->isEmpty()
-        ? $quickLinks
-        : collect();
+    $sidebarActive = $siteSettings->header_layout === 'wide_mission' && ($siteSettings->wide_mission_sidebar ?? false);
+    $quickLinksHere = ($sidebarActive && $quickLinks->isNotEmpty()) ? collect() : $quickLinks;
 @endphp
 @if ($poll || $quickLinksHere->isNotEmpty())
 <section class="border-t border-gray-100 bg-gray-50">

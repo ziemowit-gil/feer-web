@@ -233,6 +233,14 @@
                     <span class="text-sm font-bold">Wyszukiwarka w menu <span class="font-normal text-muted">(przenosi search z górnego paska na koniec paska nav)</span></span>
                 </label>
 
+                <label class="flex items-center gap-2 rounded-lg border border-gray-200 bg-white p-3">
+                    <input type="hidden" name="wide_mission_sidebar" value="0">
+                    <input type="checkbox" name="wide_mission_sidebar" value="1"
+                        {{ old('wide_mission_sidebar', $settings->wide_mission_sidebar ?? false) ? 'checked' : '' }}
+                        class="rounded border-gray-300 text-brand focus:ring-brand">
+                    <span class="text-sm font-bold">Skróty w sidebarze hero <span class="font-normal text-muted">(moduł „Szybkie Akcje" obok slidera; slider przyjmuje mniejsze wymiary)</span></span>
+                </label>
+
                 <div class="grid gap-4 sm:grid-cols-2">
                     <div>
                         <label class="mb-1 block text-sm font-bold">Social media 1</label>

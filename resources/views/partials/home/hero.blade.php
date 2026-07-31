@@ -1,13 +1,13 @@
 @php
     $wideMission = $siteSettings->header_layout === 'wide_mission';
-    $sidebarLinks = ($wideMission && isset($quickLinks) && $quickLinks->isNotEmpty())
+    $sidebarLinks = ($wideMission && ($siteSettings->wide_mission_sidebar ?? false) && isset($quickLinks) && $quickLinks->isNotEmpty())
         ? $quickLinks->take(4)
         : collect();
     $hasSidebar = $sidebarLinks->isNotEmpty();
 @endphp
 
 @if ($siteSettings->isModuleEnabled('hero') && $slides->isNotEmpty())
-@if ($hasSidebar)<div class="flex h-[320px] md:h-[440px]">@endif
+@if ($hasSidebar)<div class="flex h-[260px] md:h-[360px]">@endif
 
 <section
     class="{{ $hasSidebar ? 'relative flex-1 min-w-0 overflow-hidden bg-ink' : 'relative overflow-hidden bg-ink' }}"
@@ -24,9 +24,9 @@
                 data-hero-slide
                 @if ($index !== 0) aria-hidden="true" @endif
             >
-                <div class="mx-auto w-full max-w-6xl px-4 py-8 text-white">
-                    <h1 class="max-w-xl text-2xl font-bold leading-tight md:text-4xl">{{ $slide->title }}</h1>
-                    <p class="mt-2 max-w-lg text-sm text-white/85 md:text-base">{{ $slide->text }}</p>
+                <div class="mx-auto w-full {{ $hasSidebar ? '' : 'max-w-6xl' }} px-4 py-6 text-white">
+                    <h1 class="{{ $hasSidebar ? 'text-xl md:text-2xl' : 'max-w-xl text-2xl md:text-4xl' }} font-bold leading-tight">{{ $slide->title }}</h1>
+                    <p class="mt-1.5 {{ $hasSidebar ? 'text-xs md:text-sm' : 'max-w-lg text-sm md:text-base' }} text-white/85">{{ $slide->text }}</p>
                     @if ($slide->button_label && $slide->button_url)
                         <a href="{{ $slide->button_url }}" data-hero-cta {{ $index !== 0 ? 'tabindex=-1' : '' }}
                             class="mt-4 inline-block rounded bg-brand px-5 py-2 text-sm font-bold text-white hover:bg-brand-dark">
