@@ -64,8 +64,8 @@ class Page extends Model
         'microsoft' => 'Zalogowanie do strefy wewnętrznej (Microsoft 365)',
     ];
 
-    /** Slug automatycznie zakładanej strony „Strefa współpracownika" (/strefa). */
-    public const STREFA_SLUG = 'strefa';
+    /** Slug automatycznie zakładanej strony „Strefa współpracownika" (/strefa-wspolpracownika-feer). */
+    public const STREFA_SLUG = 'strefa-wspolpracownika-feer';
 
     /** Domyślna treść strefy, gdy nadpisywana strona nie ma własnej treści. */
     public const STREFA_DEFAULT_CONTENT = '<p>Witamy w strefie współpracownika. Poniżej znajdziesz wewnętrzne '

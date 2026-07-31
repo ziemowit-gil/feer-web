@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Hash;
 class PageController extends Controller
 {
     /** Slug automatycznie zakładanej strony „Strefa współpracownika". */
-    private const STREFA_SLUG = 'strefa';
+    private const STREFA_SLUG = 'strefa-wspolpracownika-feer';
 
     public function show(Request $request, Page $page)
     {

@@ -51,7 +51,7 @@
                     @endif
                     <li><a href="{{ route('accessibility.show') }}" class="hover:text-brand">Deklaracja dostępności</a></li>
                     <li><a href="{{ route('sitemap.page') }}" class="hover:text-brand">Mapa strony</a></li>
-                    <li><a href="{{ url('/strefa') }}" class="hover:text-brand">Strefa współpracownika</a></li>
+                    <li><a href="{{ url('/strefa-wspolpracownika-feer') }}" class="hover:text-brand">Strefa współpracownika</a></li>
                 </ul>
             </nav>
 

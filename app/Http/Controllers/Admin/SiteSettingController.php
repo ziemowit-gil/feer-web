@@ -44,8 +44,8 @@ class SiteSettingController extends Controller
         $page->save();
 
         $message = $previousTitle
-            ? "Adres /strefa został nadpisany jako „Strefa współpracownika” (poprzednio: „{$previousTitle}”)."
-            : 'Utworzono „Strefę współpracownika” pod adresem /strefa.';
+            ? “Adres /strefa-wspolpracownika-feer został nadpisany jako „Strefa współpracownika” (poprzednio: „{$previousTitle}”).”
+            : 'Utworzono „Strefę współpracownika” pod adresem /strefa-wspolpracownika-feer.';
 
         return redirect()->route('admin.ustawienia.edit', ['tab' => 'login'])->with('status', $message);
     }
