@@ -141,6 +141,7 @@
         <div x-show="tab === 'header'" x-cloak class="space-y-6">
             <div>
                 <p class="mb-3 text-sm font-bold">Układ nagłówka strony</p>
+                @php $isFeer = str_contains(request()->getHost(), 'feer.org.pl'); @endphp
                 <div class="grid gap-3 sm:grid-cols-2">
                     @foreach (\App\Models\SiteSetting::HEADER_LAYOUTS as $layoutValue => $layoutLabel)
                     <label class="flex cursor-pointer items-start gap-3 rounded-lg border p-3 transition has-[:checked]:border-brand has-[:checked]:bg-brand-light">
@@ -157,8 +158,9 @@
                         @endif
                         <span class="text-sm leading-snug">
                             {{ $layoutLabel }}
-                            @if ($layoutValue === 'wide_mission')
-                            <span class="ml-1 rounded-full bg-gray-200 px-2 py-0.5 text-[0.65rem] font-semibold text-gray-600">🔒 FER</span>
+                            @if ($layoutValue === 'wide_mission' && !$isFeer)
+                            <span class="ml-1 rounded-full bg-gray-200 px-2 py-0.5 text-[0.65rem] font-semibold text-gray-600">🔒 Tylko FEER</span>
+                            <span class="mt-1 block text-xs text-muted">weCMS powstał jako autorskie rozwiązanie dla FEER. Jest teraz publicznie dostępny, ale niektóre opcje pozostają zarezerwowane.</span>
                             @endif
                         </span>
                     </label>
