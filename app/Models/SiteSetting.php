@@ -148,7 +148,7 @@ class SiteSetting extends Model implements HasMedia
         'show_coordinators', 'ngo_color', 'sub_brands',
         'logo_alt', 'logo_only',
         'news_layout', 'volunteer_layout',
-        'wide_mission_social_1', 'wide_mission_social_2', 'wide_mission_cta_label', 'wide_mission_cta_url', 'wide_mission_show_mission', 'wide_mission_highlight_account',
+        'wide_mission_social_1', 'wide_mission_social_2', 'wide_mission_cta_label', 'wide_mission_cta_url', 'wide_mission_show_mission', 'wide_mission_highlight_account', 'wide_mission_nav_align',
         'krs_number', 'nip_number', 'regon_number', 'projects_intro', 'materials_intro', 'materials_notice',
         'accessibility_entity_name', 'accessibility_status', 'accessibility_status_note',
         'accessibility_page_published_at', 'accessibility_page_updated_at', 'accessibility_declaration_date',

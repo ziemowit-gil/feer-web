@@ -175,6 +175,20 @@
                     <span class="text-sm font-bold">Podświetlaj nr konta <span class="font-normal text-muted">(wyświetla numer w kolorze marki)</span></span>
                 </label>
 
+                <div>
+                    <p class="mb-2 text-sm font-bold">Wyrównanie menu</p>
+                    <div class="flex gap-4">
+                        @foreach(['left' => 'Do lewej', 'center' => 'Na środku'] as $alignVal => $alignLabel)
+                        <label class="flex cursor-pointer items-center gap-2">
+                            <input type="radio" name="wide_mission_nav_align" value="{{ $alignVal }}"
+                                {{ old('wide_mission_nav_align', $settings->wide_mission_nav_align ?? 'left') === $alignVal ? 'checked' : '' }}
+                                class="border-gray-300 text-brand focus:ring-brand">
+                            <span class="text-sm">{{ $alignLabel }}</span>
+                        </label>
+                        @endforeach
+                    </div>
+                </div>
+
                 <div class="grid gap-4 sm:grid-cols-2">
                     <div>
                         <label class="mb-1 block text-sm font-bold">Social media 1</label>

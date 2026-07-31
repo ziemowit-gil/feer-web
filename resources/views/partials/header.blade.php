@@ -127,7 +127,7 @@
 
     {{-- Pasek nawigacji — biała kreska u dołu oddziela od paska ogłoszenia --}}
     <nav aria-label="Menu główne" class="hidden border-b border-white/25 bg-brand shadow-sm lg:block">
-        <div class="mx-auto max-w-6xl px-4">
+        <div @class(['mx-auto max-w-6xl px-4 flex', 'justify-center' => ($siteSettings->wide_mission_nav_align ?? 'left') === 'center'])>
             @include('partials.main-nav-items', ['onBrand' => true])
         </div>
     </nav>
