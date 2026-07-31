@@ -13,8 +13,8 @@
          powiązanej strony + (dla „O organizacji") pozycja FAQ. --}}
     @include('partials.nav-link-dropdown', ['item' => $item, 'mobile' => $mobile])
 @else
-    <li @class(['nav-btn-item' => $item->is_button])>
-        @if ($item->is_button)
+    <li>
+        @if ($item->is_button && !($onBrand ?? false))
             @if (\App\Support\Color::isValid($item->button_color))
                 @php $cta = \App\Support\Color::button($item->button_color); @endphp
                 <a href="{{ $item->url }}"
