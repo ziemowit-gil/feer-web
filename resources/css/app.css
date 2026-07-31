@@ -259,3 +259,24 @@ html.no-animations *::after {
     outline: 3px solid #c31432;
     outline-offset: 2px;
 }
+
+/* Nawigacja na kolorowym tle (onBrand=true): hover i aktywny stan w białym,
+   nie w kolorze marki — bo marka === tło = niewidoczny tekst.
+   Selektory celują tylko w triggery (bezpośrednie dzieci <li>),
+   pomijają białe panele dropdownów zagnieżdżone głębiej. */
+.nav-on-brand > li > a:hover,
+.nav-on-brand > li > div > a:hover,
+.nav-on-brand > li > button:hover,
+.nav-on-brand > li > div > button:hover { color: rgba(255,255,255,0.8); }
+
+.nav-on-brand > li > a:hover,
+.nav-on-brand > li > div:hover,
+.nav-on-brand > li > button:hover { border-color: rgba(255,255,255,0.6); }
+
+/* Aktywny/otwarty element na pasku marki — biała kreska, nie brand */
+.nav-on-brand > li > a.border-brand,
+.nav-on-brand > li > div.border-brand,
+.nav-on-brand > li > button.border-brand { border-color: white; }
+
+/* Strzałki rozwijające podmenu — białe gdy nav na tle marki */
+.nav-on-brand > li > div > button.text-brand { color: rgba(255,255,255,0.7); }

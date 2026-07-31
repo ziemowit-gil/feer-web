@@ -48,50 +48,67 @@
                 ], fn ($s) => !empty($s[0]));
             @endphp
 
-            {{-- Social media + WCAG controls --}}
-            <div class="hidden flex-none items-center gap-6 sm:flex">
+            {{-- Prawa kolumna: social + WCAG (górny wiersz), konto + wesprzyj (dolny) --}}
+            <div class="hidden flex-none flex-col items-end gap-1.5 sm:flex">
 
-                @if ($socials)
-                    <nav aria-label="Media społecznościowe" class="flex items-center gap-2">
-                        @foreach ($socials as [$url, $icon, $label])
-                            <a href="{{ $url }}" target="_blank" rel="noopener"
-                                class="flex min-h-10 min-w-10 items-center justify-center rounded-full border border-gray-200 text-lg text-muted transition hover:border-brand hover:text-brand"
-                                aria-label="{{ $label }}">
-                                <i class="{{ $icon }}" aria-hidden="true"></i>
-                            </a>
-                        @endforeach
-                    </nav>
-                @endif
+                {{-- Wiersz 1: social media + separator + WCAG --}}
+                <div class="flex items-center gap-6">
+                    @if ($socials)
+                        <nav aria-label="Media społecznościowe" class="flex items-center gap-2">
+                            @foreach ($socials as [$url, $icon, $label])
+                                <a href="{{ $url }}" target="_blank" rel="noopener"
+                                    class="flex min-h-10 min-w-10 items-center justify-center rounded-full border border-gray-200 text-lg text-muted transition hover:border-brand hover:text-brand"
+                                    aria-label="{{ $label }}">
+                                    <i class="{{ $icon }}" aria-hidden="true"></i>
+                                </a>
+                            @endforeach
+                        </nav>
+                        <div class="h-8 w-px bg-gray-200" aria-hidden="true"></div>
+                    @endif
 
-                {{-- Separator --}}
-                <div class="h-8 w-px bg-gray-200" aria-hidden="true"></div>
-
-                {{-- Kontrolki dostępności WCAG --}}
-                <div role="group" aria-label="Ustawienia dostępności" class="flex items-center gap-1">
-                    <div role="group" aria-label="Rozmiar czcionki" class="flex items-center">
-                        <button type="button" data-a11y-font="down"
-                            class="flex min-h-9 min-w-9 items-center justify-center rounded-l border border-gray-200 text-sm text-muted transition hover:border-brand hover:text-brand"
-                            aria-label="Zmniejsz czcionkę">A-</button>
-                        <button type="button" data-a11y-font="reset"
-                            class="flex min-h-9 min-w-9 items-center justify-center border-y border-gray-200 text-sm text-muted transition hover:border-brand hover:text-brand"
-                            aria-label="Domyślny rozmiar czcionki">A</button>
-                        <button type="button" data-a11y-font="up"
-                            class="flex min-h-9 min-w-9 items-center justify-center rounded-r border border-gray-200 text-sm text-muted transition hover:border-brand hover:text-brand"
-                            aria-label="Zwiększ czcionkę">A+</button>
+                    <div role="group" aria-label="Ustawienia dostępności" class="flex items-center gap-1">
+                        <div role="group" aria-label="Rozmiar czcionki" class="flex items-center">
+                            <button type="button" data-a11y-font="down"
+                                class="flex min-h-9 min-w-9 items-center justify-center rounded-l border border-gray-200 text-sm text-muted transition hover:border-brand hover:text-brand"
+                                aria-label="Zmniejsz czcionkę">A-</button>
+                            <button type="button" data-a11y-font="reset"
+                                class="flex min-h-9 min-w-9 items-center justify-center border-y border-gray-200 text-sm text-muted transition hover:border-brand hover:text-brand"
+                                aria-label="Domyślny rozmiar czcionki">A</button>
+                            <button type="button" data-a11y-font="up"
+                                class="flex min-h-9 min-w-9 items-center justify-center rounded-r border border-gray-200 text-sm text-muted transition hover:border-brand hover:text-brand"
+                                aria-label="Zwiększ czcionkę">A+</button>
+                        </div>
+                        <button type="button" data-a11y-contrast
+                            class="flex min-h-9 min-w-9 items-center justify-center rounded border border-gray-200 text-muted transition hover:border-brand hover:text-brand"
+                            aria-pressed="false" aria-label="Wersja kontrastowa">
+                            <i class="fa-solid fa-circle-half-stroke" aria-hidden="true"></i>
+                        </button>
+                        <button type="button" data-a11y-animations
+                            class="flex min-h-9 min-w-9 items-center justify-center rounded border border-gray-200 text-muted transition hover:border-brand hover:text-brand"
+                            aria-pressed="false" aria-label="Wyłącz animacje">
+                            <i class="fa-solid fa-film" aria-hidden="true"></i>
+                        </button>
                     </div>
-
-                    <button type="button" data-a11y-contrast
-                        class="flex min-h-9 min-w-9 items-center justify-center rounded border border-gray-200 text-muted transition hover:border-brand hover:text-brand"
-                        aria-pressed="false" aria-label="Wersja kontrastowa">
-                        <i class="fa-solid fa-circle-half-stroke" aria-hidden="true"></i>
-                    </button>
-
-                    <button type="button" data-a11y-animations
-                        class="flex min-h-9 min-w-9 items-center justify-center rounded border border-gray-200 text-muted transition hover:border-brand hover:text-brand"
-                        aria-pressed="false" aria-label="Wyłącz animacje">
-                        <i class="fa-solid fa-film" aria-hidden="true"></i>
-                    </button>
                 </div>
+
+                {{-- Wiersz 2: numer konta + link Wesprzyj --}}
+                @if ($siteSettings->bank_account_number || \Illuminate\Support\Facades\Route::has('support.show'))
+                    <div class="flex items-center gap-4 text-xs text-muted">
+                        @if ($siteSettings->bank_account_number)
+                            <span>
+                                <span class="font-medium text-ink">Nr konta:</span>
+                                <span class="font-mono tracking-wide">{{ $siteSettings->bank_account_number }}</span>
+                            </span>
+                        @endif
+                        @if (\Illuminate\Support\Facades\Route::has('support.show'))
+                            <a href="{{ route('support.show') }}"
+                                class="flex items-center gap-1 font-bold text-brand hover:text-brand-dark">
+                                <i class="fa-solid fa-heart text-[10px]" aria-hidden="true"></i>
+                                Wesprzyj naszą działalność
+                            </a>
+                        @endif
+                    </div>
+                @endif
             </div>
 
             {{-- Hamburger (mobile) --}}
@@ -106,8 +123,8 @@
         </div>
     </div>
 
-    {{-- Pasek nawigacji --}}
-    <nav aria-label="Menu główne" class="hidden bg-brand lg:block">
+    {{-- Pasek nawigacji — ramka u dołu oddziela menu od treści strony --}}
+    <nav aria-label="Menu główne" class="hidden border-b-4 border-brand-dark bg-brand lg:block">
         <div class="mx-auto flex max-w-6xl justify-center px-4">
             @include('partials.main-nav-items', ['onBrand' => true])
         </div>
@@ -155,6 +172,26 @@
                 </button>
             </div>
         </div>
+
+        {{-- Numer konta + Wesprzyj (mobile) --}}
+        @if ($siteSettings->bank_account_number || \Illuminate\Support\Facades\Route::has('support.show'))
+            <div class="flex flex-wrap items-center gap-4 border-b border-gray-100 px-4 py-3 text-sm">
+                @if ($siteSettings->bank_account_number)
+                    <span class="text-muted">
+                        <span class="font-medium text-ink">Nr konta:</span>
+                        <span class="font-mono">{{ $siteSettings->bank_account_number }}</span>
+                    </span>
+                @endif
+                @if (\Illuminate\Support\Facades\Route::has('support.show'))
+                    <a href="{{ route('support.show') }}"
+                        class="flex items-center gap-1.5 font-bold text-brand hover:text-brand-dark">
+                        <i class="fa-solid fa-heart text-xs" aria-hidden="true"></i>
+                        Wesprzyj naszą działalność
+                    </a>
+                @endif
+            </div>
+        @endif
+
         <div class="px-4 pb-4">
             @include('partials.main-nav-items', ['mobile' => true])
         </div>
