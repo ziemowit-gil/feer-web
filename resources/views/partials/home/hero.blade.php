@@ -1,6 +1,22 @@
+@php
+    $wideMission = $siteSettings->header_layout === 'wide_mission';
+    $sidebarLinks = ($wideMission && isset($quickLinks) && $quickLinks->isNotEmpty())
+        ? $quickLinks->take(4)
+        : collect();
+    $hasSidebar = $sidebarLinks->isNotEmpty();
+@endphp
+
 @if ($siteSettings->isModuleEnabled('hero') && $slides->isNotEmpty())
-<section class="relative overflow-hidden bg-ink" data-hero-slider role="region" aria-roledescription="karuzela" aria-label="Wyróżnione treści">
-    <div class="relative h-[320px] md:h-[440px]">
+@if ($hasSidebar)<div class="flex h-[320px] md:h-[440px]">@endif
+
+<section
+    class="{{ $hasSidebar ? 'relative flex-1 min-w-0 overflow-hidden bg-ink' : 'relative overflow-hidden bg-ink' }}"
+    data-hero-slider
+    role="region"
+    aria-roledescription="karuzela"
+    aria-label="Wyróżnione treści">
+
+    <div class="{{ $hasSidebar ? 'relative h-full' : 'relative h-[320px] md:h-[440px]' }}">
         @foreach ($slides as $index => $slide)
             <div
                 class="absolute inset-0 flex items-end bg-cover bg-center transition-opacity duration-700 motion-reduce:transition-none {{ $index === 0 ? 'opacity-100' : 'opacity-0 pointer-events-none' }}"
@@ -36,4 +52,25 @@
         <span aria-live="polite"><span data-hero-counter>1</span>/{{ count($slides) }}</span>
     </div>
 </section>
+
+@if ($hasSidebar)
+<nav aria-label="Na skróty" class="hidden w-48 flex-col md:flex lg:w-56">
+    @foreach ($sidebarLinks as $link)
+        @php
+            $tileHex = \App\Support\Color::isValid($link->color ?? '') ? $link->color : '#374151';
+            $qa = \App\Support\Color::button($tileHex);
+        @endphp
+        <a href="{{ $link->url }}"
+            class="flex flex-1 flex-col items-center justify-center gap-2 px-3 py-3 text-center transition-[filter] duration-150 hover:brightness-110 focus-visible:outline-2 focus-visible:outline-offset-[-2px]"
+            style="background-color: {{ $tileHex }}; color: {{ $qa['text'] }}; outline-color: {{ $qa['text'] }};">
+            @if ($link->icon)
+                <i class="bi {{ $link->icon }} text-xl" aria-hidden="true"></i>
+            @endif
+            <span class="text-xs font-bold uppercase leading-snug tracking-wide">{{ $link->label }}</span>
+        </a>
+    @endforeach
+</nav>
+</div>
+@endif
+
 @endif

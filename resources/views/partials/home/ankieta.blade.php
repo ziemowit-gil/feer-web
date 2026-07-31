@@ -1,4 +1,9 @@
-@if ($poll || $quickLinks->isNotEmpty())
+@php
+    $quickLinksHere = $siteSettings->header_layout !== 'wide_mission' || $quickLinks->isEmpty()
+        ? $quickLinks
+        : collect();
+@endphp
+@if ($poll || $quickLinksHere->isNotEmpty())
 <section class="border-t border-gray-100 bg-gray-50">
     <div class="mx-auto max-w-6xl px-4 py-12 {{ $poll ? 'grid gap-10 md:grid-cols-2' : '' }}">
         @if ($poll)
@@ -38,11 +43,11 @@
             </div>
         @endif
 
-        @if ($quickLinks->isNotEmpty())
+        @if ($quickLinksHere->isNotEmpty())
             <div>
                 <h2 class="mb-4 text-xl font-bold text-ink">Na skróty</h2>
                 <div class="grid grid-cols-2 gap-4 sm:grid-cols-3">
-                    @foreach ($quickLinks as $link)
+                    @foreach ($quickLinksHere as $link)
                         @if (\App\Support\Color::isValid($link->color))
                             @php $qa = \App\Support\Color::button($link->color); @endphp
                             <a href="{{ $link->url }}" class="flex flex-col items-center gap-2 rounded-lg border-2 border-gray-200 bg-white px-4 py-6 text-center shadow-sm transition hover:shadow-md"
