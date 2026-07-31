@@ -53,7 +53,7 @@ class SiteSetting extends Model implements HasMedia
 
     public const SETTINGS_TABS = [
         'general' => 'Ogólne',
-        'header'  => 'Wide',
+        'header'  => 'Nagłówek',
         'colors' => 'Kolory',
         'maintenance' => 'Serwis',
         'seo' => 'SEO',
@@ -90,7 +90,7 @@ class SiteSetting extends Model implements HasMedia
         'classic' => 'Klasyczny (menu na białym tle, obok logo)',
         'brand_bar' => 'Pasek w kolorze marki (menu na osobnym pasku pod logo)',
         'brand_bar_inline' => 'Pasek w kolorze marki (menu w jednym rzędzie z logo)',
-        'wide_mission' => 'Nagłówek WOŚP (logo | misja | 2×social + CTA) — menu na pasku poniżej',
+        'wide_mission' => 'Wide (logo | misja | 2×social + CTA) — menu na pasku poniżej',
     ];
 
     /**
