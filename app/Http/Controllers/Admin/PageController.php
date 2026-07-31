@@ -27,10 +27,16 @@ class PageController extends Controller
             ->when($sort === 'default', fn ($q) => $q->orderBy('order')->orderBy('title'))
             ->get();
 
+        $strefaReady = Page::where('slug', Page::STREFA_SLUG)
+            ->where('type', 'internal_hub')
+            ->where('access_mode', 'microsoft')
+            ->exists();
+
         return view('admin.pages.index', [
-            'pages' => $pages,
-            'status' => $status,
-            'sort' => $sort,
+            'pages'       => $pages,
+            'status'      => $status,
+            'sort'        => $sort,
+            'strefaReady' => $strefaReady,
         ]);
     }
 

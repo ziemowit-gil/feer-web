@@ -5,7 +5,23 @@
 @section('content')
     @include('admin.partials.content-nav-tabs')
 
-    <div class="mb-4 flex justify-end">
+    <div class="mb-4 flex items-center justify-between gap-4">
+        @if ($strefaReady)
+            <span class="inline-flex items-center gap-2 rounded border border-green-200 bg-green-50 px-3 py-2 text-sm font-bold text-green-700">
+                <i class="fa-solid fa-check" aria-hidden="true"></i> Strefa współpracownika istnieje
+                <a href="{{ route('page.show', \App\Models\Page::STREFA_SLUG) }}" target="_blank" class="ml-1 font-normal underline hover:no-underline" aria-label="Otwórz strefę w nowej karcie">/{{ \App\Models\Page::STREFA_SLUG }}</a>
+            </span>
+        @else
+            <form method="POST" action="{{ route('admin.strefa.overwrite') }}"
+                onsubmit="return confirm('Utworzyć stronę „Strefa współpracownika" pod adresem /{{ \App\Models\Page::STREFA_SLUG }}?\nStrona będzie wewnętrzna z logowaniem Microsoft 365.')">
+                @csrf
+                <button type="submit"
+                    class="inline-flex items-center gap-2 rounded bg-brand px-4 py-2 text-sm font-bold text-white hover:bg-brand-dark focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2">
+                    <i class="fa-solid fa-shield-halved" aria-hidden="true"></i> Utwórz strefę współpracownika
+                </button>
+            </form>
+        @endif
+
         <a href="{{ route('admin.podstrony.create') }}" class="rounded bg-brand px-4 py-2 text-sm font-bold text-white hover:bg-brand-dark">
             <i class="fa-solid fa-plus"></i> Dodaj stronę
         </a>

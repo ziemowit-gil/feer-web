@@ -387,6 +387,11 @@ Route::middleware(['auth', 'verified', '2fa'])->prefix('admin')->name('admin.')-
 
 require __DIR__.'/auth.php';
 
+// Przekierowanie ze starego adresu /strefa na nowy slug strony strefy.
+// Ścieżki MS OAuth (/strefa/logowanie itd.) działają niezależnie — ten redirect
+// dotyczy tylko dokładnego GET /strefa, nie podścieżek.
+Route::redirect('/strefa', '/strefa-wspolpracownika-feer', 301);
+
 // Strefa wewnętrzna: osobne logowanie współpracowników przez Microsoft 365
 // (guard „member"), niezależne od logowania do panelu.
 Route::prefix('strefa')->group(function () {
