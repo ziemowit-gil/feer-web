@@ -260,17 +260,28 @@ html.no-animations *::after {
     outline-offset: 2px;
 }
 
+/* W pasku marki (wide_mission / brand_bar) lista nawigacyjna zajmuje całą
+   dostępną szerokość, co pozwala na przesunięcie przycisków CTA na prawo. */
+.nav-on-brand {
+    width: 100%;
+}
+/* Pierwszy przycisk CTA (is_button → li.nav-btn-item) leci na prawą stronę;
+   kolejne przyciski CTA naturalnie grupują się obok (margin-left: 0). */
+.nav-on-brand > li.nav-btn-item:not(.nav-btn-item ~ .nav-btn-item) {
+    margin-left: auto;
+}
+
 /* Nawigacja na kolorowym tle (onBrand=true): hover i aktywny stan w białym,
    nie w kolorze marki — bo marka === tło = niewidoczny tekst.
-   Selektory celują tylko w triggery (bezpośrednie dzieci <li>),
-   pomijają białe panele dropdownów zagnieżdżone głębiej. */
+   `.border-b-2` identyfikuje wrapper triggera (nav-link-dropdown) — wyklucza
+   biały panel podmenu, który ma te same poziomy zagnieżdżenia, ale inne klasy. */
 .nav-on-brand > li > a:hover,
-.nav-on-brand > li > div > a:hover,
+.nav-on-brand > li > div.border-b-2 > a:hover,
 .nav-on-brand > li > button:hover,
-.nav-on-brand > li > div > button:hover { color: rgba(255,255,255,0.8); }
+.nav-on-brand > li > div.border-b-2 > button:hover { color: rgba(255,255,255,0.8); }
 
 .nav-on-brand > li > a:hover,
-.nav-on-brand > li > div:hover,
+.nav-on-brand > li > div.border-b-2:hover,
 .nav-on-brand > li > button:hover { border-color: rgba(255,255,255,0.6); }
 
 /* Aktywny/otwarty element na pasku marki — biała kreska, nie brand */
@@ -279,4 +290,4 @@ html.no-animations *::after {
 .nav-on-brand > li > button.border-brand { border-color: white; }
 
 /* Strzałki rozwijające podmenu — białe gdy nav na tle marki */
-.nav-on-brand > li > div > button.text-brand { color: rgba(255,255,255,0.7); }
+.nav-on-brand > li > div.border-b-2 > button.text-brand { color: rgba(255,255,255,0.7); }

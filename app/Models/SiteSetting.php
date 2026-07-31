@@ -52,7 +52,7 @@ class SiteSetting extends Model implements HasMedia
         'registry' => 'Dane rejestrowe',
         'accessibility' => 'Dostępność',
         'support' => 'Wesprzyj nas',
-        'content' => 'Projekty',
+        'content' => 'Treści',
         'modules' => 'Moduły',
         'homepage' => 'Strona główna',
         'login' => 'Logowanie',

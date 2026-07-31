@@ -48,36 +48,22 @@
                 ], fn ($s) => !empty($s[0]));
             @endphp
 
-            {{-- Prawa kolumna: social + CTA (góra), konto + wesprzyj (dół) --}}
-            {{-- WCAG jest w osobnym pasku na samej górze — tu go nie powtarzamy --}}
-            @php $navBtn = ($navItems ?? collect())->first(fn ($i) => $i->is_button); @endphp
+            {{-- Prawa kolumna: social (góra), konto + wesprzyj (dół) --}}
+            {{-- CTA przeniesione na prawy koniec paska nav poniżej --}}
             <div class="hidden flex-none flex-col items-end gap-1.5 sm:flex">
 
-                {{-- Wiersz 1: social media + separator + przycisk CTA --}}
-                <div class="flex items-center gap-4">
-                    @if ($socials)
-                        <nav aria-label="Media społecznościowe" class="flex items-center gap-2">
-                            @foreach ($socials as [$url, $icon, $label])
-                                <a href="{{ $url }}" target="_blank" rel="noopener"
-                                    class="flex min-h-10 min-w-10 items-center justify-center rounded-full border border-gray-200 text-lg text-muted transition hover:border-brand hover:text-brand"
-                                    aria-label="{{ $label }}">
-                                    <i class="{{ $icon }}" aria-hidden="true"></i>
-                                </a>
-                            @endforeach
-                        </nav>
-                    @endif
-
-                    @if ($navBtn)
-                        @if ($socials)
-                            <div class="h-8 w-px bg-gray-200" aria-hidden="true"></div>
-                        @endif
-                        <a href="{{ $navBtn->url }}"
-                            class="inline-flex items-center gap-1.5 rounded-full bg-brand px-4 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-brand-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
-                            <i class="fa-solid fa-hands-holding-heart text-xs" aria-hidden="true"></i>
-                            {{ $navBtn->label }}
-                        </a>
-                    @endif
-                </div>
+                {{-- Wiersz 1: social media --}}
+                @if ($socials)
+                    <nav aria-label="Media społecznościowe" class="flex items-center gap-2">
+                        @foreach ($socials as [$url, $icon, $label])
+                            <a href="{{ $url }}" target="_blank" rel="noopener"
+                                class="flex min-h-10 min-w-10 items-center justify-center rounded-full border border-gray-200 text-lg text-muted transition hover:border-brand hover:text-brand"
+                                aria-label="{{ $label }}">
+                                <i class="{{ $icon }}" aria-hidden="true"></i>
+                            </a>
+                        @endforeach
+                    </nav>
+                @endif
 
                 {{-- Wiersz 2: numer konta + link Wesprzyj --}}
                 @if ($siteSettings->bank_account_number || \Illuminate\Support\Facades\Route::has('support.show'))
@@ -111,9 +97,9 @@
         </div>
     </div>
 
-    {{-- Pasek nawigacji — ramka u dołu oddziela menu od treści strony --}}
-    <nav aria-label="Menu główne" class="hidden border-b-4 border-brand-dark bg-brand lg:block">
-        <div class="mx-auto flex max-w-6xl justify-center px-4">
+    {{-- Pasek nawigacji — biała kreska u dołu oddziela od paska ogłoszenia --}}
+    <nav aria-label="Menu główne" class="hidden border-b border-white/25 bg-brand shadow-sm lg:block">
+        <div class="mx-auto max-w-6xl px-4">
             @include('partials.main-nav-items', ['onBrand' => true])
         </div>
     </nav>
