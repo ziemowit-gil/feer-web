@@ -13,7 +13,7 @@
 @endsection
 
 @section('content')
-    <section class="relative mb-14 flex min-h-[18rem] items-end overflow-hidden bg-brand bg-linear-to-br from-brand to-brand-dark text-white md:min-h-[22rem]"
+    <section class="relative mb-14 flex min-h-[14rem] items-end overflow-hidden bg-brand bg-linear-to-br from-brand to-brand-dark text-white md:min-h-[17rem]"
         @if ($siteSettings->supportImageUrl())
             style="background-image: linear-gradient(0deg, rgba(0,0,0,.7), rgba(0,0,0,.2)), url('{{ $siteSettings->supportImageUrl() }}'); background-size: cover; background-position: center;"
         @endif>

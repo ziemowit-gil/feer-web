@@ -174,7 +174,7 @@
 
     <article>
         {{-- Hero: tytuł + motto na gradiencie marki --}}
-        <header class="relative overflow-hidden bg-gradient-to-br from-brand to-brand-dark px-4 py-20 text-center text-white md:py-28">
+        <header class="relative overflow-hidden bg-gradient-to-br from-brand to-brand-dark px-4 py-10 text-center text-white md:py-16">
             <i class="fa-solid fa-quote-right pointer-events-none absolute -right-4 -top-4 text-[9rem] text-white/10 md:text-[14rem]" aria-hidden="true"></i>
             <div class="relative mx-auto max-w-4xl">
                 <h1 class="text-3xl font-bold leading-tight md:text-5xl">{{ $page->title }}</h1>

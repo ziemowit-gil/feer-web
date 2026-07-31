@@ -1,7 +1,8 @@
 @php $items ??= []; @endphp
 
-<nav aria-label="Ścieżka nawigacyjna" class="mx-auto max-w-6xl px-4 pt-6">
-    <ol class="flex flex-wrap items-center gap-2 text-sm text-muted">
+<div class="border-b border-gray-200 bg-gray-50">
+<nav aria-label="Ścieżka nawigacyjna" class="mx-auto max-w-6xl px-4">
+    <ol class="flex flex-wrap items-center gap-1.5 py-2.5 text-xs text-muted">
         <li class="flex items-center gap-2">
             <a href="{{ route('home') }}" class="flex min-h-6 items-center gap-1.5 hover:text-brand">
                 <i class="fa-solid fa-house text-xs" aria-hidden="true"></i>
@@ -22,3 +23,4 @@
         @endforeach
     </ol>
 </nav>
+</div>
