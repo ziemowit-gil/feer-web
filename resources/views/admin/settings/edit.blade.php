@@ -167,6 +167,14 @@
                     <span class="text-sm font-bold">Pokazuj misję <span class="font-normal text-muted">(pobiera motto ze strony „O organizacji")</span></span>
                 </label>
 
+                <label class="flex items-center gap-2 rounded-lg border border-gray-200 bg-white p-3">
+                    <input type="hidden" name="wide_mission_highlight_account" value="0">
+                    <input type="checkbox" name="wide_mission_highlight_account" value="1"
+                        {{ old('wide_mission_highlight_account', $settings->wide_mission_highlight_account ?? false) ? 'checked' : '' }}
+                        class="rounded border-gray-300 text-brand focus:ring-brand">
+                    <span class="text-sm font-bold">Podświetlaj nr konta <span class="font-normal text-muted">(wyświetla numer w kolorze marki)</span></span>
+                </label>
+
                 <div class="grid gap-4 sm:grid-cols-2">
                     <div>
                         <label class="mb-1 block text-sm font-bold">Social media 1</label>

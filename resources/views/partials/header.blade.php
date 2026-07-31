@@ -91,10 +91,16 @@
                 @if ($siteSettings->bank_account_number || \Illuminate\Support\Facades\Route::has('support.show'))
                     <div class="flex items-center gap-4 text-xs text-muted">
                         @if ($siteSettings->bank_account_number)
-                            <span>
-                                <span class="font-medium text-ink">Nr konta:</span>
-                                <span class="font-mono tracking-wide">{{ $siteSettings->bank_account_number }}</span>
-                            </span>
+                            @if ($siteSettings->wide_mission_highlight_account)
+                                <span class="font-medium text-brand">Nr konta:
+                                    <span class="font-mono font-bold tracking-wide">{{ $siteSettings->bank_account_number }}</span>
+                                </span>
+                            @else
+                                <span>
+                                    <span class="font-medium text-ink">Nr konta:</span>
+                                    <span class="font-mono tracking-wide">{{ $siteSettings->bank_account_number }}</span>
+                                </span>
+                            @endif
                         @endif
                         @if (\Illuminate\Support\Facades\Route::has('support.show'))
                             <a href="{{ route('support.show') }}"
