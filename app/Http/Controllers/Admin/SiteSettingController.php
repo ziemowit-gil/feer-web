@@ -24,6 +24,13 @@ class SiteSettingController extends Controller
         ]);
     }
 
+    public function dev()
+    {
+        return view('admin.settings.dev', [
+            'settings' => SiteSetting::current(),
+        ]);
+    }
+
     /**
      * Nadpisuje stronę spod adresu /strefa jako „Strefę współpracownika"
      * (strona wewnętrzna, logowanie MS365). Wywoływane, gdy administrator
@@ -243,8 +250,7 @@ class SiteSettingController extends Controller
             'support_outro_subtitle' => ['nullable', 'string', 'max:500'],
             'enabled_modules' => ['sometimes', 'array'],
             'enabled_modules.*' => ['string', Rule::in(array_keys(SiteSetting::MODULES))],
-            'section_order' => ['sometimes', 'array'],
-            'section_order.*' => ['integer'],
+            'section_order_json' => ['sometimes', 'nullable', 'string'],
             'events_home_color' => ['nullable', 'regex:/^#[0-9a-fA-F]{6}$/'],
         ]);
 
@@ -316,11 +322,10 @@ class SiteSettingController extends Controller
             $request->input('enabled_modules', [])
         ));
 
-        $sectionPositions = $request->input('section_order', []);
-        $data['homepage_section_order'] = collect(array_keys(SiteSetting::HOMEPAGE_SECTIONS))
-            ->sortBy(fn ($key) => $sectionPositions[$key] ?? 999)
-            ->values()
-            ->all();
+        $orderedKeys = json_decode($request->input('section_order_json', '[]'), true) ?? [];
+        $defined = array_keys(SiteSetting::HOMEPAGE_SECTIONS);
+        $valid = array_values(array_intersect($orderedKeys, $defined));
+        $data['homepage_section_order'] = array_values(array_unique(array_merge($valid, $defined)));
 
         $settings = SiteSetting::current();
 
@@ -360,7 +365,7 @@ class SiteSettingController extends Controller
             ->values()
             ->all() ?: null;
 
-        unset($data['logo'], $data['remove_logo'], $data['og_image'], $data['remove_og_image'], $data['support_image'], $data['remove_support_image'], $data['support_gallery'], $data['remove_support_gallery'], $data['news_default_image'], $data['remove_news_default_image'], $data['bip_logo'], $data['remove_bip_logo'], $data['enabled_modules'], $data['section_order'], $data['notify_schedule_change']);
+        unset($data['logo'], $data['remove_logo'], $data['og_image'], $data['remove_og_image'], $data['support_image'], $data['remove_support_image'], $data['support_gallery'], $data['remove_support_gallery'], $data['news_default_image'], $data['remove_news_default_image'], $data['bip_logo'], $data['remove_bip_logo'], $data['enabled_modules'], $data['section_order_json'], $data['notify_schedule_change']);
 
         $colorWasAdjusted = $data['brand_color'] !== $request->input('brand_color');
 

@@ -1591,10 +1591,10 @@
                                 <i class="fa-solid fa-arrow-down" aria-hidden="true"></i>
                             </button>
                         </span>
-                        <input type="hidden" name="section_order[{{ $key }}]" value="0">
                     </li>
                 @endforeach
             </ul>
+            <input type="hidden" id="section-order-json" name="section_order_json">
 
             {{-- Kolor sekcji „Szkolenia i wydarzenia" na stronie głównej --}}
             <div class="mt-6 rounded-lg border border-gray-200 bg-gray-50 p-5">
@@ -1812,16 +1812,17 @@
                     <code class="font-mono text-sm text-ink">{{ url('/') }}/<strong>{{ $currentPrefix }}</strong></code>
                 </div>
 
-                <form method="POST" action="{{ route('admin.ustawienia.prefix') }}"
-                      class="mt-4 space-y-4"
-                      x-data="{ prefix: '{{ $currentPrefix }}', confirmed: false }"
-                      onsubmit="return confirm('Zmienić prefix na /' + document.getElementById('admin_prefix_input').value + '? Po zapisaniu zostaniesz przekierowany(a) pod nowy adres — zaktualizuj zakładki.')">
-                    @csrf
+                {{-- Formularz zmiany prefixu musi być POZA głównym formularzem ustawień
+                     (HTML nie pozwala zagnieżdżać <form>). Używamy atrybutu form="prefix-change-form"
+                     na kontrolkach, żeby zachować układ wizualny wewnątrz zakładki. --}}
+                <div class="mt-4 space-y-4"
+                     x-data="{ prefix: '{{ $currentPrefix }}' }">
                     <div>
                         <label for="admin_prefix_input" class="mb-1 block text-sm font-bold">Nowy prefix URL</label>
                         <div class="flex items-center gap-1">
                             <span class="whitespace-nowrap rounded-l border border-r-0 border-gray-300 bg-gray-100 px-3 py-2 text-sm text-muted">{{ url('/') }}/</span>
                             <input type="text" id="admin_prefix_input" name="admin_prefix"
+                                form="prefix-change-form"
                                 x-model="prefix"
                                 value="{{ $currentPrefix }}"
                                 pattern="[a-z0-9][a-z0-9\-_]*[a-z0-9]" minlength="3" maxlength="60" required
@@ -1839,11 +1840,12 @@
                     </div>
 
                     <button type="submit"
+                        form="prefix-change-form"
                         class="inline-flex items-center gap-2 rounded bg-amber-600 px-4 py-2 text-sm font-bold text-white transition hover:bg-amber-700 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2">
                         <i class="fa-solid fa-arrow-right-to-bracket" aria-hidden="true"></i>
                         Zmień adres panelu
                     </button>
-                </form>
+                </div>
             </div>
         </div>
 
@@ -1942,6 +1944,13 @@
         </div>
     </form>
 
+    {{-- Formularz zmiany prefixu URL panelu — poza głównym formularzem ustawień.
+         Kontrolki (input, button) są skojarzone atrybutem form=”prefix-change-form”. --}}
+    <form id=”prefix-change-form” method=”POST” action=”{{ route('admin.ustawienia.prefix') }}”
+          onsubmit=”return confirm('Zmienić prefix na /' + document.getElementById('admin_prefix_input').value + '? Po zapisaniu zostaniesz przekierowany(a) pod nowy adres — zaktualizuj zakładki.')”>
+        @csrf
+    </form>
+
     {{-- Test poczty: osobny formularz (nie można zagnieżdżać formularzy), widoczny w zakładce „Poczta”. --}}
     <form method="POST" action="{{ route('admin.ustawienia.mail-test') }}" x-show="tab === 'mail'" x-cloak
         class="rounded-lg border border-gray-200 bg-white p-6">
@@ -2037,11 +2046,11 @@
         (function () {
             const list = document.getElementById('section-order-list');
             if (!list) return;
+            const orderInput = document.getElementById('section-order-json');
 
             function renumber() {
-                [...list.children].forEach((li, index) => {
-                    li.querySelector('input[type="hidden"]').value = index;
-                });
+                const keys = [...list.children].map(li => li.dataset.section);
+                if (orderInput) orderInput.value = JSON.stringify(keys);
             }
 
             list.addEventListener('click', (event) => {
