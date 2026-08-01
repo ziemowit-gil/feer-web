@@ -635,6 +635,76 @@
             <p class="text-center text-muted">Brak dodanych linków. Dodaj je w panelu (edycja strony → Strefa współpracownika).</p>
         @endif
     </section>
+    @elseif ($page->isTrainingInstitution())
+    <section class="border-b border-gray-200 bg-gray-50">
+        <div class="mx-auto max-w-4xl px-4 py-12 md:py-16">
+            <span class="mb-3 inline-flex items-center gap-2 rounded-full bg-brand-light px-3 py-1 text-sm font-bold text-brand">
+                <i class="fa-solid fa-graduation-cap" aria-hidden="true"></i> Instytucja szkoleniowa
+            </span>
+            <h1 class="mt-3 text-3xl font-bold text-ink md:text-4xl">{{ $page->title }}</h1>
+        </div>
+    </section>
+
+    <section class="mx-auto max-w-4xl px-4 py-12">
+        <div class="space-y-8">
+            {{-- Dane kierownika --}}
+            @if (filled($page->training_manager_name))
+                <div class="flex items-start gap-4 rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+                    <span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-brand-light text-brand" aria-hidden="true">
+                        <i class="fa-solid fa-user-tie text-lg"></i>
+                    </span>
+                    <div>
+                        <p class="text-xs font-bold uppercase tracking-wide text-muted">Kierownik szkolenia</p>
+                        <p class="mt-1 text-lg font-bold text-ink">{{ $page->training_manager_name }}</p>
+                        @if (filled($page->training_manager_title))
+                            <p class="text-sm text-muted">{{ $page->training_manager_title }}</p>
+                        @endif
+                    </div>
+                </div>
+            @endif
+
+            {{-- Numery rejestracyjne RIS / BUR --}}
+            @if (filled($page->training_ris_number) || filled($page->training_bur_number))
+                <div class="grid gap-4 sm:grid-cols-2">
+                    @if (filled($page->training_ris_number))
+                        <div class="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+                            <p class="text-xs font-bold uppercase tracking-wide text-muted">Numer wpisu RIS</p>
+                            <p class="mt-2 font-mono text-lg font-bold text-ink">{{ $page->training_ris_number }}</p>
+                        </div>
+                    @endif
+                    @if (filled($page->training_bur_number))
+                        <div class="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+                            <p class="text-xs font-bold uppercase tracking-wide text-muted">Numer wpisu BUR</p>
+                            <p class="mt-2 font-mono text-lg font-bold text-ink">{{ $page->training_bur_number }}</p>
+                        </div>
+                    @endif
+                </div>
+            @endif
+
+            {{-- Wyjaśnienie braku wpisu w BUR --}}
+            @if (filled($page->training_bur_note))
+                <div class="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 px-5 py-4" role="note">
+                    <i class="fa-solid fa-circle-info mt-0.5 shrink-0 text-amber-500" aria-hidden="true"></i>
+                    <p class="text-sm leading-relaxed text-amber-900">{!! nl2br(e($page->training_bur_note)) !!}</p>
+                </div>
+            @endif
+
+            {{-- Treść i dodatkowe informacje --}}
+            @if ($page->content)
+                <div class="prose max-w-none text-ink">{!! $page->content !!}</div>
+            @endif
+
+            @if (filled($page->training_extra_info))
+                <div class="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+                    <h2 class="mb-3 text-base font-bold text-ink">Dodatkowe informacje</h2>
+                    <div class="prose max-w-none text-ink">{!! nl2br(e($page->training_extra_info)) !!}</div>
+                </div>
+            @endif
+
+            @include('partials.page-gallery', ['page' => $page])
+            @include('partials.attachments-list', ['attachments' => $page->attachments])
+        </div>
+    </section>
     @elseif ($page->isLegacy())
     <section class="border-b border-gray-200 bg-gray-50">
         <div class="mx-auto max-w-4xl px-4 py-12 text-center md:py-16">

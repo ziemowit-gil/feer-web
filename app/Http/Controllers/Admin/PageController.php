@@ -315,6 +315,12 @@ class PageController extends Controller
             'faq_items.*.answer' => ['nullable', 'string', 'max:20000'],
             'bip_move_url' => ['nullable', 'url', 'max:255'],
             'bip_move_note' => ['nullable', 'string', 'max:2000'],
+            'training_manager_name' => ['nullable', 'string', 'max:255'],
+            'training_manager_title' => ['nullable', 'string', 'max:255'],
+            'training_ris_number' => ['nullable', 'string', 'max:100'],
+            'training_bur_number' => ['nullable', 'string', 'max:100'],
+            'training_extra_info' => ['nullable', 'string', 'max:10000'],
+            'training_bur_note' => ['nullable', 'string', 'max:2000'],
         ]);
 
         $data['parent_id'] = $data['parent_id'] ?: null;
