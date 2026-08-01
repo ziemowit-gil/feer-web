@@ -24,6 +24,7 @@
         'bip' => '<div class="bip-link-box"><p><img src="/img/bip-logo.svg" alt="Logo Biuletynu Informacji Publicznej (BIP)"></p><p>Więcej informacji o naszej fundacji oraz dokumenty formalne publikujemy w Biuletynie Informacji Publicznej.</p><p><a href="/bip" class="cta-button">Więcej informacji w BIP</a></p></div><p>&nbsp;</p>',
         'accentLeft' => '<div class="accent-section accent-left"><p>Treść w kolorowej sekcji&hellip;</p></div><p>&nbsp;</p>',
         'accentRight' => '<div class="accent-section accent-right"><p>Treść w kolorowej sekcji&hellip;</p></div><p>&nbsp;</p>',
+        'table' => '<table><caption>Opis tabeli</caption><thead><tr><th scope="col">Kolumna 1</th><th scope="col">Kolumna 2</th><th scope="col">Kolumna 3</th></tr></thead><tbody><tr><th scope="row">Wiersz 1</th><td>Dane</td><td>Dane</td></tr><tr><th scope="row">Wiersz 2</th><td>Dane</td><td>Dane</td></tr></tbody></table><p>&nbsp;</p>',
     ];
 
     $pages = \App\Models\Page::where('is_published', true)->orderBy('title')->get();
@@ -55,6 +56,10 @@
         'html' => $eventBoxHtml($e),
         'htmlCk' => $eventBoxHtmlCk($e),
     ])->values();
+
+    $newsForPicker = \App\Models\News::where('is_published', true)
+        ->orderByDesc('published_at')
+        ->get(['id', 'title', 'slug']);
 @endphp
 
 @php $mi = 'flex w-full items-center gap-2 rounded px-3 py-2 text-left text-xs font-bold text-ink hover:bg-brand-light hover:text-brand'; @endphp
@@ -77,6 +82,7 @@
             @endif
             <button type="button" data-insert-key="accentLeft" @click="open = false" class="{{ $mi }}"><i class="fa-solid fa-align-left w-4 text-center" aria-hidden="true"></i> Sekcja akcentu (lewo)</button>
             <button type="button" data-insert-key="accentRight" @click="open = false" class="{{ $mi }}"><i class="fa-solid fa-align-right w-4 text-center" aria-hidden="true"></i> Sekcja akcentu (prawo)</button>
+            <button type="button" data-insert-key="table" @click="open = false" class="{{ $mi }}"><i class="fa-solid fa-table w-4 text-center" aria-hidden="true"></i> Tabela dostępna (WCAG)</button>
             @if ($eventBoxOptions->isNotEmpty())
                 <label for="{{ $editorId }}-event-box" class="mt-2 block px-3 pb-1 text-[0.65rem] font-bold uppercase tracking-wide text-muted">Ramka z wydarzeniem</label>
                 <select id="{{ $editorId }}-event-box" @change="open = false" class="w-full rounded border-gray-300 px-2 py-1.5 text-xs font-bold text-ink focus:border-brand focus:ring-brand">
@@ -104,6 +110,20 @@
                     <i class="fa-solid fa-file-lines w-4 text-center" aria-hidden="true"></i> Wybierz stronę serwisu…
                 </button>
             @endif
+            @if ($newsForPicker->isNotEmpty())
+                <button type="button"
+                    @click="window['__nmOpen_{{ $editorId }}']?.(); open = false"
+                    class="{{ $mi }}">
+                    <i class="fa-solid fa-newspaper w-4 text-center" aria-hidden="true"></i> Wybierz news…
+                </button>
+            @endif
+            @if ($eventsForBox->isNotEmpty())
+                <button type="button"
+                    @click="window['__elOpen_{{ $editorId }}']?.(); open = false"
+                    class="{{ $mi }}">
+                    <i class="fa-solid fa-calendar-day w-4 text-center" aria-hidden="true"></i> Wybierz wydarzenie…
+                </button>
+            @endif
             @if ($schedulePages->isNotEmpty())
                 <label for="{{ $editorId }}-schedule-cta" class="mt-2 block px-3 pb-1 text-[0.65rem] font-bold uppercase tracking-wide text-muted">Przycisk CTA do harmonogramu</label>
                 <select id="{{ $editorId }}-schedule-cta" @change="open = false" class="w-full rounded border-gray-300 px-2 py-1.5 text-xs font-bold text-ink focus:border-brand focus:ring-brand">
@@ -113,6 +133,18 @@
                     @endforeach
                 </select>
             @endif
+        </div>
+    </div>
+
+    {{-- Menu „Kotwice" --}}
+    <div class="relative" x-data="{ open: false }" @click.outside="open = false" @keydown.escape="open = false">
+        <button type="button" @click="open = !open" :aria-expanded="open"
+            class="inline-flex items-center gap-2 rounded border border-gray-300 px-3 py-1.5 text-xs font-bold text-ink hover:border-brand hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+            <i class="fa-solid fa-hashtag" aria-hidden="true"></i> Kotwice <i class="fa-solid fa-chevron-down text-[0.6rem]" aria-hidden="true"></i>
+        </button>
+        <div x-show="open" x-cloak class="absolute left-0 z-20 mt-1 w-52 rounded-lg border border-gray-200 bg-white p-2 shadow-lg" role="menu">
+            <button type="button" @click="window['__anchorInsertOpen_{{ $editorId }}']?.(); open = false" class="{{ $mi }}"><i class="fa-solid fa-anchor w-4 text-center" aria-hidden="true"></i> Wstaw kotwicę</button>
+            <button type="button" @click="window['__anchorLinkOpen_{{ $editorId }}']?.(); open = false" class="{{ $mi }}"><i class="fa-solid fa-link w-4 text-center" aria-hidden="true"></i> Link do kotwicy</button>
         </div>
     </div>
 </div>
@@ -135,6 +167,96 @@
         <div class="flex-1 overflow-y-auto">
             <ul id="{{ $editorId }}-page-modal-list" class="divide-y divide-gray-100" role="listbox" aria-label="Lista stron serwisu"></ul>
             <p id="{{ $editorId }}-page-modal-empty" class="hidden py-6 text-center text-sm text-muted">Brak wyników.</p>
+        </div>
+    </div>
+</div>
+
+{{-- Modal: picker newsów --}}
+<div id="{{ $editorId }}-news-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 p-4"
+     role="dialog" aria-modal="true" aria-labelledby="{{ $editorId }}-news-modal-title">
+    <div class="flex max-h-[70vh] w-full max-w-lg flex-col overflow-hidden rounded-lg bg-white p-5">
+        <div class="mb-4 flex items-center justify-between">
+            <h2 id="{{ $editorId }}-news-modal-title" class="text-base font-bold">Wybierz news do linka</h2>
+            <button type="button" data-news-modal-close class="text-muted hover:text-red-600" aria-label="Zamknij okno wyboru newsa"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <label class="sr-only" for="{{ $editorId }}-news-modal-search">Szukaj newsa po tytule</label>
+        <input type="search" id="{{ $editorId }}-news-modal-search" placeholder="Szukaj po tytule…"
+            class="mb-3 w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+        <div class="flex-1 overflow-y-auto">
+            <ul id="{{ $editorId }}-news-modal-list" class="divide-y divide-gray-100" role="listbox" aria-label="Lista newsów"></ul>
+            <p id="{{ $editorId }}-news-modal-empty" class="hidden py-6 text-center text-sm text-muted">Brak wyników.</p>
+        </div>
+    </div>
+</div>
+
+{{-- Modal: picker wydarzeń jako link --}}
+<div id="{{ $editorId }}-event-link-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 p-4"
+     role="dialog" aria-modal="true" aria-labelledby="{{ $editorId }}-event-link-modal-title">
+    <div class="flex max-h-[70vh] w-full max-w-lg flex-col overflow-hidden rounded-lg bg-white p-5">
+        <div class="mb-4 flex items-center justify-between">
+            <h2 id="{{ $editorId }}-event-link-modal-title" class="text-base font-bold">Wybierz wydarzenie do linka</h2>
+            <button type="button" data-event-link-modal-close class="text-muted hover:text-red-600" aria-label="Zamknij okno wyboru wydarzenia"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <label class="sr-only" for="{{ $editorId }}-event-link-modal-search">Szukaj wydarzenia po tytule</label>
+        <input type="search" id="{{ $editorId }}-event-link-modal-search" placeholder="Szukaj po tytule…"
+            class="mb-3 w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+        <div class="flex-1 overflow-y-auto">
+            <ul id="{{ $editorId }}-event-link-modal-list" class="divide-y divide-gray-100" role="listbox" aria-label="Lista wydarzeń"></ul>
+            <p id="{{ $editorId }}-event-link-modal-empty" class="hidden py-6 text-center text-sm text-muted">Brak wyników.</p>
+        </div>
+    </div>
+</div>
+
+{{-- Modal: wstaw kotwicę --}}
+<div id="{{ $editorId }}-anchor-insert-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 p-4"
+     role="dialog" aria-modal="true" aria-labelledby="{{ $editorId }}-anchor-insert-title">
+    <div class="w-full max-w-sm rounded-lg bg-white p-5 shadow-2xl">
+        <div class="mb-3 flex items-center justify-between">
+            <h2 id="{{ $editorId }}-anchor-insert-title" class="text-base font-bold">Wstaw kotwicę</h2>
+            <button type="button" data-anchor-insert-close class="text-muted hover:text-red-600" aria-label="Zamknij"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <p class="mb-3 text-xs text-muted">Kotwica to punkt na stronie, do którego można prowadzić linki (<code class="font-mono">#sekcja-id</code>). Zostanie wstawiona w miejscu kursora.</p>
+        <label class="mb-1 block text-xs font-bold" for="{{ $editorId }}-anchor-insert-id">ID kotwicy</label>
+        <input type="text" id="{{ $editorId }}-anchor-insert-id" placeholder="np. sekcja-kontakt"
+            class="mb-1 w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand"
+            pattern="[a-z0-9\-]+" title="Tylko małe litery, cyfry i myślniki">
+        <p class="mb-4 text-[0.65rem] text-muted">Tylko małe litery, cyfry i myślniki. Bez spacji.</p>
+        <div class="flex justify-end gap-2">
+            <button type="button" data-anchor-insert-close class="rounded border border-gray-300 px-3 py-1.5 text-sm text-ink hover:bg-gray-50">Anuluj</button>
+            <button type="button" id="{{ $editorId }}-anchor-insert-submit" class="rounded bg-brand px-3 py-1.5 text-sm font-bold text-white hover:bg-brand-dark">Wstaw kotwicę</button>
+        </div>
+    </div>
+</div>
+
+{{-- Modal: link do kotwicy --}}
+<div id="{{ $editorId }}-anchor-link-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 p-4"
+     role="dialog" aria-modal="true" aria-labelledby="{{ $editorId }}-anchor-link-title">
+    <div class="flex max-h-[80vh] w-full max-w-lg flex-col overflow-hidden rounded-lg bg-white p-5">
+        <div class="mb-3 flex items-center justify-between">
+            <h2 id="{{ $editorId }}-anchor-link-title" class="text-base font-bold">Link do kotwicy</h2>
+            <button type="button" data-anchor-link-close class="text-muted hover:text-red-600" aria-label="Zamknij"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <p class="mb-3 text-xs text-muted">Kliknij kotwicę z listy lub wpisz ID ręcznie. Kotwice muszą być wcześniej wstawione w treści.</p>
+        <div class="mb-3 min-h-0 flex-1 overflow-y-auto">
+            <p class="mb-1 text-[0.65rem] font-bold uppercase tracking-wide text-muted">Kotwice znalezione w treści</p>
+            <ul id="{{ $editorId }}-anchor-link-found" class="divide-y divide-gray-100 rounded border border-gray-200" role="listbox" aria-label="Znalezione kotwice"></ul>
+            <p id="{{ $editorId }}-anchor-link-none" class="py-3 text-center text-xs text-muted">Brak kotwic w treści — najpierw wstaw kotwicę.</p>
+        </div>
+        <div class="space-y-2 border-t border-gray-100 pt-3">
+            <div>
+                <label class="mb-0.5 block text-xs font-bold" for="{{ $editorId }}-anchor-link-id">ID kotwicy (bez #)</label>
+                <input type="text" id="{{ $editorId }}-anchor-link-id" placeholder="sekcja-kontakt"
+                    class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+            </div>
+            <div>
+                <label class="mb-0.5 block text-xs font-bold" for="{{ $editorId }}-anchor-link-text">Tekst linku</label>
+                <input type="text" id="{{ $editorId }}-anchor-link-text" placeholder="np. Przejdź do sekcji kontakt"
+                    class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+            </div>
+        </div>
+        <div class="mt-4 flex justify-end gap-2">
+            <button type="button" data-anchor-link-close class="rounded border border-gray-300 px-3 py-1.5 text-sm text-ink hover:bg-gray-50">Anuluj</button>
+            <button type="button" id="{{ $editorId }}-anchor-link-submit" class="rounded bg-brand px-3 py-1.5 text-sm font-bold text-white hover:bg-brand-dark">Wstaw link</button>
         </div>
     </div>
 </div>
@@ -415,6 +537,164 @@
     })();
 </script>
 
+<script>
+    // ── Picker newsów ────────────────────────────────────────────────────────
+    (function () {
+        var nmModal  = document.getElementById('{{ $editorId }}-news-modal');
+        var nmSearch = document.getElementById('{{ $editorId }}-news-modal-search');
+        var nmList   = document.getElementById('{{ $editorId }}-news-modal-list');
+        var nmEmpty  = document.getElementById('{{ $editorId }}-news-modal-empty');
+        var nmItems  = {!! json_encode($newsForPicker->map(fn ($n) => ['url' => route('news.show', $n), 'title' => $n->title])->values()) !!};
+
+        function nmEsc(t) { return (t||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+        function nmRender(q) {
+            var lower = q.toLowerCase();
+            var list = lower ? nmItems.filter(function (n) { return n.title.toLowerCase().indexOf(lower) !== -1; }) : nmItems;
+            nmList.innerHTML = '';
+            nmEmpty.classList.toggle('hidden', list.length > 0);
+            list.forEach(function (n) {
+                var btn = document.createElement('button');
+                btn.type = 'button'; btn.setAttribute('role', 'option');
+                btn.className = 'flex w-full items-baseline gap-3 px-3 py-2.5 text-left hover:bg-brand-light focus-visible:bg-brand-light focus-visible:outline-none';
+                btn.innerHTML = '<span class="flex-1 text-sm font-medium text-ink">' + nmEsc(n.title) + '</span>'
+                    + '<span class="shrink-0 text-xs text-muted">' + nmEsc(n.url) + '</span>';
+                btn.addEventListener('click', function () {
+                    nmModal.dispatchEvent(new CustomEvent('news-link-picked', { detail: n }));
+                    nmClose();
+                });
+                var li = document.createElement('li'); li.appendChild(btn); nmList.appendChild(li);
+            });
+        }
+
+        function nmOpen() { nmModal.classList.remove('hidden'); nmModal.classList.add('flex'); nmSearch.value = ''; nmRender(''); nmSearch.focus(); }
+        function nmClose() { nmModal.classList.add('hidden'); nmModal.classList.remove('flex'); }
+
+        nmModal.querySelector('[data-news-modal-close]').addEventListener('click', nmClose);
+        nmModal.addEventListener('click', function (e) { if (e.target === nmModal) nmClose(); });
+        nmModal.addEventListener('keydown', function (e) { if (e.key === 'Escape') nmClose(); });
+        nmSearch.addEventListener('input', function () { nmRender(nmSearch.value); });
+        window['__nmOpen_{{ $editorId }}'] = nmOpen;
+    })();
+
+    // ── Picker wydarzeń jako link ─────────────────────────────────────────────
+    (function () {
+        var elModal  = document.getElementById('{{ $editorId }}-event-link-modal');
+        var elSearch = document.getElementById('{{ $editorId }}-event-link-modal-search');
+        var elList   = document.getElementById('{{ $editorId }}-event-link-modal-list');
+        var elEmpty  = document.getElementById('{{ $editorId }}-event-link-modal-empty');
+        var elItems  = {!! json_encode($eventsForBox->map(fn ($e) => ['url' => '/wydarzenia/'.$e->slug, 'title' => $e->title])->values()) !!};
+
+        function elEsc(t) { return (t||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+        function elRender(q) {
+            var lower = q.toLowerCase();
+            var list = lower ? elItems.filter(function (ev) { return ev.title.toLowerCase().indexOf(lower) !== -1; }) : elItems;
+            elList.innerHTML = '';
+            elEmpty.classList.toggle('hidden', list.length > 0);
+            list.forEach(function (ev) {
+                var btn = document.createElement('button');
+                btn.type = 'button'; btn.setAttribute('role', 'option');
+                btn.className = 'flex w-full items-baseline gap-3 px-3 py-2.5 text-left hover:bg-brand-light focus-visible:bg-brand-light focus-visible:outline-none';
+                btn.innerHTML = '<span class="flex-1 text-sm font-medium text-ink">' + elEsc(ev.title) + '</span>'
+                    + '<span class="shrink-0 text-xs text-muted">' + elEsc(ev.url) + '</span>';
+                btn.addEventListener('click', function () {
+                    elModal.dispatchEvent(new CustomEvent('event-link-picked', { detail: ev }));
+                    elClose();
+                });
+                var li = document.createElement('li'); li.appendChild(btn); elList.appendChild(li);
+            });
+        }
+
+        function elOpen() { elModal.classList.remove('hidden'); elModal.classList.add('flex'); elSearch.value = ''; elRender(''); elSearch.focus(); }
+        function elClose() { elModal.classList.add('hidden'); elModal.classList.remove('flex'); }
+
+        elModal.querySelector('[data-event-link-modal-close]').addEventListener('click', elClose);
+        elModal.addEventListener('click', function (e) { if (e.target === elModal) elClose(); });
+        elModal.addEventListener('keydown', function (e) { if (e.key === 'Escape') elClose(); });
+        elSearch.addEventListener('input', function () { elRender(elSearch.value); });
+        window['__elOpen_{{ $editorId }}'] = elOpen;
+    })();
+
+    // ── Wstaw kotwicę ────────────────────────────────────────────────────────
+    (function () {
+        var aiModal  = document.getElementById('{{ $editorId }}-anchor-insert-modal');
+        var aiInput  = document.getElementById('{{ $editorId }}-anchor-insert-id');
+        var aiSubmit = document.getElementById('{{ $editorId }}-anchor-insert-submit');
+
+        function aiOpen() { aiModal.classList.remove('hidden'); aiModal.classList.add('flex'); aiInput.value = ''; aiInput.focus(); }
+        function aiClose() { aiModal.classList.add('hidden'); aiModal.classList.remove('flex'); }
+
+        aiSubmit.addEventListener('click', function () {
+            var id = aiInput.value.trim().toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9\-]/g, '');
+            if (!id) { aiInput.focus(); return; }
+            aiInput.value = id;
+            aiModal.dispatchEvent(new CustomEvent('anchor-insert', { detail: { id: id } }));
+            aiClose();
+        });
+        aiInput.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); aiSubmit.click(); } });
+        aiModal.querySelectorAll('[data-anchor-insert-close]').forEach(function (b) { b.addEventListener('click', aiClose); });
+        aiModal.addEventListener('click', function (e) { if (e.target === aiModal) aiClose(); });
+        aiModal.addEventListener('keydown', function (e) { if (e.key === 'Escape') aiClose(); });
+        window['__anchorInsertOpen_{{ $editorId }}'] = aiOpen;
+    })();
+
+    // ── Link do kotwicy ──────────────────────────────────────────────────────
+    (function () {
+        var alModal    = document.getElementById('{{ $editorId }}-anchor-link-modal');
+        var alFound    = document.getElementById('{{ $editorId }}-anchor-link-found');
+        var alNone     = document.getElementById('{{ $editorId }}-anchor-link-none');
+        var alIdInput  = document.getElementById('{{ $editorId }}-anchor-link-id');
+        var alTxtInput = document.getElementById('{{ $editorId }}-anchor-link-text');
+        var alSubmit   = document.getElementById('{{ $editorId }}-anchor-link-submit');
+
+        function scanAnchors() {
+            var getContent = window['__getContent_{{ $editorId }}'];
+            if (!getContent) { alNone.classList.remove('hidden'); alFound.innerHTML = ''; return; }
+            var doc = new DOMParser().parseFromString(getContent(), 'text/html');
+            var ids = [];
+            doc.querySelectorAll('[id]').forEach(function (el) {
+                if (el.id) ids.push({ id: el.id, label: (el.textContent || '').trim().slice(0, 60) || '#' + el.id });
+            });
+            alFound.innerHTML = '';
+            alNone.classList.toggle('hidden', ids.length > 0);
+            ids.forEach(function (item) {
+                var btn = document.createElement('button');
+                btn.type = 'button'; btn.setAttribute('role', 'option');
+                btn.className = 'flex w-full items-baseline gap-3 px-3 py-2 text-left hover:bg-brand-light focus-visible:bg-brand-light focus-visible:outline-none';
+                btn.innerHTML = '<code class="shrink-0 font-mono text-xs text-brand">#' + item.id + '</code>'
+                    + '<span class="flex-1 truncate text-xs text-muted">' + item.label + '</span>';
+                btn.addEventListener('click', function () {
+                    alIdInput.value = item.id;
+                    alTxtInput.value = item.label !== '#' + item.id ? item.label : '';
+                    alTxtInput.focus();
+                });
+                var li = document.createElement('li'); li.appendChild(btn); alFound.appendChild(li);
+            });
+        }
+
+        function alOpen() {
+            alModal.classList.remove('hidden'); alModal.classList.add('flex');
+            alIdInput.value = ''; alTxtInput.value = '';
+            scanAnchors();
+            alIdInput.focus();
+        }
+        function alClose() { alModal.classList.add('hidden'); alModal.classList.remove('flex'); }
+
+        alSubmit.addEventListener('click', function () {
+            var id = alIdInput.value.trim();
+            var text = alTxtInput.value.trim();
+            if (!id || !text) { (id ? alTxtInput : alIdInput).focus(); return; }
+            alModal.dispatchEvent(new CustomEvent('anchor-link-insert', { detail: { id: id, text: text } }));
+            alClose();
+        });
+        alModal.querySelectorAll('[data-anchor-link-close]').forEach(function (b) { b.addEventListener('click', alClose); });
+        alModal.addEventListener('click', function (e) { if (e.target === alModal) alClose(); });
+        alModal.addEventListener('keydown', function (e) { if (e.key === 'Escape') alClose(); });
+        window['__anchorLinkOpen_{{ $editorId }}'] = alOpen;
+    })();
+</script>
+
 @if ($useCkEditor)
     <style>
         #{{ $editorId }}-ck-wrapper .ck-editor__editable {
@@ -484,6 +764,43 @@
                         editor.model.insertContent(modelFragment);
                         editor.editing.view.focus();
                     });
+
+                    document.getElementById('{{ $editorId }}-news-modal').addEventListener('news-link-picked', function (event) {
+                        var n = event.detail;
+                        var html = '<p><a href="' + n.url + '">' + n.title + '</a></p>';
+                        var viewFragment = editor.data.processor.toView(html);
+                        var modelFragment = editor.data.toModel(viewFragment);
+                        editor.model.insertContent(modelFragment);
+                        editor.editing.view.focus();
+                    });
+
+                    document.getElementById('{{ $editorId }}-event-link-modal').addEventListener('event-link-picked', function (event) {
+                        var ev = event.detail;
+                        var html = '<p><a href="' + ev.url + '">' + ev.title + '</a></p>';
+                        var viewFragment = editor.data.processor.toView(html);
+                        var modelFragment = editor.data.toModel(viewFragment);
+                        editor.model.insertContent(modelFragment);
+                        editor.editing.view.focus();
+                    });
+
+                    document.getElementById('{{ $editorId }}-anchor-insert-modal').addEventListener('anchor-insert', function (event) {
+                        var html = '<span id="' + event.detail.id + '" class="page-anchor" aria-hidden="true">​</span>';
+                        var viewFragment = editor.data.processor.toView(html);
+                        var modelFragment = editor.data.toModel(viewFragment);
+                        editor.model.insertContent(modelFragment);
+                        editor.editing.view.focus();
+                    });
+
+                    document.getElementById('{{ $editorId }}-anchor-link-modal').addEventListener('anchor-link-insert', function (event) {
+                        var d = event.detail;
+                        var html = '<a href="#' + d.id + '">' + d.text + '</a>';
+                        var viewFragment = editor.data.processor.toView(html);
+                        var modelFragment = editor.data.toModel(viewFragment);
+                        editor.model.insertContent(modelFragment);
+                        editor.editing.view.focus();
+                    });
+
+                    window['__getContent_{{ $editorId }}'] = function () { return editor.getData(); };
 
                     var scheduleCtaSelect = document.getElementById('{{ $editorId }}-schedule-cta');
                     if (scheduleCtaSelect) {
@@ -559,6 +876,8 @@
                 var pageLinks = {!! json_encode($pages->map(fn ($p) => ['url' => '/'.$p->slug, 'title' => $p->title])->values()) !!};
                 var scheduleLinks = {!! json_encode($schedulePages->map(fn ($p) => ['url' => '/'.$p->slug, 'title' => $p->title])->values()) !!};
                 var eventBoxes = {!! json_encode($eventBoxOptions->map(fn ($o) => ['title' => $o['title'], 'html' => $o['html']])->values()) !!};
+                var newsLinks = {!! json_encode($newsForPicker->map(fn ($n) => ['url' => route('news.show', $n), 'title' => $n->title])->values()) !!};
+                var eventLinks = {!! json_encode($eventsForBox->map(fn ($e) => ['url' => '/wydarzenia/'.$e->slug, 'title' => $e->title])->values()) !!};
 
                 function checkA11y(html) {
                     var doc = new DOMParser().parseFromString(html, 'text/html');
@@ -594,7 +913,7 @@
                     statusbar: false,
                     branding: false,
                     convert_urls: false,
-                    plugins: 'advlist autolink lists link image charmap preview searchreplace visualblocks code fullscreen media table help wordcount accordion emoticons autosave quickbars',
+                    plugins: 'advlist autolink lists link anchor image charmap preview searchreplace visualblocks code fullscreen media table help wordcount accordion emoticons autosave quickbars',
                     toolbar: 'undo redo | blocks | bold italic underline forecolor backcolor | alignleft aligncenter alignright | bullist numlist | link table media accordion | insertmenu linkmenu | removeformat charmap emoticons | searchreplace visualblocks fullscreen preview | a11ycheck help | code',
                     toolbar_mode: 'wrap',
                     statusbar: true,
@@ -631,6 +950,8 @@
                                     { type: 'menuitem', text: 'Sekcja akcentu (prawo)', onAction: function () { editor.insertContent(snippets.accentRight); } },
                                     { type: 'menuitem', text: 'Układ 2 kolumn', onAction: function () { editor.insertContent(columnsHtml); } },
                                     { type: 'menuitem', text: 'Linia pozioma', onAction: function () { editor.insertContent('<hr>'); } },
+                                    { type: 'menuitem', text: 'Tabela dostępna (WCAG)', icon: 'table', onAction: function () { editor.insertContent(snippets.table); } },
+                                    { type: 'menuitem', text: 'Wstaw kotwicę', icon: 'anchor', onAction: function () { window['__anchorInsertOpen_{{ $editorId }}']?.(); } },
                                 ];
                                 if (eventBoxes.length) {
                                     items.push({ type: 'nestedmenuitem', text: 'Ramka z wydarzeniem', getSubmenuItems: function () {
@@ -657,6 +978,19 @@
                                         window['__pmOpen_{{ $editorId }}']?.();
                                     }});
                                 }
+                                if (newsLinks.length) {
+                                    items.push({ type: 'menuitem', text: 'Link do newsa — wybierz z listy…', onAction: function () {
+                                        window['__nmOpen_{{ $editorId }}']?.();
+                                    }});
+                                }
+                                if (eventLinks.length) {
+                                    items.push({ type: 'menuitem', text: 'Link do wydarzenia — wybierz z listy…', onAction: function () {
+                                        window['__elOpen_{{ $editorId }}']?.();
+                                    }});
+                                }
+                                items.push({ type: 'menuitem', text: 'Link do kotwicy…', icon: 'anchor', onAction: function () {
+                                    window['__anchorLinkOpen_{{ $editorId }}']?.();
+                                }});
                                 if (scheduleLinks.length) {
                                     items.push({ type: 'nestedmenuitem', text: 'Przycisk CTA do harmonogramu', getSubmenuItems: function () {
                                         return scheduleLinks.map(function (p) {
@@ -692,6 +1026,22 @@
                                 var p = event.detail;
                                 editor.insertContent('<a href="' + p.url + '">' + p.title + '</a>');
                             });
+                            document.getElementById('{{ $editorId }}-news-modal').addEventListener('news-link-picked', function (event) {
+                                var n = event.detail;
+                                editor.insertContent('<a href="' + n.url + '">' + n.title + '</a>');
+                            });
+                            document.getElementById('{{ $editorId }}-event-link-modal').addEventListener('event-link-picked', function (event) {
+                                var ev = event.detail;
+                                editor.insertContent('<a href="' + ev.url + '">' + ev.title + '</a>');
+                            });
+                            document.getElementById('{{ $editorId }}-anchor-insert-modal').addEventListener('anchor-insert', function (event) {
+                                editor.insertContent('<a id="' + event.detail.id + '" class="page-anchor" aria-hidden="true"></a>');
+                            });
+                            document.getElementById('{{ $editorId }}-anchor-link-modal').addEventListener('anchor-link-insert', function (event) {
+                                var d = event.detail;
+                                editor.insertContent('<a href="#' + d.id + '">' + d.text + '</a>');
+                            });
+                            window['__getContent_{{ $editorId }}'] = function () { return editor.getContent(); };
                         });
                     },
                 });
