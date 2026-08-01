@@ -78,31 +78,46 @@
                 </div>
             </div>
 
-            <div class="grid gap-5 sm:grid-cols-2">
-                <div>
-                    <label for="audience" class="mb-1 block text-sm font-bold">Grupa docelowa (kolorystyka)</label>
-                    <select id="audience" name="audience" class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
-                        @foreach ($siteSettings->audienceOptions() as $value => $label)
-                            <option value="{{ $value }}" {{ old('audience', $news->audience ?? 'brand') === $value ? 'selected' : '' }}>{{ $label }}</option>
-                        @endforeach
-                    </select>
-                    <p class="mt-1 text-xs text-muted">Zmienia kolorystykę strony aktualności na kolor wybranej submarki (Ustawienia → Kolory).</p>
-                    @error('audience') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
-                </div>
+            @php
+                $extraOpen = $errors->has('audience') || $errors->has('accent_color')
+                    || ($news->exists && filled($news->accent_color))
+                    || ($news->exists && !in_array($news->audience ?? 'brand', ['brand', '']));
+            @endphp
+            <div x-data="{ extraOpen: {{ $extraOpen ? 'true' : 'false' }} }" class="-mx-6">
+                <button type="button" @click="extraOpen = !extraOpen" :aria-expanded="extraOpen"
+                    class="flex w-full items-center gap-2 border-t border-gray-100 px-6 py-3 text-sm font-bold text-muted hover:bg-gray-50 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand">
+                    <i class="fa-solid fa-sliders text-xs" aria-hidden="true"></i>
+                    Dodatkowe
+                    <i class="fa-solid fa-chevron-down ml-auto text-xs transition-transform duration-200" :class="{ 'rotate-180': extraOpen }" aria-hidden="true"></i>
+                </button>
+                <div x-show="extraOpen" x-cloak class="px-6 py-4">
+                    <div class="grid gap-5 sm:grid-cols-2">
+                        <div>
+                            <label for="audience" class="mb-1 block text-sm font-bold">Grupa docelowa (kolorystyka)</label>
+                            <select id="audience" name="audience" class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                                @foreach ($siteSettings->audienceOptions() as $value => $label)
+                                    <option value="{{ $value }}" {{ old('audience', $news->audience ?? 'brand') === $value ? 'selected' : '' }}>{{ $label }}</option>
+                                @endforeach
+                            </select>
+                            <p class="mt-1 text-xs text-muted">Zmienia kolorystykę strony aktualności na kolor wybranej submarki (Ustawienia → Kolory).</p>
+                            @error('audience') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                        </div>
 
-                <div>
-                    <label for="accent_color_text" class="mb-1 block text-sm font-bold">Własny kolor akcentu <span class="font-normal text-muted">(opcjonalnie)</span></label>
-                    <div class="flex flex-wrap items-center gap-3">
-                        <input type="color" id="accent_color_picker" value="{{ old('accent_color', $news->accent_color ?: '#c31432') }}"
-                            oninput="document.getElementById('accent_color_text').value = this.value"
-                            class="h-10 w-16 rounded border-gray-300" aria-label="Wybierz własny kolor akcentu">
-                        <input type="text" id="accent_color_text" name="accent_color" value="{{ old('accent_color', $news->accent_color) }}"
-                            placeholder="np. #0d7d4d — puste = jak obok"
-                            oninput="if (/^#[0-9a-fA-F]{6}$/.test(this.value)) document.getElementById('accent_color_picker').value = this.value"
-                            class="w-48 rounded border-gray-300 font-mono text-sm focus:border-brand focus:ring-brand">
+                        <div>
+                            <label for="accent_color_text" class="mb-1 block text-sm font-bold">Własny kolor akcentu <span class="font-normal text-muted">(opcjonalnie)</span></label>
+                            <div class="flex flex-wrap items-center gap-3">
+                                <input type="color" id="accent_color_picker" value="{{ old('accent_color', $news->accent_color ?: '#c31432') }}"
+                                    oninput="document.getElementById('accent_color_text').value = this.value"
+                                    class="h-10 w-16 rounded border-gray-300" aria-label="Wybierz własny kolor akcentu">
+                                <input type="text" id="accent_color_text" name="accent_color" value="{{ old('accent_color', $news->accent_color) }}"
+                                    placeholder="np. #0d7d4d — puste = jak obok"
+                                    oninput="if (/^#[0-9a-fA-F]{6}$/.test(this.value)) document.getElementById('accent_color_picker').value = this.value"
+                                    class="w-48 rounded border-gray-300 font-mono text-sm focus:border-brand focus:ring-brand">
+                            </div>
+                            <p class="mt-1 text-xs text-muted">Nadpisuje kolorystykę tej strony dowolnym kolorem (ma pierwszeństwo przed grupą docelową obok). Zbyt jasny kolor zostanie przyciemniony przy zapisie (kontrast WCAG). Puste = kolor z grupy docelowej.</p>
+                            @error('accent_color') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                        </div>
                     </div>
-                    <p class="mt-1 text-xs text-muted">Nadpisuje kolorystykę tej strony dowolnym kolorem (ma pierwszeństwo przed grupą docelową obok). Zbyt jasny kolor zostanie przyciemniony przy zapisie (kontrast WCAG). Puste = kolor z grupy docelowej.</p>
-                    @error('accent_color') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                 </div>
             </div>
 
@@ -197,8 +212,8 @@
                     @endif
 
                     {{-- Podgląd nowo wybranego (Alpine) --}}
-                    <div x-show="localPreview || unsplashThumb" x-cloak class="relative">
-                        <img :src="localPreview || unsplashThumb" alt=""
+                    <div x-show="localPreview || unsplashThumb || libraryThumb" x-cloak class="relative">
+                        <img :src="localPreview || unsplashThumb || libraryThumb" alt=""
                             class="h-36 w-full rounded-lg border border-gray-200 object-cover">
                         <button type="button" @click="clearImage()"
                             class="absolute right-2 top-2 rounded bg-black/60 px-2 py-1 text-xs font-bold text-white hover:bg-black/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
@@ -212,7 +227,7 @@
                     <button type="button" @click="openModal()" data-modal-trigger
                         class="inline-flex items-center gap-2 rounded border border-gray-300 bg-white px-4 py-2 text-sm font-bold text-ink hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
                         <i class="fa-solid fa-image text-muted" aria-hidden="true"></i>
-                        <span x-text="localPreview || unsplashThumb || {{ $news->exists && $news->image_url ? 'true' : 'false' }} ? 'Zmień zdjęcie' : 'Wybierz zdjęcie'"></span>
+                        <span x-text="localPreview || unsplashThumb || libraryThumb || {{ $news->exists && $news->image_url ? 'true' : 'false' }} ? 'Zmień zdjęcie' : 'Wybierz zdjęcie'"></span>
                     </button>
                     @error('image') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
 
@@ -226,6 +241,9 @@
                     <input type="hidden" name="unsplash_download_location" :value="unsplashDownloadLocation">
                     <input type="hidden" name="unsplash_author" :value="unsplashAuthor">
                     <input type="hidden" name="unsplash_alt" :value="unsplashAlt">
+                    {{-- Ukryte pola biblioteki multimediów --}}
+                    <input type="hidden" name="library_media_id" :value="libraryMediaId">
+                    <input type="hidden" name="library_alt" :value="libraryAlt">
                 </div>
 
                 <div class="mt-4">
@@ -277,6 +295,14 @@
                                 <i class="fa-solid fa-camera-retro mr-1" aria-hidden="true"></i> Unsplash
                             </span>
                             @endif
+                            <button type="button" role="tab" id="tab-library"
+                                :aria-selected="tab === 'library'" :tabindex="tab === 'library' ? 0 : -1"
+                                aria-controls="tabpanel-library"
+                                @click="tab = 'library'; !libraryLoaded && loadLibrary()"
+                                :class="tab === 'library' ? 'border-b-2 border-brand text-brand font-bold' : 'text-muted hover:text-ink'"
+                                class="ml-4 py-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                                <i class="fa-solid fa-photo-film mr-1" aria-hidden="true"></i> Biblioteka
+                            </button>
                         </div>
 
                         <div class="p-6">
@@ -366,6 +392,72 @@
                                 </div>
                             </div>
                             @endif
+
+                            {{-- Tab: Biblioteka multimediów --}}
+                            <div id="tabpanel-library" x-show="tab === 'library'" role="tabpanel" aria-labelledby="tab-library" class="space-y-4">
+
+                                <div x-show="libraryLoading" class="flex justify-center py-10">
+                                    <span class="text-sm text-muted" aria-live="polite" aria-busy="true">Ładowanie biblioteki…</span>
+                                </div>
+
+                                <template x-if="!libraryLoading && libraryResults.length === 0">
+                                    <p class="py-6 text-center text-sm text-muted">
+                                        Brak zdjęć w bibliotece multimediów.
+                                        <a href="{{ route('admin.multimedia.index') }}" target="_blank" rel="noopener"
+                                            class="font-bold text-brand hover:text-brand-dark">Otwórz bibliotekę</a>
+                                    </p>
+                                </template>
+
+                                <template x-if="!libraryLoading && libraryResults.length > 0">
+                                    <div class="space-y-3">
+                                        <div>
+                                            <label for="lib-search" class="sr-only">Filtruj zdjęcia biblioteki</label>
+                                            <input type="text" id="lib-search" x-model="librarySearch"
+                                                placeholder="Filtruj po nazwie lub opisie…"
+                                                class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                                        </div>
+                                        <div class="grid max-h-72 grid-cols-3 gap-2 overflow-y-auto sm:grid-cols-4"
+                                            role="list" aria-label="Zdjęcia z biblioteki multimediów">
+                                            <template x-for="img in libraryResults.filter(i => !librarySearch.trim() || (i.file_name + ' ' + (i.alt || '')).toLowerCase().includes(librarySearch.toLowerCase()))" :key="img.id">
+                                                <button type="button" @click="pickLibrary(img)" role="listitem"
+                                                    :aria-pressed="librarySelected && librarySelected.id === img.id"
+                                                    :aria-label="'Wybierz: ' + (img.alt || img.file_name)"
+                                                    :class="librarySelected && librarySelected.id === img.id ? 'border-brand ring-1 ring-brand' : 'border-transparent hover:border-gray-300'"
+                                                    class="relative overflow-hidden rounded border-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+                                                    :title="img.alt || img.file_name">
+                                                    <img :src="img.url" :alt="img.alt || img.file_name" class="h-20 w-full object-cover">
+                                                    <span x-show="librarySelected && librarySelected.id === img.id"
+                                                        class="absolute right-1 top-1 flex h-5 w-5 items-center justify-center rounded-full bg-brand text-white" aria-hidden="true">
+                                                        <i class="fa-solid fa-check text-[10px]"></i>
+                                                    </span>
+                                                </button>
+                                            </template>
+                                        </div>
+                                    </div>
+                                </template>
+
+                                <div x-show="librarySelected" x-cloak
+                                    class="flex items-center gap-3 rounded-lg border border-green-200 bg-green-50 p-3">
+                                    <img :src="librarySelected?.url" alt="" class="h-12 w-16 flex-none rounded object-cover">
+                                    <div class="min-w-0 text-xs">
+                                        <p class="font-bold text-ink">Wybrano</p>
+                                        <p class="truncate text-muted" x-text="librarySelected?.alt || librarySelected?.file_name"></p>
+                                    </div>
+                                    <button type="button" @click="librarySelected = null"
+                                        class="ml-auto rounded px-1 text-xs font-bold text-red-600 hover:text-red-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500">
+                                        Wyczyść
+                                    </button>
+                                </div>
+
+                                <div class="flex gap-3 border-t border-gray-100 pt-4">
+                                    <button type="button" @click="confirmLibrary()" :disabled="!librarySelected"
+                                        :class="librarySelected ? 'bg-brand hover:bg-brand-dark cursor-pointer' : 'bg-gray-200 text-gray-400 cursor-not-allowed'"
+                                        class="rounded px-5 py-2 text-sm font-bold text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                                        Wstaw
+                                    </button>
+                                    <button type="button" @click="close()" class="rounded px-2 text-sm text-muted hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">Anuluj</button>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -494,6 +586,15 @@
             unsplashFull: '',
             unsplashDownloadLocation: '',
             unsplashAlt: '',
+            // Biblioteka multimediów
+            libraryResults: [],
+            libraryLoaded: false,
+            libraryLoading: false,
+            librarySearch: '',
+            librarySelected: null,
+            libraryThumb: '',
+            libraryMediaId: '',
+            libraryAlt: '',
 
             openModal() {
                 this.open = true;
@@ -528,6 +629,7 @@
                 this.fileName = file.name;
                 this.unsplashSelected = null; this.unsplashThumb = ''; this.unsplashFull = '';
                 this.unsplashDownloadLocation = ''; this.unsplashAlt = ''; this.unsplashAuthor = '';
+                this.librarySelected = null; this.libraryThumb = ''; this.libraryMediaId = ''; this.libraryAlt = '';
                 const reader = new FileReader();
                 reader.onload = (e) => { this.localPreview = e.target.result; };
                 reader.readAsDataURL(file);
@@ -546,6 +648,7 @@
                 if (fi) fi.value = '';
                 this.unsplashSelected = null; this.unsplashThumb = ''; this.unsplashAuthor = '';
                 this.unsplashFull = ''; this.unsplashDownloadLocation = ''; this.unsplashAlt = '';
+                this.librarySelected = null; this.libraryThumb = ''; this.libraryMediaId = ''; this.libraryAlt = '';
             },
 
             async search() {
@@ -566,6 +669,7 @@
                 this.localPreview = null; this.fileName = '';
                 const fi = this.$el.querySelector('#image');
                 if (fi) fi.value = '';
+                this.librarySelected = null;
             },
 
             confirmUnsplash() {
@@ -575,6 +679,36 @@
                 this.unsplashFull = this.unsplashSelected.full_url;
                 this.unsplashDownloadLocation = this.unsplashSelected.download_location;
                 this.unsplashAlt = this.unsplashSelected.alt || '';
+                this.librarySelected = null; this.libraryThumb = ''; this.libraryMediaId = ''; this.libraryAlt = '';
+                this.close();
+            },
+
+            async loadLibrary() {
+                if (this.libraryLoaded) return;
+                this.libraryLoading = true;
+                try {
+                    const r = await fetch('{{ route('admin.multimedia.images') }}', { headers: { 'Accept': 'application/json' } });
+                    this.libraryResults = await r.json();
+                    this.libraryLoaded = true;
+                } catch {}
+                this.libraryLoading = false;
+            },
+
+            pickLibrary(img) {
+                this.librarySelected = img;
+            },
+
+            confirmLibrary() {
+                if (!this.librarySelected) return;
+                this.libraryThumb = this.librarySelected.url;
+                this.libraryMediaId = this.librarySelected.id;
+                this.libraryAlt = this.librarySelected.alt || '';
+                // Wyczyść inne tryby wyboru
+                this.localPreview = null; this.fileName = ''; this.fileDimensions = '';
+                const fi = this.$el.querySelector('#image');
+                if (fi) fi.value = '';
+                this.unsplashSelected = null; this.unsplashThumb = ''; this.unsplashFull = '';
+                this.unsplashDownloadLocation = ''; this.unsplashAlt = ''; this.unsplashAuthor = '';
                 this.close();
             },
         });

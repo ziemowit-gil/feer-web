@@ -40,7 +40,7 @@ class ContentTemplateController extends Controller
         $data = $request->validate([
             'type' => ['required', 'string', 'in:news,event,volunteer_ad'],
             'name' => ['required', 'string', 'max:120'],
-            'data' => ['required', 'array'],
+            'data' => ['present', 'array'],
         ]);
 
         ContentTemplate::create($data);

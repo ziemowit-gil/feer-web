@@ -198,6 +198,21 @@ class NewsController extends Controller
             return;
         }
 
+        if ($request->filled('library_media_id')) {
+            $source = \Spatie\MediaLibrary\MediaCollections\Models\Media::find($request->integer('library_media_id'));
+
+            if ($source) {
+                $source->copy($news, 'image');
+                $news->refreshImageDimensions();
+
+                if (blank($news->image_alt) && $request->filled('library_alt')) {
+                    $news->update(['image_alt' => $request->input('library_alt')]);
+                }
+            }
+
+            return;
+        }
+
         if (! $request->filled('unsplash_full_url')) {
             return;
         }

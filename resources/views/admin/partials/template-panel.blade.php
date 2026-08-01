@@ -321,12 +321,19 @@ function templateModal(type, fields) {
                     body: JSON.stringify({ type: this.type, name: this.saveName.trim(), data }),
                 });
                 const json = await r.json();
+                if (!r.ok) {
+                    const msg = json.message || Object.values(json.errors || {}).flat().join(' ') || 'Błąd zapisu szablonu.';
+                    this.savedMsg = '❌ ' + msg;
+                    setTimeout(() => { this.savedMsg = ''; }, 5000);
+                    return;
+                }
                 this.savedMsg = json.status ?? 'Zapisano.';
                 this.saveName = '';
                 await this.fetchTemplates();
                 setTimeout(() => { this.savedMsg = ''; }, 3000);
             } catch {
-                alert('Nie udało się zapisać szablonu.');
+                this.savedMsg = '❌ Błąd połączenia — szablon niezapisany.';
+                setTimeout(() => { this.savedMsg = ''; }, 5000);
             }
         },
 
