@@ -156,7 +156,7 @@
     </div>
 </div>
 
-<textarea name="{{ $name }}" id="{{ $editorId }}" rows="14"
+<textarea name="{{ $name }}" id="{{ $editorId }}" rows="14" placeholder="Tu wpisz tekst…"
     class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">{{ $value }}</textarea>
 
 <div id="{{ $editorId }}-stats" class="mt-1 min-h-[1.25rem] text-xs text-muted" aria-live="polite" aria-atomic="true"></div>
@@ -1378,9 +1378,10 @@
                         });
                     },
                     elementpath: false,
+                    placeholder: 'Tu wpisz tekst…',
                     // Autozapis roboczy w przeglądarce — po awarii można przywrócić wersję.
                     autosave_interval: '20s',
-                    autosave_restore_when_empty: true,
+                    autosave_restore_when_empty: false,
                     autosave_retention: '1440m',
                     // Szybki pasek zaznaczenia; bez natrętnego paska wstawiania.
                     quickbars_insert_toolbar: false,
