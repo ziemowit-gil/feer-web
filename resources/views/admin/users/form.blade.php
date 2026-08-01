@@ -55,6 +55,19 @@
             @error('password') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
         </div>
 
+        <div class="border-t border-gray-100 pt-5">
+            <label class="flex items-center gap-2 text-sm font-medium">
+                <input type="hidden" name="local_login_allowed" value="0">
+                <input type="checkbox" name="local_login_allowed" value="1"
+                    {{ old('local_login_allowed', $user->local_login_allowed ?? false) ? 'checked' : '' }}
+                    class="rounded border-gray-300 text-brand focus:ring-brand">
+                Dostęp awaryjny (logowanie hasłem gdy MS wyłączone)
+            </label>
+            <p class="ml-6 mt-1 text-xs text-muted">
+                Pozwala temu kontu logować się hasłem nawet gdy opcja „tylko Microsoft 365" jest aktywna. Używaj tylko dla konta zapasowego.
+            </p>
+        </div>
+
         <div class="flex items-center gap-3 border-t border-gray-100 pt-5">
             <button type="submit" class="rounded bg-brand px-5 py-2 text-sm font-bold text-white hover:bg-brand-dark">Zapisz</button>
             <a href="{{ route('admin.uzytkownicy.index') }}" class="text-sm text-muted hover:text-brand">Anuluj</a>

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
+use App\Models\SiteSetting;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -27,6 +28,18 @@ class AuthenticatedSessionController extends Controller
         $request->authenticate();
 
         $user = Auth::user();
+
+        // Tryb "tylko MS": lokalny login hasłem dozwolony wyłącznie dla kont
+        // z flagą local_login_allowed (furtka awaryjna gdy MS nie działa).
+        if (SiteSetting::current()->microsoftOnlyLogin() && ! $user->local_login_allowed) {
+            Auth::guard('web')->logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+
+            return back()->withErrors([
+                'email' => 'Logowanie hasłem jest wyłączone. Zaloguj się przez Microsoft 365.',
+            ])->onlyInput('email');
+        }
 
         // Jeśli konto ma włączone 2FA — wyloguj i wymagaj drugiego składnika
         // przed pełnym zalogowaniem (dane oczekujące trzymamy w sesji).

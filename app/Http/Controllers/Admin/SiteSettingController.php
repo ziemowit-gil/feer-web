@@ -73,6 +73,7 @@ class SiteSettingController extends Controller
             'header_layout' => ['required', Rule::in(array_keys(SiteSetting::HEADER_LAYOUTS))],
             'content_editor' => ['required', Rule::in(array_keys(SiteSetting::EDITORS))],
             'microsoft_login_enabled' => ['sometimes', 'boolean'],
+            'microsoft_only_login' => ['sometimes', 'boolean'],
             'microsoft_client_id' => ['nullable', 'string', 'max:255'],
             'microsoft_client_secret' => ['nullable', 'string', 'max:1000'],
             'microsoft_tenant_id' => ['nullable', 'string', 'max:255'],
@@ -259,6 +260,7 @@ class SiteSettingController extends Controller
         $data['maintenance_mode'] = $request->boolean('maintenance_mode');
         $data['site_url'] = filled($data['site_url'] ?? null) ? rtrim($data['site_url'], '/') : null;
         $data['microsoft_login_enabled'] = $request->boolean('microsoft_login_enabled');
+        $data['microsoft_only_login'] = $request->boolean('microsoft_only_login');
         $data['member_login_enabled'] = $request->boolean('member_login_enabled');
         $data['two_factor_required_admins'] = $request->boolean('two_factor_required_admins');
 

@@ -31,12 +31,14 @@ class UserController extends Controller
             'role' => ['required', Rule::in([User::ROLE_ADMIN, User::ROLE_EDITOR])],
             'user_group_id' => ['nullable', Rule::exists(UserGroup::class, 'id')],
             'password' => ['required', 'string', 'min:8'],
+            'local_login_allowed' => ['sometimes', 'boolean'],
         ]);
 
         if ($data['role'] === User::ROLE_ADMIN) {
             $data['user_group_id'] = null;
         }
 
+        $data['local_login_allowed'] = $request->boolean('local_login_allowed');
         $data['password'] = Hash::make($data['password']);
         $data['email_verified_at'] = now();
 
@@ -58,11 +60,14 @@ class UserController extends Controller
             'role' => ['required', Rule::in([User::ROLE_ADMIN, User::ROLE_EDITOR])],
             'user_group_id' => ['nullable', Rule::exists(UserGroup::class, 'id')],
             'password' => ['nullable', 'string', 'min:8'],
+            'local_login_allowed' => ['sometimes', 'boolean'],
         ]);
 
         if ($data['role'] === User::ROLE_ADMIN) {
             $data['user_group_id'] = null;
         }
+
+        $data['local_login_allowed'] = $request->boolean('local_login_allowed');
 
         if (! empty($data['password'])) {
             $data['password'] = Hash::make($data['password']);

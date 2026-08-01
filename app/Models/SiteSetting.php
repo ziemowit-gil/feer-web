@@ -141,7 +141,7 @@ class SiteSetting extends Model implements HasMedia
         'homepage_banner_text', 'homepage_banner_link_label', 'homepage_banner_link_url', 'homepage_banner_visible_from', 'homepage_banner_visible_until',
         'newsletter_code', 'header_layout', 'show_topbar_bip', 'show_topbar_social', 'content_editor',
         'site_url', 'maintenance_mode', 'maintenance_message',
-        'microsoft_login_enabled', 'microsoft_client_id', 'microsoft_client_secret', 'microsoft_tenant_id',
+        'microsoft_login_enabled', 'microsoft_only_login', 'microsoft_client_id', 'microsoft_client_secret', 'microsoft_tenant_id',
         'member_login_enabled', 'member_allowed_domains', 'szo_api_url', 'yubico_client_id', 'yubico_secret_key', 'two_factor_required_admins',
         'unsplash_access_key', 'cookie_banner_enabled', 'cookie_banner_text', 'show_cms_credit',
         'mail_transport', 'mail_from_address', 'mail_from_name', 'mail_host', 'mail_port', 'mail_username', 'mail_password', 'mail_encryption',
@@ -254,6 +254,7 @@ class SiteSetting extends Model implements HasMedia
         'logo_only' => 'boolean',
         'maintenance_mode' => 'boolean',
         'microsoft_login_enabled' => 'boolean',
+        'microsoft_only_login' => 'boolean',
         'microsoft_client_secret' => 'encrypted',
         'member_login_enabled' => 'boolean',
         'yubico_secret_key' => 'encrypted',
@@ -472,6 +473,19 @@ class SiteSetting extends Model implements HasMedia
             'tenant' => $this->microsoft_tenant_id ?: config('services.microsoft.tenant', 'common'),
             'redirect' => config('services.microsoft.redirect') ?: url('/auth/microsoft/callback'),
         ];
+    }
+
+    /**
+     * Czy lokalny login hasłem jest zablokowany na rzecz wyłącznie MS365.
+     * Uwzględnia maintenance_mode (wówczas oba tryby wracają do normalnego stanu).
+     */
+    public function microsoftOnlyLogin(): bool
+    {
+        if ($this->maintenance_mode) {
+            return false;
+        }
+
+        return (bool) $this->microsoft_only_login && $this->microsoftLoginEnabled();
     }
 
     /**

@@ -3,6 +3,8 @@
     @section('brand_heading', 'Panel administracyjny')
     @section('brand_lead', 'Zaloguj się, aby zarządzać treścią serwisu ' . $siteSettings->site_name . '.')
 
+    @php $msOnly = $siteSettings->microsoftOnlyLogin(); @endphp
+
     <div class="mb-6 flex flex-col items-center text-center">
         <span class="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-brand-light text-brand">
             <i class="fa-solid fa-lock"></i>
@@ -20,8 +22,42 @@
         </div>
     @endif
 
-    <form method="POST" action="{{ route('login') }}" class="space-y-5" x-data="{ submitting: false, showPassword: false }" @submit="submitting = true">
+    @if ($msOnly)
+        {{-- Tryb "tylko MS": główny przycisk MS, formularz ukryty za linkiem awaryjnym --}}
+        <a href="{{ route('auth.microsoft.redirect') }}"
+            class="flex w-full items-center justify-center gap-2.5 rounded-lg bg-brand px-5 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-brand-dark hover:shadow-md active:scale-[0.99]">
+            <svg class="h-5 w-5" viewBox="0 0 21 21" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <rect x="1" y="1" width="9" height="9" fill="#f25022"/>
+                <rect x="11" y="1" width="9" height="9" fill="#7fba00"/>
+                <rect x="1" y="11" width="9" height="9" fill="#00a4ef"/>
+                <rect x="11" y="11" width="9" height="9" fill="#ffb900"/>
+            </svg>
+            Zaloguj się przez Microsoft 365
+        </a>
+
+        <div x-data="{ open: {{ $errors->any() ? 'true' : 'false' }} }" class="mt-8">
+            <button type="button" @click="open = !open"
+                class="mx-auto flex items-center gap-1.5 text-xs text-muted transition hover:text-ink"
+                :aria-expanded="open">
+                <i class="fa-solid fa-shield-halved text-[10px]"></i>
+                <span>Dostęp awaryjny</span>
+                <i class="fa-solid fa-chevron-down text-[10px] transition-transform" :class="open ? 'rotate-180' : ''"></i>
+            </button>
+
+            <div x-show="open" x-cloak x-transition class="mt-4">
+                <p class="mb-4 rounded border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
+                    <i class="fa-solid fa-triangle-exclamation mr-1"></i>
+                    Formularz dostępu awaryjnego — tylko dla kont z uprawnieniem lokalnego logowania.
+                </p>
+    @endif
+
+    <form method="POST" action="{{ route('login') }}" class="space-y-5{{ $msOnly ? '' : '' }}"
+        x-data="{ submitting: false, showPassword: false }" @submit="submitting = true">
         @csrf
+
+        @error('email')
+            <p class="rounded border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{{ $message }}</p>
+        @enderror
 
         <div>
             <label for="email" class="mb-1.5 block text-sm font-bold">E-mail</label>
@@ -32,7 +68,6 @@
                 <input id="email" type="email" name="email" value="{{ old('email') }}" required autofocus autocomplete="username"
                     class="w-full rounded-lg border-gray-300 pl-10 transition focus:border-brand focus:ring-brand/30">
             </div>
-            @error('email') <p class="mt-1.5 text-sm text-red-600">{{ $message }}</p> @enderror
         </div>
 
         <div>
@@ -70,7 +105,10 @@
         </button>
     </form>
 
-    @if ($siteSettings->microsoftLoginEnabled())
+    @if ($msOnly)
+            </div>
+        </div>
+    @elseif ($siteSettings->microsoftLoginEnabled())
         <div class="my-6 flex items-center gap-3 text-xs font-medium uppercase tracking-wide text-muted">
             <span class="h-px flex-1 bg-gray-200"></span>
             lub

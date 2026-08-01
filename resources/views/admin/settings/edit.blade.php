@@ -1684,6 +1684,19 @@
                 Włącz logowanie przez Microsoft 365
             </label>
 
+            <div x-show="msEnabled" x-cloak>
+                <label class="flex items-center gap-2 text-sm font-medium">
+                    <input type="hidden" name="microsoft_only_login" value="0">
+                    <input type="checkbox" name="microsoft_only_login" value="1"
+                        {{ old('microsoft_only_login', $settings->microsoft_only_login) ? 'checked' : '' }}
+                        class="rounded border-gray-300 text-brand focus:ring-brand">
+                    Wyłącz lokalne logowanie hasłem (tylko Microsoft 365)
+                </label>
+                <p class="ml-6 mt-1 text-xs text-muted">
+                    Formularz e-mail + hasło zostaje ukryty. Konta z włączoną flagą „Dostęp awaryjny" nadal mogą się zalogować hasłem (furtka awaryjna).
+                </p>
+            </div>
+
             <div class="space-y-5" x-show="msEnabled" x-cloak>
                 <div>
                     <label for="microsoft_client_id" class="mb-1 block text-sm font-bold">Client ID</label>
