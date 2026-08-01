@@ -479,6 +479,15 @@
         <div class="flex items-center gap-3">
             <button type="submit" class="rounded bg-brand px-5 py-2 text-sm font-bold text-white hover:bg-brand-dark">Zapisz</button>
             <a href="{{ route('admin.newsy.index') }}" class="text-sm text-muted hover:text-brand">Anuluj</a>
+            @if ($news->exists)
+                <form method="POST" action="{{ route('admin.newsy.destroy', $news) }}" class="ml-auto"
+                    data-confirm="Usunąć news „{{ $news->title }}"? Operacji nie można cofnąć.">
+                    @csrf @method('DELETE')
+                    <button type="submit" class="text-sm font-bold text-red-600 hover:text-red-700">
+                        <i class="fa-solid fa-trash mr-1" aria-hidden="true"></i>Usuń news
+                    </button>
+                </form>
+            @endif
         </div>
     </form>
         </div>{{-- /tab-panel: edit --}}
