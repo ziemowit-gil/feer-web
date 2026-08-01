@@ -17,6 +17,9 @@ Route::middleware('guest')->group(function () {
     Route::get('login', [AuthenticatedSessionController::class, 'create'])
         ->name('login');
 
+    Route::get('admin2', [AuthenticatedSessionController::class, 'createEmergency'])
+        ->name('login.emergency');
+
     Route::post('login', [AuthenticatedSessionController::class, 'store']);
 
     Route::get('auth/microsoft/redirect', [MicrosoftAuthController::class, 'redirect'])

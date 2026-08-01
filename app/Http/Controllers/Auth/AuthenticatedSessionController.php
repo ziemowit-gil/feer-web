@@ -21,6 +21,15 @@ class AuthenticatedSessionController extends Controller
     }
 
     /**
+     * Formularz awaryjny pod /admin2 — pokazuje lokalny login bez względu
+     * na tryb "tylko MS". Brak linka z głównej strony logowania.
+     */
+    public function createEmergency(): View
+    {
+        return view('auth.login', ['emergency' => true]);
+    }
+
+    /**
      * Handle an incoming authentication request.
      */
     public function store(LoginRequest $request): RedirectResponse
