@@ -38,6 +38,7 @@ Alpine.store('confirm', {
 // i przeładowuje stronę, żeby PHP wyrenderował nową kolejność.
 Alpine.data('homepageEditor', (initialOrder, saveUrl) => ({
     editMode: false,
+    collapsed: localStorage.getItem('admin-bar-collapsed') === '1',
     sections: [...initialOrder],
     initialSections: [...initialOrder],
     dragging: null,
@@ -45,6 +46,11 @@ Alpine.data('homepageEditor', (initialOrder, saveUrl) => ({
     saving: false,
     saveSuccess: false,
     error: null,
+
+    toggleBar() {
+        this.collapsed = !this.collapsed;
+        localStorage.setItem('admin-bar-collapsed', this.collapsed ? '1' : '0');
+    },
 
     // Etykiety zgodne z SiteSetting::HOMEPAGE_SECTIONS w PHP.
     LABELS: {

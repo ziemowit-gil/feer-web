@@ -1,7 +1,7 @@
 {{--
     Pasek edytora układu strony głównej.
     Renderowany wyłącznie wewnątrz x-data="homepageEditor(...)" — ma dostęp do
-    stanu Alpine (editMode, saving, saveSuccess, error, hasChanges()).
+    stanu Alpine: editMode, saving, saveSuccess, error, collapsed, toggleBar().
     Widoczny tylko dla administratorów (warunek w home.blade.php).
 --}}
 <div
@@ -10,9 +10,25 @@
     aria-label="Panel edytora strony głównej"
     aria-live="polite"
 >
-    <div class="mx-auto flex max-w-6xl flex-wrap items-center gap-x-4 gap-y-2 px-4 py-3">
+    {{-- Stan zwinięty — wąski tab z przyciskiem rozwinięcia --}}
+    <div x-show="collapsed" class="flex items-center justify-between px-4 py-1.5">
+        <span class="text-xs font-medium text-gray-500">
+            <i class="fa-solid fa-wand-magic-sparkles mr-1 text-brand" aria-hidden="true"></i>Panel admina
+        </span>
+        <button
+            type="button"
+            @click="toggleBar()"
+            class="flex items-center gap-1 rounded px-2 py-1 text-xs font-medium text-gray-600 hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+            aria-label="Rozwiń pasek administratora"
+        >
+            Rozwiń <i class="fa-solid fa-chevron-down" aria-hidden="true"></i>
+        </button>
+    </div>
 
-        {{-- Ikona + komunikat statusu --}}
+    {{-- Stan rozwinięty --}}
+    <div x-show="!collapsed" class="mx-auto flex max-w-6xl flex-wrap items-center gap-x-4 gap-y-2 px-4 py-3">
+
+        {{-- Komunikat statusu --}}
         <div class="flex min-w-0 flex-1 items-center gap-2 text-sm text-gray-600">
             <template x-if="saveSuccess">
                 <span class="flex items-center gap-1.5 font-medium text-green-700">
@@ -35,15 +51,21 @@
         </div>
 
         {{-- Komunikat błędu --}}
-        <p
-            x-show="error"
-            x-text="error"
-            class="text-sm font-medium text-red-600"
-            role="alert"
-        ></p>
+        <p x-show="error" x-text="error" class="text-sm font-medium text-red-600" role="alert"></p>
 
         {{-- Przyciski akcji --}}
         <div class="flex shrink-0 items-center gap-2">
+
+            {{-- Zwiń pasek --}}
+            <button
+                type="button"
+                @click="toggleBar()"
+                class="rounded-lg border border-gray-200 px-2 py-2 text-gray-400 transition hover:bg-gray-100 hover:text-gray-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+                aria-label="Zwiń pasek administratora"
+                title="Zwiń"
+            >
+                <i class="fa-solid fa-chevron-up text-sm" aria-hidden="true"></i>
+            </button>
 
             {{-- Przejdź do panelu --}}
             <a
@@ -53,18 +75,18 @@
                 <i class="fa-solid fa-gauge mr-1" aria-hidden="true"></i>Panel
             </a>
 
-            {{-- Wyloguj z panelu admina --}}
+            {{-- Wyloguj --}}
             <form method="POST" action="{{ route('logout') }}">
                 @csrf
                 <button
                     type="submit"
-                    class="rounded-lg border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 transition hover:bg-red-50 hover:border-red-300 hover:text-red-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+                    class="rounded-lg border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 transition hover:border-red-300 hover:bg-red-50 hover:text-red-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
                 >
                     <i class="fa-solid fa-right-from-bracket mr-1" aria-hidden="true"></i>Wyloguj
                 </button>
             </form>
 
-            {{-- Odrzuć zmiany (tylko w trybie edycji, gdy są niezapisane zmiany) --}}
+            {{-- Odrzuć zmiany (tylko w trybie edycji) --}}
             <button
                 x-show="editMode"
                 x-cloak
@@ -90,7 +112,7 @@
                 <span x-text="saving ? 'Zapisywanie…' : 'Zapisz układ'"></span>
             </button>
 
-            {{-- Przycisk przełączania trybu edycji --}}
+            {{-- Przełącz tryb edycji --}}
             <button
                 type="button"
                 @click="toggleEdit()"
@@ -112,4 +134,3 @@
         </div>
     </div>
 </div>
-
