@@ -97,8 +97,12 @@ class NewsController extends Controller
         return redirect()->route('admin.newsy.index')->with('status', 'News został zaktualizowany.');
     }
 
-    public function destroy(News $news)
+    public function destroy(Request $request, News $news)
     {
+        if ($request->boolean('with_clones')) {
+            $news->clones()->each(fn ($clone) => $clone->delete());
+        }
+
         $news->delete();
 
         return redirect()->route('admin.newsy.index')->with('status', 'News został usunięty.');
@@ -112,6 +116,7 @@ class NewsController extends Controller
         $clone->is_published = false;
         $clone->is_featured = false;
         $clone->is_clone = true;
+        $clone->cloned_from_id = $news->id;
         $clone->save();
 
         // Kopiujemy tagi; zdjęcie (media) trzeba wgrać ponownie — jak przy klonowaniu stron.
@@ -275,7 +280,8 @@ class NewsController extends Controller
         $slug = $base;
         $suffix = 2;
 
-        while (News::where('slug', $slug)->when($ignoreId, fn ($q) => $q->where('id', '!=', $ignoreId))->exists()) {
+        // withTrashed() – slug w koszu też blokuje constraint UNIQUE w bazie.
+        while (News::withTrashed()->where('slug', $slug)->when($ignoreId, fn ($q) => $q->where('id', '!=', $ignoreId))->exists()) {
             $slug = "{$base}-{$suffix}";
             $suffix++;
         }
