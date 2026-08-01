@@ -160,7 +160,7 @@ Route::post('/kontakt/przyjde', [MeetingSignupController::class, 'store'])->name
 Route::get('/rezerwuj-spotkanie-modul', [MeetingSignupController::class, 'publicShow'])->name('booking.show');
 Route::post('/rezerwuj-spotkanie-modul', [MeetingSignupController::class, 'publicStore'])->name('booking.store')->middleware('throttle:5,1');
 
-Route::redirect('/dashboard', '/admin')->middleware(['auth', 'verified'])->name('dashboard');
+Route::redirect('/dashboard', '/'.config('app.admin_prefix', 'admin'))->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -168,7 +168,7 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-Route::middleware(['auth', 'verified', '2fa'])->prefix('admin')->name('admin.')->group(function () {
+Route::middleware(['auth', 'verified', '2fa'])->prefix(config('app.admin_prefix', 'admin'))->name('admin.')->group(function () {
     Route::get('/', [AdminDashboardController::class, 'index'])->name('dashboard');
 
     // Historia zmian treści (dostęp weryfikowany per moduł w kontrolerze).

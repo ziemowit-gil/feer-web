@@ -123,4 +123,8 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
+    // URL-prefix panelu administracyjnego. Domyślnie "admin".
+    // Zmień ADMIN_PREFIX w .env, aby ukryć panel pod innym adresem.
+    'admin_prefix' => env('ADMIN_PREFIX', 'admin'),
+
 ];
