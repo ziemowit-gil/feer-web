@@ -9,6 +9,7 @@ use App\Models\Page;
 use App\Models\SiteSetting;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\Rule;
 
@@ -447,6 +448,43 @@ class SiteSettingController extends Controller
             : 'Ustawienia zostały zapisane.').$notifyMsg;
 
         return redirect()->route('admin.ustawienia.edit')->with('status', $status);
+    }
+
+    /**
+     * Zmienia prefix URL panelu admina (ADMIN_PREFIX w .env).
+     * Po zapisie przekierowuje do nowego adresu, bo stary przestaje działać.
+     */
+    public function updateAdminPrefix(Request $request): RedirectResponse
+    {
+        $data = $request->validate([
+            'admin_prefix' => ['required', 'string', 'min:3', 'max:60', 'regex:/^[a-z0-9][a-z0-9\-_]*[a-z0-9]$/'],
+        ], [
+            'admin_prefix.regex' => 'Prefix może zawierać tylko małe litery, cyfry, myślniki i podkreślenia. Musi zaczynać się i kończyć literą lub cyfrą.',
+            'admin_prefix.min' => 'Prefix musi mieć co najmniej 3 znaki.',
+        ]);
+
+        $newPrefix = $data['admin_prefix'];
+        $envPath = base_path('.env');
+
+        if (! file_exists($envPath)) {
+            return back()->with('error', 'Plik .env nie istnieje — nie można zmienić prefiksu.');
+        }
+
+        $content = file_get_contents($envPath);
+
+        if (preg_match('/^ADMIN_PREFIX=.*/m', $content)) {
+            $content = preg_replace('/^ADMIN_PREFIX=.*/m', "ADMIN_PREFIX={$newPrefix}", $content);
+        } else {
+            $content = rtrim($content)."\nADMIN_PREFIX={$newPrefix}\n";
+        }
+
+        file_put_contents($envPath, $content);
+
+        Artisan::call('config:clear');
+
+        $newUrl = url("/{$newPrefix}/ustawienia").'?tab=login';
+
+        return redirect($newUrl)->with('status', "Prefix panelu zmieniony na /{$newPrefix}. Zaktualizuj zakładki.");
     }
 
     /**

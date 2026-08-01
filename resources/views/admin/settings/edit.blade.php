@@ -1796,6 +1796,55 @@
                     </div>
                 </div>
             </div>
+
+            {{-- ===================== Adres URL panelu ===================== --}}
+            <div class="border-t border-gray-200 pt-6">
+                <h2 class="text-base font-bold text-ink">Adres panelu administracyjnego</h2>
+                <p class="mt-1 text-xs text-muted">
+                    Zmiana segmentu URL otwierającego panel (domyślnie <code>/admin</code>). Utrudnia automatyczne
+                    skanowanie — nie zastępuje silnego hasła ani 2FA.
+                </p>
+
+                @php $currentPrefix = config('app.admin_prefix', 'admin'); @endphp
+
+                <div class="mt-3 flex items-center gap-2 rounded bg-gray-50 px-3 py-2">
+                    <span class="text-sm text-muted">Aktualny adres:</span>
+                    <code class="font-mono text-sm text-ink">{{ url('/') }}/<strong>{{ $currentPrefix }}</strong></code>
+                </div>
+
+                <form method="POST" action="{{ route('admin.ustawienia.prefix') }}"
+                      class="mt-4 space-y-4"
+                      x-data="{ prefix: '{{ $currentPrefix }}', confirmed: false }"
+                      onsubmit="return confirm('Zmienić prefix na /' + document.getElementById('admin_prefix_input').value + '? Po zapisaniu zostaniesz przekierowany(a) pod nowy adres — zaktualizuj zakładki.')">
+                    @csrf
+                    <div>
+                        <label for="admin_prefix_input" class="mb-1 block text-sm font-bold">Nowy prefix URL</label>
+                        <div class="flex items-center gap-1">
+                            <span class="whitespace-nowrap rounded-l border border-r-0 border-gray-300 bg-gray-100 px-3 py-2 text-sm text-muted">{{ url('/') }}/</span>
+                            <input type="text" id="admin_prefix_input" name="admin_prefix"
+                                x-model="prefix"
+                                value="{{ $currentPrefix }}"
+                                pattern="[a-z0-9][a-z0-9\-_]*[a-z0-9]" minlength="3" maxlength="60" required
+                                autocomplete="off" spellcheck="false"
+                                class="flex-1 rounded-none rounded-r border-gray-300 font-mono text-sm focus:border-brand focus:ring-brand"
+                                aria-describedby="admin-prefix-hint">
+                        </div>
+                        <p id="admin-prefix-hint" class="mt-1 text-xs text-muted">Małe litery, cyfry, myślniki i podkreślenia. Minimum 3 znaki. Przykład: <code>zarzadzanie</code>, <code>cms-feer</code>.</p>
+                        @error('admin_prefix') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </div>
+
+                    <div class="rounded border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800" role="alert">
+                        <i class="fa-solid fa-triangle-exclamation mr-1" aria-hidden="true"></i>
+                        Po zapisaniu panel otworzy się pod <strong>nowym adresem</strong>. Stary link przestanie działać — zaktualizuj zakładkę w przeglądarce.
+                    </div>
+
+                    <button type="submit"
+                        class="inline-flex items-center gap-2 rounded bg-amber-600 px-4 py-2 text-sm font-bold text-white transition hover:bg-amber-700 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2">
+                        <i class="fa-solid fa-arrow-right-to-bracket" aria-hidden="true"></i>
+                        Zmień adres panelu
+                    </button>
+                </form>
+            </div>
         </div>
 
         <div x-show="tab === 'mail'" x-cloak class="space-y-6" x-data="{ transport: '{{ old('mail_transport', $settings->mail_transport ?: 'default') }}' }">
