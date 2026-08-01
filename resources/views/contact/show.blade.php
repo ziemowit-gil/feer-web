@@ -17,7 +17,28 @@
             <div class="prose mb-8 max-w-2xl text-muted">{!! $siteSettings->contact_intro !!}</div>
         @endif
 
-        <div class="grid gap-10 md:grid-cols-[1fr_300px]">
+        @php
+            $contactSections = collect([
+                ['id' => 'formularz',    'label' => 'Napisz do nas',      'show' => true],
+                ['id' => 'spotkania',    'label' => $siteSettings->contact_meeting_title ?: 'Spotkajmy się',
+                 'show' => $siteSettings->contact_schedule_enabled || filled($siteSettings->contact_online_meeting_url)],
+                ['id' => 'przesylki',   'label' => 'Wyślij przesyłkę',   'show' => (bool) $siteSettings->contact_shipping_visible],
+                ['id' => 'rachunki',    'label' => 'Rachunki bankowe',    'show' => !empty($siteSettings->contact_bank_accounts)],
+                ['id' => 'koordynatorzy', 'label' => 'Koordynatorzy',    'show' => $projects->isNotEmpty()],
+            ])->filter(fn ($s) => $s['show'])->values();
+        @endphp
+        @if ($contactSections->count() > 1)
+            <nav aria-label="Przejdź do sekcji" class="mb-8 flex flex-wrap gap-2">
+                @foreach ($contactSections as $sec)
+                    <a href="#{{ $sec['id'] }}"
+                       class="rounded-full border border-brand/30 bg-brand-light/50 px-3 py-1 text-sm font-bold text-brand hover:bg-brand-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                        {{ $sec['label'] }}
+                    </a>
+                @endforeach
+            </nav>
+        @endif
+
+        <div id="formularz" class="scroll-mt-24 grid gap-10 md:grid-cols-[1fr_300px]">
             <div>
                 @if (session('status'))
                     <div class="mb-6 rounded border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
@@ -365,7 +386,7 @@
         @endphp
 
         @if ($showShipping)
-            <div class="mt-12 border-t border-gray-100 pt-8">
+            <div id="przesylki" class="mt-12 scroll-mt-24 border-t border-gray-100 pt-8">
                 <h2 class="mb-2 text-lg font-bold text-ink">Wyślij do nas przesyłkę</h2>
                 <p class="mb-4 max-w-2xl text-sm text-muted">{{ $shipNote ?: 'Możesz nadać do nas paczkę lub list — również na paczkomat.' }}</p>
 
@@ -417,7 +438,7 @@
         @endif
 
         @if (!empty($siteSettings->contact_bank_accounts))
-            <div class="mt-12 border-t border-gray-100 pt-8">
+            <div id="rachunki" class="mt-12 scroll-mt-24 border-t border-gray-100 pt-8">
                 <h2 class="mb-2 text-xl font-bold text-ink">Numery rachunków bankowych</h2>
                 <p class="mb-5 max-w-2xl text-sm text-muted">Przy każdym rachunku opisujemy, do czego służy i co można na niego wpłacić.</p>
                 <div class="grid gap-4 sm:grid-cols-2">
@@ -444,7 +465,7 @@
         @endif
 
         @if ($projects->isNotEmpty())
-            <div class="mt-12 border-t border-gray-100 pt-8">
+            <div id="koordynatorzy" class="mt-12 scroll-mt-24 border-t border-gray-100 pt-8">
                 <h2 class="mb-4 text-xl font-bold text-ink"> Koordynatorzy poszczególnych działań</h2>
                 <div class="grid gap-4 sm:grid-cols-2">
                     @foreach ($projects as $project)

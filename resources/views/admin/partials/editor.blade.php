@@ -152,6 +152,8 @@
 <textarea name="{{ $name }}" id="{{ $editorId }}" rows="14"
     class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">{{ $value }}</textarea>
 
+<div id="{{ $editorId }}-stats" class="mt-1 min-h-[1.25rem] text-xs text-muted" aria-live="polite" aria-atomic="true"></div>
+
 <div id="{{ $editorId }}-page-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 p-4"
      role="dialog" aria-modal="true" aria-labelledby="{{ $editorId }}-page-modal-title">
     <div class="flex max-h-[70vh] w-full max-w-lg flex-col overflow-hidden rounded-lg bg-white p-5">
@@ -693,6 +695,29 @@
         alModal.addEventListener('keydown', function (e) { if (e.key === 'Escape') alClose(); });
         window['__anchorLinkOpen_{{ $editorId }}'] = alOpen;
     })();
+
+    // ── Statystyki treści ─────────────────────────────────────────────────────
+    (function () {
+        var statsEl = document.getElementById('{{ $editorId }}-stats');
+        var debounce;
+
+        function compute(html) {
+            var doc = new DOMParser().parseFromString(html, 'text/html');
+            var words = ((doc.body.textContent || '').trim().match(/\S+/g) || []).length;
+            var mins = Math.max(1, Math.round(words / 200));
+            var links = doc.querySelectorAll('a[href]').length;
+            var images = doc.querySelectorAll('img').length;
+            var parts = ['Słowa: ' + words, 'Czas czytania: ~' + mins + ' min'];
+            if (links) parts.push('Linki: ' + links);
+            if (images) parts.push('Obrazy: ' + images);
+            statsEl.textContent = parts.join(' · ');
+        }
+
+        window['__updateStats_{{ $editorId }}'] = function (html) {
+            clearTimeout(debounce);
+            debounce = setTimeout(function () { compute(html); }, 300);
+        };
+    })();
 </script>
 
 @if ($useCkEditor)
@@ -801,6 +826,11 @@
                     });
 
                     window['__getContent_{{ $editorId }}'] = function () { return editor.getData(); };
+
+                    editor.model.document.on('change:data', function () {
+                        window['__updateStats_{{ $editorId }}']?.(editor.getData());
+                    });
+                    window['__updateStats_{{ $editorId }}']?.(editor.getData());
 
                     var scheduleCtaSelect = document.getElementById('{{ $editorId }}-schedule-cta');
                     if (scheduleCtaSelect) {
@@ -1013,7 +1043,12 @@
                             },
                         });
 
+                        editor.on('keyup change', function () {
+                            window['__updateStats_{{ $editorId }}']?.(editor.getContent());
+                        });
+
                         editor.on('init', function () {
+                            window['__updateStats_{{ $editorId }}']?.(editor.getContent());
                             modal.addEventListener('media-picked', function (event) {
                                 var image = event.detail;
                                 // Wymuszenie alt: przy wstawianiu obrazu pytamy o opis alternatywny.
