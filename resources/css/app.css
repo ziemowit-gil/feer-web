@@ -251,6 +251,25 @@ html.no-animations *::after {
     margin-bottom: 0;
 }
 
+/* Blok ostrzeżenie / notatka wstawiany z edytora — bursztynowa ramka. */
+.prose .content-note,
+.content-note {
+    border: 1px solid #f59e0b;
+    border-left-width: 4px;
+    border-radius: 0.5rem;
+    background-color: #fffbeb;
+    padding: 1rem 1.25rem;
+    margin: 1.5rem 0;
+}
+.prose .content-note > :first-child,
+.content-note > :first-child {
+    margin-top: 0;
+}
+.prose .content-note > :last-child,
+.content-note > :last-child {
+    margin-bottom: 0;
+}
+
 /* Kafelek BIP wstawiany z edytora — link do strony-pośrednika /bip. */
 .prose .bip-link-box,
 .bip-link-box {

@@ -176,6 +176,7 @@ Route::middleware(['auth', 'verified', '2fa'])->prefix(config('app.admin_prefix'
 
     // Historia zmian treści (dostęp weryfikowany per moduł w kontrolerze).
     Route::get('historia/{type}/{id}', [AdminRevisionController::class, 'index'])->name('historia.index');
+    Route::get('historia/{type}/{id}/json', [AdminRevisionController::class, 'json'])->name('historia.json');
     Route::post('historia/{type}/{id}/przywroc/{revision}', [AdminRevisionController::class, 'restore'])->name('historia.restore');
 
     // Globalna wyszukiwarka panelu (paleta poleceń).

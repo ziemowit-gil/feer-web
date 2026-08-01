@@ -123,7 +123,7 @@
 
             <div>
                 <label class="mb-1 block text-sm font-bold">Treść</label>
-                @include('admin.partials.editor', ['name' => 'content', 'value' => old('content', $news->content)])
+                @include('admin.partials.editor', ['name' => 'content', 'value' => old('content', $news->content), 'revisionable' => $news->exists ? ['type' => 'news', 'id' => $news->id] : null])
                 @error('content') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
             </div>
         </div>

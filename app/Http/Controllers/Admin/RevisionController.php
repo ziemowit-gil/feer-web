@@ -7,6 +7,7 @@ use App\Models\News;
 use App\Models\Page;
 use App\Models\Project;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Http\JsonResponse;
 
 class RevisionController extends Controller
 {
@@ -33,6 +34,26 @@ class RevisionController extends Controller
             'revisions' => $revisions,
             'fields' => $model->revisionFields(),
         ]);
+    }
+
+    /** Lista wersji jako JSON — dla modala historii w edytorze treści. */
+    public function json(string $type, int $id): JsonResponse
+    {
+        $model = $this->resolve($type, $id);
+
+        $revisions = $model->revisions()->with('user')->get()
+            ->filter(fn ($r) => isset($r->data['content']))
+            ->map(fn ($r) => [
+                'id'         => $r->id,
+                'label'      => $r->created_at->format('d.m.Y H:i'),
+                'ago'        => $r->created_at->diffForHumans(),
+                'user'       => $r->user?->name ?? '—',
+                'content'    => $r->data['content'],
+                'word_count' => str_word_count(strip_tags($r->data['content'] ?? '')),
+            ])
+            ->values();
+
+        return response()->json($revisions);
     }
 
     /** Przywróć wskazaną wersję (tworzy nową bieżącą wersję z jej treścią). */

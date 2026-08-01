@@ -17,6 +17,15 @@
     // preserves (and which is styled as a highlighted box on the front-end).
     $boxHtml = '<div class="content-box"><p>Wpisz tutaj tekst w ramce&hellip;</p></div><p>&nbsp;</p>';
     $boxHtmlForCk = '<blockquote><p>Wpisz tutaj tekst w ramce&hellip;</p></blockquote><p>&nbsp;</p>';
+    // Blok ostrzeżenie/notatka — bursztynowa ramka boczna.
+    $noteHtml = '<div class="content-note"><p>Wpisz tutaj treść notatki lub ostrzeżenia&hellip;</p></div><p>&nbsp;</p>';
+    $noteHtmlForCk = '<blockquote><p>⚠ Wpisz tutaj treść notatki lub ostrzeżenia&hellip;</p></blockquote><p>&nbsp;</p>';
+    // Historia wersji: opcjonalny kontekst przekazywany z formularza.
+    $revisionType = $revisionable['type'] ?? null;
+    $revisionId   = $revisionable['id'] ?? null;
+    $historyJsonUrl = ($revisionType && $revisionId)
+        ? route('admin.historia.json', ['type' => $revisionType, 'id' => $revisionId])
+        : null;
 
     // Snippety wstawiane jednym, wspólnym mechanizmem (data-insert-key).
     $editorSnippets = [
@@ -26,7 +35,10 @@
         'accentLeft' => '<div class="accent-section accent-left"><p>Treść w kolorowej sekcji&hellip;</p></div><p>&nbsp;</p>',
         'accentRight' => '<div class="accent-section accent-right"><p>Treść w kolorowej sekcji&hellip;</p></div><p>&nbsp;</p>',
         'table' => '<table><caption>Opis tabeli</caption><thead><tr><th scope="col">Kolumna 1</th><th scope="col">Kolumna 2</th><th scope="col">Kolumna 3</th></tr></thead><tbody><tr><th scope="row">Wiersz 1</th><td>Dane</td><td>Dane</td></tr><tr><th scope="row">Wiersz 2</th><td>Dane</td><td>Dane</td></tr></tbody></table><p>&nbsp;</p>',
+        'note' => $noteHtml,
     ];
+    // CKEditor nie zachowuje <div class="content-note"> — podmień na <blockquote>.
+    $ckEditorSnippets = array_merge($editorSnippets, ['note' => $noteHtmlForCk]);
 
     $pages = \App\Models\Page::where('is_published', true)->orderBy('title')->get();
     // Schedule pages, offered as ready-made CTA buttons ("Sprawdź harmonogram").
@@ -79,6 +91,7 @@
             <button type="button" data-insert-key="green" @click="open = false" class="{{ $mi }}"><i class="fa-solid fa-square w-4 text-center" style="color:#15803d" aria-hidden="true"></i> Przycisk zielony</button>
             <button type="button" data-insert-key="bip" @click="open = false" class="{{ $mi }}"><i class="fa-solid fa-landmark w-4 text-center text-muted" aria-hidden="true"></i> Więcej informacji w BIP</button>
             <button type="button" id="{{ $editorId }}-box" @click="open = false" class="{{ $mi }}"><i class="fa-solid fa-vector-square w-4 text-center" aria-hidden="true"></i> Tekst z ramką</button>
+            <button type="button" data-insert-key="note" @click="open = false" class="{{ $mi }}"><i class="fa-solid fa-triangle-exclamation w-4 text-center text-amber-500" aria-hidden="true"></i> Notatka / ostrzeżenie</button>
             @if ($useCkEditor)
                 <button type="button" id="{{ $editorId }}-columns" @click="open = false" class="{{ $mi }}"><i class="fa-solid fa-table-columns w-4 text-center" aria-hidden="true"></i> Układ 2 kolumn</button>
             @endif
@@ -154,6 +167,24 @@
             <button type="button" @click="window['__anchorLinkOpen_{{ $editorId }}']?.(); open = false" class="{{ $mi }}"><i class="fa-solid fa-link w-4 text-center" aria-hidden="true"></i> Link do kotwicy</button>
         </div>
     </div>
+
+    {{-- Wyczyść formatowanie zaznaczenia --}}
+    <button type="button" @click="window['__clearFormat_{{ $editorId }}']?.()"
+        title="Wyczyść formatowanie zaznaczenia (usuwa pogrubienie, kursywę, nagłówki…)"
+        aria-label="Wyczyść formatowanie zaznaczenia"
+        class="inline-flex items-center gap-2 rounded border border-gray-300 px-3 py-1.5 text-xs font-bold text-ink hover:border-red-400 hover:text-red-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+        <i class="fa-solid fa-eraser" aria-hidden="true"></i> Wyczyść formatowanie
+    </button>
+
+    @if ($historyJsonUrl)
+    {{-- Historia wersji --}}
+    <button type="button" @click="window['__historyOpen_{{ $editorId }}']?.()"
+        title="Historia wersji treści"
+        aria-label="Otwórz historię wersji treści"
+        class="ml-auto inline-flex items-center gap-2 rounded border border-gray-300 px-3 py-1.5 text-xs font-bold text-ink hover:border-brand hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+        <i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i> Historia wersji
+    </button>
+    @endif
 </div>
 
 <textarea name="{{ $name }}" id="{{ $editorId }}" rows="14" placeholder="Tu wpisz tekst…"
@@ -269,6 +300,48 @@
         </div>
     </div>
 </div>
+
+@if ($historyJsonUrl)
+{{-- Modal: historia wersji treści --}}
+<div id="{{ $editorId }}-history-modal" class="fixed inset-0 z-50 hidden items-start justify-center bg-black/50 p-4 pt-16"
+     role="dialog" aria-modal="true" aria-labelledby="{{ $editorId }}-history-title">
+    <div class="flex h-[70vh] w-full max-w-4xl flex-col overflow-hidden rounded-xl bg-white shadow-2xl">
+        <div class="flex shrink-0 items-center justify-between border-b border-gray-100 px-5 py-3">
+            <h2 id="{{ $editorId }}-history-title" class="text-base font-bold">
+                <i class="fa-solid fa-clock-rotate-left mr-2 text-brand" aria-hidden="true"></i>Historia wersji treści
+            </h2>
+            <button type="button" id="{{ $editorId }}-history-close"
+                class="text-muted hover:text-red-600" aria-label="Zamknij historię wersji">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+        <div class="flex min-h-0 flex-1">
+            {{-- Lista rewizji --}}
+            <div class="w-64 shrink-0 overflow-y-auto border-r border-gray-100 p-2">
+                <p id="{{ $editorId }}-history-loading" class="py-6 text-center text-sm text-muted">Ładowanie…</p>
+                <ul id="{{ $editorId }}-history-list" class="space-y-1" role="listbox" aria-label="Lista wersji treści"></ul>
+                <p id="{{ $editorId }}-history-empty" class="hidden py-6 text-center text-sm text-muted">Brak zapisanych wersji.</p>
+            </div>
+            {{-- Podgląd wybranej wersji --}}
+            <div class="flex min-w-0 flex-1 flex-col">
+                <div id="{{ $editorId }}-history-hint" class="flex flex-1 items-center justify-center text-sm text-muted">
+                    Wybierz wersję z listy, aby zobaczyć podgląd.
+                </div>
+                <div id="{{ $editorId }}-history-preview-wrap" class="hidden min-h-0 flex-1 overflow-y-auto p-5">
+                    <div id="{{ $editorId }}-history-preview" class="prose max-w-none text-sm"></div>
+                </div>
+                <div id="{{ $editorId }}-history-footer" class="hidden shrink-0 border-t border-gray-100 px-5 py-3">
+                    <button type="button" id="{{ $editorId }}-history-load"
+                        class="rounded-lg bg-brand px-4 py-2 text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                        <i class="fa-solid fa-rotate-left mr-1" aria-hidden="true"></i> Załaduj tę wersję do edytora
+                    </button>
+                    <span class="ml-3 text-xs text-muted">Aktualna treść zostanie zastąpiona — możesz cofnąć (Ctrl+Z).</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@endif
 
 {{-- Modal: galeria zdjęć (multi-select) --}}
 <div id="{{ $editorId }}-gallery-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 p-4"
@@ -1147,7 +1220,7 @@
                         editor.editing.view.focus();
                     });
 
-                    var ckSnippets = {!! json_encode($editorSnippets) !!};
+                    var ckSnippets = {!! json_encode($ckEditorSnippets) !!};
                     document.getElementById('{{ $editorId }}-toolbar').querySelectorAll('[data-insert-key]').forEach(function (b) {
                         b.addEventListener('click', function () {
                             var vf = editor.data.processor.toView(ckSnippets[b.dataset.insertKey]);
@@ -1155,6 +1228,14 @@
                             editor.editing.view.focus();
                         });
                     });
+
+                    window['__setContent_{{ $editorId }}'] = function (html) { editor.setData(html || ''); editor.editing.view.focus(); };
+                    window['__clearFormat_{{ $editorId }}'] = function () {
+                        if (editor.commands.get('removeFormat')) {
+                            editor.execute('removeFormat');
+                            editor.editing.view.focus();
+                        }
+                    };
 
                     document.getElementById('{{ $editorId }}-ext-link').addEventListener('click', function () {
                         var url = window.prompt('Adres URL (link zewnętrzny):', 'https://');
@@ -1351,7 +1432,7 @@
                     branding: false,
                     convert_urls: false,
                     plugins: 'advlist autolink lists link anchor image charmap preview searchreplace visualblocks code fullscreen media table help wordcount accordion emoticons autosave quickbars',
-                    toolbar: 'undo redo | blocks | bold italic underline forecolor backcolor | alignleft aligncenter alignright | bullist numlist | link table media accordion | insertmenu linkmenu | removeformat charmap emoticons | searchreplace visualblocks fullscreen preview | a11ycheck help | code',
+                    toolbar: 'undo redo | blocks | bold italic underline forecolor backcolor | alignleft aligncenter alignright | bullist numlist | link table media accordion | insertmenu linkmenu | clearformat | charmap emoticons | searchreplace visualblocks fullscreen preview | a11ycheck help | code{{ $historyJsonUrl ? " | historyrevisions" : "" }}',
                     toolbar_mode: 'wrap',
                     statusbar: true,
                     paste_data_images: true,
@@ -1397,6 +1478,27 @@
                         args.node.querySelectorAll('o\\:p').forEach(function (el) { el.remove(); });
                     },
                     setup: function (editor) {
+                        // Wyczyść formatowanie zaznaczenia: inline + blokowe (nagłówki → paragraf).
+                        editor.ui.registry.addButton('clearformat', {
+                            icon: 'remove-formatting',
+                            tooltip: 'Wyczyść formatowanie zaznaczenia (usuwa pogrubienie, kursywę, nagłówki…)',
+                            onAction: function () {
+                                editor.execCommand('FormatBlock', false, 'p');
+                                editor.execCommand('RemoveFormat');
+                            },
+                        });
+
+                        @if ($historyJsonUrl)
+                        // Historia wersji treści.
+                        editor.ui.registry.addButton('historyrevisions', {
+                            icon: 'restore-draft',
+                            tooltip: 'Historia wersji treści',
+                            onAction: function () {
+                                window['__historyOpen_{{ $editorId }}']?.();
+                            },
+                        });
+                        @endif
+
                         editor.ui.registry.addMenuButton('insertmenu', {
                             text: 'Wstaw', icon: 'plus', tooltip: 'Wstaw element',
                             fetch: function (cb) {
@@ -1408,6 +1510,7 @@
                                     { type: 'menuitem', text: 'Przycisk zielony', onAction: function () { editor.insertContent(snippets.green); } },
                                     { type: 'menuitem', text: 'Więcej informacji w BIP', onAction: function () { editor.insertContent(snippets.bip); } },
                                     { type: 'menuitem', text: 'Tekst z ramką', onAction: function () { editor.insertContent(boxHtml); } },
+                                    { type: 'menuitem', text: 'Notatka / ostrzeżenie', onAction: function () { editor.insertContent(snippets.note); } },
                                     { type: 'menuitem', text: 'Sekcja akcentu (lewo)', onAction: function () { editor.insertContent(snippets.accentLeft); } },
                                     { type: 'menuitem', text: 'Sekcja akcentu (prawo)', onAction: function () { editor.insertContent(snippets.accentRight); } },
                                     { type: 'menuitem', text: 'Układ 2 kolumn', onAction: function () { editor.insertContent(columnsHtml); } },
@@ -1521,6 +1624,11 @@
                                 editor.insertContent('<a href="#' + d.id + '">' + d.text + '</a>');
                             });
                             window['__getContent_{{ $editorId }}'] = function () { return editor.getContent(); };
+                            window['__setContent_{{ $editorId }}'] = function (html) { editor.setContent(html || ''); editor.focus(); };
+                            window['__clearFormat_{{ $editorId }}'] = function () {
+                                editor.execCommand('FormatBlock', false, 'p');
+                                editor.execCommand('RemoveFormat');
+                            };
                         });
                     },
                 });
@@ -1551,4 +1659,86 @@
             }
         })();
     </script>
+@endif
+
+@if ($historyJsonUrl)
+<script>
+    (function () {
+        var hvModal    = document.getElementById('{{ $editorId }}-history-modal');
+        var hvList     = document.getElementById('{{ $editorId }}-history-list');
+        var hvLoading  = document.getElementById('{{ $editorId }}-history-loading');
+        var hvEmpty    = document.getElementById('{{ $editorId }}-history-empty');
+        var hvHint     = document.getElementById('{{ $editorId }}-history-hint');
+        var hvPreviewWrap = document.getElementById('{{ $editorId }}-history-preview-wrap');
+        var hvPreview  = document.getElementById('{{ $editorId }}-history-preview');
+        var hvFooter   = document.getElementById('{{ $editorId }}-history-footer');
+        var hvLoad     = document.getElementById('{{ $editorId }}-history-load');
+        var hvClose    = document.getElementById('{{ $editorId }}-history-close');
+        var revisions  = null;
+        var selected   = null;
+
+        function hvEsc(t) {
+            return (t || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        }
+
+        function hvRender(list) {
+            hvLoading.classList.add('hidden');
+            if (!list.length) { hvEmpty.classList.remove('hidden'); return; }
+            var itemClass = 'block w-full rounded px-3 py-2 text-left text-xs hover:bg-brand-light focus-visible:bg-brand-light focus-visible:outline-none';
+            list.forEach(function (rev, i) {
+                var btn = document.createElement('button');
+                btn.type = 'button';
+                btn.setAttribute('role', 'option');
+                btn.className = itemClass;
+                btn.innerHTML = '<span class="block font-bold text-ink">' + hvEsc(rev.label) + '</span>'
+                    + '<span class="block text-muted">' + hvEsc(rev.ago) + ' · ' + hvEsc(rev.user) + '</span>'
+                    + '<span class="block text-muted">' + rev.word_count + ' słów</span>';
+                btn.addEventListener('click', function () {
+                    hvList.querySelectorAll('[role=option]').forEach(function (b) {
+                        b.classList.remove('bg-brand-light', 'ring-1', 'ring-brand');
+                    });
+                    btn.classList.add('bg-brand-light', 'ring-1', 'ring-brand');
+                    selected = rev;
+                    hvHint.classList.add('hidden');
+                    hvPreviewWrap.classList.remove('hidden');
+                    hvFooter.classList.remove('hidden');
+                    hvPreview.innerHTML = rev.content || '<em class="text-muted">Brak treści.</em>';
+                });
+                var li = document.createElement('li');
+                li.appendChild(btn);
+                hvList.appendChild(li);
+            });
+        }
+
+        function hvOpen() {
+            hvModal.classList.remove('hidden');
+            hvModal.classList.add('flex');
+            if (revisions !== null) return;
+            fetch({{ json_encode($historyJsonUrl) }})
+                .then(function (r) { return r.json(); })
+                .then(function (data) { revisions = data; hvRender(data); })
+                .catch(function () {
+                    hvLoading.textContent = 'Nie udało się pobrać historii.';
+                });
+        }
+
+        function hvClose() {
+            hvModal.classList.add('hidden');
+            hvModal.classList.remove('flex');
+        }
+
+        hvLoad.addEventListener('click', function () {
+            if (!selected) return;
+            if (!confirm('Zastąpić aktualną treść edytora wybraną wersją?')) return;
+            window['__setContent_{{ $editorId }}']?.(selected.content);
+            hvClose();
+        });
+
+        hvClose.addEventListener('click', hvClose);
+        hvModal.addEventListener('click', function (e) { if (e.target === hvModal) hvClose(); });
+        hvModal.addEventListener('keydown', function (e) { if (e.key === 'Escape') hvClose(); });
+
+        window['__historyOpen_{{ $editorId }}'] = hvOpen;
+    })();
+</script>
 @endif

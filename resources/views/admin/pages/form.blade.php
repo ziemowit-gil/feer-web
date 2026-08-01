@@ -98,7 +98,7 @@
                          („O organizacji" i „Przeniesiono do BIP" mają własne pola). --}}
                     <div data-content-field class="{{ in_array($currentType, ['about', 'bip_move'], true) ? 'hidden' : '' }}">
                         <label class="mb-1 block text-sm font-bold">Treść</label>
-                        @include('admin.partials.editor', ['name' => 'content', 'value' => old('content', $page->content)])
+                        @include('admin.partials.editor', ['name' => 'content', 'value' => old('content', $page->content), 'revisionable' => $page->exists ? ['type' => 'page', 'id' => $page->id] : null])
                         @error('content') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
                 </div>
