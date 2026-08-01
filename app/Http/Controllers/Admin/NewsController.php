@@ -111,6 +111,7 @@ class NewsController extends Controller
         $clone->slug = $this->uniqueSlug($clone->title);
         $clone->is_published = false;
         $clone->is_featured = false;
+        $clone->is_clone = true;
         $clone->save();
 
         // Kopiujemy tagi; zdjęcie (media) trzeba wgrać ponownie — jak przy klonowaniu stron.
@@ -180,6 +181,7 @@ class NewsController extends Controller
         $data['is_published'] = $request->boolean('is_published');
         $data['is_featured'] = $request->boolean('is_featured');
         $data['is_archived'] = $request->boolean('is_archived');
+        $data['is_clone'] = $request->boolean('is_clone');
         unset($data['image']);
 
         return $this->applyApprovalWorkflow($data);

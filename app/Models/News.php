@@ -39,7 +39,7 @@ class News extends Model implements HasMedia
     }
 
     protected $fillable = [
-        'news_category_id', 'project_id', 'title', 'slug', 'excerpt', 'audience', 'accent_color', 'image_alt', 'content', 'published_at', 'is_published', 'is_featured', 'is_archived',
+        'news_category_id', 'project_id', 'title', 'slug', 'excerpt', 'audience', 'accent_color', 'image_alt', 'content', 'published_at', 'is_published', 'is_featured', 'is_archived', 'is_clone',
         'meta_title', 'meta_description', 'pending_approval', 'submitted_by_id',
     ];
 
@@ -48,6 +48,7 @@ class News extends Model implements HasMedia
         'is_published' => 'boolean',
         'is_archived' => 'boolean',
         'is_featured' => 'boolean',
+        'is_clone' => 'boolean',
         'pending_approval' => 'boolean',
     ];
 

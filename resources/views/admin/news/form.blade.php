@@ -189,6 +189,14 @@
                             class="rounded border-gray-300 text-brand focus:ring-brand">
                         <span class="flex items-center gap-1 text-sm font-bold"><i class="fa-solid fa-clock-rotate-left text-muted" aria-hidden="true"></i> Treść archiwalna</span>
                     </label>
+                    @if ($news->exists)
+                        <label class="flex items-center gap-2">
+                            <input type="hidden" name="is_clone" value="0">
+                            <input type="checkbox" name="is_clone" value="1" {{ old('is_clone', $news->is_clone ?? false) ? 'checked' : '' }}
+                                class="rounded border-gray-300 text-amber-500 focus:ring-amber-400">
+                            <span class="flex items-center gap-1 text-sm font-bold"><i class="fa-solid fa-copy text-amber-500" aria-hidden="true"></i> Kopia</span>
+                        </label>
+                    @endif
                 </div>
                 <p class="mt-3 text-xs text-muted">Wyróżniony news jest prezentowany w złotej ramce na liście aktualności, stronie głównej i stronie projektu.</p>
             </fieldset>
