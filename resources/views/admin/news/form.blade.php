@@ -480,7 +480,14 @@
             <button type="submit" class="rounded bg-brand px-5 py-2 text-sm font-bold text-white hover:bg-brand-dark">Zapisz</button>
             <a href="{{ route('admin.newsy.index') }}" class="text-sm text-muted hover:text-brand">Anuluj</a>
             @if ($news->exists)
-                <form method="POST" action="{{ route('admin.newsy.destroy', $news) }}" class="ml-auto"
+                <form method="POST" action="{{ route('admin.newsy.klonuj', $news) }}" class="ml-auto"
+                    data-confirm="Sklonować news „{{ $news->title }}"? Kopia zostanie zapisana jako szkic.">
+                    @csrf
+                    <button type="submit" class="text-sm font-bold text-muted hover:text-brand">
+                        <i class="fa-solid fa-copy mr-1" aria-hidden="true"></i>Klonuj
+                    </button>
+                </form>
+                <form method="POST" action="{{ route('admin.newsy.destroy', $news) }}"
                     data-confirm="Usunąć news „{{ $news->title }}"? Operacji nie można cofnąć.">
                     @csrf @method('DELETE')
                     <button type="submit" class="text-sm font-bold text-red-600 hover:text-red-700">
