@@ -45,6 +45,25 @@
         {{-- Przyciski akcji --}}
         <div class="flex shrink-0 items-center gap-2">
 
+            {{-- Przejdź do panelu --}}
+            <a
+                href="{{ route('admin.dashboard') }}"
+                class="rounded-lg border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+            >
+                <i class="fa-solid fa-gauge mr-1" aria-hidden="true"></i>Panel
+            </a>
+
+            {{-- Wyloguj z panelu admina --}}
+            <form method="POST" action="{{ route('logout') }}">
+                @csrf
+                <button
+                    type="submit"
+                    class="rounded-lg border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 transition hover:bg-red-50 hover:border-red-300 hover:text-red-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+                >
+                    <i class="fa-solid fa-right-from-bracket mr-1" aria-hidden="true"></i>Wyloguj
+                </button>
+            </form>
+
             {{-- Odrzuć zmiany (tylko w trybie edycji, gdy są niezapisane zmiany) --}}
             <button
                 x-show="editMode"
