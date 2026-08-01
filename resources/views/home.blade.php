@@ -16,6 +16,8 @@
 --}}
 @if ($isAdmin)
 <div x-data="homepageEditor(@js($sectionOrder), '{{ route('admin.homepage.section-order') }}')">
+{{-- Spacer pod pasek admina dokowany na górze --}}
+<div aria-hidden="true" class="h-14 print:hidden"></div>
 @endif
 
     {{-- Kontener sekcji: w trybie edycji staje się flex-col, by CSS `order` działało --}}

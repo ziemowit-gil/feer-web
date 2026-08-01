@@ -5,7 +5,7 @@
     Widoczny tylko dla administratorów (warunek w home.blade.php).
 --}}
 <div
-    class="fixed inset-x-0 bottom-0 z-[9999] border-t border-gray-200 bg-white shadow-[0_-4px_16px_rgba(0,0,0,.08)] print:hidden"
+    class="fixed inset-x-0 top-0 z-[9999] border-b border-gray-200 bg-white shadow-[0_4px_16px_rgba(0,0,0,.08)] print:hidden"
     role="region"
     aria-label="Panel edytora strony głównej"
     aria-live="polite"
@@ -113,5 +113,3 @@
     </div>
 </div>
 
-{{-- Odsunięcie treści strony od dołu, żeby pasek nie zasłaniał ostatniej sekcji --}}
-<div aria-hidden="true" class="h-16 print:hidden"></div>
