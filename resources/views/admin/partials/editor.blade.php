@@ -98,13 +98,11 @@
         <div x-show="open" x-cloak class="absolute left-0 z-20 mt-1 w-64 rounded-lg border border-gray-200 bg-white p-2 shadow-lg" role="menu">
             <button type="button" id="{{ $editorId }}-ext-link" @click="open = false" class="{{ $mi }}"><i class="fa-solid fa-arrow-up-right-from-square w-4 text-center" aria-hidden="true"></i> Link zewnętrzny (nowa karta)</button>
             @if ($pages->isNotEmpty())
-                <label for="{{ $editorId }}-page-link" class="mt-2 block px-3 pb-1 text-[0.65rem] font-bold uppercase tracking-wide text-muted">Link do strony</label>
-                <select id="{{ $editorId }}-page-link" @change="open = false" class="w-full rounded border-gray-300 px-2 py-1.5 text-xs font-bold text-ink focus:border-brand focus:ring-brand">
-                    <option value="">— wybierz stronę —</option>
-                    @foreach ($pages as $page)
-                        <option value="/{{ $page->slug }}" data-title="{{ $page->title }}">{{ $page->title }}</option>
-                    @endforeach
-                </select>
+                <button type="button"
+                    @click="window['__pmOpen_{{ $editorId }}']?.(); open = false"
+                    class="{{ $mi }}">
+                    <i class="fa-solid fa-file-lines w-4 text-center" aria-hidden="true"></i> Wybierz stronę serwisu…
+                </button>
             @endif
             @if ($schedulePages->isNotEmpty())
                 <label for="{{ $editorId }}-schedule-cta" class="mt-2 block px-3 pb-1 text-[0.65rem] font-bold uppercase tracking-wide text-muted">Przycisk CTA do harmonogramu</label>
@@ -121,6 +119,25 @@
 
 <textarea name="{{ $name }}" id="{{ $editorId }}" rows="14"
     class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">{{ $value }}</textarea>
+
+<div id="{{ $editorId }}-page-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 p-4"
+     role="dialog" aria-modal="true" aria-labelledby="{{ $editorId }}-page-modal-title">
+    <div class="flex max-h-[70vh] w-full max-w-lg flex-col overflow-hidden rounded-lg bg-white p-5">
+        <div class="mb-4 flex items-center justify-between">
+            <h2 id="{{ $editorId }}-page-modal-title" class="text-base font-bold">Wybierz stronę do linka</h2>
+            <button type="button" data-page-modal-close class="text-muted hover:text-red-600" aria-label="Zamknij okno wyboru strony">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+        <label class="sr-only" for="{{ $editorId }}-page-modal-search">Szukaj strony po tytule lub adresie URL</label>
+        <input type="search" id="{{ $editorId }}-page-modal-search" placeholder="Szukaj po tytule lub adresie URL…"
+            class="mb-3 w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+        <div class="flex-1 overflow-y-auto">
+            <ul id="{{ $editorId }}-page-modal-list" class="divide-y divide-gray-100" role="listbox" aria-label="Lista stron serwisu"></ul>
+            <p id="{{ $editorId }}-page-modal-empty" class="hidden py-6 text-center text-sm text-muted">Brak wyników.</p>
+        </div>
+    </div>
+</div>
 
 <div id="{{ $editorId }}-media-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 p-4" role="dialog" aria-modal="true" aria-label="Wybierz obraz">
     <div class="flex max-h-[80vh] w-full max-w-3xl flex-col overflow-hidden rounded-lg bg-white p-5">
@@ -337,6 +354,67 @@
     })();
 </script>
 
+<script>
+    (function () {
+        var pmModal  = document.getElementById('{{ $editorId }}-page-modal');
+        var pmSearch = document.getElementById('{{ $editorId }}-page-modal-search');
+        var pmList   = document.getElementById('{{ $editorId }}-page-modal-list');
+        var pmEmpty  = document.getElementById('{{ $editorId }}-page-modal-empty');
+        var pmPages  = {!! json_encode($pages->map(fn ($p) => ['url' => '/'.$p->slug, 'title' => $p->title])->values()) !!};
+
+        function pmEsc(t) {
+            return (t || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        }
+
+        function pmRender(q) {
+            var lower = q.toLowerCase();
+            var list = lower ? pmPages.filter(function (p) {
+                return p.title.toLowerCase().indexOf(lower) !== -1 || p.url.toLowerCase().indexOf(lower) !== -1;
+            }) : pmPages;
+            pmList.innerHTML = '';
+            pmEmpty.classList.toggle('hidden', list.length > 0);
+            list.forEach(function (p) {
+                var btn = document.createElement('button');
+                btn.type = 'button';
+                btn.setAttribute('role', 'option');
+                btn.className = 'flex w-full items-baseline gap-3 px-3 py-2.5 text-left hover:bg-brand-light focus-visible:bg-brand-light focus-visible:outline-none';
+                btn.innerHTML = '<span class="flex-1 text-sm font-medium text-ink">' + pmEsc(p.title) + '</span>'
+                    + '<span class="shrink-0 text-xs text-muted">' + pmEsc(p.url) + '</span>';
+                btn.addEventListener('click', function () {
+                    pmModal.dispatchEvent(new CustomEvent('page-link-picked', { detail: p }));
+                    pmClose();
+                });
+                var li = document.createElement('li');
+                li.appendChild(btn);
+                pmList.appendChild(li);
+            });
+            if (list.length > 0) {
+                pmList.querySelector('button')?.focus();
+            }
+        }
+
+        function pmOpen() {
+            pmModal.classList.remove('hidden');
+            pmModal.classList.add('flex');
+            pmSearch.value = '';
+            pmRender('');
+            pmSearch.focus();
+        }
+
+        function pmClose() {
+            pmModal.classList.add('hidden');
+            pmModal.classList.remove('flex');
+        }
+
+        pmModal.querySelector('[data-page-modal-close]').addEventListener('click', pmClose);
+        pmModal.addEventListener('click', function (e) { if (e.target === pmModal) pmClose(); });
+        pmModal.addEventListener('keydown', function (e) { if (e.key === 'Escape') pmClose(); });
+        pmSearch.addEventListener('input', function () { pmRender(pmSearch.value); });
+
+        window['__pmOpen_{{ $editorId }}'] = pmOpen;
+    })();
+</script>
+
 @if ($useCkEditor)
     <style>
         #{{ $editorId }}-ck-wrapper .ck-editor__editable {
@@ -398,19 +476,14 @@
                         editor.editing.view.focus();
                     });
 
-                    var pageLinkSelect = document.getElementById('{{ $editorId }}-page-link');
-                    if (pageLinkSelect) {
-                        pageLinkSelect.addEventListener('change', function () {
-                            if (!this.value) return;
-                            var title = this.selectedOptions[0].dataset.title;
-                            var html = '<p><a href="' + this.value + '">' + title + '</a></p>';
-                            var viewFragment = editor.data.processor.toView(html);
-                            var modelFragment = editor.data.toModel(viewFragment);
-                            editor.model.insertContent(modelFragment);
-                            editor.editing.view.focus();
-                            this.selectedIndex = 0;
-                        });
-                    }
+                    document.getElementById('{{ $editorId }}-page-modal').addEventListener('page-link-picked', function (event) {
+                        var p = event.detail;
+                        var html = '<p><a href="' + p.url + '">' + p.title + '</a></p>';
+                        var viewFragment = editor.data.processor.toView(html);
+                        var modelFragment = editor.data.toModel(viewFragment);
+                        editor.model.insertContent(modelFragment);
+                        editor.editing.view.focus();
+                    });
 
                     var scheduleCtaSelect = document.getElementById('{{ $editorId }}-schedule-cta');
                     if (scheduleCtaSelect) {
@@ -580,11 +653,9 @@
                                     editor.insertContent('<a href="' + url + '" target="_blank" rel="noopener noreferrer external">' + text + '</a>');
                                 } }];
                                 if (pageLinks.length) {
-                                    items.push({ type: 'nestedmenuitem', text: 'Link do strony', getSubmenuItems: function () {
-                                        return pageLinks.map(function (p) {
-                                            return { type: 'menuitem', text: p.title, onAction: function () { editor.insertContent('<a href="' + p.url + '">' + p.title + '</a>'); } };
-                                        });
-                                    } });
+                                    items.push({ type: 'menuitem', text: 'Link do strony — wybierz z listy…', onAction: function () {
+                                        window['__pmOpen_{{ $editorId }}']?.();
+                                    }});
                                 }
                                 if (scheduleLinks.length) {
                                     items.push({ type: 'nestedmenuitem', text: 'Przycisk CTA do harmonogramu', getSubmenuItems: function () {
@@ -616,6 +687,10 @@
                                 if (alt === null) return; // anulowano — nie wstawiaj
                                 var safeAlt = alt.replace(/&/g, '&amp;').replace(/"/g, '&quot;');
                                 editor.insertContent('<img src="' + image.url + '" alt="' + safeAlt + '">');
+                            });
+                            document.getElementById('{{ $editorId }}-page-modal').addEventListener('page-link-picked', function (event) {
+                                var p = event.detail;
+                                editor.insertContent('<a href="' + p.url + '">' + p.title + '</a>');
                             });
                         });
                     },
