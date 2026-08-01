@@ -326,6 +326,7 @@ Route::middleware(['auth', 'verified', '2fa'])->prefix('admin')->name('admin.')-
     Route::put('multimedia/foldery/{folder}', [MediaLibraryController::class, 'updateFolder'])->name('multimedia.foldery.update');
     Route::delete('multimedia/foldery/{folder}', [MediaLibraryController::class, 'destroyFolder'])->name('multimedia.foldery.destroy');
 
+    Route::get('pliki/lista', [AdminAttachmentController::class, 'lista'])->name('pliki.lista');
     Route::delete('pliki/{attachment}', [AdminAttachmentController::class, 'destroy'])->name('pliki.destroy');
 
     Route::middleware('admin')->group(function () {

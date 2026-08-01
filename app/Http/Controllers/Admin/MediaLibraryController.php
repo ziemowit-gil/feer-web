@@ -218,44 +218,59 @@ class MediaLibraryController extends Controller
      * accounts require the link to be set to public — internal-only links will
      * be rejected with a 422.
      */
+    /**
+     * Downloads an image from OneDrive and saves it into the media library.
+     * Two modes:
+     *  - download_url: pre-authenticated URL returned by the OneDrive File Picker SDK
+     *    (no Graph API call needed — the picker already resolved auth)
+     *  - url: a public sharing link (1drv.ms or similar) — converted via the Graph
+     *    Shares API, which works without OAuth for "anyone with the link" files
+     */
     public function oneDriveImport(Request $request)
     {
         $data = $request->validate([
-            'url' => ['required', 'url', 'max:1000'],
+            'download_url' => ['nullable', 'url', 'max:2000'],
+            'url' => ['nullable', 'url', 'max:1000'],
+            'name' => ['nullable', 'string', 'max:255'],
         ]);
 
-        $shareUrl = $data['url'];
+        abort_unless(!empty($data['download_url']) || !empty($data['url']), 422,
+            'Podaj adres URL pliku lub link udostępniania OneDrive.');
 
-        // Encode the sharing URL for the Graph API: base64url with u! prefix.
-        $encoded = 'u!'.rtrim(strtr(base64_encode($shareUrl), '+/', '-_'), '=');
+        if (!empty($data['download_url'])) {
+            $downloadUrl = $data['download_url'];
+            $originalName = $data['name'] ?? null;
+        } else {
+            $shareUrl = $data['url'];
+            $encoded = 'u!'.rtrim(strtr(base64_encode($shareUrl), '+/', '-_'), '=');
 
-        $metaResponse = Http::timeout(15)->get(
-            "https://api.onedrive.com/v1.0/shares/{$encoded}/root",
-            ['$select' => 'name,file,@microsoft.graph.downloadUrl']
-        );
+            $metaResponse = Http::timeout(15)->get(
+                "https://api.onedrive.com/v1.0/shares/{$encoded}/root",
+                ['$select' => 'name,file,@microsoft.graph.downloadUrl']
+            );
 
-        abort_unless($metaResponse->successful(), 422,
-            'Nie można uzyskać dostępu do pliku OneDrive. Upewnij się, że link jest udostępniony publicznie („Każda osoba mająca link").');
+            abort_unless($metaResponse->successful(), 422,
+                'Nie można uzyskać dostępu do pliku OneDrive. Upewnij się, że link jest udostępniony publicznie.');
 
-        $meta = $metaResponse->json();
+            $meta = $metaResponse->json();
+            abort_unless(isset($meta['file']), 422, 'Podany link nie wskazuje na plik.');
 
-        abort_unless(isset($meta['file']), 422, 'Podany link nie wskazuje na plik.');
+            $mimeType = $meta['file']['mimeType'] ?? '';
+            abort_unless(str_starts_with($mimeType, 'image/'), 422,
+                'Plik nie jest obrazem. Obsługiwane formaty: JPEG, PNG, GIF, WebP i inne obrazy.');
 
-        $mimeType = $meta['file']['mimeType'] ?? '';
-        abort_unless(str_starts_with($mimeType, 'image/'), 422,
-            'Plik nie jest obrazem. Obsługiwane formaty: JPEG, PNG, GIF, WebP i inne obrazy.');
+            $downloadUrl = $meta['@microsoft.graph.downloadUrl'] ?? null;
+            abort_unless($downloadUrl, 422, 'Nie udało się pobrać adresu pliku z OneDrive.');
+            $originalName = $meta['name'] ?? null;
+        }
 
-        $downloadUrl = $meta['@microsoft.graph.downloadUrl'] ?? null;
-        abort_unless($downloadUrl, 422, 'Nie udało się pobrać adresu pliku z OneDrive.');
-
-        $originalName = $meta['name'] ?? null;
         $ext = $originalName ? pathinfo($originalName, PATHINFO_EXTENSION) : 'jpg';
         $fileName = Str::random(20).($ext ? '.'.$ext : '');
 
         $media = MediaLibrary::instance()
             ->addMediaFromUrl($downloadUrl)
             ->usingFileName($fileName)
-            ->withCustomProperties(['onedrive_source' => $shareUrl])
+            ->withCustomProperties(['onedrive_name' => $originalName])
             ->toMediaCollection('files');
 
         return response()->json([

@@ -1,6 +1,7 @@
 @php
     $editorId = 'editor-'.$name;
     $useCkEditor = ($siteSettings->content_editor ?? 'tinymce') === 'ckeditor';
+    $msClientId = filled($siteSettings->microsoftConfig()['client_id'] ?? null) ? $siteSettings->microsoftConfig()['client_id'] : null;
     // TinyMCE keeps arbitrary <div> markup as-is, so it gets the real
     // (WCAG-friendly, responsive) two-column block. CKEditor's classic/super
     // CDN build has no General HTML Support plugin — any <div> it doesn't
@@ -124,6 +125,11 @@
                     <i class="fa-solid fa-calendar-day w-4 text-center" aria-hidden="true"></i> Wybierz wydarzenie…
                 </button>
             @endif
+            <button type="button"
+                @click="window['__afOpen_{{ $editorId }}']?.(); open = false"
+                class="{{ $mi }}">
+                <i class="fa-solid fa-file-arrow-down w-4 text-center" aria-hidden="true"></i> Plik do pobrania…
+            </button>
             @if ($schedulePages->isNotEmpty())
                 <label for="{{ $editorId }}-schedule-cta" class="mt-2 block px-3 pb-1 text-[0.65rem] font-bold uppercase tracking-wide text-muted">Przycisk CTA do harmonogramu</label>
                 <select id="{{ $editorId }}-schedule-cta" @change="open = false" class="w-full rounded border-gray-300 px-2 py-1.5 text-xs font-bold text-ink focus:border-brand focus:ring-brand">
@@ -263,6 +269,25 @@
     </div>
 </div>
 
+{{-- Modal: picker plików do pobrania --}}
+<div id="{{ $editorId }}-attachment-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 p-4"
+     role="dialog" aria-modal="true" aria-labelledby="{{ $editorId }}-attachment-modal-title">
+    <div class="flex max-h-[70vh] w-full max-w-lg flex-col overflow-hidden rounded-lg bg-white p-5">
+        <div class="mb-4 flex items-center justify-between">
+            <h2 id="{{ $editorId }}-attachment-modal-title" class="text-base font-bold">Wybierz plik do pobrania</h2>
+            <button type="button" data-af-close class="text-muted hover:text-red-600" aria-label="Zamknij okno wyboru pliku"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <label class="sr-only" for="{{ $editorId }}-af-search">Szukaj pliku po nazwie lub stronie</label>
+        <input type="search" id="{{ $editorId }}-af-search" placeholder="Szukaj po nazwie pliku lub stronie…"
+            class="mb-3 w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+        <div class="flex-1 overflow-y-auto">
+            <ul id="{{ $editorId }}-af-list" class="divide-y divide-gray-100" role="listbox" aria-label="Lista plików do pobrania"></ul>
+            <p id="{{ $editorId }}-af-empty" class="hidden py-6 text-center text-sm text-muted">Brak plików do pobrania.</p>
+            <p id="{{ $editorId }}-af-loading" class="py-6 text-center text-sm text-muted">Ładowanie…</p>
+        </div>
+    </div>
+</div>
+
 <div id="{{ $editorId }}-media-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 p-4" role="dialog" aria-modal="true" aria-label="Wybierz obraz">
     <div class="flex max-h-[80vh] w-full max-w-3xl flex-col overflow-hidden rounded-lg bg-white p-5">
         <div class="mb-4 flex items-center justify-between">
@@ -305,21 +330,40 @@
         </div>
 
         <div data-media-panel=”onedrive” class=”hidden”>
-            <p class=”mb-3 text-xs text-muted”>
-                Wklej publiczny link do obrazu z OneDrive (np. <code class=”font-mono”>https://1drv.ms/i/&hellip;</code>).
-                Plik zostanie pobrany do biblioteki multimediów. Link musi być dostępny dla każdego z linkiem.
-            </p>
+            @if ($msClientId)
+            <div class=”mb-4 flex justify-center”>
+                <button type=”button” data-onedrive-open
+                    class=”inline-flex items-center gap-2 rounded bg-[#0078d4] px-5 py-2.5 text-sm font-bold text-white hover:bg-[#106ebe] disabled:opacity-50”
+                    aria-label=”Otwórz przeglądarkę plików OneDrive”>
+                    <i class=”fa-brands fa-microsoft” aria-hidden=”true”></i> Wybierz z OneDrive
+                </button>
+            </div>
+            <p class=”mb-4 text-center text-xs text-muted”>Zaloguj się kontem Microsoft i wybierz obraz. Plik zostanie pobrany do biblioteki.</p>
+            <details class=”mb-2”>
+                <summary class=”cursor-pointer text-xs text-muted hover:text-ink”>Lub wklej publiczny link</summary>
+                <div class=”mt-2 flex gap-2”>
+            @else
+            <p class=”mb-3 text-xs text-muted”>Wklej publiczny link do obrazu z OneDrive (<code class=”font-mono”>https://1drv.ms/i/&hellip;</code>). Link musi być dostępny dla każdego z linkiem.</p>
             <div class=”mb-4 flex gap-2”>
+            @endif
                 <label class=”sr-only” for=”{{ $editorId }}-onedrive-url”>Adres URL obrazu z OneDrive</label>
                 <input type=”url” id=”{{ $editorId }}-onedrive-url” placeholder=”https://1drv.ms/i/&hellip;”
-                    class=”w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand”
-                    aria-describedby=”{{ $editorId }}-onedrive-hint”>
+                    class=”w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand”>
                 <button type=”button” data-onedrive-submit
                     class=”flex-none rounded bg-brand px-3 py-1.5 text-xs font-bold text-white hover:bg-brand-dark disabled:opacity-50”>Importuj</button>
+            @if ($msClientId)
+                </div>
+            </details>
+            @else
             </div>
-            <p id=”{{ $editorId }}-onedrive-hint” data-onedrive-hint class=”py-6 text-center text-sm text-muted”>Wklej link z OneDrive powyżej i kliknij „Importuj”.</p>
-            <p data-onedrive-loading class=”hidden py-6 text-center text-sm text-muted” aria-live=”polite”>Pobieranie pliku z OneDrive&hellip;</p>
-            <p data-onedrive-error class=”hidden py-6 text-center text-sm text-red-600” role=”alert”></p>
+            @endif
+            <p data-onedrive-hint class=”py-4 text-center text-sm text-muted”>
+                @if ($msClientId) Kliknij „Wybierz z OneDrive” powyżej.
+                @else Wklej link i kliknij „Importuj”.
+                @endif
+            </p>
+            <p data-onedrive-loading class=”hidden py-4 text-center text-sm text-muted” aria-live=”polite”>Pobieranie pliku z OneDrive&hellip;</p>
+            <p data-onedrive-error class=”hidden py-4 text-center text-sm text-red-600” role=”alert”></p>
         </div>
     </div>
 </div>
@@ -495,29 +539,34 @@
             }
         });
 
-        // OneDrive: paste a public sharing link → server downloads and saves to the library.
-        var onedriveSubmitButton = modal.querySelector('[data-onedrive-submit]');
-        var onedriveUrlInput = document.getElementById('{{ $editorId }}-onedrive-url');
-        var onedriveHint = modal.querySelector('[data-onedrive-hint]');
+        // OneDrive: picker SDK (gdy microsoft_client_id) + fallback "wklej link" (zawsze).
+        var onedriveHint    = modal.querySelector('[data-onedrive-hint]');
         var onedriveLoading = modal.querySelector('[data-onedrive-loading]');
-        var onedriveError = modal.querySelector('[data-onedrive-error]');
+        var onedriveError   = modal.querySelector('[data-onedrive-error]');
+        var onedriveSubmitButton = modal.querySelector('[data-onedrive-submit]');
+        var onedriveUrlInput     = document.getElementById('{{ $editorId }}-onedrive-url');
 
-        function runOneDriveImport() {
-            var url = onedriveUrlInput.value.trim();
-            if (!url) return;
-
-            onedriveHint.classList.add('hidden');
+        function oneDriveSetLoading(loading) {
+            onedriveHint.classList.toggle('hidden', loading);
+            onedriveLoading.classList.toggle('hidden', !loading);
             onedriveError.classList.add('hidden');
-            onedriveLoading.classList.remove('hidden');
-            onedriveSubmitButton.disabled = true;
+            if (onedriveSubmitButton) onedriveSubmitButton.disabled = loading;
+            @if ($msClientId)
+            var openBtn = modal.querySelector('[data-onedrive-open]');
+            if (openBtn) openBtn.disabled = loading;
+            @endif
+        }
 
+        function oneDriveImportUrl(payload) {
+            oneDriveSetLoading(true);
             fetch('{{ route('admin.multimedia.onedrive.import') }}', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'Accept': 'application/json',
                     'X-CSRF-TOKEN': document.querySelector('input[name=_token]').value,
                 },
-                body: JSON.stringify({url: url}),
+                body: JSON.stringify(payload),
             })
                 .then(function (res) {
                     return res.json().then(function (body) {
@@ -526,27 +575,145 @@
                     });
                 })
                 .then(function (image) {
-                    onedriveLoading.classList.add('hidden');
-                    onedriveSubmitButton.disabled = false;
-                    onedriveUrlInput.value = '';
+                    oneDriveSetLoading(false);
+                    if (onedriveUrlInput) onedriveUrlInput.value = '';
                     modal.dispatchEvent(new CustomEvent('media-picked', {detail: image}));
                     closeModal();
                 })
                 .catch(function (err) {
-                    onedriveLoading.classList.add('hidden');
-                    onedriveSubmitButton.disabled = false;
-                    onedriveError.textContent = err.message || 'Nie udało się pobrać pliku. Sprawdź, czy link jest publiczny (dostępny dla każdego z linkiem).';
+                    oneDriveSetLoading(false);
+                    onedriveError.textContent = err.message || 'Nie udało się pobrać pliku.';
                     onedriveError.classList.remove('hidden');
                 });
         }
 
-        onedriveSubmitButton.addEventListener('click', runOneDriveImport);
-        onedriveUrlInput.addEventListener('keydown', function (event) {
-            if (event.key === 'Enter') {
-                event.preventDefault();
-                runOneDriveImport();
-            }
+        @if ($msClientId)
+        // Picker SDK — ładowany leniwie przy pierwszym kliknięciu.
+        var odSdkLoaded = false;
+        function loadOneDriveSdk(cb) {
+            if (window.OneDrive) { cb(); return; }
+            var s = document.createElement('script');
+            s.src = 'https://js.live.net/v7.2/OneDrive.js';
+            s.onload = cb;
+            document.head.appendChild(s);
+        }
+        var odOpenBtn = modal.querySelector('[data-onedrive-open]');
+        odOpenBtn.addEventListener('click', function () {
+            loadOneDriveSdk(function () {
+                window.OneDrive.open({
+                    clientId: {{ json_encode($msClientId) }},
+                    action: 'download',
+                    multiSelect: false,
+                    advanced: { filter: '.jpg,.jpeg,.png,.gif,.webp,.bmp,.avif,.svg' },
+                    success: function (files) {
+                        var file = files.value[0];
+                        var dlUrl = file['@microsoft.graph.downloadUrl'] || file['@content.downloadUrl'];
+                        oneDriveImportUrl({ download_url: dlUrl, name: file.name });
+                    },
+                    cancel: function () {},
+                    error: function (e) {
+                        onedriveError.textContent = 'Błąd OneDrive: ' + (e.message || JSON.stringify(e));
+                        onedriveError.classList.remove('hidden');
+                    },
+                });
+            });
         });
+        @endif
+
+        // URL paste — fallback zawsze dostępny.
+        if (onedriveSubmitButton) {
+            function runOneDrivePaste() {
+                var url = onedriveUrlInput ? onedriveUrlInput.value.trim() : '';
+                if (!url) return;
+                oneDriveImportUrl({ url: url });
+            }
+            onedriveSubmitButton.addEventListener('click', runOneDrivePaste);
+            if (onedriveUrlInput) {
+                onedriveUrlInput.addEventListener('keydown', function (event) {
+                    if (event.key === 'Enter') { event.preventDefault(); runOneDrivePaste(); }
+                });
+            }
+        }
+    })();
+</script>
+
+<script>
+    (function () {
+        var afModal   = document.getElementById('{{ $editorId }}-attachment-modal');
+        var afList    = document.getElementById('{{ $editorId }}-af-list');
+        var afSearch  = document.getElementById('{{ $editorId }}-af-search');
+        var afEmpty   = document.getElementById('{{ $editorId }}-af-empty');
+        var afLoading = document.getElementById('{{ $editorId }}-af-loading');
+        var allAttachments = null;
+
+        function afEsc(t) {
+            return (t || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        }
+
+        function renderAttachments(list) {
+            afList.innerHTML = '';
+            afEmpty.classList.toggle('hidden', list.length > 0);
+            list.forEach(function (a) {
+                var btn = document.createElement('button');
+                btn.type = 'button';
+                btn.setAttribute('role', 'option');
+                btn.className = 'flex w-full items-center gap-3 px-3 py-2.5 text-left hover:bg-brand-light focus-visible:bg-brand-light focus-visible:outline-none';
+                var meta = [a.extension, a.size].filter(Boolean).join(' · ');
+                btn.innerHTML = '<i class="fa-solid fa-file-arrow-down w-4 shrink-0 text-muted" aria-hidden="true"></i>'
+                    + '<span class="flex-1 min-w-0">'
+                    + '<span class="block truncate text-sm font-medium text-ink">' + afEsc(a.label) + '</span>'
+                    + (a.owner_title ? '<span class="block truncate text-xs text-muted">' + afEsc(a.owner_title) + '</span>' : '')
+                    + '</span>'
+                    + (meta ? '<span class="shrink-0 text-xs text-muted">' + afEsc(meta) + '</span>' : '');
+                btn.addEventListener('click', function () {
+                    afModal.dispatchEvent(new CustomEvent('attachment-picked', {detail: a}));
+                    afClose();
+                });
+                var li = document.createElement('li');
+                li.appendChild(btn);
+                afList.appendChild(li);
+            });
+            if (list.length > 0) { afList.querySelector('button')?.focus(); }
+        }
+
+        function loadAttachments() {
+            if (allAttachments !== null) { renderAttachments(allAttachments); return; }
+            fetch('{{ route('admin.pliki.lista') }}')
+                .then(function (res) { return res.json(); })
+                .then(function (data) {
+                    allAttachments = data;
+                    afLoading.classList.add('hidden');
+                    renderAttachments(data);
+                });
+        }
+
+        afSearch.addEventListener('input', function () {
+            if (!allAttachments) return;
+            var q = afSearch.value.toLowerCase();
+            renderAttachments(allAttachments.filter(function (a) {
+                return a.label.toLowerCase().indexOf(q) !== -1
+                    || (a.owner_title && a.owner_title.toLowerCase().indexOf(q) !== -1);
+            }));
+        });
+
+        function afOpen() {
+            afModal.classList.remove('hidden');
+            afModal.classList.add('flex');
+            loadAttachments();
+            afSearch.value = '';
+            afSearch.focus();
+        }
+
+        function afClose() {
+            afModal.classList.add('hidden');
+            afModal.classList.remove('flex');
+        }
+
+        afModal.querySelectorAll('[data-af-close]').forEach(function (btn) { btn.addEventListener('click', afClose); });
+        afModal.addEventListener('click', function (e) { if (e.target === afModal) afClose(); });
+        afModal.addEventListener('keydown', function (e) { if (e.key === 'Escape') afClose(); });
+
+        window['__afOpen_{{ $editorId }}'] = afOpen;
     })();
 </script>
 
@@ -939,6 +1106,18 @@
                         editor.model.insertContent(modelFragment);
                         editor.editing.view.focus();
                     });
+
+                    document.getElementById('{{ $editorId }}-attachment-modal').addEventListener('attachment-picked', function (event) {
+                        var a = event.detail;
+                        var meta = [a.extension, a.size].filter(Boolean).join(', ');
+                        var label = a.label + (meta ? ' (' + meta + ')' : '');
+                        var html = '<p><a href="' + a.url + '" download class="cta-button">'
+                            + '<i class="fa-solid fa-file-arrow-down" aria-hidden="true"></i> Pobierz: ' + label + '</a></p>';
+                        var viewFragment = editor.data.processor.toView(html);
+                        var modelFragment = editor.data.toModel(viewFragment);
+                        editor.model.insertContent(modelFragment);
+                        editor.editing.view.focus();
+                    });
                 });
             }
 
@@ -1090,6 +1269,9 @@
                                         window['__elOpen_{{ $editorId }}']?.();
                                     }});
                                 }
+                                items.push({ type: 'menuitem', text: 'Plik do pobrania — wybierz z listy…', icon: 'download', onAction: function () {
+                                    window['__afOpen_{{ $editorId }}']?.();
+                                }});
                                 items.push({ type: 'menuitem', text: 'Link do kotwicy…', icon: 'anchor', onAction: function () {
                                     window['__anchorLinkOpen_{{ $editorId }}']?.();
                                 }});
@@ -1140,6 +1322,12 @@
                             document.getElementById('{{ $editorId }}-event-link-modal').addEventListener('event-link-picked', function (event) {
                                 var ev = event.detail;
                                 editor.insertContent('<a href="' + ev.url + '">' + ev.title + '</a>');
+                            });
+                            document.getElementById('{{ $editorId }}-attachment-modal').addEventListener('attachment-picked', function (event) {
+                                var a = event.detail;
+                                var meta = [a.extension, a.size].filter(Boolean).join(', ');
+                                var label = a.label + (meta ? ' (' + meta + ')' : '');
+                                editor.insertContent('<p><a href="' + a.url + '" download class="cta-button"><i class="fa-solid fa-file-arrow-down" aria-hidden="true"></i> Pobierz: ' + label + '</a></p>');
                             });
                             document.getElementById('{{ $editorId }}-anchor-insert-modal').addEventListener('anchor-insert', function (event) {
                                 editor.insertContent('<a id="' + event.detail.id + '" class="page-anchor" aria-hidden="true"></a>');

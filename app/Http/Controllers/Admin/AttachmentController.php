@@ -24,6 +24,29 @@ class AttachmentController extends Controller
         return redirect()->route('admin.newsy.edit', $news)->with('status', 'Plik został dodany.');
     }
 
+    public function lista()
+    {
+        $attachments = Attachment::query()
+            ->with('media')
+            ->orderBy('label')
+            ->get()
+            ->filter(fn ($a) => $a->file_url)
+            ->map(function ($a) {
+                $owner = $a->attachable;
+
+                return [
+                    'id' => $a->id,
+                    'label' => $a->label,
+                    'url' => $a->file_url,
+                    'extension' => $a->file_extension,
+                    'size' => $a->file_size,
+                    'owner_title' => $owner?->title ?? null,
+                ];
+            });
+
+        return response()->json($attachments->values());
+    }
+
     public function destroy(Attachment $attachment)
     {
         $attachment->delete();
