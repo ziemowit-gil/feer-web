@@ -17,6 +17,13 @@
         <p class="mt-1 text-sm text-muted">Panel administracyjny — {{ $siteSettings->site_name }}</p>
     </div>
 
+    @if ($emergency)
+        <div class="mb-5 flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2.5 text-sm text-amber-800">
+            <i class="fa-solid fa-shield-halved shrink-0"></i>
+            <span>Dostęp awaryjny — logowanie hasłem</span>
+        </div>
+    @endif
+
     <x-auth-session-status class="mb-4" :status="session('status')" />
 
     @if (session('error'))
@@ -45,10 +52,6 @@
             x-data="{ submitting: false, showPassword: false }" @submit="submitting = true">
             @csrf
 
-            @error('email')
-                <p class="rounded border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{{ $message }}</p>
-            @enderror
-
             <div>
                 <label for="email" class="mb-1.5 block text-sm font-bold">E-mail</label>
                 <div class="relative">
@@ -58,6 +61,7 @@
                     <input id="email" type="email" name="email" value="{{ old('email') }}" required autofocus autocomplete="username"
                         class="w-full rounded-lg border-gray-300 pl-10 transition focus:border-brand focus:ring-brand/30">
                 </div>
+                @error('email') <p class="mt-1.5 text-sm text-red-600">{{ $message }}</p> @enderror
             </div>
 
             <div>
