@@ -18,6 +18,7 @@ Route::middleware('guest')->group(function () {
         ->name('login');
 
     Route::get('admin2', [AuthenticatedSessionController::class, 'createEmergency'])
+        ->middleware('throttle:10,1')
         ->name('login.emergency');
 
     Route::post('login', [AuthenticatedSessionController::class, 'store']);
