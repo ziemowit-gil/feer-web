@@ -7,18 +7,157 @@ window.Alpine = Alpine;
 Alpine.store('confirm', {
     open: false,
     message: '',
+    extraLabel: '',   // etykieta trzeciego przycisku (np. „Usuń z kopiami (2)")
     _resolve: null,
     ask(message) {
         return new Promise(resolve => {
             this.message = message;
+            this.extraLabel = '';
             this.open = true;
             this._resolve = resolve;
             Alpine.nextTick(() => document.getElementById('confirm-cancel-btn')?.focus());
         });
     },
-    confirm() { this.open = false; this._resolve?.(true); },
-    cancel() { this.open = false; this._resolve?.(false); },
+    askWithExtra(message, extraLabel) {
+        return new Promise(resolve => {
+            this.message = message;
+            this.extraLabel = extraLabel;
+            this.open = true;
+            this._resolve = resolve;
+            Alpine.nextTick(() => document.getElementById('confirm-cancel-btn')?.focus());
+        });
+    },
+    confirm()  { this.open = false; this._resolve?.('ok'); },
+    extra()    { this.open = false; this._resolve?.('extra'); },
+    cancel()   { this.open = false; this._resolve?.(null); },
 });
+
+// Komponent edytora układu strony głównej — drag-and-drop dla administratorów.
+// Używa CSS `order` wewnątrz flex-col kontenera, więc DOM nie jest przestawiany —
+// tylko wizualna kolejność zmienia się reaktywnie. Wywołanie save() zapisuje do API
+// i przeładowuje stronę, żeby PHP wyrenderował nową kolejność.
+Alpine.data('homepageEditor', (initialOrder, saveUrl) => ({
+    editMode: false,
+    sections: [...initialOrder],
+    initialSections: [...initialOrder],
+    dragging: null,
+    dragOver: null,
+    saving: false,
+    saveSuccess: false,
+    error: null,
+
+    // Etykiety zgodne z SiteSetting::HOMEPAGE_SECTIONS w PHP.
+    LABELS: {
+        hero:     'Slajder (hero)',
+        news:     'Aktualności',
+        events:   'Szkolenia i wydarzenia',
+        ankieta:  'Ankieta i szybkie akcje',
+        gallery:  'Galeria',
+        substack: 'O tym piszemy (Substack)',
+    },
+
+    sectionIndex(key) {
+        return this.sections.indexOf(key);
+    },
+
+    sectionLabel(key) {
+        return this.LABELS[key] ?? key;
+    },
+
+    hasChanges() {
+        return this.sections.join(',') !== this.initialSections.join(',');
+    },
+
+    // --- Drag and Drop (desktop, HTML5 API) ---
+
+    startDrag(key) {
+        this.dragging = key;
+    },
+
+    enterDrop(key) {
+        if (this.dragging && this.dragging !== key) {
+            this.dragOver = key;
+        }
+    },
+
+    leaveDrop(key) {
+        if (this.dragOver === key) this.dragOver = null;
+    },
+
+    onDrop(key) {
+        if (this.dragging && this.dragging !== key) {
+            const from = this.sections.indexOf(this.dragging);
+            const to   = this.sections.indexOf(key);
+            this.sections.splice(from, 1);
+            this.sections.splice(to, 0, this.dragging);
+        }
+        this.dragging = null;
+        this.dragOver = null;
+    },
+
+    // --- Klawiatura / mobile: przyciski góra/dół ---
+
+    moveUp(key) {
+        const idx = this.sections.indexOf(key);
+        if (idx > 0) {
+            this.sections = this.sections
+                .map((k, i) => i === idx - 1 ? key : i === idx ? this.sections[idx - 1] : k);
+        }
+    },
+
+    moveDown(key) {
+        const idx = this.sections.indexOf(key);
+        if (idx < this.sections.length - 1) {
+            this.sections = this.sections
+                .map((k, i) => i === idx ? this.sections[idx + 1] : i === idx + 1 ? key : k);
+        }
+    },
+
+    // --- Tryb edycji ---
+
+    toggleEdit() {
+        this.editMode = !this.editMode;
+        this.error = null;
+        // Przy wychodzeniu z trybu bez zapisu — odrzuć zmiany.
+        if (!this.editMode) this.sections = [...this.initialSections];
+    },
+
+    discard() {
+        this.sections = [...this.initialSections];
+        this.editMode = false;
+        this.error = null;
+    },
+
+    async save() {
+        this.saving = true;
+        this.error = null;
+        try {
+            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
+            const res = await fetch(saveUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken,
+                    'Accept': 'application/json',
+                },
+                body: JSON.stringify({ sections: this.sections }),
+            });
+            if (!res.ok) {
+                const json = await res.json().catch(() => ({}));
+                throw new Error(json.message ?? `HTTP ${res.status}`);
+            }
+            this.initialSections = [...this.sections];
+            this.editMode = false;
+            this.saveSuccess = true;
+            // Przeładuj po chwili, żeby PHP wyrenderował nową kolejność w DOM.
+            setTimeout(() => window.location.reload(), 600);
+        } catch (e) {
+            this.error = 'Nie udało się zapisać układu. Spróbuj ponownie.';
+        } finally {
+            this.saving = false;
+        }
+    },
+}));
 
 Alpine.start();
 
@@ -180,12 +319,27 @@ if (pdfThumbs.length) {
 }
 
 // Przechwytuje submit formularzy z data-confirm → Alpine modal zamiast confirm().
+// Jeśli formularz ma data-clone-count > 0, modal pokazuje trzeci przycisk
+// „Usuń z kopiami". Wybranie go dodaje hidden input with_clones=1 przed submit.
 document.addEventListener('submit', async (e) => {
     const form = e.target;
     if (!form.dataset.confirm) return;
     e.preventDefault();
-    const ok = await Alpine.store('confirm').ask(form.dataset.confirm);
-    if (ok) form.submit();
+    const cloneCount = parseInt(form.dataset.cloneCount ?? '0', 10);
+    let result;
+    if (cloneCount > 0) {
+        const label = `Usuń oryginał i ${cloneCount} ${cloneCount === 1 ? 'kopię' : 'kopie'}`;
+        result = await Alpine.store('confirm').askWithExtra(form.dataset.confirm, label);
+    } else {
+        result = await Alpine.store('confirm').ask(form.dataset.confirm);
+    }
+    if (!result) return;
+    if (result === 'extra') {
+        const inp = document.createElement('input');
+        inp.type = 'hidden'; inp.name = 'with_clones'; inp.value = '1';
+        form.appendChild(inp);
+    }
+    form.submit();
 }, { capture: true });
 
 // Live preview sluga: auto-generuje slug z tytułu dla nowych rekordów.

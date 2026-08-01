@@ -71,6 +71,7 @@ use App\Http\Controllers\SupportController;
 use App\Http\Controllers\BannerTrackingController;
 use App\Http\Controllers\Admin\BannerController as AdminBannerController;
 use App\Http\Controllers\Admin\BannerZoneController as AdminBannerZoneController;
+use App\Http\Controllers\Admin\HomepageLayoutController;
 use App\Http\Controllers\Admin\EtrController as AdminEtrController;
 use App\Http\Controllers\EtrController;
 use App\Http\Controllers\VolunteerController;
@@ -337,11 +338,16 @@ Route::middleware(['auth', 'verified', '2fa'])->prefix(config('app.admin_prefix'
     Route::delete('pliki/{attachment}', [AdminAttachmentController::class, 'destroy'])->name('pliki.destroy');
 
     Route::middleware('admin')->group(function () {
+        // Układ strony głównej (drag-and-drop z frontendu).
+        Route::post('homepage/section-order', [HomepageLayoutController::class, 'updateSectionOrder'])
+            ->name('homepage.section-order');
+
         Route::get('ustawienia', [SiteSettingController::class, 'edit'])->name('ustawienia.edit');
         Route::put('ustawienia', [SiteSettingController::class, 'update'])->name('ustawienia.update');
         Route::post('ustawienia/test-poczty', [SiteSettingController::class, 'mailTest'])->name('ustawienia.mail-test');
         Route::post('ustawienia/strefa-nadpisz', [SiteSettingController::class, 'overwriteStrefa'])->name('strefa.overwrite');
         Route::post('ustawienia/prefix-panelu', [SiteSettingController::class, 'updateAdminPrefix'])->name('ustawienia.prefix');
+        Route::get('ustawienia/dev', [SiteSettingController::class, 'dev'])->name('ustawienia.dev');
 
         Route::get('zgloszenia-spotkania', [AdminMeetingSignupController::class, 'index'])->name('zgloszenia-spotkania.index');
         Route::get('zgloszenia-spotkania/eksport', [AdminMeetingSignupController::class, 'export'])->name('zgloszenia-spotkania.export');

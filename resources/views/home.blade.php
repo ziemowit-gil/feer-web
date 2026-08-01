@@ -2,13 +2,99 @@
 
 @section('title', $siteSettings->site_name . ' — Strona główna')
 
+@php
+    // Sprawdzamy rolę po stronie serwera — Alpine dostaje tylko URL do zapisu,
+    // nie żadnych uprawnień. Faktyczna autoryzacja jest w HomepageLayoutController.
+    $isAdmin = auth()->check() && auth()->user()->isAdmin();
+@endphp
+
 @section('content')
 
-    @foreach ($sectionOrder as $section)
-        @include('partials.home.'.$section)
-    @endforeach
+{{--
+    Wrapper x-data renderowany wyłącznie dla administratorów.
+    Dla zwykłych użytkowników sekcje renderują się bez żadnego Alpine overhead.
+--}}
+@if ($isAdmin)
+<div x-data="homepageEditor(@js($sectionOrder), '{{ route('admin.homepage.section-order') }}')">
+@endif
 
-    {{-- MAPA + KONTAKT --}}
+    {{-- Kontener sekcji: w trybie edycji staje się flex-col, by CSS `order` działało --}}
+    <div @if ($isAdmin) :class="editMode ? 'flex flex-col' : ''" @endif>
+
+        @foreach ($sectionOrder as $section)
+        <div
+            class="relative"
+            @if ($isAdmin)
+                {{-- CSS order kontroluje wizualną kolejność bez zmiany DOM --}}
+                :style="editMode ? { order: sectionIndex('{{ $section }}') } : {}"
+
+                {{-- Drag and Drop (HTML5 API, działa na desktopie) --}}
+                :draggable="editMode ? 'true' : 'false'"
+                @dragstart="startDrag('{{ $section }}')"
+                @dragover.prevent="enterDrop('{{ $section }}')"
+                @dragleave.self="leaveDrop('{{ $section }}')"
+                @drop.prevent="onDrop('{{ $section }}')"
+                @dragend="dragging = null; dragOver = null"
+
+                :class="{
+                    'ring-2 ring-brand ring-offset-4 rounded-2xl overflow-hidden transition-all':
+                        editMode && dragOver === '{{ $section }}' && dragging !== '{{ $section }}',
+                    'opacity-50 scale-[0.99]':
+                        editMode && dragging === '{{ $section }}',
+                    'cursor-grab active:cursor-grabbing': editMode,
+                }"
+            @endif
+        >
+
+            @if ($isAdmin)
+                {{-- Baner z nazwą sekcji + ikonką uchwytu, widoczny tylko na desktopie w trybie edycji --}}
+                <div
+                    x-show="editMode"
+                    x-cloak
+                    class="absolute inset-x-0 top-0 z-20 hidden justify-center md:flex"
+                    aria-hidden="true"
+                >
+                    <div class="flex select-none items-center gap-2 rounded-b-xl bg-brand px-4 py-1.5 text-xs font-bold text-white shadow-md">
+                        <i class="fa-solid fa-grip-dots-vertical"></i>
+                        <span x-text="sectionLabel('{{ $section }}')"></span>
+                    </div>
+                </div>
+
+                {{-- Przyciski góra / dół — dla klawiatury i urządzeń dotykowych --}}
+                <div
+                    x-show="editMode"
+                    x-cloak
+                    class="absolute right-3 top-1/2 z-20 flex -translate-y-1/2 flex-col gap-1 md:hidden"
+                >
+                    <button
+                        type="button"
+                        @click="moveUp('{{ $section }}')"
+                        :disabled="sectionIndex('{{ $section }}') === 0"
+                        class="flex h-9 w-9 items-center justify-center rounded-full bg-white shadow ring-1 ring-black/10 transition hover:bg-gray-50 disabled:opacity-30"
+                        :aria-label="'Przesuń wyżej: ' + sectionLabel('{{ $section }}')"
+                    >
+                        <i class="fa-solid fa-chevron-up text-xs text-brand" aria-hidden="true"></i>
+                    </button>
+                    <button
+                        type="button"
+                        @click="moveDown('{{ $section }}')"
+                        :disabled="sectionIndex('{{ $section }}') === sections.length - 1"
+                        class="flex h-9 w-9 items-center justify-center rounded-full bg-white shadow ring-1 ring-black/10 transition hover:bg-gray-50 disabled:opacity-30"
+                        :aria-label="'Przesuń niżej: ' + sectionLabel('{{ $section }}')"
+                    >
+                        <i class="fa-solid fa-chevron-down text-xs text-brand" aria-hidden="true"></i>
+                    </button>
+                </div>
+            @endif
+
+            @include('partials.home.'.$section)
+
+        </div>
+        @endforeach
+
+    </div>
+
+    {{-- MAPA + KONTAKT — zawsze na końcu, poza kolejnością drag-and-drop --}}
     <section id="kontakt" class="mx-auto max-w-6xl px-4">
         <div class="grid overflow-hidden rounded-2xl shadow-sm ring-1 ring-black/5 md:grid-cols-2">
             <div class="h-64 w-full bg-gray-200 md:h-auto">
@@ -74,5 +160,10 @@
             </div>
         </div>
     </section>
+
+@if ($isAdmin)
+    @include('partials.home-editor-bar')
+</div>{{-- /x-data="homepageEditor" --}}
+@endif
 
 @endsection
