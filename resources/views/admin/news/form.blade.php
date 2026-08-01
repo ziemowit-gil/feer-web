@@ -178,77 +178,197 @@
                 <p class="mt-3 text-xs text-muted">Wyróżniony news jest prezentowany w złotej ramce na liście aktualności, stronie głównej i stronie projektu.</p>
             </fieldset>
 
-            <div class="grid gap-5 sm:grid-cols-2">
+            @php $hasUnsplash = (bool) config('services.unsplash.access_key'); @endphp
+            <div x-data="imagePickerModal('{{ route('admin.multimedia.unsplash.search') }}')"
+                 @keydown.escape.window="open && close()">
+
+                {{-- ===== Podgląd + przycisk otwierający ===== --}}
+                <p class="mb-1 text-sm font-bold">Zdjęcie</p>
                 <div class="space-y-3">
+                    {{-- Aktualnie zapisane zdjęcie (serwer) --}}
                     @if ($news->exists && $news->image_url)
-                        <div>
-                            <p class="mb-1 text-sm font-bold">Obecne zdjęcie</p>
-                            <img src="{{ $news->image_url }}" alt="{{ $news->image_alt ?: $news->title }}" class="h-32 w-full rounded object-cover">
+                        <div x-show="!localPreview && !unsplashThumb">
+                            <img src="{{ $news->image_url }}" alt="{{ $news->image_alt ?: $news->title }}"
+                                class="h-36 w-full rounded-lg border border-gray-200 object-cover">
                             @if ($news->image_width && $news->image_height)
-                                <p class="mt-1 text-xs text-muted">Wymiary: {{ $news->image_width }} × {{ $news->image_height }} px</p>
+                                <p class="mt-1 text-xs text-muted">Obecne: {{ $news->image_width }} × {{ $news->image_height }} px</p>
                             @endif
                         </div>
                     @endif
 
-                    <div>
-                        <label for="image" class="mb-1 block text-sm font-bold">{{ $news->exists ? 'Zmień zdjęcie' : 'Zdjęcie' }}</label>
-                        <input type="file" id="image" name="image" accept="image/*"
-                            class="block w-full cursor-pointer text-sm text-muted file:mr-3 file:cursor-pointer file:rounded file:border-0 file:bg-brand file:px-4 file:py-2 file:text-sm file:font-bold file:text-white hover:file:bg-brand-dark">
+                    {{-- Podgląd nowo wybranego (Alpine) --}}
+                    <div x-show="localPreview || unsplashThumb" x-cloak class="relative">
+                        <img :src="localPreview || unsplashThumb" alt=""
+                            class="h-36 w-full rounded-lg border border-gray-200 object-cover">
+                        <button type="button" @click="clearImage()"
+                            class="absolute right-2 top-2 rounded bg-black/60 px-2 py-1 text-xs font-bold text-white hover:bg-black/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+                            aria-label="Usuń wybrane zdjęcie">
+                            <i class="fa-solid fa-xmark mr-1" aria-hidden="true"></i>Usuń
+                        </button>
+                        <p x-show="unsplashAuthor" class="mt-1 text-xs text-muted">Unsplash · autor: <span x-text="unsplashAuthor"></span></p>
                         <p id="image-dimensions-preview" class="mt-1 text-xs text-muted"></p>
-                        @error('image') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
 
-                    <div>
-                        <label for="image_alt" class="mb-1 block text-sm font-bold">Opis alternatywny zdjęcia</label>
-                        <input type="text" id="image_alt" name="image_alt" value="{{ old('image_alt', $news->image_alt) }}"
-                            placeholder="np. Uczestnicy warsztatu przy laptopach w sali szkoleniowej"
-                            class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
-                        <p class="mt-1 text-xs text-muted">Opisz, co przedstawia zdjęcie — czytają to osoby korzystające z czytników ekranu.</p>
-                        @error('image_alt') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
-                    </div>
+                    <button type="button" @click="openModal()" data-modal-trigger
+                        class="inline-flex items-center gap-2 rounded border border-gray-300 bg-white px-4 py-2 text-sm font-bold text-ink hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                        <i class="fa-solid fa-image text-muted" aria-hidden="true"></i>
+                        <span x-text="localPreview || unsplashThumb || {{ $news->exists && $news->image_url ? 'true' : 'false' }} ? 'Zmień zdjęcie' : 'Wybierz zdjęcie'"></span>
+                    </button>
+                    @error('image') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+
+                    {{-- Input file — w DOM dzięki x-show (nie x-if), niewidoczny, wciąż w formularzu --}}
+                    <input type="file" id="image" name="image" accept="image/*"
+                        class="absolute opacity-0 h-0 w-0 overflow-hidden" tabindex="-1" aria-hidden="true"
+                        @change="onFileChange($event)">
+
+                    {{-- Ukryte pola Unsplash --}}
+                    <input type="hidden" name="unsplash_full_url" :value="unsplashFull">
+                    <input type="hidden" name="unsplash_download_location" :value="unsplashDownloadLocation">
+                    <input type="hidden" name="unsplash_author" :value="unsplashAuthor">
+                    <input type="hidden" name="unsplash_alt" :value="unsplashAlt">
                 </div>
 
-                <div class="rounded-lg border border-dashed border-gray-300 p-3" x-data="unsplashPicker('{{ route('admin.multimedia.unsplash.search') }}')">
-                        <p class="mb-2 text-sm font-bold"><i class="fa-solid fa-camera-retro text-muted" aria-hidden="true"></i> …lub pobierz z Unsplash</p>
-                        @if (config('services.unsplash.access_key'))
-                            <div class="flex gap-2">
-                                <input type="text" x-model="query" @keydown.enter.prevent="search()" placeholder="Szukaj zdjęć, np. edukacja"
-                                    class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
-                                <button type="button" @click="search()" :disabled="loading"
-                                    class="flex-none rounded bg-brand px-3 py-2 text-sm font-bold text-white hover:bg-brand-dark disabled:opacity-50">
-                                    <span x-show="!loading">Szukaj</span><span x-show="loading" x-cloak>…</span>
-                                </button>
-                            </div>
-                            <p x-show="error" x-cloak x-text="error" class="mt-2 text-xs text-red-600"></p>
+                <div class="mt-4">
+                    <label for="image_alt" class="mb-1 block text-sm font-bold">Opis alternatywny zdjęcia</label>
+                    <input type="text" id="image_alt" name="image_alt" value="{{ old('image_alt', $news->image_alt) }}"
+                        placeholder="np. Uczestnicy warsztatu przy laptopach w sali szkoleniowej"
+                        class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                    <p class="mt-1 text-xs text-muted">Opisz, co przedstawia zdjęcie — czytają to osoby korzystające z czytników ekranu.</p>
+                    @error('image_alt') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                </div>
 
-                            <div x-show="results.length" x-cloak class="mt-3 grid max-h-56 grid-cols-3 gap-2 overflow-y-auto">
-                                <template x-for="photo in results" :key="photo.id">
-                                    <button type="button" @click="pick(photo)"
-                                        class="relative overflow-hidden rounded border-2"
-                                        :class="selected && selected.id === photo.id ? 'border-brand' : 'border-transparent hover:border-gray-300'">
-                                        <img :src="photo.thumb_url" alt="" class="h-16 w-full object-cover">
-                                        <span class="absolute inset-x-0 bottom-0 truncate bg-black/50 px-1 py-0.5 text-[10px] text-white" x-text="photo.author_name"></span>
+                {{-- ============================= MODAL ============================= --}}
+                <div x-show="open" x-cloak class="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto p-4 sm:p-8" style="display:none">
+                    <div class="fixed inset-0 bg-ink/60" @click="close()" aria-hidden="true"></div>
+
+                    <div x-ref="dialog" role="dialog" aria-modal="true" aria-labelledby="img-modal-title"
+                         @keydown.tab="trapTab($event)"
+                         class="relative z-10 my-4 w-full max-w-2xl rounded-xl border border-gray-200 bg-white shadow-2xl">
+
+                        {{-- Nagłówek --}}
+                        <div class="flex items-center justify-between border-b border-gray-100 px-6 py-4">
+                            <h2 id="img-modal-title" class="text-lg font-bold text-ink">Wybierz zdjęcie</h2>
+                            <button type="button" @click="close()"
+                                class="rounded p-2 text-muted hover:bg-gray-100 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                                <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+                                <span class="sr-only">Zamknij okno</span>
+                            </button>
+                        </div>
+
+                        {{-- Zakładki --}}
+                        <div class="flex gap-1 border-b border-gray-100 px-6" role="tablist" aria-label="Źródło zdjęcia">
+                            <button type="button" role="tab" id="tab-file"
+                                :aria-selected="tab === 'file'" :tabindex="tab === 'file' ? 0 : -1"
+                                @click="tab = 'file'"
+                                :class="tab === 'file' ? 'border-b-2 border-brand text-brand font-bold' : 'text-muted hover:text-ink'"
+                                class="mr-6 py-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                                <i class="fa-solid fa-upload mr-1" aria-hidden="true"></i> Plik z dysku
+                            </button>
+                            @if ($hasUnsplash)
+                            <button type="button" role="tab" id="tab-unsplash"
+                                :aria-selected="tab === 'unsplash'" :tabindex="tab === 'unsplash' ? 0 : -1"
+                                @click="tab = 'unsplash'"
+                                :class="tab === 'unsplash' ? 'border-b-2 border-brand text-brand font-bold' : 'text-muted hover:text-ink'"
+                                class="py-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                                <i class="fa-solid fa-camera-retro mr-1" aria-hidden="true"></i> Unsplash
+                            </button>
+                            @else
+                            <span class="py-3 text-sm text-gray-300 cursor-not-allowed" title="Skonfiguruj UNSPLASH_ACCESS_KEY, aby odblokować">
+                                <i class="fa-solid fa-camera-retro mr-1" aria-hidden="true"></i> Unsplash
+                            </span>
+                            @endif
+                        </div>
+
+                        <div class="p-6">
+                            {{-- Tab: Plik z dysku --}}
+                            <div x-show="tab === 'file'" role="tabpanel" aria-labelledby="tab-file" class="space-y-4">
+                                <div>
+                                    <p class="mb-3 text-sm text-muted">Kliknij poniżej, aby wybrać zdjęcie z komputera. JPG, PNG, WebP, max 2 MB.</p>
+                                    <button type="button"
+                                        @click="$el.closest('[x-data]').querySelector('#image').click()"
+                                        class="inline-flex items-center gap-2 rounded bg-brand px-4 py-2 text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
+                                        <i class="fa-solid fa-folder-open" aria-hidden="true"></i> Wybierz plik
                                     </button>
-                                </template>
-                            </div>
-
-                            <div x-show="selected" x-cloak class="mt-3 flex items-center gap-3 rounded bg-brand-light p-2">
-                                <img :src="selected?.thumb_url" alt="" class="h-12 w-16 flex-none rounded object-cover">
-                                <div class="min-w-0 text-xs">
-                                    <p class="font-bold text-ink">Wybrano zdjęcie z Unsplash</p>
-                                    <p class="text-muted">Autor: <span x-text="selected?.author_name"></span> — zapisz, aby pobrać.</p>
+                                    <span x-show="fileName" x-cloak x-text="fileName" class="ml-3 text-sm text-muted"></span>
                                 </div>
-                                <button type="button" @click="clear()" class="ml-auto flex-none text-xs font-bold text-red-600 hover:text-red-700">Wyczyść</button>
+
+                                <div x-show="localPreview" x-cloak>
+                                    <img :src="localPreview" alt="" class="max-h-64 w-full rounded-lg border border-gray-200 object-contain bg-gray-50">
+                                    <p x-text="fileDimensions" class="mt-1 text-xs text-muted"></p>
+                                </div>
+
+                                <div class="flex gap-3 border-t border-gray-100 pt-4">
+                                    <button type="button" @click="close()" :disabled="!localPreview"
+                                        :class="localPreview ? 'bg-brand hover:bg-brand-dark cursor-pointer' : 'bg-gray-200 text-gray-400 cursor-not-allowed'"
+                                        class="rounded px-5 py-2 text-sm font-bold text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                                        Wstaw
+                                    </button>
+                                    <button type="button" @click="close()" class="text-sm text-muted hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand rounded px-2">Anuluj</button>
+                                </div>
                             </div>
 
-                            <input type="hidden" name="unsplash_full_url" :value="selected ? selected.full_url : ''">
-                            <input type="hidden" name="unsplash_download_location" :value="selected ? selected.download_location : ''">
-                            <input type="hidden" name="unsplash_author" :value="selected ? selected.author_name : ''">
-                            <input type="hidden" name="unsplash_alt" :value="selected ? selected.alt : ''">
-                        @else
-                            <p class="text-xs text-muted">Aby pobierać zdjęcia z Unsplash, ustaw <code class="rounded bg-gray-100 px-1">UNSPLASH_ACCESS_KEY</code> w pliku <code class="rounded bg-gray-100 px-1">.env</code> (darmowy klucz: unsplash.com/developers).</p>
-                        @endif
+                            {{-- Tab: Unsplash --}}
+                            @if ($hasUnsplash)
+                            <div x-show="tab === 'unsplash'" role="tabpanel" aria-labelledby="tab-unsplash" class="space-y-4">
+                                <div class="flex gap-2">
+                                    <label for="unsplash-query" class="sr-only">Szukaj w Unsplash</label>
+                                    <input type="text" id="unsplash-query" x-model="query"
+                                        @keydown.enter.prevent="search()"
+                                        placeholder="Szukaj zdjęć, np. edukacja, warsztaty, sport…"
+                                        class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                                    <button type="button" @click="search()" :disabled="loading"
+                                        class="flex-none rounded bg-brand px-4 py-2 text-sm font-bold text-white hover:bg-brand-dark disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                                        <span x-show="!loading">Szukaj</span>
+                                        <span x-show="loading" x-cloak aria-live="polite">…</span>
+                                    </button>
+                                </div>
+
+                                <p x-show="error" x-cloak x-text="error" class="text-xs text-red-600" role="alert"></p>
+
+                                <div x-show="results.length" x-cloak
+                                    class="grid max-h-72 grid-cols-3 gap-2 overflow-y-auto sm:grid-cols-4"
+                                    role="list" aria-label="Wyniki wyszukiwania Unsplash">
+                                    <template x-for="photo in results" :key="photo.id">
+                                        <button type="button" @click="pickUnsplash(photo)" role="listitem"
+                                            :aria-pressed="unsplashSelected && unsplashSelected.id === photo.id"
+                                            :class="unsplashSelected && unsplashSelected.id === photo.id ? 'border-brand ring-1 ring-brand' : 'border-transparent hover:border-gray-300'"
+                                            class="relative overflow-hidden rounded border-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                                            <img :src="photo.thumb_url" :alt="'Zdjęcie autora ' + photo.author_name" class="h-20 w-full object-cover">
+                                            <span class="absolute inset-x-0 bottom-0 truncate bg-black/60 px-1 py-0.5 text-[10px] text-white" x-text="photo.author_name"></span>
+                                            <span x-show="unsplashSelected && unsplashSelected.id === photo.id"
+                                                class="absolute right-1 top-1 flex h-5 w-5 items-center justify-center rounded-full bg-brand text-white" aria-hidden="true">
+                                                <i class="fa-solid fa-check text-[10px]"></i>
+                                            </span>
+                                        </button>
+                                    </template>
+                                </div>
+
+                                <div x-show="unsplashSelected" x-cloak
+                                    class="flex items-center gap-3 rounded-lg border border-green-200 bg-green-50 p-3">
+                                    <img :src="unsplashSelected?.thumb_url" alt="" class="h-12 w-16 flex-none rounded object-cover">
+                                    <div class="min-w-0 text-xs">
+                                        <p class="font-bold text-ink">Wybrano</p>
+                                        <p class="text-muted">Autor: <span x-text="unsplashSelected?.author_name"></span></p>
+                                    </div>
+                                    <button type="button" @click="unsplashSelected = null"
+                                        class="ml-auto text-xs font-bold text-red-600 hover:text-red-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 rounded px-1">
+                                        Wyczyść
+                                    </button>
+                                </div>
+
+                                <div class="flex gap-3 border-t border-gray-100 pt-4">
+                                    <button type="button" @click="confirmUnsplash()" :disabled="!unsplashSelected"
+                                        :class="unsplashSelected ? 'bg-brand hover:bg-brand-dark cursor-pointer' : 'bg-gray-200 text-gray-400 cursor-not-allowed'"
+                                        class="rounded px-5 py-2 text-sm font-bold text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                                        Wstaw
+                                    </button>
+                                    <button type="button" @click="close()" class="text-sm text-muted hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand rounded px-2">Anuluj</button>
+                                </div>
+                            </div>
+                            @endif
+                        </div>
                     </div>
+                </div>
             </div>
         </div>
 
@@ -355,62 +475,107 @@
             preview.classList.toggle('hidden', color === '');
         });
 
-        document.getElementById('image').addEventListener('change', function (event) {
-            const preview = document.getElementById('image-dimensions-preview');
-            const file = event.target.files[0];
-
-            if (!file) {
-                preview.textContent = '';
-                return;
-            }
-
-            const image = new Image();
-            image.onload = () => {
-                preview.textContent = `Wymiary wybranego pliku: ${image.naturalWidth} × ${image.naturalHeight} px`;
-                URL.revokeObjectURL(image.src);
-            };
-            image.src = URL.createObjectURL(file);
-        });
-
-        // Wyszukiwarka i wybór zdjęcia z Unsplash w formularzu newsa.
-        window.unsplashPicker = (searchUrl) => ({
+        // Modal wyboru zdjęcia: zakładka „Plik z dysku" + zakładka „Unsplash".
+        window.imagePickerModal = (searchUrl) => ({
+            open: false,
+            tab: 'file',
+            // Plik z dysku
+            localPreview: null,
+            fileName: '',
+            fileDimensions: '',
+            // Unsplash
             query: '',
             results: [],
-            selected: null,
             loading: false,
             error: '',
-            async search() {
-                if (!this.query.trim()) return;
-                this.loading = true;
-                this.error = '';
-                this.results = [];
-                try {
-                    const response = await fetch(`${searchUrl}?q=${encodeURIComponent(this.query)}`, {
-                        headers: { 'Accept': 'application/json' },
-                    });
-                    if (!response.ok) {
-                        this.error = response.status === 501
-                            ? 'Integracja z Unsplash nie jest skonfigurowana.'
-                            : 'Nie udało się pobrać wyników z Unsplash.';
-                        return;
-                    }
-                    const data = await response.json();
-                    this.results = data;
-                    if (!data.length) this.error = 'Brak wyników dla tego zapytania.';
-                } catch (e) {
-                    this.error = 'Błąd połączenia z Unsplash.';
-                } finally {
-                    this.loading = false;
+            unsplashSelected: null,
+            unsplashThumb: '',
+            unsplashAuthor: '',
+            unsplashFull: '',
+            unsplashDownloadLocation: '',
+            unsplashAlt: '',
+
+            openModal() {
+                this.open = true;
+                this.$nextTick(() => {
+                    const sel = 'button:not([disabled]), input:not([disabled])';
+                    const first = Array.from(this.$refs.dialog.querySelectorAll(sel))
+                        .find(el => el.offsetParent !== null);
+                    if (first) first.focus();
+                });
+            },
+
+            close() {
+                this.open = false;
+                this.$nextTick(() => this.$el.querySelector('[data-modal-trigger]')?.focus());
+            },
+
+            trapTab(event) {
+                const sel = 'a[href], button:not([disabled]), input:not([disabled]), select, textarea, [tabindex]:not([tabindex="-1"])';
+                const items = Array.from(this.$refs.dialog.querySelectorAll(sel))
+                    .filter(el => el.offsetParent !== null);
+                if (!items.length) return;
+                if (event.shiftKey && document.activeElement === items[0]) {
+                    event.preventDefault(); items[items.length - 1].focus();
+                } else if (!event.shiftKey && document.activeElement === items[items.length - 1]) {
+                    event.preventDefault(); items[0].focus();
                 }
             },
-            pick(photo) {
-                this.selected = photo;
-                // Wybór z Unsplash i plik wykluczają się — wyczyść wgrany plik.
-                const fileInput = document.getElementById('image');
-                if (fileInput) fileInput.value = '';
+
+            onFileChange(event) {
+                const file = event.target.files?.[0];
+                if (!file) { this.localPreview = null; this.fileName = ''; return; }
+                this.fileName = file.name;
+                this.unsplashSelected = null; this.unsplashThumb = ''; this.unsplashFull = '';
+                this.unsplashDownloadLocation = ''; this.unsplashAlt = ''; this.unsplashAuthor = '';
+                const reader = new FileReader();
+                reader.onload = (e) => { this.localPreview = e.target.result; };
+                reader.readAsDataURL(file);
+                const url = URL.createObjectURL(file);
+                const img = new Image();
+                img.onload = () => {
+                    this.fileDimensions = `Wymiary: ${img.naturalWidth} × ${img.naturalHeight} px`;
+                    URL.revokeObjectURL(url);
+                };
+                img.src = url;
             },
-            clear() {
-                this.selected = null;
+
+            clearImage() {
+                this.localPreview = null; this.fileName = ''; this.fileDimensions = '';
+                const fi = this.$el.querySelector('#image');
+                if (fi) fi.value = '';
+                this.unsplashSelected = null; this.unsplashThumb = ''; this.unsplashAuthor = '';
+                this.unsplashFull = ''; this.unsplashDownloadLocation = ''; this.unsplashAlt = '';
+            },
+
+            async search() {
+                if (!this.query.trim()) return;
+                this.loading = true; this.error = ''; this.results = [];
+                try {
+                    const r = await fetch(`${searchUrl}?q=${encodeURIComponent(this.query)}`, { headers: { 'Accept': 'application/json' } });
+                    if (!r.ok) { this.error = r.status === 501 ? 'Integracja z Unsplash nie jest skonfigurowana.' : 'Nie udało się pobrać wyników.'; return; }
+                    const data = await r.json();
+                    this.results = data;
+                    if (!data.length) this.error = 'Brak wyników dla tego zapytania.';
+                } catch { this.error = 'Błąd połączenia z Unsplash.'; }
+                finally { this.loading = false; }
+            },
+
+            pickUnsplash(photo) {
+                this.unsplashSelected = photo;
+                this.localPreview = null; this.fileName = '';
+                const fi = this.$el.querySelector('#image');
+                if (fi) fi.value = '';
+            },
+
+            confirmUnsplash() {
+                if (!this.unsplashSelected) return;
+                this.unsplashThumb = this.unsplashSelected.thumb_url;
+                this.unsplashAuthor = this.unsplashSelected.author_name;
+                this.unsplashFull = this.unsplashSelected.full_url;
+                this.unsplashDownloadLocation = this.unsplashSelected.download_location;
+                this.unsplashAlt = this.unsplashSelected.alt || '';
+                this.close();
             },
         });
     </script>
