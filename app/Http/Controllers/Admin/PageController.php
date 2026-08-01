@@ -30,17 +30,11 @@ class PageController extends Controller
             ->paginate(30)
             ->withQueryString();
 
-        $strefaReady = Page::where('slug', Page::STREFA_SLUG)
-            ->where('type', 'internal_hub')
-            ->where('access_mode', 'microsoft')
-            ->exists();
-
         return view('admin.pages.index', [
-            'pages'       => $pages,
-            'q'           => $search,
-            'status'      => $status,
-            'sort'        => $sort,
-            'strefaReady' => $strefaReady,
+            'pages'  => $pages,
+            'q'      => $search,
+            'status' => $status,
+            'sort'   => $sort,
         ]);
     }
 
@@ -150,6 +144,39 @@ class PageController extends Controller
         $page->update(['order' => $data['order']]);
 
         return redirect()->route('admin.podstrony.index')->with('status', "Zmieniono kolejność strony „{$page->title}”.");
+    }
+
+    public function bulk(Request $request): \Illuminate\Http\RedirectResponse
+    {
+        $data = $request->validate([
+            'action' => ['required', 'in:publish,unpublish,trash'],
+            'ids'    => ['required', 'array', 'min:1'],
+            'ids.*'  => ['integer'],
+        ]);
+
+        $pages = Page::whereIn('id', $data['ids'])
+            ->where('is_system', false)
+            ->get();
+
+        if ($pages->isEmpty()) {
+            return redirect()->back()->with('error', 'Nie znaleziono stron do przetworzenia.');
+        }
+
+        $count = $pages->count();
+
+        match ($data['action']) {
+            'publish'   => Page::whereIn('id', $pages->pluck('id'))->update(['is_published' => true]),
+            'unpublish' => Page::whereIn('id', $pages->pluck('id'))->update(['is_published' => false]),
+            'trash'     => $pages->each->delete(),
+        };
+
+        $message = match ($data['action']) {
+            'publish'   => "Opublikowano stron: {$count}.",
+            'unpublish' => "Cofnięto publikację stron: {$count}.",
+            'trash'     => "Przeniesiono do kosza stron: {$count}.",
+        };
+
+        return redirect()->back()->with('status', $message);
     }
 
     public function clone(Page $page)

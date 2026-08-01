@@ -5,23 +5,7 @@
 @section('content')
     @include('admin.partials.content-nav-tabs')
 
-    <div class="mb-4 flex items-center justify-between gap-4">
-        @if ($strefaReady)
-            <span class="inline-flex items-center gap-2 rounded border border-green-200 bg-green-50 px-3 py-2 text-sm font-bold text-green-700">
-                <i class="fa-solid fa-check" aria-hidden="true"></i> Strefa współpracownika istnieje
-                <a href="{{ route('page.show', \App\Models\Page::STREFA_SLUG) }}" target="_blank" class="ml-1 font-normal underline hover:no-underline" aria-label="Otwórz strefę w nowej karcie">/{{ \App\Models\Page::STREFA_SLUG }}</a>
-            </span>
-        @else
-            <form method="POST" action="{{ route('admin.strefa.overwrite') }}"
-                onsubmit="return confirm('Utworzyć stronę „Strefa współpracownika" pod adresem /{{ \App\Models\Page::STREFA_SLUG }}?\nStrona będzie wewnętrzna z logowaniem Microsoft 365.')">
-                @csrf
-                <button type="submit"
-                    class="inline-flex items-center gap-2 rounded bg-brand px-4 py-2 text-sm font-bold text-white hover:bg-brand-dark focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2">
-                    <i class="fa-solid fa-shield-halved" aria-hidden="true"></i> Utwórz strefę współpracownika
-                </button>
-            </form>
-        @endif
-
+    <div class="mb-4 flex justify-end">
         <a href="{{ route('admin.podstrony.create') }}" class="rounded bg-brand px-4 py-2 text-sm font-bold text-white hover:bg-brand-dark">
             <i class="fa-solid fa-plus"></i> Dodaj stronę
         </a>
@@ -35,10 +19,30 @@
         'sortOptions' => ['default' => 'Domyślne (kolejność)', 'title_asc' => 'Tytuł A–Z', 'title_desc' => 'Tytuł Z–A'],
     ])
 
+    <form id="bulk-pages-form" method="POST" action="{{ route('admin.podstrony.bulk') }}">
+        @csrf
+
+        <div id="bulk-pages-bar" class="mb-3 hidden items-center gap-3 rounded-lg border border-blue-200 bg-blue-50 px-4 py-2">
+            <span id="bulk-pages-count" class="text-sm font-bold text-blue-800"></span>
+            <select name="action" class="rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                <option value="publish">Opublikuj</option>
+                <option value="unpublish">Cofnij publikację (szkic)</option>
+                <option value="trash">Przenieś do kosza</option>
+            </select>
+            <button type="button"
+                @click="Alpine.store('confirm').ask('Wykonać tę operację na zaznaczonych stronach?').then(ok => { if (ok) $el.closest('form').submit() })"
+                class="rounded bg-brand px-3 py-1.5 text-sm font-bold text-white hover:bg-brand-dark">
+                Wykonaj
+            </button>
+        </div>
+
     <div class="overflow-hidden rounded-lg border border-gray-200 bg-white">
         <table class="w-full text-left text-sm">
             <thead class="bg-gray-50 text-xs font-bold uppercase text-muted">
                 <tr>
+                    <th class="w-8 px-4 py-3">
+                        <input type="checkbox" id="pages-select-all" class="rounded border-gray-300" aria-label="Zaznacz wszystkie strony">
+                    </th>
                     <th class="px-4 py-3">Tytuł</th>
                     <th class="px-4 py-3">Slug</th>
                     <th class="px-4 py-3">Typ</th>
@@ -50,6 +54,13 @@
             <tbody class="divide-y divide-gray-100">
                 @forelse ($pages as $page)
                     <tr>
+                        <td class="px-4 py-3">
+                            @unless ($page->is_system)
+                                <input type="checkbox" name="ids[]" value="{{ $page->id }}" class="page-row-check rounded border-gray-300" aria-label="Zaznacz {{ $page->title }}">
+                            @else
+                                <span class="block h-4 w-4"></span>
+                            @endunless
+                        </td>
                         <td class="px-4 py-3 font-medium">
                             @if ($page->parent_id)
                                 <span class="pl-4 text-muted">↳</span>
@@ -111,9 +122,9 @@
                                     <a href="{{ $page->previewUrl() }}" target="_blank" rel="noopener" class="text-amber-600 hover:text-amber-700" title="Podgląd wersji roboczej (link ważny 14 dni)"><i class="fa-solid fa-eye"></i></a>
                                 @endif
                                 <a href="{{ route('admin.podstrony.edit', $page) }}" class="text-muted hover:text-brand" title="Edytuj"><i class="fa-solid fa-pen"></i></a>
-                                <form method="POST" action="{{ route('admin.podstrony.clone', $page) }}">
+                                <form method="POST" action="{{ route('admin.podstrony.clone', $page) }}" data-confirm="Zduplikować stronę „{{ $page->title }}"? Kopia zostanie zapisana jako szkic.">
                                     @csrf
-                                    <button type="submit" class="text-muted hover:text-brand" title="Klonuj stronę"><i class="fa-solid fa-clone"></i></button>
+                                    <button type="submit" class="text-muted hover:text-brand" title="Klonuj stronę" aria-label="Klonuj stronę {{ $page->title }}"><i class="fa-solid fa-clone" aria-hidden="true"></i></button>
                                 </form>
                                 <form method="POST" action="{{ route('admin.podstrony.widocznosc', $page) }}">
                                     @csrf
@@ -147,14 +158,39 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="6" class="px-4 py-6 text-center text-muted">Brak stron. Dodaj pierwszą powyżej.</td>
+                        <td colspan="7" class="px-4 py-6 text-center text-muted">Brak stron. Dodaj pierwszą powyżej.</td>
                     </tr>
                 @endforelse
             </tbody>
         </table>
     </div>
+    </form>
 
     @if ($pages->hasPages())
         <div class="mt-4">{{ $pages->links() }}</div>
     @endif
+
+    <script>
+        (function () {
+            const selectAll = document.getElementById('pages-select-all');
+            const bar       = document.getElementById('bulk-pages-bar');
+            const countEl   = document.getElementById('bulk-pages-count');
+
+            function updateBar() {
+                const checked = document.querySelectorAll('.page-row-check:checked');
+                bar.classList.toggle('hidden', checked.length === 0);
+                bar.classList.toggle('flex', checked.length > 0);
+                countEl.textContent = 'Zaznaczono: ' + checked.length;
+            }
+
+            selectAll.addEventListener('change', () => {
+                document.querySelectorAll('.page-row-check').forEach(cb => { cb.checked = selectAll.checked; });
+                updateBar();
+            });
+
+            document.querySelectorAll('.page-row-check').forEach(cb => {
+                cb.addEventListener('change', updateBar);
+            });
+        })();
+    </script>
 @endsection
