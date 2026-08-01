@@ -11,6 +11,7 @@
 
     @include('admin.partials.list-filters', [
         'action' => route('admin.newsy.index'),
+        'q' => $q,
         'status' => $status,
         'categories' => $categories,
         'categoryId' => $category,
@@ -29,7 +30,8 @@
                 <option value="archive">Zarchiwizuj</option>
                 <option value="trash">Przenieś do kosza</option>
             </select>
-            <button type="submit" onclick="return confirm('Wykonać tę operację na zaznaczonych pozycjach?')"
+            <button type="button"
+                @click="Alpine.store('confirm').ask('Wykonać tę operację na zaznaczonych pozycjach?').then(ok => { if (ok) $el.closest('form').submit() })"
                 class="rounded bg-brand px-3 py-1.5 text-sm font-bold text-white hover:bg-brand-dark">
                 Wykonaj
             </button>
@@ -94,10 +96,10 @@
                                     @csrf
                                     <button type="submit" class="text-muted hover:text-brand" title="Klonuj"><i class="fa-solid fa-copy"></i></button>
                                 </form>
-                                <form method="POST" action="{{ route('admin.newsy.destroy', $item) }}" onsubmit="return confirm('Usunąć news &quot;{{ $item->title }}&quot;?');">
+                                <form method="POST" action="{{ route('admin.newsy.destroy', $item) }}" data-confirm="Usunąć news „{{ $item->title }}"?">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="text-muted hover:text-red-600" title="Usuń"><i class="fa-solid fa-trash"></i></button>
+                                    <button type="submit" class="text-muted hover:text-red-600" title="Usuń" aria-label="Usuń news {{ $item->title }}"><i class="fa-solid fa-trash" aria-hidden="true"></i></button>
                                 </form>
                             </div>
                         </td>
@@ -111,6 +113,10 @@
         </table>
     </div>
     </form>
+
+    @if ($news->hasPages())
+        <div class="mt-4">{{ $news->links() }}</div>
+    @endif
 
     <script>
         const selectAll = document.getElementById('select-all');

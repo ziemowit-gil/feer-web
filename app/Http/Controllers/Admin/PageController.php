@@ -16,16 +16,19 @@ class PageController extends Controller
 
     public function index(Request $request)
     {
+        $search = $request->query('q', '');
         $status = $request->query('status', '');
         $sort = $request->query('sort', 'default');
 
         $pages = Page::with('parent')
+            ->when($search !== '', fn ($q) => $q->where(fn ($q) => $q->where('title', 'like', "%{$search}%")->orWhere('slug', 'like', "%{$search}%")))
             ->when($status === 'published', fn ($q) => $q->where('is_published', true))
             ->when($status === 'draft', fn ($q) => $q->where('is_published', false))
             ->when($sort === 'title_asc', fn ($q) => $q->orderBy('title'))
             ->when($sort === 'title_desc', fn ($q) => $q->orderByDesc('title'))
             ->when($sort === 'default', fn ($q) => $q->orderBy('order')->orderBy('title'))
-            ->get();
+            ->paginate(30)
+            ->withQueryString();
 
         $strefaReady = Page::where('slug', Page::STREFA_SLUG)
             ->where('type', 'internal_hub')
@@ -34,6 +37,7 @@ class PageController extends Controller
 
         return view('admin.pages.index', [
             'pages'       => $pages,
+            'q'           => $search,
             'status'      => $status,
             'sort'        => $sort,
             'strefaReady' => $strefaReady,

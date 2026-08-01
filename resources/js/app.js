@@ -1,6 +1,25 @@
 import Alpine from 'alpinejs';
 
 window.Alpine = Alpine;
+
+// Global confirm dialog — zastępuje natywne confirm() alertdialogiem Alpine.
+// Formularze z atrybutem data-confirm są przechwytywane automatycznie.
+Alpine.store('confirm', {
+    open: false,
+    message: '',
+    _resolve: null,
+    ask(message) {
+        return new Promise(resolve => {
+            this.message = message;
+            this.open = true;
+            this._resolve = resolve;
+            Alpine.nextTick(() => document.getElementById('confirm-cancel-btn')?.focus());
+        });
+    },
+    confirm() { this.open = false; this._resolve?.(true); },
+    cancel() { this.open = false; this._resolve?.(false); },
+});
+
 Alpine.start();
 
 // Pasek dostępności: kontrast i rozmiar czcionki
@@ -159,6 +178,63 @@ const pdfThumbs = document.querySelectorAll('canvas[data-pdf-thumb]');
 if (pdfThumbs.length) {
     import('./pdf-thumbs.js').then((module) => module.renderPdfThumbs(pdfThumbs));
 }
+
+// Przechwytuje submit formularzy z data-confirm → Alpine modal zamiast confirm().
+document.addEventListener('submit', async (e) => {
+    const form = e.target;
+    if (!form.dataset.confirm) return;
+    e.preventDefault();
+    const ok = await Alpine.store('confirm').ask(form.dataset.confirm);
+    if (ok) form.submit();
+}, { capture: true });
+
+// Live preview sluga: auto-generuje slug z tytułu dla nowych rekordów.
+// Na istniejących slug jest już ustawiony — pojawia się przycisk ↺ reset.
+(function () {
+    const titleInput = document.getElementById('title');
+    const slugInput = document.getElementById('slug');
+    if (!titleInput || !slugInput) return;
+
+    const pl = { ą:'a',ć:'c',ę:'e',ł:'l',ń:'n',ó:'o',ś:'s',ź:'z',ż:'z',Ą:'a',Ć:'c',Ę:'e',Ł:'l',Ń:'n',Ó:'o',Ś:'s',Ź:'z',Ż:'z' };
+
+    function slugify(str) {
+        return str.split('').map(c => pl[c] ?? c).join('')
+            .toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+    }
+
+    let auto = slugInput.value === '';
+
+    const resetBtn = document.createElement('button');
+    resetBtn.type = 'button';
+    resetBtn.title = 'Wygeneruj slug ponownie z tytułu';
+    resetBtn.setAttribute('aria-label', 'Wygeneruj slug ponownie z tytułu');
+    resetBtn.innerHTML = '<i class="fa-solid fa-rotate-left text-xs" aria-hidden="true"></i>';
+    resetBtn.className = 'flex-none rounded p-1 text-muted hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand';
+    slugInput.parentNode.appendChild(resetBtn);
+
+    function syncBtn() {
+        resetBtn.style.display = (!auto && titleInput.value) ? '' : 'none';
+    }
+
+    resetBtn.addEventListener('click', () => {
+        slugInput.value = slugify(titleInput.value);
+        auto = true;
+        syncBtn();
+        slugInput.focus();
+    });
+
+    titleInput.addEventListener('input', () => {
+        if (auto) slugInput.value = slugify(titleInput.value);
+        syncBtn();
+    });
+
+    slugInput.addEventListener('input', () => {
+        auto = slugInput.value === '';
+        syncBtn();
+    });
+
+    syncBtn();
+})();
 
 // WCAG 3.2.5 (G201): każdemu linkowi otwieranemu w nowej karcie dodaj ukryty
 // dla wzroku dopisek „(link otwiera się w nowej karcie)" — czytniki ekranu

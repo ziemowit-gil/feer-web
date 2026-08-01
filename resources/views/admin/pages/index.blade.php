@@ -29,6 +29,7 @@
 
     @include('admin.partials.list-filters', [
         'action' => route('admin.podstrony.index'),
+        'q' => $q,
         'status' => $status,
         'sort' => $sort,
         'sortOptions' => ['default' => 'Domyślne (kolejność)', 'title_asc' => 'Tytuł A–Z', 'title_desc' => 'Tytuł Z–A'],
@@ -135,10 +136,10 @@
                                 @if ($page->is_system)
                                     <span class="cursor-not-allowed text-gray-300" title="Strony systemowej nie można usunąć"><i class="fa-solid fa-trash"></i></span>
                                 @else
-                                    <form method="POST" action="{{ route('admin.podstrony.destroy', $page) }}" onsubmit="return confirm('Usunąć stronę &quot;{{ $page->title }}&quot;?');">
+                                    <form method="POST" action="{{ route('admin.podstrony.destroy', $page) }}" data-confirm="Usunąć stronę „{{ $page->title }}"?">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="text-muted hover:text-red-600" title="Usuń"><i class="fa-solid fa-trash"></i></button>
+                                        <button type="submit" class="text-muted hover:text-red-600" title="Usuń" aria-label="Usuń stronę {{ $page->title }}"><i class="fa-solid fa-trash" aria-hidden="true"></i></button>
                                     </form>
                                 @endif
                             </div>
@@ -152,4 +153,8 @@
             </tbody>
         </table>
     </div>
+
+    @if ($pages->hasPages())
+        <div class="mt-4">{{ $pages->links() }}</div>
+    @endif
 @endsection

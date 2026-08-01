@@ -429,6 +429,26 @@
         }
     </script>
 
+    {{-- Alpine confirm modal — zastępuje natywne confirm() we wszystkich formularzach admin. --}}
+    <div x-data x-cloak x-show="$store.confirm.open"
+         class="fixed inset-0 z-[300] flex items-center justify-center bg-black/40 p-4"
+         role="alertdialog" aria-modal="true" aria-labelledby="confirm-msg"
+         @keydown.escape.window="$store.confirm.cancel()">
+        <div class="w-full max-w-sm rounded-xl bg-white p-6 shadow-2xl" @click.stop>
+            <p id="confirm-msg" class="mb-6 text-sm leading-relaxed text-ink" x-text="$store.confirm.message"></p>
+            <div class="flex justify-end gap-3">
+                <button type="button" id="confirm-cancel-btn" @click="$store.confirm.cancel()"
+                    class="rounded-lg border border-gray-300 px-4 py-2 text-sm font-bold text-ink hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                    Anuluj
+                </button>
+                <button type="button" @click="$store.confirm.confirm()"
+                    class="rounded-lg bg-red-600 px-4 py-2 text-sm font-bold text-white hover:bg-red-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600">
+                    Potwierdź
+                </button>
+            </div>
+        </div>
+    </div>
+
     @stack('scripts')
 </body>
 </html>

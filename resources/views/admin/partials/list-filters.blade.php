@@ -6,14 +6,24 @@
       $sortOptions — [wartość => etykieta]
       $categories  — (opcjonalnie) kolekcja kategorii {id,name} do selecta
       $categoryId  — (opcjonalnie) bieżąca kategoria
+      $q           — (opcjonalnie) fraza wyszukiwania po tytule
 --}}
 @php
     $categories ??= null;
     $categoryId ??= '';
-    $hasFilters = filled($status) || filled($categoryId) || (filled($sort) && $sort !== array_key_first($sortOptions));
+    $q ??= '';
+    $hasFilters = filled($q) || filled($status) || filled($categoryId) || (filled($sort) && $sort !== array_key_first($sortOptions));
 @endphp
 
 <form method="GET" action="{{ $action }}" class="mb-4 flex flex-wrap items-end gap-3 rounded-lg border border-gray-200 bg-white p-3">
+    <div class="min-w-48 flex-1">
+        <label for="filter-q" class="mb-1 block text-xs font-bold uppercase tracking-wide text-muted">Szukaj</label>
+        <div class="relative">
+            <i class="fa-solid fa-magnifying-glass pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-xs text-muted" aria-hidden="true"></i>
+            <input type="text" id="filter-q" name="q" value="{{ $q }}" placeholder="Tytuł…"
+                class="w-full rounded border-gray-300 py-1.5 pl-8 text-sm focus:border-brand focus-visible:ring-2 focus-visible:ring-brand">
+        </div>
+    </div>
     <div>
         <label for="filter-status" class="mb-1 block text-xs font-bold uppercase tracking-wide text-muted">Status</label>
         <select id="filter-status" name="status" onchange="this.form.submit()"

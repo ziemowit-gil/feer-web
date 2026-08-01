@@ -20,6 +20,7 @@ class NewsController extends Controller
 
     public function index(Request $request)
     {
+        $search = $request->query('q', '');
         $status = $request->query('status', '');
         $category = $request->query('category', '');
         $sort = $request->query('sort', 'date_desc');
@@ -32,15 +33,18 @@ class NewsController extends Controller
         };
 
         $news = News::with(['category', 'tags'])
+            ->when($search !== '', fn ($q) => $q->where('title', 'like', "%{$search}%"))
             ->when($status === 'published', fn ($q) => $q->where('is_published', true))
             ->when($status === 'draft', fn ($q) => $q->where('is_published', false))
             ->when($category !== '', fn ($q) => $q->where('news_category_id', $category))
             ->orderBy($col, $dir)
-            ->get();
+            ->paginate(30)
+            ->withQueryString();
 
         return view('admin.news.index', [
             'news' => $news,
             'categories' => NewsCategory::orderBy('order')->orderBy('name')->get(),
+            'q' => $search,
             'status' => $status,
             'category' => $category,
             'sort' => $sort,
