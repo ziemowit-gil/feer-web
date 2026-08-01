@@ -9,94 +9,250 @@
 @php
     $templateType   = $templateType ?? 'news';
     $templateFields = $templateFields ?? [];
-    $panelId        = 'tmpl-panel-' . $templateType;
 @endphp
 
-<div class="rounded-lg border border-dashed border-gray-300 bg-gray-50 p-4" x-data="templatePanel('{{ $templateType }}', @js($templateFields))" x-cloak>
-    <div class="flex flex-wrap items-center gap-3">
-        <span class="text-sm font-bold text-gray-600">
-            <i class="fa-solid fa-layer-group mr-1" aria-hidden="true"></i> Szablon
-        </span>
+<div x-data="templateModal('{{ $templateType }}', @js($templateFields))" x-cloak>
 
-        <select x-model="selected" @change="selected && loadPreview()"
-            class="flex-1 rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
-            <option value="">— wybierz szablon —</option>
-            <template x-for="t in templates" :key="t.id">
-                <option :value="t.id" x-text="t.name"></option>
-            </template>
-        </select>
+    {{-- Przycisk wyzwalający modal --}}
+    <button type="button"
+        @click="trigger = $event.currentTarget; open('load')"
+        class="inline-flex items-center gap-2 rounded border border-gray-300 bg-white px-3 py-1.5 text-sm font-bold text-gray-700 hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
+        <i class="fa-solid fa-layer-group text-brand" aria-hidden="true"></i>
+        Dodaj z szablonu / Zarządzaj szablonami
+        <template x-if="templates.length > 0">
+            <span class="rounded-full bg-brand/10 px-1.5 py-0.5 text-xs text-brand" x-text="templates.length" aria-hidden="true"></span>
+        </template>
+    </button>
 
-        <button type="button" @click="applyTemplate()"
-            :disabled="!selected"
-            class="rounded bg-brand px-3 py-1.5 text-sm font-bold text-white hover:bg-brand-dark disabled:opacity-40 disabled:cursor-not-allowed">
-            Załaduj
-        </button>
-
-        <button type="button" @click="saveModalOpen = true"
-            class="rounded border border-gray-300 px-3 py-1.5 text-sm font-bold text-gray-700 hover:bg-gray-100">
-            <i class="fa-solid fa-floppy-disk mr-1" aria-hidden="true"></i> Zapisz jako szablon
-        </button>
-
-        <a href="{{ route('admin.szablony.manage') }}" target="_blank" rel="noopener"
-            class="text-sm text-muted hover:text-brand" title="Zarządzaj szablonami">
-            <i class="fa-solid fa-ellipsis"></i>
-        </a>
-    </div>
-
-    <p x-show="applied" x-transition class="mt-2 text-xs text-green-700">
-        <i class="fa-solid fa-circle-check"></i> Szablon załadowany — sprawdź wypełnione pola i uzupełnij brakujące.
+    {{-- Komunikat o załadowaniu (poza modalem) --}}
+    <p x-show="applied" x-transition role="status"
+        class="mt-1 text-xs text-green-700">
+        <i class="fa-solid fa-circle-check" aria-hidden="true"></i>
+        Załadowano szablon „<span x-text="appliedName"></span>" — sprawdź wypełnione pola i uzupełnij brakujące.
     </p>
 
-    {{-- Modal: Zapisz jako szablon --}}
-    <div x-show="saveModalOpen" x-transition
-        class="mt-3 rounded-lg border border-blue-200 bg-blue-50 p-4">
-        <label class="mb-1 block text-sm font-bold text-blue-900">Nazwa szablonu</label>
-        <div class="flex items-center gap-2">
-            <input type="text" x-model="saveName" placeholder="np. Szkolenie FEER — standardowy"
-                @keydown.enter.prevent="saveTemplate()"
-                class="flex-1 rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
-            <button type="button" @click="saveTemplate()"
-                :disabled="!saveName.trim()"
-                class="rounded bg-brand px-3 py-1.5 text-sm font-bold text-white hover:bg-brand-dark disabled:opacity-40 disabled:cursor-not-allowed">
-                Zapisz
-            </button>
-            <button type="button" @click="saveModalOpen = false"
-                class="text-sm text-muted hover:text-gray-700">Anuluj</button>
-        </div>
-        <p x-show="savedMsg" x-transition class="mt-1 text-xs text-green-700">
-            <i class="fa-solid fa-circle-check"></i> <span x-text="savedMsg"></span>
-        </p>
-    </div>
-</div>
+    {{-- ===== MODAL ===== --}}
+    <div x-show="isOpen" x-transition
+        class="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto p-4 sm:p-6"
+        role="dialog" aria-modal="true" aria-labelledby="tmpl-modal-title"
+        @keydown.escape.window="isOpen && close()"
+        style="display: none">
+
+        {{-- Tło przyciemniające --}}
+        <div class="fixed inset-0 bg-ink/60" @click="close()" aria-hidden="true"></div>
+
+        {{-- Panel modala --}}
+        <div x-ref="panel"
+            @keydown.tab="trapTab($event)"
+            class="relative z-10 my-4 w-full max-w-xl rounded-lg border border-gray-200 bg-white shadow-xl">
+
+            {{-- Nagłówek --}}
+            <div class="flex items-center justify-between border-b border-gray-100 px-5 py-4">
+                <h2 id="tmpl-modal-title" class="text-base font-bold">
+                    <i class="fa-solid fa-layer-group mr-1.5 text-brand" aria-hidden="true"></i>
+                    Szablony treści
+                </h2>
+                <button type="button" @click="close()"
+                    class="rounded p-1.5 text-muted hover:bg-gray-100 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                    <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+                    <span class="sr-only">Zamknij okno</span>
+                </button>
+            </div>
+
+            {{-- Zakładki --}}
+            <div class="flex border-b border-gray-100" role="tablist" aria-label="Zakładki szablonów">
+                <button type="button" role="tab" id="tmpl-tab-load"
+                    :aria-selected="activeTab === 'load'"
+                    :tabindex="activeTab === 'load' ? 0 : -1"
+                    aria-controls="tmpl-panel-load"
+                    @click="activeTab = 'load'"
+                    :class="activeTab === 'load'
+                        ? '-mb-px border-b-2 border-brand text-brand'
+                        : 'text-muted hover:text-ink'"
+                    class="px-5 py-3 text-sm font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand">
+                    <i class="fa-solid fa-file-import mr-1" aria-hidden="true"></i> Dodaj z szablonu
+                </button>
+                <button type="button" role="tab" id="tmpl-tab-manage"
+                    :aria-selected="activeTab === 'manage'"
+                    :tabindex="activeTab === 'manage' ? 0 : -1"
+                    aria-controls="tmpl-panel-manage"
+                    @click="activeTab = 'manage'"
+                    :class="activeTab === 'manage'
+                        ? '-mb-px border-b-2 border-brand text-brand'
+                        : 'text-muted hover:text-ink'"
+                    class="px-5 py-3 text-sm font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand">
+                    <i class="fa-solid fa-list-check mr-1" aria-hidden="true"></i> Zarządzaj szablonami
+                </button>
+            </div>
+
+            {{-- ---- Tab: Dodaj z szablonu ---- --}}
+            <div id="tmpl-panel-load" role="tabpanel" aria-labelledby="tmpl-tab-load"
+                x-show="activeTab === 'load'" class="p-5">
+
+                <p class="mb-3 text-sm text-muted">
+                    Kliknij „Załaduj", aby wstawić dane z szablonu do bieżącego formularza.
+                    Niezapisane zmiany zostaną nadpisane.
+                </p>
+
+                <template x-if="templates.length === 0">
+                    <p class="rounded-lg border border-dashed border-gray-200 px-4 py-8 text-center text-sm text-muted">
+                        Brak szablonów tego typu. Wypełnij formularz i zapisz jako szablon
+                        w zakładce „Zarządzaj szablonami".
+                    </p>
+                </template>
+
+                <template x-if="templates.length > 0">
+                    <ul class="divide-y divide-gray-100 overflow-hidden rounded-lg border border-gray-200">
+                        <template x-for="t in templates" :key="t.id">
+                            <li class="flex items-center justify-between gap-3 px-4 py-3 hover:bg-gray-50">
+                                <span class="flex-1 text-sm font-medium text-ink" x-text="t.name"></span>
+                                <button type="button"
+                                    @click="apply(t.id)"
+                                    :aria-label="'Załaduj szablon: ' + t.name"
+                                    class="rounded bg-brand px-3 py-1 text-xs font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-1">
+                                    Załaduj
+                                </button>
+                            </li>
+                        </template>
+                    </ul>
+                </template>
+
+                <div class="mt-5 flex justify-end">
+                    <button type="button" @click="close()"
+                        class="rounded px-3 py-1.5 text-sm text-muted hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                        Anuluj
+                    </button>
+                </div>
+            </div>
+
+            {{-- ---- Tab: Zarządzaj szablonami ---- --}}
+            <div id="tmpl-panel-manage" role="tabpanel" aria-labelledby="tmpl-tab-manage"
+                x-show="activeTab === 'manage'" class="space-y-5 p-5">
+
+                {{-- Zapisz bieżącą treść jako szablon --}}
+                <div class="rounded-lg border border-blue-100 bg-blue-50 p-4">
+                    <p class="mb-2 text-sm font-bold text-blue-900">
+                        <i class="fa-solid fa-floppy-disk mr-1" aria-hidden="true"></i>
+                        Zapisz bieżącą treść jako szablon
+                    </p>
+                    <div class="flex items-center gap-2">
+                        <label for="tmpl-save-name" class="sr-only">Nazwa szablonu</label>
+                        <input type="text" id="tmpl-save-name" x-model="saveName"
+                            placeholder="np. Szkolenie FEER — standardowy"
+                            @keydown.enter.prevent="saveTemplate()"
+                            class="flex-1 rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                        <button type="button" @click="saveTemplate()"
+                            :disabled="!saveName.trim()"
+                            class="rounded bg-brand px-3 py-1.5 text-sm font-bold text-white hover:bg-brand-dark
+                                   disabled:cursor-not-allowed disabled:opacity-40
+                                   focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                            Zapisz
+                        </button>
+                    </div>
+                    <p x-show="savedMsg" x-transition role="status" class="mt-1.5 text-xs text-green-700">
+                        <i class="fa-solid fa-circle-check" aria-hidden="true"></i>
+                        <span x-text="savedMsg"></span>
+                    </p>
+                </div>
+
+                {{-- Lista istniejących szablonów --}}
+                <div>
+                    <p class="mb-2 text-sm font-bold text-gray-700">Zapisane szablony</p>
+
+                    <p x-show="deleteMsg" x-transition role="status" class="mb-2 text-xs text-green-700">
+                        <i class="fa-solid fa-circle-check" aria-hidden="true"></i>
+                        <span x-text="deleteMsg"></span>
+                    </p>
+
+                    <template x-if="templates.length === 0">
+                        <p class="rounded-lg border border-dashed border-gray-200 px-4 py-6 text-center text-sm text-muted">
+                            Brak zapisanych szablonów.
+                        </p>
+                    </template>
+
+                    <template x-if="templates.length > 0">
+                        <ul class="divide-y divide-gray-100 overflow-hidden rounded-lg border border-gray-200">
+                            <template x-for="t in templates" :key="t.id">
+                                <li class="flex items-center justify-between gap-3 px-4 py-3">
+                                    <span class="flex-1 text-sm text-ink" x-text="t.name"></span>
+                                    <button type="button"
+                                        @click="deleteTemplate(t)"
+                                        :aria-label="'Usuń szablon: ' + t.name"
+                                        title="Usuń"
+                                        class="rounded p-1.5 text-muted hover:text-red-600
+                                               focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500">
+                                        <i class="fa-solid fa-trash text-sm" aria-hidden="true"></i>
+                                    </button>
+                                </li>
+                            </template>
+                        </ul>
+                    </template>
+                </div>
+
+                <div class="flex justify-end border-t border-gray-100 pt-4">
+                    <button type="button" @click="close()"
+                        class="rounded px-3 py-1.5 text-sm text-muted hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                        Zamknij
+                    </button>
+                </div>
+            </div>
+
+        </div>{{-- /panel --}}
+    </div>{{-- /modal --}}
+</div>{{-- /x-data --}}
 
 @push('scripts')
 <script>
-function templatePanel(type, fields) {
+function templateModal(type, fields) {
     return {
         type,
         fields,
+        isOpen: false,
+        activeTab: 'load',
+        trigger: null,
         templates: [],
-        selected: '',
         applied: false,
-        saveModalOpen: false,
+        appliedName: '',
         saveName: '',
         savedMsg: '',
+        deleteMsg: '',
 
         async init() {
+            await this.fetchTemplates();
+        },
+
+        async fetchTemplates() {
             try {
-                const res = await fetch(`{{ url('admin/szablony') }}?type=${type}`);
-                this.templates = await res.json();
+                const r = await fetch('{{ url('admin/szablony') }}?type=' + this.type);
+                this.templates = await r.json();
             } catch {}
         },
 
-        async applyTemplate() {
-            if (!this.selected) return;
+        open(tab) {
+            this.activeTab = tab || 'load';
+            this.isOpen = true;
+            this.$nextTick(() => {
+                const items = this.focusables();
+                if (items.length) items[0].focus();
+            });
+        },
+
+        close() {
+            this.isOpen = false;
+            this.$nextTick(() => { if (this.trigger) this.trigger.focus(); });
+        },
+
+        async apply(id) {
             try {
-                const res = await fetch(`{{ url('admin/szablony') }}/${this.selected}/dane`);
-                const data = await res.json();
+                const r = await fetch('{{ url('admin/szablony') }}/' + id + '/dane');
+                if (!r.ok) throw new Error();
+                const data = await r.json();
                 this.fillFields(data);
+                const tmpl = this.templates.find(t => t.id === id);
+                this.appliedName = tmpl ? tmpl.name : '';
                 this.applied = true;
-                setTimeout(() => { this.applied = false; }, 4000);
+                setTimeout(() => { this.applied = false; }, 5000);
+                this.close();
             } catch {
                 alert('Nie udało się załadować szablonu.');
             }
@@ -106,31 +262,24 @@ function templatePanel(type, fields) {
             for (const [key, value] of Object.entries(data)) {
                 if (!this.fields.includes(key)) continue;
 
-                // Zwykłe inputy i selecty
-                const el = document.querySelector(`[name="${key}"]`);
+                const el = document.querySelector('[name="' + key + '"]');
                 if (el && el.tagName !== 'TEXTAREA') {
                     el.value = value ?? '';
                     el.dispatchEvent(new Event('input', { bubbles: true }));
                     el.dispatchEvent(new Event('change', { bubbles: true }));
                 }
-
-                // Textarea bez edytora
                 if (el && el.tagName === 'TEXTAREA') {
                     el.value = value ?? '';
                 }
 
-                // TinyMCE
                 if (window.tinymce) {
                     const ed = tinymce.get(key);
-                    if (ed) { ed.setContent(value ?? ''); }
+                    if (ed) ed.setContent(value ?? '');
                 }
-
-                // CKEditor 5
                 if (window.ckeditorInstances && window.ckeditorInstances[key]) {
                     window.ckeditorInstances[key].setData(value ?? '');
                 }
 
-                // Kolor: synchronizuj picker z polem tekstowym
                 if (key === 'accent_color') {
                     const picker = document.getElementById('accent_color_picker');
                     if (picker && /^#[0-9a-fA-F]{6}$/.test(value)) picker.value = value;
@@ -149,40 +298,77 @@ function templatePanel(type, fields) {
                 if (val !== null) data[f] = val;
             });
 
-            // Pobierz treść z edytora WYSIWYG jeśli pole 'content' jest w fields
-            if (this.fields.includes('content') || this.fields.includes('body')) {
-                const field = this.fields.includes('content') ? 'content' : 'body';
+            const contentField = this.fields.includes('content') ? 'content'
+                               : this.fields.includes('body') ? 'body' : null;
+            if (contentField) {
                 if (window.tinymce) {
-                    const ed = tinymce.get(field) || tinymce.editors[0];
-                    if (ed) data[field] = ed.getContent();
+                    const ed = tinymce.get(contentField) || tinymce.editors[0];
+                    if (ed) data[contentField] = ed.getContent();
                 }
-                if (window.ckeditorInstances && window.ckeditorInstances[field]) {
-                    data[field] = window.ckeditorInstances[field].getData();
+                if (window.ckeditorInstances && window.ckeditorInstances[contentField]) {
+                    data[contentField] = window.ckeditorInstances[contentField].getData();
                 }
             }
 
-            const payload = {
-                type: this.type,
-                name: this.saveName.trim(),
-                data,
-                _token: '{{ csrf_token() }}',
-            };
-
             try {
-                const res = await fetch('{{ route('admin.szablony.store') }}', {
+                const r = await fetch('{{ route('admin.szablony.store') }}', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-                    body: JSON.stringify(payload),
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    },
+                    body: JSON.stringify({ type: this.type, name: this.saveName.trim(), data }),
                 });
-                const json = await res.json();
+                const json = await r.json();
                 this.savedMsg = json.status ?? 'Zapisano.';
                 this.saveName = '';
-                // Odśwież listę szablonów
-                const listRes = await fetch(`{{ url('admin/szablony') }}?type=${this.type}`);
-                this.templates = await listRes.json();
-                setTimeout(() => { this.savedMsg = ''; this.saveModalOpen = false; }, 2500);
+                await this.fetchTemplates();
+                setTimeout(() => { this.savedMsg = ''; }, 3000);
             } catch {
                 alert('Nie udało się zapisać szablonu.');
+            }
+        },
+
+        async deleteTemplate(t) {
+            if (!confirm('Usunąć szablon „' + t.name + '"?')) return;
+            try {
+                const r = await fetch('{{ url('admin/szablony') }}/' + t.id, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Accept': 'application/json',
+                    },
+                });
+                if (r.ok) {
+                    this.templates = this.templates.filter(tmpl => tmpl.id !== t.id);
+                    this.deleteMsg = 'Szablon „' + t.name + '" usunięty.';
+                    setTimeout(() => { this.deleteMsg = ''; }, 3000);
+                } else {
+                    alert('Nie udało się usunąć szablonu.');
+                }
+            } catch {
+                alert('Nie udało się usunąć szablonu.');
+            }
+        },
+
+        focusables() {
+            const sel = 'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+            return Array.from(this.$refs.panel.querySelectorAll(sel))
+                .filter(el => el.offsetParent !== null || el === document.activeElement);
+        },
+
+        trapTab(event) {
+            const items = this.focusables();
+            if (!items.length) return;
+            const first = items[0];
+            const last = items[items.length - 1];
+            if (event.shiftKey && document.activeElement === first) {
+                event.preventDefault();
+                last.focus();
+            } else if (!event.shiftKey && document.activeElement === last) {
+                event.preventDefault();
+                first.focus();
             }
         },
     };

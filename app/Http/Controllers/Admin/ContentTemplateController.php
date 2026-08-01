@@ -51,10 +51,14 @@ class ContentTemplateController extends Controller
     }
 
     /** Usuń szablon. */
-    public function destroy(ContentTemplate $template)
+    public function destroy(Request $request, ContentTemplate $template)
     {
         $name = $template->name;
         $template->delete();
+
+        if ($request->expectsJson()) {
+            return response()->json(['status' => "Szablon \u{201E}{$name}\u{201D} został usunięty."]);
+        }
 
         return redirect()->back()->with('status', "Szablon \u{201E}{$name}\u{201D} został usunięty.");
     }
