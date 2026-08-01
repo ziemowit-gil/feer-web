@@ -311,6 +311,7 @@ Route::middleware(['auth', 'verified', '2fa'])->prefix('admin')->name('admin.')-
     Route::get('multimedia/unsplash', [MediaLibraryController::class, 'unsplashSearch'])->name('multimedia.unsplash.search');
     Route::post('multimedia/unsplash', [MediaLibraryController::class, 'unsplashImport'])->name('multimedia.unsplash.import');
     Route::post('multimedia/onedrive', [MediaLibraryController::class, 'oneDriveImport'])->name('multimedia.onedrive.import');
+    Route::post('multimedia/upload-ajax', [MediaLibraryController::class, 'uploadAjax'])->name('multimedia.upload-ajax');
     Route::get('multimedia/eksport', [MediaLibraryController::class, 'export'])->name('multimedia.export');
     Route::post('multimedia/import', [MediaLibraryController::class, 'import'])->name('multimedia.import');
     Route::post('multimedia', [MediaLibraryController::class, 'store'])->name('multimedia.store');

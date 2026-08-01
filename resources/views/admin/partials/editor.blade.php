@@ -73,6 +73,7 @@
         </button>
         <div x-show="open" x-cloak class="absolute left-0 z-20 mt-1 w-60 rounded-lg border border-gray-200 bg-white p-1 shadow-lg" role="menu">
             <button type="button" id="{{ $editorId }}-media" @click="open = false" class="{{ $mi }}"><i class="fa-solid fa-images w-4 text-center" aria-hidden="true"></i> Obraz z biblioteki</button>
+            <button type="button" id="{{ $editorId }}-gallery" @click="open = false" class="{{ $mi }}"><i class="fa-solid fa-border-all w-4 text-center" aria-hidden="true"></i> Galeria zdjęć</button>
             <button type="button" id="{{ $editorId }}-cta" @click="open = false" class="{{ $mi }}"><i class="fa-solid fa-square w-4 text-center text-brand" aria-hidden="true"></i> Przycisk CTA</button>
             <button type="button" data-insert-key="red" @click="open = false" class="{{ $mi }}"><i class="fa-solid fa-square w-4 text-center" style="color:#c81e1e" aria-hidden="true"></i> Przycisk czerwony</button>
             <button type="button" data-insert-key="green" @click="open = false" class="{{ $mi }}"><i class="fa-solid fa-square w-4 text-center" style="color:#15803d" aria-hidden="true"></i> Przycisk zielony</button>
@@ -265,6 +266,40 @@
         <div class="mt-4 flex justify-end gap-2">
             <button type="button" data-anchor-link-close class="rounded border border-gray-300 px-3 py-1.5 text-sm text-ink hover:bg-gray-50">Anuluj</button>
             <button type="button" id="{{ $editorId }}-anchor-link-submit" class="rounded bg-brand px-3 py-1.5 text-sm font-bold text-white hover:bg-brand-dark">Wstaw link</button>
+        </div>
+    </div>
+</div>
+
+{{-- Modal: galeria zdjęć (multi-select) --}}
+<div id="{{ $editorId }}-gallery-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 p-4"
+     role="dialog" aria-modal="true" aria-labelledby="{{ $editorId }}-gallery-modal-title">
+    <div class="flex max-h-[85vh] w-full max-w-4xl flex-col overflow-hidden rounded-lg bg-white p-5">
+        <div class="mb-3 flex items-center justify-between">
+            <h2 id="{{ $editorId }}-gallery-modal-title" class="text-base font-bold">Wstaw galerię zdjęć</h2>
+            <button type="button" data-gallery-close class="text-muted hover:text-red-600" aria-label="Zamknij okno galerii"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="mb-3 flex flex-wrap items-center gap-4">
+            <div class="flex items-center gap-2">
+                <label for="{{ $editorId }}-gallery-cols" class="text-xs font-bold">Kolumny:</label>
+                <select id="{{ $editorId }}-gallery-cols" class="rounded border-gray-300 py-1 text-sm focus:border-brand focus:ring-brand">
+                    <option value="2">2</option>
+                    <option value="3" selected>3</option>
+                    <option value="4">4</option>
+                </select>
+            </div>
+            <span id="{{ $editorId }}-gallery-count" class="text-xs text-muted" aria-live="polite">Zaznaczono: 0 zdjęć</span>
+            <button type="button" id="{{ $editorId }}-gallery-submit" disabled
+                class="ml-auto rounded bg-brand px-4 py-1.5 text-sm font-bold text-white hover:bg-brand-dark disabled:opacity-40">
+                <i class="fa-solid fa-border-all" aria-hidden="true"></i> Wstaw galerię
+            </button>
+        </div>
+        <label class="sr-only" for="{{ $editorId }}-gallery-search">Szukaj zdjęcia po nazwie pliku</label>
+        <input type="search" id="{{ $editorId }}-gallery-search" placeholder="Szukaj po nazwie pliku…"
+            class="mb-3 w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+        <div class="flex-1 overflow-y-auto">
+            <p id="{{ $editorId }}-gallery-loading" class="py-6 text-center text-sm text-muted" aria-live="polite">Ładowanie zdjęć…</p>
+            <div id="{{ $editorId }}-gallery-grid" class="grid grid-cols-3 gap-2 sm:grid-cols-4 lg:grid-cols-5"></div>
+            <p id="{{ $editorId }}-gallery-empty" class="hidden py-6 text-center text-sm text-muted">Brak zdjęć.</p>
         </div>
     </div>
 </div>
@@ -639,6 +674,110 @@
 
 <script>
     (function () {
+        var gmModal   = document.getElementById('{{ $editorId }}-gallery-modal');
+        var gmGrid    = document.getElementById('{{ $editorId }}-gallery-grid');
+        var gmSearch  = document.getElementById('{{ $editorId }}-gallery-search');
+        var gmEmpty   = document.getElementById('{{ $editorId }}-gallery-empty');
+        var gmLoading = document.getElementById('{{ $editorId }}-gallery-loading');
+        var gmCount   = document.getElementById('{{ $editorId }}-gallery-count');
+        var gmSubmit  = document.getElementById('{{ $editorId }}-gallery-submit');
+        var gmCols    = document.getElementById('{{ $editorId }}-gallery-cols');
+        var gmAllImages = null;
+        var gmSelected  = [];
+
+        function gmEsc(t) {
+            return (t || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        }
+
+        function gmCurrentList() {
+            var q = gmSearch.value.toLowerCase();
+            if (!gmAllImages) return [];
+            return q ? gmAllImages.filter(function (i) {
+                return i.file_name.toLowerCase().indexOf(q) !== -1 || i.alt.toLowerCase().indexOf(q) !== -1;
+            }) : gmAllImages;
+        }
+
+        function gmRender(list) {
+            gmGrid.innerHTML = '';
+            gmEmpty.classList.toggle('hidden', list.length > 0);
+            list.forEach(function (image) {
+                var sel = gmSelected.some(function (s) { return s.id === image.id; });
+                var btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'relative overflow-hidden rounded border-2 text-left transition-colors '
+                    + (sel ? 'border-brand' : 'border-transparent hover:border-gray-300');
+                btn.setAttribute('aria-pressed', sel ? 'true' : 'false');
+                btn.setAttribute('aria-label', (sel ? 'Odznacz: ' : 'Zaznacz: ') + image.file_name);
+                btn.innerHTML = '<img src="' + image.url + '" alt="" class="h-24 w-full object-cover">'
+                    + (sel ? '<span class="absolute top-1 right-1 flex h-5 w-5 items-center justify-center rounded-full bg-brand text-white text-[10px]" aria-hidden="true"><i class="fa-solid fa-check"></i></span>' : '');
+                btn.addEventListener('click', function () {
+                    var idx = gmSelected.findIndex(function (s) { return s.id === image.id; });
+                    if (idx >= 0) gmSelected.splice(idx, 1); else gmSelected.push(image);
+                    gmRender(gmCurrentList());
+                    gmUpdateCount();
+                });
+                gmGrid.appendChild(btn);
+            });
+        }
+
+        function gmUpdateCount() {
+            var n = gmSelected.length;
+            var label = n === 1 ? '1 zdjęcie' : (n < 5 && n > 1 ? n + ' zdjęcia' : n + ' zdjęć');
+            gmCount.textContent = 'Zaznaczono: ' + label;
+            gmSubmit.disabled = n === 0;
+        }
+
+        function loadGalleryImages() {
+            if (gmAllImages !== null) { gmLoading.classList.add('hidden'); gmRender(gmAllImages); return; }
+            fetch('{{ route('admin.multimedia.images') }}')
+                .then(function (res) { return res.json(); })
+                .then(function (data) {
+                    gmAllImages = data;
+                    gmLoading.classList.add('hidden');
+                    gmRender(data);
+                });
+        }
+
+        gmSearch.addEventListener('input', function () { if (gmAllImages) gmRender(gmCurrentList()); });
+
+        gmSubmit.addEventListener('click', function () {
+            if (!gmSelected.length) return;
+            var cols = gmCols.value;
+            var colClass = cols === '3' ? '' : ' content-gallery--cols-' + cols;
+            var figures = gmSelected.map(function (img) {
+                return '<figure><img src="' + img.url + '" alt="' + gmEsc(img.alt) + '" loading="lazy"></figure>';
+            }).join('');
+            var html = '<div class="content-gallery' + colClass + '" role="group" aria-label="Galeria zdjęć">'
+                + figures + '</div><p>&nbsp;</p>';
+            gmModal.dispatchEvent(new CustomEvent('gallery-picked', {detail: {html: html}}));
+            gmClose();
+        });
+
+        function gmOpen() {
+            gmSelected = [];
+            gmModal.classList.remove('hidden');
+            gmModal.classList.add('flex');
+            gmUpdateCount();
+            loadGalleryImages();
+            gmSearch.value = '';
+            gmSearch.focus();
+        }
+
+        function gmClose() {
+            gmModal.classList.add('hidden');
+            gmModal.classList.remove('flex');
+        }
+
+        gmModal.querySelectorAll('[data-gallery-close]').forEach(function (btn) { btn.addEventListener('click', gmClose); });
+        gmModal.addEventListener('click', function (e) { if (e.target === gmModal) gmClose(); });
+        gmModal.addEventListener('keydown', function (e) { if (e.key === 'Escape') gmClose(); });
+
+        window['__gmOpen_{{ $editorId }}'] = gmOpen;
+    })();
+</script>
+
+<script>
+    (function () {
         var afModal   = document.getElementById('{{ $editorId }}-attachment-modal');
         var afList    = document.getElementById('{{ $editorId }}-af-list');
         var afSearch  = document.getElementById('{{ $editorId }}-af-search');
@@ -971,7 +1110,13 @@
                 var textarea = document.getElementById('{{ $editorId }}');
                 var modal = document.getElementById('{{ $editorId }}-media-modal');
 
-                ClassicEditor.create(textarea).then(function (editor) {
+                var ckCsrfToken = document.querySelector('input[name=_token]')?.value || '';
+                ClassicEditor.create(textarea, {
+                    simpleUpload: {
+                        uploadUrl: '{{ route('admin.multimedia.upload-ajax') }}',
+                        headers: { 'X-CSRF-TOKEN': ckCsrfToken },
+                    },
+                }).then(function (editor) {
                     var form = textarea.closest('form');
                     editor.ui.view.element.id = '{{ $editorId }}-ck-wrapper';
 
@@ -1118,6 +1263,17 @@
                         editor.model.insertContent(modelFragment);
                         editor.editing.view.focus();
                     });
+
+                    document.getElementById('{{ $editorId }}-gallery-modal').addEventListener('gallery-picked', function (event) {
+                        var viewFragment = editor.data.processor.toView(event.detail.html);
+                        var modelFragment = editor.data.toModel(viewFragment);
+                        editor.model.insertContent(modelFragment);
+                        editor.editing.view.focus();
+                    });
+
+                    document.getElementById('{{ $editorId }}-gallery').addEventListener('click', function () {
+                        window['__gmOpen_{{ $editorId }}']?.();
+                    });
                 });
             }
 
@@ -1198,6 +1354,29 @@
                     toolbar: 'undo redo | blocks | bold italic underline forecolor backcolor | alignleft aligncenter alignright | bullist numlist | link table media accordion | insertmenu linkmenu | removeformat charmap emoticons | searchreplace visualblocks fullscreen preview | a11ycheck help | code',
                     toolbar_mode: 'wrap',
                     statusbar: true,
+                    paste_data_images: true,
+                    automatic_uploads: true,
+                    images_upload_handler: function (blobInfo, progress) {
+                        return new Promise(function (resolve, reject) {
+                            var formData = new FormData();
+                            formData.append('file', blobInfo.blob(), blobInfo.filename());
+                            formData.append('_token', document.querySelector('input[name=_token]').value);
+                            var xhr = new XMLHttpRequest();
+                            xhr.open('POST', '{{ route('admin.multimedia.upload-ajax') }}');
+                            xhr.upload.onprogress = function (e) {
+                                if (e.lengthComputable) progress(e.loaded / e.total * 100);
+                            };
+                            xhr.onload = function () {
+                                if (xhr.status >= 200 && xhr.status < 300) {
+                                    resolve(JSON.parse(xhr.responseText).location);
+                                } else {
+                                    reject({ message: 'Błąd uploadu (' + xhr.status + ')', remove: true });
+                                }
+                            };
+                            xhr.onerror = function () { reject({ message: 'Błąd sieci', remove: true }); };
+                            xhr.send(formData);
+                        });
+                    },
                     elementpath: false,
                     // Autozapis roboczy w przeglądarce — po awarii można przywrócić wersję.
                     autosave_interval: '20s',
@@ -1222,6 +1401,7 @@
                             fetch: function (cb) {
                                 var items = [
                                     { type: 'menuitem', text: 'Obraz z biblioteki', icon: 'image', onAction: function () { document.getElementById('{{ $editorId }}-media').click(); } },
+                                    { type: 'menuitem', text: 'Galeria zdjęć', icon: 'gallery', onAction: function () { window['__gmOpen_{{ $editorId }}']?.(); } },
                                     { type: 'menuitem', text: 'Przycisk CTA', onAction: function () { editor.insertContent(ctaHtml); } },
                                     { type: 'menuitem', text: 'Przycisk czerwony', onAction: function () { editor.insertContent(snippets.red); } },
                                     { type: 'menuitem', text: 'Przycisk zielony', onAction: function () { editor.insertContent(snippets.green); } },
@@ -1328,6 +1508,9 @@
                                 var meta = [a.extension, a.size].filter(Boolean).join(', ');
                                 var label = a.label + (meta ? ' (' + meta + ')' : '');
                                 editor.insertContent('<p><a href="' + a.url + '" download class="cta-button"><i class="fa-solid fa-file-arrow-down" aria-hidden="true"></i> Pobierz: ' + label + '</a></p>');
+                            });
+                            document.getElementById('{{ $editorId }}-gallery-modal').addEventListener('gallery-picked', function (event) {
+                                editor.insertContent(event.detail.html);
                             });
                             document.getElementById('{{ $editorId }}-anchor-insert-modal').addEventListener('anchor-insert', function (event) {
                                 editor.insertContent('<a id="' + event.detail.id + '" class="page-anchor" aria-hidden="true"></a>');

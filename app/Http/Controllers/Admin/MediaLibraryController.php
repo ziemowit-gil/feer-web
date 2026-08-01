@@ -219,6 +219,31 @@ class MediaLibraryController extends Controller
      * be rejected with a 422.
      */
     /**
+     * Receives a single file via XHR/fetch (drag-drop or paste in the content
+     * editor) and saves it to the media library. Returns JSON in a format that
+     * both TinyMCE (location) and CKEditor SimpleUploadAdapter (url) expect.
+     */
+    public function uploadAjax(Request $request)
+    {
+        $request->validate([
+            'file' => ['required', 'file', 'mimes:jpg,jpeg,png,gif,webp,bmp,avif,svg,pdf,doc,docx,xls,xlsx,ppt,pptx,odt,ods,odp,zip', 'max:20480'],
+        ], [], ['file' => 'plik']);
+
+        $media = MediaLibrary::instance()
+            ->addMedia($request->file('file'))
+            ->toMediaCollection('files');
+
+        $url = $media->getUrl();
+
+        return response()->json([
+            'location' => $url,
+            'url' => $url,
+            'id' => $media->id,
+            'file_name' => $media->file_name,
+        ]);
+    }
+
+    /**
      * Downloads an image from OneDrive and saves it into the media library.
      * Two modes:
      *  - download_url: pre-authenticated URL returned by the OneDrive File Picker SDK
