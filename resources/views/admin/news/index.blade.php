@@ -101,7 +101,9 @@
                                     @csrf
                                     <button type="submit" class="text-muted hover:text-brand" title="Klonuj"><i class="fa-solid fa-copy"></i></button>
                                 </form>
-                                <form method="POST" action="{{ route('admin.newsy.destroy', $item) }}" data-confirm="Usunąć news „{{ $item->title }}"?">
+                                <form method="POST" action="{{ route('admin.newsy.destroy', $item) }}"
+                                    data-confirm="Usunąć news „{{ $item->title }}"?"
+                                    @if ($item->clones_count > 0) data-clone-count="{{ $item->clones_count }}" @endif>
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="text-muted hover:text-red-600" title="Usuń" aria-label="Usuń news {{ $item->title }}"><i class="fa-solid fa-trash" aria-hidden="true"></i></button>

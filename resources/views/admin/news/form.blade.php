@@ -496,7 +496,8 @@
                     </button>
                 </form>
                 <form method="POST" action="{{ route('admin.newsy.destroy', $news) }}"
-                    data-confirm="Usunąć news „{{ $news->title }}"? Operacji nie można cofnąć.">
+                    data-confirm="Usunąć news „{{ $news->title }}"? Operacji nie można cofnąć."
+                    @if (($clonesCount ?? 0) > 0) data-clone-count="{{ $clonesCount }}" @endif>
                     @csrf @method('DELETE')
                     <button type="submit" class="text-sm font-bold text-red-600 hover:text-red-700">
                         <i class="fa-solid fa-trash mr-1" aria-hidden="true"></i>Usuń news

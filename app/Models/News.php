@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
@@ -39,7 +40,7 @@ class News extends Model implements HasMedia
     }
 
     protected $fillable = [
-        'news_category_id', 'project_id', 'title', 'slug', 'excerpt', 'audience', 'accent_color', 'image_alt', 'content', 'published_at', 'is_published', 'is_featured', 'is_archived', 'is_clone',
+        'news_category_id', 'project_id', 'title', 'slug', 'excerpt', 'audience', 'accent_color', 'image_alt', 'content', 'published_at', 'is_published', 'is_featured', 'is_archived', 'is_clone', 'cloned_from_id',
         'meta_title', 'meta_description', 'pending_approval', 'submitted_by_id',
     ];
 
@@ -70,6 +71,11 @@ class News extends Model implements HasMedia
     public function tags(): BelongsToMany
     {
         return $this->belongsToMany(Tag::class);
+    }
+
+    public function clones(): HasMany
+    {
+        return $this->hasMany(self::class, 'cloned_from_id');
     }
 
     public function scopePublished(Builder $query): Builder

@@ -33,6 +33,7 @@ class NewsController extends Controller
         };
 
         $news = News::with(['category', 'tags'])
+            ->withCount('clones')
             ->when($search !== '', fn ($q) => $q->where('title', 'like', "%{$search}%"))
             ->when($status === 'published', fn ($q) => $q->where('is_published', true))
             ->when($status === 'draft', fn ($q) => $q->where('is_published', false))
@@ -80,6 +81,7 @@ class NewsController extends Controller
             'news' => $news->load('tags'),
             'newsCategories' => NewsCategory::orderBy('order')->orderBy('name')->get(),
             'projects' => Project::orderBy('title')->get(),
+            'clonesCount' => $news->clones()->count(),
         ]);
     }
 
