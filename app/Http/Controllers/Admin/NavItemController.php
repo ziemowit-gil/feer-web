@@ -7,6 +7,7 @@ use App\Models\NavItem;
 use App\Models\Page;
 use App\Models\SiteSetting;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 
 class NavItemController extends Controller
@@ -110,6 +111,32 @@ class NavItemController extends Controller
         return redirect()->route('admin.pozycje-menu.index', ['location' => $navItem->location])
             ->with($status['ok'] ? 'status' : 'error', $status['message'])
             ->with('focus_nav', $navItem->id);
+    }
+
+    /**
+     * Zapisuje nową kolejność i zagnieżdżenie po drag & drop.
+     * Przyjmuje tablicę {id, parent_id, order} dla wszystkich pozycji menu
+     * w danej lokalizacji — klient wysyła kompletny snapshot, nie delty.
+     */
+    public function reorder(Request $request)
+    {
+        $data = $request->validate([
+            'items'            => ['required', 'array', 'min:1'],
+            'items.*.id'       => ['required', 'integer', 'exists:nav_items,id'],
+            'items.*.parent_id'=> ['nullable', 'integer', 'exists:nav_items,id'],
+            'items.*.order'    => ['required', 'integer', 'min:0'],
+        ]);
+
+        DB::transaction(function () use ($data) {
+            foreach ($data['items'] as $item) {
+                NavItem::where('id', $item['id'])->update([
+                    'parent_id' => $item['parent_id'] ?? null,
+                    'order'     => $item['order'],
+                ]);
+            }
+        });
+
+        return response()->json(['ok' => true]);
     }
 
     public function destroy(NavItem $navItem)

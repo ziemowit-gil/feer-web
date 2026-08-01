@@ -16,7 +16,8 @@ class PageController extends Controller
     public function show(Request $request, Page $page)
     {
         $preview = $this->isPreviewRequest($request);
-        abort_unless($page->is_published || $preview, 404);
+        $isLive = $page->is_published && ($page->publish_at === null || $page->publish_at->isPast());
+        abort_unless($isLive || $preview, 404);
 
         // Strona wewnętrzna (także „Panel współpracownika"): sprawdź autoryzację.
         if ($page->isAccessRestricted() && ! $page->accessGranted()) {

@@ -322,6 +322,7 @@ class PageController extends Controller
         $data['project_display'] = $data['project_id'] ? ($data['project_display'] ?? 'link') : 'link';
         $data['slug'] = trim($data['slug'] ?? '');
         $data['is_published'] = $request->boolean('is_published');
+        $data['publish_at'] = $request->filled('publish_at') ? $request->input('publish_at') : null;
         $data['is_archived'] = $request->boolean('is_archived');
         $data['show_in_menu'] = $request->boolean('show_in_menu');
         $data['show_side_nav'] = $request->boolean('show_side_nav');

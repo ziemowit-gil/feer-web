@@ -18,11 +18,16 @@
     $btn = 'inline-flex h-8 w-8 items-center justify-center rounded text-muted transition-colors hover:bg-gray-100 hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-muted';
 @endphp
 
-<li id="nav-item-{{ $item->id }}" role="treeitem" aria-level="{{ $level }}" aria-setsize="{{ $setsize }}" aria-posinset="{{ $position }}"
+<li id="nav-item-{{ $item->id }}" data-id="{{ $item->id }}" role="treeitem" aria-level="{{ $level }}" aria-setsize="{{ $setsize }}" aria-posinset="{{ $position }}"
     @if ($hasChildren) x-data="{ expanded: true }" :aria-expanded="expanded" @endif
     class="list-none py-1">
 
     <div class="flex flex-wrap items-center gap-x-2 gap-y-2 rounded px-2 py-1.5 hover:bg-gray-50 @if ($level === 2) ml-6 border-l-2 border-gray-100 pl-3 @endif">
+
+        {{-- Uchwyt drag & drop — widoczny tylko dla użytkowników myszy --}}
+        <span class="drag-handle hidden cursor-grab touch-none select-none text-gray-300 hover:text-gray-500 active:cursor-grabbing sm:block" aria-hidden="true" title="Przeciągnij, aby zmienić kolejność">
+            <i class="fa-solid fa-grip-vertical text-sm"></i>
+        </span>
 
         {{-- Rozwijanie / zwijanie gałęzi (odzwierciedla aria-expanded) --}}
         @if ($hasChildren)

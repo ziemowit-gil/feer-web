@@ -31,11 +31,14 @@
 
     <div x-data="menuBuilder({{ Js::from($reopen) }}, {{ Js::from(route('admin.pozycje-menu.store')) }})"
         @keydown.escape.window="close()">
-        <p class="mb-4 text-sm text-muted">
+        <p class=”mb-4 text-sm text-muted”>
             Pozycje menu wyświetlanego w nagłówku strony. Pozycja typu „Rozwijane menu” może mieć własne podpozycje (submenu),
-            a „Menu projektów” pobiera zawartość automatycznie z kategorii projektów (<a href="{{ route('admin.kategorie.index') }}" class="rounded text-brand hover:text-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">zarządzaj kategoriami</a>).
-            Kolejność i zagnieżdżenie zmieniasz przyciskami strzałek — bez przeciągania myszą.
+            a „Menu projektów” pobiera zawartość automatycznie z kategorii projektów (<a href=”{{ route('admin.kategorie.index') }}” class=”rounded text-brand hover:text-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand”>zarządzaj kategoriami</a>).
+            Kolejność zmieniasz przeciągając <i class=”fa-solid fa-grip-vertical text-gray-400” aria-hidden=”true”></i> lub przyciskami strzałek (dostępność klawiatury). Zagnieżdżenie — tylko przyciskami <i class=”fa-solid fa-arrow-right-long text-gray-400” aria-hidden=”true”></i><i class=”fa-solid fa-arrow-left-long text-gray-400” aria-hidden=”true”></i>.
         </p>
+
+        {{-- Wskaźnik zapisu po drag & drop (ukryty do czasu użycia) --}}
+        <div id=”nav-dnd-status” role=”status” aria-live=”polite” class=”mb-3 hidden rounded border px-3 py-2 text-sm”></div>
 
         <div class="mb-4 flex justify-end">
             <button type="button" @click="openCreate($event)" data-location="{{ $location }}"
@@ -112,6 +115,74 @@
             })();
         </script>
     @endif
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js" integrity="sha512-Eezs+g9Lq4TCCq0wae01s9PuNWzHYoCMkE97e2qdkYthpI0pzC3UGB03lgEHn2XM85hDOUF6qgqqszs+iXU4Q==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script>
+        (function () {
+            var reorderUrl = '{{ route('admin.pozycje-menu.reorder') }}';
+            var csrfToken = document.querySelector('meta[name="csrf-token"]')?.content
+                || document.querySelector('input[name="_token"]')?.value || '';
+            var statusEl = document.getElementById('nav-dnd-status');
+            var saveTimer = null;
+
+            function showStatus(msg, isError) {
+                statusEl.textContent = msg;
+                statusEl.className = 'mb-3 rounded border px-3 py-2 text-sm '
+                    + (isError ? 'border-red-200 bg-red-50 text-red-700' : 'border-green-200 bg-green-50 text-green-700');
+                statusEl.classList.remove('hidden');
+                clearTimeout(saveTimer);
+                saveTimer = setTimeout(() => statusEl.classList.add('hidden'), 3000);
+            }
+
+            function collectItems() {
+                var items = [];
+                var topList = document.querySelector('[role="tree"]');
+                if (!topList) return items;
+                topList.querySelectorAll(':scope > li[data-id]').forEach(function (li, idx) {
+                    items.push({ id: parseInt(li.dataset.id), parent_id: null, order: idx });
+                    var childList = li.querySelector(':scope > ul[role="group"]');
+                    if (childList) {
+                        childList.querySelectorAll(':scope > li[data-id]').forEach(function (child, cidx) {
+                            items.push({ id: parseInt(child.dataset.id), parent_id: parseInt(li.dataset.id), order: cidx });
+                        });
+                    }
+                });
+                return items;
+            }
+
+            function save() {
+                var items = collectItems();
+                fetch(reorderUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' },
+                    body: JSON.stringify({ items: items }),
+                })
+                .then(function (r) { return r.json(); })
+                .then(function (data) {
+                    if (data.ok) showStatus('Kolejność zapisana.', false);
+                    else showStatus('Błąd zapisu kolejności.', true);
+                })
+                .catch(function () { showStatus('Błąd sieci — kolejność niezapisana.', true); });
+            }
+
+            var sortableOpts = {
+                animation: 150,
+                handle: '.drag-handle',
+                ghostClass: 'opacity-50',
+                onEnd: save,
+            };
+
+            document.addEventListener('DOMContentLoaded', function () {
+                var topList = document.querySelector('[role="tree"]');
+                if (topList) {
+                    new Sortable(topList, sortableOpts);
+                    topList.querySelectorAll('[role="group"]').forEach(function (ul) {
+                        new Sortable(ul, sortableOpts);
+                    });
+                }
+            });
+        })();
+    </script>
 
     <script>
         document.addEventListener('alpine:init', () => {

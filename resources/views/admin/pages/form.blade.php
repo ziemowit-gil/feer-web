@@ -834,7 +834,8 @@
             {{-- ==================== PUBLIKACJA I POWIĄZANIA ==================== --}}
             <div data-ftab-panel="ustawienia" class="hidden space-y-6">
                 {{-- Karta: widoczność i status --}}
-                <div class="rounded-lg border border-gray-200 bg-white p-6">
+                <div class="rounded-lg border border-gray-200 bg-white p-6"
+                    x-data="{ pub: {{ old('is_published', $page->is_published ?? true) ? 'true' : 'false' }} }">
                     <div class="mb-4">
                         <h2 class="text-base font-bold text-ink">Widoczność i status</h2>
                         <p class="mt-0.5 text-xs text-muted">Decyduje, czy i jak strona pojawia się w serwisie.</p>
@@ -843,6 +844,7 @@
                     <div class="grid gap-3 sm:grid-cols-2">
                         <label class="flex items-start gap-3 rounded-lg border border-gray-200 p-3">
                             <input type="checkbox" name="is_published" value="1" {{ old('is_published', $page->is_published ?? true) ? 'checked' : '' }}
+                                @change="pub = $event.target.checked"
                                 class="mt-0.5 rounded border-gray-300 text-brand focus:ring-brand">
                             <span>
                                 <span class="block text-sm font-bold">Opublikowana</span>
@@ -913,6 +915,24 @@
                                 <span>Ta strona jest zablokowana do edycji przez administratora.</span>
                             </p>
                         @endif
+                    </div>
+
+                    {{-- Harmonogram: data i godzina pierwszego pokazania strony --}}
+                    <div x-show="pub" x-cloak class="mt-4 flex flex-wrap items-end gap-4 rounded-lg border border-blue-100 bg-blue-50/50 p-4">
+                        <div>
+                            <label for="publish_at" class="mb-1 block text-sm font-bold text-ink">
+                                <i class="fa-regular fa-clock mr-1 text-blue-400" aria-hidden="true"></i>
+                                Opublikuj dopiero od
+                                <span class="font-normal text-muted">(opcjonalnie)</span>
+                            </label>
+                            <input type="datetime-local" id="publish_at" name="publish_at"
+                                value="{{ old('publish_at', $page->publish_at?->format('Y-m-d\TH:i')) }}"
+                                class="rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                            @error('publish_at') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                        </div>
+                        <p class="text-xs text-muted">
+                            Puste = widoczna natychmiast. Podaj datę, aby strona pojawiła się publicznie dopiero od tej chwili — wcześniej niedostępna dla odwiedzających.
+                        </p>
                     </div>
                 </div>
 

@@ -153,7 +153,7 @@ class Page extends Model
     public const DEFAULT_WIP_NOTICE_MESSAGE = 'Wprowadzamy zmiany na tej stronie — nie wszystkie elementy mogą jeszcze działać poprawnie.';
 
     protected $fillable = [
-        'parent_id', 'project_id', 'project_display', 'title', 'slug', 'content', 'is_published', 'is_featured', 'is_archived', 'show_in_menu', 'show_side_nav', 'is_system', 'is_locked', 'order',
+        'parent_id', 'project_id', 'project_display', 'title', 'slug', 'content', 'is_published', 'publish_at', 'is_featured', 'is_archived', 'show_in_menu', 'show_side_nav', 'is_system', 'is_locked', 'order',
         'meta_title', 'meta_description', 'pending_approval', 'submitted_by_id',
         'is_disabled', 'disabled_message', 'wip_mode', 'wip_message',
         'type', 'event_mode', 'event_when', 'event_location', 'event_how_to_join', 'event_registration_url',
@@ -166,6 +166,7 @@ class Page extends Model
 
     protected $casts = [
         'is_published' => 'boolean',
+        'publish_at' => 'datetime',
         'is_featured' => 'boolean',
         'is_archived' => 'boolean',
         'pending_approval' => 'boolean',

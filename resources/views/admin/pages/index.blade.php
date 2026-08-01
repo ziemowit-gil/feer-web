@@ -93,8 +93,10 @@
                             @if ($page->is_featured)
                                 <span class="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-bold text-amber-700"><i class="fa-solid fa-star"></i> Wyróżniona</span>
                             @endif
-                            @if ($page->is_published)
+                            @if ($page->is_published && ($page->publish_at === null || $page->publish_at->isPast()))
                                 <span class="rounded-full bg-green-100 px-2 py-0.5 text-xs font-bold text-green-700">Opublikowana</span>
+                            @elseif ($page->is_published)
+                                <span class="rounded-full bg-blue-100 px-2 py-0.5 text-xs font-bold text-blue-700" title="Pojawi się {{ $page->publish_at?->format('d.m.Y H:i') }}"><i class="fa-regular fa-clock"></i> Zaplanowana</span>
                             @else
                                 <span class="rounded-full bg-gray-100 px-2 py-0.5 text-xs font-bold text-gray-500">Szkic</span>
                             @endif
@@ -128,10 +130,10 @@
                                         <i class="fa-solid fa-plus" aria-hidden="true"></i> podstrona
                                     </a>
                                 @endunless
-                                @if ($page->is_published)
+                                @if ($page->is_published && ($page->publish_at === null || $page->publish_at->isPast()))
                                     <a href="{{ route('page.show', $page) }}" target="_blank" class="text-muted hover:text-brand" title="Podgląd"><i class="fa-solid fa-eye"></i></a>
                                 @else
-                                    <a href="{{ $page->previewUrl() }}" target="_blank" rel="noopener" class="text-amber-600 hover:text-amber-700" title="Podgląd wersji roboczej (link ważny 14 dni)"><i class="fa-solid fa-eye"></i></a>
+                                    <a href="{{ $page->previewUrl() }}" target="_blank" rel="noopener" class="text-amber-600 hover:text-amber-700" title="{{ $page->is_published ? 'Zaplanowana — podgląd wersji roboczej' : 'Podgląd wersji roboczej (link ważny 14 dni)' }}"><i class="fa-solid fa-eye"></i></a>
                                 @endif
                                 <a href="{{ route('admin.podstrony.edit', $page) }}" class="text-muted hover:text-brand" title="Edytuj"><i class="fa-solid fa-pen"></i></a>
                                 <form method="POST" action="{{ route('admin.podstrony.clone', $page) }}" data-confirm="Zduplikować stronę „{{ $page->title }}"? Kopia zostanie zapisana jako szkic.">
