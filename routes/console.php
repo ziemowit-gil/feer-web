@@ -10,3 +10,6 @@ Artisan::command('inspire', function () {
 
 // Codzienna auto-archiwizacja przeterminowanych wydarzeń i ogłoszeń wolontariatu.
 Schedule::command('content:auto-archive')->dailyAt('03:00');
+
+// Poranne przypomnienia o zadaniach z terminem na jutro.
+Schedule::command('tasks:remind-due')->dailyAt('08:00');

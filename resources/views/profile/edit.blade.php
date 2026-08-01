@@ -25,6 +25,12 @@
             @include('profile.partials.two-factor-form')
         </section>
 
+        <section id="powiadomienia" class="scroll-mt-6 rounded-lg border border-gray-200 bg-white p-6">
+            <div class="max-w-xl">
+                @include('profile.partials.notification-preferences-form')
+            </div>
+        </section>
+
         <section class="rounded-lg border border-red-200 bg-white p-6">
             <div class="max-w-xl">
                 @include('profile.partials.delete-user-form')

@@ -41,6 +41,7 @@ use App\Http\Controllers\Admin\TimelineController as AdminTimelineController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\Admin\UserGroupController as AdminUserGroupController;
 use App\Http\Controllers\Admin\ContentTemplateController as AdminContentTemplateController;
+use App\Http\Controllers\Admin\TaskController as AdminTaskController;
 use App\Http\Controllers\Admin\VolunteerAdController as AdminVolunteerAdController;
 use App\Http\Controllers\AccessibilityController;
 use App\Http\Controllers\AccessibilityReportController;
@@ -165,6 +166,7 @@ Route::redirect('/dashboard', '/'.config('app.admin_prefix', 'admin'))->middlewa
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::patch('/profile/powiadomienia', [ProfileController::class, 'updateNotifications'])->name('profile.notifications');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
@@ -180,6 +182,10 @@ Route::middleware(['auth', 'verified', '2fa'])->prefix(config('app.admin_prefix'
 
     // Centrum powiadomień — oznaczanie jako przejrzane.
     Route::post('powiadomienia/widziano', [AdminNotificationController::class, 'seen'])->name('powiadomienia.seen');
+
+    // Zadania (lista + CRUD + szybkie oznaczenie jako done).
+    Route::resource('zadania', AdminTaskController::class)->parameters(['zadania' => 'zadanie'])->except('show');
+    Route::post('zadania/{zadanie}/done', [AdminTaskController::class, 'done'])->name('zadania.done');
 
     // Blokada równoczesnej edycji (heartbeat, dostęp per moduł w kontrolerze).
     Route::post('blokada-edycji', AdminEditLockController::class)->name('edit-lock');

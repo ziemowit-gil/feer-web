@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-#[Fillable(['name', 'email', 'password', 'role', 'user_group_id', 'microsoft_id', 'avatar', 'notifications_seen_at'])]
+#[Fillable(['name', 'email', 'password', 'role', 'user_group_id', 'microsoft_id', 'avatar', 'notifications_seen_at', 'notification_preferences'])]
 #[Hidden(['password', 'remember_token', 'two_factor_secret', 'two_factor_recovery_codes'])]
 class User extends Authenticatable
 {
@@ -40,6 +40,7 @@ class User extends Authenticatable
             'two_factor_confirmed_at' => 'datetime',
             'yubikey_ids' => 'array',
             'notifications_seen_at' => 'datetime',
+            'notification_preferences' => 'array',
         ];
     }
 

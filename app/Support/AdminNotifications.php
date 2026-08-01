@@ -3,6 +3,7 @@
 namespace App\Support;
 
 use App\Http\Controllers\Admin\ApprovalController;
+use App\Http\Controllers\Admin\TaskController;
 use App\Models\AccessibilityReport;
 use App\Models\BlogComment;
 use App\Models\MeetingSignup;
@@ -26,6 +27,9 @@ class AdminNotifications
             self::push($items, 'Treści do zatwierdzenia', ApprovalController::pendingCount(),
                 route('admin.zatwierdzanie.index'), 'fa-clipboard-check');
         }
+
+        self::push($items, 'Moje zadania', TaskController::myPendingCount($user->id),
+            route('admin.zadania.index', ['moje' => 1]), 'fa-list-check');
 
         if ($user->canAccessModule('blog')) {
             self::push($items, 'Komentarze do moderacji', BlogComment::pending()->count(),

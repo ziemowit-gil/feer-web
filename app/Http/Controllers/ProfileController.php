@@ -37,6 +37,19 @@ class ProfileController extends Controller
         return Redirect::route('profile.edit')->with('status', 'profile-updated');
     }
 
+    /** Zapisz preferencje powiadomień e-mail. */
+    public function updateNotifications(Request $request): RedirectResponse
+    {
+        $request->user()->update([
+            'notification_preferences' => [
+                'task_assigned' => $request->boolean('task_assigned'),
+                'task_due_soon' => $request->boolean('task_due_soon'),
+            ],
+        ]);
+
+        return Redirect::route('profile.edit')->with('status', 'notifications-updated');
+    }
+
     /**
      * Delete the user's account.
      */

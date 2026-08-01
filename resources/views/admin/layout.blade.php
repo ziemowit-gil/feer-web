@@ -48,6 +48,15 @@
                 <i class="fa-solid fa-gauge {{ $iconClass('admin.dashboard') }}"></i> Dashboard
             </a>
 
+            @php $myTaskCount = \App\Http\Controllers\Admin\TaskController::myPendingCount(auth()->id()); @endphp
+            <a href="{{ route('admin.zadania.index') }}" class="{{ $itemClass('admin.zadania.*') }}">
+                <i class="fa-solid fa-list-check {{ $iconClass('admin.zadania.*') }}"></i>
+                <span class="flex-1">Zadania</span>
+                @if ($myTaskCount > 0)
+                    <span class="rounded-full bg-brand px-2 py-0.5 text-xs font-bold text-white">{{ $myTaskCount }}</span>
+                @endif
+            </a>
+
             @if (auth()->user()->canApproveContent())
                 @php $pendingApprovals = \App\Http\Controllers\Admin\ApprovalController::pendingCount(); @endphp
                 <a href="{{ route('admin.zatwierdzanie.index') }}" class="{{ $itemClass('admin.zatwierdzanie.*') }}">
@@ -279,7 +288,10 @@
 
         <div class="space-y-1 border-t border-gray-200 p-3 text-sm">
             <a href="{{ route('profile.edit') }}" class="group flex items-center gap-3 rounded-lg px-3 py-2 text-muted transition-colors hover:bg-gray-100 hover:text-ink">
-                <i class="fa-solid fa-key w-5 shrink-0 text-center text-gray-400 group-hover:text-ink"></i> Zmień hasło
+                <i class="fa-solid fa-key w-5 shrink-0 text-center text-gray-400 group-hover:text-ink"></i> Profil i hasło
+            </a>
+            <a href="{{ route('profile.edit') }}#powiadomienia" class="group flex items-center gap-3 rounded-lg px-3 py-2 text-muted transition-colors hover:bg-gray-100 hover:text-ink">
+                <i class="fa-solid fa-bell w-5 shrink-0 text-center text-gray-400 group-hover:text-ink"></i> Powiadomienia
             </a>
             <a href="{{ route('home') }}" class="group flex items-center gap-3 rounded-lg px-3 py-2 text-muted transition-colors hover:bg-gray-100 hover:text-ink">
                 <i class="fa-solid fa-arrow-left w-5 shrink-0 text-center text-gray-400 group-hover:text-ink"></i> Wróć do strony
