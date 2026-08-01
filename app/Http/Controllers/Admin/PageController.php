@@ -26,7 +26,7 @@ class PageController extends Controller
             ->when($status === 'draft', fn ($q) => $q->where('is_published', false))
             ->when($sort === 'title_asc', fn ($q) => $q->orderBy('title'))
             ->when($sort === 'title_desc', fn ($q) => $q->orderByDesc('title'))
-            ->when($sort === 'default', fn ($q) => $q->orderBy('order')->orderBy('title'))
+            ->when($sort === 'default', fn ($q) => $q->orderByDesc('is_featured')->orderBy('order')->orderBy('title'))
             ->paginate(30)
             ->withQueryString();
 
@@ -112,6 +112,21 @@ class PageController extends Controller
         $message = $page->is_published
             ? "Strona „{$page->title}” została opublikowana."
             : "Strona „{$page->title}” została ukryta.";
+
+        return redirect()->route('admin.podstrony.index')->with('status', $message);
+    }
+
+    public function toggleFeatured(Page $page)
+    {
+        if ($response = $this->denyIfLocked($page)) {
+            return $response;
+        }
+
+        $page->update(['is_featured' => ! $page->is_featured]);
+
+        $message = $page->is_featured
+            ? "Strona „{$page->title}” została wyróżniona."
+            : "Usunięto wyróżnienie strony „{$page->title}”.";
 
         return redirect()->route('admin.podstrony.index')->with('status', $message);
     }

@@ -53,7 +53,7 @@
             </thead>
             <tbody class="divide-y divide-gray-100">
                 @forelse ($pages as $page)
-                    <tr>
+                    <tr @if ($page->is_featured) class="ring-1 ring-inset ring-amber-300 bg-amber-50/40" @endif>
                         <td class="px-4 py-3">
                             @unless ($page->is_system)
                                 <input type="checkbox" name="ids[]" value="{{ $page->id }}" class="page-row-check rounded border-gray-300" aria-label="Zaznacz {{ $page->title }}">
@@ -90,6 +90,9 @@
                             </form>
                         </td>
                         <td class="px-4 py-3">
+                            @if ($page->is_featured)
+                                <span class="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-bold text-amber-700"><i class="fa-solid fa-star"></i> Wyróżniona</span>
+                            @endif
                             @if ($page->is_published)
                                 <span class="rounded-full bg-green-100 px-2 py-0.5 text-xs font-bold text-green-700">Opublikowana</span>
                             @else
@@ -110,6 +113,15 @@
                         </td>
                         <td class="px-4 py-3">
                             <div class="flex items-center justify-end gap-3">
+                                <form method="POST" action="{{ route('admin.podstrony.wyroznienie', $page) }}">
+                                    @csrf
+                                    @method('PATCH')
+                                    @if ($page->is_featured)
+                                        <button type="submit" class="text-amber-500 hover:text-muted" title="Usuń wyróżnienie" aria-label="Usuń wyróżnienie strony {{ $page->title }}"><i class="fa-solid fa-star" aria-hidden="true"></i></button>
+                                    @else
+                                        <button type="submit" class="text-muted hover:text-amber-500" title="Wyróżnij stronę" aria-label="Wyróżnij stronę {{ $page->title }}"><i class="fa-regular fa-star" aria-hidden="true"></i></button>
+                                    @endif
+                                </form>
                                 @unless ($page->parent_id)
                                     <a href="{{ route('admin.podstrony.create', ['parent_id' => $page->id]) }}"
                                         class="inline-flex items-center gap-1 text-xs font-bold text-brand hover:text-brand-dark" title="Dodaj podstronę jako podrzędną w „{{ $page->title }}”">

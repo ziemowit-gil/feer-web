@@ -210,6 +210,7 @@ Route::middleware(['auth', 'verified', '2fa'])->prefix('admin')->name('admin.')-
         Route::patch('podstrony/{page}/kolejnosc', [AdminPageController::class, 'updateOrder'])->name('podstrony.kolejnosc');
         Route::patch('podstrony/{page}/widocznosc', [AdminPageController::class, 'toggleVisibility'])->name('podstrony.widocznosc');
         Route::patch('podstrony/{page}/wylacz', [AdminPageController::class, 'toggleDisabled'])->name('podstrony.wylacz');
+        Route::patch('podstrony/{page}/wyroznienie', [AdminPageController::class, 'toggleFeatured'])->name('podstrony.wyroznienie');
 
         // Oś czasu (historia) strony „O organizacji" jako osobna pozycja w menu.
         Route::get('os-czasu', [AdminTimelineController::class, 'edit'])->name('os-czasu.edit');
@@ -309,6 +310,7 @@ Route::middleware(['auth', 'verified', '2fa'])->prefix('admin')->name('admin.')-
     Route::get('multimedia/audyt-alt', [MediaLibraryController::class, 'altAudit'])->name('multimedia.alt-audit');
     Route::get('multimedia/unsplash', [MediaLibraryController::class, 'unsplashSearch'])->name('multimedia.unsplash.search');
     Route::post('multimedia/unsplash', [MediaLibraryController::class, 'unsplashImport'])->name('multimedia.unsplash.import');
+    Route::post('multimedia/onedrive', [MediaLibraryController::class, 'oneDriveImport'])->name('multimedia.onedrive.import');
     Route::get('multimedia/eksport', [MediaLibraryController::class, 'export'])->name('multimedia.export');
     Route::post('multimedia/import', [MediaLibraryController::class, 'import'])->name('multimedia.import');
     Route::post('multimedia', [MediaLibraryController::class, 'store'])->name('multimedia.store');

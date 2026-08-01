@@ -273,6 +273,7 @@
         <div class="mb-4 flex w-fit gap-1 rounded-lg border border-gray-200 bg-gray-50 p-1 text-sm font-bold">
             <button type="button" data-media-tab-btn="library" class="rounded px-3 py-1.5 bg-brand text-white">Biblioteka</button>
             <button type="button" data-media-tab-btn="unsplash" class="rounded px-3 py-1.5 text-muted hover:bg-gray-100">Unsplash</button>
+            <button type="button" data-media-tab-btn="onedrive" class="rounded px-3 py-1.5 text-muted hover:bg-gray-100">OneDrive</button>
         </div>
 
         <div data-media-panel="library">
@@ -285,22 +286,40 @@
             </div>
         </div>
 
-        <div data-media-panel="unsplash" class="hidden">
+        <div data-media-panel=”unsplash” class=”hidden”>
             {{-- Plain div, not <form>: this partial renders inside the page's own
                  <form>, and nested <form> elements are invalid HTML — browsers
                  silently drop them, along with everything depending on 'submit'. --}}
-            <div data-unsplash-form class="mb-4 flex gap-2">
-                <label class="sr-only" for="{{ $editorId }}-unsplash-search">Szukaj zdjęć na Unsplash</label>
-                <input type="search" id="{{ $editorId }}-unsplash-search" placeholder="Szukaj zdjęć na Unsplash&hellip;"
-                    class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
-                <button type="button" data-unsplash-submit class="flex-none rounded bg-brand px-3 py-1.5 text-xs font-bold text-white hover:bg-brand-dark">Szukaj</button>
+            <div data-unsplash-form class=”mb-4 flex gap-2”>
+                <label class=”sr-only” for=”{{ $editorId }}-unsplash-search”>Szukaj zdjęć na Unsplash</label>
+                <input type=”search” id=”{{ $editorId }}-unsplash-search” placeholder=”Szukaj zdjęć na Unsplash&hellip;”
+                    class=”w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand”>
+                <button type=”button” data-unsplash-submit class=”flex-none rounded bg-brand px-3 py-1.5 text-xs font-bold text-white hover:bg-brand-dark”>Szukaj</button>
             </div>
-            <div class="overflow-y-auto">
-                <div data-unsplash-grid class="grid grid-cols-3 gap-3 sm:grid-cols-4"></div>
-                <p data-unsplash-hint class="py-6 text-center text-sm text-muted">Wpisz szukaną frazę powyżej (np. „edukacja”, „dostępność”).</p>
-                <p data-unsplash-loading class="hidden py-6 text-center text-sm text-muted">Szukam&hellip;</p>
-                <p data-unsplash-error class="hidden py-6 text-center text-sm text-red-600"></p>
+            <div class=”overflow-y-auto”>
+                <div data-unsplash-grid class=”grid grid-cols-3 gap-3 sm:grid-cols-4”></div>
+                <p data-unsplash-hint class=”py-6 text-center text-sm text-muted”>Wpisz szukaną frazę powyżej (np. „edukacja”, „dostępność”).</p>
+                <p data-unsplash-loading class=”hidden py-6 text-center text-sm text-muted”>Szukam&hellip;</p>
+                <p data-unsplash-error class=”hidden py-6 text-center text-sm text-red-600”></p>
             </div>
+        </div>
+
+        <div data-media-panel=”onedrive” class=”hidden”>
+            <p class=”mb-3 text-xs text-muted”>
+                Wklej publiczny link do obrazu z OneDrive (np. <code class=”font-mono”>https://1drv.ms/i/&hellip;</code>).
+                Plik zostanie pobrany do biblioteki multimediów. Link musi być dostępny dla każdego z linkiem.
+            </p>
+            <div class=”mb-4 flex gap-2”>
+                <label class=”sr-only” for=”{{ $editorId }}-onedrive-url”>Adres URL obrazu z OneDrive</label>
+                <input type=”url” id=”{{ $editorId }}-onedrive-url” placeholder=”https://1drv.ms/i/&hellip;”
+                    class=”w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand”
+                    aria-describedby=”{{ $editorId }}-onedrive-hint”>
+                <button type=”button” data-onedrive-submit
+                    class=”flex-none rounded bg-brand px-3 py-1.5 text-xs font-bold text-white hover:bg-brand-dark disabled:opacity-50”>Importuj</button>
+            </div>
+            <p id=”{{ $editorId }}-onedrive-hint” data-onedrive-hint class=”py-6 text-center text-sm text-muted”>Wklej link z OneDrive powyżej i kliknij „Importuj”.</p>
+            <p data-onedrive-loading class=”hidden py-6 text-center text-sm text-muted” aria-live=”polite”>Pobieranie pliku z OneDrive&hellip;</p>
+            <p data-onedrive-error class=”hidden py-6 text-center text-sm text-red-600” role=”alert”></p>
         </div>
     </div>
 </div>
@@ -473,6 +492,59 @@
             if (event.key === 'Enter') {
                 event.preventDefault();
                 runUnsplashSearch();
+            }
+        });
+
+        // OneDrive: paste a public sharing link → server downloads and saves to the library.
+        var onedriveSubmitButton = modal.querySelector('[data-onedrive-submit]');
+        var onedriveUrlInput = document.getElementById('{{ $editorId }}-onedrive-url');
+        var onedriveHint = modal.querySelector('[data-onedrive-hint]');
+        var onedriveLoading = modal.querySelector('[data-onedrive-loading]');
+        var onedriveError = modal.querySelector('[data-onedrive-error]');
+
+        function runOneDriveImport() {
+            var url = onedriveUrlInput.value.trim();
+            if (!url) return;
+
+            onedriveHint.classList.add('hidden');
+            onedriveError.classList.add('hidden');
+            onedriveLoading.classList.remove('hidden');
+            onedriveSubmitButton.disabled = true;
+
+            fetch('{{ route('admin.multimedia.onedrive.import') }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('input[name=_token]').value,
+                },
+                body: JSON.stringify({url: url}),
+            })
+                .then(function (res) {
+                    return res.json().then(function (body) {
+                        if (!res.ok) throw new Error(body.message || 'Błąd importu');
+                        return body;
+                    });
+                })
+                .then(function (image) {
+                    onedriveLoading.classList.add('hidden');
+                    onedriveSubmitButton.disabled = false;
+                    onedriveUrlInput.value = '';
+                    modal.dispatchEvent(new CustomEvent('media-picked', {detail: image}));
+                    closeModal();
+                })
+                .catch(function (err) {
+                    onedriveLoading.classList.add('hidden');
+                    onedriveSubmitButton.disabled = false;
+                    onedriveError.textContent = err.message || 'Nie udało się pobrać pliku. Sprawdź, czy link jest publiczny (dostępny dla każdego z linkiem).';
+                    onedriveError.classList.remove('hidden');
+                });
+        }
+
+        onedriveSubmitButton.addEventListener('click', runOneDriveImport);
+        onedriveUrlInput.addEventListener('keydown', function (event) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                runOneDriveImport();
             }
         });
     })();

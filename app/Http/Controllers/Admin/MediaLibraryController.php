@@ -212,6 +212,61 @@ class MediaLibraryController extends Controller
     }
 
     /**
+     * Downloads an image from a public OneDrive sharing link and saves it into
+     * the media library. Uses the Microsoft Graph sharing API (no OAuth needed
+     * for "anyone with the link" personal OneDrive files). SharePoint/business
+     * accounts require the link to be set to public — internal-only links will
+     * be rejected with a 422.
+     */
+    public function oneDriveImport(Request $request)
+    {
+        $data = $request->validate([
+            'url' => ['required', 'url', 'max:1000'],
+        ]);
+
+        $shareUrl = $data['url'];
+
+        // Encode the sharing URL for the Graph API: base64url with u! prefix.
+        $encoded = 'u!'.rtrim(strtr(base64_encode($shareUrl), '+/', '-_'), '=');
+
+        $metaResponse = Http::timeout(15)->get(
+            "https://api.onedrive.com/v1.0/shares/{$encoded}/root",
+            ['$select' => 'name,file,@microsoft.graph.downloadUrl']
+        );
+
+        abort_unless($metaResponse->successful(), 422,
+            'Nie można uzyskać dostępu do pliku OneDrive. Upewnij się, że link jest udostępniony publicznie („Każda osoba mająca link").');
+
+        $meta = $metaResponse->json();
+
+        abort_unless(isset($meta['file']), 422, 'Podany link nie wskazuje na plik.');
+
+        $mimeType = $meta['file']['mimeType'] ?? '';
+        abort_unless(str_starts_with($mimeType, 'image/'), 422,
+            'Plik nie jest obrazem. Obsługiwane formaty: JPEG, PNG, GIF, WebP i inne obrazy.');
+
+        $downloadUrl = $meta['@microsoft.graph.downloadUrl'] ?? null;
+        abort_unless($downloadUrl, 422, 'Nie udało się pobrać adresu pliku z OneDrive.');
+
+        $originalName = $meta['name'] ?? null;
+        $ext = $originalName ? pathinfo($originalName, PATHINFO_EXTENSION) : 'jpg';
+        $fileName = Str::random(20).($ext ? '.'.$ext : '');
+
+        $media = MediaLibrary::instance()
+            ->addMediaFromUrl($downloadUrl)
+            ->usingFileName($fileName)
+            ->withCustomProperties(['onedrive_source' => $shareUrl])
+            ->toMediaCollection('files');
+
+        return response()->json([
+            'id' => $media->id,
+            'url' => $media->getUrl(),
+            'file_name' => $media->file_name,
+            'alt' => $originalName ? pathinfo($originalName, PATHINFO_FILENAME) : '',
+        ]);
+    }
+
+    /**
      * Uploads one or more files into the library in a single request. The
      * upload form sends `files[]`, so a user can pick or drag several files
      * at once; each is added to the standalone library and dropped into the
