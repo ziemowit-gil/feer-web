@@ -21,7 +21,7 @@ class TaskController extends Controller
 
         $query = Task::with(['assignee', 'creator'])
             ->forUser($user)
-            ->orderByRaw("FIELD(priority, 'high', 'normal', 'low')")
+            ->orderByRaw("CASE priority WHEN 'high' THEN 1 WHEN 'normal' THEN 2 ELSE 3 END")
             ->orderBy('due_date')
             ->orderBy('created_at', 'desc');
 
