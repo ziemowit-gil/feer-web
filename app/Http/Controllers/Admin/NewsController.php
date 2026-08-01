@@ -188,12 +188,21 @@ class NewsController extends Controller
     /**
      * Set the news image from either an uploaded file or a chosen Unsplash
      * photo (downloaded server-side). A file upload takes precedence.
+     * Uploading a new file replaces the existing one (singleFile collection).
+     * Sending delete_image=1 without a new file removes the current photo.
      */
     private function handleImage(Request $request, News $news): void
     {
         if ($request->hasFile('image')) {
             $news->addMediaFromRequest('image')->toMediaCollection('image');
             $news->refreshImageDimensions();
+
+            return;
+        }
+
+        if ($request->boolean('delete_image')) {
+            $news->clearMediaCollection('image');
+            $news->update(['image_alt' => null]);
 
             return;
         }

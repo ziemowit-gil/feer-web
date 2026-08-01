@@ -202,13 +202,23 @@
                 <div class="space-y-3">
                     {{-- Aktualnie zapisane zdjęcie (serwer) --}}
                     @if ($news->exists && $news->image_url)
-                        <div x-show="!localPreview && !unsplashThumb">
+                        <div x-show="!localPreview && !unsplashThumb && !libraryThumb && !deleteImage">
                             <img src="{{ $news->image_url }}" alt="{{ $news->image_alt ?: $news->title }}"
                                 class="h-36 w-full rounded-lg border border-gray-200 object-cover">
                             @if ($news->image_width && $news->image_height)
                                 <p class="mt-1 text-xs text-muted">Obecne: {{ $news->image_width }} × {{ $news->image_height }} px</p>
                             @endif
+                            <button type="button" x-show="!localPreview && !unsplashThumb && !libraryThumb" @click="deleteImage = true"
+                                class="mt-1 inline-flex items-center gap-1 text-xs font-bold text-red-600 hover:text-red-700">
+                                <i class="fa-solid fa-trash" aria-hidden="true"></i> Usuń zdjęcie
+                            </button>
                         </div>
+                        <div x-show="deleteImage && !localPreview && !unsplashThumb && !libraryThumb" x-cloak
+                            class="flex items-center justify-between rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm">
+                            <span class="text-red-700"><i class="fa-solid fa-triangle-exclamation mr-1" aria-hidden="true"></i>Zdjęcie zostanie usunięte po zapisaniu.</span>
+                            <button type="button" @click="deleteImage = false" class="text-xs font-bold text-red-600 underline hover:text-red-700">Cofnij</button>
+                        </div>
+                        <input type="hidden" name="delete_image" :value="deleteImage && !localPreview && !unsplashThumb && !libraryThumb ? '1' : '0'">
                     @endif
 
                     {{-- Podgląd nowo wybranego (Alpine) --}}
@@ -571,6 +581,7 @@
         window.imagePickerModal = (searchUrl) => ({
             open: false,
             tab: 'file',
+            deleteImage: false,
             // Plik z dysku
             localPreview: null,
             fileName: '',
