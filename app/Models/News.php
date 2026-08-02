@@ -21,6 +21,7 @@ class News extends Model implements HasMedia
     use \App\Models\Concerns\LogsActivity;
     use \Illuminate\Database\Eloquent\SoftDeletes;
     use InteractsWithMedia;
+    use \App\Models\Concerns\HasWebpConversion;
 
     protected $table = 'news';
 

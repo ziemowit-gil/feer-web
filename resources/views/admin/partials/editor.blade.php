@@ -73,6 +73,7 @@
     $newsForPicker = \App\Models\News::where('is_published', true)
         ->orderByDesc('published_at')
         ->get(['id', 'title', 'slug']);
+    $docxImportUrl = route('admin.editor.docx.import');
 @endphp
 
 @php $mi = 'flex w-full items-center gap-2 rounded px-3 py-2 text-left text-xs font-bold text-ink hover:bg-brand-light hover:text-brand'; @endphp
@@ -92,6 +93,7 @@
             <button type="button" data-insert-key="bip" @click="open = false" class="{{ $mi }}"><i class="fa-solid fa-landmark w-4 text-center text-muted" aria-hidden="true"></i> Więcej informacji w BIP</button>
             <button type="button" id="{{ $editorId }}-box" @click="open = false" class="{{ $mi }}"><i class="fa-solid fa-vector-square w-4 text-center" aria-hidden="true"></i> Tekst z ramką</button>
             <button type="button" data-insert-key="note" @click="open = false" class="{{ $mi }}"><i class="fa-solid fa-triangle-exclamation w-4 text-center text-amber-500" aria-hidden="true"></i> Notatka / ostrzeżenie</button>
+            <button type="button" id="{{ $editorId }}-docx-btn" @click="open = false" class="{{ $mi }}"><i class="fa-solid fa-file-word w-4 text-center text-blue-600" aria-hidden="true"></i> Importuj DOCX…</button>
             @if ($useCkEditor)
                 <button type="button" id="{{ $editorId }}-columns" @click="open = false" class="{{ $mi }}"><i class="fa-solid fa-table-columns w-4 text-center" aria-hidden="true"></i> Układ 2 kolumn</button>
             @endif
@@ -189,6 +191,8 @@
 
 <textarea name="{{ $name }}" id="{{ $editorId }}" rows="14" placeholder="Tu wpisz tekst…"
     class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">{{ $value }}</textarea>
+
+<input type="file" id="{{ $editorId }}-docx-input" accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document" class="sr-only" aria-hidden="true" tabindex="-1">
 
 <div id="{{ $editorId }}-stats" class="mt-1 min-h-[1.25rem] text-xs text-muted" aria-live="polite" aria-atomic="true"></div>
 
@@ -1511,6 +1515,7 @@
                                     { type: 'menuitem', text: 'Więcej informacji w BIP', onAction: function () { editor.insertContent(snippets.bip); } },
                                     { type: 'menuitem', text: 'Tekst z ramką', onAction: function () { editor.insertContent(boxHtml); } },
                                     { type: 'menuitem', text: 'Notatka / ostrzeżenie', onAction: function () { editor.insertContent(snippets.note); } },
+                                    { type: 'menuitem', text: 'Importuj plik DOCX…', icon: 'upload', onAction: function () { document.getElementById('{{ $editorId }}-docx-input').click(); } },
                                     { type: 'menuitem', text: 'Sekcja akcentu (lewo)', onAction: function () { editor.insertContent(snippets.accentLeft); } },
                                     { type: 'menuitem', text: 'Sekcja akcentu (prawo)', onAction: function () { editor.insertContent(snippets.accentRight); } },
                                     { type: 'menuitem', text: 'Układ 2 kolumn', onAction: function () { editor.insertContent(columnsHtml); } },
@@ -1742,3 +1747,95 @@
     })();
 </script>
 @endif
+
+<script>
+(function () {
+    var textarea = document.getElementById('{{ $editorId }}');
+    if (!textarea) return;
+    var form = textarea.closest('form');
+    if (!form) return;
+    if (form.dataset.headingCheckAttached) return;
+    form.dataset.headingCheckAttached = '1';
+
+    form.addEventListener('submit', async function (e) {
+        var getContent = window['__getContent_{{ $editorId }}'];
+        if (!getContent) return;
+        var html = getContent();
+        if (!html) return;
+
+        var doc = new DOMParser().parseFromString(html, 'text/html');
+        var headings = Array.from(doc.querySelectorAll('h1,h2,h3,h4,h5,h6'));
+        var problems = [];
+
+        var levels = headings.map(function (h) { return parseInt(h.tagName[1], 10); });
+
+        for (var i = 1; i < levels.length; i++) {
+            if (levels[i] - levels[i - 1] > 1) {
+                problems.push('Przeskok w nagłówkach: H' + levels[i - 1] + ' → H' + levels[i] + '.');
+                break;
+            }
+        }
+
+        var h1count = levels.filter(function (l) { return l === 1; }).length;
+        if (h1count > 1) {
+            problems.push('Wiele nagłówków H1 (' + h1count + ') — powinna być co najwyżej jedna H1.');
+        }
+
+        headings.forEach(function (h) {
+            if (!h.textContent.trim()) {
+                problems.push('Pusty nagłówek H' + h.tagName[1] + '.');
+            }
+        });
+
+        if (!problems.length) return;
+
+        var message = 'Wykryto problemy z nagłówkami:\n'
+            + problems.map(function (p) { return '• ' + p; }).join('\n')
+            + '\n\nZapisać mimo to?';
+
+        var ok = await Alpine.store('confirm').ask(message);
+        if (!ok) {
+            e.preventDefault();
+        }
+    });
+})();
+</script>
+
+<script>
+(function () {
+    var docxInput  = document.getElementById('{{ $editorId }}-docx-input');
+    var docxBtn    = document.getElementById('{{ $editorId }}-docx-btn');
+    var importUrl  = {{ json_encode($docxImportUrl) }};
+    var csrfToken  = document.querySelector('meta[name="csrf-token"]')?.content ?? '';
+
+    function triggerPick() { if (docxInput) docxInput.click(); }
+    if (docxBtn) docxBtn.addEventListener('click', triggerPick);
+
+    if (!docxInput) return;
+
+    docxInput.addEventListener('change', function () {
+        var file = docxInput.files?.[0];
+        if (!file) return;
+        docxInput.value = '';
+        var fd = new FormData();
+        fd.append('_token', csrfToken);
+        fd.append('docx', file);
+
+        // Show loading toast if Alpine store available
+        fetch(importUrl, { method: 'POST', body: fd })
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+                if (data.error) { alert('Błąd: ' + data.error); return; }
+                var setContent = window['__setContent_{{ $editorId }}'];
+                var getContent = window['__getContent_{{ $editorId }}'];
+                if (!setContent) { alert('Edytor nie jest jeszcze gotowy.'); return; }
+                var current = getContent?.() || '';
+                var newContent = current
+                    ? current + '\n' + data.html
+                    : data.html;
+                setContent(newContent);
+            })
+            .catch(function () { alert('Nie udało się zaimportować pliku DOCX.'); });
+    });
+})();
+</script>

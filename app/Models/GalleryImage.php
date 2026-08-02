@@ -9,6 +9,7 @@ use Spatie\MediaLibrary\InteractsWithMedia;
 class GalleryImage extends Model implements HasMedia
 {
     use InteractsWithMedia;
+    use \App\Models\Concerns\HasWebpConversion;
 
     protected $fillable = ['caption', 'order'];
 

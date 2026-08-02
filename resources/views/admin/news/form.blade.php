@@ -326,22 +326,42 @@
                         <div class="p-6">
                             {{-- Tab: Plik z dysku --}}
                             <div x-show="tab === 'file'" role="tabpanel" aria-labelledby="tab-file" class="space-y-4">
-                                <div>
+                                <div x-show="!cropMode">
                                     <p class="mb-3 text-sm text-muted">Kliknij poniżej, aby wybrać zdjęcie z komputera. JPG, PNG, WebP, max 2 MB.</p>
                                     <button type="button"
                                         @click="$el.closest('[x-data]').querySelector('#image').click()"
                                         class="inline-flex items-center gap-2 rounded bg-brand px-4 py-2 text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
                                         <i class="fa-solid fa-folder-open" aria-hidden="true"></i> Wybierz plik
                                     </button>
-                                    <span x-show="fileName" x-cloak x-text="fileName" class="ml-3 text-sm text-muted"></span>
+                                    <span x-show="fileName && !cropMode" x-cloak x-text="fileName" class="ml-3 text-sm text-muted"></span>
                                 </div>
 
-                                <div x-show="localPreview" x-cloak>
+                                {{-- Podgląd po wyborze / po kadrowaniu --}}
+                                <div x-show="localPreview && !cropMode" x-cloak>
                                     <img :src="localPreview" alt="" class="max-h-64 w-full rounded-lg border border-gray-200 object-contain bg-gray-50">
                                     <p x-text="fileDimensions" class="mt-1 text-xs text-muted"></p>
                                 </div>
 
-                                <div class="flex gap-3 border-t border-gray-100 pt-4">
+                                {{-- Kadrowanie --}}
+                                <div x-show="cropMode" x-cloak class="space-y-3">
+                                    <p class="text-sm font-medium text-ink">Zaznacz obszar do zachowania</p>
+                                    <p class="text-xs text-muted">Przeciągnij ramkę lub jej narożniki, aby wybrać kadr.</p>
+                                    <div class="max-h-72 overflow-hidden rounded-lg border border-gray-200 bg-gray-50">
+                                        <img :src="cropImgSrc" data-crop-img alt="" class="block max-w-full">
+                                    </div>
+                                    <div class="flex gap-2 pt-1">
+                                        <button type="button" @click="confirmCrop()"
+                                            class="inline-flex items-center gap-2 rounded bg-brand px-4 py-2 text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                                            <i class="fa-solid fa-crop-simple" aria-hidden="true"></i> Przytnij
+                                        </button>
+                                        <button type="button" @click="skipCrop()"
+                                            class="rounded border border-gray-300 px-4 py-2 text-sm font-bold text-ink hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                                            Pomiń kadrowanie
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div x-show="!cropMode" class="flex gap-3 border-t border-gray-100 pt-4">
                                     <button type="button" @click="close()" :disabled="!localPreview"
                                         :class="localPreview ? 'bg-brand hover:bg-brand-dark cursor-pointer' : 'bg-gray-200 text-gray-400 cursor-not-allowed'"
                                         class="rounded px-5 py-2 text-sm font-bold text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
@@ -611,6 +631,11 @@
             localPreview: null,
             fileName: '',
             fileDimensions: '',
+            // Kadrowanie
+            cropMode: false,
+            cropImgSrc: '',
+            cropperInstance: null,
+            pendingFile: null,
             // Unsplash
             query: '',
             results: [],
@@ -666,19 +691,87 @@
                 this.unsplashSelected = null; this.unsplashThumb = ''; this.unsplashFull = '';
                 this.unsplashDownloadLocation = ''; this.unsplashAlt = ''; this.unsplashAuthor = '';
                 this.librarySelected = null; this.libraryThumb = ''; this.libraryMediaId = ''; this.libraryAlt = '';
+                if (!file.type.startsWith('image/')) { this.localPreview = null; return; }
+                this.pendingFile = file;
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    this.cropImgSrc = e.target.result;
+                    this.cropMode = true;
+                    this.$nextTick(() => this._initCropper());
+                };
+                reader.readAsDataURL(file);
+            },
+
+            _initCropper() {
+                const img = this.$el.querySelector('[data-crop-img]');
+                if (!img) return;
+                const init = () => {
+                    if (this.cropperInstance) { this.cropperInstance.destroy(); this.cropperInstance = null; }
+                    this.cropperInstance = new Cropper(img, {
+                        viewMode: 1,
+                        autoCropArea: 1,
+                        responsive: true,
+                        checkOrientation: false,
+                    });
+                };
+                if (window.Cropper) { init(); return; }
+                if (!document.getElementById('cropperjs-css')) {
+                    const link = document.createElement('link');
+                    link.id = 'cropperjs-css';
+                    link.rel = 'stylesheet';
+                    link.href = 'https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css';
+                    document.head.appendChild(link);
+                }
+                const script = document.createElement('script');
+                script.src = 'https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js';
+                script.onload = init;
+                document.head.appendChild(script);
+            },
+
+            confirmCrop() {
+                if (!this.cropperInstance) return;
+                const mime = this.pendingFile?.type === 'image/png' ? 'image/png' : 'image/jpeg';
+                const ext  = mime === 'image/png' ? 'png' : 'jpg';
+                const canvas = this.cropperInstance.getCroppedCanvas({ maxWidth: 2400, maxHeight: 2400 });
+                canvas.toBlob((blob) => {
+                    if (!blob) { this.skipCrop(); return; }
+                    const croppedFile = new File([blob], `cropped.${ext}`, { type: mime });
+                    const fi = this.$el.querySelector('#image');
+                    if (fi && window.DataTransfer) {
+                        const dt = new DataTransfer();
+                        dt.items.add(croppedFile);
+                        fi.files = dt.files;
+                    }
+                    this.localPreview = URL.createObjectURL(blob);
+                    const tmp = new Image();
+                    tmp.onload = () => { this.fileDimensions = `Wymiary po kadrowaniu: ${tmp.naturalWidth} × ${tmp.naturalHeight} px`; };
+                    tmp.src = this.localPreview;
+                    this._destroyCropper();
+                }, mime, 0.92);
+            },
+
+            skipCrop() {
+                const file = this.pendingFile;
+                this._destroyCropper();
+                if (!file) return;
                 const reader = new FileReader();
                 reader.onload = (e) => { this.localPreview = e.target.result; };
                 reader.readAsDataURL(file);
                 const url = URL.createObjectURL(file);
-                const img = new Image();
-                img.onload = () => {
-                    this.fileDimensions = `Wymiary: ${img.naturalWidth} × ${img.naturalHeight} px`;
-                    URL.revokeObjectURL(url);
-                };
-                img.src = url;
+                const tmp = new Image();
+                tmp.onload = () => { this.fileDimensions = `Wymiary: ${tmp.naturalWidth} × ${tmp.naturalHeight} px`; URL.revokeObjectURL(url); };
+                tmp.src = url;
+            },
+
+            _destroyCropper() {
+                if (this.cropperInstance) { this.cropperInstance.destroy(); this.cropperInstance = null; }
+                this.cropMode = false;
+                this.cropImgSrc = '';
+                this.pendingFile = null;
             },
 
             clearImage() {
+                this._destroyCropper();
                 this.localPreview = null; this.fileName = ''; this.fileDimensions = '';
                 const fi = this.$el.querySelector('#image');
                 if (fi) fi.value = '';

@@ -1706,15 +1706,12 @@
                     @else
                         <p class="text-xs text-muted italic">Brak — wygeneruj adres, aby aktywować furtkę awaryjną.</p>
                     @endif
-                    <form method="POST" action="{{ route('admin.ustawienia.emergency-token') }}" class="mt-3"
-                        onsubmit="return confirm('Wygenerować nowy adres? Stary przestanie działać natychmiast.');">
-                        @csrf
-                        <button type="submit"
-                            class="inline-flex items-center gap-1.5 rounded border border-gray-300 bg-white px-3 py-1.5 text-xs font-medium text-ink shadow-sm hover:bg-gray-50">
-                            <i class="fa-solid fa-rotate-right"></i>
-                            {{ $settings->emergency_login_token ? 'Wygeneruj nowy adres' : 'Wygeneruj adres' }}
-                        </button>
-                    </form>
+                    <button type="submit" form="emergency-token-form"
+                        onclick="return confirm('Wygenerować nowy adres? Stary przestanie działać natychmiast.')"
+                        class="mt-3 inline-flex items-center gap-1.5 rounded border border-gray-300 bg-white px-3 py-1.5 text-xs font-medium text-ink shadow-sm hover:bg-gray-50">
+                        <i class="fa-solid fa-rotate-right"></i>
+                        {{ $settings->emergency_login_token ? 'Wygeneruj nowy adres' : 'Wygeneruj adres' }}
+                    </button>
                 </div>
             </div>
 
@@ -1982,6 +1979,11 @@
          Kontrolki (input, button) są skojarzone atrybutem form=”prefix-change-form”. --}}
     <form id=”prefix-change-form” method=”POST” action=”{{ route('admin.ustawienia.prefix') }}”
           onsubmit=”return confirm('Zmienić prefix na /' + document.getElementById('admin_prefix_input').value + '? Po zapisaniu zostaniesz przekierowany(a) pod nowy adres — zaktualizuj zakładki.')”>
+        @csrf
+    </form>
+
+    {{-- Regeneracja tokenu awaryjnego: osobny formularz poza głównym (HTML nie pozwala zagnieżdżać). --}}
+    <form id=”emergency-token-form” method=”POST” action=”{{ route('admin.ustawienia.emergency-token') }}”>
         @csrf
     </form>
 

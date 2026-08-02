@@ -11,6 +11,7 @@ use Spatie\MediaLibrary\InteractsWithMedia;
 class PageImage extends Model implements HasMedia
 {
     use InteractsWithMedia;
+    use \App\Models\Concerns\HasWebpConversion;
 
     protected $fillable = ['page_id', 'alt', 'caption', 'order'];
 
