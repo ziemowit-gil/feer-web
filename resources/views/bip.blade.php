@@ -144,6 +144,82 @@ HTML;
                         @endforeach
                     </div>
                 @endif
+
+                {{-- ── Ostatnie zmiany w BIP (tryb wbudowany) ── --}}
+                @if ($recentChanges->isNotEmpty())
+                    <section class="mt-12" aria-labelledby="recent-changes-heading">
+                        <h2 id="recent-changes-heading" class="mb-4 flex items-center gap-2 text-base font-bold text-ink">
+                            <i class="fa-solid fa-clock-rotate-left text-brand text-sm" aria-hidden="true"></i>
+                            Ostatnie zmiany w BIP
+                        </h2>
+                        <div class="overflow-x-auto rounded-lg border border-gray-200 bg-white">
+                            <table class="w-full text-left text-sm">
+                                <caption class="sr-only">Ostatnie zmiany dokumentów BIP</caption>
+                                <thead class="bg-gray-50 text-xs font-bold uppercase text-muted">
+                                    <tr>
+                                        <th scope="col" class="px-4 py-2.5">Data</th>
+                                        <th scope="col" class="px-4 py-2.5">Operacja</th>
+                                        <th scope="col" class="px-4 py-2.5">Dokument</th>
+                                        <th scope="col" class="px-4 py-2.5">Autor</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-100">
+                                    @php
+                                        $docSlugs = BipDocument::withTrashed()
+                                            ->whereIn('id', $recentChanges->pluck('subject_id')->unique())
+                                            ->pluck('slug', 'id');
+                                    @endphp
+                                    @foreach ($recentChanges as $entry)
+                                        <tr class="hover:bg-gray-50">
+                                            <td class="whitespace-nowrap px-4 py-2.5 text-muted">
+                                                <time datetime="{{ $entry->created_at->toIso8601String() }}">
+                                                    {{ $entry->created_at->locale('pl')->isoFormat('D MMM YYYY') }}
+                                                </time>
+                                            </td>
+                                            <td class="px-4 py-2.5">
+                                                @php
+                                                    $badge = match($entry->event) {
+                                                        'created' => ['bg-green-100 text-green-700', 'fa-plus', 'Dodanie'],
+                                                        'updated' => ['bg-blue-100 text-blue-700', 'fa-pen', 'Edycja'],
+                                                        'deleted' => ['bg-red-100 text-red-700', 'fa-trash', 'Usunięcie'],
+                                                        default   => ['bg-gray-100 text-gray-600', 'fa-circle', $entry->eventLabel()],
+                                                    };
+                                                @endphp
+                                                <span class="inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-bold {{ $badge[0] }}">
+                                                    <i class="fa-solid {{ $badge[1] }} text-[0.6rem]" aria-hidden="true"></i>
+                                                    {{ $badge[2] }}
+                                                </span>
+                                            </td>
+                                            <td class="px-4 py-2.5 font-medium">
+                                                @if ($docSlugs[$entry->subject_id] ?? null)
+                                                    <a href="{{ route('bip.document', $docSlugs[$entry->subject_id]) }}"
+                                                        class="text-brand hover:text-brand-dark hover:underline focus-visible:outline-2 focus-visible:outline-brand">
+                                                        {{ $entry->subject_label }}
+                                                    </a>
+                                                @else
+                                                    <span class="text-muted">{{ $entry->subject_label }}
+                                                        @if ($entry->event === 'deleted')
+                                                            <span class="text-xs">(usunięty)</span>
+                                                        @endif
+                                                    </span>
+                                                @endif
+                                            </td>
+                                            <td class="px-4 py-2.5 text-muted">
+                                                {{ $entry->user_name ?: '—' }}
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="mt-3 text-right">
+                            <a href="{{ route('bip.changelog') }}"
+                                class="text-xs font-bold text-brand hover:text-brand-dark hover:underline focus-visible:outline-2 focus-visible:outline-brand">
+                                Pełny rejestr zmian →
+                            </a>
+                        </div>
+                    </section>
+                @endif
             </main>
 
         </div>

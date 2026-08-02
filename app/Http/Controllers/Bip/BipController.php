@@ -15,27 +15,38 @@ use App\Models\SiteSetting;
 class BipController extends Controller
 {
     /**
-     * Strona /bip. Tryb wbudowany: lista dokumentów. Tryb zewnętrzny: intro + przycisk do zewnętrznego BIP.
+     * Strona /bip. Tryb wbudowany: lista dokumentów + ostatnie zmiany.
+     * Tryb zewnętrzny: intro + przycisk do zewnętrznego BIP.
      */
     public function index()
     {
         $settings = SiteSetting::current();
         $isExternal = ($settings->bip_mode ?? 'internal') === 'external';
 
-        $documents = (! $isExternal && $settings->isModuleEnabled('bip'))
-            ? BipDocument::published()
+        $documents = collect();
+        $recentChanges = collect();
+
+        if (! $isExternal && $settings->isModuleEnabled('bip')) {
+            $documents = BipDocument::published()
                 ->orderBy('category')
                 ->orderBy('order')
                 ->orderBy('title')
                 ->with(['creator', 'updater', 'media'])
                 ->get()
-                ->groupBy('category')
-            : collect();
+                ->groupBy('category');
 
-        return view('bip', compact('documents', 'isExternal'));
+            $recentChangeIds = $documents->flatten()->pluck('id');
+
+            $recentChanges = ActivityLog::where('subject_type', 'BipDocument')
+                ->latest()
+                ->limit(8)
+                ->get();
+        }
+
+        return view('bip', compact('documents', 'isExternal', 'recentChanges'));
     }
 
-    /** Wyświetla treść pojedynczego dokumentu BIP (tylko w trybie wbudowanym). */
+    /** Wyświetla treść pojedynczego dokumentu BIP z historią edycji. */
     public function show(BipDocument $bipDocument)
     {
         $settings = SiteSetting::current();
@@ -48,7 +59,12 @@ class BipController extends Controller
 
         $bipDocument->load(['creator', 'updater', 'media']);
 
-        return view('bip.show', compact('bipDocument'));
+        $history = ActivityLog::where('subject_type', 'BipDocument')
+            ->where('subject_id', $bipDocument->id)
+            ->latest()
+            ->get();
+
+        return view('bip.show', compact('bipDocument', 'history'));
     }
 
     /** Publiczny rejestr zmian BIP (tylko w trybie wbudowanym). */
