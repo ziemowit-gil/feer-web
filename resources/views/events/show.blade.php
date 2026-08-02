@@ -33,149 +33,212 @@
 @php $accent = $siteSettings->contrastSafeColor($siteSettings->audienceColor($event->audience)); @endphp
 
 @section('content')
-    <article class="mx-auto max-w-3xl px-4 py-12" style="--accent: {{ $accent }}">
-        <header class="mb-8">
-            <p class="inline-flex items-center gap-2 text-sm font-bold uppercase tracking-wide" style="color: var(--accent)">
-                <i class="fa-solid {{ $event->typeIcon() }}" aria-hidden="true"></i> {{ $event->typeLabel() }}
-            </p>
-            <h1 class="mt-1 text-3xl font-bold text-ink">{{ $event->title }}</h1>
-            <p class="mt-3 text-lg text-gray-700">{{ $event->lead }}</p>
+<div x-data="{ drawerOpen: false }" style="--accent: {{ $accent }}">
 
-            @if ($event->isPast())
-                <p class="mt-4 inline-flex items-center gap-2 rounded-lg bg-gray-100 px-4 py-2 text-sm font-bold text-gray-700" role="status">
-                    <i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i> To wydarzenie już się odbyło.
+    {{-- ── MAIN GRID ────────────────────────────────────────────── --}}
+    <div class="mx-auto max-w-5xl px-4 py-12 lg:grid lg:grid-cols-[1fr_288px] lg:items-start lg:gap-10">
+
+        {{-- ── ARTYKUŁ ── --}}
+        <article>
+            <header class="mb-8">
+                <p class="inline-flex items-center gap-2 text-sm font-bold uppercase tracking-wide" style="color: var(--accent)">
+                    <i class="fa-solid {{ $event->typeIcon() }}" aria-hidden="true"></i> {{ $event->typeLabel() }}
                 </p>
-            @endif
+                <h1 class="mt-1 text-3xl font-bold text-ink">{{ $event->title }}</h1>
+                <p class="mt-3 text-lg text-gray-700">{{ $event->lead }}</p>
 
-            <dl class="mt-5 flex flex-wrap gap-2 text-sm">
-                <div class="inline-flex items-center gap-2 rounded-full bg-gray-100 px-3 py-1.5">
-                    <i class="fa-solid fa-calendar-day" aria-hidden="true" style="color: var(--accent)"></i>
-                    <dt class="sr-only">Termin</dt>
-                    <dd><time datetime="{{ $event->starts_at->toIso8601String() }}">{{ $event->dateRangeLabel() }}</time></dd>
-                </div>
-                <div class="inline-flex items-center gap-2 rounded-full bg-gray-100 px-3 py-1.5">
-                    <i class="fa-solid fa-location-dot" aria-hidden="true" style="color: var(--accent)"></i>
-                    <dt class="sr-only">Tryb i miejsce</dt>
-                    <dd>{{ $event->modeLabel() }}@if ($event->location) · {{ $event->location }}@endif</dd>
-                </div>
-                @if ($event->price_info)
-                    <div class="inline-flex items-center gap-2 rounded-full bg-gray-100 px-3 py-1.5">
-                        <i class="fa-solid fa-tag" aria-hidden="true" style="color: var(--accent)"></i>
-                        <dt class="sr-only">Koszt</dt>
-                        <dd>{{ $event->price_info }}</dd>
-                    </div>
+                @if ($event->isPast())
+                    <p class="mt-4 inline-flex items-center gap-2 rounded-lg bg-gray-100 px-4 py-2 text-sm font-bold text-gray-700" role="status">
+                        <i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i> To wydarzenie już się odbyło.
+                    </p>
                 @endif
-            </dl>
 
-            @if (! $event->isPast() && $event->registrationHref())
-                <a href="{{ $event->registrationHref() }}" @if($event->registration_url) target="_blank" rel="noopener" @endif
-                   class="mt-6 inline-flex items-center gap-2 rounded-lg px-6 py-3 font-bold text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-                   style="background: var(--accent); outline-color: var(--accent)">
-                    {{ $event->registration_cta_label }} <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
-                </a>
+                {{-- Mobile: przycisk otwierający drawer ze szczegółami --}}
+                <button type="button"
+                    @click="drawerOpen = true"
+                    :aria-expanded="drawerOpen"
+                    aria-controls="event-info-drawer"
+                    class="mt-5 inline-flex w-full items-center gap-3 rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-ink hover:bg-gray-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 lg:hidden"
+                    style="outline-color: var(--accent)">
+                    <i class="fa-solid fa-calendar-day flex-none" aria-hidden="true" style="color: var(--accent)"></i>
+                    <span class="flex-1 text-left">
+                        <span class="font-bold">{{ $event->dateRangeLabel() }}</span>
+                        @if ($event->location)
+                            <span class="text-muted"> · {{ $event->location }}</span>
+                        @else
+                            <span class="text-muted"> · {{ $event->modeLabel() }}</span>
+                        @endif
+                    </span>
+                    <i class="fa-solid fa-chevron-up flex-none text-muted" aria-hidden="true"></i>
+                </button>
+            </header>
+
+            @if ($event->description)
+                <section aria-labelledby="opis" class="mb-8">
+                    <h2 id="opis" class="flex items-center gap-2 text-xl font-bold text-ink">
+                        <i class="fa-solid fa-circle-info" aria-hidden="true" style="color: var(--accent)"></i> O wydarzeniu
+                    </h2>
+                    <p class="mt-2 whitespace-pre-line text-gray-700">{{ $event->description }}</p>
+                </section>
             @endif
-        </header>
 
-        @if ($event->description)
-            <section aria-labelledby="opis" class="mb-8">
-                <h2 id="opis" class="flex items-center gap-2 text-xl font-bold text-ink">
-                    <i class="fa-solid fa-circle-info" aria-hidden="true" style="color: var(--accent)"></i> O wydarzeniu
-                </h2>
-                <p class="mt-2 whitespace-pre-line text-gray-700">{{ $event->description }}</p>
-            </section>
-        @endif
-
-        @if ($event->hasFacilitator())
-            <section aria-labelledby="prowadzaca" class="mb-8">
-                <h2 id="prowadzaca" class="flex items-center gap-2 text-xl font-bold text-ink">
-                    <i class="fa-solid fa-chalkboard-user" aria-hidden="true" style="color: var(--accent)"></i> Prowadzący / Prowadząca
-                </h2>
-                <div class="mt-3 flex flex-col gap-5 rounded-xl border border-gray-200 bg-gray-50 p-6 sm:flex-row sm:items-start">
-                    @if ($event->facilitatorPhotoUrl())
-                        <img src="{{ $event->facilitatorPhotoUrl() }}"
-                            alt="{{ $event->facilitator_name ? 'Zdjęcie: '.$event->facilitator_name : 'Zdjęcie osoby prowadzącej zajęcia' }}"
-                            class="h-28 w-28 flex-none rounded-full object-cover ring-2" style="--tw-ring-color: color-mix(in srgb, var(--accent) 40%, white)">
-                    @else
-                        <span class="flex h-28 w-28 flex-none items-center justify-center rounded-full text-white" style="background: var(--accent)" aria-hidden="true">
-                            <i class="fa-solid fa-user text-4xl"></i>
-                        </span>
-                    @endif
-                    <div class="min-w-0">
-                        @if ($event->facilitator_name)
-                            <p class="text-lg font-bold text-ink">{{ $event->facilitator_name }}</p>
+            @if ($event->hasFacilitator())
+                <section aria-labelledby="prowadzaca" class="mb-8">
+                    <h2 id="prowadzaca" class="flex items-center gap-2 text-xl font-bold text-ink">
+                        <i class="fa-solid fa-chalkboard-user" aria-hidden="true" style="color: var(--accent)"></i> Prowadzący / Prowadząca
+                    </h2>
+                    <div class="mt-3 flex flex-col gap-5 rounded-xl border border-gray-200 bg-gray-50 p-6 sm:flex-row sm:items-start">
+                        @if ($event->facilitatorPhotoUrl())
+                            <img src="{{ $event->facilitatorPhotoUrl() }}"
+                                alt="{{ $event->facilitator_name ? 'Zdjęcie: '.$event->facilitator_name : 'Zdjęcie osoby prowadzącej zajęcia' }}"
+                                class="h-28 w-28 flex-none rounded-full object-cover ring-2" style="--tw-ring-color: color-mix(in srgb, var(--accent) 40%, white)">
+                        @else
+                            <span class="flex h-28 w-28 flex-none items-center justify-center rounded-full text-white" style="background: var(--accent)" aria-hidden="true">
+                                <i class="fa-solid fa-user text-4xl"></i>
+                            </span>
                         @endif
-                        @if ($event->facilitator_role)
-                            <p class="text-sm font-bold uppercase tracking-wide" style="color: var(--accent)">{{ $event->facilitator_role }}</p>
-                        @endif
-                        @if ($event->facilitator_bio)
-                            <p class="mt-2 whitespace-pre-line text-gray-700">{{ $event->facilitator_bio }}</p>
-                        @endif
+                        <div class="min-w-0">
+                            @if ($event->facilitator_name)
+                                <p class="text-lg font-bold text-ink">{{ $event->facilitator_name }}</p>
+                            @endif
+                            @if ($event->facilitator_role)
+                                <p class="text-sm font-bold uppercase tracking-wide" style="color: var(--accent)">{{ $event->facilitator_role }}</p>
+                            @endif
+                            @if ($event->facilitator_bio)
+                                <p class="mt-2 whitespace-pre-line text-gray-700">{{ $event->facilitator_bio }}</p>
+                            @endif
+                        </div>
                     </div>
-                </div>
-            </section>
-        @endif
+                </section>
+            @endif
 
-        @if ($event->online_url && ! $event->isPast())
-            <section aria-labelledby="online" class="mb-8 rounded-xl border-2 p-6" style="border-color: color-mix(in srgb, var(--accent) 30%, white)">
-                <h2 id="online" class="flex items-center gap-2 text-xl font-bold text-ink">
-                    <i class="fa-solid fa-video" aria-hidden="true" style="color: var(--accent)"></i> Udział online
+            @if ($event->online_url && ! $event->isPast())
+                <section aria-labelledby="online" class="mb-8 rounded-xl border-2 p-6" style="border-color: color-mix(in srgb, var(--accent) 30%, white)">
+                    <h2 id="online" class="flex items-center gap-2 text-xl font-bold text-ink">
+                        <i class="fa-solid fa-video" aria-hidden="true" style="color: var(--accent)"></i> Udział online
+                    </h2>
+                    <p class="mt-2 text-gray-700">Wydarzenie odbędzie się także zdalnie. Link do spotkania:</p>
+                    <a href="{{ $event->online_url }}" target="_blank" rel="noopener" class="mt-2 inline-flex items-center gap-2 break-all font-bold" style="color: var(--accent)">
+                        <i class="fa-solid fa-link" aria-hidden="true"></i> {{ $event->online_url }}
+                    </a>
+                </section>
+            @endif
+
+            @php
+                $eventFaqs = $event->faqs->concat($event->globalFaqs->where('is_published', true));
+            @endphp
+            @if ($eventFaqs->isNotEmpty())
+                <section aria-labelledby="faq" class="mb-8">
+                    <h2 id="faq" class="flex items-center gap-2 text-xl font-bold text-ink">
+                        <i class="fa-solid fa-circle-question" aria-hidden="true" style="color: var(--accent)"></i> Najczęstsze pytania
+                    </h2>
+                    <div class="mt-3 space-y-2">
+                        @foreach ($eventFaqs as $faq)
+                            <details class="group rounded-xl border border-gray-200 bg-white [&[open]]:border-gray-300">
+                                <summary class="flex cursor-pointer list-none items-center justify-between gap-3 px-5 py-4 font-bold text-ink [&::-webkit-details-marker]:hidden">
+                                    <span>{{ $faq->question }}</span>
+                                    <i class="fa-solid fa-chevron-down flex-none text-sm text-muted transition-transform group-open:rotate-180" aria-hidden="true"></i>
+                                </summary>
+                                <div class="mt-[-4px] px-5 pb-4 whitespace-pre-line text-gray-700">{{ $faq->answer }}</div>
+                            </details>
+                        @endforeach
+                    </div>
+                </section>
+            @endif
+
+            <section aria-labelledby="zapisy" class="rounded-xl border-2 p-6" style="border-color: color-mix(in srgb, var(--accent) 30%, white)">
+                <h2 id="zapisy" class="flex items-center gap-2 text-xl font-bold text-ink">
+                    <i class="fa-solid fa-paper-plane" aria-hidden="true" style="color: var(--accent)"></i> Zapisy i kontakt
                 </h2>
-                <p class="mt-2 text-gray-700">Wydarzenie odbędzie się także zdalnie. Link do spotkania:</p>
-                <a href="{{ $event->online_url }}" target="_blank" rel="noopener" class="mt-2 inline-flex items-center gap-2 font-bold break-all" style="color: var(--accent)">
-                    <i class="fa-solid fa-link" aria-hidden="true"></i> {{ $event->online_url }}
-                </a>
+                @if ($event->isPast())
+                    <p class="mt-2 text-gray-700">To wydarzenie już się odbyło — zapisy są zamknięte. Napisz do nas, jeśli interesują Cię kolejne terminy.</p>
+                @elseif ($event->registrationHref())
+                    <p class="mt-2 text-gray-700">Aby wziąć udział, zapisz się poniżej. W razie pytań chętnie pomożemy.</p>
+                @else
+                    <p class="mt-2 text-gray-700">Szczegóły zapisów podamy wkrótce. W razie pytań napisz do nas.</p>
+                @endif
+
+                @if ($event->contact_email)
+                    <p class="mt-3 text-sm text-gray-700">
+                        <i class="fa-solid fa-envelope mr-1" aria-hidden="true" style="color: var(--accent)"></i>
+                        Kontakt: <a href="mailto:{{ $event->contact_email }}" class="font-bold" style="color: var(--accent)">{{ $event->contact_email }}</a>
+                    </p>
+                @endif
+
+                @if (! $event->isPast() && $event->registrationHref())
+                    <a href="{{ $event->registrationHref() }}" @if($event->registration_url) target="_blank" rel="noopener" @endif
+                       class="mt-4 inline-flex items-center gap-2 rounded-lg px-6 py-3 font-bold text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+                       style="background: var(--accent); outline-color: var(--accent)">
+                        {{ $event->registration_cta_label }} <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+                    </a>
+                @endif
             </section>
-        @endif
+        </article>
 
-        @php
-            // Własne FAQ wydarzenia + dopięte pytania z globalnego FAQ (tylko opublikowane).
-            $eventFaqs = $event->faqs->concat($event->globalFaqs->where('is_published', true));
-        @endphp
-        @if ($eventFaqs->isNotEmpty())
-            <section aria-labelledby="faq" class="mb-8">
-                <h2 id="faq" class="flex items-center gap-2 text-xl font-bold text-ink">
-                    <i class="fa-solid fa-circle-question" aria-hidden="true" style="color: var(--accent)"></i> Najczęstsze pytania
-                </h2>
-                <div class="mt-3 space-y-2">
-                    @foreach ($eventFaqs as $faq)
-                        <details class="group rounded-xl border border-gray-200 bg-white [&[open]]:border-gray-300">
-                            <summary class="flex cursor-pointer list-none items-center justify-between gap-3 px-5 py-4 font-bold text-ink [&::-webkit-details-marker]:hidden">
-                                <span>{{ $faq->question }}</span>
-                                <i class="fa-solid fa-chevron-down flex-none text-sm text-muted transition-transform group-open:rotate-180" aria-hidden="true"></i>
-                            </summary>
-                            <div class="px-5 pb-4 -mt-1 whitespace-pre-line text-gray-700">{{ $faq->answer }}</div>
-                        </details>
-                    @endforeach
-                </div>
-            </section>
-        @endif
+        {{-- ── SIDEBAR (desktop sticky) ── --}}
+        <aside class="hidden lg:block lg:sticky lg:top-24 lg:self-start" aria-label="Szczegóły i zapisy">
+            @include('events._sidebar-info')
+        </aside>
+    </div>
 
-        <section aria-labelledby="zapisy" class="rounded-xl border-2 p-6" style="border-color: color-mix(in srgb, var(--accent) 30%, white)">
-            <h2 id="zapisy" class="flex items-center gap-2 text-xl font-bold text-ink">
-                <i class="fa-solid fa-paper-plane" aria-hidden="true" style="color: var(--accent)"></i> Zapisy i kontakt
-            </h2>
-            @if ($event->isPast())
-                <p class="mt-2 text-gray-700">To wydarzenie już się odbyło — zapisy są zamknięte. Napisz do nas, jeśli interesują Cię kolejne terminy.</p>
-            @elseif ($event->registrationHref())
-                <p class="mt-2 text-gray-700">Aby wziąć udział, zapisz się poniżej. W razie pytań chętnie pomożemy.</p>
-            @else
-                <p class="mt-2 text-gray-700">Szczegóły zapisów podamy wkrótce. W razie pytań napisz do nas.</p>
-            @endif
+    {{-- ── MOBILE DRAWER ── --}}
+    <div
+        x-show="drawerOpen"
+        x-cloak
+        id="event-info-drawer"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Szczegóły wydarzenia"
+        class="fixed inset-0 z-50 flex flex-col justify-end lg:hidden"
+        @keydown.escape.window="drawerOpen = false">
 
-            @if ($event->contact_email)
-                <p class="mt-3 text-sm text-gray-700">
-                    <i class="fa-solid fa-envelope mr-1" aria-hidden="true" style="color: var(--accent)"></i>
-                    Kontakt: <a href="mailto:{{ $event->contact_email }}" class="font-bold" style="color: var(--accent)">{{ $event->contact_email }}</a>
-                </p>
-            @endif
+        {{-- Backdrop --}}
+        <div
+            class="absolute inset-0 bg-black/40"
+            aria-hidden="true"
+            @click="drawerOpen = false"
+            x-transition:enter="transition-opacity ease-out duration-200"
+            x-transition:enter-start="opacity-0"
+            x-transition:enter-end="opacity-100"
+            x-transition:leave="transition-opacity ease-in duration-150"
+            x-transition:leave-start="opacity-100"
+            x-transition:leave-end="opacity-0">
+        </div>
 
-            @if (! $event->isPast() && $event->registrationHref())
-                <a href="{{ $event->registrationHref() }}" @if($event->registration_url) target="_blank" rel="noopener" @endif
-                   class="mt-4 inline-flex items-center gap-2 rounded-lg px-6 py-3 font-bold text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-                   style="background: var(--accent); outline-color: var(--accent)">
-                    {{ $event->registration_cta_label }} <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
-                </a>
-            @endif
-        </section>
-    </article>
+        {{-- Panel --}}
+        <div
+            class="relative max-h-[85dvh] overflow-y-auto rounded-t-2xl bg-white shadow-2xl"
+            x-transition:enter="transition ease-out duration-300"
+            x-transition:enter-start="translate-y-full"
+            x-transition:enter-end="translate-y-0"
+            x-transition:leave="transition ease-in duration-200"
+            x-transition:leave-start="translate-y-0"
+            x-transition:leave-end="translate-y-full"
+            x-init="$watch('drawerOpen', val => { if (val) $nextTick(() => $el.querySelector('button')?.focus()) })">
+
+            {{-- Drag handle --}}
+            <div class="flex justify-center pt-3 pb-1" aria-hidden="true">
+                <span class="h-1 w-10 rounded-full bg-gray-300"></span>
+            </div>
+
+            {{-- Header z przyciskiem zamknięcia --}}
+            <div class="flex items-center justify-between border-b border-gray-100 px-6 py-3">
+                <span class="font-bold text-ink">Szczegóły wydarzenia</span>
+                <button
+                    type="button"
+                    @click="drawerOpen = false"
+                    class="flex h-9 w-9 items-center justify-center rounded-full text-muted hover:bg-gray-100 hover:text-ink focus-visible:outline focus-visible:outline-2"
+                    style="outline-color: var(--accent)"
+                    aria-label="Zamknij">
+                    <i class="fa-solid fa-xmark text-lg" aria-hidden="true"></i>
+                </button>
+            </div>
+
+            <div class="p-6">
+                @include('events._sidebar-info')
+            </div>
+        </div>
+    </div>
+
+</div>
 @endsection
