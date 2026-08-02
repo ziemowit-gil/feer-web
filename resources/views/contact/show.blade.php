@@ -18,15 +18,26 @@
         @endif
 
         @php
+            $meetingTitle  = $siteSettings->contact_meeting_title ?: 'Spotkajmy się';
+            $onlineUrl     = $siteSettings->contact_online_meeting_url;
+            $scheduleItems = $siteSettings->contactScheduleUpcoming();
+            $showMeetings  = filled($onlineUrl) || ! empty($scheduleItems) || filled($siteSettings->contact_remote_note);
+
+            $pkCode    = $siteSettings->contact_paczkomat_code;
+            $pkAddr    = $siteSettings->contact_paczkomat_address;
+            $shipNote  = $siteSettings->contact_shipping_note;
+            $shipPhone = $siteSettings->contact_shipping_phone;
+            $showShipping = filled($shipNote) || filled($pkCode) || filled($pkAddr) || filled($shipPhone);
+
             $contactSections = collect([
-                ['id' => 'formularz',    'label' => 'Napisz do nas',      'show' => $siteSettings->contact_show_form ?? true],
-                ['id' => 'spotkania',    'label' => $siteSettings->contact_meeting_title ?: 'Spotkajmy się',
-                 'show' => $siteSettings->contact_schedule_enabled || filled($siteSettings->contact_online_meeting_url)],
-                ['id' => 'przesylki',   'label' => 'Wyślij przesyłkę',   'show' => (bool) $siteSettings->contact_shipping_visible],
-                ['id' => 'rachunki',    'label' => 'Rachunki bankowe',    'show' => !empty($siteSettings->contact_bank_accounts) && ($siteSettings->contact_show_bank_accounts ?? true)],
-                ['id' => 'koordynatorzy', 'label' => 'Koordynatorzy',    'show' => $projects->isNotEmpty() && ($siteSettings->contact_show_coordinators ?? true)],
-            ])->filter(fn ($s) => $s['show'])->values();
+                ['id' => 'formularz',     'label' => 'Napisz do nas'],
+                ['id' => 'spotkania',     'label' => $meetingTitle,         'show' => $showMeetings],
+                ['id' => 'przesylki',     'label' => 'Wyślij przesyłkę',    'show' => $showShipping],
+                ['id' => 'rachunki',      'label' => 'Rachunki bankowe',     'show' => ! empty($siteSettings->contact_bank_accounts)],
+                ['id' => 'koordynatorzy', 'label' => 'Koordynatorzy',        'show' => $projects->isNotEmpty()],
+            ])->filter(fn ($s) => $s['show'] ?? true)->values();
         @endphp
+
         @if ($contactSections->count() > 1)
             <nav aria-label="Przejdź do sekcji" class="mb-8 flex flex-wrap gap-2">
                 @foreach ($contactSections as $sec)
@@ -38,7 +49,7 @@
             </nav>
         @endif
 
-        @if ($siteSettings->contact_show_form ?? true)
+        {{-- Formularz kontaktowy + dane teleadresowe --}}
         <div id="formularz" class="scroll-mt-24 grid gap-10 md:grid-cols-[1fr_300px]">
             <div>
                 @if (session('status'))
@@ -170,30 +181,21 @@
                 @endif
             </aside>
         </div>
-        @endif {{-- contact_show_form --}}
 
-        @php
-            $meetingTitle = $siteSettings->contact_meeting_title ?: 'Spotkajmy się';
-            $onlineUrl = $siteSettings->contact_online_meeting_url;
-            $onlineLabel = $siteSettings->contact_online_meeting_label ?: 'Wybierz dogodny termin';
-            $onlineText = $siteSettings->contact_online_meeting_text ?: 'Najwygodniej spotkać się online — umów rozmowę w dogodnym dla Ciebie terminie.';
-            $remoteNote = $siteSettings->contact_remote_note;
-            $scheduleTitle = $siteSettings->contact_schedule_title ?: 'Kiedy i gdzie jesteśmy w Krakowie';
-            $scheduleEnabled = $siteSettings->contact_schedule_enabled;
-            $scheduleItems = $siteSettings->contactScheduleUpcoming();
-            $showOnline = filled($onlineUrl);
-            $showSchedule = $scheduleEnabled && ! empty($scheduleItems);
-            // Gdy wybór terminu wyłączony — zamiast harmonogramu i przycisków komunikat.
-            $showNoSchedule = ! $scheduleEnabled;
-            $noScheduleNote = $siteSettings->contact_no_schedule_note ?: 'Jeszcze nie ustaliliśmy żadnych terminów.';
-            $onlineExternal = $showOnline && \Illuminate\Support\Str::startsWith($onlineUrl, ['http://', 'https://']);
-        @endphp
+        {{-- Spotkania: online + harmonogram w Krakowie --}}
+        @if ($showMeetings)
+            @php
+                $onlineLabel    = $siteSettings->contact_online_meeting_label ?: 'Wybierz dogodny termin';
+                $onlineText     = $siteSettings->contact_online_meeting_text ?: 'Najwygodniej spotkać się online — umów rozmowę w dogodnym dla Ciebie terminie.';
+                $remoteNote     = $siteSettings->contact_remote_note;
+                $scheduleTitle  = $siteSettings->contact_schedule_title ?: 'Kiedy i gdzie jesteśmy w Krakowie';
+                $showOnline     = filled($onlineUrl);
+                $onlineExternal = $showOnline && \Illuminate\Support\Str::startsWith($onlineUrl, ['http://', 'https://']);
+            @endphp
 
-        @if ($showOnline || $showSchedule || $showNoSchedule || filled($remoteNote))
             <div id="spotkania" class="mt-12 scroll-mt-24 border-t border-gray-100 pt-8">
                 <h2 class="mb-4 text-xl font-bold text-ink">{{ $meetingTitle }}</h2>
 
-                {{-- Zaproszenie na spotkanie online — wyróżniony baner (hero) --}}
                 @if ($showOnline)
                     <div class="mb-6 flex flex-col gap-4 rounded-xl bg-linear-to-br from-brand to-brand-dark p-6 text-white sm:flex-row sm:items-center sm:justify-between">
                         <div class="flex items-start gap-3">
@@ -218,22 +220,7 @@
                     </p>
                 @endif
 
-                {{-- Wybór terminu wyłączony w ustawieniach — komunikat zamiast przycisków. --}}
-                @if ($showNoSchedule)
-                    <div class="flex flex-col gap-4 rounded-lg border border-gray-200 p-5 sm:flex-row sm:items-center">
-                        <span class="flex h-11 w-11 flex-none items-center justify-center rounded-full bg-brand-light text-brand" aria-hidden="true">
-                            <i class="fa-solid fa-calendar-xmark"></i>
-                        </span>
-                        <div>
-                            <h3 class="text-lg font-bold text-ink">{{ $scheduleTitle }}</h3>
-                            <p class="mt-0.5 max-w-xl text-sm text-muted">{{ $noScheduleNote }}</p>
-                        </div>
-                    </div>
-                @endif
-
-                {{-- W Krakowie: harmonogram + formularz w wyskakującym okienku (modal).
-                     Modal otwiera się sam, gdy walidacja formularza zwróci błędy. --}}
-                @if ($showSchedule)
+                @if (! empty($scheduleItems))
                     <div x-data="{ open: {{ $errors->meeting->isNotEmpty() ? 'true' : 'false' }} }"
                         x-effect="document.body.style.overflow = open ? 'hidden' : ''">
 
@@ -244,7 +231,6 @@
                             </div>
                         @endif
 
-                        {{-- Wyzwalacz modala --}}
                         <div class="flex flex-col gap-4 rounded-lg border border-gray-200 p-5 sm:flex-row sm:items-center sm:justify-between">
                             <div class="flex items-start gap-3">
                                 <span class="flex h-11 w-11 flex-none items-center justify-center rounded-full bg-brand-light text-brand" aria-hidden="true">
@@ -261,7 +247,7 @@
                             </button>
                         </div>
 
-                        {{-- Modal --}}
+                        {{-- Modal z terminami i formularzem zapisu --}}
                         <div x-show="open" x-cloak x-transition.opacity
                             @keydown.escape.window="open = false"
                             @click.self="open = false"
@@ -380,16 +366,11 @@
             </div>
         @endif
 
-        @php
-            $shipNote = $siteSettings->contact_shipping_note;
-            $pkCode = $siteSettings->contact_paczkomat_code;
-            $pkAddr = $siteSettings->contact_paczkomat_address;
-            $pkLoc = $siteSettings->contact_paczkomat_location;
-            $shipPhone = $siteSettings->contact_shipping_phone;
-            $showShipping = $siteSettings->contact_shipping_visible && (filled($shipNote) || filled($pkCode) || filled($pkAddr) || filled($shipPhone));
-        @endphp
-
+        {{-- Przesyłki / paczkomat --}}
         @if ($showShipping)
+            @php
+                $pkLoc = $siteSettings->contact_paczkomat_location;
+            @endphp
             <div id="przesylki" class="mt-12 scroll-mt-24 border-t border-gray-100 pt-8">
                 <h2 class="mb-2 text-lg font-bold text-ink">Wyślij do nas przesyłkę</h2>
                 <p class="mb-4 max-w-2xl text-sm text-muted">{{ $shipNote ?: 'Możesz nadać do nas paczkę lub list — również na paczkomat.' }}</p>
@@ -441,7 +422,8 @@
             </div>
         @endif
 
-        @if (!empty($siteSettings->contact_bank_accounts) && ($siteSettings->contact_show_bank_accounts ?? true))
+        {{-- Rachunki bankowe --}}
+        @if (! empty($siteSettings->contact_bank_accounts))
             <div id="rachunki" class="mt-12 scroll-mt-24 border-t border-gray-100 pt-8">
                 <h2 class="mb-2 text-xl font-bold text-ink">Numery rachunków bankowych</h2>
                 <p class="mb-5 max-w-2xl text-sm text-muted">Przy każdym rachunku opisujemy, do czego służy i co można na niego wpłacić.</p>
@@ -452,11 +434,10 @@
                                 <i class="fa-solid fa-building-columns"></i>
                             </span>
                             <div class="min-w-0">
-                                @if (!empty($account['purpose']))
+                                @if (! empty($account['purpose']))
                                     <p class="font-bold text-ink">{{ $account['purpose'] }}</p>
                                 @endif
-                                {{-- Pełny numer w jednej linii; na wąskich ekranach przewija się poziomo we własnym polu zamiast zawijać. --}}
-                                <p class="{{ !empty($account['purpose']) ? 'mt-1' : '' }} overflow-x-auto whitespace-nowrap font-mono text-sm text-ink">{{ $account['number'] }}</p>
+                                <p class="{{ ! empty($account['purpose']) ? 'mt-1' : '' }} overflow-x-auto whitespace-nowrap font-mono text-sm text-ink">{{ $account['number'] }}</p>
                                 <button type="button" data-copy-button data-copy-value="{{ $account['number'] }}"
                                     class="mt-2.5 inline-flex items-center gap-1.5 rounded-full border border-brand px-3 py-1 text-xs font-bold text-brand transition hover:bg-brand-light">
                                     <i class="fa-regular fa-copy" aria-hidden="true"></i> Kopiuj numer
@@ -468,9 +449,10 @@
             </div>
         @endif
 
-        @if ($projects->isNotEmpty() && ($siteSettings->contact_show_coordinators ?? true))
+        {{-- Koordynatorzy projektów --}}
+        @if ($projects->isNotEmpty())
             <div id="koordynatorzy" class="mt-12 scroll-mt-24 border-t border-gray-100 pt-8">
-                <h2 class="mb-4 text-xl font-bold text-ink"> Koordynatorzy poszczególnych działań</h2>
+                <h2 class="mb-4 text-xl font-bold text-ink">Koordynatorzy poszczególnych działań</h2>
                 <div class="grid gap-4 sm:grid-cols-2">
                     @foreach ($projects as $project)
                         <div class="rounded-lg border p-4 text-sm {{ $project->is_featured_contact ? 'border-brand/30 bg-brand-light ring-1 ring-brand/20' : 'border-gray-200' }}">
@@ -494,7 +476,7 @@
         @endif
     </section>
 
-    @if (!empty($siteSettings->contact_bank_accounts) || filled($siteSettings->contact_paczkomat_code))
+    @if (! empty($siteSettings->contact_bank_accounts) || filled($siteSettings->contact_paczkomat_code))
         <script>
             document.querySelectorAll('[data-copy-button]').forEach(function (button) {
                 button.addEventListener('click', function () {

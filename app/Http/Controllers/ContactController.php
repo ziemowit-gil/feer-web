@@ -20,11 +20,8 @@ class ContactController extends Controller
     /** Wyświetla stronę kontaktową z listą koordynatorów aktywnych projektów. */
     public function index()
     {
-        // Coordinator contacts for the contact page: only live (non-archival)
-        // projects whose coordinator is not hidden, with featured contacts pulled
-        // to the front. The site-wide master switch can hide them all at once.
         $settings = SiteSetting::current();
-        $projects = ($settings->isModuleEnabled('projects') && $settings->show_coordinators)
+        $projects = $settings->isModuleEnabled('projects')
             ? Project::where('is_published', true)
                 ->where('is_completed', false)
                 ->where('show_coordinator', true)

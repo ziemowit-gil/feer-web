@@ -1012,40 +1012,11 @@
                 @error('contact_intro') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
             </div>
 
-            <p class=”mb-2 text-xs font-bold uppercase tracking-wide text-muted”>Sekcje strony Kontakt</p>
-            <input type=”hidden” name=”contact_show_form” value=”1”>
-            <input type=”hidden” name=”contact_show_bank_accounts” value=”1”>
-            <input type=”hidden” name=”contact_show_coordinators” value=”1”>
-            <div class=”mb-1 space-y-2 rounded-lg border border-gray-200 bg-gray-50 p-3”>
-                <div class=”flex items-start gap-2 text-sm”>
-                    <i class=”fa-solid fa-check mt-0.5 flex-none text-brand” aria-hidden=”true”></i>
-                    <span>
-                        <span class=”font-bold”>Napisz do nas</span>
-                        <span class=”block text-xs text-muted”>Formularz kontaktowy i dane teleadresowe.</span>
-                    </span>
-                </div>
-                <div class=”flex items-start gap-2 text-sm”>
-                    <i class=”fa-solid fa-check mt-0.5 flex-none text-brand” aria-hidden=”true”></i>
-                    <span>
-                        <span class=”font-bold”>Rachunki bankowe</span>
-                        <span class=”block text-xs text-muted”>Widoczne tylko gdy rachunki są skonfigurowane poniżej.</span>
-                    </span>
-                </div>
-                <div class=”flex items-start gap-2 text-sm”>
-                    <i class=”fa-solid fa-check mt-0.5 flex-none text-brand” aria-hidden=”true”></i>
-                    <span>
-                        <span class=”font-bold”>Koordynatorzy</span>
-                        <span class=”block text-xs text-muted”>Lista koordynatorów projektów. Dotyczy tylko strony Kontakt — poniższy przełącznik wyłącza koordynatorów wszędzie.</span>
-                    </span>
-                </div>
-            </div>
-            <p class=”mb-4 text-xs text-muted”><i class=”fa-solid fa-circle-info mr-1” aria-hidden=”true”></i>Wszystkie sekcje są domyślnie włączone. Możliwość konfiguracji widoczności poszczególnych sekcji pojawi się w przyszłych wersjach weCMS.</p>
-
             <label class=”mb-4 flex items-start gap-2 rounded-lg border border-gray-200 bg-gray-50 p-3 text-sm”>
                 <input type=”checkbox” name=”show_coordinators” value=”1” @checked(old('show_coordinators', $settings->show_coordinators)) class=”mt-0.5 rounded border-gray-300 text-brand focus:ring-brand”>
                 <span>
                     <span class=”font-bold”>Pokazuj koordynatorów projektów</span>
-                    <span class=”block text-xs text-muted”>Główny wyłącznik danych koordynatorów na stronie „Kontakt” oraz na stronach projektów. Poszczególne projekty mają dodatkowo własny przełącznik.</span>
+                    <span class=”block text-xs text-muted”>Wyłącza dane koordynatorów na stronach projektów. Poszczególne projekty mają dodatkowo własny przełącznik.</span>
                 </span>
             </label>
 
@@ -1092,14 +1063,8 @@
             <div class="mt-8 space-y-4 rounded-lg border border-gray-200 bg-gray-50 p-5">
                 <div>
                     <p class="text-sm font-bold text-ink">Przesyłki (paczka, list, paczkomat)</p>
-                    <p class="mt-0.5 text-xs text-muted">Informacja na podstronie <a href="{{ route('contact.show') }}" target="_blank" rel="noopener" class="text-brand underline">/kontakt</a> o nadawaniu do nas przesyłek. Zostaw pola puste, aby ukryć cały blok.</p>
+                    <p class="mt-0.5 text-xs text-muted">Sekcja pojawia się na podstronie <a href="{{ route('contact.show') }}" target="_blank" rel="noopener" class="text-brand underline">/kontakt</a> automatycznie, gdy którekolwiek pole poniżej jest wypełnione. Zostaw wszystkie puste, aby ukryć blok.</p>
                 </div>
-
-                <label class="flex items-center gap-2">
-                    <input type="checkbox" name="contact_shipping_visible" value="1" {{ old('contact_shipping_visible', $settings->contact_shipping_visible ?? true) ? 'checked' : '' }}
-                        class="rounded border-gray-300 text-brand focus:ring-brand">
-                    <span class="text-sm font-bold">Pokaż sekcję „Wyślij do nas przesyłkę" na stronie kontaktu</span>
-                </label>
 
                 <div>
                     <label for="contact_shipping_note" class="mb-1 block text-sm font-bold">Tekst wstępny <span class="font-normal text-muted">(opcjonalnie)</span></label>
@@ -1266,7 +1231,7 @@
                             class="mt-0.5 rounded border-gray-300 text-brand focus:ring-brand">
                         <span>
                             <span class="text-sm font-bold">Umożliw wybór terminu spotkania</span>
-                            <span class="block text-xs text-muted">Gdy wyłączone, na stronie kontakt zamiast harmonogramu i przycisków pokażemy komunikat poniżej.</span>
+                            <span class="block text-xs text-muted">Gdy wyłączone, na stronie zapisów zamiast harmonogramu pokażemy komunikat poniżej.</span>
                         </span>
                     </label>
 
