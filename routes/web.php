@@ -95,6 +95,7 @@ Route::middleware('module:projects')->group(function () {
 Route::middleware('module:news')->group(function () {
     Route::get('/aktualnosci', [NewsController::class, 'index'])->name('news.index');
     Route::get('/aktualnosci/{news:slug}', [NewsController::class, 'show'])->name('news.show');
+    Route::get('/aktualnosci/{news:slug}/pdf', [NewsController::class, 'pdf'])->name('news.pdf');
 });
 
 Route::post('/ankieta/{poll}/glosuj', [PollVoteController::class, 'store'])->name('polls.vote')->middleware('module:polls');
@@ -329,6 +330,8 @@ Route::middleware(['auth', 'verified', '2fa'])->prefix(config('app.admin_prefix'
     Route::post('multimedia/zbiorczo', [MediaLibraryController::class, 'bulk'])->name('multimedia.bulk');
     Route::post('multimedia/eksport-zaznaczonych', [MediaLibraryController::class, 'exportSelected'])->name('multimedia.export-selected');
     Route::put('multimedia/{media}/alt', [MediaLibraryController::class, 'updateAlt'])->name('multimedia.alt');
+    Route::put('multimedia/{media}/autor', [MediaLibraryController::class, 'updateAuthor'])->name('multimedia.author');
+    Route::put('multimedia/{media}/nazwa', [MediaLibraryController::class, 'rename'])->name('multimedia.rename');
     Route::put('multimedia/{media}/tagi', [MediaLibraryController::class, 'updateTags'])->name('multimedia.tags');
     Route::delete('multimedia/kosz', [MediaLibraryController::class, 'emptyArchive'])->name('multimedia.empty-archive');
     Route::put('multimedia/{media}/folder', [MediaLibraryController::class, 'move'])->name('multimedia.move');

@@ -54,6 +54,19 @@
 
             <div class="prose max-w-none text-ink">{!! $news->content !!}</div>
 
+            <div class="mt-8 flex flex-wrap gap-3 print:hidden" aria-label="Opcje artykułu">
+                <button type="button" onclick="window.print()"
+                    class="inline-flex items-center gap-2 rounded border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-ink hover:bg-gray-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
+                    <i class="fa-solid fa-print text-muted" aria-hidden="true"></i>
+                    Drukuj
+                </button>
+                <a href="{{ route('news.pdf', $news) }}" target="_blank" rel="noopener"
+                    class="inline-flex items-center gap-2 rounded border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-ink hover:bg-gray-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
+                    <i class="fa-solid fa-file-pdf text-muted" aria-hidden="true"></i>
+                    Tekst w PDF
+                </a>
+            </div>
+
             @include('partials.attachments-list', ['attachments' => $news->attachments])
         </div>
     </section>

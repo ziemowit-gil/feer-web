@@ -36,4 +36,14 @@ class NewsController extends Controller
 
         return view('news.show', compact('news', 'brandColor', 'preview'));
     }
+
+    public function pdf(News $news)
+    {
+        abort_unless($news->is_published && $news->published_at <= now(), 404);
+        $news->load(['category']);
+        $siteSettings = SiteSetting::current();
+        $printedAt = now()->format('d.m.Y');
+
+        return view('news.pdf', compact('news', 'siteSettings', 'printedAt'));
+    }
 }
