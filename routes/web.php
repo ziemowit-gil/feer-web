@@ -362,6 +362,7 @@ Route::middleware(['auth', 'verified', '2fa'])->prefix(config('app.admin_prefix'
         Route::post('ustawienia/strefa-nadpisz', [SiteSettingController::class, 'overwriteStrefa'])->name('strefa.overwrite');
         Route::post('ustawienia/prefix-panelu', [SiteSettingController::class, 'updateAdminPrefix'])->name('ustawienia.prefix');
         Route::get('ustawienia/dev', [SiteSettingController::class, 'dev'])->name('ustawienia.dev');
+        Route::post('push/wyslij', [SiteSettingController::class, 'sendPush'])->name('push.send');
 
         Route::get('zgloszenia-spotkania', [AdminMeetingSignupController::class, 'index'])->name('zgloszenia-spotkania.index');
         Route::get('zgloszenia-spotkania/eksport', [AdminMeetingSignupController::class, 'export'])->name('zgloszenia-spotkania.export');
@@ -426,6 +427,18 @@ Route::middleware(['auth', 'verified', '2fa'])->prefix(config('app.admin_prefix'
         return response()->file($path, ['Content-Type' => 'text/html; charset=utf-8']);
     })->middleware('admin')->name('dokumentacja');
 });
+
+// Subskrypcje Web Push — rejestracja i wyrejestrowanie.
+Route::post('/push/subscribe',   [\App\Http\Controllers\PushController::class, 'subscribe'])->name('push.subscribe');
+Route::post('/push/unsubscribe', [\App\Http\Controllers\PushController::class, 'unsubscribe'])->name('push.unsubscribe');
+
+// Manifest PWA — dynamicznie generowany z ustawień serwisu.
+Route::get('/manifest.webmanifest', function () {
+    $s = App\Models\SiteSetting::current();
+    return response()
+        ->view('pwa.manifest', ['settings' => $s])
+        ->header('Content-Type', 'application/manifest+json');
+})->name('pwa.manifest');
 
 require __DIR__.'/auth.php';
 

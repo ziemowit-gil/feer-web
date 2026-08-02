@@ -418,3 +418,5 @@ document.querySelectorAll('a[target="_blank"]').forEach((link) => {
     note.textContent = ' (link otwiera się w nowej karcie)';
     link.appendChild(note);
 });
+
+import './push';

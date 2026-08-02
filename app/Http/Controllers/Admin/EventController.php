@@ -78,6 +78,12 @@ class EventController extends Controller
         $this->syncFacilitatorPhoto($request, $event);
         $this->syncFaqs($request, $event);
 
+        if ($event->isSeries()) {
+            $count = $event->generateInstances();
+            $suffix = $count > 0 ? " Wygenerowano {$count} " . ($count === 1 ? 'instancję' : ($count < 5 ? 'instancje' : 'instancji')) . ' serii.' : '';
+            return redirect()->route('admin.wydarzenia.index')->with('status', "Wydarzenie zostało dodane.{$suffix}");
+        }
+
         return redirect()->route('admin.wydarzenia.index')->with('status', 'Wydarzenie zostało dodane.');
     }
 
@@ -101,16 +107,46 @@ class EventController extends Controller
         $data = $this->prepared($request);
         $data['slug'] = $this->uniqueSlug(($data['slug'] ?? '') ?: $data['title'], $event->id);
 
+        $oldRecurrenceType = $event->recurrence_type;
         $event->update($data);
         $this->syncFacilitatorPhoto($request, $event);
         $this->syncFaqs($request, $event);
 
+        if ($event->isSeries()) {
+            // Seria — regeneruj instancje (nowe parametry lub zmiana daty)
+            $count = $event->generateInstances();
+            $suffix = $count > 0
+                ? " Zaktualizowano serię: {$count} " . ($count === 1 ? 'instancja' : ($count < 5 ? 'instancje' : 'instancji')) . '.'
+                : ' Seria bez instancji (sprawdź datę zakończenia).';
+            return redirect()->route('admin.wydarzenia.index')->with('status', "Wydarzenie zostało zaktualizowane.{$suffix}");
+        }
+
+        // Usunięto cykl z wydarzenia, które wcześniej było serią — posprzątaj sieroty
+        if ($oldRecurrenceType && ! $event->recurrence_type) {
+            Event::where('recurrence_parent_id', $event->id)->each->delete();
+        }
+
         return redirect()->route('admin.wydarzenia.index')->with('status', 'Wydarzenie zostało zaktualizowane.');
     }
 
-    /** Usuwa wydarzenie. */
-    public function destroy(Event $event)
+    /** Usuwa wydarzenie (wraz z całą serią, gdy to rekord-rodzic). */
+    public function destroy(Request $request, Event $event)
     {
+        if ($event->isSeries() || $request->boolean('delete_series')) {
+            // Usuń wszystkie instancje serii, a potem samego rodzica
+            $count = $event->instances()->count();
+            $event->instances()->each->delete();
+            $event->delete();
+            $label = $count > 0 ? " (usunięto też {$count} " . ($count === 1 ? 'instancję' : ($count < 5 ? 'instancje' : 'instancji')) . ' serii)' : '';
+            return redirect()->route('admin.wydarzenia.index')->with('status', "Seria wydarzeń została usunięta{$label}.");
+        }
+
+        if ($event->isInstance()) {
+            // Usuwamy tylko tę instancję (seria zostaje)
+            $event->delete();
+            return redirect()->route('admin.wydarzenia.index')->with('status', 'Instancja serii została usunięta.');
+        }
+
         $event->delete();
 
         return redirect()->route('admin.wydarzenia.index')->with('status', 'Wydarzenie zostało usunięte.');
@@ -127,6 +163,10 @@ class EventController extends Controller
         $clone->starts_at = null;
         $clone->ends_at = null;
         $clone->archived_at = null;
+        // Klon to nowe, samodzielne wydarzenie — bez powiązania z serią
+        $clone->recurrence_type = null;
+        $clone->recurrence_ends_at = null;
+        $clone->recurrence_parent_id = null;
         $clone->save();
 
         foreach ($event->faqs()->get() as $faq) {
@@ -300,7 +340,7 @@ class EventController extends Controller
         $data['registration_cta_label'] = trim((string) ($data['registration_cta_label'] ?? '')) ?: 'Zapisz się';
 
         // Pliki, FAQ i pomocnicze pola obsługujemy osobno.
-        unset($data['facilitator_photo'], $data['remove_facilitator_photo'], $data['faqs']);
+        unset($data['facilitator_photo'], $data['remove_facilitator_photo'], $data['faqs'], $data['delete_series']);
 
         return $data;
     }

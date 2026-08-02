@@ -427,5 +427,57 @@
         </div>
     </section>
 
+    {{-- ====== Ręczne powiadomienie push ====== --}}
+    <section aria-labelledby="push-heading">
+        <h2 id="push-heading" class="mb-1 text-base font-bold text-ink">Ręczne powiadomienie push</h2>
+        <p class="mb-3 text-sm text-muted">
+            Wyślij powiadomienie push do wszystkich aktywnych subskrybentów.
+            Subskrypcji w bazie: <strong>{{ \App\Models\PushSubscription::count() }}</strong>.
+        </p>
+
+        @if (session('status'))
+            <div class="mb-4 rounded-lg bg-green-50 px-4 py-3 text-sm text-green-800 ring-1 ring-green-200" role="alert">
+                {{ session('status') }}
+            </div>
+        @endif
+
+        <form method="POST" action="{{ route('admin.push.send') }}" class="max-w-lg space-y-4 rounded-xl border border-gray-200 bg-white p-5">
+            @csrf
+            <div>
+                <label for="push_title" class="mb-1 block text-sm font-medium text-ink">Tytuł <span aria-hidden="true">*</span></label>
+                <input id="push_title" name="push_title" type="text" maxlength="80" required
+                       value="{{ old('push_title') }}"
+                       class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand"
+                       aria-describedby="push_title_hint">
+                <p id="push_title_hint" class="mt-0.5 text-xs text-muted">Maks. 80 znaków.</p>
+                @error('push_title') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
+            </div>
+
+            <div>
+                <label for="push_body" class="mb-1 block text-sm font-medium text-ink">Treść <span aria-hidden="true">*</span></label>
+                <textarea id="push_body" name="push_body" maxlength="200" required rows="3"
+                          class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand"
+                          aria-describedby="push_body_hint">{{ old('push_body') }}</textarea>
+                <p id="push_body_hint" class="mt-0.5 text-xs text-muted">Maks. 200 znaków.</p>
+                @error('push_body') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
+            </div>
+
+            <div>
+                <label for="push_url" class="mb-1 block text-sm font-medium text-ink">URL (opcjonalny)</label>
+                <input id="push_url" name="push_url" type="url" maxlength="500"
+                       value="{{ old('push_url', '/') }}"
+                       class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand"
+                       aria-describedby="push_url_hint">
+                <p id="push_url_hint" class="mt-0.5 text-xs text-muted">Adres, który otworzy się po kliknięciu powiadomienia.</p>
+                @error('push_url') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
+            </div>
+
+            <button type="submit"
+                    class="rounded-lg bg-brand px-5 py-2 text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
+                Wyślij powiadomienie
+            </button>
+        </form>
+    </section>
+
 </div>
 @endsection

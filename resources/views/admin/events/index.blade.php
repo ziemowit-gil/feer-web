@@ -65,7 +65,16 @@
                             <td class=”px-4 py-3”>
                                 <input type=”checkbox” name=”ids[]” value=”{{ $event->id }}” class=”row-check rounded border-gray-300” aria-label=”Zaznacz {{ $event->title }}”>
                             </td>
-                            <td class=”px-4 py-3 font-medium”>{{ $event->title }}</td>
+                            <td class=”px-4 py-3 font-medium”>
+                                {{ $event->title }}
+                                @if ($event->isSeries())
+                                    <span class=”ml-1 rounded-full bg-indigo-100 px-2 py-0.5 text-xs font-bold text-indigo-700” title=”Seria powtarzająca się”>
+                                        <i class=”fa-solid fa-rotate” aria-hidden=”true”></i> Seria &middot; {{ $event->instances()->count() }}
+                                    </span>
+                                @elseif ($event->isInstance())
+                                    <span class=”ml-1 rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-500” title=”Instancja serii”>instancja</span>
+                                @endif
+                            </td>
                             <td class=”px-4 py-3 text-muted”>
                                 <i class=”fa-solid {{ $event->typeIcon() }} mr-1 text-gray-400” aria-hidden=”true”></i>{{ $event->typeLabel() }}
                             </td>

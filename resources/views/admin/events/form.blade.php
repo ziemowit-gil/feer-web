@@ -80,6 +80,62 @@
             </div>
         </fieldset>
 
+        {{-- Powtarzanie --}}
+        @if (! $event->isInstance())
+        <fieldset class="space-y-4 rounded-lg border border-gray-200 bg-white p-6"
+            x-data="{
+                enabled: @js(old('recurrence_type', $event->recurrence_type) !== null),
+            }">
+            <legend class="px-2 text-sm font-bold text-brand">Powtarzanie <span class="font-normal text-muted">(opcjonalnie)</span></legend>
+
+            @if ($event->isSeries())
+                <p class="rounded bg-blue-50 px-3 py-2 text-xs text-blue-800">
+                    <i class="fa-solid fa-rotate" aria-hidden="true"></i>
+                    Seria &middot; {{ $event->instances()->count() }} {{ $event->instances()->count() === 1 ? 'instancja' : ($event->instances()->count() < 5 ? 'instancje' : 'instancji') }}.
+                    Zapisanie formularza <strong>wygeneruje instancje od nowa</strong>.
+                </p>
+            @endif
+
+            <label class="flex items-center gap-2">
+                <input type="checkbox" x-model="enabled"
+                    class="rounded border-gray-300 text-brand focus:ring-brand"
+                    aria-expanded="enabled" aria-controls="recurrence-fields">
+                <span class="text-sm font-bold">Ustaw powtarzanie</span>
+            </label>
+
+            <div id="recurrence-fields" x-show="enabled" x-cloak class="grid gap-4 sm:grid-cols-2">
+                <div>
+                    <label for="recurrence_type" class="mb-1 block text-sm font-bold">Częstotliwość</label>
+                    <select id="recurrence_type" :name="enabled ? 'recurrence_type' : null"
+                        class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                        @foreach (\App\Models\Event::RECURRENCE_TYPES as $value => $label)
+                            <option value="{{ $value }}"
+                                {{ old('recurrence_type', $event->recurrence_type) === $value ? 'selected' : '' }}>
+                                {{ $label }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+                <div>
+                    <label for="recurrence_ends_at" class="mb-1 block text-sm font-bold">Zakończ serię dnia <span class="font-normal text-muted">(opcjonalnie)</span></label>
+                    <input type="date" id="recurrence_ends_at" :name="enabled ? 'recurrence_ends_at' : null"
+                        value="{{ old('recurrence_ends_at', $event->recurrence_ends_at?->format('Y-m-d')) }}"
+                        class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                    <p class="mt-1 text-xs text-muted">Gdy puste: maks. 12 mies. (co tydzień/2 tyg.) lub 3 lata (co mies./rok). Maks. 52 instancje.</p>
+                </div>
+            </div>
+        </fieldset>
+        @else
+            {{-- Informacja dla instancji serii --}}
+            <div class="rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-800">
+                <i class="fa-solid fa-link" aria-hidden="true"></i>
+                To jest <strong>instancja serii</strong> — edytujesz tylko to wystąpienie.
+                <a href="{{ route('admin.wydarzenia.edit', $event->parent) }}" class="ml-1 font-bold underline hover:text-blue-900">
+                    Przejdź do serii ({{ $event->parent->title }})
+                </a>
+            </div>
+        @endif
+
         {{-- Miejsce / tryb --}}
         <fieldset class="space-y-4 rounded-lg border border-gray-200 bg-white p-6">
             <legend class="px-2 text-sm font-bold text-brand">Miejsce</legend>

@@ -45,6 +45,9 @@ class EventRequest extends FormRequest
             'faqs' => ['nullable', 'array'],
             'faqs.*.question' => ['nullable', 'string', 'max:255'],
             'faqs.*.answer' => ['nullable', 'string', 'max:2000'],
+            'recurrence_type' => ['nullable', Rule::in(array_keys(Event::RECURRENCE_TYPES))],
+            'recurrence_ends_at' => ['nullable', 'date', 'after:starts_at'],
+            'delete_series' => ['sometimes', 'boolean'],
         ];
     }
 
@@ -53,6 +56,7 @@ class EventRequest extends FormRequest
         return [
             'location.required_unless' => 'Podaj miejsce (chyba że wydarzenie jest w pełni zdalne).',
             'ends_at.after_or_equal' => 'Termin zakończenia nie może być wcześniejszy niż rozpoczęcia.',
+            'recurrence_ends_at.after' => 'Data zakończenia serii musi być po dacie pierwszego wystąpienia.',
         ];
     }
 

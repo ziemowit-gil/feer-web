@@ -545,4 +545,23 @@ class SiteSettingController extends Controller
         return redirect()->route('admin.ustawienia.edit', ['tab' => 'login'])
             ->with('status', 'Nowy adres dostępu awaryjnego został wygenerowany.');
     }
+
+    /** Wysyła ręczne powiadomienie push do wszystkich subskrybentów. */
+    public function sendPush(Request $request): RedirectResponse
+    {
+        $data = $request->validate([
+            'push_title' => ['required', 'string', 'max:80'],
+            'push_body'  => ['required', 'string', 'max:200'],
+            'push_url'   => ['nullable', 'url', 'max:500'],
+        ]);
+
+        $service = new \App\Services\PushNotificationService();
+        $count = $service->send(
+            $data['push_title'],
+            $data['push_body'],
+            $data['push_url'] ?? '/'
+        );
+
+        return redirect()->back()->with('status', "Powiadomienie push wysłane do {$count} subskrybentów.");
+    }
 }
