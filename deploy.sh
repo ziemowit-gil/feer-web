@@ -2,78 +2,171 @@
 #
 # Deploy FEER-web na serwerze produkcyjnym.
 #
-# Pobiera zmiany z gita, zachowując realną bazę SQLite (jest w .gitignore,
-# ale w starym checkoucie serwera bywa jeszcze śledzona), uruchamia migracje
-# i czyści cache. Bezpieczny do wielokrotnego uruchamiania.
+# Pobiera zmiany z gita, buduje assety, uruchamia migracje obu baz (główna
+# i blog) oraz czyści cache. Włącza tryb serwisowy na czas wdrożenia i
+# automatycznie go wyłącza — nawet w razie błędu.
 #
 # Użycie:
 #   ./deploy.sh
 #
 # Zmienne środowiskowe (opcjonalne):
-#   PHP_BIN   binarka PHP CLI            (domyślnie: php84, a gdy niedostępna — php85)
-#   NPM_BIN   binarka npm                (domyślnie: /opt/alt/alt-nodejs20/root/usr/bin/npm)
-#   BRANCH    gałąź do pobrania          (domyślnie: main)
+#   PHP_BIN       binarka PHP CLI                (domyślnie: php85 lub php84)
+#   COMPOSER_BIN  binarka Composer               (domyślnie: composer)
+#   NPM_BIN       binarka npm                    (domyślnie: /opt/alt/alt-nodejs20/root/usr/bin/npm)
+#   BRANCH        gałąź do pobrania              (domyślnie: main)
 #
-# Przykład lokalnego testu:  PHP_BIN=php NPM_BIN=npm ./deploy.sh
+# Przykład lokalnego testu:  PHP_BIN=php COMPOSER_BIN=composer NPM_BIN=npm ./deploy.sh
 set -euo pipefail
 
-# Wybór binarki PHP: preferuj php84, w razie porażki użyj php85.
-# Jawnie ustawiona zmienna PHP_BIN wyłącza automatyczny wybór.
+# ─── Konfiguracja ─────────────────────────────────────────────────────────────
+
 if [ -z "${PHP_BIN:-}" ]; then
-    if php84 -v >/dev/null 2>&1; then
+    if php85 -v >/dev/null 2>&1; then
+        PHP_BIN="php85"
+    elif php84 -v >/dev/null 2>&1; then
         PHP_BIN="php84"
     else
-        PHP_BIN="php85"
+        PHP_BIN="php"
     fi
 fi
+COMPOSER_BIN="${COMPOSER_BIN:-composer}"
 NPM_BIN="${NPM_BIN:-/opt/alt/alt-nodejs20/root/usr/bin/npm}"
 BRANCH="${BRANCH:-main}"
 DB="database/database.sqlite"
+BLOG_DB="database/blog.sqlite"
 
-# Uruchamiaj z katalogu projektu (tam, gdzie leży ten skrypt).
 cd "$(dirname "$0")"
 
-echo "▶ Deploy FEER-web (gałąź: $BRANCH, PHP: $PHP_BIN)"
+# ─── Nagłówek ─────────────────────────────────────────────────────────────────
 
-# 1. Kopia zapasowa realnej bazy (jeśli istnieje).
-BACKUP=""
-if [ -f "$DB" ]; then
-    BACKUP="/tmp/feer-db-backup-$(date +%Y%m%d-%H%M%S).sqlite"
-    cp "$DB" "$BACKUP"
-    echo "  ✔ Kopia bazy: $BACKUP"
+echo ""
+echo "┌─────────────────────────────────────────────────────────────┐"
+printf "│  %-61s│\n" "Deploy FEER-web"
+printf "│  %-61s│\n" "Gałąź: $BRANCH  |  PHP: $PHP_BIN"
+echo "└─────────────────────────────────────────────────────────────┘"
+echo ""
+
+# ─── Podgląd nadchodzących commitów ───────────────────────────────────────────
+
+echo "  Pobieranie informacji o zmianach..."
+git fetch origin "$BRANCH" --quiet
+
+INCOMING=$(git log --oneline --graph HEAD..origin/"$BRANCH" 2>/dev/null || true)
+
+if [ -z "$INCOMING" ]; then
+    echo ""
+    echo "  ┌─ Brak nowych commitów na origin/$BRANCH ─────────────────┐"
+    echo "  │  Lokalnie jest już najnowsza wersja.                    │"
+    echo "  └──────────────────────────────────────────────────────────┘"
+    echo ""
+    printf "  Czy mimo to kontynuować deploy? [t/N] "
+    read -r confirm
+    [[ "$confirm" =~ ^[tTyY]$ ]] || { echo "  Anulowano."; exit 0; }
+else
+    COUNT=$(echo "$INCOMING" | grep -c "^\*" || true)
+    echo ""
+    echo "  ┌─ Commity do wdrożenia ($COUNT) ──────────────────────────────┐"
+    while IFS= read -r line; do
+        printf "  │  %-58s│\n" "$line"
+    done <<< "$INCOMING"
+    echo "  └──────────────────────────────────────────────────────────┘"
+    echo ""
+    printf "  Wdrożyć te zmiany? [t/N] "
+    read -r confirm
+    [[ "$confirm" =~ ^[tTyY]$ ]] || { echo "  Anulowano."; exit 0; }
 fi
 
-# 2. Cofnij lokalne zmiany w pliku bazy, gdyby był jeszcze śledzony
-#    (inaczej git pull odmówi). Gdy plik jest już ignorowany — nic nie robi.
-git checkout -- "$DB" 2>/dev/null || true
+echo ""
 
-# 3. Pobierz kod.
-echo "▶ git pull origin $BRANCH"
+# ─── Tryb serwisowy ───────────────────────────────────────────────────────────
+
+echo "  [1/7] Tryb serwisowy: włączam..."
+"$PHP_BIN" artisan down --render="errors::503" --retry=30 2>/dev/null || true
+
+_przywroc_serwis() {
+    echo ""
+    echo "  !!! Błąd — wyłączam tryb serwisowy awaryjnie..."
+    "$PHP_BIN" artisan up 2>/dev/null || true
+}
+trap _przywroc_serwis ERR
+
+# ─── Kopia zapasowa baz SQLite ────────────────────────────────────────────────
+
+TS=$(date +%Y%m%d-%H%M%S)
+BACKUP=""
+BLOG_BACKUP=""
+
+echo "  [2/7] Kopia zapasowa baz..."
+if [ -f "$DB" ]; then
+    BACKUP="/tmp/feer-db-$TS.sqlite"
+    cp "$DB" "$BACKUP"
+    echo "        Główna:  $BACKUP"
+fi
+if [ -f "$BLOG_DB" ]; then
+    BLOG_BACKUP="/tmp/feer-blog-db-$TS.sqlite"
+    cp "$BLOG_DB" "$BLOG_BACKUP"
+    echo "        Blog:    $BLOG_BACKUP"
+fi
+
+# ─── Git pull ─────────────────────────────────────────────────────────────────
+
+echo "  [3/7] Pobieranie kodu..."
+git checkout -- "$DB" 2>/dev/null || true
+git checkout -- "$BLOG_DB" 2>/dev/null || true
 git pull origin "$BRANCH"
 
-# 4. Przywróć realną bazę na miejsce.
 if [ -n "$BACKUP" ]; then
     cp "$BACKUP" "$DB"
-    echo "  ✔ Przywrócono bazę z kopii"
+    echo "        Przywrócono bazę główną."
+fi
+if [ -n "$BLOG_BACKUP" ]; then
+    cp "$BLOG_BACKUP" "$BLOG_DB"
+    echo "        Przywrócono bazę bloga."
 fi
 
-# 5. Budowa assetów frontu (Tailwind/Vite).
-# Dołóż katalog npm/node do PATH, żeby skrypty (vite → #!/usr/bin/env node)
-# znalazły binarkę `node` z tej samej dystrybucji Node.
-echo "▶ Budowa assetów (npm ci && npm run build)"
+# ─── Composer ─────────────────────────────────────────────────────────────────
+
+echo "  [4/7] Composer install..."
+"$PHP_BIN" "$(which "$COMPOSER_BIN")" install \
+    --no-interaction \
+    --no-dev \
+    --optimize-autoloader \
+    --quiet
+
+# ─── Assety front-endowe ──────────────────────────────────────────────────────
+
+echo "  [5/7] Budowanie assetów (npm)..."
 export PATH="$(dirname "$NPM_BIN"):$PATH"
 if [ -f package-lock.json ]; then
-    "$NPM_BIN" ci
+    "$NPM_BIN" ci --silent
 else
-    "$NPM_BIN" install
+    "$NPM_BIN" install --silent
 fi
 "$NPM_BIN" run build
 
-# 6. Migracje i czyszczenie cache.
-echo "▶ Migracje i cache"
-"$PHP_BIN" artisan migrate --force
-"$PHP_BIN" artisan route:clear
-"$PHP_BIN" artisan view:clear
-"$PHP_BIN" artisan cache:clear
+# ─── Migracje ─────────────────────────────────────────────────────────────────
 
-echo "✅ Deploy zakończony."
+echo "  [6/7] Migracje..."
+echo "        Baza główna..."
+"$PHP_BIN" artisan migrate --force
+echo "        Baza bloga..."
+"$PHP_BIN" artisan migrate --force \
+    --database=blog \
+    --path=database/migrations/blog
+
+# ─── Cache i optymalizacja ────────────────────────────────────────────────────
+
+echo "  [7/7] Czyszczenie i optymalizacja cache..."
+"$PHP_BIN" artisan optimize:clear --quiet
+"$PHP_BIN" artisan optimize --quiet
+
+# ─── Koniec ───────────────────────────────────────────────────────────────────
+
+trap - ERR
+"$PHP_BIN" artisan up
+
+echo ""
+echo "┌─────────────────────────────────────────────────────────────┐"
+echo "│  Deploy zakończony pomyślnie.                               │"
+echo "└─────────────────────────────────────────────────────────────┘"
+echo ""
