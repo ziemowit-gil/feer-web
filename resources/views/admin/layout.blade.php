@@ -60,15 +60,6 @@
                 <i class="fa-solid fa-gauge {{ $iconClass('admin.dashboard') }}"></i> Dashboard
             </a>
 
-            @php $myTaskCount = \App\Http\Controllers\Admin\TaskController::myPendingCount(auth()->id()); @endphp
-            <a href="{{ route('admin.zadania.index') }}" class="{{ $itemClass('admin.zadania.*') }}">
-                <i class="fa-solid fa-list-check {{ $iconClass('admin.zadania.*') }}"></i>
-                <span class="flex-1">Zadania</span>
-                @if ($myTaskCount > 0)
-                    <span class="rounded-full bg-brand px-2 py-0.5 text-xs font-bold text-white">{{ $myTaskCount }}</span>
-                @endif
-            </a>
-
             @if (auth()->user()->canApproveContent())
                 @php $pendingApprovals = \App\Http\Controllers\Admin\ApprovalController::pendingCount(); @endphp
                 <a href="{{ route('admin.zatwierdzanie.index') }}" class="{{ $itemClass('admin.zatwierdzanie.*') }}">
@@ -77,12 +68,6 @@
                     @if ($pendingApprovals > 0)
                         <span class="rounded-full bg-brand px-2 py-0.5 text-xs font-bold text-white">{{ $pendingApprovals }}</span>
                     @endif
-                </a>
-            @endif
-
-            @if ($can('news') || $can('events'))
-                <a href="{{ route('admin.kalendarz.index') }}" class="{{ $itemClass('admin.kalendarz.*') }}">
-                    <i class="fa-solid fa-calendar-days {{ $iconClass('admin.kalendarz.*') }}"></i> Kalendarz redakcyjny
                 </a>
             @endif
 
@@ -360,6 +345,29 @@
         <header class="flex items-center justify-between gap-4 border-b border-gray-200 bg-white px-6 py-4">
             <h1 class="text-xl font-bold">@yield('title', 'Panel administracyjny')</h1>
             <div class="flex items-center gap-3">
+
+                {{-- Zadania --}}
+                @php $myTaskCount = \App\Http\Controllers\Admin\TaskController::myPendingCount(auth()->id()); @endphp
+                <a href="{{ route('admin.zadania.index') }}"
+                    class="relative flex items-center gap-2 rounded-lg border px-3 py-2 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand {{ request()->routeIs('admin.zadania.*') ? 'border-brand bg-brand-light text-brand' : 'border-gray-300 text-muted hover:border-brand hover:text-brand' }}"
+                    aria-label="Zadania{{ $myTaskCount ? ' (' . $myTaskCount . ' oczekujących)' : '' }}">
+                    <i class="fa-solid fa-list-check" aria-hidden="true"></i>
+                    <span class="hidden sm:inline">Zadania</span>
+                    @if ($myTaskCount > 0)
+                        <span class="absolute -right-1.5 -top-1.5 flex h-5 min-w-[1.25rem] items-center justify-center rounded-full bg-brand px-1 text-xs font-bold text-white">{{ $myTaskCount > 99 ? '99+' : $myTaskCount }}</span>
+                    @endif
+                </a>
+
+                {{-- Kalendarz redakcyjny --}}
+                @if ($can('news') || $can('events'))
+                    <a href="{{ route('admin.kalendarz.index') }}"
+                        class="flex items-center gap-2 rounded-lg border px-3 py-2 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand {{ request()->routeIs('admin.kalendarz.*') ? 'border-brand bg-brand-light text-brand' : 'border-gray-300 text-muted hover:border-brand hover:text-brand' }}"
+                        aria-label="Kalendarz redakcyjny">
+                        <i class="fa-solid fa-calendar-days" aria-hidden="true"></i>
+                        <span class="hidden md:inline">Kalendarz</span>
+                    </a>
+                @endif
+
                 <button type="button" onclick="window.dispatchEvent(new CustomEvent('open-command-palette'))"
                     class="flex items-center gap-2 rounded-lg border border-gray-300 px-3 py-2 text-sm text-muted hover:border-brand hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
                     aria-label="Szukaj w panelu (Ctrl+K)">
