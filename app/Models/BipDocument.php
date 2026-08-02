@@ -26,18 +26,39 @@ class BipDocument extends Model implements HasMedia
     use \App\Models\Concerns\LogsActivity;
 
     /**
-     * Kategorie dokumentów BIP według struktury wymaganej przepisami prawa.
+     * Kategorie dokumentów BIP zgodne z art. 6 ustawy o dostępie do informacji
+     * publicznej (Dz.U. 2001 nr 112 poz. 1198 z późn. zm.).
+     *
+     * Kolejność odpowiada strukturze art. 6 ust. 1 pkt 1–5.
      */
     public const CATEGORIES = [
-        'organizational' => 'Dane organizacyjne i kontakt',
-        'statute'        => 'Statut i dokumenty prawne',
-        'reports'        => 'Sprawozdania i budżet',
-        'projects'       => 'Projekty i działania',
-        'announcements'  => 'Ogłoszenia i komunikaty',
-        'property'       => 'Majątek i gospodarka',
-        'contracts'      => 'Rejestr umów',
-        'vacancies'      => 'Rekrutacja i wolontariat',
-        'other'          => 'Inne',
+        // pkt 1 — Informacje o podmiocie
+        'subject_status'    => 'Status prawny i forma prawna',
+        'subject_scope'     => 'Przedmiot działania i kompetencje',
+        'subject_persons'   => 'Organy i osoby funkcyjne',
+        'subject_structure' => 'Struktura organizacyjna',
+        // pkt 2 — Majątek publiczny
+        'property'          => 'Majątek i nieruchomości',
+        'public_projects'   => 'Projekty ze środków publicznych',
+        // pkt 3 — Informacje o działaniu
+        'operations'        => 'Tryb działania i obsługa spraw',
+        'registers'         => 'Rejestry i ewidencje',
+        // pkt 4 — Dokumenty urzędowe
+        'official_docs'     => 'Dokumenty urzędowe',
+        // pkt 5 — Zamówienia i finanse
+        'procurement'       => 'Zamówienia publiczne',
+        'finance'           => 'Sprawozdania finansowe i budżet',
+        // Pozostałe
+        'other'             => 'Inne',
+    ];
+
+    /**
+     * Kategorie wymagane przepisami (art. 6 ust. 1 ustawy).
+     * Użyte w panelu do oznaczania brakujących sekcji.
+     */
+    public const REQUIRED_CATEGORIES = [
+        'subject_status', 'subject_scope', 'subject_persons', 'subject_structure',
+        'property', 'operations', 'official_docs', 'finance',
     ];
 
     protected $fillable = [

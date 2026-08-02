@@ -1429,13 +1429,47 @@
                             </div>
                         @endif
                         <input type="file" name="bip_logo" accept="image/*" class="block w-full cursor-pointer text-sm text-muted file:mr-3 file:cursor-pointer file:rounded file:border-0 file:bg-brand file:px-4 file:py-2 file:text-sm file:font-bold file:text-white hover:file:bg-brand-dark">
-                        <p class="mt-1 text-xs text-muted">Oficjalne logo BIP na stronie <code>/bip</code>. Puste = wbudowany znak „BIP”.</p>
-                        @error('bip_logo') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                        <p class=”mt-1 text-xs text-muted”>Oficjalne logo BIP na stronie <code>/bip</code>. Puste = wbudowany znak „BIP”.</p>
+                        @error('bip_logo') <p class=”mt-1 text-sm text-red-600”>{{ $message }}</p> @enderror
+                    </div>
+
+                    {{-- Redaktor BIP — wymóg rozporządzenia MSWiA --}}
+                    <div>
+                        <label for=”bip_editor_name” class=”mb-1 block text-sm font-bold”>Redaktor BIP — imię i nazwisko</label>
+                        <input type=”text” id=”bip_editor_name” name=”bip_editor_name”
+                            value=”{{ old('bip_editor_name', $settings->bip_editor_name) }}”
+                            placeholder=”Jan Kowalski”
+                            class=”w-full rounded border-gray-300 focus:border-brand focus:ring-brand”>
+                        <p class=”mt-1 text-xs text-muted”>Wymagane przez rozporządzenie MSWiA — imię i nazwisko redaktora strony BIP widoczne publicznie.</p>
+                        @error('bip_editor_name') <p class=”mt-1 text-sm text-red-600”>{{ $message }}</p> @enderror
+                    </div>
+
+                    <div>
+                        <label for=”bip_editor_email” class=”mb-1 block text-sm font-bold”>Redaktor BIP — adres e-mail</label>
+                        <input type=”email” id=”bip_editor_email” name=”bip_editor_email”
+                            value=”{{ old('bip_editor_email', $settings->bip_editor_email) }}”
+                            placeholder=”bip@example.org”
+                            class=”w-full rounded border-gray-300 focus:border-brand focus:ring-brand”>
+                        <p class=”mt-1 text-xs text-muted”>Kontaktowy adres e-mail redaktora BIP — widoczny publicznie jako punkt kontaktowy.</p>
+                        @error('bip_editor_email') <p class=”mt-1 text-sm text-red-600”>{{ $message }}</p> @enderror
+                    </div>
+
+                    <div>
+                        <label for=”bip_gov_url” class=”mb-1 block text-sm font-bold”>Adres rejestracyjny na gov.pl/bip</label>
+                        <input type=”url” id=”bip_gov_url” name=”bip_gov_url”
+                            value=”{{ old('bip_gov_url', $settings->bip_gov_url) }}”
+                            placeholder=”https://www.gov.pl/web/podmiot/bip-fundacja-...”
+                            class=”w-full rounded border-gray-300 focus:border-brand focus:ring-brand”>
+                        <p class=”mt-1 text-xs text-muted”>
+                            Każda strona BIP musi być zarejestrowana u Ministra ds. Informatyzacji.
+                            Podaj URL wpisu podmiotu na <a href=”https://www.gov.pl/web/gov/bip” target=”_blank” rel=”noopener” class=”text-brand underline”>gov.pl/bip</a>.
+                        </p>
+                        @error('bip_gov_url') <p class=”mt-1 text-sm text-red-600”>{{ $message }}</p> @enderror
                     </div>
                 </div>
 
                 <div>
-                    <label for="facebook_url" class="mb-1 block text-sm font-bold">Facebook</label>
+                    <label for=”facebook_url” class=”mb-1 block text-sm font-bold”>Facebook</label>
                     <input type="text" id="facebook_url" name="facebook_url" value="{{ old('facebook_url', $settings->facebook_url) }}" placeholder="https://facebook.com/..."
                         class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
                     @error('facebook_url') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror

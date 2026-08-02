@@ -6,6 +6,14 @@
 @section('content')
     @php
         $bipLogo = $siteSettings->bipLogoUrl() ?: asset('img/bip-logo.svg');
+
+        // Blok identyfikacyjny podmiotu — wymóg § 10 rozporządzenia MSWiA.
+        $hasSubjectData = $siteSettings->contact_email
+            || $siteSettings->contact_phone
+            || $siteSettings->contact_address
+            || $siteSettings->hasRegistryData()
+            || $siteSettings->bip_editor_name;
+
         $bipDefault = <<<'HTML'
 <h2>Co znajdziesz w Biuletynie Informacji Publicznej Fundacji FEER?</h2>
 <p>Fundacja FEER stawia na pełną transparentność, jawność działania oraz budowanie zaufania. Choć przepisy prawa nie nakładają na organizacje pozarządowe sztywnego obowiązku prowadzenia Biuletynu Informacji Publicznej, wierzymy, że otwartość wobec naszych darczyńców, partnerów, uczestników projektów oraz instytucji publicznych to fundament nowoczesnego i odpowiedzialnego trzeciego sektora.</p>
@@ -20,6 +28,91 @@
 <p>Masz pytanie dotyczące naszej działalności lub poszukujesz konkretnej informacji publicznej? <a href="/kontakt">Skontaktuj się z nami bezpośrednio</a> – chętnie udzielimy wszelkich wyjaśnień.</p>
 HTML;
     @endphp
+
+    {{-- ── Identyfikacja podmiotu — wymóg § 10 rozporządzenia MSWiA ── --}}
+    @if ($hasSubjectData)
+        <section class="border-b border-gray-200 bg-gray-50 px-4 py-6" aria-label="Dane identyfikacyjne podmiotu BIP">
+            <div class="mx-auto max-w-4xl">
+                <div class="flex flex-wrap gap-x-10 gap-y-4 text-sm">
+                    <div>
+                        <p class="text-xs font-bold uppercase tracking-wide text-muted mb-1">Podmiot prowadzący BIP</p>
+                        <p class="font-semibold text-ink text-base">{{ $siteSettings->site_name }}</p>
+                        @if ($siteSettings->contact_address || $siteSettings->contact_city)
+                            <p class="text-muted mt-0.5">
+                                {{ $siteSettings->contact_address }}
+                                @if ($siteSettings->contact_address && $siteSettings->contact_city), @endif
+                                {{ $siteSettings->contact_city }}
+                            </p>
+                        @endif
+                    </div>
+
+                    @if ($siteSettings->contact_email || $siteSettings->contact_phone)
+                        <div>
+                            <p class="text-xs font-bold uppercase tracking-wide text-muted mb-1">Kontakt</p>
+                            @if ($siteSettings->contact_email)
+                                <p>
+                                    <a href="mailto:{{ $siteSettings->contact_email }}"
+                                        class="text-brand hover:text-brand-dark hover:underline focus-visible:outline-2 focus-visible:outline-brand">
+                                        {{ $siteSettings->contact_email }}
+                                    </a>
+                                </p>
+                            @endif
+                            @if ($siteSettings->contact_phone)
+                                <p class="text-muted">{{ $siteSettings->contact_phone }}</p>
+                            @endif
+                        </div>
+                    @endif
+
+                    @if ($siteSettings->hasRegistryData())
+                        <div>
+                            <p class="text-xs font-bold uppercase tracking-wide text-muted mb-1">Dane rejestrowe</p>
+                            @if ($siteSettings->krs_number)
+                                <p class="text-muted">KRS: <span class="font-mono font-semibold text-ink">{{ $siteSettings->krs_number }}</span></p>
+                            @endif
+                            @if ($siteSettings->nip_number)
+                                <p class="text-muted">NIP: <span class="font-mono font-semibold text-ink">{{ $siteSettings->nip_number }}</span></p>
+                            @endif
+                            @if ($siteSettings->regon_number)
+                                <p class="text-muted">REGON: <span class="font-mono font-semibold text-ink">{{ $siteSettings->regon_number }}</span></p>
+                            @endif
+                        </div>
+                    @endif
+
+                    @if ($siteSettings->bip_editor_name || $siteSettings->bip_editor_email)
+                        <div>
+                            <p class="text-xs font-bold uppercase tracking-wide text-muted mb-1">Redaktor BIP</p>
+                            @if ($siteSettings->bip_editor_name)
+                                <p class="font-semibold text-ink">{{ $siteSettings->bip_editor_name }}</p>
+                            @endif
+                            @if ($siteSettings->bip_editor_email)
+                                <p>
+                                    <a href="mailto:{{ $siteSettings->bip_editor_email }}"
+                                        class="text-brand hover:text-brand-dark hover:underline focus-visible:outline-2 focus-visible:outline-brand">
+                                        {{ $siteSettings->bip_editor_email }}
+                                    </a>
+                                </p>
+                            @endif
+                        </div>
+                    @endif
+
+                    <div class="ml-auto flex flex-col items-end justify-center gap-2">
+                        <a href="{{ route('bip.changelog') }}"
+                            class="inline-flex items-center gap-1.5 rounded-full border border-gray-300 bg-white px-3 py-1.5 text-xs font-bold text-ink hover:border-brand hover:text-brand transition focus-visible:outline-2 focus-visible:outline-brand">
+                            <i class="fa-solid fa-clock-rotate-left text-[0.65rem]" aria-hidden="true"></i>
+                            Rejestr zmian BIP
+                        </a>
+                        @if ($siteSettings->bip_gov_url)
+                            <a href="{{ $siteSettings->bip_gov_url }}" target="_blank" rel="noopener"
+                                class="inline-flex items-center gap-1.5 rounded-full border border-gray-300 bg-white px-3 py-1.5 text-xs font-bold text-muted hover:border-brand hover:text-brand transition focus-visible:outline-2 focus-visible:outline-brand">
+                                <i class="fa-solid fa-arrow-up-right-from-square text-[0.65rem]" aria-hidden="true"></i>
+                                Podmiot w rejestrze gov.pl
+                            </a>
+                        @endif
+                    </div>
+                </div>
+            </div>
+        </section>
+    @endif
 
     <section class="relative overflow-hidden px-4 py-20">
         {{-- Dekoracje w tle: półprzezroczyste logo BIP oraz pionowy napis w rogu --}}

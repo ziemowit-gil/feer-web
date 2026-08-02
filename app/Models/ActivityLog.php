@@ -25,6 +25,7 @@ class ActivityLog extends Model
         'Project' => 'Projekt',
         'LandingPage' => 'Landing page',
         'AnnualReport' => 'Sprawozdanie',
+        'BipDocument' => 'Dokument BIP',
         'User' => 'Użytkownik',
         'UserGroup' => 'Grupa użytkowników',
     ];

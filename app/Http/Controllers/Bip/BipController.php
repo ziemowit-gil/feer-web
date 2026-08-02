@@ -3,13 +3,14 @@
 namespace App\Http\Controllers\Bip;
 
 use App\Http\Controllers\Controller;
+use App\Models\ActivityLog;
 use App\Models\BipDocument;
 use App\Models\SiteSetting;
 
 /**
- * Publiczne widoki BIP: lista dokumentów i szczegół dokumentu.
+ * Publiczne widoki BIP: lista dokumentów, szczegół dokumentu i rejestr zmian.
  *
- * Metody: index(), show().
+ * Metody: index(), show(), changeLog().
  *
  * @author Ziemowit Gil <ziemowit.gil@feer.org.pl>
  */
@@ -44,5 +45,25 @@ class BipController extends Controller
         $bipDocument->load(['creator', 'updater', 'media']);
 
         return view('bip.show', compact('bipDocument'));
+    }
+
+    /**
+     * Publiczny rejestr zmian BIP (§ 14 rozporządzenia MSWiA).
+     *
+     * Wyświetla paginowaną historię wszystkich operacji (utworzenie, edycja,
+     * usunięcie) wykonanych na dokumentach BIP, posortowaną od najnowszych.
+     */
+    public function changeLog()
+    {
+        $entries = ActivityLog::where('subject_type', 'BipDocument')
+            ->latest()
+            ->paginate(50);
+
+        // Mapa id → slug opublikowanych dokumentów (do linków w tabeli).
+        $documentMap = BipDocument::withTrashed()
+            ->whereIn('id', $entries->pluck('subject_id')->unique())
+            ->pluck('slug', 'id');
+
+        return view('bip.changelog', compact('entries', 'documentMap'));
     }
 }
