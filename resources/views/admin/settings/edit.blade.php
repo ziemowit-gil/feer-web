@@ -1013,34 +1013,34 @@
             </div>
 
             <p class=”mb-2 text-xs font-bold uppercase tracking-wide text-muted”>Sekcje strony Kontakt</p>
-            <input type=”hidden” name=”contact_show_form” value=”0”>
-            <input type=”hidden” name=”contact_show_bank_accounts” value=”0”>
-            <input type=”hidden” name=”contact_show_coordinators” value=”0”>
-            <div class=”mb-4 space-y-2 rounded-lg border border-gray-200 bg-gray-50 p-3”>
-                <label class=”flex items-start gap-2 text-sm”>
-                    <input type=”checkbox” name=”contact_show_form” value=”1” @checked(old('contact_show_form', $settings->contact_show_form ?? true)) class=”mt-0.5 rounded border-gray-300 text-brand focus:ring-brand”>
+            <input type=”hidden” name=”contact_show_form” value=”1”>
+            <input type=”hidden” name=”contact_show_bank_accounts” value=”1”>
+            <input type=”hidden” name=”contact_show_coordinators” value=”1”>
+            <div class=”mb-1 space-y-2 rounded-lg border border-gray-200 bg-gray-50 p-3”>
+                <div class=”flex items-start gap-2 text-sm”>
+                    <i class=”fa-solid fa-check mt-0.5 flex-none text-brand” aria-hidden=”true”></i>
                     <span>
                         <span class=”font-bold”>Napisz do nas</span>
                         <span class=”block text-xs text-muted”>Formularz kontaktowy i dane teleadresowe.</span>
                     </span>
-                </label>
-                <label class=”flex items-start gap-2 text-sm”>
-                    <input type=”checkbox” name=”contact_show_bank_accounts” value=”1” @checked(old('contact_show_bank_accounts', $settings->contact_show_bank_accounts ?? true)) class=”mt-0.5 rounded border-gray-300 text-brand focus:ring-brand”>
+                </div>
+                <div class=”flex items-start gap-2 text-sm”>
+                    <i class=”fa-solid fa-check mt-0.5 flex-none text-brand” aria-hidden=”true”></i>
                     <span>
                         <span class=”font-bold”>Rachunki bankowe</span>
                         <span class=”block text-xs text-muted”>Widoczne tylko gdy rachunki są skonfigurowane poniżej.</span>
                     </span>
-                </label>
-                <label class=”flex items-start gap-2 text-sm”>
-                    <input type=”checkbox” name=”contact_show_coordinators” value=”1” @checked(old('contact_show_coordinators', $settings->contact_show_coordinators ?? true)) class=”mt-0.5 rounded border-gray-300 text-brand focus:ring-brand”>
+                </div>
+                <div class=”flex items-start gap-2 text-sm”>
+                    <i class=”fa-solid fa-check mt-0.5 flex-none text-brand” aria-hidden=”true”></i>
                     <span>
                         <span class=”font-bold”>Koordynatorzy</span>
                         <span class=”block text-xs text-muted”>Lista koordynatorów projektów. Dotyczy tylko strony Kontakt — poniższy przełącznik wyłącza koordynatorów wszędzie.</span>
                     </span>
-                </label>
+                </div>
             </div>
+            <p class=”mb-4 text-xs text-muted”><i class=”fa-solid fa-circle-info mr-1” aria-hidden=”true”></i>Wszystkie sekcje są domyślnie włączone. Możliwość konfiguracji widoczności poszczególnych sekcji pojawi się w przyszłych wersjach weCMS.</p>
 
-            <input type=”hidden” name=”show_coordinators” value=”0”>
             <label class=”mb-4 flex items-start gap-2 rounded-lg border border-gray-200 bg-gray-50 p-3 text-sm”>
                 <input type=”checkbox” name=”show_coordinators” value=”1” @checked(old('show_coordinators', $settings->show_coordinators)) class=”mt-0.5 rounded border-gray-300 text-brand focus:ring-brand”>
                 <span>
