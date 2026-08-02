@@ -7,6 +7,14 @@
     <title>@yield('title', 'Panel administracyjny') — {{ $siteSettings->site_name }}</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @php $brandPalette = $siteSettings->brandPalette(); @endphp
+    <style>
+        :root {
+            --color-brand:       {{ $brandPalette['color'] }};
+            --color-brand-dark:  {{ $brandPalette['dark'] }};
+            --color-brand-light: {{ $brandPalette['light'] }};
+        }
+    </style>
     <style>
         /* ── Zwijany sidebar ─────────────────────────────────────────── */
         aside.sidebar { width: 16rem; transition: width 200ms ease; }
