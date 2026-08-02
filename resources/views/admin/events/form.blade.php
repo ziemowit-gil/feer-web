@@ -92,11 +92,74 @@
                         @endforeach
                     </select>
                 </div>
-                <div x-show="mode !== 'zdalnie'" x-cloak>
+                <div x-show="mode !== 'zdalnie'" x-cloak
+                    x-data="{
+                        lat: @js(old('latitude', $event->latitude)),
+                        lng: @js(old('longitude', $event->longitude)),
+                        map: null, marker: null,
+                        initMap() {
+                            if (this.map) return;
+                            this.$nextTick(() => {
+                                const startLat = this.lat || 50.0647;
+                                const startLng = this.lng || 19.9450;
+                                this.map = L.map(this.$refs.mapEl).setView([startLat, startLng], this.lat ? 14 : 6);
+                                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                                    attribution: '© <a href=\'https://www.openstreetmap.org/copyright\'>OpenStreetMap</a>'
+                                }).addTo(this.map);
+                                if (this.lat && this.lng) {
+                                    this.marker = L.marker([this.lat, this.lng], { draggable: true }).addTo(this.map);
+                                    this.marker.on('dragend', e => {
+                                        const p = e.target.getLatLng();
+                                        this.lat = p.lat.toFixed(7);
+                                        this.lng = p.lng.toFixed(7);
+                                    });
+                                }
+                                this.map.on('click', e => {
+                                    this.lat = e.latlng.lat.toFixed(7);
+                                    this.lng = e.latlng.lng.toFixed(7);
+                                    if (this.marker) { this.marker.setLatLng(e.latlng); }
+                                    else {
+                                        this.marker = L.marker(e.latlng, { draggable: true }).addTo(this.map);
+                                        this.marker.on('dragend', ev => {
+                                            const p = ev.target.getLatLng();
+                                            this.lat = p.lat.toFixed(7);
+                                            this.lng = p.lng.toFixed(7);
+                                        });
+                                    }
+                                });
+                            });
+                        },
+                        clearPin() { this.lat = null; this.lng = null; if (this.marker) { this.marker.remove(); this.marker = null; } }
+                    }">
                     <label for="location" class="mb-1 block text-sm font-bold">Miejsce</label>
                     <input type="text" id="location" name="location" value="{{ old('location', $event->location) }}" maxlength="255" placeholder="np. Nowy Sącz, ul. Barbackiego 28"
                         class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
                     <p class="mt-1 text-xs text-muted">Wymagane, chyba że wydarzenie jest w pełni zdalne.</p>
+
+                    {{-- Mapa —pin lokalizacji --}}
+                    <div class="mt-3">
+                        <div class="mb-1 flex items-center justify-between">
+                            <p class="text-xs font-bold text-muted">
+                                Pin na mapie <span class="font-normal">(opcjonalnie — kliknij mapę, aby ustawić)</span>
+                            </p>
+                            <button type="button" x-show="lat" @click="clearPin()"
+                                class="text-xs text-muted hover:text-red-600" aria-label="Usuń pin">
+                                <i class="fa-solid fa-xmark" aria-hidden="true"></i> Usuń pin
+                            </button>
+                        </div>
+
+                        <div x-ref="mapEl" class="h-56 w-full overflow-hidden rounded-lg border border-gray-200"
+                            x-init="$watch('$el.isConnected', v => v && initMap())"
+                            @click="if (!map) initMap()"></div>
+
+                        <p x-show="lat" class="mt-1 text-xs text-muted">
+                            <span x-text="lat"></span>, <span x-text="lng"></span>
+                        </p>
+                        <p x-show="!lat" class="mt-1 text-xs text-muted">Brak pinu — kliknij mapę, aby dodać.</p>
+                    </div>
+
+                    <input type="hidden" name="latitude" :value="lat">
+                    <input type="hidden" name="longitude" :value="lng">
                 </div>
             </div>
             <div x-show="mode !== 'stacjonarnie'" x-cloak>
@@ -302,3 +365,10 @@
         </div>
     </form>
 @endsection
+
+@push('scripts')
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV/XN/WLs=" crossorigin=""></script>
+@endpush

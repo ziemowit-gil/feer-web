@@ -299,9 +299,13 @@
                         x-data="{
                             files: [],
                             meta: [],
+                            croppedFiles: {},
+                            cropIdx: null,
+                            cropperInst: null,
                             drag: false,
                             setFiles(list) {
                                 this.files = Array.from(list);
+                                this.croppedFiles = {};
                                 this.meta = this.files.map(f => ({
                                     author: '',
                                     alt: f.name.replace(/\.[^.]+$/, '').replace(/[-_]+/g, ' ')
@@ -312,9 +316,46 @@
                                 this.$refs.input.files = event.dataTransfer.files;
                                 this.setFiles(event.dataTransfer.files);
                             },
-                            clear() { this.$refs.input.value = ''; this.files = []; this.meta = []; }
+                            clear() { this.$refs.input.value = ''; this.files = []; this.meta = []; this.croppedFiles = {}; },
+                            isImage(f) { return f.type.startsWith('image/'); },
+                            openCrop(idx) {
+                                this.cropIdx = idx;
+                                const src = this.croppedFiles[idx]
+                                    ? URL.createObjectURL(this.croppedFiles[idx])
+                                    : URL.createObjectURL(this.files[idx]);
+                                this.$nextTick(() => {
+                                    const img = this.$refs.cropImg;
+                                    img.src = src;
+                                    if (this.cropperInst) this.cropperInst.destroy();
+                                    this.cropperInst = new Cropper(img, { viewMode: 1, autoCropArea: 0.9 });
+                                });
+                            },
+                            confirmCrop() {
+                                const idx = this.cropIdx;
+                                const mime = this.files[idx]?.type || 'image/jpeg';
+                                this.cropperInst.getCroppedCanvas({ maxWidth: 4096 }).toBlob(blob => {
+                                    this.croppedFiles[idx] = blob;
+                                    this.cancelCrop();
+                                }, mime, 0.92);
+                            },
+                            cancelCrop() {
+                                this.cropIdx = null;
+                                if (this.cropperInst) { this.cropperInst.destroy(); this.cropperInst = null; }
+                            },
+                            prepareAndSubmit(form) {
+                                if (Object.keys(this.croppedFiles).length === 0) { form.submit(); return; }
+                                const dt = new DataTransfer();
+                                this.files.forEach((f, i) => {
+                                    dt.items.add(this.croppedFiles[i]
+                                        ? new File([this.croppedFiles[i]], f.name, { type: f.type })
+                                        : f);
+                                });
+                                this.$refs.input.files = dt.files;
+                                form.submit();
+                            }
                         }"
                         @dragover.prevent="drag = true" @dragleave.prevent="drag = false" @drop.prevent="onDrop($event)"
+                        @submit.prevent="prepareAndSubmit($el)"
                         class="mb-4">
                         @csrf
                         <input type="hidden" name="folder_id" value="{{ $folder?->id }}">
@@ -361,7 +402,15 @@
                                                     <td class="px-4 py-2">
                                                         <div class="flex items-center gap-2">
                                                             <i class="fa-solid fa-file flex-none text-muted" aria-hidden="true"></i>
-                                                            <span class="max-w-[12rem] truncate text-sm" x-text="file.name"></span>
+                                                            <span class="max-w-[10rem] truncate text-sm" x-text="file.name"></span>
+                                                            <template x-if="isImage(file)">
+                                                                <button type="button" @click="openCrop(i)"
+                                                                    class="flex-none rounded border border-gray-300 px-1.5 py-0.5 text-[10px] font-bold text-muted hover:border-brand hover:text-brand"
+                                                                    :aria-label="'Kadruj plik ' + file.name">
+                                                                    <i class="fa-solid fa-crop-simple" aria-hidden="true"></i>
+                                                                    <span x-text="croppedFiles[i] ? 'Kadrowano' : 'Kadruj'"></span>
+                                                                </button>
+                                                            </template>
                                                         </div>
                                                     </td>
                                                     <td class="px-4 py-2">
@@ -399,6 +448,38 @@
                                 </div>
                             </div>
                         </template>
+
+                        {{-- Modal kadrowania --}}
+                        <div x-show="cropIdx !== null" x-cloak
+                            @keydown.escape.window="cancelCrop()"
+                            class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4"
+                            role="dialog" aria-modal="true" aria-label="Kadruj obraz"
+                            x-transition.opacity>
+                            <div class="flex max-h-[90vh] w-full max-w-3xl flex-col overflow-hidden rounded-xl bg-white shadow-2xl" @click.stop>
+                                <div class="flex items-center justify-between border-b border-gray-100 px-5 py-4">
+                                    <h2 class="text-sm font-bold text-ink">Kadrowanie obrazu</h2>
+                                    <button type="button" @click="cancelCrop()"
+                                        class="rounded-lg p-1.5 text-muted hover:bg-gray-100 hover:text-ink"
+                                        aria-label="Zamknij">
+                                        <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+                                    </button>
+                                </div>
+                                <div class="flex-1 overflow-hidden bg-gray-100 p-2">
+                                    <img x-ref="cropImg" src="" alt="Podgląd do kadrowania"
+                                        class="block max-h-[60vh] max-w-full mx-auto">
+                                </div>
+                                <div class="flex items-center gap-3 border-t border-gray-100 px-5 py-4">
+                                    <button type="button" @click="confirmCrop()"
+                                        class="rounded-lg bg-brand px-4 py-2 text-sm font-bold text-white hover:bg-brand-dark">
+                                        <i class="fa-solid fa-check" aria-hidden="true"></i>
+                                        Zastosuj kadrowanie
+                                    </button>
+                                    <button type="button" @click="cancelCrop()"
+                                        class="text-sm font-bold text-muted hover:text-ink">Anuluj</button>
+                                    <p class="ml-auto text-xs text-muted">Przeciągnij zaznaczenie &middot; Kółko myszy = zoom</p>
+                                </div>
+                            </div>
+                        </div>
                     </form>
                 @endunless
 
@@ -1111,3 +1192,10 @@
         <div class="sr-only" aria-live="polite" x-text="copiedId ? 'Adres URL skopiowany do schowka.' : ''"></div>
     </div>
 @endsection
+
+@push('scripts')
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css"
+    integrity="sha512-UtLOu9C7NuThQhuXXrGwx9Jb/z9zPQJcM85ND7HF1GGZc0H4eiL4o91A/GBUDqmAzgme6oAnq35AggAVb9fA==" crossorigin="anonymous">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"
+    integrity="sha512-JyCZjCOZoyeQZSd5+YEAcFgz2fowJ1F1hyJOXgtKu4llIa0KneLcidn5bwfutiehqlCPSRQLzKqeHkgykc0SQ==" crossorigin="anonymous" defer></script>
+@endpush

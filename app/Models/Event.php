@@ -31,8 +31,8 @@ class Event extends Model implements HasMedia
     protected $fillable = [
         'title', 'slug', 'lead', 'description',
         'facilitator_name', 'facilitator_role', 'facilitator_bio',
-        'type', 'mode', 'location', 'online_url',
-        'starts_at', 'ends_at',
+        'type', 'mode', 'location', 'latitude', 'longitude', 'online_url',
+        'starts_at', 'ends_at', 'published_at',
         'registration_url', 'registration_cta_label', 'contact_email', 'price_info',
         'audience', 'is_published', 'is_featured', 'order', 'archived_at',
     ];
@@ -40,9 +40,12 @@ class Event extends Model implements HasMedia
     protected $casts = [
         'starts_at' => 'datetime',
         'ends_at' => 'datetime',
+        'published_at' => 'datetime',
         'is_published' => 'boolean',
         'is_featured' => 'boolean',
         'archived_at' => 'datetime',
+        'latitude' => 'float',
+        'longitude' => 'float',
     ];
 
     public function getRouteKeyName(): string

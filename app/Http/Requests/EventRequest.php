@@ -28,6 +28,8 @@ class EventRequest extends FormRequest
             'mode' => ['required', Rule::in(array_keys(Event::MODES))],
             // Lokalizacja wymagana, gdy wydarzenie nie jest w pełni zdalne.
             'location' => ['nullable', 'required_unless:mode,zdalnie', 'string', 'max:255'],
+            'latitude' => ['nullable', 'numeric', 'between:-90,90'],
+            'longitude' => ['nullable', 'numeric', 'between:-180,180'],
             'online_url' => ['nullable', 'url', 'max:500'],
             'starts_at' => ['required', 'date'],
             'ends_at' => ['nullable', 'date', 'after_or_equal:starts_at'],
