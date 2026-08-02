@@ -22,6 +22,7 @@ class SearchController extends Controller
     public function index(Request $request)
     {
         $q = trim((string) $request->query('q', ''));
+        $archive = (bool) $request->query('archiwum', false);
         $groups = [];
         $searched = mb_strlen($q) >= self::MIN;
 
@@ -34,28 +35,35 @@ class SearchController extends Controller
                     ->whereNotIn('type', ['internal', 'internal_hub'])
                     ->where(fn ($w) => $w->where('title', 'like', $like)->orWhere('content', 'like', $like))
                     ->orderBy('title')->limit(self::PER_GROUP)->get()
-                    ->map(fn ($p) => $this->item($p->title, route('page.show', $p), $p->content));
+                    ->map(fn ($p) => $this->item($p->title, route('page.show', $p), $p->content, $p->created_at));
             }
 
             if ($settings->isModuleEnabled('news')) {
                 $groups['Aktualności'] = News::published()
                     ->where(fn ($w) => $w->where('title', 'like', $like)->orWhere('excerpt', 'like', $like)->orWhere('content', 'like', $like))
                     ->orderByDesc('published_at')->limit(self::PER_GROUP)->get()
-                    ->map(fn ($n) => $this->item($n->title, route('news.show', $n), $n->excerpt ?: $n->content));
+                    ->map(fn ($n) => $this->item($n->title, route('news.show', $n), $n->excerpt ?: $n->content, $n->published_at));
             }
 
             if ($settings->isModuleEnabled('projects')) {
                 $groups['Projekty'] = Project::where('is_published', true)
                     ->where(fn ($w) => $w->where('title', 'like', $like)->orWhere('excerpt', 'like', $like)->orWhere('content', 'like', $like)->orWhere('for_whom', 'like', $like))
                     ->orderBy('title')->limit(self::PER_GROUP)->get()
-                    ->map(fn ($p) => $this->item($p->title, route('projects.show', $p), $p->excerpt ?: $p->content));
+                    ->map(fn ($p) => $this->item($p->title, route('projects.show', $p), $p->excerpt ?: $p->content, $p->created_at));
             }
 
             if ($settings->isModuleEnabled('materials')) {
-                $groups['Materiały edukacyjne'] = EducationalMaterial::where('is_published', true)->where('is_archival', false)
+                $materialsQuery = EducationalMaterial::where('is_published', true)
                     ->where(fn ($w) => $w->where('title', 'like', $like)->orWhere('description', 'like', $like)->orWhere('target_group', 'like', $like))
-                    ->orderBy('order')->limit(self::PER_GROUP)->get()
-                    ->map(fn ($m) => $this->item($m->title, route('materials.index'), $m->description));
+                    ->orderBy('order')->limit(self::PER_GROUP);
+
+                if (! $archive) {
+                    $materialsQuery->where('is_archival', false);
+                }
+
+                $label = $archive ? 'Materiały edukacyjne (z archiwum)' : 'Materiały edukacyjne';
+                $groups[$label] = $materialsQuery->get()
+                    ->map(fn ($m) => $this->item($m->title, route('materials.index'), $m->description, $m->created_at, null, $m->is_archival));
             }
 
             // Blog działa na osobnym połączeniu — gdyby było niedostępne, nie
@@ -65,7 +73,7 @@ class SearchController extends Controller
                     ->where('published_at', '<=', now())
                     ->where(fn ($w) => $w->where('title', 'like', $like)->orWhere('excerpt', 'like', $like)->orWhere('body', 'like', $like))
                     ->orderByDesc('published_at')->limit(self::PER_GROUP)->get()
-                    ->map(fn ($a) => $this->item($a->title, route('blog.show', $a), $a->excerpt ?: $a->body));
+                    ->map(fn ($a) => $this->item($a->title, route('blog.show', $a), $a->excerpt ?: $a->body, $a->published_at, $a->author_name));
             } catch (\Throwable $e) {
                 report($e);
             }
@@ -75,15 +83,18 @@ class SearchController extends Controller
         $groups = array_filter($groups, fn ($g) => $g->isNotEmpty());
         $total = collect($groups)->sum(fn ($g) => $g->count());
 
-        return view('search.index', compact('q', 'groups', 'total', 'searched'));
+        return view('search.index', compact('q', 'groups', 'total', 'searched', 'archive'));
     }
 
-    private function item(string $title, string $url, ?string $body): array
+    private function item(string $title, string $url, ?string $body, ?\Illuminate\Support\Carbon $date = null, ?string $author = null, bool $archival = false): array
     {
         return [
             'title' => $title,
             'url' => $url,
             'snippet' => Str::limit(trim(preg_replace('/\s+/', ' ', strip_tags((string) $body))), 160),
+            'date' => $date,
+            'author' => $author,
+            'archival' => $archival,
         ];
     }
 
