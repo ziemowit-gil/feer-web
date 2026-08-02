@@ -3,249 +3,291 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>weCMS for FEER — Dokumentacja kontrolerów</title>
+<title>weCMS for FEER — Dokumentacja techniczna</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=Pacifico&display=swap" rel="stylesheet">
 <style>
 /* ── Tokens ──────────────────────────────────────────────────────── */
 :root {
-  --brand:       #1e3a8a;
-  --accent:      #2563eb;
-  --accent-soft: #dbeafe;
-  --tech:        #6d28d9;
-  --tech-soft:   #ede9fe;
-  --green:       #059669;
-  --green-soft:  #d1fae5;
-  --amber:       #b45309;
-  --amber-soft:  #fef3c7;
-  --rose:        #be123c;
-  --rose-soft:   #ffe4e6;
-  --bg:          #f1f5f9;
-  --surface:     #ffffff;
-  --surface2:    #e8eef6;
-  --border:      #cbd5e1;
-  --text:        #0f172a;
-  --text-muted:  #64748b;
-  --code-bg:     #1e293b;
-  --code-text:   #93c5fd;
-  --mono-inline-bg:  #e8eef6;
-  --mono-inline-col: #1e3a8a;
-  --radius:      6px;
-  --radius-lg:   10px;
+  --brand:         #1e3a8a;
+  --brand-mid:     #2563eb;
+  --brand-light:   #dbeafe;
+  --tech:          #6d28d9;
+  --tech-soft:     #ede9fe;
+  --green:         #059669;
+  --green-soft:    #d1fae5;
+  --amber:         #b45309;
+  --amber-soft:    #fef3c7;
+  --rose:          #be123c;
+  --rose-soft:     #ffe4e6;
+  --bg:            #f1f5f9;
+  --surface:       #ffffff;
+  --surface2:      #e8eef6;
+  --border:        #cbd5e1;
+  --text:          #0f172a;
+  --text-muted:    #64748b;
+  --mono-bg:       #e8eef6;
+  --mono-col:      #1e3a8a;
+  --pacifico-col:  #2563eb;
+  --radius:        6px;
+  --radius-lg:     10px;
 }
 @media (prefers-color-scheme: dark) {
   :root {
-    --brand:       #3b82f6;
-    --accent:      #60a5fa;
-    --accent-soft: #1e3a5f;
-    --tech:        #a78bfa;
-    --tech-soft:   #2e1065;
-    --green:       #34d399;
-    --green-soft:  #064e3b;
-    --amber:       #fbbf24;
-    --amber-soft:  #451a03;
-    --rose:        #fb7185;
-    --rose-soft:   #4c0519;
-    --bg:          #0d1520;
-    --surface:     #162032;
-    --surface2:    #1e2c3d;
-    --border:      #2d3f55;
-    --text:        #e2e8f0;
-    --text-muted:  #94a3b8;
-    --mono-inline-bg:  #1e2c3d;
-    --mono-inline-col: #93c5fd;
+    --brand:        #3b82f6;
+    --brand-mid:    #60a5fa;
+    --brand-light:  #1e3a5f;
+    --tech:         #a78bfa;
+    --tech-soft:    #2e1065;
+    --green:        #34d399;
+    --green-soft:   #064e3b;
+    --amber:        #fbbf24;
+    --amber-soft:   #451a03;
+    --rose:         #fb7185;
+    --rose-soft:    #4c0519;
+    --bg:           #0d1520;
+    --surface:      #162032;
+    --surface2:     #1e2c3d;
+    --border:       #2d3f55;
+    --text:         #e2e8f0;
+    --text-muted:   #94a3b8;
+    --mono-bg:      #1e2c3d;
+    --mono-col:     #93c5fd;
+    --pacifico-col: #93c5fd;
   }
 }
 :root[data-theme="dark"] {
-  --brand:       #3b82f6;
-  --accent:      #60a5fa;
-  --accent-soft: #1e3a5f;
-  --tech:        #a78bfa;
-  --tech-soft:   #2e1065;
-  --green:       #34d399;
-  --green-soft:  #064e3b;
-  --amber:       #fbbf24;
-  --amber-soft:  #451a03;
-  --rose:        #fb7185;
-  --rose-soft:   #4c0519;
-  --bg:          #0d1520;
-  --surface:     #162032;
-  --surface2:    #1e2c3d;
-  --border:      #2d3f55;
-  --text:        #e2e8f0;
-  --text-muted:  #94a3b8;
-  --mono-inline-bg:  #1e2c3d;
-  --mono-inline-col: #93c5fd;
+  --brand:        #3b82f6;
+  --brand-mid:    #60a5fa;
+  --brand-light:  #1e3a5f;
+  --tech:         #a78bfa;
+  --tech-soft:    #2e1065;
+  --green:        #34d399;
+  --green-soft:   #064e3b;
+  --amber:        #fbbf24;
+  --amber-soft:   #451a03;
+  --rose:         #fb7185;
+  --rose-soft:    #4c0519;
+  --bg:           #0d1520;
+  --surface:      #162032;
+  --surface2:     #1e2c3d;
+  --border:       #2d3f55;
+  --text:         #e2e8f0;
+  --text-muted:   #94a3b8;
+  --mono-bg:      #1e2c3d;
+  --mono-col:     #93c5fd;
+  --pacifico-col: #93c5fd;
 }
 :root[data-theme="light"] {
-  --brand:       #1e3a8a;
-  --accent:      #2563eb;
-  --accent-soft: #dbeafe;
-  --tech:        #6d28d9;
-  --tech-soft:   #ede9fe;
-  --green:       #059669;
-  --green-soft:  #d1fae5;
-  --amber:       #b45309;
-  --amber-soft:  #fef3c7;
-  --rose:        #be123c;
-  --rose-soft:   #ffe4e6;
-  --bg:          #f1f5f9;
-  --surface:     #ffffff;
-  --surface2:    #e8eef6;
-  --border:      #cbd5e1;
-  --text:        #0f172a;
-  --text-muted:  #64748b;
-  --mono-inline-bg:  #e8eef6;
-  --mono-inline-col: #1e3a8a;
+  --brand:        #1e3a8a;
+  --brand-mid:    #2563eb;
+  --brand-light:  #dbeafe;
+  --tech:         #6d28d9;
+  --tech-soft:    #ede9fe;
+  --green:        #059669;
+  --green-soft:   #d1fae5;
+  --amber:        #b45309;
+  --amber-soft:   #fef3c7;
+  --rose:         #be123c;
+  --rose-soft:    #ffe4e6;
+  --bg:           #f1f5f9;
+  --surface:      #ffffff;
+  --surface2:     #e8eef6;
+  --border:       #cbd5e1;
+  --text:         #0f172a;
+  --text-muted:   #64748b;
+  --mono-bg:      #e8eef6;
+  --mono-col:     #1e3a8a;
+  --pacifico-col: #2563eb;
 }
 
 /* ── Reset ───────────────────────────────────────────────────────── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html { font-size: 16px; scroll-behavior: smooth; }
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  font-family: 'Lato', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   background: var(--bg);
   color: var(--text);
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
 }
-a { color: var(--accent); text-decoration: none; }
+a { color: var(--brand-mid); text-decoration: none; }
 a:hover { text-decoration: underline; }
-a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 2px; }
+a:focus-visible { outline: 2px solid var(--brand-mid); outline-offset: 2px; border-radius: 2px; }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+
+/* ── Logo (identyczne z panelem) ─────────────────────────────────── */
+.logo-we  { font-family: 'Pacifico', cursive; color: var(--pacifico-col); }
+.logo-cms { font-family: 'Lato', sans-serif; font-weight: 900; color: var(--text); }
 
 /* ── Topbar ──────────────────────────────────────────────────────── */
 .topbar {
   position: sticky; top: 0; z-index: 50;
-  background: var(--brand);
-  display: flex; align-items: center; gap: 0;
-  padding: 0 24px; height: 50px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center;
+  padding: 0 24px; height: 52px;
 }
-.topbar-logo {
-  font-size: 14px; font-weight: 900; letter-spacing: -.01em;
-  color: #fff; white-space: nowrap;
-  display: flex; align-items: baseline; gap: 6px;
+.topbar-brand {
+  display: flex; align-items: center; gap: 2px;
+  font-size: 18px; white-space: nowrap;
 }
-.topbar-logo .we   { opacity: .7; }
-.topbar-logo .cms  { color: #fff; }
-.topbar-logo .for  { font-size: 11px; font-weight: 500; opacity: .55; letter-spacing: .06em; text-transform: uppercase; margin-left: 2px; }
-.topbar-logo .feer { font-size: 12px; font-weight: 700; color: #93c5fd; letter-spacing: .04em; }
-.topbar-div { width: 1px; height: 20px; background: rgba(255,255,255,.2); margin: 0 16px; }
-.topbar-subtitle { font-size: 13px; color: rgba(255,255,255,.6); font-weight: 400; }
+.topbar-brand .for-feer {
+  font-size: 11px; font-weight: 700; letter-spacing: .08em;
+  text-transform: uppercase; color: var(--text-muted);
+  margin-left: 10px; padding-left: 10px;
+  border-left: 1px solid var(--border);
+}
+.topbar-div { flex: 1; }
 .topbar-nav {
-  display: flex; gap: 2px; margin-left: auto; align-items: center;
+  display: flex; gap: 2px; align-items: center;
 }
 .topbar-nav a {
   font-size: 12px; padding: 5px 10px; border-radius: var(--radius);
-  color: rgba(255,255,255,.65); font-weight: 500;
+  color: var(--text-muted); font-weight: 700;
   transition: background .12s, color .12s;
 }
 .topbar-nav a:hover {
-  background: rgba(255,255,255,.12); color: #fff; text-decoration: none;
+  background: var(--brand-light); color: var(--brand); text-decoration: none;
 }
-@media (max-width: 640px) {
-  .topbar-subtitle, .topbar-div { display: none; }
-  .topbar-nav a { padding: 5px 7px; }
+@media (max-width: 600px) {
+  .topbar-brand .for-feer { display: none; }
+  .topbar-nav a { padding: 5px 6px; }
 }
 
 /* ── Layout ──────────────────────────────────────────────────────── */
-.page { max-width: 1060px; margin: 0 auto; padding: 44px 24px 80px; }
+.page { max-width: 1060px; margin: 0 auto; padding: 48px 24px 80px; }
 
 /* ── Hero ────────────────────────────────────────────────────────── */
 .hero {
   margin-bottom: 44px;
-  padding-bottom: 40px;
+  padding-bottom: 44px;
   border-bottom: 1px solid var(--border);
 }
-.hero-kicker {
-  font-size: 11px; font-weight: 700; letter-spacing: .12em;
-  text-transform: uppercase; color: var(--accent);
-  margin-bottom: 14px;
-  display: flex; align-items: center; gap: 8px;
-}
-.hero-kicker::before {
-  content: '';
-  display: inline-block; width: 24px; height: 2px;
-  background: var(--accent); border-radius: 2px;
-}
-.hero-brand {
+.hero-logotype {
   display: flex; align-items: baseline; gap: 0; flex-wrap: wrap;
-  margin-bottom: 8px;
+  margin-bottom: 10px;
 }
-.hero-brand .we  { font-size: clamp(2rem, 6vw, 3.2rem); font-weight: 200; color: var(--text-muted); letter-spacing: -.02em; }
-.hero-brand .cms { font-size: clamp(2rem, 6vw, 3.2rem); font-weight: 900; color: var(--text); letter-spacing: -.03em; }
-.hero-brand .sep { width: 1px; height: clamp(1.4rem, 4vw, 2.2rem); background: var(--border); margin: 0 16px; align-self: center; }
-.hero-brand .for { font-size: clamp(.8rem, 2vw, 1rem); font-weight: 400; color: var(--text-muted); letter-spacing: .06em; text-transform: uppercase; margin-right: 8px; }
-.hero-brand .feer { font-size: clamp(1.6rem, 5vw, 2.6rem); font-weight: 800; color: var(--accent); letter-spacing: -.01em; }
-.hero-sub {
-  font-size: 1.05rem; color: var(--text-muted); margin-bottom: 20px;
-  font-weight: 400;
+.hero-logotype .logo-we  { font-size: clamp(2.2rem, 7vw, 3.6rem); }
+.hero-logotype .logo-cms { font-size: clamp(2.2rem, 7vw, 3.6rem); }
+.hero-logotype .for-label {
+  font-size: clamp(.75rem, 2vw, .95rem); font-weight: 700; letter-spacing: .1em;
+  text-transform: uppercase; color: var(--text-muted);
+  margin: 0 8px 0 12px; align-self: center;
+}
+.hero-logotype .feer-label {
+  font-size: clamp(1.6rem, 5vw, 2.8rem); font-weight: 900;
+  color: var(--brand-mid); letter-spacing: -.01em;
+}
+.hero-subtitle {
+  font-size: 1.1rem; font-weight: 700; color: var(--text);
+  margin-bottom: 6px;
+}
+.hero-tagline {
+  font-size: .95rem; color: var(--text-muted);
+  margin-bottom: 22px; max-width: 580px;
 }
 .hero-authors {
-  display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
-  margin-bottom: 24px;
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  margin-bottom: 28px;
 }
 .author-chip {
   display: inline-flex; align-items: center; gap: 7px;
   background: var(--surface); border: 1px solid var(--border);
-  border-radius: 100px; padding: 4px 12px 4px 6px;
-  font-size: 12.5px; color: var(--text);
+  border-radius: 100px; padding: 4px 14px 4px 6px;
+  font-size: 12.5px;
 }
 .author-avatar {
-  width: 22px; height: 22px; border-radius: 50%;
-  background: var(--accent); color: #fff;
+  width: 24px; height: 24px; border-radius: 50%;
+  background: var(--brand-mid); color: #fff;
   display: flex; align-items: center; justify-content: center;
-  font-size: 10px; font-weight: 700; letter-spacing: -.01em;
-  flex-shrink: 0;
+  font-size: 9px; font-weight: 900; flex-shrink: 0;
 }
 .author-avatar.jp { background: var(--tech); }
 .hero-stats {
-  display: flex; gap: 12px; flex-wrap: wrap;
+  display: flex; gap: 10px; flex-wrap: wrap;
 }
 .stat {
   background: var(--surface); border: 1px solid var(--border);
-  border-radius: var(--radius-lg); padding: 14px 20px;
-  min-width: 88px; text-align: center;
+  border-radius: var(--radius-lg); padding: 12px 18px;
+  min-width: 84px; text-align: center;
 }
 .stat-n {
-  font-size: 1.7rem; font-weight: 900; color: var(--accent);
-  line-height: 1; font-variant-numeric: tabular-nums;
-  letter-spacing: -.02em;
+  font-size: 1.65rem; font-weight: 900; color: var(--brand-mid);
+  line-height: 1; font-variant-numeric: tabular-nums; letter-spacing: -.02em;
 }
-.stat-l { font-size: 11px; color: var(--text-muted); margin-top: 3px; font-weight: 500; }
+.stat-l { font-size: 11px; color: var(--text-muted); margin-top: 3px; font-weight: 700; }
 
-/* ── Tech stack ──────────────────────────────────────────────────── */
-.tech-section {
+/* ── Section heading ─────────────────────────────────────────────── */
+.section-title {
+  font-size: 11px; font-weight: 900; letter-spacing: .1em;
+  text-transform: uppercase; color: var(--text-muted);
+  display: flex; align-items: center; gap: 8px; margin-bottom: 16px;
+}
+.section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+/* ── About CMS ───────────────────────────────────────────────────── */
+.about-desc {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
-  padding: 24px 24px 20px;
-  margin-bottom: 48px;
+  padding: 24px 28px;
+  margin-bottom: 16px;
 }
-.tech-section-title {
-  font-size: 11px; font-weight: 700; letter-spacing: .1em;
-  text-transform: uppercase; color: var(--text-muted);
-  margin-bottom: 16px; display: flex; align-items: center; gap: 8px;
+.about-desc p { color: var(--text); font-size: 14.5px; line-height: 1.75; margin-bottom: 12px; }
+.about-desc p:last-child { margin-bottom: 0; }
+.about-desc strong { color: var(--brand-mid); }
+.modules-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 14px; margin-bottom: 44px;
 }
-.tech-section-title::after {
-  content: ''; flex: 1; height: 1px; background: var(--border);
+.module-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); padding: 18px 20px;
+}
+.module-card-head {
+  display: flex; align-items: center; gap: 10px; margin-bottom: 10px;
+}
+.module-icon {
+  width: 32px; height: 32px; border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 15px; flex-shrink: 0;
+}
+.module-icon.blue   { background: var(--brand-light); }
+.module-icon.violet { background: var(--tech-soft); }
+.module-icon.green  { background: var(--green-soft); }
+.module-icon.amber  { background: var(--amber-soft); }
+.module-icon.rose   { background: var(--rose-soft); }
+.module-card h3 { font-size: 13px; font-weight: 900; color: var(--text); }
+.module-card ul { list-style: none; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+.module-card ul li {
+  font-size: 12.5px; color: var(--text-muted);
+  padding-left: 14px; position: relative; line-height: 1.45;
+}
+.module-card ul li::before { content: '—'; position: absolute; left: 0; color: var(--border); font-size: 11px; }
+
+/* ── Tech stack ──────────────────────────────────────────────────── */
+.tech-section {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); padding: 22px 24px 18px; margin-bottom: 48px;
 }
 .tech-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: 12px;
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(178px, 1fr)); gap: 14px;
 }
 .tech-group { display: flex; flex-direction: column; gap: 6px; }
 .tech-group-label {
-  font-size: 10px; font-weight: 700; letter-spacing: .1em;
+  font-size: 10px; font-weight: 900; letter-spacing: .1em;
   text-transform: uppercase; color: var(--text-muted);
-  padding-bottom: 4px; border-bottom: 1px solid var(--border);
-  margin-bottom: 2px;
+  padding-bottom: 4px; border-bottom: 1px solid var(--border); margin-bottom: 2px;
 }
 .tech-chips { display: flex; flex-wrap: wrap; gap: 5px; }
 .chip {
-  display: inline-flex; align-items: center; gap: 5px;
-  font-size: 12px; font-weight: 500; border-radius: 100px;
+  display: inline-flex; align-items: center;
+  font-size: 12px; font-weight: 700; border-radius: 100px;
   padding: 3px 10px; white-space: nowrap;
 }
-.chip-blue   { background: var(--accent-soft); color: var(--accent); }
+.chip-blue   { background: var(--brand-light); color: var(--brand-mid); }
 .chip-violet { background: var(--tech-soft);   color: var(--tech); }
 .chip-green  { background: var(--green-soft);  color: var(--green); }
 .chip-amber  { background: var(--amber-soft);  color: var(--amber); }
@@ -263,32 +305,29 @@ a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-
 :root[data-theme="dark"] .chip-green  { color: #6ee7b7; }
 :root[data-theme="dark"] .chip-amber  { color: #fde68a; }
 :root[data-theme="dark"] .chip-rose   { color: #fda4af; }
-:root[data-theme="light"] .chip-blue   { color: var(--accent); }
+:root[data-theme="light"] .chip-blue   { color: var(--brand-mid); }
 :root[data-theme="light"] .chip-violet { color: var(--tech); }
 :root[data-theme="light"] .chip-green  { color: var(--green); }
 :root[data-theme="light"] .chip-amber  { color: var(--amber); }
 :root[data-theme="light"] .chip-rose   { color: var(--rose); }
 
 /* ── Controller sections ─────────────────────────────────────────── */
-.section { margin-bottom: 52px; }
-.section-header {
+.ctrl-section { margin-bottom: 52px; }
+.ctrl-section-header {
   display: flex; align-items: center; gap: 12px;
   margin-bottom: 14px; padding-bottom: 10px;
   border-bottom: 2px solid var(--border);
 }
-.section-header h2 {
-  font-size: 1.05rem; font-weight: 700; color: var(--text);
-}
+.ctrl-section-header h2 { font-size: 1.05rem; font-weight: 900; }
 .ns-badge {
-  font-size: 11px; font-weight: 600; padding: 3px 9px;
+  font-size: 11px; font-weight: 700; padding: 3px 9px;
   border-radius: 100px; white-space: nowrap;
   font-family: ui-monospace, 'Cascadia Code', 'SF Mono', Menlo, monospace;
-  letter-spacing: .01em;
 }
 .ns-pub   { background: var(--green-soft);  color: var(--green); }
 .ns-admin { background: var(--tech-soft);   color: var(--tech); }
 .ns-auth  { background: var(--amber-soft);  color: var(--amber); }
-.ns-trait { background: var(--accent-soft); color: var(--accent); }
+.ns-trait { background: var(--brand-light); color: var(--brand-mid); }
 @media (prefers-color-scheme: dark) {
   .ns-pub   { color: #6ee7b7; }
   .ns-admin { color: #c4b5fd; }
@@ -307,7 +346,7 @@ table { width: 100%; border-collapse: collapse; font-size: 13px; }
 thead tr { background: var(--surface2); }
 th {
   text-align: left; padding: 9px 14px;
-  font-size: 10.5px; font-weight: 700; letter-spacing: .07em;
+  font-size: 10.5px; font-weight: 900; letter-spacing: .07em;
   text-transform: uppercase; color: var(--text-muted);
   border-bottom: 1px solid var(--border); white-space: nowrap;
 }
@@ -316,20 +355,19 @@ tr:last-child td { border-bottom: none; }
 tbody tr:hover { background: var(--surface2); }
 .ctrl-name {
   font-family: ui-monospace, 'Cascadia Code', 'SF Mono', Menlo, monospace;
-  font-size: 12px; color: var(--mono-inline-col);
-  background: var(--mono-inline-bg);
+  font-size: 12px; color: var(--mono-col);
+  background: var(--mono-bg);
   padding: 2px 6px; border-radius: 4px;
   white-space: nowrap; display: inline-block;
 }
 .methods {
   font-family: ui-monospace, 'Cascadia Code', 'SF Mono', Menlo, monospace;
-  font-size: 11.5px; color: var(--text-muted);
-  line-height: 1.9;
+  font-size: 11.5px; line-height: 1.9;
 }
 .methods span {
-  display: inline-block; background: var(--mono-inline-bg);
+  display: inline-block; background: var(--mono-bg);
   border-radius: 3px; padding: 1px 5px; margin: 1px 2px 1px 0;
-  color: var(--mono-inline-col); font-size: 11px;
+  color: var(--mono-col); font-size: 11px;
 }
 .desc { color: var(--text); font-size: 13px; line-height: 1.5; }
 
@@ -338,23 +376,30 @@ footer {
   margin-top: 60px; padding: 20px 0;
   border-top: 1px solid var(--border);
   display: flex; justify-content: space-between; align-items: center;
-  flex-wrap: wrap; gap: 8px;
+  flex-wrap: wrap; gap: 10px;
 }
-.footer-brand { font-size: 13px; font-weight: 700; color: var(--text-muted); }
-.footer-brand strong { color: var(--accent); }
+.footer-brand { font-size: 14px; display: flex; align-items: center; gap: 2px; }
+.footer-brand .logo-we  { font-size: 18px; }
+.footer-brand .logo-cms { font-size: 18px; }
+.footer-brand .suffix {
+  font-size: 11px; font-weight: 700; letter-spacing: .07em;
+  text-transform: uppercase; color: var(--text-muted);
+  margin-left: 8px; padding-left: 8px; border-left: 1px solid var(--border);
+}
 .footer-authors { font-size: 12px; color: var(--text-muted); }
 </style>
 </head>
 <body>
 
+<!-- TOPBAR -->
 <header class="topbar" role="banner">
-  <div class="topbar-logo" aria-label="weCMS for FEER">
-    <span class="we">we</span><span class="cms">CMS</span>
-    <span class="for">for</span><span class="feer">FEER</span>
+  <div class="topbar-brand" aria-label="weCMS for FEER">
+    <span class="logo-we">We</span><span class="logo-cms">CMS</span>
+    <span class="for-feer">for FEER</span>
   </div>
-  <div class="topbar-div" aria-hidden="true"></div>
-  <span class="topbar-subtitle">Dokumentacja kontrolerów</span>
+  <div class="topbar-div"></div>
   <nav class="topbar-nav" aria-label="Sekcje dokumentacji">
+    <a href="#o-systemie">O systemie</a>
     <a href="#tech">Stack</a>
     <a href="#publiczne">Publiczne</a>
     <a href="#admin">Admin</a>
@@ -367,21 +412,22 @@ footer {
 
   <!-- HERO -->
   <section class="hero" aria-labelledby="hero-title">
-    <p class="hero-kicker" aria-hidden="true">Dokumentacja techniczna · 2026</p>
-    <div class="hero-brand" aria-hidden="true">
-      <span class="we">we</span><span class="cms">CMS</span>
-      <span class="sep"></span>
-      <span class="for">for</span>
-      <span class="feer">FEER</span>
+    <div class="hero-logotype" aria-hidden="true">
+      <span class="logo-we">We</span><span class="logo-cms">CMS</span>
+      <span class="for-label">for</span>
+      <span class="feer-label">FEER</span>
     </div>
-    <h1 id="hero-title" class="sr-only">weCMS for FEER — Dokumentacja kontrolerów</h1>
-    <p class="hero-sub">System zarządzania treścią polskiej organizacji pozarządowej.<br>Pełna dokumentacja kontrolerów Laravel wraz z opisami metod.</p>
+    <h1 id="hero-title" class="sr-only">weCMS for FEER — Dokumentacja techniczna</h1>
+    <p class="hero-subtitle">System zarządzania treścią dla organizacji pozarządowej</p>
+    <p class="hero-tagline">
+      Dokumentacja kontrolerów Laravel z opisami metod publicznych.
+    </p>
 
     <div class="hero-authors" aria-label="Autorzy">
       <div class="author-chip">
         <div class="author-avatar" aria-hidden="true">ZG</div>
         <span>Ziemowit Gil</span>
-        <span style="color:var(--text-muted);font-size:11px">·</span>
+        <span style="color:var(--border)">·</span>
         <a href="mailto:ziemowit.gil@feer.org.pl" style="font-size:11px;color:var(--text-muted)">ziemowit.gil@feer.org.pl</a>
       </div>
       <div class="author-chip">
@@ -391,104 +437,225 @@ footer {
     </div>
 
     <div class="hero-stats" role="list" aria-label="Statystyki kontrolerów">
-      <div class="stat" role="listitem">
-        <div class="stat-n">28</div>
-        <div class="stat-l">Publiczne</div>
+      <div class="stat" role="listitem"><div class="stat-n">28</div><div class="stat-l">Publiczne</div></div>
+      <div class="stat" role="listitem"><div class="stat-n">1</div><div class="stat-l">Trait</div></div>
+      <div class="stat" role="listitem"><div class="stat-n">46</div><div class="stat-l">Admin</div></div>
+      <div class="stat" role="listitem"><div class="stat-n">12</div><div class="stat-l">Auth</div></div>
+      <div class="stat" role="listitem"><div class="stat-n">87</div><div class="stat-l">Łącznie</div></div>
+    </div>
+  </section>
+
+  <!-- O SYSTEMIE -->
+  <section id="o-systemie" aria-labelledby="about-title">
+    <p class="section-title" id="about-title">O systemie</p>
+
+    <div class="about-desc">
+      <p>
+        <strong>weCMS</strong> to dedykowany system zarządzania treścią stworzony dla
+        <strong>FEER</strong> — Fundacji Edukacji i Rehabilitacji Zawodowej, polskiej organizacji
+        pozarządowej wspierającej osoby z niepełnosprawnościami. System obsługuje kompletną
+        obecność cyfrową organizacji: od strony głównej, przez aktualności i projekty,
+        po zapisy na szkolenia, wolontariat i strefę współpracownika.
+      </p>
+      <p>
+        Zbudowany na <strong>Laravel 13 / PHP 8.3+</strong> z dwoma bazami SQLite — główną
+        i osobną dla bloga Wiem FEER — weCMS łączy klasyczny panel CMS z zaawansowaną
+        kontrolą dostępu (Microsoft 365 SSO + 2FA), biblioteką mediów (Spatie MediaLibrary,
+        Unsplash, OneDrive) oraz wbudowanymi narzędziami dostępności zgodnymi z
+        <strong>WCAG 2.1 AA</strong> i standardem <strong>ETR (Easy-To-Read)</strong>.
+      </p>
+      <p>
+        Panel administracyjny obsługuje 46 kontrolerów Admin i 12 kontrolerów Auth,
+        w tym obieg akceptacji treści, kosz z miękkim usuwaniem, dziennik zdarzeń
+        (ActivityLog), edytor szablonów treści, skaner martwych linków i eksport ZIP.
+        Strona publiczna jest serwowana przez 28 kontrolerów pokrywających wszystkie
+        moduły treści, landing page'e, ankiety, formularz kontaktowy i mapę strony.
+      </p>
+    </div>
+
+    <div class="modules-grid">
+
+      <div class="module-card">
+        <div class="module-card-head">
+          <div class="module-icon blue">📄</div>
+          <h3>Zarządzanie treścią</h3>
+        </div>
+        <ul>
+          <li>Podstrony — typy, harmonogram, hasło dostępu, MS365</li>
+          <li>Aktualności z tagami, kategoriami, klonowaniem</li>
+          <li>Projekty z kategoriami i sekcjami własnymi</li>
+          <li>Szkolenia/wydarzenia — LP, .ics, konwersja</li>
+          <li>Materiały edukacyjne z subskrypcją e-mail</li>
+          <li>Blog Wiem FEER (oddzielna baza SQLite)</li>
+          <li>FAQ, partnerzy, sprawozdania roczne</li>
+          <li>Ogłoszenia wolontariackie</li>
+          <li>Oś czasu organizacji (timeline)</li>
+          <li>Obieg akceptacji (HandlesContentApproval)</li>
+        </ul>
       </div>
-      <div class="stat" role="listitem">
-        <div class="stat-n">1</div>
-        <div class="stat-l">Trait</div>
+
+      <div class="module-card">
+        <div class="module-card-head">
+          <div class="module-icon violet">🖼️</div>
+          <h3>Media i pliki</h3>
+        </div>
+        <ul>
+          <li>Biblioteka multimediów (Spatie MediaLibrary)</li>
+          <li>Foldery, tagi, autor, alt-tekst z audytem</li>
+          <li>Import z Unsplash (z pingiem download_location)</li>
+          <li>Import z OneDrive / Microsoft Graph API</li>
+          <li>Galeria zdjęć podstron, konwersje obrazów</li>
+          <li>Attachmenty do podstron i aktualności</li>
+          <li>Eksport/import archiwum ZIP mediów</li>
+          <li>Import dokumentów .docx → HTML</li>
+        </ul>
       </div>
-      <div class="stat" role="listitem">
-        <div class="stat-n">46</div>
-        <div class="stat-l">Admin</div>
+
+      <div class="module-card">
+        <div class="module-card-head">
+          <div class="module-icon amber">🔐</div>
+          <h3>Dostęp i bezpieczeństwo</h3>
+        </div>
+        <ul>
+          <li>Microsoft 365 SSO — panel admin i strefa współpracownika</li>
+          <li>Logowanie hasłem z dostępem awaryjnym</li>
+          <li>TOTP 2FA (Google Authenticator / Authy)</li>
+          <li>YubiKey 2FA (klucze sprzętowe)</li>
+          <li>Kody zapasowe 2FA</li>
+          <li>Role użytkowników i grupy uprawnień</li>
+          <li>Uprawnienia do modułów per-grupa</li>
+          <li>Blokada jednoczesnej edycji (EditLock)</li>
+        </ul>
       </div>
-      <div class="stat" role="listitem">
-        <div class="stat-n">12</div>
-        <div class="stat-l">Auth</div>
+
+      <div class="module-card">
+        <div class="module-card-head">
+          <div class="module-icon green">♿</div>
+          <h3>Dostępność (WCAG)</h3>
+        </div>
+        <ul>
+          <li>WCAG 2.1 AA jako wymóg projektowy</li>
+          <li>Wersje ETR (Easy-To-Read) aktualności i podstron</li>
+          <li>Deklaracja dostępności z formularzem zgłoszeń</li>
+          <li>Kontrast-safe kolory akcentu (contrastSafeColor)</li>
+          <li>Alt-tekst dla każdego zdjęcia — audyt braków</li>
+          <li>Mapa strony HTML dla czytników ekranu</li>
+          <li>Strona informacyjna o standardzie ETR</li>
+        </ul>
       </div>
-      <div class="stat" role="listitem">
-        <div class="stat-n">87</div>
-        <div class="stat-l">Łącznie</div>
+
+      <div class="module-card">
+        <div class="module-card-head">
+          <div class="module-icon rose">⚙️</div>
+          <h3>Narzędzia i automatyzacja</h3>
+        </div>
+        <ul>
+          <li>Ustawienia serwisu — wygląd, moduły, SEO, poczta</li>
+          <li>Przekierowania HTTP (CSV eksport/import)</li>
+          <li>Skaner martwych linków</li>
+          <li>Kalendarz redakcyjny (aktualności + wydarzenia)</li>
+          <li>Szablony treści wielokrotnego użycia</li>
+          <li>Eksport/import całego serwisu (ZIP)</li>
+          <li>Historia wersji (Revision) z przywracaniem</li>
+          <li>Zadania wewnętrzne (kanban) z powiadomieniami</li>
+          <li>Wyszukiwarka poleceń Ctrl+K (JSON API)</li>
+          <li>Dziennik zdarzeń (Spatie ActivityLog)</li>
+          <li>System banerów ze strefami wyświetlania</li>
+          <li>Ankiety z głosowaniem i dedupeiem sesji</li>
+        </ul>
       </div>
+
+      <div class="module-card">
+        <div class="module-card-head">
+          <div class="module-icon blue">🌐</div>
+          <h3>Strona publiczna</h3>
+        </div>
+        <ul>
+          <li>Strona główna z konfigurowalnymi modułami</li>
+          <li>Wyszukiwarka (strony, aktualności, projekty, blog)</li>
+          <li>Landing page'e webinarów (.ics, lista uczestników)</li>
+          <li>Strefa współpracownika (MS365) — terminy spotkań</li>
+          <li>Formularze kontaktowy i zgłoszeniowy</li>
+          <li>Sitemap XML + mapa HTML</li>
+          <li>Skróty URL (/bip, /instagram, /facebook)</li>
+          <li>Druk PDF aktualności</li>
+          <li>Podgląd szkicu (signed URL)</li>
+        </ul>
+      </div>
+
     </div>
   </section>
 
   <!-- TECH STACK -->
-  <section class="tech-section" id="tech" aria-labelledby="tech-title">
-    <h2 class="tech-section-title" id="tech-title">Stack technologiczny</h2>
-    <div class="tech-grid">
-
-      <div class="tech-group">
-        <div class="tech-group-label">Backend</div>
-        <div class="tech-chips">
-          <span class="chip chip-blue">PHP 8.3+</span>
-          <span class="chip chip-blue">Laravel 13</span>
-          <span class="chip chip-blue">Eloquent ORM</span>
-          <span class="chip chip-blue">Artisan CLI</span>
-          <span class="chip chip-gray">SQLite (×2 bazy)</span>
+  <section id="tech" aria-labelledby="tech-title" style="margin-bottom:48px">
+    <p class="section-title" id="tech-title">Stack technologiczny</p>
+    <div class="tech-section">
+      <div class="tech-grid">
+        <div class="tech-group">
+          <div class="tech-group-label">Backend</div>
+          <div class="tech-chips">
+            <span class="chip chip-blue">PHP 8.3+</span>
+            <span class="chip chip-blue">Laravel 13</span>
+            <span class="chip chip-blue">Eloquent ORM</span>
+            <span class="chip chip-blue">Artisan CLI</span>
+            <span class="chip chip-gray">SQLite (×2 bazy)</span>
+          </div>
+        </div>
+        <div class="tech-group">
+          <div class="tech-group-label">Autentykacja</div>
+          <div class="tech-chips">
+            <span class="chip chip-amber">Microsoft 365 SSO</span>
+            <span class="chip chip-amber">Azure AD / Socialite</span>
+            <span class="chip chip-amber">TOTP (2FA)</span>
+            <span class="chip chip-amber">YubiKey (2FA)</span>
+            <span class="chip chip-amber">Laravel Guards</span>
+          </div>
+        </div>
+        <div class="tech-group">
+          <div class="tech-group-label">Media &amp; treść</div>
+          <div class="tech-chips">
+            <span class="chip chip-violet">Spatie MediaLibrary</span>
+            <span class="chip chip-violet">Spatie ActivityLog</span>
+            <span class="chip chip-violet">Unsplash API</span>
+            <span class="chip chip-violet">OneDrive / MS Graph</span>
+            <span class="chip chip-violet">TinyMCE / CKEditor</span>
+          </div>
+        </div>
+        <div class="tech-group">
+          <div class="tech-group-label">Frontend</div>
+          <div class="tech-chips">
+            <span class="chip chip-green">Vite</span>
+            <span class="chip chip-green">Blade Templates</span>
+            <span class="chip chip-green">Alpine.js</span>
+            <span class="chip chip-green">CSS Custom Properties</span>
+          </div>
+        </div>
+        <div class="tech-group">
+          <div class="tech-group-label">Wdrożenie</div>
+          <div class="tech-chips">
+            <span class="chip chip-rose">PHP 8.5 (prod)</span>
+            <span class="chip chip-rose">deploy.sh</span>
+            <span class="chip chip-rose">Tryb serwisowy</span>
+            <span class="chip chip-rose">Queue / Scheduler</span>
+          </div>
+        </div>
+        <div class="tech-group">
+          <div class="tech-group-label">Standardy</div>
+          <div class="tech-chips">
+            <span class="chip chip-gray">WCAG 2.1 AA</span>
+            <span class="chip chip-gray">PHPDoc</span>
+            <span class="chip chip-gray">RESTful routing</span>
+            <span class="chip chip-gray">Soft deletes</span>
+            <span class="chip chip-gray">ETR (Easy-To-Read)</span>
+          </div>
         </div>
       </div>
-
-      <div class="tech-group">
-        <div class="tech-group-label">Autentykacja</div>
-        <div class="tech-chips">
-          <span class="chip chip-amber">Microsoft 365 SSO</span>
-          <span class="chip chip-amber">Azure AD / Socialite</span>
-          <span class="chip chip-amber">TOTP (2FA)</span>
-          <span class="chip chip-amber">YubiKey (2FA)</span>
-          <span class="chip chip-amber">Laravel Guards</span>
-        </div>
-      </div>
-
-      <div class="tech-group">
-        <div class="tech-group-label">Media &amp; treść</div>
-        <div class="tech-chips">
-          <span class="chip chip-violet">Spatie MediaLibrary</span>
-          <span class="chip chip-violet">Spatie ActivityLog</span>
-          <span class="chip chip-violet">Unsplash API</span>
-          <span class="chip chip-violet">OneDrive / MS Graph</span>
-          <span class="chip chip-violet">TinyMCE / CKEditor</span>
-        </div>
-      </div>
-
-      <div class="tech-group">
-        <div class="tech-group-label">Frontend</div>
-        <div class="tech-chips">
-          <span class="chip chip-green">Vite</span>
-          <span class="chip chip-green">Blade Templates</span>
-          <span class="chip chip-green">Alpine.js</span>
-          <span class="chip chip-green">CSS Custom Properties</span>
-        </div>
-      </div>
-
-      <div class="tech-group">
-        <div class="tech-group-label">Wdrożenie</div>
-        <div class="tech-chips">
-          <span class="chip chip-rose">PHP 8.5 (prod)</span>
-          <span class="chip chip-rose">deploy.sh</span>
-          <span class="chip chip-rose">Tryb serwisowy</span>
-          <span class="chip chip-rose">Queue / Scheduler</span>
-        </div>
-      </div>
-
-      <div class="tech-group">
-        <div class="tech-group-label">Standardy</div>
-        <div class="tech-chips">
-          <span class="chip chip-gray">WCAG 2.1 AA</span>
-          <span class="chip chip-gray">PHPDoc</span>
-          <span class="chip chip-gray">RESTful routing</span>
-          <span class="chip chip-gray">Soft deletes</span>
-          <span class="chip chip-gray">ETR (Easy-To-Read)</span>
-        </div>
-      </div>
-
     </div>
   </section>
 
   <!-- PUBLICZNE -->
-  <section class="section" id="publiczne" aria-labelledby="h2-pub">
-    <div class="section-header">
+  <section class="ctrl-section" id="publiczne" aria-labelledby="h2-pub">
+    <div class="ctrl-section-header">
       <h2 id="h2-pub">Kontrolery publiczne</h2>
       <span class="ns-badge ns-pub">App\Http\Controllers</span>
     </div>
@@ -530,8 +697,8 @@ footer {
   </section>
 
   <!-- TRAIT -->
-  <section class="section" id="trait" aria-labelledby="h2-trait">
-    <div class="section-header">
+  <section class="ctrl-section" id="trait" aria-labelledby="h2-trait">
+    <div class="ctrl-section-header">
       <h2 id="h2-trait">Trait</h2>
       <span class="ns-badge ns-trait">App\Http\Controllers\Concerns</span>
     </div>
@@ -550,8 +717,8 @@ footer {
   </section>
 
   <!-- ADMIN -->
-  <section class="section" id="admin" aria-labelledby="h2-admin">
-    <div class="section-header">
+  <section class="ctrl-section" id="admin" aria-labelledby="h2-admin">
+    <div class="ctrl-section-header">
       <h2 id="h2-admin">Panel administracyjny</h2>
       <span class="ns-badge ns-admin">App\Http\Controllers\Admin</span>
     </div>
@@ -614,8 +781,8 @@ footer {
   </section>
 
   <!-- AUTH -->
-  <section class="section" id="auth" aria-labelledby="h2-auth">
-    <div class="section-header">
+  <section class="ctrl-section" id="auth" aria-labelledby="h2-auth">
+    <div class="ctrl-section-header">
       <h2 id="h2-auth">Autentykacja</h2>
       <span class="ns-badge ns-auth">App\Http\Controllers\Auth</span>
     </div>
@@ -644,20 +811,13 @@ footer {
 
 <footer role="contentinfo">
   <div class="footer-brand">
-    <strong>weCMS</strong> for FEER &mdash; Dokumentacja techniczna
+    <span class="logo-we">We</span><span class="logo-cms">CMS</span>
+    <span class="suffix">for FEER — Dokumentacja techniczna</span>
   </div>
   <div class="footer-authors">
-    Autorzy: Ziemowit Gil &lt;ziemowit.gil@feer.org.pl&gt; &middot; Jarek P.
+    Autorzy: Ziemowit Gil · Jarek P.
   </div>
 </footer>
-
-<style>
-.sr-only {
-  position: absolute; width: 1px; height: 1px;
-  padding: 0; margin: -1px; overflow: hidden;
-  clip: rect(0,0,0,0); white-space: nowrap; border: 0;
-}
-</style>
 
 </body>
 </html>
