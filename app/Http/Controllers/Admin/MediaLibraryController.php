@@ -60,7 +60,7 @@ class MediaLibraryController extends Controller
         $tag = $request->input('tag');
         $dateFrom = $request->input('date_from');
         $dateTo = $request->input('date_to');
-        $authorId = $request->filled('author') ? (int) $request->input('author') : null;
+        $authorSearch = $request->input('author');
         $withArchived = $request->boolean('with_archived');
 
         $media = Media::query()
@@ -77,7 +77,13 @@ class MediaLibraryController extends Controller
             ->when($tag, fn ($query) => $query->where('custom_properties', 'like', '%"'.addslashes($tag).'"%'))
             ->when($dateFrom, fn ($query) => $query->whereDate('created_at', '>=', $dateFrom))
             ->when($dateTo, fn ($query) => $query->whereDate('created_at', '<=', $dateTo))
-            ->when($authorId, fn ($query) => $query->where('uploaded_by_user_id', $authorId))
+            ->when($authorSearch, function ($query) use ($authorSearch) {
+                $like = '%'.addcslashes($authorSearch, '%_').'%';
+                $query->where(function ($q) use ($authorSearch, $like) {
+                    $q->where('custom_properties', 'like', '%"author":"'.addcslashes($authorSearch, '%_').'%')
+                      ->orWhereHas('uploadedBy', fn ($u) => $u->where('name', 'like', $like));
+                });
+            })
             ->latest()
             ->paginate(36)
             ->withQueryString()
@@ -111,7 +117,7 @@ class MediaLibraryController extends Controller
                     'owner' => $this->describeOwner($media, $model),
                     'alt' => $this->describeAlt($media, $model),
                     'tags' => $media->getCustomProperty('tags', []),
-                    'uploader' => $media->uploadedBy?->name,
+                    'author' => $media->getCustomProperty('author') ?: ($media->uploadedBy?->name ?? 'System'),
                 ];
             });
 
@@ -126,17 +132,6 @@ class MediaLibraryController extends Controller
             ->sort()
             ->values();
 
-        $uploaders = Media::query()
-            ->whereIn('model_type', $this->accessibleModelTypes())
-            ->whereNotNull('uploaded_by_user_id')
-            ->with('uploadedBy:id,name')
-            ->get(['uploaded_by_user_id'])
-            ->map(fn ($m) => $m->uploadedBy)
-            ->filter()
-            ->unique('id')
-            ->sortBy('name')
-            ->values();
-
         return view('admin.media.index', [
             'media' => $media,
             'folder' => $folder,
@@ -145,12 +140,11 @@ class MediaLibraryController extends Controller
             'allFolders' => MediaFolder::orderBy('name')->get(),
             'folderTree' => $this->folderTree(),
             'allTags' => $allTags,
-            'uploaders' => $uploaders,
             'currentSearch' => $search,
             'currentTag' => $tag,
             'currentDateFrom' => $dateFrom,
             'currentDateTo' => $dateTo,
-            'currentAuthor' => $authorId,
+            'currentAuthor' => $authorSearch,
             'withArchived' => $withArchived,
         ]);
     }
@@ -280,22 +274,30 @@ class MediaLibraryController extends Controller
 
         Http::withHeaders(['Authorization' => "Client-ID {$accessKey}"])->get($data['download_location']);
 
+        $authorCredit = $data['author_name'].' / Unsplash';
+        $altText = 'Zdjęcie: '.$authorCredit;
+
         $media = MediaLibrary::instance()
             ->addMediaFromUrl($data['full_url'])
             ->usingFileName(Str::random(20).'.jpg')
-            ->withCustomProperties(['unsplash_author' => $data['author_name']])
+            ->withCustomProperties([
+                'unsplash_author' => $data['author_name'],
+                'author' => $authorCredit,
+                'alt' => $altText,
+            ])
             ->toMediaCollection('files');
 
-        $media->update([
-            'uploaded_by_user_id' => auth()->id(),
-            ...(!empty($data['folder_id']) ? ['media_folder_id' => $data['folder_id']] : []),
-        ]);
+        $media->uploaded_by_user_id = auth()->id();
+        if (! empty($data['folder_id'])) {
+            $media->media_folder_id = $data['folder_id'];
+        }
+        $media->save();
 
         return response()->json([
             'id' => $media->id,
             'url' => $media->getUrl(),
             'file_name' => $media->file_name,
-            'alt' => 'Zdjęcie: '.$data['author_name'].' / Unsplash',
+            'alt' => $altText,
         ]);
     }
 
@@ -410,21 +412,29 @@ class MediaLibraryController extends Controller
             'files' => ['required', 'array', 'min:1'],
             'files.*' => ['file', 'max:10240'],
             'folder_id' => ['nullable', 'exists:media_folders,id'],
+            'authors' => ['nullable', 'array'],
+            'authors.*' => ['nullable', 'string', 'max:255'],
+            'alts' => ['nullable', 'array'],
+            'alts.*' => ['nullable', 'string', 'max:255'],
         ], [], ['files.*' => 'plik']);
 
         $folderId = $request->input('folder_id') ?: null;
         $library = MediaLibrary::instance();
         $count = 0;
-
         $userId = auth()->id();
 
-        foreach ($request->file('files', []) as $file) {
+        foreach ($request->file('files', []) as $index => $file) {
             $media = $library->addMedia($file)->toMediaCollection('files');
 
-            $media->update(array_filter([
-                'uploaded_by_user_id' => $userId,
-                'media_folder_id' => $folderId,
-            ]));
+            $author = trim($request->input("authors.{$index}", ''));
+            $alt    = trim($request->input("alts.{$index}", ''));
+
+            if ($author !== '') $media->setCustomProperty('author', $author);
+            if ($alt !== '') $media->setCustomProperty('alt', $alt);
+
+            $media->uploaded_by_user_id = $userId;
+            if ($folderId) $media->media_folder_id = $folderId;
+            $media->save();
 
             $count++;
         }
@@ -714,6 +724,27 @@ class MediaLibraryController extends Controller
         $media->delete();
 
         return redirect()->route('admin.multimedia.index')->with('status', 'Plik został usunięty.');
+    }
+
+    public function emptyArchive(Request $request)
+    {
+        $folderId = $request->filled('folder') ? $request->integer('folder') : null;
+
+        $items = Media::query()
+            ->whereIn('model_type', $this->accessibleModelTypes())
+            ->whereNotNull('archived_at')
+            ->when($folderId, fn ($q) => $q->where('media_folder_id', $folderId))
+            ->get();
+
+        $count = $items->count();
+        $items->each->delete();
+
+        $message = $count > 0
+            ? "Kosz opróżniony — usunięto plików: {$count}."
+            : 'Kosz jest już pusty.';
+
+        return redirect()->route('admin.multimedia.index', array_filter(['folder' => $folderId, 'archived' => 1]))
+            ->with('status', $message);
     }
 
     public function storeFolder(Request $request)

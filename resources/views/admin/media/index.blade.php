@@ -248,20 +248,12 @@
                                 {{-- Author --}}
                                 <div>
                                     <label for="filter-author" class="mb-1 block text-xs font-bold text-muted">
-                                        Autor / wgrywający
+                                        Autor / twórca
                                     </label>
-                                    <select id="filter-author" name="author"
+                                    <input type="text" id="filter-author" name="author"
+                                        value="{{ $currentAuthor }}"
+                                        placeholder="np. Jan Kowalski"
                                         class="w-full rounded-lg border-gray-300 text-sm focus:border-brand focus:ring-brand">
-                                        <option value="">Wszyscy autorzy</option>
-                                        @foreach ($uploaders as $uploader)
-                                            <option value="{{ $uploader->id }}" {{ $currentAuthor === $uploader->id ? 'selected' : '' }}>
-                                                {{ $uploader->name }}
-                                            </option>
-                                        @endforeach
-                                        @if ($uploaders->isEmpty())
-                                            <option disabled>— brak danych o autorach —</option>
-                                        @endif
-                                    </select>
                                 </div>
 
                                 {{-- Archive checkbox --}}
@@ -290,10 +282,21 @@
                     <form method="POST" action="{{ route('admin.multimedia.store') }}" enctype="multipart/form-data"
                         x-data="{
                             files: [],
+                            meta: [],
                             drag: false,
-                            setFiles(list) { this.files = Array.from(list).map(f => f.name); },
-                            onDrop(event) { this.drag = false; this.$refs.input.files = event.dataTransfer.files; this.setFiles(event.dataTransfer.files); },
-                            clear() { this.$refs.input.value = ''; this.files = []; }
+                            setFiles(list) {
+                                this.files = Array.from(list);
+                                this.meta = this.files.map(f => ({
+                                    author: '',
+                                    alt: f.name.replace(/\.[^.]+$/, '').replace(/[-_]+/g, ' ')
+                                }));
+                            },
+                            onDrop(event) {
+                                this.drag = false;
+                                this.$refs.input.files = event.dataTransfer.files;
+                                this.setFiles(event.dataTransfer.files);
+                            },
+                            clear() { this.$refs.input.value = ''; this.files = []; this.meta = []; }
                         }"
                         @dragover.prevent="drag = true" @dragleave.prevent="drag = false" @drop.prevent="onDrop($event)"
                         class="mb-4">
@@ -313,19 +316,63 @@
                         </label>
 
                         <template x-if="files.length">
-                            <div class="mt-3 rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
-                                <p class="mb-2 text-[10px] font-bold uppercase tracking-widest text-muted">
-                                    Wybrane pliki (<span x-text="files.length"></span>)
-                                </p>
-                                <ul class="mb-3 max-h-36 space-y-1 overflow-y-auto text-sm text-ink">
-                                    <template x-for="(name, i) in files" :key="i">
-                                        <li class="flex items-center gap-2">
-                                            <i class="fa-solid fa-file text-muted" aria-hidden="true"></i>
-                                            <span class="truncate" x-text="name"></span>
-                                        </li>
-                                    </template>
-                                </ul>
-                                <div class="flex items-center gap-3">
+                            <div class="mt-3 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+                                <div class="flex items-center justify-between border-b border-gray-100 bg-gray-50 px-4 py-2.5">
+                                    <p class="text-[10px] font-bold uppercase tracking-widest text-muted">
+                                        Wybrane pliki (<span x-text="files.length"></span>)
+                                    </p>
+                                    <p class="text-[10px] text-muted">Wypełnij autora i opis — pomagają przy wyszukiwaniu i dostępności</p>
+                                </div>
+
+                                <div class="overflow-x-auto">
+                                    <table class="w-full">
+                                        <thead class="border-b border-gray-100 bg-gray-50 text-[10px] font-bold uppercase tracking-widest text-muted">
+                                            <tr>
+                                                <th scope="col" class="px-4 py-2 text-left">Plik</th>
+                                                <th scope="col" class="px-4 py-2 text-left">
+                                                    Autor / twórca
+                                                    <span class="font-normal normal-case tracking-normal">(opcjonalnie)</span>
+                                                </th>
+                                                <th scope="col" class="px-4 py-2 text-left">
+                                                    Opis alternatywny
+                                                    <span class="font-normal normal-case tracking-normal">(zalecany dla obrazów)</span>
+                                                </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="divide-y divide-gray-100">
+                                            <template x-for="(file, i) in files" :key="i">
+                                                <tr>
+                                                    <td class="px-4 py-2">
+                                                        <div class="flex items-center gap-2">
+                                                            <i class="fa-solid fa-file flex-none text-muted" aria-hidden="true"></i>
+                                                            <span class="max-w-[12rem] truncate text-sm" x-text="file.name"></span>
+                                                        </div>
+                                                    </td>
+                                                    <td class="px-4 py-2">
+                                                        <label :for="'upl-author-' + i" class="sr-only"
+                                                            x-text="'Autor pliku ' + file.name"></label>
+                                                        <input :id="'upl-author-' + i" type="text"
+                                                            :name="'authors[' + i + ']'"
+                                                            x-model="meta[i].author"
+                                                            placeholder="np. Jan Kowalski"
+                                                            class="w-full min-w-[10rem] rounded-lg border-gray-300 py-1.5 text-xs focus:border-brand focus:ring-brand">
+                                                    </td>
+                                                    <td class="px-4 py-2">
+                                                        <label :for="'upl-alt-' + i" class="sr-only"
+                                                            x-text="'Opis alternatywny pliku ' + file.name"></label>
+                                                        <input :id="'upl-alt-' + i" type="text"
+                                                            :name="'alts[' + i + ']'"
+                                                            x-model="meta[i].alt"
+                                                            placeholder="Co przedstawia ten plik?"
+                                                            class="w-full min-w-[14rem] rounded-lg border-gray-300 py-1.5 text-xs focus:border-brand focus:ring-brand">
+                                                    </td>
+                                                </tr>
+                                            </template>
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                <div class="flex items-center gap-3 border-t border-gray-100 px-4 py-3">
                                     <button type="submit"
                                         class="rounded-lg bg-brand px-4 py-2 text-xs font-bold text-white hover:bg-brand-dark">
                                         <i class="fa-solid fa-upload" aria-hidden="true"></i>
@@ -345,9 +392,19 @@
                 @error('name') <p class="mb-4 text-sm text-red-600">{{ $message }}</p> @enderror
 
                 @if ($showArchived)
-                    <div class="mb-6 flex items-center gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+                    <div class="mb-6 flex flex-wrap items-center gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
                         <i class="fa-solid fa-box-archive flex-none text-amber-500" aria-hidden="true"></i>
-                        Przeglądasz archiwum — schowane pliki nie pojawiają się w bibliotece ani edytorze, ale nie zostały usunięte.
+                        <span class="flex-1">Przeglądasz archiwum — schowane pliki nie pojawiają się w bibliotece ani edytorze, ale nie zostały usunięte.</span>
+                        <form method="POST" action="{{ route('admin.multimedia.empty-archive', array_filter(['folder' => $folder?->id])) }}"
+                            onsubmit="return confirm('Czy na pewno chcesz trwale usunąć wszystkie pliki w archiwum? Tej operacji nie można cofnąć.')">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit"
+                                class="flex items-center gap-1.5 rounded-lg border border-amber-400 bg-white px-3 py-1.5 text-xs font-bold text-amber-700 hover:bg-amber-100 focus:outline-none focus:ring-2 focus:ring-amber-500">
+                                <i class="fa-solid fa-trash-can" aria-hidden="true"></i>
+                                Opróżnij kosz
+                            </button>
+                        </form>
                     </div>
                 @endif
 
@@ -520,7 +577,7 @@
                                     <p class="text-[11px] text-muted">{{ $item['size'] }} &middot; {{ $item['created_at']->format('d.m.Y') }}</p>
                                     <p class="text-[11px] text-muted">
                                         <i class="fa-solid fa-user text-[9px]" aria-hidden="true"></i>
-                                        {{ $item['uploader'] ?? 'System' }}
+                                        {{ $item['author'] ?? 'System' }}
                                     </p>
 
                                     {{-- Usage (owner) link --}}
@@ -816,7 +873,7 @@
 
                                         {{-- Author --}}
                                         <td class="whitespace-nowrap px-4 py-3 text-sm text-muted">
-                                            {{ $item['uploader'] ?? 'System' }}
+                                            {{ $item['author'] ?? 'System' }}
                                         </td>
 
                                         {{-- Size + date --}}

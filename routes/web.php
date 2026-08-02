@@ -330,6 +330,7 @@ Route::middleware(['auth', 'verified', '2fa'])->prefix(config('app.admin_prefix'
     Route::post('multimedia/eksport-zaznaczonych', [MediaLibraryController::class, 'exportSelected'])->name('multimedia.export-selected');
     Route::put('multimedia/{media}/alt', [MediaLibraryController::class, 'updateAlt'])->name('multimedia.alt');
     Route::put('multimedia/{media}/tagi', [MediaLibraryController::class, 'updateTags'])->name('multimedia.tags');
+    Route::delete('multimedia/kosz', [MediaLibraryController::class, 'emptyArchive'])->name('multimedia.empty-archive');
     Route::put('multimedia/{media}/folder', [MediaLibraryController::class, 'move'])->name('multimedia.move');
     Route::put('multimedia/{media}/archiwizuj', [MediaLibraryController::class, 'archive'])->name('multimedia.archive');
     Route::put('multimedia/{media}/przywroc', [MediaLibraryController::class, 'restore'])->name('multimedia.restore');
