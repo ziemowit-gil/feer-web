@@ -294,6 +294,9 @@ class SiteSettingController extends Controller
         }
         $data['mail_encryption'] = filled($data['mail_encryption'] ?? null) ? $data['mail_encryption'] : null;
         $data['show_coordinators'] = $request->boolean('show_coordinators');
+        $data['wide_mission_nav_hover_white'] = $request->boolean('wide_mission_nav_hover_white');
+        $data['wide_mission_nav_active_white'] = $request->boolean('wide_mission_nav_active_white');
+        $data['wide_mission_nav_icons_white'] = $request->boolean('wide_mission_nav_icons_white');
         $data['show_topbar_bip'] = $request->boolean('show_topbar_bip');
         $data['show_topbar_social'] = $request->boolean('show_topbar_social');
         $data['contact_show_form'] = $request->boolean('contact_show_form');

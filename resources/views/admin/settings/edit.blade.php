@@ -282,6 +282,27 @@
                         @endforeach
                     </div>
                     <p class="mt-1 text-xs text-muted">Biały pasek wymaga ustawienia ikon w pozycjach menu (zakładka Menu → pole Ikona).</p>
+                    <div class="mt-3 space-y-2 rounded-lg border border-gray-200 bg-gray-50 p-3 text-sm">
+                        <p class="text-xs font-bold uppercase tracking-wide text-muted">Kolory pozycji — tylko pasek koloru marki</p>
+                        <label class="flex items-center gap-2">
+                            <input type="hidden" name="wide_mission_nav_hover_white" value="0">
+                            <input type="checkbox" name="wide_mission_nav_hover_white" value="1" @checked(old('wide_mission_nav_hover_white', $settings->wide_mission_nav_hover_white ?? false)) class="rounded border-gray-300 text-brand focus:ring-brand">
+                            <span class="font-bold">Biały hover</span>
+                            <span class="text-xs text-muted">— tekst/podkreślenie na biało przy najechaniu</span>
+                        </label>
+                        <label class="flex items-center gap-2">
+                            <input type="hidden" name="wide_mission_nav_active_white" value="0">
+                            <input type="checkbox" name="wide_mission_nav_active_white" value="1" @checked(old('wide_mission_nav_active_white', $settings->wide_mission_nav_active_white ?? false)) class="rounded border-gray-300 text-brand focus:ring-brand">
+                            <span class="font-bold">Biały active</span>
+                            <span class="text-xs text-muted">— białe podkreślenie aktywnej pozycji</span>
+                        </label>
+                        <label class="flex items-center gap-2">
+                            <input type="hidden" name="wide_mission_nav_icons_white" value="0">
+                            <input type="checkbox" name="wide_mission_nav_icons_white" value="1" @checked(old('wide_mission_nav_icons_white', $settings->wide_mission_nav_icons_white ?? false)) class="rounded border-gray-300 text-brand focus:ring-brand">
+                            <span class="font-bold">Białe ikony/strzałki</span>
+                            <span class="text-xs text-muted">— strzałki podmenu w kolorze białym</span>
+                        </label>
+                    </div>
                 </div>
 
                 <div class="grid gap-4 sm:grid-cols-2">

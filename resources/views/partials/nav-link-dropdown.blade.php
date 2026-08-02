@@ -13,18 +13,26 @@
     @focusout="if (! $el.contains($event.relatedTarget)) open = false"
     @keydown.escape="open = false; $refs.linkTrigger.focus()"
     @click.outside="open = false">
-    @php $ob = $onBrand ?? false; @endphp
-    <div class="flex items-center gap-1 border-b-2 transition-colors {{ $isCurrent ? ($ob ? 'border-white' : 'border-brand text-brand') : 'border-transparent' }} {{ $mobile ? 'w-full justify-between' : 'pb-1' }}"
-        :class="open ? '{{ $ob ? 'border-white' : 'border-brand text-brand' }}' : ''">
+    @php
+        $ob      = $onBrand ?? false;
+        $hoverW  = $ob && ($siteSettings->wide_mission_nav_hover_white  ?? false);
+        $activeW = $ob && ($siteSettings->wide_mission_nav_active_white ?? false);
+        $iconsW  = $ob && ($siteSettings->wide_mission_nav_icons_white  ?? false);
+        $hoverTxtCls = $hoverW  ? 'hover:text-white'           : 'hover:text-brand';
+        $activeBdr   = $ob ? ($activeW ? 'border-white' : 'border-brand text-brand') : 'border-brand text-brand';
+        $iconCls     = $iconsW ? 'text-white hover:text-white/80' : 'text-brand hover:text-brand';
+    @endphp
+    <div class="flex items-center gap-1 border-b-2 transition-colors {{ $isCurrent ? $activeBdr : 'border-transparent' }} {{ $mobile ? 'w-full justify-between' : 'pb-1' }}"
+        :class="open ? '{{ $activeBdr }}' : ''">
         {{-- Nagłówek działa jak zwykły link — klik prowadzi pod adres pozycji. --}}
         <a href="{{ $item->url }}" x-ref="linkTrigger"
-            class="uppercase transition-colors hover:text-brand focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-current {{ $mobile ? 'py-2' : 'pt-2' }}">
+            class="uppercase transition-colors {{ $hoverTxtCls }} focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-current {{ $mobile ? 'py-2' : 'pt-2' }}">
             {{ $item->label }}
         </a>
         {{-- Strzałka rozwija/zamyka podmenu (działa też na mobile). --}}
         <button type="button" @click="open = !open" x-ref="linkToggle"
             :aria-expanded="open.toString()" :aria-controls="$id('dropdown')" aria-label="Rozwiń podmenu: {{ $item->label }}"
-            class="flex items-center px-1 text-brand hover:text-brand focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-current {{ $mobile ? 'py-2' : 'pt-2' }}">
+            class="flex items-center px-1 {{ $iconCls }} focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-current {{ $mobile ? 'py-2' : 'pt-2' }}">
             <i class="fa-solid fa-chevron-down text-[10px] transition-transform" :class="open ? 'rotate-180' : ''" aria-hidden="true"></i>
         </button>
     </div>

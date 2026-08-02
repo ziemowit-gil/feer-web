@@ -5,10 +5,17 @@
     @focusout="if (! $el.contains($event.relatedTarget)) open = false"
     @keydown.escape="open = false; $refs.dropdownTrigger.focus()"
     @click.outside="open = false">
+    @php
+        $ob      = $onBrand ?? false;
+        $hoverW  = $ob && ($siteSettings->wide_mission_nav_hover_white  ?? false);
+        $activeW = $ob && ($siteSettings->wide_mission_nav_active_white ?? false);
+        $hoverCls  = $hoverW  ? 'hover:border-white hover:text-white' : 'hover:border-brand hover:text-brand';
+        $activeBdr = $ob ? ($activeW ? 'border-white' : 'border-brand text-brand') : 'border-brand text-brand';
+        $staticCls = $item->isCurrent() ? $activeBdr : 'border-transparent';
+    @endphp
     <button type="button" x-ref="dropdownTrigger" @click="open = !open"
         :aria-expanded="open.toString()" :aria-controls="$id('dropdown')"
-        @php $ob = $onBrand ?? false; @endphp
-        class="flex w-full items-center gap-1 border-b-2 py-2 uppercase transition-colors hover:border-brand hover:text-brand focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-current {{ $item->isCurrent() ? ($ob ? 'border-white' : 'border-brand text-brand') : 'border-transparent' }} {{ $mobile ? 'justify-between' : 'pb-1' }}" :class="open ? '{{ $ob ? 'border-white' : 'border-brand text-brand' }}' : ''">
+        class="flex w-full items-center gap-1 border-b-2 py-2 uppercase transition-colors {{ $hoverCls }} focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-current {{ $staticCls }} {{ $mobile ? 'justify-between' : 'pb-1' }}" :class="open ? '{{ $activeBdr }}' : ''">
         {{ $item->label }} <i class="fa-solid fa-chevron-down text-[10px]" aria-hidden="true"></i>
     </button>
 
