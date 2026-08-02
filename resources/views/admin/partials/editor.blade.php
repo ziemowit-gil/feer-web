@@ -193,6 +193,7 @@
     class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">{{ $value }}</textarea>
 
 <input type="file" id="{{ $editorId }}-docx-input" accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document" class="sr-only" aria-hidden="true" tabindex="-1">
+<input type="file" id="{{ $editorId }}-txt-input" accept=".txt,text/plain" class="sr-only" aria-hidden="true" tabindex="-1">
 
 <div id="{{ $editorId }}-stats" class="mt-1 min-h-[1.25rem] text-xs text-muted" aria-live="polite" aria-atomic="true"></div>
 
@@ -1436,7 +1437,7 @@
                     branding: false,
                     convert_urls: false,
                     plugins: 'advlist autolink lists link anchor image charmap preview searchreplace visualblocks code fullscreen media table help wordcount accordion emoticons autosave quickbars',
-                    toolbar: 'undo redo | blocks | bold italic underline forecolor backcolor | alignleft aligncenter alignright | bullist numlist | link table media accordion | insertmenu linkmenu | clearformat | charmap emoticons | searchreplace visualblocks fullscreen preview | a11ycheck help | code{{ $historyJsonUrl ? " | historyrevisions" : "" }}',
+                    toolbar: 'undo redo | blocks | bold italic underline forecolor backcolor | alignleft aligncenter alignright | bullist numlist | link table media accordion | insertmenu linkmenu importmenu | clearformat | charmap emoticons | searchreplace visualblocks fullscreen preview | a11ycheck help | code{{ $historyJsonUrl ? " | historyrevisions" : "" }}',
                     toolbar_mode: 'wrap',
                     statusbar: true,
                     paste_data_images: true,
@@ -1572,6 +1573,20 @@
                                     } });
                                 }
                                 cb(items);
+                            },
+                        });
+
+                        editor.ui.registry.addMenuButton('importmenu', {
+                            text: 'Import', icon: 'upload', tooltip: 'Importuj treść z pliku',
+                            fetch: function (cb) {
+                                cb([
+                                    { type: 'menuitem', text: 'Importuj DOCX (Word)…', icon: 'upload', onAction: function () {
+                                        document.getElementById('{{ $editorId }}-docx-input').click();
+                                    }},
+                                    { type: 'menuitem', text: 'Importuj TXT…', icon: 'sourcecode', onAction: function () {
+                                        document.getElementById('{{ $editorId }}-txt-input').click();
+                                    }},
+                                ]);
                             },
                         });
 
@@ -1821,7 +1836,6 @@
         fd.append('_token', csrfToken);
         fd.append('docx', file);
 
-        // Show loading toast if Alpine store available
         fetch(importUrl, { method: 'POST', body: fd })
             .then(function (r) { return r.json(); })
             .then(function (data) {
@@ -1830,12 +1844,54 @@
                 var getContent = window['__getContent_{{ $editorId }}'];
                 if (!setContent) { alert('Edytor nie jest jeszcze gotowy.'); return; }
                 var current = getContent?.() || '';
-                var newContent = current
-                    ? current + '\n' + data.html
-                    : data.html;
-                setContent(newContent);
+                setContent(current ? current + '\n' + data.html : data.html);
             })
             .catch(function () { alert('Nie udało się zaimportować pliku DOCX.'); });
+    });
+})();
+</script>
+
+<script>
+(function () {
+    var txtInput = document.getElementById('{{ $editorId }}-txt-input');
+    if (!txtInput) return;
+
+    txtInput.addEventListener('change', function () {
+        var file = txtInput.files?.[0];
+        if (!file) return;
+        txtInput.value = '';
+
+        var reader = new FileReader();
+        reader.onload = function (e) {
+            var text = e.target.result || '';
+            // Każdy niepusty akapit (oddzielony pustą linią lub nową linią) → <p>
+            var html = text
+                .split(/\r?\n/)
+                .map(function (line) { return line.trim(); })
+                .reduce(function (acc, line) {
+                    if (line === '') {
+                        if (acc.current) { acc.paragraphs.push(acc.current); acc.current = ''; }
+                    } else {
+                        acc.current = acc.current ? acc.current + ' ' + line : line;
+                    }
+                    return acc;
+                }, { paragraphs: [], current: '' });
+            if (html.current) html.paragraphs.push(html.current);
+
+            var result = html.paragraphs
+                .map(function (p) {
+                    // Escapowanie HTML
+                    return '<p>' + p.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</p>';
+                })
+                .join('\n');
+
+            var setContent = window['__setContent_{{ $editorId }}'];
+            var getContent = window['__getContent_{{ $editorId }}'];
+            if (!setContent) { alert('Edytor nie jest jeszcze gotowy.'); return; }
+            var current = getContent?.() || '';
+            setContent(current ? current + '\n' + result : result);
+        };
+        reader.readAsText(file, 'UTF-8');
     });
 })();
 </script>
