@@ -23,40 +23,42 @@
 
     <x-banner-zone name="footer" />
 
-    <div class="border-t border-gray-200 bg-gray-50">
-        <div class="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-4 py-6 text-sm text-muted">
-            <div class="flex items-center gap-2">
-                @if ($siteSettings->logoUrl())
-                  
-                @else
-                    <span class="flex h-8 w-8 items-center justify-center rounded bg-brand text-sm font-bold text-white">{{ mb_substr($siteSettings->site_name, 0, 1) }}</span>
-                @endif
-                <span>
-                    <span class="block">&copy; {{ now()->year }} {{ $siteSettings->site_name }}</span>
-                    @if ($siteSettings->show_cms_credit ?? true)
-                        <span class="block text-xs">
-                            Napędza <span class="font-bold">weCMS</span> · autor:
-                            <a href="mailto:ziemowit.gil@feer.org.pl" class="hover:text-brand">Ziemowit Gil</a>
-                        </span>
-                    @endif
-                </span>
-            </div>
+    <div class="relative border-t border-gray-200 bg-gray-50">
+        <div class="mx-auto max-w-6xl px-4 py-5 text-sm text-muted">
+            <div class="flex flex-wrap items-center justify-between gap-x-8 gap-y-4">
 
-            <nav aria-label="Linki stopki">
-                <ul class="flex flex-wrap gap-6">
-                    @if ($footerNavItems->isNotEmpty())
+                {{-- Marka --}}
+                <div class="flex items-center gap-2.5">
+                    @if ($siteSettings->logoUrl())
+                        <img src="{{ $siteSettings->logoUrl() }}" alt="" class="h-8 w-8 flex-none rounded object-contain">
+                    @else
+                        <span class="flex h-8 w-8 flex-none items-center justify-center rounded bg-brand text-sm font-bold text-white">{{ mb_substr($siteSettings->site_name, 0, 1) }}</span>
+                    @endif
+                    <div class="leading-snug">
+                        <p>&copy; {{ now()->year }} {{ $siteSettings->site_name }}</p>
+                        @if ($siteSettings->show_cms_credit ?? true)
+                            <p class="text-xs">
+                                Napędza <span class="font-bold">weCMS</span> &middot;
+                                <a href="mailto:ziemowit.gil@feer.org.pl" class="hover:text-brand">Ziemowit Gil</a>
+                            </p>
+                        @endif
+                    </div>
+                </div>
+
+                {{-- Nawigacja --}}
+                <nav aria-label="Linki stopki">
+                    <ul class="flex flex-wrap gap-x-6 gap-y-1">
                         @foreach ($footerNavItems as $item)
                             <li><a href="{{ $item->url }}" class="hover:text-brand">{{ $item->label }}</a></li>
                         @endforeach
-                    @endif
-                    <li><a href="{{ route('accessibility.show') }}" class="hover:text-brand">Deklaracja dostępności</a></li>
-                    <li><a href="{{ route('sitemap.page') }}" class="hover:text-brand">Mapa strony</a></li>
-                    <li><a href="{{ url('/strefa-wspolpracownika-feer') }}" class="hover:text-brand">Strefa współpracownika</a></li>
-                </ul>
-            </nav>
+                        <li><a href="{{ route('accessibility.show') }}" class="hover:text-brand">Deklaracja dostępności</a></li>
+                        <li><a href="{{ route('sitemap.page') }}" class="hover:text-brand">Mapa strony</a></li>
+                        <li><a href="{{ url('/strefa-wspolpracownika-feer') }}" class="hover:text-brand">Strefa współpracownika</a></li>
+                    </ul>
+                </nav>
 
-            @if ($siteSettings->facebook_url || $siteSettings->twitter_url || $siteSettings->instagram_url || $siteSettings->linkedin_url || $siteSettings->youtube_url || $siteSettings->substack_url)
-                <div role="region" aria-label="Media społecznościowe" class="flex items-center gap-2">
+                {{-- Social + admin --}}
+                <div class="flex items-center gap-2">
                     @if ($siteSettings->substack_url)
                         <a href="{{ $siteSettings->substack_url }}" target="_blank" rel="noopener" class="flex h-9 w-9 items-center justify-center rounded-full bg-brand font-bold text-white transition hover:bg-brand-dark" aria-label="Substack">
                             <i class="fa-solid fa-pen-nib text-sm" aria-hidden="true"></i>
@@ -88,7 +90,9 @@
                         </a>
                     @endif
                 </div>
-            @endif
+
+            </div>
         </div>
+        <a href="{{ route('admin.dashboard') }}" class="absolute bottom-2 right-3 text-base leading-none" aria-label="Panel administracyjny">⚙️</a>
     </div>
 </footer>
