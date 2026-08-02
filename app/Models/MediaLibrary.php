@@ -19,4 +19,9 @@ class MediaLibrary extends Model implements HasMedia
     {
         return static::query()->first() ?? static::create();
     }
+
+    public function registerMediaConversions(?\Spatie\MediaLibrary\MediaCollections\Models\Media $media = null): void
+    {
+        $this->addMediaConversion('webp')->format('webp')->quality(85)->nonQueued();
+    }
 }

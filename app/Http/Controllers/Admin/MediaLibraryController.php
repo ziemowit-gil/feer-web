@@ -69,10 +69,15 @@ class MediaLibraryController extends Controller
             ->through(function (Media $media) {
                 $model = $media->model_type::find($media->model_id);
 
+                $isImage = str_starts_with($media->mime_type, 'image/');
+                $isWebp  = $media->mime_type === 'image/webp';
+
                 return [
                     'id' => $media->id,
                     'url' => $media->getUrl(),
-                    'is_image' => str_starts_with($media->mime_type, 'image/'),
+                    'is_image' => $isImage,
+                    'is_webp' => $isWebp,
+                    'has_webp_conversion' => $isImage && ! $isWebp && file_exists($media->getPath('webp')),
                     'file_name' => $media->file_name,
                     'size' => $media->human_readable_size,
                     'collection' => $media->collection_name,
@@ -608,6 +613,38 @@ class MediaLibraryController extends Controller
         $media->update(['archived_at' => null]);
 
         return redirect()->back()->with('status', 'Plik został przywrócony z archiwum.');
+    }
+
+    /**
+     * Replaces the original non-WebP file with its Spatie-generated WebP conversion,
+     * updating the media record in place so existing URLs continue to resolve.
+     */
+    public function convertToWebp(Media $media)
+    {
+        abort_unless(in_array($media->model_type, $this->accessibleModelTypes()), 403);
+        abort_unless(str_starts_with($media->mime_type, 'image/'), 422, 'Nie jest obrazem.');
+        abort_if($media->mime_type === 'image/webp', 422, 'Plik jest już w formacie WebP.');
+
+        $webpPath = $media->getPath('webp');
+        abort_unless(file_exists($webpPath), 422, 'Brak konwersji WebP — prześlij plik ponownie, aby wygenerować konwersję.');
+
+        $newFileName = pathinfo($media->file_name, PATHINFO_FILENAME) . '.webp';
+        $originalPath = $media->getPath();
+        $newPath = dirname($originalPath) . DIRECTORY_SEPARATOR . $newFileName;
+
+        copy($webpPath, $newPath);
+
+        if (realpath($newPath) !== realpath($originalPath)) {
+            @unlink($originalPath);
+        }
+
+        $media->update([
+            'file_name' => $newFileName,
+            'mime_type' => 'image/webp',
+            'size'      => filesize($webpPath),
+        ]);
+
+        return redirect()->back()->with('status', "Plik zastąpiono wersją WebP: {$newFileName}.");
     }
 
     public function destroy(Media $media)
