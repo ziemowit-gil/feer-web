@@ -22,52 +22,26 @@
             </a>
         </li>
 
-        @if ($bipNavItems->isNotEmpty())
-            {{-- Pozycje skonfigurowane przez admina --}}
-            @foreach ($bipNavItems as $item)
-                @php
-                    $isCurrentItem = ltrim(parse_url($item->url, PHP_URL_PATH) ?? '', '/') === ltrim(request()->path(), '/');
-                    $isExtLink = str_starts_with($item->url ?? '', 'http');
-                @endphp
-                <li>
-                    <a href="{{ $item->url }}"
-                        @if ($isExtLink) target="_blank" rel="noopener" @endif
-                        @if ($isCurrentItem) aria-current="page" @endif
-                        class="flex items-center gap-2 rounded px-3 py-2 transition {{ $isCurrentItem ? 'bg-brand-light font-semibold text-brand' : 'text-muted hover:bg-gray-50 hover:text-ink' }} focus-visible:outline-2 focus-visible:outline-brand">
-                        @if ($item->icon)
-                            <i class="{{ $item->icon }} w-4 text-center text-[0.7rem]" aria-hidden="true"></i>
-                        @endif
-                        {{ $item->label }}
-                        @if ($isExtLink)
-                            <i class="fa-solid fa-arrow-up-right-from-square ml-auto text-[0.55rem] text-muted" aria-hidden="true"></i>
-                        @endif
-                    </a>
-                </li>
-            @endforeach
-        @elseif (! $isExternalMode)
-            {{-- Fallback gdy brak pozycji: kategorie dokumentów i rejestr zmian --}}
-            <li class="pt-3">
-                <p class="px-3 pb-1 text-[0.65rem] font-bold uppercase tracking-wider text-muted">
-                    Kategorie dokumentów
-                </p>
-            </li>
-            @foreach (\App\Models\BipDocument::CATEGORIES as $catKey => $catLabel)
-                <li>
-                    <a href="{{ route('bip') }}#kategoria-{{ $catKey }}"
-                        class="block rounded px-3 py-1.5 text-muted transition hover:bg-gray-50 hover:text-ink focus-visible:outline-2 focus-visible:outline-brand">
-                        {{ $catLabel }}
-                    </a>
-                </li>
-            @endforeach
-            <li class="pt-3">
-                <a href="{{ route('bip.changelog') }}"
-                    @if ($onChangelog) aria-current="page" @endif
-                    class="flex items-center gap-2 rounded px-3 py-2 transition {{ $onChangelog ? 'bg-brand-light font-semibold text-brand' : 'text-muted hover:bg-gray-50 hover:text-ink' }} focus-visible:outline-2 focus-visible:outline-brand">
-                    <i class="fa-solid fa-clock-rotate-left w-4 text-center text-[0.7rem]" aria-hidden="true"></i>
-                    Rejestr zmian
+        @foreach ($bipNavItems as $item)
+            @php
+                $isCurrentItem = ltrim(parse_url($item->url, PHP_URL_PATH) ?? '', '/') === ltrim(request()->path(), '/');
+                $isExtLink = str_starts_with($item->url ?? '', 'http');
+            @endphp
+            <li>
+                <a href="{{ $item->url }}"
+                    @if ($isExtLink) target="_blank" rel="noopener" @endif
+                    @if ($isCurrentItem) aria-current="page" @endif
+                    class="flex items-center gap-2 rounded px-3 py-2 transition {{ $isCurrentItem ? 'bg-brand-light font-semibold text-brand' : 'text-muted hover:bg-gray-50 hover:text-ink' }} focus-visible:outline-2 focus-visible:outline-brand">
+                    @if ($item->icon)
+                        <i class="{{ $item->icon }} w-4 text-center text-[0.7rem]" aria-hidden="true"></i>
+                    @endif
+                    {{ $item->label }}
+                    @if ($isExtLink)
+                        <i class="fa-solid fa-arrow-up-right-from-square ml-auto text-[0.55rem] text-muted" aria-hidden="true"></i>
+                    @endif
                 </a>
             </li>
-        @endif
+        @endforeach
     </ul>
 </nav>
 

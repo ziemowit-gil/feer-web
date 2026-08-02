@@ -369,8 +369,8 @@ class NavItemController extends Controller
             $data['module'] = 'faq';
         }
 
-        // The footer only ever renders plain links — no dropdowns/submenus.
-        if ($data['location'] === 'footer') {
+        // Footer and BIP sidebar only render plain links — no dropdowns/submenus.
+        if (in_array($data['location'], ['footer', 'bip'], true)) {
             $data['type'] = 'link';
             $data['parent_id'] = null;
         }
