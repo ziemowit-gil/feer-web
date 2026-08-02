@@ -248,6 +248,14 @@
                 </label>
 
                 <label class="flex items-center gap-2 rounded-lg border border-gray-200 bg-white p-3">
+                    <input type="hidden" name="hero_mission_slide" value="0">
+                    <input type="checkbox" name="hero_mission_slide" value="1"
+                        {{ old('hero_mission_slide', $settings->hero_mission_slide ?? false) ? 'checked' : '' }}
+                        class="rounded border-gray-300 text-brand focus:ring-brand">
+                    <span class="text-sm font-bold">Misja jako slajd <span class="font-normal text-muted">(dodaje slajd z misją organizacji na początku slidera)</span></span>
+                </label>
+
+                <label class="flex items-center gap-2 rounded-lg border border-gray-200 bg-white p-3">
                     <input type="hidden" name="wide_mission_sidebar" value="0">
                     <input type="checkbox" name="wide_mission_sidebar" value="1"
                         {{ old('wide_mission_sidebar', $settings->wide_mission_sidebar ?? false) ? 'checked' : '' }}

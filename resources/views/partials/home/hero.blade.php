@@ -27,6 +27,29 @@
 
     <div class="{{ $hasSidebar ? 'relative h-full' : 'relative h-[320px] md:h-[440px]' }}">
         @foreach ($slides as $index => $slide)
+            @if (isset($slide->mission_text))
+            {{-- Slajd misji organizacji (bez tła-obrazka) --}}
+            <div
+                class="absolute inset-0 flex items-center justify-center bg-white transition-opacity duration-700 motion-reduce:transition-none {{ $index === 0 ? 'opacity-100' : 'opacity-0 pointer-events-none' }}"
+                data-hero-slide
+                @if ($index !== 0) aria-hidden="true" @endif
+            >
+                <div class="w-full px-8 py-6 text-center {{ $hasSidebar ? 'max-w-xs' : 'max-w-lg' }}">
+                    @if ($slide->logo_url)
+                        <img src="{{ $slide->logo_url }}" alt="{{ $slide->site_name }}"
+                            class="mx-auto mb-5 h-14 w-auto max-w-[10rem] object-contain opacity-90">
+                    @endif
+                    <p class="{{ $hasSidebar ? 'text-base md:text-lg' : 'text-xl md:text-3xl' }} font-bold leading-snug text-ink">{{ $slide->mission_text }}</p>
+                    @if ($slide->cta_label && $slide->cta_url)
+                        <a href="{{ $slide->cta_url }}" {{ $index !== 0 ? 'tabindex=-1' : '' }}
+                            class="mt-5 inline-flex items-center gap-2 rounded-full bg-brand px-5 py-2.5 text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand">
+                            {{ $slide->cta_label }}
+                        </a>
+                    @endif
+                </div>
+            </div>
+            @else
+            {{-- Standardowy slajd z obrazem --}}
             <div
                 class="absolute inset-0 flex items-end bg-cover bg-center transition-opacity duration-700 motion-reduce:transition-none {{ $index === 0 ? 'opacity-100' : 'opacity-0 pointer-events-none' }}"
                 style="background-image: linear-gradient(0deg, rgba(0,0,0,.65), rgba(0,0,0,.15)), url('{{ $slide->image_url }}')"
@@ -44,6 +67,7 @@
                     @endif
                 </div>
             </div>
+            @endif
         @endforeach
     </div>
 

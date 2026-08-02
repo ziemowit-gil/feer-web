@@ -6,6 +6,7 @@ use App\Models\Event;
 use App\Models\GalleryImage;
 use App\Models\HeroSlide;
 use App\Models\News;
+use App\Models\Page;
 use App\Models\Partner;
 use App\Models\Poll;
 use App\Models\QuickAction;
@@ -19,6 +20,20 @@ class HomeController extends Controller
         $settings = SiteSetting::current();
 
         $slides = $settings->isModuleEnabled('hero') ? HeroSlide::orderBy('order')->get() : collect();
+
+        if ($settings->hero_mission_slide && $slides->isNotEmpty()) {
+            $missionText = Page::where('type', 'about')->value('about_motto') ?: $settings->tagline;
+            if ($missionText) {
+                $missionSlide = (object) [
+                    'mission_text' => $missionText,
+                    'logo_url'     => $settings->logoUrl(),
+                    'site_name'    => $settings->site_name,
+                    'cta_label'    => trim($settings->wide_mission_cta_label ?? ''),
+                    'cta_url'      => trim($settings->wide_mission_cta_url ?? ''),
+                ];
+                $slides = $slides->prepend($missionSlide);
+            }
+        }
 
         $news = $settings->isModuleEnabled('news')
             ? News::published()->with('category')->orderByDesc('published_at')->limit(3)->get()
