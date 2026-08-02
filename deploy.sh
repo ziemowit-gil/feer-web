@@ -25,8 +25,8 @@ if [ -z "${PHP_BIN:-}" ]; then
         PHP_BIN="php85"
     elif php84 -v >/dev/null 2>&1; then
         PHP_BIN="php84"
-    elif php82 -v >/dev/null 2>&1; then
-        PHP_BIN="php82"
+    elif php83 -v >/dev/null 2>&1; then
+        PHP_BIN="php83"
     else
         PHP_BIN="php"
     fi
@@ -34,9 +34,12 @@ fi
 COMPOSER_BIN="${COMPOSER_BIN:-composer}"
 
 # Jeśli composer nie jest dostępny w PATH, szukamy przez pełne ścieżki
-# (php85 → php84 → php82 — typowe na hostingu współdzielonym).
+# (php85 → php84 → php83; projekt wymaga ^8.3).
 if ! command -v "$COMPOSER_BIN" >/dev/null 2>&1; then
-    for _php in /opt/alt/php85/usr/bin/php /opt/alt/php84/usr/bin/php /opt/alt/php82/usr/bin/php; do
+    for _php in \
+            /opt/alt/php85/usr/bin/php \
+            /opt/alt/php84/usr/bin/php \
+            /opt/alt/php83/usr/bin/php; do
         if [ -x "$_php" ] && [ -f /usr/local/bin/composer ]; then
             PHP_BIN="$_php"
             COMPOSER_BIN="/usr/local/bin/composer"
@@ -141,13 +144,21 @@ fi
 
 # ─── Composer ─────────────────────────────────────────────────────────────────
 
-echo "  [4/7] Composer install..."
+COMPOSER_FAILED=0
+echo "  [4/7] Composer update..."
 COMPOSER_PATH="$(command -v "$COMPOSER_BIN" 2>/dev/null || echo "$COMPOSER_BIN")"
-"$PHP_BIN" "$COMPOSER_PATH" update \
-    --no-interaction \
-    --no-dev \
-    --optimize-autoloader \
-    --quiet
+if "$PHP_BIN" "$COMPOSER_PATH" update \
+        --no-interaction \
+        --no-dev \
+        --optimize-autoloader \
+        --quiet; then
+    echo "        OK."
+else
+    COMPOSER_FAILED=1
+    echo ""
+    echo "  ⚠  Composer zakończył błędem — pomijam zależności PHP."
+    echo "     Kod Git został już pobrany; zależności i cache wymagają ręcznego uruchomienia."
+fi
 
 # ─── Assety front-endowe ──────────────────────────────────────────────────────
 
@@ -182,7 +193,21 @@ trap - ERR
 "$PHP_BIN" artisan up
 
 echo ""
-echo "┌─────────────────────────────────────────────────────────────┐"
-echo "│  Deploy zakończony pomyślnie.                               │"
-echo "└─────────────────────────────────────────────────────────────┘"
+if [ "$COMPOSER_FAILED" -eq 1 ]; then
+    echo "┌─────────────────────────────────────────────────────────────┐"
+    echo "│  Kod pobrany — Composer nie zadziałał.                     │"
+    echo "│                                                             │"
+    echo "│  Uruchom ręcznie:                                           │"
+    echo "│    /opt/alt/php84/usr/bin/php /usr/local/bin/composer \\    │"
+    echo "│      update --no-dev --optimize-autoloader                 │"
+    echo "│    php85 artisan migrate --force                            │"
+    echo "│    php85 artisan migrate --force --database=blog \\         │"
+    echo "│      --path=database/migrations/blog                       │"
+    echo "│    php85 artisan optimize:clear && php85 artisan optimize   │"
+    echo "└─────────────────────────────────────────────────────────────┘"
+else
+    echo "┌─────────────────────────────────────────────────────────────┐"
+    echo "│  Deploy zakończony pomyślnie.                               │"
+    echo "└─────────────────────────────────────────────────────────────┘"
+fi
 echo ""

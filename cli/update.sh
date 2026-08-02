@@ -90,11 +90,11 @@ detect_composer() {
             COMPOSER_BIN="$PHP_BIN composer.phar"
         else
             # Hosting współdzielony: Composer nie jest w PATH — szukamy go
-            # razem z dostępną binarkę PHP (php85 → php84 → php82).
+            # razem z dostępną binarkę PHP (php85 → php84 → php83; projekt wymaga ^8.3).
             for php_candidate in \
                     /opt/alt/php85/usr/bin/php \
                     /opt/alt/php84/usr/bin/php \
-                    /opt/alt/php82/usr/bin/php; do
+                    /opt/alt/php83/usr/bin/php; do
                 if [[ -x "$php_candidate" && -f /usr/local/bin/composer ]]; then
                     PHP_BIN="$php_candidate"
                     COMPOSER_BIN="/usr/local/bin/composer"
@@ -136,13 +136,16 @@ fi
 echo "✔ Pobrano zmiany (git, gałąź $BRANCH)."
 
 # --- 2. Zależności PHP (Composer) --------------------------------------------
+COMPOSER_FAILED=0
 if [[ "$DO_COMPOSER" -eq 1 && -f composer.json ]]; then
     detect_composer
     if [[ -z "$COMPOSER_BIN" ]]; then
+        COMPOSER_FAILED=1
         echo "⚠ Nie znaleziono Composera — pomijam instalację zależności PHP." >&2
-        echo "  Zainstaluj ręcznie: composer install --no-dev --optimize-autoloader" >&2
+    elif ! $COMPOSER_BIN install --no-interaction --prefer-dist --no-dev --optimize-autoloader; then
+        COMPOSER_FAILED=1
+        echo "⚠ Composer zakończył błędem — zależności PHP nie zostały zaktualizowane." >&2
     else
-        $COMPOSER_BIN install --no-interaction --prefer-dist --no-dev --optimize-autoloader
         echo "✔ Zainstalowano zależności PHP (Composer)."
     fi
 fi
@@ -199,5 +202,15 @@ else
 fi
 
 echo "=============================================================="
-echo " Gotowe. Aktualizacja zakończona."
+if [[ "$COMPOSER_FAILED" -eq 1 ]]; then
+    echo " Kod pobrany — Composer nie zadziałał."
+    echo ""
+    echo " Uruchom ręcznie:"
+    echo "   /opt/alt/php84/usr/bin/php /usr/local/bin/composer \\"
+    echo "     install --no-dev --optimize-autoloader"
+    echo "   php85 artisan migrate --force"
+    echo "   php85 artisan optimize:clear && php85 artisan optimize"
+else
+    echo " Gotowe. Aktualizacja zakończona."
+fi
 echo "=============================================================="
