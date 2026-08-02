@@ -30,6 +30,12 @@ if [ -z "${PHP_BIN:-}" ]; then
     fi
 fi
 COMPOSER_BIN="${COMPOSER_BIN:-composer}"
+
+# Jeśli composer nie jest dostępny w PATH, użyj pełnej ścieżki z php84
+if ! command -v "$COMPOSER_BIN" >/dev/null 2>&1; then
+    PHP_BIN="/opt/alt/php84/usr/bin/php"
+    COMPOSER_BIN="/usr/local/bin/composer"
+fi
 NPM_BIN="${NPM_BIN:-/opt/alt/alt-nodejs20/root/usr/bin/npm}"
 BRANCH="${BRANCH:-main}"
 DB="database/database.sqlite"
@@ -127,7 +133,8 @@ fi
 # ─── Composer ─────────────────────────────────────────────────────────────────
 
 echo "  [4/7] Composer install..."
-"$PHP_BIN" "$(which "$COMPOSER_BIN")" install \
+COMPOSER_PATH="$(command -v "$COMPOSER_BIN" 2>/dev/null || echo "$COMPOSER_BIN")"
+"$PHP_BIN" "$COMPOSER_PATH" install \
     --no-interaction \
     --no-dev \
     --optimize-autoloader \
