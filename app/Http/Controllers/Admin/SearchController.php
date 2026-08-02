@@ -13,6 +13,14 @@ use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
+/**
+ * Panel admin: wyszukiwarka poleceń (Ctrl+K) — treści i sekcje panelu,
+ * filtrowana według uprawnień zalogowanego użytkownika.
+ *
+ * Metody: __invoke().
+ *
+ * @author Ziemowit Gil <ziemowit.gil@feer.org.pl>
+ */
 class SearchController extends Controller
 {
     /**
@@ -31,6 +39,7 @@ class SearchController extends Controller
         ['faq', Faq::class, 'question', 'admin.faq.edit', 'FAQ', 'fa-circle-question'],
     ];
 
+    /** Obsługuje wyszukiwarkę poleceń Ctrl+K — treści i sekcje panelu. */
     public function __invoke(Request $request): JsonResponse
     {
         $q = trim((string) $request->query('q', ''));

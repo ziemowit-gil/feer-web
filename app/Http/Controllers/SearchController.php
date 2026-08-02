@@ -11,6 +11,14 @@ use App\Models\SiteSetting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
+/**
+ * Publiczna wyszukiwarka serwisu — przeszukuje strony, aktualności, projekty,
+ * materiały edukacyjne i artykuły bloga z paginacją i podświetlaniem trafień.
+ *
+ * Metody: index().
+ *
+ * @author Ziemowit Gil <ziemowit.gil@feer.org.pl>
+ */
 class SearchController extends Controller
 {
     /** Minimalna długość zapytania, żeby nie zwracać całego serwisu. */
@@ -19,6 +27,7 @@ class SearchController extends Controller
     /** Limit wyników na kategorię. */
     private const PER_GROUP = 20;
 
+    /** Przeszukuje opublikowane treści serwisu i zwraca wyniki pogrupowane wg sekcji. */
     public function index(Request $request)
     {
         $q = trim((string) $request->query('q', ''));

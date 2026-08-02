@@ -8,8 +8,16 @@ use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
+/**
+ * Panel admin: zarządzanie przekierowaniami HTTP (301/302) z eksportem i importem CSV.
+ *
+ * Metody: index(), store(), update(), destroy(), export(), import().
+ *
+ * @author Ziemowit Gil <ziemowit.gil@feer.org.pl>
+ */
 class RedirectController extends Controller
 {
+    /** Wyświetla listę wszystkich przekierowań HTTP. */
     public function index()
     {
         return view('admin.redirects.index', [
@@ -17,6 +25,7 @@ class RedirectController extends Controller
         ]);
     }
 
+    /** Dodaje nowe przekierowanie HTTP z walidacją unikalności ścieżki. */
     public function store(Request $request)
     {
         $data = $this->validated($request);
@@ -26,6 +35,7 @@ class RedirectController extends Controller
         return redirect()->route('admin.przekierowania.index')->with('status', 'Przekierowanie zostało dodane.');
     }
 
+    /** Aktualizuje ścieżkę docelową lub status przekierowania. */
     public function update(Request $request, RedirectModel $przekierowanie)
     {
         $przekierowanie->update($this->validated($request, $przekierowanie->id));
@@ -33,6 +43,7 @@ class RedirectController extends Controller
         return redirect()->route('admin.przekierowania.index')->with('status', 'Przekierowanie zostało zapisane.');
     }
 
+    /** Usuwa przekierowanie. */
     public function destroy(RedirectModel $przekierowanie)
     {
         $przekierowanie->delete();

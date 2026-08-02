@@ -6,8 +6,16 @@ use App\Http\Controllers\Controller;
 use App\Models\AccessibilityReport;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
+/**
+ * Panel admin: lista zgłoszeń barier dostępności z możliwością usuwania i eksportu do CSV.
+ *
+ * Metody: index(), destroy(), export().
+ *
+ * @author Ziemowit Gil <ziemowit.gil@feer.org.pl>
+ */
 class AccessibilityReportController extends Controller
 {
+    /** Wyświetla listę zgłoszeń barier dostępności. */
     public function index()
     {
         return view('admin.accessibility-reports.index', [
@@ -16,6 +24,7 @@ class AccessibilityReportController extends Controller
         ]);
     }
 
+    /** Usuwa zgłoszenie bariery dostępności. */
     public function destroy(AccessibilityReport $report)
     {
         $report->delete();
@@ -25,6 +34,7 @@ class AccessibilityReportController extends Controller
             ->with('status', 'Zgłoszenie zostało usunięte.');
     }
 
+    /** Eksportuje wszystkie zgłoszenia do pliku CSV. */
     public function export(): StreamedResponse
     {
         $filename = 'zgloszenia-barier-'.now()->format('Y-m-d').'.csv';

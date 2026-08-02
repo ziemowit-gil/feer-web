@@ -8,8 +8,18 @@ use App\Models\VolunteerAd;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
+/**
+ * Panel admin: zarządzanie ogłoszeniami wolontariackimi z archiwizacją,
+ * klonowaniem i operacjami zbiorczymi.
+ *
+ * Metody: index(), create(), store(), edit(), update(), destroy(), clone(),
+ *         bulk(), archive(), restore().
+ *
+ * @author Ziemowit Gil <ziemowit.gil@feer.org.pl>
+ */
 class VolunteerAdController extends Controller
 {
+    /** Wyświetla listę ogłoszeń wolontariackich z przełącznikiem archiwum. */
     public function index(Request $request)
     {
         $showArchived = $request->boolean('archived');
@@ -42,11 +52,13 @@ class VolunteerAdController extends Controller
         return redirect()->back()->with('status', 'Ogłoszenie zostało przywrócone z archiwum.');
     }
 
+    /** Wyświetla formularz tworzenia nowego ogłoszenia. */
     public function create()
     {
         return view('admin.volunteer-ads.form', ['ad' => new VolunteerAd(['application_cta_label' => 'Zgłoś się', 'q_mode' => 'stacjonarnie'])]);
     }
 
+    /** Zapisuje nowe ogłoszenie wolontariackie z unikalnym slugiem. */
     public function store(VolunteerAdRequest $request)
     {
         $data = $this->prepared($request);
@@ -57,11 +69,13 @@ class VolunteerAdController extends Controller
         return redirect()->route('admin.wolontariat.index')->with('status', 'Ogłoszenie zostało dodane.');
     }
 
+    /** Wyświetla formularz edycji ogłoszenia. */
     public function edit(VolunteerAd $wolontariat)
     {
         return view('admin.volunteer-ads.form', ['ad' => $wolontariat]);
     }
 
+    /** Aktualizuje ogłoszenie wolontariackie. */
     public function update(VolunteerAdRequest $request, VolunteerAd $wolontariat)
     {
         $data = $this->prepared($request);
@@ -72,6 +86,7 @@ class VolunteerAdController extends Controller
         return redirect()->route('admin.wolontariat.index')->with('status', 'Ogłoszenie zostało zaktualizowane.');
     }
 
+    /** Usuwa ogłoszenie wolontariackie. */
     public function destroy(VolunteerAd $wolontariat)
     {
         $wolontariat->delete();
@@ -79,6 +94,7 @@ class VolunteerAdController extends Controller
         return redirect()->route('admin.wolontariat.index')->with('status', 'Ogłoszenie zostało usunięte.');
     }
 
+    /** Klonuje ogłoszenie jako szkic bez terminu zgłoszeń. */
     public function clone(VolunteerAd $wolontariat)
     {
         $clone = $wolontariat->replicate();
@@ -93,6 +109,7 @@ class VolunteerAdController extends Controller
             ->with('status', 'Ogłoszenie zostało sklonowane jako "' . $clone->title . '". Jest zapisane jako szkic — uzupełnij termin zgłoszeń.');
     }
 
+    /** Wykonuje zbiorczą operację (archiwizuj / przywróć / usuń) na zaznaczonych ogłoszeniach. */
     public function bulk(Request $request)
     {
         $data = $request->validate([

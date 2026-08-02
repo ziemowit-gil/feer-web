@@ -1,0 +1,663 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>weCMS for FEER — Dokumentacja kontrolerów</title>
+<style>
+/* ── Tokens ──────────────────────────────────────────────────────── */
+:root {
+  --brand:       #1e3a8a;
+  --accent:      #2563eb;
+  --accent-soft: #dbeafe;
+  --tech:        #6d28d9;
+  --tech-soft:   #ede9fe;
+  --green:       #059669;
+  --green-soft:  #d1fae5;
+  --amber:       #b45309;
+  --amber-soft:  #fef3c7;
+  --rose:        #be123c;
+  --rose-soft:   #ffe4e6;
+  --bg:          #f1f5f9;
+  --surface:     #ffffff;
+  --surface2:    #e8eef6;
+  --border:      #cbd5e1;
+  --text:        #0f172a;
+  --text-muted:  #64748b;
+  --code-bg:     #1e293b;
+  --code-text:   #93c5fd;
+  --mono-inline-bg:  #e8eef6;
+  --mono-inline-col: #1e3a8a;
+  --radius:      6px;
+  --radius-lg:   10px;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --brand:       #3b82f6;
+    --accent:      #60a5fa;
+    --accent-soft: #1e3a5f;
+    --tech:        #a78bfa;
+    --tech-soft:   #2e1065;
+    --green:       #34d399;
+    --green-soft:  #064e3b;
+    --amber:       #fbbf24;
+    --amber-soft:  #451a03;
+    --rose:        #fb7185;
+    --rose-soft:   #4c0519;
+    --bg:          #0d1520;
+    --surface:     #162032;
+    --surface2:    #1e2c3d;
+    --border:      #2d3f55;
+    --text:        #e2e8f0;
+    --text-muted:  #94a3b8;
+    --mono-inline-bg:  #1e2c3d;
+    --mono-inline-col: #93c5fd;
+  }
+}
+:root[data-theme="dark"] {
+  --brand:       #3b82f6;
+  --accent:      #60a5fa;
+  --accent-soft: #1e3a5f;
+  --tech:        #a78bfa;
+  --tech-soft:   #2e1065;
+  --green:       #34d399;
+  --green-soft:  #064e3b;
+  --amber:       #fbbf24;
+  --amber-soft:  #451a03;
+  --rose:        #fb7185;
+  --rose-soft:   #4c0519;
+  --bg:          #0d1520;
+  --surface:     #162032;
+  --surface2:    #1e2c3d;
+  --border:      #2d3f55;
+  --text:        #e2e8f0;
+  --text-muted:  #94a3b8;
+  --mono-inline-bg:  #1e2c3d;
+  --mono-inline-col: #93c5fd;
+}
+:root[data-theme="light"] {
+  --brand:       #1e3a8a;
+  --accent:      #2563eb;
+  --accent-soft: #dbeafe;
+  --tech:        #6d28d9;
+  --tech-soft:   #ede9fe;
+  --green:       #059669;
+  --green-soft:  #d1fae5;
+  --amber:       #b45309;
+  --amber-soft:  #fef3c7;
+  --rose:        #be123c;
+  --rose-soft:   #ffe4e6;
+  --bg:          #f1f5f9;
+  --surface:     #ffffff;
+  --surface2:    #e8eef6;
+  --border:      #cbd5e1;
+  --text:        #0f172a;
+  --text-muted:  #64748b;
+  --mono-inline-bg:  #e8eef6;
+  --mono-inline-col: #1e3a8a;
+}
+
+/* ── Reset ───────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 16px; scroll-behavior: smooth; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 2px; }
+
+/* ── Topbar ──────────────────────────────────────────────────────── */
+.topbar {
+  position: sticky; top: 0; z-index: 50;
+  background: var(--brand);
+  display: flex; align-items: center; gap: 0;
+  padding: 0 24px; height: 50px;
+}
+.topbar-logo {
+  font-size: 14px; font-weight: 900; letter-spacing: -.01em;
+  color: #fff; white-space: nowrap;
+  display: flex; align-items: baseline; gap: 6px;
+}
+.topbar-logo .we   { opacity: .7; }
+.topbar-logo .cms  { color: #fff; }
+.topbar-logo .for  { font-size: 11px; font-weight: 500; opacity: .55; letter-spacing: .06em; text-transform: uppercase; margin-left: 2px; }
+.topbar-logo .feer { font-size: 12px; font-weight: 700; color: #93c5fd; letter-spacing: .04em; }
+.topbar-div { width: 1px; height: 20px; background: rgba(255,255,255,.2); margin: 0 16px; }
+.topbar-subtitle { font-size: 13px; color: rgba(255,255,255,.6); font-weight: 400; }
+.topbar-nav {
+  display: flex; gap: 2px; margin-left: auto; align-items: center;
+}
+.topbar-nav a {
+  font-size: 12px; padding: 5px 10px; border-radius: var(--radius);
+  color: rgba(255,255,255,.65); font-weight: 500;
+  transition: background .12s, color .12s;
+}
+.topbar-nav a:hover {
+  background: rgba(255,255,255,.12); color: #fff; text-decoration: none;
+}
+@media (max-width: 640px) {
+  .topbar-subtitle, .topbar-div { display: none; }
+  .topbar-nav a { padding: 5px 7px; }
+}
+
+/* ── Layout ──────────────────────────────────────────────────────── */
+.page { max-width: 1060px; margin: 0 auto; padding: 44px 24px 80px; }
+
+/* ── Hero ────────────────────────────────────────────────────────── */
+.hero {
+  margin-bottom: 44px;
+  padding-bottom: 40px;
+  border-bottom: 1px solid var(--border);
+}
+.hero-kicker {
+  font-size: 11px; font-weight: 700; letter-spacing: .12em;
+  text-transform: uppercase; color: var(--accent);
+  margin-bottom: 14px;
+  display: flex; align-items: center; gap: 8px;
+}
+.hero-kicker::before {
+  content: '';
+  display: inline-block; width: 24px; height: 2px;
+  background: var(--accent); border-radius: 2px;
+}
+.hero-brand {
+  display: flex; align-items: baseline; gap: 0; flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+.hero-brand .we  { font-size: clamp(2rem, 6vw, 3.2rem); font-weight: 200; color: var(--text-muted); letter-spacing: -.02em; }
+.hero-brand .cms { font-size: clamp(2rem, 6vw, 3.2rem); font-weight: 900; color: var(--text); letter-spacing: -.03em; }
+.hero-brand .sep { width: 1px; height: clamp(1.4rem, 4vw, 2.2rem); background: var(--border); margin: 0 16px; align-self: center; }
+.hero-brand .for { font-size: clamp(.8rem, 2vw, 1rem); font-weight: 400; color: var(--text-muted); letter-spacing: .06em; text-transform: uppercase; margin-right: 8px; }
+.hero-brand .feer { font-size: clamp(1.6rem, 5vw, 2.6rem); font-weight: 800; color: var(--accent); letter-spacing: -.01em; }
+.hero-sub {
+  font-size: 1.05rem; color: var(--text-muted); margin-bottom: 20px;
+  font-weight: 400;
+}
+.hero-authors {
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+  margin-bottom: 24px;
+}
+.author-chip {
+  display: inline-flex; align-items: center; gap: 7px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 100px; padding: 4px 12px 4px 6px;
+  font-size: 12.5px; color: var(--text);
+}
+.author-avatar {
+  width: 22px; height: 22px; border-radius: 50%;
+  background: var(--accent); color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px; font-weight: 700; letter-spacing: -.01em;
+  flex-shrink: 0;
+}
+.author-avatar.jp { background: var(--tech); }
+.hero-stats {
+  display: flex; gap: 12px; flex-wrap: wrap;
+}
+.stat {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); padding: 14px 20px;
+  min-width: 88px; text-align: center;
+}
+.stat-n {
+  font-size: 1.7rem; font-weight: 900; color: var(--accent);
+  line-height: 1; font-variant-numeric: tabular-nums;
+  letter-spacing: -.02em;
+}
+.stat-l { font-size: 11px; color: var(--text-muted); margin-top: 3px; font-weight: 500; }
+
+/* ── Tech stack ──────────────────────────────────────────────────── */
+.tech-section {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 24px 24px 20px;
+  margin-bottom: 48px;
+}
+.tech-section-title {
+  font-size: 11px; font-weight: 700; letter-spacing: .1em;
+  text-transform: uppercase; color: var(--text-muted);
+  margin-bottom: 16px; display: flex; align-items: center; gap: 8px;
+}
+.tech-section-title::after {
+  content: ''; flex: 1; height: 1px; background: var(--border);
+}
+.tech-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 12px;
+}
+.tech-group { display: flex; flex-direction: column; gap: 6px; }
+.tech-group-label {
+  font-size: 10px; font-weight: 700; letter-spacing: .1em;
+  text-transform: uppercase; color: var(--text-muted);
+  padding-bottom: 4px; border-bottom: 1px solid var(--border);
+  margin-bottom: 2px;
+}
+.tech-chips { display: flex; flex-wrap: wrap; gap: 5px; }
+.chip {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 12px; font-weight: 500; border-radius: 100px;
+  padding: 3px 10px; white-space: nowrap;
+}
+.chip-blue   { background: var(--accent-soft); color: var(--accent); }
+.chip-violet { background: var(--tech-soft);   color: var(--tech); }
+.chip-green  { background: var(--green-soft);  color: var(--green); }
+.chip-amber  { background: var(--amber-soft);  color: var(--amber); }
+.chip-rose   { background: var(--rose-soft);   color: var(--rose); }
+.chip-gray   { background: var(--surface2);    color: var(--text-muted); }
+@media (prefers-color-scheme: dark) {
+  .chip-blue   { color: #93c5fd; }
+  .chip-violet { color: #c4b5fd; }
+  .chip-green  { color: #6ee7b7; }
+  .chip-amber  { color: #fde68a; }
+  .chip-rose   { color: #fda4af; }
+}
+:root[data-theme="dark"] .chip-blue   { color: #93c5fd; }
+:root[data-theme="dark"] .chip-violet { color: #c4b5fd; }
+:root[data-theme="dark"] .chip-green  { color: #6ee7b7; }
+:root[data-theme="dark"] .chip-amber  { color: #fde68a; }
+:root[data-theme="dark"] .chip-rose   { color: #fda4af; }
+:root[data-theme="light"] .chip-blue   { color: var(--accent); }
+:root[data-theme="light"] .chip-violet { color: var(--tech); }
+:root[data-theme="light"] .chip-green  { color: var(--green); }
+:root[data-theme="light"] .chip-amber  { color: var(--amber); }
+:root[data-theme="light"] .chip-rose   { color: var(--rose); }
+
+/* ── Controller sections ─────────────────────────────────────────── */
+.section { margin-bottom: 52px; }
+.section-header {
+  display: flex; align-items: center; gap: 12px;
+  margin-bottom: 14px; padding-bottom: 10px;
+  border-bottom: 2px solid var(--border);
+}
+.section-header h2 {
+  font-size: 1.05rem; font-weight: 700; color: var(--text);
+}
+.ns-badge {
+  font-size: 11px; font-weight: 600; padding: 3px 9px;
+  border-radius: 100px; white-space: nowrap;
+  font-family: ui-monospace, 'Cascadia Code', 'SF Mono', Menlo, monospace;
+  letter-spacing: .01em;
+}
+.ns-pub   { background: var(--green-soft);  color: var(--green); }
+.ns-admin { background: var(--tech-soft);   color: var(--tech); }
+.ns-auth  { background: var(--amber-soft);  color: var(--amber); }
+.ns-trait { background: var(--accent-soft); color: var(--accent); }
+@media (prefers-color-scheme: dark) {
+  .ns-pub   { color: #6ee7b7; }
+  .ns-admin { color: #c4b5fd; }
+  .ns-auth  { color: #fde68a; }
+}
+:root[data-theme="dark"] .ns-pub   { color: #6ee7b7; }
+:root[data-theme="dark"] .ns-admin { color: #c4b5fd; }
+:root[data-theme="dark"] .ns-auth  { color: #fde68a; }
+:root[data-theme="light"] .ns-pub   { color: var(--green); }
+:root[data-theme="light"] .ns-admin { color: var(--tech); }
+:root[data-theme="light"] .ns-auth  { color: var(--amber); }
+
+/* ── Table ───────────────────────────────────────────────────────── */
+.table-wrap { overflow-x: auto; border-radius: var(--radius-lg); border: 1px solid var(--border); }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+thead tr { background: var(--surface2); }
+th {
+  text-align: left; padding: 9px 14px;
+  font-size: 10.5px; font-weight: 700; letter-spacing: .07em;
+  text-transform: uppercase; color: var(--text-muted);
+  border-bottom: 1px solid var(--border); white-space: nowrap;
+}
+td { padding: 9px 14px; border-bottom: 1px solid var(--border); vertical-align: top; }
+tr:last-child td { border-bottom: none; }
+tbody tr:hover { background: var(--surface2); }
+.ctrl-name {
+  font-family: ui-monospace, 'Cascadia Code', 'SF Mono', Menlo, monospace;
+  font-size: 12px; color: var(--mono-inline-col);
+  background: var(--mono-inline-bg);
+  padding: 2px 6px; border-radius: 4px;
+  white-space: nowrap; display: inline-block;
+}
+.methods {
+  font-family: ui-monospace, 'Cascadia Code', 'SF Mono', Menlo, monospace;
+  font-size: 11.5px; color: var(--text-muted);
+  line-height: 1.9;
+}
+.methods span {
+  display: inline-block; background: var(--mono-inline-bg);
+  border-radius: 3px; padding: 1px 5px; margin: 1px 2px 1px 0;
+  color: var(--mono-inline-col); font-size: 11px;
+}
+.desc { color: var(--text); font-size: 13px; line-height: 1.5; }
+
+/* ── Footer ──────────────────────────────────────────────────────── */
+footer {
+  margin-top: 60px; padding: 20px 0;
+  border-top: 1px solid var(--border);
+  display: flex; justify-content: space-between; align-items: center;
+  flex-wrap: wrap; gap: 8px;
+}
+.footer-brand { font-size: 13px; font-weight: 700; color: var(--text-muted); }
+.footer-brand strong { color: var(--accent); }
+.footer-authors { font-size: 12px; color: var(--text-muted); }
+</style>
+</head>
+<body>
+
+<header class="topbar" role="banner">
+  <div class="topbar-logo" aria-label="weCMS for FEER">
+    <span class="we">we</span><span class="cms">CMS</span>
+    <span class="for">for</span><span class="feer">FEER</span>
+  </div>
+  <div class="topbar-div" aria-hidden="true"></div>
+  <span class="topbar-subtitle">Dokumentacja kontrolerów</span>
+  <nav class="topbar-nav" aria-label="Sekcje dokumentacji">
+    <a href="#tech">Stack</a>
+    <a href="#publiczne">Publiczne</a>
+    <a href="#admin">Admin</a>
+    <a href="#auth">Auth</a>
+    <a href="deployment.html">Wdrożenie</a>
+  </nav>
+</header>
+
+<main class="page" id="main">
+
+  <!-- HERO -->
+  <section class="hero" aria-labelledby="hero-title">
+    <p class="hero-kicker" aria-hidden="true">Dokumentacja techniczna · 2026</p>
+    <div class="hero-brand" aria-hidden="true">
+      <span class="we">we</span><span class="cms">CMS</span>
+      <span class="sep"></span>
+      <span class="for">for</span>
+      <span class="feer">FEER</span>
+    </div>
+    <h1 id="hero-title" class="sr-only">weCMS for FEER — Dokumentacja kontrolerów</h1>
+    <p class="hero-sub">System zarządzania treścią polskiej organizacji pozarządowej.<br>Pełna dokumentacja kontrolerów Laravel wraz z opisami metod.</p>
+
+    <div class="hero-authors" aria-label="Autorzy">
+      <div class="author-chip">
+        <div class="author-avatar" aria-hidden="true">ZG</div>
+        <span>Ziemowit Gil</span>
+        <span style="color:var(--text-muted);font-size:11px">·</span>
+        <a href="mailto:ziemowit.gil@feer.org.pl" style="font-size:11px;color:var(--text-muted)">ziemowit.gil@feer.org.pl</a>
+      </div>
+      <div class="author-chip">
+        <div class="author-avatar jp" aria-hidden="true">JP</div>
+        <span>Jarek P.</span>
+      </div>
+    </div>
+
+    <div class="hero-stats" role="list" aria-label="Statystyki kontrolerów">
+      <div class="stat" role="listitem">
+        <div class="stat-n">28</div>
+        <div class="stat-l">Publiczne</div>
+      </div>
+      <div class="stat" role="listitem">
+        <div class="stat-n">1</div>
+        <div class="stat-l">Trait</div>
+      </div>
+      <div class="stat" role="listitem">
+        <div class="stat-n">46</div>
+        <div class="stat-l">Admin</div>
+      </div>
+      <div class="stat" role="listitem">
+        <div class="stat-n">12</div>
+        <div class="stat-l">Auth</div>
+      </div>
+      <div class="stat" role="listitem">
+        <div class="stat-n">87</div>
+        <div class="stat-l">Łącznie</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TECH STACK -->
+  <section class="tech-section" id="tech" aria-labelledby="tech-title">
+    <h2 class="tech-section-title" id="tech-title">Stack technologiczny</h2>
+    <div class="tech-grid">
+
+      <div class="tech-group">
+        <div class="tech-group-label">Backend</div>
+        <div class="tech-chips">
+          <span class="chip chip-blue">PHP 8.3+</span>
+          <span class="chip chip-blue">Laravel 13</span>
+          <span class="chip chip-blue">Eloquent ORM</span>
+          <span class="chip chip-blue">Artisan CLI</span>
+          <span class="chip chip-gray">SQLite (×2 bazy)</span>
+        </div>
+      </div>
+
+      <div class="tech-group">
+        <div class="tech-group-label">Autentykacja</div>
+        <div class="tech-chips">
+          <span class="chip chip-amber">Microsoft 365 SSO</span>
+          <span class="chip chip-amber">Azure AD / Socialite</span>
+          <span class="chip chip-amber">TOTP (2FA)</span>
+          <span class="chip chip-amber">YubiKey (2FA)</span>
+          <span class="chip chip-amber">Laravel Guards</span>
+        </div>
+      </div>
+
+      <div class="tech-group">
+        <div class="tech-group-label">Media &amp; treść</div>
+        <div class="tech-chips">
+          <span class="chip chip-violet">Spatie MediaLibrary</span>
+          <span class="chip chip-violet">Spatie ActivityLog</span>
+          <span class="chip chip-violet">Unsplash API</span>
+          <span class="chip chip-violet">OneDrive / MS Graph</span>
+          <span class="chip chip-violet">TinyMCE / CKEditor</span>
+        </div>
+      </div>
+
+      <div class="tech-group">
+        <div class="tech-group-label">Frontend</div>
+        <div class="tech-chips">
+          <span class="chip chip-green">Vite</span>
+          <span class="chip chip-green">Blade Templates</span>
+          <span class="chip chip-green">Alpine.js</span>
+          <span class="chip chip-green">CSS Custom Properties</span>
+        </div>
+      </div>
+
+      <div class="tech-group">
+        <div class="tech-group-label">Wdrożenie</div>
+        <div class="tech-chips">
+          <span class="chip chip-rose">PHP 8.5 (prod)</span>
+          <span class="chip chip-rose">deploy.sh</span>
+          <span class="chip chip-rose">Tryb serwisowy</span>
+          <span class="chip chip-rose">Queue / Scheduler</span>
+        </div>
+      </div>
+
+      <div class="tech-group">
+        <div class="tech-group-label">Standardy</div>
+        <div class="tech-chips">
+          <span class="chip chip-gray">WCAG 2.1 AA</span>
+          <span class="chip chip-gray">PHPDoc</span>
+          <span class="chip chip-gray">RESTful routing</span>
+          <span class="chip chip-gray">Soft deletes</span>
+          <span class="chip chip-gray">ETR (Easy-To-Read)</span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- PUBLICZNE -->
+  <section class="section" id="publiczne" aria-labelledby="h2-pub">
+    <div class="section-header">
+      <h2 id="h2-pub">Kontrolery publiczne</h2>
+      <span class="ns-badge ns-pub">App\Http\Controllers</span>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Kontroler</th><th>Opis</th><th>Metody</th></tr></thead>
+        <tbody>
+          <tr><td><code class="ctrl-name">AccessibilityController</code></td><td class="desc">Publiczna strona „Deklaracja dostępności" z formularzem zgłaszania barier.</td><td class="methods"><span>show()</span></td></tr>
+          <tr><td><code class="ctrl-name">AccessibilityReportController</code></td><td class="desc">Przyjmuje zgłoszenia barier; wysyła powiadomienie e-mail.</td><td class="methods"><span>store()</span></td></tr>
+          <tr><td><code class="ctrl-name">BannerTrackingController</code></td><td class="desc">Rejestruje statystyki banerów — wyświetlenia (próbkowanie 1:5) i kliknięcia.</td><td class="methods"><span>impression()</span> <span>click()</span></td></tr>
+          <tr><td><code class="ctrl-name">BlogCommentController</code></td><td class="desc">Przyjmuje komentarze do bloga; trafiają do moderacji (<code class="ctrl-name">is_approved=false</code>).</td><td class="methods"><span>store()</span></td></tr>
+          <tr><td><code class="ctrl-name">BlogController</code></td><td class="desc">Publiczna lista i widok artykułów bloga Wiem FEER.</td><td class="methods"><span>index()</span> <span>show()</span></td></tr>
+          <tr><td><code class="ctrl-name">ContactController</code></td><td class="desc">Strona kontaktowa z listą koordynatorów i formularzem e-mail.</td><td class="methods"><span>index()</span> <span>store()</span></td></tr>
+          <tr><td><code class="ctrl-name">Controller</code> <em style="font-size:11px;color:var(--text-muted)">(bazowy)</em></td><td class="desc">Bazowy kontroler z metodą sprawdzającą podpisany podgląd szkicu.</td><td class="methods"><span>isPreviewRequest()</span></td></tr>
+          <tr><td><code class="ctrl-name">EducationalMaterialController</code></td><td class="desc">Publiczna lista opublikowanych materiałów edukacyjnych.</td><td class="methods"><span>index()</span></td></tr>
+          <tr><td><code class="ctrl-name">EtrController</code></td><td class="desc">Publiczna strona informacyjna o standardzie ETR (Easy-To-Read).</td><td class="methods"><span>about()</span></td></tr>
+          <tr><td><code class="ctrl-name">EventController</code></td><td class="desc">Publiczna lista nadchodzących szkoleń/wydarzeń i widok szczegółów.</td><td class="methods"><span>index()</span> <span>show()</span></td></tr>
+          <tr><td><code class="ctrl-name">FaqController</code></td><td class="desc">Publiczna strona FAQ — pytania pogrupowane wg kategorii.</td><td class="methods"><span>index()</span></td></tr>
+          <tr><td><code class="ctrl-name">HomeController</code></td><td class="desc">Strona główna — agreguje dane ze wszystkich włączonych modułów.</td><td class="methods"><span>index()</span></td></tr>
+          <tr><td><code class="ctrl-name">LandingPageController</code></td><td class="desc">Landing page webinaru/szkolenia: widok, zapis (AJAX) i plik .ics.</td><td class="methods"><span>show()</span> <span>register()</span> <span>calendar()</span></td></tr>
+          <tr><td><code class="ctrl-name">MaterialSubscriberController</code></td><td class="desc">Zapis e-maila na powiadomienia o nowych materiałach edukacyjnych.</td><td class="methods"><span>store()</span></td></tr>
+          <tr><td><code class="ctrl-name">MeetingSignupController</code></td><td class="desc">Formularz „Daj znać, że przyjdziesz" (strona kontaktowa i <code class="ctrl-name">/booking</code>).</td><td class="methods"><span>publicShow()</span> <span>publicStore()</span> <span>store()</span></td></tr>
+          <tr><td><code class="ctrl-name">NewsController</code></td><td class="desc">Publiczna lista i szczegóły aktualności oraz widok do wydruku (PDF).</td><td class="methods"><span>index()</span> <span>show()</span> <span>pdf()</span></td></tr>
+          <tr><td><code class="ctrl-name">NewsletterController</code></td><td class="desc">Publiczna strona newslettera z osadzonym formularzem zapisu.</td><td class="methods"><span>index()</span></td></tr>
+          <tr><td><code class="ctrl-name">PageController</code></td><td class="desc">Podstrony z kontrolą dostępu (hasło/MS365) i obsługą podglądu szkicu.</td><td class="methods"><span>show()</span> <span>unlock()</span></td></tr>
+          <tr><td><code class="ctrl-name">PollVoteController</code></td><td class="desc">Oddawanie głosu w ankiecie z dedupeiem po sesji przeglądarki.</td><td class="methods"><span>store()</span></td></tr>
+          <tr><td><code class="ctrl-name">ProfileController</code></td><td class="desc">Profil zalogowanego użytkownika: dane, powiadomienia, usunięcie konta.</td><td class="methods"><span>edit()</span> <span>update()</span> <span>updateNotifications()</span> <span>destroy()</span></td></tr>
+          <tr><td><code class="ctrl-name">ProjectController</code></td><td class="desc">Publiczne listy projektów (bieżące, archiwalne, wg kategorii) i szczegóły.</td><td class="methods"><span>index()</span> <span>archive()</span> <span>category()</span> <span>show()</span></td></tr>
+          <tr><td><code class="ctrl-name">ReportController</code></td><td class="desc">Publiczna strona sprawozdań rocznych.</td><td class="methods"><span>index()</span></td></tr>
+          <tr><td><code class="ctrl-name">ReserwacjeController</code></td><td class="desc">Panel strefy współpracownika (MS365): terminy spotkań i zgłoszenia.</td><td class="methods"><span>index()</span> <span>storeTermin()</span> <span>destroyTermin()</span> <span>notify()</span> <span>confirmSignup()</span> <span>destroySignup()</span> <span>export()</span></td></tr>
+          <tr><td><code class="ctrl-name">SearchController</code></td><td class="desc">Wyszukiwarka serwisu (strony, aktualności, projekty, materiały, blog).</td><td class="methods"><span>index()</span></td></tr>
+          <tr><td><code class="ctrl-name">ShortcutController</code></td><td class="desc">Przekierowania skrótowe: <code class="ctrl-name">/bip</code>, <code class="ctrl-name">/instagram</code>, <code class="ctrl-name">/facebook</code>.</td><td class="methods"><span>bip()</span> <span>instagram()</span> <span>facebook()</span></td></tr>
+          <tr><td><code class="ctrl-name">SitemapController</code></td><td class="desc">Plik XML sitemap (dla robotów) i strona HTML „Mapa strony".</td><td class="methods"><span>index()</span> <span>page()</span></td></tr>
+          <tr><td><code class="ctrl-name">SupportController</code></td><td class="desc">Publiczna strona „Wesprzyj nas".</td><td class="methods"><span>index()</span></td></tr>
+          <tr><td><code class="ctrl-name">VolunteerController</code></td><td class="desc">Publiczna lista i szczegóły aktywnych ogłoszeń wolontariackich.</td><td class="methods"><span>index()</span> <span>show()</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- TRAIT -->
+  <section class="section" id="trait" aria-labelledby="h2-trait">
+    <div class="section-header">
+      <h2 id="h2-trait">Trait</h2>
+      <span class="ns-badge ns-trait">App\Http\Controllers\Concerns</span>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Trait</th><th>Opis</th><th>Metody</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><code class="ctrl-name">HandlesContentApproval</code></td>
+            <td class="desc">Obieg akceptacji treści: bez uprawnienia <code class="ctrl-name">canApproveContent()</code> żądanie publikacji trafia do kolejki.</td>
+            <td class="methods"><span>applyApprovalWorkflow()</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ADMIN -->
+  <section class="section" id="admin" aria-labelledby="h2-admin">
+    <div class="section-header">
+      <h2 id="h2-admin">Panel administracyjny</h2>
+      <span class="ns-badge ns-admin">App\Http\Controllers\Admin</span>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Kontroler</th><th>Opis</th><th>Metody</th></tr></thead>
+        <tbody>
+          <tr><td><code class="ctrl-name">AccessibilityReportController</code></td><td class="desc">Lista zgłoszeń barier dostępności — usuwanie i eksport CSV.</td><td class="methods"><span>index()</span> <span>destroy()</span> <span>export()</span></td></tr>
+          <tr><td><code class="ctrl-name">ActivityController</code></td><td class="desc">Przeglądarka dziennika zdarzeń (ActivityLog) z filtrami.</td><td class="methods"><span>index()</span></td></tr>
+          <tr><td><code class="ctrl-name">AnnualReportController</code></td><td class="desc">CRUD sprawozdań rocznych (merytorycznych i finansowych) z plikami PDF.</td><td class="methods"><span>index()</span> <span>create()</span> <span>store()</span> <span>edit()</span> <span>update()</span> <span>destroy()</span></td></tr>
+          <tr><td><code class="ctrl-name">ApprovalController</code></td><td class="desc">Kolejka treści oczekujących na zatwierdzenie z akcjami i licznikiem badge'a.</td><td class="methods"><span>index()</span> <span>approve()</span> <span>reject()</span> <span>pendingCount()</span></td></tr>
+          <tr><td><code class="ctrl-name">AttachmentController</code></td><td class="desc">Zarządzanie załącznikami przypiętymi do podstron i aktualności.</td><td class="methods"><span>storeForPage()</span> <span>storeForNews()</span> <span>lista()</span> <span>destroy()</span></td></tr>
+          <tr><td><code class="ctrl-name">BannerController</code></td><td class="desc">CRUD banerów graficznych/HTML z przypisywaniem do stref i toggle aktywności.</td><td class="methods"><span>index()</span> <span>create()</span> <span>store()</span> <span>edit()</span> <span>update()</span> <span>destroy()</span> <span>toggle()</span></td></tr>
+          <tr><td><code class="ctrl-name">BannerZoneController</code></td><td class="desc">Zarządzanie strefami banerów (miejscami wyświetlania).</td><td class="methods"><span>index()</span> <span>create()</span> <span>store()</span> <span>edit()</span> <span>update()</span> <span>destroy()</span></td></tr>
+          <tr><td><code class="ctrl-name">BlogArticleController</code></td><td class="desc">CRUD artykułów bloga Wiem FEER z klonowaniem i togglem dostępności.</td><td class="methods"><span>index()</span> <span>create()</span> <span>store()</span> <span>edit()</span> <span>update()</span> <span>destroy()</span> <span>clone()</span> <span>toggleDisabled()</span></td></tr>
+          <tr><td><code class="ctrl-name">BlogCommentController</code></td><td class="desc">Moderacja komentarzy bloga — zatwierdzanie i usuwanie.</td><td class="methods"><span>index()</span> <span>approve()</span> <span>destroy()</span></td></tr>
+          <tr><td><code class="ctrl-name">CalendarController</code></td><td class="desc">Kalendarz redakcyjny — aktualności i wydarzenia w układzie miesięcznym.</td><td class="methods"><span>index()</span></td></tr>
+          <tr><td><code class="ctrl-name">CategoryController</code></td><td class="desc">CRUD kategorii projektów.</td><td class="methods"><span>index()</span> <span>create()</span> <span>store()</span> <span>edit()</span> <span>update()</span> <span>destroy()</span></td></tr>
+          <tr><td><code class="ctrl-name">ContentPortabilityController</code></td><td class="desc">Eksport całego serwisu do ZIP i import z ZIP.</td><td class="methods"><span>index()</span> <span>export()</span> <span>import()</span></td></tr>
+          <tr><td><code class="ctrl-name">ContentTemplateController</code></td><td class="desc">Szablony treści wielokrotnego użycia (JSON API dla edytora).</td><td class="methods"><span>index()</span> <span>manage()</span> <span>load()</span> <span>store()</span> <span>destroy()</span></td></tr>
+          <tr><td><code class="ctrl-name">DashboardController</code></td><td class="desc">Główny pulpit z licznikami treści i ostatnimi wpisami.</td><td class="methods"><span>index()</span></td></tr>
+          <tr><td><code class="ctrl-name">DocxImportController</code></td><td class="desc">Konwersja pliku .docx na HTML do wklejenia w edytor treści.</td><td class="methods"><span>import()</span></td></tr>
+          <tr><td><code class="ctrl-name">EditLockController</code></td><td class="desc">Heartbeat blokady jednoczesnej edycji (cache-based, odświeżany co 30 s).</td><td class="methods"><span>__invoke()</span></td></tr>
+          <tr><td><code class="ctrl-name">EducationalMaterialController</code></td><td class="desc">CRUD materiałów edukacyjnych z obsługą MediaLibrary.</td><td class="methods"><span>index()</span> <span>create()</span> <span>store()</span> <span>edit()</span> <span>update()</span> <span>destroy()</span></td></tr>
+          <tr><td><code class="ctrl-name">EtrController</code></td><td class="desc">Zapis i usuwanie wersji ETR aktualności i podstron.</td><td class="methods"><span>update()</span> <span>destroy()</span></td></tr>
+          <tr><td><code class="ctrl-name">EventController</code></td><td class="desc">CRUD szkoleń/wydarzeń z archiwizacją, klonowaniem i konwersją na aktualność/LP.</td><td class="methods"><span>index()</span> <span>archive()</span> <span>restore()</span> <span>create()</span> <span>store()</span> <span>edit()</span> <span>update()</span> <span>destroy()</span> <span>clone()</span> <span>bulk()</span> <span>toNews()</span> <span>toLanding()</span></td></tr>
+          <tr><td><code class="ctrl-name">FaqController</code></td><td class="desc">CRUD pytań i odpowiedzi (FAQ).</td><td class="methods"><span>index()</span> <span>create()</span> <span>store()</span> <span>edit()</span> <span>update()</span> <span>destroy()</span></td></tr>
+          <tr><td><code class="ctrl-name">GalleryImageController</code></td><td class="desc">CRUD zdjęć w galerii publicznej.</td><td class="methods"><span>index()</span> <span>create()</span> <span>store()</span> <span>edit()</span> <span>update()</span> <span>destroy()</span></td></tr>
+          <tr><td><code class="ctrl-name">HeroSlideController</code></td><td class="desc">Zarządzanie slajdami sekcji hero i edytor slajdu z misją organizacji.</td><td class="methods"><span>index()</span> <span>create()</span> <span>store()</span> <span>edit()</span> <span>update()</span> <span>destroy()</span> <span>updateMissionSlide()</span></td></tr>
+          <tr><td><code class="ctrl-name">HomepageLayoutController</code></td><td class="desc">Zapis kolejności sekcji strony głównej (drag &amp; drop, JSON API).</td><td class="methods"><span>updateSectionOrder()</span></td></tr>
+          <tr><td><code class="ctrl-name">LandingPageController</code></td><td class="desc">CRUD landing page'ów webinarów z listą uczestników i eksportem CSV.</td><td class="methods"><span>index()</span> <span>create()</span> <span>store()</span> <span>edit()</span> <span>update()</span> <span>destroy()</span> <span>registrations()</span> <span>exportRegistrations()</span></td></tr>
+          <tr><td><code class="ctrl-name">LinkCheckController</code></td><td class="desc">Skaner martwych linków w treści aktualności, podstron i projektów.</td><td class="methods"><span>index()</span> <span>scan()</span></td></tr>
+          <tr><td><code class="ctrl-name">MaterialSubscriberController</code></td><td class="desc">Lista subskrybentów powiadomień o materiałach z eksportem CSV.</td><td class="methods"><span>index()</span> <span>destroy()</span> <span>export()</span></td></tr>
+          <tr><td><code class="ctrl-name">MediaLibraryController</code></td><td class="desc">Biblioteka multimediów: upload, foldery, tagi, alt-tekst, Unsplash, OneDrive, ZIP.</td><td class="methods"><span>index()</span> <span>store()</span> <span>uploadAjax()</span> <span>bulk()</span> <span>rename()</span> <span>updateTags()</span> <span>updateAuthor()</span> <span>updateAlt()</span> <span>altAudit()</span> <span>imagesJson()</span> <span>unsplashSearch()</span> <span>unsplashImport()</span> <span>oneDriveImport()</span> <span>move()</span> <span>archive()</span> <span>restore()</span> <span>destroy()</span> <span>export()</span> <span>exportSelected()</span> <span>import()</span> <span>emptyArchive()</span> <span>storeFolder()</span> <span>updateFolder()</span> <span>destroyFolder()</span></td></tr>
+          <tr><td><code class="ctrl-name">MeetingSignupController</code></td><td class="desc">Lista zgłoszeń spotkań z usuwaniem i eksportem CSV.</td><td class="methods"><span>index()</span> <span>destroy()</span> <span>export()</span></td></tr>
+          <tr><td><code class="ctrl-name">NavItemController</code></td><td class="desc">Zarządzanie pozycjami menu z reorderingiem drag &amp; drop.</td><td class="methods"><span>index()</span> <span>create()</span> <span>store()</span> <span>edit()</span> <span>update()</span> <span>destroy()</span> <span>move()</span> <span>reorder()</span></td></tr>
+          <tr><td><code class="ctrl-name">NewsCategoryController</code></td><td class="desc">CRUD kategorii aktualności.</td><td class="methods"><span>index()</span> <span>create()</span> <span>store()</span> <span>edit()</span> <span>update()</span> <span>destroy()</span></td></tr>
+          <tr><td><code class="ctrl-name">NewsController</code></td><td class="desc">Zarządzanie aktualnościami z wyszukiwaniem, klonowaniem i operacjami zbiorczymi.</td><td class="methods"><span>index()</span> <span>create()</span> <span>store()</span> <span>edit()</span> <span>update()</span> <span>destroy()</span> <span>clone()</span> <span>bulk()</span></td></tr>
+          <tr><td><code class="ctrl-name">NewsletterController</code></td><td class="desc">Edycja kodu osadzającego zewnętrzny formularz newslettera.</td><td class="methods"><span>edit()</span> <span>update()</span></td></tr>
+          <tr><td><code class="ctrl-name">NotificationController</code></td><td class="desc">Oznaczanie powiadomień jako przeczytanych (JSON API).</td><td class="methods"><span>seen()</span></td></tr>
+          <tr><td><code class="ctrl-name">PageController</code></td><td class="desc">Zarządzanie podstronami — wiele typów, harmonogram, dostęp, operacje zbiorcze.</td><td class="methods"><span>index()</span> <span>create()</span> <span>store()</span> <span>edit()</span> <span>update()</span> <span>destroy()</span> <span>toggleVisibility()</span> <span>toggleFeatured()</span> <span>toggleDisabled()</span> <span>updateOrder()</span> <span>bulk()</span> <span>clone()</span></td></tr>
+          <tr><td><code class="ctrl-name">PageImageController</code></td><td class="desc">Galeria zdjęć przypiętych do konkretnej podstrony.</td><td class="methods"><span>store()</span> <span>update()</span> <span>destroy()</span></td></tr>
+          <tr><td><code class="ctrl-name">PartnerController</code></td><td class="desc">CRUD partnerów organizacji (logotypy, linki, kolejność).</td><td class="methods"><span>index()</span> <span>create()</span> <span>store()</span> <span>edit()</span> <span>update()</span> <span>destroy()</span></td></tr>
+          <tr><td><code class="ctrl-name">PollController</code></td><td class="desc">CRUD ankiet z zarządzaniem opcjami głosowania.</td><td class="methods"><span>index()</span> <span>create()</span> <span>store()</span> <span>edit()</span> <span>update()</span> <span>destroy()</span></td></tr>
+          <tr><td><code class="ctrl-name">ProjectController</code></td><td class="desc">Zarządzanie projektami z cennikiem i sekcjami własnymi.</td><td class="methods"><span>index()</span> <span>create()</span> <span>store()</span> <span>edit()</span> <span>update()</span> <span>destroy()</span></td></tr>
+          <tr><td><code class="ctrl-name">QuickActionController</code></td><td class="desc">Zarządzanie szybkimi akcjami (kafelki na stronie głównej).</td><td class="methods"><span>index()</span> <span>create()</span> <span>store()</span> <span>edit()</span> <span>update()</span> <span>destroy()</span></td></tr>
+          <tr><td><code class="ctrl-name">RedirectController</code></td><td class="desc">Zarządzanie przekierowaniami HTTP z eksportem/importem CSV.</td><td class="methods"><span>index()</span> <span>store()</span> <span>update()</span> <span>destroy()</span> <span>export()</span> <span>import()</span></td></tr>
+          <tr><td><code class="ctrl-name">RevisionController</code></td><td class="desc">Historia wersji treści z podglądem JSON i przywracaniem.</td><td class="methods"><span>index()</span> <span>json()</span> <span>restore()</span></td></tr>
+          <tr><td><code class="ctrl-name">SearchController</code></td><td class="desc">Wyszukiwarka poleceń (Ctrl+K) filtrowana wg uprawnień.</td><td class="methods"><span>__invoke()</span></td></tr>
+          <tr><td><code class="ctrl-name">SiteSettingController</code></td><td class="desc">Ustawienia serwisu: wygląd, moduły, kontakt, poczta, dostępność, SEO.</td><td class="methods"><span>edit()</span> <span>update()</span> <span>dev()</span> <span>overwriteStrefa()</span> <span>updateAdminPrefix()</span> <span>mailTest()</span> <span>regenerateEmergencyToken()</span></td></tr>
+          <tr><td><code class="ctrl-name">TaskController</code></td><td class="desc">Zarządzanie zadaniami wewnętrznymi (kanban) z powiadomieniami.</td><td class="methods"><span>index()</span> <span>create()</span> <span>store()</span> <span>edit()</span> <span>update()</span> <span>destroy()</span> <span>done()</span> <span>myPendingCount()</span></td></tr>
+          <tr><td><code class="ctrl-name">TimelineController</code></td><td class="desc">Dedykowany edytor osi czasu (historii) strony „O organizacji".</td><td class="methods"><span>edit()</span> <span>update()</span></td></tr>
+          <tr><td><code class="ctrl-name">TrashController</code></td><td class="desc">Kosz usuniętych treści — przywracanie i trwałe kasowanie.</td><td class="methods"><span>index()</span> <span>restore()</span> <span>forceDelete()</span> <span>count()</span></td></tr>
+          <tr><td><code class="ctrl-name">UserController</code></td><td class="desc">CRUD użytkowników panelu z rolami, grupami i odłączaniem MS365.</td><td class="methods"><span>index()</span> <span>create()</span> <span>store()</span> <span>edit()</span> <span>update()</span> <span>destroy()</span> <span>unlinkMicrosoft()</span></td></tr>
+          <tr><td><code class="ctrl-name">UserGroupController</code></td><td class="desc">Zarządzanie grupami użytkowników i ich uprawnieniami do modułów.</td><td class="methods"><span>index()</span> <span>create()</span> <span>store()</span> <span>edit()</span> <span>update()</span> <span>destroy()</span></td></tr>
+          <tr><td><code class="ctrl-name">VolunteerAdController</code></td><td class="desc">Ogłoszenia wolontariackie z archiwizacją, klonowaniem i operacjami zbiorczymi.</td><td class="methods"><span>index()</span> <span>create()</span> <span>store()</span> <span>edit()</span> <span>update()</span> <span>destroy()</span> <span>clone()</span> <span>bulk()</span> <span>archive()</span> <span>restore()</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- AUTH -->
+  <section class="section" id="auth" aria-labelledby="h2-auth">
+    <div class="section-header">
+      <h2 id="h2-auth">Autentykacja</h2>
+      <span class="ns-badge ns-auth">App\Http\Controllers\Auth</span>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Kontroler</th><th>Opis</th><th>Metody</th></tr></thead>
+        <tbody>
+          <tr><td><code class="ctrl-name">AuthenticatedSessionController</code></td><td class="desc">Logowanie hasłem (e-mail + hasło) z obsługą 2FA i dostępu awaryjnego.</td><td class="methods"><span>create()</span> <span>createEmergency()</span> <span>store()</span> <span>destroy()</span></td></tr>
+          <tr><td><code class="ctrl-name">ConfirmablePasswordController</code></td><td class="desc">Ponowne potwierdzenie hasła przed wrażliwymi operacjami.</td><td class="methods"><span>show()</span> <span>store()</span></td></tr>
+          <tr><td><code class="ctrl-name">EmailVerificationNotificationController</code></td><td class="desc">Ponowne wysłanie e-maila weryfikacyjnego (throttle 60 s).</td><td class="methods"><span>store()</span></td></tr>
+          <tr><td><code class="ctrl-name">EmailVerificationPromptController</code></td><td class="desc">Ekran z prośbą o weryfikację adresu e-mail.</td><td class="methods"><span>__invoke()</span></td></tr>
+          <tr><td><code class="ctrl-name">MemberMicrosoftAuthController</code></td><td class="desc">Logowanie współpracowników do strefy wewnętrznej przez Microsoft 365.</td><td class="methods"><span>create()</span> <span>redirect()</span> <span>callback()</span> <span>destroy()</span></td></tr>
+          <tr><td><code class="ctrl-name">MicrosoftAuthController</code></td><td class="desc">Logowanie administratorów/redaktorów do panelu przez Microsoft 365 (SSO).</td><td class="methods"><span>redirect()</span> <span>callback()</span></td></tr>
+          <tr><td><code class="ctrl-name">NewPasswordController</code></td><td class="desc">Ustawienie nowego hasła po kliknięciu linku resetującego.</td><td class="methods"><span>create()</span> <span>store()</span></td></tr>
+          <tr><td><code class="ctrl-name">PasswordController</code></td><td class="desc">Zmiana hasła przez zalogowanego użytkownika z profilu.</td><td class="methods"><span>update()</span></td></tr>
+          <tr><td><code class="ctrl-name">PasswordResetLinkController</code></td><td class="desc">Wysyłka linku resetującego hasło na adres e-mail.</td><td class="methods"><span>create()</span> <span>store()</span></td></tr>
+          <tr><td><code class="ctrl-name">TwoFactorChallengeController</code></td><td class="desc">Drugi składnik logowania: TOTP, kody zapasowe lub YubiKey.</td><td class="methods"><span>create()</span> <span>store()</span></td></tr>
+          <tr><td><code class="ctrl-name">TwoFactorSettingController</code></td><td class="desc">Zarządzanie 2FA z profilu: TOTP, kody zapasowe, YubiKey.</td><td class="methods"><span>enable()</span> <span>confirm()</span> <span>disable()</span> <span>regenerateRecovery()</span> <span>addYubikey()</span> <span>removeYubikey()</span></td></tr>
+          <tr><td><code class="ctrl-name">VerifyEmailController</code></td><td class="desc">Potwierdzenie adresu e-mail przez link weryfikacyjny.</td><td class="methods"><span>__invoke()</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+</main>
+
+<footer role="contentinfo">
+  <div class="footer-brand">
+    <strong>weCMS</strong> for FEER &mdash; Dokumentacja techniczna
+  </div>
+  <div class="footer-authors">
+    Autorzy: Ziemowit Gil &lt;ziemowit.gil@feer.org.pl&gt; &middot; Jarek P.
+  </div>
+</footer>
+
+<style>
+.sr-only {
+  position: absolute; width: 1px; height: 1px;
+  padding: 0; margin: -1px; overflow: hidden;
+  clip: rect(0,0,0,0); white-space: nowrap; border: 0;
+}
+</style>
+
+</body>
+</html>

@@ -8,8 +8,16 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
+/**
+ * Panel admin: CRUD artykułów bloga Wiem FEER z klonowaniem i przełącznikiem „wyłącz artykuł".
+ *
+ * Metody: index(), create(), store(), edit(), update(), destroy(), clone(), toggleDisabled().
+ *
+ * @author Ziemowit Gil <ziemowit.gil@feer.org.pl>
+ */
 class BlogArticleController extends Controller
 {
+    /** Wyświetla listę artykułów bloga Wiem FEER z licznikami komentarzy. */
     public function index()
     {
         $articles = BlogArticle::withCount([
@@ -20,11 +28,13 @@ class BlogArticleController extends Controller
         return view('admin.blog.index', compact('articles'));
     }
 
+    /** Wyświetla formularz tworzenia nowego artykułu. */
     public function create()
     {
         return view('admin.blog.form', ['article' => new BlogArticle]);
     }
 
+    /** Zapisuje nowy artykuł bloga z wygenerowanym unikalnym slugiem. */
     public function store(Request $request)
     {
         $data = $this->validated($request);
@@ -35,11 +45,13 @@ class BlogArticleController extends Controller
         return redirect()->route('admin.wiem-feer.index')->with('status', 'Artykuł został utworzony.');
     }
 
+    /** Wyświetla formularz edycji artykułu. */
     public function edit(BlogArticle $article)
     {
         return view('admin.blog.form', compact('article'));
     }
 
+    /** Aktualizuje artykuł bloga. */
     public function update(Request $request, BlogArticle $article)
     {
         $data = $this->validated($request);
@@ -50,6 +62,7 @@ class BlogArticleController extends Controller
         return redirect()->route('admin.wiem-feer.index')->with('status', 'Artykuł został zaktualizowany.');
     }
 
+    /** Usuwa artykuł bloga. */
     public function destroy(BlogArticle $article)
     {
         $article->delete();
@@ -57,6 +70,7 @@ class BlogArticleController extends Controller
         return redirect()->route('admin.wiem-feer.index')->with('status', 'Artykuł został usunięty.');
     }
 
+    /** Klonuje artykuł jako nowy szkic z unikalnym tytułem i slugiem. */
     public function clone(BlogArticle $article)
     {
         $clone = $article->replicate();
@@ -71,6 +85,7 @@ class BlogArticleController extends Controller
             ->with('status', 'Artykuł został sklonowany jako "' . $clone->title . '". Jest zapisany jako wyłączony.');
     }
 
+    /** Przełącza flagę wyłączenia artykułu (ukrywa lub przywraca go na froncie). */
     public function toggleDisabled(BlogArticle $article)
     {
         $article->update(['is_disabled' => ! $article->is_disabled]);

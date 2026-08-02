@@ -8,6 +8,14 @@ use App\Models\Page;
 use App\Models\Project;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * Panel admin: kosz usuniętych treści — przywracanie soft-deleted rekordów
+ * i trwałe kasowanie wraz z plikami mediów.
+ *
+ * Metody: index(), restore(), forceDelete(), count().
+ *
+ * @author Ziemowit Gil <ziemowit.gil@feer.org.pl>
+ */
 class TrashController extends Controller
 {
     /** typ => [klasa modelu, moduł, etykieta]. */
@@ -42,6 +50,7 @@ class TrashController extends Controller
         return view('admin.trash.index', ['items' => $items->sortByDesc('deleted_at')->values()]);
     }
 
+    /** Przywraca soft-deleted rekord z kosza. */
     public function restore(string $type, int $id)
     {
         $this->resolve($type, $id)->restore();
@@ -49,6 +58,7 @@ class TrashController extends Controller
         return back()->with('status', 'Treść została przywrócona.');
     }
 
+    /** Trwale usuwa rekord z kosza wraz z plikami mediów. */
     public function forceDelete(string $type, int $id)
     {
         $this->resolve($type, $id)->forceDelete();

@@ -6,8 +6,16 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\AnnualReportRequest;
 use App\Models\AnnualReport;
 
+/**
+ * Panel admin: CRUD sprawozdań rocznych (merytorycznych i finansowych) z plikami PDF.
+ *
+ * Metody: index(), create(), store(), edit(), update(), destroy().
+ *
+ * @author Ziemowit Gil <ziemowit.gil@feer.org.pl>
+ */
 class AnnualReportController extends Controller
 {
+    /** Wyświetla listę sprawozdań rocznych. */
     public function index()
     {
         $reports = AnnualReport::orderByDesc('year')->with('media')->get();
@@ -15,6 +23,7 @@ class AnnualReportController extends Controller
         return view('admin.reports.index', compact('reports'));
     }
 
+    /** Wyświetla formularz dodawania nowego sprawozdania. */
     public function create()
     {
         return view('admin.reports.form', [
@@ -22,6 +31,7 @@ class AnnualReportController extends Controller
         ]);
     }
 
+    /** Zapisuje nowe sprawozdanie wraz z plikami PDF. */
     public function store(AnnualReportRequest $request)
     {
         $report = AnnualReport::create($this->prepared($request));
@@ -30,11 +40,13 @@ class AnnualReportController extends Controller
         return redirect()->route('admin.sprawozdania.index')->with('status', "Sprawozdania za {$report->year} rok zostały dodane.");
     }
 
+    /** Wyświetla formularz edycji sprawozdania. */
     public function edit(AnnualReport $annualReport)
     {
         return view('admin.reports.form', ['report' => $annualReport]);
     }
 
+    /** Aktualizuje sprawozdanie wraz z plikami PDF. */
     public function update(AnnualReportRequest $request, AnnualReport $annualReport)
     {
         $annualReport->update($this->prepared($request));
@@ -43,6 +55,7 @@ class AnnualReportController extends Controller
         return redirect()->route('admin.sprawozdania.index')->with('status', "Sprawozdania za {$annualReport->year} rok zostały zaktualizowane.");
     }
 
+    /** Usuwa sprawozdanie wraz z plikami. */
     public function destroy(AnnualReport $annualReport)
     {
         $year = $annualReport->year;

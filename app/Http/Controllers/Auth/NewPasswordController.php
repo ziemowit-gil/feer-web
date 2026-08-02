@@ -14,20 +14,25 @@ use Illuminate\Validation\Rules;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
+/**
+ * Ustawienie nowego hasła po kliknięciu linku resetującego (token z e-maila).
+ *
+ * Metody: create(), store().
+ *
+ * @author Ziemowit Gil <ziemowit.gil@feer.org.pl>
+ */
 class NewPasswordController extends Controller
 {
-    /**
-     * Display the password reset view.
-     */
+    /** Wyświetla formularz ustawienia nowego hasła (z tokenem z e-maila). */
     public function create(Request $request): View
     {
         return view('auth.reset-password', ['request' => $request]);
     }
 
     /**
-     * Handle an incoming new password request.
+     * Ustawia nowe hasło po weryfikacji tokenu i przekierowuje na stronę logowania.
      *
-     * @throws ValidationException
+     * @throws \Illuminate\Validation\ValidationException
      */
     public function store(Request $request): RedirectResponse
     {

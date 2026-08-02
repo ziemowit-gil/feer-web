@@ -9,8 +9,17 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 
+/**
+ * Panel admin: CRUD użytkowników panelu z przypisywaniem ról i grup
+ * oraz odłączaniem konta Microsoft 365.
+ *
+ * Metody: index(), create(), store(), edit(), update(), destroy(), unlinkMicrosoft().
+ *
+ * @author Ziemowit Gil <ziemowit.gil@feer.org.pl>
+ */
 class UserController extends Controller
 {
+    /** Wyświetla listę użytkowników panelu z informacją o grupie. */
     public function index()
     {
         $users = User::with('group')->orderBy('name')->get();
@@ -18,11 +27,13 @@ class UserController extends Controller
         return view('admin.users.index', compact('users'));
     }
 
+    /** Wyświetla formularz tworzenia nowego użytkownika. */
     public function create()
     {
         return view('admin.users.form', ['user' => new User, 'groups' => UserGroup::orderBy('name')->get()]);
     }
 
+    /** Tworzy nowego użytkownika z haszowanym hasłem i weryfikacją e-mail. */
     public function store(Request $request)
     {
         $data = $request->validate([
@@ -47,11 +58,13 @@ class UserController extends Controller
         return redirect()->route('admin.uzytkownicy.index')->with('status', 'Użytkownik został utworzony.');
     }
 
+    /** Wyświetla formularz edycji użytkownika. */
     public function edit(User $user)
     {
         return view('admin.users.form', ['user' => $user, 'groups' => UserGroup::orderBy('name')->get()]);
     }
 
+    /** Aktualizuje dane użytkownika; puste hasło = bez zmian. */
     public function update(Request $request, User $user)
     {
         $data = $request->validate([
@@ -80,6 +93,7 @@ class UserController extends Controller
         return redirect()->route('admin.uzytkownicy.index')->with('status', 'Użytkownik został zaktualizowany.');
     }
 
+    /** Usuwa użytkownika; blokuje samousunięcie. */
     public function destroy(Request $request, User $user)
     {
         abort_if($request->user()->is($user), 403, 'Nie możesz usunąć własnego konta.');
@@ -89,6 +103,7 @@ class UserController extends Controller
         return redirect()->route('admin.uzytkownicy.index')->with('status', 'Użytkownik został usunięty.');
     }
 
+    /** Odłącza konto Microsoft 365 od użytkownika (usuwa microsoft_id i avatar). */
     public function unlinkMicrosoft(User $user)
     {
         $user->forceFill(['microsoft_id' => null, 'avatar' => null])->save();

@@ -9,19 +9,22 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
+/**
+ * Ponowne potwierdzenie hasła przez zalogowanego użytkownika przed wrażliwymi operacjami.
+ *
+ * Metody: show(), store().
+ *
+ * @author Ziemowit Gil <ziemowit.gil@feer.org.pl>
+ */
 class ConfirmablePasswordController extends Controller
 {
-    /**
-     * Show the confirm password view.
-     */
+    /** Wyświetla formularz potwierdzenia hasła przed wrażliwą operacją. */
     public function show(): View
     {
         return view('auth.confirm-password');
     }
 
-    /**
-     * Confirm the user's password.
-     */
+    /** Weryfikuje podane hasło i zapisuje czas potwierdzenia w sesji. */
     public function store(Request $request): RedirectResponse
     {
         if (! Auth::guard('web')->validate([

@@ -9,20 +9,25 @@ use Illuminate\Support\Facades\Password;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
+/**
+ * Wysyłka linku resetującego hasło na podany adres e-mail.
+ *
+ * Metody: create(), store().
+ *
+ * @author Ziemowit Gil <ziemowit.gil@feer.org.pl>
+ */
 class PasswordResetLinkController extends Controller
 {
-    /**
-     * Display the password reset link request view.
-     */
+    /** Wyświetla formularz żądania linku do resetowania hasła. */
     public function create(): View
     {
         return view('auth.forgot-password');
     }
 
     /**
-     * Handle an incoming password reset link request.
+     * Wysyła link resetujący hasło na podany adres e-mail.
      *
-     * @throws ValidationException
+     * @throws \Illuminate\Validation\ValidationException
      */
     public function store(Request $request): RedirectResponse
     {

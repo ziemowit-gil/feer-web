@@ -6,8 +6,17 @@ use App\Http\Requests\WebinarRegistrationRequest;
 use App\Models\LandingPage;
 use App\Services\Webinar\RegistrationHandler;
 
+/**
+ * Publiczny landing page webinaru/szkolenia: widok strony, obsługa zapisu (AJAX)
+ * oraz generowanie pliku iCalendar (.ics) do pobrania.
+ *
+ * Metody: show(), register(), calendar().
+ *
+ * @author Ziemowit Gil <ziemowit.gil@feer.org.pl>
+ */
 class LandingPageController extends Controller
 {
+    /** Wyświetla publiczny landing page webinaru na podstawie podanego sluga. */
     public function show(string $slug)
     {
         $page = LandingPage::published()->where('slug', $slug)->firstOrFail();
@@ -15,6 +24,7 @@ class LandingPageController extends Controller
         return view('lp.show', compact('page'));
     }
 
+    /** Zapisuje zgłoszenie uczestnictwa w webinarze i zwraca odpowiedź JSON z komunikatem. */
     public function register(WebinarRegistrationRequest $request, string $slug, RegistrationHandler $handler)
     {
         $page = LandingPage::published()->where('slug', $slug)->firstOrFail();

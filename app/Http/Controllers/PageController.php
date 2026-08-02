@@ -8,11 +8,20 @@ use App\Support\SzoKomunikaty;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 
+/**
+ * Wyświetlanie podstron z kontrolą dostępu (hasło / MS365), obsługą podglądu szkicu
+ * oraz formularzem odblokowywania chronionych treści.
+ *
+ * Metody: show(), unlock().
+ *
+ * @author Ziemowit Gil <ziemowit.gil@feer.org.pl>
+ */
 class PageController extends Controller
 {
     /** Slug automatycznie zakładanej strony „Strefa współpracownika". */
     private const STREFA_SLUG = 'strefa-wspolpracownika-feer';
 
+    /** Wyświetla podstronę z kontrolą dostępu (hasło / MS365) i obsługą podglądu szkicu. */
     public function show(Request $request, Page $page)
     {
         $preview = $this->isPreviewRequest($request);

@@ -4,6 +4,13 @@ namespace App\Http\Controllers;
 
 use App\Models\SiteSetting;
 
+/**
+ * Przekierowania skrótowe na zewnętrzne profile organizacji (BIP, Instagram, Facebook).
+ *
+ * Metody: bip(), instagram(), facebook().
+ *
+ * @author Ziemowit Gil <ziemowit.gil@feer.org.pl>
+ */
 class ShortcutController extends Controller
 {
     /**
@@ -16,11 +23,13 @@ class ShortcutController extends Controller
         return view('bip');
     }
 
+    /** Przekierowuje na profil organizacji w serwisie Instagram. */
     public function instagram()
     {
         return $this->away(SiteSetting::current()->instagram_url);
     }
 
+    /** Przekierowuje na profil organizacji w serwisie Facebook. */
     public function facebook()
     {
         return $this->away(SiteSetting::current()->facebook_url);

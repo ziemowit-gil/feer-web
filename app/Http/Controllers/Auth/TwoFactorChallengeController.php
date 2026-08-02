@@ -13,12 +13,16 @@ use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 /**
- * Drugi składnik logowania hasłem: po poprawnym haśle użytkownik jest
- * tymczasowo wylogowany, a pełne zalogowanie następuje dopiero po podaniu
+ * Drugi składnik logowania hasłem — pełne zalogowanie wymaga podania
  * kodu TOTP, kodu zapasowego lub jednorazowego hasła z klucza YubiKey.
+ *
+ * Metody: create(), store().
+ *
+ * @author Ziemowit Gil <ziemowit.gil@feer.org.pl>
  */
 class TwoFactorChallengeController extends Controller
 {
+    /** Wyświetla formularz weryfikacji drugiego składnika logowania (TOTP / YubiKey). */
     public function create(Request $request): View|RedirectResponse
     {
         if (! $this->pendingUser($request)) {
@@ -31,6 +35,7 @@ class TwoFactorChallengeController extends Controller
         ]);
     }
 
+    /** Weryfikuje kod 2FA (TOTP, YubiKey lub kod zapasowy) i finalizuje logowanie. */
     public function store(Request $request, TwoFactorService $totp, YubikeyVerifier $yubikey): RedirectResponse
     {
         $user = $this->pendingUser($request);

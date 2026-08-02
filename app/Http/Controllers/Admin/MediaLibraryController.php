@@ -20,6 +20,17 @@ use App\Models\Media;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use ZipArchive;
 
+/**
+ * Panel admin: biblioteka multimediów — upload, foldery, tagi, alt-tekst, archiwizacja,
+ * eksport/import ZIP, integracja z Unsplash i OneDrive, audyt dostępności obrazów.
+ *
+ * Metody: index(), store(), uploadAjax(), bulk(), rename(), updateTags(), updateAuthor(),
+ *         updateAlt(), altAudit(), imagesJson(), unsplashSearch(), unsplashImport(),
+ *         oneDriveImport(), move(), archive(), restore(), destroy(), export(),
+ *         exportSelected(), import(), emptyArchive(), storeFolder(), updateFolder(), destroyFolder().
+ *
+ * @author Ziemowit Gil <ziemowit.gil@feer.org.pl>
+ */
 class MediaLibraryController extends Controller
 {
     /**
@@ -52,6 +63,7 @@ class MediaLibraryController extends Controller
         MediaLibrary::class => null,
     ];
 
+    /** Wyświetla bibliotekę multimediów z filtrowaniem, tagami i drzewem folderów. */
     public function index(Request $request)
     {
         $folder = $request->filled('folder') ? MediaFolder::findOrFail($request->integer('folder')) : null;
@@ -168,6 +180,7 @@ class MediaLibraryController extends Controller
         ]);
     }
 
+    /** Zapisuje tagi pliku (zastępuje dotychczasową listę). */
     public function updateTags(Request $request, Media $media)
     {
         abort_unless(in_array($media->model_type, $this->accessibleModelTypes()), 403);
@@ -193,6 +206,7 @@ class MediaLibraryController extends Controller
         return redirect()->back()->with('status', 'Tagi zostały zaktualizowane.');
     }
 
+    /** Zmienia wyświetlaną nazwę pliku (display_name) bez dotykania fizycznej nazwy. */
     public function rename(Request $request, Media $media)
     {
         abort_unless(in_array($media->model_type, $this->accessibleModelTypes()), 403);
@@ -212,6 +226,7 @@ class MediaLibraryController extends Controller
         return redirect()->back()->with('status', 'Nazwa pliku została zmieniona.');
     }
 
+    /** Zapisuje autora/fotografa pliku jako właściwość niestandardową. */
     public function updateAuthor(Request $request, Media $media)
     {
         abort_unless(in_array($media->model_type, $this->accessibleModelTypes()), 403);
@@ -736,6 +751,7 @@ class MediaLibraryController extends Controller
                 .($skipped > 0 ? " Pominięto: {$skipped} (foldery, pliki ukryte lub niedozwolone)." : ''));
     }
 
+    /** Przenosi plik do wskazanego folderu (lub do katalogu głównego, gdy brak folder_id). */
     public function move(Request $request, Media $media)
     {
         abort_unless(in_array($media->model_type, $this->accessibleModelTypes()), 403);
@@ -774,6 +790,7 @@ class MediaLibraryController extends Controller
         return redirect()->back()->with('status', 'Plik został przywrócony z archiwum.');
     }
 
+    /** Trwale usuwa plik z biblioteki i dysku. */
     public function destroy(Media $media)
     {
         abort_unless(in_array($media->model_type, $this->accessibleModelTypes()), 403);
@@ -783,6 +800,7 @@ class MediaLibraryController extends Controller
         return redirect()->route('admin.multimedia.index')->with('status', 'Plik został usunięty.');
     }
 
+    /** Trwale usuwa wszystkie zarchiwizowane pliki (opróżnia kosz biblioteki). */
     public function emptyArchive(Request $request)
     {
         $folderId = $request->filled('folder') ? $request->integer('folder') : null;
@@ -804,6 +822,7 @@ class MediaLibraryController extends Controller
             ->with('status', $message);
     }
 
+    /** Tworzy nowy folder w bibliotece multimediów. */
     public function storeFolder(Request $request)
     {
         $data = $request->validate([
@@ -817,6 +836,7 @@ class MediaLibraryController extends Controller
             ->with('status', "Folder „{$folder->name}” został utworzony.");
     }
 
+    /** Zmienia nazwę folderu w bibliotece multimediów. */
     public function updateFolder(Request $request, MediaFolder $folder)
     {
         $data = $request->validate([

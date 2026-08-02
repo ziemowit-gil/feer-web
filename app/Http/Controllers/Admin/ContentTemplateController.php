@@ -6,6 +6,13 @@ use App\Http\Controllers\Controller;
 use App\Models\ContentTemplate;
 use Illuminate\Http\Request;
 
+/**
+ * Panel admin: szablony treści wielokrotnego użycia w formularzach (JSON API dla edytora).
+ *
+ * Metody: index(), manage(), load(), store(), destroy().
+ *
+ * @author Ziemowit Gil <ziemowit.gil@feer.org.pl>
+ */
 class ContentTemplateController extends Controller
 {
     /** Listowanie szablonów danego typu — zwraca JSON (dla JS w formularzu). */

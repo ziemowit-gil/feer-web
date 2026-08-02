@@ -84,7 +84,7 @@
             $pagesRoutes = ['admin.podstrony.*', 'admin.pozycje-menu.*', 'admin.os-czasu.*'];
 
             // ② PUBLIKACJE — dynamiczna treść redakcyjna (razem z Projektami)
-            $pubRoutes = ['admin.newsy.*', 'admin.kategorie-newsow.*', 'admin.wiem-feer.*', 'admin.komentarze-bloga.*', 'admin.materialy-edukacyjne.*', 'admin.zapisy-materialy.*', 'admin.wolontariat.*', 'admin.wydarzenia.*', 'admin.kategorie.*', 'admin.projekty.*', 'admin.faq.*', 'admin.sprawozdania.*', 'admin.lp.*', 'admin.ankiety.*'];
+            $pubRoutes = ['admin.newsy.*', 'admin.kategorie-newsow.*', 'admin.tagi.*', 'admin.wiem-feer.*', 'admin.komentarze-bloga.*', 'admin.materialy-edukacyjne.*', 'admin.zapisy-materialy.*', 'admin.wolontariat.*', 'admin.wydarzenia.*', 'admin.kategorie.*', 'admin.projekty.*', 'admin.faq.*', 'admin.sprawozdania.*', 'admin.lp.*', 'admin.ankiety.*'];
 
             // ③ STRONA GŁÓWNA — sekcje wizualne homepage
             $appearanceRoutes = ['admin.hero.*', 'admin.galeria.*', 'admin.szybkie-akcje.*', 'admin.partnerzy.*'];
@@ -161,6 +161,10 @@
                             <a href="{{ route('admin.kategorie-newsow.index') }}" class="{{ $itemClass('admin.kategorie-newsow.*') }}" title="Kategorie newsów">
                                 <i class="fa-solid fa-tags {{ $iconClass('admin.kategorie-newsow.*') }}"></i>
                                 <span class="nav-label">Kategorie newsów</span>
+                            </a>
+                            <a href="{{ route('admin.tagi.index') }}" class="{{ $itemClass('admin.tagi.*') }}" title="Tagi aktualności">
+                                <i class="fa-solid fa-hashtag {{ $iconClass('admin.tagi.*') }}"></i>
+                                <span class="nav-label">Tagi</span>
                             </a>
                         @endif
                         @if ($siteSettings->isModuleEnabled('blog'))

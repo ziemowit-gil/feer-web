@@ -6,8 +6,17 @@ use App\Http\Controllers\Controller;
 use App\Models\ActivityLog;
 use Illuminate\Http\Request;
 
+/**
+ * Panel admin: przeglądarka dziennika zdarzeń (ActivityLog) z filtrami po typie zdarzenia,
+ * obiekcie i użytkowniku.
+ *
+ * Metody: index().
+ *
+ * @author Ziemowit Gil <ziemowit.gil@feer.org.pl>
+ */
 class ActivityController extends Controller
 {
+    /** Wyświetla dziennik zdarzeń z filtrami po typie, obiekcie, użytkowniku i dacie. */
     public function index(Request $request)
     {
         $event    = $request->query('event', '');

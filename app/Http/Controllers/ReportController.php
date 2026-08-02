@@ -4,6 +4,13 @@ namespace App\Http\Controllers;
 
 use App\Models\AnnualReport;
 
+/**
+ * Publiczna strona sprawozdań rocznych (merytorycznych i finansowych) posortowanych malejąco.
+ *
+ * Metody: index().
+ *
+ * @author Ziemowit Gil <ziemowit.gil@feer.org.pl>
+ */
 class ReportController extends Controller
 {
     /**

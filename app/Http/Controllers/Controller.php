@@ -4,6 +4,13 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 
+/**
+ * Bazowy kontroler aplikacji z pomocniczą metodą do weryfikacji podpisanego podglądu szkicu.
+ *
+ * Metody: isPreviewRequest().
+ *
+ * @author Ziemowit Gil <ziemowit.gil@feer.org.pl>
+ */
 abstract class Controller
 {
     /**

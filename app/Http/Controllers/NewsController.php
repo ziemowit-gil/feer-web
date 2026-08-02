@@ -7,8 +7,16 @@ use App\Models\NewsCategory;
 use App\Models\SiteSetting;
 use Illuminate\Http\Request;
 
+/**
+ * Publiczna lista i szczegóły aktualności oraz widok do wydruku (generowany przez headless Chromium).
+ *
+ * Metody: index(), show(), pdf().
+ *
+ * @author Ziemowit Gil <ziemowit.gil@feer.org.pl>
+ */
 class NewsController extends Controller
 {
+    /** Wyświetla listing aktualności z opcjonalnym filtrem kategorii i paginacją. */
     public function index(Request $request)
     {
         $categories = NewsCategory::orderBy('order')->orderBy('name')->get();
@@ -25,6 +33,7 @@ class NewsController extends Controller
         return view('news.index', compact('news', 'categories', 'activeCategory'));
     }
 
+    /** Wyświetla stronę szczegółów aktualności; obsługuje tryb podglądu szkicu. */
     public function show(Request $request, News $news)
     {
         $preview = $this->isPreviewRequest($request);
@@ -37,6 +46,7 @@ class NewsController extends Controller
         return view('news.show', compact('news', 'brandColor', 'preview'));
     }
 
+    /** Wyświetla widok do wydruku (PDF) opublikowanej aktualności — konwertowany przez headless Chromium. */
     public function pdf(News $news)
     {
         abort_unless($news->is_published && $news->published_at <= now(), 404);

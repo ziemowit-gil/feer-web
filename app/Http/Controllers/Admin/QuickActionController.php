@@ -6,8 +6,16 @@ use App\Http\Controllers\Controller;
 use App\Models\QuickAction;
 use Illuminate\Http\Request;
 
+/**
+ * Panel admin: zarządzanie szybkimi akcjami (kafelki z ikonami widoczne na stronie głównej).
+ *
+ * Metody: index(), create(), store(), edit(), update(), destroy().
+ *
+ * @author Ziemowit Gil <ziemowit.gil@feer.org.pl>
+ */
 class QuickActionController extends Controller
 {
+    /** Wyświetla listę szybkich akcji posortowanych wg kolejności. */
     public function index()
     {
         $quickActions = QuickAction::orderBy('order')->get();
@@ -15,11 +23,13 @@ class QuickActionController extends Controller
         return view('admin.quick-actions.index', compact('quickActions'));
     }
 
+    /** Wyświetla formularz tworzenia nowej szybkiej akcji. */
     public function create()
     {
         return view('admin.quick-actions.form', ['quickAction' => new QuickAction]);
     }
 
+    /** Zapisuje nową szybką akcję. */
     public function store(Request $request)
     {
         QuickAction::create($this->validated($request));
@@ -27,11 +37,13 @@ class QuickActionController extends Controller
         return redirect()->route('admin.szybkie-akcje.index')->with('status', 'Szybka akcja została dodana.');
     }
 
+    /** Wyświetla formularz edycji szybkiej akcji. */
     public function edit(QuickAction $quickAction)
     {
         return view('admin.quick-actions.form', compact('quickAction'));
     }
 
+    /** Aktualizuje dane szybkiej akcji. */
     public function update(Request $request, QuickAction $quickAction)
     {
         $quickAction->update($this->validated($request));
@@ -39,6 +51,7 @@ class QuickActionController extends Controller
         return redirect()->route('admin.szybkie-akcje.index')->with('status', 'Szybka akcja została zaktualizowana.');
     }
 
+    /** Usuwa szybką akcję. */
     public function destroy(QuickAction $quickAction)
     {
         $quickAction->delete();

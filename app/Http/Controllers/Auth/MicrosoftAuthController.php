@@ -10,6 +10,13 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Laravel\Socialite\Facades\Socialite;
 
+/**
+ * Logowanie administratorów i redaktorów do panelu przez Microsoft 365 (Socialite / SSO).
+ *
+ * Metody: redirect(), callback().
+ *
+ * @author Ziemowit Gil <ziemowit.gil@feer.org.pl>
+ */
 class MicrosoftAuthController extends Controller
 {
     /**

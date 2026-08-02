@@ -53,10 +53,21 @@
         </div>
         <p class="-mt-3 text-xs text-muted">Zostaw puste, jeśli slajd nie ma mieć przycisku.</p>
 
-        <div>
-            <label for="order" class="mb-1 block text-sm font-bold">Kolejność</label>
-            <input type="number" id="order" name="order" min="0" value="{{ old('order', $heroSlide->order) }}"
-                class="w-28 rounded border-gray-300 focus:border-brand focus:ring-brand">
+        <div class="grid gap-5 sm:grid-cols-2">
+            <div>
+                <label for="order" class="mb-1 block text-sm font-bold">Kolejność</label>
+                <input type="number" id="order" name="order" min="0" value="{{ old('order', $heroSlide->order) }}"
+                    class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+            </div>
+
+            <div>
+                <label for="duration" class="mb-1 block text-sm font-bold">Czas wyświetlania (s)</label>
+                <input type="number" id="duration" name="duration" min="1" max="60"
+                    value="{{ old('duration', $heroSlide->duration) }}" placeholder="6"
+                    class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                <p class="mt-1 text-xs text-muted">Domyślnie 6 sekund. Zostaw puste, by użyć domyślnej.</p>
+                @error('duration') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+            </div>
         </div>
 
         <div class="flex items-center gap-3 border-t border-gray-100 pt-5">

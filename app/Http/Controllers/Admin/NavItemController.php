@@ -10,8 +10,17 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 
+/**
+ * Panel admin: zarządzanie pozycjami menu (główne i stopka) z reorderingiem
+ * drag & drop i przesuwaniem przyciskami w górę/dół.
+ *
+ * Metody: index(), create(), store(), edit(), update(), destroy(), move(), reorder().
+ *
+ * @author Ziemowit Gil <ziemowit.gil@feer.org.pl>
+ */
 class NavItemController extends Controller
 {
+    /** Wyświetla listę pozycji menu dla danej lokalizacji (main/footer). */
     public function index(Request $request)
     {
         $location = $request->input('location', 'main');
@@ -34,6 +43,7 @@ class NavItemController extends Controller
         ]);
     }
 
+    /** Wyświetla formularz tworzenia nowej pozycji menu. */
     public function create(Request $request)
     {
         $location = $request->input('location', 'main');
@@ -46,6 +56,7 @@ class NavItemController extends Controller
         ]);
     }
 
+    /** Zapisuje nową pozycję menu, umieszczając ją na końcu listy rodzeństwa. */
     public function store(Request $request)
     {
         $data = $this->validated($request);
@@ -63,6 +74,7 @@ class NavItemController extends Controller
         return redirect()->route('admin.pozycje-menu.index', ['location' => $data['location']])->with('status', 'Pozycja menu została dodana.');
     }
 
+    /** Wyświetla formularz edycji pozycji menu. */
     public function edit(NavItem $navItem)
     {
         return view('admin.nav-items.form', [
@@ -72,6 +84,7 @@ class NavItemController extends Controller
         ]);
     }
 
+    /** Aktualizuje pozycję menu z zabezpieczeniem przed niepoprawnym zagnieżdżaniem. */
     public function update(Request $request, NavItem $navItem)
     {
         $data = $this->validated($request);
@@ -139,6 +152,7 @@ class NavItemController extends Controller
         return response()->json(['ok' => true]);
     }
 
+    /** Usuwa pozycję menu. */
     public function destroy(NavItem $navItem)
     {
         $location = $navItem->location;

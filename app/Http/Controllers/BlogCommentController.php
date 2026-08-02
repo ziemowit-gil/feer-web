@@ -5,8 +5,16 @@ namespace App\Http\Controllers;
 use App\Models\BlogArticle;
 use Illuminate\Http\Request;
 
+/**
+ * Przyjmuje komentarze do artykułów bloga Wiem FEER; trafiają do moderacji (is_approved=false).
+ *
+ * Metody: store().
+ *
+ * @author Ziemowit Gil <ziemowit.gil@feer.org.pl>
+ */
 class BlogCommentController extends Controller
 {
+    /** Waliduje i zapisuje komentarz do artykułu bloga; nowe komentarze czekają na moderację. */
     public function store(Request $request, BlogArticle $article)
     {
         abort_unless($article->isVisible(), 404);

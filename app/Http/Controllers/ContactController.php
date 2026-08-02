@@ -8,8 +8,16 @@ use App\Models\SiteSetting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 
+/**
+ * Strona kontaktowa z listą koordynatorów projektów oraz formularzem wysyłającym e-mail.
+ *
+ * Metody: index(), store().
+ *
+ * @author Ziemowit Gil <ziemowit.gil@feer.org.pl>
+ */
 class ContactController extends Controller
 {
+    /** Wyświetla stronę kontaktową z listą koordynatorów aktywnych projektów. */
     public function index()
     {
         // Coordinator contacts for the contact page: only live (non-archival)
@@ -29,6 +37,7 @@ class ContactController extends Controller
         return view('contact.show', compact('projects'));
     }
 
+    /** Waliduje wiadomość kontaktową i wysyła ją na adres e-mail organizacji. */
     public function store(Request $request)
     {
         $data = $request->validate([

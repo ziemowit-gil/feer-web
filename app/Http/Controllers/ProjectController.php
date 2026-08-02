@@ -6,8 +6,16 @@ use App\Models\Category;
 use App\Models\Project;
 use App\Models\SiteSetting;
 
+/**
+ * Publiczne listy projektów (bieżące, archiwalne, wg kategorii) i widok szczegółów projektu.
+ *
+ * Metody: index(), archive(), category(), show().
+ *
+ * @author Ziemowit Gil <ziemowit.gil@feer.org.pl>
+ */
 class ProjectController extends Controller
 {
+    /** Wyświetla listę aktywnych projektów pogrupowanych wg kategorii. */
     public function index()
     {
         $categories = Category::with(['publishedProjects' => fn ($query) => $query->where('is_completed', false)])
@@ -20,6 +28,7 @@ class ProjectController extends Controller
         return view('projects.index', compact('categories', 'hasArchive'));
     }
 
+    /** Wyświetla archiwum zakończonych projektów. */
     public function archive()
     {
         $projects = Project::where('is_published', true)
@@ -32,6 +41,7 @@ class ProjectController extends Controller
         return view('projects.archive', compact('projects'));
     }
 
+    /** Wyświetla projekty należące do wybranej kategorii. */
     public function category(Category $category)
     {
         $category->load(['publishedProjects' => fn ($query) => $query->where('is_completed', false)]);
@@ -39,6 +49,7 @@ class ProjectController extends Controller
         return view('projects.category', compact('category'));
     }
 
+    /** Wyświetla stronę szczegółów opublikowanego projektu z kolorem akcentu dla grupy docelowej. */
     public function show(Project $project)
     {
         abort_unless($project->is_published, 404);

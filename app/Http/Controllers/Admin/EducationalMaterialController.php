@@ -7,8 +7,16 @@ use App\Models\EducationalMaterial;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
+/**
+ * Panel admin: CRUD materiałów edukacyjnych (PDF, wideo, scenariusze) z obsługą MediaLibrary.
+ *
+ * Metody: index(), create(), store(), edit(), update(), destroy().
+ *
+ * @author Ziemowit Gil <ziemowit.gil@feer.org.pl>
+ */
 class EducationalMaterialController extends Controller
 {
+    /** Wyświetla listę materiałów edukacyjnych. */
     public function index()
     {
         $materials = EducationalMaterial::orderBy('order')->orderBy('title')->get();
@@ -16,11 +24,13 @@ class EducationalMaterialController extends Controller
         return view('admin.educational-materials.index', compact('materials'));
     }
 
+    /** Wyświetla formularz dodawania nowego materiału edukacyjnego. */
     public function create()
     {
         return view('admin.educational-materials.form', ['material' => new EducationalMaterial]);
     }
 
+    /** Zapisuje nowy materiał edukacyjny wraz z plikiem PDF (jeśli dotyczy). */
     public function store(Request $request)
     {
         $data = $this->validated($request, isCreate: true);
@@ -35,11 +45,13 @@ class EducationalMaterialController extends Controller
         return redirect()->route('admin.materialy-edukacyjne.index')->with('status', 'Materiał został dodany.');
     }
 
+    /** Wyświetla formularz edycji materiału edukacyjnego. */
     public function edit(EducationalMaterial $material)
     {
         return view('admin.educational-materials.form', compact('material'));
     }
 
+    /** Aktualizuje materiał edukacyjny, opcjonalnie zastępuje plik PDF. */
     public function update(Request $request, EducationalMaterial $material)
     {
         $data = $this->validated($request, isCreate: false);
@@ -54,6 +66,7 @@ class EducationalMaterialController extends Controller
         return redirect()->route('admin.materialy-edukacyjne.index')->with('status', 'Materiał został zaktualizowany.');
     }
 
+    /** Usuwa materiał edukacyjny. */
     public function destroy(EducationalMaterial $material)
     {
         $material->delete();

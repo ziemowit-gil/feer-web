@@ -6,8 +6,16 @@ use App\Http\Controllers\Controller;
 use App\Models\MaterialSubscriber;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
+/**
+ * Panel admin: lista subskrybentów powiadomień o materiałach edukacyjnych z eksportem CSV.
+ *
+ * Metody: index(), destroy(), export().
+ *
+ * @author Ziemowit Gil <ziemowit.gil@feer.org.pl>
+ */
 class MaterialSubscriberController extends Controller
 {
+    /** Wyświetla listę subskrybentów powiadomień o materiałach edukacyjnych. */
     public function index()
     {
         return view('admin.material-subscribers.index', [
@@ -16,6 +24,7 @@ class MaterialSubscriberController extends Controller
         ]);
     }
 
+    /** Usuwa adres e-mail z listy subskrybentów. */
     public function destroy(MaterialSubscriber $subscriber)
     {
         $subscriber->delete();
@@ -25,6 +34,7 @@ class MaterialSubscriberController extends Controller
             ->with('status', 'Adres został usunięty z listy.');
     }
 
+    /** Eksportuje listę subskrybentów do pliku CSV. */
     public function export(): StreamedResponse
     {
         $filename = 'zapisy-materialy-'.now()->format('Y-m-d').'.csv';

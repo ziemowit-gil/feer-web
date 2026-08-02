@@ -8,6 +8,13 @@ use App\Models\News;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 
+/**
+ * Panel admin: kalendarz redakcyjny — aktualności i wydarzenia w układzie miesięcznym.
+ *
+ * Metody: index().
+ *
+ * @author Ziemowit Gil <ziemowit.gil@feer.org.pl>
+ */
 class CalendarController extends Controller
 {
     /** Kalendarz redakcyjny: publikacje aktualności i terminy wydarzeń w danym miesiącu. */

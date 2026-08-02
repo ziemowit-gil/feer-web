@@ -6,8 +6,16 @@ use App\Http\Controllers\Controller;
 use App\Models\Partner;
 use Illuminate\Http\Request;
 
+/**
+ * Panel admin: CRUD partnerów organizacji (logotypy, linki, kolejność).
+ *
+ * Metody: index(), create(), store(), edit(), update(), destroy().
+ *
+ * @author Ziemowit Gil <ziemowit.gil@feer.org.pl>
+ */
 class PartnerController extends Controller
 {
+    /** Wyświetla listę partnerów posortowaną wg kolejności. */
     public function index()
     {
         $partners = Partner::orderBy('order')->get();
@@ -15,11 +23,13 @@ class PartnerController extends Controller
         return view('admin.partners.index', compact('partners'));
     }
 
+    /** Wyświetla formularz tworzenia nowego partnera. */
     public function create()
     {
         return view('admin.partners.form', ['partner' => new Partner]);
     }
 
+    /** Zapisuje nowego partnera wraz z plikiem logotypu. */
     public function store(Request $request)
     {
         $data = $this->validated($request, isCreate: true);
@@ -31,11 +41,13 @@ class PartnerController extends Controller
         return redirect()->route('admin.partnerzy.index')->with('status', 'Partner został dodany.');
     }
 
+    /** Wyświetla formularz edycji partnera. */
     public function edit(Partner $partner)
     {
         return view('admin.partners.form', compact('partner'));
     }
 
+    /** Aktualizuje dane partnera, opcjonalnie zastępuje logotyp. */
     public function update(Request $request, Partner $partner)
     {
         $data = $this->validated($request, isCreate: false);
@@ -50,6 +62,7 @@ class PartnerController extends Controller
         return redirect()->route('admin.partnerzy.index')->with('status', 'Partner został zaktualizowany.');
     }
 
+    /** Usuwa partnera. */
     public function destroy(Partner $partner)
     {
         $partner->delete();

@@ -18,6 +18,7 @@
                 @csrf
                 @method('PATCH')
                 <input type="hidden" name="hero_mission_bg" :value="bg">
+                <input type="hidden" name="hero_mission_order" value="{{ $siteSettings->hero_mission_order ?? 1 }}">
                 <input type="hidden" name="hero_mission_slide" value="0">
                 <label class="flex cursor-pointer items-center gap-2.5">
                     <input type="checkbox" name="hero_mission_slide" value="1"
@@ -80,10 +81,29 @@
                 </div>
             </div>
 
+            {{-- Pozycja slajdu misji --}}
+            <div class="mt-4">
+                <label for="hero_mission_order" class="mb-1 block text-sm font-bold text-ink">
+                    Pozycja w slajderze
+                </label>
+                <div class="flex items-center gap-3">
+                    <input type="number" name="hero_mission_order" id="hero_mission_order"
+                        min="1" max="{{ $heroSlides->count() + 1 }}"
+                        value="{{ $siteSettings->hero_mission_order ?? 1 }}"
+                        class="w-24 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand">
+                    <p class="text-sm text-muted">
+                        1 = pierwszy slajd, {{ $heroSlides->count() + 1 }} = ostatni
+                        @if ($heroSlides->isEmpty())
+                            <span class="text-xs">(brak innych slajdów)</span>
+                        @endif
+                    </p>
+                </div>
+            </div>
+
             <div class="mt-4">
                 <button type="submit"
                     class="rounded bg-brand px-4 py-2 text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
-                    Zapisz tło
+                    Zapisz ustawienia
                 </button>
             </div>
         </form>

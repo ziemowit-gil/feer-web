@@ -7,10 +7,12 @@ use App\Models\Page;
 use Illuminate\Http\Request;
 
 /**
- * Dedykowany edytor osi czasu (historii) strony typu „O organizacji". Oś czasu
- * to pole about_timeline tej strony — normalnie edytowane wewnątrz dużego
- * formularza strony. Ten ekran wyciąga ją jako osobną pozycję w menu, żeby
- * najczęściej aktualizowaną sekcję można było zmienić w jednym kroku.
+ * Panel admin: dedykowany edytor osi czasu (historii) strony „O organizacji" —
+ * wyodrębniona z dużego formularza strony, żeby ułatwić częste aktualizacje.
+ *
+ * Metody: edit(), update().
+ *
+ * @author Ziemowit Gil <ziemowit.gil@feer.org.pl>
  */
 class TimelineController extends Controller
 {
@@ -20,6 +22,7 @@ class TimelineController extends Controller
      */
     private const ROW_KEYS = ['year', 'text', 'url', 'label', 'url2', 'label2', 'url3', 'label3', 'color'];
 
+    /** Wyświetla edytor osi czasu dla wybranej strony „O organizacji". */
     public function edit(Request $request)
     {
         $pages = Page::where('type', 'about')->orderBy('order')->orderBy('title')->get();
@@ -33,6 +36,7 @@ class TimelineController extends Controller
         return view('admin.timeline.edit', compact('page', 'pages'));
     }
 
+    /** Zapisuje zaktualizowaną oś czasu (wiersze puste są pomijane). */
     public function update(Request $request, Page $page)
     {
         abort_unless($page->isAbout(), 404);

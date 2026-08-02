@@ -10,6 +10,14 @@ use App\Notifications\ContentApproved;
 use App\Notifications\ContentRejected;
 use Illuminate\Http\Request;
 
+/**
+ * Panel admin: kolejka treści oczekujących na zatwierdzenie (aktualności, strony, projekty)
+ * wraz z akcjami zatwierdzenia, odrzucenia i licznikiem dla badge'a w menu.
+ *
+ * Metody: index(), approve(), reject(), pendingCount().
+ *
+ * @author Ziemowit Gil <ziemowit.gil@feer.org.pl>
+ */
 class ApprovalController extends Controller
 {
     /** typ => [klasa modelu, trasa edycji, etykieta]. */
@@ -19,6 +27,7 @@ class ApprovalController extends Controller
         'project' => [Project::class, 'admin.projekty.edit', 'Projekt'],
     ];
 
+    /** Wyświetla listę treści oczekujących na zatwierdzenie. */
     public function index()
     {
         abort_unless(auth()->user()->canApproveContent(), 403);
@@ -41,6 +50,12 @@ class ApprovalController extends Controller
         return view('admin.approvals.index', ['items' => $items->sortByDesc('updated_at')->values()]);
     }
 
+    /**
+     * Zatwierdza i publikuje treść wskazanego typu i ID.
+     *
+     * @param  string  $type  Typ treści: news|page|project
+     * @param  int     $id    ID rekordu
+     */
     public function approve(string $type, int $id)
     {
         $model = $this->resolve($type, $id);
@@ -51,6 +66,12 @@ class ApprovalController extends Controller
         return back()->with('status', 'Treść została zatwierdzona i opublikowana.');
     }
 
+    /**
+     * Odrzuca treść i cofa ją do szkicu; opcjonalnie wysyła powód autoroowi.
+     *
+     * @param  string  $type  Typ treści: news|page|project
+     * @param  int     $id    ID rekordu
+     */
     public function reject(Request $request, string $type, int $id)
     {
         $reason = $request->validate(['reason' => 'nullable|string|max:1000'])['reason'] ?? null;

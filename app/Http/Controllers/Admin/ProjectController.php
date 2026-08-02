@@ -11,10 +11,18 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
+/**
+ * Panel admin: zarządzanie projektami z cennikiem, sekcjami własnymi i trybem koordynatora.
+ *
+ * Metody: index(), create(), store(), edit(), update(), destroy().
+ *
+ * @author Ziemowit Gil <ziemowit.gil@feer.org.pl>
+ */
 class ProjectController extends Controller
 {
     use HandlesContentApproval;
 
+    /** Wyświetla listę projektów z filtrowaniem po statusie i kategorii. */
     public function index(Request $request)
     {
         $status = $request->query('status', '');
@@ -39,6 +47,7 @@ class ProjectController extends Controller
         ]);
     }
 
+    /** Wyświetla formularz tworzenia nowego projektu. */
     public function create()
     {
         return view('admin.projects.form', [
@@ -47,6 +56,7 @@ class ProjectController extends Controller
         ]);
     }
 
+    /** Zapisuje nowy projekt z opcjonalnym zdjęciem. */
     public function store(Request $request)
     {
         $data = $this->validated($request);
@@ -61,6 +71,7 @@ class ProjectController extends Controller
         return redirect()->route('admin.projekty.index')->with('status', 'Projekt został utworzony.');
     }
 
+    /** Wyświetla formularz edycji projektu. */
     public function edit(Project $project)
     {
         return view('admin.projects.form', [
@@ -69,6 +80,7 @@ class ProjectController extends Controller
         ]);
     }
 
+    /** Aktualizuje projekt z opcjonalnym zdjęciem. */
     public function update(Request $request, Project $project)
     {
         $data = $this->validated($request);
@@ -83,6 +95,7 @@ class ProjectController extends Controller
         return redirect()->route('admin.projekty.index')->with('status', 'Projekt został zaktualizowany.');
     }
 
+    /** Usuwa projekt. */
     public function destroy(Project $project)
     {
         $project->delete();

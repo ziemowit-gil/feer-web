@@ -12,6 +12,14 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\Rule;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
+/**
+ * Panel strefy współpracownika (member guard): zarządzanie terminami spotkań
+ * i zgłoszeniami — dostępne tylko dla zalogowanych przez MS365.
+ *
+ * Metody: index(), storeTermin(), destroyTermin(), notify(), confirmSignup(), destroySignup(), export().
+ *
+ * @author Ziemowit Gil <ziemowit.gil@feer.org.pl>
+ */
 class ReserwacjeController extends Controller
 {
     private function guardCheck(): ?RedirectResponse
@@ -22,6 +30,7 @@ class ReserwacjeController extends Controller
         return null;
     }
 
+    /** Wyświetla panel zarządzania terminami i zgłoszeniami spotkań w strefie współpracownika. */
     public function index(): mixed
     {
         if ($r = $this->guardCheck()) return $r;
@@ -36,6 +45,7 @@ class ReserwacjeController extends Controller
         return view('rezerwacje.index', compact('settings', 'schedule', 'upcoming', 'signups', 'byTerm', 'noTerm'));
     }
 
+    /** Dodaje nowy termin spotkania (jednorazowy lub cykliczny) do harmonogramu kontaktowego. */
     public function storeTermin(Request $request): RedirectResponse
     {
         if ($r = $this->guardCheck()) return $r;
@@ -59,6 +69,7 @@ class ReserwacjeController extends Controller
         return redirect()->route('rezerwacje.index')->with('status', 'Termin został dodany.');
     }
 
+    /** Usuwa termin z harmonogramu kontaktowego na podstawie jego indeksu w tablicy. */
     public function destroyTermin(Request $request, int $index): RedirectResponse
     {
         if ($r = $this->guardCheck()) return $r;
@@ -74,6 +85,7 @@ class ReserwacjeController extends Controller
         return redirect()->route('rezerwacje.index')->with('status', 'Termin usunięty.');
     }
 
+    /** Wysyła e-mail z aktualnymi terminami do wszystkich zapisanych zgłaszających. */
     public function notify(): RedirectResponse
     {
         if ($r = $this->guardCheck()) return $r;
@@ -106,6 +118,7 @@ class ReserwacjeController extends Controller
         return redirect()->route('rezerwacje.index')->with('status', 'Powiadomienie wysłane do '.count($emails).' osób.');
     }
 
+    /** Potwierdza zgłoszenie spotkania i wysyła e-mail z potwierdzeniem do zgłaszającego. */
     public function confirmSignup(MeetingSignup $signup): RedirectResponse
     {
         if ($r = $this->guardCheck()) return $r;
@@ -129,6 +142,7 @@ class ReserwacjeController extends Controller
         return redirect()->route('rezerwacje.index')->with('status', 'Spotkanie potwierdzone — wysłano e-mail do '.$signup->name.'.');
     }
 
+    /** Usuwa zgłoszenie spotkania z listy. */
     public function destroySignup(MeetingSignup $signup): RedirectResponse
     {
         if ($r = $this->guardCheck()) return $r;
@@ -138,6 +152,7 @@ class ReserwacjeController extends Controller
         return redirect()->route('rezerwacje.index')->with('status', 'Zgłoszenie usunięte.');
     }
 
+    /** Eksportuje wszystkie zgłoszenia spotkań do pliku CSV z BOM (Excel). */
     public function export(): StreamedResponse|RedirectResponse
     {
         if ($r = $this->guardCheck()) return $r;

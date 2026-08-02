@@ -7,8 +7,16 @@ use App\Models\Category;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
+/**
+ * Panel admin: CRUD kategorii projektów.
+ *
+ * Metody: index(), create(), store(), edit(), update(), destroy().
+ *
+ * @author Ziemowit Gil <ziemowit.gil@feer.org.pl>
+ */
 class CategoryController extends Controller
 {
+    /** Wyświetla listę kategorii projektów z liczbą przypisanych projektów. */
     public function index()
     {
         $categories = Category::withCount('projects')->orderBy('order')->orderBy('name')->get();
@@ -16,11 +24,13 @@ class CategoryController extends Controller
         return view('admin.categories.index', compact('categories'));
     }
 
+    /** Wyświetla formularz tworzenia nowej kategorii. */
     public function create()
     {
         return view('admin.categories.form', ['category' => new Category]);
     }
 
+    /** Zapisuje nową kategorię z wygenerowanym unikalnym slugiem. */
     public function store(Request $request)
     {
         $data = $this->validated($request);
@@ -31,11 +41,13 @@ class CategoryController extends Controller
         return redirect()->route('admin.kategorie.index')->with('status', 'Kategoria została utworzona.');
     }
 
+    /** Wyświetla formularz edycji kategorii. */
     public function edit(Category $category)
     {
         return view('admin.categories.form', compact('category'));
     }
 
+    /** Aktualizuje kategorię projektów. */
     public function update(Request $request, Category $category)
     {
         $data = $this->validated($request);
@@ -46,6 +58,7 @@ class CategoryController extends Controller
         return redirect()->route('admin.kategorie.index')->with('status', 'Kategoria została zaktualizowana.');
     }
 
+    /** Usuwa kategorię projektów. */
     public function destroy(Category $category)
     {
         $category->delete();

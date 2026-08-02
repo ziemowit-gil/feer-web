@@ -8,8 +8,17 @@ use App\Models\LandingPage;
 use Illuminate\Support\Str;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
+/**
+ * Panel admin: CRUD landing page'ów webinarów/szkoleń, lista zapisanych uczestników
+ * i eksport rejestracji do CSV.
+ *
+ * Metody: index(), create(), store(), edit(), update(), destroy(), registrations(), exportRegistrations().
+ *
+ * @author Ziemowit Gil <ziemowit.gil@feer.org.pl>
+ */
 class LandingPageController extends Controller
 {
+    /** Wyświetla listę landing page'ów z liczbą zapisów. */
     public function index()
     {
         $pages = LandingPage::withCount('registrations')->orderByDesc('updated_at')->get();
@@ -17,11 +26,13 @@ class LandingPageController extends Controller
         return view('admin.landing-pages.index', compact('pages'));
     }
 
+    /** Wyświetla formularz tworzenia nowego landing page'a. */
     public function create()
     {
         return view('admin.landing-pages.form', ['page' => new LandingPage]);
     }
 
+    /** Zapisuje nowy landing page. */
     public function store(LandingPageRequest $request)
     {
         LandingPage::create($this->prepared($request));
@@ -29,11 +40,13 @@ class LandingPageController extends Controller
         return redirect()->route('admin.lp.index')->with('status', 'Landing page został utworzony.');
     }
 
+    /** Wyświetla formularz edycji landing page'a. */
     public function edit(LandingPage $landing)
     {
         return view('admin.landing-pages.form', ['page' => $landing]);
     }
 
+    /** Aktualizuje landing page. */
     public function update(LandingPageRequest $request, LandingPage $landing)
     {
         $landing->update($this->prepared($request));
@@ -41,6 +54,7 @@ class LandingPageController extends Controller
         return redirect()->route('admin.lp.index')->with('status', 'Landing page został zapisany.');
     }
 
+    /** Usuwa landing page. */
     public function destroy(LandingPage $landing)
     {
         $landing->delete();
@@ -48,6 +62,7 @@ class LandingPageController extends Controller
         return redirect()->route('admin.lp.index')->with('status', 'Landing page został usunięty.');
     }
 
+    /** Wyświetla listę uczestników zapisanych na wydarzenie landing page'a. */
     public function registrations(LandingPage $landing)
     {
         return view('admin.landing-pages.registrations', [

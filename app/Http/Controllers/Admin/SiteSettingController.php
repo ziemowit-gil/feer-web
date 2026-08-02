@@ -14,8 +14,17 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
+/**
+ * Panel admin: ustawienia serwisu — wygląd, moduły, dane kontaktowe, poczta, dostępność, SEO.
+ *
+ * Metody: edit(), update(), dev(), overwriteStrefa(), updateAdminPrefix(),
+ *         mailTest(), regenerateEmergencyToken().
+ *
+ * @author Ziemowit Gil <ziemowit.gil@feer.org.pl>
+ */
 class SiteSettingController extends Controller
 {
+    /** Wyświetla formularz ustawień serwisu. */
     public function edit()
     {
         return view('admin.settings.edit', [
@@ -25,6 +34,7 @@ class SiteSettingController extends Controller
         ]);
     }
 
+    /** Wyświetla zakładkę deweloperską (diagnostyka, narzędzia debugowania). */
     public function dev()
     {
         return view('admin.settings.dev', [
@@ -59,6 +69,7 @@ class SiteSettingController extends Controller
         return redirect()->route('admin.ustawienia.edit', ['tab' => 'login'])->with('status', $message);
     }
 
+    /** Zapisuje wszystkie ustawienia serwisu (wygląd, moduły, kontakt, SEO, poczta, WCAG). */
     public function update(Request $request)
     {
         $data = $request->validate([

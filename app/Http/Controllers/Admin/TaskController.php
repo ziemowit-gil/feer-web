@@ -11,8 +11,17 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
+/**
+ * Panel admin: zarządzanie zadaniami wewnętrznymi (kanban) z powiadomieniami
+ * przy przypisaniu oraz licznikiem moich nieukończonych zadań dla badge'a.
+ *
+ * Metody: index(), create(), store(), edit(), update(), destroy(), done(), myPendingCount().
+ *
+ * @author Ziemowit Gil <ziemowit.gil@feer.org.pl>
+ */
 class TaskController extends Controller
 {
+    /** Wyświetla tablicę kanban zadań z filtrowaniem po statusie i przypisaniu. */
     public function index(Request $request): View
     {
         $user = $request->user();
@@ -43,12 +52,14 @@ class TaskController extends Controller
         return view('admin.tasks.index', compact('tasks', 'users', 'filter', 'mine', 'openCount', 'doneCount'));
     }
 
+    /** Wyświetla formularz tworzenia nowego zadania. */
     public function create(): View
     {
         $users = User::orderBy('name')->get(['id', 'name', 'email']);
         return view('admin.tasks.form', ['task' => new Task(), 'users' => $users]);
     }
 
+    /** Zapisuje nowe zadanie i wysyła powiadomienie do przypisanej osoby. */
     public function store(TaskRequest $request): RedirectResponse
     {
         $data = $request->validated();
@@ -65,12 +76,14 @@ class TaskController extends Controller
         return redirect()->route('admin.zadania.index')->with('status', 'Zadanie zostało dodane.');
     }
 
+    /** Wyświetla formularz edycji zadania. */
     public function edit(Task $zadanie): View
     {
         $users = User::orderBy('name')->get(['id', 'name', 'email']);
         return view('admin.tasks.form', ['task' => $zadanie, 'users' => $users]);
     }
 
+    /** Aktualizuje zadanie i wysyła powiadomienie przy zmianie przypisania. */
     public function update(TaskRequest $request, Task $zadanie): RedirectResponse
     {
         $data = $request->validated();
@@ -89,12 +102,14 @@ class TaskController extends Controller
         return redirect()->route('admin.zadania.index')->with('status', 'Zadanie zostało zaktualizowane.');
     }
 
+    /** Usuwa zadanie. */
     public function destroy(Task $zadanie): RedirectResponse
     {
         $zadanie->delete();
         return redirect()->route('admin.zadania.index')->with('status', 'Zadanie zostało usunięte.');
     }
 
+    /** Szybkie oznaczenie zadania jako ukończonego. */
     public function done(Task $zadanie): RedirectResponse
     {
         $zadanie->update(['status' => 'done', 'completed_at' => now()]);
@@ -128,6 +143,7 @@ class TaskController extends Controller
         }
     }
 
+    /** Liczba moich nieukończonych zadań (do plakietki w menu). */
     public static function myPendingCount(int $userId): int
     {
         return Task::where('assigned_to', $userId)->pending()->count();

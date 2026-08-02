@@ -8,8 +8,17 @@ use App\Models\SiteSetting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 
+/**
+ * Przyjmuje zgłoszenia barier dostępności z formularza na stronie publicznej
+ * i wysyła powiadomienie mailowe na adres kontaktowy organizacji.
+ *
+ * Metody: store().
+ *
+ * @author Ziemowit Gil <ziemowit.gil@feer.org.pl>
+ */
 class AccessibilityReportController extends Controller
 {
+    /** Waliduje i zapisuje zgłoszenie bariery dostępności, a następnie wysyła powiadomienie e-mail. */
     public function store(Request $request)
     {
         $data = $request->validate([

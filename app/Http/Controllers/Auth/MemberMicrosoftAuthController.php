@@ -13,8 +13,12 @@ use Illuminate\View\View;
 use Laravel\Socialite\Facades\Socialite;
 
 /**
- * Osobne logowanie do stron wewnętrznych („strefa współpracownika") przez
- * Microsoft 365. Loguje do guardu „member" — całkowicie oddzielonego od panelu.
+ * Logowanie współpracowników do strefy wewnętrznej przez Microsoft 365
+ * (guard „member" — oddzielony od panelu administracyjnego).
+ *
+ * Metody: create(), redirect(), callback(), destroy().
+ *
+ * @author Ziemowit Gil <ziemowit.gil@feer.org.pl>
  */
 class MemberMicrosoftAuthController extends Controller
 {

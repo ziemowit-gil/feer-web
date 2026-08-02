@@ -9,8 +9,16 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\View\View;
 
+/**
+ * Panel admin: zarządzanie strefami banerów — miejscami wyświetlania banerów w serwisie.
+ *
+ * Metody: index(), create(), store(), edit(), update(), destroy().
+ *
+ * @author Ziemowit Gil <ziemowit.gil@feer.org.pl>
+ */
 class BannerZoneController extends Controller
 {
+    /** Wyświetla listę stref banerów z liczbą przypisanych banerów. */
     public function index(): View
     {
         $zones = BannerZone::withCount('banners')->orderBy('label')->get();
@@ -18,11 +26,13 @@ class BannerZoneController extends Controller
         return view('admin.banner-zones.index', compact('zones'));
     }
 
+    /** Wyświetla formularz tworzenia nowej strefy banerów. */
     public function create(): View
     {
         return view('admin.banner-zones.form', ['zone' => new BannerZone]);
     }
 
+    /** Zapisuje nową strefę banerów. */
     public function store(Request $request): RedirectResponse
     {
         $request->validate([
@@ -38,11 +48,13 @@ class BannerZoneController extends Controller
             ->with('status', 'Strefa „' . $request->label . '" została dodana.');
     }
 
+    /** Wyświetla formularz edycji strefy banerów. */
     public function edit(BannerZone $strefaBanneru): View
     {
         return view('admin.banner-zones.form', ['zone' => $strefaBanneru]);
     }
 
+    /** Aktualizuje strefę banerów i czyści jej cache. */
     public function update(Request $request, BannerZone $strefaBanneru): RedirectResponse
     {
         $request->validate([
@@ -59,6 +71,7 @@ class BannerZoneController extends Controller
             ->with('status', 'Strefa „' . $strefaBanneru->label . '" została zaktualizowana.');
     }
 
+    /** Usuwa strefę banerów i czyści jej cache. */
     public function destroy(BannerZone $strefaBanneru): RedirectResponse
     {
         $slug = $strefaBanneru->slug;

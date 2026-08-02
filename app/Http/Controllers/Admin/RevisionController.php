@@ -9,6 +9,14 @@ use App\Models\Project;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
 
+/**
+ * Panel admin: historia wersji treści (podstrony, aktualności, projekty)
+ * z podglądem JSON i możliwością przywrócenia wybranej wersji.
+ *
+ * Metody: index(), json(), restore().
+ *
+ * @author Ziemowit Gil <ziemowit.gil@feer.org.pl>
+ */
 class RevisionController extends Controller
 {
     /** typ => [klasa modelu, moduł, trasa edycji, etykieta, nazwa pola tytułu]. */

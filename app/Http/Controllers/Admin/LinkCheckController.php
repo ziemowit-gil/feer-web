@@ -11,11 +11,19 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
 
+/**
+ * Panel admin: skaner martwych linków w treści aktualności, podstron i projektów.
+ *
+ * Metody: index(), scan().
+ *
+ * @author Ziemowit Gil <ziemowit.gil@feer.org.pl>
+ */
 class LinkCheckController extends Controller
 {
     /** Maks. liczba zewnętrznych adresów sprawdzanych w jednym skanie. */
     private const MAX_EXTERNAL = 150;
 
+    /** Wyświetla wyniki ostatniego skanowania martwych linków. */
     public function index()
     {
         return view('admin.link-check.index', [
@@ -25,6 +33,7 @@ class LinkCheckController extends Controller
         ]);
     }
 
+    /** Uruchamia skanowanie linków w treściach i zapisuje wyniki w cache. */
     public function scan()
     {
         $links = $this->collectLinks();          // ['url' => ['label'=>, 'edit_url'=>], ...]

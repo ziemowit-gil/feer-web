@@ -1,0 +1,423 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wdrożenie — FEER CMS</title>
+<style>
+/* ── Tokens ─────────────────────────────────────────────────── */
+:root {
+  --bg:         #f8fafc;
+  --surface:    #ffffff;
+  --surface2:   #f1f5f9;
+  --border:     #e2e8f0;
+  --text:       #0f172a;
+  --text-muted: #64748b;
+  --accent:     #2563eb;
+  --accent-dim: #dbeafe;
+  --green:      #16a34a;
+  --green-dim:  #dcfce7;
+  --amber:      #d97706;
+  --amber-dim:  #fef3c7;
+  --red:        #dc2626;
+  --red-dim:    #fee2e2;
+  --code-bg:    #1e293b;
+  --code-text:  #e2e8f0;
+  --step-bg:    #f0f9ff;
+  --step-border:#bae6fd;
+  --radius:     6px;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg:         #0f172a;
+    --surface:    #1e293b;
+    --surface2:   #162032;
+    --border:     #334155;
+    --text:       #e2e8f0;
+    --text-muted: #94a3b8;
+    --accent:     #60a5fa;
+    --accent-dim: #1e3a5f;
+    --green:      #4ade80;
+    --green-dim:  #052e16;
+    --amber:      #fbbf24;
+    --amber-dim:  #451a03;
+    --red:        #f87171;
+    --red-dim:    #450a0a;
+    --code-bg:    #0d1117;
+    --code-text:  #e2e8f0;
+    --step-bg:    #0c2744;
+    --step-border:#1e40af;
+  }
+}
+:root[data-theme="dark"] {
+  --bg:         #0f172a;
+  --surface:    #1e293b;
+  --surface2:   #162032;
+  --border:     #334155;
+  --text:       #e2e8f0;
+  --text-muted: #94a3b8;
+  --accent:     #60a5fa;
+  --accent-dim: #1e3a5f;
+  --green:      #4ade80;
+  --green-dim:  #052e16;
+  --amber:      #fbbf24;
+  --amber-dim:  #451a03;
+  --red:        #f87171;
+  --red-dim:    #450a0a;
+  --code-bg:    #0d1117;
+  --code-text:  #e2e8f0;
+  --step-bg:    #0c2744;
+  --step-border:#1e40af;
+}
+:root[data-theme="light"] {
+  --bg:         #f8fafc;
+  --surface:    #ffffff;
+  --surface2:   #f1f5f9;
+  --border:     #e2e8f0;
+  --text:       #0f172a;
+  --text-muted: #64748b;
+  --accent:     #2563eb;
+  --accent-dim: #dbeafe;
+  --green:      #16a34a;
+  --green-dim:  #dcfce7;
+  --amber:      #d97706;
+  --amber-dim:  #fef3c7;
+  --red:        #dc2626;
+  --red-dim:    #fee2e2;
+  --code-bg:    #1e293b;
+  --code-text:  #e2e8f0;
+  --step-bg:    #f0f9ff;
+  --step-border:#bae6fd;
+}
+
+/* ── Reset ──────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 16px; scroll-behavior: smooth; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.7;
+  -webkit-font-smoothing: antialiased;
+}
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 2px; }
+
+/* ── Top bar ────────────────────────────────────────────────── */
+.topbar {
+  position: sticky; top: 0; z-index: 50;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 20px;
+  padding: 0 24px; height: 52px;
+}
+.topbar-brand { font-size: 13px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--text-muted); white-space: nowrap; }
+.topbar-title { font-size: 15px; font-weight: 600; color: var(--text); }
+.topbar-sep { color: var(--border); }
+.topbar-nav { display: flex; gap: 4px; margin-left: auto; align-items: center; }
+.topbar-nav a { font-size: 12px; padding: 4px 10px; border-radius: var(--radius); color: var(--text-muted); font-weight: 500; transition: background .12s, color .12s; }
+.topbar-nav a:hover { background: var(--surface2); color: var(--text); text-decoration: none; }
+
+/* ── Layout ─────────────────────────────────────────────────── */
+.page { max-width: 860px; margin: 0 auto; padding: 48px 24px 80px; }
+
+/* ── Hero ───────────────────────────────────────────────────── */
+.hero { margin-bottom: 48px; padding-bottom: 32px; border-bottom: 1px solid var(--border); }
+.hero-eyebrow { font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--accent); margin-bottom: 8px; }
+.hero h1 { font-size: clamp(1.6rem, 4vw, 2.4rem); font-weight: 800; line-height: 1.2; text-wrap: balance; margin-bottom: 10px; }
+.hero-meta { font-size: 13px; color: var(--text-muted); }
+
+/* ── Section ────────────────────────────────────────────────── */
+.section { margin-bottom: 48px; }
+.section h2 {
+  font-size: 1.05rem; font-weight: 700;
+  color: var(--text); margin-bottom: 16px;
+  padding-bottom: 8px; border-bottom: 2px solid var(--border);
+}
+.section h3 { font-size: .9rem; font-weight: 700; margin: 20px 0 8px; color: var(--text); }
+
+/* ── Code blocks ─────────────────────────────────────────────── */
+pre {
+  background: var(--code-bg);
+  color: var(--code-text);
+  padding: 16px 20px;
+  border-radius: var(--radius);
+  overflow-x: auto;
+  font-family: ui-monospace, 'Cascadia Code', 'SF Mono', Menlo, monospace;
+  font-size: 13px;
+  line-height: 1.6;
+  margin: 12px 0;
+}
+code {
+  font-family: ui-monospace, 'Cascadia Code', 'SF Mono', Menlo, monospace;
+  font-size: 12.5px;
+  background: var(--surface2);
+  color: var(--accent);
+  padding: 2px 5px;
+  border-radius: 3px;
+}
+pre code { background: none; color: inherit; padding: 0; font-size: inherit; }
+
+/* ── Tables ─────────────────────────────────────────────────── */
+.table-wrap { overflow-x: auto; border-radius: var(--radius); border: 1px solid var(--border); margin: 12px 0; }
+table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+thead tr { background: var(--surface2); }
+th { text-align: left; padding: 9px 14px; font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--text-muted); border-bottom: 1px solid var(--border); white-space: nowrap; }
+td { padding: 9px 14px; border-bottom: 1px solid var(--border); vertical-align: top; font-size: 13px; }
+tr:last-child td { border-bottom: none; }
+tbody tr:hover { background: var(--surface2); }
+td code { font-size: 12px; }
+
+/* ── Callout ────────────────────────────────────────────────── */
+.callout {
+  display: flex; gap: 12px; align-items: flex-start;
+  padding: 14px 16px; border-radius: var(--radius);
+  margin: 16px 0; font-size: 13.5px;
+}
+.callout-warn  { background: var(--amber-dim); border-left: 3px solid var(--amber); }
+.callout-info  { background: var(--step-bg);   border-left: 3px solid var(--accent); }
+.callout-danger{ background: var(--red-dim);   border-left: 3px solid var(--red); }
+.callout-icon  { font-size: 16px; line-height: 1.4; flex-shrink: 0; }
+.callout-body  { flex: 1; }
+.callout-body strong { display: block; margin-bottom: 2px; font-size: 13px; }
+
+/* ── Steps ──────────────────────────────────────────────────── */
+.steps { display: flex; flex-direction: column; gap: 0; }
+.step {
+  display: grid; grid-template-columns: 48px 1fr;
+  gap: 0 16px; padding: 16px 0;
+  border-bottom: 1px solid var(--border);
+}
+.step:last-child { border-bottom: none; }
+.step-num {
+  width: 32px; height: 32px; border-radius: 50%;
+  background: var(--accent-dim); color: var(--accent);
+  font-size: 13px; font-weight: 800;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; font-variant-numeric: tabular-nums;
+}
+.step-body { padding-top: 4px; }
+.step-title { font-weight: 700; font-size: 14px; margin-bottom: 4px; }
+.step-desc { font-size: 13px; color: var(--text-muted); }
+
+/* ── Env table ──────────────────────────────────────────────── */
+.env-key { font-family: ui-monospace, 'SF Mono', Menlo, monospace; font-size: 12.5px; color: var(--accent); }
+.env-req { color: var(--red); font-size: 11px; font-weight: 700; background: var(--red-dim); padding: 1px 5px; border-radius: 3px; }
+.env-opt { color: var(--text-muted); font-size: 11px; }
+
+/* ── Footer ─────────────────────────────────────────────────── */
+footer { margin-top: 64px; padding-top: 24px; border-top: 1px solid var(--border); font-size: 12px; color: var(--text-muted); display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
+</style>
+</head>
+<body>
+
+<header class="topbar" role="banner">
+  <span class="topbar-brand">FEER CMS</span>
+  <span class="topbar-sep">›</span>
+  <span class="topbar-title">Dokumentacja wdrożeniowa</span>
+  <nav class="topbar-nav" aria-label="Nawigacja">
+    <a href="#wymagania">Wymagania</a>
+    <a href="#env">Zmienne .env</a>
+    <a href="#lokalnie">Lokalnie</a>
+    <a href="#deploy">Deploy</a>
+    <a href="#sso">SSO</a>
+    <a href="controllers.html">Kontrolery</a>
+  </nav>
+</header>
+
+<main class="page" id="main">
+
+  <section class="hero" aria-labelledby="hero-h1">
+    <p class="hero-eyebrow">Dokumentacja techniczna</p>
+    <h1 id="hero-h1">Wdrożenie FEER CMS</h1>
+    <p class="hero-meta">Autor: Ziemowit Gil &lt;ziemowit.gil@feer.org.pl&gt; &mdash; Laravel 13 / PHP 8.3+</p>
+  </section>
+
+  <!-- WYMAGANIA -->
+  <section class="section" id="wymagania" aria-labelledby="h2-req">
+    <h2 id="h2-req">Wymagania</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Komponent</th><th>Wersja</th><th>Uwaga</th></tr></thead>
+        <tbody>
+          <tr><td><strong>PHP</strong></td><td><code>^8.3</code></td><td>Produkcja: <code>php85</code> (lub <code>php84</code>)</td></tr>
+          <tr><td><strong>Laravel</strong></td><td><code>^13.8</code></td><td></td></tr>
+          <tr><td><strong>Composer</strong></td><td>2.x</td><td></td></tr>
+          <tr><td><strong>Node.js</strong></td><td>20</td><td>NPM bundled; Vite do budowania assetów</td></tr>
+          <tr><td><strong>Baza danych</strong></td><td>SQLite</td><td>Dwie pliki: <code>database.sqlite</code> i <code>blog.sqlite</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Dwie bazy SQLite</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Baza</th><th>Plik</th><th>Połączenie</th><th>Migracje</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Główna</strong></td><td><code>database/database.sqlite</code></td><td><code>sqlite</code> (domyślne)</td><td><code>database/migrations/</code></td></tr>
+          <tr><td><strong>Blog Wiem FEER</strong></td><td><code>database/blog.sqlite</code></td><td><code>blog</code></td><td><code>database/migrations/blog/</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠</span>
+      <div class="callout-body">
+        <strong><code>php artisan migrate</code> migruje tylko główną bazę.</strong>
+        Bazę bloga migruj zawsze z flagami <code>--database=blog --path=database/migrations/blog</code>.
+      </div>
+    </div>
+  </section>
+
+  <!-- ENV -->
+  <section class="section" id="env" aria-labelledby="h2-env">
+    <h2 id="h2-env">Zmienne środowiskowe <code>.env</code></h2>
+    <p style="font-size:13px;color:var(--text-muted);margin-bottom:16px;">Skopiuj <code>.env.example</code> → <code>.env</code> i uzupełnij poniższe wartości.</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Zmienna</th><th>Przykład / opis</th><th></th></tr></thead>
+        <tbody>
+          <tr><td class="env-key">APP_KEY</td><td>Wygeneruj: <code>php artisan key:generate</code></td><td><span class="env-req">WYMAGANE</span></td></tr>
+          <tr><td class="env-key">APP_ENV</td><td><code>production</code> na serwerze</td><td><span class="env-req">WYMAGANE</span></td></tr>
+          <tr><td class="env-key">APP_DEBUG</td><td><code>false</code> — nigdy <code>true</code> na produkcji</td><td><span class="env-req">WYMAGANE</span></td></tr>
+          <tr><td class="env-key">APP_URL</td><td><code>https://feer.org.pl</code></td><td><span class="env-req">WYMAGANE</span></td></tr>
+          <tr><td class="env-key">BLOG_DB_DATABASE</td><td>Bezwzględna ścieżka do <code>blog.sqlite</code></td><td><span class="env-req">WYMAGANE</span></td></tr>
+          <tr><td class="env-key">ADMIN_PREFIX</td><td><code>zarzadzanie</code> — ukrywa panel pod innym URL (domyślnie: <code>admin</code>)</td><td><span class="env-opt">opcjonalne</span></td></tr>
+          <tr><td class="env-key">MAIL_MAILER</td><td><code>smtp</code> z danymi serwera SMTP organizacji</td><td><span class="env-req">WYMAGANE</span></td></tr>
+          <tr><td class="env-key">MICROSOFT_CLIENT_ID</td><td>ID aplikacji z Azure Portal</td><td><span class="env-req">WYMAGANE dla SSO</span></td></tr>
+          <tr><td class="env-key">MICROSOFT_CLIENT_SECRET</td><td>Secret z Azure Portal</td><td><span class="env-req">WYMAGANE dla SSO</span></td></tr>
+          <tr><td class="env-key">MICROSOFT_REDIRECT_URI</td><td><code>https://feer.org.pl/auth/microsoft/callback</code></td><td><span class="env-req">WYMAGANE dla SSO</span></td></tr>
+          <tr><td class="env-key">MICROSOFT_TENANT_ID</td><td><code>common</code> lub konkretny ID tenanta org.</td><td><span class="env-opt">opcjonalne</span></td></tr>
+          <tr><td class="env-key">UNSPLASH_ACCESS_KEY</td><td>Bezpłatny klucz z unsplash.com/developers</td><td><span class="env-opt">opcjonalne</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- LOKALNIE -->
+  <section class="section" id="lokalnie" aria-labelledby="h2-local">
+    <h2 id="h2-local">Pierwsze uruchomienie (lokalne)</h2>
+    <div class="steps">
+      <div class="step"><div class="step-num">1</div><div class="step-body"><div class="step-title">Zależności PHP</div><pre>composer install</pre></div></div>
+      <div class="step"><div class="step-num">2</div><div class="step-body"><div class="step-title">Plik .env i klucz aplikacji</div><pre>cp .env.example .env
+php artisan key:generate</pre></div></div>
+      <div class="step"><div class="step-num">3</div><div class="step-body"><div class="step-title">Utwórz pliki baz SQLite</div><pre>touch database/database.sqlite
+touch database/blog.sqlite</pre></div></div>
+      <div class="step"><div class="step-num">4</div><div class="step-body"><div class="step-title">Uruchom migracje</div><pre>php artisan migrate
+php artisan migrate --database=blog --path=database/migrations/blog</pre></div></div>
+      <div class="step"><div class="step-num">5</div><div class="step-body"><div class="step-title">Symlink storage</div><pre>php artisan storage:link</pre></div></div>
+      <div class="step"><div class="step-num">6</div><div class="step-body"><div class="step-title">Zbuduj frontend</div><pre>npm install
+npm run dev</pre></div></div>
+      <div class="step"><div class="step-num">7</div><div class="step-body"><div class="step-title">Serwer deweloperski</div><pre>php artisan serve</pre><div class="step-desc">Panel: <code>http://localhost:8000/{ADMIN_PREFIX}</code> (domyślnie <code>/admin</code>)</div></div></div>
+    </div>
+  </section>
+
+  <!-- DEPLOY -->
+  <section class="section" id="deploy" aria-labelledby="h2-deploy">
+    <h2 id="h2-deploy">Wdrożenie produkcyjne — <code>deploy.sh</code></h2>
+    <p style="font-size:13px;color:var(--text-muted);margin-bottom:16px;">Skrypt realizuje 7-krokowy proces z trybem serwisowym, kopią zapasową baz i rollbackiem przy błędzie.</p>
+
+    <pre>./deploy.sh</pre>
+
+    <p style="font-size:13px;color:var(--text-muted);margin:12px 0 16px;">Skrypt pyta o potwierdzenie i pokazuje listę nadchodzących commitów przed wdrożeniem.</p>
+
+    <h3>Kroki deploy.sh</h3>
+    <div class="steps">
+      <div class="step"><div class="step-num">1</div><div class="step-body"><div class="step-title">Tryb serwisowy</div><div class="step-desc"><code>php85 artisan down --render="errors::503" --retry=30</code> — strona niewidoczna dla użytkowników.</div></div></div>
+      <div class="step"><div class="step-num">2</div><div class="step-body"><div class="step-title">Kopia zapasowa baz SQLite</div><div class="step-desc">Obie bazy kopiowane do <code>/tmp/feer-db-YYYYMMDD-HHMMSS.sqlite</code> przed git pull.</div></div></div>
+      <div class="step"><div class="step-num">3</div><div class="step-body"><div class="step-title">Git pull</div><div class="step-desc"><code>git pull origin main</code> — po pobraniu bazy są przywracane z kopii (git checkout je resetuje).</div></div></div>
+      <div class="step"><div class="step-num">4</div><div class="step-body"><div class="step-title">Composer update</div><div class="step-desc"><code>--no-dev --optimize-autoloader</code>; przy błędzie skrypt kontynuuje i podaje instrukcję ręczną.</div></div></div>
+      <div class="step"><div class="step-num">5</div><div class="step-body"><div class="step-title">Build frontend (npm)</div><div class="step-desc"><code>npm ci &amp;&amp; npm run build</code> — generuje pliki do <code>public/build/</code>.</div></div></div>
+      <div class="step"><div class="step-num">6</div><div class="step-body"><div class="step-title">Migracje obu baz</div><pre>php85 artisan migrate --force
+php85 artisan migrate --force --database=blog --path=database/migrations/blog</pre></div></div>
+      <div class="step"><div class="step-num">7</div><div class="step-body"><div class="step-title">Cache i wyłączenie trybu serwisowego</div><div class="step-desc"><code>optimize:clear</code> → <code>optimize</code> → <code>artisan up</code></div></div></div>
+    </div>
+
+    <h3>Zmienne środowiskowe skryptu</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Zmienna</th><th>Domyślna</th><th>Opis</th></tr></thead>
+        <tbody>
+          <tr><td><code>PHP_BIN</code></td><td><code>php85</code> / <code>php84</code> (autodetect)</td><td>Binarka PHP CLI na serwerze</td></tr>
+          <tr><td><code>COMPOSER_BIN</code></td><td><code>composer</code></td><td>Binarka Composer</td></tr>
+          <tr><td><code>NPM_BIN</code></td><td><code>/opt/alt/alt-nodejs20/…/npm</code></td><td>Binarka npm</td></tr>
+          <tr><td><code>BRANCH</code></td><td><code>main</code></td><td>Gałąź Git do wdrożenia</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout callout-info">
+      <span class="callout-icon">💡</span>
+      <div class="callout-body">
+        <strong>Lokalny test skryptu:</strong>
+        <code>PHP_BIN=php COMPOSER_BIN=composer NPM_BIN=npm ./deploy.sh</code>
+      </div>
+    </div>
+
+    <h3>Rollback po błędzie</h3>
+    <p style="font-size:13px;color:var(--text-muted);margin-bottom:8px;">Skrypt ma ustawiony <code>trap ERR</code> — tryb serwisowy jest wyłączany automatycznie. Ręczne przywrócenie bazy:</p>
+    <pre>cp /tmp/feer-db-20260101-120000.sqlite database/database.sqlite
+cp /tmp/feer-blog-db-20260101-120000.sqlite database/blog.sqlite
+php85 artisan optimize:clear</pre>
+  </section>
+
+  <!-- SSO -->
+  <section class="section" id="sso" aria-labelledby="h2-sso">
+    <h2 id="h2-sso">Microsoft 365 SSO — konfiguracja Azure</h2>
+    <div class="steps">
+      <div class="step"><div class="step-num">1</div><div class="step-body"><div class="step-title">Utwórz rejestrację aplikacji</div><div class="step-desc">Azure Portal → Microsoft Entra ID → Rejestracje aplikacji → Nowa rejestracja.</div></div></div>
+      <div class="step"><div class="step-num">2</div><div class="step-body"><div class="step-title">Ustaw Redirect URI (Web)</div><pre>https://feer.org.pl/auth/microsoft/callback
+https://feer.org.pl/auth/member/microsoft/callback</pre></div></div>
+      <div class="step"><div class="step-num">3</div><div class="step-body"><div class="step-title">Utwórz Client Secret</div><div class="step-desc">Certyfikaty i wpisy tajne → Nowy wpis tajny klienta → skopiuj wartość (pokazywana raz).</div></div></div>
+      <div class="step"><div class="step-num">4</div><div class="step-body"><div class="step-title">Skopiuj dane do .env</div><pre>MICROSOFT_CLIENT_ID=&lt;ID aplikacji&gt;
+MICROSOFT_CLIENT_SECRET=&lt;Secret&gt;
+MICROSOFT_TENANT_ID=&lt;ID tenanta lub "common"&gt;</pre></div></div>
+    </div>
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠</span>
+      <div class="callout-body">
+        <strong>Ograniczenie logowania do domeny org:</strong>
+        Ustaw <code>MICROSOFT_TENANT_ID</code> na konkretny ID tenanta (zamiast <code>common</code>), aby zablokować zewnętrzne konta Microsoft.
+      </div>
+    </div>
+  </section>
+
+  <!-- DODATKOWE -->
+  <section class="section" id="inne" aria-labelledby="h2-inne">
+    <h2 id="h2-inne">Pozostałe polecenia</h2>
+
+    <h3>Prawa dostępu</h3>
+    <pre>chmod -R 775 storage bootstrap/cache
+chown -R www-data:www-data storage bootstrap/cache</pre>
+
+    <h3>Kolejka zadań (Queue Worker)</h3>
+    <pre>php85 artisan queue:work --tries=3 --timeout=60</pre>
+
+    <h3>Scheduler (cron)</h3>
+    <pre>* * * * * www-data php85 /ścieżka/do/artisan schedule:run >> /dev/null 2>&amp;1</pre>
+
+    <h3>Cache — ręczne odświeżenie</h3>
+    <pre>php85 artisan optimize:clear   # czyści
+php85 artisan optimize          # buduje (config + routes + views)</pre>
+
+    <h3>Migracje ręczne</h3>
+    <pre>php85 artisan migrate --force
+php85 artisan migrate --force --database=blog --path=database/migrations/blog</pre>
+
+    <div class="callout callout-danger">
+      <span class="callout-icon">🔴</span>
+      <div class="callout-body">
+        <strong>Na serwerze produkcyjnym:</strong> zawsze używaj <code>php85</code>, nigdy samego <code>php</code> — może wskazywać na starszą wersję.
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <span>FEER CMS &mdash; Dokumentacja wdrożeniowa</span>
+  <span>Ziemowit Gil &lt;ziemowit.gil@feer.org.pl&gt;</span>
+</footer>
+
+</body>
+</html>

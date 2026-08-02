@@ -9,11 +9,17 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\View\View;
 
+/**
+ * Profil zalogowanego użytkownika panelu: edycja danych osobowych,
+ * preferencje powiadomień e-mail i usunięcie własnego konta.
+ *
+ * Metody: edit(), update(), updateNotifications(), destroy().
+ *
+ * @author Ziemowit Gil <ziemowit.gil@feer.org.pl>
+ */
 class ProfileController extends Controller
 {
-    /**
-     * Display the user's profile form.
-     */
+    /** Wyświetla formularz edycji profilu zalogowanego użytkownika. */
     public function edit(Request $request): View
     {
         return view('profile.edit', [
@@ -21,9 +27,7 @@ class ProfileController extends Controller
         ]);
     }
 
-    /**
-     * Update the user's profile information.
-     */
+    /** Zapisuje zaktualizowane dane profilu; resetuje weryfikację e-mail, gdy adres się zmienił. */
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
         $request->user()->fill($request->validated());
@@ -50,9 +54,7 @@ class ProfileController extends Controller
         return Redirect::route('profile.edit')->with('status', 'notifications-updated');
     }
 
-    /**
-     * Delete the user's account.
-     */
+    /** Usuwa konto zalogowanego użytkownika po weryfikacji hasła i inwaliduje sesję. */
     public function destroy(Request $request): RedirectResponse
     {
         $request->validateWithBag('userDeletion', [

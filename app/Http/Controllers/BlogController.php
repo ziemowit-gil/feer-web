@@ -5,8 +5,16 @@ namespace App\Http\Controllers;
 use App\Models\BlogArticle;
 use Illuminate\Http\Request;
 
+/**
+ * Publiczna lista i widok artykułów bloga Wiem FEER (z obsługą podglądu szkicu).
+ *
+ * Metody: index(), show().
+ *
+ * @author Ziemowit Gil <ziemowit.gil@feer.org.pl>
+ */
 class BlogController extends Controller
 {
+    /** Wyświetla listing artykułów bloga z wyróżnionym najnowszym wpisem w sekcji hero. */
     public function index()
     {
         // Najnowszy wpis prezentujemy jako wyróżniony (hero) na pierwszej stronie.
@@ -28,6 +36,7 @@ class BlogController extends Controller
         return view('blog.index', compact('articles', 'featured'));
     }
 
+    /** Wyświetla pojedynczy artykuł bloga; obsługuje tryb podglądu szkicu dla zalogowanych. */
     public function show(Request $request, BlogArticle $article)
     {
         $preview = $this->isPreviewRequest($request);

@@ -7,11 +7,16 @@ use Illuminate\Auth\Events\Verified;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Http\RedirectResponse;
 
+/**
+ * Potwierdzenie adresu e-mail przez link weryfikacyjny z wiadomości.
+ *
+ * Metody: __invoke().
+ *
+ * @author Ziemowit Gil <ziemowit.gil@feer.org.pl>
+ */
 class VerifyEmailController extends Controller
 {
-    /**
-     * Mark the authenticated user's email address as verified.
-     */
+    /** Oznacza adres e-mail zalogowanego użytkownika jako zweryfikowany i przekierowuje do pulpitu. */
     public function __invoke(EmailVerificationRequest $request): RedirectResponse
     {
         if ($request->user()->hasVerifiedEmail()) {

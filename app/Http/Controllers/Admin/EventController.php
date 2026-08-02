@@ -12,8 +12,18 @@ use App\Models\SiteSetting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
+/**
+ * Panel admin: pełny CRUD szkoleń/wydarzeń z archiwizacją, klonowaniem, operacjami
+ * zbiorczymi i konwersją na aktualność lub landing page.
+ *
+ * Metody: index(), archive(), restore(), create(), store(), edit(), update(), destroy(),
+ *         clone(), bulk(), toNews(), toLanding().
+ *
+ * @author Ziemowit Gil <ziemowit.gil@feer.org.pl>
+ */
 class EventController extends Controller
 {
+    /** Wyświetla listę wydarzeń — aktywnych lub zarchiwizowanych (parametr ?archived=1). */
     public function index(Request $request)
     {
         $showArchived = $request->boolean('archived');
@@ -45,6 +55,7 @@ class EventController extends Controller
         return redirect()->back()->with('status', 'Wydarzenie zostało przywrócone z archiwum.');
     }
 
+    /** Wyświetla formularz tworzenia nowego wydarzenia. */
     public function create()
     {
         return view('admin.events.form', [
@@ -57,6 +68,7 @@ class EventController extends Controller
         ]);
     }
 
+    /** Zapisuje nowe wydarzenie z FAQ i zdjęciem prowadzącej. */
     public function store(EventRequest $request)
     {
         $data = $this->prepared($request);
@@ -69,6 +81,7 @@ class EventController extends Controller
         return redirect()->route('admin.wydarzenia.index')->with('status', 'Wydarzenie zostało dodane.');
     }
 
+    /** Wyświetla formularz edycji wydarzenia. */
     public function edit(Event $event)
     {
         return view('admin.events.form', ['event' => $event, 'allFaqs' => $this->faqOptions()]);
@@ -82,6 +95,7 @@ class EventController extends Controller
             : collect();
     }
 
+    /** Aktualizuje wydarzenie wraz z FAQ i zdjęciem prowadzącej. */
     public function update(EventRequest $request, Event $event)
     {
         $data = $this->prepared($request);
@@ -94,6 +108,7 @@ class EventController extends Controller
         return redirect()->route('admin.wydarzenia.index')->with('status', 'Wydarzenie zostało zaktualizowane.');
     }
 
+    /** Usuwa wydarzenie. */
     public function destroy(Event $event)
     {
         $event->delete();
@@ -101,6 +116,7 @@ class EventController extends Controller
         return redirect()->route('admin.wydarzenia.index')->with('status', 'Wydarzenie zostało usunięte.');
     }
 
+    /** Klonuje wydarzenie jako szkic bez daty, kopiując powiązane FAQ. */
     public function clone(Event $event)
     {
         $clone = $event->replicate();
@@ -121,6 +137,7 @@ class EventController extends Controller
             ->with('status', 'Wydarzenie zostało sklonowane jako "' . $clone->title . '". Jest zapisane jako szkic — uzupełnij termin.');
     }
 
+    /** Wykonuje operację zbiorczą na zaznaczonych wydarzeniach (archiwizacja, przywrócenie, usunięcie). */
     public function bulk(Request $request)
     {
         $data = $request->validate([

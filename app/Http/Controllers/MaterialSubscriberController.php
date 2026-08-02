@@ -5,8 +5,16 @@ namespace App\Http\Controllers;
 use App\Models\MaterialSubscriber;
 use Illuminate\Http\Request;
 
+/**
+ * Zapis adresu e-mail na listę powiadomień o nowych materiałach edukacyjnych.
+ *
+ * Metody: store().
+ *
+ * @author Ziemowit Gil <ziemowit.gil@feer.org.pl>
+ */
 class MaterialSubscriberController extends Controller
 {
+    /** Dodaje adres e-mail do listy powiadomień o nowych materiałach edukacyjnych (bez duplikatów). */
     public function store(Request $request)
     {
         $data = $request->validate([

@@ -6,6 +6,13 @@ use App\Models\Banner;
 use Illuminate\Http\RedirectResponse;
 use Symfony\Component\HttpFoundation\Response;
 
+/**
+ * Rejestruje statystyki banerów: wyświetlenia (próbkowanie 1:5) i kliknięcia.
+ *
+ * Metody: impression(), click().
+ *
+ * @author Ziemowit Gil <ziemowit.gil@feer.org.pl>
+ */
 class BannerTrackingController extends Controller
 {
     /** Rejestruje wyświetlenie bannera (losowe próbkowanie 1:5, bez bazy przy każdym pageview). */

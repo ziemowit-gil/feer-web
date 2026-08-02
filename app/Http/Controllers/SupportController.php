@@ -7,8 +7,16 @@ use App\Models\Page;
 use App\Models\Partner;
 use App\Models\SiteSetting;
 
+/**
+ * Publiczna strona „Wesprzyj nas" ze statystykami, galerią i listą metod wsparcia organizacji.
+ *
+ * Metody: index().
+ *
+ * @author Ziemowit Gil <ziemowit.gil@feer.org.pl>
+ */
 class SupportController extends Controller
 {
+    /** Wyświetla stronę „Wesprzyj nas" ze statystykami, galerią i listą metod wsparcia. */
     public function index()
     {
         $settings = SiteSetting::current();

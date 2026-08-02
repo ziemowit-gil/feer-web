@@ -14,10 +14,19 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
+/**
+ * Panel admin: zarządzanie aktualnościami z wyszukiwaniem, klonowaniem, operacjami
+ * zbiorczymi i obsługą zdjęcia głównego (plik/Unsplash/biblioteka).
+ *
+ * Metody: index(), create(), store(), edit(), update(), destroy(), clone(), bulk().
+ *
+ * @author Ziemowit Gil <ziemowit.gil@feer.org.pl>
+ */
 class NewsController extends Controller
 {
     use HandlesContentApproval;
 
+    /** Wyświetla listę aktualności z wyszukiwaniem, filtrowaniem statusu i kategorii. */
     public function index(Request $request)
     {
         $search = $request->query('q', '');
@@ -52,6 +61,7 @@ class NewsController extends Controller
         ]);
     }
 
+    /** Wyświetla formularz tworzenia nowej aktualności. */
     public function create()
     {
         return view('admin.news.form', [
@@ -61,6 +71,7 @@ class NewsController extends Controller
         ]);
     }
 
+    /** Zapisuje nową aktualność z tagami i opcjonalnym zdjęciem. */
     public function store(Request $request)
     {
         $data = $this->validated($request);
@@ -75,6 +86,7 @@ class NewsController extends Controller
         return redirect()->route('admin.newsy.index')->with('status', 'News został utworzony.');
     }
 
+    /** Wyświetla formularz edycji aktualności. */
     public function edit(News $news)
     {
         return view('admin.news.form', [
@@ -85,6 +97,7 @@ class NewsController extends Controller
         ]);
     }
 
+    /** Aktualizuje aktualność z tagami i opcjonalnym zdjęciem. */
     public function update(Request $request, News $news)
     {
         $data = $this->validated($request);
@@ -99,6 +112,7 @@ class NewsController extends Controller
         return redirect()->route('admin.newsy.index')->with('status', 'News został zaktualizowany.');
     }
 
+    /** Usuwa aktualność (opcjonalnie wraz z klonami). */
     public function destroy(Request $request, News $news)
     {
         if ($request->boolean('with_clones')) {
@@ -110,6 +124,7 @@ class NewsController extends Controller
         return redirect()->route('admin.newsy.index')->with('status', 'News został usunięty.');
     }
 
+    /** Klonuje aktualność jako szkic bez zdjęcia. */
     public function clone(News $news)
     {
         $clone = $news->replicate();
@@ -128,6 +143,7 @@ class NewsController extends Controller
             ->with('status', "News został sklonowany jako „{$clone->title}”. Jest zapisany jako szkic (bez zdjęcia — dodaj je ponownie).");
     }
 
+    /** Wykonuje zbiorczą operację (kosz / publikuj / cofnij / archiwizuj) na zaznaczonych aktualnościach. */
     public function bulk(Request $request)
     {
         $data = $request->validate([

@@ -56,6 +56,7 @@
                 class="absolute inset-0 flex items-end bg-cover bg-center transition-opacity duration-700 motion-reduce:transition-none {{ $index === 0 ? 'opacity-100' : 'opacity-0 pointer-events-none' }}"
                 style="background-image: linear-gradient(0deg, rgba(0,0,0,.65), rgba(0,0,0,.15)), url('{{ $slide->image_url }}')"
                 data-hero-slide
+                @if ($slide->duration) data-hero-duration="{{ $slide->duration }}" @endif
                 @if ($index !== 0) aria-hidden="true" @endif
             >
                 <div class="mx-auto w-full {{ $hasSidebar ? '' : 'max-w-6xl' }} px-4 py-6 text-white">

@@ -13,6 +13,10 @@ use Illuminate\Validation\ValidationException;
 /**
  * Zarządzanie 2FA przez zalogowanego użytkownika panelu (na stronie profilu):
  * włączenie/potwierdzenie TOTP, kody zapasowe, rejestracja i usuwanie YubiKey.
+ *
+ * Metody: enable(), confirm(), disable(), regenerateRecovery(), addYubikey(), removeYubikey().
+ *
+ * @author Ziemowit Gil <ziemowit.gil@feer.org.pl>
  */
 class TwoFactorSettingController extends Controller
 {

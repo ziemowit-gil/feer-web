@@ -6,8 +6,16 @@ use App\Models\Poll;
 use App\Models\PollOption;
 use Illuminate\Http\Request;
 
+/**
+ * Obsługuje oddawanie głosu w ankiecie publicznej z dedupeiem po sesji przeglądarki.
+ *
+ * Metody: store().
+ *
+ * @author Ziemowit Gil <ziemowit.gil@feer.org.pl>
+ */
 class PollVoteController extends Controller
 {
+    /** Rejestruje głos w ankiecie z dedupeiem po sesji przeglądarki. */
     public function store(Request $request, Poll $poll)
     {
         $data = $request->validate([

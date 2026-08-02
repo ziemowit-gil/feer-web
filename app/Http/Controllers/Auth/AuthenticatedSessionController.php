@@ -12,11 +12,16 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
+/**
+ * Logowanie hasłem (e-mail + hasło) z obsługą 2FA (TOTP / YubiKey) i awaryjnego dostępu.
+ *
+ * Metody: create(), createEmergency(), store(), destroy().
+ *
+ * @author Ziemowit Gil <ziemowit.gil@feer.org.pl>
+ */
 class AuthenticatedSessionController extends Controller
 {
-    /**
-     * Display the login view.
-     */
+    /** Wyświetla formularz logowania hasłem. */
     public function create(): View
     {
         return view('auth.login');
@@ -35,9 +40,7 @@ class AuthenticatedSessionController extends Controller
         return view('auth.login', ['emergency' => true]);
     }
 
-    /**
-     * Handle an incoming authentication request.
-     */
+    /** Uwierzytelnia użytkownika; przy włączonym 2FA przekierowuje do wyzwania drugiego składnika. */
     public function store(LoginRequest $request): RedirectResponse
     {
         // Tryb "tylko MS": sprawdzamy flagę PRZED authenticate(), żeby nie
@@ -75,9 +78,7 @@ class AuthenticatedSessionController extends Controller
         return redirect()->intended(route('dashboard', absolute: false));
     }
 
-    /**
-     * Destroy an authenticated session.
-     */
+    /** Wylogowuje użytkownika i inwaliduje sesję. */
     public function destroy(Request $request): RedirectResponse
     {
         Auth::guard('web')->logout();

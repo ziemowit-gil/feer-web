@@ -13,8 +13,17 @@ use App\Models\QuickAction;
 use App\Models\SiteSetting;
 use App\Support\SubstackFeed;
 
+/**
+ * Strona główna serwisu — agreguje dane ze wszystkich włączonych modułów
+ * (hero, aktualności, wydarzenia, ankieta, szybkie akcje, galeria, partnerzy, Substack).
+ *
+ * Metody: index().
+ *
+ * @author Ziemowit Gil <ziemowit.gil@feer.org.pl>
+ */
 class HomeController extends Controller
 {
+    /** Wyświetla stronę główną z danymi wszystkich włączonych modułów (hero, aktualności, ankieta itp.). */
     public function index()
     {
         $settings = SiteSetting::current();
@@ -31,7 +40,8 @@ class HomeController extends Controller
                     'mission_bg'     => $settings->hero_mission_bg ?? 'brand',
                     'mission_img_url' => $settings->missionSlideImageUrl(),
                 ];
-                $slides = $slides->prepend($missionSlide);
+                $position = max(0, min((int) ($settings->hero_mission_order ?? 1) - 1, $slides->count()));
+                $slides = $slides->values()->take($position)->push($missionSlide)->merge($slides->values()->slice($position));
             }
         }
 

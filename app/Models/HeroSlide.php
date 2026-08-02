@@ -10,7 +10,9 @@ class HeroSlide extends Model implements HasMedia
 {
     use InteractsWithMedia;
 
-    protected $fillable = ['title', 'text', 'button_label', 'button_url', 'order'];
+    protected $fillable = ['title', 'text', 'button_label', 'button_url', 'order', 'duration'];
+
+    protected $casts = ['duration' => 'integer'];
 
     public function registerMediaCollections(): void
     {

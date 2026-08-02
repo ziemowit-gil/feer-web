@@ -8,11 +8,16 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\Password;
 
+/**
+ * Zmiana hasła przez zalogowanego użytkownika z poziomu strony profilu.
+ *
+ * Metody: update().
+ *
+ * @author Ziemowit Gil <ziemowit.gil@feer.org.pl>
+ */
 class PasswordController extends Controller
 {
-    /**
-     * Update the user's password.
-     */
+    /** Aktualizuje hasło zalogowanego użytkownika po weryfikacji aktualnego. */
     public function update(Request $request): RedirectResponse
     {
         $validated = $request->validateWithBag('updatePassword', [

@@ -6,8 +6,16 @@ use App\Http\Controllers\Controller;
 use App\Models\MeetingSignup;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
+/**
+ * Panel admin: lista zgłoszeń „Daj znać, że przyjdziesz" z możliwością usunięcia i eksportu CSV.
+ *
+ * Metody: index(), destroy(), export().
+ *
+ * @author Ziemowit Gil <ziemowit.gil@feer.org.pl>
+ */
 class MeetingSignupController extends Controller
 {
+    /** Wyświetla listę zgłoszeń na spotkania. */
     public function index()
     {
         return view('admin.meeting-signups.index', [
@@ -16,6 +24,7 @@ class MeetingSignupController extends Controller
         ]);
     }
 
+    /** Usuwa zgłoszenie na spotkanie. */
     public function destroy(MeetingSignup $signup)
     {
         $signup->delete();
@@ -25,6 +34,7 @@ class MeetingSignupController extends Controller
             ->with('status', 'Zgłoszenie zostało usunięte.');
     }
 
+    /** Eksportuje zgłoszenia na spotkania do pliku CSV. */
     public function export(): StreamedResponse
     {
         $filename = 'zgloszenia-spotkania-'.now()->format('Y-m-d').'.csv';

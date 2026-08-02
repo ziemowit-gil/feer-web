@@ -7,6 +7,13 @@ use App\Models\EtrContent;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
+/**
+ * Panel admin: zapis i usuwanie wersji ETR (Easy-To-Read) aktualności i podstron.
+ *
+ * Metody: update(), destroy().
+ *
+ * @author Ziemowit Gil <ziemowit.gil@feer.org.pl>
+ */
 class EtrController extends Controller
 {
     private const ALLOWED_TYPES = [
@@ -14,6 +21,12 @@ class EtrController extends Controller
         'podstrona' => \App\Models\Page::class,
     ];
 
+    /**
+     * Zapisuje lub aktualizuje wersję ETR dla aktualności lub podstrony.
+     *
+     * @param  string  $type  Typ treści: news|podstrona
+     * @param  int     $id    ID rekordu
+     */
     public function update(Request $request, string $type, int $id): RedirectResponse
     {
         abort_unless(array_key_exists($type, self::ALLOWED_TYPES), 404);
@@ -38,6 +51,12 @@ class EtrController extends Controller
         return back()->with('status', 'Wersja ETR została zapisana.');
     }
 
+    /**
+     * Usuwa wersję ETR powiązaną z aktualności lub podstroną.
+     *
+     * @param  string  $type  Typ treści: news|podstrona
+     * @param  int     $id    ID rekordu
+     */
     public function destroy(string $type, int $id): RedirectResponse
     {
         abort_unless(array_key_exists($type, self::ALLOWED_TYPES), 404);

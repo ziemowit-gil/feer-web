@@ -41,6 +41,7 @@ use App\Http\Controllers\Admin\TimelineController as AdminTimelineController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\Admin\UserGroupController as AdminUserGroupController;
 use App\Http\Controllers\Admin\ContentTemplateController as AdminContentTemplateController;
+use App\Http\Controllers\Admin\TagController as AdminTagController;
 use App\Http\Controllers\Admin\TaskController as AdminTaskController;
 use App\Http\Controllers\Admin\VolunteerAdController as AdminVolunteerAdController;
 use App\Http\Controllers\AccessibilityController;
@@ -247,6 +248,9 @@ Route::middleware(['auth', 'verified', '2fa'])->prefix(config('app.admin_prefix'
         Route::post('newsy/{news}/klonuj', [AdminNewsController::class, 'clone'])->name('newsy.klonuj');
         Route::post('newsy/zbiorczo', [AdminNewsController::class, 'bulk'])->name('newsy.bulk');
         Route::resource('kategorie-newsow', AdminNewsCategoryController::class)->parameters(['kategorie-newsow' => 'newsCategory'])->except('show');
+        Route::get('tagi', [AdminTagController::class, 'index'])->name('tagi.index');
+        Route::put('tagi/{tag}', [AdminTagController::class, 'update'])->name('tagi.update');
+        Route::delete('tagi/{tag}', [AdminTagController::class, 'destroy'])->name('tagi.destroy');
     });
 
     Route::middleware(['module:polls', 'module-access:polls'])->group(function () {

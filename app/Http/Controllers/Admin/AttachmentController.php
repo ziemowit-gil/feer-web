@@ -8,8 +8,16 @@ use App\Models\News;
 use App\Models\Page;
 use Illuminate\Http\Request;
 
+/**
+ * Panel admin: zarządzanie załącznikami (plikami do pobrania) przypiętymi do podstron i aktualności.
+ *
+ * Metody: storeForPage(), storeForNews(), lista(), destroy().
+ *
+ * @author Ziemowit Gil <ziemowit.gil@feer.org.pl>
+ */
 class AttachmentController extends Controller
 {
+    /** Dodaje załącznik do podstrony. */
     public function storeForPage(Request $request, Page $page)
     {
         $this->storeFor($request, $page);
@@ -17,6 +25,7 @@ class AttachmentController extends Controller
         return redirect()->route('admin.podstrony.edit', $page)->with('status', 'Plik został dodany.');
     }
 
+    /** Dodaje załącznik do aktualności. */
     public function storeForNews(Request $request, News $news)
     {
         $this->storeFor($request, $news);
@@ -24,6 +33,11 @@ class AttachmentController extends Controller
         return redirect()->route('admin.newsy.edit', $news)->with('status', 'Plik został dodany.');
     }
 
+    /**
+     * Zwraca JSON z listą wszystkich załączników z metadanymi (dla pickera w edytorze).
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function lista()
     {
         $attachments = Attachment::query()
@@ -47,6 +61,7 @@ class AttachmentController extends Controller
         return response()->json($attachments->values());
     }
 
+    /** Usuwa załącznik wraz z plikiem. */
     public function destroy(Attachment $attachment)
     {
         $attachment->delete();

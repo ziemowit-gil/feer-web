@@ -7,8 +7,16 @@ use App\Models\Page;
 use App\Models\PageImage;
 use Illuminate\Http\Request;
 
+/**
+ * Panel admin: galeria zdjęć przypiętych do konkretnej podstrony (upload, edycja, usuwanie).
+ *
+ * Metody: store(), update(), destroy().
+ *
+ * @author Ziemowit Gil <ziemowit.gil@feer.org.pl>
+ */
 class PageImageController extends Controller
 {
+    /** Dodaje zdjęcie do galerii podstrony i zapisuje je przez MediaLibrary. */
     public function store(Request $request, Page $page)
     {
         $data = $request->validate([
@@ -29,6 +37,7 @@ class PageImageController extends Controller
         return redirect()->route('admin.podstrony.edit', $page)->with('status', 'Zdjęcie zostało dodane do galerii.');
     }
 
+    /** Aktualizuje alt-tekst, podpis i kolejność zdjęcia. */
     public function update(Request $request, PageImage $image)
     {
         $data = $request->validate([
@@ -46,6 +55,7 @@ class PageImageController extends Controller
         return redirect()->route('admin.podstrony.edit', $image->page)->with('status', 'Zdjęcie zostało zaktualizowane.');
     }
 
+    /** Usuwa zdjęcie z galerii podstrony. */
     public function destroy(PageImage $image)
     {
         $page = $image->page;

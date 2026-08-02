@@ -7,8 +7,16 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use PhpOffice\PhpWord\IOFactory;
 
+/**
+ * Panel admin: konwersja pliku .docx do oczyszczonego HTML gotowego do wklejenia w edytor.
+ *
+ * Metody: import().
+ *
+ * @author Ziemowit Gil <ziemowit.gil@feer.org.pl>
+ */
 class DocxImportController extends Controller
 {
+    /** Konwertuje wgrany plik .docx do oczyszczonego HTML i zwraca go jako JSON. */
     public function import(Request $request): JsonResponse
     {
         $request->validate([

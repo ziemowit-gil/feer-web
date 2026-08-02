@@ -262,12 +262,17 @@ if (heroSlider) {
         }
     }
 
+    function getDelay() {
+        const dur = parseInt(slides[activeIndex]?.dataset.heroDuration, 10);
+        return (!isNaN(dur) && dur > 0) ? dur * 1000 : 6000;
+    }
+
     // WCAG 2.2.2 (Pause, Stop, Hide): auto-advance can always be stopped, and
     // never starts at all for users who asked for reduced motion.
     function restartTimer() {
-        clearInterval(timer);
+        clearTimeout(timer);
         if (!userPaused) {
-            timer = setInterval(() => showSlide(activeIndex + 1), 6000);
+            timer = setTimeout(() => { showSlide(activeIndex + 1); restartTimer(); }, getDelay());
         }
     }
 
@@ -294,9 +299,9 @@ if (heroSlider) {
 
     // Pause on hover/keyboard focus so a slide doesn't change under a reading user;
     // resume only if they hadn't explicitly paused it themselves.
-    heroSlider.addEventListener('mouseenter', () => clearInterval(timer));
+    heroSlider.addEventListener('mouseenter', () => clearTimeout(timer));
     heroSlider.addEventListener('mouseleave', () => restartTimer());
-    heroSlider.addEventListener('focusin', () => clearInterval(timer));
+    heroSlider.addEventListener('focusin', () => clearTimeout(timer));
     heroSlider.addEventListener('focusout', () => restartTimer());
 
     setPaused(userPaused);

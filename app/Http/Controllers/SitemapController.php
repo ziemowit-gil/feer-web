@@ -10,12 +10,16 @@ use App\Models\SiteSetting;
 use Spatie\Sitemap\Sitemap;
 use Spatie\Sitemap\Tags\Url;
 
+/**
+ * Generuje plik XML sitemap (dla robotów) oraz czytelną stronę HTML „Mapa strony".
+ *
+ * Metody: index(), page().
+ *
+ * @author Ziemowit Gil <ziemowit.gil@feer.org.pl>
+ */
 class SitemapController extends Controller
 {
-    /**
-     * Build the sitemap from published content, honouring which modules are
-     * enabled so disabled sections (which 404) never appear in it.
-     */
+    /** Generuje XML sitemap z opublikowanych treści z uwzględnieniem włączonych modułów. */
     public function index()
     {
         $settings = SiteSetting::current();
@@ -64,10 +68,7 @@ class SitemapController extends Controller
         return $sitemap->toResponse(request());
     }
 
-    /**
-     * Human-readable "Mapa strony" page listing the same published content as
-     * the XML sitemap, grouped by section (enabled modules only).
-     */
+    /** Wyświetla czytelną stronę HTML „Mapa strony" z tymi samymi treściami co XML sitemap. */
     public function page()
     {
         $settings = SiteSetting::current();

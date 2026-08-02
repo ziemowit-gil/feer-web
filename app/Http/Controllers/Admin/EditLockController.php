@@ -7,6 +7,13 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 
+/**
+ * Panel admin: heartbeat blokady jednoczesnej edycji (cache-based, odświeżany co 30 s przez JS).
+ *
+ * Metody: __invoke().
+ *
+ * @author Ziemowit Gil <ziemowit.gil@feer.org.pl>
+ */
 class EditLockController extends Controller
 {
     /** typ => moduł (autoryzacja). */

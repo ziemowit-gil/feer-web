@@ -7,6 +7,13 @@ use App\Models\SiteSetting;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
+/**
+ * Panel admin: zapis nowej kolejności sekcji strony głównej (drag & drop, JSON API).
+ *
+ * Metody: updateSectionOrder().
+ *
+ * @author Ziemowit Gil <ziemowit.gil@feer.org.pl>
+ */
 class HomepageLayoutController extends Controller
 {
     /**

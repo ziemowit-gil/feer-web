@@ -11,8 +11,17 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
+/**
+ * Panel admin: pełny CRUD banerów graficznych i HTML, przypisywanie do stref reklamowych
+ * oraz toggle aktywności bez przeładowania.
+ *
+ * Metody: index(), create(), store(), edit(), update(), destroy(), toggle().
+ *
+ * @author Ziemowit Gil <ziemowit.gil@feer.org.pl>
+ */
 class BannerController extends Controller
 {
+    /** Wyświetla listę banerów z przypisanymi strefami. */
     public function index(): View
     {
         $banners = Banner::with('zones')->latest()->paginate(20);
@@ -20,6 +29,7 @@ class BannerController extends Controller
         return view('admin.banners.index', compact('banners'));
     }
 
+    /** Wyświetla formularz tworzenia nowego banera. */
     public function create(): View
     {
         $zones = BannerZone::orderBy('label')->get();
@@ -27,6 +37,7 @@ class BannerController extends Controller
         return view('admin.banners.form', ['banner' => new Banner, 'zones' => $zones]);
     }
 
+    /** Zapisuje nowy baner i przypisuje go do stref. */
     public function store(Request $request): RedirectResponse
     {
         $data = $this->prepare($request);
@@ -44,6 +55,7 @@ class BannerController extends Controller
             ->with('status', 'Baner „' . $banner->name . '" został dodany.');
     }
 
+    /** Wyświetla formularz edycji banera. */
     public function edit(Banner $banner): View
     {
         $banner->load('zones');
@@ -52,6 +64,7 @@ class BannerController extends Controller
         return view('admin.banners.form', compact('banner', 'zones'));
     }
 
+    /** Aktualizuje dane banera, opcjonalnie zastępuje obraz. */
     public function update(Request $request, Banner $banner): RedirectResponse
     {
         $data = $this->prepare($request);
@@ -72,6 +85,7 @@ class BannerController extends Controller
             ->with('status', 'Baner „' . $banner->name . '" został zaktualizowany.');
     }
 
+    /** Usuwa baner wraz z plikiem obrazu. */
     public function destroy(Banner $banner): RedirectResponse
     {
         if ($banner->image_path) {
@@ -84,6 +98,7 @@ class BannerController extends Controller
             ->with('status', 'Baner został usunięty.');
     }
 
+    /** Przełącza aktywność banera (włącz/wyłącz). */
     public function toggle(Banner $banner): RedirectResponse
     {
         $banner->update(['is_active' => ! $banner->is_active]);

@@ -6,10 +6,18 @@ use App\Http\Controllers\Controller;
 use App\Support\ContentPortability;
 use Illuminate\Http\Request;
 
+/**
+ * Panel admin: eksport całego serwisu do pliku ZIP i import z pliku ZIP (migracja treści).
+ *
+ * Metody: index(), export(), import().
+ *
+ * @author Ziemowit Gil <ziemowit.gil@feer.org.pl>
+ */
 class ContentPortabilityController extends Controller
 {
     public function __construct(private ContentPortability $portability) {}
 
+    /** Wyświetla ekran eksportu/importu treści z listą tabel. */
     public function index()
     {
         return view('admin.content-portability.index', [

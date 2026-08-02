@@ -11,8 +11,17 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\View\View;
 
+/**
+ * Formularz „Daj znać, że przyjdziesz" — przyjmuje zapisy na spotkania stacjonarne
+ * (zarówno ze strony kontaktowej, jak i z osobnej strony rezerwacji).
+ *
+ * Metody: publicShow(), publicStore(), store().
+ *
+ * @author Ziemowit Gil <ziemowit.gil@feer.org.pl>
+ */
 class MeetingSignupController extends Controller
 {
+    /** Wyświetla stronę formularza rezerwacji spotkania (/umow-sie) z nadchodzącymi terminami. */
     public function publicShow(): View
     {
         $siteSettings = SiteSetting::current();
@@ -21,6 +30,7 @@ class MeetingSignupController extends Controller
         return view('booking.show', compact('siteSettings', 'scheduleItems'));
     }
 
+    /** Waliduje i zapisuje zgłoszenie ze strony /umow-sie; wysyła powiadomienie e-mail. */
     public function publicStore(Request $request): RedirectResponse
     {
         $validator = Validator::make($request->all(), [
@@ -68,6 +78,7 @@ class MeetingSignupController extends Controller
         return redirect()->route('booking.show')->with('booking_signed_up', true);
     }
 
+    /** Waliduje i zapisuje zgłoszenie z modalu na stronie kontaktowej (error bag „meeting”). */
     public function store(Request $request)
     {
         // Nazwany error bag „meeting”, aby błędy tego formularza (modal na

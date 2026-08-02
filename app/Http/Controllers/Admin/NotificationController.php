@@ -6,6 +6,13 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
+/**
+ * Panel admin: oznaczanie powiadomień jako przeczytanych (JSON API, wywołanie z dropdown).
+ *
+ * Metody: seen().
+ *
+ * @author Ziemowit Gil <ziemowit.gil@feer.org.pl>
+ */
 class NotificationController extends Controller
 {
     /** Oznacz powiadomienia jako przejrzane (zeruje pozycje „nowe od…"). */

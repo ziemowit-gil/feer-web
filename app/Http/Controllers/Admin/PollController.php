@@ -7,8 +7,16 @@ use App\Models\Poll;
 use App\Models\PollOption;
 use Illuminate\Http\Request;
 
+/**
+ * Panel admin: CRUD ankiet z zarządzaniem opcjami głosowania.
+ *
+ * Metody: index(), create(), store(), edit(), update(), destroy().
+ *
+ * @author Ziemowit Gil <ziemowit.gil@feer.org.pl>
+ */
 class PollController extends Controller
 {
+    /** Wyświetla listę ankiet z opcjami głosowania. */
     public function index()
     {
         $polls = Poll::with('options')->latest()->get();
@@ -16,11 +24,13 @@ class PollController extends Controller
         return view('admin.polls.index', compact('polls'));
     }
 
+    /** Wyświetla formularz tworzenia nowej ankiety. */
     public function create()
     {
         return view('admin.polls.form', ['poll' => new Poll]);
     }
 
+    /** Zapisuje nową ankietę z opcjami głosowania. */
     public function store(Request $request)
     {
         $data = $request->validate([
@@ -41,11 +51,13 @@ class PollController extends Controller
         return redirect()->route('admin.ankiety.index')->with('status', 'Ankieta została utworzona.');
     }
 
+    /** Wyświetla formularz edycji ankiety z aktualnymi opcjami. */
     public function edit(Poll $poll)
     {
         return view('admin.polls.form', ['poll' => $poll->load('options')]);
     }
 
+    /** Aktualizuje pytanie, opcje i status ankiety (dodaje/usuwa/edytuje opcje). */
     public function update(Request $request, Poll $poll)
     {
         $data = $request->validate([
@@ -85,6 +97,7 @@ class PollController extends Controller
         return redirect()->route('admin.ankiety.index')->with('status', 'Ankieta została zaktualizowana.');
     }
 
+    /** Usuwa ankietę wraz z opcjami i oddanymi głosami. */
     public function destroy(Poll $poll)
     {
         $poll->delete();

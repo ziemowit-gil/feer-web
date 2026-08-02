@@ -10,10 +10,20 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
+/**
+ * Panel admin: zarządzanie podstronami z rozbudowanym formularzem (wiele typów treści,
+ * harmonogram, sekcje „O organizacji", kontrola dostępu) i operacjami zbiorczymi.
+ *
+ * Metody: index(), create(), store(), edit(), update(), destroy(), toggleVisibility(),
+ *         toggleFeatured(), toggleDisabled(), updateOrder(), bulk(), clone().
+ *
+ * @author Ziemowit Gil <ziemowit.gil@feer.org.pl>
+ */
 class PageController extends Controller
 {
     use HandlesContentApproval;
 
+    /** Wyświetla listę podstron z wyszukiwaniem i filtrowaniem statusu. */
     public function index(Request $request)
     {
         $search = $request->query('q', '');
@@ -38,6 +48,7 @@ class PageController extends Controller
         ]);
     }
 
+    /** Wyświetla formularz tworzenia nowej podstrony. */
     public function create()
     {
         return view('admin.pages.form', [
@@ -48,6 +59,7 @@ class PageController extends Controller
         ]);
     }
 
+    /** Zapisuje nową podstronę z unikalnym slugiem. */
     public function store(Request $request)
     {
         $data = $this->validated($request);
@@ -58,6 +70,7 @@ class PageController extends Controller
         return redirect()->route('admin.podstrony.index')->with('status', 'Strona została utworzona.');
     }
 
+    /** Wyświetla formularz edycji podstrony (zablokowaną stronę może edytować tylko admin). */
     public function edit(Page $page)
     {
         if ($response = $this->denyIfLocked($page)) {
@@ -72,6 +85,7 @@ class PageController extends Controller
         ]);
     }
 
+    /** Zapisuje zmiany podstrony z walidacją i blokowaniem dostępu do zablokowanych stron. */
     public function update(Request $request, Page $page)
     {
         if ($response = $this->denyIfLocked($page)) {
@@ -86,6 +100,7 @@ class PageController extends Controller
         return redirect()->route('admin.podstrony.index')->with('status', 'Strona została zaktualizowana.');
     }
 
+    /** Usuwa podstronę (stron systemowych nie można usunąć). */
     public function destroy(Page $page)
     {
         if ($response = $this->denyIfLocked($page)) {
@@ -101,6 +116,7 @@ class PageController extends Controller
         return redirect()->route('admin.podstrony.index')->with('status', 'Strona została usunięta.');
     }
 
+    /** Przełącza widoczność podstrony (publikuj / ukryj). */
     public function toggleVisibility(Page $page)
     {
         if ($response = $this->denyIfLocked($page)) {
@@ -116,6 +132,7 @@ class PageController extends Controller
         return redirect()->route('admin.podstrony.index')->with('status', $message);
     }
 
+    /** Przełącza wyróżnienie podstrony. */
     public function toggleFeatured(Page $page)
     {
         if ($response = $this->denyIfLocked($page)) {
@@ -131,6 +148,7 @@ class PageController extends Controller
         return redirect()->route('admin.podstrony.index')->with('status', $message);
     }
 
+    /** Przełącza tryb wyłączenia podstrony (wyłącz / włącz ponownie). */
     public function toggleDisabled(Page $page)
     {
         if ($response = $this->denyIfLocked($page)) {
@@ -146,6 +164,7 @@ class PageController extends Controller
         return redirect()->route('admin.podstrony.index')->with('status', $message);
     }
 
+    /** Zmienia kolejność wyświetlania podstrony w menu/liście. */
     public function updateOrder(Request $request, Page $page)
     {
         if ($response = $this->denyIfLocked($page)) {
@@ -161,6 +180,7 @@ class PageController extends Controller
         return redirect()->route('admin.podstrony.index')->with('status', "Zmieniono kolejność strony „{$page->title}”.");
     }
 
+    /** Wykonuje zbiorczą operację (publikuj / cofnij / kosz) na zaznaczonych podstronach. */
     public function bulk(Request $request): \Illuminate\Http\RedirectResponse
     {
         $data = $request->validate([
@@ -194,6 +214,7 @@ class PageController extends Controller
         return redirect()->back()->with('status', $message);
     }
 
+    /** Klonuje podstronę jako szkic (bez flagi systemowej i blokady). */
     public function clone(Page $page)
     {
         if ($response = $this->denyIfLocked($page)) {
