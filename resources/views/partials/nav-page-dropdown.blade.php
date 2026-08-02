@@ -8,8 +8,8 @@
     @php
         $triggerCurrent = request()->routeIs('page.show') && (request()->route('page')?->id === $page->id || request()->route('page')?->parent_id === $page->id);
         $ob      = $onBrand ?? false;
-        $hoverW  = $ob && ($siteSettings->wide_mission_nav_hover_white  ?? false);
-        $activeW = $ob && ($siteSettings->wide_mission_nav_active_white ?? false);
+        $hoverW  = $ob && ($siteSettings->wide_mission_nav_hover_white  ?? true);
+        $activeW = $ob && ($siteSettings->wide_mission_nav_active_white ?? true);
         $iconsW  = $ob && ($siteSettings->wide_mission_nav_icons_white  ?? false);
         $hoverTxtCls = $hoverW ? 'hover:text-white'              : 'hover:text-brand';
         $activeBdr   = $ob ? ($activeW ? 'border-white' : 'border-brand text-brand') : 'border-brand text-brand';

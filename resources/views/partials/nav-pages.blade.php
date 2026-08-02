@@ -8,8 +8,8 @@
             @php
                 $pageActive = request()->routeIs('page.show') && request()->route('page')?->id === $page->id;
                 $ob      = $onBrand ?? false;
-                $hoverW  = $ob && ($siteSettings->wide_mission_nav_hover_white  ?? false);
-                $activeW = $ob && ($siteSettings->wide_mission_nav_active_white ?? false);
+                $hoverW  = $ob && ($siteSettings->wide_mission_nav_hover_white  ?? true);
+                $activeW = $ob && ($siteSettings->wide_mission_nav_active_white ?? true);
                 $hoverCls  = $hoverW  ? 'hover:border-white hover:text-white' : 'hover:border-brand hover:text-brand';
                 $activeCls = $pageActive ? ($activeW ? 'border-white' : 'border-brand text-brand') : 'border-transparent';
             @endphp
