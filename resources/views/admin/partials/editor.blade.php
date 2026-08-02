@@ -1450,11 +1450,23 @@
                     document.getElementById('{{ $editorId }}-attachment-modal').addEventListener('attachment-picked', function (event) {
                         var a = event.detail;
                         function esc(t) { return (t||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+                        function fileIcon(ext) {
+                            var e = (ext || '').toLowerCase();
+                            if (e === 'pdf') return 'fa-file-pdf';
+                            if (['doc','docx'].indexOf(e) !== -1) return 'fa-file-word';
+                            if (['xls','xlsx'].indexOf(e) !== -1) return 'fa-file-excel';
+                            if (['ppt','pptx'].indexOf(e) !== -1) return 'fa-file-powerpoint';
+                            if (['zip','rar','7z','tar','gz'].indexOf(e) !== -1) return 'fa-file-zipper';
+                            if (['jpg','jpeg','png','gif','webp'].indexOf(e) !== -1) return 'fa-file-image';
+                            if (['mp4','avi','mov','mkv','webm'].indexOf(e) !== -1) return 'fa-file-video';
+                            if (['mp3','wav','ogg','flac'].indexOf(e) !== -1) return 'fa-file-audio';
+                            return 'fa-file-arrow-down';
+                        }
                         var meta = [a.extension, a.size].filter(Boolean).join(' · ');
                         var html = '<div class="rounded-lg border border-gray-200">'
                             + '<div class="flex flex-wrap items-center justify-between gap-4 p-4">'
                             + '<div class="flex min-w-0 items-center gap-3">'
-                            + '<span class="flex h-10 w-10 flex-none items-center justify-center rounded border border-brand text-brand" aria-hidden="true"><i class="fa-solid fa-download"></i></span>'
+                            + '<span class="flex h-10 w-10 flex-none items-center justify-center rounded border border-brand text-brand" aria-hidden="true"><i class="fa-solid ' + fileIcon(a.extension) + '"></i></span>'
                             + '<span class="font-bold text-ink">' + esc(a.label) + '</span>'
                             + '</div>'
                             + '<div class="ml-auto flex items-center gap-4">'
@@ -1835,11 +1847,23 @@
                             document.getElementById('{{ $editorId }}-attachment-modal').addEventListener('attachment-picked', function (event) {
                                 var a = event.detail;
                                 function esc(t) { return (t||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+                                function fileIcon(ext) {
+                                    var e = (ext || '').toLowerCase();
+                                    if (e === 'pdf') return 'fa-file-pdf';
+                                    if (['doc','docx'].indexOf(e) !== -1) return 'fa-file-word';
+                                    if (['xls','xlsx'].indexOf(e) !== -1) return 'fa-file-excel';
+                                    if (['ppt','pptx'].indexOf(e) !== -1) return 'fa-file-powerpoint';
+                                    if (['zip','rar','7z','tar','gz'].indexOf(e) !== -1) return 'fa-file-zipper';
+                                    if (['jpg','jpeg','png','gif','webp'].indexOf(e) !== -1) return 'fa-file-image';
+                                    if (['mp4','avi','mov','mkv','webm'].indexOf(e) !== -1) return 'fa-file-video';
+                                    if (['mp3','wav','ogg','flac'].indexOf(e) !== -1) return 'fa-file-audio';
+                                    return 'fa-file-arrow-down';
+                                }
                                 var meta = [a.extension, a.size].filter(Boolean).join(' · ');
                                 var html = '<div class="rounded-lg border border-gray-200">'
                                     + '<div class="flex flex-wrap items-center justify-between gap-4 p-4">'
                                     + '<div class="flex min-w-0 items-center gap-3">'
-                                    + '<span class="flex h-10 w-10 flex-none items-center justify-center rounded border border-brand text-brand" aria-hidden="true"><i class="fa-solid fa-download"></i></span>'
+                                    + '<span class="flex h-10 w-10 flex-none items-center justify-center rounded border border-brand text-brand" aria-hidden="true"><i class="fa-solid ' + fileIcon(a.extension) + '"></i></span>'
                                     + '<span class="font-bold text-ink">' + esc(a.label) + '</span>'
                                     + '</div>'
                                     + '<div class="ml-auto flex items-center gap-4">'
