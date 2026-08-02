@@ -7,17 +7,48 @@
     <title>@yield('title', 'Panel administracyjny') — {{ $siteSettings->site_name }}</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <style>
+        /* ── Zwijany sidebar ─────────────────────────────────────────── */
+        aside.sidebar { transition: width 200ms ease; }
+        aside.sidebar.collapsed { width: 4rem; }
+
+        /* ukryj etykiety i nagłówki sekcji */
+        aside.sidebar.collapsed .nav-label,
+        aside.sidebar.collapsed .section-header,
+        aside.sidebar.collapsed .brand-label,
+        aside.sidebar.collapsed .sidebar-bottom .link-label { display: none !important; }
+
+        /* wymuś widoczność zawartości sekcji */
+        aside.sidebar.collapsed .section-content { display: block !important; }
+
+        /* wyśrodkuj linki i przyciski poziomo */
+        aside.sidebar.collapsed nav a,
+        aside.sidebar.collapsed nav > button { justify-content: center; padding-left: .5rem; padding-right: .5rem; }
+        aside.sidebar.collapsed .section-content a { padding-left: .5rem; padding-right: .5rem; justify-content: center; }
+        aside.sidebar.collapsed .brand-area { justify-content: center; padding-left: .75rem; padding-right: .75rem; }
+        aside.sidebar.collapsed .sidebar-bottom a,
+        aside.sidebar.collapsed .sidebar-bottom button { justify-content: center; padding-left: .5rem; padding-right: .5rem; }
+
+        /* mały separator zamiast nagłówka sekcji */
+        aside.sidebar.collapsed .section-divider { display: block; height: 1px; background: #e5e7eb; margin: .5rem .75rem; }
+        aside.sidebar:not(.collapsed) .section-divider { display: none; }
+    </style>
 </head>
 <body class="flex min-h-screen bg-gray-50 text-ink antialiased">
 
-    <aside class="flex w-64 flex-none flex-col border-r border-gray-200 bg-white">
-        <div class="flex items-center gap-2 border-b border-gray-200 px-5 py-4">
+    <aside class="sidebar flex w-64 flex-none flex-col border-r border-gray-200 bg-white"
+           x-data="{
+               collapsed: localStorage.getItem('admin-sidebar') === '1',
+               toggle() { this.collapsed = !this.collapsed; localStorage.setItem('admin-sidebar', this.collapsed ? '1' : '0'); this.$el.classList.toggle('collapsed', this.collapsed); },
+               init() { if (this.collapsed) this.$el.classList.add('collapsed'); }
+           }">
+        <div class="brand-area flex items-center gap-2 border-b border-gray-200 px-5 py-4">
             @if ($siteSettings->logoUrl())
-                <img src="{{ $siteSettings->logoUrl() }}" alt="{{ $siteSettings->site_name }}" class="h-9 w-9 rounded object-contain">
+                <img src="{{ $siteSettings->logoUrl() }}" alt="{{ $siteSettings->site_name }}" class="h-9 w-9 flex-none rounded object-contain">
             @else
-                <span class="flex h-9 w-9 items-center justify-center rounded bg-brand text-sm font-bold text-white">{{ mb_substr($siteSettings->site_name, 0, 1) }}</span>
+                <span class="flex h-9 w-9 flex-none items-center justify-center rounded bg-brand text-sm font-bold text-white">{{ mb_substr($siteSettings->site_name, 0, 1) }}</span>
             @endif
-            <span class="font-bold leading-tight">Panel<br><span class="text-xs font-normal text-muted">{{ $siteSettings->site_name }}</span></span>
+            <span class="brand-label min-w-0 font-bold leading-tight">Panel<br><span class="text-xs font-normal text-muted">{{ $siteSettings->site_name }}</span></span>
         </div>
 
         @php
@@ -56,35 +87,39 @@
         <nav class="flex-1 space-y-1.5 overflow-y-auto px-3 py-4 text-sm font-medium">
 
             {{-- Globalne (zawsze widoczne) --}}
-            <a href="{{ route('admin.dashboard') }}" class="{{ $itemClass('admin.dashboard') }}">
-                <i class="fa-solid fa-gauge {{ $iconClass('admin.dashboard') }}"></i> Dashboard
+            <a href="{{ route('admin.dashboard') }}" class="{{ $itemClass('admin.dashboard') }}" title="Dashboard">
+                <i class="fa-solid fa-gauge {{ $iconClass('admin.dashboard') }}"></i>
+                <span class="nav-label">Dashboard</span>
             </a>
 
             @if (auth()->user()->canApproveContent())
                 @php $pendingApprovals = \App\Http\Controllers\Admin\ApprovalController::pendingCount(); @endphp
-                <a href="{{ route('admin.zatwierdzanie.index') }}" class="{{ $itemClass('admin.zatwierdzanie.*') }}">
+                <a href="{{ route('admin.zatwierdzanie.index') }}" class="{{ $itemClass('admin.zatwierdzanie.*') }}" title="Do zatwierdzenia">
                     <i class="fa-solid fa-clipboard-check {{ $iconClass('admin.zatwierdzanie.*') }}"></i>
-                    <span class="flex-1">Do zatwierdzenia</span>
+                    <span class="nav-label flex-1">Do zatwierdzenia</span>
                     @if ($pendingApprovals > 0)
-                        <span class="rounded-full bg-brand px-2 py-0.5 text-xs font-bold text-white">{{ $pendingApprovals }}</span>
+                        <span class="nav-label rounded-full bg-brand px-2 py-0.5 text-xs font-bold text-white">{{ $pendingApprovals }}</span>
                     @endif
                 </a>
             @endif
 
             {{-- ① STRONY --}}
             @if ($can('pages'))
+                <div class="section-divider"></div>
                 <div x-data="{ open: {{ request()->routeIs($pagesRoutes) ? 'true' : 'false' }} }">
                     <button type="button" @click="open = !open" :aria-expanded="open" aria-controls="nav-section-pages"
-                        class="flex w-full items-center justify-between rounded-lg px-3 py-2 text-xs font-bold uppercase tracking-wider text-muted transition-colors hover:bg-gray-100 hover:text-ink">
+                        class="section-header flex w-full items-center justify-between rounded-lg px-3 py-2 text-xs font-bold uppercase tracking-wider text-muted transition-colors hover:bg-gray-100 hover:text-ink">
                         <span>Strony</span>
                         <i class="fa-solid fa-chevron-down text-[0.6rem] text-gray-400 transition-transform duration-200" :class="{ 'rotate-180': open }"></i>
                     </button>
-                    <div id="nav-section-pages" x-show="open" @unless (request()->routeIs($pagesRoutes)) style="display: none" @endunless class="mt-1 space-y-1">
-                        <a href="{{ route('admin.podstrony.index') }}" class="{{ $itemClass(['admin.podstrony.*', 'admin.pozycje-menu.*']) }}">
-                            <i class="fa-solid fa-file-lines {{ $iconClass(['admin.podstrony.*', 'admin.pozycje-menu.*']) }}"></i> Strony i menu
+                    <div id="nav-section-pages" x-show="open" @unless (request()->routeIs($pagesRoutes)) style="display: none" @endunless class="section-content mt-1 space-y-1">
+                        <a href="{{ route('admin.podstrony.index') }}" class="{{ $itemClass(['admin.podstrony.*', 'admin.pozycje-menu.*']) }}" title="Strony i menu">
+                            <i class="fa-solid fa-file-lines {{ $iconClass(['admin.podstrony.*', 'admin.pozycje-menu.*']) }}"></i>
+                            <span class="nav-label">Strony i menu</span>
                         </a>
-                        <a href="{{ route('admin.os-czasu.edit') }}" class="{{ $itemClass('admin.os-czasu.*') }}">
-                            <i class="fa-solid fa-timeline {{ $iconClass('admin.os-czasu.*') }}"></i> Oś czasu (historia)
+                        <a href="{{ route('admin.os-czasu.edit') }}" class="{{ $itemClass('admin.os-czasu.*') }}" title="Oś czasu">
+                            <i class="fa-solid fa-timeline {{ $iconClass('admin.os-czasu.*') }}"></i>
+                            <span class="nav-label">Oś czasu (historia)</span>
                         </a>
                     </div>
                 </div>
@@ -92,73 +127,88 @@
 
             {{-- ② PUBLIKACJE --}}
             @if ($can('news') || $can('polls') || $can('materials') || $can('volunteering') || $can('events') || $can('faq') || $can('reports') || $can('landing') || $can('projects') || $siteSettings->isModuleEnabled('blog'))
+                <div class="section-divider"></div>
                 <div x-data="{ open: {{ request()->routeIs($pubRoutes) ? 'true' : 'false' }} }">
                     <button type="button" @click="open = !open" :aria-expanded="open" aria-controls="nav-section-pub"
-                        class="flex w-full items-center justify-between rounded-lg px-3 py-2 text-xs font-bold uppercase tracking-wider text-muted transition-colors hover:bg-gray-100 hover:text-ink">
+                        class="section-header flex w-full items-center justify-between rounded-lg px-3 py-2 text-xs font-bold uppercase tracking-wider text-muted transition-colors hover:bg-gray-100 hover:text-ink">
                         <span>Publikacje</span>
                         <i class="fa-solid fa-chevron-down text-[0.6rem] text-gray-400 transition-transform duration-200" :class="{ 'rotate-180': open }"></i>
                     </button>
-                    <div id="nav-section-pub" x-show="open" @unless (request()->routeIs($pubRoutes)) style="display: none" @endunless class="mt-1 space-y-1">
+                    <div id="nav-section-pub" x-show="open" @unless (request()->routeIs($pubRoutes)) style="display: none" @endunless class="section-content mt-1 space-y-1">
                         @if ($can('news'))
-                            <a href="{{ route('admin.newsy.index') }}" class="{{ $itemClass('admin.newsy.*') }}">
-                                <i class="fa-solid fa-newspaper {{ $iconClass('admin.newsy.*') }}"></i> Aktualności
+                            <a href="{{ route('admin.newsy.index') }}" class="{{ $itemClass('admin.newsy.*') }}" title="Aktualności">
+                                <i class="fa-solid fa-newspaper {{ $iconClass('admin.newsy.*') }}"></i>
+                                <span class="nav-label">Aktualności</span>
                             </a>
-                            <a href="{{ route('admin.kategorie-newsow.index') }}" class="{{ $itemClass('admin.kategorie-newsow.*') }}">
-                                <i class="fa-solid fa-tags {{ $iconClass('admin.kategorie-newsow.*') }}"></i> Kategorie newsów
+                            <a href="{{ route('admin.kategorie-newsow.index') }}" class="{{ $itemClass('admin.kategorie-newsow.*') }}" title="Kategorie newsów">
+                                <i class="fa-solid fa-tags {{ $iconClass('admin.kategorie-newsow.*') }}"></i>
+                                <span class="nav-label">Kategorie newsów</span>
                             </a>
                         @endif
                         @if ($siteSettings->isModuleEnabled('blog'))
-                            <a href="{{ route('admin.wiem-feer.index') }}" class="{{ $itemClass('admin.wiem-feer.*') }}">
-                                <i class="fa-solid fa-feather-pointed {{ $iconClass('admin.wiem-feer.*') }}"></i> Wiem FEER (blog)
+                            <a href="{{ route('admin.wiem-feer.index') }}" class="{{ $itemClass('admin.wiem-feer.*') }}" title="Wiem FEER (blog)">
+                                <i class="fa-solid fa-feather-pointed {{ $iconClass('admin.wiem-feer.*') }}"></i>
+                                <span class="nav-label">Wiem FEER (blog)</span>
                             </a>
-                            <a href="{{ route('admin.komentarze-bloga.index') }}" class="{{ $itemClass('admin.komentarze-bloga.*') }}">
-                                <i class="fa-solid fa-comments {{ $iconClass('admin.komentarze-bloga.*') }}"></i> Komentarze (blog)
+                            <a href="{{ route('admin.komentarze-bloga.index') }}" class="{{ $itemClass('admin.komentarze-bloga.*') }}" title="Komentarze (blog)">
+                                <i class="fa-solid fa-comments {{ $iconClass('admin.komentarze-bloga.*') }}"></i>
+                                <span class="nav-label">Komentarze (blog)</span>
                             </a>
                         @endif
                         @if ($can('materials'))
-                            <a href="{{ route('admin.materialy-edukacyjne.index') }}" class="{{ $itemClass('admin.materialy-edukacyjne.*') }}">
-                                <i class="fa-solid fa-graduation-cap {{ $iconClass('admin.materialy-edukacyjne.*') }}"></i> Materiały edukacyjne
+                            <a href="{{ route('admin.materialy-edukacyjne.index') }}" class="{{ $itemClass('admin.materialy-edukacyjne.*') }}" title="Materiały edukacyjne">
+                                <i class="fa-solid fa-graduation-cap {{ $iconClass('admin.materialy-edukacyjne.*') }}"></i>
+                                <span class="nav-label">Materiały edukacyjne</span>
                             </a>
-                            <a href="{{ route('admin.zapisy-materialy.index') }}" class="{{ $itemClass('admin.zapisy-materialy.*') }}">
-                                <i class="fa-solid fa-envelope-open-text {{ $iconClass('admin.zapisy-materialy.*') }}"></i> Zapisy uczestników
+                            <a href="{{ route('admin.zapisy-materialy.index') }}" class="{{ $itemClass('admin.zapisy-materialy.*') }}" title="Zapisy uczestników">
+                                <i class="fa-solid fa-envelope-open-text {{ $iconClass('admin.zapisy-materialy.*') }}"></i>
+                                <span class="nav-label">Zapisy uczestników</span>
                             </a>
                         @endif
                         @if ($can('events'))
-                            <a href="{{ route('admin.wydarzenia.index') }}" class="{{ $itemClass('admin.wydarzenia.*') }}">
-                                <i class="fa-solid fa-calendar-days {{ $iconClass('admin.wydarzenia.*') }}"></i> Szkolenia i wydarzenia
+                            <a href="{{ route('admin.wydarzenia.index') }}" class="{{ $itemClass('admin.wydarzenia.*') }}" title="Szkolenia i wydarzenia">
+                                <i class="fa-solid fa-calendar-days {{ $iconClass('admin.wydarzenia.*') }}"></i>
+                                <span class="nav-label">Szkolenia i wydarzenia</span>
                             </a>
                         @endif
                         @if ($can('volunteering'))
-                            <a href="{{ route('admin.wolontariat.index') }}" class="{{ $itemClass('admin.wolontariat.*') }}">
-                                <i class="fa-solid fa-hands-helping {{ $iconClass('admin.wolontariat.*') }}"></i> Wolontariat
+                            <a href="{{ route('admin.wolontariat.index') }}" class="{{ $itemClass('admin.wolontariat.*') }}" title="Wolontariat">
+                                <i class="fa-solid fa-hands-helping {{ $iconClass('admin.wolontariat.*') }}"></i>
+                                <span class="nav-label">Wolontariat</span>
                             </a>
                         @endif
                         @if ($can('projects'))
-                            <a href="{{ route('admin.projekty.index') }}" class="{{ $itemClass('admin.projekty.*') }}">
-                                <i class="fa-solid fa-diagram-project {{ $iconClass('admin.projekty.*') }}"></i> Projekty
+                            <a href="{{ route('admin.projekty.index') }}" class="{{ $itemClass('admin.projekty.*') }}" title="Projekty">
+                                <i class="fa-solid fa-diagram-project {{ $iconClass('admin.projekty.*') }}"></i>
+                                <span class="nav-label">Projekty</span>
                             </a>
-                            <a href="{{ route('admin.kategorie.index') }}" class="{{ $itemClass('admin.kategorie.*') }}">
-                                <i class="fa-solid fa-tags {{ $iconClass('admin.kategorie.*') }}"></i> Kategorie projektów
+                            <a href="{{ route('admin.kategorie.index') }}" class="{{ $itemClass('admin.kategorie.*') }}" title="Kategorie projektów">
+                                <i class="fa-solid fa-tags {{ $iconClass('admin.kategorie.*') }}"></i>
+                                <span class="nav-label">Kategorie projektów</span>
                             </a>
                         @endif
                         @if ($can('faq'))
-                            <a href="{{ route('admin.faq.index') }}" class="{{ $itemClass('admin.faq.*') }}">
-                                <i class="fa-solid fa-circle-question {{ $iconClass('admin.faq.*') }}"></i> FAQ
+                            <a href="{{ route('admin.faq.index') }}" class="{{ $itemClass('admin.faq.*') }}" title="FAQ">
+                                <i class="fa-solid fa-circle-question {{ $iconClass('admin.faq.*') }}"></i>
+                                <span class="nav-label">FAQ</span>
                             </a>
                         @endif
                         @if ($can('reports'))
-                            <a href="{{ route('admin.sprawozdania.index') }}" class="{{ $itemClass('admin.sprawozdania.*') }}">
-                                <i class="fa-solid fa-file-invoice {{ $iconClass('admin.sprawozdania.*') }}"></i> Sprawozdania
+                            <a href="{{ route('admin.sprawozdania.index') }}" class="{{ $itemClass('admin.sprawozdania.*') }}" title="Sprawozdania">
+                                <i class="fa-solid fa-file-invoice {{ $iconClass('admin.sprawozdania.*') }}"></i>
+                                <span class="nav-label">Sprawozdania</span>
                             </a>
                         @endif
                         @if ($can('landing'))
-                            <a href="{{ route('admin.lp.index') }}" class="{{ $itemClass('admin.lp.*') }}">
-                                <i class="fa-solid fa-bullhorn {{ $iconClass('admin.lp.*') }}"></i> Landing pages
+                            <a href="{{ route('admin.lp.index') }}" class="{{ $itemClass('admin.lp.*') }}" title="Landing pages">
+                                <i class="fa-solid fa-bullhorn {{ $iconClass('admin.lp.*') }}"></i>
+                                <span class="nav-label">Landing pages</span>
                             </a>
                         @endif
                         @if ($can('polls'))
-                            <a href="{{ route('admin.ankiety.index') }}" class="{{ $itemClass('admin.ankiety.*') }}">
-                                <i class="fa-solid fa-square-poll-vertical {{ $iconClass('admin.ankiety.*') }}"></i> Ankiety
+                            <a href="{{ route('admin.ankiety.index') }}" class="{{ $itemClass('admin.ankiety.*') }}" title="Ankiety">
+                                <i class="fa-solid fa-square-poll-vertical {{ $iconClass('admin.ankiety.*') }}"></i>
+                                <span class="nav-label">Ankiety</span>
                             </a>
                         @endif
                     </div>
@@ -167,31 +217,36 @@
 
             {{-- ③ STRONA GŁÓWNA --}}
             @if ($can('hero') || $can('gallery') || $can('quick_actions') || $can('partners'))
+                <div class="section-divider"></div>
                 <div x-data="{ open: {{ request()->routeIs($appearanceRoutes) ? 'true' : 'false' }} }">
                     <button type="button" @click="open = !open" :aria-expanded="open" aria-controls="nav-section-appearance"
-                        class="flex w-full items-center justify-between rounded-lg px-3 py-2 text-xs font-bold uppercase tracking-wider text-muted transition-colors hover:bg-gray-100 hover:text-ink">
+                        class="section-header flex w-full items-center justify-between rounded-lg px-3 py-2 text-xs font-bold uppercase tracking-wider text-muted transition-colors hover:bg-gray-100 hover:text-ink">
                         <span>Strona główna</span>
                         <i class="fa-solid fa-chevron-down text-[0.6rem] text-gray-400 transition-transform duration-200" :class="{ 'rotate-180': open }"></i>
                     </button>
-                    <div id="nav-section-appearance" x-show="open" @unless (request()->routeIs($appearanceRoutes)) style="display: none" @endunless class="mt-1 space-y-1">
+                    <div id="nav-section-appearance" x-show="open" @unless (request()->routeIs($appearanceRoutes)) style="display: none" @endunless class="section-content mt-1 space-y-1">
                         @if ($can('hero'))
-                            <a href="{{ route('admin.hero.index') }}" class="{{ $itemClass('admin.hero.*') }}">
-                                <i class="fa-solid fa-images {{ $iconClass('admin.hero.*') }}"></i> Slajder (hero)
+                            <a href="{{ route('admin.hero.index') }}" class="{{ $itemClass('admin.hero.*') }}" title="Slajder (hero)">
+                                <i class="fa-solid fa-images {{ $iconClass('admin.hero.*') }}"></i>
+                                <span class="nav-label">Slajder (hero)</span>
                             </a>
                         @endif
                         @if ($can('gallery'))
-                            <a href="{{ route('admin.galeria.index') }}" class="{{ $itemClass('admin.galeria.*') }}">
-                                <i class="fa-solid fa-panorama {{ $iconClass('admin.galeria.*') }}"></i> Galeria
+                            <a href="{{ route('admin.galeria.index') }}" class="{{ $itemClass('admin.galeria.*') }}" title="Galeria">
+                                <i class="fa-solid fa-panorama {{ $iconClass('admin.galeria.*') }}"></i>
+                                <span class="nav-label">Galeria</span>
                             </a>
                         @endif
                         @if ($can('quick_actions'))
-                            <a href="{{ route('admin.szybkie-akcje.index') }}" class="{{ $itemClass('admin.szybkie-akcje.*') }}">
-                                <i class="fa-solid fa-bolt {{ $iconClass('admin.szybkie-akcje.*') }}"></i> Szybkie akcje
+                            <a href="{{ route('admin.szybkie-akcje.index') }}" class="{{ $itemClass('admin.szybkie-akcje.*') }}" title="Szybkie akcje">
+                                <i class="fa-solid fa-bolt {{ $iconClass('admin.szybkie-akcje.*') }}"></i>
+                                <span class="nav-label">Szybkie akcje</span>
                             </a>
                         @endif
                         @if ($can('partners'))
-                            <a href="{{ route('admin.partnerzy.index') }}" class="{{ $itemClass('admin.partnerzy.*') }}">
-                                <i class="fa-solid fa-handshake {{ $iconClass('admin.partnerzy.*') }}"></i> Partnerzy
+                            <a href="{{ route('admin.partnerzy.index') }}" class="{{ $itemClass('admin.partnerzy.*') }}" title="Partnerzy">
+                                <i class="fa-solid fa-handshake {{ $iconClass('admin.partnerzy.*') }}"></i>
+                                <span class="nav-label">Partnerzy</span>
                             </a>
                         @endif
                     </div>
@@ -200,18 +255,21 @@
 
             {{-- ④ MARKETING (tylko admin) --}}
             @if (auth()->user()->isAdmin())
+                <div class="section-divider"></div>
                 <div x-data="{ open: {{ request()->routeIs($marketingRoutes) ? 'true' : 'false' }} }">
                     <button type="button" @click="open = !open" :aria-expanded="open" aria-controls="nav-section-marketing"
-                        class="flex w-full items-center justify-between rounded-lg px-3 py-2 text-xs font-bold uppercase tracking-wider text-muted transition-colors hover:bg-gray-100 hover:text-ink">
+                        class="section-header flex w-full items-center justify-between rounded-lg px-3 py-2 text-xs font-bold uppercase tracking-wider text-muted transition-colors hover:bg-gray-100 hover:text-ink">
                         <span>Marketing</span>
                         <i class="fa-solid fa-chevron-down text-[0.6rem] text-gray-400 transition-transform duration-200" :class="{ 'rotate-180': open }"></i>
                     </button>
-                    <div id="nav-section-marketing" x-show="open" @unless (request()->routeIs($marketingRoutes)) style="display: none" @endunless class="mt-1 space-y-1">
-                        <a href="{{ route('admin.banery.index') }}" class="{{ $itemClass(['admin.banery.*', 'admin.strefy-bannerow.*']) }}">
-                            <i class="fa-solid fa-rectangle-ad {{ $iconClass(['admin.banery.*', 'admin.strefy-bannerow.*']) }}"></i> Bannery
+                    <div id="nav-section-marketing" x-show="open" @unless (request()->routeIs($marketingRoutes)) style="display: none" @endunless class="section-content mt-1 space-y-1">
+                        <a href="{{ route('admin.banery.index') }}" class="{{ $itemClass(['admin.banery.*', 'admin.strefy-bannerow.*']) }}" title="Bannery">
+                            <i class="fa-solid fa-rectangle-ad {{ $iconClass(['admin.banery.*', 'admin.strefy-bannerow.*']) }}"></i>
+                            <span class="nav-label">Bannery</span>
                         </a>
-                        <a href="{{ route('admin.newsletter.edit') }}" class="{{ $itemClass('admin.newsletter.*') }}">
-                            <i class="fa-solid fa-envelope {{ $iconClass('admin.newsletter.*') }}"></i> Newsletter
+                        <a href="{{ route('admin.newsletter.edit') }}" class="{{ $itemClass('admin.newsletter.*') }}" title="Newsletter">
+                            <i class="fa-solid fa-envelope {{ $iconClass('admin.newsletter.*') }}"></i>
+                            <span class="nav-label">Newsletter</span>
                         </a>
                     </div>
                 </div>
@@ -219,69 +277,79 @@
 
             {{-- ⑤ SKRZYNKA (tylko admin) --}}
             @if (auth()->user()->isAdmin())
+                <div class="section-divider"></div>
                 <div x-data="{ open: {{ request()->routeIs($inboxRoutes) ? 'true' : 'false' }} }">
                     <button type="button" @click="open = !open" :aria-expanded="open" aria-controls="nav-section-inbox"
-                        class="flex w-full items-center justify-between rounded-lg px-3 py-2 text-xs font-bold uppercase tracking-wider text-muted transition-colors hover:bg-gray-100 hover:text-ink">
+                        class="section-header flex w-full items-center justify-between rounded-lg px-3 py-2 text-xs font-bold uppercase tracking-wider text-muted transition-colors hover:bg-gray-100 hover:text-ink">
                         <span>Skrzynka</span>
                         <i class="fa-solid fa-chevron-down text-[0.6rem] text-gray-400 transition-transform duration-200" :class="{ 'rotate-180': open }"></i>
                     </button>
-                    <div id="nav-section-inbox" x-show="open" @unless (request()->routeIs($inboxRoutes)) style="display: none" @endunless class="mt-1 space-y-1">
-                        <a href="{{ route('admin.zgloszenia-spotkania.index') }}" class="{{ $itemClass('admin.zgloszenia-spotkania.*') }}">
-                            <i class="fa-solid fa-handshake-angle {{ $iconClass('admin.zgloszenia-spotkania.*') }}"></i> Zgłoszenia (spotkania)
+                    <div id="nav-section-inbox" x-show="open" @unless (request()->routeIs($inboxRoutes)) style="display: none" @endunless class="section-content mt-1 space-y-1">
+                        <a href="{{ route('admin.zgloszenia-spotkania.index') }}" class="{{ $itemClass('admin.zgloszenia-spotkania.*') }}" title="Zgłoszenia spotkań">
+                            <i class="fa-solid fa-handshake-angle {{ $iconClass('admin.zgloszenia-spotkania.*') }}"></i>
+                            <span class="nav-label">Zgłoszenia (spotkania)</span>
                         </a>
-                        <a href="{{ route('admin.zgloszenia-barier.index') }}" class="{{ $itemClass('admin.zgloszenia-barier.*') }}">
-                            <i class="fa-solid fa-universal-access {{ $iconClass('admin.zgloszenia-barier.*') }}"></i> Zgłoszenia barier
+                        <a href="{{ route('admin.zgloszenia-barier.index') }}" class="{{ $itemClass('admin.zgloszenia-barier.*') }}" title="Zgłoszenia barier">
+                            <i class="fa-solid fa-universal-access {{ $iconClass('admin.zgloszenia-barier.*') }}"></i>
+                            <span class="nav-label">Zgłoszenia barier</span>
                         </a>
                     </div>
                 </div>
             @endif
 
-            {{-- ⑥ MULTIMEDIA (szybki dostęp — bez zwijania) --}}
-            <a href="{{ route('admin.multimedia.index') }}" class="{{ $itemClass('admin.multimedia.*') }}">
-                <i class="fa-solid fa-photo-film {{ $iconClass('admin.multimedia.*') }}"></i> Multimedia
+            {{-- ⑥ MULTIMEDIA (szybki dostęp) --}}
+            <div class="section-divider"></div>
+            <a href="{{ route('admin.multimedia.index') }}" class="{{ $itemClass('admin.multimedia.*') }}" title="Multimedia">
+                <i class="fa-solid fa-photo-film {{ $iconClass('admin.multimedia.*') }}"></i>
+                <span class="nav-label">Multimedia</span>
             </a>
 
             {{-- ⑦ UŻYTKOWNICY (tylko admin) --}}
             @if (auth()->user()->isAdmin())
+                <div class="section-divider"></div>
                 <div x-data="{ open: {{ request()->routeIs($usersRoutes) ? 'true' : 'false' }} }">
                     <button type="button" @click="open = !open" :aria-expanded="open" aria-controls="nav-section-users"
-                        class="flex w-full items-center justify-between rounded-lg px-3 py-2 text-xs font-bold uppercase tracking-wider text-muted transition-colors hover:bg-gray-100 hover:text-ink">
+                        class="section-header flex w-full items-center justify-between rounded-lg px-3 py-2 text-xs font-bold uppercase tracking-wider text-muted transition-colors hover:bg-gray-100 hover:text-ink">
                         <span>Użytkownicy</span>
                         <i class="fa-solid fa-chevron-down text-[0.6rem] text-gray-400 transition-transform duration-200" :class="{ 'rotate-180': open }"></i>
                     </button>
-                    <div id="nav-section-users" x-show="open" @unless (request()->routeIs($usersRoutes)) style="display: none" @endunless class="mt-1 space-y-1">
-                        <a href="{{ route('admin.uzytkownicy.index') }}" class="{{ $itemClass('admin.uzytkownicy.*') }}">
-                            <i class="fa-solid fa-users {{ $iconClass('admin.uzytkownicy.*') }}"></i> Użytkownicy
+                    <div id="nav-section-users" x-show="open" @unless (request()->routeIs($usersRoutes)) style="display: none" @endunless class="section-content mt-1 space-y-1">
+                        <a href="{{ route('admin.uzytkownicy.index') }}" class="{{ $itemClass('admin.uzytkownicy.*') }}" title="Użytkownicy">
+                            <i class="fa-solid fa-users {{ $iconClass('admin.uzytkownicy.*') }}"></i>
+                            <span class="nav-label">Użytkownicy</span>
                         </a>
-                        <a href="{{ route('admin.grupy.index') }}" class="{{ $itemClass('admin.grupy.*') }}">
-                            <i class="fa-solid fa-user-group {{ $iconClass('admin.grupy.*') }}"></i> Grupy użytkowników
+                        <a href="{{ route('admin.grupy.index') }}" class="{{ $itemClass('admin.grupy.*') }}" title="Grupy użytkowników">
+                            <i class="fa-solid fa-user-group {{ $iconClass('admin.grupy.*') }}"></i>
+                            <span class="nav-label">Grupy użytkowników</span>
                         </a>
                     </div>
                 </div>
             @endif
 
-            {{-- ⑧ SYSTEM — tylko narzędzia techniczne (tylko admin) --}}
+            {{-- ⑧ SYSTEM (tylko admin) --}}
             @if (auth()->user()->isAdmin())
+                <div class="section-divider"></div>
                 <div x-data="{ open: {{ request()->routeIs($systemRoutes) ? 'true' : 'false' }} }">
                     <button type="button" @click="open = !open" :aria-expanded="open" aria-controls="nav-section-system"
-                        class="flex w-full items-center justify-between rounded-lg px-3 py-2 text-xs font-bold uppercase tracking-wider text-muted transition-colors hover:bg-gray-100 hover:text-ink">
+                        class="section-header flex w-full items-center justify-between rounded-lg px-3 py-2 text-xs font-bold uppercase tracking-wider text-muted transition-colors hover:bg-gray-100 hover:text-ink">
                         <span>System</span>
                         <i class="fa-solid fa-chevron-down text-[0.6rem] text-gray-400 transition-transform duration-200" :class="{ 'rotate-180': open }"></i>
                     </button>
-                    <div id="nav-section-system" x-show="open" @unless (request()->routeIs($systemRoutes)) style="display: none" @endunless class="mt-1 space-y-1">
+                    <div id="nav-section-system" x-show="open" @unless (request()->routeIs($systemRoutes)) style="display: none" @endunless class="section-content mt-1 space-y-1">
                         <div x-data="{ open: {{ request()->routeIs('admin.ustawienia.*') ? 'true' : 'false' }} }">
-                            <div class="flex items-center {{ $itemClass('admin.ustawienia.*') }}">
+                            <div class="flex items-center {{ $itemClass('admin.ustawienia.*') }}" title="Ustawienia strony">
                                 <a href="{{ route('admin.ustawienia.edit') }}" class="flex min-w-0 flex-1 items-center gap-3">
-                                    <i class="fa-solid fa-palette {{ $iconClass('admin.ustawienia.*') }}"></i> Ustawienia strony
+                                    <i class="fa-solid fa-palette {{ $iconClass('admin.ustawienia.*') }}"></i>
+                                    <span class="nav-label">Ustawienia strony</span>
                                 </a>
                                 <button type="button" @click="open = !open" :aria-expanded="open" aria-controls="nav-settings-sub"
-                                    class="-my-2 -mr-1 flex items-center rounded p-2 text-gray-400 hover:text-brand">
+                                    class="nav-label -my-2 -mr-1 flex items-center rounded p-2 text-gray-400 hover:text-brand">
                                     <span class="sr-only">Rozwiń sekcje ustawień</span>
                                     <i class="fa-solid fa-chevron-down text-[0.6rem] transition-transform duration-200" :class="{ 'rotate-180': open }"></i>
                                 </button>
                             </div>
                             <div id="nav-settings-sub" x-show="open" @unless (request()->routeIs('admin.ustawienia.*')) style="display: none" @endunless
-                                class="mt-1 space-y-0.5 border-l border-gray-200 pl-3">
+                                class="nav-label mt-1 space-y-0.5 border-l border-gray-200 pl-3">
                                 @foreach (\App\Models\SiteSetting::SETTINGS_TABS as $tabKey => $tabLabel)
                                     <a href="{{ route('admin.ustawienia.edit', ['tab' => $tabKey]) }}"
                                         class="block rounded-lg px-3 py-1.5 text-sm {{ request()->routeIs('admin.ustawienia.*') && request('tab', 'general') === $tabKey ? 'bg-brand-light font-semibold text-brand' : 'text-muted hover:bg-gray-100 hover:text-brand' }}">
@@ -290,52 +358,70 @@
                                 @endforeach
                             </div>
                         </div>
-                        <a href="{{ route('admin.szablony.index') }}" class="{{ $itemClass('admin.szablony.*') }}">
-                            <i class="fa-solid fa-clone {{ $iconClass('admin.szablony.*') }}"></i> Szablony treści
+                        <a href="{{ route('admin.szablony.index') }}" class="{{ $itemClass('admin.szablony.*') }}" title="Szablony treści">
+                            <i class="fa-solid fa-clone {{ $iconClass('admin.szablony.*') }}"></i>
+                            <span class="nav-label">Szablony treści</span>
                         </a>
-                        <a href="{{ route('admin.przekierowania.index') }}" class="{{ $itemClass('admin.przekierowania.*') }}">
-                            <i class="fa-solid fa-signs-post {{ $iconClass('admin.przekierowania.*') }}"></i> Przekierowania 301
+                        <a href="{{ route('admin.przekierowania.index') }}" class="{{ $itemClass('admin.przekierowania.*') }}" title="Przekierowania 301">
+                            <i class="fa-solid fa-signs-post {{ $iconClass('admin.przekierowania.*') }}"></i>
+                            <span class="nav-label">Przekierowania 301</span>
                         </a>
-                        <a href="{{ route('admin.martwe-linki.index') }}" class="{{ $itemClass('admin.martwe-linki.*') }}">
-                            <i class="fa-solid fa-link-slash {{ $iconClass('admin.martwe-linki.*') }}"></i> Martwe linki
+                        <a href="{{ route('admin.martwe-linki.index') }}" class="{{ $itemClass('admin.martwe-linki.*') }}" title="Martwe linki">
+                            <i class="fa-solid fa-link-slash {{ $iconClass('admin.martwe-linki.*') }}"></i>
+                            <span class="nav-label">Martwe linki</span>
                         </a>
-                        <a href="{{ route('admin.tresc.index') }}" class="{{ $itemClass('admin.tresc.*') }}">
-                            <i class="fa-solid fa-right-left {{ $iconClass('admin.tresc.*') }}"></i> Przenoszenie treści
+                        <a href="{{ route('admin.tresc.index') }}" class="{{ $itemClass('admin.tresc.*') }}" title="Przenoszenie treści">
+                            <i class="fa-solid fa-right-left {{ $iconClass('admin.tresc.*') }}"></i>
+                            <span class="nav-label">Przenoszenie treści</span>
                         </a>
-                        <a href="{{ route('admin.dziennik.index') }}" class="{{ $itemClass('admin.dziennik.*') }}">
-                            <i class="fa-solid fa-clock-rotate-left {{ $iconClass('admin.dziennik.*') }}"></i> Dziennik zdarzeń
+                        <a href="{{ route('admin.dziennik.index') }}" class="{{ $itemClass('admin.dziennik.*') }}" title="Dziennik zdarzeń">
+                            <i class="fa-solid fa-clock-rotate-left {{ $iconClass('admin.dziennik.*') }}"></i>
+                            <span class="nav-label">Dziennik zdarzeń</span>
                         </a>
                     </div>
                 </div>
             @endif
 
-            {{-- KOSZ (zawsze widoczny, z licznikiem) --}}
+            {{-- KOSZ --}}
+            <div class="section-divider"></div>
             @php $trashCount = \App\Http\Controllers\Admin\TrashController::count(); @endphp
-            <a href="{{ route('admin.kosz.index') }}" class="{{ $itemClass('admin.kosz.*') }}">
+            <a href="{{ route('admin.kosz.index') }}" class="{{ $itemClass('admin.kosz.*') }}" title="Kosz">
                 <i class="fa-solid fa-trash-can {{ $iconClass('admin.kosz.*') }}"></i>
-                <span class="flex-1">Kosz</span>
+                <span class="nav-label flex-1">Kosz</span>
                 @if ($trashCount > 0)
-                    <span class="rounded-full bg-gray-200 px-2 py-0.5 text-xs font-bold text-gray-700">{{ $trashCount }}</span>
+                    <span class="nav-label rounded-full bg-gray-200 px-2 py-0.5 text-xs font-bold text-gray-700">{{ $trashCount }}</span>
                 @endif
             </a>
 
         </nav>
 
-        <div class="space-y-1 border-t border-gray-200 p-3 text-sm">
-            <a href="{{ route('profile.edit') }}" class="group flex items-center gap-3 rounded-lg px-3 py-2 text-muted transition-colors hover:bg-gray-100 hover:text-ink">
-                <i class="fa-solid fa-key w-5 shrink-0 text-center text-gray-400 group-hover:text-ink"></i> Profil i hasło
+        {{-- Przełącznik zwinięcia + linki profilowe --}}
+        <div class="sidebar-bottom space-y-1 border-t border-gray-200 p-3 text-sm">
+            <button type="button" @click="toggle()"
+                class="group flex w-full items-center gap-3 rounded-lg px-3 py-2 text-muted transition-colors hover:bg-gray-100 hover:text-ink"
+                :title="collapsed ? 'Rozwiń menu' : 'Zwiń menu'"
+                :aria-label="collapsed ? 'Rozwiń menu boczne' : 'Zwiń menu boczne'">
+                <i class="fa-solid w-5 shrink-0 text-center text-gray-400 group-hover:text-ink"
+                   :class="collapsed ? 'fa-chevron-right' : 'fa-chevron-left'"></i>
+                <span class="link-label">Zwiń menu</span>
+            </button>
+            <a href="{{ route('profile.edit') }}" class="group flex items-center gap-3 rounded-lg px-3 py-2 text-muted transition-colors hover:bg-gray-100 hover:text-ink" title="Profil i hasło">
+                <i class="fa-solid fa-key w-5 shrink-0 text-center text-gray-400 group-hover:text-ink"></i>
+                <span class="link-label">Profil i hasło</span>
             </a>
-            <a href="{{ route('profile.edit') }}#powiadomienia" class="group flex items-center gap-3 rounded-lg px-3 py-2 text-muted transition-colors hover:bg-gray-100 hover:text-ink">
-                <i class="fa-solid fa-bell w-5 shrink-0 text-center text-gray-400 group-hover:text-ink"></i> Powiadomienia
+            <a href="{{ route('profile.edit') }}#powiadomienia" class="group flex items-center gap-3 rounded-lg px-3 py-2 text-muted transition-colors hover:bg-gray-100 hover:text-ink" title="Powiadomienia">
+                <i class="fa-solid fa-bell w-5 shrink-0 text-center text-gray-400 group-hover:text-ink"></i>
+                <span class="link-label">Powiadomienia</span>
             </a>
-            <a href="{{ route('home') }}" class="group flex items-center gap-3 rounded-lg px-3 py-2 text-muted transition-colors hover:bg-gray-100 hover:text-ink">
-                <i class="fa-solid fa-arrow-left w-5 shrink-0 text-center text-gray-400 group-hover:text-ink"></i> Wróć do strony
+            <a href="{{ route('home') }}" class="group flex items-center gap-3 rounded-lg px-3 py-2 text-muted transition-colors hover:bg-gray-100 hover:text-ink" title="Wróć do strony">
+                <i class="fa-solid fa-arrow-left w-5 shrink-0 text-center text-gray-400 group-hover:text-ink"></i>
+                <span class="link-label">Wróć do strony</span>
             </a>
             <form method="POST" action="{{ route('logout') }}">
                 @csrf
-                <button type="submit" class="group flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-muted transition-colors hover:bg-gray-100 hover:text-ink">
+                <button type="submit" title="Wyloguj" class="group flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-muted transition-colors hover:bg-gray-100 hover:text-ink">
                     <i class="fa-solid fa-right-from-bracket w-5 shrink-0 text-center text-gray-400 group-hover:text-ink"></i>
-                    <span class="min-w-0 truncate">Wyloguj ({{ auth()->user()->email }})</span>
+                    <span class="link-label min-w-0 truncate">Wyloguj ({{ auth()->user()->email }})</span>
                 </button>
             </form>
         </div>
