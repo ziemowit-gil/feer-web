@@ -46,7 +46,7 @@
                 @if ($index !== 0) aria-hidden="true" @endif
             >
                 <div class="w-full px-8 py-6 text-center {{ $hasSidebar ? 'max-w-xs' : 'max-w-lg' }}">
-                    <p class="mb-3 text-xs font-bold uppercase tracking-widest text-white/70">Misja organizacji</p>
+                    <p class="mb-3 text-xs font-bold uppercase tracking-widest text-white/70">Co nas napędza</p>
                     <p class="{{ $hasSidebar ? 'text-base md:text-lg' : 'text-xl md:text-3xl' }} font-bold leading-snug text-white">{{ $slide->mission_text }}</p>
                 </div>
             </div>
