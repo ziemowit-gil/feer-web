@@ -48,22 +48,45 @@
     </p>
 </div>
 
-<div x-show="form.type === 'link' || form.location === 'footer'" x-cloak>
+<div x-show="form.type === 'link' || form.location === 'footer' || form.location === 'bip'" x-cloak>
+    {{-- Wybór dokumentu BIP — tylko gdy lokalizacja to "Menu BIP" --}}
+    @if (!empty($bipDocuments) && $bipDocuments->isNotEmpty())
+        <div x-show="form.location === 'bip'" x-cloak>
+            <label for="nav-bip-picker" class="mb-1 block text-sm font-bold">Wybierz dokument BIP <span class="font-normal text-muted">(opcjonalnie)</span></label>
+            <select id="nav-bip-picker" class="mb-2 w-full rounded border-gray-300 focus-visible:border-brand focus-visible:ring-2 focus-visible:ring-brand"
+                @change="
+                    let opt = $event.target.options[$event.target.selectedIndex];
+                    if (opt.value) {
+                        form.url = opt.value;
+                        if (!form.label) form.label = opt.dataset.label || '';
+                    }
+                    $event.target.selectedIndex = 0;">
+                <option value="">— wybierz z listy dokumentów BIP —</option>
+                @foreach ($bipDocuments as $doc)
+                    <option value="/bip/{{ $doc->slug }}" data-label="{{ $doc->title }}">{{ $doc->title }}</option>
+                @endforeach
+            </select>
+        </div>
+    @endif
+
+    {{-- Wybór strony — tylko gdy lokalizacja to nie "Menu BIP" --}}
     @if ($pages->isNotEmpty())
-        <label for="nav-page-picker" class="mb-1 block text-sm font-bold">Wybierz stronę <span class="font-normal text-muted">(opcjonalnie)</span></label>
-        <select id="nav-page-picker" class="mb-2 w-full rounded border-gray-300 focus-visible:border-brand focus-visible:ring-2 focus-visible:ring-brand"
-            @change="if ($event.target.value) { form.url = $event.target.value; } $event.target.selectedIndex = 0;">
-            <option value="">— wybierz z listy stron —</option>
-            @foreach ($pages as $page)
-                <option value="/{{ $page->slug }}">{{ $page->title }}</option>
-            @endforeach
-        </select>
+        <div x-show="form.location !== 'bip'" x-cloak>
+            <label for="nav-page-picker" class="mb-1 block text-sm font-bold">Wybierz stronę <span class="font-normal text-muted">(opcjonalnie)</span></label>
+            <select id="nav-page-picker" class="mb-2 w-full rounded border-gray-300 focus-visible:border-brand focus-visible:ring-2 focus-visible:ring-brand"
+                @change="if ($event.target.value) { form.url = $event.target.value; } $event.target.selectedIndex = 0;">
+                <option value="">— wybierz z listy stron —</option>
+                @foreach ($pages as $page)
+                    <option value="/{{ $page->slug }}">{{ $page->title }}</option>
+                @endforeach
+            </select>
+        </div>
     @endif
 
     <label for="nav-url" class="mb-1 block text-sm font-bold">Link</label>
     <input type="text" id="nav-url" name="url" x-model="form.url" placeholder="np. /polityka-prywatnosci, #kontakt lub https://..."
         class="w-full rounded border-gray-300 focus-visible:border-brand focus-visible:ring-2 focus-visible:ring-brand">
-    <p class="mt-1 text-xs text-muted">Wybór strony powyżej uzupełni to pole — możesz też wpisać dowolny adres ręcznie.</p>
+    <p class="mt-1 text-xs text-muted">Wybór dokumentu lub strony powyżej uzupełni to pole — możesz też wpisać dowolny adres ręcznie.</p>
     @error('url') <p class="mt-1 text-sm text-red-700">{{ $message }}</p> @enderror
 </div>
 

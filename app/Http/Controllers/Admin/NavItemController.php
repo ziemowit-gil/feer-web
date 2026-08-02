@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\BipDocument;
 use App\Models\NavItem;
 use App\Models\Page;
 use App\Models\SiteSetting;
@@ -40,6 +41,7 @@ class NavItemController extends Controller
             // klienta na podstawie edytowanego identyfikatora.
             'parentOptions' => $this->parentOptions(null, 'main'),
             'pages' => Page::orderBy('title')->get(),
+            'bipDocuments' => BipDocument::published()->orderBy('title')->get(),
         ]);
     }
 
@@ -53,6 +55,7 @@ class NavItemController extends Controller
             'navItem' => new NavItem(['location' => $location]),
             'parentOptions' => $this->parentOptions(null, $location),
             'pages' => Page::orderBy('title')->get(),
+            'bipDocuments' => BipDocument::published()->orderBy('title')->get(),
         ]);
     }
 
@@ -81,6 +84,7 @@ class NavItemController extends Controller
             'navItem' => $navItem,
             'parentOptions' => $this->parentOptions($navItem, $navItem->location),
             'pages' => Page::orderBy('title')->get(),
+            'bipDocuments' => BipDocument::published()->orderBy('title')->get(),
         ]);
     }
 
