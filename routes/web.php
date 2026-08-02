@@ -69,6 +69,8 @@ use App\Http\Controllers\SearchController;
 use App\Http\Controllers\ShortcutController;
 use App\Http\Controllers\SitemapController;
 use App\Http\Controllers\SupportController;
+use App\Http\Controllers\Bip\BipController;
+use App\Http\Controllers\Bip\BipDocumentController as AdminBipDocumentController;
 use App\Http\Controllers\BannerTrackingController;
 use App\Http\Controllers\Admin\BannerController as AdminBannerController;
 use App\Http\Controllers\Admin\BannerZoneController as AdminBannerZoneController;
@@ -140,8 +142,9 @@ Route::get('/newsletter', [NewsletterController::class, 'index'])->name('newslet
 
 Route::get('/wsparcie', [SupportController::class, 'index'])->name('support.show')->middleware('module:support');
 
-// Sztywne skróty: /bip (strona-pośrednik z informacją), /instagram i /fb (przekierowania).
-Route::get('/bip', [ShortcutController::class, 'bip'])->name('bip');
+// BIP: strona główna z listą dokumentów + szczegół dokumentu.
+Route::get('/bip', [BipController::class, 'index'])->name('bip');
+Route::get('/bip/{bipDocument:slug}', [BipController::class, 'show'])->name('bip.document')->middleware('module:bip');
 Route::get('/instagram', [ShortcutController::class, 'instagram'])->name('shortcut.instagram');
 Route::get('/fb', [ShortcutController::class, 'facebook'])->name('shortcut.fb');
 Route::get('/facebook', [ShortcutController::class, 'facebook'])->name('shortcut.facebook');
@@ -296,6 +299,11 @@ Route::middleware(['auth', 'verified', '2fa'])->prefix(config('app.admin_prefix'
 
     Route::middleware(['module:reports', 'module-access:reports'])->group(function () {
         Route::resource('sprawozdania', AdminAnnualReportController::class)->parameters(['sprawozdania' => 'annualReport'])->except('show');
+    });
+
+    Route::middleware(['module:bip', 'module-access:bip'])->group(function () {
+        Route::resource('bip-dokumenty', AdminBipDocumentController::class)->parameters(['bip-dokumenty' => 'bipDocument'])->except('show');
+        Route::patch('bip-dokumenty/{bipDocument}/widocznosc', [AdminBipDocumentController::class, 'toggleVisibility'])->name('bip-dokumenty.widocznosc');
     });
 
     // Kolejka moderacji — dostęp pilnuje kontroler (canApproveContent).

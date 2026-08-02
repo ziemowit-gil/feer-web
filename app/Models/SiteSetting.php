@@ -32,6 +32,7 @@ class SiteSetting extends Model implements HasMedia
         'faq' => 'FAQ (najczęstsze pytania)',
         'support' => 'Wesprzyj nas',
         'reports' => 'Sprawozdania roczne',
+        'bip' => 'BIP — dokumenty publiczne',
         'blog' => 'Wiem FEER (blog)',
         'landing' => 'Landing page (webinary)',
     ];

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\BipDocument;
 use App\Models\News;
 use App\Models\Page;
 use App\Models\Project;
@@ -21,9 +22,10 @@ class RevisionController extends Controller
 {
     /** typ => [klasa modelu, moduł, trasa edycji, etykieta, nazwa pola tytułu]. */
     private const TYPES = [
-        'page' => [Page::class, 'pages', 'admin.podstrony.edit', 'Strona'],
-        'news' => [News::class, 'news', 'admin.newsy.edit', 'Aktualność'],
-        'project' => [Project::class, 'projects', 'admin.projekty.edit', 'Projekt'],
+        'page'         => [Page::class, 'pages', 'admin.podstrony.edit', 'Strona'],
+        'news'         => [News::class, 'news', 'admin.newsy.edit', 'Aktualność'],
+        'project'      => [Project::class, 'projects', 'admin.projekty.edit', 'Projekt'],
+        'bip_document' => [BipDocument::class, 'bip', 'admin.bip-dokumenty.edit', 'Dokument BIP'],
     ];
 
     /** Historia zmian danego rekordu — lista wersji z różnicami względem bieżącej. */

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\BipDocument;
 use App\Models\News;
 use App\Models\Page;
 use App\Models\Project;
@@ -20,9 +21,10 @@ class TrashController extends Controller
 {
     /** typ => [klasa modelu, moduł, etykieta]. */
     private const TYPES = [
-        'page' => [Page::class, 'pages', 'Strona'],
-        'news' => [News::class, 'news', 'Aktualność'],
-        'project' => [Project::class, 'projects', 'Projekt'],
+        'page'         => [Page::class, 'pages', 'Strona'],
+        'news'         => [News::class, 'news', 'Aktualność'],
+        'project'      => [Project::class, 'projects', 'Projekt'],
+        'bip_document' => [BipDocument::class, 'bip', 'Dokument BIP'],
     ];
 
     /** Kosz — usunięte treści z możliwością przywrócenia lub trwałego skasowania. */
@@ -81,6 +83,7 @@ class TrashController extends Controller
     {
         return Page::onlyTrashed()->count()
             + News::onlyTrashed()->count()
-            + Project::onlyTrashed()->count();
+            + Project::onlyTrashed()->count()
+            + BipDocument::onlyTrashed()->count();
     }
 }

@@ -96,7 +96,7 @@
             $pagesRoutes = ['admin.podstrony.*', 'admin.pozycje-menu.*', 'admin.os-czasu.*'];
 
             // ② PUBLIKACJE — dynamiczna treść redakcyjna (razem z Projektami)
-            $pubRoutes = ['admin.newsy.*', 'admin.kategorie-newsow.*', 'admin.tagi.*', 'admin.wiem-feer.*', 'admin.komentarze-bloga.*', 'admin.materialy-edukacyjne.*', 'admin.zapisy-materialy.*', 'admin.wolontariat.*', 'admin.wydarzenia.*', 'admin.kategorie.*', 'admin.projekty.*', 'admin.faq.*', 'admin.sprawozdania.*', 'admin.lp.*', 'admin.ankiety.*'];
+            $pubRoutes = ['admin.newsy.*', 'admin.kategorie-newsow.*', 'admin.tagi.*', 'admin.wiem-feer.*', 'admin.komentarze-bloga.*', 'admin.materialy-edukacyjne.*', 'admin.zapisy-materialy.*', 'admin.wolontariat.*', 'admin.wydarzenia.*', 'admin.kategorie.*', 'admin.projekty.*', 'admin.faq.*', 'admin.sprawozdania.*', 'admin.bip-dokumenty.*', 'admin.lp.*', 'admin.ankiety.*'];
 
             // ③ STRONA GŁÓWNA — sekcje wizualne homepage
             $appearanceRoutes = ['admin.hero.*', 'admin.galeria.*', 'admin.szybkie-akcje.*', 'admin.partnerzy.*'];
@@ -231,6 +231,12 @@
                             <a href="{{ route('admin.sprawozdania.index') }}" class="{{ $itemClass('admin.sprawozdania.*') }}" title="Sprawozdania">
                                 <i class="fa-solid fa-file-invoice {{ $iconClass('admin.sprawozdania.*') }}"></i>
                                 <span class="nav-label">Sprawozdania</span>
+                            </a>
+                        @endif
+                        @if ($can('bip'))
+                            <a href="{{ route('admin.bip-dokumenty.index') }}" class="{{ $itemClass('admin.bip-dokumenty.*') }}" title="BIP — dokumenty">
+                                <i class="fa-solid fa-landmark {{ $iconClass('admin.bip-dokumenty.*') }}"></i>
+                                <span class="nav-label">BIP — dokumenty</span>
                             </a>
                         @endif
                         @if ($can('landing'))

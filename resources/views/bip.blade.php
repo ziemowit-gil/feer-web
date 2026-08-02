@@ -52,4 +52,83 @@ HTML;
             </div>
         </div>
     </section>
+
+    {{-- ── Dokumenty BIP (gdy moduł włączony i istnieją opublikowane dokumenty) ── --}}
+    @if ($documents->isNotEmpty())
+        <section class="border-t border-gray-100 bg-gray-50 px-4 py-16" aria-labelledby="bip-documents-heading">
+            <div class="mx-auto max-w-4xl">
+                <h2 id="bip-documents-heading" class="mb-2 text-2xl font-extrabold text-ink">
+                    Dokumenty publiczne
+                </h2>
+                <p class="mb-10 text-muted">
+                    Dokumenty uporządkowane według kategorii — kliknij tytuł, aby zobaczyć pełną treść lub pobrać pliki.
+                </p>
+
+                @foreach (\App\Models\BipDocument::CATEGORIES as $catKey => $catLabel)
+                    @if ($documents->has($catKey))
+                        <div class="mb-10">
+                            <h3 class="mb-4 flex items-center gap-2 text-sm font-bold uppercase tracking-wide text-brand">
+                                <span class="h-px flex-1 bg-brand/20"></span>
+                                {{ $catLabel }}
+                                <span class="h-px flex-1 bg-brand/20"></span>
+                            </h3>
+
+                            <ul class="space-y-3" role="list">
+                                @foreach ($documents[$catKey] as $doc)
+                                    <li class="group rounded-xl border border-gray-200 bg-white px-5 py-4 transition hover:border-brand/30 hover:shadow-sm">
+                                        <div class="flex flex-wrap items-start justify-between gap-2">
+                                            <div class="min-w-0 flex-1">
+                                                <a href="{{ route('bip.document', $doc->slug) }}"
+                                                    class="text-base font-semibold text-ink group-hover:text-brand hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
+                                                    {{ $doc->title }}
+                                                </a>
+                                                @if ($doc->summary)
+                                                    <p class="mt-1 text-sm text-muted leading-snug">{{ $doc->summary }}</p>
+                                                @endif
+                                            </div>
+                                            @php $files = $doc->getMedia('files'); @endphp
+                                            @if ($files->isNotEmpty())
+                                                <span class="flex-none rounded-full bg-brand/10 px-2.5 py-1 text-xs font-bold text-brand">
+                                                    <i class="fa-solid fa-paperclip mr-1" aria-hidden="true"></i>
+                                                    {{ $files->count() }} {{ trans_choice('plik|pliki|plików', $files->count()) }}
+                                                </span>
+                                            @endif
+                                        </div>
+
+                                        {{-- Metadane BIP — wymóg ustawowy --}}
+                                        <dl class="mt-2 flex flex-wrap gap-x-5 gap-y-1 text-xs text-muted">
+                                            <div class="flex items-center gap-1">
+                                                <dt class="font-semibold">Dodano:</dt>
+                                                <dd>
+                                                    <time datetime="{{ $doc->created_at->toIso8601String() }}">
+                                                        {{ $doc->created_at->locale('pl')->isoFormat('D MMM YYYY') }}
+                                                    </time>
+                                                </dd>
+                                            </div>
+                                            @if ($doc->creator)
+                                                <div class="flex items-center gap-1">
+                                                    <dt class="font-semibold">Wprowadził/-a:</dt>
+                                                    <dd>{{ $doc->creator->name }}</dd>
+                                                </div>
+                                            @endif
+                                            @if ($doc->updated_at->ne($doc->created_at))
+                                                <div class="flex items-center gap-1">
+                                                    <dt class="font-semibold">Zmieniono:</dt>
+                                                    <dd>
+                                                        <time datetime="{{ $doc->updated_at->toIso8601String() }}">
+                                                            {{ $doc->updated_at->locale('pl')->isoFormat('D MMM YYYY') }}
+                                                        </time>
+                                                    </dd>
+                                                </div>
+                                            @endif
+                                        </dl>
+                                    </li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    @endif
+                @endforeach
+            </div>
+        </section>
+    @endif
 @endsection
