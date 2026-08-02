@@ -47,4 +47,11 @@ return [
         'tenant' => env('MICROSOFT_TENANT_ID', 'common'),
     ],
 
+    'browsershot' => [
+        // Ścieżka do binarki Chrome/Chromium. Gdy pusta — Browsershot szuka automatycznie.
+        'chrome_path' => env('BROWSERSHOT_CHROME_PATH'),
+        // Wymagane na większości serwerów Linux (współdzielone środowisko bez sandbox).
+        'no_sandbox' => env('BROWSERSHOT_NO_SANDBOX', false),
+    ],
+
 ];

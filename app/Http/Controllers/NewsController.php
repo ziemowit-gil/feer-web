@@ -5,7 +5,10 @@ namespace App\Http\Controllers;
 use App\Models\News;
 use App\Models\NewsCategory;
 use App\Models\SiteSetting;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
+use Spatie\Browsershot\Browsershot;
 
 /**
  * Publiczna lista i szczegóły aktualności oraz widok do wydruku (generowany przez headless Chromium).
@@ -46,15 +49,41 @@ class NewsController extends Controller
         return view('news.show', compact('news', 'brandColor', 'preview'));
     }
 
-    /** Wyświetla widok do wydruku (PDF) opublikowanej aktualności — konwertowany przez headless Chromium. */
-    public function pdf(News $news)
+    /**
+     * Generuje PDF opublikowanej aktualności.
+     * Silnik: Browsershot (headless Chromium) z fallbackiem do DomPDF.
+     */
+    public function pdf(News $news): \Symfony\Component\HttpFoundation\Response
     {
         abort_unless($news->is_published && $news->published_at <= now(), 404);
         $news->load(['category']);
         $siteSettings = SiteSetting::current();
-        $brandPalette = $siteSettings->brandPalette();
-        $printedAt = now()->format('d.m.Y');
+        $brandPalette  = $siteSettings->brandPalette();
+        $printedAt     = now()->format('d.m.Y');
+        $filename      = Str::slug($news->title) . '.pdf';
 
-        return view('news.pdf', compact('news', 'siteSettings', 'brandPalette', 'printedAt'));
+        try {
+            $shot = Browsershot::html(
+                view('news.pdf', compact('news', 'siteSettings', 'brandPalette', 'printedAt'))->render()
+            )
+                ->format('A4')
+                ->margins(20, 25, 20, 25)
+                ->waitUntilNetworkIdle();
+
+            if ($path = config('services.browsershot.chrome_path')) {
+                $shot->setChromePath($path);
+            }
+            if (config('services.browsershot.no_sandbox')) {
+                $shot->noSandbox();
+            }
+
+            return response($shot->pdf())
+                ->header('Content-Type', 'application/pdf')
+                ->header('Content-Disposition', 'attachment; filename="' . $filename . '"');
+        } catch (\Throwable) {
+            return Pdf::loadView('news.pdf-print', compact('news', 'siteSettings', 'brandPalette', 'printedAt'))
+                ->setPaper('a4')
+                ->download($filename);
+        }
     }
 }

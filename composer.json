@@ -8,6 +8,7 @@
     "require": {
         "php": "^8.3",
         "bacon/bacon-qr-code": "^3.1",
+        "barryvdh/laravel-dompdf": "^3.1",
         "laravel/framework": "^13.8",
         "laravel/socialite": "^5.29",
         "laravel/tinker": "^3.0",
@@ -15,6 +16,7 @@
         "phpoffice/phpword": "^1.4",
         "pragmarx/google2fa-qrcode": "^4.0",
         "socialiteproviders/microsoft": "^4.10",
+        "spatie/browsershot": "^5.4",
         "spatie/laravel-medialibrary": "^11.23",
         "spatie/laravel-sitemap": "^8.2"
     },
