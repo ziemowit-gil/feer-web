@@ -73,7 +73,10 @@ class MediaLibraryController extends Controller
                     ? $query->whereNotNull('archived_at')
                     : $query->whereNull('archived_at')
             )
-            ->when($search, fn ($query) => $query->where('file_name', 'like', '%'.addcslashes($search, '%_').'%'))
+            ->when($search, fn ($query) => $query->where(fn ($q) => $q
+                ->where('file_name', 'like', '%'.addcslashes($search, '%_').'%')
+                ->orWhere('custom_properties', 'like', '%"display_name":"'.addcslashes($search, '%_').'%')
+            ))
             ->when($tag, fn ($query) => $query->where('custom_properties', 'like', '%"'.addslashes($tag).'"%'))
             ->when($dateFrom, fn ($query) => $query->whereDate('created_at', '>=', $dateFrom))
             ->when($dateTo, fn ($query) => $query->whereDate('created_at', '<=', $dateTo))
@@ -102,13 +105,27 @@ class MediaLibraryController extends Controller
                     }
                 }
 
+                $thumbUrl = null;
+                if ($isImage) {
+                    try {
+                        $thumbUrl = $media->hasGeneratedConversion('thumb')
+                            ? $media->getUrl('thumb')
+                            : $media->getUrl();
+                    } catch (\Throwable) {
+                        $thumbUrl = $media->getUrl();
+                    }
+                }
+
                 return [
                     'id' => $media->id,
                     'url' => $media->getUrl(),
+                    'thumb_url' => $thumbUrl,
                     'is_image' => $isImage,
                     'is_webp' => $isWebp,
                     'has_webp_conversion' => $hasWebpConversion,
-                    'file_name' => $media->file_name,
+                    'file_name' => $media->getCustomProperty('display_name') ?: $media->file_name,
+                    'file_name_real' => $media->file_name,
+                    'display_name_custom' => $media->getCustomProperty('display_name') ?? '',
                     'size' => $media->human_readable_size,
                     'mime_type' => $media->mime_type,
                     'collection' => $media->collection_name,
@@ -116,8 +133,10 @@ class MediaLibraryController extends Controller
                     'archived' => $media->archived_at !== null,
                     'owner' => $this->describeOwner($media, $model),
                     'alt' => $this->describeAlt($media, $model),
+                    'alt_editable' => $media->getCustomProperty('alt', ''),
                     'tags' => $media->getCustomProperty('tags', []),
                     'author' => $media->getCustomProperty('author') ?: ($media->uploadedBy?->name ?? 'System'),
+                    'author_editable' => $media->getCustomProperty('author', ''),
                 ];
             });
 
@@ -172,6 +191,44 @@ class MediaLibraryController extends Controller
         $media->save();
 
         return redirect()->back()->with('status', 'Tagi zostały zaktualizowane.');
+    }
+
+    public function rename(Request $request, Media $media)
+    {
+        abort_unless(in_array($media->model_type, $this->accessibleModelTypes()), 403);
+
+        $data = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+        ]);
+
+        $name = trim($data['name']);
+        if ($name === '') {
+            $media->forgetCustomProperty('display_name');
+        } else {
+            $media->setCustomProperty('display_name', $name);
+        }
+        $media->save();
+
+        return redirect()->back()->with('status', 'Nazwa pliku została zmieniona.');
+    }
+
+    public function updateAuthor(Request $request, Media $media)
+    {
+        abort_unless(in_array($media->model_type, $this->accessibleModelTypes()), 403);
+
+        $data = $request->validate([
+            'author' => ['nullable', 'string', 'max:255'],
+        ]);
+
+        $author = trim((string) ($data['author'] ?? ''));
+        if ($author === '') {
+            $media->forgetCustomProperty('author');
+        } else {
+            $media->setCustomProperty('author', $author);
+        }
+        $media->save();
+
+        return redirect()->back()->with('status', 'Autor został zaktualizowany.');
     }
 
     /**

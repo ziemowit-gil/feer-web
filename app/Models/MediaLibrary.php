@@ -20,8 +20,14 @@ class MediaLibrary extends Model implements HasMedia
         return static::query()->first() ?? static::create();
     }
 
+    public function registerMediaCollections(): void
+    {
+        $this->addMediaCollection('files')->withResponsiveImages();
+    }
+
     public function registerMediaConversions(?\Spatie\MediaLibrary\MediaCollections\Models\Media $media = null): void
     {
         $this->addMediaConversion('webp')->format('webp')->quality(85)->nonQueued();
+        $this->addMediaConversion('thumb')->width(400)->format('webp')->quality(80)->nonQueued();
     }
 }

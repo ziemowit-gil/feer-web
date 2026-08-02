@@ -3,9 +3,23 @@
 @section('title', 'Multimedia')
 
 @section('content')
+    @php
+        $imageItems = $media->filter(fn ($i) => $i['is_image'])->values()->toArray();
+    @endphp
     <div x-data="{
             view: localStorage.getItem('media-view') || 'list',
             lightbox: null,
+            lightboxIdx: -1,
+            lightboxLoaded: false,
+            images: @js($imageItems),
+            openLightbox(url) {
+                const idx = this.images.findIndex(i => i.url === url);
+                this.lightboxIdx = idx;
+                this.lightboxLoaded = false;
+                this.lightbox = idx >= 0 ? this.images[idx] : { url, alt: '', caption: url };
+            },
+            lightboxPrev() { if (this.lightboxIdx > 0) { this.lightboxLoaded = false; this.lightboxIdx--; this.lightbox = this.images[this.lightboxIdx]; } },
+            lightboxNext() { if (this.lightboxIdx < this.images.length - 1) { this.lightboxLoaded = false; this.lightboxIdx++; this.lightbox = this.images[this.lightboxIdx]; } },
             selected: [],
             copiedId: null,
             pageIds: @js($media->pluck('id')->values()),
@@ -16,7 +30,9 @@
             clearSelection() { this.selected = []; },
             async copy(url, id) { try { await navigator.clipboard.writeText(url); } catch (e) { window.prompt('Skopiuj adres URL:', url); return; } this.copiedId = id; setTimeout(() => { if (this.copiedId === id) this.copiedId = null; }, 2000); }
         }"
-        x-init="$watch('view', value => localStorage.setItem('media-view', value))">
+        x-init="$watch('view', value => localStorage.setItem('media-view', value))"
+        @keydown.arrow-left.window="if (lightbox) lightboxPrev()"
+        @keydown.arrow-right.window="if (lightbox) lightboxNext()">
 
         <div class="flex flex-col gap-6 lg:flex-row lg:items-start">
 
@@ -533,9 +549,9 @@
 
                                     @if ($item['is_image'])
                                         <button type="button" class="block h-full w-full cursor-zoom-in"
-                                            @click="lightbox = { url: @js($item['url']), alt: @js($item['alt']), caption: @js($item['file_name']) }"
+                                            @click="openLightbox(@js($item['url']))"
                                             aria-label="Powiększ obraz: {{ $item['alt'] }}">
-                                            <img src="{{ $item['url'] }}" alt="{{ $item['alt'] }}" class="h-full w-full object-cover">
+                                            <img src="{{ $item['thumb_url'] }}" alt="{{ $item['alt'] }}" class="h-full w-full object-cover" loading="lazy">
                                         </button>
                                     @else
                                         <div class="flex h-full w-full flex-col items-center justify-center gap-2">
@@ -758,9 +774,9 @@
                                             <div class="flex h-14 w-14 items-center justify-center overflow-hidden rounded-lg bg-gray-100 flex-none">
                                                 @if ($item['is_image'])
                                                     <button type="button" class="block h-full w-full cursor-zoom-in"
-                                                        @click="lightbox = { url: @js($item['url']), alt: @js($item['alt']), caption: @js($item['file_name']) }"
+                                                        @click="openLightbox(@js($item['url']))"
                                                         aria-label="Powiększ obraz: {{ $item['alt'] }}">
-                                                        <img src="{{ $item['url'] }}" alt="{{ $item['alt'] }}" class="h-full w-full object-cover">
+                                                        <img src="{{ $item['thumb_url'] }}" alt="{{ $item['alt'] }}" class="h-full w-full object-cover" loading="lazy">
                                                     </button>
                                                 @else
                                                     <i class="fa-solid fa-file text-xl text-gray-300" aria-hidden="true"></i>
@@ -769,23 +785,52 @@
                                         </td>
 
                                         {{-- Filename + meta --}}
-                                        <td class="max-w-[14rem] px-4 py-3">
-                                            <p class="truncate font-bold text-ink" title="{{ $item['file_name'] }}">{{ $item['file_name'] }}</p>
-                                            <p class="mt-0.5 text-xs text-muted">{{ $item['mime_type'] }}</p>
-                                            @if ($item['archived'])
-                                                <span class="mt-0.5 inline-block rounded bg-gray-200 px-1.5 py-0.5 text-[10px] font-bold text-gray-600">W archiwum</span>
-                                            @endif
-                                            @if ($item['is_image'])
-                                                @if ($item['is_webp'])
-                                                    <span class="mt-0.5 inline-flex items-center gap-0.5 rounded bg-green-100 px-1.5 py-0.5 text-[10px] font-bold text-green-700">
-                                                        <i class="fa-solid fa-check" aria-hidden="true"></i> WebP
-                                                    </span>
-                                                @else
-                                                    <span class="mt-0.5 inline-block rounded border border-amber-200 bg-amber-50 px-1.5 py-0.5 text-[10px] font-bold text-amber-700">
-                                                        {{ strtoupper(pathinfo($item['file_name'], PATHINFO_EXTENSION)) }}
-                                                    </span>
-                                                @endif
-                                            @endif
+                                        <td class="max-w-[14rem] px-4 py-3"
+                                            x-data="{ renaming: false, nameVal: @js($item['display_name_custom'] ?: $item['file_name_real']) }">
+
+                                            <template x-if="!renaming">
+                                                <div>
+                                                    <div class="group/name flex items-center gap-1">
+                                                        <p class="min-w-0 flex-1 truncate font-bold text-ink" title="{{ $item['file_name'] }}">{{ $item['file_name'] }}</p>
+                                                        <button type="button" @click="renaming = true"
+                                                            class="flex-none px-0.5 py-0.5 text-[11px] text-muted opacity-0 transition-opacity group-hover/name:opacity-100 hover:text-brand"
+                                                            aria-label="Zmień nazwę pliku {{ $item['file_name'] }}">
+                                                            <i class="fa-solid fa-pen" aria-hidden="true"></i>
+                                                        </button>
+                                                    </div>
+                                                    <p class="mt-0.5 text-xs text-muted">{{ $item['mime_type'] }}</p>
+                                                    @if ($item['archived'])
+                                                        <span class="mt-0.5 inline-block rounded bg-gray-200 px-1.5 py-0.5 text-[10px] font-bold text-gray-600">W archiwum</span>
+                                                    @endif
+                                                    @if ($item['is_image'])
+                                                        @if ($item['is_webp'])
+                                                            <span class="mt-0.5 inline-flex items-center gap-0.5 rounded bg-green-100 px-1.5 py-0.5 text-[10px] font-bold text-green-700">
+                                                                <i class="fa-solid fa-check" aria-hidden="true"></i> WebP
+                                                            </span>
+                                                        @else
+                                                            <span class="mt-0.5 inline-block rounded border border-amber-200 bg-amber-50 px-1.5 py-0.5 text-[10px] font-bold text-amber-700">
+                                                                {{ strtoupper(pathinfo($item['file_name_real'], PATHINFO_EXTENSION)) }}
+                                                            </span>
+                                                        @endif
+                                                    @endif
+                                                </div>
+                                            </template>
+
+                                            <template x-if="renaming">
+                                                <form method="POST" action="{{ route('admin.multimedia.rename', $item['id']) }}"
+                                                    class="flex items-center gap-1"
+                                                    x-init="$nextTick(() => $refs['rename-{{ $item['id'] }}'].focus())">
+                                                    @csrf
+                                                    @method('PUT')
+                                                    <label class="sr-only" for="rename-{{ $item['id'] }}">Nowa nazwa pliku</label>
+                                                    <input type="text" id="rename-{{ $item['id'] }}" x-ref="rename-{{ $item['id'] }}"
+                                                        name="name" x-model="nameVal" required
+                                                        @keydown.escape="renaming = false"
+                                                        class="w-full min-w-0 rounded border-gray-300 text-xs focus:border-brand focus:ring-brand">
+                                                    <button type="submit" class="flex-none text-brand hover:text-brand-dark" aria-label="Zapisz"><i class="fa-solid fa-check text-xs" aria-hidden="true"></i></button>
+                                                    <button type="button" @click="renaming = false" class="flex-none text-muted" aria-label="Anuluj"><i class="fa-solid fa-xmark text-xs" aria-hidden="true"></i></button>
+                                                </form>
+                                            </template>
                                         </td>
 
                                         {{-- Usage / owner --}}
@@ -871,9 +916,35 @@
                                             </div>
                                         </td>
 
-                                        {{-- Author --}}
-                                        <td class="whitespace-nowrap px-4 py-3 text-sm text-muted">
-                                            {{ $item['author'] ?? 'System' }}
+                                        {{-- Author (inline edit) --}}
+                                        <td class="px-4 py-3"
+                                            x-data="{ editingAuthor: false, authorVal: @js($item['author_editable']) }">
+                                            <template x-if="!editingAuthor">
+                                                <div class="group/author flex items-center gap-1">
+                                                    <span class="whitespace-nowrap text-sm text-muted" x-text="authorVal || @js($item['author'])"></span>
+                                                    <button type="button" @click="editingAuthor = true"
+                                                        class="flex-none px-0.5 text-[11px] text-muted opacity-0 transition-opacity group-hover/author:opacity-100 hover:text-brand"
+                                                        aria-label="Edytuj autora">
+                                                        <i class="fa-solid fa-pen" aria-hidden="true"></i>
+                                                    </button>
+                                                </div>
+                                            </template>
+                                            <template x-if="editingAuthor">
+                                                <form method="POST" action="{{ route('admin.multimedia.author', $item['id']) }}"
+                                                    class="flex items-center gap-1"
+                                                    x-init="$nextTick(() => $refs['author-{{ $item['id'] }}'].focus())">
+                                                    @csrf
+                                                    @method('PUT')
+                                                    <label class="sr-only" for="author-{{ $item['id'] }}">Autor pliku</label>
+                                                    <input type="text" id="author-{{ $item['id'] }}" x-ref="author-{{ $item['id'] }}"
+                                                        name="author" x-model="authorVal"
+                                                        placeholder="np. Jan Kowalski"
+                                                        @keydown.escape="editingAuthor = false"
+                                                        class="w-32 rounded border-gray-300 text-xs focus:border-brand focus:ring-brand">
+                                                    <button type="submit" class="flex-none text-brand" aria-label="Zapisz"><i class="fa-solid fa-check text-xs" aria-hidden="true"></i></button>
+                                                    <button type="button" @click="editingAuthor = false" class="flex-none text-muted" aria-label="Anuluj"><i class="fa-solid fa-xmark text-xs" aria-hidden="true"></i></button>
+                                                </form>
+                                            </template>
                                         </td>
 
                                         {{-- Size + date --}}
@@ -902,8 +973,33 @@
                                         @endif
 
                                         {{-- Actions --}}
-                                        <td class="px-4 py-3">
+                                        <td class="px-4 py-3"
+                                            x-data="{ editingAlt: false, altVal: @js($item['alt_editable']) }">
+                                            <template x-if="editingAlt">
+                                                <form method="POST" action="{{ route('admin.multimedia.alt', $item['id']) }}"
+                                                    class="mb-2 flex items-center gap-1"
+                                                    x-init="$nextTick(() => $refs['alt-{{ $item['id'] }}'].focus())">
+                                                    @csrf
+                                                    @method('PUT')
+                                                    <label class="sr-only" for="alt-{{ $item['id'] }}">Opis alternatywny</label>
+                                                    <input type="text" id="alt-{{ $item['id'] }}" x-ref="alt-{{ $item['id'] }}"
+                                                        name="alt" x-model="altVal"
+                                                        placeholder="Co przedstawia obraz?"
+                                                        @keydown.escape="editingAlt = false"
+                                                        class="w-36 rounded border-gray-300 text-xs focus:border-brand focus:ring-brand">
+                                                    <button type="submit" class="flex-none text-brand" aria-label="Zapisz alt"><i class="fa-solid fa-check text-xs" aria-hidden="true"></i></button>
+                                                    <button type="button" @click="editingAlt = false" class="flex-none text-muted" aria-label="Anuluj"><i class="fa-solid fa-xmark text-xs" aria-hidden="true"></i></button>
+                                                </form>
+                                            </template>
                                             <div class="flex items-center justify-end gap-1">
+                                                @if ($item['is_image'])
+                                                    <button type="button" @click="editingAlt = !editingAlt"
+                                                        class="rounded-lg p-1.5 text-muted hover:bg-gray-100 hover:text-ink"
+                                                        :title="altVal ? 'Edytuj opis alt: ' + altVal : 'Dodaj opis alt'"
+                                                        :aria-label="altVal ? 'Edytuj opis alt' : 'Dodaj opis alt (brak)'">
+                                                        <i class="fa-solid" :class="altVal ? 'fa-image text-green-600' : 'fa-image text-amber-500'" aria-hidden="true"></i>
+                                                    </button>
+                                                @endif
                                                 @if ($item['archived'])
                                                     <form method="POST" action="{{ route('admin.multimedia.restore', $item['id']) }}">
                                                         @csrf
@@ -955,17 +1051,60 @@
         <div x-show="lightbox" x-cloak
             @keydown.escape.window="lightbox = null"
             @click="lightbox = null"
-            class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4"
+            class="fixed inset-0 z-50 flex items-center justify-center bg-black/85 p-4"
             role="dialog" aria-modal="true" aria-label="Podgląd obrazu"
             x-transition.opacity>
+
+            {{-- Close --}}
             <button type="button" @click="lightbox = null"
-                class="absolute right-4 top-4 flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20"
-                aria-label="Zamknij podgląd">
+                class="absolute right-4 top-4 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/25 focus:outline-none focus:ring-2 focus:ring-white/50"
+                aria-label="Zamknij podgląd (Esc)">
                 <i class="fa-solid fa-xmark text-xl" aria-hidden="true"></i>
             </button>
-            <figure class="max-w-4xl" @click.stop>
-                <img :src="lightbox?.url" :alt="lightbox?.alt" class="mx-auto max-h-[80vh] w-auto rounded-xl object-contain shadow-2xl">
-                <figcaption class="mt-3 text-center text-sm text-white/70" x-text="lightbox?.caption"></figcaption>
+
+            {{-- Prev arrow --}}
+            <button type="button" @click.stop="lightboxPrev()"
+                x-show="lightboxIdx > 0"
+                class="absolute left-4 top-1/2 z-10 flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/25 focus:outline-none focus:ring-2 focus:ring-white/50"
+                aria-label="Poprzedni obraz (strzałka w lewo)">
+                <i class="fa-solid fa-chevron-left text-lg" aria-hidden="true"></i>
+            </button>
+
+            {{-- Next arrow --}}
+            <button type="button" @click.stop="lightboxNext()"
+                x-show="lightboxIdx < images.length - 1"
+                class="absolute right-4 top-1/2 z-10 flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/25 focus:outline-none focus:ring-2 focus:ring-white/50"
+                aria-label="Następny obraz (strzałka w prawo)">
+                <i class="fa-solid fa-chevron-right text-lg" aria-hidden="true"></i>
+            </button>
+
+            {{-- Image + caption --}}
+            <figure class="flex max-h-full max-w-4xl flex-col items-center" @click.stop>
+
+                {{-- Loading spinner --}}
+                <div x-show="!lightboxLoaded" class="flex h-[40vh] w-full items-center justify-center">
+                    <i class="fa-solid fa-spinner fa-spin text-4xl text-white/40" aria-hidden="true"></i>
+                </div>
+
+                <img :src="lightbox?.url" :alt="lightbox?.alt"
+                    class="mx-auto max-h-[80vh] w-auto rounded-xl object-contain shadow-2xl"
+                    :class="lightboxLoaded ? 'block' : 'hidden'"
+                    @load="lightboxLoaded = true">
+
+                <figcaption class="mt-3 w-full space-y-1 text-center" x-show="lightboxLoaded">
+                    <p class="text-sm font-bold text-white" x-text="lightbox?.file_name"></p>
+                    <p class="text-xs text-white/60"
+                        x-text="[lightbox?.size, lightbox?.mime_type].filter(Boolean).join(' · ')"></p>
+                    <template x-if="lightbox?.author && lightbox.author !== 'System'">
+                        <p class="text-xs text-white/50">
+                            <i class="fa-solid fa-user text-[10px]" aria-hidden="true"></i>
+                            <span x-text="lightbox?.author"></span>
+                        </p>
+                    </template>
+                    <template x-if="lightboxIdx >= 0 && images.length > 1">
+                        <p class="text-xs text-white/40" x-text="(lightboxIdx + 1) + ' / ' + images.length"></p>
+                    </template>
+                </figcaption>
             </figure>
         </div>
 
