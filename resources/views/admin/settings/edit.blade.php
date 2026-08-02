@@ -418,7 +418,7 @@
                         </div>
                     @endforeach
                 </div>
-                <button type="button" data-subbrands-add class="mt-3 inline-flex items-center gap-2 rounded border border-brand px-3 py-1.5 text-sm font-bold text-brand hover:bg-brand-light"><i class="fa-solid fa-plus"></i> Dodaj kolor submarki</button>
+                <button type="button" data-subbrands-add class="mt-3 inline-flex items-center gap-2 rounded border border-brand px-3 py-1.5 text-sm font-bold text-brand hover:bg-brand-light"><i class="fa-solid fa-plus" aria-hidden="true"></i> Dodaj kolor submarki</button>
                 <template data-subbrands-template>
                     <div data-subbrands-row class="flex flex-wrap items-center gap-2">
                         <input type="color" value="#1f6feb" oninput="this.nextElementSibling.value = this.value"
@@ -1403,12 +1403,38 @@
             <p class="mb-4 text-xs text-muted">Dotyczy tylko górnego paska nad logo. Ikony mediów społecznościowych w stopce pozostają widoczne niezależnie od tego ustawienia (BIP nie jest wyświetlany w stopce).</p>
 
             <div class="grid gap-4 sm:grid-cols-2">
-                <div>
-                    <label for="bip_url" class="mb-1 block text-sm font-bold">BIP</label>
-                    <input type="text" id="bip_url" name="bip_url" value="{{ old('bip_url', $settings->bip_url) }}" placeholder="https://bip..."
-                        class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
-                    <p class="mt-1 text-xs text-muted">Adres Biuletynu. Dostępny też pod skrótem <code>/bip</code> (strona-pośrednik z informacją poniżej).</p>
-                    @error('bip_url') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                <div x-data="{ bipMode: '{{ old('bip_mode', $settings->bip_mode ?? 'internal') }}' }">
+                    {{-- Tryb BIP --}}
+                    <fieldset class="mb-4">
+                        <legend class="mb-2 text-sm font-bold">Tryb BIP</legend>
+                        <div class="space-y-2">
+                            <label class="flex items-start gap-2 text-sm">
+                                <input type="radio" name="bip_mode" value="internal" x-model="bipMode"
+                                    class="mt-0.5 border-gray-300 text-brand focus:ring-brand">
+                                <span>
+                                    <strong>Własny BIP</strong> — dokumenty zarządzane w tym panelu<br>
+                                    <span class="text-xs text-muted">Wymaga włączonego modułu BIP w zakładce Moduły oraz dodania dokumentów w <a href="{{ route('admin.bip-dokumenty.index') }}" class="text-brand underline">Publikacje → BIP</a>.</span>
+                                </span>
+                            </label>
+                            <label class="flex items-start gap-2 text-sm">
+                                <input type="radio" name="bip_mode" value="external" x-model="bipMode"
+                                    class="mt-0.5 border-gray-300 text-brand focus:ring-brand">
+                                <span>
+                                    <strong>Zewnętrzny BIP</strong> — odnośnik do osobnej strony BIP<br>
+                                    <span class="text-xs text-muted">Strona /bip pokazuje opis i przycisk prowadzący do zewnętrznego adresu.</span>
+                                </span>
+                            </label>
+                        </div>
+                    </fieldset>
+
+                    {{-- Adres zewnętrzny — tylko w trybie zewnętrznym --}}
+                    <div x-show="bipMode === 'external'" x-cloak class="mb-4">
+                        <label for="bip_url" class="mb-1 block text-sm font-bold">Adres zewnętrznego BIP</label>
+                        <input type="text" id="bip_url" name="bip_url" value="{{ old('bip_url', $settings->bip_url) }}" placeholder="https://bip..."
+                            class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                        <p class="mt-1 text-xs text-muted">Pojawi się jako przycisk „Przejdź do pełnego BIP" na stronie /bip.</p>
+                        @error('bip_url') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </div>
 
                     <div class="mt-3">
                         <label class="mb-1 block text-sm font-bold">Treść strony <code>/bip</code> <span class="font-normal text-muted">(opcjonalnie)</span></label>
@@ -2015,7 +2041,7 @@
         </div>
 
         <div class="flex items-center gap-3 border-t border-gray-100 pt-5">
-            <button type="submit" class="rounded bg-brand px-5 py-2 text-sm font-bold text-white hover:bg-brand-dark">Zapisz</button>
+            <button type="submit" class="rounded bg-brand px-5 py-2 text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">Zapisz</button>
         </div>
     </form>
 

@@ -22,8 +22,7 @@
         <header class="mb-8">
             <h1 class="text-3xl font-extrabold text-ink">Rejestr zmian BIP</h1>
             <p class="mt-3 text-muted leading-relaxed">
-                Publiczny dziennik wszystkich operacji na dokumentach Biuletynu Informacji Publicznej —
-                zgodnie z § 14 rozporządzenia MSWiA w sprawie Biuletynu Informacji Publicznej.
+                Publiczny dziennik wszystkich operacji na dokumentach Biuletynu Informacji Publicznej.
                 Każda zmiana jest rejestrowana automatycznie wraz z datą i osobą, która jej dokonała.
             </p>
         </header>

@@ -112,6 +112,15 @@ class SiteSetting extends Model implements HasMedia
     ];
 
     /**
+     * BIP display modes: 'internal' uses the built-in document module,
+     * 'external' shows a link to a separately hosted BIP service.
+     */
+    public const BIP_MODES = [
+        'internal' => 'Własny BIP (dokumenty wbudowane)',
+        'external' => 'Zewnętrzny BIP (odnośnik do innej strony)',
+    ];
+
+    /**
      * Mail gateway modes selectable in the admin panel. "default" keeps the
      * .env configuration; "smtp" uses the panel-provided SMTP settings.
      */
@@ -132,7 +141,7 @@ class SiteSetting extends Model implements HasMedia
 
     protected $fillable = [
         'site_name', 'tagline', 'brand_color', 'brand_color_2', 'brand_color_3', 'brand_color_4', 'meta_description', 'allow_indexing', 'ga_measurement_id', 'disabled_modules', 'homepage_section_order', 'events_home_color',
-        'bip_url', 'bip_intro', 'bip_editor_name', 'bip_editor_email', 'bip_gov_url', 'facebook_url', 'twitter_url', 'instagram_url', 'linkedin_url', 'youtube_url', 'substack_url',
+        'bip_url', 'bip_intro', 'bip_editor_name', 'bip_editor_email', 'bip_gov_url', 'bip_mode', 'facebook_url', 'twitter_url', 'instagram_url', 'linkedin_url', 'youtube_url', 'substack_url',
         'contact_address', 'contact_city', 'contact_email', 'contact_phone', 'contact_intro', 'contact_bank_accounts',
         'contact_meeting_title', 'contact_online_meeting_url', 'contact_online_meeting_label', 'contact_online_meeting_text',
         'contact_schedule_title', 'contact_schedule', 'contact_schedule_enabled', 'contact_no_schedule_note', 'contact_remote_note', 'contact_meeting_notify_email',

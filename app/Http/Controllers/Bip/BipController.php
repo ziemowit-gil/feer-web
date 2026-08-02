@@ -10,21 +10,19 @@ use App\Models\SiteSetting;
 /**
  * Publiczne widoki BIP: lista dokumentów, szczegół dokumentu i rejestr zmian.
  *
- * Metody: index(), show(), changeLog().
- *
  * @author Ziemowit Gil <ziemowit.gil@feer.org.pl>
  */
 class BipController extends Controller
 {
     /**
-     * Strona /bip: informacja o BIP oraz — gdy moduł włączony —
-     * lista dokumentów publicznych pogrupowana według kategorii.
+     * Strona /bip. Tryb wbudowany: lista dokumentów. Tryb zewnętrzny: intro + przycisk do zewnętrznego BIP.
      */
     public function index()
     {
         $settings = SiteSetting::current();
+        $isExternal = ($settings->bip_mode ?? 'internal') === 'external';
 
-        $documents = $settings->isModuleEnabled('bip')
+        $documents = (! $isExternal && $settings->isModuleEnabled('bip'))
             ? BipDocument::published()
                 ->orderBy('category')
                 ->orderBy('order')
@@ -34,12 +32,18 @@ class BipController extends Controller
                 ->groupBy('category')
             : collect();
 
-        return view('bip', compact('documents'));
+        return view('bip', compact('documents', 'isExternal'));
     }
 
-    /** Wyświetla treść pojedynczego dokumentu BIP. */
+    /** Wyświetla treść pojedynczego dokumentu BIP (tylko w trybie wbudowanym). */
     public function show(BipDocument $bipDocument)
     {
+        $settings = SiteSetting::current();
+
+        if (($settings->bip_mode ?? 'internal') === 'external') {
+            return redirect()->route('bip');
+        }
+
         abort_unless($bipDocument->is_published, 404);
 
         $bipDocument->load(['creator', 'updater', 'media']);
@@ -47,19 +51,19 @@ class BipController extends Controller
         return view('bip.show', compact('bipDocument'));
     }
 
-    /**
-     * Publiczny rejestr zmian BIP (§ 14 rozporządzenia MSWiA).
-     *
-     * Wyświetla paginowaną historię wszystkich operacji (utworzenie, edycja,
-     * usunięcie) wykonanych na dokumentach BIP, posortowaną od najnowszych.
-     */
+    /** Publiczny rejestr zmian BIP (tylko w trybie wbudowanym). */
     public function changeLog()
     {
+        $settings = SiteSetting::current();
+
+        if (($settings->bip_mode ?? 'internal') === 'external') {
+            return redirect()->route('bip');
+        }
+
         $entries = ActivityLog::where('subject_type', 'BipDocument')
             ->latest()
             ->paginate(50);
 
-        // Mapa id → slug opublikowanych dokumentów (do linków w tabeli).
         $documentMap = BipDocument::withTrashed()
             ->whereIn('id', $entries->pluck('subject_id')->unique())
             ->pluck('slug', 'id');
