@@ -42,8 +42,9 @@ class NewsController extends Controller
         abort_unless($news->is_published && $news->published_at <= now(), 404);
         $news->load(['category']);
         $siteSettings = SiteSetting::current();
+        $brandPalette = $siteSettings->brandPalette();
         $printedAt = now()->format('d.m.Y');
 
-        return view('news.pdf', compact('news', 'siteSettings', 'printedAt'));
+        return view('news.pdf', compact('news', 'siteSettings', 'brandPalette', 'printedAt'));
     }
 }
