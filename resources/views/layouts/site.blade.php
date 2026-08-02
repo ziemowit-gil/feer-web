@@ -62,6 +62,7 @@
 
     @include('partials.topbar')
     @include('partials.header')
+    @include('partials.admin-bar')
 
     <main id="main-content" class="flex-1">
         @hasSection('breadcrumbs')
