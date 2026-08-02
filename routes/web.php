@@ -228,6 +228,7 @@ Route::middleware(['auth', 'verified', '2fa'])->prefix(config('app.admin_prefix'
 
     Route::middleware(['module:hero', 'module-access:hero'])->group(function () {
         Route::resource('hero', HeroSlideController::class)->parameters(['hero' => 'heroSlide'])->except('show');
+        Route::patch('hero-misja-slajd', [HeroSlideController::class, 'updateMissionSlide'])->name('hero.mission-slide');
     });
 
     Route::middleware(['module:gallery', 'module-access:gallery'])->group(function () {

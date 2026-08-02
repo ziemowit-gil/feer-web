@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\HeroSlide;
+use App\Models\SiteSetting;
 use Illuminate\Http\Request;
 
 class HeroSlideController extends Controller
@@ -73,5 +74,16 @@ class HeroSlideController extends Controller
         $heroSlide->delete();
 
         return redirect()->route('admin.hero.index')->with('status', 'Slajd został usunięty.');
+    }
+
+    public function updateMissionSlide(Request $request)
+    {
+        $request->validate(['hero_mission_slide' => ['boolean']]);
+
+        SiteSetting::current()->update([
+            'hero_mission_slide' => (bool) $request->input('hero_mission_slide', false),
+        ]);
+
+        return redirect()->route('admin.hero.index')->with('status', 'Ustawienie slajdu z misją zostało zapisane.');
     }
 }
