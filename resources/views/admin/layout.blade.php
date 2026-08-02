@@ -64,8 +64,8 @@
                 <span class="flex h-9 w-9 flex-none items-center justify-center rounded bg-brand text-sm font-bold text-white">{{ mb_substr($siteSettings->site_name, 0, 1) }}</span>
             @endif
             <span class="brand-label min-w-0 leading-tight">
-                <span style="font-family:'Pacifico',cursive;color:var(--color-brand)">We</span><span style="font-family:'Lato',sans-serif;font-weight:700">CMS</span>
-                <br><span class="text-xs font-normal text-muted">Autorski CMS dla NGO</span>
+                <span style="font-family:'Pacifico',cursive;color:var(--color-brand)">We</span><span style="font-family:'Pacifico',cursive;font-weight:300">CMS</span>
+                <br><span class="text-xs font-normal text-muted">CMS dla NGO</span>
             </span>
         </div>
 

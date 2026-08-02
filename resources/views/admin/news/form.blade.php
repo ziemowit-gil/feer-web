@@ -60,28 +60,13 @@
                 </div>
             </div>
 
-            <div class="grid gap-5 sm:grid-cols-2">
-                <div>
-                    <label for="excerpt" class="mb-1 block text-sm font-bold">Krótki opis</label>
-                    <input type="text" id="excerpt" name="excerpt" value="{{ old('excerpt', $news->excerpt) }}"
-                        class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
-                    @error('excerpt') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
-                </div>
-
-                <div>
-                    <label for="tags" class="mb-1 block text-sm font-bold">Tagi <span class="font-normal text-muted">(opcjonalnie)</span></label>
-                    <input type="text" id="tags" name="tags"
-                        value="{{ old('tags', $news->relationLoaded('tags') ? $news->tags->pluck('name')->implode(', ') : '') }}"
-                        placeholder="np. dostępność, wcag, audyt"
-                        class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
-                    <p class="mt-1 text-xs text-muted">Oddziel tagi przecinkami. Nowe tagi zostaną utworzone automatycznie.</p>
-                </div>
-            </div>
-
             @php
                 $extraOpen = $errors->has('audience') || $errors->has('accent_color')
+                    || $errors->has('excerpt') || $errors->has('tags')
                     || ($news->exists && filled($news->accent_color))
-                    || ($news->exists && !in_array($news->audience ?? 'brand', ['brand', '']));
+                    || ($news->exists && !in_array($news->audience ?? 'brand', ['brand', '']))
+                    || ($news->exists && filled($news->excerpt))
+                    || ($news->exists && $news->relationLoaded('tags') && $news->tags->isNotEmpty());
             @endphp
             <div x-data="{ extraOpen: {{ $extraOpen ? 'true' : 'false' }} }" class="-mx-6">
                 <button type="button" @click="extraOpen = !extraOpen" :aria-expanded="extraOpen"
@@ -91,6 +76,24 @@
                     <i class="fa-solid fa-chevron-down ml-auto text-xs transition-transform duration-200" :class="{ 'rotate-180': extraOpen }" aria-hidden="true"></i>
                 </button>
                 <div x-show="extraOpen" x-cloak class="px-6 py-4">
+                    <div class="mb-5 grid gap-5 sm:grid-cols-2">
+                        <div>
+                            <label for="excerpt" class="mb-1 block text-sm font-bold">Krótki opis</label>
+                            <input type="text" id="excerpt" name="excerpt" value="{{ old('excerpt', $news->excerpt) }}"
+                                class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                            @error('excerpt') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                        </div>
+
+                        <div>
+                            <label for="tags" class="mb-1 block text-sm font-bold">Tagi <span class="font-normal text-muted">(opcjonalnie)</span></label>
+                            <input type="text" id="tags" name="tags"
+                                value="{{ old('tags', $news->relationLoaded('tags') ? $news->tags->pluck('name')->implode(', ') : '') }}"
+                                placeholder="np. dostępność, wcag, audyt"
+                                class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                            <p class="mt-1 text-xs text-muted">Oddziel tagi przecinkami. Nowe tagi zostaną utworzone automatycznie.</p>
+                        </div>
+                    </div>
+
                     <div class="grid gap-5 sm:grid-cols-2">
                         <div>
                             <label for="audience" class="mb-1 block text-sm font-bold">Grupa docelowa (kolorystyka)</label>

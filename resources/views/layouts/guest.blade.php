@@ -50,9 +50,9 @@
 
             <div class="relative hidden lg:block">
                 <p class="mb-2 text-4xl leading-none">
-                    <span style="font-family:'Pacifico',cursive">We</span><span style="font-family:'Lato',sans-serif;font-weight:700">CMS</span>
+                    <span style="font-family:'Pacifico',cursive">We</span><span style="font-family:'Pacifico',cursive;font-weight:300">CMS</span>
                 </p>
-                <p class="mb-6 text-sm text-white/60">Autorski CMS dla NGO</p>
+                <p class="mb-6 text-sm text-white/60">CMS dla NGO</p>
                 <h2 class="max-w-md text-3xl font-bold leading-tight">@yield('brand_heading', 'Witaj ponownie')</h2>
                 <p class="mt-4 max-w-md text-white/80">@yield('brand_lead', 'Zaloguj się, aby kontynuować.')</p>
             </div>

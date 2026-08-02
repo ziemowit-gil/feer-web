@@ -11,7 +11,7 @@
 
     <div class="mb-6 flex flex-col items-center text-center">
         <p class="mb-3 text-3xl leading-none">
-            <span style="font-family:'Pacifico',cursive;color:var(--color-brand)">We</span><span style="font-family:'Lato',sans-serif;font-weight:700">CMS</span>
+            <span style="font-family:'Pacifico',cursive;color:var(--color-brand)">We</span><span style="font-family:'Pacifico',cursive;font-weight:300">CMS</span>
         </p>
         <h1 class="text-xl font-bold text-ink">Zaloguj się</h1>
         <p class="mt-1 text-sm text-muted">{{ $siteSettings->site_name }}</p>

@@ -38,6 +38,12 @@
         @include('partials.etr-toggle', ['etr' => $news->etr, 'title' => $news->title])
 
         <div x-show="!etr">
+            <a href="{{ route('news.index') }}"
+                class="mb-6 inline-flex items-center gap-2 text-sm font-medium text-muted hover:text-brand focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
+                <i class="fa-solid fa-arrow-left text-xs" aria-hidden="true"></i>
+                Powrót do aktualności
+            </a>
+
             <div class="mb-3 flex flex-wrap items-center gap-3 text-sm">
                 <span class="text-muted">{{ $news->published_at->format('d.m.Y') }}</span>
                 @if ($news->updated_at->gt($news->published_at))

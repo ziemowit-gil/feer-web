@@ -70,6 +70,12 @@
                                         @if ($item->excerpt)
                                             <p class="mt-1 text-sm text-muted line-clamp-2">{{ $item->excerpt }}</p>
                                         @endif
+
+                                        <a href="{{ route('news.show', $item) }}"
+                                            aria-label="Czytaj więcej: {{ $item->title }}"
+                                            class="mt-2 inline-block text-sm font-bold text-brand hover:text-brand-dark focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
+                                            Czytaj więcej →
+                                        </a>
                                     </div>
 
                                     @if ($img)
@@ -129,8 +135,9 @@
 
                                     <div class="mt-auto">
                                         <a href="{{ route('news.show', $item) }}"
+                                            aria-label="Czytaj więcej: {{ $item->title }}"
                                             class="inline-block rounded border border-gray-300 px-5 py-2 text-xs font-bold uppercase tracking-wide text-ink transition hover:border-brand hover:text-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
-                                            Więcej
+                                            Czytaj więcej
                                         </a>
                                     </div>
                                 </div>
