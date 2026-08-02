@@ -25,11 +25,11 @@ class HomeController extends Controller
             $missionText = Page::where('type', 'about')->value('about_motto') ?: $settings->tagline;
             if ($missionText) {
                 $missionSlide = (object) [
-                    'mission_text' => $missionText,
-                    'logo_url'     => $settings->logoUrl(),
-                    'site_name'    => $settings->site_name,
-                    'cta_label'    => trim($settings->wide_mission_cta_label ?? ''),
-                    'cta_url'      => trim($settings->wide_mission_cta_url ?? ''),
+                    'mission_text'   => $missionText,
+                    'logo_url'       => $settings->logoUrl(),
+                    'site_name'      => $settings->site_name,
+                    'mission_bg'     => $settings->hero_mission_bg ?? 'brand',
+                    'mission_img_url' => $settings->missionSlideImageUrl(),
                 ];
                 $slides = $slides->prepend($missionSlide);
             }

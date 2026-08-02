@@ -78,12 +78,24 @@ class HeroSlideController extends Controller
 
     public function updateMissionSlide(Request $request)
     {
-        $request->validate(['hero_mission_slide' => ['boolean']]);
-
-        SiteSetting::current()->update([
-            'hero_mission_slide' => (bool) $request->input('hero_mission_slide', false),
+        $request->validate([
+            'hero_mission_slide' => ['boolean'],
+            'hero_mission_bg'    => ['nullable', 'in:brand,image'],
+            'hero_mission_image' => ['nullable', 'image', 'max:4096'],
         ]);
 
-        return redirect()->route('admin.hero.index')->with('status', 'Ustawienie slajdu z misją zostało zapisane.');
+        $settings = SiteSetting::current();
+
+        $settings->update([
+            'hero_mission_slide' => (bool) $request->input('hero_mission_slide', false),
+            'hero_mission_bg'    => $request->input('hero_mission_bg', 'brand'),
+        ]);
+
+        if ($request->hasFile('hero_mission_image')) {
+            $settings->addMediaFromRequest('hero_mission_image')
+                ->toMediaCollection('hero_mission_image');
+        }
+
+        return redirect()->route('admin.hero.index')->with('status', 'Ustawienia slajdu z misją zostały zapisane.');
     }
 }

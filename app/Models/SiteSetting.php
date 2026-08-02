@@ -148,7 +148,7 @@ class SiteSetting extends Model implements HasMedia
         'show_coordinators', 'ngo_color', 'sub_brands',
         'logo_alt', 'logo_only',
         'news_layout', 'volunteer_layout',
-        'wide_mission_social_1', 'wide_mission_social_2', 'wide_mission_cta_label', 'wide_mission_cta_url', 'wide_mission_show_mission', 'wide_mission_highlight_account', 'wide_mission_nav_align', 'wide_mission_search_in_nav', 'wide_mission_sidebar', 'wide_mission_sidebar_style', 'wide_mission_nav_style', 'hero_mission_slide',
+        'wide_mission_social_1', 'wide_mission_social_2', 'wide_mission_cta_label', 'wide_mission_cta_url', 'wide_mission_show_mission', 'wide_mission_highlight_account', 'wide_mission_nav_align', 'wide_mission_search_in_nav', 'wide_mission_sidebar', 'wide_mission_sidebar_style', 'wide_mission_nav_style', 'hero_mission_slide', 'hero_mission_bg',
         'krs_number', 'nip_number', 'regon_number', 'projects_intro', 'materials_intro', 'materials_notice',
         'accessibility_entity_name', 'accessibility_status', 'accessibility_status_note',
         'accessibility_page_published_at', 'accessibility_page_updated_at', 'accessibility_declaration_date',
@@ -673,9 +673,15 @@ class SiteSetting extends Model implements HasMedia
         $this->addMediaCollection('support_image')->singleFile();
         $this->addMediaCollection('news_default_image')->singleFile();
         $this->addMediaCollection('bip_logo')->singleFile();
+        $this->addMediaCollection('hero_mission_image')->singleFile();
         // Osobna galeria dla strony „Wesprzyj nas" (wiele zdjęć, niezależna od
         // głównej galerii strony) — kolaż „działamy" jako dowód aktywności.
         $this->addMediaCollection('support_gallery');
+    }
+
+    public function missionSlideImageUrl(): ?string
+    {
+        return $this->getFirstMediaUrl('hero_mission_image') ?: null;
     }
 
     /** Zdjęcia dedykowanej galerii strony „Wesprzyj nas" (posortowane). */

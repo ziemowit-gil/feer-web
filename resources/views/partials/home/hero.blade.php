@@ -28,24 +28,29 @@
     <div class="{{ $hasSidebar ? 'relative h-full' : 'relative h-[320px] md:h-[440px]' }}">
         @foreach ($slides as $index => $slide)
             @if (isset($slide->mission_text))
-            {{-- Slajd misji organizacji (bez tła-obrazka) --}}
+            {{-- Slajd misji organizacji --}}
+            @php
+                $missionBg    = $slide->mission_bg ?? 'brand';
+                $missionImg   = $slide->mission_img_url ?? null;
+                $useImage     = $missionBg === 'image' && $missionImg;
+                $missionTextColor = $useImage ? 'text-white' : 'text-white';
+            @endphp
             <div
-                class="absolute inset-0 flex items-center justify-center bg-white transition-opacity duration-700 motion-reduce:transition-none {{ $index === 0 ? 'opacity-100' : 'opacity-0 pointer-events-none' }}"
+                class="absolute inset-0 flex items-center justify-center transition-opacity duration-700 motion-reduce:transition-none {{ $index === 0 ? 'opacity-100' : 'opacity-0 pointer-events-none' }}"
+                @if ($useImage)
+                    style="background-image: linear-gradient(rgba(0,0,0,.45), rgba(0,0,0,.45)), url('{{ $missionImg }}'); background-size: cover; background-position: center;"
+                @else
+                    style="background-color: var(--color-brand);"
+                @endif
                 data-hero-slide
                 @if ($index !== 0) aria-hidden="true" @endif
             >
                 <div class="w-full px-8 py-6 text-center {{ $hasSidebar ? 'max-w-xs' : 'max-w-lg' }}">
                     @if ($slide->logo_url)
                         <img src="{{ $slide->logo_url }}" alt="{{ $slide->site_name }}"
-                            class="mx-auto mb-5 h-14 w-auto max-w-[10rem] object-contain opacity-90">
+                            class="mx-auto mb-5 h-14 w-auto max-w-[10rem] object-contain opacity-90 brightness-0 invert">
                     @endif
-                    <p class="{{ $hasSidebar ? 'text-base md:text-lg' : 'text-xl md:text-3xl' }} font-bold leading-snug text-ink">{{ $slide->mission_text }}</p>
-                    @if ($slide->cta_label && $slide->cta_url)
-                        <a href="{{ $slide->cta_url }}" {{ $index !== 0 ? 'tabindex=-1' : '' }}
-                            class="mt-5 inline-flex items-center gap-2 rounded-full bg-brand px-5 py-2.5 text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand">
-                            {{ $slide->cta_label }}
-                        </a>
-                    @endif
+                    <p class="{{ $hasSidebar ? 'text-base md:text-lg' : 'text-xl md:text-3xl' }} font-bold leading-snug text-white">{{ $slide->mission_text }}</p>
                 </div>
             </div>
             @else
