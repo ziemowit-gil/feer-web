@@ -31,9 +31,16 @@
                     <p class="mt-1 text-sm text-muted">Używaj długiego, losowego hasła dla bezpieczeństwa konta.</p>
                 </div>
                 <div class="rounded-lg border border-gray-200 bg-white p-6">
-                    <div class="max-w-md">
-                        @include('profile.partials.update-password-form')
-                    </div>
+                    @if (auth()->user()->microsoft_id)
+                        <div class="flex items-start gap-3 rounded-lg border border-blue-100 bg-blue-50 px-4 py-3 text-sm text-blue-900">
+                            <i class="fa-solid fa-circle-info mt-0.5 flex-none text-blue-500" aria-hidden="true"></i>
+                            <p>Twoje konto używa logowania przez <strong>Microsoft 365</strong>. Hasło należy zmienić w <strong>Systemie Zarządzania Organizacją</strong> w zakładce <strong>Tożsamość</strong>.</p>
+                        </div>
+                    @else
+                        <div class="max-w-md">
+                            @include('profile.partials.update-password-form')
+                        </div>
+                    @endif
                 </div>
             </div>
 

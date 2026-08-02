@@ -1023,9 +1023,11 @@
             </div>
 
             <p class=”mb-2 text-xs font-bold uppercase tracking-wide text-muted”>Sekcje strony Kontakt</p>
+            <input type=”hidden” name=”contact_show_form” value=”0”>
+            <input type=”hidden” name=”contact_show_bank_accounts” value=”0”>
+            <input type=”hidden” name=”contact_show_coordinators” value=”0”>
             <div class=”mb-4 space-y-2 rounded-lg border border-gray-200 bg-gray-50 p-3”>
                 <label class=”flex items-start gap-2 text-sm”>
-                    <input type=”hidden” name=”contact_show_form” value=”0”>
                     <input type=”checkbox” name=”contact_show_form” value=”1” @checked(old('contact_show_form', $settings->contact_show_form ?? true)) class=”mt-0.5 rounded border-gray-300 text-brand focus:ring-brand”>
                     <span>
                         <span class=”font-bold”>Napisz do nas</span>
@@ -1033,7 +1035,6 @@
                     </span>
                 </label>
                 <label class=”flex items-start gap-2 text-sm”>
-                    <input type=”hidden” name=”contact_show_bank_accounts” value=”0”>
                     <input type=”checkbox” name=”contact_show_bank_accounts” value=”1” @checked(old('contact_show_bank_accounts', $settings->contact_show_bank_accounts ?? true)) class=”mt-0.5 rounded border-gray-300 text-brand focus:ring-brand”>
                     <span>
                         <span class=”font-bold”>Rachunki bankowe</span>
@@ -1041,7 +1042,6 @@
                     </span>
                 </label>
                 <label class=”flex items-start gap-2 text-sm”>
-                    <input type=”hidden” name=”contact_show_coordinators” value=”0”>
                     <input type=”checkbox” name=”contact_show_coordinators” value=”1” @checked(old('contact_show_coordinators', $settings->contact_show_coordinators ?? true)) class=”mt-0.5 rounded border-gray-300 text-brand focus:ring-brand”>
                     <span>
                         <span class=”font-bold”>Koordynatorzy</span>
@@ -1050,8 +1050,8 @@
                 </label>
             </div>
 
+            <input type=”hidden” name=”show_coordinators” value=”0”>
             <label class=”mb-4 flex items-start gap-2 rounded-lg border border-gray-200 bg-gray-50 p-3 text-sm”>
-                <input type=”hidden” name=”show_coordinators” value=”0”>
                 <input type=”checkbox” name=”show_coordinators” value=”1” @checked(old('show_coordinators', $settings->show_coordinators)) class=”mt-0.5 rounded border-gray-300 text-brand focus:ring-brand”>
                 <span>
                     <span class=”font-bold”>Pokazuj koordynatorów projektów</span>

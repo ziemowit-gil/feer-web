@@ -63,6 +63,7 @@
             @php
                 $extraOpen = $errors->has('audience') || $errors->has('accent_color')
                     || $errors->has('excerpt') || $errors->has('tags')
+                    || filled(old('tags')) || filled(old('excerpt'))
                     || ($news->exists && filled($news->accent_color))
                     || ($news->exists && !in_array($news->audience ?? 'brand', ['brand', '']))
                     || ($news->exists && filled($news->excerpt))
