@@ -83,7 +83,6 @@
 
         <div class="space-y-3 rounded-lg border border-gray-200 bg-gray-50 p-4">
             <label class="flex items-center gap-2">
-                <input type="hidden" name="cookie_banner_enabled" value="0">
                 <input type="checkbox" name="cookie_banner_enabled" value="1" {{ old('cookie_banner_enabled', $settings->cookie_banner_enabled ?? true) ? 'checked' : '' }}
                     class="rounded border-gray-300 text-brand focus:ring-brand">
                 <span class="text-sm font-bold">Pokaż baner o plikach cookies</span>
@@ -99,7 +98,6 @@
         </div>
 
         <label class="flex items-center gap-2 rounded-lg border border-gray-200 bg-gray-50 p-4">
-            <input type="hidden" name="show_cms_credit" value="0">
             <input type="checkbox" name="show_cms_credit" value="1" {{ old('show_cms_credit', $settings->show_cms_credit ?? true) ? 'checked' : '' }}
                 class="rounded border-gray-300 text-brand focus:ring-brand">
             <span class="text-sm font-bold">Pokaż nazwę CMS w stopce („weCMS · autor…")</span>
@@ -210,7 +208,6 @@
                 <p class="text-sm font-bold text-brand">Ustawienia nagłówka WOŚP</p>
 
                 <label class="flex items-center gap-2 rounded-lg border border-gray-200 bg-white p-3">
-                    <input type="hidden" name="wide_mission_show_mission" value="0">
                     <input type="checkbox" name="wide_mission_show_mission" value="1"
                         {{ old('wide_mission_show_mission', $settings->wide_mission_show_mission ?? false) ? 'checked' : '' }}
                         class="rounded border-gray-300 text-brand focus:ring-brand">
@@ -218,7 +215,6 @@
                 </label>
 
                 <label class="flex items-center gap-2 rounded-lg border border-gray-200 bg-white p-3">
-                    <input type="hidden" name="wide_mission_highlight_account" value="0">
                     <input type="checkbox" name="wide_mission_highlight_account" value="1"
                         {{ old('wide_mission_highlight_account', $settings->wide_mission_highlight_account ?? false) ? 'checked' : '' }}
                         class="rounded border-gray-300 text-brand focus:ring-brand">
@@ -240,7 +236,6 @@
                 </div>
 
                 <label class="flex items-center gap-2 rounded-lg border border-gray-200 bg-white p-3">
-                    <input type="hidden" name="wide_mission_search_in_nav" value="0">
                     <input type="checkbox" name="wide_mission_search_in_nav" value="1"
                         {{ old('wide_mission_search_in_nav', $settings->wide_mission_search_in_nav ?? false) ? 'checked' : '' }}
                         class="rounded border-gray-300 text-brand focus:ring-brand">
@@ -248,7 +243,6 @@
                 </label>
 
                 <label class="flex items-center gap-2 rounded-lg border border-gray-200 bg-white p-3">
-                    <input type="hidden" name="wide_mission_sidebar" value="0">
                     <input type="checkbox" name="wide_mission_sidebar" value="1"
                         {{ old('wide_mission_sidebar', $settings->wide_mission_sidebar ?? false) ? 'checked' : '' }}
                         class="rounded border-gray-300 text-brand focus:ring-brand">
@@ -285,19 +279,16 @@
                     <div class="mt-3 space-y-2 rounded-lg border border-gray-200 bg-gray-50 p-3 text-sm">
                         <p class="text-xs font-bold uppercase tracking-wide text-muted">Kolory pozycji — tylko pasek koloru marki</p>
                         <label class="flex items-center gap-2">
-                            <input type="hidden" name="wide_mission_nav_hover_white" value="0">
                             <input type="checkbox" name="wide_mission_nav_hover_white" value="1" @checked(old('wide_mission_nav_hover_white', $settings->wide_mission_nav_hover_white ?? false)) class="rounded border-gray-300 text-brand focus:ring-brand">
                             <span class="font-bold">Biały hover</span>
                             <span class="text-xs text-muted">— tekst/podkreślenie na biało przy najechaniu</span>
                         </label>
                         <label class="flex items-center gap-2">
-                            <input type="hidden" name="wide_mission_nav_active_white" value="0">
                             <input type="checkbox" name="wide_mission_nav_active_white" value="1" @checked(old('wide_mission_nav_active_white', $settings->wide_mission_nav_active_white ?? false)) class="rounded border-gray-300 text-brand focus:ring-brand">
                             <span class="font-bold">Biały active</span>
                             <span class="text-xs text-muted">— białe podkreślenie aktywnej pozycji</span>
                         </label>
                         <label class="flex items-center gap-2">
-                            <input type="hidden" name="wide_mission_nav_icons_white" value="0">
                             <input type="checkbox" name="wide_mission_nav_icons_white" value="1" @checked(old('wide_mission_nav_icons_white', $settings->wide_mission_nav_icons_white ?? false)) class="rounded border-gray-300 text-brand focus:ring-brand">
                             <span class="font-bold">Białe ikony/strzałki</span>
                             <span class="text-xs text-muted">— strzałki podmenu w kolorze białym</span>
@@ -458,7 +449,6 @@
                 <p class="mt-1 text-xs text-muted">Po włączeniu zwykli użytkownicy zobaczą komunikat o przerwie technicznej. Zalogowani administratorzy dalej mają dostęp do panelu i strony, aby móc wyłączyć tryb.</p>
 
                 <label class="mt-4 flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm">
-                    <input type="hidden" name="maintenance_mode" value="0">
                     <input type="checkbox" name="maintenance_mode" value="1" x-model="maintenance"
                         @checked(old('maintenance_mode', $settings->maintenance_mode))
                         class="mt-0.5 rounded border-gray-300 text-brand focus:ring-brand">
@@ -1369,7 +1359,6 @@
                 </div>
 
                 <label class="flex items-start gap-2 rounded-lg border border-gray-200 bg-white p-3 text-sm">
-                    <input type="hidden" name="notify_schedule_change" value="0">
                     <input type="checkbox" name="notify_schedule_change" value="1" @checked(old('notify_schedule_change')) class="mt-0.5 rounded border-gray-300 text-brand focus:ring-brand">
                     <span>
                         <span class="font-bold">Powiadom zapisanych o zmianie terminu</span>
@@ -1649,7 +1638,6 @@
             <div class="mt-6 rounded-lg border border-gray-200 bg-gray-50 p-5">
                 <p class="mb-3 text-sm font-bold text-ink">Slider hero</p>
                 <label class="flex items-center gap-2 rounded-lg border border-gray-200 bg-white p-3">
-                    <input type="hidden" name="hero_mission_slide" value="0">
                     <input type="checkbox" name="hero_mission_slide" value="1"
                         {{ old('hero_mission_slide', $settings->hero_mission_slide ?? false) ? 'checked' : '' }}
                         class="rounded border-gray-300 text-brand focus:ring-brand">
@@ -1738,7 +1726,6 @@
             </div>
 
             <label class="flex items-center gap-2 text-sm font-medium">
-                <input type="hidden" name="microsoft_login_enabled" value="0">
                 <input type="checkbox" name="microsoft_login_enabled" value="1" x-model="msEnabled"
                     {{ old('microsoft_login_enabled', $settings->microsoft_login_enabled) ? 'checked' : '' }}
                     class="rounded border-gray-300 text-brand focus:ring-brand">
@@ -1748,7 +1735,6 @@
             <div x-show="msEnabled" x-cloak class="space-y-4">
                 <div>
                     <label class="flex items-center gap-2 text-sm font-medium">
-                        <input type="hidden" name="microsoft_only_login" value="0">
                         <input type="checkbox" name="microsoft_only_login" value="1"
                             {{ old('microsoft_only_login', $settings->microsoft_only_login) ? 'checked' : '' }}
                             class="rounded border-gray-300 text-brand focus:ring-brand">
@@ -1821,7 +1807,6 @@
                 <code class="mt-2 block break-all rounded bg-gray-50 px-3 py-2 text-xs text-ink">{{ url('/strefa/microsoft/callback') }}</code>
 
                 <label class="mt-4 flex items-center gap-2 text-sm font-medium">
-                    <input type="hidden" name="member_login_enabled" value="0">
                     <input type="checkbox" name="member_login_enabled" value="1" x-model="memberEnabled"
                         {{ old('member_login_enabled', $settings->member_login_enabled) ? 'checked' : '' }}
                         class="rounded border-gray-300 text-brand focus:ring-brand">
@@ -1861,7 +1846,6 @@
                 </p>
 
                 <label class="mt-4 flex items-center gap-2 text-sm font-medium">
-                    <input type="hidden" name="two_factor_required_admins" value="0">
                     <input type="checkbox" name="two_factor_required_admins" value="1"
                         {{ old('two_factor_required_admins', $settings->two_factor_required_admins) ? 'checked' : '' }}
                         class="rounded border-gray-300 text-brand focus:ring-brand">
