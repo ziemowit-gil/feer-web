@@ -79,7 +79,8 @@ detect_npm() {
     fi
 }
 
-# Wykrywanie Composera (zmienna, composer w PATH, lokalny composer.phar).
+# Wykrywanie Composera (zmienna, composer w PATH, lokalny composer.phar,
+# fallback do pełnych ścieżek na hostingu współdzielonym).
 detect_composer() {
     COMPOSER_BIN="${COMPOSER_BIN:-}"
     if [[ -z "$COMPOSER_BIN" ]]; then
@@ -87,6 +88,20 @@ detect_composer() {
             COMPOSER_BIN="composer"
         elif [[ -f composer.phar ]]; then
             COMPOSER_BIN="$PHP_BIN composer.phar"
+        else
+            # Hosting współdzielony: Composer nie jest w PATH — szukamy go
+            # razem z dostępną binarkę PHP (php85 → php84 → php82).
+            for php_candidate in \
+                    /opt/alt/php85/usr/bin/php \
+                    /opt/alt/php84/usr/bin/php \
+                    /opt/alt/php82/usr/bin/php; do
+                if [[ -x "$php_candidate" && -f /usr/local/bin/composer ]]; then
+                    PHP_BIN="$php_candidate"
+                    COMPOSER_BIN="/usr/local/bin/composer"
+                    echo "→ Composer wykryty przez fallback: $PHP_BIN $COMPOSER_BIN"
+                    break
+                fi
+            done
         fi
     fi
 }

@@ -25,16 +25,25 @@ if [ -z "${PHP_BIN:-}" ]; then
         PHP_BIN="php85"
     elif php84 -v >/dev/null 2>&1; then
         PHP_BIN="php84"
+    elif php82 -v >/dev/null 2>&1; then
+        PHP_BIN="php82"
     else
         PHP_BIN="php"
     fi
 fi
 COMPOSER_BIN="${COMPOSER_BIN:-composer}"
 
-# Jeśli composer nie jest dostępny w PATH, użyj pełnej ścieżki z php84
+# Jeśli composer nie jest dostępny w PATH, szukamy przez pełne ścieżki
+# (php85 → php84 → php82 — typowe na hostingu współdzielonym).
 if ! command -v "$COMPOSER_BIN" >/dev/null 2>&1; then
-    PHP_BIN="/opt/alt/php84/usr/bin/php"
-    COMPOSER_BIN="/usr/local/bin/composer"
+    for _php in /opt/alt/php85/usr/bin/php /opt/alt/php84/usr/bin/php /opt/alt/php82/usr/bin/php; do
+        if [ -x "$_php" ] && [ -f /usr/local/bin/composer ]; then
+            PHP_BIN="$_php"
+            COMPOSER_BIN="/usr/local/bin/composer"
+            break
+        fi
+    done
+    unset _php
 fi
 NPM_BIN="${NPM_BIN:-/opt/alt/alt-nodejs20/root/usr/bin/npm}"
 BRANCH="${BRANCH:-main}"
