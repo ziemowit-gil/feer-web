@@ -13,7 +13,6 @@ use App\Models\Partner;
 use App\Models\Poll;
 use App\Models\Project;
 use App\Models\Tag;
-use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Http;
@@ -29,12 +28,9 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        User::factory()->create([
-            'name' => 'Administrator',
-            'email' => 'ziemowit.gil@feer.org.pl',
-            'password' => 'feer-admin-2026',
-            'role' => User::ROLE_ADMIN,
-            'email_verified_at' => now(),
+        $this->call([
+            UserSeeder::class,
+            SiteSettingSeeder::class,
         ]);
 
         $slides = [
@@ -243,7 +239,15 @@ class DatabaseSeeder extends Seeder
                 ->toMediaCollection('logo');
         }
 
-        $this->call(EventSeeder::class);
+        $this->call([
+            EventSeeder::class,
+            BipDocumentSeeder::class,
+            FaqSeeder::class,
+            VolunteerAdSeeder::class,
+            AnnualReportSeeder::class,
+            EducationalMaterialSeeder::class,
+            QuickActionSeeder::class,
+        ]);
     }
 
     private function downloadImage(string $url, string $directory): ?string
