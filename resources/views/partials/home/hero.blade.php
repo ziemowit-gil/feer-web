@@ -1,10 +1,18 @@
 @php
     $wideMission = $siteSettings->header_layout === 'wide_mission';
-    $sidebarLinks = ($wideMission && ($siteSettings->wide_mission_sidebar ?? false) && isset($quickLinks) && $quickLinks->isNotEmpty())
+    $sidebarStyle = $siteSettings->wide_mission_sidebar_style ?? 'colored';
+    $sidebarEnabled = $wideMission && ($siteSettings->wide_mission_sidebar ?? false);
+
+    $missionText = null;
+    if ($sidebarEnabled && $sidebarStyle === 'mission') {
+        $missionText = \App\Models\Page::where('type', 'about')->value('about_motto') ?: $siteSettings->tagline;
+    }
+
+    $sidebarLinks = ($sidebarEnabled && $sidebarStyle !== 'mission' && isset($quickLinks) && $quickLinks->isNotEmpty())
         ? $quickLinks->take(4)
         : collect();
-    $hasSidebar = $sidebarLinks->isNotEmpty();
-    $sidebarStyle = $siteSettings->wide_mission_sidebar_style ?? 'colored';
+
+    $hasSidebar = $missionText || $sidebarLinks->isNotEmpty();
 @endphp
 
 @if ($siteSettings->isModuleEnabled('hero') && $slides->isNotEmpty())
@@ -55,7 +63,21 @@
 </section>
 
 @if ($hasSidebar)
-@if ($sidebarStyle === 'cards')
+@if ($missionText)
+{{-- Styl: misja organizacji --}}
+<aside aria-label="Misja organizacji" class="hidden w-56 flex-none flex-col items-center justify-center gap-4 bg-white px-6 py-8 md:flex lg:w-72">
+    @if ($siteSettings->logoUrl())
+        <img src="{{ $siteSettings->logoUrl() }}" alt="{{ $siteSettings->site_name }}" class="h-12 w-auto max-w-[8rem] object-contain opacity-80">
+    @endif
+    <p class="text-center text-sm font-medium leading-relaxed text-gray-700">{{ $missionText }}</p>
+    @php $wmCtaLabel = trim($siteSettings->wide_mission_cta_label ?? ''); $wmCtaUrl = trim($siteSettings->wide_mission_cta_url ?? ''); @endphp
+    @if ($wmCtaLabel && $wmCtaUrl)
+        <a href="{{ $wmCtaUrl }}" class="mt-1 inline-flex items-center gap-2 rounded-full bg-brand px-4 py-2 text-xs font-bold text-white hover:bg-brand-dark">
+            {{ $wmCtaLabel }}
+        </a>
+    @endif
+</aside>
+@elseif ($sidebarStyle === 'cards')
 {{-- Styl: białe karty w siatce 2-kolumnowej --}}
 <nav aria-label="Na skróty" class="hidden w-64 flex-col md:flex lg:w-80">
     <div class="grid h-full grid-cols-2">

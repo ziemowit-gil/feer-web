@@ -252,13 +252,13 @@
                     <input type="checkbox" name="wide_mission_sidebar" value="1"
                         {{ old('wide_mission_sidebar', $settings->wide_mission_sidebar ?? false) ? 'checked' : '' }}
                         class="rounded border-gray-300 text-brand focus:ring-brand">
-                    <span class="text-sm font-bold">Skróty w sidebarze hero <span class="font-normal text-muted">(moduł „Szybkie Akcje" obok slidera; slider przyjmuje mniejsze wymiary)</span></span>
+                    <span class="text-sm font-bold">Sidebar obok slidera <span class="font-normal text-muted">(misja organizacji lub skróty obok slidera; slider przyjmuje mniejsze wymiary)</span></span>
                 </label>
 
                 <div>
-                    <label class="mb-1 block text-sm font-bold">Styl sidebara skrótów</label>
+                    <label class="mb-1 block text-sm font-bold">Zawartość sidebara</label>
                     <div class="flex flex-wrap gap-3">
-                        @foreach (['colored' => 'Kolorowe kafle', 'cards' => 'Białe karty (ikona + etykieta)'] as $sv => $sl)
+                        @foreach (['mission' => 'Misja organizacji', 'colored' => 'Kolorowe kafle (skróty)', 'cards' => 'Białe karty (skróty)'] as $sv => $sl)
                             <label class="flex cursor-pointer items-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2.5 has-[:checked]:border-brand has-[:checked]:bg-brand-light">
                                 <input type="radio" name="wide_mission_sidebar_style" value="{{ $sv }}"
                                     {{ old('wide_mission_sidebar_style', $settings->wide_mission_sidebar_style ?? 'colored') === $sv ? 'checked' : '' }}

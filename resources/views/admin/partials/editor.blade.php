@@ -199,6 +199,12 @@
             <i class="fa-solid fa-a" aria-hidden="true"></i> Style <i class="fa-solid fa-chevron-down text-[0.6rem]" aria-hidden="true"></i>
         </button>
         <div x-show="open" x-cloak class="absolute left-0 z-20 mt-1 w-72 rounded-lg border border-gray-200 bg-white p-1 shadow-lg" role="menu">
+            <button type="button" id="{{ $editorId }}-bolditalic-btn" @click="open = false" class="{{ $mi }}">
+                <i class="fa-solid fa-bold w-4 text-center" aria-hidden="true"></i> Pogrubiony i pochylony
+            </button>
+            <button type="button" id="{{ $editorId }}-brandcolor-btn" @click="open = false" class="{{ $mi }}">
+                <i class="fa-solid fa-a w-4 text-center text-brand" aria-hidden="true"></i> Kolor marki
+            </button>
             <button type="button" id="{{ $editorId }}-sronly-btn" @click="open = false" class="{{ $mi }}">
                 <i class="fa-solid fa-eye-slash w-4 text-center text-violet-600" aria-hidden="true"></i> Tylko czytnik ekranu (sr-only)
             </button>
@@ -1301,6 +1307,19 @@
                         srModal.addEventListener('keydown', function (e) { if (e.key === 'Escape') srClose(); });
                     })();
 
+                    document.getElementById('{{ $editorId }}-bolditalic-btn').addEventListener('click', function () {
+                        editor.execute('bold');
+                        editor.execute('italic');
+                        editor.editing.view.focus();
+                    });
+
+                    document.getElementById('{{ $editorId }}-brandcolor-btn').addEventListener('click', function () {
+                        if (editor.commands.get('fontColor')) {
+                            editor.execute('fontColor', { value: 'var(--color-brand)' });
+                        }
+                        editor.editing.view.focus();
+                    });
+
                     document.getElementById('{{ $editorId }}-cta').addEventListener('click', function () {
                         var viewFragment = editor.data.processor.toView({!! json_encode($ctaHtml) !!});
                         var modelFragment = editor.data.toModel(viewFragment);
@@ -1430,10 +1449,20 @@
 
                     document.getElementById('{{ $editorId }}-attachment-modal').addEventListener('attachment-picked', function (event) {
                         var a = event.detail;
-                        var meta = [a.extension, a.size].filter(Boolean).join(', ');
-                        var label = a.label + (meta ? ' (' + meta + ')' : '');
-                        var html = '<p><a href="' + a.url + '" download class="cta-button">'
-                            + '<i class="fa-solid fa-file-arrow-down" aria-hidden="true"></i> Pobierz: ' + label + '</a></p>';
+                        function esc(t) { return (t||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+                        var meta = [a.extension, a.size].filter(Boolean).join(' · ');
+                        var html = '<div class="rounded-lg border border-gray-200">'
+                            + '<div class="flex flex-wrap items-center justify-between gap-4 p-4">'
+                            + '<div class="flex min-w-0 items-center gap-3">'
+                            + '<span class="flex h-10 w-10 flex-none items-center justify-center rounded border border-brand text-brand" aria-hidden="true"><i class="fa-solid fa-download"></i></span>'
+                            + '<span class="font-bold text-ink">' + esc(a.label) + '</span>'
+                            + '</div>'
+                            + '<div class="ml-auto flex items-center gap-4">'
+                            + (meta ? '<span class="text-sm text-muted">' + esc(meta) + '</span>' : '')
+                            + '<a href="' + a.url + '" download class="flex-none rounded bg-brand px-5 py-2 text-sm font-bold uppercase text-white transition hover:bg-brand-dark">Pobierz <span class="sr-only">— ' + esc(a.label) + '</span></a>'
+                            + '</div>'
+                            + '</div>'
+                            + '</div>';
                         var viewFragment = editor.data.processor.toView(html);
                         var modelFragment = editor.data.toModel(viewFragment);
                         editor.model.insertContent(modelFragment);
@@ -1696,7 +1725,29 @@
                         editor.ui.registry.addMenuButton('stylesmenu', {
                             text: 'Style', tooltip: 'Zastosuj styl WCAG do zaznaczenia',
                             fetch: function (cb) {
-                                cb([{
+                                cb([
+                                    {
+                                        type: 'menuitem',
+                                        text: 'Pogrubiony i pochylony',
+                                        icon: 'bold',
+                                        onAction: function () {
+                                            var selHtml = editor.selection.getContent({ format: 'html' });
+                                            var selText = editor.selection.getContent({ format: 'text' }).trim();
+                                            if (!selText && !selHtml) return;
+                                            editor.selection.setContent('<strong><em>' + (selHtml || selText) + '</em></strong>');
+                                        },
+                                    },
+                                    {
+                                        type: 'menuitem',
+                                        text: 'Kolor marki',
+                                        onAction: function () {
+                                            var selHtml = editor.selection.getContent({ format: 'html' });
+                                            var selText = editor.selection.getContent({ format: 'text' }).trim();
+                                            if (!selText && !selHtml) return;
+                                            editor.selection.setContent('<span style="color: var(--color-brand)">' + (selHtml || selText) + '</span>');
+                                        },
+                                    },
+                                    {
                                     type: 'menuitem',
                                     text: 'Tylko czytnik ekranu (sr-only)',
                                     icon: 'accessibility-check',
@@ -1739,7 +1790,8 @@
                                             },
                                         });
                                     },
-                                }]);
+                                },
+                                ]);
                             },
                         });
 
@@ -1782,9 +1834,21 @@
                             });
                             document.getElementById('{{ $editorId }}-attachment-modal').addEventListener('attachment-picked', function (event) {
                                 var a = event.detail;
-                                var meta = [a.extension, a.size].filter(Boolean).join(', ');
-                                var label = a.label + (meta ? ' (' + meta + ')' : '');
-                                editor.insertContent('<p><a href="' + a.url + '" download class="cta-button"><i class="fa-solid fa-file-arrow-down" aria-hidden="true"></i> Pobierz: ' + label + '</a></p>');
+                                function esc(t) { return (t||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+                                var meta = [a.extension, a.size].filter(Boolean).join(' · ');
+                                var html = '<div class="rounded-lg border border-gray-200">'
+                                    + '<div class="flex flex-wrap items-center justify-between gap-4 p-4">'
+                                    + '<div class="flex min-w-0 items-center gap-3">'
+                                    + '<span class="flex h-10 w-10 flex-none items-center justify-center rounded border border-brand text-brand" aria-hidden="true"><i class="fa-solid fa-download"></i></span>'
+                                    + '<span class="font-bold text-ink">' + esc(a.label) + '</span>'
+                                    + '</div>'
+                                    + '<div class="ml-auto flex items-center gap-4">'
+                                    + (meta ? '<span class="text-sm text-muted">' + esc(meta) + '</span>' : '')
+                                    + '<a href="' + a.url + '" download class="flex-none rounded bg-brand px-5 py-2 text-sm font-bold uppercase text-white transition hover:bg-brand-dark">Pobierz <span class="sr-only">— ' + esc(a.label) + '</span></a>'
+                                    + '</div>'
+                                    + '</div>'
+                                    + '</div>';
+                                editor.insertContent(html);
                             });
                             document.getElementById('{{ $editorId }}-gallery-modal').addEventListener('gallery-picked', function (event) {
                                 editor.insertContent(event.detail.html);
