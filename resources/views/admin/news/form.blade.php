@@ -328,6 +328,7 @@
                             <div x-show="tab === 'file'" role="tabpanel" aria-labelledby="tab-file" class="space-y-4">
                                 <div x-show="!cropMode">
                                     <p class="mb-3 text-sm text-muted">Kliknij poniżej, aby wybrać zdjęcie z komputera. JPG, PNG, WebP, max 2 MB.</p>
+                                    <p class="mb-3 text-xs text-muted"><i class="fa-solid fa-circle-info mr-1" aria-hidden="true"></i>System automatycznie konwertuje przesłane zdjęcia do formatu WebP.</p>
                                     <button type="button"
                                         @click="$el.closest('[x-data]').querySelector('#image').click()"
                                         class="inline-flex items-center gap-2 rounded bg-brand px-4 py-2 text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
