@@ -19,5 +19,9 @@
             class="rounded px-3 py-1.5 {{ $activeLocation === 'footer' ? 'bg-brand text-white' : 'text-muted hover:bg-gray-100' }}">
             Stopka
         </a>
+        <a href="{{ route('admin.pozycje-menu.index', ['location' => 'bip']) }}"
+            class="rounded px-3 py-1.5 {{ $activeLocation === 'bip' ? 'bg-brand text-white' : 'text-muted hover:bg-gray-100' }}">
+            Menu BIP
+        </a>
     @endif
 </nav>

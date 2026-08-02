@@ -26,6 +26,7 @@ class NavItem extends Model
     public const LOCATIONS = [
         'main' => 'Menu główne (nagłówek)',
         'footer' => 'Stopka',
+        'bip' => 'Menu BIP (boczna nawigacja)',
     ];
 
     protected $fillable = [

@@ -1,28 +1,56 @@
 @php
-    $bipSettings = $siteSettings ?? \App\Models\SiteSetting::current();
+    $bipSettings   = $siteSettings ?? \App\Models\SiteSetting::current();
     $isExternalMode = ($bipSettings->bip_mode ?? 'internal') === 'external';
-    $onBip         = request()->routeIs('bip')         && ! request()->routeIs('bip.*');
-    $onChangelog   = request()->routeIs('bip.changelog');
+    $onBip          = request()->routeIs('bip') && ! request()->routeIs('bip.*');
+    $onChangelog    = request()->routeIs('bip.changelog');
+
+    $bipNavItems = \App\Models\NavItem::where('location', 'bip')
+        ->where('is_active', true)
+        ->orderBy('order')
+        ->get();
 @endphp
 
 <nav aria-label="Nawigacja BIP">
     <ul class="space-y-0.5 text-sm">
+        {{-- Strona główna BIP — stała pierwsza pozycja --}}
         <li>
             <a href="{{ route('bip') }}"
                 @if ($onBip) aria-current="page" @endif
-                class="flex items-center gap-2 rounded px-3 py-2 font-semibold transition {{ $onBip ? 'bg-brand-light text-brand' : 'text-ink hover:bg-gray-50' }}">
+                class="flex items-center gap-2 rounded px-3 py-2 font-semibold transition {{ $onBip ? 'bg-brand-light text-brand' : 'text-ink hover:bg-gray-50' }} focus-visible:outline-2 focus-visible:outline-brand">
                 <i class="fa-solid fa-landmark w-4 text-center text-[0.7rem]" aria-hidden="true"></i>
                 Strona główna BIP
             </a>
         </li>
 
-        @if (! $isExternalMode)
+        @if ($bipNavItems->isNotEmpty())
+            {{-- Pozycje skonfigurowane przez admina --}}
+            @foreach ($bipNavItems as $item)
+                @php
+                    $isCurrentItem = ltrim(parse_url($item->url, PHP_URL_PATH) ?? '', '/') === ltrim(request()->path(), '/');
+                    $isExtLink = str_starts_with($item->url ?? '', 'http');
+                @endphp
+                <li>
+                    <a href="{{ $item->url }}"
+                        @if ($isExtLink) target="_blank" rel="noopener" @endif
+                        @if ($isCurrentItem) aria-current="page" @endif
+                        class="flex items-center gap-2 rounded px-3 py-2 transition {{ $isCurrentItem ? 'bg-brand-light font-semibold text-brand' : 'text-muted hover:bg-gray-50 hover:text-ink' }} focus-visible:outline-2 focus-visible:outline-brand">
+                        @if ($item->icon)
+                            <i class="{{ $item->icon }} w-4 text-center text-[0.7rem]" aria-hidden="true"></i>
+                        @endif
+                        {{ $item->label }}
+                        @if ($isExtLink)
+                            <i class="fa-solid fa-arrow-up-right-from-square ml-auto text-[0.55rem] text-muted" aria-hidden="true"></i>
+                        @endif
+                    </a>
+                </li>
+            @endforeach
+        @elseif (! $isExternalMode)
+            {{-- Fallback gdy brak pozycji: kategorie dokumentów i rejestr zmian --}}
             <li class="pt-3">
                 <p class="px-3 pb-1 text-[0.65rem] font-bold uppercase tracking-wider text-muted">
                     Kategorie dokumentów
                 </p>
             </li>
-
             @foreach (\App\Models\BipDocument::CATEGORIES as $catKey => $catLabel)
                 <li>
                     <a href="{{ route('bip') }}#kategoria-{{ $catKey }}"
@@ -31,7 +59,6 @@
                     </a>
                 </li>
             @endforeach
-
             <li class="pt-3">
                 <a href="{{ route('bip.changelog') }}"
                     @if ($onChangelog) aria-current="page" @endif

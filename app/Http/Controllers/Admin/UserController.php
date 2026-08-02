@@ -36,16 +36,20 @@ class UserController extends Controller
     /** Tworzy nowego użytkownika z haszowanym hasłem i weryfikacją e-mail. */
     public function store(Request $request)
     {
+        $isBipEditor = $request->input('role') === User::ROLE_BIP_EDITOR;
+
         $data = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
+            'name' => ['required', 'string', 'max:255', $isBipEditor ? 'regex:/^\S+\s+\S+/' : 'min:1'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', Rule::unique(User::class)],
-            'role' => ['required', Rule::in([User::ROLE_ADMIN, User::ROLE_EDITOR])],
+            'role' => ['required', Rule::in(array_keys(User::ROLES))],
             'user_group_id' => ['nullable', Rule::exists(UserGroup::class, 'id')],
             'password' => ['required', 'string', 'min:8'],
             'local_login_allowed' => ['sometimes', 'boolean'],
+        ], [
+            'name.regex' => 'Edytor BIP musi mieć podane imię i nazwisko (dwa wyrazy).',
         ]);
 
-        if ($data['role'] === User::ROLE_ADMIN) {
+        if (in_array($data['role'], [User::ROLE_ADMIN, User::ROLE_BIP_EDITOR], true)) {
             $data['user_group_id'] = null;
         }
 
@@ -67,16 +71,20 @@ class UserController extends Controller
     /** Aktualizuje dane użytkownika; puste hasło = bez zmian. */
     public function update(Request $request, User $user)
     {
+        $isBipEditor = $request->input('role') === User::ROLE_BIP_EDITOR;
+
         $data = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
+            'name' => ['required', 'string', 'max:255', $isBipEditor ? 'regex:/^\S+\s+\S+/' : 'min:1'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', Rule::unique(User::class)->ignore($user->id)],
-            'role' => ['required', Rule::in([User::ROLE_ADMIN, User::ROLE_EDITOR])],
+            'role' => ['required', Rule::in(array_keys(User::ROLES))],
             'user_group_id' => ['nullable', Rule::exists(UserGroup::class, 'id')],
             'password' => ['nullable', 'string', 'min:8'],
             'local_login_allowed' => ['sometimes', 'boolean'],
+        ], [
+            'name.regex' => 'Edytor BIP musi mieć podane imię i nazwisko (dwa wyrazy).',
         ]);
 
-        if ($data['role'] === User::ROLE_ADMIN) {
+        if (in_array($data['role'], [User::ROLE_ADMIN, User::ROLE_BIP_EDITOR], true)) {
             $data['user_group_id'] = null;
         }
 

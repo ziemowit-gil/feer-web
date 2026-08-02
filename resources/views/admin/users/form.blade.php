@@ -21,17 +21,24 @@
             @error('email') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
         </div>
 
-        <div>
+        <div x-data="{ role: '{{ old('role', $user->role ?? 'editor') }}' }">
             <label for="role" class="mb-1 block text-sm font-bold">Rola</label>
-            <select id="role" name="role" required onchange="document.getElementById('group-field').hidden = this.value === 'admin'"
+            <select id="role" name="role" required x-model="role"
                 class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
-                <option value="editor" {{ old('role', $user->role) === 'editor' ? 'selected' : '' }}>Edytor</option>
-                <option value="admin" {{ old('role', $user->role) === 'admin' ? 'selected' : '' }}>Administrator</option>
+                @foreach (\App\Models\User::ROLES as $val => $label)
+                    <option value="{{ $val }}" {{ old('role', $user->role) === $val ? 'selected' : '' }}>{{ $label }}</option>
+                @endforeach
             </select>
             @error('role') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+
+            <p x-show="role === 'bip_editor'" x-cloak class="mt-1.5 rounded border border-blue-200 bg-blue-50 px-3 py-2 text-xs text-blue-800">
+                <i class="fa-solid fa-circle-info mr-1" aria-hidden="true"></i>
+                Edytor BIP ma dostęp wyłącznie do modułu BIP. Imię i nazwisko są wymagane — widoczne publicznie na stronie BIP.
+            </p>
         </div>
 
-        <div id="group-field" {{ old('role', $user->role) === 'admin' ? 'hidden' : '' }}>
+        <div id="group-field" x-data="{ role: '{{ old('role', $user->role ?? 'editor') }}' }" x-show="role === 'editor'" x-cloak
+            @change.window="role = document.getElementById('role').value">
             <label for="user_group_id" class="mb-1 block text-sm font-bold">Grupa</label>
             <select id="user_group_id" name="user_group_id" class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
                 <option value="">— brak (bez dostępu do modułów) —</option>

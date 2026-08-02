@@ -25,6 +25,14 @@ class User extends Authenticatable
 
     public const ROLE_EDITOR = 'editor';
 
+    public const ROLE_BIP_EDITOR = 'bip_editor';
+
+    public const ROLES = [
+        self::ROLE_EDITOR     => 'Edytor',
+        self::ROLE_BIP_EDITOR => 'Edytor BIP',
+        self::ROLE_ADMIN      => 'Administrator',
+    ];
+
     /**
      * Get the attributes that should be cast.
      *
@@ -77,9 +85,22 @@ class User extends Authenticatable
      * Admins always have full access; editors only have access to the
      * content modules their assigned group was granted.
      */
+    public function isBipEditor(): bool
+    {
+        return $this->role === self::ROLE_BIP_EDITOR;
+    }
+
     public function canAccessModule(string $module): bool
     {
-        return $this->isAdmin() || ($this->group && $this->group->hasModule($module));
+        if ($this->isAdmin()) {
+            return true;
+        }
+
+        if ($this->isBipEditor()) {
+            return $module === 'bip';
+        }
+
+        return $this->group && $this->group->hasModule($module);
     }
 
     /**

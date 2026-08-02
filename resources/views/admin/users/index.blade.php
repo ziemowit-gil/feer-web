@@ -33,12 +33,13 @@
                         </td>
                         <td class="px-4 py-3 text-muted">{{ $user->email }}</td>
                         <td class="px-4 py-3">
-                            <span class="rounded-full px-2 py-1 text-xs font-bold {{ $user->isAdmin() ? 'bg-brand-light text-brand' : 'bg-gray-100 text-muted' }}">
-                                {{ $user->isAdmin() ? 'Administrator' : 'Edytor' }}
+                            <span class="rounded-full px-2 py-1 text-xs font-bold
+                                {{ $user->isAdmin() ? 'bg-brand-light text-brand' : ($user->isBipEditor() ? 'bg-blue-50 text-blue-700' : 'bg-gray-100 text-muted') }}">
+                                {{ \App\Models\User::ROLES[$user->role] ?? $user->role }}
                             </span>
                         </td>
                         <td class="px-4 py-3 text-muted">
-                            {{ $user->isAdmin() ? '—' : ($user->group->name ?? 'brak') }}
+                            {{ ($user->isAdmin() || $user->isBipEditor()) ? '—' : ($user->group->name ?? 'brak') }}
                         </td>
                         <td class="px-4 py-3">
                             <div class="flex justify-end gap-3">
