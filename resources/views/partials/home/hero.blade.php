@@ -43,6 +43,9 @@
                     style="background-color: var(--color-brand);"
                 @endif
                 data-hero-slide
+                role="group"
+                aria-roledescription="slajd"
+                aria-label="Co nas napędza"
                 @if ($index !== 0) aria-hidden="true" @endif
             >
                 <div class="w-full px-8 py-6 text-center {{ $hasSidebar ? 'max-w-xs' : 'max-w-lg' }}">
@@ -56,6 +59,9 @@
                 class="absolute inset-0 flex items-end bg-cover bg-center transition-opacity duration-700 motion-reduce:transition-none {{ $index === 0 ? 'opacity-100' : 'opacity-0 pointer-events-none' }}"
                 style="background-image: linear-gradient(0deg, rgba(0,0,0,.65), rgba(0,0,0,.15)), url('{{ $slide->image_url }}')"
                 data-hero-slide
+                role="group"
+                aria-roledescription="slajd"
+                aria-label="{{ $slide->title }}"
                 @if ($slide->duration) data-hero-duration="{{ $slide->duration }}" @endif
                 @if ($index !== 0) aria-hidden="true" @endif
             >
@@ -74,18 +80,18 @@
         @endforeach
     </div>
 
-    <button type="button" data-hero-prev class="absolute left-3 top-1/2 flex min-h-[36px] min-w-[36px] -translate-y-1/2 items-center justify-center rounded-full bg-black/30 text-white hover:bg-black/50" aria-label="Poprzedni slajd">
+    <button type="button" data-hero-prev class="absolute left-3 top-1/2 flex min-h-[44px] min-w-[44px] -translate-y-1/2 items-center justify-center rounded-full bg-black/30 text-white hover:bg-black/50 focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2" aria-label="Poprzedni slajd">
         <i class="fa-solid fa-chevron-left" aria-hidden="true"></i>
     </button>
-    <button type="button" data-hero-next class="absolute right-3 top-1/2 flex min-h-[36px] min-w-[36px] -translate-y-1/2 items-center justify-center rounded-full bg-black/30 text-white hover:bg-black/50" aria-label="Następny slajd">
+    <button type="button" data-hero-next class="absolute right-3 top-1/2 flex min-h-[44px] min-w-[44px] -translate-y-1/2 items-center justify-center rounded-full bg-black/30 text-white hover:bg-black/50 focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2" aria-label="Następny slajd">
         <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
     </button>
 
-    <div class="absolute bottom-3 right-4 flex items-center gap-2 rounded-full bg-black/30 px-3 py-1 text-xs text-white">
-        <button type="button" data-hero-toggle class="flex min-h-6 min-w-6 items-center justify-center" aria-label="Wstrzymaj automatyczną zmianę slajdów" aria-pressed="false">
+    <div class="absolute bottom-3 right-4 flex items-center gap-2 rounded-full bg-black/30 px-3 text-xs text-white">
+        <button type="button" data-hero-toggle class="flex min-h-[44px] min-w-[44px] items-center justify-center focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-[-2px]" aria-label="Wstrzymaj automatyczną zmianę slajdów" aria-pressed="false">
             <i class="fa-solid fa-pause" data-hero-toggle-icon aria-hidden="true"></i>
         </button>
-        <span aria-live="polite"><span data-hero-counter>1</span>/{{ count($slides) }}</span>
+        <span aria-live="polite" aria-atomic="true"><span data-hero-counter>1</span> z {{ count($slides) }}</span>
     </div>
 </section>
 
