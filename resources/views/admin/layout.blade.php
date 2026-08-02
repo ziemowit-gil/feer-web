@@ -32,6 +32,7 @@
         aside.sidebar.collapsed .nav-label,
         aside.sidebar.collapsed .section-header,
         aside.sidebar.collapsed .brand-label,
+        aside.sidebar.collapsed .role-indicator,
         aside.sidebar.collapsed .sidebar-bottom .link-label { display: none !important; }
 
         /* wymuś widoczność zawartości sekcji */
@@ -69,12 +70,13 @@
             </span>
         </div>
 
-        <div class="brand-label border-b border-gray-200 px-4 py-2">
+        <div class="role-indicator border-b border-gray-200 px-4 py-2">
             <p class="text-xs text-muted">Pracujesz jako</p>
             <p class="text-sm font-bold text-ink">
-                {{ auth()->user()->name ?: auth()->user()->email }}
-                <span class="ml-1 rounded px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide {{ auth()->user()->isAdmin() ? 'bg-brand/10 text-brand' : 'bg-gray-100 text-muted' }}">
-                    {{ auth()->user()->isAdmin() ? 'Administrator' : 'Edytor' }}
+                @php $authUser = auth()->user(); @endphp
+                {{ $authUser?->name ?: $authUser?->email }}
+                <span class="ml-1 rounded px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide {{ $authUser?->isAdmin() ? 'bg-brand/10 text-brand' : 'bg-gray-100 text-muted' }}">
+                    {{ $authUser?->isAdmin() ? 'Administrator' : 'Edytor' }}
                 </span>
             </p>
         </div>
