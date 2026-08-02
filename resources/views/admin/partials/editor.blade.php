@@ -166,6 +166,19 @@
         </div>
     </div>
 
+    {{-- Menu „Style" --}}
+    <div class="relative" x-data="{ open: false }" @click.outside="open = false" @keydown.escape="open = false">
+        <button type="button" @click="open = !open" :aria-expanded="open"
+            class="inline-flex items-center gap-2 rounded border border-gray-300 px-3 py-1.5 text-xs font-bold text-ink hover:border-brand hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+            <i class="fa-solid fa-a" aria-hidden="true"></i> Style <i class="fa-solid fa-chevron-down text-[0.6rem]" aria-hidden="true"></i>
+        </button>
+        <div x-show="open" x-cloak class="absolute left-0 z-20 mt-1 w-80 rounded-lg border border-gray-200 bg-white p-1 shadow-lg" role="menu">
+            <button type="button" id="{{ $editorId }}-sronly-btn" @click="open = false" class="{{ $mi }}">
+                <i class="fa-solid fa-eye-slash w-4 text-center text-violet-600" aria-hidden="true"></i> Tylko czytnik ekranu (sr-only)
+            </button>
+        </div>
+    </div>
+
     {{-- Menu „Kotwice" --}}
     <div class="relative" x-data="{ open: false }" @click.outside="open = false" @keydown.escape="open = false">
         <button type="button" @click="open = !open" :aria-expanded="open"
@@ -408,6 +421,39 @@
         </div>
     </div>
 </div>
+
+@if ($useCkEditor)
+{{-- Modal: wstaw tekst tylko dla czytnika ekranu (sr-only) — CKEditor --}}
+<div id="{{ $editorId }}-sronly-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 p-4"
+     role="dialog" aria-modal="true" aria-labelledby="{{ $editorId }}-sronly-title">
+    <div class="w-full max-w-lg rounded-lg bg-white p-5 shadow-2xl">
+        <div class="mb-3 flex items-center justify-between">
+            <h2 id="{{ $editorId }}-sronly-title" class="text-base font-bold">
+                <i class="fa-solid fa-eye-slash mr-2 text-violet-600" aria-hidden="true"></i>Tylko czytnik ekranu (sr-only)
+            </h2>
+            <button type="button" id="{{ $editorId }}-sronly-close" class="text-muted hover:text-red-600" aria-label="Zamknij"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="mb-4 rounded border-l-4 border-amber-400 bg-amber-50 px-4 py-3 text-sm">
+            <p class="mb-1 font-bold">⚠ Tekst będzie niewidoczny wizualnie na stronie</p>
+            <p class="mb-2">Klasa <code class="font-mono">sr-only</code> ukrywa element przez CSS (<code class="font-mono">position:absolute; width:1px; height:1px</code>), ale czytniki ekranu — NVDA, JAWS, VoiceOver — nadal go przeczytają.</p>
+            <p class="mb-1 font-semibold">Prawidłowe zastosowania (WCAG 2.1):</p>
+            <ul class="ml-4 list-disc space-y-0.5">
+                <li>dodatkowy kontekst przy ikonkach bez etykiety (np. „Usuń element")</li>
+                <li>etykiety ukrytych pól formularzy</li>
+                <li>komunikaty o zmianie stanu strony</li>
+            </ul>
+            <p class="mt-2 text-xs font-semibold text-amber-800">Nie stosuj do treści, które powinny być widoczne dla wszystkich użytkowników.</p>
+        </div>
+        <label class="mb-1 block text-xs font-bold" for="{{ $editorId }}-sronly-text">Tekst tylko dla czytnika ekranu</label>
+        <input type="text" id="{{ $editorId }}-sronly-text" placeholder="np. Usuń element, Wymagane pole…"
+            class="mb-4 w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+        <div class="flex justify-end gap-2">
+            <button type="button" id="{{ $editorId }}-sronly-close2" class="rounded border border-gray-300 px-3 py-1.5 text-sm text-ink hover:bg-gray-50">Anuluj</button>
+            <button type="button" id="{{ $editorId }}-sronly-submit" class="rounded bg-violet-600 px-3 py-1.5 text-sm font-bold text-white hover:bg-violet-700">Wstaw sr-only</button>
+        </div>
+    </div>
+</div>
+@endif
 
 <div id="{{ $editorId }}-media-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 p-4" role="dialog" aria-modal="true" aria-label="Wybierz obraz">
     <div class="flex max-h-[80vh] w-full max-w-3xl flex-col overflow-hidden rounded-lg bg-white p-5">
@@ -1219,6 +1265,28 @@
                         editor.editing.view.focus();
                     });
 
+                    (function () {
+                        var srModal  = document.getElementById('{{ $editorId }}-sronly-modal');
+                        var srInput  = document.getElementById('{{ $editorId }}-sronly-text');
+                        var srSubmit = document.getElementById('{{ $editorId }}-sronly-submit');
+                        function srOpen() { srModal.classList.remove('hidden'); srModal.classList.add('flex'); srInput.value = ''; srInput.focus(); }
+                        function srClose() { srModal.classList.add('hidden'); srModal.classList.remove('flex'); editor.editing.view.focus(); }
+                        function srInsert() {
+                            var text = srInput.value.trim();
+                            if (!text) { srInput.focus(); return; }
+                            var vf = editor.data.processor.toView('<span class="sr-only">' + text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</span>');
+                            editor.model.insertContent(editor.data.toModel(vf));
+                            srClose();
+                        }
+                        document.getElementById('{{ $editorId }}-sronly-btn').addEventListener('click', srOpen);
+                        document.getElementById('{{ $editorId }}-sronly-close').addEventListener('click', srClose);
+                        document.getElementById('{{ $editorId }}-sronly-close2').addEventListener('click', srClose);
+                        srSubmit.addEventListener('click', srInsert);
+                        srInput.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); srInsert(); } });
+                        srModal.addEventListener('click', function (e) { if (e.target === srModal) srClose(); });
+                        srModal.addEventListener('keydown', function (e) { if (e.key === 'Escape') srClose(); });
+                    })();
+
                     document.getElementById('{{ $editorId }}-cta').addEventListener('click', function () {
                         var viewFragment = editor.data.processor.toView({!! json_encode($ctaHtml) !!});
                         var modelFragment = editor.data.toModel(viewFragment);
@@ -1446,7 +1514,7 @@
                     convert_urls: false,
                     plugins: 'advlist autolink lists link anchor image charmap preview searchreplace visualblocks code fullscreen media table help wordcount accordion emoticons autosave quickbars',
                     block_formats: 'Akapit=p; Nagłówek 2=h2; Nagłówek 3=h3; Nagłówek 4=h4',
-                    toolbar: 'undo redo | blocks | bold italic underline forecolor backcolor | alignleft aligncenter alignright | bullist numlist | link table media accordion | insertmenu linkmenu importmenu | clearformat | charmap emoticons | searchreplace visualblocks fullscreen preview | a11ycheck help | code{{ $historyJsonUrl ? " | historyrevisions" : "" }}',
+                    toolbar: 'undo redo | blocks stylesmenu | bold italic underline forecolor backcolor | alignleft aligncenter alignright | bullist numlist | link table media accordion | insertmenu linkmenu importmenu | clearformat | charmap emoticons | searchreplace visualblocks fullscreen preview | a11ycheck help | code{{ $historyJsonUrl ? " | historyrevisions" : "" }}',
                     toolbar_mode: 'wrap',
                     statusbar: true,
                     paste_data_images: true,
@@ -1474,6 +1542,7 @@
                     },
                     elementpath: false,
                     placeholder: 'Tu wpisz tekst…',
+                    content_style: '.sr-only{position:static!important;display:inline!important;width:auto!important;height:auto!important;overflow:visible!important;clip:auto!important;white-space:normal!important;background:#ede9fe;outline:2px dashed #7c3aed;padding:1px 4px;border-radius:2px}.sr-only::before{content:"⦿ ";color:#7c3aed;font-weight:700;font-size:.75em;letter-spacing:.02em}',
                     // Autozapis roboczy w przeglądarce — po awarii można przywrócić wersję.
                     autosave_interval: '20s',
                     autosave_restore_when_empty: false,
@@ -1597,6 +1666,56 @@
                                         document.getElementById('{{ $editorId }}-txt-input').click();
                                     }},
                                 ]);
+                            },
+                        });
+
+                        editor.ui.registry.addMenuButton('stylesmenu', {
+                            text: 'Style', tooltip: 'Zastosuj styl WCAG do zaznaczenia',
+                            fetch: function (cb) {
+                                cb([{
+                                    type: 'menuitem',
+                                    text: 'Tylko czytnik ekranu (sr-only)',
+                                    icon: 'accessibility-check',
+                                    onAction: function () {
+                                        var selHtml = editor.selection.getContent({ format: 'html' });
+                                        var selText = editor.selection.getContent({ format: 'text' }).trim();
+                                        if (!selText) {
+                                            editor.windowManager.open({
+                                                title: 'Tylko czytnik ekranu',
+                                                body: { type: 'panel', items: [{ type: 'htmlpanel', html: '<p>Zaznacz najpierw tekst, który ma być widoczny wyłącznie dla czytnika ekranu.</p>' }] },
+                                                buttons: [{ type: 'cancel', text: 'Zamknij', buttonType: 'primary' }],
+                                            });
+                                            return;
+                                        }
+                                        var preview = selText.length > 60 ? selText.substring(0, 60) + '…' : selText;
+                                        editor.windowManager.open({
+                                            title: 'Tylko czytnik ekranu (sr-only)',
+                                            body: { type: 'panel', items: [{ type: 'htmlpanel', html:
+                                                '<div style="border-left:4px solid #f59e0b;padding:10px 14px;background:#fffbeb;margin-bottom:12px;border-radius:2px">'
+                                                + '<p style="font-weight:700;margin-bottom:6px;font-size:1em">⚠ Tekst będzie niewidoczny na stronie</p>'
+                                                + '<p style="margin-bottom:6px">Klasa <code>sr-only</code> ukrywa element wizualnie (metoda CSS: <code>position:absolute;width:1px;height:1px</code>), ale czytniki ekranu — NVDA, JAWS, VoiceOver — nadal go przeczytają.</p>'
+                                                + '<p style="margin-bottom:4px;font-weight:600">Prawidłowe zastosowania (WCAG 2.1):</p>'
+                                                + '<ul style="margin-left:1.2em;list-style:disc;margin-bottom:8px">'
+                                                + '<li>dodatkowy kontekst przy ikonkach bez etykiety (np. „Usuń element")</li>'
+                                                + '<li>etykiety ukrytych pól formularzy</li>'
+                                                + '<li>komunikaty o zmianie stanu strony</li>'
+                                                + '</ul>'
+                                                + '<p style="color:#92400e;font-size:.875em"><strong>Nie stosuj do treści, które powinny być widoczne dla wszystkich użytkowników.</strong></p>'
+                                                + '</div>'
+                                                + '<p style="margin-bottom:4px;font-size:.875em">Zaznaczony tekst: <strong style="background:#ede9fe;padding:1px 4px;border-radius:2px">' + preview + '</strong></p>'
+                                                + '<p style="font-size:.875em;color:#555">W edytorze tekst będzie widoczny z fioletowym obramowaniem i znacznikiem ⦿.</p>'
+                                            }] },
+                                            buttons: [
+                                                { type: 'cancel', text: 'Anuluj' },
+                                                { type: 'submit', text: 'Zastosuj sr-only', buttonType: 'primary' },
+                                            ],
+                                            onSubmit: function (api) {
+                                                editor.selection.setContent('<span class="sr-only">' + (selHtml || selText) + '</span>');
+                                                api.close();
+                                            },
+                                        });
+                                    },
+                                }]);
                             },
                         });
 
