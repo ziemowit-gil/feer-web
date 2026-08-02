@@ -21,7 +21,7 @@
         ])>
         @forelse (($navCategories ?? collect()) as $category)
             <div class="group/cat relative">
-                <a href="{{ route('categories.show', $category) }}" class="flex items-center justify-between px-4 py-2 text-sm font-bold text-ink hover:bg-gray-50 hover:text-brand focus:bg-gray-50">
+                <a href="{{ route('categories.show', $category) }}" class="flex items-center justify-between px-4 py-2 text-sm font-bold text-ink hover:bg-gray-50 hover:text-brand focus-visible:bg-gray-50">
                     {{ $category->name }}
                     @if (! $mobile && $category->publishedProjects->isNotEmpty())
                         <i class="fa-solid fa-chevron-right text-xs text-muted" aria-hidden="true"></i>
@@ -31,7 +31,7 @@
                 @if (! $mobile && $category->publishedProjects->isNotEmpty())
                     <div class="invisible absolute left-full top-0 z-50 ml-1 w-60 rounded-lg border border-gray-200 bg-white py-2 opacity-0 shadow-lg transition group-hover/cat:visible group-hover/cat:opacity-100 group-focus-within/cat:visible group-focus-within/cat:opacity-100">
                         @foreach ($category->publishedProjects as $project)
-                            <a href="{{ route('projects.show', $project) }}" class="block px-4 py-2 text-sm font-medium normal-case text-ink hover:bg-gray-50 hover:text-brand focus:bg-gray-50">
+                            <a href="{{ route('projects.show', $project) }}" class="block px-4 py-2 text-sm font-medium normal-case text-ink hover:bg-gray-50 hover:text-brand focus-visible:bg-gray-50">
                                 {{ $project->title }}
                             </a>
                         @endforeach
@@ -43,16 +43,16 @@
         @endforelse
 
         <div class="mt-1 border-t border-gray-100 pt-1">
-            <a href="{{ route('projects.index') }}" class="block px-4 py-2 text-sm font-bold normal-case text-brand hover:bg-gray-50 focus:bg-gray-50">Wszystkie projekty →</a>
+            <a href="{{ route('projects.index') }}" class="block px-4 py-2 text-sm font-bold normal-case text-brand hover:bg-gray-50 focus-visible:bg-gray-50">Wszystkie projekty →</a>
             @if ($navHasProjectArchive ?? false)
-                <a href="{{ route('projects.archive') }}" class="block px-4 py-2 text-sm font-bold normal-case text-brand hover:bg-gray-50 focus:bg-gray-50">To już zrobiliśmy →</a>
+                <a href="{{ route('projects.archive') }}" class="block px-4 py-2 text-sm font-bold normal-case text-brand hover:bg-gray-50 focus-visible:bg-gray-50">To już zrobiliśmy →</a>
             @endif
         </div>
 
         @if ($siteSettings->isModuleEnabled('events'))
             {{-- Wyróżniony skrót do nadchodzących szkoleń/wydarzeń na końcu listy — przyciąga wzrok. --}}
             <a href="{{ route('events.index') }}"
-                class="mx-2 mt-2 flex items-center gap-2 rounded-lg bg-brand px-3 py-2 text-sm font-bold normal-case text-white transition-colors hover:bg-brand-dark focus:bg-brand-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
+                class="mx-2 mt-2 flex items-center gap-2 rounded-lg bg-brand px-3 py-2 text-sm font-bold normal-case text-white transition-colors hover:bg-brand-dark focus-visible:bg-brand-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
                 <span class="relative flex h-2.5 w-2.5 flex-none" aria-hidden="true">
                     <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-white/70"></span>
                     <span class="relative inline-flex h-2.5 w-2.5 rounded-full bg-white"></span>

@@ -12,7 +12,7 @@
         {{ $item->label }} <i class="fa-solid fa-chevron-down text-[10px]" aria-hidden="true"></i>
     </button>
 
-    <div :id="$id('dropdown')" x-show="open" x-cloak x-transition
+    <ul :id="$id('dropdown')" x-show="open" x-cloak x-transition role="list"
         @class([
             'z-50 rounded-lg border border-gray-200 py-2 normal-case tracking-normal shadow-lg',
             'bg-white/90 backdrop-blur-sm' => $item->is_transparent_dropdown,
@@ -21,9 +21,9 @@
             'static mt-1 w-full' => $mobile,
         ])>
         @forelse ($item->children as $child)
-            @include('partials.nav-item', ['item' => $child, 'mobile' => $mobile])
+            <li>@include('partials.nav-item', ['item' => $child, 'mobile' => $mobile])</li>
         @empty
-            <p class="px-4 py-2 text-sm normal-case text-muted">Brak podpozycji.</p>
+            <li class="px-4 py-2 text-sm normal-case text-muted">Brak podpozycji.</li>
         @endforelse
-    </div>
+    </ul>
 </li>

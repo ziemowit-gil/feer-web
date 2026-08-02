@@ -163,7 +163,7 @@
     @endif
 
     {{-- Mobile: misja + social + menu --}}
-    <div x-show="mobileOpen" x-cloak id="main-nav-panel" class="border-t border-gray-200 bg-white lg:hidden">
+    <nav x-show="mobileOpen" x-cloak id="main-nav-panel" aria-label="Menu mobilne" class="border-t border-gray-200 bg-white lg:hidden">
         @if ($siteSettings->tagline)
             <p class="border-b border-gray-100 px-4 py-3 text-sm text-muted">{{ $siteSettings->tagline }}</p>
         @endif
@@ -227,18 +227,18 @@
         <div class="px-4 pb-4">
             @include('partials.main-nav-items', ['mobile' => true])
         </div>
-    </div>
+    </nav>
 </header>
 
 @else
 {{-- ─── Dotychczasowe layouty (classic / brand_bar / brand_bar_inline) ──── --}}
 <header class="{{ $inlineOnBrand ? 'bg-brand border-transparent' : 'bg-white' }}" x-data="{ mobileOpen: false }" @keydown.escape="mobileOpen = false">
     <div class="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-4">
-        <a href="{{ route('home') }}" class="flex items-center gap-3">
+        <a href="{{ route('home') }}" class="flex items-center gap-3" aria-label="{{ $siteSettings->site_name }} — strona główna">
             @if ($siteSettings->logoUrl())
                 <img src="{{ $siteSettings->logoUrl() }}" alt="{{ $siteSettings->logoAltText() }}" class="h-12 w-auto max-w-[16rem] flex-none rounded object-contain {{ $inlineOnBrand ? 'bg-white p-1' : '' }}">
             @else
-                <span class="flex h-11 w-11 flex-none items-center justify-center rounded text-xl font-bold {{ $inlineOnBrand ? 'bg-white text-brand' : 'bg-brand text-white' }}">{{ mb_substr($siteSettings->site_name, 0, 1) }}</span>
+                <span class="flex h-11 w-11 flex-none items-center justify-center rounded text-xl font-bold {{ $inlineOnBrand ? 'bg-white text-brand' : 'bg-brand text-white' }}" aria-hidden="true">{{ mb_substr($siteSettings->site_name, 0, 1) }}</span>
             @endif
             @unless ($siteSettings->showLogoOnly())
                 <span class="leading-tight">

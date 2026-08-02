@@ -23,7 +23,7 @@
         </button>
     </div>
 
-    <div :id="$id('dropdown')" x-show="open" x-cloak x-transition
+    <ul :id="$id('dropdown')" x-show="open" x-cloak x-transition role="list"
         @class([
             'z-50 rounded-lg border border-gray-200 py-2 normal-case tracking-normal shadow-lg',
             'bg-white/90 backdrop-blur-sm' => $transparent,
@@ -32,16 +32,23 @@
             'static mt-1 w-full' => $mobile,
         ])>
         @foreach ($page->publishedChildren as $child)
-            <a href="{{ route('page.show', $child) }}" class="block px-4 py-2 text-sm font-medium normal-case {{ request()->routeIs('page.show') && request()->route('page')?->id === $child->id ? 'text-brand' : 'text-ink' }} hover:bg-gray-50 hover:text-brand focus:bg-gray-50">
-                {{ $child->title }}
-            </a>
+            @php $isCurrentChild = request()->routeIs('page.show') && request()->route('page')?->id === $child->id; @endphp
+            <li>
+                <a href="{{ route('page.show', $child) }}" @if ($isCurrentChild) aria-current="page" @endif
+                    class="block px-4 py-2 text-sm font-medium normal-case {{ $isCurrentChild ? 'text-brand' : 'text-ink' }} hover:bg-gray-50 hover:text-brand focus-visible:bg-gray-50">
+                    {{ $child->title }}
+                </a>
+            </li>
         @endforeach
 
         {{-- Strona „O organizacji": FAQ zawsze jako pozycja submenu (gdy moduł włączony). --}}
         @if ($page->type === 'about' && $siteSettings->isModuleEnabled('faq'))
-            <a href="{{ route('faq.index') }}" class="block px-4 py-2 text-sm font-medium normal-case {{ request()->routeIs('faq.index') ? 'text-brand' : 'text-ink' }} hover:bg-gray-50 hover:text-brand focus:bg-gray-50">
-                Najczęstsze pytania (FAQ)
-            </a>
+            <li>
+                <a href="{{ route('faq.index') }}" @if (request()->routeIs('faq.index')) aria-current="page" @endif
+                    class="block px-4 py-2 text-sm font-medium normal-case {{ request()->routeIs('faq.index') ? 'text-brand' : 'text-ink' }} hover:bg-gray-50 hover:text-brand focus-visible:bg-gray-50">
+                    Najczęstsze pytania (FAQ)
+                </a>
+            </li>
         @endif
-    </div>
+    </ul>
 </li>

@@ -1,8 +1,9 @@
 @php $mobile ??= false; @endphp
 
 @if ($item->parent_id)
-    {{-- Nested row inside a dropdown panel — no <li>, the panel isn't a list. --}}
-    <a href="{{ $item->url }}" class="block px-4 py-2 text-sm font-medium normal-case {{ $item->isCurrent() ? 'text-brand' : 'text-ink' }} hover:bg-gray-50 hover:text-brand focus:bg-gray-50">
+    {{-- Nested row inside a dropdown panel — the <li> wrapper lives in the parent partial. --}}
+    <a href="{{ $item->url }}" @if ($item->isCurrent()) aria-current="page" @endif
+        class="block px-4 py-2 text-sm font-medium normal-case {{ $item->isCurrent() ? 'text-brand' : 'text-ink' }} hover:bg-gray-50 hover:text-brand focus-visible:bg-gray-50">
         {{ $item->label }}
     </a>
 @elseif (! $item->is_button && (
@@ -32,7 +33,7 @@
         @else
             @php $activeClasses = $item->isCurrent() ? ($onBrand ?? false ? 'border-white' : 'border-brand text-brand') : 'border-transparent'; @endphp
             <a href="{{ $item->url }}"
-                {{ $item->isCurrent() ? 'aria-current="page"' : '' }}
+                @if ($item->isCurrent()) aria-current="page" @endif
                 class="block border-b-2 py-2 transition-colors hover:border-brand hover:text-brand focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-current {{ $activeClasses }} {{ $mobile ? '' : 'pb-1' }}">
                 {{ $item->label }}
             </a>
