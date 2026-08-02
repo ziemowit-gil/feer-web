@@ -9,7 +9,7 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <style>
         /* ── Zwijany sidebar ─────────────────────────────────────────── */
-        aside.sidebar { transition: width 200ms ease; }
+        aside.sidebar { width: 16rem; transition: width 200ms ease; }
         aside.sidebar.collapsed { width: 4rem; }
 
         /* ukryj etykiety i nagłówki sekcji */
@@ -36,12 +36,11 @@
 </head>
 <body class="flex min-h-screen bg-gray-50 text-ink antialiased">
 
-    <aside class="sidebar flex w-64 flex-none flex-col border-r border-gray-200 bg-white"
-           x-data="{
-               collapsed: localStorage.getItem('admin-sidebar') === '1',
-               toggle() { this.collapsed = !this.collapsed; localStorage.setItem('admin-sidebar', this.collapsed ? '1' : '0'); this.$el.classList.toggle('collapsed', this.collapsed); },
-               init() { if (this.collapsed) this.$el.classList.add('collapsed'); }
-           }">
+    <aside class="sidebar flex flex-none flex-col border-r border-gray-200 bg-white"
+           x-data="{ collapsed: localStorage.getItem('admin-sidebar') === '1' }"
+           :class="{ 'collapsed': collapsed }"
+           x-effect="localStorage.setItem('admin-sidebar', collapsed ? '1' : '0')"
+           style="width: 16rem">
         <div class="brand-area flex items-center gap-2 border-b border-gray-200 px-5 py-4">
             @if ($siteSettings->logoUrl())
                 <img src="{{ $siteSettings->logoUrl() }}" alt="{{ $siteSettings->site_name }}" class="h-9 w-9 flex-none rounded object-contain">
@@ -397,7 +396,7 @@
 
         {{-- Przełącznik zwinięcia + linki profilowe --}}
         <div class="sidebar-bottom space-y-1 border-t border-gray-200 p-3 text-sm">
-            <button type="button" @click="toggle()"
+            <button type="button" @click="collapsed = !collapsed"
                 class="group flex w-full items-center gap-3 rounded-lg px-3 py-2 text-muted transition-colors hover:bg-gray-100 hover:text-ink"
                 :title="collapsed ? 'Rozwiń menu' : 'Zwiń menu'"
                 :aria-label="collapsed ? 'Rozwiń menu boczne' : 'Zwiń menu boczne'">
