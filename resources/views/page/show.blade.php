@@ -227,16 +227,16 @@
         @case('stats')
         {{-- Statystyki: pas w gradiencie marki, dzielniki, animacja liczenia --}}
         @if ($aboutStats->isNotEmpty())
-            <section class="relative overflow-hidden bg-gradient-to-br from-brand to-brand-dark px-4 py-16 text-white" aria-label="W liczbach" data-countup>
+            <section class="relative overflow-hidden bg-gradient-to-br from-brand to-brand-dark px-4 py-12 text-white" aria-label="W liczbach" data-countup>
                 <i class="fa-solid fa-arrow-trend-up pointer-events-none absolute -bottom-10 -right-2 text-[11rem] text-white/10" aria-hidden="true"></i>
-                <dl class="relative mx-auto grid max-w-5xl grid-cols-2 gap-y-10 md:grid-cols-4 md:divide-x md:divide-white/20">
+                <dl class="relative mx-auto grid max-w-4xl grid-cols-2 gap-6 md:grid-cols-4 md:divide-x md:divide-white/20">
                     @foreach ($aboutStats as $stat)
-                        <div class="px-6 text-center">
+                        <div class="flex flex-col items-center px-4 text-center">
                             <dt class="sr-only">{{ $stat['label'] ?? '' }}</dt>
-                            <dd>
-                                <span class="block text-5xl font-extrabold leading-none tracking-tight md:text-6xl" data-countup-value>{{ $stat['value'] ?? '' }}</span>
-                                <span class="mx-auto mt-4 block h-1 w-10 rounded-full bg-white/50" aria-hidden="true"></span>
-                                <span class="mt-4 block text-sm font-medium uppercase tracking-widest text-white/80">{{ $stat['label'] ?? '' }}</span>
+                            <dd class="flex flex-col items-center">
+                                <span class="block text-3xl font-extrabold leading-none tracking-tight md:text-4xl" data-countup-value>{{ $stat['value'] ?? '' }}</span>
+                                <span class="mx-auto mt-3 block h-px w-8 rounded-full bg-white/40" aria-hidden="true"></span>
+                                <span class="mt-3 block text-xs font-medium uppercase tracking-wider text-white/75">{{ $stat['label'] ?? '' }}</span>
                             </dd>
                         </div>
                     @endforeach
