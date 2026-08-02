@@ -165,7 +165,7 @@ HTML;
                                 </thead>
                                 <tbody class="divide-y divide-gray-100">
                                     @php
-                                        $docSlugs = BipDocument::withTrashed()
+                                        $docSlugs = \App\Models\BipDocument::withTrashed()
                                             ->whereIn('id', $recentChanges->pluck('subject_id')->unique())
                                             ->pluck('slug', 'id');
                                     @endphp
