@@ -7,12 +7,6 @@
     @php
         $bipLogo = $siteSettings->bipLogoUrl() ?: asset('img/bip-logo.svg');
 
-        $hasSubjectData = $siteSettings->contact_email
-            || $siteSettings->contact_phone
-            || $siteSettings->contact_address
-            || $siteSettings->hasRegistryData()
-            || $siteSettings->bip_editor_name;
-
         $bipDefault = <<<'HTML'
 <h2>Co znajdziesz w Biuletynie Informacji Publicznej Fundacji FEER?</h2>
 <p>Fundacja FEER stawia na pełną transparentność, jawność działania oraz budowanie zaufania. Choć przepisy prawa nie nakładają na organizacje pozarządowe sztywnego obowiązku prowadzenia Biuletynu Informacji Publicznej, wierzymy, że otwartość wobec naszych darczyńców, partnerów, uczestników projektów oraz instytucji publicznych to fundament nowoczesnego i odpowiedzialnego trzeciego sektora.</p>
@@ -40,31 +34,26 @@ HTML;
                     </div>
                 </div>
 
-                <div class="flex flex-wrap items-center gap-2">
-                    @if (! $isExternal)
-                        <a href="{{ route('bip.changelog') }}"
-                            class="inline-flex items-center gap-1.5 rounded-full border border-gray-300 bg-white px-3 py-1.5 text-xs font-bold text-ink transition hover:border-brand hover:text-brand focus-visible:outline-2 focus-visible:outline-brand">
-                            <i class="fa-solid fa-clock-rotate-left text-[0.65rem]" aria-hidden="true"></i>
-                            Rejestr zmian
-                        </a>
-                    @endif
-                    <a href="{{ route('home') }}"
-                        class="inline-flex items-center gap-1.5 rounded-full border border-gray-300 bg-white px-3 py-1.5 text-xs font-bold text-muted transition hover:border-brand hover:text-brand focus-visible:outline-2 focus-visible:outline-brand">
-                        <i class="fa-solid fa-arrow-left text-[0.65rem]" aria-hidden="true"></i>
-                        Strona główna organizacji
-                    </a>
-                </div>
+                <a href="{{ route('home') }}"
+                    class="inline-flex items-center gap-1.5 rounded-full border border-gray-300 bg-white px-3 py-1.5 text-xs font-bold text-muted transition hover:border-brand hover:text-brand focus-visible:outline-2 focus-visible:outline-brand">
+                    <i class="fa-solid fa-arrow-left text-[0.65rem]" aria-hidden="true"></i>
+                    Strona główna organizacji
+                </a>
             </div>
         </div>
     </div>
 
-    {{-- ── Treść główna + panel boczny ── --}}
+    {{-- ── Układ dwukolumnowy: boczne menu + treść ── --}}
     <div class="mx-auto max-w-5xl px-4 py-8">
-        <div class="grid gap-8 lg:grid-cols-[1fr_280px]">
+        <div class="grid gap-8 lg:grid-cols-[220px_1fr]">
 
-            {{-- ── Kolumna główna ── --}}
+            {{-- ── Boczne menu nawigacyjne ── --}}
+            <aside class="lg:border-r lg:border-gray-100 lg:pr-6">
+                @include('bip._sidebar')
+            </aside>
+
+            {{-- ── Treść główna ── --}}
             <main>
-                {{-- Treść opisowa BIP --}}
                 <div class="prose max-w-none text-ink [&_h2]:text-ink [&_h3]:text-brand [&_li::marker]:font-bold [&_li::marker]:text-brand">
                     {!! $siteSettings->bip_intro ?: $bipDefault !!}
                 </div>
@@ -91,7 +80,7 @@ HTML;
 
                         @foreach (\App\Models\BipDocument::CATEGORIES as $catKey => $catLabel)
                             @if ($documents->has($catKey))
-                                <div class="mb-8">
+                                <div id="kategoria-{{ $catKey }}" class="mb-10 scroll-mt-6">
                                     <h3 class="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-brand">
                                         <span class="h-px flex-1 bg-brand/20" aria-hidden="true"></span>
                                         {{ $catLabel }}
@@ -156,82 +145,6 @@ HTML;
                     </div>
                 @endif
             </main>
-
-            {{-- ── Panel boczny: dane identyfikacyjne podmiotu (§ 10 MSWiA) ── --}}
-            @if ($hasSubjectData)
-                <aside aria-label="Dane identyfikacyjne podmiotu BIP">
-                    <div class="sticky top-4 rounded-xl border border-gray-200 bg-gray-50 p-5 text-sm">
-                        <h2 class="mb-4 text-xs font-bold uppercase tracking-wide text-muted">Podmiot prowadzący BIP</h2>
-
-                        <p class="font-semibold text-ink">{{ $siteSettings->site_name }}</p>
-
-                        @if ($siteSettings->contact_address || $siteSettings->contact_city)
-                            <p class="mt-0.5 text-muted">
-                                {{ $siteSettings->contact_address }}
-                                @if ($siteSettings->contact_address && $siteSettings->contact_city), @endif
-                                {{ $siteSettings->contact_city }}
-                            </p>
-                        @endif
-
-                        @if ($siteSettings->contact_email || $siteSettings->contact_phone)
-                            <div class="mt-3 space-y-0.5">
-                                @if ($siteSettings->contact_email)
-                                    <p>
-                                        <a href="mailto:{{ $siteSettings->contact_email }}"
-                                            class="text-brand hover:text-brand-dark hover:underline focus-visible:outline-2 focus-visible:outline-brand">
-                                            {{ $siteSettings->contact_email }}
-                                        </a>
-                                    </p>
-                                @endif
-                                @if ($siteSettings->contact_phone)
-                                    <p class="text-muted">{{ $siteSettings->contact_phone }}</p>
-                                @endif
-                            </div>
-                        @endif
-
-                        @if ($siteSettings->hasRegistryData())
-                            <div class="mt-3 space-y-0.5">
-                                @if ($siteSettings->krs_number)
-                                    <p class="text-muted">KRS: <span class="font-mono font-semibold text-ink">{{ $siteSettings->krs_number }}</span></p>
-                                @endif
-                                @if ($siteSettings->nip_number)
-                                    <p class="text-muted">NIP: <span class="font-mono font-semibold text-ink">{{ $siteSettings->nip_number }}</span></p>
-                                @endif
-                                @if ($siteSettings->regon_number)
-                                    <p class="text-muted">REGON: <span class="font-mono font-semibold text-ink">{{ $siteSettings->regon_number }}</span></p>
-                                @endif
-                            </div>
-                        @endif
-
-                        @if ($siteSettings->bip_editor_name || $siteSettings->bip_editor_email)
-                            <div class="mt-3 border-t border-gray-200 pt-3">
-                                <p class="text-xs font-bold uppercase tracking-wide text-muted mb-1">Redaktor BIP</p>
-                                @if ($siteSettings->bip_editor_name)
-                                    <p class="font-semibold text-ink">{{ $siteSettings->bip_editor_name }}</p>
-                                @endif
-                                @if ($siteSettings->bip_editor_email)
-                                    <p>
-                                        <a href="mailto:{{ $siteSettings->bip_editor_email }}"
-                                            class="text-brand hover:text-brand-dark hover:underline focus-visible:outline-2 focus-visible:outline-brand">
-                                            {{ $siteSettings->bip_editor_email }}
-                                        </a>
-                                    </p>
-                                @endif
-                            </div>
-                        @endif
-
-                        @if ($siteSettings->bip_gov_url)
-                            <div class="mt-3 border-t border-gray-200 pt-3">
-                                <a href="{{ $siteSettings->bip_gov_url }}" target="_blank" rel="noopener"
-                                    class="inline-flex items-center gap-1.5 text-xs font-bold text-muted transition hover:text-brand focus-visible:outline-2 focus-visible:outline-brand">
-                                    <i class="fa-solid fa-arrow-up-right-from-square text-[0.6rem]" aria-hidden="true"></i>
-                                    Podmiot w rejestrze gov.pl
-                                </a>
-                            </div>
-                        @endif
-                    </div>
-                </aside>
-            @endif
 
         </div>
     </div>

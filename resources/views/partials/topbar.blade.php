@@ -18,7 +18,9 @@
 
         {{-- Prawa: wyszukiwarka (gdy nie przeniesiona do menu) + BIP + social --}}
         @php
-            $showBip = $siteSettings->show_topbar_bip && $siteSettings->bip_url;
+            $bipIsExternal = ($siteSettings->bip_mode ?? 'internal') === 'external';
+            $bipHref = $bipIsExternal ? $siteSettings->bip_url : route('bip');
+            $showBip = $siteSettings->show_topbar_bip && ($bipIsExternal ? $siteSettings->bip_url : true);
             $showSocial = $siteSettings->show_topbar_social && ($siteSettings->facebook_url || $siteSettings->twitter_url || $siteSettings->instagram_url || $siteSettings->linkedin_url || $siteSettings->youtube_url);
             $searchInNav = $siteSettings->header_layout === 'wide_mission' && ($siteSettings->wide_mission_search_in_nav ?? false);
         @endphp
@@ -36,7 +38,8 @@
             @endunless
 
             @if ($showBip)
-                <a href="{{ $siteSettings->bip_url }}" target="_blank" rel="noopener" class="flex min-h-6 items-center gap-1 font-bold hover:text-brand">
+                <a href="{{ $bipHref }}" @if ($bipIsExternal) target="_blank" rel="noopener" @endif
+                    class="flex min-h-6 items-center gap-1 font-bold hover:text-brand focus-visible:outline-2 focus-visible:outline-brand">
                     <i class="fa-solid fa-landmark" aria-hidden="true"></i> BIP
                 </a>
             @endif
