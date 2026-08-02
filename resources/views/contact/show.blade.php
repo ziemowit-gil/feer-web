@@ -19,12 +19,12 @@
 
         @php
             $contactSections = collect([
-                ['id' => 'formularz',    'label' => 'Napisz do nas',      'show' => true],
+                ['id' => 'formularz',    'label' => 'Napisz do nas',      'show' => $siteSettings->contact_show_form ?? true],
                 ['id' => 'spotkania',    'label' => $siteSettings->contact_meeting_title ?: 'Spotkajmy się',
                  'show' => $siteSettings->contact_schedule_enabled || filled($siteSettings->contact_online_meeting_url)],
                 ['id' => 'przesylki',   'label' => 'Wyślij przesyłkę',   'show' => (bool) $siteSettings->contact_shipping_visible],
-                ['id' => 'rachunki',    'label' => 'Rachunki bankowe',    'show' => !empty($siteSettings->contact_bank_accounts)],
-                ['id' => 'koordynatorzy', 'label' => 'Koordynatorzy',    'show' => $projects->isNotEmpty()],
+                ['id' => 'rachunki',    'label' => 'Rachunki bankowe',    'show' => !empty($siteSettings->contact_bank_accounts) && ($siteSettings->contact_show_bank_accounts ?? true)],
+                ['id' => 'koordynatorzy', 'label' => 'Koordynatorzy',    'show' => $projects->isNotEmpty() && ($siteSettings->contact_show_coordinators ?? true)],
             ])->filter(fn ($s) => $s['show'])->values();
         @endphp
         @if ($contactSections->count() > 1)
@@ -38,6 +38,7 @@
             </nav>
         @endif
 
+        @if ($siteSettings->contact_show_form ?? true)
         <div id="formularz" class="scroll-mt-24 grid gap-10 md:grid-cols-[1fr_300px]">
             <div>
                 @if (session('status'))
@@ -167,6 +168,7 @@
                     @endif
             </aside>
         </div>
+        @endif {{-- contact_show_form --}}
 
         @php
             $meetingTitle = $siteSettings->contact_meeting_title ?: 'Spotkajmy się';
@@ -437,7 +439,7 @@
             </div>
         @endif
 
-        @if (!empty($siteSettings->contact_bank_accounts))
+        @if (!empty($siteSettings->contact_bank_accounts) && ($siteSettings->contact_show_bank_accounts ?? true))
             <div id="rachunki" class="mt-12 scroll-mt-24 border-t border-gray-100 pt-8">
                 <h2 class="mb-2 text-xl font-bold text-ink">Numery rachunków bankowych</h2>
                 <p class="mb-5 max-w-2xl text-sm text-muted">Przy każdym rachunku opisujemy, do czego służy i co można na niego wpłacić.</p>
@@ -464,7 +466,7 @@
             </div>
         @endif
 
-        @if ($projects->isNotEmpty())
+        @if ($projects->isNotEmpty() && ($siteSettings->contact_show_coordinators ?? true))
             <div id="koordynatorzy" class="mt-12 scroll-mt-24 border-t border-gray-100 pt-8">
                 <h2 class="mb-4 text-xl font-bold text-ink"> Koordynatorzy poszczególnych działań</h2>
                 <div class="grid gap-4 sm:grid-cols-2">

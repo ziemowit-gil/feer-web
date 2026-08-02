@@ -296,6 +296,9 @@ class SiteSettingController extends Controller
         $data['show_coordinators'] = $request->boolean('show_coordinators');
         $data['show_topbar_bip'] = $request->boolean('show_topbar_bip');
         $data['show_topbar_social'] = $request->boolean('show_topbar_social');
+        $data['contact_show_form'] = $request->boolean('contact_show_form');
+        $data['contact_show_bank_accounts'] = $request->boolean('contact_show_bank_accounts');
+        $data['contact_show_coordinators'] = $request->boolean('contact_show_coordinators');
         $data['contact_shipping_visible'] = $request->boolean('contact_shipping_visible');
         $data['contact_schedule_enabled'] = $request->boolean('contact_schedule_enabled');
         $data['support_show_partners'] = $request->boolean('support_show_partners');

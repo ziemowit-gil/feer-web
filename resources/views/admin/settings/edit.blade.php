@@ -1001,16 +1001,44 @@
                 @error('contact_intro') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
             </div>
 
-            <label class="mb-4 flex items-start gap-2 rounded-lg border border-gray-200 bg-gray-50 p-3 text-sm">
-                <input type="hidden" name="show_coordinators" value="0">
-                <input type="checkbox" name="show_coordinators" value="1" @checked(old('show_coordinators', $settings->show_coordinators)) class="mt-0.5 rounded border-gray-300 text-brand focus:ring-brand">
+            <p class=”mb-2 text-xs font-bold uppercase tracking-wide text-muted”>Sekcje strony Kontakt</p>
+            <div class=”mb-4 space-y-2 rounded-lg border border-gray-200 bg-gray-50 p-3”>
+                <label class=”flex items-start gap-2 text-sm”>
+                    <input type=”hidden” name=”contact_show_form” value=”0”>
+                    <input type=”checkbox” name=”contact_show_form” value=”1” @checked(old('contact_show_form', $settings->contact_show_form ?? true)) class=”mt-0.5 rounded border-gray-300 text-brand focus:ring-brand”>
+                    <span>
+                        <span class=”font-bold”>Napisz do nas</span>
+                        <span class=”block text-xs text-muted”>Formularz kontaktowy i dane teleadresowe.</span>
+                    </span>
+                </label>
+                <label class=”flex items-start gap-2 text-sm”>
+                    <input type=”hidden” name=”contact_show_bank_accounts” value=”0”>
+                    <input type=”checkbox” name=”contact_show_bank_accounts” value=”1” @checked(old('contact_show_bank_accounts', $settings->contact_show_bank_accounts ?? true)) class=”mt-0.5 rounded border-gray-300 text-brand focus:ring-brand”>
+                    <span>
+                        <span class=”font-bold”>Rachunki bankowe</span>
+                        <span class=”block text-xs text-muted”>Widoczne tylko gdy rachunki są skonfigurowane poniżej.</span>
+                    </span>
+                </label>
+                <label class=”flex items-start gap-2 text-sm”>
+                    <input type=”hidden” name=”contact_show_coordinators” value=”0”>
+                    <input type=”checkbox” name=”contact_show_coordinators” value=”1” @checked(old('contact_show_coordinators', $settings->contact_show_coordinators ?? true)) class=”mt-0.5 rounded border-gray-300 text-brand focus:ring-brand”>
+                    <span>
+                        <span class=”font-bold”>Koordynatorzy</span>
+                        <span class=”block text-xs text-muted”>Lista koordynatorów projektów. Dotyczy tylko strony Kontakt — poniższy przełącznik wyłącza koordynatorów wszędzie.</span>
+                    </span>
+                </label>
+            </div>
+
+            <label class=”mb-4 flex items-start gap-2 rounded-lg border border-gray-200 bg-gray-50 p-3 text-sm”>
+                <input type=”hidden” name=”show_coordinators” value=”0”>
+                <input type=”checkbox” name=”show_coordinators” value=”1” @checked(old('show_coordinators', $settings->show_coordinators)) class=”mt-0.5 rounded border-gray-300 text-brand focus:ring-brand”>
                 <span>
-                    <span class="font-bold">Pokazuj koordynatorów projektów</span>
-                    <span class="block text-xs text-muted">Główny wyłącznik danych koordynatorów na stronie „Kontakt” oraz na stronach projektów. Poszczególne projekty mają dodatkowo własny przełącznik.</span>
+                    <span class=”font-bold”>Pokazuj koordynatorów projektów</span>
+                    <span class=”block text-xs text-muted”>Główny wyłącznik danych koordynatorów na stronie „Kontakt” oraz na stronach projektów. Poszczególne projekty mają dodatkowo własny przełącznik.</span>
                 </span>
             </label>
 
-            <div class="grid gap-4 sm:grid-cols-2">
+            <div class=”grid gap-4 sm:grid-cols-2”>
                 <div>
                     <label for="contact_address" class="mb-1 block text-sm font-bold">Adres (ulica i numer)</label>
                     <input type="text" id="contact_address" name="contact_address" value="{{ old('contact_address', $settings->contact_address) }}" required
