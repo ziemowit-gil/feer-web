@@ -11,6 +11,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
 class SiteSettingController extends Controller
@@ -517,5 +518,14 @@ class SiteSettingController extends Controller
 
         return redirect()->route('admin.ustawienia.edit')
             ->with('status', 'Wysłano wiadomość testową na adres '.$data['test_email'].'.');
+    }
+
+    /** Generuje nowy losowy token furtki awaryjnej i zapisuje w ustawieniach. */
+    public function regenerateEmergencyToken(): RedirectResponse
+    {
+        SiteSetting::current()->update(['emergency_login_token' => Str::random(24)]);
+
+        return redirect()->route('admin.ustawienia.edit', ['tab' => 'login'])
+            ->with('status', 'Nowy adres dostępu awaryjnego został wygenerowany.');
     }
 }

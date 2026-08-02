@@ -1684,17 +1684,38 @@
                 Włącz logowanie przez Microsoft 365
             </label>
 
-            <div x-show="msEnabled" x-cloak>
-                <label class="flex items-center gap-2 text-sm font-medium">
-                    <input type="hidden" name="microsoft_only_login" value="0">
-                    <input type="checkbox" name="microsoft_only_login" value="1"
-                        {{ old('microsoft_only_login', $settings->microsoft_only_login) ? 'checked' : '' }}
-                        class="rounded border-gray-300 text-brand focus:ring-brand">
-                    Wyłącz lokalne logowanie hasłem (tylko Microsoft 365)
-                </label>
-                <p class="ml-6 mt-1 text-xs text-muted">
-                    Formularz e-mail + hasło zostaje ukryty. Konta z włączoną flagą „Dostęp awaryjny" nadal mogą się zalogować hasłem (furtka awaryjna).
-                </p>
+            <div x-show="msEnabled" x-cloak class="space-y-4">
+                <div>
+                    <label class="flex items-center gap-2 text-sm font-medium">
+                        <input type="hidden" name="microsoft_only_login" value="0">
+                        <input type="checkbox" name="microsoft_only_login" value="1"
+                            {{ old('microsoft_only_login', $settings->microsoft_only_login) ? 'checked' : '' }}
+                            class="rounded border-gray-300 text-brand focus:ring-brand">
+                        Wyłącz lokalne logowanie hasłem (tylko Microsoft 365)
+                    </label>
+                    <p class="ml-6 mt-1 text-xs text-muted">
+                        Formularz e-mail + hasło zostaje ukryty. Konta z włączoną flagą „Dostęp awaryjny" nadal mogą się zalogować hasłem przez adres awaryjny poniżej.
+                    </p>
+                </div>
+
+                <div class="rounded-lg border border-gray-200 bg-gray-50 p-4">
+                    <p class="mb-2 text-sm font-bold text-ink">Adres dostępu awaryjnego</p>
+                    @if ($settings->emergency_login_token)
+                        <code class="block break-all rounded bg-white px-3 py-2 text-xs text-ink ring-1 ring-gray-200">{{ url('/'.$settings->emergency_login_token) }}</code>
+                        <p class="mt-1.5 text-xs text-muted">Skopiuj i przechowaj w bezpiecznym miejscu. Po wygenerowaniu nowego stary przestaje działać natychmiast.</p>
+                    @else
+                        <p class="text-xs text-muted italic">Brak — wygeneruj adres, aby aktywować furtkę awaryjną.</p>
+                    @endif
+                    <form method="POST" action="{{ route('admin.ustawienia.emergency-token') }}" class="mt-3"
+                        onsubmit="return confirm('Wygenerować nowy adres? Stary przestanie działać natychmiast.');">
+                        @csrf
+                        <button type="submit"
+                            class="inline-flex items-center gap-1.5 rounded border border-gray-300 bg-white px-3 py-1.5 text-xs font-medium text-ink shadow-sm hover:bg-gray-50">
+                            <i class="fa-solid fa-rotate-right"></i>
+                            {{ $settings->emergency_login_token ? 'Wygeneruj nowy adres' : 'Wygeneruj adres' }}
+                        </button>
+                    </form>
+                </div>
             </div>
 
             <div class="space-y-5" x-show="msEnabled" x-cloak>

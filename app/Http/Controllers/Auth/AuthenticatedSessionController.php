@@ -23,11 +23,15 @@ class AuthenticatedSessionController extends Controller
     }
 
     /**
-     * Formularz awaryjny pod /admin2 — pokazuje lokalny login bez względu
-     * na tryb "tylko MS". Brak linka z głównej strony logowania.
+     * Formularz awaryjny pod losowym URL — pokazuje lokalny login bez względu
+     * na tryb "tylko MS". Token walidowany względem ustawień; 404 gdy nie pasuje.
      */
-    public function createEmergency(): View
+    public function createEmergency(string $token): View
     {
+        $stored = SiteSetting::current()->emergency_login_token;
+
+        abort_if(! $stored || ! hash_equals($stored, $token), 404);
+
         return view('auth.login', ['emergency' => true]);
     }
 

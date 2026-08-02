@@ -72,6 +72,7 @@ use App\Http\Controllers\BannerTrackingController;
 use App\Http\Controllers\Admin\BannerController as AdminBannerController;
 use App\Http\Controllers\Admin\BannerZoneController as AdminBannerZoneController;
 use App\Http\Controllers\Admin\HomepageLayoutController;
+use App\Http\Controllers\Admin\DocxImportController;
 use App\Http\Controllers\Admin\EtrController as AdminEtrController;
 use App\Http\Controllers\EtrController;
 use App\Http\Controllers\VolunteerController;
@@ -318,6 +319,7 @@ Route::middleware(['auth', 'verified', '2fa'])->prefix(config('app.admin_prefix'
     Route::get('multimedia/audyt-alt', [MediaLibraryController::class, 'altAudit'])->name('multimedia.alt-audit');
     Route::get('multimedia/unsplash', [MediaLibraryController::class, 'unsplashSearch'])->name('multimedia.unsplash.search');
     Route::post('multimedia/unsplash', [MediaLibraryController::class, 'unsplashImport'])->name('multimedia.unsplash.import');
+    Route::post('editor/importuj-docx', [DocxImportController::class, 'import'])->name('editor.docx.import');
     Route::post('multimedia/onedrive', [MediaLibraryController::class, 'oneDriveImport'])->name('multimedia.onedrive.import');
     Route::post('multimedia/upload-ajax', [MediaLibraryController::class, 'uploadAjax'])->name('multimedia.upload-ajax');
     Route::get('multimedia/eksport', [MediaLibraryController::class, 'export'])->name('multimedia.export');
@@ -346,6 +348,7 @@ Route::middleware(['auth', 'verified', '2fa'])->prefix(config('app.admin_prefix'
         Route::get('ustawienia', [SiteSettingController::class, 'edit'])->name('ustawienia.edit');
         Route::put('ustawienia', [SiteSettingController::class, 'update'])->name('ustawienia.update');
         Route::post('ustawienia/test-poczty', [SiteSettingController::class, 'mailTest'])->name('ustawienia.mail-test');
+        Route::post('ustawienia/token-awaryjny', [SiteSettingController::class, 'regenerateEmergencyToken'])->name('ustawienia.emergency-token');
         Route::post('ustawienia/strefa-nadpisz', [SiteSettingController::class, 'overwriteStrefa'])->name('strefa.overwrite');
         Route::post('ustawienia/prefix-panelu', [SiteSettingController::class, 'updateAdminPrefix'])->name('ustawienia.prefix');
         Route::get('ustawienia/dev', [SiteSettingController::class, 'dev'])->name('ustawienia.dev');
