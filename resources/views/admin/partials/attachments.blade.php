@@ -14,7 +14,7 @@
                     <form method="POST" action="{{ route('admin.pliki.destroy', $attachment) }}" onsubmit="return confirm('Usunąć plik &quot;{{ $attachment->label }}&quot;?');">
                         @csrf
                         @method('DELETE')
-                        <button type="submit" class="flex-none text-muted hover:text-red-600" title="Usuń"><i class="fa-solid fa-trash"></i></button>
+                        <button type="submit" class="flex-none text-muted hover:text-red-600" title="Usuń"><i class="fa-solid fa-trash" aria-hidden="true"></i></button>
                     </form>
                 </li>
             @endforeach
@@ -37,8 +37,8 @@
                 class="block w-full cursor-pointer text-sm text-muted file:mr-3 file:cursor-pointer file:rounded file:border-0 file:bg-brand file:px-4 file:py-2 file:text-sm file:font-bold file:text-white hover:file:bg-brand-dark">
             @error('file') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
         </div>
-        <button type="submit" class="rounded bg-brand px-4 py-2 text-sm font-bold text-white hover:bg-brand-dark">
-            <i class="fa-solid fa-plus"></i> Dodaj plik
+        <button type="submit" class="rounded bg-brand px-4 py-2 text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
+            <i class="fa-solid fa-plus" aria-hidden="true"></i> Dodaj plik
         </button>
     </form>
 </div>

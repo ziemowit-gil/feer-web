@@ -50,7 +50,7 @@
         </div>
 
         <div class="flex items-center gap-3">
-            <button type="submit" class="rounded bg-brand px-5 py-2 text-sm font-bold text-white hover:bg-brand-dark">Zapisz</button>
+            <button type="submit" class="rounded bg-brand px-5 py-2 text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">Zapisz</button>
             <a href="{{ route('admin.faq.index') }}" class="text-sm text-muted hover:text-ink">Anuluj</a>
         </div>
     </form>

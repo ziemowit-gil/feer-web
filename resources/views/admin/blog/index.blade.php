@@ -7,8 +7,8 @@
         <a href="{{ route('admin.komentarze-bloga.index') }}" class="text-sm font-bold text-muted hover:text-brand">
             <i class="fa-solid fa-comments"></i> Moderacja komentarzy
         </a>
-        <a href="{{ route('admin.wiem-feer.create') }}" class="rounded bg-brand px-4 py-2 text-sm font-bold text-white hover:bg-brand-dark">
-            <i class="fa-solid fa-plus"></i> Dodaj artykuł
+        <a href="{{ route('admin.wiem-feer.create') }}" class="rounded bg-brand px-4 py-2 text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
+            <i class="fa-solid fa-plus" aria-hidden="true"></i> Dodaj artykuł
         </a>
     </div>
 
@@ -54,9 +54,9 @@
                                 @if ($article->isVisible())
                                     <a href="{{ route('blog.show', $article) }}" target="_blank" rel="noopener" class="text-muted hover:text-brand" title="Zobacz na stronie"><i class="fa-solid fa-up-right-from-square"></i></a>
                                 @else
-                                    <a href="{{ $article->previewUrl() }}" target="_blank" rel="noopener" class="text-amber-600 hover:text-amber-700" title="Podgląd wersji roboczej (link ważny 14 dni)"><i class="fa-solid fa-eye"></i></a>
+                                    <a href="{{ $article->previewUrl() }}" target="_blank" rel="noopener" class="text-amber-600 hover:text-amber-700" title="Podgląd wersji roboczej (link ważny 14 dni)"><i class="fa-solid fa-eye" aria-hidden="true"></i></a>
                                 @endif
-                                <a href="{{ route('admin.wiem-feer.edit', $article) }}" class="text-muted hover:text-brand" title="Edytuj"><i class="fa-solid fa-pen"></i></a>
+                                <a href="{{ route('admin.wiem-feer.edit', $article) }}" class="text-muted hover:text-brand" title="Edytuj"><i class="fa-solid fa-pen" aria-hidden="true"></i></a>
                                 <form method="POST" action="{{ route('admin.wiem-feer.klonuj', $article) }}">
                                     @csrf
                                     <button type="submit" class="text-muted hover:text-brand" title="Klonuj jako szkic"><i class="fa-solid fa-copy"></i></button>
@@ -73,7 +73,7 @@
                                 <form method="POST" action="{{ route('admin.wiem-feer.destroy', $article) }}" onsubmit="return confirm('Usunąć artykuł &quot;{{ $article->title }}&quot; wraz z komentarzami?');">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="text-muted hover:text-red-600" title="Usuń"><i class="fa-solid fa-trash"></i></button>
+                                    <button type="submit" class="text-muted hover:text-red-600" title="Usuń"><i class="fa-solid fa-trash" aria-hidden="true"></i></button>
                                 </form>
                             </div>
                         </td>

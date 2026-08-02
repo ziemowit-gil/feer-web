@@ -15,7 +15,7 @@
             <a href="{{ route('admin.strefy-bannerow.index') }}" class="rounded border border-gray-300 bg-white px-4 py-2 text-sm font-bold text-ink hover:bg-gray-50">
                 <i class="fa-solid fa-layer-group fa-sm"></i> Strefy
             </a>
-            <a href="{{ route('admin.banery.create') }}" class="rounded bg-brand px-4 py-2 text-sm font-bold text-white hover:bg-brand-dark">
+            <a href="{{ route('admin.banery.create') }}" class="rounded bg-brand px-4 py-2 text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
                 <i class="fa-solid fa-plus fa-sm"></i> Dodaj baner
             </a>
         </div>

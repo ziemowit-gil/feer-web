@@ -6,8 +6,8 @@
     @include('admin.partials.content-nav-tabs')
 
     <div class="mb-4 flex justify-end">
-        <a href="{{ route('admin.podstrony.create') }}" class="rounded bg-brand px-4 py-2 text-sm font-bold text-white hover:bg-brand-dark">
-            <i class="fa-solid fa-plus"></i> Dodaj stronę
+        <a href="{{ route('admin.podstrony.create') }}" class="rounded bg-brand px-4 py-2 text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
+            <i class="fa-solid fa-plus" aria-hidden="true"></i> Dodaj stronę
         </a>
     </div>
 
@@ -17,6 +17,7 @@
         'status' => $status,
         'sort' => $sort,
         'sortOptions' => ['default' => 'Domyślne (kolejność)', 'title_asc' => 'Tytuł A–Z', 'title_desc' => 'Tytuł Z–A'],
+        'total' => $pages->total(),
     ])
 
     <form id="bulk-pages-form" method="POST" action="{{ route('admin.podstrony.bulk') }}">
@@ -31,7 +32,7 @@
             </select>
             <button type="button"
                 @click="Alpine.store('confirm').ask('Wykonać tę operację na zaznaczonych stronach?').then(ok => { if (ok) $el.closest('form').submit() })"
-                class="rounded bg-brand px-3 py-1.5 text-sm font-bold text-white hover:bg-brand-dark">
+                class="rounded bg-brand px-3 py-1.5 text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
                 Wykonaj
             </button>
         </div>
@@ -131,11 +132,11 @@
                                     </a>
                                 @endunless
                                 @if ($page->is_published && ($page->publish_at === null || $page->publish_at->isPast()))
-                                    <a href="{{ route('page.show', $page) }}" target="_blank" class="text-muted hover:text-brand" title="Podgląd"><i class="fa-solid fa-eye"></i></a>
+                                    <a href="{{ route('page.show', $page) }}" target="_blank" class="text-muted hover:text-brand" title="Podgląd"><i class="fa-solid fa-eye" aria-hidden="true"></i></a>
                                 @else
-                                    <a href="{{ $page->previewUrl() }}" target="_blank" rel="noopener" class="text-amber-600 hover:text-amber-700" title="{{ $page->is_published ? 'Zaplanowana — podgląd wersji roboczej' : 'Podgląd wersji roboczej (link ważny 14 dni)' }}"><i class="fa-solid fa-eye"></i></a>
+                                    <a href="{{ $page->previewUrl() }}" target="_blank" rel="noopener" class="text-amber-600 hover:text-amber-700" title="{{ $page->is_published ? 'Zaplanowana — podgląd wersji roboczej' : 'Podgląd wersji roboczej (link ważny 14 dni)' }}"><i class="fa-solid fa-eye" aria-hidden="true"></i></a>
                                 @endif
-                                <a href="{{ route('admin.podstrony.edit', $page) }}" class="text-muted hover:text-brand" title="Edytuj"><i class="fa-solid fa-pen"></i></a>
+                                <a href="{{ route('admin.podstrony.edit', $page) }}" class="text-muted hover:text-brand" title="Edytuj"><i class="fa-solid fa-pen" aria-hidden="true"></i></a>
                                 <form method="POST" action="{{ route('admin.podstrony.clone', $page) }}" data-confirm="Zduplikować stronę „{{ $page->title }}"? Kopia zostanie zapisana jako szkic.">
                                     @csrf
                                     <button type="submit" class="text-muted hover:text-brand" title="Klonuj stronę" aria-label="Klonuj stronę {{ $page->title }}"><i class="fa-solid fa-clone" aria-hidden="true"></i></button>
@@ -146,7 +147,7 @@
                                     @if ($page->is_published)
                                         <button type="submit" class="text-muted hover:text-amber-600" title="Ukryj (cofnij publikację)"><i class="fa-solid fa-eye-slash"></i></button>
                                     @else
-                                        <button type="submit" class="text-muted hover:text-green-600" title="Opublikuj (pokaż)"><i class="fa-solid fa-eye"></i></button>
+                                        <button type="submit" class="text-muted hover:text-green-600" title="Opublikuj (pokaż)"><i class="fa-solid fa-eye" aria-hidden="true"></i></button>
                                     @endif
                                 </form>
                                 <form method="POST" action="{{ route('admin.podstrony.wylacz', $page) }}">
@@ -159,7 +160,7 @@
                                     @endif
                                 </form>
                                 @if ($page->is_system)
-                                    <span class="cursor-not-allowed text-gray-300" title="Strony systemowej nie można usunąć"><i class="fa-solid fa-trash"></i></span>
+                                    <span class="cursor-not-allowed text-gray-300" title="Strony systemowej nie można usunąć"><i class="fa-solid fa-trash" aria-hidden="true"></i></span>
                                 @else
                                     <form method="POST" action="{{ route('admin.podstrony.destroy', $page) }}" data-confirm="Usunąć stronę „{{ $page->title }}"?">
                                         @csrf

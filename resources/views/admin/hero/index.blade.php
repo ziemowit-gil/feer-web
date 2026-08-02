@@ -110,8 +110,8 @@
     </div>
 
     <div class="mb-4 flex justify-end">
-        <a href="{{ route('admin.hero.create') }}" class="rounded bg-brand px-4 py-2 text-sm font-bold text-white hover:bg-brand-dark">
-            <i class="fa-solid fa-plus"></i> Dodaj slajd
+        <a href="{{ route('admin.hero.create') }}" class="rounded bg-brand px-4 py-2 text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
+            <i class="fa-solid fa-plus" aria-hidden="true"></i> Dodaj slajd
         </a>
     </div>
 

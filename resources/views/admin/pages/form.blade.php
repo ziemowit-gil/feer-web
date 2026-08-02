@@ -277,7 +277,7 @@
                             </div>
 
                             <button type="button" data-schedule-add class="mt-3 inline-flex items-center gap-2 rounded border border-brand px-3 py-1.5 text-sm font-bold text-brand hover:bg-brand-light">
-                                <i class="fa-solid fa-plus"></i> Dodaj termin
+                                <i class="fa-solid fa-plus" aria-hidden="true"></i> Dodaj termin
                             </button>
 
                             <template data-schedule-template>
@@ -424,7 +424,7 @@
                                     </div>
                                 @endforeach
                             </div>
-                            <button type="button" data-repeater-add class="mt-2 inline-flex items-center gap-2 rounded border border-brand px-3 py-1.5 text-sm font-bold text-brand hover:bg-brand-light"><i class="fa-solid fa-plus"></i> Dodaj statystykę</button>
+                            <button type="button" data-repeater-add class="mt-2 inline-flex items-center gap-2 rounded border border-brand px-3 py-1.5 text-sm font-bold text-brand hover:bg-brand-light"><i class="fa-solid fa-plus" aria-hidden="true"></i> Dodaj statystykę</button>
                             <template data-repeater-template>
                                 <div data-repeater-row class="grid gap-2 sm:grid-cols-[1fr_2fr_auto]">
                                     <input type="text" name="about_stats[__INDEX__][value]" placeholder="Wartość, np. 500+" aria-label="Wartość statystyki" class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
@@ -451,7 +451,7 @@
                                     </div>
                                 @endforeach
                             </div>
-                            <button type="button" data-repeater-add class="mt-2 inline-flex items-center gap-2 rounded border border-brand px-3 py-1.5 text-sm font-bold text-brand hover:bg-brand-light"><i class="fa-solid fa-plus"></i> Dodaj wartość</button>
+                            <button type="button" data-repeater-add class="mt-2 inline-flex items-center gap-2 rounded border border-brand px-3 py-1.5 text-sm font-bold text-brand hover:bg-brand-light"><i class="fa-solid fa-plus" aria-hidden="true"></i> Dodaj wartość</button>
                             <template data-repeater-template>
                                 <div data-repeater-row class="grid gap-2 sm:grid-cols-[1fr_1fr_2fr_auto]">
                                     <input type="text" name="about_values[__INDEX__][icon]" placeholder="fa-solid fa-heart" aria-label="Ikona wartości" class="w-full rounded border-gray-300 font-mono text-xs focus:border-brand focus:ring-brand">
@@ -493,7 +493,7 @@
                                     </div>
                                 @endforeach
                             </div>
-                            <button type="button" data-repeater-add class="mt-2 inline-flex items-center gap-2 rounded border border-brand px-3 py-1.5 text-sm font-bold text-brand hover:bg-brand-light"><i class="fa-solid fa-plus"></i> Dodaj wpis</button>
+                            <button type="button" data-repeater-add class="mt-2 inline-flex items-center gap-2 rounded border border-brand px-3 py-1.5 text-sm font-bold text-brand hover:bg-brand-light"><i class="fa-solid fa-plus" aria-hidden="true"></i> Dodaj wpis</button>
                             <template data-repeater-template>
                                 <div data-repeater-row class="space-y-2 rounded-lg border border-gray-200 bg-gray-50 p-4">
                                     <div class="grid gap-2 sm:grid-cols-[1fr_3fr]">
@@ -560,7 +560,7 @@
                                     </div>
                                 @endforeach
                             </div>
-                            <button type="button" data-repeater-add class="mt-2 inline-flex items-center gap-2 rounded border border-brand px-3 py-1.5 text-sm font-bold text-brand hover:bg-brand-light"><i class="fa-solid fa-plus"></i> Dodaj osobę</button>
+                            <button type="button" data-repeater-add class="mt-2 inline-flex items-center gap-2 rounded border border-brand px-3 py-1.5 text-sm font-bold text-brand hover:bg-brand-light"><i class="fa-solid fa-plus" aria-hidden="true"></i> Dodaj osobę</button>
                             <template data-repeater-template>
                                 <div data-repeater-row class="space-y-2 rounded-lg border border-gray-200 bg-gray-50 p-4">
                                     <div class="grid gap-2 sm:grid-cols-2">
@@ -665,7 +665,7 @@
                                             </div>
                                         @endforeach
                                     </div>
-                                    <button type="button" data-repeater-add class="mt-2 inline-flex items-center gap-2 rounded border border-brand px-3 py-1.5 text-sm font-bold text-brand hover:bg-brand-light"><i class="fa-solid fa-plus"></i> Dodaj wzmiankę</button>
+                                    <button type="button" data-repeater-add class="mt-2 inline-flex items-center gap-2 rounded border border-brand px-3 py-1.5 text-sm font-bold text-brand hover:bg-brand-light"><i class="fa-solid fa-plus" aria-hidden="true"></i> Dodaj wzmiankę</button>
                                     <template data-repeater-template>
                                         <div data-repeater-row class="space-y-2 rounded-lg border border-gray-200 bg-gray-50 p-4">
                                             <input type="url" name="about_press[__INDEX__][url]" placeholder="Link do artykułu (URL)" aria-label="Link wzmianki" class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
@@ -726,7 +726,7 @@
                                     </div>
                                 @endforeach
                             </div>
-                            <button type="button" data-repeater-add class="mt-3 inline-flex items-center gap-2 rounded border border-brand px-3 py-1.5 text-sm font-bold text-brand hover:bg-brand-light"><i class="fa-solid fa-plus"></i> Dodaj pytanie</button>
+                            <button type="button" data-repeater-add class="mt-3 inline-flex items-center gap-2 rounded border border-brand px-3 py-1.5 text-sm font-bold text-brand hover:bg-brand-light"><i class="fa-solid fa-plus" aria-hidden="true"></i> Dodaj pytanie</button>
                             <template data-repeater-template>
                                 <div data-repeater-row class="space-y-2 rounded-lg border border-gray-200 bg-gray-50 p-4">
                                     <input type="text" name="faq_items[__INDEX__][question]" placeholder="Pytanie" aria-label="Pytanie"
@@ -844,7 +844,7 @@
                                     </div>
                                 @endforeach
                             </div>
-                            <button type="button" data-repeater-add class="mt-2 inline-flex items-center gap-2 rounded border border-brand px-3 py-1.5 text-sm font-bold text-brand hover:bg-brand-light"><i class="fa-solid fa-plus"></i> Dodaj link</button>
+                            <button type="button" data-repeater-add class="mt-2 inline-flex items-center gap-2 rounded border border-brand px-3 py-1.5 text-sm font-bold text-brand hover:bg-brand-light"><i class="fa-solid fa-plus" aria-hidden="true"></i> Dodaj link</button>
                             <template data-repeater-template>
                                 <div data-repeater-row class="space-y-2 rounded-lg border border-gray-200 bg-gray-50 p-4">
                                     <div class="grid gap-2 sm:grid-cols-[2fr_3fr]">
@@ -1173,7 +1173,7 @@
             </div>
 
             <div class="flex items-center gap-3">
-                <button type="submit" class="rounded bg-brand px-5 py-2 text-sm font-bold text-white hover:bg-brand-dark">Zapisz</button>
+                <button type="submit" class="rounded bg-brand px-5 py-2 text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">Zapisz</button>
                 <a href="{{ route('admin.podstrony.index') }}" class="text-sm text-muted hover:text-brand">Anuluj</a>
             </div>
         </form>

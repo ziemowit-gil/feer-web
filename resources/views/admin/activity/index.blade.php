@@ -67,7 +67,7 @@
 
                 <div class="mt-3 flex items-center gap-3">
                     <button type="submit"
-                        class="rounded-lg bg-brand px-4 py-2 text-xs font-bold text-white hover:bg-brand-dark">
+                        class="rounded-lg bg-brand px-4 py-2 text-xs font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
                         Filtruj
                     </button>
                     @if ($event || $subject || $userName || $dateFrom || $dateTo)

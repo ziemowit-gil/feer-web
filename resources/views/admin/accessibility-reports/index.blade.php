@@ -6,7 +6,7 @@
     <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
         <p class="text-sm text-muted">Zgłoszenia z formularza na stronie <a href="{{ route('accessibility.show') }}" target="_blank" rel="noopener" class="text-brand underline">deklaracji dostępności</a>: <span class="font-bold text-ink">{{ $total }}</span></p>
         @if ($total > 0)
-            <a href="{{ route('admin.zgloszenia-barier.export') }}" class="rounded bg-brand px-4 py-2 text-sm font-bold text-white hover:bg-brand-dark">
+            <a href="{{ route('admin.zgloszenia-barier.export') }}" class="rounded bg-brand px-4 py-2 text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
                 <i class="fa-solid fa-file-csv"></i> Eksport CSV
             </a>
         @endif
@@ -43,7 +43,7 @@
                                 <form method="POST" action="{{ route('admin.zgloszenia-barier.destroy', $report) }}" onsubmit="return confirm('Usunąć to zgłoszenie?');">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="text-muted hover:text-red-600" title="Usuń"><i class="fa-solid fa-trash"></i></button>
+                                    <button type="submit" class="text-muted hover:text-red-600" title="Usuń"><i class="fa-solid fa-trash" aria-hidden="true"></i></button>
                                 </form>
                             </div>
                         </td>

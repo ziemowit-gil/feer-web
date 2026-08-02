@@ -49,7 +49,7 @@
                                 @csrf
                                 @method('DELETE')
                                 <button type="submit" class="rounded border border-gray-300 px-3 py-1.5 text-xs font-bold text-muted hover:border-red-300 hover:text-red-600">
-                                    <i class="fa-solid fa-trash"></i> Usuń
+                                    <i class="fa-solid fa-trash" aria-hidden="true"></i> Usuń
                                 </button>
                             </form>
                         </div>
@@ -90,7 +90,7 @@
                                 @csrf
                                 @method('DELETE')
                                 <button type="submit" class="rounded border border-gray-300 px-3 py-1.5 text-xs font-bold text-muted hover:border-red-300 hover:text-red-600">
-                                    <i class="fa-solid fa-trash"></i> Usuń
+                                    <i class="fa-solid fa-trash" aria-hidden="true"></i> Usuń
                                 </button>
                             </form>
                         </div>

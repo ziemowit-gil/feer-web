@@ -6,7 +6,7 @@
     <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
         <p class="text-sm text-muted">Zgłoszenia z formularza „Daj znać, że przyjdziesz” (podstrona <a href="{{ route('contact.show') }}" target="_blank" rel="noopener" class="text-brand underline">/kontakt</a>): <span class="font-bold text-ink">{{ $total }}</span></p>
         @if ($total > 0)
-            <a href="{{ route('admin.zgloszenia-spotkania.export') }}" class="rounded bg-brand px-4 py-2 text-sm font-bold text-white hover:bg-brand-dark">
+            <a href="{{ route('admin.zgloszenia-spotkania.export') }}" class="rounded bg-brand px-4 py-2 text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
                 <i class="fa-solid fa-file-csv"></i> Eksport CSV
             </a>
         @endif
@@ -37,7 +37,7 @@
                                 <form method="POST" action="{{ route('admin.zgloszenia-spotkania.destroy', $signup) }}" onsubmit="return confirm('Usunąć zgłoszenie od &quot;{{ $signup->name }}&quot;?');">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="text-muted hover:text-red-600" title="Usuń"><i class="fa-solid fa-trash"></i></button>
+                                    <button type="submit" class="text-muted hover:text-red-600" title="Usuń"><i class="fa-solid fa-trash" aria-hidden="true"></i></button>
                                 </form>
                             </div>
                         </td>

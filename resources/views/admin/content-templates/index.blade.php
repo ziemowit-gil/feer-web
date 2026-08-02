@@ -37,7 +37,7 @@
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" class="text-muted hover:text-red-600" title="Usuń szablon">
-                                                <i class="fa-solid fa-trash"></i>
+                                                <i class="fa-solid fa-trash" aria-hidden="true"></i>
                                             </button>
                                         </form>
                                     </div>

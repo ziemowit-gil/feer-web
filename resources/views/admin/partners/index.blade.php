@@ -4,8 +4,8 @@
 
 @section('content')
     <div class="mb-4 flex justify-end">
-        <a href="{{ route('admin.partnerzy.create') }}" class="rounded bg-brand px-4 py-2 text-sm font-bold text-white hover:bg-brand-dark">
-            <i class="fa-solid fa-plus"></i> Dodaj partnera
+        <a href="{{ route('admin.partnerzy.create') }}" class="rounded bg-brand px-4 py-2 text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
+            <i class="fa-solid fa-plus" aria-hidden="true"></i> Dodaj partnera
         </a>
     </div>
 
@@ -35,11 +35,11 @@
                         <td class="px-4 py-3 text-muted">{{ $partner->order }}</td>
                         <td class="px-4 py-3">
                             <div class="flex justify-end gap-3">
-                                <a href="{{ route('admin.partnerzy.edit', $partner) }}" class="text-muted hover:text-brand" title="Edytuj"><i class="fa-solid fa-pen"></i></a>
+                                <a href="{{ route('admin.partnerzy.edit', $partner) }}" class="text-muted hover:text-brand" title="Edytuj"><i class="fa-solid fa-pen" aria-hidden="true"></i></a>
                                 <form method="POST" action="{{ route('admin.partnerzy.destroy', $partner) }}" onsubmit="return confirm('Usunąć partnera &quot;{{ $partner->name }}&quot;?');">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="text-muted hover:text-red-600" title="Usuń"><i class="fa-solid fa-trash"></i></button>
+                                    <button type="submit" class="text-muted hover:text-red-600" title="Usuń"><i class="fa-solid fa-trash" aria-hidden="true"></i></button>
                                 </form>
                             </div>
                         </td>

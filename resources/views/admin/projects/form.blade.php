@@ -177,7 +177,7 @@
                                 </div>
                             @endforeach
                         </div>
-                        <button type="button" data-pricing-add class="mt-3 inline-flex items-center gap-2 rounded border border-brand px-3 py-1.5 text-sm font-bold text-brand hover:bg-brand-light"><i class="fa-solid fa-plus"></i> Dodaj pozycję</button>
+                        <button type="button" data-pricing-add class="mt-3 inline-flex items-center gap-2 rounded border border-brand px-3 py-1.5 text-sm font-bold text-brand hover:bg-brand-light"><i class="fa-solid fa-plus" aria-hidden="true"></i> Dodaj pozycję</button>
                         <template data-pricing-template>
                             <div data-pricing-row class="grid gap-2 sm:grid-cols-[2fr_1fr_2fr_auto]">
                                 <input type="text" name="pricing[__INDEX__][item]" placeholder="Pozycja / usługa" aria-label="Pozycja cennika" class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
@@ -376,7 +376,7 @@
         </div>
 
         <div class="flex items-center gap-3">
-            <button type="submit" class="rounded bg-brand px-5 py-2 text-sm font-bold text-white hover:bg-brand-dark">Zapisz</button>
+            <button type="submit" class="rounded bg-brand px-5 py-2 text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">Zapisz</button>
             <a href="{{ route('admin.projekty.index') }}" class="text-sm text-muted hover:text-brand">Anuluj</a>
         </div>
     </form>

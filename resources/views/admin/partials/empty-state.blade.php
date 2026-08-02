@@ -7,7 +7,7 @@
             </span>
             <p class="text-sm text-muted">{{ $message }}</p>
             @if ($createRoute)
-                <a href="{{ $createRoute }}" class="inline-flex items-center gap-1.5 rounded-lg bg-brand px-4 py-2 text-sm font-bold text-white hover:bg-brand-dark">
+                <a href="{{ $createRoute }}" class="inline-flex items-center gap-1.5 rounded-lg bg-brand px-4 py-2 text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
                     <i class="fa-solid fa-plus" aria-hidden="true"></i>
                     {{ $createLabel }}
                 </a>

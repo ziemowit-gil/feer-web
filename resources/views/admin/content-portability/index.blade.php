@@ -14,7 +14,7 @@
         <div class="rounded-lg border border-gray-200 bg-white p-6">
             <h2 class="text-base font-bold text-ink">1. Eksport treści</h2>
             <p class="mt-1 text-sm text-muted">Pobierz paczkę ZIP z bieżącą treścią i mediami (z tego serwera).</p>
-            <a href="{{ route('admin.tresc.export') }}" class="mt-4 inline-flex items-center gap-2 rounded bg-brand px-5 py-2.5 text-sm font-bold text-white hover:bg-brand-dark">
+            <a href="{{ route('admin.tresc.export') }}" class="mt-4 inline-flex items-center gap-2 rounded bg-brand px-5 py-2.5 text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
                 <i class="fa-solid fa-download" aria-hidden="true"></i> Pobierz paczkę ZIP
             </a>
         </div>

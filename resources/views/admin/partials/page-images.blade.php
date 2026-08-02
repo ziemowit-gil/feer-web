@@ -27,7 +27,7 @@
                     <form method="POST" action="{{ route('admin.podstrony.zdjecia.destroy', $image) }}" onsubmit="return confirm('Usunąć to zdjęcie z galerii?');">
                         @csrf
                         @method('DELETE')
-                        <button type="submit" class="flex-none text-muted hover:text-red-600" title="Usuń zdjęcie" aria-label="Usuń zdjęcie"><i class="fa-solid fa-trash"></i></button>
+                        <button type="submit" class="flex-none text-muted hover:text-red-600" title="Usuń zdjęcie" aria-label="Usuń zdjęcie"><i class="fa-solid fa-trash" aria-hidden="true"></i></button>
                     </form>
                 </li>
             @endforeach
@@ -58,8 +58,8 @@
                 class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
             @error('caption') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
         </div>
-        <button type="submit" class="rounded bg-brand px-4 py-2 text-sm font-bold text-white hover:bg-brand-dark">
-            <i class="fa-solid fa-plus"></i> Dodaj zdjęcie
+        <button type="submit" class="rounded bg-brand px-4 py-2 text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
+            <i class="fa-solid fa-plus" aria-hidden="true"></i> Dodaj zdjęcie
         </button>
     </form>
 </div>

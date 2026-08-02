@@ -309,7 +309,7 @@
         <p class="mb-4 text-[0.65rem] text-muted">Tylko małe litery, cyfry i myślniki. Bez spacji.</p>
         <div class="flex justify-end gap-2">
             <button type="button" data-anchor-insert-close class="rounded border border-gray-300 px-3 py-1.5 text-sm text-ink hover:bg-gray-50">Anuluj</button>
-            <button type="button" id="{{ $editorId }}-anchor-insert-submit" class="rounded bg-brand px-3 py-1.5 text-sm font-bold text-white hover:bg-brand-dark">Wstaw kotwicę</button>
+            <button type="button" id="{{ $editorId }}-anchor-insert-submit" class="rounded bg-brand px-3 py-1.5 text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">Wstaw kotwicę</button>
         </div>
     </div>
 </div>
@@ -342,7 +342,7 @@
         </div>
         <div class="mt-4 flex justify-end gap-2">
             <button type="button" data-anchor-link-close class="rounded border border-gray-300 px-3 py-1.5 text-sm text-ink hover:bg-gray-50">Anuluj</button>
-            <button type="button" id="{{ $editorId }}-anchor-link-submit" class="rounded bg-brand px-3 py-1.5 text-sm font-bold text-white hover:bg-brand-dark">Wstaw link</button>
+            <button type="button" id="{{ $editorId }}-anchor-link-submit" class="rounded bg-brand px-3 py-1.5 text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">Wstaw link</button>
         </div>
     </div>
 </div>
@@ -1471,7 +1471,7 @@
                             + '</div>'
                             + '<div class="ml-auto flex items-center gap-4">'
                             + (meta ? '<span class="text-sm text-muted">' + esc(meta) + '</span>' : '')
-                            + '<a href="' + a.url + '" download class="flex-none rounded bg-brand px-5 py-2 text-sm font-bold uppercase text-white transition hover:bg-brand-dark">Pobierz <span class="sr-only">— ' + esc(a.label) + '</span></a>'
+                            + '<a href="' + a.url + '" download class="flex-none rounded bg-brand px-5 py-2 text-sm font-bold uppercase text-white transition hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">Pobierz <span class="sr-only">— ' + esc(a.label) + '</span></a>'
                             + '</div>'
                             + '</div>'
                             + '</div>';
@@ -1868,7 +1868,7 @@
                                     + '</div>'
                                     + '<div class="ml-auto flex items-center gap-4">'
                                     + (meta ? '<span class="text-sm text-muted">' + esc(meta) + '</span>' : '')
-                                    + '<a href="' + a.url + '" download class="flex-none rounded bg-brand px-5 py-2 text-sm font-bold uppercase text-white transition hover:bg-brand-dark">Pobierz <span class="sr-only">— ' + esc(a.label) + '</span></a>'
+                                    + '<a href="' + a.url + '" download class="flex-none rounded bg-brand px-5 py-2 text-sm font-bold uppercase text-white transition hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">Pobierz <span class="sr-only">— ' + esc(a.label) + '</span></a>'
                                     + '</div>'
                                     + '</div>'
                                     + '</div>';

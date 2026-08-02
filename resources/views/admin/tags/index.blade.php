@@ -63,7 +63,7 @@
                                 <button @click="editing = {{ $tag->id }}"
                                         class="text-muted hover:text-brand"
                                         title="Zmień nazwę">
-                                    <i class="fa-solid fa-pen"></i>
+                                    <i class="fa-solid fa-pen" aria-hidden="true"></i>
                                 </button>
                                 <form method="POST"
                                       action="{{ route('admin.tagi.destroy', $tag) }}"
@@ -71,7 +71,7 @@
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="text-muted hover:text-red-600" title="Usuń">
-                                        <i class="fa-solid fa-trash"></i>
+                                        <i class="fa-solid fa-trash" aria-hidden="true"></i>
                                     </button>
                                 </form>
                             </div>

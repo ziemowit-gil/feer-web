@@ -18,8 +18,8 @@
                 <i class="fa-solid fa-user" aria-hidden="true"></i> Moje
             </a>
         </div>
-        <a href="{{ route('admin.zadania.create') }}" class="rounded bg-brand px-4 py-2 text-sm font-bold text-white hover:bg-brand-dark">
-            <i class="fa-solid fa-plus"></i> Dodaj zadanie
+        <a href="{{ route('admin.zadania.create') }}" class="rounded bg-brand px-4 py-2 text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
+            <i class="fa-solid fa-plus" aria-hidden="true"></i> Dodaj zadanie
         </a>
     </div>
 
@@ -83,14 +83,14 @@
                                     </form>
                                 @endif
                                 <a href="{{ route('admin.zadania.edit', $task) }}" class="text-brand hover:text-brand-dark" title="Edytuj">
-                                    <i class="fa-solid fa-pen"></i>
+                                    <i class="fa-solid fa-pen" aria-hidden="true"></i>
                                 </a>
                                 <form method="POST" action="{{ route('admin.zadania.destroy', $task) }}"
                                     onsubmit="return confirm('Usunąć zadanie &quot;{{ $task->title }}&quot;?')">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="text-muted hover:text-red-600" title="Usuń">
-                                        <i class="fa-solid fa-trash"></i>
+                                        <i class="fa-solid fa-trash" aria-hidden="true"></i>
                                     </button>
                                 </form>
                             </div>

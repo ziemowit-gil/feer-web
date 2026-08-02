@@ -22,7 +22,7 @@
                         class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
                     @error('to_url') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                 </div>
-                <button type="submit" class="rounded bg-brand px-5 py-2 text-sm font-bold text-white hover:bg-brand-dark">Dodaj</button>
+                <button type="submit" class="rounded bg-brand px-5 py-2 text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">Dodaj</button>
             </div>
         </form>
 
@@ -65,7 +65,7 @@
                                     <button form="redirect-{{ $r->id }}" type="submit" class="text-brand hover:text-brand-dark" title="Zapisz"><i class="fa-solid fa-floppy-disk"></i></button>
                                     <form method="POST" action="{{ route('admin.przekierowania.destroy', $r) }}" onsubmit="return confirm('Usunąć przekierowanie {{ $r->from_path }}?');">
                                         @csrf @method('DELETE')
-                                        <button type="submit" class="text-muted hover:text-red-600" title="Usuń"><i class="fa-solid fa-trash"></i></button>
+                                        <button type="submit" class="text-muted hover:text-red-600" title="Usuń"><i class="fa-solid fa-trash" aria-hidden="true"></i></button>
                                     </form>
                                 </div>
                             </td>

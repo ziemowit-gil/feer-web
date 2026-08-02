@@ -147,6 +147,14 @@
 
             {{-- Szybkie akcje --}}
             @php
+                $shortcutColors = [
+                    'blue'   => 'bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100 focus-visible:ring-blue-500',
+                    'green'  => 'bg-green-50 text-green-700 border-green-200 hover:bg-green-100 focus-visible:ring-green-500',
+                    'purple' => 'bg-purple-50 text-purple-700 border-purple-200 hover:bg-purple-100 focus-visible:ring-purple-500',
+                    'orange' => 'bg-orange-50 text-orange-700 border-orange-200 hover:bg-orange-100 focus-visible:ring-orange-500',
+                    'slate'  => 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100 focus-visible:ring-slate-500',
+                    'rose'   => 'bg-rose-50 text-rose-700 border-rose-200 hover:bg-rose-100 focus-visible:ring-rose-500',
+                ];
                 $shortcuts = [];
                 if ($can('news'))       $shortcuts[] = ['route' => route('admin.newsy.create'),              'label' => 'Nowy news',           'icon' => 'fa-newspaper',      'color' => 'blue'];
                 if ($can('events'))     $shortcuts[] = ['route' => route('admin.wydarzenia.create'),         'label' => 'Nowe wydarzenie',     'icon' => 'fa-calendar-days',  'color' => 'green'];
@@ -164,9 +172,10 @@
                     </div>
                     <div class="grid grid-cols-2 gap-2 p-3">
                         @foreach ($shortcuts as $s)
+                            @php $cls = $shortcutColors[$s['color']] ?? $shortcutColors['blue']; @endphp
                             <a href="{{ $s['route'] }}"
-                                class="group flex flex-col items-center gap-1.5 rounded-lg border border-brand/20 bg-brand/5 px-2 py-3 text-center text-xs font-bold text-brand transition hover:border-brand/0 hover:bg-brand hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
-                                <i class="fa-solid {{ $s['icon'] }} text-base text-brand transition group-hover:text-white" aria-hidden="true"></i>
+                                class="flex flex-col items-center gap-1.5 rounded-lg border px-2 py-3 text-center text-xs font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 {{ $cls }}">
+                                <i class="fa-solid {{ $s['icon'] }} text-base" aria-hidden="true"></i>
                                 {{ $s['label'] }}
                             </a>
                         @endforeach

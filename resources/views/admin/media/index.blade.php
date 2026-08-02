@@ -192,7 +192,7 @@
                             </div>
 
                             <button type="submit"
-                                class="rounded-lg bg-brand px-4 py-2 text-xs font-bold text-white hover:bg-brand-dark">
+                                class="rounded-lg bg-brand px-4 py-2 text-xs font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
                                 <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
                                 <span class="ml-1 hidden sm:inline">Szukaj</span>
                             </button>
@@ -285,7 +285,7 @@
 
                             <div class="mt-3 flex justify-end">
                                 <button type="submit"
-                                    class="rounded-lg bg-brand px-4 py-2 text-xs font-bold text-white hover:bg-brand-dark">
+                                    class="rounded-lg bg-brand px-4 py-2 text-xs font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
                                     Zastosuj filtry
                                 </button>
                             </div>
@@ -439,7 +439,7 @@
 
                                 <div class="flex items-center gap-3 border-t border-gray-100 px-4 py-3">
                                     <button type="submit"
-                                        class="rounded-lg bg-brand px-4 py-2 text-xs font-bold text-white hover:bg-brand-dark">
+                                        class="rounded-lg bg-brand px-4 py-2 text-xs font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
                                         <i class="fa-solid fa-upload" aria-hidden="true"></i>
                                         Prześlij (<span x-text="files.length"></span>)
                                     </button>
@@ -470,7 +470,7 @@
                                 </div>
                                 <div class="flex items-center gap-3 border-t border-gray-100 px-5 py-4">
                                     <button type="button" @click="confirmCrop()"
-                                        class="rounded-lg bg-brand px-4 py-2 text-sm font-bold text-white hover:bg-brand-dark">
+                                        class="rounded-lg bg-brand px-4 py-2 text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
                                         <i class="fa-solid fa-check" aria-hidden="true"></i>
                                         Zastosuj kadrowanie
                                     </button>

@@ -7,11 +7,13 @@
       $categories  — (opcjonalnie) kolekcja kategorii {id,name} do selecta
       $categoryId  — (opcjonalnie) bieżąca kategoria
       $q           — (opcjonalnie) fraza wyszukiwania po tytule
+      $total       — (opcjonalnie) łączna liczba wyników do wyświetlenia
 --}}
 @php
     $categories ??= null;
     $categoryId ??= '';
     $q ??= '';
+    $total ??= null;
     $hasFilters = filled($q) || filled($status) || filled($categoryId) || (filled($sort) && $sort !== array_key_first($sortOptions));
 @endphp
 
@@ -62,5 +64,11 @@
     </button>
     @if ($hasFilters)
         <a href="{{ $action }}" class="rounded px-2 py-1.5 text-sm text-muted hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">Wyczyść</a>
+    @endif
+    @if ($total !== null)
+        <span class="ml-auto text-sm text-muted" aria-live="polite">
+            {{ $total }}
+            {{ $total === 1 ? 'wynik' : ($total >= 2 && $total <= 4 ? 'wyniki' : 'wyników') }}
+        </span>
     @endif
 </form>
