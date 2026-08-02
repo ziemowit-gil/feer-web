@@ -85,31 +85,40 @@
 
 @php $mi = 'flex w-full items-center gap-2 rounded px-3 py-2 text-left text-xs font-bold text-ink hover:bg-brand-light hover:text-brand'; @endphp
 <div id="{{ $editorId }}-toolbar" class="mb-2 flex-wrap items-center gap-2 {{ $useCkEditor ? 'flex' : 'hidden' }}">
-    {{-- Menu „Wstaw" — zgrupowane akcje wstawiania bloków --}}
+    {{-- Menu „Wstaw" — bloki, multimedia, układ --}}
     <div class="relative" x-data="{ open: false }" @click.outside="open = false" @keydown.escape="open = false">
         <button type="button" @click="open = !open" :aria-expanded="open"
             class="inline-flex items-center gap-2 rounded border border-gray-300 px-3 py-1.5 text-xs font-bold text-ink hover:border-brand hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
             <i class="fa-solid fa-plus" aria-hidden="true"></i> Wstaw <i class="fa-solid fa-chevron-down text-[0.6rem]" aria-hidden="true"></i>
         </button>
         <div x-show="open" x-cloak class="absolute left-0 z-20 mt-1 w-60 rounded-lg border border-gray-200 bg-white p-1 shadow-lg" role="menu">
+            {{-- Multimedia --}}
             <button type="button" id="{{ $editorId }}-media" @click="open = false" class="{{ $mi }}"><i class="fa-solid fa-images w-4 text-center" aria-hidden="true"></i> Obraz z biblioteki</button>
             <button type="button" id="{{ $editorId }}-gallery" @click="open = false" class="{{ $mi }}"><i class="fa-solid fa-border-all w-4 text-center" aria-hidden="true"></i> Galeria zdjęć</button>
+            <hr class="my-1 border-gray-100" role="separator">
+            {{-- Przyciski --}}
             <button type="button" id="{{ $editorId }}-cta" @click="open = false" class="{{ $mi }}"><i class="fa-solid fa-square w-4 text-center text-brand" aria-hidden="true"></i> Przycisk CTA</button>
             <button type="button" data-insert-key="red" @click="open = false" class="{{ $mi }}"><i class="fa-solid fa-square w-4 text-center" style="color:#c81e1e" aria-hidden="true"></i> Przycisk czerwony</button>
             <button type="button" data-insert-key="green" @click="open = false" class="{{ $mi }}"><i class="fa-solid fa-square w-4 text-center" style="color:#15803d" aria-hidden="true"></i> Przycisk zielony</button>
-            <button type="button" data-insert-key="bip" @click="open = false" class="{{ $mi }}"><i class="fa-solid fa-landmark w-4 text-center text-muted" aria-hidden="true"></i> Więcej informacji w BIP</button>
+            <hr class="my-1 border-gray-100" role="separator">
+            {{-- Bloki treści --}}
             <button type="button" id="{{ $editorId }}-box" @click="open = false" class="{{ $mi }}"><i class="fa-solid fa-vector-square w-4 text-center" aria-hidden="true"></i> Tekst z ramką</button>
             <button type="button" data-insert-key="note" @click="open = false" class="{{ $mi }}"><i class="fa-solid fa-triangle-exclamation w-4 text-center text-amber-500" aria-hidden="true"></i> Notatka / ostrzeżenie</button>
             <button type="button" data-insert-key="important" @click="open = false" class="{{ $mi }}"><i class="fa-solid fa-circle-info w-4 text-center text-blue-600" aria-hidden="true"></i> Ważne info</button>
-            <button type="button" id="{{ $editorId }}-docx-btn" @click="open = false" class="{{ $mi }}"><i class="fa-solid fa-file-word w-4 text-center text-blue-600" aria-hidden="true"></i> Importuj DOCX…</button>
+            <button type="button" data-insert-key="bip" @click="open = false" class="{{ $mi }}"><i class="fa-solid fa-landmark w-4 text-center text-muted" aria-hidden="true"></i> Więcej informacji w BIP</button>
+            <hr class="my-1 border-gray-100" role="separator">
+            {{-- Układ --}}
             @if ($useCkEditor)
                 <button type="button" id="{{ $editorId }}-columns" @click="open = false" class="{{ $mi }}"><i class="fa-solid fa-table-columns w-4 text-center" aria-hidden="true"></i> Układ 2 kolumn</button>
             @endif
             <button type="button" data-insert-key="accentLeft" @click="open = false" class="{{ $mi }}"><i class="fa-solid fa-align-left w-4 text-center" aria-hidden="true"></i> Sekcja akcentu (lewo)</button>
             <button type="button" data-insert-key="accentRight" @click="open = false" class="{{ $mi }}"><i class="fa-solid fa-align-right w-4 text-center" aria-hidden="true"></i> Sekcja akcentu (prawo)</button>
+            <hr class="my-1 border-gray-100" role="separator">
+            {{-- Inne --}}
             <button type="button" data-insert-key="table" @click="open = false" class="{{ $mi }}"><i class="fa-solid fa-table w-4 text-center" aria-hidden="true"></i> Tabela dostępna (WCAG)</button>
             @if ($eventBoxOptions->isNotEmpty())
-                <label for="{{ $editorId }}-event-box" class="mt-2 block px-3 pb-1 text-[0.65rem] font-bold uppercase tracking-wide text-muted">Ramka z wydarzeniem</label>
+                <hr class="my-1 border-gray-100" role="separator">
+                <label for="{{ $editorId }}-event-box" class="block px-3 pb-1 pt-0.5 text-[0.65rem] font-bold uppercase tracking-wide text-muted">Ramka z wydarzeniem</label>
                 <select id="{{ $editorId }}-event-box" @change="open = false" class="w-full rounded border-gray-300 px-2 py-1.5 text-xs font-bold text-ink focus:border-brand focus:ring-brand">
                     <option value="">— wybierz wydarzenie —</option>
                     @foreach ($eventBoxOptions as $ev)
@@ -126,36 +135,29 @@
             class="inline-flex items-center gap-2 rounded border border-gray-300 px-3 py-1.5 text-xs font-bold text-ink hover:border-brand hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
             <i class="fa-solid fa-link" aria-hidden="true"></i> Wstaw link <i class="fa-solid fa-chevron-down text-[0.6rem]" aria-hidden="true"></i>
         </button>
-        <div x-show="open" x-cloak class="absolute left-0 z-20 mt-1 w-64 rounded-lg border border-gray-200 bg-white p-2 shadow-lg" role="menu">
+        <div x-show="open" x-cloak class="absolute left-0 z-20 mt-1 w-64 rounded-lg border border-gray-200 bg-white p-1 shadow-lg" role="menu">
             <button type="button" id="{{ $editorId }}-ext-link" @click="open = false" class="{{ $mi }}"><i class="fa-solid fa-arrow-up-right-from-square w-4 text-center" aria-hidden="true"></i> Link zewnętrzny (nowa karta)</button>
             @if ($pages->isNotEmpty())
-                <button type="button"
-                    @click="window['__pmOpen_{{ $editorId }}']?.(); open = false"
-                    class="{{ $mi }}">
+                <button type="button" @click="window['__pmOpen_{{ $editorId }}']?.(); open = false" class="{{ $mi }}">
                     <i class="fa-solid fa-file-lines w-4 text-center" aria-hidden="true"></i> Wybierz stronę serwisu…
                 </button>
             @endif
             @if ($newsForPicker->isNotEmpty())
-                <button type="button"
-                    @click="window['__nmOpen_{{ $editorId }}']?.(); open = false"
-                    class="{{ $mi }}">
+                <button type="button" @click="window['__nmOpen_{{ $editorId }}']?.(); open = false" class="{{ $mi }}">
                     <i class="fa-solid fa-newspaper w-4 text-center" aria-hidden="true"></i> Wybierz news…
                 </button>
             @endif
             @if ($eventsForBox->isNotEmpty())
-                <button type="button"
-                    @click="window['__elOpen_{{ $editorId }}']?.(); open = false"
-                    class="{{ $mi }}">
+                <button type="button" @click="window['__elOpen_{{ $editorId }}']?.(); open = false" class="{{ $mi }}">
                     <i class="fa-solid fa-calendar-day w-4 text-center" aria-hidden="true"></i> Wybierz wydarzenie…
                 </button>
             @endif
-            <button type="button"
-                @click="window['__afOpen_{{ $editorId }}']?.(); open = false"
-                class="{{ $mi }}">
+            <button type="button" @click="window['__afOpen_{{ $editorId }}']?.(); open = false" class="{{ $mi }}">
                 <i class="fa-solid fa-file-arrow-down w-4 text-center" aria-hidden="true"></i> Plik do pobrania…
             </button>
             @if ($schedulePages->isNotEmpty())
-                <label for="{{ $editorId }}-schedule-cta" class="mt-2 block px-3 pb-1 text-[0.65rem] font-bold uppercase tracking-wide text-muted">Przycisk CTA do harmonogramu</label>
+                <hr class="my-1 border-gray-100" role="separator">
+                <label for="{{ $editorId }}-schedule-cta" class="block px-3 pb-1 pt-0.5 text-[0.65rem] font-bold uppercase tracking-wide text-muted">Przycisk CTA do harmonogramu</label>
                 <select id="{{ $editorId }}-schedule-cta" @change="open = false" class="w-full rounded border-gray-300 px-2 py-1.5 text-xs font-bold text-ink focus:border-brand focus:ring-brand">
                     <option value="">— wybierz harmonogram —</option>
                     @foreach ($schedulePages as $sp)
@@ -166,16 +168,15 @@
         </div>
     </div>
 
-    {{-- Menu „Style" --}}
+    {{-- Menu „Import" --}}
     <div class="relative" x-data="{ open: false }" @click.outside="open = false" @keydown.escape="open = false">
         <button type="button" @click="open = !open" :aria-expanded="open"
             class="inline-flex items-center gap-2 rounded border border-gray-300 px-3 py-1.5 text-xs font-bold text-ink hover:border-brand hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
-            <i class="fa-solid fa-a" aria-hidden="true"></i> Style <i class="fa-solid fa-chevron-down text-[0.6rem]" aria-hidden="true"></i>
+            <i class="fa-solid fa-file-import" aria-hidden="true"></i> Import <i class="fa-solid fa-chevron-down text-[0.6rem]" aria-hidden="true"></i>
         </button>
-        <div x-show="open" x-cloak class="absolute left-0 z-20 mt-1 w-80 rounded-lg border border-gray-200 bg-white p-1 shadow-lg" role="menu">
-            <button type="button" id="{{ $editorId }}-sronly-btn" @click="open = false" class="{{ $mi }}">
-                <i class="fa-solid fa-eye-slash w-4 text-center text-violet-600" aria-hidden="true"></i> Tylko czytnik ekranu (sr-only)
-            </button>
+        <div x-show="open" x-cloak class="absolute left-0 z-20 mt-1 w-52 rounded-lg border border-gray-200 bg-white p-1 shadow-lg" role="menu">
+            <button type="button" id="{{ $editorId }}-docx-btn" @click="open = false" class="{{ $mi }}"><i class="fa-solid fa-file-word w-4 text-center text-blue-600" aria-hidden="true"></i> Importuj DOCX (Word)…</button>
+            <button type="button" id="{{ $editorId }}-txt-btn" @click="open = false" class="{{ $mi }}"><i class="fa-solid fa-file-lines w-4 text-center text-muted" aria-hidden="true"></i> Importuj TXT…</button>
         </div>
     </div>
 
@@ -185,9 +186,22 @@
             class="inline-flex items-center gap-2 rounded border border-gray-300 px-3 py-1.5 text-xs font-bold text-ink hover:border-brand hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
             <i class="fa-solid fa-hashtag" aria-hidden="true"></i> Kotwice <i class="fa-solid fa-chevron-down text-[0.6rem]" aria-hidden="true"></i>
         </button>
-        <div x-show="open" x-cloak class="absolute left-0 z-20 mt-1 w-52 rounded-lg border border-gray-200 bg-white p-2 shadow-lg" role="menu">
+        <div x-show="open" x-cloak class="absolute left-0 z-20 mt-1 w-52 rounded-lg border border-gray-200 bg-white p-1 shadow-lg" role="menu">
             <button type="button" @click="window['__anchorInsertOpen_{{ $editorId }}']?.(); open = false" class="{{ $mi }}"><i class="fa-solid fa-anchor w-4 text-center" aria-hidden="true"></i> Wstaw kotwicę</button>
             <button type="button" @click="window['__anchorLinkOpen_{{ $editorId }}']?.(); open = false" class="{{ $mi }}"><i class="fa-solid fa-link w-4 text-center" aria-hidden="true"></i> Link do kotwicy</button>
+        </div>
+    </div>
+
+    {{-- Menu „Style" --}}
+    <div class="relative" x-data="{ open: false }" @click.outside="open = false" @keydown.escape="open = false">
+        <button type="button" @click="open = !open" :aria-expanded="open"
+            class="inline-flex items-center gap-2 rounded border border-gray-300 px-3 py-1.5 text-xs font-bold text-ink hover:border-brand hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+            <i class="fa-solid fa-a" aria-hidden="true"></i> Style <i class="fa-solid fa-chevron-down text-[0.6rem]" aria-hidden="true"></i>
+        </button>
+        <div x-show="open" x-cloak class="absolute left-0 z-20 mt-1 w-72 rounded-lg border border-gray-200 bg-white p-1 shadow-lg" role="menu">
+            <button type="button" id="{{ $editorId }}-sronly-btn" @click="open = false" class="{{ $mi }}">
+                <i class="fa-solid fa-eye-slash w-4 text-center text-violet-600" aria-hidden="true"></i> Tylko czytnik ekranu (sr-only)
+            </button>
         </div>
     </div>
 
@@ -1514,7 +1528,7 @@
                     convert_urls: false,
                     plugins: 'advlist autolink lists link anchor image charmap preview searchreplace visualblocks code fullscreen media table help wordcount accordion emoticons autosave quickbars',
                     block_formats: 'Akapit=p; Nagłówek 2=h2; Nagłówek 3=h3; Nagłówek 4=h4',
-                    toolbar: 'undo redo | blocks stylesmenu | bold italic underline forecolor backcolor | alignleft aligncenter alignright | bullist numlist | link table media accordion | insertmenu linkmenu importmenu | clearformat | charmap emoticons | searchreplace visualblocks fullscreen preview | a11ycheck help | code{{ $historyJsonUrl ? " | historyrevisions" : "" }}',
+                    toolbar: 'undo redo | blocks | bold italic underline forecolor backcolor | alignleft aligncenter alignright | bullist numlist | link table media accordion | insertmenu linkmenu importmenu stylesmenu | clearformat | charmap emoticons | searchreplace visualblocks fullscreen preview | a11ycheck help | code{{ $historyJsonUrl ? " | historyrevisions" : "" }}',
                     toolbar_mode: 'wrap',
                     statusbar: true,
                     paste_data_images: true,
@@ -1586,24 +1600,33 @@
                             text: 'Wstaw', icon: 'plus', tooltip: 'Wstaw element',
                             fetch: function (cb) {
                                 var items = [
+                                    // Multimedia
                                     { type: 'menuitem', text: 'Obraz z biblioteki', icon: 'image', onAction: function () { document.getElementById('{{ $editorId }}-media').click(); } },
                                     { type: 'menuitem', text: 'Galeria zdjęć', icon: 'gallery', onAction: function () { window['__gmOpen_{{ $editorId }}']?.(); } },
+                                    { type: 'separator' },
+                                    // Przyciski
                                     { type: 'menuitem', text: 'Przycisk CTA', onAction: function () { editor.insertContent(ctaHtml); } },
                                     { type: 'menuitem', text: 'Przycisk czerwony', onAction: function () { editor.insertContent(snippets.red); } },
                                     { type: 'menuitem', text: 'Przycisk zielony', onAction: function () { editor.insertContent(snippets.green); } },
-                                    { type: 'menuitem', text: 'Więcej informacji w BIP', onAction: function () { editor.insertContent(snippets.bip); } },
+                                    { type: 'separator' },
+                                    // Bloki treści
                                     { type: 'menuitem', text: 'Tekst z ramką', onAction: function () { editor.insertContent(boxHtml); } },
                                     { type: 'menuitem', text: 'Notatka / ostrzeżenie', onAction: function () { editor.insertContent(snippets.note); } },
                                     { type: 'menuitem', text: 'Ważne info', icon: 'info', onAction: function () { editor.insertContent(snippets.important); } },
-                                    { type: 'menuitem', text: 'Importuj plik DOCX…', icon: 'upload', onAction: function () { document.getElementById('{{ $editorId }}-docx-input').click(); } },
+                                    { type: 'menuitem', text: 'Więcej informacji w BIP', onAction: function () { editor.insertContent(snippets.bip); } },
+                                    { type: 'separator' },
+                                    // Układ
+                                    { type: 'menuitem', text: 'Układ 2 kolumn', onAction: function () { editor.insertContent(columnsHtml); } },
                                     { type: 'menuitem', text: 'Sekcja akcentu (lewo)', onAction: function () { editor.insertContent(snippets.accentLeft); } },
                                     { type: 'menuitem', text: 'Sekcja akcentu (prawo)', onAction: function () { editor.insertContent(snippets.accentRight); } },
-                                    { type: 'menuitem', text: 'Układ 2 kolumn', onAction: function () { editor.insertContent(columnsHtml); } },
+                                    { type: 'separator' },
+                                    // Inne
                                     { type: 'menuitem', text: 'Linia pozioma', onAction: function () { editor.insertContent('<hr>'); } },
                                     { type: 'menuitem', text: 'Tabela dostępna (WCAG)', icon: 'table', onAction: function () { editor.insertContent(snippets.table); } },
                                     { type: 'menuitem', text: 'Wstaw kotwicę', icon: 'anchor', onAction: function () { window['__anchorInsertOpen_{{ $editorId }}']?.(); } },
                                 ];
                                 if (eventBoxes.length) {
+                                    items.push({ type: 'separator' });
                                     items.push({ type: 'nestedmenuitem', text: 'Ramka z wydarzeniem', getSubmenuItems: function () {
                                         return eventBoxes.map(function (ev) {
                                             return { type: 'menuitem', text: ev.title, onAction: function () { editor.insertContent(ev.html); } };
@@ -1641,6 +1664,7 @@
                                 items.push({ type: 'menuitem', text: 'Plik do pobrania — wybierz z listy…', icon: 'download', onAction: function () {
                                     window['__afOpen_{{ $editorId }}']?.();
                                 }});
+                                items.push({ type: 'separator' });
                                 items.push({ type: 'menuitem', text: 'Link do kotwicy…', icon: 'anchor', onAction: function () {
                                     window['__anchorLinkOpen_{{ $editorId }}']?.();
                                 }});
@@ -1954,6 +1978,11 @@
 
     function triggerPick() { if (docxInput) docxInput.click(); }
     if (docxBtn) docxBtn.addEventListener('click', triggerPick);
+
+    // Przycisk TXT w CKEditor (TinyMCE używa importmenu).
+    var txtBtnCk = document.getElementById('{{ $editorId }}-txt-btn');
+    var txtInputEl = document.getElementById('{{ $editorId }}-txt-input');
+    if (txtBtnCk && txtInputEl) txtBtnCk.addEventListener('click', function () { txtInputEl.click(); });
 
     if (!docxInput) return;
 
