@@ -14,6 +14,17 @@
                     Dzień dobry, {{ auth()->user()->name }}
                 </h1>
                 <p class="mt-1 text-sm text-white/75">{{ $siteSettings->site_name }}</p>
+                <div class="mt-3 flex flex-wrap gap-x-4 gap-y-1">
+                    @foreach ($stats->take(5) as $stat)
+                        <a href="{{ $stat['route'] }}" class="flex items-center gap-1.5 text-sm text-white/80 hover:text-white">
+                            <span class="text-base font-bold text-white">{{ $stat['count'] }}</span>
+                            <span>{{ $stat['label'] }}</span>
+                        </a>
+                    @endforeach
+                    @if ($stats->count() > 5)
+                        <span class="text-sm text-white/50">+{{ $stats->count() - 5 }} więcej</span>
+                    @endif
+                </div>
             </div>
             <div class="flex flex-wrap items-center gap-2">
                 <a href="{{ route('home') }}" target="_blank" rel="noopener"
@@ -28,28 +39,6 @@
                 </a>
             </div>
         </div>
-    </div>
-
-    {{-- ── Statystyki ───────────────────────────────────────────────── --}}
-    <div class="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-        @foreach ($stats as $stat)
-            <a href="{{ $stat['route'] }}"
-                class="group flex flex-col gap-2 rounded-xl border border-gray-200 bg-white p-4 shadow-sm transition hover:border-brand hover:shadow-md">
-                <div class="flex items-center justify-between">
-                    <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-light text-brand transition group-hover:bg-brand group-hover:text-white">
-                        <i class="fa-solid {{ $stat['icon'] }} text-xs" aria-hidden="true"></i>
-                    </span>
-                    <i class="fa-solid fa-chevron-right text-[10px] text-gray-300 transition group-hover:text-brand" aria-hidden="true"></i>
-                </div>
-                <div>
-                    <p class="text-xl font-bold leading-none text-ink">{{ $stat['count'] }}</p>
-                    <p class="mt-0.5 text-xs font-bold text-ink">{{ $stat['label'] }}</p>
-                    @if ($stat['sub'])
-                        <p class="mt-0.5 text-[11px] text-muted">{{ $stat['sub'] }}</p>
-                    @endif
-                </div>
-            </a>
-        @endforeach
     </div>
 
     {{-- ── Główna siatka ────────────────────────────────────────────── --}}
