@@ -257,6 +257,11 @@ class PageController extends Controller
             'meta_title' => ['nullable', 'string', 'max:255'],
             'meta_description' => ['nullable', 'string', 'max:300'],
             'content' => ['nullable', 'string'],
+            'content_image' => ['nullable', 'string', 'max:1000'],
+            'content_image_file' => ['nullable', 'image', 'max:8192'],
+            'content_image_alt' => ['nullable', 'string', 'max:255'],
+            'content_image_width' => ['nullable', 'string', 'max:30'],
+            'remove_content_image' => ['sometimes', 'boolean'],
             'order' => ['nullable', 'integer', 'min:0'],
             'disabled_message' => ['nullable', 'string', 'max:2000'],
             'wip_mode' => ['nullable', Rule::in(array_keys(Page::WIP_MODES))],
@@ -528,6 +533,20 @@ class PageController extends Controller
         }
 
         unset($data['hub_hero_file']);
+
+        // Zdjęcie w treści: wgrany plik ma pierwszeństwo nad URL; checkbox usuwa.
+        if ($request->hasFile('content_image_file')) {
+            $data['content_image'] = \Illuminate\Support\Facades\Storage::disk('public')->url(
+                $request->file('content_image_file')->store('pages', 'public')
+            );
+        } elseif ($request->boolean('remove_content_image')) {
+            $data['content_image'] = null;
+        } else {
+            $data['content_image'] = trim((string) ($data['content_image'] ?? '')) ?: null;
+        }
+        $data['content_image_alt'] = trim((string) ($data['content_image_alt'] ?? '')) ?: null;
+        $data['content_image_width'] = trim((string) ($data['content_image_width'] ?? '')) ?: null;
+        unset($data['content_image_file'], $data['remove_content_image']);
 
         // „Prezentacja tego, co było": nazwa poprzednika + wstęp; poza typem czyścimy.
         if ($data['type'] === 'legacy') {

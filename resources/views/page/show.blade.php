@@ -63,6 +63,8 @@
 
             <div class="grid gap-10 md:grid-cols-[1fr_300px]">
                 <div class="min-w-0">
+                    @include('partials.page-content-image')
+
                     @if ($page->content)
                         <div class="prose max-w-none text-ink">{!! $page->content !!}</div>
                     @endif
@@ -143,6 +145,8 @@
                 </div>
 
                 <h1 class="mb-6 text-3xl font-bold text-ink">{{ $page->title }}</h1>
+
+                @include('partials.page-content-image')
 
                 @if ($page->content)
                     <div class="prose max-w-none text-ink">{!! $page->content !!}</div>
@@ -532,6 +536,8 @@
 
         <h1 class="mb-6 text-3xl font-bold text-ink">{{ $page->title }}</h1>
 
+        @include('partials.page-content-image')
+
         @if ($page->content)
             <div class="prose mb-6 max-w-none text-ink">{!! $page->content !!}</div>
         @endif
@@ -690,6 +696,7 @@
             @endif
 
             {{-- Treść i dodatkowe informacje --}}
+            @include('partials.page-content-image')
             @if ($page->content)
                 <div class="prose max-w-none text-ink">{!! $page->content !!}</div>
             @endif
@@ -722,6 +729,7 @@
     </section>
 
     <section class="mx-auto max-w-4xl px-4 py-12">
+        @include('partials.page-content-image')
         @if ($page->content)
             <div class="prose max-w-none text-ink">{!! $page->content !!}</div>
         @endif
@@ -738,6 +746,8 @@
         <div class="grid gap-10 {{ $showSideNav ? 'md:grid-cols-[1fr_220px]' : '' }}">
             <div>
                 <h1 class="mb-6 text-3xl font-bold text-ink">{{ $page->title }}</h1>
+
+                @include('partials.page-content-image')
 
                 <div class="prose max-w-none text-ink">{!! $page->content !!}</div>
 

@@ -162,6 +162,7 @@ class Page extends Model
         'about_motto', 'about_motto_author', 'about_intro', 'about_stats', 'about_timeline', 'about_values', 'about_team', 'about_section_order', 'about_partner_ids', 'about_documents_intro', 'about_documents_bip_url', 'about_press_intro', 'about_press', 'about_faq_visible',
         'faq_intro', 'faq_items', 'bip_move_url', 'bip_move_note', 'show_gallery',
         'training_manager_name', 'training_manager_title', 'training_ris_number', 'training_bur_number', 'training_extra_info', 'training_bur_note',
+        'content_image', 'content_image_alt', 'content_image_width',
         'access_mode', 'access_password', 'hub_hero', 'hub_intro', 'hub_links',
         'legacy_name', 'legacy_intro',
     ];

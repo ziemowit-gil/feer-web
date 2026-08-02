@@ -101,6 +101,55 @@
                         @include('admin.partials.editor', ['name' => 'content', 'value' => old('content', $page->content), 'revisionable' => $page->exists ? ['type' => 'page', 'id' => $page->id] : null])
                         @error('content') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
+
+                    {{-- Zdjęcie w treści --}}
+                    <div>
+                        <p class="mb-1 text-sm font-bold">Zdjęcie w treści <span class="font-normal text-muted">(opcjonalne)</span></p>
+                        <p class="mb-3 text-xs text-muted">Pojawia się poniżej tytułu, przed główną treścią strony. Ustaw szerokość, by dopasować do układu.</p>
+                        <div class="flex items-start gap-4">
+                            @if (filled(old('content_image', $page->content_image ?? null)))
+                                <img src="{{ old('content_image', $page->content_image) }}" alt=""
+                                    class="h-20 w-32 shrink-0 rounded object-cover">
+                                <label class="mt-1 flex items-center gap-1.5 text-sm text-red-600">
+                                    <input type="checkbox" name="remove_content_image" value="1"
+                                        class="rounded border-gray-300 text-brand focus:ring-brand">
+                                    Usuń zdjęcie
+                                </label>
+                            @else
+                                <span class="flex h-20 w-32 shrink-0 items-center justify-center rounded bg-gray-100 text-gray-300" aria-hidden="true">
+                                    <i class="fa-solid fa-image text-2xl"></i>
+                                </span>
+                            @endif
+                            <div class="min-w-0 flex-1 space-y-2">
+                                <input type="file" name="content_image_file" accept="image/*"
+                                    aria-label="Wgraj zdjęcie"
+                                    class="block w-full text-sm text-muted file:mr-3 file:rounded file:border-0 file:bg-brand-light file:px-3 file:py-1.5 file:text-sm file:font-bold file:text-brand">
+                                <input type="text" name="content_image" value="{{ old('content_image', $page->content_image ?? '') }}"
+                                    placeholder="…albo wklej URL zdjęcia"
+                                    class="w-full rounded border-gray-300 text-xs focus:border-brand focus:ring-brand">
+                                <div class="grid gap-3 sm:grid-cols-2">
+                                    <div>
+                                        <label for="content_image_alt" class="mb-1 block text-xs font-bold">Tekst alternatywny (dostępność)</label>
+                                        <input type="text" id="content_image_alt" name="content_image_alt"
+                                            value="{{ old('content_image_alt', $page->content_image_alt ?? '') }}"
+                                            placeholder="Opisz co przedstawia zdjęcie"
+                                            class="w-full rounded border-gray-300 text-xs focus:border-brand focus:ring-brand">
+                                    </div>
+                                    <div>
+                                        <label for="content_image_width" class="mb-1 block text-xs font-bold">Szerokość</label>
+                                        <select id="content_image_width" name="content_image_width"
+                                            class="w-full rounded border-gray-300 text-xs focus:border-brand focus:ring-brand">
+                                            <option value="" {{ old('content_image_width', $page->content_image_width ?? '') === '' ? 'selected' : '' }}>Pełna (100%)</option>
+                                            <option value="max-w-2xl" {{ old('content_image_width', $page->content_image_width ?? '') === 'max-w-2xl' ? 'selected' : '' }}>Duże (ok. 672px)</option>
+                                            <option value="max-w-xl" {{ old('content_image_width', $page->content_image_width ?? '') === 'max-w-xl' ? 'selected' : '' }}>Średnie (ok. 576px)</option>
+                                            <option value="max-w-lg" {{ old('content_image_width', $page->content_image_width ?? '') === 'max-w-lg' ? 'selected' : '' }}>Małe (ok. 512px)</option>
+                                            <option value="max-w-xs" {{ old('content_image_width', $page->content_image_width ?? '') === 'max-w-xs' ? 'selected' : '' }}>Bardzo małe (ok. 320px)</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
