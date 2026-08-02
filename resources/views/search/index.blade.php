@@ -22,6 +22,24 @@
                 <button type="submit" class="rounded bg-brand px-5 py-2 font-bold text-white hover:bg-brand-dark focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2">Szukaj</button>
             </div>
 
+            <fieldset class="mt-3">
+                <legend class="sr-only">Zakres wyszukiwania</legend>
+                <div class="flex flex-wrap gap-x-5 gap-y-2" role="radiogroup" aria-label="Zakres wyszukiwania">
+                    @foreach ([
+                        '' => 'Cały serwis',
+                        'aktualnosci' => 'Tylko aktualności',
+                        'materialy' => 'Tylko materiały edukacyjne',
+                    ] as $val => $label)
+                        <label class="flex cursor-pointer items-center gap-1.5 text-sm text-ink select-none">
+                            <input type="radio" name="typ" value="{{ $val }}"
+                                {{ $typ === $val ? 'checked' : '' }}
+                                class="h-4 w-4 border-gray-300 text-brand focus:ring-brand">
+                            {{ $label }}
+                        </label>
+                    @endforeach
+                </div>
+            </fieldset>
+
             <div class="mt-3 flex items-center gap-2">
                 <input
                     id="search-archiwum"

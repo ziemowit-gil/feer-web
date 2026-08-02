@@ -23,6 +23,7 @@ class SearchController extends Controller
     {
         $q = trim((string) $request->query('q', ''));
         $archive = (bool) $request->query('archiwum', false);
+        $typ = in_array($request->query('typ'), ['aktualnosci', 'materialy']) ? $request->query('typ') : '';
         $groups = [];
         $searched = mb_strlen($q) >= self::MIN;
 
@@ -30,7 +31,7 @@ class SearchController extends Controller
             $settings = SiteSetting::current();
             $like = '%'.$this->escapeLike($q).'%';
 
-            if ($settings->isModuleEnabled('pages')) {
+            if ($typ === '' && $settings->isModuleEnabled('pages')) {
                 $groups['Strony'] = Page::where('is_published', true)->where('is_disabled', false)
                     ->whereNotIn('type', ['internal', 'internal_hub'])
                     ->where(fn ($w) => $w->where('title', 'like', $like)->orWhere('content', 'like', $like))
@@ -38,21 +39,21 @@ class SearchController extends Controller
                     ->map(fn ($p) => $this->item($p->title, route('page.show', $p), $p->content, $p->created_at));
             }
 
-            if ($settings->isModuleEnabled('news')) {
+            if (($typ === '' || $typ === 'aktualnosci') && $settings->isModuleEnabled('news')) {
                 $groups['Aktualności'] = News::published()
                     ->where(fn ($w) => $w->where('title', 'like', $like)->orWhere('excerpt', 'like', $like)->orWhere('content', 'like', $like))
                     ->orderByDesc('published_at')->limit(self::PER_GROUP)->get()
                     ->map(fn ($n) => $this->item($n->title, route('news.show', $n), $n->excerpt ?: $n->content, $n->published_at));
             }
 
-            if ($settings->isModuleEnabled('projects')) {
+            if ($typ === '' && $settings->isModuleEnabled('projects')) {
                 $groups['Projekty'] = Project::where('is_published', true)
                     ->where(fn ($w) => $w->where('title', 'like', $like)->orWhere('excerpt', 'like', $like)->orWhere('content', 'like', $like)->orWhere('for_whom', 'like', $like))
                     ->orderBy('title')->limit(self::PER_GROUP)->get()
                     ->map(fn ($p) => $this->item($p->title, route('projects.show', $p), $p->excerpt ?: $p->content, $p->created_at));
             }
 
-            if ($settings->isModuleEnabled('materials')) {
+            if (($typ === '' || $typ === 'materialy') && $settings->isModuleEnabled('materials')) {
                 $materialsQuery = EducationalMaterial::where('is_published', true)
                     ->where(fn ($w) => $w->where('title', 'like', $like)->orWhere('description', 'like', $like)->orWhere('target_group', 'like', $like))
                     ->orderBy('order')->limit(self::PER_GROUP);
@@ -68,14 +69,16 @@ class SearchController extends Controller
 
             // Blog działa na osobnym połączeniu — gdyby było niedostępne, nie
             // przerywamy całej wyszukiwarki.
-            try {
-                $groups['Wiem FEER (blog)'] = BlogArticle::where('is_published', true)->where('is_disabled', false)
-                    ->where('published_at', '<=', now())
-                    ->where(fn ($w) => $w->where('title', 'like', $like)->orWhere('excerpt', 'like', $like)->orWhere('body', 'like', $like))
-                    ->orderByDesc('published_at')->limit(self::PER_GROUP)->get()
-                    ->map(fn ($a) => $this->item($a->title, route('blog.show', $a), $a->excerpt ?: $a->body, $a->published_at, $a->author_name));
-            } catch (\Throwable $e) {
-                report($e);
+            if ($typ === '') {
+                try {
+                    $groups['Wiem FEER (blog)'] = BlogArticle::where('is_published', true)->where('is_disabled', false)
+                        ->where('published_at', '<=', now())
+                        ->where(fn ($w) => $w->where('title', 'like', $like)->orWhere('excerpt', 'like', $like)->orWhere('body', 'like', $like))
+                        ->orderByDesc('published_at')->limit(self::PER_GROUP)->get()
+                        ->map(fn ($a) => $this->item($a->title, route('blog.show', $a), $a->excerpt ?: $a->body, $a->published_at, $a->author_name));
+                } catch (\Throwable $e) {
+                    report($e);
+                }
             }
         }
 
@@ -83,7 +86,7 @@ class SearchController extends Controller
         $groups = array_filter($groups, fn ($g) => $g->isNotEmpty());
         $total = collect($groups)->sum(fn ($g) => $g->count());
 
-        return view('search.index', compact('q', 'groups', 'total', 'searched', 'archive'));
+        return view('search.index', compact('q', 'groups', 'total', 'searched', 'archive', 'typ'));
     }
 
     private function item(string $title, string $url, ?string $body, ?\Illuminate\Support\Carbon $date = null, ?string $author = null, bool $archival = false): array
