@@ -10,7 +10,7 @@
                 $ob      = $onBrand ?? false;
                 $hoverW  = $ob && ($siteSettings->wide_mission_nav_hover_white  ?? true);
                 $activeW = $ob && ($siteSettings->wide_mission_nav_active_white ?? true);
-                $hoverCls  = $hoverW  ? 'hover:border-white hover:text-white' : 'hover:border-brand hover:text-brand';
+                $hoverCls  = $hoverW  ? 'hover:border-white hover:text-white hover:underline' : 'hover:border-brand hover:text-brand';
                 $activeCls = $pageActive ? ($activeW ? 'border-white' : 'border-brand text-brand') : 'border-transparent';
             @endphp
             <a href="{{ route('page.show', $page) }}"

@@ -11,7 +11,7 @@
         $hoverW  = $ob && ($siteSettings->wide_mission_nav_hover_white  ?? true);
         $activeW = $ob && ($siteSettings->wide_mission_nav_active_white ?? true);
         $iconsW  = $ob && ($siteSettings->wide_mission_nav_icons_white  ?? false);
-        $hoverTxtCls = $hoverW ? 'hover:text-white'              : 'hover:text-brand';
+        $hoverTxtCls = $hoverW ? 'hover:text-white hover:underline'              : 'hover:text-brand';
         $activeBdr   = $ob ? ($activeW ? 'border-white' : 'border-brand text-brand') : 'border-brand text-brand';
         $iconCls     = $iconsW ? 'text-white hover:text-white/80' : 'text-brand hover:text-brand';
     @endphp

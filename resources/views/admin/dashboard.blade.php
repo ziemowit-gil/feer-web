@@ -162,30 +162,15 @@
                     <div class="border-b border-gray-100 px-5 py-3.5">
                         <h2 class="text-sm font-bold text-ink">Utwórz nowe</h2>
                     </div>
-                    <ul class="divide-y divide-gray-50 p-2">
+                    <div class="grid grid-cols-2 gap-2 p-3">
                         @foreach ($shortcuts as $s)
-                            @php
-                                $colors = [
-                                    'blue'   => 'bg-blue-50 text-blue-500',
-                                    'green'  => 'bg-green-50 text-green-600',
-                                    'purple' => 'bg-purple-50 text-purple-500',
-                                    'orange' => 'bg-orange-50 text-orange-500',
-                                    'slate'  => 'bg-slate-100 text-slate-500',
-                                    'rose'   => 'bg-rose-50 text-rose-500',
-                                ];
-                            @endphp
-                            <li>
-                                <a href="{{ $s['route'] }}"
-                                    class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-ink transition hover:bg-gray-50 hover:text-brand">
-                                    <span class="flex h-7 w-7 flex-none items-center justify-center rounded-md {{ $colors[$s['color']] }}">
-                                        <i class="fa-solid {{ $s['icon'] }} text-[11px]" aria-hidden="true"></i>
-                                    </span>
-                                    {{ $s['label'] }}
-                                    <i class="fa-solid fa-plus ml-auto text-[10px] text-gray-300" aria-hidden="true"></i>
-                                </a>
-                            </li>
+                            <a href="{{ $s['route'] }}"
+                                class="group flex flex-col items-center gap-1.5 rounded-lg border border-brand/20 bg-brand/5 px-2 py-3 text-center text-xs font-bold text-brand transition hover:border-brand/0 hover:bg-brand hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
+                                <i class="fa-solid {{ $s['icon'] }} text-base text-brand transition group-hover:text-white" aria-hidden="true"></i>
+                                {{ $s['label'] }}
+                            </a>
                         @endforeach
-                    </ul>
+                    </div>
                 </div>
             @endif
 
