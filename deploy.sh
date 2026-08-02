@@ -134,7 +134,7 @@ fi
 
 echo "  [4/7] Composer install..."
 COMPOSER_PATH="$(command -v "$COMPOSER_BIN" 2>/dev/null || echo "$COMPOSER_BIN")"
-"$PHP_BIN" "$COMPOSER_PATH" install \
+"$PHP_BIN" "$COMPOSER_PATH" update \
     --no-interaction \
     --no-dev \
     --optimize-autoloader \
