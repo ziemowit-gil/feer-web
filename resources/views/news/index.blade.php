@@ -181,6 +181,7 @@
                                 @if ($item->excerpt)
                                     <p class="mt-1 text-sm text-muted">{{ $item->excerpt }}</p>
                                 @endif
+                                <span class="mt-2 inline-block text-sm font-bold text-brand" aria-hidden="true">Czytaj więcej →</span>
                             </a>
                         @empty
                             @if ($activeCategory)

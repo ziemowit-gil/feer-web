@@ -35,6 +35,10 @@
 
     @if ($msOnly && ! $emergency)
         {{-- Tryb "tylko MS": wyświetl wyłącznie przycisk Microsoft --}}
+        <div class="mb-5 rounded-lg border border-blue-100 bg-blue-50 px-4 py-3 text-sm text-blue-900">
+            <p>Logowanie do panelu edytora i administratora CMS odbywa się za pomocą usługi jednokrotnego logowania — tymi samymi danymi, co do poczty elektronicznej organizacji.</p>
+            <p class="mt-2 font-medium">Użyj przycisku niżej i zaloguj się tak samo jak do poczty.</p>
+        </div>
         <a href="{{ route('auth.microsoft.redirect') }}"
             class="flex w-full items-center justify-center gap-2.5 rounded-lg bg-brand px-5 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-brand-dark hover:shadow-md active:scale-[0.99]">
             <svg class="h-5 w-5" viewBox="0 0 21 21" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
@@ -105,6 +109,8 @@
                 lub
                 <span class="h-px flex-1 bg-gray-200"></span>
             </div>
+
+            <p class="mb-3 text-sm text-muted">Użyj przycisku niżej i zaloguj się tak samo jak do poczty.</p>
 
             <a href="{{ route('auth.microsoft.redirect') }}"
                 class="flex w-full items-center justify-center gap-2.5 rounded-lg border border-gray-300 bg-white px-5 py-2.5 text-sm font-bold text-ink shadow-sm transition hover:bg-gray-50 hover:shadow-md active:scale-[0.99]">
