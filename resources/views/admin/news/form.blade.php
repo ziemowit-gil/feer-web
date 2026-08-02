@@ -346,8 +346,8 @@
                                 <div x-show="cropMode" x-cloak class="space-y-3">
                                     <p class="text-sm font-medium text-ink">Zaznacz obszar do zachowania</p>
                                     <p class="text-xs text-muted">Przeciągnij ramkę lub jej narożniki, aby wybrać kadr.</p>
-                                    <div class="max-h-72 overflow-hidden rounded-lg border border-gray-200 bg-gray-50">
-                                        <img :src="cropImgSrc" data-crop-img alt="" class="block max-w-full">
+                                    <div class="rounded-lg border border-gray-200 bg-gray-50" style="max-height:320px;">
+                                        <img :src="cropImgSrc" data-crop-img alt="" style="display:block;max-width:100%;max-height:320px;">
                                     </div>
                                     <div class="flex gap-2 pt-1">
                                         <button type="button" @click="confirmCrop()"
