@@ -10,11 +10,11 @@
     @endphp
 
     <div class="mb-6 flex flex-col items-center text-center">
-        <span class="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-brand-light text-brand">
-            <i class="fa-solid fa-lock"></i>
-        </span>
+        <p class="mb-3 text-3xl leading-none">
+            <span style="font-family:'Pacifico',cursive;color:var(--color-brand)">We</span><span style="font-family:'Lato',sans-serif;font-weight:700">CMS</span>
+        </p>
         <h1 class="text-xl font-bold text-ink">Zaloguj się</h1>
-        <p class="mt-1 text-sm text-muted">Panel administracyjny — {{ $siteSettings->site_name }}</p>
+        <p class="mt-1 text-sm text-muted">{{ $siteSettings->site_name }}</p>
     </div>
 
     @if ($emergency)

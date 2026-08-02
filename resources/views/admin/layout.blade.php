@@ -6,6 +6,9 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'Panel administracyjny') — {{ $siteSettings->site_name }}</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Pacifico&family=Lato:wght@700&display=swap">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @php $brandPalette = $siteSettings->brandPalette(); @endphp
     <style>
@@ -55,7 +58,10 @@
             @else
                 <span class="flex h-9 w-9 flex-none items-center justify-center rounded bg-brand text-sm font-bold text-white">{{ mb_substr($siteSettings->site_name, 0, 1) }}</span>
             @endif
-            <span class="brand-label min-w-0 font-bold leading-tight">Panel<br><span class="text-xs font-normal text-muted">{{ $siteSettings->site_name }}</span></span>
+            <span class="brand-label min-w-0 leading-tight">
+                <span style="font-family:'Pacifico',cursive;color:var(--color-brand)">We</span><span style="font-family:'Lato',sans-serif;font-weight:700">CMS</span>
+                <br><span class="text-xs font-normal text-muted">Autorski CMS dla NGO</span>
+            </span>
         </div>
 
         @php

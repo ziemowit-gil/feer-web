@@ -45,9 +45,12 @@
 
         {{-- Nagłówek drawera --}}
         <div class="flex items-center justify-between border-b border-white/10 px-4 py-4">
-            <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-2.5 font-bold text-white hover:text-white/80">
+            <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-2.5 text-white hover:text-white/80">
                 <i class="fa-solid fa-gauge text-brand" aria-hidden="true"></i>
-                Panel administracyjny
+                <span class="leading-tight">
+                    <span style="font-family:'Pacifico',cursive">We</span><span style="font-family:'Lato',sans-serif;font-weight:700">CMS</span>
+                    <span class="block text-[10px] font-normal text-white/50">Autorski CMS dla NGO</span>
+                </span>
             </a>
             <button type="button" @click="open = false"
                 class="flex h-8 w-8 items-center justify-center rounded text-white/50 hover:bg-white/10 hover:text-white"

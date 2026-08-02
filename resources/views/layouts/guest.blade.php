@@ -8,7 +8,18 @@
     <title>@hasSection('title')@yield('title') — @endif{{ $siteSettings->site_name }}</title>
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Pacifico&family=Lato:wght@700&display=swap">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @php $brandPalette = $siteSettings->brandPalette(); @endphp
+    <style>
+        :root {
+            --color-brand:       {{ $brandPalette['color'] }};
+            --color-brand-dark:  {{ $brandPalette['dark'] }};
+            --color-brand-light: {{ $brandPalette['light'] }};
+        }
+    </style>
 </head>
 <body class="min-h-screen bg-white text-ink antialiased">
     <div class="flex min-h-screen flex-col lg:flex-row">
@@ -33,6 +44,10 @@
             </div>
 
             <div class="relative hidden lg:block">
+                <p class="mb-2 text-4xl leading-none">
+                    <span style="font-family:'Pacifico',cursive">We</span><span style="font-family:'Lato',sans-serif;font-weight:700">CMS</span>
+                </p>
+                <p class="mb-6 text-sm text-white/60">Autorski CMS dla NGO</p>
                 <h2 class="max-w-md text-3xl font-bold leading-tight">@yield('brand_heading', 'Witaj ponownie')</h2>
                 <p class="mt-4 max-w-md text-white/80">@yield('brand_lead', 'Zaloguj się, aby kontynuować.')</p>
             </div>
