@@ -62,7 +62,6 @@
 
     @include('partials.topbar')
     @include('partials.header')
-    @include('partials.admin-bar')
 
     <main id="main-content" class="flex-1">
         @hasSection('breadcrumbs')
@@ -76,5 +75,6 @@
 
     @include('partials.lightbox')
     @include('partials.cookie-banner')
+    @include('partials.admin-bar')
 </body>
 </html>
