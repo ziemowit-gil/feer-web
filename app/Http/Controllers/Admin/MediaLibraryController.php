@@ -16,7 +16,7 @@ use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
-use Spatie\MediaLibrary\MediaCollections\Models\Media;
+use App\Models\Media;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use ZipArchive;
 
@@ -56,15 +56,30 @@ class MediaLibraryController extends Controller
     {
         $folder = $request->filled('folder') ? MediaFolder::findOrFail($request->integer('folder')) : null;
         $showArchived = $request->boolean('archived');
+        $search = $request->input('q');
+        $tag = $request->input('tag');
+        $dateFrom = $request->input('date_from');
+        $dateTo = $request->input('date_to');
+        $authorId = $request->filled('author') ? (int) $request->input('author') : null;
+        $withArchived = $request->boolean('with_archived');
 
         $media = Media::query()
+            ->with('uploadedBy:id,name')
             ->whereIn('model_type', $this->accessibleModelTypes())
             ->where('media_folder_id', $folder?->id)
-            ->when($showArchived,
-                fn ($query) => $query->whereNotNull('archived_at'),
-                fn ($query) => $query->whereNull('archived_at'))
+            ->when(
+                ! $withArchived,
+                fn ($query) => $showArchived
+                    ? $query->whereNotNull('archived_at')
+                    : $query->whereNull('archived_at')
+            )
+            ->when($search, fn ($query) => $query->where('file_name', 'like', '%'.addcslashes($search, '%_').'%'))
+            ->when($tag, fn ($query) => $query->where('custom_properties', 'like', '%"'.addslashes($tag).'"%'))
+            ->when($dateFrom, fn ($query) => $query->whereDate('created_at', '>=', $dateFrom))
+            ->when($dateTo, fn ($query) => $query->whereDate('created_at', '<=', $dateTo))
+            ->when($authorId, fn ($query) => $query->where('uploaded_by_user_id', $authorId))
             ->latest()
-            ->paginate(24)
+            ->paginate(36)
             ->withQueryString()
             ->through(function (Media $media) {
                 $model = $media->model_type::find($media->model_id);
@@ -89,13 +104,38 @@ class MediaLibraryController extends Controller
                     'has_webp_conversion' => $hasWebpConversion,
                     'file_name' => $media->file_name,
                     'size' => $media->human_readable_size,
+                    'mime_type' => $media->mime_type,
                     'collection' => $media->collection_name,
                     'created_at' => $media->created_at,
                     'archived' => $media->archived_at !== null,
                     'owner' => $this->describeOwner($media, $model),
                     'alt' => $this->describeAlt($media, $model),
+                    'tags' => $media->getCustomProperty('tags', []),
+                    'uploader' => $media->uploadedBy?->name,
                 ];
             });
+
+        $allTags = Media::query()
+            ->whereIn('model_type', $this->accessibleModelTypes())
+            ->whereNot('custom_properties', '[]')
+            ->whereNotNull('custom_properties')
+            ->get(['custom_properties'])
+            ->flatMap(fn ($m) => $m->getCustomProperty('tags', []))
+            ->filter()
+            ->unique()
+            ->sort()
+            ->values();
+
+        $uploaders = Media::query()
+            ->whereIn('model_type', $this->accessibleModelTypes())
+            ->whereNotNull('uploaded_by_user_id')
+            ->with('uploadedBy:id,name')
+            ->get(['uploaded_by_user_id'])
+            ->map(fn ($m) => $m->uploadedBy)
+            ->filter()
+            ->unique('id')
+            ->sortBy('name')
+            ->values();
 
         return view('admin.media.index', [
             'media' => $media,
@@ -104,7 +144,40 @@ class MediaLibraryController extends Controller
             'breadcrumbs' => $folder ? $folder->path() : [],
             'allFolders' => MediaFolder::orderBy('name')->get(),
             'folderTree' => $this->folderTree(),
+            'allTags' => $allTags,
+            'uploaders' => $uploaders,
+            'currentSearch' => $search,
+            'currentTag' => $tag,
+            'currentDateFrom' => $dateFrom,
+            'currentDateTo' => $dateTo,
+            'currentAuthor' => $authorId,
+            'withArchived' => $withArchived,
         ]);
+    }
+
+    public function updateTags(Request $request, Media $media)
+    {
+        abort_unless(in_array($media->model_type, $this->accessibleModelTypes()), 403);
+
+        $data = $request->validate([
+            'tags' => ['nullable', 'array'],
+            'tags.*' => ['string', 'max:60'],
+        ]);
+
+        $tags = array_values(array_filter(
+            array_unique(array_map('trim', $data['tags'] ?? [])),
+            fn ($t) => $t !== ''
+        ));
+
+        if (empty($tags)) {
+            $media->forgetCustomProperty('tags');
+        } else {
+            $media->setCustomProperty('tags', $tags);
+        }
+
+        $media->save();
+
+        return redirect()->back()->with('status', 'Tagi zostały zaktualizowane.');
     }
 
     /**
@@ -213,9 +286,10 @@ class MediaLibraryController extends Controller
             ->withCustomProperties(['unsplash_author' => $data['author_name']])
             ->toMediaCollection('files');
 
-        if (! empty($data['folder_id'])) {
-            $media->update(['media_folder_id' => $data['folder_id']]);
-        }
+        $media->update([
+            'uploaded_by_user_id' => auth()->id(),
+            ...(!empty($data['folder_id']) ? ['media_folder_id' => $data['folder_id']] : []),
+        ]);
 
         return response()->json([
             'id' => $media->id,
@@ -246,6 +320,8 @@ class MediaLibraryController extends Controller
         $media = MediaLibrary::instance()
             ->addMedia($request->file('file'))
             ->toMediaCollection('files');
+
+        $media->update(['uploaded_by_user_id' => auth()->id()]);
 
         $url = $media->getUrl();
 
@@ -312,6 +388,8 @@ class MediaLibraryController extends Controller
             ->withCustomProperties(['onedrive_name' => $originalName])
             ->toMediaCollection('files');
 
+        $media->update(['uploaded_by_user_id' => auth()->id()]);
+
         return response()->json([
             'id' => $media->id,
             'url' => $media->getUrl(),
@@ -338,12 +416,15 @@ class MediaLibraryController extends Controller
         $library = MediaLibrary::instance();
         $count = 0;
 
+        $userId = auth()->id();
+
         foreach ($request->file('files', []) as $file) {
             $media = $library->addMedia($file)->toMediaCollection('files');
 
-            if ($folderId) {
-                $media->update(['media_folder_id' => $folderId]);
-            }
+            $media->update(array_filter([
+                'uploaded_by_user_id' => $userId,
+                'media_folder_id' => $folderId,
+            ]));
 
             $count++;
         }
@@ -532,6 +613,7 @@ class MediaLibraryController extends Controller
         $folderCache = [];
         $imported = 0;
         $skipped = 0;
+        $userId = auth()->id();
 
         for ($i = 0; $i < $zip->numFiles; $i++) {
             $entryName = $zip->statIndex($i)['name'];
@@ -568,9 +650,10 @@ class MediaLibraryController extends Controller
                     ->usingFileName($baseName)
                     ->toMediaCollection('files');
 
-                if ($folderId) {
-                    $media->update(['media_folder_id' => $folderId]);
-                }
+                $media->update(array_filter([
+                    'uploaded_by_user_id' => $userId,
+                    'media_folder_id' => $folderId,
+                ]));
 
                 $imported++;
             } catch (\Throwable) {

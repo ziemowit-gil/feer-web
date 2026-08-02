@@ -4,7 +4,7 @@
 
 @section('content')
     <div x-data="{
-            view: localStorage.getItem('media-view') || 'grid',
+            view: localStorage.getItem('media-view') || 'list',
             lightbox: null,
             selected: [],
             copiedId: null,
@@ -17,14 +17,16 @@
             async copy(url, id) { try { await navigator.clipboard.writeText(url); } catch (e) { window.prompt('Skopiuj adres URL:', url); return; } this.copiedId = id; setTimeout(() => { if (this.copiedId === id) this.copiedId = null; }, 2000); }
         }"
         x-init="$watch('view', value => localStorage.setItem('media-view', value))">
+
         <div class="flex flex-col gap-6 lg:flex-row lg:items-start">
-            {{-- Folder tree --}}
-            <aside class="w-full flex-none lg:w-60">
-                <div class="rounded-lg border border-gray-200 bg-white p-3">
-                    <p class="mb-2 px-2 text-xs font-bold uppercase tracking-wide text-muted">Foldery</p>
+
+            {{-- ── Folder tree ─────────────────────────────────────────────── --}}
+            <aside class="w-full flex-none lg:w-56">
+                <div class="rounded-xl border border-gray-200 bg-white p-3 shadow-sm">
+                    <p class="mb-2 px-2 text-[10px] font-bold uppercase tracking-widest text-muted">Foldery</p>
 
                     <a href="{{ route('admin.multimedia.index', ['archived' => $showArchived ? 1 : null]) }}"
-                        class="flex items-center gap-2 rounded px-2 py-1 text-sm {{ ! $folder ? 'bg-brand-light font-bold text-brand' : 'text-ink hover:bg-gray-100' }}">
+                        class="flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm {{ ! $folder ? 'bg-brand-light font-bold text-brand' : 'text-ink hover:bg-gray-100' }}">
                         <i class="fa-solid fa-photo-film w-4 text-brand" aria-hidden="true"></i>
                         <span class="flex-1">Wszystkie multimedia</span>
                     </a>
@@ -36,12 +38,36 @@
                         'showArchived' => $showArchived,
                     ])
                 </div>
+
+                {{-- Tag filter sidebar --}}
+                @if ($allTags->isNotEmpty())
+                    <div class="mt-4 rounded-xl border border-gray-200 bg-white p-3 shadow-sm">
+                        <p class="mb-2 px-2 text-[10px] font-bold uppercase tracking-widest text-muted">Filtruj po tagu</p>
+                        <div class="space-y-0.5">
+                            <a href="{{ route('admin.multimedia.index', array_filter(['folder' => $folder?->id, 'archived' => $showArchived ? 1 : null, 'q' => $currentSearch])) }}"
+                                class="flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm {{ ! $currentTag ? 'bg-brand-light font-bold text-brand' : 'text-ink hover:bg-gray-100' }}">
+                                <i class="fa-solid fa-tags w-4 text-xs text-muted" aria-hidden="true"></i>
+                                <span class="flex-1">Wszystkie tagi</span>
+                            </a>
+                            @foreach ($allTags as $t)
+                                <a href="{{ route('admin.multimedia.index', array_filter(['folder' => $folder?->id, 'archived' => $showArchived ? 1 : null, 'q' => $currentSearch, 'tag' => $t])) }}"
+                                    class="flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm {{ $currentTag === $t ? 'bg-brand-light font-bold text-brand' : 'text-ink hover:bg-gray-100' }}">
+                                    <i class="fa-solid fa-tag w-4 text-xs text-muted" aria-hidden="true"></i>
+                                    <span class="flex-1 truncate">{{ $t }}</span>
+                                </a>
+                            @endforeach
+                        </div>
+                    </div>
+                @endif
             </aside>
 
-            {{-- Main column --}}
+            {{-- ── Main column ──────────────────────────────────────────────── --}}
             <div class="min-w-0 flex-1">
+
+                {{-- Breadcrumbs --}}
                 <nav aria-label="Ścieżka folderów" class="mb-4 flex flex-wrap items-center gap-1 text-sm text-muted">
-                    <a href="{{ route('admin.multimedia.index', ['archived' => $showArchived ? 1 : null]) }}" class="hover:text-brand {{ ! $folder ? 'font-bold text-ink' : '' }}">
+                    <a href="{{ route('admin.multimedia.index', ['archived' => $showArchived ? 1 : null]) }}"
+                        class="hover:text-brand {{ ! $folder ? 'font-bold text-ink' : '' }}">
                         <i class="fa-solid fa-folder-open" aria-hidden="true"></i> Multimedia
                     </a>
                     @foreach ($breadcrumbs as $crumb)
@@ -53,68 +79,213 @@
                     @endforeach
                 </nav>
 
-                {{-- Toolbar: folder creation + view / archive / export-all / import --}}
-                <div class="mb-4 flex flex-wrap items-center justify-between gap-4 rounded-lg border border-gray-200 bg-white p-4">
-                    <form method="POST" action="{{ route('admin.multimedia.foldery.store') }}" class="flex items-center gap-2">
-                        @csrf
-                        <input type="hidden" name="parent_id" value="{{ $folder?->id }}">
-                        <label class="sr-only" for="new-folder-name">Nazwa nowego folderu</label>
-                        <input type="text" id="new-folder-name" name="name" placeholder="Nazwa nowego folderu" required
-                            class="rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
-                        <button type="submit" class="rounded border border-brand px-3 py-2 text-xs font-bold text-brand hover:bg-brand-light">
-                            <i class="fa-solid fa-folder-plus" aria-hidden="true"></i> Nowy folder
-                        </button>
-                    </form>
-
+                {{-- ── Toolbar ─────────────────────────────────────────────── --}}
+                <div class="mb-4 rounded-xl border border-gray-200 bg-white p-3 shadow-sm">
                     <div class="flex flex-wrap items-center gap-3">
-                        {{-- Grid / list view switch --}}
-                        <div class="flex items-center rounded border border-gray-300" role="group" aria-label="Widok multimediów">
+
+                        {{-- New folder --}}
+                        <form method="POST" action="{{ route('admin.multimedia.foldery.store') }}" class="flex items-center gap-2">
+                            @csrf
+                            <input type="hidden" name="parent_id" value="{{ $folder?->id }}">
+                            <label class="sr-only" for="new-folder-name">Nazwa nowego folderu</label>
+                            <input type="text" id="new-folder-name" name="name" placeholder="Nowy folder…" required
+                                class="rounded-lg border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                            <button type="submit"
+                                class="flex items-center gap-1.5 rounded-lg border border-brand px-3 py-2 text-xs font-bold text-brand hover:bg-brand-light">
+                                <i class="fa-solid fa-folder-plus" aria-hidden="true"></i> Utwórz
+                            </button>
+                        </form>
+
+                        <div class="flex-1"></div>
+
+                        {{-- View switch --}}
+                        <div class="flex items-center divide-x divide-gray-300 overflow-hidden rounded-lg border border-gray-300"
+                            role="group" aria-label="Widok multimediów">
                             <button type="button" @click="view = 'grid'"
                                 :class="view === 'grid' ? 'bg-brand-light text-brand' : 'text-muted hover:bg-gray-100'"
-                                class="rounded-l px-3 py-2 text-xs font-bold" aria-label="Widok kafelków">
+                                class="px-3 py-2 text-xs" aria-label="Widok kafelków">
                                 <i class="fa-solid fa-table-cells-large" aria-hidden="true"></i>
                             </button>
                             <button type="button" @click="view = 'list'"
                                 :class="view === 'list' ? 'bg-brand-light text-brand' : 'text-muted hover:bg-gray-100'"
-                                class="rounded-r border-l border-gray-300 px-3 py-2 text-xs font-bold" aria-label="Widok listy">
+                                class="px-3 py-2 text-xs" aria-label="Widok listy">
                                 <i class="fa-solid fa-list" aria-hidden="true"></i>
                             </button>
                         </div>
 
-                        <a href="{{ route('admin.multimedia.index', ['folder' => $folder?->id, 'archived' => $showArchived ? null : 1]) }}"
-                            class="rounded border px-3 py-2 text-xs font-bold {{ $showArchived ? 'border-brand bg-brand-light text-brand' : 'border-gray-300 text-muted hover:bg-gray-100' }}">
+                        <div class="h-5 w-px bg-gray-200" aria-hidden="true"></div>
+
+                        {{-- Archive toggle --}}
+                        <a href="{{ route('admin.multimedia.index', array_filter(['folder' => $folder?->id, 'archived' => $showArchived ? null : 1, 'q' => $currentSearch, 'tag' => $currentTag])) }}"
+                            class="flex items-center gap-1.5 rounded-lg border px-3 py-2 text-xs font-bold {{ $showArchived ? 'border-brand bg-brand-light text-brand' : 'border-gray-300 text-muted hover:bg-gray-100' }}">
                             <i class="fa-solid fa-box-archive" aria-hidden="true"></i>
-                            {{ $showArchived ? 'Pokaż aktywne pliki' : 'Pokaż archiwum' }}
+                            {{ $showArchived ? 'Aktywne pliki' : 'Archiwum' }}
                         </a>
 
+                        {{-- Alt audit --}}
                         <a href="{{ route('admin.multimedia.alt-audit') }}"
-                            class="rounded border border-gray-300 px-3 py-2 text-xs font-bold text-muted hover:bg-gray-100">
+                            class="flex items-center gap-1.5 rounded-lg border border-gray-300 px-3 py-2 text-xs font-bold text-muted hover:bg-gray-100"
+                            title="Audyt dostępności — pliki bez alt-text">
                             <i class="fa-solid fa-universal-access" aria-hidden="true"></i>
-                            Audyt alt-text
+                            <span class="hidden sm:inline">Audyt alt</span>
                         </a>
 
+                        <div class="h-5 w-px bg-gray-200" aria-hidden="true"></div>
+
+                        {{-- Export --}}
                         <a href="{{ route('admin.multimedia.export', ['folder' => $folder?->id]) }}"
-                            class="rounded border border-gray-300 px-3 py-2 text-xs font-bold text-muted hover:bg-gray-100">
+                            class="flex items-center gap-1.5 rounded-lg border border-gray-300 px-3 py-2 text-xs font-bold text-muted hover:bg-gray-100"
+                            title="{{ $folder ? 'Eksportuj folder jako ZIP' : 'Eksportuj wszystko jako ZIP' }}">
                             <i class="fa-solid fa-file-zipper" aria-hidden="true"></i>
-                            {{ $folder ? 'Eksportuj folder' : 'Eksportuj wszystko' }}
+                            <span class="hidden sm:inline">{{ $folder ? 'Eksportuj folder' : 'Eksportuj' }}</span>
                         </a>
 
+                        {{-- Import --}}
                         <form method="POST" action="{{ route('admin.multimedia.import') }}" enctype="multipart/form-data"
-                            x-data class="flex items-center gap-2">
+                            x-data class="flex items-center">
                             @csrf
                             <input type="hidden" name="folder_id" value="{{ $folder?->id }}">
-                            <label class="sr-only" for="media-import">Zaimportuj archiwum ZIP z plikami</label>
-                            <input type="file" name="archive" id="media-import" accept=".zip" required
-                                @change="$el.form.requestSubmit()"
-                                class="cursor-pointer text-sm text-muted file:mr-3 file:cursor-pointer file:rounded file:border-0 file:bg-gray-100 file:px-4 file:py-2 file:text-sm file:font-bold file:text-ink hover:file:bg-gray-200">
-                            <button type="submit" class="rounded border border-gray-300 px-3 py-2 text-xs font-bold text-muted hover:bg-gray-100">
-                                <i class="fa-solid fa-file-import" aria-hidden="true"></i> Importuj ZIP
-                            </button>
+                            <label class="flex cursor-pointer items-center gap-1.5 rounded-lg border border-gray-300 px-3 py-2 text-xs font-bold text-muted hover:bg-gray-100"
+                                title="Importuj archiwum ZIP z plikami">
+                                <i class="fa-solid fa-file-import" aria-hidden="true"></i>
+                                <span class="hidden sm:inline">Importuj ZIP</span>
+                                <input type="file" name="archive" accept=".zip" required
+                                    class="sr-only" @change="$el.form.requestSubmit()">
+                            </label>
                         </form>
+
                     </div>
                 </div>
 
-                {{-- Multi-file upload with drag & drop --}}
+                {{-- ── Search + filters ────────────────────────────────────── --}}
+                <form method="GET" action="{{ route('admin.multimedia.index') }}" class="mb-4"
+                    role="search" aria-label="Wyszukiwarka multimediów">
+                    @if ($folder) <input type="hidden" name="folder" value="{{ $folder->id }}"> @endif
+
+                    <div x-data="{ expanded: {{ ($currentDateFrom || $currentDateTo || $currentAuthor || $withArchived) ? 'true' : 'false' }} }"
+                        class="rounded-xl border border-gray-200 bg-white shadow-sm">
+
+                        {{-- Main row --}}
+                        <div class="flex flex-wrap items-center gap-2 px-4 py-3">
+                            <div class="relative min-w-[200px] flex-1">
+                                <label for="media-search" class="sr-only">Szukaj po nazwie pliku</label>
+                                <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-xs text-muted" aria-hidden="true"></i>
+                                <input type="text" id="media-search" name="q" value="{{ $currentSearch }}"
+                                    placeholder="Szukaj po nazwie pliku…"
+                                    class="w-full rounded-lg border-gray-300 py-2 pl-8 pr-3 text-sm focus:border-brand focus:ring-brand">
+                            </div>
+
+                            <button type="submit"
+                                class="rounded-lg bg-brand px-4 py-2 text-xs font-bold text-white hover:bg-brand-dark">
+                                <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+                                <span class="ml-1 hidden sm:inline">Szukaj</span>
+                            </button>
+
+                            <button type="button" @click="expanded = !expanded"
+                                class="flex items-center gap-1.5 rounded-lg border border-gray-300 px-3 py-2 text-xs font-bold text-muted hover:bg-gray-100"
+                                :aria-expanded="expanded" aria-controls="search-filters">
+                                <i class="fa-solid fa-sliders text-[11px]" aria-hidden="true"></i>
+                                <span>Filtry</span>
+                                @if ($currentDateFrom || $currentDateTo || $currentAuthor || $withArchived)
+                                    <span class="flex h-4 w-4 items-center justify-center rounded-full bg-brand text-[9px] font-bold text-white"
+                                        aria-label="Aktywne filtry">
+                                        {{ (int)($currentDateFrom || $currentDateTo) + (int)($currentAuthor > 0) + (int)$withArchived }}
+                                    </span>
+                                @endif
+                            </button>
+
+                            @if ($currentSearch || $currentTag || $currentDateFrom || $currentDateTo || $currentAuthor || $withArchived)
+                                <a href="{{ route('admin.multimedia.index', array_filter(['folder' => $folder?->id])) }}"
+                                    class="rounded-lg px-3 py-2 text-xs font-bold text-muted hover:text-ink">
+                                    <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+                                    <span class="hidden sm:inline">Wyczyść filtry</span>
+                                </a>
+                            @endif
+
+                            @if ($currentTag)
+                                <span class="flex items-center gap-1.5 rounded-full bg-brand-light px-3 py-1 text-xs font-bold text-brand">
+                                    <i class="fa-solid fa-tag text-[10px]" aria-hidden="true"></i>
+                                    {{ $currentTag }}
+                                    <a href="{{ route('admin.multimedia.index', array_filter(['folder' => $folder?->id, 'q' => $currentSearch])) }}"
+                                        class="ml-0.5 rounded-full hover:text-brand-dark"
+                                        aria-label="Usuń filtr tagu: {{ $currentTag }}">
+                                        <i class="fa-solid fa-xmark text-[10px]" aria-hidden="true"></i>
+                                    </a>
+                                </span>
+                            @endif
+                        </div>
+
+                        {{-- Expanded filters --}}
+                        <div id="search-filters" x-show="expanded" x-cloak
+                            x-transition:enter="transition duration-150 ease-out"
+                            x-transition:enter-start="opacity-0 -translate-y-1"
+                            x-transition:enter-end="opacity-100 translate-y-0"
+                            class="border-t border-gray-100 px-4 pb-4 pt-3">
+
+                            <fieldset class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                                <legend class="sr-only">Filtry zaawansowane</legend>
+
+                                {{-- Date from --}}
+                                <div>
+                                    <label for="filter-date-from" class="mb-1 block text-xs font-bold text-muted">
+                                        Data dodania — od
+                                    </label>
+                                    <input type="date" id="filter-date-from" name="date_from"
+                                        value="{{ $currentDateFrom }}"
+                                        class="w-full rounded-lg border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                                </div>
+
+                                {{-- Date to --}}
+                                <div>
+                                    <label for="filter-date-to" class="mb-1 block text-xs font-bold text-muted">
+                                        Data dodania — do
+                                    </label>
+                                    <input type="date" id="filter-date-to" name="date_to"
+                                        value="{{ $currentDateTo }}"
+                                        class="w-full rounded-lg border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                                </div>
+
+                                {{-- Author --}}
+                                <div>
+                                    <label for="filter-author" class="mb-1 block text-xs font-bold text-muted">
+                                        Autor / wgrywający
+                                    </label>
+                                    <select id="filter-author" name="author"
+                                        class="w-full rounded-lg border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                                        <option value="">Wszyscy autorzy</option>
+                                        @foreach ($uploaders as $uploader)
+                                            <option value="{{ $uploader->id }}" {{ $currentAuthor === $uploader->id ? 'selected' : '' }}>
+                                                {{ $uploader->name }}
+                                            </option>
+                                        @endforeach
+                                        @if ($uploaders->isEmpty())
+                                            <option disabled>— brak danych o autorach —</option>
+                                        @endif
+                                    </select>
+                                </div>
+
+                                {{-- Archive checkbox --}}
+                                <div class="flex items-end">
+                                    <label class="flex cursor-pointer items-center gap-2.5 rounded-lg border border-gray-300 px-3 py-2.5 text-sm text-ink hover:bg-gray-50 w-full">
+                                        <input type="checkbox" name="with_archived" value="1"
+                                            {{ $withArchived ? 'checked' : '' }}
+                                            class="h-4 w-4 rounded border-gray-300 text-brand focus:ring-brand">
+                                        <span>Szukaj też w archiwum</span>
+                                    </label>
+                                </div>
+                            </fieldset>
+
+                            <div class="mt-3 flex justify-end">
+                                <button type="submit"
+                                    class="rounded-lg bg-brand px-4 py-2 text-xs font-bold text-white hover:bg-brand-dark">
+                                    Zastosuj filtry
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+
+                {{-- ── Upload zone ──────────────────────────────────────────── --}}
                 @unless ($showArchived)
                     <form method="POST" action="{{ route('admin.multimedia.store') }}" enctype="multipart/form-data"
                         x-data="{
@@ -124,8 +295,7 @@
                             onDrop(event) { this.drag = false; this.$refs.input.files = event.dataTransfer.files; this.setFiles(event.dataTransfer.files); },
                             clear() { this.$refs.input.value = ''; this.files = []; }
                         }"
-                        @dragover.prevent="drag = true" @dragleave.prevent="drag = false"
-                        @drop.prevent="onDrop($event)"
+                        @dragover.prevent="drag = true" @dragleave.prevent="drag = false" @drop.prevent="onDrop($event)"
                         class="mb-4">
                         @csrf
                         <input type="hidden" name="folder_id" value="{{ $folder?->id }}">
@@ -133,19 +303,21 @@
                         <input id="media-upload" x-ref="input" type="file" name="files[]" multiple required
                             class="peer sr-only" @change="setFiles($event.target.files)">
                         <label for="media-upload"
-                            class="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed p-6 text-center transition peer-focus-visible:ring-2 peer-focus-visible:ring-brand"
+                            class="flex cursor-pointer items-center gap-4 rounded-xl border-2 border-dashed px-6 py-5 transition peer-focus-visible:ring-2 peer-focus-visible:ring-brand"
                             :class="drag ? 'border-brand bg-brand-light' : 'border-gray-300 bg-white hover:border-brand hover:bg-gray-50'">
-                            <i class="fa-solid fa-cloud-arrow-up text-3xl text-brand" aria-hidden="true"></i>
-                            <span class="text-sm font-bold text-ink">Przeciągnij pliki tutaj lub kliknij, aby wybrać</span>
-                            <span class="text-xs text-muted">Możesz dodać wiele plików naraz (do 10 MB każdy).</span>
+                            <i class="fa-solid fa-cloud-arrow-up flex-none text-3xl text-brand" aria-hidden="true"></i>
+                            <div>
+                                <p class="text-sm font-bold text-ink">Przeciągnij pliki tutaj lub kliknij, aby wybrać</p>
+                                <p class="text-xs text-muted">Wiele plików naraz &middot; maks. 10 MB każdy</p>
+                            </div>
                         </label>
 
                         <template x-if="files.length">
-                            <div class="mt-3 rounded-lg border border-gray-200 bg-white p-4">
-                                <p class="mb-2 text-xs font-bold uppercase tracking-wide text-muted">
+                            <div class="mt-3 rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+                                <p class="mb-2 text-[10px] font-bold uppercase tracking-widest text-muted">
                                     Wybrane pliki (<span x-text="files.length"></span>)
                                 </p>
-                                <ul class="mb-3 max-h-40 space-y-1 overflow-y-auto text-sm text-ink">
+                                <ul class="mb-3 max-h-36 space-y-1 overflow-y-auto text-sm text-ink">
                                     <template x-for="(name, i) in files" :key="i">
                                         <li class="flex items-center gap-2">
                                             <i class="fa-solid fa-file text-muted" aria-hidden="true"></i>
@@ -155,9 +327,9 @@
                                 </ul>
                                 <div class="flex items-center gap-3">
                                     <button type="submit"
-                                        class="rounded bg-brand px-4 py-2 text-xs font-bold text-white hover:bg-brand-dark">
+                                        class="rounded-lg bg-brand px-4 py-2 text-xs font-bold text-white hover:bg-brand-dark">
                                         <i class="fa-solid fa-upload" aria-hidden="true"></i>
-                                        Prześlij pliki (<span x-text="files.length"></span>)
+                                        Prześlij (<span x-text="files.length"></span>)
                                     </button>
                                     <button type="button" @click="clear()"
                                         class="text-xs font-bold text-muted hover:text-ink">Wyczyść</button>
@@ -173,119 +345,133 @@
                 @error('name') <p class="mb-4 text-sm text-red-600">{{ $message }}</p> @enderror
 
                 @if ($showArchived)
-                    <div class="mb-6 flex items-center gap-2 rounded border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-muted">
-                        <i class="fa-solid fa-box-archive" aria-hidden="true"></i>
-                        Przeglądasz archiwum. Schowane pliki nie pojawiają się w bibliotece ani w wyborze zdjęć w edytorze, ale nie zostały usunięte.
+                    <div class="mb-6 flex items-center gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+                        <i class="fa-solid fa-box-archive flex-none text-amber-500" aria-hidden="true"></i>
+                        Przeglądasz archiwum — schowane pliki nie pojawiają się w bibliotece ani edytorze, ale nie zostały usunięte.
                     </div>
                 @endif
 
-                {{-- Bulk action bar: appears once files are selected --}}
+                {{-- ── Bulk action bar ──────────────────────────────────────── --}}
                 <div x-show="selected.length" x-cloak x-transition
-                    class="sticky top-2 z-30 mb-4 flex flex-wrap items-center gap-3 rounded-lg border border-brand bg-brand-light p-3 shadow"
+                    class="sticky top-2 z-30 mb-4 flex flex-wrap items-center gap-3 rounded-xl border border-brand bg-brand-light px-4 py-3 shadow-md"
                     role="region" aria-label="Akcje dla zaznaczonych plików">
+
                     <p class="text-sm font-bold text-brand" aria-live="polite">
                         Zaznaczono: <span x-text="selected.length"></span>
                     </p>
 
                     <div class="flex flex-1 flex-wrap items-center justify-end gap-2">
-                        {{-- Export selected as ZIP --}}
                         <form method="POST" action="{{ route('admin.multimedia.export-selected') }}">
                             @csrf
                             <template x-for="id in selected" :key="id"><input type="hidden" name="ids[]" :value="id"></template>
-                            <button type="submit" class="rounded border border-gray-300 bg-white px-3 py-2 text-xs font-bold text-muted hover:bg-gray-100">
+                            <button type="submit"
+                                class="flex items-center gap-1.5 rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-xs font-bold text-muted hover:bg-gray-100">
                                 <i class="fa-solid fa-file-zipper" aria-hidden="true"></i> Eksportuj ZIP
                             </button>
                         </form>
 
                         @if (! $showArchived && $allFolders->isNotEmpty())
-                            {{-- Move selected to a folder --}}
-                            <form method="POST" action="{{ route('admin.multimedia.bulk') }}" class="flex items-center gap-1">
+                            <form method="POST" action="{{ route('admin.multimedia.bulk') }}" class="flex items-center gap-1.5">
                                 @csrf
                                 <input type="hidden" name="action" value="move">
                                 <template x-for="id in selected" :key="id"><input type="hidden" name="ids[]" :value="id"></template>
                                 <label class="sr-only" for="bulk-folder">Przenieś zaznaczone do folderu</label>
                                 <select id="bulk-folder" name="folder_id"
-                                    class="rounded border-gray-300 text-xs focus:border-brand focus:ring-brand">
+                                    class="rounded-lg border-gray-300 text-xs focus:border-brand focus:ring-brand">
                                     <option value="">— główny katalog —</option>
                                     @foreach ($allFolders as $option)
                                         <option value="{{ $option->id }}">{{ $option->fullPath() }}</option>
                                     @endforeach
                                 </select>
-                                <button type="submit" class="rounded border border-gray-300 bg-white px-3 py-2 text-xs font-bold text-muted hover:bg-gray-100">
+                                <button type="submit"
+                                    class="rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-xs font-bold text-muted hover:bg-gray-100">
                                     Przenieś
                                 </button>
                             </form>
                         @endif
 
                         @if ($showArchived)
-                            {{-- Restore selected --}}
                             <form method="POST" action="{{ route('admin.multimedia.bulk') }}">
                                 @csrf
                                 <input type="hidden" name="action" value="restore">
                                 <template x-for="id in selected" :key="id"><input type="hidden" name="ids[]" :value="id"></template>
-                                <button type="submit" class="rounded border border-brand bg-white px-3 py-2 text-xs font-bold text-brand hover:bg-brand-light">
+                                <button type="submit"
+                                    class="flex items-center gap-1.5 rounded-lg border border-brand bg-white px-3 py-1.5 text-xs font-bold text-brand hover:bg-brand-light">
                                     <i class="fa-solid fa-rotate-left" aria-hidden="true"></i> Przywróć
                                 </button>
                             </form>
                         @else
-                            {{-- Archive selected --}}
                             <form method="POST" action="{{ route('admin.multimedia.bulk') }}">
                                 @csrf
                                 <input type="hidden" name="action" value="archive">
                                 <template x-for="id in selected" :key="id"><input type="hidden" name="ids[]" :value="id"></template>
-                                <button type="submit" class="rounded border border-gray-300 bg-white px-3 py-2 text-xs font-bold text-muted hover:bg-gray-100">
+                                <button type="submit"
+                                    class="flex items-center gap-1.5 rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-xs font-bold text-muted hover:bg-gray-100">
                                     <i class="fa-solid fa-box-archive" aria-hidden="true"></i> Schowaj
                                 </button>
                             </form>
                         @endif
 
-                        {{-- Delete selected --}}
                         <form method="POST" action="{{ route('admin.multimedia.bulk') }}"
                             @submit="if (! confirm('Usunąć zaznaczone pliki (' + selected.length + ')? Jeśli któryś jest używany, zniknie też z miejsca, w którym się wyświetlał.')) $event.preventDefault();">
                             @csrf
                             <input type="hidden" name="action" value="delete">
                             <template x-for="id in selected" :key="id"><input type="hidden" name="ids[]" :value="id"></template>
-                            <button type="submit" class="rounded border border-red-300 bg-white px-3 py-2 text-xs font-bold text-red-600 hover:bg-red-50">
+                            <button type="submit"
+                                class="flex items-center gap-1.5 rounded-lg border border-red-300 bg-white px-3 py-1.5 text-xs font-bold text-red-600 hover:bg-red-50">
                                 <i class="fa-solid fa-trash" aria-hidden="true"></i> Usuń
                             </button>
                         </form>
 
                         <button type="button" @click="clearSelection()"
-                            class="rounded px-3 py-2 text-xs font-bold text-muted hover:text-ink">
-                            Odznacz wszystkie
+                            class="rounded-lg px-3 py-1.5 text-xs font-bold text-muted hover:text-ink">
+                            Odznacz
                         </button>
                     </div>
                 </div>
 
                 @if ($media->isEmpty())
-                    <p class="py-6 text-center text-muted">
-                        {{ $showArchived ? 'Brak schowanych plików w tym folderze.' : 'Brak plików w tym folderze.' }}
-                    </p>
+                    <div class="flex flex-col items-center gap-3 py-16 text-center text-muted">
+                        <i class="fa-solid fa-photo-film text-5xl opacity-20" aria-hidden="true"></i>
+                        <p class="text-sm">
+                            @if ($currentSearch || $currentTag)
+                                Brak wyników dla podanych filtrów.
+                            @elseif ($showArchived)
+                                Brak schowanych plików w tym folderze.
+                            @else
+                                Brak plików w tym folderze.
+                            @endif
+                        </p>
+                    </div>
                 @else
-                    {{-- Select-all-on-page --}}
-                    <div class="mb-3 flex items-center gap-2">
-                        <input type="checkbox" id="select-all" :checked="allSelected" @change="toggleAll()"
-                            class="h-4 w-4 rounded border-gray-300 text-brand focus:ring-brand">
-                        <label for="select-all" class="text-sm text-muted">Zaznacz wszystkie na tej stronie</label>
+                    <div class="mb-3 flex items-center justify-between">
+                        <label class="flex items-center gap-2 text-sm text-muted">
+                            <input type="checkbox" id="select-all" :checked="allSelected" @change="toggleAll()"
+                                class="h-4 w-4 rounded border-gray-300 text-brand focus:ring-brand">
+                            Zaznacz wszystkie na tej stronie
+                        </label>
+                        <p class="text-xs text-muted">{{ $media->total() }} {{ $media->total() === 1 ? 'plik' : ($media->total() < 5 ? 'pliki' : 'plików') }}</p>
                     </div>
 
-                    {{-- Grid view --}}
-                    <div x-show="view === 'grid'" x-cloak class="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+                    {{-- ── Grid view ───────────────────────────────────────── --}}
+                    <div x-show="view === 'grid'" x-cloak
+                        class="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
                         @foreach ($media as $item)
-                            <div class="overflow-hidden rounded-lg border bg-white transition {{ $item['archived'] ? 'opacity-75' : '' }}"
+                            <div class="group relative overflow-visible rounded-xl border bg-white shadow-sm transition-shadow hover:shadow-md {{ $item['archived'] ? 'opacity-60' : '' }}"
                                 :class="isSelected({{ $item['id'] }}) ? 'border-brand ring-2 ring-brand' : 'border-gray-200'">
-                                <div class="relative flex h-32 items-center justify-center bg-gray-50">
+
+                                {{-- Thumbnail --}}
+                                <div class="relative h-40 overflow-hidden rounded-t-xl bg-gray-100">
                                     <div class="absolute left-2 top-2 z-10">
                                         <input type="checkbox" id="sel-{{ $item['id'] }}"
-                                            :checked="isSelected({{ $item['id'] }})" @change="toggle({{ $item['id'] }})"
+                                            :checked="isSelected({{ $item['id'] }})"
+                                            @change="toggle({{ $item['id'] }})"
                                             class="h-5 w-5 rounded border-gray-300 bg-white text-brand shadow focus:ring-brand">
                                         <label for="sel-{{ $item['id'] }}" class="sr-only">Zaznacz plik {{ $item['file_name'] }}</label>
                                     </div>
 
                                     @if ($item['archived'])
-                                        <span class="absolute right-2 top-2 z-10 rounded bg-gray-800/80 px-2 py-0.5 text-xs font-bold text-white">
-                                            W archiwum
-                                        </span>
+                                        <span class="absolute right-2 top-2 z-10 rounded-full bg-gray-900/70 px-2 py-0.5 text-[10px] font-bold text-white">Archiwum</span>
                                     @endif
 
                                     @if ($item['is_image'])
@@ -295,130 +481,224 @@
                                             <img src="{{ $item['url'] }}" alt="{{ $item['alt'] }}" class="h-full w-full object-cover">
                                         </button>
                                     @else
-                                        <i class="fa-solid fa-file text-3xl text-muted" aria-hidden="true"></i>
-                                    @endif
-                                </div>
-                                <div class="space-y-1 p-3">
-                                    <p class="truncate text-xs font-bold" title="{{ $item['file_name'] }}">{{ $item['file_name'] }}</p>
-                                    <p class="text-xs text-muted">{{ $item['owner']['label'] }} &middot; {{ $item['collection'] }}</p>
-                                    <p class="text-xs text-muted">{{ $item['size'] }} &middot; {{ $item['created_at']->format('d.m.Y') }}</p>
-
-                                    {{-- File URL + copy --}}
-                                    <div class="flex items-center gap-1 pt-1">
-                                        <label class="sr-only" for="url-{{ $item['id'] }}">Adres URL pliku {{ $item['file_name'] }}</label>
-                                        <input type="text" id="url-{{ $item['id'] }}" readonly value="{{ $item['url'] }}"
-                                            @focus="$event.target.select()"
-                                            class="min-w-0 flex-1 truncate rounded border-gray-200 bg-gray-50 px-2 py-1 text-xs text-muted focus:border-brand focus:ring-brand">
-                                        <button type="button" @click="copy(@js($item['url']), {{ $item['id'] }})"
-                                            class="flex-none rounded border border-gray-300 px-2 py-1 hover:bg-gray-100"
-                                            :aria-label="copiedId === {{ $item['id'] }} ? 'Skopiowano adres URL' : 'Kopiuj adres URL'">
-                                            <i class="fa-solid" :class="copiedId === {{ $item['id'] }} ? 'fa-check text-green-600' : 'fa-copy text-muted'" aria-hidden="true"></i>
-                                        </button>
-                                    </div>
-
-                                    @if ($allFolders->isNotEmpty())
-                                        <form method="POST" action="{{ route('admin.multimedia.move', $item['id']) }}" class="pt-1">
-                                            @csrf
-                                            @method('PUT')
-                                            <label class="sr-only" for="folder-{{ $item['id'] }}">Przenieś do folderu</label>
-                                            <select id="folder-{{ $item['id'] }}" name="folder_id" onchange="this.form.submit()"
-                                                class="w-full rounded border-gray-300 text-xs focus:border-brand focus:ring-brand">
-                                                <option value="" {{ ! $folder ? 'selected' : '' }}>— główny katalog —</option>
-                                                @foreach ($allFolders as $option)
-                                                    <option value="{{ $option->id }}" {{ $folder?->id === $option->id ? 'selected' : '' }}>{{ $option->fullPath() }}</option>
-                                                @endforeach
-                                            </select>
-                                        </form>
-                                    @endif
-
-                                    <div class="pt-1">
-                                        @if ($item['archived'])
-                                            <form method="POST" action="{{ route('admin.multimedia.restore', $item['id']) }}">
-                                                @csrf
-                                                @method('PUT')
-                                                <button type="submit" class="flex w-full items-center justify-center gap-1 rounded border border-brand px-2 py-1.5 text-xs font-bold text-brand hover:bg-brand-light">
-                                                    <i class="fa-solid fa-rotate-left" aria-hidden="true"></i> Przywróć z archiwum
-                                                </button>
-                                            </form>
-                                        @else
-                                            <form method="POST" action="{{ route('admin.multimedia.archive', $item['id']) }}">
-                                                @csrf
-                                                @method('PUT')
-                                                <button type="submit" class="flex w-full items-center justify-center gap-1 rounded border border-gray-300 px-2 py-1.5 text-xs font-bold text-muted hover:bg-gray-100 hover:text-ink">
-                                                    <i class="fa-solid fa-box-archive" aria-hidden="true"></i> Schowaj / archiwizuj
-                                                </button>
-                                            </form>
-                                        @endif
-                                    </div>
-
-                                    @if ($item['is_image'])
-                                        <div class="pt-1">
-                                            @if ($item['is_webp'])
-                                                <span class="inline-flex items-center gap-1 rounded bg-green-100 px-1.5 py-0.5 text-xs font-bold text-green-700">
-                                                    <i class="fa-solid fa-check" aria-hidden="true"></i> WebP
-                                                </span>
-                                            @else
-                                                <span class="inline-block rounded border border-amber-200 bg-amber-50 px-1.5 py-0.5 text-xs font-bold text-amber-700">
-                                                    {{ strtoupper(pathinfo($item['file_name'], PATHINFO_EXTENSION)) }}
-                                                </span>
-                                            @endif
+                                        <div class="flex h-full w-full flex-col items-center justify-center gap-2">
+                                            <i class="fa-solid fa-file text-5xl text-gray-300" aria-hidden="true"></i>
+                                            <span class="text-xs font-bold uppercase text-gray-400">{{ pathinfo($item['file_name'], PATHINFO_EXTENSION) }}</span>
                                         </div>
                                     @endif
 
-                                    <div class="flex items-center justify-between pt-2">
-                                        @if ($item['owner']['url'])
-                                            <a href="{{ $item['owner']['url'] }}" class="text-xs font-bold text-brand hover:text-brand-dark">Otwórz</a>
-                                        @elseif ($item['owner']['standalone'] ?? false)
-                                            <span class="text-xs text-muted">Plik w bibliotece</span>
-                                        @else
-                                            <span class="text-xs text-muted">Osierocony plik</span>
-                                        @endif
+                                    {{-- Hover: copy URL overlay --}}
+                                    <div class="pointer-events-none absolute inset-0 flex items-end justify-end bg-gradient-to-t from-black/40 to-transparent p-2 opacity-0 transition-opacity group-hover:pointer-events-auto group-hover:opacity-100">
+                                        <button type="button"
+                                            @click.stop="copy(@js($item['url']), {{ $item['id'] }})"
+                                            class="flex items-center gap-1.5 rounded-full bg-black/60 px-2.5 py-1.5 text-xs font-bold text-white backdrop-blur hover:bg-black/80"
+                                            :aria-label="copiedId === {{ $item['id'] }} ? 'Skopiowano URL' : 'Kopiuj URL'">
+                                            <i class="fa-solid"
+                                                :class="copiedId === {{ $item['id'] }} ? 'fa-check' : 'fa-link'"
+                                                aria-hidden="true"></i>
+                                            <span x-text="copiedId === {{ $item['id'] }} ? 'Skopiowano' : 'Kopiuj URL'"></span>
+                                        </button>
+                                    </div>
+                                </div>
 
-                                        <form method="POST" action="{{ route('admin.multimedia.destroy', $item['id']) }}"
-                                            onsubmit="return confirm('Usunąć plik &quot;{{ $item['file_name'] }}&quot;? Jeśli jest używany, zniknie też z miejsca, w którym się wyświetlał.');">
+                                {{-- Card footer --}}
+                                <div class="p-3" x-data="{ open: false, tags: @js($item['tags']), tagInput: '', addingTag: false }">
+
+                                    {{-- Filename + format badge --}}
+                                    <div class="mb-0.5 flex items-start gap-1">
+                                        <p class="flex-1 truncate text-xs font-bold leading-snug text-ink"
+                                            title="{{ $item['file_name'] }}">{{ $item['file_name'] }}</p>
+                                        @if ($item['is_image'])
+                                            @if ($item['is_webp'])
+                                                <span class="flex-none rounded bg-green-100 px-1 py-0.5 text-[10px] font-bold text-green-700">WebP</span>
+                                            @else
+                                                <span class="flex-none rounded border border-amber-200 bg-amber-50 px-1 py-0.5 text-[10px] font-bold text-amber-700">{{ strtoupper(pathinfo($item['file_name'], PATHINFO_EXTENSION)) }}</span>
+                                            @endif
+                                        @endif
+                                    </div>
+
+                                    <p class="text-[11px] text-muted">{{ $item['size'] }} &middot; {{ $item['created_at']->format('d.m.Y') }}</p>
+                                    <p class="text-[11px] text-muted">
+                                        <i class="fa-solid fa-user text-[9px]" aria-hidden="true"></i>
+                                        {{ $item['uploader'] ?? 'System' }}
+                                    </p>
+
+                                    {{-- Usage (owner) link --}}
+                                    @if ($item['owner']['url'])
+                                        <a href="{{ $item['owner']['url'] }}"
+                                            class="mt-1 flex items-center gap-1 text-[11px] font-bold text-brand hover:text-brand-dark">
+                                            <i class="fa-solid fa-arrow-up-right-from-square text-[9px]" aria-hidden="true"></i>
+                                            {{ $item['owner']['label'] }}
+                                        </a>
+                                    @else
+                                        <p class="mt-1 text-[11px] text-muted">
+                                            {{ ($item['owner']['standalone'] ?? false) ? 'Plik w bibliotece' : 'Osierocony plik' }}
+                                        </p>
+                                    @endif
+
+                                    {{-- Tags --}}
+                                    <div class="mt-2">
+                                        <form x-ref="tagForm-{{ $item['id'] }}"
+                                            method="POST" action="{{ route('admin.multimedia.tags', $item['id']) }}">
                                             @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="text-xs text-muted hover:text-red-600" title="Usuń"><i class="fa-solid fa-trash"></i></button>
+                                            @method('PUT')
+                                            <template x-for="tag in tags" :key="tag">
+                                                <input type="hidden" name="tags[]" :value="tag">
+                                            </template>
                                         </form>
+
+                                        <div class="flex flex-wrap items-center gap-1">
+                                            <template x-for="tag in tags" :key="tag">
+                                                <span class="flex items-center gap-0.5 rounded-full bg-gray-100 pl-2 pr-1 py-0.5 text-[10px] font-bold text-gray-600">
+                                                    <span x-text="tag"></span>
+                                                    <button type="button"
+                                                        @click="tags = tags.filter(t => t !== tag); $refs['tagForm-{{ $item['id'] }}'].requestSubmit()"
+                                                        class="ml-0.5 rounded-full hover:text-red-500" aria-label="Usuń tag">
+                                                        <i class="fa-solid fa-xmark text-[9px]" aria-hidden="true"></i>
+                                                    </button>
+                                                </span>
+                                            </template>
+
+                                            <button type="button" @click="addingTag = !addingTag"
+                                                class="rounded-full border border-dashed border-gray-300 px-2 py-0.5 text-[10px] text-muted hover:border-brand hover:text-brand"
+                                                aria-label="Dodaj tag">
+                                                <i class="fa-solid fa-plus text-[8px]" aria-hidden="true"></i> Tag
+                                            </button>
+                                        </div>
+
+                                        <div x-show="addingTag" x-cloak class="mt-1.5">
+                                            <input type="text" x-model="tagInput"
+                                                placeholder="Nowy tag…"
+                                                class="w-full rounded-lg border-gray-300 py-1 pl-2 pr-2 text-xs focus:border-brand focus:ring-brand"
+                                                @keydown.enter.prevent="
+                                                    const t = tagInput.trim();
+                                                    if (t && !tags.includes(t)) { tags.push(t); $refs['tagForm-{{ $item['id'] }}'].requestSubmit(); }
+                                                    tagInput = ''; addingTag = false;
+                                                "
+                                                @keydown.escape="addingTag = false; tagInput = ''"
+                                                x-init="$nextTick(() => { if (addingTag) $el.focus(); })"
+                                                x-effect="if (addingTag) $nextTick(() => $el.focus())">
+                                        </div>
+                                    </div>
+
+                                    {{-- Three-dot actions --}}
+                                    <div class="mt-2 flex items-center justify-between">
+                                        <span class="text-[11px] text-muted">{{ $item['collection'] }}</span>
+
+                                        <div class="relative flex-none" @click.outside="open = false">
+                                            <button type="button" @click="open = !open"
+                                                class="rounded-md p-1 text-muted hover:bg-gray-100 hover:text-ink"
+                                                aria-label="Więcej akcji">
+                                                <i class="fa-solid fa-ellipsis-vertical text-xs" aria-hidden="true"></i>
+                                            </button>
+
+                                            <div x-show="open" x-cloak
+                                                x-transition:enter="transition duration-100 ease-out"
+                                                x-transition:enter-start="opacity-0 scale-95"
+                                                x-transition:enter-end="opacity-100 scale-100"
+                                                x-transition:leave="transition duration-75 ease-in"
+                                                x-transition:leave-start="opacity-100 scale-100"
+                                                x-transition:leave-end="opacity-0 scale-95"
+                                                class="absolute bottom-full right-0 z-20 mb-1 w-52 origin-bottom-right rounded-xl border border-gray-200 bg-white py-1 shadow-lg">
+
+                                                @if ($allFolders->isNotEmpty())
+                                                    <div class="border-b border-gray-100 px-3 py-2">
+                                                        <p class="mb-1 text-[10px] font-bold uppercase tracking-widest text-muted">Przenieś do folderu</p>
+                                                        <form method="POST" action="{{ route('admin.multimedia.move', $item['id']) }}">
+                                                            @csrf
+                                                            @method('PUT')
+                                                            <label class="sr-only" for="folder-g-{{ $item['id'] }}">Wybierz folder</label>
+                                                            <select id="folder-g-{{ $item['id'] }}" name="folder_id"
+                                                                onchange="this.form.submit()"
+                                                                class="w-full rounded-lg border-gray-300 text-xs focus:border-brand focus:ring-brand">
+                                                                <option value="" {{ ! $folder ? 'selected' : '' }}>— główny katalog —</option>
+                                                                @foreach ($allFolders as $option)
+                                                                    <option value="{{ $option->id }}" {{ $folder?->id === $option->id ? 'selected' : '' }}>{{ $option->fullPath() }}</option>
+                                                                @endforeach
+                                                            </select>
+                                                        </form>
+                                                    </div>
+                                                @endif
+
+                                                @if ($item['archived'])
+                                                    <form method="POST" action="{{ route('admin.multimedia.restore', $item['id']) }}">
+                                                        @csrf
+                                                        @method('PUT')
+                                                        <button type="submit" class="flex w-full items-center gap-2 px-3 py-2 text-xs text-brand hover:bg-brand-light">
+                                                            <i class="fa-solid fa-rotate-left w-4 text-center" aria-hidden="true"></i>
+                                                            Przywróć z archiwum
+                                                        </button>
+                                                    </form>
+                                                @else
+                                                    <form method="POST" action="{{ route('admin.multimedia.archive', $item['id']) }}">
+                                                        @csrf
+                                                        @method('PUT')
+                                                        <button type="submit" class="flex w-full items-center gap-2 px-3 py-2 text-xs text-ink hover:bg-gray-50">
+                                                            <i class="fa-solid fa-box-archive w-4 text-center text-muted" aria-hidden="true"></i>
+                                                            Schowaj / archiwizuj
+                                                        </button>
+                                                    </form>
+                                                @endif
+
+                                                <div class="my-1 border-t border-gray-100"></div>
+
+                                                <form method="POST" action="{{ route('admin.multimedia.destroy', $item['id']) }}"
+                                                    onsubmit="return confirm('Usunąć plik &quot;{{ $item['file_name'] }}&quot;? Jeśli jest używany, zniknie też z miejsca, w którym się wyświetlał.');">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="flex w-full items-center gap-2 px-3 py-2 text-xs text-red-600 hover:bg-red-50">
+                                                        <i class="fa-solid fa-trash w-4 text-center" aria-hidden="true"></i>
+                                                        Usuń plik
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         @endforeach
                     </div>
 
-                    {{-- List view --}}
-                    <div x-show="view === 'list'" x-cloak class="overflow-x-auto rounded-lg border border-gray-200 bg-white">
+                    {{-- ── List view ───────────────────────────────────────── --}}
+                    <div x-show="view === 'list'" x-cloak class="overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-sm">
                         <table class="w-full text-left text-sm">
-                            <thead class="border-b border-gray-200 text-xs uppercase tracking-wide text-muted">
+                            <thead class="border-b border-gray-200 bg-gray-50 text-[10px] font-bold uppercase tracking-widest text-muted">
                                 <tr>
-                                    <th scope="col" class="p-3">
+                                    <th scope="col" class="px-4 py-3">
                                         <input type="checkbox" :checked="allSelected" @change="toggleAll()"
                                             class="h-4 w-4 rounded border-gray-300 text-brand focus:ring-brand"
                                             aria-label="Zaznacz wszystkie na tej stronie">
                                     </th>
-                                    <th scope="col" class="p-3"><span class="sr-only">Podgląd</span></th>
-                                    <th scope="col" class="p-3">Nazwa</th>
-                                    <th scope="col" class="p-3">Adres URL</th>
-                                    <th scope="col" class="p-3">Rozmiar</th>
-                                    <th scope="col" class="p-3">Dodano</th>
+                                    <th scope="col" class="px-4 py-3"><span class="sr-only">Podgląd</span></th>
+                                    <th scope="col" class="px-4 py-3">Plik</th>
+                                    <th scope="col" class="px-4 py-3">Użycie</th>
+                                    <th scope="col" class="px-4 py-3">Tagi</th>
+                                    <th scope="col" class="px-4 py-3">URL</th>
+                                    <th scope="col" class="px-4 py-3">Autor</th>
+                                    <th scope="col" class="px-4 py-3">Rozmiar&nbsp;/ data</th>
                                     @if ($allFolders->isNotEmpty())
-                                        <th scope="col" class="p-3">Folder</th>
+                                        <th scope="col" class="px-4 py-3">Folder</th>
                                     @endif
-                                    <th scope="col" class="p-3 text-right">Akcje</th>
+                                    <th scope="col" class="px-4 py-3 text-right">Akcje</th>
                                 </tr>
                             </thead>
-                            <tbody>
+                            <tbody class="divide-y divide-gray-100">
                                 @foreach ($media as $item)
-                                    <tr class="border-b border-gray-100 last:border-0 {{ $item['archived'] ? 'opacity-75' : '' }}"
-                                        :class="isSelected({{ $item['id'] }}) ? 'bg-brand-light' : ''">
-                                        <td class="p-3">
+                                    <tr class="{{ $item['archived'] ? 'opacity-60' : '' }}"
+                                        :class="isSelected({{ $item['id'] }}) ? 'bg-brand-light' : 'hover:bg-gray-50'">
+
+                                        {{-- Checkbox --}}
+                                        <td class="px-4 py-3">
                                             <input type="checkbox" id="sel-list-{{ $item['id'] }}"
-                                                :checked="isSelected({{ $item['id'] }})" @change="toggle({{ $item['id'] }})"
+                                                :checked="isSelected({{ $item['id'] }})"
+                                                @change="toggle({{ $item['id'] }})"
                                                 class="h-4 w-4 rounded border-gray-300 text-brand focus:ring-brand">
                                             <label for="sel-list-{{ $item['id'] }}" class="sr-only">Zaznacz plik {{ $item['file_name'] }}</label>
                                         </td>
-                                        <td class="p-3">
-                                            <div class="flex h-12 w-12 items-center justify-center overflow-hidden rounded bg-gray-50">
+
+                                        {{-- Thumbnail --}}
+                                        <td class="px-4 py-3">
+                                            <div class="flex h-14 w-14 items-center justify-center overflow-hidden rounded-lg bg-gray-100 flex-none">
                                                 @if ($item['is_image'])
                                                     <button type="button" class="block h-full w-full cursor-zoom-in"
                                                         @click="lightbox = { url: @js($item['url']), alt: @js($item['alt']), caption: @js($item['file_name']) }"
@@ -426,53 +706,135 @@
                                                         <img src="{{ $item['url'] }}" alt="{{ $item['alt'] }}" class="h-full w-full object-cover">
                                                     </button>
                                                 @else
-                                                    <i class="fa-solid fa-file text-muted" aria-hidden="true"></i>
+                                                    <i class="fa-solid fa-file text-xl text-gray-300" aria-hidden="true"></i>
                                                 @endif
                                             </div>
                                         </td>
-                                        <td class="max-w-xs p-3">
-                                            <p class="truncate font-bold" title="{{ $item['file_name'] }}">{{ $item['file_name'] }}</p>
-                                            <p class="text-xs text-muted">
-                                                {{ $item['owner']['label'] }} &middot; {{ $item['collection'] }}
-                                                @if ($item['archived'])
-                                                    &middot; <span class="font-bold text-ink">W archiwum</span>
-                                                @endif
-                                            </p>
+
+                                        {{-- Filename + meta --}}
+                                        <td class="max-w-[14rem] px-4 py-3">
+                                            <p class="truncate font-bold text-ink" title="{{ $item['file_name'] }}">{{ $item['file_name'] }}</p>
+                                            <p class="mt-0.5 text-xs text-muted">{{ $item['mime_type'] }}</p>
+                                            @if ($item['archived'])
+                                                <span class="mt-0.5 inline-block rounded bg-gray-200 px-1.5 py-0.5 text-[10px] font-bold text-gray-600">W archiwum</span>
+                                            @endif
                                             @if ($item['is_image'])
                                                 @if ($item['is_webp'])
-                                                    <span class="mt-0.5 inline-flex items-center gap-0.5 rounded bg-green-100 px-1.5 py-0.5 text-xs font-bold text-green-700">
+                                                    <span class="mt-0.5 inline-flex items-center gap-0.5 rounded bg-green-100 px-1.5 py-0.5 text-[10px] font-bold text-green-700">
                                                         <i class="fa-solid fa-check" aria-hidden="true"></i> WebP
                                                     </span>
                                                 @else
-                                                    <span class="mt-0.5 inline-block rounded border border-amber-200 bg-amber-50 px-1.5 py-0.5 text-xs font-bold text-amber-700">
+                                                    <span class="mt-0.5 inline-block rounded border border-amber-200 bg-amber-50 px-1.5 py-0.5 text-[10px] font-bold text-amber-700">
                                                         {{ strtoupper(pathinfo($item['file_name'], PATHINFO_EXTENSION)) }}
                                                     </span>
                                                 @endif
                                             @endif
                                         </td>
-                                        <td class="p-3">
-                                            <div class="flex items-center gap-1">
+
+                                        {{-- Usage / owner --}}
+                                        <td class="px-4 py-3">
+                                            @if ($item['owner']['url'])
+                                                <a href="{{ $item['owner']['url'] }}"
+                                                    class="inline-flex items-center gap-1.5 rounded-lg border border-brand/30 bg-brand-light px-2.5 py-1.5 text-xs font-bold text-brand hover:bg-brand hover:text-white transition-colors">
+                                                    <i class="fa-solid fa-arrow-up-right-from-square text-[10px]" aria-hidden="true"></i>
+                                                    {{ $item['owner']['label'] }}
+                                                </a>
+                                            @elseif ($item['owner']['standalone'] ?? false)
+                                                <span class="inline-flex items-center gap-1.5 rounded-lg bg-gray-100 px-2.5 py-1.5 text-xs text-muted">
+                                                    <i class="fa-solid fa-layer-group text-[10px]" aria-hidden="true"></i>
+                                                    Biblioteka plików
+                                                </span>
+                                            @else
+                                                <span class="inline-flex items-center gap-1.5 rounded-lg bg-amber-50 px-2.5 py-1.5 text-xs text-amber-700">
+                                                    <i class="fa-solid fa-triangle-exclamation text-[10px]" aria-hidden="true"></i>
+                                                    Osierocony plik
+                                                </span>
+                                            @endif
+                                        </td>
+
+                                        {{-- Tags --}}
+                                        <td class="px-4 py-3"
+                                            x-data="{ tags: @js($item['tags']), tagInput: '', addingTag: false }">
+                                            <form x-ref="tagFormList-{{ $item['id'] }}"
+                                                method="POST" action="{{ route('admin.multimedia.tags', $item['id']) }}">
+                                                @csrf
+                                                @method('PUT')
+                                                <template x-for="tag in tags" :key="tag">
+                                                    <input type="hidden" name="tags[]" :value="tag">
+                                                </template>
+                                            </form>
+
+                                            <div class="flex flex-wrap items-center gap-1">
+                                                <template x-for="tag in tags" :key="tag">
+                                                    <span class="flex items-center gap-0.5 rounded-full bg-gray-100 pl-2 pr-1 py-0.5 text-[10px] font-bold text-gray-600">
+                                                        <span x-text="tag"></span>
+                                                        <button type="button"
+                                                            @click="tags = tags.filter(t => t !== tag); $refs['tagFormList-{{ $item['id'] }}'].requestSubmit()"
+                                                            class="ml-0.5 rounded-full hover:text-red-500" aria-label="Usuń tag">
+                                                            <i class="fa-solid fa-xmark text-[9px]" aria-hidden="true"></i>
+                                                        </button>
+                                                    </span>
+                                                </template>
+                                                <button type="button" @click="addingTag = !addingTag"
+                                                    class="rounded-full border border-dashed border-gray-300 px-2 py-0.5 text-[10px] text-muted hover:border-brand hover:text-brand"
+                                                    aria-label="Dodaj tag">
+                                                    <i class="fa-solid fa-plus text-[8px]" aria-hidden="true"></i>
+                                                </button>
+                                            </div>
+
+                                            <div x-show="addingTag" x-cloak class="mt-1">
+                                                <input type="text" x-model="tagInput"
+                                                    placeholder="Nowy tag…"
+                                                    class="w-32 rounded-lg border-gray-300 py-1 px-2 text-xs focus:border-brand focus:ring-brand"
+                                                    @keydown.enter.prevent="
+                                                        const t = tagInput.trim();
+                                                        if (t && !tags.includes(t)) { tags.push(t); $refs['tagFormList-{{ $item['id'] }}'].requestSubmit(); }
+                                                        tagInput = ''; addingTag = false;
+                                                    "
+                                                    @keydown.escape="addingTag = false; tagInput = ''"
+                                                    x-effect="if (addingTag) $nextTick(() => $el.focus())">
+                                            </div>
+                                        </td>
+
+                                        {{-- URL --}}
+                                        <td class="px-4 py-3">
+                                            <div class="flex items-center gap-1.5">
                                                 <label class="sr-only" for="url-list-{{ $item['id'] }}">Adres URL pliku {{ $item['file_name'] }}</label>
                                                 <input type="text" id="url-list-{{ $item['id'] }}" readonly value="{{ $item['url'] }}"
                                                     @focus="$event.target.select()"
-                                                    class="w-40 truncate rounded border-gray-200 bg-gray-50 px-2 py-1 text-xs text-muted focus:border-brand focus:ring-brand">
-                                                <button type="button" @click="copy(@js($item['url']), {{ $item['id'] }})"
-                                                    class="flex-none rounded border border-gray-300 px-2 py-1 hover:bg-gray-100"
+                                                    class="w-32 rounded-lg border-gray-200 bg-gray-50 px-2 py-1.5 text-xs text-muted focus:border-brand focus:ring-brand">
+                                                <button type="button"
+                                                    @click="copy(@js($item['url']), {{ $item['id'] }})"
+                                                    class="flex-none rounded-lg border border-gray-300 px-2 py-1.5 hover:bg-gray-100"
                                                     :aria-label="copiedId === {{ $item['id'] }} ? 'Skopiowano adres URL' : 'Kopiuj adres URL'">
-                                                    <i class="fa-solid" :class="copiedId === {{ $item['id'] }} ? 'fa-check text-green-600' : 'fa-copy text-muted'" aria-hidden="true"></i>
+                                                    <i class="fa-solid"
+                                                        :class="copiedId === {{ $item['id'] }} ? 'fa-check text-green-600' : 'fa-copy text-muted'"
+                                                        aria-hidden="true"></i>
                                                 </button>
                                             </div>
                                         </td>
-                                        <td class="whitespace-nowrap p-3 text-muted">{{ $item['size'] }}</td>
-                                        <td class="whitespace-nowrap p-3 text-muted">{{ $item['created_at']->format('d.m.Y') }}</td>
+
+                                        {{-- Author --}}
+                                        <td class="whitespace-nowrap px-4 py-3 text-sm text-muted">
+                                            {{ $item['uploader'] ?? 'System' }}
+                                        </td>
+
+                                        {{-- Size + date --}}
+                                        <td class="whitespace-nowrap px-4 py-3 text-sm text-muted">
+                                            <p>{{ $item['size'] }}</p>
+                                            <p class="text-xs">{{ $item['created_at']->format('d.m.Y') }}</p>
+                                        </td>
+
+                                        {{-- Folder --}}
                                         @if ($allFolders->isNotEmpty())
-                                            <td class="p-3">
+                                            <td class="px-4 py-3">
                                                 <form method="POST" action="{{ route('admin.multimedia.move', $item['id']) }}">
                                                     @csrf
                                                     @method('PUT')
                                                     <label class="sr-only" for="folder-list-{{ $item['id'] }}">Przenieś do folderu</label>
-                                                    <select id="folder-list-{{ $item['id'] }}" name="folder_id" onchange="this.form.submit()"
-                                                        class="w-full min-w-[10rem] rounded border-gray-300 text-xs focus:border-brand focus:ring-brand">
+                                                    <select id="folder-list-{{ $item['id'] }}" name="folder_id"
+                                                        onchange="this.form.submit()"
+                                                        class="w-full min-w-[9rem] rounded-lg border-gray-300 text-xs focus:border-brand focus:ring-brand">
                                                         <option value="" {{ ! $folder ? 'selected' : '' }}>— główny katalog —</option>
                                                         @foreach ($allFolders as $option)
                                                             <option value="{{ $option->id }}" {{ $folder?->id === $option->id ? 'selected' : '' }}>{{ $option->fullPath() }}</option>
@@ -481,26 +843,28 @@
                                                 </form>
                                             </td>
                                         @endif
-                                        <td class="p-3">
-                                            <div class="flex items-center justify-end gap-3">
-                                                @if ($item['owner']['url'])
-                                                    <a href="{{ $item['owner']['url'] }}" class="text-xs font-bold text-brand hover:text-brand-dark">Otwórz</a>
-                                                @endif
 
+                                        {{-- Actions --}}
+                                        <td class="px-4 py-3">
+                                            <div class="flex items-center justify-end gap-1">
                                                 @if ($item['archived'])
                                                     <form method="POST" action="{{ route('admin.multimedia.restore', $item['id']) }}">
                                                         @csrf
                                                         @method('PUT')
-                                                        <button type="submit" class="text-brand hover:text-brand-dark" title="Przywróć z archiwum" aria-label="Przywróć z archiwum">
-                                                            <i class="fa-solid fa-rotate-left"></i>
+                                                        <button type="submit"
+                                                            class="rounded-lg p-1.5 text-brand hover:bg-brand-light"
+                                                            title="Przywróć z archiwum" aria-label="Przywróć z archiwum">
+                                                            <i class="fa-solid fa-rotate-left" aria-hidden="true"></i>
                                                         </button>
                                                     </form>
                                                 @else
                                                     <form method="POST" action="{{ route('admin.multimedia.archive', $item['id']) }}">
                                                         @csrf
                                                         @method('PUT')
-                                                        <button type="submit" class="text-muted hover:text-ink" title="Schowaj / archiwizuj" aria-label="Schowaj / archiwizuj">
-                                                            <i class="fa-solid fa-box-archive"></i>
+                                                        <button type="submit"
+                                                            class="rounded-lg p-1.5 text-muted hover:bg-gray-100 hover:text-ink"
+                                                            title="Schowaj / archiwizuj" aria-label="Schowaj / archiwizuj">
+                                                            <i class="fa-solid fa-box-archive" aria-hidden="true"></i>
                                                         </button>
                                                     </form>
                                                 @endif
@@ -509,7 +873,11 @@
                                                     onsubmit="return confirm('Usunąć plik &quot;{{ $item['file_name'] }}&quot;? Jeśli jest używany, zniknie też z miejsca, w którym się wyświetlał.');">
                                                     @csrf
                                                     @method('DELETE')
-                                                    <button type="submit" class="text-muted hover:text-red-600" title="Usuń" aria-label="Usuń plik"><i class="fa-solid fa-trash"></i></button>
+                                                    <button type="submit"
+                                                        class="rounded-lg p-1.5 text-muted hover:bg-red-50 hover:text-red-600"
+                                                        title="Usuń plik" aria-label="Usuń plik">
+                                                        <i class="fa-solid fa-trash" aria-hidden="true"></i>
+                                                    </button>
                                                 </form>
                                             </div>
                                         </td>
@@ -526,7 +894,7 @@
             </div>
         </div>
 
-        {{-- Image lightbox --}}
+        {{-- ── Image lightbox ───────────────────────────────────────────────── --}}
         <div x-show="lightbox" x-cloak
             @keydown.escape.window="lightbox = null"
             @click="lightbox = null"
@@ -534,16 +902,16 @@
             role="dialog" aria-modal="true" aria-label="Podgląd obrazu"
             x-transition.opacity>
             <button type="button" @click="lightbox = null"
-                class="absolute right-4 top-4 text-3xl text-white/80 hover:text-white" aria-label="Zamknij podgląd">
-                <i class="fa-solid fa-xmark"></i>
+                class="absolute right-4 top-4 flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20"
+                aria-label="Zamknij podgląd">
+                <i class="fa-solid fa-xmark text-xl" aria-hidden="true"></i>
             </button>
             <figure class="max-w-4xl" @click.stop>
-                <img :src="lightbox?.url" :alt="lightbox?.alt" class="mx-auto max-h-[80vh] w-auto rounded object-contain">
-                <figcaption class="mt-3 text-center text-sm text-white/80" x-text="lightbox?.caption"></figcaption>
+                <img :src="lightbox?.url" :alt="lightbox?.alt" class="mx-auto max-h-[80vh] w-auto rounded-xl object-contain shadow-2xl">
+                <figcaption class="mt-3 text-center text-sm text-white/70" x-text="lightbox?.caption"></figcaption>
             </figure>
         </div>
 
-        {{-- Screen-reader announcement for copy-to-clipboard --}}
         <div class="sr-only" aria-live="polite" x-text="copiedId ? 'Adres URL skopiowany do schowka.' : ''"></div>
     </div>
 @endsection
