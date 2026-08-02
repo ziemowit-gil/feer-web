@@ -21,7 +21,6 @@ class News extends Model implements HasMedia
     use \App\Models\Concerns\LogsActivity;
     use \Illuminate\Database\Eloquent\SoftDeletes;
     use InteractsWithMedia;
-    use \App\Models\Concerns\HasWebpConversion;
 
     protected $table = 'news';
 
@@ -87,6 +86,11 @@ class News extends Model implements HasMedia
     public function registerMediaCollections(): void
     {
         $this->addMediaCollection('image')->singleFile();
+    }
+
+    public function registerMediaConversions(?\Spatie\MediaLibrary\MediaCollections\Models\Media $media = null): void
+    {
+        $this->addMediaConversion('webp')->format('webp')->quality(85)->nonQueued();
     }
 
     protected function imageUrl(): Attribute

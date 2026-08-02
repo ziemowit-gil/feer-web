@@ -11,7 +11,6 @@ use Spatie\MediaLibrary\InteractsWithMedia;
 class PageImage extends Model implements HasMedia
 {
     use InteractsWithMedia;
-    use \App\Models\Concerns\HasWebpConversion;
 
     protected $fillable = ['page_id', 'alt', 'caption', 'order'];
 
@@ -23,6 +22,11 @@ class PageImage extends Model implements HasMedia
     public function registerMediaCollections(): void
     {
         $this->addMediaCollection('image')->singleFile();
+    }
+
+    public function registerMediaConversions(?\Spatie\MediaLibrary\MediaCollections\Models\Media $media = null): void
+    {
+        $this->addMediaConversion('webp')->format('webp')->quality(85)->nonQueued();
     }
 
     protected function imageUrl(): Attribute
