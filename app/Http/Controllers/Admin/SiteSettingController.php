@@ -338,10 +338,9 @@ class SiteSettingController extends Controller
                 || ($row['type'] === 'weekly' && $row['weekday'] >= 1 && $row['weekday'] <= 7))
             ->values()
             ->all();
-        $data['disabled_modules'] = array_values(array_diff(
-            array_keys(SiteSetting::MODULES),
-            $request->input('enabled_modules', [])
-        ));
+        $data['disabled_modules'] = $request->has('enabled_modules')
+            ? array_values(array_diff(array_keys(SiteSetting::MODULES), $request->input('enabled_modules')))
+            : (SiteSetting::current()->disabled_modules ?? []);
 
         $orderedKeys = json_decode($request->input('section_order_json', '[]'), true) ?? [];
         $defined = array_keys(SiteSetting::HOMEPAGE_SECTIONS);
