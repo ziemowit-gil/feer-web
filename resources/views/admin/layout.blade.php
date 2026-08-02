@@ -435,6 +435,14 @@
                 <i class="fa-solid fa-bell w-5 shrink-0 text-center text-gray-400 group-hover:text-ink"></i>
                 <span class="link-label">Powiadomienia</span>
             </a>
+            @if (auth()->user()->isAdmin())
+                <a href="{{ route('admin.dokumentacja') }}" target="_blank" rel="noopener"
+                   class="group flex items-center gap-3 rounded-lg px-3 py-2 text-muted transition-colors hover:bg-gray-100 hover:text-ink"
+                   title="Dokumentacja techniczna weCMS">
+                    <i class="fa-solid fa-book w-5 shrink-0 text-center text-gray-400 group-hover:text-ink"></i>
+                    <span class="link-label">Dokumentacja</span>
+                </a>
+            @endif
             <a href="{{ route('home') }}" class="group flex items-center gap-3 rounded-lg px-3 py-2 text-muted transition-colors hover:bg-gray-100 hover:text-ink" title="Wróć do strony">
                 <i class="fa-solid fa-arrow-left w-5 shrink-0 text-center text-gray-400 group-hover:text-ink"></i>
                 <span class="link-label">Wróć do strony</span>

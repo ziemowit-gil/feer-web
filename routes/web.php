@@ -416,6 +416,15 @@ Route::middleware(['auth', 'verified', '2fa'])->prefix(config('app.admin_prefix'
         Route::get('martwe-linki', [AdminLinkCheckController::class, 'index'])->name('martwe-linki.index');
         Route::post('martwe-linki/skanuj', [AdminLinkCheckController::class, 'scan'])->name('martwe-linki.scan');
     });
+
+    // Dokumentacja techniczna (tylko admin).
+    Route::get('dokumentacja/{plik?}', function (string $plik = 'controllers') {
+        $allowed = ['controllers', 'deployment'];
+        $plik = in_array($plik, $allowed, true) ? $plik : 'controllers';
+        $path = base_path("docs/{$plik}.html");
+        abort_unless(file_exists($path), 404);
+        return response()->file($path, ['Content-Type' => 'text/html; charset=utf-8']);
+    })->middleware('admin')->name('dokumentacja');
 });
 
 require __DIR__.'/auth.php';

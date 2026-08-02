@@ -451,25 +451,48 @@ footer {
 
     <div class="about-desc">
       <p>
-        <strong>weCMS</strong> to dedykowany system zarządzania treścią stworzony dla
-        <strong>FEER</strong> — Fundacji Edukacji i Rehabilitacji Zawodowej, polskiej organizacji
-        pozarządowej wspierającej osoby z niepełnosprawnościami. System obsługuje kompletną
-        obecność cyfrową organizacji: od strony głównej, przez aktualności i projekty,
-        po zapisy na szkolenia, wolontariat i strefę współpracownika.
+        <strong>FEER — Fundacja Edukacji Empatii Rozwoju „FEER"</strong> to polska organizacja
+        pozarządowa działająca na rzecz osób z niepełnosprawnościami, ich rodzin i opiekunów.
+        Jej strona internetowa to nie wizytówka — to narzędzie misji: miejsce, gdzie
+        beneficjenci trafiają po informacje o szkoleniach, wolontariacie, projektach
+        dofinansowanych ze środków UE i materiałach edukacyjnych tworzonych z myślą
+        o osobach z różnymi potrzebami. <strong>weCMS</strong> powstał, bo żaden gotowy
+        system nie rozumiał tego kontekstu wystarczająco dobrze.
       </p>
       <p>
-        Zbudowany na <strong>Laravel 13 / PHP 8.3+</strong> z dwoma bazami SQLite — główną
-        i osobną dla bloga Wiem FEER — weCMS łączy klasyczny panel CMS z zaawansowaną
-        kontrolą dostępu (Microsoft 365 SSO + 2FA), biblioteką mediów (Spatie MediaLibrary,
-        Unsplash, OneDrive) oraz wbudowanymi narzędziami dostępności zgodnymi z
-        <strong>WCAG 2.1 AA</strong> i standardem <strong>ETR (Easy-To-Read)</strong>.
+        <strong>Dostępność to tu obowiązek prawny i misja jednocześnie.</strong>
+        FEER działa na rzecz osób z niepełnosprawnościami — a więc obsługuje odbiorców,
+        którzy korzystają z czytników ekranu, klawiaturowej nawigacji, powiększonych fontów
+        i uproszczonego języka. Zgodność z <strong>WCAG 2.1 AA</strong> nie jest dodatkiem —
+        jest warunkiem, żeby treść w ogóle dotarła do właściwego człowieka. Dlatego system
+        wymusza alt-tekst przy każdym zdjęciu, audytuje braki w bibliotece mediów, pilnuje
+        kontrastu przez <code class="ctrl-name">contrastSafeColor()</code> i obsługuje
+        standard <strong>ETR (Easy-To-Read)</strong> — uproszczone wersje aktualności
+        i podstron dla osób z niepełnosprawnością intelektualną lub trudnościami
+        w czytaniu. To nie są wtyczki — to architektura.
       </p>
       <p>
-        Panel administracyjny obsługuje 46 kontrolerów Admin i 12 kontrolerów Auth,
-        w tym obieg akceptacji treści, kosz z miękkim usuwaniem, dziennik zdarzeń
-        (ActivityLog), edytor szablonów treści, skaner martwych linków i eksport ZIP.
-        Strona publiczna jest serwowana przez 28 kontrolerów pokrywających wszystkie
-        moduły treści, landing page'e, ankiety, formularz kontaktowy i mapę strony.
+        <strong>NGO rządzi się innymi prawami niż korporacja.</strong>
+        Treści tworzą koordynatorzy projektów, wolontariusze i stażyści — nie zawodowi
+        redaktorzy. System musi być na tyle prosty, żeby działał bez onboardingu,
+        i na tyle bezpieczny, żeby przypadkowa publikacja niegotowego tekstu nie była
+        możliwa. Stąd wbudowany obieg akceptacji (<code class="ctrl-name">HandlesContentApproval</code>):
+        redaktorzy bez uprawnień do publikacji wysyłają treść do kolejki — koordynator
+        zatwierdza lub odrzuca. Każda zmiana jest logowana w dzienniku zdarzeń (ActivityLog),
+        a historia wersji pozwala cofnąć każdą edycję. Cały cykl życia treści —
+        szkic → akceptacja → publikacja → archiwum → kosz — jest wymuszony systemowo,
+        nie regulaminowo.
+      </p>
+      <p>
+        <strong>Infrastruktura dopasowana do realiów fundacji.</strong>
+        FEER pracuje na Microsoft 365 — dlatego logowanie do panelu i strefy współpracownika
+        działa przez <strong>Microsoft 365 SSO (Azure AD)</strong>, bez osobnych haseł.
+        Brak dużego budżetu IT oznacza zero zewnętrznych SaaS-ów do zarządzania treścią:
+        <strong>Laravel 13 / PHP 8.3+</strong>, dwie bazy SQLite, biblioteka mediów
+        zintegrowana z Unsplash i OneDrive, wdrożenie przez własny skrypt
+        <code class="ctrl-name">deploy.sh</code>. Bezpieczeństwo: 2FA sprzętowy (YubiKey)
+        i programowy (TOTP) dla każdego konta adminów, dostęp awaryjny na wypadek
+        niedostępności Microsoft. 87 kontrolerów. Żadnych opłat za licencję.
       </p>
     </div>
 
