@@ -270,6 +270,26 @@ html.no-animations *::after {
     margin-bottom: 0;
 }
 
+/* Blok "Ważne info" — niebieska ramka boczna; kontrast tekstu ~12:1 (WCAG AAA). */
+.prose .content-important,
+.content-important {
+    border: 1px solid #93c5fd;
+    border-left: 4px solid #2563eb;
+    border-radius: 0 0.5rem 0.5rem 0;
+    background-color: #eff6ff;
+    color: #1e3a8a;
+    padding: 1rem 1.25rem;
+    margin: 1.5rem 0;
+}
+.prose .content-important > :first-child,
+.content-important > :first-child {
+    margin-top: 0;
+}
+.prose .content-important > :last-child,
+.content-important > :last-child {
+    margin-bottom: 0;
+}
+
 /* Kafelek BIP wstawiany z edytora — link do strony-pośrednika /bip. */
 .prose .bip-link-box,
 .bip-link-box {

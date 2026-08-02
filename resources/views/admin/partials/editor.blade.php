@@ -20,6 +20,9 @@
     // Blok ostrzeżenie/notatka — bursztynowa ramka boczna.
     $noteHtml = '<div class="content-note"><p>Wpisz tutaj treść notatki lub ostrzeżenia&hellip;</p></div><p>&nbsp;</p>';
     $noteHtmlForCk = '<blockquote><p>⚠ Wpisz tutaj treść notatki lub ostrzeżenia&hellip;</p></blockquote><p>&nbsp;</p>';
+    // Blok ważna informacja — niebieska ramka boczna, kontrast WCAG AA+.
+    $importantHtml = '<div class="content-important"><p><strong>Ważne</strong></p><p>Wpisz tutaj treść ważnej informacji&hellip;</p></div><p>&nbsp;</p>';
+    $importantHtmlForCk = '<blockquote><p><strong>ℹ Ważne</strong><br>Wpisz tutaj treść ważnej informacji&hellip;</p></blockquote><p>&nbsp;</p>';
     // Historia wersji: opcjonalny kontekst przekazywany z formularza.
     $revisionType = $revisionable['type'] ?? null;
     $revisionId   = $revisionable['id'] ?? null;
@@ -36,9 +39,13 @@
         'accentRight' => '<div class="accent-section accent-right"><p>Treść w kolorowej sekcji&hellip;</p></div><p>&nbsp;</p>',
         'table' => '<table><caption>Opis tabeli</caption><thead><tr><th scope="col">Kolumna 1</th><th scope="col">Kolumna 2</th><th scope="col">Kolumna 3</th></tr></thead><tbody><tr><th scope="row">Wiersz 1</th><td>Dane</td><td>Dane</td></tr><tr><th scope="row">Wiersz 2</th><td>Dane</td><td>Dane</td></tr></tbody></table><p>&nbsp;</p>',
         'note' => $noteHtml,
+        'important' => $importantHtml,
     ];
-    // CKEditor nie zachowuje <div class="content-note"> — podmień na <blockquote>.
-    $ckEditorSnippets = array_merge($editorSnippets, ['note' => $noteHtmlForCk]);
+    // CKEditor nie zachowuje <div class="content-*"> — podmień na <blockquote>.
+    $ckEditorSnippets = array_merge($editorSnippets, [
+        'note' => $noteHtmlForCk,
+        'important' => $importantHtmlForCk,
+    ]);
 
     $pages = \App\Models\Page::where('is_published', true)->orderBy('title')->get();
     // Schedule pages, offered as ready-made CTA buttons ("Sprawdź harmonogram").
@@ -93,6 +100,7 @@
             <button type="button" data-insert-key="bip" @click="open = false" class="{{ $mi }}"><i class="fa-solid fa-landmark w-4 text-center text-muted" aria-hidden="true"></i> Więcej informacji w BIP</button>
             <button type="button" id="{{ $editorId }}-box" @click="open = false" class="{{ $mi }}"><i class="fa-solid fa-vector-square w-4 text-center" aria-hidden="true"></i> Tekst z ramką</button>
             <button type="button" data-insert-key="note" @click="open = false" class="{{ $mi }}"><i class="fa-solid fa-triangle-exclamation w-4 text-center text-amber-500" aria-hidden="true"></i> Notatka / ostrzeżenie</button>
+            <button type="button" data-insert-key="important" @click="open = false" class="{{ $mi }}"><i class="fa-solid fa-circle-info w-4 text-center text-blue-600" aria-hidden="true"></i> Ważne info</button>
             <button type="button" id="{{ $editorId }}-docx-btn" @click="open = false" class="{{ $mi }}"><i class="fa-solid fa-file-word w-4 text-center text-blue-600" aria-hidden="true"></i> Importuj DOCX…</button>
             @if ($useCkEditor)
                 <button type="button" id="{{ $editorId }}-columns" @click="open = false" class="{{ $mi }}"><i class="fa-solid fa-table-columns w-4 text-center" aria-hidden="true"></i> Układ 2 kolumn</button>
@@ -1437,6 +1445,7 @@
                     branding: false,
                     convert_urls: false,
                     plugins: 'advlist autolink lists link anchor image charmap preview searchreplace visualblocks code fullscreen media table help wordcount accordion emoticons autosave quickbars',
+                    block_formats: 'Akapit=p; Nagłówek 2=h2; Nagłówek 3=h3; Nagłówek 4=h4',
                     toolbar: 'undo redo | blocks | bold italic underline forecolor backcolor | alignleft aligncenter alignright | bullist numlist | link table media accordion | insertmenu linkmenu importmenu | clearformat | charmap emoticons | searchreplace visualblocks fullscreen preview | a11ycheck help | code{{ $historyJsonUrl ? " | historyrevisions" : "" }}',
                     toolbar_mode: 'wrap',
                     statusbar: true,
@@ -1516,6 +1525,7 @@
                                     { type: 'menuitem', text: 'Więcej informacji w BIP', onAction: function () { editor.insertContent(snippets.bip); } },
                                     { type: 'menuitem', text: 'Tekst z ramką', onAction: function () { editor.insertContent(boxHtml); } },
                                     { type: 'menuitem', text: 'Notatka / ostrzeżenie', onAction: function () { editor.insertContent(snippets.note); } },
+                                    { type: 'menuitem', text: 'Ważne info', icon: 'info', onAction: function () { editor.insertContent(snippets.important); } },
                                     { type: 'menuitem', text: 'Importuj plik DOCX…', icon: 'upload', onAction: function () { document.getElementById('{{ $editorId }}-docx-input').click(); } },
                                     { type: 'menuitem', text: 'Sekcja akcentu (lewo)', onAction: function () { editor.insertContent(snippets.accentLeft); } },
                                     { type: 'menuitem', text: 'Sekcja akcentu (prawo)', onAction: function () { editor.insertContent(snippets.accentRight); } },
