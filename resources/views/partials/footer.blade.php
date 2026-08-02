@@ -25,29 +25,26 @@
 
     <div class="relative border-t border-gray-200 bg-gray-50">
         <div class="mx-auto max-w-6xl px-4 py-5 text-sm text-muted">
-            <div class="flex flex-wrap items-center justify-between gap-x-8 gap-y-4">
+            <div class="flex items-center justify-between gap-6">
 
                 {{-- Marka --}}
-                <div class="flex items-center gap-2.5">
+                <div class="flex shrink-0 items-center gap-2.5">
                     @if ($siteSettings->logoUrl())
                         <img src="{{ $siteSettings->logoUrl() }}" alt="" class="h-8 w-8 flex-none rounded object-contain">
                     @else
                         <span class="flex h-8 w-8 flex-none items-center justify-center rounded bg-brand text-sm font-bold text-white">{{ mb_substr($siteSettings->site_name, 0, 1) }}</span>
                     @endif
-                    <div class="leading-snug">
-                        <p>&copy; {{ now()->year }} {{ $siteSettings->site_name }}</p>
+                    <span>
+                        &copy; {{ now()->year }} {{ $siteSettings->site_name }}
                         @if ($siteSettings->show_cms_credit ?? true)
-                            <p class="text-xs">
-                                Napędza <span class="font-bold">weCMS</span> &middot;
-                                <a href="mailto:ziemowit.gil@feer.org.pl" class="hover:text-brand">Ziemowit Gil</a>
-                            </p>
+                            &middot; <span class="font-bold">weCMS</span>
                         @endif
-                    </div>
+                    </span>
                 </div>
 
                 {{-- Nawigacja --}}
                 <nav aria-label="Linki stopki">
-                    <ul class="flex flex-wrap gap-x-6 gap-y-1">
+                    <ul class="flex flex-wrap gap-x-5 gap-y-1">
                         @foreach ($footerNavItems as $item)
                             <li><a href="{{ $item->url }}" class="hover:text-brand">{{ $item->label }}</a></li>
                         @endforeach
@@ -93,6 +90,8 @@
 
             </div>
         </div>
-        <a href="{{ route('admin.dashboard') }}" class="absolute bottom-2 right-3 text-base leading-none" aria-label="Panel administracyjny">⚙️</a>
+        <a href="{{ route('admin.dashboard') }}" class="absolute bottom-2 right-3 text-muted transition hover:text-brand" aria-label="Panel administracyjny">
+            <i class="fa-solid fa-gear text-sm" aria-hidden="true"></i>
+        </a>
     </div>
 </footer>
