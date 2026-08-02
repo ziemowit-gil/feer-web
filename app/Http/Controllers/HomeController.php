@@ -41,7 +41,7 @@ class HomeController extends Controller
                     'mission_img_url' => $settings->missionSlideImageUrl(),
                 ];
                 $position = max(0, min((int) ($settings->hero_mission_order ?? 1) - 1, $slides->count()));
-                $slides = $slides->values()->take($position)->push($missionSlide)->merge($slides->values()->slice($position));
+                $slides = $slides->values()->take($position)->push($missionSlide)->toBase()->merge($slides->values()->slice($position));
             }
         }
 
