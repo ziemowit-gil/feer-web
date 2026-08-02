@@ -96,7 +96,7 @@ class News extends Model implements HasMedia
     protected function imageUrl(): Attribute
     {
         return Attribute::make(
-            get: fn () => $this->getFirstMediaUrl('image') ?: null,
+            get: fn () => $this->getFirstMedia('image')?->getAvailableUrl(['webp']) ?: null,
         );
     }
 

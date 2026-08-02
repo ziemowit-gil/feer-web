@@ -331,7 +331,6 @@ Route::middleware(['auth', 'verified', '2fa'])->prefix(config('app.admin_prefix'
     Route::put('multimedia/{media}/folder', [MediaLibraryController::class, 'move'])->name('multimedia.move');
     Route::put('multimedia/{media}/archiwizuj', [MediaLibraryController::class, 'archive'])->name('multimedia.archive');
     Route::put('multimedia/{media}/przywroc', [MediaLibraryController::class, 'restore'])->name('multimedia.restore');
-    Route::put('multimedia/{media}/konwertuj-webp', [MediaLibraryController::class, 'convertToWebp'])->name('multimedia.konwertuj-webp');
     Route::delete('multimedia/{media}', [MediaLibraryController::class, 'destroy'])->name('multimedia.destroy');
 
     Route::post('multimedia/foldery', [MediaLibraryController::class, 'storeFolder'])->name('multimedia.foldery.store');

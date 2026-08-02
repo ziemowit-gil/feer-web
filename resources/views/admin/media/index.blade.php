@@ -361,17 +361,6 @@
                                                 <span class="inline-block rounded border border-amber-200 bg-amber-50 px-1.5 py-0.5 text-xs font-bold text-amber-700">
                                                     {{ strtoupper(pathinfo($item['file_name'], PATHINFO_EXTENSION)) }}
                                                 </span>
-                                                @if ($item['has_webp_conversion'])
-                                                    <form method="POST" action="{{ route('admin.multimedia.konwertuj-webp', $item['id']) }}" class="mt-1">
-                                                        @csrf
-                                                        @method('PUT')
-                                                        <button type="submit"
-                                                            onclick="return confirm('Zastąpić oryginalny plik wersją WebP? Operacja jest nieodwracalna.')"
-                                                            class="flex w-full items-center justify-center gap-1 rounded border border-green-300 px-2 py-1.5 text-xs font-bold text-green-700 hover:bg-green-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-500">
-                                                            <i class="fa-solid fa-rotate" aria-hidden="true"></i> Zastąp WebP
-                                                        </button>
-                                                    </form>
-                                                @endif
                                             @endif
                                         </div>
                                     @endif
@@ -496,18 +485,6 @@
                                             <div class="flex items-center justify-end gap-3">
                                                 @if ($item['owner']['url'])
                                                     <a href="{{ $item['owner']['url'] }}" class="text-xs font-bold text-brand hover:text-brand-dark">Otwórz</a>
-                                                @endif
-
-                                                @if ($item['has_webp_conversion'])
-                                                    <form method="POST" action="{{ route('admin.multimedia.konwertuj-webp', $item['id']) }}">
-                                                        @csrf
-                                                        @method('PUT')
-                                                        <button type="submit"
-                                                            onclick="return confirm('Zastąpić oryginalny plik wersją WebP? Operacja jest nieodwracalna.')"
-                                                            class="text-green-600 hover:text-green-800" title="Zastąp WebP" aria-label="Zastąp plik wersją WebP">
-                                                            <i class="fa-solid fa-rotate" aria-hidden="true"></i>
-                                                        </button>
-                                                    </form>
                                                 @endif
 
                                                 @if ($item['archived'])

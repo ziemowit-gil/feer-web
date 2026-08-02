@@ -25,7 +25,7 @@ class GalleryImage extends Model implements HasMedia
     protected function imageUrl(): \Illuminate\Database\Eloquent\Casts\Attribute
     {
         return \Illuminate\Database\Eloquent\Casts\Attribute::make(
-            get: fn () => $this->getFirstMediaUrl('image') ?: null,
+            get: fn () => $this->getFirstMedia('image')?->getAvailableUrl(['webp']) ?: null,
         );
     }
 }
