@@ -290,7 +290,7 @@ function templateModal(type, fields) {
         async saveTemplate() {
             if (!this.saveName.trim()) return;
 
-            const formEl = document.querySelector('form');
+            const formEl = document.querySelector('form[enctype="multipart/form-data"]') || document.querySelector('form');
             const formData = new FormData(formEl);
             const data = {};
             this.fields.forEach(f => {
