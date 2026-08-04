@@ -134,6 +134,7 @@
                     @if ($event->facilitatorPhotoUrl())
                         <img src="{{ $event->facilitatorPhotoUrl() }}"
                             alt="{{ $event->facilitator_name ? 'Zdjęcie: '.$event->facilitator_name : 'Zdjęcie osoby prowadzącej zajęcia' }}"
+                            data-lightbox
                             class="h-28 w-28 flex-none rounded-full object-cover ring-2" style="--tw-ring-color: color-mix(in srgb, var(--accent) 40%, white)">
                     @else
                         <span class="flex h-28 w-28 flex-none items-center justify-center rounded-full text-white" style="background: var(--accent)" aria-hidden="true">
