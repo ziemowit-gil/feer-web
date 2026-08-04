@@ -30,7 +30,17 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
 
-PHP_BIN="${PHP_BIN:-php}"
+if [ -z "${PHP_BIN:-}" ]; then
+    if php85 -v >/dev/null 2>&1; then
+        PHP_BIN="php85"
+    elif php84 -v >/dev/null 2>&1; then
+        PHP_BIN="php84"
+    elif php83 -v >/dev/null 2>&1; then
+        PHP_BIN="php83"
+    else
+        PHP_BIN="php"
+    fi
+fi
 
 ASSUME_YES=0
 DO_COMPOSER=1
@@ -168,7 +178,10 @@ fi
 # --- 4. Migracje bazy --------------------------------------------------------
 if [[ "$DO_MIGRATE" -eq 1 ]]; then
     "$PHP_BIN" artisan migrate --force
-    echo "✔ Migracje zaktualizowane."
+    "$PHP_BIN" artisan migrate --force \
+        --database=blog \
+        --path=database/migrations/blog
+    echo "✔ Migracje zaktualizowane (główna + blog)."
 fi
 
 # --- 5. Symlink public/storage (względny — przetrwa przeniesienie instalacji) -
