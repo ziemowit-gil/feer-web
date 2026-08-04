@@ -24,6 +24,57 @@ use Illuminate\Support\Str;
  */
 class EventController extends Controller
 {
+    /** Wyświetla stronę statystyk wydarzeń. */
+    public function stats()
+    {
+        $base = fn () => Event::whereNull('archived_at');
+
+        $total     = Event::count();
+        $active    = $base()->count();
+        $archived  = Event::whereNotNull('archived_at')->count();
+        $published = $base()->where('is_published', true)->count();
+        $drafts    = $base()->where('is_published', false)->count();
+
+        $upcoming = Event::upcoming()->count();
+        $past = $base()->where('is_published', true)
+            ->where(function ($q) {
+                $q->where('ends_at', '<', now())
+                  ->orWhere(function ($inner) {
+                      $inner->whereNull('ends_at')->whereDate('starts_at', '<', now());
+                  });
+            })->count();
+
+        $byType = $base()->selectRaw('type, count(*) as cnt')->groupBy('type')->pluck('cnt', 'type');
+        $byMode = $base()->selectRaw('mode, count(*) as cnt')->groupBy('mode')->pluck('cnt', 'mode');
+
+        $seriesCount    = $base()->whereNotNull('recurrence_type')->whereNull('recurrence_parent_id')->count();
+        $instancesCount = $base()->whereNotNull('recurrence_parent_id')->count();
+
+        $withUrl       = $base()->whereNotNull('registration_url')->where('registration_url', '!=', '')->count();
+        $emailOnly     = $base()->where(fn ($q) => $q->whereNull('registration_url')->orWhere('registration_url', ''))
+                                ->whereNotNull('contact_email')->where('contact_email', '!=', '')->count();
+        $noRegistration = max(0, $active - $withUrl - $emailOnly);
+
+        $withFacilitator = $base()->whereNotNull('facilitator_name')->where('facilitator_name', '!=', '')->count();
+
+        $currentYear = now()->year;
+        $rawByMonth  = $base()->whereYear('starts_at', $currentYear)
+            ->selectRaw('MONTH(starts_at) as m, count(*) as cnt')
+            ->groupBy('m')
+            ->pluck('cnt', 'm');
+        $byMonth = collect(range(1, 12))->map(fn ($m) => (int) $rawByMonth->get($m, 0));
+
+        return view('admin.events.stats', compact(
+            'total', 'active', 'archived', 'published', 'drafts',
+            'upcoming', 'past',
+            'byType', 'byMode',
+            'seriesCount', 'instancesCount',
+            'withUrl', 'emailOnly', 'noRegistration',
+            'withFacilitator',
+            'byMonth', 'currentYear',
+        ));
+    }
+
     /** Wyświetla listę wydarzeń — aktywnych lub zarchiwizowanych (parametr ?archived=1). */
     public function index(Request $request)
     {

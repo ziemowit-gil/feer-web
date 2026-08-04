@@ -6,6 +6,10 @@
     <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
         <p class="text-sm text-muted">Szkolenia i wydarzenia (strona <a href="{{ route('events.index') }}" target="_blank" rel="noopener" class="text-brand underline">/wydarzenia</a>).</p>
         <div class="flex items-center gap-3">
+            <a href="{{ route('admin.wydarzenia.statystyki') }}"
+                class="rounded border border-gray-300 px-3 py-2 text-sm font-bold text-muted hover:bg-gray-100">
+                <i class="fa-solid fa-chart-bar" aria-hidden="true"></i> Statystyki
+            </a>
             @if ($showArchived || $archivedCount > 0)
                 <a href="{{ route('admin.wydarzenia.index', ['archived' => $showArchived ? null : 1]) }}"
                     class="rounded border px-3 py-2 text-sm font-bold {{ $showArchived ? 'border-brand bg-brand-light text-brand' : 'border-gray-300 text-muted hover:bg-gray-100' }}">
