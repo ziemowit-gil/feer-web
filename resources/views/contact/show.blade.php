@@ -135,10 +135,6 @@
                             <span class="min-w-0">
                                 <span class="block text-xs font-bold uppercase tracking-wide text-muted">E-mail</span>
                                 <span class="block break-all font-medium text-ink group-hover:text-brand">{{ $siteSettings->contact_email }}</span>
-                                <span class="mt-0.5 inline-flex items-center gap-1 rounded-full bg-green-100 px-2 py-0.5 text-xs font-bold text-green-700">
-                                    <i class="fa-solid fa-circle-check text-[10px]" aria-hidden="true"></i>
-                                    Najlepiej mailowo
-                                </span>
                             </span>
                         </a>
                     </li>
