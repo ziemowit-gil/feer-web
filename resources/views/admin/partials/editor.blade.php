@@ -1380,7 +1380,7 @@
 
                     document.getElementById('{{ $editorId }}-event-link-modal').addEventListener('event-link-picked', function (event) {
                         var ev = event.detail;
-                        var html = '<p><a href="' + ev.url + '">' + ev.title + '</a></p>';
+                        var html = '<p><a href="' + ev.url + '">' + ev.title + ' – strona wydarzenia</a></p>';
                         var viewFragment = editor.data.processor.toView(html);
                         var modelFragment = editor.data.toModel(viewFragment);
                         editor.model.insertContent(modelFragment);
@@ -1842,7 +1842,7 @@
                             });
                             document.getElementById('{{ $editorId }}-event-link-modal').addEventListener('event-link-picked', function (event) {
                                 var ev = event.detail;
-                                editor.insertContent('<a href="' + ev.url + '">' + ev.title + '</a>');
+                                editor.insertContent('<a href="' + ev.url + '">' + ev.title + ' – strona wydarzenia</a>');
                             });
                             document.getElementById('{{ $editorId }}-attachment-modal').addEventListener('attachment-picked', function (event) {
                                 var a = event.detail;
