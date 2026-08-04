@@ -42,7 +42,7 @@
                             @error('body')
                                 <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
                             @enderror
-                            <p class="mt-1 text-xs text-muted">Możesz używać znaczników HTML. Zmienne zastępuj w postaci <code class="rounded bg-gray-100 px-0.5">{{'{{'}}nazwa_zmiennej{{'}}'}}</code>.</p>
+                            <p class="mt-1 text-xs text-muted">Możesz używać znaczników HTML. Zmienne zastępuj w postaci <code class="rounded bg-gray-100 px-0.5">@{{nazwa_zmiennej}}</code>.</p>
                         </div>
                     </div>
 
@@ -66,7 +66,7 @@
                         @foreach ($template->variables as $key => $description)
                             <div>
                                 <dt>
-                                    <code class="rounded bg-blue-50 px-1.5 py-0.5 text-xs font-mono text-blue-700">{{'{{'}}{{ $key }}{{'}}'}}</code>
+                                    <code class="rounded bg-blue-50 px-1.5 py-0.5 text-xs font-mono text-blue-700">@{{{{ $key }}}}</code>
                                 </dt>
                                 <dd class="mt-0.5 text-xs text-muted">{{ $description }}</dd>
                             </div>

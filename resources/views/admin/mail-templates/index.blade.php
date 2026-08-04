@@ -4,7 +4,7 @@
 
 @section('content')
     <div class="mb-4">
-        <p class="text-sm text-muted">Edytuj temat i treść wiadomości e-mail wysyłanych automatycznie przez system. Zmienne w postaci <code class="rounded bg-gray-100 px-1">{{'{{'}}zmienna{{'}}'}}</code> zostaną zastąpione rzeczywistymi wartościami.</p>
+        <p class="text-sm text-muted">Edytuj temat i treść wiadomości e-mail wysyłanych automatycznie przez system. Zmienne w postaci <code class="rounded bg-gray-100 px-1">@{{zmienna}}</code> zostaną zastąpione rzeczywistymi wartościami.</p>
     </div>
 
     @if (session('success'))
