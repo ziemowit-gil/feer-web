@@ -160,8 +160,11 @@
                 <div class="section-divider"></div>
                 <div x-data="{ open: {{ request()->routeIs($pubRoutes) ? 'true' : 'false' }} }">
                     <button type="button" @click="open = !open" :aria-expanded="open" aria-controls="nav-section-pub"
-                        class="section-header flex w-full items-center justify-between rounded-lg px-3 py-2 text-xs font-bold uppercase tracking-wider text-muted transition-colors hover:bg-gray-100 hover:text-ink">
-                        <span>Publikacje</span>
+                        class="section-header flex w-full items-center gap-2 rounded-lg px-3 py-2 text-xs font-bold uppercase tracking-wider text-muted transition-colors hover:bg-gray-100 hover:text-ink">
+                        <span class="flex-1 text-left">Publikacje</span>
+                        @if (auth()->user()->canApproveContent() && ($pendingApprovals ?? 0) > 0)
+                            <span class="nav-label rounded-full bg-brand px-2 py-0.5 text-[10px] font-bold text-white">{{ $pendingApprovals }}</span>
+                        @endif
                         <i class="fa-solid fa-chevron-down text-[0.6rem] text-gray-400 transition-transform duration-200" :class="{ 'rotate-180': open }"></i>
                     </button>
                     <div id="nav-section-pub" x-show="open" @unless (request()->routeIs($pubRoutes)) style="display: none" @endunless class="section-content mt-1 space-y-1">
