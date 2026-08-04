@@ -234,8 +234,8 @@ class EventController extends Controller
             $photo->copy($news, 'image');
         }
 
-        return redirect()->route('admin.newsy.edit', $news)
-            ->with('status', "Utworzono aktualność „{$news->title}” na podstawie wydarzenia. Zapisana jako szkic — sprawdź treść i opublikuj.");
+        return redirect($news->previewUrl())
+            ->with('status', 'Sprawdź podgląd poniżej — aktualność “' . $news->title . '” zapisana jako szkic. Kliknij “Edytuj w panelu”, by uzupełnić i opublikować.');
     }
 
     /**

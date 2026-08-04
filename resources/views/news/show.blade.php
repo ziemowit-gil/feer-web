@@ -30,6 +30,20 @@
 @endsection
 
 @section('content')
+    @if ($preview ?? false)
+        <div class="border-b border-amber-300 bg-amber-50 px-4 py-3" role="status">
+            <div class="mx-auto flex max-w-2xl flex-wrap items-center justify-between gap-3">
+                <p class="flex items-center gap-2 text-sm font-bold text-amber-800">
+                    <i class="fa-solid fa-eye" aria-hidden="true"></i>
+                    Podgląd szkicu — ta aktualność nie jest jeszcze widoczna dla odwiedzających.
+                </p>
+                <a href="{{ route('admin.newsy.edit', $news) }}"
+                    class="inline-flex items-center gap-2 rounded bg-amber-700 px-4 py-1.5 text-sm font-bold text-white hover:bg-amber-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-700">
+                    <i class="fa-solid fa-pen-to-square" aria-hidden="true"></i> Edytuj w panelu
+                </a>
+            </div>
+        </div>
+    @endif
     <section class="mx-auto max-w-2xl px-4 py-12" x-data="{ etr: false }">
         @if ($news->is_archived)
             @include('partials.archival-notice', ['date' => $news->published_at])

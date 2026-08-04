@@ -89,41 +89,69 @@
                                 @endif
                             </td>
                             <td class="px-4 py-3">
-                                <div class="flex items-center justify-end gap-3">
+                                <div class="flex flex-wrap items-center justify-end gap-1.5">
                                     @if ($siteSettings->isModuleEnabled('news'))
                                         <form method="POST" action="{{ route('admin.wydarzenia.na-aktualnosc', $event) }}" onsubmit="return confirm('Utworzyć aktualność na podstawie „{{ $event->title }}"? Powstanie szkic do przejrzenia.');">
                                             @csrf
-                                            <button type="submit" class="text-muted hover:text-brand" title="Utwórz aktualność na podstawie wydarzenia"><i class="fa-solid fa-newspaper"></i></button>
+                                            <button type="submit"
+                                                class="inline-flex items-center gap-1 rounded px-2 py-1 text-xs font-medium text-muted hover:bg-gray-100 hover:text-brand"
+                                                title="Stwórz szkic aktualności na podstawie treści tego wydarzenia">
+                                                <i class="fa-solid fa-newspaper" aria-hidden="true"></i> Aktualność
+                                            </button>
                                         </form>
                                     @endif
                                     @if ($siteSettings->isModuleEnabled('landing'))
                                         <form method="POST" action="{{ route('admin.wydarzenia.na-landing', $event) }}" onsubmit="return confirm('Utworzyć landing page na podstawie „{{ $event->title }}"? Powstanie szkic do przejrzenia.');">
                                             @csrf
-                                            <button type="submit" class="text-muted hover:text-brand" title="Utwórz landing page na podstawie wydarzenia"><i class="fa-solid fa-bullhorn"></i></button>
+                                            <button type="submit"
+                                                class="inline-flex items-center gap-1 rounded px-2 py-1 text-xs font-medium text-muted hover:bg-gray-100 hover:text-brand"
+                                                title="Stwórz szkic landing page'a na podstawie treści tego wydarzenia">
+                                                <i class="fa-solid fa-bullhorn" aria-hidden="true"></i> Landing
+                                            </button>
                                         </form>
                                     @endif
-                                    <a href="{{ route('admin.wydarzenia.edit', $event) }}" class="text-brand hover:text-brand-dark" title="Edytuj"><i class="fa-solid fa-pen"></i></a>
+                                    <a href="{{ route('admin.wydarzenia.edit', $event) }}"
+                                        class="inline-flex items-center gap-1 rounded px-2 py-1 text-xs font-medium text-brand hover:bg-brand-light"
+                                        title="Edytuj treść i ustawienia tego wydarzenia">
+                                        <i class="fa-solid fa-pen" aria-hidden="true"></i> Edytuj
+                                    </a>
                                     <form method="POST" action="{{ route('admin.wydarzenia.klonuj', $event) }}">
                                         @csrf
-                                        <button type="submit" class="text-muted hover:text-brand" title="Klonuj jako szkic"><i class="fa-solid fa-copy"></i></button>
+                                        <button type="submit"
+                                            class="inline-flex items-center gap-1 rounded px-2 py-1 text-xs font-medium text-muted hover:bg-gray-100 hover:text-brand"
+                                            title="Skopiuj wydarzenie jako nowy szkic (bez daty)">
+                                            <i class="fa-solid fa-copy" aria-hidden="true"></i> Klonuj
+                                        </button>
                                     </form>
                                     @if ($event->archived_at)
                                         <form method="POST" action="{{ route('admin.wydarzenia.restore', $event) }}">
                                             @csrf
                                             @method('PUT')
-                                            <button type="submit" class="text-muted hover:text-brand" title="Przywróć z archiwum"><i class="fa-solid fa-box-open"></i></button>
+                                            <button type="submit"
+                                                class="inline-flex items-center gap-1 rounded px-2 py-1 text-xs font-medium text-muted hover:bg-gray-100 hover:text-brand"
+                                                title="Przywróć wydarzenie z archiwum na aktywną listę">
+                                                <i class="fa-solid fa-box-open" aria-hidden="true"></i> Przywróć
+                                            </button>
                                         </form>
                                     @else
-                                        <form method="POST" action="{{ route('admin.wydarzenia.archive', $event) }}" title="Zarchiwizuj">
+                                        <form method="POST" action="{{ route('admin.wydarzenia.archive', $event) }}">
                                             @csrf
                                             @method('PUT')
-                                            <button type="submit" class="text-muted hover:text-brand" title="Zarchiwizuj (schowaj z listy)"><i class="fa-solid fa-box-archive"></i></button>
+                                            <button type="submit"
+                                                class="inline-flex items-center gap-1 rounded px-2 py-1 text-xs font-medium text-muted hover:bg-gray-100 hover:text-brand"
+                                                title="Schowaj wydarzenie z domyślnej listy (nie usuwa, można przywrócić)">
+                                                <i class="fa-solid fa-box-archive" aria-hidden="true"></i> Archiwizuj
+                                            </button>
                                         </form>
                                     @endif
-                                    <form method="POST" action="{{ route('admin.wydarzenia.destroy', $event) }}" onsubmit="return confirm('Usunąć wydarzenie &quot;{{ $event->title }}&quot;?');">
+                                    <form method="POST" action="{{ route('admin.wydarzenia.destroy', $event) }}" onsubmit="return confirm('Usunąć wydarzenie „{{ $event->title }}"? Tej operacji nie można cofnąć.');">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="text-muted hover:text-red-600" title="Usuń"><i class="fa-solid fa-trash"></i></button>
+                                        <button type="submit"
+                                            class="inline-flex items-center gap-1 rounded px-2 py-1 text-xs font-medium text-muted hover:bg-red-50 hover:text-red-600"
+                                            title="Trwale usuń to wydarzenie (nie można cofnąć)">
+                                            <i class="fa-solid fa-trash" aria-hidden="true"></i> Usuń
+                                        </button>
                                     </form>
                                 </div>
                             </td>
