@@ -549,7 +549,7 @@
 
         @include('admin.partials.seo-fields', ['model' => $news])
 
-        <div x-data="{ saving: false }" class="flex items-center gap-3">
+        <div x-data="{ saving: false }" x-init="window.addEventListener('pageshow', e => { if (e.persisted) saving = false })" class="flex items-center gap-3">
             <button type="submit" :disabled="saving" @click="saving = true"
                 class="inline-flex items-center gap-2 rounded bg-brand px-5 py-2 text-sm font-bold text-white hover:bg-brand-dark disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
                 <svg x-show="saving" x-cloak class="h-4 w-4 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" aria-hidden="true">

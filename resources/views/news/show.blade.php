@@ -47,7 +47,7 @@
     @php
         $articleLayout = $news->article_layout ?? 'default';
         $img           = $news->imageUrlOrDefault();
-        $imgAlt        = $news->image_alt ?: 'Zdjęcie ilustracyjne: ' . $news->title;
+        $imgAlt        = $news->image_alt ?: 'Zdjęcie ilustracyjne';
         $isSide        = $articleLayout === 'side' && $img;
     @endphp
 
