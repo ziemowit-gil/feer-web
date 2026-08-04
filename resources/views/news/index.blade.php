@@ -150,6 +150,82 @@
                             @endif
                         @endforelse
                     </div>
+                @elseif (($siteSettings->news_layout ?? 'grid') === 'side')
+                    {{-- ── Widok: kwadratowe zdjęcie obok tekstu ── --}}
+                    <ul class="flex flex-col divide-y divide-gray-100" role="list">
+                        @forelse ($news as $item)
+                            @php
+                                $ngoAccent = $item->accent_color ?: (($item->audience ?? 'brand') === 'ngo' ? $siteSettings->audienceColor('ngo') : null);
+                                $img = $item->imageUrlOrDefault();
+                            @endphp
+                            <li @class([
+                                'group py-5 first:pt-0 last:pb-0',
+                                'rounded-xl border-2 border-amber-400 bg-amber-50/50 px-4' => $item->is_featured,
+                            ])>
+                                <article class="flex items-center gap-5">
+                                    {{-- Kwadratowe zdjęcie --}}
+                                    <a href="{{ route('news.show', $item) }}"
+                                        class="hidden shrink-0 overflow-hidden rounded-lg sm:block"
+                                        tabindex="-1" aria-hidden="true">
+                                        @if ($img)
+                                            <img src="{{ $img }}" alt=""
+                                                class="h-24 w-24 object-cover transition group-hover:scale-105">
+                                        @else
+                                            <div class="h-24 w-24 bg-brand-light"></div>
+                                        @endif
+                                    </a>
+
+                                    {{-- Tekst --}}
+                                    <div class="min-w-0 flex-1">
+                                        <div class="mb-1 flex flex-wrap items-center gap-2">
+                                            @if ($item->category)
+                                                <span class="inline-block rounded px-2 py-0.5 text-xs font-bold uppercase text-white"
+                                                    style="background-color: {{ $item->category->badgeColor() }}">
+                                                    {{ $item->category->name }}
+                                                </span>
+                                            @endif
+                                            @if ($item->is_featured)
+                                                <span class="inline-flex items-center gap-1 rounded-full bg-amber-400/20 px-2 py-0.5 text-xs font-bold text-amber-700">
+                                                    <i class="fa-solid fa-star" aria-hidden="true"></i> Wyróżnione
+                                                </span>
+                                            @endif
+                                            <time datetime="{{ $item->published_at->toDateString() }}"
+                                                class="text-xs text-muted">
+                                                {{ $item->published_at->format('d.m.Y') }}
+                                            </time>
+                                        </div>
+
+                                        <h2 class="font-bold leading-snug text-ink">
+                                            <a href="{{ route('news.show', $item) }}"
+                                                @if ($ngoAccent) style="text-decoration-color: {{ $ngoAccent }}" @endif
+                                                class="hover:underline focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-current {{ $ngoAccent ? '' : 'hover:text-brand' }}">
+                                                {{ $item->title }}
+                                            </a>
+                                        </h2>
+
+                                        @if ($item->excerpt)
+                                            <p class="mt-1 text-sm text-muted line-clamp-2">{{ $item->excerpt }}</p>
+                                        @endif
+
+                                        <a href="{{ route('news.show', $item) }}"
+                                            aria-label="Czytaj więcej: {{ $item->title }}"
+                                            class="mt-2 inline-block text-sm font-bold text-brand hover:text-brand-dark focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
+                                            Czytaj więcej →
+                                        </a>
+                                    </div>
+                                </article>
+                            </li>
+                        @empty
+                            @if ($activeCategory)
+                                <li class="py-5 text-muted">
+                                    Brak aktualności w kategorii „{{ $activeCategory->name }}".
+                                    <a href="{{ route('news.index') }}" class="font-bold text-brand hover:text-brand-dark">Zobacz wszystkie →</a>
+                                </li>
+                            @else
+                                <li class="py-5 text-muted">Brak opublikowanych newsów.</li>
+                            @endif
+                        @endforelse
+                    </ul>
                 @else
                     {{-- ── Widok siatka (domyślny) ── --}}
                     <div class="grid gap-8 sm:grid-cols-2">

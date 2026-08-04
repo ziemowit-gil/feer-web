@@ -1591,6 +1591,12 @@
                             class="border-gray-300 text-brand focus:ring-brand">
                         <span class="text-sm"><i class="fa-solid fa-table-cells-large text-muted"></i> Karty 3-kolumnowe</span>
                     </label>
+                    <label class="flex cursor-pointer items-center gap-2">
+                        <input type="radio" name="news_layout" value="side"
+                            {{ old('news_layout', $settings->news_layout ?? 'grid') === 'side' ? 'checked' : '' }}
+                            class="border-gray-300 text-brand focus:ring-brand">
+                        <span class="text-sm"><i class="fa-solid fa-image text-muted"></i> Zdjęcie obok (kwadrat)</span>
+                    </label>
                 </div>
             </div>
 

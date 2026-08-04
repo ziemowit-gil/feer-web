@@ -1,6 +1,9 @@
 import Alpine from 'alpinejs';
+import Cropper from 'cropperjs';
+import 'cropperjs/dist/cropper.css';
 
 window.Alpine = Alpine;
+window.Cropper = Cropper;
 
 // Global confirm dialog — zastępuje natywne confirm() alertdialogiem Alpine.
 // Formularze z atrybutem data-confirm są przechwytywane automatycznie.
