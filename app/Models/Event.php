@@ -42,7 +42,7 @@ class Event extends Model implements HasMedia
         'facilitator_name', 'facilitator_role', 'facilitator_bio',
         'type', 'mode', 'location', 'latitude', 'longitude', 'online_url',
         'starts_at', 'ends_at', 'published_at',
-        'registration_url', 'registration_cta_label', 'contact_email', 'price_info',
+        'registration_url', 'registration_cta_label', 'hide_registration', 'contact_email', 'price_info',
         'audience', 'is_published', 'is_featured', 'order', 'archived_at',
         'recurrence_type', 'recurrence_ends_at', 'recurrence_parent_id',
     ];
@@ -53,6 +53,7 @@ class Event extends Model implements HasMedia
         'published_at' => 'datetime',
         'is_published' => 'boolean',
         'is_featured' => 'boolean',
+        'hide_registration' => 'boolean',
         'archived_at' => 'datetime',
         'latitude' => 'float',
         'longitude' => 'float',
@@ -206,6 +207,7 @@ class Event extends Model implements HasMedia
     public function scopeUpcoming(Builder $query): Builder
     {
         return $query->where('is_published', true)
+            ->whereNull('archived_at')
             ->where(function (Builder $q) {
                 $q->where('ends_at', '>=', now())
                     ->orWhere(function (Builder $inner) {
@@ -275,6 +277,10 @@ class Event extends Model implements HasMedia
      */
     public function registrationHref(): ?string
     {
+        if ($this->hide_registration) {
+            return null;
+        }
+
         if (filled($this->registration_url)) {
             return $this->registration_url;
         }

@@ -44,6 +44,8 @@ use App\Http\Controllers\Admin\ContentTemplateController as AdminContentTemplate
 use App\Http\Controllers\Admin\TagController as AdminTagController;
 use App\Http\Controllers\Admin\TaskController as AdminTaskController;
 use App\Http\Controllers\Admin\VolunteerAdController as AdminVolunteerAdController;
+use App\Http\Controllers\Admin\MailTemplateController as AdminMailTemplateController;
+use App\Http\Controllers\Admin\WcagScanController as AdminWcagScanController;
 use App\Http\Controllers\AccessibilityController;
 use App\Http\Controllers\AccessibilityReportController;
 use App\Http\Controllers\Admin\BlogArticleController as AdminBlogArticleController;
@@ -425,6 +427,16 @@ Route::middleware(['auth', 'verified', '2fa'])->prefix(config('app.admin_prefix'
         Route::get('dziennik', [AdminActivityController::class, 'index'])->name('dziennik.index');
         Route::get('martwe-linki', [AdminLinkCheckController::class, 'index'])->name('martwe-linki.index');
         Route::post('martwe-linki/skanuj', [AdminLinkCheckController::class, 'scan'])->name('martwe-linki.scan');
+        Route::get('skaner-wcag', [AdminWcagScanController::class, 'index'])->name('wcag-scans.index');
+        Route::post('skaner-wcag/skanuj', [AdminWcagScanController::class, 'scan'])->name('wcag-scans.scan');
+        Route::get('skaner-wcag/{wcagScan}', [AdminWcagScanController::class, 'show'])->name('wcag-scans.show');
+        Route::delete('skaner-wcag/{wcagScan}', [AdminWcagScanController::class, 'destroy'])->name('wcag-scans.destroy');
+    });
+
+    Route::middleware('admin')->group(function () {
+        Route::get('szablony-maili', [AdminMailTemplateController::class, 'index'])->name('mail-templates.index');
+        Route::get('szablony-maili/{mailTemplate}/edytuj', [AdminMailTemplateController::class, 'edit'])->name('mail-templates.edit');
+        Route::put('szablony-maili/{mailTemplate}', [AdminMailTemplateController::class, 'update'])->name('mail-templates.update');
     });
 
     // Dokumentacja techniczna (tylko admin).

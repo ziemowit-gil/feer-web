@@ -111,7 +111,7 @@
             $usersRoutes = ['admin.uzytkownicy.*', 'admin.grupy.*'];
 
             // ⑧ SYSTEM — narzędzia techniczne
-            $systemRoutes = ['admin.ustawienia.*', 'admin.szablony.*', 'admin.tresc.*', 'admin.przekierowania.*', 'admin.martwe-linki.*', 'admin.dziennik.*'];
+            $systemRoutes = ['admin.ustawienia.*', 'admin.szablony.*', 'admin.tresc.*', 'admin.przekierowania.*', 'admin.martwe-linki.*', 'admin.dziennik.*', 'admin.wcag-scans.*', 'admin.mail-templates.*'];
         @endphp
 
         <nav class="flex-1 space-y-1.5 overflow-y-auto px-3 py-4 text-sm font-medium">
@@ -417,6 +417,14 @@
                         <a href="{{ route('admin.dziennik.index') }}" class="{{ $itemClass('admin.dziennik.*') }}" title="Dziennik zdarzeń">
                             <i class="fa-solid fa-clock-rotate-left {{ $iconClass('admin.dziennik.*') }}"></i>
                             <span class="nav-label">Dziennik zdarzeń</span>
+                        </a>
+                        <a href="{{ route('admin.wcag-scans.index') }}" class="{{ $itemClass('admin.wcag-scans.*') }}" title="Skaner WCAG">
+                            <i class="fa-solid fa-universal-access {{ $iconClass('admin.wcag-scans.*') }}"></i>
+                            <span class="nav-label">Skaner WCAG</span>
+                        </a>
+                        <a href="{{ route('admin.mail-templates.index') }}" class="{{ $itemClass('admin.mail-templates.*') }}" title="Szablony maili">
+                            <i class="fa-solid fa-envelope-open-text {{ $iconClass('admin.mail-templates.*') }}"></i>
+                            <span class="nav-label">Szablony maili</span>
                         </a>
                     </div>
                 </div>

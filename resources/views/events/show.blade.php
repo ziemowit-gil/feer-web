@@ -55,7 +55,7 @@
                 @click="sliderOpen = true"
                 :aria-expanded="sliderOpen"
                 aria-controls="event-slider"
-                class="mt-5 inline-flex items-center gap-3 rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm font-medium text-ink transition hover:bg-gray-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+                class="mt-5 inline-flex items-center gap-3 rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-medium text-ink shadow-sm transition hover:border-gray-300 hover:bg-gray-50 hover:shadow focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
                 style="outline-color: var(--accent)">
                 <i class="fa-solid fa-location-dot flex-none" aria-hidden="true" style="color: var(--accent)"></i>
                 <span>

@@ -52,14 +52,14 @@
                         <th class=”w-8 px-4 py-3”>
                             <input type=”checkbox” id=”select-all” class=”rounded border-gray-300” aria-label=”Zaznacz wszystkie”>
                         </th>
-                        <th class=”px-4 py-3”>Tytuł</th>
-                        <th class=”px-4 py-3”>Rodzaj</th>
-                        <th class=”px-4 py-3”>Termin</th>
-                        <th class=”px-4 py-3”>Status</th>
+                        <th class=”w-full px-4 py-3”>Tytuł</th>
+                        <th class=”min-w-[6rem] whitespace-nowrap px-4 py-3”>Rodzaj</th>
+                        <th class=”min-w-[9rem] whitespace-nowrap px-4 py-3”>Termin</th>
+                        <th class=”min-w-[6rem] whitespace-nowrap px-4 py-3”>Status</th>
                         <th class=”px-4 py-3 text-right”>Akcje</th>
                     </tr>
                 </thead>
-                <tbody class=”divide-y divide-gray-100”>
+                <tbody class=”divide-y divide-gray-200”>
                     @forelse ($events as $event)
                         <tr>
                             <td class=”px-4 py-3”>
@@ -75,7 +75,7 @@
                                     <span class=”ml-1 rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-500” title=”Instancja serii”>instancja</span>
                                 @endif
                             </td>
-                            <td class=”px-4 py-3 text-muted”>
+                            <td class=”whitespace-nowrap px-4 py-3 text-muted”>
                                 <i class=”fa-solid {{ $event->typeIcon() }} mr-1 text-gray-400” aria-hidden=”true”></i>{{ $event->typeLabel() }}
                             </td>
                             <td class=”px-4 py-3 whitespace-nowrap text-muted”>{{ $event->shortDateLabel() }}</td>

@@ -35,6 +35,7 @@ class EventRequest extends FormRequest
             'ends_at' => ['nullable', 'date', 'after_or_equal:starts_at'],
             'registration_url' => ['nullable', 'url', 'max:500'],
             'registration_cta_label' => ['nullable', 'string', 'max:60'],
+            'hide_registration' => ['sometimes', 'boolean'],
             'contact_email' => ['nullable', 'email', 'max:255'],
             'price_info' => ['nullable', 'string', 'max:100'],
             'audience' => ['required', 'string', 'max:60'],

@@ -226,25 +226,37 @@
         </fieldset>
 
         {{-- Zapisy --}}
-        <fieldset class="space-y-4 rounded-lg border border-gray-200 bg-white p-6">
+        <fieldset class="space-y-4 rounded-lg border border-gray-200 bg-white p-6"
+            x-data="{ hide: @js(old('hide_registration', $event->hide_registration ?? false)) }">
             <legend class="px-2 text-sm font-bold text-brand">Zapisy i kontakt</legend>
-            <div class="grid gap-4 sm:grid-cols-2">
-                <div>
-                    <label for="registration_url" class="mb-1 block text-sm font-bold">Link do zapisów</label>
-                    <input type="url" id="registration_url" name="registration_url" value="{{ old('registration_url', $event->registration_url) }}" maxlength="500" placeholder="https://..."
-                        class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
-                    <p class="mt-1 text-xs text-muted">Zewnętrzny formularz (Typeform, Google Forms). Gdy pusty, przycisk zapisu użyje e-maila poniżej.</p>
+
+            <label class="flex items-center gap-2">
+                <input type="checkbox" name="hide_registration" value="1"
+                    x-model="hide"
+                    {{ old('hide_registration', $event->hide_registration) ? 'checked' : '' }}
+                    class="rounded border-gray-300 text-brand focus:ring-brand">
+                <span class="text-sm font-bold">Nie pokazuj przycisku zapisów na stronie</span>
+            </label>
+
+            <div x-show="!hide" x-cloak class="space-y-4">
+                <div class="grid gap-4 sm:grid-cols-2">
+                    <div>
+                        <label for="registration_url" class="mb-1 block text-sm font-bold">Link do zapisów</label>
+                        <input type="url" id="registration_url" name="registration_url" value="{{ old('registration_url', $event->registration_url) }}" maxlength="500" placeholder="https://..."
+                            class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                        <p class="mt-1 text-xs text-muted">Zewnętrzny formularz (Typeform, Google Forms). Gdy pusty, przycisk zapisu użyje e-maila poniżej.</p>
+                    </div>
+                    <div>
+                        <label for="registration_cta_label" class="mb-1 block text-sm font-bold">Napis na przycisku</label>
+                        <input type="text" id="registration_cta_label" name="registration_cta_label" value="{{ old('registration_cta_label', $event->registration_cta_label ?: 'Zapisz się') }}" maxlength="60"
+                            class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                    </div>
                 </div>
                 <div>
-                    <label for="registration_cta_label" class="mb-1 block text-sm font-bold">Napis na przycisku</label>
-                    <input type="text" id="registration_cta_label" name="registration_cta_label" value="{{ old('registration_cta_label', $event->registration_cta_label ?: 'Zapisz się') }}" maxlength="60"
+                    <label for="contact_email" class="mb-1 block text-sm font-bold">E-mail kontaktowy <span class="font-normal text-muted">(zapasowo, gdy brak linku)</span></label>
+                    <input type="email" id="contact_email" name="contact_email" value="{{ old('contact_email', $event->contact_email) }}" maxlength="255" placeholder="np. szkolenia@feer.org.pl"
                         class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
                 </div>
-            </div>
-            <div>
-                <label for="contact_email" class="mb-1 block text-sm font-bold">E-mail kontaktowy <span class="font-normal text-muted">(zapasowo, gdy brak linku)</span></label>
-                <input type="email" id="contact_email" name="contact_email" value="{{ old('contact_email', $event->contact_email) }}" maxlength="255" placeholder="np. szkolenia@feer.org.pl"
-                    class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
             </div>
         </fieldset>
 
