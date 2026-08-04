@@ -684,6 +684,33 @@
             </div>
         </header>
 
+        {{-- Pasek szybkich skrótów --}}
+        @if ($can('news') || $can('events'))
+        <div class="flex flex-wrap items-center gap-2 border-b border-gray-100 bg-gray-50/80 px-6 py-2">
+            <span class="mr-1 text-xs font-bold uppercase tracking-wide text-muted">Szybko:</span>
+            @if ($can('news'))
+            <a href="{{ route('admin.newsy.create') }}"
+                class="inline-flex items-center gap-1.5 rounded border border-gray-200 bg-white px-3 py-1 text-xs font-bold text-ink hover:border-brand hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                <i class="fa-solid fa-plus" aria-hidden="true"></i> Dodaj aktualność
+            </a>
+            @endif
+            @if ($can('events'))
+            <a href="{{ route('admin.wydarzenia.create') }}"
+                class="inline-flex items-center gap-1.5 rounded border border-gray-200 bg-white px-3 py-1 text-xs font-bold text-ink hover:border-brand hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                <i class="fa-solid fa-calendar-plus" aria-hidden="true"></i> Nowe wydarzenie
+            </a>
+            @endif
+            <a href="{{ route('home') }}" target="_blank" rel="noopener"
+                class="inline-flex items-center gap-1.5 rounded border border-gray-200 bg-white px-3 py-1 text-xs font-bold text-ink hover:border-brand hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i> Strona główna
+            </a>
+            <a href="{{ route('admin.raporty.brakujace-alt') }}"
+                class="ml-auto inline-flex items-center gap-1.5 rounded border border-gray-200 bg-white px-3 py-1 text-xs font-bold text-muted hover:border-amber-400 hover:text-amber-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                <i class="fa-solid fa-triangle-exclamation text-amber-500" aria-hidden="true"></i> Brakujące alt
+            </a>
+        </div>
+        @endif
+
         <main class="p-6">
             @if (session('status'))
                 <div role="status" aria-live="polite" class="mb-4 rounded border border-green-300 bg-green-50 px-4 py-3 text-sm text-green-800">

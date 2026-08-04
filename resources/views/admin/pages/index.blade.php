@@ -5,7 +5,11 @@
 @section('content')
     @include('admin.partials.content-nav-tabs')
 
-    <div class="mb-4 flex justify-end">
+    <div class="mb-4 flex items-center justify-end gap-2">
+        <a href="{{ route('admin.podstrony.eksport') }}"
+            class="inline-flex items-center gap-1.5 rounded border border-gray-300 bg-white px-3 py-2 text-sm font-bold text-muted hover:border-gray-400 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+            <i class="fa-solid fa-file-csv" aria-hidden="true"></i> Eksportuj CSV
+        </a>
         <a href="{{ route('admin.podstrony.create') }}" class="rounded bg-brand px-4 py-2 text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
             <i class="fa-solid fa-plus" aria-hidden="true"></i> Dodaj stronę
         </a>

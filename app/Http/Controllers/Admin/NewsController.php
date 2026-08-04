@@ -71,6 +71,58 @@ class NewsController extends Controller
         ]);
     }
 
+    /** Eksport listy newsów do pliku CSV. */
+    public function export()
+    {
+        $news = News::with('category', 'tags')
+            ->orderByDesc('published_at')
+            ->get(['id', 'title', 'slug', 'news_category_id', 'published_at', 'is_published', 'is_archived', 'image_alt', 'excerpt']);
+
+        $rows = [['ID', 'Tytuł', 'Slug', 'Kategoria', 'Tagi', 'Data publikacji', 'Status', 'Alt zdjęcia', 'Excerpt']];
+        foreach ($news as $item) {
+            $status = $item->is_archived ? 'Zarchiwizowany' : ($item->is_published ? 'Opublikowany' : 'Szkic');
+            $rows[] = [
+                $item->id,
+                $item->title,
+                $item->slug,
+                $item->category?->name ?? '',
+                $item->tags->pluck('name')->implode(', '),
+                $item->published_at?->format('Y-m-d H:i') ?? '',
+                $status,
+                $item->image_alt ?? '',
+                $item->excerpt ?? '',
+            ];
+        }
+
+        $csv = collect($rows)->map(fn ($r) => implode(';', array_map(fn ($v) => '"' . str_replace('"', '""', (string) $v) . '"', $r)))->implode("\n");
+
+        return response($csv, 200, [
+            'Content-Type'        => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => 'attachment; filename="newsy-' . now()->format('Y-m-d') . '.csv"',
+        ]);
+    }
+
+    /** Sprawdza czy istnieje news o podobnym tytule (AJAX). */
+    public function checkDuplicate(Request $request)
+    {
+        $title = trim($request->query('title', ''));
+        if (strlen($title) < 4) {
+            return response()->json(['found' => false, 'items' => []]);
+        }
+        $excludeId = $request->integer('exclude');
+        $words = collect(preg_split('/\s+/', mb_strtolower($title)))->filter(fn ($w) => mb_strlen($w) > 3);
+        if ($words->isEmpty()) {
+            return response()->json(['found' => false, 'items' => []]);
+        }
+        $q = News::query();
+        if ($excludeId) $q->where('id', '!=', $excludeId);
+        foreach ($words->take(3) as $w) {
+            $q->orWhere('title', 'like', '%' . $w . '%');
+        }
+        $found = $q->orderByDesc('published_at')->limit(3)->pluck('title');
+        return response()->json(['found' => $found->isNotEmpty(), 'items' => $found]);
+    }
+
     /** Zapisuje nową aktualność z tagami i opcjonalnym zdjęciem. */
     public function store(Request $request)
     {
@@ -190,6 +242,8 @@ class NewsController extends Controller
             'audience' => ['nullable', Rule::in(array_keys(SiteSetting::current()->audienceOptions()))],
             'accent_color' => ['nullable', 'regex:/^#[0-9a-fA-F]{6}$/'],
             'image_alt' => ['nullable', 'string', 'max:255'],
+            'image_focal_x' => ['nullable', 'integer', 'min:0', 'max:100'],
+            'image_focal_y' => ['nullable', 'integer', 'min:0', 'max:100'],
             'article_layout' => ['nullable', Rule::in(['default', 'side', 'wide', 'none'])],
             'content' => ['nullable', 'string'],
             'published_at' => ['required', 'date'],
@@ -202,6 +256,8 @@ class NewsController extends Controller
         $data['accent_color'] = filled($data['accent_color'] ?? null)
             ? SiteSetting::current()->contrastSafeColor($data['accent_color'])
             : null;
+        $data['image_focal_x'] = (int) ($data['image_focal_x'] ?? 50);
+        $data['image_focal_y'] = (int) ($data['image_focal_y'] ?? 50);
         $data['article_layout'] = $data['article_layout'] ?? 'default';
         $data['is_published'] = $request->boolean('is_published');
         $data['is_featured'] = $request->boolean('is_featured');

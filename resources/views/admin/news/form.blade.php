@@ -55,11 +55,36 @@
 
         <div class="space-y-5 rounded-lg border border-gray-200 bg-white p-6">
             <div class="grid gap-5 sm:grid-cols-2">
-                <div>
+                <div x-data="{
+                    dupeItems: [],
+                    dupeTimer: null,
+                    checkDupe(val) {
+                        clearTimeout(this.dupeTimer);
+                        if (val.length < 4) { this.dupeItems = []; return; }
+                        this.dupeTimer = setTimeout(() => {
+                            fetch('{{ route('admin.newsy.sprawdz-duplikat') }}?title=' + encodeURIComponent(val) + '&exclude={{ $news->id ?? 0 }}')
+                                .then(r => r.json())
+                                .then(d => { this.dupeItems = d.found ? d.items : []; });
+                        }, 600);
+                    }
+                }">
                     <label for="title" class="mb-1 block text-sm font-bold">Tytuł</label>
                     <input type="text" id="title" name="title" value="{{ old('title', $news->title) }}" required
+                        @input="checkDupe($el.value)"
                         class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
                     @error('title') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    <template x-if="dupeItems.length > 0">
+                        <div class="mt-2 rounded-lg border border-amber-200 bg-amber-50 p-3" role="alert">
+                            <p class="mb-1 text-xs font-bold text-amber-800">
+                                <i class="fa-solid fa-triangle-exclamation mr-1" aria-hidden="true"></i>Możliwe duplikaty:
+                            </p>
+                            <ul class="space-y-0.5">
+                                <template x-for="item in dupeItems" :key="item">
+                                    <li class="text-xs text-amber-700" x-text="item"></li>
+                                </template>
+                            </ul>
+                        </div>
+                    </template>
                 </div>
 
                 <div>
@@ -288,6 +313,39 @@
                         class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
                     <p class="mt-1 text-xs text-muted">Opisz, co przedstawia zdjęcie — czytają to osoby korzystające z czytników ekranu.</p>
                     @error('image_alt') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                </div>
+
+                {{-- Punkt ogniskowy zdjęcia --}}
+                @php $focalX = (int) old('image_focal_x', $news->image_focal_x ?? 50); $focalY = (int) old('image_focal_y', $news->image_focal_y ?? 50); @endphp
+                <div class="mt-4" x-data="{
+                    fx: {{ $focalX }},
+                    fy: {{ $focalY }},
+                    setPoint(event) {
+                        const rect = event.currentTarget.getBoundingClientRect();
+                        this.fx = Math.round((event.clientX - rect.left) / rect.width * 100);
+                        this.fy = Math.round((event.clientY - rect.top) / rect.height * 100);
+                    }
+                }">
+                    <p class="mb-1 text-sm font-bold">Punkt ogniskowy</p>
+                    <p class="mb-2 text-xs text-muted">Kliknij na zdjęciu, by wskazać ważny punkt — zachowany przy przycinaniu do miniatur.</p>
+                    @if ($news->exists && $news->image_url)
+                        <div class="relative inline-block cursor-crosshair select-none overflow-hidden rounded-lg border border-gray-200"
+                             @click="setPoint($event)" title="Kliknij, by ustawić punkt ogniskowy">
+                            <img src="{{ $news->image_url }}" alt="" draggable="false"
+                                class="pointer-events-none block h-32 max-w-xs object-cover"
+                                style="object-position: 50% 50%">
+                            <div class="pointer-events-none absolute"
+                                :style="'left:' + fx + '%;top:' + fy + '%;transform:translate(-50%,-50%)'">
+                                <span class="flex h-5 w-5 items-center justify-center rounded-full border-2 border-white bg-brand/40 shadow ring-2 ring-brand"
+                                    aria-hidden="true"></span>
+                            </div>
+                        </div>
+                        <p class="mt-1 text-xs text-muted">X: <strong x-text="fx"></strong>% / Y: <strong x-text="fy"></strong>%</p>
+                    @else
+                        <p class="text-xs italic text-muted">Dostępne po wgraniu i zapisaniu zdjęcia.</p>
+                    @endif
+                    <input type="hidden" name="image_focal_x" :value="fx">
+                    <input type="hidden" name="image_focal_y" :value="fy">
                 </div>
 
                 {{-- Układ zdjęcia na stronie artykułu --}}

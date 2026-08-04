@@ -218,6 +218,8 @@ Route::middleware(['auth', 'verified', '2fa'])->prefix(config('app.admin_prefix'
     Route::delete('kosz/{type}/{id}', [AdminTrashController::class, 'forceDelete'])->name('kosz.force');
 
     Route::middleware(['module:pages', 'module-access:pages'])->group(function () {
+        Route::get('podstrony/eksport', [AdminPageController::class, 'export'])->name('podstrony.eksport');
+        Route::get('raporty/brakujace-alt', [AdminPageController::class, 'missingAltReport'])->name('raporty.brakujace-alt');
         Route::resource('podstrony', AdminPageController::class)->parameters(['podstrony' => 'page']);
         Route::post('podstrony/{page}/pliki', [AdminAttachmentController::class, 'storeForPage'])->name('podstrony.pliki.store');
         Route::post('podstrony/{page}/zdjecia', [AdminPageImageController::class, 'store'])->name('podstrony.zdjecia.store');
@@ -250,6 +252,8 @@ Route::middleware(['auth', 'verified', '2fa'])->prefix(config('app.admin_prefix'
     });
 
     Route::middleware(['module:news', 'module-access:news'])->group(function () {
+        Route::get('newsy/eksport', [AdminNewsController::class, 'export'])->name('newsy.eksport');
+        Route::get('newsy/sprawdz-duplikat', [AdminNewsController::class, 'checkDuplicate'])->name('newsy.sprawdz-duplikat');
         Route::resource('newsy', AdminNewsController::class)->parameters(['newsy' => 'news'])->except('show');
         Route::post('newsy/{news}/pliki', [AdminAttachmentController::class, 'storeForNews'])->name('newsy.pliki.store');
         Route::post('newsy/{news}/klonuj', [AdminNewsController::class, 'clone'])->name('newsy.klonuj');

@@ -48,6 +48,54 @@ class PageController extends Controller
         ]);
     }
 
+    /** Eksport listy stron do CSV. */
+    public function export()
+    {
+        $pages = Page::orderBy('order')->orderBy('title')
+            ->get(['id', 'title', 'slug', 'type', 'order', 'is_published', 'is_system', 'content_image', 'content_image_alt']);
+
+        $rows = [['ID', 'Tytuł', 'Slug', 'Typ', 'Kolejność', 'Status', 'Ma zdjęcie', 'Alt zdjęcia']];
+        foreach ($pages as $page) {
+            $status = $page->is_published ? 'Opublikowana' : 'Szkic';
+            $rows[] = [
+                $page->id,
+                $page->title,
+                '/' . $page->slug,
+                Page::TYPES[$page->type] ?? $page->type,
+                $page->order,
+                $status,
+                filled($page->content_image) ? 'Tak' : 'Nie',
+                $page->content_image_alt ?? '',
+            ];
+        }
+
+        $csv = collect($rows)->map(fn ($r) => implode(';', array_map(fn ($v) => '"' . str_replace('"', '""', (string) $v) . '"', $r)))->implode("\n");
+
+        return response($csv, 200, [
+            'Content-Type'        => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => 'attachment; filename="strony-' . now()->format('Y-m-d') . '.csv"',
+        ]);
+    }
+
+    /** Raport stron i newsów bez alt-tekstów zdjęć. */
+    public function missingAltReport()
+    {
+        $newsNoAlt = \App\Models\News::whereNotNull('image_url')
+            ->where('image_url', '!=', '')
+            ->where(fn ($q) => $q->whereNull('image_alt')->orWhere('image_alt', ''))
+            ->orderByDesc('published_at')
+            ->get(['id', 'title', 'slug', 'image_url', 'published_at']);
+
+        $pagesNoAlt = Page::where(fn ($q) =>
+                $q->whereNotNull('content_image')->where('content_image', '!=', '')
+            )
+            ->where(fn ($q) => $q->whereNull('content_image_alt')->orWhere('content_image_alt', ''))
+            ->orderBy('title')
+            ->get(['id', 'title', 'slug', 'content_image', 'content_image_alt']);
+
+        return view('admin.reports.missing-alt', compact('newsNoAlt', 'pagesNoAlt'));
+    }
+
     /** Wyświetla formularz tworzenia nowej podstrony. */
     public function create()
     {

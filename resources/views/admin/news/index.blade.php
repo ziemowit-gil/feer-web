@@ -3,7 +3,11 @@
 @section('title', 'Aktualności')
 
 @section('content')
-    <div class="mb-4 flex justify-end">
+    <div class="mb-4 flex items-center justify-end gap-2">
+        <a href="{{ route('admin.newsy.eksport') }}"
+            class="inline-flex items-center gap-1.5 rounded border border-gray-300 bg-white px-3 py-2 text-sm font-bold text-muted hover:border-gray-400 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+            <i class="fa-solid fa-file-csv" aria-hidden="true"></i> Eksportuj CSV
+        </a>
         <a href="{{ route('admin.newsy.create') }}" class="rounded bg-brand px-4 py-2 text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
             <i class="fa-solid fa-plus" aria-hidden="true"></i> Dodaj news
         </a>
@@ -96,7 +100,8 @@
                             </td>
                             <td x-show="cols.thumb" class="px-4 py-2">
                                 @if ($img)
-                                    <img src="{{ $img }}" alt="" class="h-10 w-14 rounded object-cover" loading="lazy">
+                                    <img src="{{ $img }}" alt="" class="h-10 w-14 rounded object-cover" loading="lazy"
+                        style="object-position: {{ $item->image_focal_x ?? 50 }}% {{ $item->image_focal_y ?? 50 }}%">
                                 @else
                                     <div class="h-10 w-14 rounded bg-gray-100 flex items-center justify-center">
                                         <i class="fa-regular fa-image text-gray-300 text-xs" aria-hidden="true"></i>
