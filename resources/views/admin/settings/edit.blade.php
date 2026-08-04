@@ -1051,6 +1051,16 @@
             </div>
 
             <div class="mt-4">
+                <label for="contact_office_hours" class="mb-1 block text-sm font-bold">Godziny pracy <span class="font-normal text-muted">(opcjonalnie)</span></label>
+                <input type="text" id="contact_office_hours" name="contact_office_hours"
+                    value="{{ old('contact_office_hours', $settings->contact_office_hours) }}"
+                    placeholder="np. Poniedziałek – piątek: 9:00–17:00"
+                    class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                <p class="mt-1 text-xs text-muted">Pojawi się w bocznym panelu danych kontaktowych. Zostaw puste, aby ukryć.</p>
+                @error('contact_office_hours') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+            </div>
+
+            <div class="mt-4">
                 <label for="contact_edelivery_address" class="mb-1 block text-sm font-bold">Adres do e-Doręczeń <span class="font-normal text-muted">(opcjonalnie)</span></label>
                 <input type="text" id="contact_edelivery_address" name="contact_edelivery_address" value="{{ old('contact_edelivery_address', $settings->contact_edelivery_address) }}"
                     placeholder="AE:PL-12345-67890-ABCDE-12"
