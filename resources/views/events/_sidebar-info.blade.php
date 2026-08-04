@@ -35,6 +35,19 @@
             </div>
         @endif
 
+        @if ($event->capacity)
+            <div class="flex items-start gap-3 px-5 py-4">
+                <i class="fa-solid fa-users mt-0.5 flex-none text-base" style="color: var(--accent)" aria-hidden="true"></i>
+                <div>
+                    <dt class="text-xs font-bold uppercase tracking-wide text-muted">Limit miejsc</dt>
+                    <dd class="mt-0.5 font-bold text-ink">{{ $event->capacity }} {{ $event->capacity === 1 ? 'miejsce' : ($event->capacity < 5 ? 'miejsca' : 'miejsc') }}</dd>
+                    @if ($event->capacity_note)
+                        <dd class="mt-0.5 text-sm text-gray-600">{{ $event->capacity_note }}</dd>
+                    @endif
+                </div>
+            </div>
+        @endif
+
         @if ($event->contact_email)
             <div class="flex items-start gap-3 px-5 py-4">
                 <i class="fa-solid fa-envelope mt-0.5 flex-none text-base" style="color: var(--accent)" aria-hidden="true"></i>

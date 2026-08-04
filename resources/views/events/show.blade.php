@@ -252,6 +252,17 @@
                 <p class="mt-2 text-gray-700">Szczegóły zapisów podamy wkrótce. W razie pytań napisz do nas.</p>
             @endif
 
+            @if ($event->capacity)
+                <p class="mt-3 flex items-center gap-2 text-sm text-gray-700">
+                    <i class="fa-solid fa-users flex-none" aria-hidden="true" style="color: var(--accent)"></i>
+                    <span>Liczba miejsc: <strong>{{ $event->capacity }}</strong>
+                    @if ($event->capacity_note)
+                        &mdash; {{ $event->capacity_note }}
+                    @endif
+                    </span>
+                </p>
+            @endif
+
             @if ($event->contact_email)
                 <p class="mt-3 text-sm text-gray-700">
                     <i class="fa-solid fa-envelope mr-1" aria-hidden="true" style="color: var(--accent)"></i>

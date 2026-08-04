@@ -35,6 +35,19 @@
         'templateFields' => ['news_category_id', 'project_id', 'audience', 'accent_color', 'excerpt', 'content', 'meta_title', 'meta_description'],
     ])
 
+    @if (session('preview_url'))
+        <div class="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3">
+            <p class="flex items-center gap-2 text-sm font-bold text-amber-800">
+                <i class="fa-solid fa-eye" aria-hidden="true"></i>
+                Aktualność utworzona na podstawie wydarzenia — sprawdź podgląd przed publikacją.
+            </p>
+            <a href="{{ session('preview_url') }}" target="_blank" rel="noopener"
+                class="inline-flex items-center gap-2 rounded bg-amber-700 px-4 py-1.5 text-sm font-bold text-white hover:bg-amber-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-700">
+                <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i> Zobacz podgląd
+            </a>
+        </div>
+    @endif
+
     <form method="POST" action="{{ $news->exists ? route('admin.newsy.update', $news) : route('admin.newsy.store') }}"
         enctype="multipart/form-data" class="mt-4 space-y-6">
         @csrf

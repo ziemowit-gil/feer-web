@@ -94,9 +94,10 @@
                                         <form method="POST" action="{{ route('admin.wydarzenia.na-aktualnosc', $event) }}" onsubmit="return confirm('Utworzyć aktualność na podstawie „{{ $event->title }}"? Powstanie szkic do przejrzenia.');">
                                             @csrf
                                             <button type="submit"
-                                                class="inline-flex items-center gap-1 rounded px-2 py-1 text-xs font-medium text-muted hover:bg-gray-100 hover:text-brand"
-                                                title="Stwórz szkic aktualności na podstawie treści tego wydarzenia">
-                                                <i class="fa-solid fa-newspaper" aria-hidden="true"></i> Aktualność
+                                                class="group/btn relative inline-flex items-center rounded px-2 py-1 text-xs font-medium text-muted hover:bg-gray-100 hover:text-brand"
+                                                aria-label="Stwórz aktualność z tego wydarzenia">
+                                                <i class="fa-solid fa-newspaper" aria-hidden="true"></i>
+                                                <span class="pointer-events-none absolute bottom-full left-1/2 z-10 mb-1 -translate-x-1/2 whitespace-nowrap rounded bg-gray-700 px-2 py-0.5 text-xs font-normal text-white opacity-0 transition-opacity group-hover/btn:opacity-100" role="tooltip">Aktualność</span>
                                             </button>
                                         </form>
                                     @endif
@@ -104,23 +105,26 @@
                                         <form method="POST" action="{{ route('admin.wydarzenia.na-landing', $event) }}" onsubmit="return confirm('Utworzyć landing page na podstawie „{{ $event->title }}"? Powstanie szkic do przejrzenia.');">
                                             @csrf
                                             <button type="submit"
-                                                class="inline-flex items-center gap-1 rounded px-2 py-1 text-xs font-medium text-muted hover:bg-gray-100 hover:text-brand"
-                                                title="Stwórz szkic landing page'a na podstawie treści tego wydarzenia">
-                                                <i class="fa-solid fa-bullhorn" aria-hidden="true"></i> Landing
+                                                class="group/btn relative inline-flex items-center rounded px-2 py-1 text-xs font-medium text-muted hover:bg-gray-100 hover:text-brand"
+                                                aria-label="Stwórz landing page z tego wydarzenia">
+                                                <i class="fa-solid fa-bullhorn" aria-hidden="true"></i>
+                                                <span class="pointer-events-none absolute bottom-full left-1/2 z-10 mb-1 -translate-x-1/2 whitespace-nowrap rounded bg-gray-700 px-2 py-0.5 text-xs font-normal text-white opacity-0 transition-opacity group-hover/btn:opacity-100" role="tooltip">Landing</span>
                                             </button>
                                         </form>
                                     @endif
                                     <a href="{{ route('admin.wydarzenia.edit', $event) }}"
-                                        class="inline-flex items-center gap-1 rounded px-2 py-1 text-xs font-medium text-brand hover:bg-brand-light"
-                                        title="Edytuj treść i ustawienia tego wydarzenia">
-                                        <i class="fa-solid fa-pen" aria-hidden="true"></i> Edytuj
+                                        class="group/btn relative inline-flex items-center rounded px-2 py-1 text-xs font-medium text-brand hover:bg-brand-light"
+                                        aria-label="Edytuj wydarzenie">
+                                        <i class="fa-solid fa-pen" aria-hidden="true"></i>
+                                        <span class="pointer-events-none absolute bottom-full left-1/2 z-10 mb-1 -translate-x-1/2 whitespace-nowrap rounded bg-gray-700 px-2 py-0.5 text-xs font-normal text-white opacity-0 transition-opacity group-hover/btn:opacity-100" role="tooltip">Edytuj</span>
                                     </a>
                                     <form method="POST" action="{{ route('admin.wydarzenia.klonuj', $event) }}">
                                         @csrf
                                         <button type="submit"
-                                            class="inline-flex items-center gap-1 rounded px-2 py-1 text-xs font-medium text-muted hover:bg-gray-100 hover:text-brand"
-                                            title="Skopiuj wydarzenie jako nowy szkic (bez daty)">
-                                            <i class="fa-solid fa-copy" aria-hidden="true"></i> Klonuj
+                                            class="group/btn relative inline-flex items-center rounded px-2 py-1 text-xs font-medium text-muted hover:bg-gray-100 hover:text-brand"
+                                            aria-label="Klonuj wydarzenie">
+                                            <i class="fa-solid fa-copy" aria-hidden="true"></i>
+                                            <span class="pointer-events-none absolute bottom-full left-1/2 z-10 mb-1 -translate-x-1/2 whitespace-nowrap rounded bg-gray-700 px-2 py-0.5 text-xs font-normal text-white opacity-0 transition-opacity group-hover/btn:opacity-100" role="tooltip">Klonuj</span>
                                         </button>
                                     </form>
                                     @if ($event->archived_at)
@@ -128,9 +132,10 @@
                                             @csrf
                                             @method('PUT')
                                             <button type="submit"
-                                                class="inline-flex items-center gap-1 rounded px-2 py-1 text-xs font-medium text-muted hover:bg-gray-100 hover:text-brand"
-                                                title="Przywróć wydarzenie z archiwum na aktywną listę">
-                                                <i class="fa-solid fa-box-open" aria-hidden="true"></i> Przywróć
+                                                class="group/btn relative inline-flex items-center rounded px-2 py-1 text-xs font-medium text-muted hover:bg-gray-100 hover:text-brand"
+                                                aria-label="Przywróć wydarzenie z archiwum">
+                                                <i class="fa-solid fa-box-open" aria-hidden="true"></i>
+                                                <span class="pointer-events-none absolute bottom-full left-1/2 z-10 mb-1 -translate-x-1/2 whitespace-nowrap rounded bg-gray-700 px-2 py-0.5 text-xs font-normal text-white opacity-0 transition-opacity group-hover/btn:opacity-100" role="tooltip">Przywróć</span>
                                             </button>
                                         </form>
                                     @else
@@ -138,9 +143,10 @@
                                             @csrf
                                             @method('PUT')
                                             <button type="submit"
-                                                class="inline-flex items-center gap-1 rounded px-2 py-1 text-xs font-medium text-muted hover:bg-gray-100 hover:text-brand"
-                                                title="Schowaj wydarzenie z domyślnej listy (nie usuwa, można przywrócić)">
-                                                <i class="fa-solid fa-box-archive" aria-hidden="true"></i> Archiwizuj
+                                                class="group/btn relative inline-flex items-center rounded px-2 py-1 text-xs font-medium text-muted hover:bg-gray-100 hover:text-brand"
+                                                aria-label="Archiwizuj wydarzenie">
+                                                <i class="fa-solid fa-box-archive" aria-hidden="true"></i>
+                                                <span class="pointer-events-none absolute bottom-full left-1/2 z-10 mb-1 -translate-x-1/2 whitespace-nowrap rounded bg-gray-700 px-2 py-0.5 text-xs font-normal text-white opacity-0 transition-opacity group-hover/btn:opacity-100" role="tooltip">Archiwizuj</span>
                                             </button>
                                         </form>
                                     @endif
@@ -148,9 +154,10 @@
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit"
-                                            class="inline-flex items-center gap-1 rounded px-2 py-1 text-xs font-medium text-muted hover:bg-red-50 hover:text-red-600"
-                                            title="Trwale usuń to wydarzenie (nie można cofnąć)">
-                                            <i class="fa-solid fa-trash" aria-hidden="true"></i> Usuń
+                                            class="group/btn relative inline-flex items-center rounded px-2 py-1 text-xs font-medium text-muted hover:bg-red-50 hover:text-red-600"
+                                            aria-label="Usuń wydarzenie">
+                                            <i class="fa-solid fa-trash" aria-hidden="true"></i>
+                                            <span class="pointer-events-none absolute bottom-full left-1/2 z-10 mb-1 -translate-x-1/2 whitespace-nowrap rounded bg-gray-700 px-2 py-0.5 text-xs font-normal text-white opacity-0 transition-opacity group-hover/btn:opacity-100" role="tooltip">Usuń</span>
                                         </button>
                                     </form>
                                 </div>

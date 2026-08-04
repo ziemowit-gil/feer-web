@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\EventRequest;
 use App\Models\Event;
+use App\Models\Facilitator;
 use App\Models\Faq;
 use App\Models\LandingPage;
 use App\Models\News;
@@ -66,6 +67,7 @@ class EventController extends Controller
                 'is_published' => true,
             ]),
             'allFaqs' => $this->faqOptions(),
+            'facilitatorCatalog' => $this->facilitatorCatalog(),
         ]);
     }
 
@@ -91,7 +93,20 @@ class EventController extends Controller
     /** Wyświetla formularz edycji wydarzenia. */
     public function edit(Event $event)
     {
-        return view('admin.events.form', ['event' => $event, 'allFaqs' => $this->faqOptions()]);
+        return view('admin.events.form', [
+            'event' => $event,
+            'allFaqs' => $this->faqOptions(),
+            'facilitatorCatalog' => $this->facilitatorCatalog(),
+        ]);
+    }
+
+    /** Katalog prowadzących jako tablica do Alpine.js. */
+    private function facilitatorCatalog(): array
+    {
+        return Facilitator::orderBy('name')
+            ->get()
+            ->map->toPickerArray()
+            ->toArray();
     }
 
     /** Globalne pytania FAQ do dopięcia (puste, gdy moduł FAQ wyłączony). */
@@ -234,8 +249,9 @@ class EventController extends Controller
             $photo->copy($news, 'image');
         }
 
-        return redirect($news->previewUrl())
-            ->with('status', 'Sprawdź podgląd poniżej — aktualność “' . $news->title . '” zapisana jako szkic. Kliknij “Edytuj w panelu”, by uzupełnić i opublikować.');
+        return redirect()->route('admin.newsy.edit', $news)
+            ->with('status', 'Aktualność “' . $news->title . '” utworzona jako szkic.')
+            ->with('preview_url', $news->previewUrl());
     }
 
     /**
@@ -366,13 +382,19 @@ class EventController extends Controller
             ->each(fn ($row, $i) => $event->faqs()->create($row + ['order' => $i]));
     }
 
-    /** Wgraj/usuń zdjęcie prowadzącej (kolekcja jednoplikowa). */
+    /** Wgraj/usuń/skopiuj zdjęcie prowadzącej (kolekcja jednoplikowa). */
     private function syncFacilitatorPhoto(EventRequest $request, Event $event): void
     {
         if ($request->hasFile('facilitator_photo')) {
             $event->addMediaFromRequest('facilitator_photo')->toMediaCollection('facilitator_photo');
         } elseif ($request->boolean('remove_facilitator_photo')) {
             $event->clearMediaCollection('facilitator_photo');
+        } elseif ($request->filled('facilitator_id')) {
+            $facilitator = Facilitator::find($request->input('facilitator_id'));
+            if ($facilitator && ($photo = $facilitator->getFirstMedia('photo'))) {
+                $event->clearMediaCollection('facilitator_photo');
+                $photo->copy($event, 'facilitator_photo');
+            }
         }
     }
 

@@ -78,6 +78,7 @@ use App\Http\Controllers\Admin\BannerController as AdminBannerController;
 use App\Http\Controllers\Admin\BannerZoneController as AdminBannerZoneController;
 use App\Http\Controllers\Admin\HomepageLayoutController;
 use App\Http\Controllers\Admin\DocxImportController;
+use App\Http\Controllers\Admin\FacilitatorController as AdminFacilitatorController;
 use App\Http\Controllers\Admin\EtrController as AdminEtrController;
 use App\Http\Controllers\EtrController;
 use App\Http\Controllers\VolunteerController;
@@ -294,6 +295,10 @@ Route::middleware(['auth', 'verified', '2fa'])->prefix(config('app.admin_prefix'
         Route::put('wydarzenia/{event}/przywroc', [AdminEventController::class, 'restore'])->name('wydarzenia.restore');
         Route::post('wydarzenia/{event}/klonuj', [AdminEventController::class, 'clone'])->name('wydarzenia.klonuj');
         Route::post('wydarzenia/zbiorczo', [AdminEventController::class, 'bulk'])->name('wydarzenia.bulk');
+
+        Route::resource('prowadzacy', AdminFacilitatorController::class)
+            ->parameters(['prowadzacy' => 'prowadzacy'])
+            ->except('show');
     });
 
     Route::middleware(['module:faq', 'module-access:faq'])->group(function () {

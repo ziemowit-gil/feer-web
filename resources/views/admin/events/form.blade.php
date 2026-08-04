@@ -264,6 +264,20 @@
             <div x-show="!hide" x-cloak class="space-y-4">
                 <div class="grid gap-4 sm:grid-cols-2">
                     <div>
+                        <label for="capacity" class="mb-1 block text-sm font-bold">Limit miejsc <span class="font-normal text-muted">(opcjonalnie)</span></label>
+                        <input type="number" id="capacity" name="capacity" value="{{ old('capacity', $event->capacity) }}" min="1" max="9999" placeholder="np. 20"
+                            class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                        <p class="mt-1 text-xs text-muted">Gdy puste — brak limitu.</p>
+                    </div>
+                    <div>
+                        <label for="capacity_note" class="mb-1 block text-sm font-bold">Komentarz do limitu <span class="font-normal text-muted">(opcjonalnie)</span></label>
+                        <input type="text" id="capacity_note" name="capacity_note" value="{{ old('capacity_note', $event->capacity_note) }}" maxlength="255"
+                            placeholder="np. Rejestracja w kolejności zgłoszeń"
+                            class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                    </div>
+                </div>
+                <div class="grid gap-4 sm:grid-cols-2">
+                    <div>
                         <label for="registration_url" class="mb-1 block text-sm font-bold">Link do zapisów</label>
                         <input type="url" id="registration_url" name="registration_url" value="{{ old('registration_url', $event->registration_url) }}" maxlength="500" placeholder="https://..."
                             class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
@@ -285,8 +299,71 @@
 
         {{-- Osoba prowadząca --}}
         <fieldset class="space-y-4 rounded-lg border border-gray-200 bg-white p-6"
-            x-data="{ preview: @js($event->facilitatorPhotoUrl()) }">
+            x-data="{
+                preview: @js($event->facilitatorPhotoUrl()),
+                catalog: @js($facilitatorCatalog ?? []),
+                pickerOpen: false,
+                facilitatorId: @js(old('facilitator_id', $event->facilitator_id)),
+                fname: @js(old('facilitator_name', $event->facilitator_name) ?? ''),
+                frole: @js(old('facilitator_role', $event->facilitator_role) ?? ''),
+                fbio: @js(old('facilitator_bio', $event->facilitator_bio) ?? ''),
+                fwebsite: @js(old('facilitator_website', $event->facilitator_website) ?? ''),
+                flinkedin: @js(old('facilitator_linkedin', $event->facilitator_linkedin) ?? ''),
+                ffacebook: @js(old('facilitator_facebook', $event->facilitator_facebook) ?? ''),
+                finstagram: @js(old('facilitator_instagram', $event->facilitator_instagram) ?? ''),
+                ftwitter: @js(old('facilitator_twitter', $event->facilitator_twitter) ?? ''),
+                pick(f) {
+                    this.facilitatorId = f.id;
+                    this.fname = f.name;
+                    this.frole = f.role;
+                    this.fbio = f.bio;
+                    this.fwebsite = f.website;
+                    this.flinkedin = f.linkedin;
+                    this.ffacebook = f.facebook;
+                    this.finstagram = f.instagram;
+                    this.ftwitter = f.twitter;
+                    this.preview = f.photo;
+                    this.pickerOpen = false;
+                }
+            }" @click.outside="pickerOpen = false">
             <legend class="px-2 text-sm font-bold text-brand">Osoba prowadząca <span class="font-normal text-muted">(opcjonalnie)</span></legend>
+
+            <input type="hidden" name="facilitator_id" :value="facilitatorId">
+
+            {{-- Picker z katalogu --}}
+            <template x-if="catalog.length > 0">
+                <div class="relative">
+                    <button type="button" @click="pickerOpen = !pickerOpen"
+                        class="inline-flex items-center gap-1.5 rounded border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-muted hover:bg-gray-50 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-1">
+                        <i class="fa-solid fa-address-book" aria-hidden="true"></i>
+                        Wybierz z katalogu
+                        <i class="fa-solid fa-chevron-down text-xs" :class="pickerOpen ? 'rotate-180' : ''" aria-hidden="true"></i>
+                    </button>
+                    <div x-show="pickerOpen" x-cloak x-transition
+                        class="absolute left-0 top-full z-20 mt-1 max-h-72 w-72 overflow-y-auto rounded-lg border border-gray-200 bg-white shadow-lg"
+                        role="listbox" aria-label="Katalog prowadzących">
+                        <template x-for="f in catalog" :key="f.id">
+                            <button type="button" @click="pick(f)"
+                                class="flex w-full items-center gap-3 px-3 py-2.5 text-left hover:bg-gray-50"
+                                role="option" :aria-selected="facilitatorId === f.id">
+                                <template x-if="f.photo">
+                                    <img :src="f.photo" :alt="'Zdjęcie: ' + f.name" class="h-9 w-9 flex-none rounded-full object-cover ring-1 ring-gray-200">
+                                </template>
+                                <template x-if="!f.photo">
+                                    <span class="flex h-9 w-9 flex-none items-center justify-center rounded-full bg-gray-100 text-gray-300">
+                                        <i class="fa-solid fa-user text-sm" aria-hidden="true"></i>
+                                    </span>
+                                </template>
+                                <div class="min-w-0 flex-1">
+                                    <p class="truncate text-sm font-bold text-ink" x-text="f.name"></p>
+                                    <p x-show="f.role" class="truncate text-xs text-muted" x-text="f.role"></p>
+                                </div>
+                                <i x-show="facilitatorId === f.id" class="fa-solid fa-check flex-none text-brand" aria-hidden="true"></i>
+                            </button>
+                        </template>
+                    </div>
+                </div>
+            </template>
 
             <div class="flex flex-wrap items-start gap-5">
                 <div class="flex flex-col items-center gap-2">
@@ -313,12 +390,12 @@
                     <div class="grid gap-4 sm:grid-cols-2">
                         <div>
                             <label for="facilitator_name" class="mb-1 block text-sm font-bold">Imię i nazwisko</label>
-                            <input type="text" id="facilitator_name" name="facilitator_name" value="{{ old('facilitator_name', $event->facilitator_name) }}" maxlength="160" placeholder="np. Anna Kowalska"
+                            <input type="text" id="facilitator_name" name="facilitator_name" x-model="fname" maxlength="160" placeholder="np. Anna Kowalska"
                                 class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
                         </div>
                         <div>
                             <label for="facilitator_role" class="mb-1 block text-sm font-bold">Rola / tytuł</label>
-                            <input type="text" id="facilitator_role" name="facilitator_role" value="{{ old('facilitator_role', $event->facilitator_role) }}" maxlength="160" placeholder="np. trenerka dostępności cyfrowej"
+                            <input type="text" id="facilitator_role" name="facilitator_role" x-model="frole" maxlength="160" placeholder="np. trenerka dostępności cyfrowej"
                                 class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
                         </div>
                     </div>
@@ -327,15 +404,15 @@
                         <input type="file" id="facilitator_photo" name="facilitator_photo" accept="image/*"
                             @change="const f = $event.target.files[0]; if (f) preview = URL.createObjectURL(f)"
                             class="w-full text-sm text-muted file:mr-3 file:rounded file:border-0 file:bg-brand file:px-3 file:py-2 file:text-sm file:font-bold file:text-white hover:file:bg-brand-dark">
-                        <p class="mt-1 text-xs text-muted">Kwadratowe zdjęcie wygląda najlepiej (kadrowane do koła). Maks. 4 MB.</p>
+                        <p class="mt-1 text-xs text-muted">Kwadratowe zdjęcie wygląda najlepiej (kadrowane do koła). Maks. 4 MB. Zdjęcie z katalogu zostanie skopiowane automatycznie.</p>
                     </div>
                 </div>
             </div>
 
             <div>
                 <label for="facilitator_bio" class="mb-1 block text-sm font-bold">Bio</label>
-                <textarea id="facilitator_bio" name="facilitator_bio" rows="4" maxlength="2000" placeholder="Kilka zdań o doświadczeniu i tym, co uczestnicy zyskają dzięki osobie prowadzącej."
-                    class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">{{ old('facilitator_bio', $event->facilitator_bio) }}</textarea>
+                <textarea id="facilitator_bio" name="facilitator_bio" x-model="fbio" rows="4" maxlength="2000" placeholder="Kilka zdań o doświadczeniu i tym, co uczestnicy zyskają dzięki osobie prowadzącej."
+                    class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand"></textarea>
             </div>
 
             <div class="space-y-3">
@@ -345,8 +422,7 @@
                         <span class="w-5 flex-none text-center text-muted"><i class="fa-solid fa-globe" aria-hidden="true"></i></span>
                         <div class="flex-1">
                             <label for="facilitator_website" class="mb-0.5 block text-xs font-bold">Strona WWW</label>
-                            <input type="url" id="facilitator_website" name="facilitator_website"
-                                value="{{ old('facilitator_website', $event->facilitator_website) }}"
+                            <input type="url" id="facilitator_website" name="facilitator_website" x-model="fwebsite"
                                 maxlength="500" placeholder="https://..."
                                 class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
                         </div>
@@ -355,8 +431,7 @@
                         <span class="w-5 flex-none text-center" style="color:#0a66c2"><i class="fa-brands fa-linkedin" aria-hidden="true"></i></span>
                         <div class="flex-1">
                             <label for="facilitator_linkedin" class="mb-0.5 block text-xs font-bold">LinkedIn</label>
-                            <input type="url" id="facilitator_linkedin" name="facilitator_linkedin"
-                                value="{{ old('facilitator_linkedin', $event->facilitator_linkedin) }}"
+                            <input type="url" id="facilitator_linkedin" name="facilitator_linkedin" x-model="flinkedin"
                                 maxlength="500" placeholder="https://linkedin.com/in/..."
                                 class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
                         </div>
@@ -365,8 +440,7 @@
                         <span class="w-5 flex-none text-center" style="color:#1877f2"><i class="fa-brands fa-facebook" aria-hidden="true"></i></span>
                         <div class="flex-1">
                             <label for="facilitator_facebook" class="mb-0.5 block text-xs font-bold">Facebook</label>
-                            <input type="url" id="facilitator_facebook" name="facilitator_facebook"
-                                value="{{ old('facilitator_facebook', $event->facilitator_facebook) }}"
+                            <input type="url" id="facilitator_facebook" name="facilitator_facebook" x-model="ffacebook"
                                 maxlength="500" placeholder="https://facebook.com/..."
                                 class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
                         </div>
@@ -375,8 +449,7 @@
                         <span class="w-5 flex-none text-center" style="color:#e1306c"><i class="fa-brands fa-instagram" aria-hidden="true"></i></span>
                         <div class="flex-1">
                             <label for="facilitator_instagram" class="mb-0.5 block text-xs font-bold">Instagram</label>
-                            <input type="url" id="facilitator_instagram" name="facilitator_instagram"
-                                value="{{ old('facilitator_instagram', $event->facilitator_instagram) }}"
+                            <input type="url" id="facilitator_instagram" name="facilitator_instagram" x-model="finstagram"
                                 maxlength="500" placeholder="https://instagram.com/..."
                                 class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
                         </div>
@@ -385,8 +458,7 @@
                         <span class="w-5 flex-none text-center text-ink"><i class="fa-brands fa-x-twitter" aria-hidden="true"></i></span>
                         <div class="flex-1">
                             <label for="facilitator_twitter" class="mb-0.5 block text-xs font-bold">X / Twitter</label>
-                            <input type="url" id="facilitator_twitter" name="facilitator_twitter"
-                                value="{{ old('facilitator_twitter', $event->facilitator_twitter) }}"
+                            <input type="url" id="facilitator_twitter" name="facilitator_twitter" x-model="ftwitter"
                                 maxlength="500" placeholder="https://x.com/..."
                                 class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
                         </div>
