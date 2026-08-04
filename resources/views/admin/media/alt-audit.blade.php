@@ -23,7 +23,7 @@
         <p class="mb-4 text-sm text-muted">
             Do uzupełnienia: <span class="font-bold text-ink">{{ $total }}</span>
             {{ trans_choice('obraz|obrazy|obrazów', $total) }}.
-            Wpisz krótki opis tego, co przedstawia zdjęcie (np. „Wolontariusze pakują paczki”), a nie „zdjęcie” czy nazwę pliku.
+            Wpisz krótki opis tego, co przedstawia zdjęcie (np. „Wolontariusze pakują paczki"), a nie „zdjęcie" czy nazwę pliku.
             Opis zapisuje się na pliku i jest używany przy wstawianiu go do treści.
         </p>
 

@@ -79,13 +79,13 @@
 
                 {{-- Podgląd automatycznego komunikatu dla pozostałych statusów --}}
                 <p class="text-xs text-muted" x-show="status.{{ $type }} === 'not_yet'" x-cloak>
-                    Na stronie pojawi się: „Sprawozdanie za {rok} rok nie zostało jeszcze opublikowane.”
+                    Na stronie pojawi się: „Sprawozdanie za {rok} rok nie zostało jeszcze opublikowane."
                 </p>
                 <p class="text-xs text-muted" x-show="status.{{ $type }} === 'soon'" x-cloak>
-                    Na stronie pojawi się: „Dokumenty zostaną niebawem uzupełnione.”
+                    Na stronie pojawi się: „Dokumenty zostaną niebawem uzupełnione."
                 </p>
                 <p class="text-xs text-muted" x-show="status.{{ $type }} === 'not_required'" x-cloak>
-                    Na stronie pojawi się: „Organizacja nie ma obowiązku składania tego sprawozdania.”
+                    Na stronie pojawi się: „Organizacja nie ma obowiązku składania tego sprawozdania."
                 </p>
             </fieldset>
         @endforeach

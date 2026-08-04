@@ -1,4 +1,4 @@
-<p>Ktoś dał znać, że wybiera się na spotkanie (formularz „Daj znać, że przyjdziesz” na stronie).</p>
+<p>Ktoś dał znać, że wybiera się na spotkanie (formularz „Daj znać, że przyjdziesz" na stronie).</p>
 
 <p>
     <strong>Imię i nazwisko:</strong> {{ $senderName }}<br>

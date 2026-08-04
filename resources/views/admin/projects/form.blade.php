@@ -259,7 +259,7 @@
                     <div>
                         <label class="mb-1 block text-sm font-bold">Co udało się osiągnąć</label>
                         @include('admin.partials.editor', ['name' => 'outcomes', 'value' => old('outcomes', $project->outcomes)])
-                        <p class="mt-1 text-xs text-muted">Rezultaty, materiały i efekty, które zostają po zakończeniu projektu (np. raporty, narzędzia, nagrania, linki). Jeśli wypełnisz, na stronie projektu pojawi się osobna sekcja „Co udało się osiągnąć”.</p>
+                        <p class="mt-1 text-xs text-muted">Rezultaty, materiały i efekty, które zostają po zakończeniu projektu (np. raporty, narzędzia, nagrania, linki). Jeśli wypełnisz, na stronie projektu pojawi się osobna sekcja „Co udało się osiągnąć".</p>
                         @error('outcomes') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
                 </div>
@@ -339,7 +339,7 @@
                         <input type="checkbox" name="show_coordinator" value="1" {{ old('show_coordinator', $project->show_coordinator ?? true) ? 'checked' : '' }}
                             class="mt-0.5 rounded border-gray-300 text-brand focus:ring-brand">
                         <span class="text-sm font-bold">Pokazuj koordynatora
-                            <span class="block font-normal text-muted">Gdy wyłączone, dane koordynatora nie pojawią się na stronie projektu ani na stronie „Kontakt”. Można też wyłączyć globalnie w Ustawienia → Kontakt.</span>
+                            <span class="block font-normal text-muted">Gdy wyłączone, dane koordynatora nie pojawią się na stronie projektu ani na stronie „Kontakt". Można też wyłączyć globalnie w Ustawienia → Kontakt.</span>
                         </span>
                     </label>
 
@@ -347,7 +347,7 @@
                         <input type="checkbox" name="is_featured_contact" value="1" {{ old('is_featured_contact', $project->is_featured_contact ?? false) ? 'checked' : '' }}
                             class="mt-0.5 rounded border-gray-300 text-brand focus:ring-brand">
                         <span class="text-sm font-bold">Wyróżniony kontakt
-                            <span class="block font-normal text-muted">Na stronie „Kontakt” ten koordynator zostanie wyróżniony innym tłem i pokazany jako pierwszy.</span>
+                            <span class="block font-normal text-muted">Na stronie „Kontakt" ten koordynator zostanie wyróżniony innym tłem i pokazany jako pierwszy.</span>
                         </span>
                     </label>
                 </div>
@@ -363,7 +363,7 @@
                         <label for="legacy_url" class="mb-1 block text-sm font-bold">Link do informacji o projekcie <span class="font-normal text-muted">(opcjonalnie)</span></label>
                         <input type="url" id="legacy_url" name="legacy_url" value="{{ old('legacy_url', $project->legacy_url) }}" placeholder="https://..."
                             class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
-                        <p class="mt-1 text-xs text-muted">Jeśli podasz link, w boxie pojawi się odnośnik „Zobacz informacje o projekcie”.</p>
+                        <p class="mt-1 text-xs text-muted">Jeśli podasz link, w boxie pojawi się odnośnik „Zobacz informacje o projekcie".</p>
                         @error('legacy_url') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
                 </div>

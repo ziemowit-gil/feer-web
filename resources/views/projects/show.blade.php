@@ -65,8 +65,8 @@
         @php
             $catName = trim($project->category->name);
             $forWhom = trim((string) $project->for_whom);
-            // „Dla kogo” bywa tym samym, co kategoria (taksonomia projektów jest wg
-            // odbiorcy, np. „Dla NGO”), więc pokazujemy je tylko, gdy wnosi coś ponad
+            // „Dla kogo" bywa tym samym, co kategoria (taksonomia projektów jest wg
+            // odbiorcy, np. „Dla NGO"), więc pokazujemy je tylko, gdy wnosi coś ponad
             // nazwę kategorii — inaczej grupa docelowa dublowałaby się z plakietką.
             $showForWhom = $forWhom !== ''
                 && mb_strtolower($forWhom) !== mb_strtolower($catName)

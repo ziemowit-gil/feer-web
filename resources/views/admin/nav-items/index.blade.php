@@ -31,14 +31,14 @@
 
     <div x-data="menuBuilder({{ Js::from($reopen) }}, {{ Js::from(route('admin.pozycje-menu.store')) }})"
         @keydown.escape.window="close()">
-        <p class=”mb-4 text-sm text-muted”>
-            Pozycje menu wyświetlanego w nagłówku strony. Pozycja typu „Rozwijane menu” może mieć własne podpozycje (submenu),
-            a „Menu projektów” pobiera zawartość automatycznie z kategorii projektów (<a href=”{{ route('admin.kategorie.index') }}” class=”rounded text-brand hover:text-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand”>zarządzaj kategoriami</a>).
-            Kolejność zmieniasz przeciągając <i class=”fa-solid fa-grip-vertical text-gray-400” aria-hidden=”true”></i> lub przyciskami strzałek (dostępność klawiatury). Zagnieżdżenie — tylko przyciskami <i class=”fa-solid fa-arrow-right-long text-gray-400” aria-hidden=”true”></i><i class=”fa-solid fa-arrow-left-long text-gray-400” aria-hidden=”true”></i>.
+        <p class="mb-4 text-sm text-muted">
+            Pozycje menu wyświetlanego w nagłówku strony. Pozycja typu „Rozwijane menu" może mieć własne podpozycje (submenu),
+            a „Menu projektów" pobiera zawartość automatycznie z kategorii projektów (<a href="{{ route('admin.kategorie.index') }}" class="rounded text-brand hover:text-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">zarządzaj kategoriami</a>).
+            Kolejność zmieniasz przeciągając <i class="fa-solid fa-grip-vertical text-gray-400" aria-hidden="true"></i> lub przyciskami strzałek (dostępność klawiatury). Zagnieżdżenie — tylko przyciskami <i class="fa-solid fa-arrow-right-long text-gray-400" aria-hidden="true"></i><i class="fa-solid fa-arrow-left-long text-gray-400" aria-hidden="true"></i>.
         </p>
 
         {{-- Wskaźnik zapisu po drag & drop (ukryty do czasu użycia) --}}
-        <div id=”nav-dnd-status” role=”status” aria-live=”polite” class=”mb-3 hidden rounded border px-3 py-2 text-sm”></div>
+        <div id="nav-dnd-status" role="status" aria-live="polite" class="mb-3 hidden rounded border px-3 py-2 text-sm"></div>
 
         <div class="mb-4 flex justify-end">
             <button type="button" @click="openCreate($event)" data-location="{{ $location }}"

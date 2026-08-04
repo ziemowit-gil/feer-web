@@ -498,59 +498,59 @@
             </div>
         </div>
 
-        <div data-media-panel=”unsplash” class=”hidden”>
+        <div data-media-panel="unsplash" class="hidden">
             {{-- Plain div, not <form>: this partial renders inside the page's own
                  <form>, and nested <form> elements are invalid HTML — browsers
                  silently drop them, along with everything depending on 'submit'. --}}
-            <div data-unsplash-form class=”mb-4 flex gap-2”>
-                <label class=”sr-only” for=”{{ $editorId }}-unsplash-search”>Szukaj zdjęć na Unsplash</label>
-                <input type=”search” id=”{{ $editorId }}-unsplash-search” placeholder=”Szukaj zdjęć na Unsplash&hellip;”
-                    class=”w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand”>
-                <button type=”button” data-unsplash-submit class=”flex-none rounded bg-brand px-3 py-1.5 text-xs font-bold text-white hover:bg-brand-dark”>Szukaj</button>
+            <div data-unsplash-form class="mb-4 flex gap-2">
+                <label class="sr-only" for="{{ $editorId }}-unsplash-search">Szukaj zdjęć na Unsplash</label>
+                <input type="search" id="{{ $editorId }}-unsplash-search" placeholder="Szukaj zdjęć na Unsplash&hellip;"
+                    class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                <button type="button" data-unsplash-submit class="flex-none rounded bg-brand px-3 py-1.5 text-xs font-bold text-white hover:bg-brand-dark">Szukaj</button>
             </div>
-            <div class=”overflow-y-auto”>
-                <div data-unsplash-grid class=”grid grid-cols-3 gap-3 sm:grid-cols-4”></div>
-                <p data-unsplash-hint class=”py-6 text-center text-sm text-muted”>Wpisz szukaną frazę powyżej (np. „edukacja”, „dostępność”).</p>
-                <p data-unsplash-loading class=”hidden py-6 text-center text-sm text-muted”>Szukam&hellip;</p>
-                <p data-unsplash-error class=”hidden py-6 text-center text-sm text-red-600”></p>
+            <div class="overflow-y-auto">
+                <div data-unsplash-grid class="grid grid-cols-3 gap-3 sm:grid-cols-4"></div>
+                <p data-unsplash-hint class="py-6 text-center text-sm text-muted">Wpisz szukaną frazę powyżej (np. „edukacja", „dostępność").</p>
+                <p data-unsplash-loading class="hidden py-6 text-center text-sm text-muted">Szukam&hellip;</p>
+                <p data-unsplash-error class="hidden py-6 text-center text-sm text-red-600"></p>
             </div>
         </div>
 
-        <div data-media-panel=”onedrive” class=”hidden”>
+        <div data-media-panel="onedrive" class="hidden">
             @if ($msClientId)
-            <div class=”mb-4 flex justify-center”>
-                <button type=”button” data-onedrive-open
-                    class=”inline-flex items-center gap-2 rounded bg-[#0078d4] px-5 py-2.5 text-sm font-bold text-white hover:bg-[#106ebe] disabled:opacity-50”
-                    aria-label=”Otwórz przeglądarkę plików OneDrive”>
-                    <i class=”fa-brands fa-microsoft” aria-hidden=”true”></i> Wybierz z OneDrive
+            <div class="mb-4 flex justify-center">
+                <button type="button" data-onedrive-open
+                    class="inline-flex items-center gap-2 rounded bg-[#0078d4] px-5 py-2.5 text-sm font-bold text-white hover:bg-[#106ebe] disabled:opacity-50"
+                    aria-label="Otwórz przeglądarkę plików OneDrive">
+                    <i class="fa-brands fa-microsoft" aria-hidden="true"></i> Wybierz z OneDrive
                 </button>
             </div>
-            <p class=”mb-4 text-center text-xs text-muted”>Zaloguj się kontem Microsoft i wybierz obraz. Plik zostanie pobrany do biblioteki.</p>
-            <details class=”mb-2”>
-                <summary class=”cursor-pointer text-xs text-muted hover:text-ink”>Lub wklej publiczny link</summary>
-                <div class=”mt-2 flex gap-2”>
+            <p class="mb-4 text-center text-xs text-muted">Zaloguj się kontem Microsoft i wybierz obraz. Plik zostanie pobrany do biblioteki.</p>
+            <details class="mb-2">
+                <summary class="cursor-pointer text-xs text-muted hover:text-ink">Lub wklej publiczny link</summary>
+                <div class="mt-2 flex gap-2">
             @else
-            <p class=”mb-3 text-xs text-muted”>Wklej publiczny link do obrazu z OneDrive (<code class=”font-mono”>https://1drv.ms/i/&hellip;</code>). Link musi być dostępny dla każdego z linkiem.</p>
-            <div class=”mb-4 flex gap-2”>
+            <p class="mb-3 text-xs text-muted">Wklej publiczny link do obrazu z OneDrive (<code class="font-mono">https://1drv.ms/i/&hellip;</code>). Link musi być dostępny dla każdego z linkiem.</p>
+            <div class="mb-4 flex gap-2">
             @endif
-                <label class=”sr-only” for=”{{ $editorId }}-onedrive-url”>Adres URL obrazu z OneDrive</label>
-                <input type=”url” id=”{{ $editorId }}-onedrive-url” placeholder=”https://1drv.ms/i/&hellip;”
-                    class=”w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand”>
-                <button type=”button” data-onedrive-submit
-                    class=”flex-none rounded bg-brand px-3 py-1.5 text-xs font-bold text-white hover:bg-brand-dark disabled:opacity-50”>Importuj</button>
+                <label class="sr-only" for="{{ $editorId }}-onedrive-url">Adres URL obrazu z OneDrive</label>
+                <input type="url" id="{{ $editorId }}-onedrive-url" placeholder="https://1drv.ms/i/&hellip;"
+                    class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                <button type="button" data-onedrive-submit
+                    class="flex-none rounded bg-brand px-3 py-1.5 text-xs font-bold text-white hover:bg-brand-dark disabled:opacity-50">Importuj</button>
             @if ($msClientId)
                 </div>
             </details>
             @else
             </div>
             @endif
-            <p data-onedrive-hint class=”py-4 text-center text-sm text-muted”>
-                @if ($msClientId) Kliknij „Wybierz z OneDrive” powyżej.
-                @else Wklej link i kliknij „Importuj”.
+            <p data-onedrive-hint class="py-4 text-center text-sm text-muted">
+                @if ($msClientId) Kliknij „Wybierz z OneDrive" powyżej.
+                @else Wklej link i kliknij „Importuj".
                 @endif
             </p>
-            <p data-onedrive-loading class=”hidden py-4 text-center text-sm text-muted” aria-live=”polite”>Pobieranie pliku z OneDrive&hellip;</p>
-            <p data-onedrive-error class=”hidden py-4 text-center text-sm text-red-600” role=”alert”></p>
+            <p data-onedrive-loading class="hidden py-4 text-center text-sm text-muted" aria-live="polite">Pobieranie pliku z OneDrive&hellip;</p>
+            <p data-onedrive-error class="hidden py-4 text-center text-sm text-red-600" role="alert"></p>
         </div>
     </div>
 </div>

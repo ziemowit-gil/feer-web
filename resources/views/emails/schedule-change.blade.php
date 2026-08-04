@@ -18,4 +18,4 @@
 
 <p>Do zobaczenia!<br>Zespół {{ $siteName }}</p>
 
-<p style="color:#888;font-size:12px;">Otrzymujesz tę wiadomość, bo zgłosiłeś(-aś) chęć udziału w spotkaniu przez formularz „Daj znać, że przyjdziesz”.</p>
+<p style="color:#888;font-size:12px;">Otrzymujesz tę wiadomość, bo zgłosiłeś(-aś) chęć udziału w spotkaniu przez formularz „Daj znać, że przyjdziesz".</p>

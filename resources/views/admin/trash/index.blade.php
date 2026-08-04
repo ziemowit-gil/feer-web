@@ -33,7 +33,7 @@
                                     </button>
                                 </form>
                                 <form method="POST" action="{{ route('admin.kosz.force', ['type' => $item['type'], 'id' => $item['id']]) }}"
-                                    onsubmit="return confirm('Trwale usunąć „{{ $item['title'] }}”? Tej operacji nie można cofnąć.');">
+                                    onsubmit="return confirm('Trwale usunąć „{{ $item['title'] }}"? Tej operacji nie można cofnąć.');">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="rounded border border-gray-300 px-3 py-1.5 text-xs font-bold text-muted hover:border-red-400 hover:text-red-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600">

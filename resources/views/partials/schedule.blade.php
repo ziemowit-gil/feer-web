@@ -46,7 +46,7 @@
         @endif
         <div class="overflow-x-auto rounded-xl border border-gray-200">
             <table class="w-full text-left text-sm" aria-labelledby="{{ $headingId }}">
-                <caption class="sr-only">Harmonogram — data, godzina, miejsce i uwagi. Terminy oznaczone „zmienione” uległy zmianie.</caption>
+                <caption class="sr-only">Harmonogram — data, godzina, miejsce i uwagi. Terminy oznaczone „zmienione" uległy zmianie.</caption>
                 <thead class="bg-gray-50 text-xs font-bold uppercase tracking-wide text-muted">
                     <tr>
                         <th scope="col" class="px-4 py-3">Data</th>

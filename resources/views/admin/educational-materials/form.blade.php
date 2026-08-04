@@ -79,7 +79,7 @@
             <input type="checkbox" name="is_archival" value="1" {{ old('is_archival', $material->is_archival ?? false) ? 'checked' : '' }}
                 class="mt-0.5 rounded border-gray-300 text-brand focus:ring-brand">
             <span class="text-sm font-bold">Materiał archiwalny
-                <span class="block font-normal text-muted">Oznaczony na liście plakietką „z dawien dawna”.</span>
+                <span class="block font-normal text-muted">Oznaczony na liście plakietką „z dawien dawna".</span>
             </span>
         </label>
 

@@ -75,7 +75,7 @@
                 <input type="hidden" name="action" value="up">
                 <button type="submit" class="{{ $btn }}" @disabled($isFirst)>
                     <i class="fa-solid fa-arrow-up text-sm" aria-hidden="true"></i>
-                    <span class="sr-only">Przenieś „{{ $item->label }}” w górę</span>
+                    <span class="sr-only">Przenieś „{{ $item->label }}" w górę</span>
                 </button>
             </form>
 
@@ -86,7 +86,7 @@
                 <input type="hidden" name="action" value="down">
                 <button type="submit" class="{{ $btn }}" @disabled($isLast)>
                     <i class="fa-solid fa-arrow-down text-sm" aria-hidden="true"></i>
-                    <span class="sr-only">Przenieś „{{ $item->label }}” w dół</span>
+                    <span class="sr-only">Przenieś „{{ $item->label }}" w dół</span>
                 </button>
             </form>
 
@@ -98,7 +98,7 @@
                     <input type="hidden" name="action" value="indent">
                     <button type="submit" class="{{ $btn }}">
                         <i class="fa-solid fa-arrow-right-long text-sm" aria-hidden="true"></i>
-                        <span class="sr-only">Zagnieźdź „{{ $item->label }}” jako podpozycję powyższej pozycji</span>
+                        <span class="sr-only">Zagnieźdź „{{ $item->label }}" jako podpozycję powyższej pozycji</span>
                     </button>
                 </form>
             @endif
@@ -111,7 +111,7 @@
                     <input type="hidden" name="action" value="outdent">
                     <button type="submit" class="{{ $btn }}">
                         <i class="fa-solid fa-arrow-left-long text-sm" aria-hidden="true"></i>
-                        <span class="sr-only">Wysuń „{{ $item->label }}” na najwyższy poziom</span>
+                        <span class="sr-only">Wysuń „{{ $item->label }}" na najwyższy poziom</span>
                     </button>
                 </form>
             @endif
@@ -122,7 +122,7 @@
             @if ($canHoldChildren)
                 <button type="button" @click="openCreate($event)" data-parent="{{ $item->id }}" data-location="{{ $item->location }}" class="{{ $btn }}">
                     <i class="fa-solid fa-plus text-sm" aria-hidden="true"></i>
-                    <span class="sr-only">Dodaj podpozycję w „{{ $item->label }}”</span>
+                    <span class="sr-only">Dodaj podpozycję w „{{ $item->label }}"</span>
                 </button>
             @endif
 
@@ -143,7 +143,7 @@
                 data-active="{{ $item->is_active ? 1 : 0 }}"
                 class="{{ $btn }}">
                 <i class="fa-solid fa-pen text-sm" aria-hidden="true"></i>
-                <span class="sr-only">Edytuj „{{ $item->label }}”</span>
+                <span class="sr-only">Edytuj „{{ $item->label }}"</span>
             </button>
 
             {{-- Usuń --}}
@@ -153,7 +153,7 @@
                 @method('DELETE')
                 <button type="submit" class="{{ $btn }} hover:text-red-700 focus-visible:ring-red-600">
                     <i class="fa-solid fa-trash text-sm" aria-hidden="true"></i>
-                    <span class="sr-only">Usuń „{{ $item->label }}”</span>
+                    <span class="sr-only">Usuń „{{ $item->label }}"</span>
                 </button>
             </form>
         </div>

@@ -163,7 +163,7 @@
                                 <option value="{{ $value }}" {{ $currentType === $value ? 'selected' : '' }}>{{ $label }}</option>
                             @endforeach
                         </select>
-                        <p class="mt-1 text-xs text-muted">„Wydarzenie” dodaje pola o terminie, miejscu i rejestracji. „Harmonogram zajęć / spotkań” dodaje tabelę terminów oraz miejsce na informację o zmianie. Każdy typ ma inny układ na stronie.</p>
+                        <p class="mt-1 text-xs text-muted">„Wydarzenie" dodaje pola o terminie, miejscu i rejestracji. „Harmonogram zajęć / spotkań" dodaje tabelę terminów oraz miejsce na informację o zmianie. Każdy typ ma inny układ na stronie.</p>
                         @error('type') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
 
@@ -207,7 +207,7 @@
                             <label for="event_registration_url" class="mb-1 block text-sm font-bold">Link do rejestracji</label>
                             <input type="url" id="event_registration_url" name="event_registration_url" value="{{ old('event_registration_url', $page->event_registration_url) }}" placeholder="https://..."
                                 class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
-                            <p class="mt-1 text-xs text-muted">Jeśli podasz link, na stronie wydarzenia pojawi się przycisk „Zarejestruj się”.</p>
+                            <p class="mt-1 text-xs text-muted">Jeśli podasz link, na stronie wydarzenia pojawi się przycisk „Zarejestruj się".</p>
                             @error('event_registration_url') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                         </div>
                     </div>
@@ -222,7 +222,7 @@
                                 <input type="checkbox" name="schedule_pending" value="1" {{ $schedulePending ? 'checked' : '' }}
                                     data-schedule-pending-toggle class="mt-0.5 rounded border-gray-300 text-brand focus:ring-brand">
                                 <span>
-                                    <span class="block text-sm font-bold text-ink">Wyświetlaj komunikat „Harmonogram jeszcze nie został opublikowany”</span>
+                                    <span class="block text-sm font-bold text-ink">Wyświetlaj komunikat „Harmonogram jeszcze nie został opublikowany"</span>
                                     <span class="mt-0.5 block text-xs text-muted">Gdy włączone, zamiast tabeli terminów odwiedzający zobaczą komunikat, że harmonogram nie jest jeszcze gotowy. Terminy poniżej możesz już wpisywać — pojawią się dopiero po wyłączeniu tej opcji.</span>
                                 </span>
                             </label>
@@ -238,7 +238,7 @@
 
                         <div>
                             <p class="mb-1 block text-sm font-bold">Terminy</p>
-                            <p class="mb-3 text-xs text-muted">Dodaj kolejne terminy (data, godzina, miejsce). Zaznacz „Termin zmieniony”, aby wyróżnić wpis, który uległ zmianie.</p>
+                            <p class="mb-3 text-xs text-muted">Dodaj kolejne terminy (data, godzina, miejsce). Zaznacz „Termin zmieniony", aby wyróżnić wpis, który uległ zmianie.</p>
 
                             <div data-schedule-rows class="space-y-3">
                                 @foreach ($scheduleItems as $i => $item)
@@ -373,7 +373,7 @@
                             <summary class="cursor-pointer rounded-lg px-4 py-3 text-sm font-bold text-ink hover:bg-gray-50">Dokumenty i sprawozdania</summary>
                             <div class="space-y-4 border-t border-gray-100 px-4 py-4">
                         <div class="space-y-4 rounded-lg border border-gray-200 bg-gray-50/60 p-4">
-                            <p class="text-sm font-bold text-ink"><i class="fa-solid fa-folder-open text-muted" aria-hidden="true"></i> Sekcja „Dokumenty i sprawozdania”</p>
+                            <p class="text-sm font-bold text-ink"><i class="fa-solid fa-folder-open text-muted" aria-hidden="true"></i> Sekcja „Dokumenty i sprawozdania"</p>
 
                             <div>
                                 <label for="about_documents_intro" class="mb-1 block text-sm font-bold">Wstęp (opis nad listą)</label>
@@ -393,18 +393,18 @@
                                         @endif
                                     </button>
                                 @else
-                                    <p class="mt-1 text-xs font-medium text-amber-700">Zapisz stronę, aby móc wgrać pliki (pojawi się zakładka „Pliki do pobrania”).</p>
+                                    <p class="mt-1 text-xs font-medium text-amber-700">Zapisz stronę, aby móc wgrać pliki (pojawi się zakładka „Pliki do pobrania").</p>
                                 @endif
                             </div>
                         </div>
 
                         @if ($page->exists)
                             <p class="rounded border border-blue-200 bg-blue-50 px-3 py-2 text-xs text-blue-800">
-                                Zdjęcia dodaj w zakładce „Galeria”. Pierwsze 2–3 zdjęcia pojawią się obok wstępu; pozostałe w sekcji galerii poniżej.
+                                Zdjęcia dodaj w zakładce „Galeria". Pierwsze 2–3 zdjęcia pojawią się obok wstępu; pozostałe w sekcji galerii poniżej.
                             </p>
                         @else
                             <p class="rounded border border-blue-200 bg-blue-50 px-3 py-2 text-xs text-blue-800">
-                                Zdjęcia (2–3 obok wstępu + galeria) dodasz po zapisaniu strony — pojawi się zakładka „Galeria”.
+                                Zdjęcia (2–3 obok wstępu + galeria) dodasz po zapisaniu strony — pojawi się zakładka „Galeria".
                             </p>
                         @endif
                             </div>
@@ -414,7 +414,7 @@
                             <summary class="cursor-pointer rounded-lg px-4 py-3 text-sm font-bold text-ink hover:bg-gray-50">Statystyki (liczby)</summary>
                             <div class="border-t border-gray-100 px-4 py-4">
                         <div data-repeater>
-                            <p class="mb-3 text-xs text-muted">np. „12 lat” + „doświadczenia”. Puste wiersze są pomijane.</p>
+                            <p class="mb-3 text-xs text-muted">np. „12 lat" + „doświadczenia". Puste wiersze są pomijane.</p>
                             <div data-repeater-rows class="space-y-2">
                                 @foreach ($aboutStats as $i => $row)
                                     <div data-repeater-row class="grid gap-2 sm:grid-cols-[1fr_2fr_auto]">
@@ -598,10 +598,10 @@
                             <summary class="cursor-pointer rounded-lg px-4 py-3 text-sm font-bold text-ink hover:bg-gray-50">Nasi partnerzy</summary>
                             <div class="border-t border-gray-100 px-4 py-4">
                         <div>
-                            <p class="mb-3 text-xs text-muted">Zaznacz partnerów, których loga pokazać w sekcji „Nasi partnerzy — wspierają nas”. Partnerów dodajesz w module <a href="{{ route('admin.partnerzy.index') }}" class="text-brand underline">Partnerzy</a>.</p>
+                            <p class="mb-3 text-xs text-muted">Zaznacz partnerów, których loga pokazać w sekcji „Nasi partnerzy — wspierają nas". Partnerów dodajesz w module <a href="{{ route('admin.partnerzy.index') }}" class="text-brand underline">Partnerzy</a>.</p>
                             @php $selectedPartners = array_map('intval', (array) old('about_partner_ids', $page->about_partner_ids ?? [])); @endphp
                             @if ($partnerOptions->isEmpty())
-                                <p class="rounded border border-gray-200 bg-gray-50 px-3 py-2 text-xs text-muted">Brak partnerów — dodaj ich najpierw w module „Partnerzy”.</p>
+                                <p class="rounded border border-gray-200 bg-gray-50 px-3 py-2 text-xs text-muted">Brak partnerów — dodaj ich najpierw w module „Partnerzy".</p>
                             @else
                                 <div class="grid gap-2 sm:grid-cols-2">
                                     @foreach ($partnerOptions as $partner)
@@ -692,7 +692,7 @@
                             <label for="faq_intro" class="mb-1 block text-sm font-bold">Wstęp <span class="font-normal text-muted">(opcjonalnie)</span></label>
                             <textarea id="faq_intro" name="faq_intro" rows="3" placeholder="Krótkie wprowadzenie nad listą pytań."
                                 class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">{{ old('faq_intro', $page->faq_intro) }}</textarea>
-                            <p class="mt-1 text-xs text-muted">Wyświetli się nad listą pytań. Pole „Treść” (edytor) możesz zostawić puste.</p>
+                            <p class="mt-1 text-xs text-muted">Wyświetli się nad listą pytań. Pole „Treść" (edytor) możesz zostawić puste.</p>
                             @error('faq_intro') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                         </div>
 
@@ -753,7 +753,7 @@
                             <input type="url" id="bip_move_url" name="bip_move_url" value="{{ old('bip_move_url', $page->bip_move_url) }}"
                                 placeholder="https://bip… — puste = ogólny adres BIP z Ustawień"
                                 class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
-                            <p class="mt-1 text-xs text-muted">Puste = przycisk poprowadzi do ogólnego adresu BIP z „Ustawienia → Media i BIP”. Dodatkowy opis wpiszesz w polu „Dodatkowa informacja” poniżej.</p>
+                            <p class="mt-1 text-xs text-muted">Puste = przycisk poprowadzi do ogólnego adresu BIP z „Ustawienia → Media i BIP". Dodatkowy opis wpiszesz w polu „Dodatkowa informacja" poniżej.</p>
                             @error('bip_move_url') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                         </div>
 
@@ -933,7 +933,7 @@
                         </p>
                         <div>
                             <label for="legacy_name" class="mb-1 block text-sm font-bold">Nazwa poprzednika</label>
-                            <input type="text" id="legacy_name" name="legacy_name" value="{{ old('legacy_name', $page->legacy_name) }}" placeholder="np. Stowarzyszenie „Dawna Nazwa”"
+                            <input type="text" id="legacy_name" name="legacy_name" value="{{ old('legacy_name', $page->legacy_name) }}" placeholder="np. Stowarzyszenie „Dawna Nazwa""
                                 class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
                             @error('legacy_name') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                         </div>
@@ -1011,7 +1011,7 @@
                                 class="mt-0.5 rounded border-gray-300 text-brand focus:ring-brand">
                             <span>
                                 <span class="block text-sm font-bold">Pokaż galerię zdjęć</span>
-                                <span class="block text-xs text-muted">Wyświetla zdjęcia z zakładki „Galeria”.</span>
+                                <span class="block text-xs text-muted">Wyświetla zdjęcia z zakładki „Galeria".</span>
                             </span>
                         </label>
 
@@ -1271,7 +1271,7 @@
                     if (legacyFields) legacyFields.classList.toggle('hidden', typeSelect.value !== 'legacy');
                     if (trainingFields) trainingFields.classList.toggle('hidden', typeSelect.value !== 'training_institution');
                     if (contentField) contentField.classList.toggle('hidden', ['about', 'bip_move'].includes(typeSelect.value));
-                    // Galeria „O organizacji” jest osobna — ukryj generyczny przełącznik dla tego typu.
+                    // Galeria „O organizacji" jest osobna — ukryj generyczny przełącznik dla tego typu.
                     document.querySelectorAll('[data-gallery-toggle]').forEach(function (el) {
                         el.classList.toggle('hidden', typeSelect.value === 'about');
                     });

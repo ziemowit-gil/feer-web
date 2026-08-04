@@ -25,7 +25,7 @@
                     class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
             </div>
             <p class="mt-1 text-xs text-muted">
-                Nazwę ikony znajdziesz na <a href="https://icons.getbootstrap.com" target="_blank" rel="noopener" class="text-brand hover:text-brand-dark">icons.getbootstrap.com</a> (np. „bi-heart”).
+                Nazwę ikony znajdziesz na <a href="https://icons.getbootstrap.com" target="_blank" rel="noopener" class="text-brand hover:text-brand-dark">icons.getbootstrap.com</a> (np. „bi-heart").
             </p>
             @error('icon') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
         </div>

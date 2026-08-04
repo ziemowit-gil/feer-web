@@ -1,5 +1,5 @@
 {{--
-    Akordeon FAQ (pytania i odpowiedzi). Reużywany na stronie typu „FAQ”
+    Akordeon FAQ (pytania i odpowiedzi). Reużywany na stronie typu „FAQ"
     (page/show) oraz przy osadzeniu strony FAQ w projekcie (projects/show).
 
     Parametry:

@@ -16,15 +16,15 @@
             <div class="flex items-start gap-3">
                 <i class="fa-solid fa-triangle-exclamation mt-0.5 text-lg text-amber-600" aria-hidden="true"></i>
                 <div class="flex-1">
-                    <h2 class=”font-bold text-amber-900”>Adres <code>/strefa-wspolpracownika-feer</code> jest już zajęty</h2>
-                    <p class=”mt-1 text-sm text-amber-800”>
-                        Ten adres zajmuje strona „<strong>{{ $strefaConflict->title }}</strong>”
+                    <h2 class="font-bold text-amber-900">Adres <code>/strefa-wspolpracownika-feer</code> jest już zajęty</h2>
+                    <p class="mt-1 text-sm text-amber-800">
+                        Ten adres zajmuje strona „<strong>{{ $strefaConflict->title }}</strong>"
                         (typ: {{ \App\Models\Page::TYPES[$strefaConflict->type] ?? $strefaConflict->type }}), więc
                         strefa współpracownika nie działa. Potwierdź, aby ją nadpisać — strona zostanie przełączona na
                         wewnętrzną z logowaniem Microsoft 365. Dotychczasowa treść zostanie zachowana.
                     </p>
-                    <form method=”POST” action=”{{ route('admin.strefa.overwrite') }}” class=”mt-3”
-                        onsubmit=”return confirm('Nadpisać stronę /strefa-wspolpracownika-feer jako strefę współpracownika? Strona „{{ $strefaConflict->title }}” stanie się stroną wewnętrzną (logowanie MS365).')”>
+                    <form method="POST" action="{{ route('admin.strefa.overwrite') }}" class="mt-3"
+                        onsubmit="return confirm('Nadpisać stronę /strefa-wspolpracownika-feer jako strefę współpracownika? Strona „{{ $strefaConflict->title }}" stanie się stroną wewnętrzną (logowanie MS365).')">
                         @csrf
                         <button type="submit"
                             class="inline-flex items-center gap-2 rounded bg-amber-600 px-4 py-2 text-sm font-bold text-white transition hover:bg-amber-700 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2">
@@ -387,7 +387,7 @@
             </div>
 
             <div class="border-t border-gray-100 pt-5">
-                <label for="ngo_color_text" class="mb-1 block text-sm font-bold">Kolor submarki „NGO” <span class="font-normal text-muted">(opcjonalnie)</span></label>
+                <label for="ngo_color_text" class="mb-1 block text-sm font-bold">Kolor submarki „NGO" <span class="font-normal text-muted">(opcjonalnie)</span></label>
                 <div class="flex flex-wrap items-center gap-3">
                     <input type="color" id="ngo_color_picker" value="{{ old('ngo_color', $settings->ngo_color ?: '#1f6feb') }}"
                         oninput="document.getElementById('ngo_color_text').value = this.value"
@@ -397,13 +397,13 @@
                         oninput="if (/^#[0-9a-fA-F]{6}$/.test(this.value)) document.getElementById('ngo_color_picker').value = this.value"
                         class="w-48 rounded border-gray-300 font-mono text-sm focus:border-brand focus:ring-brand">
                 </div>
-                <p class="mt-1 text-xs text-muted">Wbudowana submarka „NGO”, wybierana przy projektach i aktualnościach. Zostaw puste, aby używać koloru przewodniego.</p>
+                <p class="mt-1 text-xs text-muted">Wbudowana submarka „NGO", wybierana przy projektach i aktualnościach. Zostaw puste, aby używać koloru przewodniego.</p>
                 @error('ngo_color') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
             </div>
 
             <div class="border-t border-gray-100 pt-5" data-subbrands>
                 <p class="mb-1 text-sm font-bold">Kolory submarek</p>
-                <p class="mb-3 text-xs text-muted">Zdefiniuj nazwane kolory dla różnych rodzajów treści (np. „Seniorzy”, „Szkoły”, „Wolontariat”). Pojawią się do wyboru w polu „Grupa docelowa (kolorystyka)” przy projektach i aktualnościach. Puste wiersze są pomijane.</p>
+                <p class="mb-3 text-xs text-muted">Zdefiniuj nazwane kolory dla różnych rodzajów treści (np. „Seniorzy", „Szkoły", „Wolontariat"). Pojawią się do wyboru w polu „Grupa docelowa (kolorystyka)" przy projektach i aktualnościach. Puste wiersze są pomijane.</p>
                 <div data-subbrands-rows class="space-y-2">
                     @foreach ($subBrands as $i => $sb)
                         <div data-subbrands-row class="flex flex-wrap items-center gap-2">
@@ -688,7 +688,7 @@
                 <div>
                     <label for="support_testimonial_quote" class="mb-1 block text-sm font-bold">Cytat <span class="font-normal text-muted">(opcjonalnie)</span></label>
                     <textarea id="support_testimonial_quote" name="support_testimonial_quote" rows="2"
-                        placeholder="np. „Dzięki FEER mama nauczyła się rozmawiać z wnukami przez wideo.”" class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">{{ old('support_testimonial_quote', $settings->support_testimonial_quote) }}</textarea>
+                        placeholder="np. „Dzięki FEER mama nauczyła się rozmawiać z wnukami przez wideo."" class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">{{ old('support_testimonial_quote', $settings->support_testimonial_quote) }}</textarea>
                     @error('support_testimonial_quote') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                 </div>
                 <div class="grid gap-4 sm:grid-cols-2">
@@ -776,7 +776,7 @@
                         @error('support_hero_subtitle') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
                     <div>
-                        <label for="support_hero_cta_label" class="mb-1 block text-sm font-bold">Tekst przycisku „Wpłać teraz”</label>
+                        <label for="support_hero_cta_label" class="mb-1 block text-sm font-bold">Tekst przycisku „Wpłać teraz"</label>
                         <input type="text" id="support_hero_cta_label" name="support_hero_cta_label" value="{{ old('support_hero_cta_label', $settings->support_hero_cta_label) }}"
                             placeholder="{{ $sd['support_hero_cta_label'] }}" class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
                         <p class="mt-1 text-xs text-muted">Przycisk pojawia się tylko, gdy ustawiono link do szybkiego przelewu (poniżej).</p>
@@ -786,7 +786,7 @@
             </div>
 
             <div class="border-t border-gray-100 pt-5">
-                <p class="mb-3 text-sm font-bold">Sekcja „Dlaczego warto nas wspierać”</p>
+                <p class="mb-3 text-sm font-bold">Sekcja „Dlaczego warto nas wspierać"</p>
                 <div class="space-y-4">
                     <div>
                         <label for="support_benefits_title" class="mb-1 block text-sm font-bold">Tytuł sekcji</label>
@@ -831,7 +831,7 @@
             </div>
 
             <div class="border-t border-gray-100 pt-5">
-                <label for="support_methods_title" class="mb-1 block text-sm font-bold">Tytuł sekcji „Jak możesz pomóc”</label>
+                <label for="support_methods_title" class="mb-1 block text-sm font-bold">Tytuł sekcji „Jak możesz pomóc"</label>
                 <input type="text" id="support_methods_title" name="support_methods_title" value="{{ old('support_methods_title', $settings->support_methods_title) }}"
                     placeholder="{{ $sd['support_methods_title'] }}" class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
                 @error('support_methods_title') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
@@ -1004,7 +1004,7 @@
         </div>
 
         <div x-show="tab === 'contact'" x-cloak>
-            <p class="mb-4 text-xs text-muted">Wyświetlane w sekcji „Kontakt” na dole strony głównej oraz na podstronie <a href="{{ route('contact.show') }}" target="_blank" rel="noopener" class="text-brand underline">/kontakt</a>.</p>
+            <p class="mb-4 text-xs text-muted">Wyświetlane w sekcji „Kontakt" na dole strony głównej oraz na podstronie <a href="{{ route('contact.show') }}" target="_blank" rel="noopener" class="text-brand underline">/kontakt</a>.</p>
 
             <div class="mb-4">
                 <label for="editor-contact_intro" class="mb-1 block text-sm font-bold">Wstęp na stronie kontakt <span class="font-normal text-muted">(opcjonalnie)</span></label>
@@ -1012,15 +1012,15 @@
                 @error('contact_intro') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
             </div>
 
-            <label class=”mb-4 flex items-start gap-2 rounded-lg border border-gray-200 bg-gray-50 p-3 text-sm”>
-                <input type=”checkbox” name=”show_coordinators” value=”1” @checked(old('show_coordinators', $settings->show_coordinators)) class=”mt-0.5 rounded border-gray-300 text-brand focus:ring-brand”>
+            <label class="mb-4 flex items-start gap-2 rounded-lg border border-gray-200 bg-gray-50 p-3 text-sm">
+                <input type="checkbox" name="show_coordinators" value="1" @checked(old('show_coordinators', $settings->show_coordinators)) class="mt-0.5 rounded border-gray-300 text-brand focus:ring-brand">
                 <span>
-                    <span class=”font-bold”>Pokazuj koordynatorów projektów</span>
-                    <span class=”block text-xs text-muted”>Wyłącza dane koordynatorów na stronach projektów. Poszczególne projekty mają dodatkowo własny przełącznik.</span>
+                    <span class="font-bold">Pokazuj koordynatorów projektów</span>
+                    <span class="block text-xs text-muted">Wyłącza dane koordynatorów na stronach projektów. Poszczególne projekty mają dodatkowo własny przełącznik.</span>
                 </span>
             </label>
 
-            <div class=”grid gap-4 sm:grid-cols-2”>
+            <div class="grid gap-4 sm:grid-cols-2">
                 <div>
                     <label for="contact_address" class="mb-1 block text-sm font-bold">Adres (ulica i numer)</label>
                     <input type="text" id="contact_address" name="contact_address" value="{{ old('contact_address', $settings->contact_address) }}" required
@@ -1154,7 +1154,7 @@
                 @error('contact_bank_accounts') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
             </div>
 
-            {{-- Sekcja „Spotkajmy się”: online (zalecane) + harmonogram stacjonarny --}}
+            {{-- Sekcja „Spotkajmy się": online (zalecane) + harmonogram stacjonarny --}}
             @php
                 $schedule = old('contact_schedule', $settings->contact_schedule ?: []);
                 if (empty($schedule)) {
@@ -1176,7 +1176,7 @@
                 </div>
 
                 <div>
-                    <label for="contact_remote_note" class="mb-1 block text-sm font-bold">Informacja „na co dzień działamy zdalnie” <span class="font-normal text-muted">(opcjonalnie)</span></label>
+                    <label for="contact_remote_note" class="mb-1 block text-sm font-bold">Informacja „na co dzień działamy zdalnie" <span class="font-normal text-muted">(opcjonalnie)</span></label>
                     <input type="text" id="contact_remote_note" name="contact_remote_note" value="{{ old('contact_remote_note', $settings->contact_remote_note) }}"
                         placeholder="np. Na co dzień działamy zdalnie — dlatego najszybciej złapiesz nas online."
                         class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
@@ -1215,7 +1215,7 @@
                 </div>
 
                 <div>
-                    <label for="contact_meeting_notify_email" class="mb-1 block text-sm font-bold">Adres do zgłoszeń „Daj znać, że przyjdziesz” <span class="font-normal text-muted">(opcjonalnie)</span></label>
+                    <label for="contact_meeting_notify_email" class="mb-1 block text-sm font-bold">Adres do zgłoszeń „Daj znać, że przyjdziesz" <span class="font-normal text-muted">(opcjonalnie)</span></label>
                     <input type="email" id="contact_meeting_notify_email" name="contact_meeting_notify_email" value="{{ old('contact_meeting_notify_email', $settings->contact_meeting_notify_email) }}"
                         placeholder="{{ $settings->contact_email ?: 'np. kontakt@feer.org.pl' }}"
                         class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
@@ -1327,12 +1327,12 @@
                     <input type="checkbox" name="notify_schedule_change" value="1" @checked(old('notify_schedule_change')) class="mt-0.5 rounded border-gray-300 text-brand focus:ring-brand">
                     <span>
                         <span class="font-bold">Powiadom zapisanych o zmianie terminu</span>
-                        <span class="block text-xs text-muted">Po zapisaniu ustawień wyśle e-mail z aktualnym harmonogramem do osób, które wypełniły „Daj znać, że przyjdziesz”, z kopią (DW) na adres powyżej. Zaznacz tylko, gdy termin faktycznie się zmienił.</span>
+                        <span class="block text-xs text-muted">Po zapisaniu ustawień wyśle e-mail z aktualnym harmonogramem do osób, które wypełniły „Daj znać, że przyjdziesz", z kopią (DW) na adres powyżej. Zaznacz tylko, gdy termin faktycznie się zmienił.</span>
                     </span>
                 </label>
             </div>
 
-            {{-- Box informacyjny pod danymi kontaktowymi (np. „zmiany w kontakcie”) --}}
+            {{-- Box informacyjny pod danymi kontaktowymi (np. „zmiany w kontakcie") --}}
             <div class="mt-8 space-y-4 rounded-lg border border-gray-200 bg-gray-50 p-5">
                 <div>
                     <p class="text-sm font-bold text-ink">Box informacyjny pod danymi kontaktowymi</p>
@@ -1455,47 +1455,47 @@
                             </div>
                         @endif
                         <input type="file" name="bip_logo" accept="image/*" class="block w-full cursor-pointer text-sm text-muted file:mr-3 file:cursor-pointer file:rounded file:border-0 file:bg-brand file:px-4 file:py-2 file:text-sm file:font-bold file:text-white hover:file:bg-brand-dark">
-                        <p class=”mt-1 text-xs text-muted”>Oficjalne logo BIP na stronie <code>/bip</code>. Puste = wbudowany znak „BIP”.</p>
-                        @error('bip_logo') <p class=”mt-1 text-sm text-red-600”>{{ $message }}</p> @enderror
+                        <p class="mt-1 text-xs text-muted">Oficjalne logo BIP na stronie <code>/bip</code>. Puste = wbudowany znak „BIP".</p>
+                        @error('bip_logo') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
 
                     {{-- Redaktor BIP — wymóg rozporządzenia MSWiA --}}
                     <div>
-                        <label for=”bip_editor_name” class=”mb-1 block text-sm font-bold”>Redaktor BIP — imię i nazwisko</label>
-                        <input type=”text” id=”bip_editor_name” name=”bip_editor_name”
-                            value=”{{ old('bip_editor_name', $settings->bip_editor_name) }}”
-                            placeholder=”Jan Kowalski”
-                            class=”w-full rounded border-gray-300 focus:border-brand focus:ring-brand”>
-                        <p class=”mt-1 text-xs text-muted”>Wymagane przez rozporządzenie MSWiA — imię i nazwisko redaktora strony BIP widoczne publicznie.</p>
-                        @error('bip_editor_name') <p class=”mt-1 text-sm text-red-600”>{{ $message }}</p> @enderror
+                        <label for="bip_editor_name" class="mb-1 block text-sm font-bold">Redaktor BIP — imię i nazwisko</label>
+                        <input type="text" id="bip_editor_name" name="bip_editor_name"
+                            value="{{ old('bip_editor_name', $settings->bip_editor_name) }}"
+                            placeholder="Jan Kowalski"
+                            class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                        <p class="mt-1 text-xs text-muted">Wymagane przez rozporządzenie MSWiA — imię i nazwisko redaktora strony BIP widoczne publicznie.</p>
+                        @error('bip_editor_name') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
 
                     <div>
-                        <label for=”bip_editor_email” class=”mb-1 block text-sm font-bold”>Redaktor BIP — adres e-mail</label>
-                        <input type=”email” id=”bip_editor_email” name=”bip_editor_email”
-                            value=”{{ old('bip_editor_email', $settings->bip_editor_email) }}”
-                            placeholder=”bip@example.org”
-                            class=”w-full rounded border-gray-300 focus:border-brand focus:ring-brand”>
-                        <p class=”mt-1 text-xs text-muted”>Kontaktowy adres e-mail redaktora BIP — widoczny publicznie jako punkt kontaktowy.</p>
-                        @error('bip_editor_email') <p class=”mt-1 text-sm text-red-600”>{{ $message }}</p> @enderror
+                        <label for="bip_editor_email" class="mb-1 block text-sm font-bold">Redaktor BIP — adres e-mail</label>
+                        <input type="email" id="bip_editor_email" name="bip_editor_email"
+                            value="{{ old('bip_editor_email', $settings->bip_editor_email) }}"
+                            placeholder="bip@example.org"
+                            class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                        <p class="mt-1 text-xs text-muted">Kontaktowy adres e-mail redaktora BIP — widoczny publicznie jako punkt kontaktowy.</p>
+                        @error('bip_editor_email') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
 
                     <div>
-                        <label for=”bip_gov_url” class=”mb-1 block text-sm font-bold”>Adres rejestracyjny na gov.pl/bip</label>
-                        <input type=”url” id=”bip_gov_url” name=”bip_gov_url”
-                            value=”{{ old('bip_gov_url', $settings->bip_gov_url) }}”
-                            placeholder=”https://www.gov.pl/web/podmiot/bip-fundacja-...”
-                            class=”w-full rounded border-gray-300 focus:border-brand focus:ring-brand”>
-                        <p class=”mt-1 text-xs text-muted”>
+                        <label for="bip_gov_url" class="mb-1 block text-sm font-bold">Adres rejestracyjny na gov.pl/bip</label>
+                        <input type="url" id="bip_gov_url" name="bip_gov_url"
+                            value="{{ old('bip_gov_url', $settings->bip_gov_url) }}"
+                            placeholder="https://www.gov.pl/web/podmiot/bip-fundacja-..."
+                            class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                        <p class="mt-1 text-xs text-muted">
                             Każda strona BIP musi być zarejestrowana u Ministra ds. Informatyzacji.
-                            Podaj URL wpisu podmiotu na <a href=”https://www.gov.pl/web/gov/bip” target=”_blank” rel=”noopener” class=”text-brand underline”>gov.pl/bip</a>.
+                            Podaj URL wpisu podmiotu na <a href="https://www.gov.pl/web/gov/bip" target="_blank" rel="noopener" class="text-brand underline">gov.pl/bip</a>.
                         </p>
-                        @error('bip_gov_url') <p class=”mt-1 text-sm text-red-600”>{{ $message }}</p> @enderror
+                        @error('bip_gov_url') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
                 </div>
 
                 <div>
-                    <label for=”facebook_url” class=”mb-1 block text-sm font-bold”>Facebook</label>
+                    <label for="facebook_url" class="mb-1 block text-sm font-bold">Facebook</label>
                     <input type="text" id="facebook_url" name="facebook_url" value="{{ old('facebook_url', $settings->facebook_url) }}" placeholder="https://facebook.com/..."
                         class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
                     @error('facebook_url') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
@@ -1533,7 +1533,7 @@
                     <label for="substack_url" class="mb-1 block text-sm font-bold">Substack (blog)</label>
                     <input type="text" id="substack_url" name="substack_url" value="{{ old('substack_url', $settings->substack_url) }}" placeholder="https://fundacjafeer.substack.com"
                         class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
-                    <p class="mt-1 text-xs text-muted">Adres profilu Substack. Najnowsze wpisy pojawią się na stronie głównej w sekcji „O tym piszemy” (kolejność ustawisz w zakładce „Strona główna”).</p>
+                    <p class="mt-1 text-xs text-muted">Adres profilu Substack. Najnowsze wpisy pojawią się na stronie głównej w sekcji „O tym piszemy" (kolejność ustawisz w zakładce „Strona główna").</p>
                     @error('substack_url') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                 </div>
             </div>
@@ -1672,7 +1672,7 @@
 
             {{-- Kolor sekcji „Szkolenia i wydarzenia" na stronie głównej --}}
             <div class="mt-6 rounded-lg border border-gray-200 bg-gray-50 p-5">
-                <label for="events_home_color_text" class="mb-1 block text-sm font-bold">Kolor sekcji „Szkolenia i wydarzenia”</label>
+                <label for="events_home_color_text" class="mb-1 block text-sm font-bold">Kolor sekcji „Szkolenia i wydarzenia"</label>
                 <p class="mb-2 text-xs text-muted">Akcent bloku wydarzeń na stronie głównej. Zostaw pusty, aby użyć koloru marki. Zbyt jasny kolor zostanie przyciemniony dla kontrastu (WCAG).</p>
                 <div class="flex items-center gap-2">
                     <input type="color" id="events_home_color_picker" value="{{ old('events_home_color', $settings->events_home_color ?: $settings->brand_color) }}"
@@ -1954,7 +1954,7 @@
             <div>
                 <h2 class="text-base font-bold text-ink">Wysyłka poczty</h2>
                 <p class="mt-1 text-xs text-muted">
-                    Konfiguracja bramki e-mail (m.in. formularz kontaktowy). Wybierz „Dziedzicz z serwera”, aby użyć ustawień
+                    Konfiguracja bramki e-mail (m.in. formularz kontaktowy). Wybierz „Dziedzicz z serwera", aby użyć ustawień
                     z pliku <code>.env</code>, albo skonfiguruj własny serwer SMTP poniżej.
                 </p>
             </div>
@@ -2046,18 +2046,18 @@
     </form>
 
     {{-- Formularz zmiany prefixu URL panelu — poza głównym formularzem ustawień.
-         Kontrolki (input, button) są skojarzone atrybutem form=”prefix-change-form”. --}}
-    <form id=”prefix-change-form” method=”POST” action=”{{ route('admin.ustawienia.prefix') }}”
-          onsubmit=”return confirm('Zmienić prefix na /' + document.getElementById('admin_prefix_input').value + '? Po zapisaniu zostaniesz przekierowany(a) pod nowy adres — zaktualizuj zakładki.')”>
+         Kontrolki (input, button) są skojarzone atrybutem form="prefix-change-form". --}}
+    <form id="prefix-change-form" method="POST" action="{{ route('admin.ustawienia.prefix') }}"
+          onsubmit="return confirm('Zmienić prefix na /' + document.getElementById('admin_prefix_input').value + '? Po zapisaniu zostaniesz przekierowany(a) pod nowy adres — zaktualizuj zakładki.')">
         @csrf
     </form>
 
     {{-- Regeneracja tokenu awaryjnego: osobny formularz poza głównym (HTML nie pozwala zagnieżdżać). --}}
-    <form id=”emergency-token-form” method=”POST” action=”{{ route('admin.ustawienia.emergency-token') }}”>
+    <form id="emergency-token-form" method="POST" action="{{ route('admin.ustawienia.emergency-token') }}">
         @csrf
     </form>
 
-    {{-- Test poczty: osobny formularz (nie można zagnieżdżać formularzy), widoczny w zakładce „Poczta”. --}}
+    {{-- Test poczty: osobny formularz (nie można zagnieżdżać formularzy), widoczny w zakładce „Poczta". --}}
     <form method="POST" action="{{ route('admin.ustawienia.mail-test') }}" x-show="tab === 'mail'" x-cloak
         class="rounded-lg border border-gray-200 bg-white p-6">
         @csrf

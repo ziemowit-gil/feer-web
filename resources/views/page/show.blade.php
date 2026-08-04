@@ -184,7 +184,7 @@
                 <h1 class="text-3xl font-bold leading-tight md:text-5xl">{{ $page->title }}</h1>
                 @if ($page->about_motto)
                     <p class="mx-auto mt-6 max-w-3xl text-xl font-medium leading-relaxed text-white/90 md:text-2xl">
-                        „{{ $page->about_motto }}”
+                        „{{ $page->about_motto }}"
                     </p>
                     @if ($page->about_motto_author)
                         <p class="mt-4 text-sm font-bold uppercase tracking-widest text-white/70">— {{ $page->about_motto_author }}</p>
@@ -414,7 +414,7 @@
                                 @endforeach
                             </ul>
                         @else
-                            <p class="text-sm text-muted">Nie dodano jeszcze dokumentów. Wgraj je w zakładce „Pliki do pobrania”.</p>
+                            <p class="text-sm text-muted">Nie dodano jeszcze dokumentów. Wgraj je w zakładce „Pliki do pobrania".</p>
                         @endif
                         <a href="{{ route('bip') }}"
                             class="mt-6 flex items-center justify-center gap-2 rounded-full border-2 border-ink px-6 py-3 font-bold text-ink transition hover:border-brand hover:text-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">

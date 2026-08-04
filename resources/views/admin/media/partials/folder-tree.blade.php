@@ -32,7 +32,7 @@
                         </button>
 
                         <form method="POST" action="{{ route('admin.multimedia.foldery.destroy', $node->id) }}"
-                            onsubmit="return confirm('Usunąć folder „{{ $node->name }}”? Jego pliki i podfoldery zostaną przeniesione do folderu nadrzędnego.');">
+                            onsubmit="return confirm('Usunąć folder „{{ $node->name }}"? Jego pliki i podfoldery zostaną przeniesione do folderu nadrzędnego.');">
                             @csrf
                             @method('DELETE')
                             <button type="submit" class="px-1 py-1 text-xs text-muted hover:text-red-600"

@@ -1,6 +1,6 @@
 {{--
-    Galeria zdjęć podstrony — pokazywana, gdy zaznaczono „Pokaż galerię zdjęć”
-    i strona ma zdjęcia. Nie dotyczy typu „O organizacji” (ma własną galerię).
+    Galeria zdjęć podstrony — pokazywana, gdy zaznaczono „Pokaż galerię zdjęć"
+    i strona ma zdjęcia. Nie dotyczy typu „O organizacji" (ma własną galerię).
 --}}
 @php
     $galleryImages = ($page->show_gallery ?? false) && ! $page->isAbout()

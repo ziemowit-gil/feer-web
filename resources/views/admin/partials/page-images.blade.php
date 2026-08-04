@@ -2,7 +2,7 @@
 
 <div class="rounded-lg border border-gray-200 bg-white p-6">
     <p class="mb-1 text-sm font-bold uppercase tracking-wide text-muted">Galeria zdjęć</p>
-    <p class="mb-4 text-xs text-muted">Zdjęcia pojawią się na stronie typu „O organizacji”. Kolejność ustalasz polem „Kolejność”.</p>
+    <p class="mb-4 text-xs text-muted">Zdjęcia pojawią się na stronie typu „O organizacji". Kolejność ustalasz polem „Kolejność".</p>
 
     @if ($images->isNotEmpty())
         <ul class="mb-4 grid gap-3 sm:grid-cols-2">

@@ -91,7 +91,7 @@
 </div>
 
 <div x-show="form.type === 'link' && form.location === 'main'" x-cloak>
-    <label for="nav-parent" class="mb-1 block text-sm font-bold">Podpozycja w menu (pod „Rozwijanym menu” lub linkiem)</label>
+    <label for="nav-parent" class="mb-1 block text-sm font-bold">Podpozycja w menu (pod „Rozwijanym menu" lub linkiem)</label>
     <select id="nav-parent" name="parent_id" x-model="form.parentId"
         class="w-full rounded border-gray-300 focus-visible:border-brand focus-visible:ring-2 focus-visible:ring-brand">
         <option value="">— pozycja główna (na pasku menu) —</option>
@@ -135,7 +135,7 @@
             Własny kolor
         </label>
     </div>
-    <p class="mt-1 text-xs text-muted">Kolor tła przycisku. Tekst automatycznie dobiera czerń lub biel dla kontrastu (WCAG). Wyłącz „Własny kolor”, aby użyć koloru marki.</p>
+    <p class="mt-1 text-xs text-muted">Kolor tła przycisku. Tekst automatycznie dobiera czerń lub biel dla kontrastu (WCAG). Wyłącz „Własny kolor", aby użyć koloru marki.</p>
     @error('button_color') <p class="mt-1 text-sm text-red-700">{{ $message }}</p> @enderror
 </div>
 

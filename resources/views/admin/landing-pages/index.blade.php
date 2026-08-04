@@ -43,7 +43,7 @@
                         <td class="px-4 py-3">
                             <div class="flex items-center justify-end gap-3">
                                 <a href="{{ route('admin.lp.edit', $page) }}" class="rounded text-brand hover:text-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand" title="Edytuj"><i class="fa-solid fa-pen" aria-hidden="true"></i><span class="sr-only">Edytuj {{ $page->title }}</span></a>
-                                <form method="POST" action="{{ route('admin.lp.destroy', $page) }}" onsubmit="return confirm('Usunąć landing page „{{ $page->title }}” wraz z zapisami?');">
+                                <form method="POST" action="{{ route('admin.lp.destroy', $page) }}" onsubmit="return confirm('Usunąć landing page „{{ $page->title }}" wraz z zapisami?');">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="rounded text-muted hover:text-red-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600" title="Usuń"><i class="fa-solid fa-trash" aria-hidden="true"></i><span class="sr-only">Usuń {{ $page->title }}</span></button>
