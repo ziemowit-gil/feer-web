@@ -37,6 +37,39 @@
             </button>
         </div>
 
+    {{-- Tabela z konfigurowalnymi kolumnami --}}
+    <div
+        x-data="{
+            open: false,
+            cols: (() => {
+                try { return { thumb: false, slug: true, type: true, order: true, ...JSON.parse(localStorage.getItem('pages-cols') || '{}') }; }
+                catch (e) { return { thumb: false, slug: true, type: true, order: true }; }
+            })(),
+        }"
+        x-effect="localStorage.setItem('pages-cols', JSON.stringify(cols))"
+        x-cloak>
+
+        {{-- Przycisk wyboru kolumn --}}
+        <div class="mb-2 flex justify-end">
+            <div class="relative">
+                <button type="button" @click="open = !open" :aria-expanded="open"
+                    class="inline-flex items-center gap-1.5 rounded border border-gray-300 bg-white px-3 py-1.5 text-xs font-bold text-muted hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                    <i class="fa-solid fa-sliders" aria-hidden="true"></i> Kolumny
+                    <i class="fa-solid fa-chevron-down text-[10px] transition" :class="open ? 'rotate-180' : ''" aria-hidden="true"></i>
+                </button>
+                <div x-show="open" @click.outside="open = false" x-transition
+                    class="absolute right-0 top-full z-20 mt-1 min-w-[160px] rounded-lg border border-gray-200 bg-white py-2 shadow-lg">
+                    <p class="mb-1 px-3 text-[10px] font-bold uppercase tracking-wide text-muted">Pokaż kolumny</p>
+                    @foreach (['thumb' => 'Miniatura', 'slug' => 'Slug', 'type' => 'Typ', 'order' => 'Kolejność'] as $key => $label)
+                        <label class="flex cursor-pointer items-center gap-2 px-3 py-1.5 hover:bg-gray-50">
+                            <input type="checkbox" x-model="cols.{{ $key }}" class="rounded border-gray-300 text-brand focus:ring-brand">
+                            <span class="text-sm">{{ $label }}</span>
+                        </label>
+                    @endforeach
+                </div>
+            </div>
+        </div>
+
     <div class="overflow-hidden rounded-lg border border-gray-200 bg-white">
         <table class="w-full text-left text-sm">
             <thead class="bg-gray-50 text-xs font-bold uppercase text-muted">
@@ -44,10 +77,11 @@
                     <th class="w-8 px-4 py-3">
                         <input type="checkbox" id="pages-select-all" class="rounded border-gray-300" aria-label="Zaznacz wszystkie strony">
                     </th>
+                    <th x-show="cols.thumb" class="w-16 px-4 py-3">Foto</th>
                     <th class="px-4 py-3">Tytuł</th>
-                    <th class="px-4 py-3">Slug</th>
-                    <th class="px-4 py-3">Typ</th>
-                    <th class="px-4 py-3">Kolejność</th>
+                    <th x-show="cols.slug" class="px-4 py-3">Slug</th>
+                    <th x-show="cols.type" class="px-4 py-3">Typ</th>
+                    <th x-show="cols.order" class="px-4 py-3">Kolejność</th>
                     <th class="px-4 py-3">Status</th>
                     <th class="px-4 py-3 text-right">Akcje</th>
                 </tr>
@@ -62,6 +96,15 @@
                                 <span class="block h-4 w-4"></span>
                             @endunless
                         </td>
+                        <td x-show="cols.thumb" class="px-4 py-2">
+                            @if (filled($page->content_image))
+                                <img src="{{ $page->content_image }}" alt="" class="h-10 w-14 rounded object-cover" loading="lazy">
+                            @else
+                                <div class="h-10 w-14 rounded bg-gray-100 flex items-center justify-center">
+                                    <i class="fa-regular fa-image text-gray-300 text-xs" aria-hidden="true"></i>
+                                </div>
+                            @endif
+                        </td>
                         <td class="px-4 py-3 font-medium">
                             @if ($page->parent_id)
                                 <span class="pl-4 text-muted">↳</span>
@@ -71,8 +114,8 @@
                                 <span class="ml-1 text-xs font-normal text-muted">(w: {{ $page->parent->title }})</span>
                             @endif
                         </td>
-                        <td class="px-4 py-3 text-muted">/{{ $page->slug }}</td>
-                        <td class="px-4 py-3">
+                        <td x-show="cols.slug" class="px-4 py-3 text-muted">/{{ $page->slug }}</td>
+                        <td x-show="cols.type" class="px-4 py-3">
                             @php
                                 $typeIcons = ['standard' => 'fa-file-lines', 'event' => 'fa-calendar-day', 'schedule' => 'fa-calendar-days', 'about' => 'fa-people-group', 'faq' => 'fa-circle-question', 'bip_move' => 'fa-landmark'];
                             @endphp
@@ -81,7 +124,7 @@
                                 {{ \App\Models\Page::TYPES[$page->type] ?? $page->type }}
                             </span>
                         </td>
-                        <td class="px-4 py-3">
+                        <td x-show="cols.order" class="px-4 py-3">
                             <form method="POST" action="{{ route('admin.podstrony.kolejnosc', $page) }}" class="flex items-center gap-1">
                                 @csrf
                                 @method('PATCH')
@@ -173,11 +216,12 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="7" class="px-4 py-6 text-center text-muted">Brak stron. Dodaj pierwszą powyżej.</td>
+                        <td colspan="8" class="px-4 py-6 text-center text-muted">Brak stron. Dodaj pierwszą powyżej.</td>
                     </tr>
                 @endforelse
             </tbody>
         </table>
+    </div>
     </div>
     </form>
 
