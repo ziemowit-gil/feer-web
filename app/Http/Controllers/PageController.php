@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\BrandAccessUser;
 use App\Models\Page;
 use App\Models\SiteSetting;
 use App\Support\SzoKomunikaty;
@@ -30,6 +31,10 @@ class PageController extends Controller
 
         // Strona wewnętrzna (także „Panel współpracownika"): sprawdź autoryzację.
         if ($page->isAccessRestricted() && ! $page->accessGranted()) {
+            if ($page->isBrandAssets()) {
+                return redirect()->route('page.brand-login', $page);
+            }
+
             if ($page->access_mode === 'microsoft') {
                 // Osobne logowanie do strefy wewnętrznej (MS365, guard „member").
                 session(['url.intended' => url()->current()]);
@@ -55,6 +60,55 @@ class PageController extends Controller
         }
 
         return response()->view('page.show', $data);
+    }
+
+    /** Formularz logowania dla strony z zasobami marki (indywidualny login+hasło). */
+    public function brandLogin(Request $request, Page $page)
+    {
+        $isLive = $page->is_published && ($page->publish_at === null || $page->publish_at->isPast());
+        abort_unless($isLive && $page->isBrandAssets(), 404);
+
+        if ($page->accessGranted()) {
+            return redirect()->route('page.show', $page);
+        }
+
+        return response()->view('page.brand-locked', compact('page'));
+    }
+
+    /** Weryfikacja loginu i hasła do strony z zasobami marki. */
+    public function brandLoginPost(Request $request, Page $page)
+    {
+        $isLive = $page->is_published && ($page->publish_at === null || $page->publish_at->isPast());
+        abort_unless($isLive && $page->isBrandAssets(), 404);
+
+        $data = $request->validate([
+            'login'    => ['required', 'string'],
+            'password' => ['required', 'string'],
+        ]);
+
+        $user = BrandAccessUser::where('page_id', $page->id)
+            ->where('login', $data['login'])
+            ->where('is_active', true)
+            ->first();
+
+        if (! $user || ! Hash::check($data['password'], $user->password)) {
+            return back()
+                ->withErrors(['login' => 'Nieprawidłowy login lub hasło.'])
+                ->withInput(['login' => $data['login']]);
+        }
+
+        session(["brand_access_{$page->id}" => $user->id]);
+        $user->update(['last_login_at' => now()]);
+
+        return redirect()->route('page.show', $page);
+    }
+
+    /** Wylogowanie ze strony z zasobami marki. */
+    public function brandLogout(Request $request, Page $page)
+    {
+        session()->forget("brand_access_{$page->id}");
+
+        return redirect()->route('page.brand-login', $page);
     }
 
     /** Odblokowanie strony wewnętrznej hasłem (zapis w sesji). */

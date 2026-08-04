@@ -12,7 +12,7 @@ class Attachment extends Model implements HasMedia
 {
     use InteractsWithMedia;
 
-    protected $fillable = ['label', 'order'];
+    protected $fillable = ['label', 'group', 'order'];
 
     public function attachable(): MorphTo
     {

@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Support\Facades\Hash;
 
 class Page extends Model
 {
@@ -57,6 +58,7 @@ class Page extends Model
         'internal' => 'Wewnętrzna (dostęp ograniczony)',
         'internal_hub' => 'Strefa współpracownika (wewnętrzny panel: komunikaty i odnośniki)',
         'legacy' => 'Prezentacja tego, co było',
+        'brand_assets' => 'Marka — identyfikacja wizualna (pliki do pobrania)',
     ];
 
     /** Tryby dostępu do strony wewnętrznej. */
@@ -165,6 +167,7 @@ class Page extends Model
         'content_image', 'content_image_alt', 'content_image_width',
         'access_mode', 'access_password', 'hub_hero', 'hub_intro', 'hub_links',
         'legacy_name', 'legacy_intro',
+        'brand_brandbook_url', 'brand_sections',
     ];
 
     protected $casts = [
@@ -191,6 +194,7 @@ class Page extends Model
         'about_partner_ids' => 'array',
         'about_press' => 'array',
         'faq_items' => 'array',
+        'brand_sections' => 'array',
     ];
 
     public function isEvent(): bool
@@ -238,16 +242,20 @@ class Page extends Model
         return $this->type === 'legacy';
     }
 
-    /** Czy strona jest chroniona dostępem (zwykła wewnętrzna lub panel współpracownika). */
+    public function isBrandAssets(): bool
+    {
+        return $this->type === 'brand_assets';
+    }
+
+    /** Czy strona jest chroniona dostępem (zwykła wewnętrzna, panel współpracownika lub marka). */
     public function isAccessRestricted(): bool
     {
-        return in_array($this->type, ['internal', 'internal_hub'], true);
+        return in_array($this->type, ['internal', 'internal_hub', 'brand_assets'], true);
     }
 
     /**
      * Czy dostęp do tej strony wewnętrznej jest już przyznany bieżącemu
-     * odwiedzającemu: dla trybu „microsoft" — zalogowanie; dla trybu „hasło" —
-     * wcześniejsze odblokowanie zapisane w sesji.
+     * odwiedzającemu.
      */
     public function accessGranted(): bool
     {
@@ -255,9 +263,12 @@ class Page extends Model
             return true;
         }
 
+        // Indywidualny login+hasło dla strony z zasobami marki.
+        if ($this->type === 'brand_assets') {
+            return filled(session("brand_access_{$this->id}"));
+        }
+
         if ($this->access_mode === 'microsoft') {
-            // Dostęp przez osobny guard współpracowników (strefa wewnętrzna),
-            // niezależny od logowania do panelu.
             return auth('member')->check();
         }
 
@@ -367,6 +378,11 @@ class Page extends Model
     public function images(): HasMany
     {
         return $this->hasMany(PageImage::class)->orderBy('order');
+    }
+
+    public function brandAccessUsers(): HasMany
+    {
+        return $this->hasMany(BrandAccessUser::class);
     }
 
     public function children(): HasMany

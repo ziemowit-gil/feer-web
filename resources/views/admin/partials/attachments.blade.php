@@ -1,4 +1,7 @@
-@php $attachments ??= collect(); @endphp
+@php
+    $attachments ??= collect();
+    $brandSections ??= [];
+@endphp
 
 <div class="rounded-lg border border-gray-200 bg-white p-6">
     <p class="mb-4 text-sm font-bold uppercase tracking-wide text-muted">Pliki do pobrania</p>
@@ -9,7 +12,12 @@
                 <li class="flex items-center justify-between gap-3 p-3">
                     <div class="min-w-0">
                         <p class="truncate text-sm font-bold">{{ $attachment->label }}</p>
-                        <p class="text-xs text-muted">{{ $attachment->file_extension }} &middot; {{ $attachment->file_size }}</p>
+                        <p class="text-xs text-muted">
+                            {{ $attachment->file_extension }} &middot; {{ $attachment->file_size }}
+                            @if ($attachment->group)
+                                &middot; <span class="font-mono">{{ $attachment->group }}</span>
+                            @endif
+                        </p>
                     </div>
                     <form method="POST" action="{{ route('admin.pliki.destroy', $attachment) }}" onsubmit="return confirm('Usunąć plik &quot;{{ $attachment->label }}&quot;?');">
                         @csrf
@@ -27,10 +35,24 @@
         @csrf
         <div>
             <label for="attachment_label" class="mb-1 block text-sm font-bold">Nazwa pliku</label>
-            <input type="text" id="attachment_label" name="label" value="{{ old('label') }}" placeholder="np. Formularz zgłoszeniowy w formacie PDF" required
+            <input type="text" id="attachment_label" name="label" value="{{ old('label') }}" placeholder="np. Logotyp kolorowy JPEG" required
                 class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
             @error('label') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
         </div>
+
+        @if (!empty($brandSections))
+            <div>
+                <label for="attachment_group" class="mb-1 block text-sm font-bold">Sekcja</label>
+                <select id="attachment_group" name="group" class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                    <option value="">— bez sekcji —</option>
+                    @foreach ($brandSections as $bs)
+                        <option value="{{ $bs['key'] }}">{{ $bs['title'] }}</option>
+                    @endforeach
+                </select>
+                @error('group') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+            </div>
+        @endif
+
         <div>
             <label for="attachment_file" class="mb-1 block text-sm font-bold">Plik</label>
             <input type="file" id="attachment_file" name="file" required

@@ -20,7 +20,9 @@ class AttachmentController extends Controller
     /** Dodaje załącznik do podstrony. */
     public function storeForPage(Request $request, Page $page)
     {
-        $this->storeFor($request, $page);
+        // Pliki identyfikacji wizualnej (CDR, AI) mogą być duże — limit 100 MB.
+        $maxKb = $page->isBrandAssets() ? 102400 : 10240;
+        $this->storeFor($request, $page, $maxKb);
 
         return redirect()->route('admin.podstrony.edit', $page)->with('status', 'Plik został dodany.');
     }
@@ -69,16 +71,18 @@ class AttachmentController extends Controller
         return redirect()->back()->with('status', 'Plik został usunięty.');
     }
 
-    private function storeFor(Request $request, Page|News $attachable): void
+    private function storeFor(Request $request, Page|News $attachable, int $maxKb = 10240): void
     {
         $data = $request->validate([
             'label' => ['required', 'string', 'max:255'],
-            'file' => ['required', 'file', 'max:10240'],
+            'group' => ['nullable', 'string', 'max:120'],
+            'file'  => ['required', 'file', 'max:' . $maxKb],
             'order' => ['nullable', 'integer', 'min:0'],
         ]);
 
         $attachment = $attachable->attachments()->create([
             'label' => $data['label'],
+            'group' => $data['group'] ?? null,
             'order' => $data['order'] ?? 0,
         ]);
 

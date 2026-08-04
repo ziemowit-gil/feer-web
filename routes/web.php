@@ -77,6 +77,7 @@ use App\Http\Controllers\BannerTrackingController;
 use App\Http\Controllers\Admin\BannerController as AdminBannerController;
 use App\Http\Controllers\Admin\BannerZoneController as AdminBannerZoneController;
 use App\Http\Controllers\Admin\HomepageLayoutController;
+use App\Http\Controllers\Admin\BrandAccessUserController as AdminBrandAccessUserController;
 use App\Http\Controllers\Admin\DocxImportController;
 use App\Http\Controllers\Admin\FacilitatorController as AdminFacilitatorController;
 use App\Http\Controllers\Admin\EtrController as AdminEtrController;
@@ -222,6 +223,12 @@ Route::middleware(['auth', 'verified', '2fa'])->prefix(config('app.admin_prefix'
         Route::get('raporty/brakujace-alt', [AdminPageController::class, 'missingAltReport'])->name('raporty.brakujace-alt');
         Route::resource('podstrony', AdminPageController::class)->parameters(['podstrony' => 'page']);
         Route::post('podstrony/{page}/pliki', [AdminAttachmentController::class, 'storeForPage'])->name('podstrony.pliki.store');
+        Route::get('podstrony/{page}/dostep/eksport', [AdminBrandAccessUserController::class, 'export'])->name('podstrony.dostep.eksport');
+        Route::get('podstrony/{page}/dostep', [AdminBrandAccessUserController::class, 'index'])->name('podstrony.dostep.index');
+        Route::post('podstrony/{page}/dostep', [AdminBrandAccessUserController::class, 'store'])->name('podstrony.dostep.store');
+        Route::post('podstrony/{page}/dostep/{user}/reset-haslo', [AdminBrandAccessUserController::class, 'resetPassword'])->name('podstrony.dostep.reset');
+        Route::patch('podstrony/{page}/dostep/{user}/aktywuj', [AdminBrandAccessUserController::class, 'toggleActive'])->name('podstrony.dostep.aktywuj');
+        Route::delete('podstrony/{page}/dostep/{user}', [AdminBrandAccessUserController::class, 'destroy'])->name('podstrony.dostep.destroy');
         Route::post('podstrony/{page}/zdjecia', [AdminPageImageController::class, 'store'])->name('podstrony.zdjecia.store');
         Route::put('podstrony/zdjecia/{image}', [AdminPageImageController::class, 'update'])->name('podstrony.zdjecia.update');
         Route::delete('podstrony/zdjecia/{image}', [AdminPageImageController::class, 'destroy'])->name('podstrony.zdjecia.destroy');
@@ -500,6 +507,11 @@ Route::prefix('rezerwacje')->name('rezerwacje.')->group(function () {
 
 // Odblokowanie strony wewnętrznej hasłem (przed catch-all, dwuczłonowa ścieżka).
 Route::post('/{page:slug}/odblokuj', [PageController::class, 'unlock'])->name('page.unlock')->middleware('module:pages');
+
+// Logowanie do strony z zasobami marki (login + indywidualne hasło).
+Route::get('/{page:slug}/logowanie', [PageController::class, 'brandLogin'])->name('page.brand-login')->middleware('module:pages');
+Route::post('/{page:slug}/logowanie', [PageController::class, 'brandLoginPost'])->name('page.brand-login.post')->middleware(['module:pages', 'throttle:10,1']);
+Route::post('/{page:slug}/wyloguj', [PageController::class, 'brandLogout'])->name('page.brand-logout')->middleware('module:pages');
 
 // Catch-all for top-level pages (e.g. /fundacja instead of /strona/fundacja).
 // Kept last so every more specific route above always wins; a page whose

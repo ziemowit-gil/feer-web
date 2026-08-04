@@ -712,6 +712,104 @@
             @include('partials.attachments-list', ['attachments' => $page->attachments])
         </div>
     </section>
+    @elseif ($page->isBrandAssets())
+    {{-- Marka: nagłówek + przycisk wylogowania --}}
+    <section class="border-b border-gray-200 bg-gray-50">
+        <div class="mx-auto max-w-5xl px-4 py-10 md:py-14">
+            <div class="flex flex-wrap items-center justify-between gap-4">
+                <div>
+                    <span class="mb-2 inline-flex items-center gap-2 rounded-full bg-brand-light px-3 py-1 text-xs font-bold uppercase tracking-wide text-brand">
+                        <i class="fa-solid fa-palette" aria-hidden="true"></i> Identyfikacja wizualna
+                    </span>
+                    <h1 class="text-3xl font-bold text-ink md:text-4xl">{{ $page->title }}</h1>
+                    @if ($page->content)
+                        <div class="prose mt-3 max-w-2xl text-muted">{!! $page->content !!}</div>
+                    @endif
+                </div>
+                <form method="POST" action="{{ route('page.brand-logout', $page) }}" class="flex-none">
+                    @csrf
+                    <button type="submit"
+                        class="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-bold text-muted hover:bg-gray-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand">
+                        <i class="fa-solid fa-right-from-bracket" aria-hidden="true"></i>
+                        Wyloguj się
+                    </button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    {{-- Brandbook --}}
+    @if (filled($page->brand_brandbook_url))
+    <section class="border-b border-gray-100 bg-brand-light">
+        <div class="mx-auto max-w-5xl px-4 py-4">
+            <a href="{{ $page->brand_brandbook_url }}"
+               target="_blank" rel="noopener noreferrer"
+               class="inline-flex items-center gap-2 font-bold text-brand hover:text-brand-dark hover:underline">
+                <i class="fa-solid fa-book-open" aria-hidden="true"></i>
+                Pobierz brandbook
+                <i class="fa-solid fa-arrow-up-right-from-square text-xs" aria-hidden="true"></i>
+            </a>
+        </div>
+    </section>
+    @endif
+
+    {{-- Sekcje plików --}}
+    <section class="mx-auto max-w-5xl px-4 py-12 space-y-12">
+        @php
+            $sections   = collect($page->brand_sections ?? []);
+            $attachments = $page->attachments->load('media');
+        @endphp
+
+        @forelse ($sections as $section)
+            @php
+                $sectionFiles = $attachments->filter(fn ($a) => $a->group === $section['key']);
+            @endphp
+            <div>
+                <h2 class="mb-4 text-xl font-bold text-ink">{{ $section['title'] }}</h2>
+
+                @if ($sectionFiles->isNotEmpty())
+                    <div class="divide-y divide-gray-200 rounded-lg border border-gray-200">
+                        @foreach ($sectionFiles as $attachment)
+                            @php
+                                $ext = strtolower($attachment->file_extension ?? '');
+                                $fileIcon = match(true) {
+                                    $ext === 'pdf'                                    => 'fa-file-pdf',
+                                    in_array($ext, ['doc','docx'])                    => 'fa-file-word',
+                                    in_array($ext, ['xls','xlsx'])                    => 'fa-file-excel',
+                                    in_array($ext, ['zip','rar','7z'])                => 'fa-file-zipper',
+                                    in_array($ext, ['jpg','jpeg','png','gif','webp']) => 'fa-file-image',
+                                    in_array($ext, ['ai','eps','svg'])                => 'fa-file-image',
+                                    default                                           => 'fa-file-arrow-down',
+                                };
+                            @endphp
+                            <div class="flex flex-wrap items-center justify-between gap-4 p-4">
+                                <div class="flex min-w-0 items-center gap-3">
+                                    <span class="flex h-10 w-10 flex-none items-center justify-center rounded border border-brand text-brand" aria-hidden="true">
+                                        <i class="fa-solid {{ $fileIcon }}"></i>
+                                    </span>
+                                    <div>
+                                        <p class="truncate font-bold text-ink">{{ $attachment->label }}</p>
+                                        <p class="text-xs text-muted">{{ $attachment->file_extension }} &middot; {{ $attachment->file_size }}</p>
+                                    </div>
+                                </div>
+                                <a href="{{ $attachment->file_url }}" download
+                                    class="flex-none rounded bg-brand px-5 py-2 text-sm font-bold uppercase text-white transition hover:bg-brand-dark focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
+                                    Pobierz
+                                    <span class="sr-only">— {{ $attachment->label }}</span>
+                                </a>
+                            </div>
+                        @endforeach
+                    </div>
+                @else
+                    <p class="text-sm text-muted italic">Brak plików w tej sekcji.</p>
+                @endif
+            </div>
+        @empty
+            {{-- Brak sekcji — wyświetl wszystkie pliki bez podziału --}}
+            @include('partials.attachments-list', ['attachments' => $attachments])
+        @endforelse
+    </section>
+
     @elseif ($page->isLegacy())
     <section class="border-b border-gray-200 bg-gray-50">
         <div class="mx-auto max-w-4xl px-4 py-12 text-center md:py-16">

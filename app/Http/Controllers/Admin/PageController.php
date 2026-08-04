@@ -395,6 +395,10 @@ class PageController extends Controller
             'training_bur_number' => ['nullable', 'string', 'max:100'],
             'training_extra_info' => ['nullable', 'string', 'max:10000'],
             'training_bur_note' => ['nullable', 'string', 'max:2000'],
+            'brand_brandbook_url' => ['nullable', 'url', 'max:500'],
+            'brand_sections' => ['nullable', 'array'],
+            'brand_sections.*.title' => ['nullable', 'string', 'max:120'],
+            'brand_sections.*.key' => ['nullable', 'string', 'max:80'],
         ]);
 
         $data['parent_id'] = $data['parent_id'] ?: null;
@@ -603,6 +607,27 @@ class PageController extends Controller
         } else {
             $data['legacy_name'] = null;
             $data['legacy_intro'] = null;
+        }
+
+        // Marka — identyfikacja wizualna: brandbook URL + sekcje; poza typem czyścimy.
+        if ($data['type'] === 'brand_assets') {
+            $data['brand_brandbook_url'] = trim((string) ($data['brand_brandbook_url'] ?? '')) ?: null;
+            $sections = [];
+            foreach ((array) $request->input('brand_sections', []) as $row) {
+                $title = trim((string) ($row['title'] ?? ''));
+                $key   = trim((string) ($row['key'] ?? ''));
+                if ($title === '') {
+                    continue;
+                }
+                if ($key === '') {
+                    $key = \Illuminate\Support\Str::slug($title);
+                }
+                $sections[] = ['key' => $key, 'title' => $title];
+            }
+            $data['brand_sections'] = $sections ?: null;
+        } else {
+            $data['brand_brandbook_url'] = null;
+            $data['brand_sections'] = null;
         }
 
         return $this->applyApprovalWorkflow($data);
