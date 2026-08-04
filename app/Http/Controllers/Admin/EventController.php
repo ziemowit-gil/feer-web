@@ -337,6 +337,7 @@ class EventController extends Controller
         $data = $request->validated();
         $data['is_published'] = $request->boolean('is_published');
         $data['is_featured'] = $request->boolean('is_featured');
+        $data['show_benefits'] = $request->boolean('show_benefits');
         $data['hide_registration'] = $request->boolean('hide_registration');
         $data['order'] = $data['order'] ?? 0;
         $data['registration_cta_label'] = trim((string) ($data['registration_cta_label'] ?? '')) ?: 'Zapisz się';

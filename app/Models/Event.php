@@ -39,7 +39,10 @@ class Event extends Model implements HasMedia
 
     protected $fillable = [
         'title', 'slug', 'lead', 'description',
+        'benefits', 'show_benefits',
         'facilitator_name', 'facilitator_role', 'facilitator_bio',
+        'facilitator_website', 'facilitator_linkedin', 'facilitator_facebook',
+        'facilitator_instagram', 'facilitator_twitter',
         'type', 'mode', 'location', 'latitude', 'longitude', 'online_url',
         'starts_at', 'ends_at', 'published_at',
         'registration_url', 'registration_cta_label', 'hide_registration', 'contact_email', 'price_info',
@@ -53,6 +56,7 @@ class Event extends Model implements HasMedia
         'published_at' => 'datetime',
         'is_published' => 'boolean',
         'is_featured' => 'boolean',
+        'show_benefits' => 'boolean',
         'hide_registration' => 'boolean',
         'archived_at' => 'datetime',
         'latitude' => 'float',

@@ -46,6 +46,29 @@
             </div>
         </div>
 
+        {{-- Korzyści --}}
+        <fieldset class="space-y-4 rounded-lg border border-gray-200 bg-white p-6"
+            x-data="{ enabled: @js(old('show_benefits', $event->show_benefits ?? false)) }">
+            <legend class="px-2 text-sm font-bold text-brand">Korzyści — co zyskasz? <span class="font-normal text-muted">(opcjonalnie)</span></legend>
+
+            <label class="flex items-center gap-2">
+                <input type="checkbox" name="show_benefits" value="1"
+                    x-model="enabled"
+                    {{ old('show_benefits', $event->show_benefits) ? 'checked' : '' }}
+                    class="rounded border-gray-300 text-brand focus:ring-brand"
+                    aria-expanded="enabled" aria-controls="benefits-fields">
+                <span class="text-sm font-bold">Pokaż sekcję „Co zyskasz?" na stronie</span>
+            </label>
+
+            <div id="benefits-fields" x-show="enabled" x-cloak>
+                <label for="benefits" class="mb-1 block text-sm font-bold">Lista korzyści</label>
+                <textarea id="benefits" name="benefits" rows="6" maxlength="5000"
+                    placeholder="Każda linia to osobna korzyść, np.:&#10;Poznasz standardy WCAG 2.2&#10;Otrzymasz gotowe szablony do pracy&#10;Uzyskasz certyfikat ukończenia"
+                    class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">{{ old('benefits', $event->benefits) }}</textarea>
+                <p class="mt-1 text-xs text-muted">Każda linia tekstu wyświetli się jako osobny punkt na stronie.</p>
+            </div>
+        </fieldset>
+
         {{-- Rodzaj i termin --}}
         <fieldset class="space-y-4 rounded-lg border border-gray-200 bg-white p-6">
             <legend class="px-2 text-sm font-bold text-brand">Rodzaj i termin</legend>
@@ -313,6 +336,62 @@
                 <label for="facilitator_bio" class="mb-1 block text-sm font-bold">Bio</label>
                 <textarea id="facilitator_bio" name="facilitator_bio" rows="4" maxlength="2000" placeholder="Kilka zdań o doświadczeniu i tym, co uczestnicy zyskają dzięki osobie prowadzącej."
                     class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">{{ old('facilitator_bio', $event->facilitator_bio) }}</textarea>
+            </div>
+
+            <div class="space-y-3">
+                <p class="text-sm font-bold">Linki i social media <span class="font-normal text-muted">(opcjonalnie)</span></p>
+                <div class="grid gap-3 sm:grid-cols-2">
+                    <div class="flex items-center gap-2">
+                        <span class="w-5 flex-none text-center text-muted"><i class="fa-solid fa-globe" aria-hidden="true"></i></span>
+                        <div class="flex-1">
+                            <label for="facilitator_website" class="mb-0.5 block text-xs font-bold">Strona WWW</label>
+                            <input type="url" id="facilitator_website" name="facilitator_website"
+                                value="{{ old('facilitator_website', $event->facilitator_website) }}"
+                                maxlength="500" placeholder="https://..."
+                                class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="w-5 flex-none text-center" style="color:#0a66c2"><i class="fa-brands fa-linkedin" aria-hidden="true"></i></span>
+                        <div class="flex-1">
+                            <label for="facilitator_linkedin" class="mb-0.5 block text-xs font-bold">LinkedIn</label>
+                            <input type="url" id="facilitator_linkedin" name="facilitator_linkedin"
+                                value="{{ old('facilitator_linkedin', $event->facilitator_linkedin) }}"
+                                maxlength="500" placeholder="https://linkedin.com/in/..."
+                                class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="w-5 flex-none text-center" style="color:#1877f2"><i class="fa-brands fa-facebook" aria-hidden="true"></i></span>
+                        <div class="flex-1">
+                            <label for="facilitator_facebook" class="mb-0.5 block text-xs font-bold">Facebook</label>
+                            <input type="url" id="facilitator_facebook" name="facilitator_facebook"
+                                value="{{ old('facilitator_facebook', $event->facilitator_facebook) }}"
+                                maxlength="500" placeholder="https://facebook.com/..."
+                                class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="w-5 flex-none text-center" style="color:#e1306c"><i class="fa-brands fa-instagram" aria-hidden="true"></i></span>
+                        <div class="flex-1">
+                            <label for="facilitator_instagram" class="mb-0.5 block text-xs font-bold">Instagram</label>
+                            <input type="url" id="facilitator_instagram" name="facilitator_instagram"
+                                value="{{ old('facilitator_instagram', $event->facilitator_instagram) }}"
+                                maxlength="500" placeholder="https://instagram.com/..."
+                                class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="w-5 flex-none text-center text-ink"><i class="fa-brands fa-x-twitter" aria-hidden="true"></i></span>
+                        <div class="flex-1">
+                            <label for="facilitator_twitter" class="mb-0.5 block text-xs font-bold">X / Twitter</label>
+                            <input type="url" id="facilitator_twitter" name="facilitator_twitter"
+                                value="{{ old('facilitator_twitter', $event->facilitator_twitter) }}"
+                                maxlength="500" placeholder="https://x.com/..."
+                                class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                        </div>
+                    </div>
+                </div>
             </div>
         </fieldset>
 

@@ -88,10 +88,47 @@
             </section>
         @endif
 
+        @if ($event->show_benefits && filled($event->benefits))
+            @php $benefitLines = array_filter(array_map('trim', explode("\n", $event->benefits))); @endphp
+            @if (count($benefitLines))
+            <section aria-labelledby="korzysci" class="mb-8">
+                <h2 id="korzysci" class="flex items-center gap-2 text-xl font-bold text-ink">
+                    <i class="fa-solid fa-star" aria-hidden="true" style="color: var(--accent)"></i> Co zyskasz?
+                </h2>
+                <ul class="mt-3 space-y-2">
+                    @foreach ($benefitLines as $benefit)
+                        <li class="flex items-start gap-3">
+                            <i class="fa-solid fa-check mt-0.5 flex-none text-sm" aria-hidden="true" style="color: var(--accent)"></i>
+                            <span class="text-gray-700">{{ $benefit }}</span>
+                        </li>
+                    @endforeach
+                </ul>
+            </section>
+            @endif
+        @endif
+
         @if ($event->hasFacilitator())
+            @php
+                $facilitatorFirstName = filled($event->facilitator_name)
+                    ? explode(' ', trim($event->facilitator_name))[0]
+                    : null;
+                $facilitatorLinks = array_filter([
+                    'website'   => $event->facilitator_website,
+                    'linkedin'  => $event->facilitator_linkedin,
+                    'facebook'  => $event->facilitator_facebook,
+                    'instagram' => $event->facilitator_instagram,
+                    'twitter'   => $event->facilitator_twitter,
+                ]);
+                $headingLabel = $facilitatorFirstName
+                    ? $facilitatorFirstName.' w&nbsp;sieci'
+                    : 'Prowadzący / Prowadząca';
+            @endphp
             <section aria-labelledby="prowadzaca" class="mb-8">
                 <h2 id="prowadzaca" class="flex items-center gap-2 text-xl font-bold text-ink">
-                    <i class="fa-solid fa-chalkboard-user" aria-hidden="true" style="color: var(--accent)"></i> Prowadzący / Prowadząca
+                    <i class="fa-solid fa-chalkboard-user" aria-hidden="true" style="color: var(--accent)"></i>
+                    {!! $facilitatorFirstName
+                        ? e($facilitatorFirstName).'<span class="font-normal text-gray-500"> — prowadzący/a</span>'
+                        : 'Prowadzący / Prowadząca' !!}
                 </h2>
                 <div class="mt-3 flex flex-col gap-5 rounded-xl border border-gray-200 bg-gray-50 p-6 sm:flex-row sm:items-start">
                     @if ($event->facilitatorPhotoUrl())
@@ -105,13 +142,63 @@
                     @endif
                     <div class="min-w-0">
                         @if ($event->facilitator_name)
-                            <p class="text-lg font-bold text-ink">{{ $event->facilitator_name }}</p>
+                            <p class="text-lg font-bold text-ink">
+                                @if ($event->facilitator_website)
+                                    <a href="{{ $event->facilitator_website }}" target="_blank" rel="noopener" style="color: var(--accent)" class="hover:underline">{{ $event->facilitator_name }}</a>
+                                @else
+                                    {{ $event->facilitator_name }}
+                                @endif
+                            </p>
                         @endif
                         @if ($event->facilitator_role)
                             <p class="text-sm font-bold uppercase tracking-wide" style="color: var(--accent)">{{ $event->facilitator_role }}</p>
                         @endif
                         @if ($event->facilitator_bio)
                             <p class="mt-2 whitespace-pre-line text-gray-700">{{ $event->facilitator_bio }}</p>
+                        @endif
+                        @if (count($facilitatorLinks))
+                            <div class="mt-3 flex flex-wrap items-center gap-3" aria-label="Linki do profili prowadzącego">
+                                @if ($event->facilitator_website)
+                                    <a href="{{ $event->facilitator_website }}" target="_blank" rel="noopener"
+                                        class="inline-flex items-center gap-1.5 rounded-full border border-gray-200 px-3 py-1 text-sm font-bold text-gray-700 hover:border-gray-300 hover:bg-white focus-visible:outline focus-visible:outline-2"
+                                        style="outline-color: var(--accent)"
+                                        aria-label="Strona WWW prowadzącego/ej (otworzy się w nowej karcie)">
+                                        <i class="fa-solid fa-globe" aria-hidden="true" style="color: var(--accent)"></i> Strona WWW
+                                    </a>
+                                @endif
+                                @if ($event->facilitator_linkedin)
+                                    <a href="{{ $event->facilitator_linkedin }}" target="_blank" rel="noopener"
+                                        class="inline-flex items-center gap-1.5 rounded-full border border-gray-200 px-3 py-1 text-sm font-bold text-gray-700 hover:border-gray-300 hover:bg-white focus-visible:outline focus-visible:outline-2"
+                                        style="outline-color: var(--accent)"
+                                        aria-label="Profil LinkedIn prowadzącego/ej (otworzy się w nowej karcie)">
+                                        <i class="fa-brands fa-linkedin" aria-hidden="true" style="color:#0a66c2"></i> LinkedIn
+                                    </a>
+                                @endif
+                                @if ($event->facilitator_facebook)
+                                    <a href="{{ $event->facilitator_facebook }}" target="_blank" rel="noopener"
+                                        class="inline-flex items-center gap-1.5 rounded-full border border-gray-200 px-3 py-1 text-sm font-bold text-gray-700 hover:border-gray-300 hover:bg-white focus-visible:outline focus-visible:outline-2"
+                                        style="outline-color: var(--accent)"
+                                        aria-label="Profil Facebook prowadzącego/ej (otworzy się w nowej karcie)">
+                                        <i class="fa-brands fa-facebook" aria-hidden="true" style="color:#1877f2"></i> Facebook
+                                    </a>
+                                @endif
+                                @if ($event->facilitator_instagram)
+                                    <a href="{{ $event->facilitator_instagram }}" target="_blank" rel="noopener"
+                                        class="inline-flex items-center gap-1.5 rounded-full border border-gray-200 px-3 py-1 text-sm font-bold text-gray-700 hover:border-gray-300 hover:bg-white focus-visible:outline focus-visible:outline-2"
+                                        style="outline-color: var(--accent)"
+                                        aria-label="Profil Instagram prowadzącego/ej (otworzy się w nowej karcie)">
+                                        <i class="fa-brands fa-instagram" aria-hidden="true" style="color:#e1306c"></i> Instagram
+                                    </a>
+                                @endif
+                                @if ($event->facilitator_twitter)
+                                    <a href="{{ $event->facilitator_twitter }}" target="_blank" rel="noopener"
+                                        class="inline-flex items-center gap-1.5 rounded-full border border-gray-200 px-3 py-1 text-sm font-bold text-gray-700 hover:border-gray-300 hover:bg-white focus-visible:outline focus-visible:outline-2"
+                                        style="outline-color: var(--accent)"
+                                        aria-label="Profil X/Twitter prowadzącego/ej (otworzy się w nowej karcie)">
+                                        <i class="fa-brands fa-x-twitter" aria-hidden="true"></i> X / Twitter
+                                    </a>
+                                @endif
+                            </div>
                         @endif
                     </div>
                 </div>
