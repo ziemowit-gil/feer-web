@@ -290,6 +290,33 @@
                     @error('image_alt') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                 </div>
 
+                {{-- Układ zdjęcia na stronie artykułu --}}
+                <div class="mt-4">
+                    <p class="mb-2 text-sm font-bold">Układ zdjęcia na stronie artykułu</p>
+                    @php $currentLayout = old('article_layout', $news->article_layout ?? 'default'); @endphp
+                    <div x-data="{ layout: '{{ $currentLayout }}' }"
+                         class="grid grid-cols-2 gap-2 sm:grid-cols-4" role="radiogroup" aria-label="Układ zdjęcia">
+                        @foreach ([
+                            'default' => ['label' => 'Banner', 'desc' => 'Zdjęcie na górze, pełna szerokość', 'icon' => 'fa-image'],
+                            'wide'    => ['label' => 'Banner duży', 'desc' => 'Jak banner, ale wyższy', 'icon' => 'fa-panorama'],
+                            'side'    => ['label' => 'Obok tekstu', 'desc' => 'Zdjęcie po lewej, treść po prawej', 'icon' => 'fa-table-columns'],
+                            'none'    => ['label' => 'Bez zdjęcia', 'desc' => 'Ukryj zdjęcie nagłówkowe', 'icon' => 'fa-eye-slash'],
+                        ] as $val => $opt)
+                            <label @click="layout = '{{ $val }}'"
+                                :class="layout === '{{ $val }}' ? 'border-brand bg-brand/5 font-bold text-brand' : 'border-gray-200 hover:border-gray-400'"
+                                class="flex cursor-pointer flex-col items-center gap-1 rounded-lg border-2 p-3 text-center text-xs transition">
+                                <input type="radio" name="article_layout" value="{{ $val }}"
+                                    {{ $currentLayout === $val ? 'checked' : '' }}
+                                    class="sr-only" @change="layout = '{{ $val }}'">
+                                <i class="fa-solid {{ $opt['icon'] }} text-lg" aria-hidden="true"></i>
+                                <span>{{ $opt['label'] }}</span>
+                                <span class="text-muted font-normal leading-tight">{{ $opt['desc'] }}</span>
+                            </label>
+                        @endforeach
+                    </div>
+                    @error('article_layout') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                </div>
+
                 {{-- ============================= MODAL ============================= --}}
                 <div x-show="open" x-cloak class="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto p-4 sm:p-8" style="display:none">
                     <div class="fixed inset-0 bg-ink/60" @click="close()" aria-hidden="true"></div>

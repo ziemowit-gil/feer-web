@@ -190,6 +190,7 @@ class NewsController extends Controller
             'audience' => ['nullable', Rule::in(array_keys(SiteSetting::current()->audienceOptions()))],
             'accent_color' => ['nullable', 'regex:/^#[0-9a-fA-F]{6}$/'],
             'image_alt' => ['nullable', 'string', 'max:255'],
+            'article_layout' => ['nullable', Rule::in(['default', 'side', 'wide', 'none'])],
             'content' => ['nullable', 'string'],
             'published_at' => ['required', 'date'],
             'image' => ['nullable', 'image', 'max:4096'],
@@ -201,6 +202,7 @@ class NewsController extends Controller
         $data['accent_color'] = filled($data['accent_color'] ?? null)
             ? SiteSetting::current()->contrastSafeColor($data['accent_color'])
             : null;
+        $data['article_layout'] = $data['article_layout'] ?? 'default';
         $data['is_published'] = $request->boolean('is_published');
         $data['is_featured'] = $request->boolean('is_featured');
         $data['is_archived'] = $request->boolean('is_archived');

@@ -44,7 +44,15 @@
             </div>
         </div>
     @endif
-    <section class="mx-auto max-w-2xl px-4 py-12" x-data="{ etr: false }">
+    @php
+        $articleLayout = $news->article_layout ?? 'default';
+        $img           = $news->imageUrlOrDefault();
+        $imgAlt        = $news->image_alt ?: 'Zdjęcie ilustracyjne: ' . $news->title;
+        $isSide        = $articleLayout === 'side' && $img;
+    @endphp
+
+    {{-- Układ "obok": max-w-5xl, żeby było miejsce na dwie kolumny --}}
+    <section class="mx-auto px-4 py-12 {{ $isSide ? 'max-w-5xl' : 'max-w-2xl' }}" x-data="{ etr: false }">
         @if ($news->is_archived)
             @include('partials.archival-notice', ['date' => $news->published_at])
         @endif
@@ -67,12 +75,25 @@
 
             <h1 class="mb-6 text-3xl font-bold text-ink">{{ $news->title }}</h1>
 
-            @php $img = $news->imageUrlOrDefault(); @endphp
-            @if ($img)
-                <img src="{{ $img }}" alt="{{ $news->image_alt ?: 'Zdjęcie ilustracyjne: '.$news->title }}" data-lightbox class="mb-6 h-64 w-full rounded-lg object-cover">
+            @if ($articleLayout === 'side' && $img)
+                {{-- ── Obok tekstu: zdjęcie po lewej, treść po prawej ── --}}
+                <div class="flex flex-col gap-6 sm:flex-row sm:items-start">
+                    <div class="shrink-0 sm:w-72">
+                        <img src="{{ $img }}" alt="{{ $imgAlt }}" data-lightbox
+                            class="w-full rounded-lg object-cover sm:aspect-[4/3]">
+                    </div>
+                    <div class="min-w-0 flex-1">
+                        <div class="prose max-w-none text-ink">{!! $news->content !!}</div>
+                    </div>
+                </div>
+            @else
+                {{-- ── Banner (default / wide) lub bez zdjęcia ── --}}
+                @if ($img && $articleLayout !== 'none')
+                    <img src="{{ $img }}" alt="{{ $imgAlt }}" data-lightbox
+                        class="mb-6 w-full rounded-lg object-cover {{ $articleLayout === 'wide' ? 'h-96' : 'h-64' }}">
+                @endif
+                <div class="prose max-w-none text-ink">{!! $news->content !!}</div>
             @endif
-
-            <div class="prose max-w-none text-ink">{!! $news->content !!}</div>
 
             <div class="mt-8 flex flex-wrap gap-3 print:hidden" aria-label="Opcje artykułu">
                 <button type="button" onclick="window.print()"
