@@ -46,12 +46,13 @@
             {{-- Social media (wszystkie — na mobile) + wybrane 2 dla desktop --}}
             @php
                 $socials = array_filter([
-                    'facebook'  => [$siteSettings->facebook_url,  'bi bi-facebook',  'Facebook'],
-                    'instagram' => [$siteSettings->instagram_url, 'bi bi-instagram', 'Instagram'],
-                    'youtube'   => [$siteSettings->youtube_url,   'bi bi-youtube',   'YouTube'],
-                    'linkedin'  => [$siteSettings->linkedin_url,  'bi bi-linkedin',  'LinkedIn'],
-                    'twitter'   => [$siteSettings->twitter_url,   'bi bi-twitter-x', 'Twitter / X'],
-                    'substack'  => [$siteSettings->substack_url,  'bi bi-substack',  'Substack'],
+                    'facebook'       => [$siteSettings->facebook_url,       'bi bi-facebook',   'Facebook'],
+                    'facebook_group' => [$siteSettings->facebook_group_url, 'bi bi-people-fill', 'Grupa Facebook'],
+                    'instagram'      => [$siteSettings->instagram_url,      'bi bi-instagram',  'Instagram'],
+                    'youtube'        => [$siteSettings->youtube_url,        'bi bi-youtube',    'YouTube'],
+                    'linkedin'       => [$siteSettings->linkedin_url,       'bi bi-linkedin',   'LinkedIn'],
+                    'twitter'        => [$siteSettings->twitter_url,        'bi bi-twitter-x',  'Twitter / X'],
+                    'substack'       => [$siteSettings->substack_url,       'bi bi-substack',   'Substack'],
                 ], fn ($s) => !empty($s[0]));
                 $socialKeys = \App\Models\SiteSetting::SOCIAL_KEYS;
                 $wmSocials = [];

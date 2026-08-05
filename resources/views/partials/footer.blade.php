@@ -66,6 +66,11 @@
                             <i class="bi bi-facebook" aria-hidden="true"></i>
                         </a>
                     @endif
+                    @if ($siteSettings->facebook_group_url)
+                        <a href="{{ $siteSettings->facebook_group_url }}" target="_blank" rel="noopener" class="flex h-9 w-9 items-center justify-center rounded-full bg-brand text-white transition hover:bg-brand-dark" aria-label="Grupa Facebook">
+                            <i class="bi bi-people-fill" aria-hidden="true"></i>
+                        </a>
+                    @endif
                     @if ($siteSettings->twitter_url)
                         <a href="{{ $siteSettings->twitter_url }}" target="_blank" rel="noopener" class="flex h-9 w-9 items-center justify-center rounded-full bg-brand text-white transition hover:bg-brand-dark" aria-label="Twitter / X">
                             <i class="bi bi-twitter-x" aria-hidden="true"></i>

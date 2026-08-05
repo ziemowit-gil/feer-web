@@ -128,6 +128,7 @@ class SiteSettingController extends Controller
             'bip_editor_email' => ['nullable', 'email', 'max:255'],
             'bip_gov_url' => ['nullable', 'string', 'max:255'],
             'facebook_url' => ['nullable', 'string', 'max:255'],
+            'facebook_group_url' => ['nullable', 'string', 'max:255'],
             'twitter_url' => ['nullable', 'string', 'max:255'],
             'instagram_url' => ['nullable', 'string', 'max:255'],
             'linkedin_url' => ['nullable', 'string', 'max:255'],

@@ -1512,6 +1512,14 @@
                 </div>
 
                 <div>
+                    <label for="facebook_group_url" class="mb-1 block text-sm font-bold">Grupa Facebook</label>
+                    <input type="text" id="facebook_group_url" name="facebook_group_url" value="{{ old('facebook_group_url', $settings->facebook_group_url) }}" placeholder="https://facebook.com/groups/..."
+                        class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                    <p class="mt-1 text-xs text-muted">Link do grupy FB — pojawi się w nagłówku i stopce obok ikony strony.</p>
+                    @error('facebook_group_url') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                </div>
+
+                <div>
                     <label for="twitter_url" class="mb-1 block text-sm font-bold">Twitter / X</label>
                     <input type="text" id="twitter_url" name="twitter_url" value="{{ old('twitter_url', $settings->twitter_url) }}" placeholder="https://x.com/..."
                         class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">

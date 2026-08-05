@@ -44,12 +44,13 @@ class SiteSetting extends Model implements HasMedia
      * drift apart.
      */
     public const SOCIAL_KEYS = [
-        'facebook'  => ['label' => 'Facebook',   'icon' => 'bi bi-facebook'],
-        'instagram' => ['label' => 'Instagram',  'icon' => 'bi bi-instagram'],
-        'youtube'   => ['label' => 'YouTube',    'icon' => 'bi bi-youtube'],
-        'linkedin'  => ['label' => 'LinkedIn',   'icon' => 'bi bi-linkedin'],
-        'twitter'   => ['label' => 'Twitter / X','icon' => 'bi bi-twitter-x'],
-        'substack'  => ['label' => 'Substack',   'icon' => 'bi bi-substack'],
+        'facebook'       => ['label' => 'Facebook',        'icon' => 'bi bi-facebook'],
+        'facebook_group' => ['label' => 'Grupa Facebook',  'icon' => 'bi bi-people-fill'],
+        'instagram'      => ['label' => 'Instagram',       'icon' => 'bi bi-instagram'],
+        'youtube'        => ['label' => 'YouTube',         'icon' => 'bi bi-youtube'],
+        'linkedin'       => ['label' => 'LinkedIn',        'icon' => 'bi bi-linkedin'],
+        'twitter'        => ['label' => 'Twitter / X',     'icon' => 'bi bi-twitter-x'],
+        'substack'       => ['label' => 'Substack',        'icon' => 'bi bi-substack'],
     ];
 
     public const SETTINGS_TABS = [
@@ -141,7 +142,7 @@ class SiteSetting extends Model implements HasMedia
 
     protected $fillable = [
         'site_name', 'tagline', 'brand_color', 'brand_color_2', 'brand_color_3', 'brand_color_4', 'meta_description', 'allow_indexing', 'ga_measurement_id', 'disabled_modules', 'homepage_section_order', 'events_home_color',
-        'bip_url', 'bip_intro', 'bip_editor_name', 'bip_editor_email', 'bip_gov_url', 'bip_mode', 'facebook_url', 'twitter_url', 'instagram_url', 'linkedin_url', 'youtube_url', 'substack_url',
+        'bip_url', 'bip_intro', 'bip_editor_name', 'bip_editor_email', 'bip_gov_url', 'bip_mode', 'facebook_url', 'facebook_group_url', 'twitter_url', 'instagram_url', 'linkedin_url', 'youtube_url', 'substack_url',
         'contact_address', 'contact_city', 'contact_email', 'contact_phone', 'contact_office_hours', 'contact_intro', 'contact_bank_accounts',
         'contact_meeting_title', 'contact_online_meeting_url', 'contact_online_meeting_label', 'contact_online_meeting_text',
         'contact_schedule_title', 'contact_schedule', 'contact_schedule_enabled', 'contact_no_schedule_note', 'contact_remote_note', 'contact_meeting_notify_email',
