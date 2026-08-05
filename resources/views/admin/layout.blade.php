@@ -496,7 +496,7 @@
                         @php $szablonyActive = request()->routeIs(['admin.szablony.*', 'admin.mail-templates.*']); @endphp
                         <div x-data="{ open: {{ $szablonyActive ? 'true' : 'false' }} }">
                             <div class="flex items-center {{ $itemClass(['admin.szablony.*', 'admin.mail-templates.*']) }}">
-                                <a href="{{ route('admin.szablony.index') }}" class="flex min-w-0 flex-1 items-center gap-3" title="Szablony">
+                                <a href="{{ route('admin.szablony.manage') }}" class="flex min-w-0 flex-1 items-center gap-3" title="Szablony">
                                     <i class="fa-solid fa-clone {{ $iconClass(['admin.szablony.*', 'admin.mail-templates.*']) }}"></i>
                                     <span class="nav-label">Szablony</span>
                                 </a>
@@ -508,7 +508,7 @@
                             </div>
                             <div id="nav-szablony-sub" x-show="open" @unless ($szablonyActive) style="display: none" @endunless
                                 class="nav-label mt-1 space-y-0.5 border-l border-gray-200 pl-3">
-                                <a href="{{ route('admin.szablony.index') }}"
+                                <a href="{{ route('admin.szablony.manage') }}"
                                     class="block rounded-lg px-3 py-1.5 text-sm {{ request()->routeIs('admin.szablony.*') ? 'bg-brand-light font-semibold text-brand' : 'text-muted hover:bg-gray-100 hover:text-brand' }}">
                                     Szablony treści
                                 </a>
