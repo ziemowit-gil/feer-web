@@ -97,6 +97,15 @@ class PollController extends Controller
         return redirect()->route('admin.ankiety.index')->with('status', 'Ankieta została zaktualizowana.');
     }
 
+    /** Zeruje wszystkie głosy ankiety (nie usuwa opcji). */
+    public function resetVotes(Poll $poll)
+    {
+        $poll->options()->update(['votes' => 0]);
+
+        return redirect()->route('admin.ankiety.index')
+            ->with('status', 'Głosy ankiety zostały wyzerowane.');
+    }
+
     /** Usuwa ankietę wraz z opcjami i oddanymi głosami. */
     public function destroy(Poll $poll)
     {

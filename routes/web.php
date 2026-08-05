@@ -276,6 +276,7 @@ Route::middleware(['auth', 'verified', '2fa'])->prefix(config('app.admin_prefix'
 
     Route::middleware(['module:polls', 'module-access:polls'])->group(function () {
         Route::resource('ankiety', AdminPollController::class)->parameters(['ankiety' => 'poll'])->except('show');
+        Route::post('ankiety/{poll}/reset-glosow', [AdminPollController::class, 'resetVotes'])->name('ankiety.reset-votes');
     });
 
     Route::middleware(['module:quick_actions', 'module-access:quick_actions'])->group(function () {

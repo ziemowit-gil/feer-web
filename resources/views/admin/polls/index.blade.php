@@ -36,6 +36,15 @@
                         <td class="px-4 py-3">
                             <div class="flex justify-end gap-3">
                                 <a href="{{ route('admin.ankiety.edit', $poll) }}" class="text-muted hover:text-brand" title="Edytuj"><i class="fa-solid fa-pen" aria-hidden="true"></i></a>
+                                @if ($poll->totalVotes() > 0)
+                                    <form method="POST" action="{{ route('admin.ankiety.reset-votes', $poll) }}"
+                                        onsubmit="return confirm('Wyzerować wszystkie głosy ankiety „{{ $poll->question }}"?\n\nTej operacji nie można cofnąć.');">
+                                        @csrf
+                                        <button type="submit" class="text-muted hover:text-amber-600" title="Zeruj głosy" aria-label="Zeruj głosy">
+                                            <i class="fa-solid fa-rotate-left" aria-hidden="true"></i>
+                                        </button>
+                                    </form>
+                                @endif
                                 <form method="POST" action="{{ route('admin.ankiety.destroy', $poll) }}" onsubmit="return confirm('Usunąć ankietę &quot;{{ $poll->question }}&quot;?');">
                                     @csrf
                                     @method('DELETE')
