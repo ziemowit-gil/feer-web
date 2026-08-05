@@ -168,6 +168,8 @@
         </div>
     </div>
 
+    <span class="w-px shrink-0 self-stretch bg-gray-200" role="separator" aria-hidden="true"></span>
+
     {{-- Menu „Import" --}}
     <div class="relative" x-data="{ open: false }" @click.outside="open = false" @keydown.escape="open = false">
         <button type="button" @click="open = !open" :aria-expanded="open"
@@ -179,6 +181,8 @@
             <button type="button" id="{{ $editorId }}-txt-btn" @click="open = false" class="{{ $mi }}"><i class="fa-solid fa-file-lines w-4 text-center text-muted" aria-hidden="true"></i> Importuj TXT…</button>
         </div>
     </div>
+
+    <span class="w-px shrink-0 self-stretch bg-gray-200" role="separator" aria-hidden="true"></span>
 
     {{-- Menu „Kotwice" --}}
     <div class="relative" x-data="{ open: false }" @click.outside="open = false" @keydown.escape="open = false">
@@ -211,12 +215,22 @@
         </div>
     </div>
 
+    <span class="w-px shrink-0 self-stretch bg-gray-200" role="separator" aria-hidden="true"></span>
+
     {{-- Wyczyść formatowanie zaznaczenia --}}
     <button type="button" @click="window['__clearFormat_{{ $editorId }}']?.()"
         title="Wyczyść formatowanie zaznaczenia (usuwa pogrubienie, kursywę, nagłówki…)"
         aria-label="Wyczyść formatowanie zaznaczenia"
         class="inline-flex items-center gap-2 rounded border border-gray-300 px-3 py-1.5 text-xs font-bold text-ink hover:border-red-400 hover:text-red-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
         <i class="fa-solid fa-eraser" aria-hidden="true"></i> Wyczyść formatowanie
+    </button>
+
+    {{-- Sprawdź dostępność (CKEditor; TinyMCE ma wbudowany przycisk a11ycheck) --}}
+    <button type="button" id="{{ $editorId }}-a11y-btn"
+        title="Sprawdź dostępność treści (WCAG)"
+        aria-label="Sprawdź dostępność treści"
+        class="inline-flex items-center gap-2 rounded border border-gray-300 px-3 py-1.5 text-xs font-bold text-ink hover:border-blue-400 hover:text-blue-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+        <i class="fa-solid fa-universal-access" aria-hidden="true"></i> Dostępność
     </button>
 
     @if ($historyJsonUrl)
@@ -237,6 +251,13 @@
 <input type="file" id="{{ $editorId }}-txt-input" accept=".txt,text/plain" class="sr-only" aria-hidden="true" tabindex="-1">
 
 <div id="{{ $editorId }}-stats" class="mt-1 min-h-[1.25rem] text-xs text-muted" aria-live="polite" aria-atomic="true"></div>
+
+<div id="{{ $editorId }}-a11y-panel" class="mt-2 hidden rounded-lg border border-blue-200 bg-blue-50 p-3 text-sm" role="alert">
+    <div class="flex items-start gap-2">
+        <div id="{{ $editorId }}-a11y-content" class="flex-1"></div>
+        <button type="button" id="{{ $editorId }}-a11y-close" class="flex-none text-muted hover:text-red-600" aria-label="Zamknij wyniki sprawdzenia dostępności"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
+    </div>
+</div>
 
 <div id="{{ $editorId }}-page-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 p-4"
      role="dialog" aria-modal="true" aria-labelledby="{{ $editorId }}-page-modal-title">
@@ -1250,6 +1271,54 @@
     })();
 </script>
 
+<script>
+(function () {
+    window['__checkA11y_{{ $editorId }}'] = function (html) {
+        var doc = new DOMParser().parseFromString(html, 'text/html');
+        var problems = [];
+        doc.querySelectorAll('img').forEach(function (img) {
+            if (!img.hasAttribute('alt')) problems.push('Obraz bez atrybutu alt (dodaj opis alternatywny).');
+        });
+        var levels = [];
+        doc.querySelectorAll('h1,h2,h3,h4,h5,h6').forEach(function (h) { levels.push(parseInt(h.tagName[1], 10)); });
+        for (var i = 1; i < levels.length; i++) {
+            if (levels[i] - levels[i - 1] > 1) { problems.push('Przeskok w kolejności nagłówków (H' + levels[i - 1] + ' → H' + levels[i] + ').'); break; }
+        }
+        var generic = ['kliknij tutaj', 'tutaj', 'klik', 'czytaj więcej', 'więcej', 'link', 'zobacz'];
+        doc.querySelectorAll('a').forEach(function (a) {
+            var t = (a.textContent || '').trim().toLowerCase();
+            if (t === '') problems.push('Link bez tekstu (czytnik ekranu przeczyta sam adres).');
+            else if (generic.indexOf(t) !== -1) problems.push('Nieopisowy tekst linku: „' + a.textContent.trim() + '".');
+        });
+        if (!problems.length) {
+            return '<p style="color:#15803d;font-weight:700">✓ Nie wykryto problemów z dostępnością treści.</p>';
+        }
+        var seen = {}, list = '';
+        problems.forEach(function (p) { if (!seen[p]) { seen[p] = 1; list += '<li>' + p + '</li>'; } });
+        return '<p style="font-weight:700;margin-bottom:.5rem">Wykryto potencjalne problemy z dostępnością:</p>'
+            + '<ul style="margin-left:1.25rem;list-style:disc">' + list + '</ul>';
+    };
+
+    var a11yBtn     = document.getElementById('{{ $editorId }}-a11y-btn');
+    var a11yPanel   = document.getElementById('{{ $editorId }}-a11y-panel');
+    var a11yContent = document.getElementById('{{ $editorId }}-a11y-content');
+    var a11yClose   = document.getElementById('{{ $editorId }}-a11y-close');
+
+    if (a11yBtn && a11yPanel && a11yContent) {
+        a11yBtn.addEventListener('click', function () {
+            var getContent = window['__getContent_{{ $editorId }}'];
+            if (!getContent) return;
+            a11yContent.innerHTML = window['__checkA11y_{{ $editorId }}'](getContent());
+            a11yPanel.classList.remove('hidden');
+            a11yPanel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        });
+    }
+    if (a11yClose && a11yPanel) {
+        a11yClose.addEventListener('click', function () { a11yPanel.classList.add('hidden'); });
+    }
+})();
+</script>
+
 @if ($useCkEditor)
     <style>
         #{{ $editorId }}-ck-wrapper .ck-editor__editable {
@@ -1533,38 +1602,11 @@
                 var newsLinks = {!! json_encode($newsForPicker->map(fn ($n) => ['url' => route('news.show', $n), 'title' => $n->title])->values()) !!};
                 var eventLinks = {!! json_encode($eventsForBox->map(fn ($e) => ['url' => '/wydarzenia/'.$e->slug, 'title' => $e->title])->values()) !!};
 
-                function checkA11y(html) {
-                    var doc = new DOMParser().parseFromString(html, 'text/html');
-                    var problems = [];
-                    doc.querySelectorAll('img').forEach(function (img) {
-                        if (!img.hasAttribute('alt')) problems.push('Obraz bez atrybutu alt (dodaj opis alternatywny).');
-                    });
-                    var levels = [];
-                    doc.querySelectorAll('h1,h2,h3,h4,h5,h6').forEach(function (h) { levels.push(parseInt(h.tagName[1], 10)); });
-                    for (var i = 1; i < levels.length; i++) {
-                        if (levels[i] - levels[i - 1] > 1) { problems.push('Przeskok w kolejności nagłówków (H' + levels[i - 1] + ' → H' + levels[i] + ').'); break; }
-                    }
-                    var generic = ['kliknij tutaj', 'tutaj', 'klik', 'czytaj więcej', 'więcej', 'link', 'zobacz'];
-                    doc.querySelectorAll('a').forEach(function (a) {
-                        var t = (a.textContent || '').trim().toLowerCase();
-                        if (t === '') problems.push('Link bez tekstu (czytnik ekranu przeczyta sam adres).');
-                        else if (generic.indexOf(t) !== -1) problems.push('Nieopisowy tekst linku: „' + a.textContent.trim() + '".');
-                    });
-                    if (!problems.length) {
-                        return '<p style="color:#15803d;font-weight:700">✓ Nie wykryto problemów z dostępnością treści.</p>';
-                    }
-                    var seen = {}, list = '';
-                    problems.forEach(function (p) { if (!seen[p]) { seen[p] = 1; list += '<li>' + p + '</li>'; } });
-                    return '<p style="font-weight:700;margin-bottom:.5rem">Wykryto potencjalne problemy z dostępnością:</p>'
-                        + '<ul style="margin-left:1.25rem;list-style:disc">' + list + '</ul>';
-                }
-
                 tinymce.init({
                     selector: '#{{ $editorId }}',
                     license_key: 'gpl',
                     height: 700,
                     menubar: false,
-                    statusbar: false,
                     branding: false,
                     convert_urls: false,
                     plugins: 'advlist autolink lists link anchor image charmap preview searchreplace visualblocks code fullscreen media table help wordcount accordion emoticons autosave quickbars',
@@ -1812,7 +1854,7 @@
                             onAction: function () {
                                 editor.windowManager.open({
                                     title: 'Kontrola dostępności',
-                                    body: { type: 'panel', items: [{ type: 'htmlpanel', html: checkA11y(editor.getContent()) }] },
+                                    body: { type: 'panel', items: [{ type: 'htmlpanel', html: window['__checkA11y_{{ $editorId }}']?.(editor.getContent()) || '' }] },
                                     buttons: [{ type: 'cancel', text: 'Zamknij', buttonType: 'primary' }],
                                 });
                             },
