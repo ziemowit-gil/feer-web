@@ -77,7 +77,7 @@
                                 @if (! $task->isDone())
                                     <form method="POST" action="{{ route('admin.zadania.done', $task) }}">
                                         @csrf
-                                        <button type="submit" class="text-green-600 hover:text-green-800" title="Oznacz jako zrobione">
+                                        <button type="submit" class="text-green-600 hover:text-green-800" title="Oznacz jako zrobione" aria-label="Oznacz jako zrobione">
                                             <i class="fa-solid fa-check"></i>
                                         </button>
                                     </form>
@@ -89,7 +89,7 @@
                                     onsubmit="return confirm('Usunąć zadanie &quot;{{ $task->title }}&quot;?')">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="text-muted hover:text-red-600" title="Usuń">
+                                    <button type="submit" class="text-muted hover:text-red-600" title="Usuń" aria-label="Usuń">
                                         <i class="fa-solid fa-trash" aria-hidden="true"></i>
                                     </button>
                                 </form>

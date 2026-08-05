@@ -56,8 +56,7 @@
     <aside class="sidebar flex flex-none flex-col border-r border-gray-200 bg-white"
            x-data="{ collapsed: localStorage.getItem('admin-sidebar') === '1' }"
            :class="{ 'collapsed': collapsed }"
-           x-effect="localStorage.setItem('admin-sidebar', collapsed ? '1' : '0')"
-           style="width: 16rem">
+           x-effect="localStorage.setItem('admin-sidebar', collapsed ? '1' : '0')">
         <div class="brand-area flex items-center gap-2 border-b border-gray-200 px-5 py-4">
             @if ($siteSettings->logoUrl())
                 <img src="{{ $siteSettings->logoUrl() }}" alt="{{ $siteSettings->site_name }}" class="h-9 w-9 flex-none rounded object-contain">
@@ -608,7 +607,7 @@
             </a>
             <form method="POST" action="{{ route('logout') }}">
                 @csrf
-                <button type="submit" title="Wyloguj" class="group flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-muted transition-colors hover:bg-gray-100 hover:text-ink">
+                <button type="submit" title="Wyloguj" aria-label="Wyloguj" class="group flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-muted transition-colors hover:bg-gray-100 hover:text-ink">
                     <i class="fa-solid fa-right-from-bracket w-5 shrink-0 text-center text-gray-400 group-hover:text-ink"></i>
                     <span class="link-label min-w-0 truncate">Wyloguj ({{ auth()->user()->email }})</span>
                 </button>

@@ -50,7 +50,7 @@
                                 <form method="POST" action="{{ route('admin.strefy-bannerow.destroy', $zone) }}"
                                     onsubmit="return confirm('Usunąć strefę „{{ addslashes($zone->label) }}"? Bannery pozostaną, ale stracą to przypisanie.');">
                                     @csrf @method('DELETE')
-                                    <button type="submit" class="text-muted hover:text-red-600" title="Usuń">
+                                    <button type="submit" class="text-muted hover:text-red-600" title="Usuń" aria-label="Usuń">
                                         <i class="fa-solid fa-trash fa-sm"></i>
                                     </button>
                                 </form>

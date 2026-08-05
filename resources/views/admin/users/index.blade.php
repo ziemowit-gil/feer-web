@@ -48,14 +48,14 @@
                                     <form method="POST" action="{{ route('admin.uzytkownicy.microsoft.unlink', $user) }}" onsubmit="return confirm('Odłączyć konto Microsoft 365 od użytkownika &quot;{{ $user->name }}&quot;?');">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="text-muted hover:text-amber-600" title="Odłącz konto Microsoft 365"><i class="fa-solid fa-link-slash"></i></button>
+                                        <button type="submit" class="text-muted hover:text-amber-600" title="Odłącz konto Microsoft 365" aria-label="Odłącz konto Microsoft 365"><i class="fa-solid fa-link-slash"></i></button>
                                     </form>
                                 @endif
                                 @unless (auth()->user()->is($user))
                                     <form method="POST" action="{{ route('admin.uzytkownicy.destroy', $user) }}" onsubmit="return confirm('Usunąć użytkownika &quot;{{ $user->name }}&quot;?');">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="text-muted hover:text-red-600" title="Usuń"><i class="fa-solid fa-trash" aria-hidden="true"></i></button>
+                                        <button type="submit" class="text-muted hover:text-red-600" title="Usuń" aria-label="Usuń"><i class="fa-solid fa-trash" aria-hidden="true"></i></button>
                                     </form>
                                 @endunless
                             </div>

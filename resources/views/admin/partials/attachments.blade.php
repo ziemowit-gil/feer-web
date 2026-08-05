@@ -22,7 +22,7 @@
                     <form method="POST" action="{{ route('admin.pliki.destroy', $attachment) }}" onsubmit="return confirm('Usunąć plik &quot;{{ $attachment->label }}&quot;?');">
                         @csrf
                         @method('DELETE')
-                        <button type="submit" class="flex-none text-muted hover:text-red-600" title="Usuń"><i class="fa-solid fa-trash" aria-hidden="true"></i></button>
+                        <button type="submit" class="flex-none text-muted hover:text-red-600" title="Usuń" aria-label="Usuń"><i class="fa-solid fa-trash" aria-hidden="true"></i></button>
                     </form>
                 </li>
             @endforeach

@@ -141,7 +141,7 @@
                                     <a href="{{ route('admin.newsy.edit', $item) }}" class="text-muted hover:text-brand" title="Edytuj"><i class="fa-solid fa-pen" aria-hidden="true"></i></a>
                                     <form method="POST" action="{{ route('admin.newsy.klonuj', $item) }}">
                                         @csrf
-                                        <button type="submit" class="text-muted hover:text-brand" title="Klonuj"><i class="fa-solid fa-copy"></i></button>
+                                        <button type="submit" class="text-muted hover:text-brand" title="Klonuj" aria-label="Klonuj"><i class="fa-solid fa-copy"></i></button>
                                     </form>
                                     <form method="POST" action="{{ route('admin.newsy.destroy', $item) }}"
                                         data-confirm="Usunąć news „{{ $item->title }}"?"

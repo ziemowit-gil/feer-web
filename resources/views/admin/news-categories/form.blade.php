@@ -37,7 +37,7 @@
             </label>
 
             <div x-show="!useBrandColor" x-cloak class="flex items-center gap-3">
-                <input type="color" id="color" name="color" x-bind:disabled="useBrandColor" value="{{ old('color', $newsCategory->color ?: $newsCategory->badgeColor()) }}"
+                <input type="color" id="color" name="color" :disabled="useBrandColor" value="{{ old('color', $newsCategory->color ?: $newsCategory->badgeColor()) }}"
                     class="h-10 w-16 rounded border-gray-300">
                 <input type="text" value="{{ old('color', $newsCategory->color ?: $newsCategory->badgeColor()) }}"
                     oninput="document.getElementById('color').value = this.value"

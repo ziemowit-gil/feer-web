@@ -36,7 +36,7 @@
                                             onsubmit="return confirm('Usunąć szablon „{{ $template->name }}"?');">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit" class="text-muted hover:text-red-600" title="Usuń szablon">
+                                            <button type="submit" class="text-muted hover:text-red-600" title="Usuń szablon" aria-label="Usuń szablon">
                                                 <i class="fa-solid fa-trash" aria-hidden="true"></i>
                                             </button>
                                         </form>

@@ -164,7 +164,7 @@
                     </label>
                     @endforeach
                 </div>
-                <input type="hidden" name="wide_activation_code" x-bind:value="wideCode">
+                <input type="hidden" name="wide_activation_code" :value="wideCode">
                 @error('wide_activation_code')
                 <p class="mt-2 text-sm text-red-600">
                     {{ $message }}

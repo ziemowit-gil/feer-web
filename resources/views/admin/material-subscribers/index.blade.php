@@ -31,7 +31,7 @@
                                 <form method="POST" action="{{ route('admin.zapisy-materialy.destroy', $subscriber) }}" onsubmit="return confirm('Usunąć adres &quot;{{ $subscriber->email }}&quot; z listy?');">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="text-muted hover:text-red-600" title="Usuń"><i class="fa-solid fa-trash" aria-hidden="true"></i></button>
+                                    <button type="submit" class="text-muted hover:text-red-600" title="Usuń" aria-label="Usuń"><i class="fa-solid fa-trash" aria-hidden="true"></i></button>
                                 </form>
                             </div>
                         </td>

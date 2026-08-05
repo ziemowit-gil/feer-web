@@ -81,25 +81,25 @@
                                     <a href="{{ route('admin.wolontariat.edit', $ad) }}" class="text-brand hover:text-brand-dark" title="Edytuj"><i class="fa-solid fa-pen" aria-hidden="true"></i></a>
                                     <form method="POST" action="{{ route('admin.wolontariat.klonuj', $ad) }}">
                                         @csrf
-                                        <button type="submit" class="text-muted hover:text-brand" title="Klonuj jako szkic"><i class="fa-solid fa-copy"></i></button>
+                                        <button type="submit" class="text-muted hover:text-brand" title="Klonuj jako szkic" aria-label="Klonuj jako szkic"><i class="fa-solid fa-copy"></i></button>
                                     </form>
                                     @if ($ad->archived_at)
                                         <form method="POST" action="{{ route('admin.wolontariat.restore', $ad) }}">
                                             @csrf
                                             @method('PUT')
-                                            <button type="submit" class="text-muted hover:text-brand" title="Przywróć z archiwum"><i class="fa-solid fa-box-open"></i></button>
+                                            <button type="submit" class="text-muted hover:text-brand" title="Przywróć z archiwum" aria-label="Przywróć z archiwum"><i class="fa-solid fa-box-open"></i></button>
                                         </form>
                                     @else
                                         <form method="POST" action="{{ route('admin.wolontariat.archive', $ad) }}">
                                             @csrf
                                             @method('PUT')
-                                            <button type="submit" class="text-muted hover:text-brand" title="Zarchiwizuj (schowaj z listy)"><i class="fa-solid fa-box-archive"></i></button>
+                                            <button type="submit" class="text-muted hover:text-brand" title="Zarchiwizuj (schowaj z listy)" aria-label="Zarchiwizuj (schowaj z listy)"><i class="fa-solid fa-box-archive"></i></button>
                                         </form>
                                     @endif
                                     <form method="POST" action="{{ route('admin.wolontariat.destroy', $ad) }}" onsubmit="return confirm('Usunąć ogłoszenie &quot;{{ $ad->title }}&quot;?');">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="text-muted hover:text-red-600" title="Usuń"><i class="fa-solid fa-trash" aria-hidden="true"></i></button>
+                                        <button type="submit" class="text-muted hover:text-red-600" title="Usuń" aria-label="Usuń"><i class="fa-solid fa-trash" aria-hidden="true"></i></button>
                                     </form>
                                 </div>
                             </td>

@@ -134,7 +134,7 @@
                                 @method('PATCH')
                                 <input type="number" name="order" min="0" value="{{ $page->order }}" aria-label="Kolejność strony {{ $page->title }}"
                                     class="w-16 rounded border-gray-300 py-1 text-sm focus:border-brand focus:ring-brand">
-                                <button type="submit" class="rounded p-1.5 text-muted hover:bg-gray-100 hover:text-brand" title="Zapisz kolejność"><i class="fa-solid fa-check"></i></button>
+                                <button type="submit" class="rounded p-1.5 text-muted hover:bg-gray-100 hover:text-brand" title="Zapisz kolejność" aria-label="Zapisz kolejność"><i class="fa-solid fa-check"></i></button>
                             </form>
                         </td>
                         <td class="px-4 py-3">
@@ -192,18 +192,18 @@
                                     @csrf
                                     @method('PATCH')
                                     @if ($page->is_published)
-                                        <button type="submit" class="text-muted hover:text-amber-600" title="Ukryj (cofnij publikację)"><i class="fa-solid fa-eye-slash"></i></button>
+                                        <button type="submit" class="text-muted hover:text-amber-600" title="Ukryj (cofnij publikację)" aria-label="Ukryj (cofnij publikację)"><i class="fa-solid fa-eye-slash"></i></button>
                                     @else
-                                        <button type="submit" class="text-muted hover:text-green-600" title="Opublikuj (pokaż)"><i class="fa-solid fa-eye" aria-hidden="true"></i></button>
+                                        <button type="submit" class="text-muted hover:text-green-600" title="Opublikuj (pokaż)" aria-label="Opublikuj (pokaż)"><i class="fa-solid fa-eye" aria-hidden="true"></i></button>
                                     @endif
                                 </form>
                                 <form method="POST" action="{{ route('admin.podstrony.wylacz', $page) }}">
                                     @csrf
                                     @method('PATCH')
                                     @if ($page->is_disabled)
-                                        <button type="submit" class="text-red-600 hover:text-green-600" title="Włącz stronę (jest wyłączona)"><i class="fa-solid fa-ban"></i></button>
+                                        <button type="submit" class="text-red-600 hover:text-green-600" title="Włącz stronę (jest wyłączona)" aria-label="Włącz stronę (jest wyłączona)"><i class="fa-solid fa-ban"></i></button>
                                     @else
-                                        <button type="submit" class="text-muted hover:text-red-600" title="Wyłącz stronę"><i class="fa-solid fa-power-off"></i></button>
+                                        <button type="submit" class="text-muted hover:text-red-600" title="Wyłącz stronę" aria-label="Wyłącz stronę"><i class="fa-solid fa-power-off"></i></button>
                                     @endif
                                 </form>
                                 @if ($page->is_system)

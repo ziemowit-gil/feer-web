@@ -94,7 +94,7 @@
                                 <form method="POST" action="{{ route('admin.banery.destroy', $banner) }}"
                                     onsubmit="return confirm('Usunąć baner „{{ addslashes($banner->name) }}"?');">
                                     @csrf @method('DELETE')
-                                    <button type="submit" class="text-muted hover:text-red-600" title="Usuń">
+                                    <button type="submit" class="text-muted hover:text-red-600" title="Usuń" aria-label="Usuń">
                                         <i class="fa-solid fa-trash fa-sm"></i>
                                     </button>
                                 </form>

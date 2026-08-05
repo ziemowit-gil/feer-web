@@ -21,7 +21,7 @@
             </thead>
             <tbody class="divide-y divide-gray-100" x-data="{ editing: null }">
                 @forelse ($tags as $tag)
-                    <tr x-bind:class="editing === {{ $tag->id }} ? 'bg-brand-light/30' : ''">
+                    <tr :class="editing === {{ $tag->id }} ? 'bg-brand-light/30' : ''">
                         <td class="px-4 py-3 font-medium">
                             <span x-show="editing !== {{ $tag->id }}">{{ $tag->name }}</span>
 
@@ -39,10 +39,10 @@
                                        required
                                        maxlength="100"
                                        aria-label="Nowa nazwa tagu {{ $tag->name }}">
-                                <button type="submit" class="text-brand hover:text-brand-dark" title="Zapisz">
+                                <button type="submit" class="text-brand hover:text-brand-dark" title="Zapisz" aria-label="Zapisz">
                                     <i class="fa-solid fa-check"></i>
                                 </button>
-                                <button type="button" @click="editing = null" class="text-muted hover:text-ink" title="Anuluj">
+                                <button type="button" @click="editing = null" class="text-muted hover:text-ink" title="Anuluj" aria-label="Anuluj">
                                     <i class="fa-solid fa-xmark"></i>
                                 </button>
                             </form>
@@ -70,7 +70,7 @@
                                       onsubmit="return confirm('Usunąć tag &quot;{{ $tag->name }}&quot;?{{ $tag->news_count > 0 ? '\n\nTag jest używany przez '.$tag->news_count.' aktualności. Zostanie odpięty od wszystkich.' : '' }}')">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="text-muted hover:text-red-600" title="Usuń">
+                                    <button type="submit" class="text-muted hover:text-red-600" title="Usuń" aria-label="Usuń">
                                         <i class="fa-solid fa-trash" aria-hidden="true"></i>
                                     </button>
                                 </form>

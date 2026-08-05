@@ -53,7 +53,7 @@
                                 <form method="POST" action="{{ route('admin.projekty.destroy', $project) }}" onsubmit="return confirm('Usunąć projekt &quot;{{ $project->title }}&quot;?');">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="text-muted hover:text-red-600" title="Usuń"><i class="fa-solid fa-trash" aria-hidden="true"></i></button>
+                                    <button type="submit" class="text-muted hover:text-red-600" title="Usuń" aria-label="Usuń"><i class="fa-solid fa-trash" aria-hidden="true"></i></button>
                                 </form>
                             </div>
                         </td>

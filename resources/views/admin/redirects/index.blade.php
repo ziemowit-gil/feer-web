@@ -65,7 +65,7 @@
                                     <button form="redirect-{{ $r->id }}" type="submit" class="text-brand hover:text-brand-dark" title="Zapisz"><i class="fa-solid fa-floppy-disk"></i></button>
                                     <form method="POST" action="{{ route('admin.przekierowania.destroy', $r) }}" onsubmit="return confirm('Usunąć przekierowanie {{ $r->from_path }}?');">
                                         @csrf @method('DELETE')
-                                        <button type="submit" class="text-muted hover:text-red-600" title="Usuń"><i class="fa-solid fa-trash" aria-hidden="true"></i></button>
+                                        <button type="submit" class="text-muted hover:text-red-600" title="Usuń" aria-label="Usuń"><i class="fa-solid fa-trash" aria-hidden="true"></i></button>
                                     </form>
                                 </div>
                             </td>

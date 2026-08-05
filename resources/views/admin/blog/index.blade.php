@@ -59,21 +59,21 @@
                                 <a href="{{ route('admin.wiem-feer.edit', $article) }}" class="text-muted hover:text-brand" title="Edytuj"><i class="fa-solid fa-pen" aria-hidden="true"></i></a>
                                 <form method="POST" action="{{ route('admin.wiem-feer.klonuj', $article) }}">
                                     @csrf
-                                    <button type="submit" class="text-muted hover:text-brand" title="Klonuj jako szkic"><i class="fa-solid fa-copy"></i></button>
+                                    <button type="submit" class="text-muted hover:text-brand" title="Klonuj jako szkic" aria-label="Klonuj jako szkic"><i class="fa-solid fa-copy"></i></button>
                                 </form>
                                 <form method="POST" action="{{ route('admin.wiem-feer.wylacz', $article) }}">
                                     @csrf
                                     @method('PATCH')
                                     @if ($article->is_disabled)
-                                        <button type="submit" class="text-red-600 hover:text-green-600" title="Włącz artykuł (jest wyłączony)"><i class="fa-solid fa-ban"></i></button>
+                                        <button type="submit" class="text-red-600 hover:text-green-600" title="Włącz artykuł (jest wyłączony)" aria-label="Włącz artykuł (jest wyłączony)"><i class="fa-solid fa-ban"></i></button>
                                     @else
-                                        <button type="submit" class="text-muted hover:text-red-600" title="Wyłącz artykuł"><i class="fa-solid fa-power-off"></i></button>
+                                        <button type="submit" class="text-muted hover:text-red-600" title="Wyłącz artykuł" aria-label="Wyłącz artykuł"><i class="fa-solid fa-power-off"></i></button>
                                     @endif
                                 </form>
                                 <form method="POST" action="{{ route('admin.wiem-feer.destroy', $article) }}" onsubmit="return confirm('Usunąć artykuł &quot;{{ $article->title }}&quot; wraz z komentarzami?');">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="text-muted hover:text-red-600" title="Usuń"><i class="fa-solid fa-trash" aria-hidden="true"></i></button>
+                                    <button type="submit" class="text-muted hover:text-red-600" title="Usuń" aria-label="Usuń"><i class="fa-solid fa-trash" aria-hidden="true"></i></button>
                                 </form>
                             </div>
                         </td>

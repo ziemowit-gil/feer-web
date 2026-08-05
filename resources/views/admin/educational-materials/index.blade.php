@@ -44,7 +44,7 @@
                                 <form method="POST" action="{{ route('admin.materialy-edukacyjne.destroy', $material) }}" onsubmit="return confirm('Usunąć materiał &quot;{{ $material->title }}&quot;?');">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="text-muted hover:text-red-600" title="Usuń"><i class="fa-solid fa-trash" aria-hidden="true"></i></button>
+                                    <button type="submit" class="text-muted hover:text-red-600" title="Usuń" aria-label="Usuń"><i class="fa-solid fa-trash" aria-hidden="true"></i></button>
                                 </form>
                             </div>
                         </td>
