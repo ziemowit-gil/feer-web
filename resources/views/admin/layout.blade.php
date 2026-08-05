@@ -107,10 +107,10 @@
             $inboxRoutes = ['admin.zgloszenia-spotkania.*', 'admin.zgloszenia-barier.*'];
 
             // ⑦ UŻYTKOWNICY
-            $usersRoutes = ['admin.uzytkownicy.*', 'admin.grupy.*'];
+            $usersRoutes = ['admin.uzytkownicy.*', 'admin.grupy.*', 'admin.zaproszenia-strefy.*'];
 
             // ⑧ SYSTEM — narzędzia techniczne
-            $systemRoutes = ['admin.ustawienia.*', 'admin.szablony.*', 'admin.tresc.*', 'admin.przekierowania.*', 'admin.martwe-linki.*', 'admin.dziennik.*', 'admin.wcag-scans.*', 'admin.mail-templates.*'];
+            $systemRoutes = ['admin.ustawienia.*', 'admin.szablony.*', 'admin.tresc.*', 'admin.przekierowania.*', 'admin.martwe-linki.*', 'admin.dziennik.*', 'admin.wcag-scans.*', 'admin.mail-templates.*', 'admin.health.*'];
         @endphp
 
         <nav class="flex-1 space-y-1.5 overflow-y-auto px-3 py-4 text-sm font-medium">
@@ -456,6 +456,10 @@
                             <i class="fa-solid fa-user-group {{ $iconClass('admin.grupy.*') }}"></i>
                             <span class="nav-label">Grupy użytkowników</span>
                         </a>
+                        <a href="{{ route('admin.zaproszenia-strefy.index') }}" class="{{ $itemClass('admin.zaproszenia-strefy.*') }}" title="Zaproszenia do strefy">
+                            <i class="fa-solid fa-envelope-open-text {{ $iconClass('admin.zaproszenia-strefy.*') }}"></i>
+                            <span class="nav-label">Zaproszenia do strefy</span>
+                        </a>
                     </div>
                 </div>
             @endif
@@ -557,6 +561,10 @@
                         <a href="{{ route('admin.wcag-scans.index') }}" class="{{ $itemClass('admin.wcag-scans.*') }}" title="Skaner WCAG">
                             <i class="fa-solid fa-universal-access {{ $iconClass('admin.wcag-scans.*') }}"></i>
                             <span class="nav-label">Skaner WCAG</span>
+                        </a>
+                        <a href="{{ route('admin.health.index') }}" class="{{ $itemClass('admin.health.*') }}" title="Health Check">
+                            <i class="fa-solid fa-heart-pulse {{ $iconClass('admin.health.*') }}"></i>
+                            <span class="nav-label">Health Check</span>
                         </a>
                     </div>
                 </div>

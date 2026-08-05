@@ -81,7 +81,10 @@ use App\Http\Controllers\Admin\BrandAccessUserController as AdminBrandAccessUser
 use App\Http\Controllers\Admin\DocxImportController;
 use App\Http\Controllers\Admin\FacilitatorController as AdminFacilitatorController;
 use App\Http\Controllers\Admin\EtrController as AdminEtrController;
+use App\Http\Controllers\Admin\MemberInvitationController as AdminMemberInvitationController;
+use App\Http\Controllers\Admin\HealthCheckController as AdminHealthCheckController;
 use App\Http\Controllers\EtrController;
+use App\Http\Controllers\MemberInvitationController;
 use App\Http\Controllers\VolunteerController;
 use Illuminate\Support\Facades\Route;
 
@@ -441,6 +444,12 @@ Route::middleware(['auth', 'verified', '2fa'])->prefix(config('app.admin_prefix'
         Route::resource('uzytkownicy', AdminUserController::class)->parameters(['uzytkownicy' => 'user'])->except('show');
         Route::delete('uzytkownicy/{user}/microsoft', [AdminUserController::class, 'unlinkMicrosoft'])->name('uzytkownicy.microsoft.unlink');
 
+        Route::resource('zaproszenia-strefy', AdminMemberInvitationController::class)
+            ->parameters(['zaproszenia-strefy' => 'zaproszenieStrefy'])
+            ->only(['index', 'create', 'store', 'destroy']);
+
+        Route::get('health', [AdminHealthCheckController::class, 'index'])->name('health.index');
+
         Route::get('dziennik', [AdminActivityController::class, 'index'])->name('dziennik.index');
         Route::get('martwe-linki', [AdminLinkCheckController::class, 'index'])->name('martwe-linki.index');
         Route::post('martwe-linki/skanuj', [AdminLinkCheckController::class, 'scan'])->name('martwe-linki.scan');
@@ -492,6 +501,11 @@ Route::prefix('strefa')->group(function () {
     Route::get('microsoft/redirect', [MemberMicrosoftAuthController::class, 'redirect'])->name('member.microsoft.redirect');
     Route::get('microsoft/callback', [MemberMicrosoftAuthController::class, 'callback'])->name('member.microsoft.callback');
     Route::post('wyloguj', [MemberMicrosoftAuthController::class, 'destroy'])->name('member.logout');
+
+    // Zaproszenia indywidualne (magic link lub przekierowanie do MS365).
+    Route::get('zaproszenie/{token}',             [MemberInvitationController::class, 'show'])->name('member.zaproszenie.show');
+    Route::post('zaproszenie/{token}/magic',      [MemberInvitationController::class, 'magic'])->name('member.zaproszenie.magic');
+    Route::get('zaproszenie/{token}/microsoft',   [MemberInvitationController::class, 'redirectToMicrosoft'])->name('member.zaproszenie.microsoft');
 });
 
 // Panel zarządzania rezerwacjami/terminami — dostęp przez Microsoft 365 (guard „member").

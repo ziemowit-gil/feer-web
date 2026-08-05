@@ -52,14 +52,14 @@
     @endphp
 
     {{-- Układ "obok": max-w-5xl, żeby było miejsce na dwie kolumny --}}
-    <section class="mx-auto px-4 py-12 {{ $isSide ? 'max-w-5xl' : 'max-w-2xl' }}" x-data="{ etr: false }">
+    <section class="mx-auto px-4 py-12 {{ $isSide ? 'max-w-5xl' : 'max-w-2xl' }}" x-data="audioPlayer()">
         @if ($news->is_archived)
             @include('partials.archival-notice', ['date' => $news->published_at])
         @endif
 
         @include('partials.etr-toggle', ['etr' => $news->etr, 'title' => $news->title])
 
-        <div x-show="!etr">
+        <div x-show="!etr" x-cloak>
             <a href="{{ route('news.index') }}"
                 class="mb-6 inline-flex items-center gap-2 text-sm font-medium text-muted hover:text-brand focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
                 <i class="fa-solid fa-arrow-left text-xs" aria-hidden="true"></i>
@@ -83,7 +83,7 @@
                             class="w-full rounded-lg object-cover sm:aspect-[4/3]">
                     </div>
                     <div class="min-w-0 flex-1">
-                        <div class="prose max-w-none text-ink">{!! $news->content !!}</div>
+                        <div id="article-text" class="prose max-w-none text-ink">{!! $news->content !!}</div>
                     </div>
                 </div>
             @else
@@ -92,10 +92,17 @@
                     <img src="{{ $img }}" alt="{{ $imgAlt }}" data-lightbox
                         class="mb-6 w-full rounded-lg object-cover {{ $articleLayout === 'wide' ? 'h-96' : 'h-64' }}">
                 @endif
-                <div class="prose max-w-none text-ink">{!! $news->content !!}</div>
+                <div id="article-text" class="prose max-w-none text-ink">{!! $news->content !!}</div>
             @endif
 
             <div class="mt-8 flex flex-wrap gap-3 print:hidden" aria-label="Opcje artykułu">
+                <button type="button" x-show="supported" x-cloak @click="play()"
+                    :aria-pressed="playing.toString()"
+                    class="inline-flex items-center gap-2 rounded border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-ink hover:bg-gray-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+                    :class="playing ? 'border-brand bg-brand-light text-brand' : ''">
+                    <i class="fa-solid text-muted" :class="playing ? 'fa-pause' : 'fa-volume-high'" aria-hidden="true"></i>
+                    <span x-text="playing ? 'Zatrzymaj odczyt' : 'Odsłuchaj artykuł'"></span>
+                </button>
                 <button type="button" onclick="window.print()"
                     class="inline-flex items-center gap-2 rounded border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-ink hover:bg-gray-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
                     <i class="fa-solid fa-print text-muted" aria-hidden="true"></i>

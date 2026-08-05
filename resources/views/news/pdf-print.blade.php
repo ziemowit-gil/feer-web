@@ -5,7 +5,7 @@
     <title>{{ $news->title }}</title>
     <style>
         body {
-            font-family: Georgia, 'Times New Roman', serif;
+            font-family: 'DejaVu Serif', serif;
             font-size: 12pt;
             line-height: 1.7;
             color: #111;
@@ -15,7 +15,7 @@
         }
 
         .org {
-            font-family: Arial, sans-serif;
+            font-family: 'DejaVu Sans', sans-serif;
             font-size: 8pt;
             font-weight: bold;
             letter-spacing: 1px;
@@ -27,7 +27,7 @@
         }
 
         .meta {
-            font-family: Arial, sans-serif;
+            font-family: 'DejaVu Sans', sans-serif;
             font-size: 8pt;
             color: #555;
             margin-bottom: 6pt;
@@ -61,7 +61,7 @@
             margin-top: 28pt;
             padding-top: 8pt;
             border-top: 1px solid #ddd;
-            font-family: Arial, sans-serif;
+            font-family: 'DejaVu Sans', sans-serif;
             font-size: 7pt;
             color: #888;
         }

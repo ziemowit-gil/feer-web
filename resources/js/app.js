@@ -168,6 +168,47 @@ Alpine.data('homepageEditor', (initialOrder, saveUrl) => ({
     },
 }));
 
+// Odtwarzacz audio (TTS) — czyta treść artykułu przez SpeechSynthesis.
+// Używany w news/show.blade.php i page/show.blade.php.
+Alpine.data('audioPlayer', () => ({
+    etr: false,
+    playing: false,
+    supported: typeof window !== 'undefined' && 'speechSynthesis' in window,
+    _utterance: null,
+
+    play() {
+        if (!this.supported) return;
+
+        const el = document.getElementById('article-text');
+        if (!el) return;
+
+        if (this.playing) {
+            window.speechSynthesis.cancel();
+            this.playing = false;
+            return;
+        }
+
+        const text = el.innerText?.trim() || '';
+        if (!text) return;
+
+        this._utterance = new SpeechSynthesisUtterance(text);
+        this._utterance.lang = 'pl-PL';
+        this._utterance.rate = 0.95;
+
+        this._utterance.onend = () => { this.playing = false; };
+        this._utterance.onerror = () => { this.playing = false; };
+
+        window.speechSynthesis.cancel();
+        window.speechSynthesis.speak(this._utterance);
+        this.playing = true;
+    },
+
+    stop() {
+        window.speechSynthesis.cancel();
+        this.playing = false;
+    },
+}));
+
 Alpine.start();
 
 // Pasek dostępności: kontrast i rozmiar czcionki

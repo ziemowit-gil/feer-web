@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\Member;
+use App\Models\MemberInvitation;
 use App\Models\SiteSetting;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -64,7 +65,11 @@ class MemberMicrosoftAuthController extends Controller
         $settings = SiteSetting::current();
         $email = $microsoftUser->getEmail();
 
-        if (! $settings->memberEmailAllowed($email)) {
+        $invitationToken = session()->pull('member_invitation_token');
+        $hasInvitation = $invitationToken
+            && MemberInvitation::findValidByToken($invitationToken)?->email === strtolower(trim((string) $email));
+
+        if (! $settings->memberEmailAllowed($email) && ! $hasInvitation && ! MemberInvitation::emailHasValidInvitation((string) $email)) {
             return redirect()->route('member.login')->with('error', 'To konto Microsoft 365 nie ma dostępu do strefy wewnętrznej. Użyj konta z domeny organizacji.');
         }
 
@@ -81,6 +86,11 @@ class MemberMicrosoftAuthController extends Controller
             'avatar' => $microsoftUser->getAvatar() ?: $member->avatar,
             'last_login_at' => now(),
         ])->save();
+
+        // Oznacz zaproszenie jako użyte (jeśli logowanie przez link zaproszenia).
+        if ($invitationToken) {
+            MemberInvitation::findValidByToken($invitationToken)?->markUsed();
+        }
 
         Auth::guard('member')->login($member, remember: true);
 
