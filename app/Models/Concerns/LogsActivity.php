@@ -2,11 +2,9 @@
 
 namespace App\Models\Concerns;
 
-use App\Models\ActivityLog;
-
 /**
- * Zapisuje w dzienniku zdarzeń utworzenie/edycję/usunięcie modelu wraz z
- * autorem (zalogowanym użytkownikiem). Doklejany do modeli treści i kont.
+ * Zapisuje w dzienniku zdarzeń spatie/laravel-activitylog zdarzenia
+ * CRUD modelu wraz z autorem i migawką tytułu (właściwość „label").
  */
 trait LogsActivity
 {
@@ -19,20 +17,16 @@ trait LogsActivity
 
     public function recordActivity(string $event): void
     {
-        $user = auth()->user();
-
-        ActivityLog::create([
-            'user_id' => $user?->id,
-            'user_name' => $user?->name ?: $user?->email ?: 'system',
-            'event' => $event,
-            'subject_type' => class_basename($this),
-            'subject_id' => $this->getKey(),
-            'subject_label' => $this->activityLabel(),
-        ]);
+        activity('cms')
+            ->causedBy(auth()->user())
+            ->performedOn($this)
+            ->withProperty('label', $this->activityLabel())
+            ->event($event)
+            ->log(class_basename($this) . ' ' . $event);
     }
 
     public function activityLabel(): string
     {
-        return (string) ($this->title ?? $this->name ?? ('#'.$this->getKey()));
+        return (string) ($this->title ?? $this->name ?? ('#' . $this->getKey()));
     }
 }

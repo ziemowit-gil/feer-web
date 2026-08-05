@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class VolunteerAd extends Model
 {
+    use \App\Models\Concerns\LogsActivity;
+
     /** Tryb działań wolontariatu (pytanie 3: gdzie/jak). */
     public const MODES = [
         'stacjonarnie' => 'Stacjonarnie',

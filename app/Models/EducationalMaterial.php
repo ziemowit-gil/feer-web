@@ -10,6 +10,7 @@ use Spatie\MediaLibrary\InteractsWithMedia;
 class EducationalMaterial extends Model implements HasMedia
 {
     use InteractsWithMedia;
+    use \App\Models\Concerns\LogsActivity;
 
     public const TYPES = [
         'video' => 'Nagranie wideo',

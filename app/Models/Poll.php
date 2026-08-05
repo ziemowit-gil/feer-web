@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Poll extends Model
 {
+    use \App\Models\Concerns\LogsActivity;
+
     protected $fillable = ['question', 'is_active'];
 
     protected $casts = [

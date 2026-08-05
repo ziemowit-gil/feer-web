@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Banner extends Model
 {
+    use \App\Models\Concerns\LogsActivity;
+
     protected $fillable = [
         'name', 'type', 'image_path', 'image_alt', 'width', 'height',
         'link_url', 'link_target', 'html_content',

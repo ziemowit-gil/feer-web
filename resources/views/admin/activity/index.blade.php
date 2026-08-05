@@ -25,7 +25,7 @@
                         <select id="f-event" name="event"
                             class="w-full rounded-lg border-gray-300 text-sm focus:border-brand focus:ring-brand">
                             <option value="">Wszystkie</option>
-                            @foreach (\App\Models\ActivityLog::EVENTS as $key => $label)
+                            @foreach (\App\Models\Activity::EVENTS as $key => $label)
                                 <option value="{{ $key }}" @selected($event === $key)>{{ $label }}</option>
                             @endforeach
                         </select>
@@ -36,7 +36,7 @@
                         <select id="f-subject" name="subject"
                             class="w-full rounded-lg border-gray-300 text-sm focus:border-brand focus:ring-brand">
                             <option value="">Wszystkie</option>
-                            @foreach (\App\Models\ActivityLog::SUBJECTS as $key => $label)
+                            @foreach (\App\Models\Activity::SUBJECTS as $key => $label)
                                 <option value="{{ $key }}" @selected($subject === $key)>{{ $label }}</option>
                             @endforeach
                         </select>

@@ -61,6 +61,13 @@ class ApprovalController extends Controller
         $model = $this->resolve($type, $id);
         $model->update(['is_published' => true, 'pending_approval' => false]);
 
+        activity('cms')
+            ->causedBy(auth()->user())
+            ->performedOn($model)
+            ->withProperty('label', $model->title)
+            ->event('approved')
+            ->log(class_basename($model) . ' approved');
+
         $this->notifyAuthor($model, new ContentApproved($model, $model->approvalLabel()));
 
         return back()->with('status', 'Treść została zatwierdzona i opublikowana.');
@@ -78,6 +85,13 @@ class ApprovalController extends Controller
 
         $model = $this->resolve($type, $id);
         $model->update(['pending_approval' => false]);
+
+        activity('cms')
+            ->causedBy(auth()->user())
+            ->performedOn($model)
+            ->withProperties(['label' => $model->title, 'reason' => $reason])
+            ->event('rejected')
+            ->log(class_basename($model) . ' rejected');
 
         $this->notifyAuthor($model, new ContentRejected($model, $model->approvalLabel(), $reason));
 

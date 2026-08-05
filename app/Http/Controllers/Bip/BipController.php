@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Bip;
 
 use App\Http\Controllers\Controller;
-use App\Models\ActivityLog;
+use App\Models\Activity;
 use App\Models\BipDocument;
 use App\Models\SiteSetting;
 
@@ -37,7 +37,9 @@ class BipController extends Controller
 
             $recentChangeIds = $documents->flatten()->pluck('id');
 
-            $recentChanges = ActivityLog::where('subject_type', 'BipDocument')
+            $recentChanges = Activity::where('subject_type', BipDocument::class)
+                ->where('log_name', 'cms')
+                ->with('causer')
                 ->latest()
                 ->limit(8)
                 ->get();
@@ -59,8 +61,10 @@ class BipController extends Controller
 
         $bipDocument->load(['creator', 'updater', 'media']);
 
-        $history = ActivityLog::where('subject_type', 'BipDocument')
+        $history = Activity::where('subject_type', BipDocument::class)
+            ->where('log_name', 'cms')
             ->where('subject_id', $bipDocument->id)
+            ->with('causer')
             ->latest()
             ->get();
 
@@ -76,7 +80,9 @@ class BipController extends Controller
             return redirect()->route('bip');
         }
 
-        $entries = ActivityLog::where('subject_type', 'BipDocument')
+        $entries = Activity::where('subject_type', BipDocument::class)
+            ->where('log_name', 'cms')
+            ->with('causer')
             ->latest()
             ->paginate(50);
 

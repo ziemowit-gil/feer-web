@@ -13,6 +13,7 @@ use Spatie\MediaLibrary\InteractsWithMedia;
 class Event extends Model implements HasMedia
 {
     use InteractsWithMedia;
+    use \App\Models\Concerns\LogsActivity;
 
     /** Rodzaj wydarzenia (z dedykowaną ikoną w widoku). */
     public const TYPES = [

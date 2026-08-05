@@ -102,6 +102,13 @@ class PollController extends Controller
     {
         $poll->options()->update(['votes' => 0]);
 
+        activity('cms')
+            ->causedBy(auth()->user())
+            ->performedOn($poll)
+            ->withProperty('label', $poll->question)
+            ->event('reset_votes')
+            ->log('Poll reset_votes');
+
         return redirect()->route('admin.ankiety.index')
             ->with('status', 'Głosy ankiety zostały wyzerowane.');
     }
