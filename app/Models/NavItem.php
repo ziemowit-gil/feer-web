@@ -9,6 +9,8 @@ use Illuminate\Support\Str;
 
 class NavItem extends Model
 {
+    use \App\Models\Concerns\LogsActivity;
+
     public const TYPES = [
         'link' => 'Zwykły link',
         'dropdown' => 'Rozwijane menu (własne podpozycje)',
@@ -107,6 +109,11 @@ class NavItem extends Model
      * Anchor links (#kontakt, #galeria) only exist on the homepage, so
      * "current" for them just means "on the homepage" — no scroll-spy.
      */
+    public function activityLabel(): string
+    {
+        return (string) ($this->label ?? ('#' . $this->getKey()));
+    }
+
     public function isCurrent(): bool
     {
         if ($this->type === 'projects') {

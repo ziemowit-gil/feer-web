@@ -103,6 +103,44 @@ class ProjectController extends Controller
         return redirect()->route('admin.projekty.index')->with('status', 'Projekt został usunięty.');
     }
 
+    /** Akcje zbiorcze: publish, unpublish, trash. */
+    public function bulk(Request $request)
+    {
+        $data = $request->validate([
+            'action' => ['required', 'in:publish,unpublish,trash'],
+            'ids'    => ['required', 'array', 'min:1'],
+            'ids.*'  => ['integer'],
+        ]);
+
+        $projects = Project::withTrashed()->whereIn('id', $data['ids'])->get();
+
+        if ($projects->isEmpty()) {
+            return back()->with('error', 'Nie znaleziono projektów.');
+        }
+
+        $count = $projects->count();
+
+        match ($data['action']) {
+            'trash'     => $projects->each->delete(),
+            'publish'   => Project::whereIn('id', $projects->pluck('id'))->update(['is_published' => true]),
+            'unpublish' => Project::whereIn('id', $projects->pluck('id'))->update(['is_published' => false]),
+        };
+
+        $message = match ($data['action']) {
+            'trash'     => "Przeniesiono do kosza projektów: {$count}.",
+            'publish'   => "Opublikowano projektów: {$count}.",
+            'unpublish' => "Cofnięto publikację projektów: {$count}.",
+        };
+
+        activity('cms')
+            ->causedBy(auth()->user())
+            ->withProperty('ids', $projects->pluck('id'))
+            ->event('bulk_' . ($data['action'] === 'trash' ? 'deleted' : $data['action'] . 'd'))
+            ->log("Project bulk_{$data['action']} ({$count})");
+
+        return back()->with('status', $message);
+    }
+
     private function validated(Request $request): array
     {
         $data = $request->validate([

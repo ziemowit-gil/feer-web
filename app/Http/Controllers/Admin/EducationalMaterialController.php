@@ -74,6 +74,44 @@ class EducationalMaterialController extends Controller
         return redirect()->route('admin.materialy-edukacyjne.index')->with('status', 'Materiał został usunięty.');
     }
 
+    /** Akcje zbiorcze: publish, unpublish, delete. */
+    public function bulk(Request $request)
+    {
+        $data = $request->validate([
+            'action' => ['required', 'in:publish,unpublish,delete'],
+            'ids'    => ['required', 'array', 'min:1'],
+            'ids.*'  => ['integer'],
+        ]);
+
+        $materials = EducationalMaterial::whereIn('id', $data['ids'])->get();
+
+        if ($materials->isEmpty()) {
+            return back()->with('error', 'Nie znaleziono materiałów.');
+        }
+
+        $count = $materials->count();
+
+        match ($data['action']) {
+            'publish'   => EducationalMaterial::whereIn('id', $materials->pluck('id'))->update(['is_published' => true]),
+            'unpublish' => EducationalMaterial::whereIn('id', $materials->pluck('id'))->update(['is_published' => false]),
+            'delete'    => $materials->each->delete(),
+        };
+
+        $message = match ($data['action']) {
+            'publish'   => "Opublikowano materiałów: {$count}.",
+            'unpublish' => "Cofnięto publikację materiałów: {$count}.",
+            'delete'    => "Usunięto materiałów: {$count}.",
+        };
+
+        activity('cms')
+            ->causedBy(auth()->user())
+            ->withProperty('ids', $materials->pluck('id'))
+            ->event('bulk_' . ($data['action'] === 'delete' ? 'deleted' : $data['action'] . 'd'))
+            ->log("EducationalMaterial bulk_{$data['action']} ({$count})");
+
+        return back()->with('status', $message);
+    }
+
     private function validated(Request $request, bool $isCreate): array
     {
         $data = $request->validate([

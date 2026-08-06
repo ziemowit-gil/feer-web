@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Models\Concerns\Approvable;
 use App\Models\Concerns\LogsActivity;
+use Laravel\Scout\Searchable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -18,6 +19,20 @@ class Page extends Model
     use \App\Models\Concerns\HasRevisions;
     use \Illuminate\Database\Eloquent\SoftDeletes;
     use LogsActivity;
+    use Searchable;
+
+    public function toSearchableArray(): array
+    {
+        return [
+            'title'   => $this->title,
+            'content' => strip_tags((string) $this->content),
+        ];
+    }
+
+    public function shouldBeSearchable(): bool
+    {
+        return (bool) $this->is_published && ! $this->trashed();
+    }
 
     public function revisionFields(): array
     {

@@ -13,3 +13,6 @@ Schedule::command('content:auto-archive')->dailyAt('03:00');
 
 // Poranne przypomnienia o zadaniach z terminem na jutro.
 Schedule::command('tasks:remind-due')->dailyAt('08:00');
+
+// Przypomnienia dla zatwierdzających o treściach czekających ponad 12 h.
+Schedule::command('approvals:notify-pending')->hourly();

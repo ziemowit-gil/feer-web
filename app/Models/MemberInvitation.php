@@ -8,6 +8,8 @@ use Illuminate\Support\Str;
 
 class MemberInvitation extends Model
 {
+    use \App\Models\Concerns\LogsActivity;
+
     protected $fillable = ['email', 'token', 'invited_by', 'note', 'expires_at', 'used_at'];
 
     protected $casts = [

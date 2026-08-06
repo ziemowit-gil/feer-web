@@ -98,6 +98,47 @@ class BannerController extends Controller
             ->with('status', 'Baner został usunięty.');
     }
 
+    /** Akcje zbiorcze: activate, deactivate, delete. */
+    public function bulk(Request $request): RedirectResponse
+    {
+        $data = $request->validate([
+            'action' => ['required', 'in:activate,deactivate,delete'],
+            'ids'    => ['required', 'array', 'min:1'],
+            'ids.*'  => ['integer'],
+        ]);
+
+        $banners = Banner::whereIn('id', $data['ids'])->get();
+
+        if ($banners->isEmpty()) {
+            return back()->with('error', 'Nie znaleziono banerów.');
+        }
+
+        $count = $banners->count();
+
+        match ($data['action']) {
+            'activate'   => Banner::whereIn('id', $banners->pluck('id'))->update(['is_active' => true]),
+            'deactivate' => Banner::whereIn('id', $banners->pluck('id'))->update(['is_active' => false]),
+            'delete'     => $banners->each(function (Banner $b) {
+                if ($b->image_path) {
+                    Storage::disk('public')->delete($b->image_path);
+                }
+                $b->delete();
+            }),
+        };
+
+        if ($data['action'] !== 'delete') {
+            $this->flushZoneCache();
+        }
+
+        $message = match ($data['action']) {
+            'activate'   => "Aktywowano banerów: {$count}.",
+            'deactivate' => "Wyłączono banerów: {$count}.",
+            'delete'     => "Usunięto banerów: {$count}.",
+        };
+
+        return back()->with('status', $message);
+    }
+
     /** Przełącza aktywność banera (włącz/wyłącz). */
     public function toggle(Banner $banner): RedirectResponse
     {

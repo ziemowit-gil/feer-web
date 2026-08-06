@@ -7,11 +7,18 @@ use Illuminate\Database\Eloquent\Model;
 
 class Faq extends Model
 {
+    use \App\Models\Concerns\LogsActivity;
+
     protected $fillable = ['question', 'answer', 'category', 'is_published', 'order'];
 
     protected $casts = [
         'is_published' => 'boolean',
     ];
+
+    public function activityLabel(): string
+    {
+        return (string) ($this->question ?? ('#' . $this->getKey()));
+    }
 
     public function scopePublished(Builder $query): Builder
     {

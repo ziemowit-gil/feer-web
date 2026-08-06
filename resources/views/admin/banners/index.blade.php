@@ -9,8 +9,20 @@
         </div>
     @endif
 
+    <form id="bulk-form" method="POST" action="{{ route('admin.banery.bulk') }}">
+    @csrf
+    <input type="hidden" name="action" id="bulk-action">
+
     <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <p class="text-sm text-muted">Zarządzaj kreacjami bannerowymi i przypisuj je do stref serwisu.</p>
+        <div class="flex items-center gap-3">
+            <p class="text-sm text-muted">Zarządzaj kreacjami bannerowymi i przypisuj je do stref serwisu.</p>
+            <div id="bulk-bar" class="hidden items-center gap-3 rounded-lg border border-blue-200 bg-blue-50 px-4 py-2">
+                <span id="bulk-count" class="text-sm font-bold text-blue-800"></span>
+                <button type="button" onclick="bulkSubmit('activate')" class="rounded border border-green-300 bg-white px-3 py-1 text-xs font-bold text-green-700 hover:bg-green-50">Aktywuj</button>
+                <button type="button" onclick="bulkSubmit('deactivate')" class="rounded border border-gray-300 bg-white px-3 py-1 text-xs font-bold text-gray-700 hover:bg-gray-50">Wyłącz</button>
+                <button type="button" onclick="if(confirm('Usunąć zaznaczone banery?')) bulkSubmit('delete')" class="rounded border border-red-300 bg-white px-3 py-1 text-xs font-bold text-red-600 hover:bg-red-50">Usuń</button>
+            </div>
+        </div>
         <div class="flex items-center gap-2">
             <a href="{{ route('admin.strefy-bannerow.index') }}" class="rounded border border-gray-300 bg-white px-4 py-2 text-sm font-bold text-ink hover:bg-gray-50">
                 <i class="fa-solid fa-layer-group fa-sm"></i> Strefy
@@ -25,6 +37,9 @@
         <table class="w-full text-left text-sm">
             <thead class="bg-gray-50 text-xs font-bold uppercase text-muted">
                 <tr>
+                    <th class="w-10 px-4 py-3">
+                        <input type="checkbox" id="select-all" class="rounded border-gray-300" aria-label="Zaznacz wszystkie">
+                    </th>
                     <th class="px-4 py-3">Baner</th>
                     <th class="px-4 py-3">Strefy</th>
                     <th class="px-4 py-3">Typ</th>
@@ -38,6 +53,9 @@
             <tbody class="divide-y divide-gray-100">
                 @forelse ($banners as $banner)
                     <tr class="hover:bg-gray-50">
+                        <td class="px-4 py-3">
+                            <input type="checkbox" name="ids[]" value="{{ $banner->id }}" class="row-check rounded border-gray-300" aria-label="Zaznacz {{ $banner->name }}">
+                        </td>
                         <td class="px-4 py-3">
                             <div class="flex items-center gap-3">
                                 @if ($banner->type === 'image' && $banner->image_path)
@@ -103,7 +121,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="8" class="px-4 py-8 text-center text-muted">
+                        <td colspan="9" class="px-4 py-8 text-center text-muted">
                             Brak banerów. <a href="{{ route('admin.banery.create') }}" class="text-brand underline">Dodaj pierwszy</a>.
                         </td>
                     </tr>
@@ -115,4 +133,41 @@
     @if ($banners->hasPages())
         <div class="mt-4">{{ $banners->links() }}</div>
     @endif
+    </form>
+
+    <script>
+        const bar = document.getElementById('bulk-bar');
+        const countEl = document.getElementById('bulk-count');
+        const selectAll = document.getElementById('select-all');
+        const checks = () => document.querySelectorAll('.row-check');
+
+        function updateBar() {
+            const checked = [...checks()].filter(c => c.checked);
+            if (checked.length > 0) {
+                countEl.textContent = 'Zaznaczono: ' + checked.length;
+                bar.classList.remove('hidden');
+                bar.classList.add('flex');
+            } else {
+                bar.classList.add('hidden');
+                bar.classList.remove('flex');
+            }
+        }
+
+        function bulkSubmit(action) {
+            document.getElementById('bulk-action').value = action;
+            document.getElementById('bulk-form').submit();
+        }
+
+        selectAll.addEventListener('change', function () {
+            checks().forEach(c => { c.checked = this.checked; });
+            updateBar();
+        });
+
+        document.addEventListener('change', function (e) {
+            if (e.target.classList.contains('row-check')) {
+                updateBar();
+                selectAll.checked = [...checks()].every(c => c.checked);
+            }
+        });
+    </script>
 @endsection

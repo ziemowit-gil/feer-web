@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Laravel\Scout\Searchable;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 
@@ -21,8 +22,23 @@ class News extends Model implements HasMedia
     use \App\Models\Concerns\LogsActivity;
     use \Illuminate\Database\Eloquent\SoftDeletes;
     use InteractsWithMedia;
+    use Searchable;
 
     protected $table = 'news';
+
+    public function toSearchableArray(): array
+    {
+        return [
+            'title'   => $this->title,
+            'excerpt' => $this->excerpt,
+            'content' => strip_tags((string) $this->content),
+        ];
+    }
+
+    public function shouldBeSearchable(): bool
+    {
+        return (bool) $this->is_published && ! $this->is_archived && ! $this->trashed();
+    }
 
     public function revisionFields(): array
     {

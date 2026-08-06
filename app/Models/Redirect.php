@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class Redirect extends Model
 {
+    use \App\Models\Concerns\LogsActivity;
+
     protected $fillable = ['from_path', 'to_url', 'is_active', 'hits'];
 
     protected $casts = [
@@ -17,6 +19,11 @@ class Redirect extends Model
      * Znormalizowana ścieżka źródłowa: pojedynczy wiodący ukośnik, bez ukośnika
      * końcowego i bez parametrów zapytania — tak porównujemy z żądaniem.
      */
+    public function activityLabel(): string
+    {
+        return (string) ($this->from_path ?? ('#' . $this->getKey()));
+    }
+
     public static function normalizePath(string $path): string
     {
         $path = trim(explode('?', $path, 2)[0]);

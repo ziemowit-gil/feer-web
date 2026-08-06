@@ -397,6 +397,13 @@ class SiteSettingController extends Controller
 
         $settings->update($data);
 
+        activity('cms')
+            ->causedBy(auth()->user())
+            ->performedOn($settings)
+            ->withProperty('label', $settings->site_name)
+            ->event('settings_updated')
+            ->log('SiteSetting settings_updated');
+
         if ($request->hasFile('logo')) {
             $settings->addMediaFromRequest('logo')->toMediaCollection('logo');
         } elseif ($request->boolean('remove_logo')) {

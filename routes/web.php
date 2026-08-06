@@ -259,6 +259,7 @@ Route::middleware(['auth', 'verified', '2fa'])->prefix(config('app.admin_prefix'
     Route::middleware(['module:projects', 'module-access:projects'])->group(function () {
         Route::resource('kategorie', AdminCategoryController::class)->parameters(['kategorie' => 'category'])->except('show');
         Route::resource('projekty', AdminProjectController::class)->parameters(['projekty' => 'project'])->except('show');
+        Route::post('projekty/zbiorczo', [AdminProjectController::class, 'bulk'])->name('projekty.bulk');
     });
 
     Route::middleware(['module:news', 'module-access:news'])->group(function () {
@@ -289,6 +290,7 @@ Route::middleware(['auth', 'verified', '2fa'])->prefix(config('app.admin_prefix'
 
     Route::middleware(['module:materials', 'module-access:materials'])->group(function () {
         Route::resource('materialy-edukacyjne', AdminEducationalMaterialController::class)->parameters(['materialy-edukacyjne' => 'material'])->except('show');
+        Route::post('materialy-edukacyjne/zbiorczo', [AdminEducationalMaterialController::class, 'bulk'])->name('materialy-edukacyjne.bulk');
         Route::get('zapisy-materialy', [AdminMaterialSubscriberController::class, 'index'])->name('zapisy-materialy.index');
         Route::get('zapisy-materialy/eksport', [AdminMaterialSubscriberController::class, 'export'])->name('zapisy-materialy.export');
         Route::delete('zapisy-materialy/{subscriber}', [AdminMaterialSubscriberController::class, 'destroy'])->name('zapisy-materialy.destroy');
@@ -434,6 +436,7 @@ Route::middleware(['auth', 'verified', '2fa'])->prefix(config('app.admin_prefix'
         Route::resource('banery', AdminBannerController::class)
             ->parameters(['banery' => 'banner'])
             ->except('show');
+        Route::post('banery/zbiorczo', [AdminBannerController::class, 'bulk'])->name('banery.bulk');
         Route::post('banery/{banner}/toggle', [AdminBannerController::class, 'toggle'])
             ->name('banery.toggle');
         Route::resource('strefy-bannerow', AdminBannerZoneController::class)

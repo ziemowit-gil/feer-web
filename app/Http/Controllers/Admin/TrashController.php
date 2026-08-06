@@ -55,7 +55,15 @@ class TrashController extends Controller
     /** Przywraca soft-deleted rekord z kosza. */
     public function restore(string $type, int $id)
     {
-        $this->resolve($type, $id)->restore();
+        $model = $this->resolve($type, $id);
+        $model->restore();
+
+        activity('cms')
+            ->causedBy(auth()->user())
+            ->performedOn($model)
+            ->withProperty('label', $model->title)
+            ->event('restored')
+            ->log(class_basename($model) . ' restored');
 
         return back()->with('status', 'Treść została przywrócona.');
     }
@@ -63,7 +71,16 @@ class TrashController extends Controller
     /** Trwale usuwa rekord z kosza wraz z plikami mediów. */
     public function forceDelete(string $type, int $id)
     {
-        $this->resolve($type, $id)->forceDelete();
+        $model = $this->resolve($type, $id);
+
+        activity('cms')
+            ->causedBy(auth()->user())
+            ->performedOn($model)
+            ->withProperty('label', $model->title)
+            ->event('force_deleted')
+            ->log(class_basename($model) . ' force_deleted');
+
+        $model->forceDelete();
 
         return back()->with('status', 'Treść została trwale usunięta.');
     }

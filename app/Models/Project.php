@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Laravel\Scout\Searchable;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 
@@ -16,6 +17,22 @@ class Project extends Model implements HasMedia
     use \App\Models\Concerns\LogsActivity;
     use \Illuminate\Database\Eloquent\SoftDeletes;
     use InteractsWithMedia;
+    use Searchable;
+
+    public function toSearchableArray(): array
+    {
+        return [
+            'title'    => $this->title,
+            'excerpt'  => $this->excerpt,
+            'for_whom' => $this->for_whom,
+            'content'  => strip_tags((string) $this->content),
+        ];
+    }
+
+    public function shouldBeSearchable(): bool
+    {
+        return (bool) $this->is_published && ! $this->trashed();
+    }
 
     public function revisionFields(): array
     {

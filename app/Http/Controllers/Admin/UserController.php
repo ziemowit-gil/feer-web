@@ -116,6 +116,13 @@ class UserController extends Controller
     {
         $user->forceFill(['microsoft_id' => null, 'avatar' => null])->save();
 
+        activity('cms')
+            ->causedBy(auth()->user())
+            ->performedOn($user)
+            ->withProperty('label', $user->name)
+            ->event('microsoft_unlinked')
+            ->log('User microsoft_unlinked');
+
         return redirect()->back()->with('status', "Konto Microsoft 365 zostało odłączone od użytkownika „{$user->name}\".");
     }
 }
