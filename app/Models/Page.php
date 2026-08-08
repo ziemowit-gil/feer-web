@@ -184,7 +184,7 @@ class Page extends Model
         'access_mode', 'access_password', 'hub_hero', 'hub_intro', 'hub_links',
         'legacy_name', 'legacy_intro',
         'brand_brandbook_url', 'brand_sections',
-        'person_phone', 'person_role', 'person_bio', 'person_email', 'person_social', 'person_member_label',
+        'person_phone', 'person_role', 'person_bio', 'person_email', 'person_social', 'person_member_label', 'person_name_genitive',
     ];
 
     protected $casts = [

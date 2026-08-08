@@ -12,10 +12,9 @@
         $aboutStats = array_values((array) old('about_stats', $page->about_stats ?? []));
         $aboutTimeline = array_values((array) old('about_timeline', $page->about_timeline ?? []));
         $aboutValues = array_values((array) old('about_values', $page->about_values ?? []));
-        $aboutTeam = array_values((array) old('about_team', $page->about_team ?? []));
-        $personPagesByTitle = \App\Models\Page::where('type', 'about_person')
-            ->get(['id', 'title'])
-            ->keyBy(fn ($p) => mb_strtolower(trim($p->title)));
+        $teamPersons = $page->exists
+            ? $page->children()->where('type', 'about_person')->orderBy('order')->orderBy('title')->get()
+            : collect();
         $aboutPress = array_values((array) old('about_press', $page->about_press ?? []));
         $faqItems = array_values((array) old('faq_items', $page->faq_items ?? []));
     @endphp
@@ -523,73 +522,22 @@
                             </div>
                         </details>
 
-                        <details class="rounded-lg border border-gray-200">
+                        <details class="rounded-lg border border-gray-200" open>
                             <summary class="cursor-pointer rounded-lg px-4 py-3 text-sm font-bold text-ink hover:bg-gray-50">Zespół</summary>
                             <div class="border-t border-gray-100 px-4 py-4">
-                        <div data-repeater>
-                            <p class="mb-3 text-xs text-muted">Imię i nazwisko, odmiana (do „Więcej o Alicji…") oraz rola. Zdjęcie, bio i social media — na podstronie osoby.</p>
-                            <div data-repeater-rows class="space-y-2">
-                                @foreach ($aboutTeam as $i => $row)
-                                    @php
-                                        $memberName = trim($row['name'] ?? '');
-                                        $existingPersonPage = filled($memberName)
-                                            ? ($personPagesByTitle[mb_strtolower($memberName)] ?? null)
-                                            : null;
-                                        $prefillUrl = route('admin.podstrony.create') . '?' . http_build_query(['prefill' => [
-                                            'title'     => $memberName,
-                                            'person_role' => $row['role'] ?? '',
-                                            'parent_id' => $page->id ?? '',
-                                        ]]);
-                                    @endphp
-                                    <div data-repeater-row class="space-y-2 rounded-lg border border-gray-200 bg-gray-50 p-3">
-                                        <div class="flex items-center gap-2">
-                                        <div class="grid min-w-0 flex-1 gap-2 sm:grid-cols-3">
-                                            <input type="text" name="about_team[{{ $i }}][name]" value="{{ $row['name'] ?? '' }}" placeholder="Imię i nazwisko" aria-label="Imię członka zespołu {{ $i + 1 }}" class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
-                                            <input type="text" name="about_team[{{ $i }}][name_genitive]" value="{{ $row['name_genitive'] ?? '' }}" placeholder="Odmiana (np. Alicji, Ziemowita)" aria-label="Odmiana imienia — członek zespołu {{ $i + 1 }}" class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
-                                            <input type="text" name="about_team[{{ $i }}][role]" value="{{ $row['role'] ?? '' }}" placeholder="Co robi w FEER" aria-label="Co robi w FEER — członek zespołu {{ $i + 1 }}" class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
-                                        </div>
-                                        <div class="flex shrink-0 items-center gap-1">
-                                            @if ($existingPersonPage)
-                                                <a href="{{ route('admin.podstrony.edit', $existingPersonPage) }}" target="_blank"
-                                                   class="rounded border border-brand px-2 py-1 text-xs font-bold text-brand hover:bg-brand-light"
-                                                   aria-label="Podstrona osoby {{ $memberName }}">
-                                                    <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i>
-                                                </a>
-                                            @elseif (filled($memberName))
-                                                <a href="{{ $prefillUrl }}" target="_blank"
-                                                   class="rounded border border-gray-300 px-2 py-1 text-xs font-bold text-muted hover:border-brand hover:text-brand"
-                                                   aria-label="Utwórz podstronę dla {{ $memberName }}">
-                                                    <i class="fa-solid fa-user-plus" aria-hidden="true"></i>
-                                                </a>
-                                            @endif
-                                            <button type="button" data-repeater-move="up" class="rounded p-1.5 text-muted hover:bg-gray-100 hover:text-brand" aria-label="Przenieś osobę wyżej"><i class="fa-solid fa-arrow-up text-xs" aria-hidden="true"></i></button>
-                                            <button type="button" data-repeater-move="down" class="rounded p-1.5 text-muted hover:bg-gray-100 hover:text-brand" aria-label="Przenieś osobę niżej"><i class="fa-solid fa-arrow-down text-xs" aria-hidden="true"></i></button>
-                                            <button type="button" data-repeater-remove class="rounded p-1.5 text-muted hover:bg-red-50 hover:text-red-600" aria-label="Usuń członka zespołu"><i class="fa-solid fa-trash text-xs" aria-hidden="true"></i></button>
-                                        </div>
-                                        </div>
-                                        <textarea name="about_team[{{ $i }}][bio]" rows="2" maxlength="300" placeholder="Krótko o tej osobie (maks. 300 znaków)" aria-label="Krótkie o mnie — członek zespołu {{ $i + 1 }}" class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">{{ $row['bio'] ?? '' }}</textarea>
-                                    </div>
-                                @endforeach
-                            </div>
-                            <button type="button" data-repeater-add class="mt-2 inline-flex items-center gap-2 rounded border border-brand px-3 py-1.5 text-sm font-bold text-brand hover:bg-brand-light"><i class="fa-solid fa-plus" aria-hidden="true"></i> Dodaj osobę</button>
-                            <template data-repeater-template>
-                                <div data-repeater-row class="space-y-2 rounded-lg border border-gray-200 bg-gray-50 p-3">
-                                    <div class="flex items-center gap-2">
-                                    <div class="grid min-w-0 flex-1 gap-2 sm:grid-cols-3">
-                                        <input type="text" name="about_team[__INDEX__][name]" placeholder="Imię i nazwisko" aria-label="Imię członka zespołu" class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
-                                        <input type="text" name="about_team[__INDEX__][name_genitive]" placeholder="Odmiana (np. Alicji, Ziemowita)" aria-label="Odmiana imienia" class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
-                                        <input type="text" name="about_team[__INDEX__][role]" placeholder="Co robi w FEER" aria-label="Co robi w FEER" class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
-                                    </div>
-                                    <div class="flex shrink-0 items-center gap-1">
-                                        <button type="button" data-repeater-move="up" class="rounded p-1.5 text-muted hover:bg-gray-100 hover:text-brand" aria-label="Przenieś osobę wyżej"><i class="fa-solid fa-arrow-up text-xs" aria-hidden="true"></i></button>
-                                        <button type="button" data-repeater-move="down" class="rounded p-1.5 text-muted hover:bg-gray-100 hover:text-brand" aria-label="Przenieś osobę niżej"><i class="fa-solid fa-arrow-down text-xs" aria-hidden="true"></i></button>
-                                        <button type="button" data-repeater-remove class="rounded p-1.5 text-muted hover:bg-red-50 hover:text-red-600" aria-label="Usuń członka zespołu"><i class="fa-solid fa-trash text-xs" aria-hidden="true"></i></button>
-                                    </div>
-                                    </div>
-                                    <textarea name="about_team[__INDEX__][bio]" rows="2" maxlength="300" placeholder="Krótko o tej osobie (maks. 300 znaków)" aria-label="Krótkie o mnie" class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand"></textarea>
+                                <p class="mb-4 text-xs text-muted">Każda osoba to osobna podstrona — możesz tu edytować wszystko bez wchodzenia w osobne zakładki.</p>
+                                <div class="space-y-3" id="team-persons-list">
+                                    @foreach ($teamPersons as $ti => $tp)
+                                        @include('admin.pages._team_person_row', ['tp' => $tp, 'ti' => $ti])
+                                    @endforeach
                                 </div>
-                            </template>
-                        </div>
+                                <button type="button" id="team-add-person"
+                                    class="mt-3 inline-flex items-center gap-2 rounded border border-brand px-3 py-1.5 text-sm font-bold text-brand hover:bg-brand-light">
+                                    <i class="fa-solid fa-user-plus" aria-hidden="true"></i> Dodaj osobę
+                                </button>
+                                <template id="team-person-template">
+                                    @include('admin.pages._team_person_row', ['tp' => null, 'ti' => '__INDEX__'])
+                                </template>
                             </div>
                         </details>
 
@@ -1746,6 +1694,73 @@
             // Przepisz treść edytorów do textarea tuż przed wysłaniem formularza.
             const form = container.closest('form');
             if (form) form.addEventListener('submit', function () { if (window.tinymce) window.tinymce.triggerSave(); });
+        })();
+
+        // ===== Inline edytor osób (sekcja Zespół) =====
+        (function () {
+            var list = document.getElementById('team-persons-list');
+            var tpl  = document.getElementById('team-person-template');
+            var btn  = document.getElementById('team-add-person');
+            if (!list || !tpl || !btn) return;
+
+            function reindex() {
+                list.querySelectorAll('.team-person-row').forEach(function (row, i) {
+                    row.dataset.index = i;
+                    row.querySelectorAll('[name]').forEach(function (el) {
+                        el.name = el.name.replace(/team\[[^\]]*\]/, 'team[' + i + ']');
+                    });
+                });
+            }
+
+            function bindRow(row) {
+                row.querySelector('.team-expand')?.addEventListener('click', function () {
+                    var details = row.querySelector('.team-details');
+                    if (details) {
+                        details.classList.toggle('hidden');
+                        var icon = this.querySelector('i');
+                        if (icon) icon.classList.toggle('fa-chevron-down', details.classList.contains('hidden'));
+                        if (icon) icon.classList.toggle('fa-chevron-up', !details.classList.contains('hidden'));
+                    }
+                });
+                row.querySelector('.team-remove')?.addEventListener('click', function () {
+                    if (confirm('Usunąć tę osobę? Zapis formularza trwale usunie jej podstronę.')) {
+                        row.remove();
+                        reindex();
+                    }
+                });
+                row.querySelector('.team-move-up')?.addEventListener('click', function () {
+                    var prev = row.previousElementSibling;
+                    if (prev && prev.classList.contains('team-person-row')) {
+                        list.insertBefore(row, prev);
+                        reindex();
+                    }
+                });
+                row.querySelector('.team-move-down')?.addEventListener('click', function () {
+                    var next = row.nextElementSibling;
+                    if (next && next.classList.contains('team-person-row')) {
+                        list.insertBefore(next, row);
+                        reindex();
+                    }
+                });
+            }
+
+            // Podpnij istniejące wiersze
+            list.querySelectorAll('.team-person-row').forEach(bindRow);
+
+            // Dodaj nową osobę
+            btn.addEventListener('click', function () {
+                var nextIdx = list.querySelectorAll('.team-person-row').length;
+                var html = tpl.innerHTML.replace(/__INDEX__/g, nextIdx);
+                var tmp = document.createElement('div');
+                tmp.innerHTML = html;
+                var newRow = tmp.firstElementChild;
+                // Nowe osoby mają szczegóły rozwinięte od razu
+                var details = newRow.querySelector('.team-details');
+                if (details) details.classList.remove('hidden');
+                list.appendChild(newRow);
+                bindRow(newRow);
+                newRow.querySelector('input[type="text"]')?.focus();
+            });
         })();
     </script>
 @endsection

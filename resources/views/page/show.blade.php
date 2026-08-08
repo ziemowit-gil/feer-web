@@ -169,10 +169,8 @@
         $aboutStats = collect($page->about_stats ?? []);
         $aboutTimeline = collect($page->about_timeline ?? []);
         $aboutValues = collect($page->about_values ?? []);
-        $aboutTeam = collect($page->about_team ?? []);
-        $personPagesByName = \App\Models\Page::where('type', 'about_person')->where('is_published', true)
-            ->get(['id', 'type', 'title', 'slug', 'content_image'])
-            ->keyBy(fn ($p) => mb_strtolower(trim($p->title)));
+        $aboutTeam = $page->children()->where('type', 'about_person')->where('is_published', true)->orderBy('order')->orderBy('title')->get();
+        $personPagesByName = $aboutTeam->keyBy(fn ($p) => mb_strtolower(trim($p->title)));
         $aboutImages = $page->images->filter(fn ($img) => $img->image_url)->values();
         // Pierwsze 2–3 zdjęcia jako kolaż obok wstępu; reszta trafia do galerii.
         $introPhotos = $aboutImages->take(3)->values();
@@ -388,7 +386,7 @@
             <section id="sekcja-team" class="bg-gray-50 px-4 py-16" aria-label="Nasz zespół">
                 <div class="mx-auto max-w-5xl">
                     <h2 class="mb-10 text-center text-2xl font-bold text-ink md:text-3xl">Nasz zespół</h2>
-                    @include('partials.team', ['members' => $aboutTeam, 'personPagesByName' => $personPagesByName])
+                    @include('partials.team', ['members' => $aboutTeam])
                 </div>
             </section>
         @endif

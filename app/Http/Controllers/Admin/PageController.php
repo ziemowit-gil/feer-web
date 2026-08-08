@@ -136,6 +136,10 @@ class PageController extends Controller
 
         $page = Page::create($data);
 
+        if ($page->isAbout()) {
+            $this->syncTeamPersons($page, $request->input('team', []));
+        }
+
         return redirect()->route('admin.podstrony.index')
             ->with('status', 'Strona „' . $page->title . '” została utworzona.')
             ->with('reload_url', $page->publicUrl());
@@ -169,6 +173,10 @@ class PageController extends Controller
             : $this->uniqueSlug($data['slug'] !== '' ? $data['slug'] : $data['title'], $page->id);
 
         $page->update($data);
+
+        if ($page->isAbout()) {
+            $this->syncTeamPersons($page, $request->input('team', []));
+        }
 
         return redirect()->route('admin.podstrony.index')
             ->with('status', 'Strona została zaktualizowana.')
@@ -386,11 +394,21 @@ class PageController extends Controller
             'about_values.*.icon' => ['nullable', 'string', 'max:100'],
             'about_values.*.title' => ['nullable', 'string', 'max:120'],
             'about_values.*.text' => ['nullable', 'string', 'max:500'],
-            'about_team' => ['nullable', 'array'],
-            'about_team.*.name' => ['nullable', 'string', 'max:120'],
-            'about_team.*.name_genitive' => ['nullable', 'string', 'max:120'],
-            'about_team.*.role' => ['nullable', 'string', 'max:120'],
-            'about_team.*.bio' => ['nullable', 'string', 'max:300'],
+            'team' => ['nullable', 'array'],
+            'team.*.id' => ['nullable', 'integer', 'exists:pages,id'],
+            'team.*.name' => ['nullable', 'string', 'max:120'],
+            'team.*.name_genitive' => ['nullable', 'string', 'max:80'],
+            'team.*.role' => ['nullable', 'string', 'max:120'],
+            'team.*.member_label' => ['nullable', 'string', 'max:60'],
+            'team.*.bio' => ['nullable', 'string', 'max:500'],
+            'team.*.content_image' => ['nullable', 'string', 'max:1000'],
+            'team.*.phone' => ['nullable', 'string', 'max:60'],
+            'team.*.email' => ['nullable', 'email', 'max:255'],
+            'team.*.facebook' => ['nullable', 'string', 'max:500'],
+            'team.*.instagram' => ['nullable', 'string', 'max:500'],
+            'team.*.linkedin' => ['nullable', 'string', 'max:500'],
+            'team.*.website' => ['nullable', 'string', 'max:500'],
+            'team.*.is_published' => ['sometimes', 'boolean'],
             'about_section_order' => ['sometimes', 'array'],
             'about_section_order.*' => ['integer'],
             'about_partner_ids' => ['nullable', 'array'],
@@ -507,7 +525,7 @@ class PageController extends Controller
             $data['about_timeline'] = $this->compactRows($request->input('about_timeline', []), ['year', 'text', 'url', 'label', 'url2', 'label2', 'url3', 'label3', 'color']);
             $data['about_values'] = $this->compactRows($request->input('about_values', []), ['icon', 'title', 'text']);
 
-            $data['about_team'] = $this->compactRows($request->input('about_team', []), ['name', 'name_genitive', 'role', 'bio']);
+            $data['about_team'] = null;
 
             $positions = $request->input('about_section_order', []);
             $data['about_section_order'] = collect(array_keys(Page::ABOUT_SECTIONS))
@@ -739,6 +757,58 @@ class PageController extends Controller
         }
 
         return null;
+    }
+
+    private function syncTeamPersons(Page $aboutPage, array $rows): void
+    {
+        $rows = collect($rows)->filter(fn ($r) => trim($r['name'] ?? '') !== '')->values();
+        $keptIds = $rows->pluck('id')->filter()->map('intval')->all();
+
+        $aboutPage->children()
+            ->where('type', 'about_person')
+            ->whereNotIn('id', $keptIds)
+            ->get()
+            ->each->delete();
+
+        foreach ($rows as $order => $row) {
+            $id = filled($row['id'] ?? '') ? (int) $row['id'] : null;
+            $name = trim($row['name'] ?? '');
+
+            $personData = [
+                'title'               => $name,
+                'type'                => 'about_person',
+                'parent_id'           => $aboutPage->id,
+                'order'               => $order,
+                'is_published'        => ! empty($row['is_published']),
+                'show_in_menu'        => false,
+                'person_name_genitive' => trim($row['name_genitive'] ?? '') ?: null,
+                'person_role'         => trim($row['role'] ?? '') ?: null,
+                'person_bio'          => trim($row['bio'] ?? '') ?: null,
+                'content_image'       => trim($row['content_image'] ?? '') ?: null,
+                'person_phone'        => trim($row['phone'] ?? '') ?: null,
+                'person_email'        => trim($row['email'] ?? '') ?: null,
+                'person_member_label' => trim($row['member_label'] ?? '') ?: null,
+                'person_social'       => array_filter([
+                    'facebook'  => trim($row['facebook'] ?? ''),
+                    'instagram' => trim($row['instagram'] ?? ''),
+                    'linkedin'  => trim($row['linkedin'] ?? ''),
+                    'website'   => trim($row['website'] ?? ''),
+                ]) ?: null,
+            ];
+
+            if ($id) {
+                $person = Page::where('id', $id)->where('parent_id', $aboutPage->id)->first();
+                if ($person) {
+                    if (Str::slug($person->title) !== Str::slug($name)) {
+                        $personData['slug'] = $this->personSlug($name, $aboutPage->id, $person->id);
+                    }
+                    $person->update($personData);
+                }
+            } else {
+                $personData['slug'] = $this->personSlug($name, $aboutPage->id);
+                Page::create($personData);
+            }
+        }
     }
 
     private function personSlug(string $title, ?int $parentId, ?int $ignoreId = null): string
