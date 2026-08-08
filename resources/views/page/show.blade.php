@@ -948,42 +948,6 @@
                         </div>
                     @endif
 
-                    @php $pSocial = $page->person_social ?? []; @endphp
-                    @if (collect($pSocial)->filter()->isNotEmpty())
-                        <div>
-                            <p class="mb-2 text-xs font-bold uppercase tracking-wide text-muted">Social media</p>
-                            <div class="flex flex-wrap gap-2">
-                                @if (!empty($pSocial['facebook']))
-                                    <a href="{{ $pSocial['facebook'] }}" target="_blank" rel="noopener noreferrer"
-                                        class="flex h-9 w-9 items-center justify-center rounded-full bg-[#1877f2] text-white hover:opacity-80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
-                                        aria-label="Facebook — {{ $page->title }}">
-                                        <i class="fa-brands fa-facebook-f text-sm" aria-hidden="true"></i>
-                                    </a>
-                                @endif
-                                @if (!empty($pSocial['instagram']))
-                                    <a href="{{ $pSocial['instagram'] }}" target="_blank" rel="noopener noreferrer"
-                                        class="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-[#f09433] via-[#e6683c] to-[#bc1888] text-white hover:opacity-80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
-                                        aria-label="Instagram — {{ $page->title }}">
-                                        <i class="fa-brands fa-instagram text-sm" aria-hidden="true"></i>
-                                    </a>
-                                @endif
-                                @if (!empty($pSocial['linkedin']))
-                                    <a href="{{ $pSocial['linkedin'] }}" target="_blank" rel="noopener noreferrer"
-                                        class="flex h-9 w-9 items-center justify-center rounded-full bg-[#0a66c2] text-white hover:opacity-80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
-                                        aria-label="LinkedIn — {{ $page->title }}">
-                                        <i class="fa-brands fa-linkedin-in text-sm" aria-hidden="true"></i>
-                                    </a>
-                                @endif
-                                @if (!empty($pSocial['website']))
-                                    <a href="{{ $pSocial['website'] }}" target="_blank" rel="noopener noreferrer"
-                                        class="flex h-9 w-9 items-center justify-center rounded-full bg-gray-600 text-white hover:opacity-80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
-                                        aria-label="Strona internetowa — {{ $page->title }}">
-                                        <i class="fa-solid fa-globe text-sm" aria-hidden="true"></i>
-                                    </a>
-                                @endif
-                            </div>
-                        </div>
-                    @endif
                 </div>
             </aside>
         </div>
