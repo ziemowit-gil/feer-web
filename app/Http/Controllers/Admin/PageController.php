@@ -133,7 +133,7 @@ class PageController extends Controller
 
         $page = Page::create($data);
 
-        return redirect()->route('admin.podstrony.index')->with('status', "Strona „{$page->title}" została utworzona.");
+        return redirect()->route('admin.podstrony.index')->with('status', "Strona „{$page->title}“ została utworzona.");
     }
 
     /** Wyświetla formularz edycji podstrony (zablokowaną stronę może edytować tylko admin). */
@@ -180,7 +180,7 @@ class PageController extends Controller
         $title = $page->title;
         $page->delete();
 
-        return redirect()->route('admin.podstrony.index')->with('status', "Strona „{$title}" została usunięta.");
+        return redirect()->route('admin.podstrony.index')->with('status', "Strona „{$title}“ została usunięta.");
     }
 
     /** Przełącza widoczność podstrony (publikuj / ukryj). */

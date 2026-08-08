@@ -531,8 +531,9 @@
                             <div data-repeater-rows class="space-y-3">
                                 @foreach ($aboutTeam as $i => $row)
                                     <div data-repeater-row class="space-y-2 rounded-lg border border-gray-200 bg-gray-50 p-4">
-                                        <div class="grid gap-2 sm:grid-cols-2">
+                                        <div class="grid gap-2 sm:grid-cols-3">
                                             <input type="text" name="about_team[{{ $i }}][name]" value="{{ $row['name'] ?? '' }}" placeholder="Imię i nazwisko" aria-label="Imię członka zespołu {{ $i + 1 }}" class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                                            <input type="text" name="about_team[{{ $i }}][name_genitive]" value="{{ $row['name_genitive'] ?? '' }}" placeholder="Odmiana (np. Alicji, Ziemowita)" aria-label="Odmiana imienia — członek zespołu {{ $i + 1 }}" class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
                                             <input type="text" name="about_team[{{ $i }}][role]" value="{{ $row['role'] ?? '' }}" placeholder="Co robi w FEER" aria-label="Co robi w FEER — członek zespołu {{ $i + 1 }}" class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
                                         </div>
                                         <div class="flex items-center gap-3 rounded-lg border border-gray-200 bg-white p-2">
@@ -601,8 +602,9 @@
                             <button type="button" data-repeater-add class="mt-2 inline-flex items-center gap-2 rounded border border-brand px-3 py-1.5 text-sm font-bold text-brand hover:bg-brand-light"><i class="fa-solid fa-plus" aria-hidden="true"></i> Dodaj osobę</button>
                             <template data-repeater-template>
                                 <div data-repeater-row class="space-y-2 rounded-lg border border-gray-200 bg-gray-50 p-4">
-                                    <div class="grid gap-2 sm:grid-cols-2">
+                                    <div class="grid gap-2 sm:grid-cols-3">
                                         <input type="text" name="about_team[__INDEX__][name]" placeholder="Imię i nazwisko" aria-label="Imię członka zespołu" class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                                        <input type="text" name="about_team[__INDEX__][name_genitive]" placeholder="Odmiana (np. Alicji, Ziemowita)" aria-label="Odmiana imienia" class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
                                         <input type="text" name="about_team[__INDEX__][role]" placeholder="Co robi w FEER" aria-label="Co robi w FEER" class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
                                     </div>
                                     <div class="flex items-center gap-3 rounded-lg border border-gray-200 bg-white p-2">

@@ -6,11 +6,11 @@
     $members = collect($members)->filter(fn ($m) => ! empty($m['name']))->values();
     $personPagesByName = $personPagesByName ?? collect();
     $socials = [
-        'facebook'  => ['fa-brands fa-facebook-f',  'Facebook',  'bg-[#1877f2]'],
-        'instagram' => ['fa-brands fa-instagram',    'Instagram', 'bg-gradient-to-br from-[#f09433] via-[#e6683c] to-[#bc1888]'],
-        'linkedin'  => ['fa-brands fa-linkedin-in',  'LinkedIn',  'bg-[#0a66c2]'],
-        'website'   => ['fa-solid fa-globe',         'Strona WWW','bg-gray-600'],
-        'substack'  => ['fa-solid fa-newspaper',     'Substack',  'bg-[#ff6719]'],
+        'facebook'  => ['fa-brands fa-facebook-f',  'Facebook'],
+        'instagram' => ['fa-brands fa-instagram',    'Instagram'],
+        'linkedin'  => ['fa-brands fa-linkedin-in',  'LinkedIn'],
+        'website'   => ['fa-solid fa-globe',         'Strona WWW'],
+        'substack'  => ['fa-solid fa-newspaper',     'Substack'],
     ];
 @endphp
 
@@ -18,9 +18,9 @@
     <div class="grid gap-10 sm:grid-cols-2 lg:grid-cols-3">
         @foreach ($members as $m)
             @php
-                $initials   = \Illuminate\Support\Str::of($m['name'])->explode(' ')->map(fn ($w) => mb_substr($w, 0, 1))->take(2)->implode('');
-                $firstName  = \Illuminate\Support\Str::of($m['name'])->explode(' ')->first();
-                $personPage = $personPagesByName->get(mb_strtolower(trim($m['name'])));
+                $initials        = \Illuminate\Support\Str::of($m['name'])->explode(' ')->map(fn ($w) => mb_substr($w, 0, 1))->take(2)->implode('');
+                $nameGenitive    = filled($m['name_genitive'] ?? '') ? $m['name_genitive'] : \Illuminate\Support\Str::of($m['name'])->explode(' ')->first();
+                $personPage      = $personPagesByName->get(mb_strtolower(trim($m['name'])));
                 $hasSocial  = collect(array_keys($socials))->contains(fn ($k) => ! empty($m[$k]));
             @endphp
 
@@ -49,11 +49,11 @@
                 {{-- Social media — te same kolory marki co na stronie osoby --}}
                 @if ($hasSocial)
                     <div class="flex items-center justify-center gap-2">
-                        @foreach ($socials as $key => [$icon, $label, $bg])
+                        @foreach ($socials as $key => [$icon, $label])
                             @if (! empty($m[$key]))
                                 <a href="{{ $m[$key] }}" target="_blank" rel="noopener"
                                     aria-label="{{ $label }} — {{ $m['name'] }}"
-                                    class="flex h-9 w-9 items-center justify-center rounded-full {{ $bg }} text-white transition hover:opacity-80 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
+                                    class="flex h-9 w-9 items-center justify-center rounded-full bg-gray-100 text-muted transition hover:bg-brand hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
                                     <i class="{{ $icon }} text-sm" aria-hidden="true"></i>
                                 </a>
                             @endif
@@ -65,7 +65,7 @@
                 @if ($personPage)
                     <a href="{{ route('page.show', $personPage) }}"
                         class="inline-flex items-center gap-1.5 text-sm font-medium text-brand hover:underline focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
-                        Więcej o {{ $firstName }}
+                        Więcej o {{ $nameGenitive }}
                         <i class="fa-solid fa-arrow-right text-xs" aria-hidden="true"></i>
                     </a>
                 @endif
