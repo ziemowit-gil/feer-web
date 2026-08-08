@@ -138,28 +138,68 @@
                             </form>
                         </td>
                         <td class="px-4 py-3">
-                            @if ($page->is_featured)
-                                <span class="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-bold text-amber-700"><i class="fa-solid fa-star"></i> Wyróżniona</span>
-                            @endif
-                            @if ($page->is_published && ($page->publish_at === null || $page->publish_at->isPast()))
-                                <span class="rounded-full bg-green-100 px-2 py-0.5 text-xs font-bold text-green-700">Opublikowana</span>
-                            @elseif ($page->is_published)
-                                <span class="rounded-full bg-blue-100 px-2 py-0.5 text-xs font-bold text-blue-700" title="Pojawi się {{ $page->publish_at?->format('d.m.Y H:i') }}"><i class="fa-regular fa-clock"></i> Zaplanowana</span>
-                            @else
-                                <span class="rounded-full bg-gray-100 px-2 py-0.5 text-xs font-bold text-gray-500">Szkic</span>
-                            @endif
-                            @if ($page->is_disabled)
-                                <span class="rounded-full bg-red-100 px-2 py-0.5 text-xs font-bold text-red-700"><i class="fa-solid fa-ban"></i> Wyłączona</span>
-                            @endif
-                            @if ($page->isWip())
-                                <span class="rounded-full bg-orange-100 px-2 py-0.5 text-xs font-bold text-orange-700"><i class="fa-solid fa-person-digging"></i> W przygotowaniu</span>
-                            @endif
-                            @if (! $page->parent_id && $page->show_in_menu)
-                                <span class="rounded-full bg-brand-light px-2 py-0.5 text-xs font-bold text-brand">W menu</span>
-                            @endif
-                            @if ($page->is_system)
-                                <span class="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-bold text-amber-700"><i class="fa-solid fa-lock"></i> Systemowa</span>
-                            @endif
+                            <div class="flex items-center gap-2 text-base">
+                                {{-- Publikacja --}}
+                                @if ($page->is_published && ($page->publish_at === null || $page->publish_at->isPast()))
+                                    <span class="text-green-600"
+                                          title="Opublikowana"
+                                          aria-label="Opublikowana">
+                                        <i class="fa-solid fa-circle-check" aria-hidden="true"></i>
+                                    </span>
+                                @elseif ($page->is_published)
+                                    <span class="text-blue-500"
+                                          title="Zaplanowana na {{ $page->publish_at?->format('d.m.Y H:i') }}"
+                                          aria-label="Zaplanowana na {{ $page->publish_at?->format('d.m.Y H:i') }}">
+                                        <i class="fa-regular fa-clock" aria-hidden="true"></i>
+                                    </span>
+                                @else
+                                    <span class="text-gray-400"
+                                          title="Szkic"
+                                          aria-label="Szkic">
+                                        <i class="fa-regular fa-circle" aria-hidden="true"></i>
+                                    </span>
+                                @endif
+                                {{-- Wyróżniona --}}
+                                @if ($page->is_featured)
+                                    <span class="text-amber-500"
+                                          title="Wyróżniona"
+                                          aria-label="Wyróżniona">
+                                        <i class="fa-solid fa-star" aria-hidden="true"></i>
+                                    </span>
+                                @endif
+                                {{-- Wyłączona --}}
+                                @if ($page->is_disabled)
+                                    <span class="text-red-500"
+                                          title="Wyłączona"
+                                          aria-label="Wyłączona">
+                                        <i class="fa-solid fa-ban" aria-hidden="true"></i>
+                                    </span>
+                                @endif
+                                {{-- W przygotowaniu --}}
+                                @if ($page->isWip())
+                                    <span class="text-orange-500"
+                                          title="W przygotowaniu"
+                                          aria-label="W przygotowaniu">
+                                        <i class="fa-solid fa-person-digging" aria-hidden="true"></i>
+                                    </span>
+                                @endif
+                                {{-- W menu --}}
+                                @if (! $page->parent_id && $page->show_in_menu)
+                                    <span class="text-brand"
+                                          title="W menu głównym"
+                                          aria-label="W menu głównym">
+                                        <i class="fa-solid fa-bars" aria-hidden="true"></i>
+                                    </span>
+                                @endif
+                                {{-- Systemowa --}}
+                                @if ($page->is_system)
+                                    <span class="text-amber-600"
+                                          title="Systemowa (chroniona)"
+                                          aria-label="Systemowa (chroniona)">
+                                        <i class="fa-solid fa-lock" aria-hidden="true"></i>
+                                    </span>
+                                @endif
+                            </div>
                         </td>
                         <td class="px-4 py-3">
                             <div class="flex items-center justify-end gap-3">
