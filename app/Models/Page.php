@@ -73,7 +73,8 @@ class Page extends Model
         'internal' => 'Wewnętrzna (dostęp ograniczony)',
         'internal_hub' => 'Strefa współpracownika (wewnętrzny panel: komunikaty i odnośniki)',
         'legacy' => 'Prezentacja tego, co było',
-        'brand_assets' => 'Marka — identyfikacja wizualna (pliki do pobrania)',
+        'brand_assets'  => 'Marka — identyfikacja wizualna (pliki do pobrania)',
+        'about_person'  => 'O organizacji — osoba',
     ];
 
     /** Tryby dostępu do strony wewnętrznej. */
@@ -183,6 +184,7 @@ class Page extends Model
         'access_mode', 'access_password', 'hub_hero', 'hub_intro', 'hub_links',
         'legacy_name', 'legacy_intro',
         'brand_brandbook_url', 'brand_sections',
+        'person_phone', 'person_role', 'person_bio', 'person_email', 'person_social',
     ];
 
     protected $casts = [
@@ -210,6 +212,7 @@ class Page extends Model
         'about_press' => 'array',
         'faq_items' => 'array',
         'brand_sections' => 'array',
+        'person_social'  => 'array',
     ];
 
     public function isEvent(): bool
@@ -260,6 +263,11 @@ class Page extends Model
     public function isBrandAssets(): bool
     {
         return $this->type === 'brand_assets';
+    }
+
+    public function isAboutPerson(): bool
+    {
+        return $this->type === 'about_person';
     }
 
     /** Czy strona jest chroniona dostępem (zwykła wewnętrzna, panel współpracownika lub marka). */

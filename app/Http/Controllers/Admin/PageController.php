@@ -399,6 +399,15 @@ class PageController extends Controller
             'brand_sections' => ['nullable', 'array'],
             'brand_sections.*.title' => ['nullable', 'string', 'max:120'],
             'brand_sections.*.key' => ['nullable', 'string', 'max:80'],
+            'person_phone' => ['nullable', 'string', 'max:60'],
+            'person_role' => ['nullable', 'string', 'max:255'],
+            'person_bio' => ['nullable', 'string', 'max:10000'],
+            'person_email' => ['nullable', 'email', 'max:255'],
+            'person_social' => ['nullable', 'array'],
+            'person_social.facebook' => ['nullable', 'string', 'max:500'],
+            'person_social.instagram' => ['nullable', 'string', 'max:500'],
+            'person_social.linkedin' => ['nullable', 'string', 'max:500'],
+            'person_social.website' => ['nullable', 'string', 'max:500'],
         ]);
 
         $data['parent_id'] = $data['parent_id'] ?: null;
@@ -628,6 +637,21 @@ class PageController extends Controller
         } else {
             $data['brand_brandbook_url'] = null;
             $data['brand_sections'] = null;
+        }
+
+        if ($data['type'] === 'about_person') {
+            $data['person_phone'] = trim((string) ($data['person_phone'] ?? '')) ?: null;
+            $data['person_role'] = trim((string) ($data['person_role'] ?? '')) ?: null;
+            $data['person_bio'] = trim((string) ($data['person_bio'] ?? '')) ?: null;
+            $data['person_email'] = trim((string) ($data['person_email'] ?? '')) ?: null;
+            $social = array_map('trim', array_filter((array) ($data['person_social'] ?? [])));
+            $data['person_social'] = array_filter($social) ?: null;
+        } else {
+            $data['person_phone'] = null;
+            $data['person_role'] = null;
+            $data['person_bio'] = null;
+            $data['person_email'] = null;
+            $data['person_social'] = null;
         }
 
         return $this->applyApprovalWorkflow($data);

@@ -1040,6 +1040,79 @@
                             </div>
                         @endif
                     </div>
+
+                    {{-- O organizacji — osoba --}}
+                    @php $personSocialValues = old('person_social', $page->person_social ?? []); @endphp
+                    <div data-about-person-fields class="space-y-5 border-t border-gray-100 pt-5 {{ $currentType === 'about_person' ? '' : 'hidden' }}">
+                        <p class="text-sm font-bold uppercase tracking-wide text-muted">O organizacji — osoba</p>
+                        <p class="text-xs text-muted">Tytuł strony to imię i nazwisko osoby. Zdjęcie profilowe dodaj w sekcji „Zdjęcie w treści" na zakładce Treść.</p>
+
+                        <div class="grid gap-5 sm:grid-cols-2">
+                            <div>
+                                <label for="person_phone" class="mb-1 block text-sm font-bold">Nr telefonu <span class="font-normal text-muted">(opcjonalnie)</span></label>
+                                <input type="tel" id="person_phone" name="person_phone"
+                                    value="{{ old('person_phone', $page->person_phone) }}"
+                                    placeholder="+48 000 000 000"
+                                    class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                                @error('person_phone') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                            </div>
+                            <div>
+                                <label for="person_email" class="mb-1 block text-sm font-bold">E-mail kontaktowy <span class="font-normal text-muted">(opcjonalnie)</span></label>
+                                <input type="email" id="person_email" name="person_email"
+                                    value="{{ old('person_email', $page->person_email) }}"
+                                    placeholder="osoba@feer.org.pl"
+                                    class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                                @error('person_email') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                            </div>
+                        </div>
+
+                        <div>
+                            <label for="person_role" class="mb-1 block text-sm font-bold">Co robi w FEER / stanowisko <span class="font-normal text-muted">(opcjonalnie)</span></label>
+                            <input type="text" id="person_role" name="person_role"
+                                value="{{ old('person_role', $page->person_role) }}"
+                                placeholder="np. Koordynatorka projektów, wolontariusz…"
+                                class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                            @error('person_role') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                        </div>
+
+                        <div>
+                            <label for="person_bio" class="mb-1 block text-sm font-bold">Krótkie o mnie <span class="font-normal text-muted">(opcjonalnie)</span></label>
+                            <textarea id="person_bio" name="person_bio" rows="4"
+                                placeholder="Kilka zdań — pojawi się wyróżnione na stronie osoby."
+                                class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">{{ old('person_bio', $page->person_bio) }}</textarea>
+                            @error('person_bio') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                        </div>
+
+                        <div>
+                            <p class="mb-3 text-sm font-bold">Social media <span class="font-normal text-muted">(opcjonalnie)</span></p>
+                            <div class="grid gap-4 sm:grid-cols-2">
+                                <div>
+                                    <label for="person_social_facebook" class="mb-1 block text-xs font-bold text-muted">Facebook</label>
+                                    <input type="url" id="person_social_facebook" name="person_social[facebook]"
+                                        value="{{ $personSocialValues['facebook'] ?? '' }}" placeholder="https://facebook.com/…"
+                                        class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                                </div>
+                                <div>
+                                    <label for="person_social_instagram" class="mb-1 block text-xs font-bold text-muted">Instagram</label>
+                                    <input type="url" id="person_social_instagram" name="person_social[instagram]"
+                                        value="{{ $personSocialValues['instagram'] ?? '' }}" placeholder="https://instagram.com/…"
+                                        class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                                </div>
+                                <div>
+                                    <label for="person_social_linkedin" class="mb-1 block text-xs font-bold text-muted">LinkedIn</label>
+                                    <input type="url" id="person_social_linkedin" name="person_social[linkedin]"
+                                        value="{{ $personSocialValues['linkedin'] ?? '' }}" placeholder="https://linkedin.com/in/…"
+                                        class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                                </div>
+                                <div>
+                                    <label for="person_social_website" class="mb-1 block text-xs font-bold text-muted">Strona internetowa</label>
+                                    <input type="url" id="person_social_website" name="person_social[website]"
+                                        value="{{ $personSocialValues['website'] ?? '' }}" placeholder="https://…"
+                                        class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -1357,6 +1430,7 @@
             const trainingFields = document.querySelector('[data-training-fields]');
             const contentField = document.querySelector('[data-content-field]');
             const brandFields = document.querySelector('[data-brand-fields]');
+            const aboutPersonFields = document.querySelector('[data-about-person-fields]');
             if (typeSelect) {
                 typeSelect.addEventListener('change', function () {
                     if (eventFields) eventFields.classList.toggle('hidden', typeSelect.value !== 'event');
@@ -1369,6 +1443,7 @@
                     if (legacyFields) legacyFields.classList.toggle('hidden', typeSelect.value !== 'legacy');
                     if (trainingFields) trainingFields.classList.toggle('hidden', typeSelect.value !== 'training_institution');
                     if (brandFields) brandFields.classList.toggle('hidden', typeSelect.value !== 'brand_assets');
+                    if (aboutPersonFields) aboutPersonFields.classList.toggle('hidden', typeSelect.value !== 'about_person');
                     if (contentField) contentField.classList.toggle('hidden', ['about', 'bip_move'].includes(typeSelect.value));
                     // Galeria „O organizacji" jest osobna — ukryj generyczny przełącznik dla tego typu.
                     document.querySelectorAll('[data-gallery-toggle]').forEach(function (el) {

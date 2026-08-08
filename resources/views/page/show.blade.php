@@ -834,6 +834,123 @@
         @include('partials.page-gallery', ['page' => $page])
         @include('partials.attachments-list', ['attachments' => $page->attachments])
     </section>
+    @elseif ($page->isAboutPerson())
+    @auth
+    @if (auth()->user()->isAdmin() || auth()->user()->user_group_id)
+    <div class="border-b border-amber-300 bg-amber-50 px-4 py-3">
+        <div class="mx-auto flex max-w-4xl flex-wrap items-center justify-between gap-3">
+            <p class="flex items-center gap-2 text-sm font-bold text-amber-800">
+                <i class="fa-solid fa-pen-to-square" aria-hidden="true"></i>
+                Panel administracyjny
+            </p>
+            <a href="{{ route('admin.podstrony.edit', $page) }}"
+                class="inline-flex items-center gap-2 rounded bg-amber-700 px-4 py-1.5 text-sm font-bold text-white hover:bg-amber-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-700">
+                <i class="fa-solid fa-pen" aria-hidden="true"></i> Edytuj stronę osoby
+            </a>
+        </div>
+    </div>
+    @endif
+    @endauth
+    {{-- Karta osoby: imię i nazwisko = tytuł strony, zdjęcie = content_image --}}
+    <section class="border-b border-gray-200 bg-gray-50">
+        <div class="mx-auto max-w-4xl px-4 py-12">
+            <span class="mb-4 inline-flex items-center gap-2 rounded-full bg-brand-light px-3 py-1 text-sm font-bold text-brand">
+                <i class="fa-solid fa-user" aria-hidden="true"></i> Członek zespołu FEER
+            </span>
+            <h1 class="text-3xl font-bold text-ink md:text-4xl">{{ $page->title }}</h1>
+            @if (filled($page->person_role))
+                <p class="mt-2 text-lg text-muted">{{ $page->person_role }}</p>
+            @endif
+        </div>
+    </section>
+
+    <section class="mx-auto max-w-4xl px-4 py-12">
+        <div class="grid gap-10 md:grid-cols-[1fr_260px]">
+            <div>
+                @if (filled($page->content_image))
+                    <div class="mb-8">
+                        <img src="{{ $page->content_image }}"
+                            alt="{{ $page->content_image_alt ?: $page->title }}"
+                            class="rounded-xl object-cover {{ $page->content_image_width ?: 'max-w-xs' }}">
+                    </div>
+                @endif
+
+                @if (filled($page->person_bio))
+                    <p class="mb-8 text-lg leading-relaxed text-ink">{{ $page->person_bio }}</p>
+                @endif
+
+                @if ($page->content)
+                    <div class="prose max-w-none text-ink">{!! $page->content !!}</div>
+                @endif
+
+                @include('partials.page-gallery', ['page' => $page])
+                @include('partials.attachments-list', ['attachments' => $page->attachments])
+            </div>
+
+            <aside aria-label="Dane kontaktowe osoby">
+                <div class="space-y-5 rounded-xl border border-gray-200 bg-gray-50 p-6 text-sm">
+                    @if (filled($page->person_phone))
+                        <div>
+                            <p class="mb-1 text-xs font-bold uppercase tracking-wide text-muted">Telefon</p>
+                            <a href="tel:{{ preg_replace('/\s+/', '', $page->person_phone) }}"
+                                class="flex items-center gap-2 font-medium text-ink hover:text-brand">
+                                <i class="fa-solid fa-phone w-4 shrink-0 text-center text-brand" aria-hidden="true"></i>
+                                {{ $page->person_phone }}
+                            </a>
+                        </div>
+                    @endif
+
+                    @if (filled($page->person_email))
+                        <div>
+                            <p class="mb-1 text-xs font-bold uppercase tracking-wide text-muted">E-mail</p>
+                            <a href="mailto:{{ $page->person_email }}"
+                                class="flex items-center gap-2 break-all font-medium text-ink hover:text-brand">
+                                <i class="fa-solid fa-envelope w-4 shrink-0 text-center text-brand" aria-hidden="true"></i>
+                                {{ $page->person_email }}
+                            </a>
+                        </div>
+                    @endif
+
+                    @php $pSocial = $page->person_social ?? []; @endphp
+                    @if (collect($pSocial)->filter()->isNotEmpty())
+                        <div>
+                            <p class="mb-2 text-xs font-bold uppercase tracking-wide text-muted">Social media</p>
+                            <div class="flex flex-wrap gap-2">
+                                @if (!empty($pSocial['facebook']))
+                                    <a href="{{ $pSocial['facebook'] }}" target="_blank" rel="noopener noreferrer"
+                                        class="flex h-9 w-9 items-center justify-center rounded-full bg-[#1877f2] text-white hover:opacity-80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+                                        aria-label="Facebook — {{ $page->title }}">
+                                        <i class="fa-brands fa-facebook-f text-sm" aria-hidden="true"></i>
+                                    </a>
+                                @endif
+                                @if (!empty($pSocial['instagram']))
+                                    <a href="{{ $pSocial['instagram'] }}" target="_blank" rel="noopener noreferrer"
+                                        class="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-[#f09433] via-[#e6683c] to-[#bc1888] text-white hover:opacity-80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+                                        aria-label="Instagram — {{ $page->title }}">
+                                        <i class="fa-brands fa-instagram text-sm" aria-hidden="true"></i>
+                                    </a>
+                                @endif
+                                @if (!empty($pSocial['linkedin']))
+                                    <a href="{{ $pSocial['linkedin'] }}" target="_blank" rel="noopener noreferrer"
+                                        class="flex h-9 w-9 items-center justify-center rounded-full bg-[#0a66c2] text-white hover:opacity-80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+                                        aria-label="LinkedIn — {{ $page->title }}">
+                                        <i class="fa-brands fa-linkedin-in text-sm" aria-hidden="true"></i>
+                                    </a>
+                                @endif
+                                @if (!empty($pSocial['website']))
+                                    <a href="{{ $pSocial['website'] }}" target="_blank" rel="noopener noreferrer"
+                                        class="flex h-9 w-9 items-center justify-center rounded-full bg-gray-600 text-white hover:opacity-80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+                                        aria-label="Strona internetowa — {{ $page->title }}">
+                                        <i class="fa-solid fa-globe text-sm" aria-hidden="true"></i>
+                                    </a>
+                                @endif
+                            </div>
+                        </div>
+                    @endif
+                </div>
+            </aside>
+        </div>
+    </section>
     @else
     @php
         $menuSiblings = $page->menuSiblings();

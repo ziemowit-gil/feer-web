@@ -81,6 +81,7 @@
         ->orderByDesc('published_at')
         ->get(['id', 'title', 'slug']);
     $docxImportUrl = route('admin.editor.docx.import');
+    $personPages = \App\Models\Page::where('is_published', true)->where('type', 'about_person')->orderBy('title')->get(['id', 'title', 'slug']);
 @endphp
 
 @php $mi = 'flex w-full items-center gap-2 rounded px-3 py-2 text-left text-xs font-bold text-ink hover:bg-brand-light hover:text-brand'; @endphp
@@ -150,6 +151,11 @@
             @if ($eventsForBox->isNotEmpty())
                 <button type="button" @click="window['__elOpen_{{ $editorId }}']?.(); open = false" class="{{ $mi }}">
                     <i class="fa-solid fa-calendar-day w-4 text-center" aria-hidden="true"></i> Wybierz wydarzenie…
+                </button>
+            @endif
+            @if ($personPages->isNotEmpty())
+                <button type="button" @click="window['__ppOpen_{{ $editorId }}']?.(); open = false" class="{{ $mi }}">
+                    <i class="fa-solid fa-user w-4 text-center" aria-hidden="true"></i> Podstrona osoby (czytaj więcej o…)
                 </button>
             @endif
             <button type="button" @click="window['__afOpen_{{ $editorId }}']?.(); open = false" class="{{ $mi }}">
@@ -310,6 +316,24 @@
         <div class="flex-1 overflow-y-auto">
             <ul id="{{ $editorId }}-event-link-modal-list" class="divide-y divide-gray-100" role="listbox" aria-label="Lista wydarzeń"></ul>
             <p id="{{ $editorId }}-event-link-modal-empty" class="hidden py-6 text-center text-sm text-muted">Brak wyników.</p>
+        </div>
+    </div>
+</div>
+
+{{-- Modal: picker podstron osób --}}
+<div id="{{ $editorId }}-person-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 p-4"
+     role="dialog" aria-modal="true" aria-labelledby="{{ $editorId }}-person-modal-title">
+    <div class="flex max-h-[70vh] w-full max-w-lg flex-col overflow-hidden rounded-lg bg-white p-5">
+        <div class="mb-4 flex items-center justify-between">
+            <h2 id="{{ $editorId }}-person-modal-title" class="text-base font-bold">Wybierz osobę — wstaw link „czytaj więcej"</h2>
+            <button type="button" data-person-modal-close class="text-muted hover:text-red-600" aria-label="Zamknij okno wyboru osoby"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <label class="sr-only" for="{{ $editorId }}-person-modal-search">Szukaj osoby po imieniu lub adresie URL</label>
+        <input type="search" id="{{ $editorId }}-person-modal-search" placeholder="Szukaj po imieniu lub adresie URL…"
+            class="mb-3 w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+        <div class="flex-1 overflow-y-auto">
+            <ul id="{{ $editorId }}-person-modal-list" class="divide-y divide-gray-100" role="listbox" aria-label="Lista osób"></ul>
+            <p id="{{ $editorId }}-person-modal-empty" class="hidden py-6 text-center text-sm text-muted">Brak wyników.</p>
         </div>
     </div>
 </div>
@@ -1169,6 +1193,49 @@
         window['__elOpen_{{ $editorId }}'] = elOpen;
     })();
 
+    // ── Picker podstron osób ─────────────────────────────────────────────────
+    (function () {
+        var ppModal  = document.getElementById('{{ $editorId }}-person-modal');
+        if (!ppModal) return;
+        var ppSearch = document.getElementById('{{ $editorId }}-person-modal-search');
+        var ppList   = document.getElementById('{{ $editorId }}-person-modal-list');
+        var ppEmpty  = document.getElementById('{{ $editorId }}-person-modal-empty');
+        var ppItems  = {!! json_encode($personPages->map(fn ($p) => ['url' => '/'.$p->slug, 'title' => $p->title])->values()) !!};
+
+        function ppEsc(t) { return (t||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+        function ppRender(q) {
+            var lower = q.toLowerCase();
+            var list = lower ? ppItems.filter(function (p) {
+                return p.title.toLowerCase().indexOf(lower) !== -1 || p.url.toLowerCase().indexOf(lower) !== -1;
+            }) : ppItems;
+            ppList.innerHTML = '';
+            ppEmpty.classList.toggle('hidden', list.length > 0);
+            list.forEach(function (p) {
+                var btn = document.createElement('button');
+                btn.type = 'button'; btn.setAttribute('role', 'option');
+                btn.className = 'flex w-full items-baseline gap-3 px-3 py-2.5 text-left hover:bg-brand-light focus-visible:bg-brand-light focus-visible:outline-none';
+                btn.innerHTML = '<span class="flex-1 text-sm font-medium text-ink">' + ppEsc(p.title) + '</span>'
+                    + '<span class="shrink-0 text-xs text-muted">' + ppEsc(p.url) + '</span>';
+                btn.addEventListener('click', function () {
+                    ppModal.dispatchEvent(new CustomEvent('person-picked', { detail: p }));
+                    ppClose();
+                });
+                var li = document.createElement('li'); li.appendChild(btn); ppList.appendChild(li);
+            });
+            if (list.length > 0) { ppList.querySelector('button')?.focus(); }
+        }
+
+        function ppOpen() { ppModal.classList.remove('hidden'); ppModal.classList.add('flex'); ppSearch.value = ''; ppRender(''); ppSearch.focus(); }
+        function ppClose() { ppModal.classList.add('hidden'); ppModal.classList.remove('flex'); }
+
+        ppModal.querySelector('[data-person-modal-close]').addEventListener('click', ppClose);
+        ppModal.addEventListener('click', function (e) { if (e.target === ppModal) ppClose(); });
+        ppModal.addEventListener('keydown', function (e) { if (e.key === 'Escape') ppClose(); });
+        ppSearch.addEventListener('input', function () { ppRender(ppSearch.value); });
+        window['__ppOpen_{{ $editorId }}'] = ppOpen;
+    })();
+
     // ── Wstaw kotwicę ────────────────────────────────────────────────────────
     (function () {
         var aiModal  = document.getElementById('{{ $editorId }}-anchor-insert-modal');
@@ -1456,6 +1523,15 @@
                         editor.editing.view.focus();
                     });
 
+                    document.getElementById('{{ $editorId }}-person-modal').addEventListener('person-picked', function (event) {
+                        var p = event.detail;
+                        var html = '<p><a href="' + p.url + '">czytaj więcej o ' + p.title + '</a></p>';
+                        var viewFragment = editor.data.processor.toView(html);
+                        var modelFragment = editor.data.toModel(viewFragment);
+                        editor.model.insertContent(modelFragment);
+                        editor.editing.view.focus();
+                    });
+
                     document.getElementById('{{ $editorId }}-anchor-insert-modal').addEventListener('anchor-insert', function (event) {
                         var html = '<span id="' + event.detail.id + '" class="page-anchor" aria-hidden="true">​</span>';
                         var viewFragment = editor.data.processor.toView(html);
@@ -1601,6 +1677,7 @@
                 var eventBoxes = {!! json_encode($eventBoxOptions->map(fn ($o) => ['title' => $o['title'], 'html' => $o['html']])->values()) !!};
                 var newsLinks = {!! json_encode($newsForPicker->map(fn ($n) => ['url' => route('news.show', $n), 'title' => $n->title])->values()) !!};
                 var eventLinks = {!! json_encode($eventsForBox->map(fn ($e) => ['url' => '/wydarzenia/'.$e->slug, 'title' => $e->title])->values()) !!};
+                var personLinks = {!! json_encode($personPages->map(fn ($p) => ['url' => '/'.$p->slug, 'title' => $p->title])->values()) !!};
 
                 tinymce.init({
                     selector: '#{{ $editorId }}',
@@ -1744,6 +1821,11 @@
                                         window['__elOpen_{{ $editorId }}']?.();
                                     }});
                                 }
+                                if (personLinks.length) {
+                                    items.push({ type: 'menuitem', text: 'Podstrona osoby (czytaj więcej o…)', onAction: function () {
+                                        window['__ppOpen_{{ $editorId }}']?.();
+                                    }});
+                                }
                                 items.push({ type: 'menuitem', text: 'Plik do pobrania — wybierz z listy…', icon: 'download', onAction: function () {
                                     window['__afOpen_{{ $editorId }}']?.();
                                 }});
@@ -1885,6 +1967,10 @@
                             document.getElementById('{{ $editorId }}-event-link-modal').addEventListener('event-link-picked', function (event) {
                                 var ev = event.detail;
                                 editor.insertContent('<a href="' + ev.url + '">' + ev.title + ' – strona wydarzenia</a>');
+                            });
+                            document.getElementById('{{ $editorId }}-person-modal').addEventListener('person-picked', function (event) {
+                                var p = event.detail;
+                                editor.insertContent('<a href="' + p.url + '">czytaj więcej o ' + p.title + '</a>');
                             });
                             document.getElementById('{{ $editorId }}-attachment-modal').addEventListener('attachment-picked', function (event) {
                                 var a = event.detail;
