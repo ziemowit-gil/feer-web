@@ -170,7 +170,6 @@
         $aboutTimeline = collect($page->about_timeline ?? []);
         $aboutValues = collect($page->about_values ?? []);
         $aboutTeam = $page->children()->where('type', 'about_person')->where('is_published', true)->orderBy('order')->orderBy('title')->get();
-        $personPagesByName = $aboutTeam->keyBy(fn ($p) => mb_strtolower(trim($p->title)));
         $aboutImages = $page->images->filter(fn ($img) => $img->image_url)->values();
         // Pierwsze 2–3 zdjęcia jako kolaż obok wstępu; reszta trafia do galerii.
         $introPhotos = $aboutImages->take(3)->values();
