@@ -184,7 +184,7 @@ class Page extends Model
         'access_mode', 'access_password', 'hub_hero', 'hub_intro', 'hub_links',
         'legacy_name', 'legacy_intro',
         'brand_brandbook_url', 'brand_sections',
-        'person_phone', 'person_role', 'person_bio', 'person_email', 'person_social',
+        'person_phone', 'person_role', 'person_bio', 'person_email', 'person_social', 'person_member_label',
     ];
 
     protected $casts = [
@@ -268,6 +268,14 @@ class Page extends Model
     public function isAboutPerson(): bool
     {
         return $this->type === 'about_person';
+    }
+
+    /** Kanoniczny publiczny URL strony (uwzględnia wielosegmentowy slug dla stron osoby). */
+    public function publicUrl(): string
+    {
+        return $this->isAboutPerson()
+            ? url('/' . $this->slug)
+            : route('page.show', $this);
     }
 
     /** Czy strona jest chroniona dostępem (zwykła wewnętrzna, panel współpracownika lub marka). */

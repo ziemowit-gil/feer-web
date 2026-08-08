@@ -554,6 +554,11 @@ Route::get('/{page:slug}/logowanie', [PageController::class, 'brandLogin'])->nam
 Route::post('/{page:slug}/logowanie', [PageController::class, 'brandLoginPost'])->name('page.brand-login.post')->middleware(['module:pages', 'throttle:10,1']);
 Route::post('/{page:slug}/wyloguj', [PageController::class, 'brandLogout'])->name('page.brand-logout')->middleware('module:pages');
 
+// Strona osoby: /{org-slug}/osoba/{person-slug} (musi być przed catch-all).
+Route::get('/{parentSlug}/osoba/{personSlug}', [PageController::class, 'showPerson'])
+    ->name('page.person')
+    ->middleware('module:pages');
+
 // Catch-all for top-level pages (e.g. /fundacja instead of /strona/fundacja).
 // Kept last so every more specific route above always wins; a page whose
 // slug collides with one of those is unreachable here, which is why

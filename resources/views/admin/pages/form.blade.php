@@ -570,6 +570,7 @@
                                                 'instagram'     => $row['instagram'] ?? '',
                                                 'linkedin'      => $row['linkedin'] ?? '',
                                                 'website'       => $row['website'] ?? '',
+                                                'parent_id'     => $page->id ?? '',
                                             ]]);
                                         @endphp
                                         <div class="flex items-center justify-between gap-1">
@@ -1085,7 +1086,23 @@
                     @php $personSocialValues = old('person_social', $page->person_social ?? []); @endphp
                     <div data-about-person-fields class="space-y-5 border-t border-gray-100 pt-5 {{ $currentType === 'about_person' ? '' : 'hidden' }}">
                         <p class="text-sm font-bold uppercase tracking-wide text-muted">O organizacji — osoba</p>
-                        <p class="text-xs text-muted">Tytuł strony to imię i nazwisko osoby. Zdjęcie profilowe dodaj w sekcji „Zdjęcie w treści" na zakładce Treść.</p>
+                        <p class="text-xs text-muted">Tytuł strony to imię i nazwisko osoby. Zdjęcie profilowe dodaj w sekcji „Zdjęcie w treści" na zakładce Treść. Slug generowany automatycznie: {org}/osoba/{imie-nazwisko}. Strony osób nie mają podstron i nie pojawiają się samodzielnie w menu.</p>
+
+                        <div>
+                            <label for="person_member_label" class="mb-2 block text-sm font-bold">Etykieta członkostwa <span class="font-normal text-muted">(opcjonalnie)</span></label>
+                            <div class="mb-2 flex flex-wrap gap-2">
+                                @foreach (['Członkini zespołu FEER', 'Członek zespołu FEER', 'Wolontariuszka', 'Wolontariusz', 'Współpracowniczka', 'Współpracownik'] as $lbl)
+                                    <button type="button" onclick="document.getElementById('person_member_label').value='{{ $lbl }}'"
+                                        class="rounded border border-gray-300 px-3 py-1 text-xs hover:border-brand hover:text-brand">{{ $lbl }}</button>
+                                @endforeach
+                            </div>
+                            <input type="text" id="person_member_label" name="person_member_label"
+                                value="{{ old('person_member_label', $page->person_member_label) }}"
+                                placeholder="np. Członkini zespołu FEER"
+                                maxlength="60"
+                                class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                            @error('person_member_label') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                        </div>
 
                         <div class="grid gap-5 sm:grid-cols-2">
                             <div>

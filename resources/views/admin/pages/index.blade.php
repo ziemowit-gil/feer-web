@@ -172,14 +172,14 @@
                                         <button type="submit" class="text-muted hover:text-amber-500" title="Wyróżnij stronę" aria-label="Wyróżnij stronę {{ $page->title }}"><i class="fa-regular fa-star" aria-hidden="true"></i></button>
                                     @endif
                                 </form>
-                                @unless ($page->parent_id)
+                                @unless ($page->parent_id || $page->isAboutPerson())
                                     <a href="{{ route('admin.podstrony.create', ['parent_id' => $page->id]) }}"
                                         class="inline-flex items-center gap-1 text-xs font-bold text-brand hover:text-brand-dark" title="Dodaj podstronę jako podrzędną w „{{ $page->title }}"">
                                         <i class="fa-solid fa-plus" aria-hidden="true"></i> podstrona
                                     </a>
                                 @endunless
                                 @if ($page->is_published && ($page->publish_at === null || $page->publish_at->isPast()))
-                                    <a href="{{ route('page.show', $page) }}" target="_blank" class="text-muted hover:text-brand" title="Podgląd"><i class="fa-solid fa-eye" aria-hidden="true"></i></a>
+                                    <a href="{{ $page->publicUrl() }}" target="_blank" class="text-muted hover:text-brand" title="Podgląd"><i class="fa-solid fa-eye" aria-hidden="true"></i></a>
                                 @else
                                     <a href="{{ $page->previewUrl() }}" target="_blank" rel="noopener" class="text-amber-600 hover:text-amber-700" title="{{ $page->is_published ? 'Zaplanowana — podgląd wersji roboczej' : 'Podgląd wersji roboczej (link ważny 14 dni)' }}"><i class="fa-solid fa-eye" aria-hidden="true"></i></a>
                                 @endif

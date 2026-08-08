@@ -40,7 +40,7 @@
                     <h2 class="mb-3 text-lg font-bold text-ink">Podstrony</h2>
                     <ul class="space-y-2 text-sm">
                         @foreach ($pages as $page)
-                            <li><a href="{{ route('page.show', $page) }}" class="text-brand hover:text-brand-dark hover:underline">{{ $page->title }}</a></li>
+                            <li><a href="{{ $page->publicUrl() }}" class="text-brand hover:text-brand-dark hover:underline">{{ $page->title }}</a></li>
                         @endforeach
                     </ul>
                 </div>

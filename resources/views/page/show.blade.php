@@ -907,7 +907,7 @@
 
             {{-- Dane + social --}}
             <div class="min-w-0 text-center sm:text-left">
-                <p class="mb-2 text-xs font-bold uppercase tracking-widest text-brand">Członek zespołu FEER</p>
+                <p class="mb-2 text-xs font-bold uppercase tracking-widest text-brand">{{ $page->person_member_label ?: 'Członek zespołu FEER' }}</p>
                 <h1 class="text-3xl font-bold text-ink md:text-4xl">{{ $page->title }}</h1>
                 @if (filled($page->person_role))
                     <p class="mt-2 text-lg text-muted">{{ $page->person_role }}</p>

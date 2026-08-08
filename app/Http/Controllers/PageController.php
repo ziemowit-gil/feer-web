@@ -111,6 +111,14 @@ class PageController extends Controller
         return redirect()->route('page.brand-login', $page);
     }
 
+    /** Wyświetla stronę osoby pod adresem /{parentSlug}/osoba/{personSlug}. */
+    public function showPerson(Request $request, string $parentSlug, string $personSlug): mixed
+    {
+        $page = Page::where('slug', "{$parentSlug}/osoba/{$personSlug}")->firstOrFail();
+
+        return $this->show($request, $page);
+    }
+
     /** Odblokowanie strony wewnętrznej hasłem (zapis w sesji). */
     public function unlock(Request $request, Page $page)
     {

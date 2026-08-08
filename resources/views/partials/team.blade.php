@@ -63,7 +63,7 @@
 
                 {{-- Link do podstrony osoby --}}
                 @if ($personPage)
-                    <a href="{{ route('page.show', $personPage) }}"
+                    <a href="{{ $personPage->publicUrl() }}"
                         class="inline-flex items-center gap-1.5 text-sm font-medium text-brand hover:underline focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
                         Więcej o {{ $nameGenitive }}
                         <i class="fa-solid fa-arrow-right text-xs" aria-hidden="true"></i>

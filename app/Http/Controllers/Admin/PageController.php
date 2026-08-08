@@ -108,6 +108,7 @@ class PageController extends Controller
             $page->person_role = filled($p['person_role'] ?? '') ? $p['person_role'] : null;
             $page->person_bio = filled($p['person_bio'] ?? '') ? $p['person_bio'] : null;
             $page->content_image = filled($p['content_image'] ?? '') ? $p['content_image'] : null;
+            $page->parent_id = filled($p['parent_id'] ?? '') ? (int) $p['parent_id'] : null;
             $social = array_filter([
                 'facebook' => $p['facebook'] ?? null,
                 'instagram' => $p['instagram'] ?? null,
@@ -129,11 +130,13 @@ class PageController extends Controller
     public function store(Request $request)
     {
         $data = $this->validated($request);
-        $data['slug'] = $this->uniqueSlug($data['slug'] !== '' ? $data['slug'] : $data['title']);
+        $data['slug'] = $data['type'] === 'about_person'
+            ? $this->personSlug($data['title'], $data['parent_id'] ?? null)
+            : $this->uniqueSlug($data['slug'] !== '' ? $data['slug'] : $data['title']);
 
         $page = Page::create($data);
 
-        return redirect()->route('admin.podstrony.index')->with('status', "Strona „{$page->title}“ została utworzona.");
+        return redirect()->route('admin.podstrony.index')->with('status', 'Strona „' . $page->title . '” została utworzona.');
     }
 
     /** Wyświetla formularz edycji podstrony (zablokowaną stronę może edytować tylko admin). */
@@ -159,7 +162,9 @@ class PageController extends Controller
         }
 
         $data = $this->validated($request);
-        $data['slug'] = $this->uniqueSlug($data['slug'] !== '' ? $data['slug'] : $data['title'], $page->id);
+        $data['slug'] = $data['type'] === 'about_person'
+            ? $this->personSlug($data['title'], $data['parent_id'] ?? null, $page->id)
+            : $this->uniqueSlug($data['slug'] !== '' ? $data['slug'] : $data['title'], $page->id);
 
         $page->update($data);
 
@@ -180,7 +185,7 @@ class PageController extends Controller
         $title = $page->title;
         $page->delete();
 
-        return redirect()->route('admin.podstrony.index')->with('status', "Strona „{$title}“ została usunięta.");
+        return redirect()->route('admin.podstrony.index')->with('status', 'Strona „' . $title . '” została usunięta.');
     }
 
     /** Przełącza widoczność podstrony (publikuj / ukryj). */
@@ -427,6 +432,7 @@ class PageController extends Controller
             'person_social.instagram' => ['nullable', 'string', 'max:500'],
             'person_social.linkedin' => ['nullable', 'string', 'max:500'],
             'person_social.website' => ['nullable', 'string', 'max:500'],
+            'person_member_label' => ['nullable', 'string', 'max:60'],
         ]);
 
         $data['parent_id'] = $data['parent_id'] ?: null;
@@ -665,12 +671,14 @@ class PageController extends Controller
             $data['person_email'] = trim((string) ($data['person_email'] ?? '')) ?: null;
             $social = array_map('trim', array_filter((array) ($data['person_social'] ?? [])));
             $data['person_social'] = array_filter($social) ?: null;
+            $data['person_member_label'] = trim((string) ($data['person_member_label'] ?? '')) ?: null;
         } else {
             $data['person_phone'] = null;
             $data['person_role'] = null;
             $data['person_bio'] = null;
             $data['person_email'] = null;
             $data['person_social'] = null;
+            $data['person_member_label'] = null;
         }
 
         return $this->applyApprovalWorkflow($data);
@@ -745,6 +753,27 @@ class PageController extends Controller
         }
 
         return null;
+    }
+
+    private function personSlug(string $title, ?int $parentId, ?int $ignoreId = null): string
+    {
+        $personPart = Str::slug($title ?: 'osoba');
+        $parent = $parentId ? Page::find($parentId) : null;
+        $prefix = $parent ? $parent->slug . '/osoba' : 'osoba';
+        $base = "{$prefix}/{$personPart}";
+        $slug = $base;
+        $suffix = 2;
+
+        $isTaken = fn ($c) => Page::where('slug', $c)
+            ->when($ignoreId, fn ($q) => $q->where('id', '!=', $ignoreId))
+            ->exists();
+
+        while ($isTaken($slug)) {
+            $slug = "{$prefix}/{$personPart}-{$suffix}";
+            $suffix++;
+        }
+
+        return $slug;
     }
 
     private function uniqueSlug(string $source, ?int $ignoreId = null): string
