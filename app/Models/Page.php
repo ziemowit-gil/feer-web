@@ -423,7 +423,7 @@ class Page extends Model
 
     public function publishedChildren(): HasMany
     {
-        return $this->children()->where('is_published', true);
+        return $this->children()->where('is_published', true)->where('type', '!=', 'about_person');
     }
 
     /**
@@ -434,7 +434,10 @@ class Page extends Model
     public function menuSiblings()
     {
         if ($this->parent_id) {
-            return $this->parent->children()->where('is_published', true)->get();
+            return $this->parent->children()
+                ->where('is_published', true)
+                ->where('type', '!=', 'about_person')
+                ->get();
         }
 
         if ($this->project_id) {

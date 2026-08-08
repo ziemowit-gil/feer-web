@@ -41,7 +41,7 @@
         @foreach ($page->publishedChildren as $child)
             @php $isCurrentChild = request()->routeIs('page.show') && request()->route('page')?->id === $child->id; @endphp
             <li>
-                <a href="{{ route('page.show', $child) }}" @if ($isCurrentChild) aria-current="page" @endif
+                <a href="{{ $child->publicUrl() }}" @if ($isCurrentChild) aria-current="page" @endif
                     class="block px-4 py-2 text-sm font-medium normal-case {{ $isCurrentChild ? 'text-brand' : 'text-ink' }} hover:bg-gray-50 hover:text-brand focus-visible:bg-gray-50">
                     {{ $child->title }}
                 </a>
