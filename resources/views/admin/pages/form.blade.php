@@ -527,107 +527,59 @@
                             <summary class="cursor-pointer rounded-lg px-4 py-3 text-sm font-bold text-ink hover:bg-gray-50">Zespół</summary>
                             <div class="border-t border-gray-100 px-4 py-4">
                         <div data-repeater>
-                            <p class="mb-3 text-xs text-muted">Każda osoba: imię i nazwisko, „Co robi w FEER", „Trochę o mnie" oraz opcjonalnie linki do social media. Zdjęcie — wklej adres URL obrazu z Multimediów; puste = inicjały.</p>
-                            <div data-repeater-rows class="space-y-3">
+                            <p class="mb-3 text-xs text-muted">Imię i nazwisko, odmiana (do „Więcej o Alicji…") oraz rola. Zdjęcie, bio i social media — na podstronie osoby.</p>
+                            <div data-repeater-rows class="space-y-2">
                                 @foreach ($aboutTeam as $i => $row)
-                                    <div data-repeater-row class="space-y-2 rounded-lg border border-gray-200 bg-gray-50 p-4">
-                                        <div class="grid gap-2 sm:grid-cols-3">
+                                    @php
+                                        $memberName = trim($row['name'] ?? '');
+                                        $existingPersonPage = filled($memberName)
+                                            ? ($personPagesByTitle[mb_strtolower($memberName)] ?? null)
+                                            : null;
+                                        $prefillUrl = route('admin.podstrony.create') . '?' . http_build_query(['prefill' => [
+                                            'title'     => $memberName,
+                                            'person_role' => $row['role'] ?? '',
+                                            'parent_id' => $page->id ?? '',
+                                        ]]);
+                                    @endphp
+                                    <div data-repeater-row class="flex items-center gap-2 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2">
+                                        <div class="grid min-w-0 flex-1 gap-2 sm:grid-cols-3">
                                             <input type="text" name="about_team[{{ $i }}][name]" value="{{ $row['name'] ?? '' }}" placeholder="Imię i nazwisko" aria-label="Imię członka zespołu {{ $i + 1 }}" class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
                                             <input type="text" name="about_team[{{ $i }}][name_genitive]" value="{{ $row['name_genitive'] ?? '' }}" placeholder="Odmiana (np. Alicji, Ziemowita)" aria-label="Odmiana imienia — członek zespołu {{ $i + 1 }}" class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
                                             <input type="text" name="about_team[{{ $i }}][role]" value="{{ $row['role'] ?? '' }}" placeholder="Co robi w FEER" aria-label="Co robi w FEER — członek zespołu {{ $i + 1 }}" class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
                                         </div>
-                                        <div class="flex items-center gap-3 rounded-lg border border-gray-200 bg-white p-2">
-                                            @if (! empty($row['photo']))
-                                                <img src="{{ $row['photo'] }}" alt="" class="h-12 w-12 shrink-0 rounded-full object-cover">
-                                            @else
-                                                <span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-gray-100 text-gray-400" aria-hidden="true"><i class="fa-solid fa-user"></i></span>
+                                        <div class="flex shrink-0 items-center gap-1">
+                                            @if ($existingPersonPage)
+                                                <a href="{{ route('admin.podstrony.edit', $existingPersonPage) }}" target="_blank"
+                                                   class="rounded border border-brand px-2 py-1 text-xs font-bold text-brand hover:bg-brand-light"
+                                                   aria-label="Podstrona osoby {{ $memberName }}">
+                                                    <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i>
+                                                </a>
+                                            @elseif (filled($memberName))
+                                                <a href="{{ $prefillUrl }}" target="_blank"
+                                                   class="rounded border border-gray-300 px-2 py-1 text-xs font-bold text-muted hover:border-brand hover:text-brand"
+                                                   aria-label="Utwórz podstronę dla {{ $memberName }}">
+                                                    <i class="fa-solid fa-user-plus" aria-hidden="true"></i>
+                                                </a>
                                             @endif
-                                            <div class="min-w-0 flex-1 space-y-1">
-                                                <input type="file" name="about_team_photos[{{ $i }}]" accept="image/*" aria-label="Wgraj zdjęcie członka zespołu {{ $i + 1 }}"
-                                                    class="block w-full cursor-pointer text-xs text-muted file:mr-2 file:cursor-pointer file:rounded file:border-0 file:bg-brand file:px-3 file:py-1 file:text-xs file:font-bold file:text-white hover:file:bg-brand-dark">
-                                                <input type="text" name="about_team[{{ $i }}][photo]" value="{{ $row['photo'] ?? '' }}" placeholder="…albo wklej URL zdjęcia" aria-label="URL zdjęcia członka zespołu {{ $i + 1 }}" class="w-full rounded border-gray-300 text-xs focus:border-brand focus:ring-brand">
-                                            </div>
-                                        </div>
-                                        <textarea name="about_team[{{ $i }}][bio]" rows="2" placeholder="Trochę o mnie" aria-label="Trochę o mnie — członek zespołu {{ $i + 1 }}" class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">{{ $row['bio'] ?? '' }}</textarea>
-                                        <div class="grid gap-2 sm:grid-cols-3">
-                                            <input type="url" name="about_team[{{ $i }}][facebook]" value="{{ $row['facebook'] ?? '' }}" placeholder="Facebook (URL)" aria-label="Facebook — członek zespołu {{ $i + 1 }}" class="w-full rounded border-gray-300 text-xs focus:border-brand focus:ring-brand">
-                                            <input type="url" name="about_team[{{ $i }}][instagram]" value="{{ $row['instagram'] ?? '' }}" placeholder="Instagram (URL)" aria-label="Instagram — członek zespołu {{ $i + 1 }}" class="w-full rounded border-gray-300 text-xs focus:border-brand focus:ring-brand">
-                                            <input type="url" name="about_team[{{ $i }}][linkedin]" value="{{ $row['linkedin'] ?? '' }}" placeholder="LinkedIn (URL)" aria-label="LinkedIn — członek zespołu {{ $i + 1 }}" class="w-full rounded border-gray-300 text-xs focus:border-brand focus:ring-brand">
-                                            <input type="url" name="about_team[{{ $i }}][website]" value="{{ $row['website'] ?? '' }}" placeholder="Własna strona WWW (URL)" aria-label="Własna strona WWW — członek zespołu {{ $i + 1 }}" class="w-full rounded border-gray-300 text-xs focus:border-brand focus:ring-brand">
-                                            <input type="url" name="about_team[{{ $i }}][substack]" value="{{ $row['substack'] ?? '' }}" placeholder="Substack (URL)" aria-label="Substack — członek zespołu {{ $i + 1 }}" class="w-full rounded border-gray-300 text-xs focus:border-brand focus:ring-brand">
-                                        </div>
-                                        @php
-                                            $memberName = trim($row['name'] ?? '');
-                                            $existingPersonPage = filled($memberName)
-                                                ? ($personPagesByTitle[mb_strtolower($memberName)] ?? null)
-                                                : null;
-                                            $prefillUrl = route('admin.podstrony.create') . '?' . http_build_query(['prefill' => [
-                                                'title'         => $memberName,
-                                                'person_role'   => $row['role'] ?? '',
-                                                'person_bio'    => $row['bio'] ?? '',
-                                                'content_image' => $row['photo'] ?? '',
-                                                'facebook'      => $row['facebook'] ?? '',
-                                                'instagram'     => $row['instagram'] ?? '',
-                                                'linkedin'      => $row['linkedin'] ?? '',
-                                                'website'       => $row['website'] ?? '',
-                                                'parent_id'     => $page->id ?? '',
-                                            ]]);
-                                        @endphp
-                                        <div class="flex items-center justify-between gap-1">
-                                            <div class="flex items-center gap-1">
-                                                @if ($existingPersonPage)
-                                                    <a href="{{ route('admin.podstrony.edit', $existingPersonPage) }}"
-                                                       target="_blank"
-                                                       class="inline-flex items-center gap-1.5 rounded border border-brand px-2 py-1 text-xs font-bold text-brand hover:bg-brand-light"
-                                                       aria-label="Przejdź do podstrony osoby {{ $memberName }}">
-                                                        <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i> Podstrona osoby
-                                                    </a>
-                                                @elseif (filled($memberName))
-                                                    <a href="{{ $prefillUrl }}"
-                                                       target="_blank"
-                                                       class="inline-flex items-center gap-1.5 rounded border border-gray-300 px-2 py-1 text-xs font-bold text-muted hover:border-brand hover:text-brand"
-                                                       aria-label="Utwórz podstronę dla {{ $memberName }}">
-                                                        <i class="fa-solid fa-user-plus" aria-hidden="true"></i> Utwórz podstronę
-                                                    </a>
-                                                @endif
-                                            </div>
-                                            <div class="flex items-center gap-1">
-                                                <button type="button" data-repeater-move="up" class="rounded p-1.5 text-muted hover:bg-gray-100 hover:text-brand" aria-label="Przenieś osobę wyżej"><i class="fa-solid fa-arrow-up" aria-hidden="true"></i></button>
-                                                <button type="button" data-repeater-move="down" class="rounded p-1.5 text-muted hover:bg-gray-100 hover:text-brand" aria-label="Przenieś osobę niżej"><i class="fa-solid fa-arrow-down" aria-hidden="true"></i></button>
-                                                <button type="button" data-repeater-remove class="inline-flex items-center gap-1.5 rounded p-1.5 text-xs font-bold text-muted hover:bg-red-50 hover:text-red-600" aria-label="Usuń członka zespołu"><i class="fa-solid fa-trash" aria-hidden="true"></i> Usuń</button>
-                                            </div>
+                                            <button type="button" data-repeater-move="up" class="rounded p-1.5 text-muted hover:bg-gray-100 hover:text-brand" aria-label="Przenieś osobę wyżej"><i class="fa-solid fa-arrow-up text-xs" aria-hidden="true"></i></button>
+                                            <button type="button" data-repeater-move="down" class="rounded p-1.5 text-muted hover:bg-gray-100 hover:text-brand" aria-label="Przenieś osobę niżej"><i class="fa-solid fa-arrow-down text-xs" aria-hidden="true"></i></button>
+                                            <button type="button" data-repeater-remove class="rounded p-1.5 text-muted hover:bg-red-50 hover:text-red-600" aria-label="Usuń członka zespołu"><i class="fa-solid fa-trash text-xs" aria-hidden="true"></i></button>
                                         </div>
                                     </div>
                                 @endforeach
                             </div>
                             <button type="button" data-repeater-add class="mt-2 inline-flex items-center gap-2 rounded border border-brand px-3 py-1.5 text-sm font-bold text-brand hover:bg-brand-light"><i class="fa-solid fa-plus" aria-hidden="true"></i> Dodaj osobę</button>
                             <template data-repeater-template>
-                                <div data-repeater-row class="space-y-2 rounded-lg border border-gray-200 bg-gray-50 p-4">
-                                    <div class="grid gap-2 sm:grid-cols-3">
+                                <div data-repeater-row class="flex items-center gap-2 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2">
+                                    <div class="grid min-w-0 flex-1 gap-2 sm:grid-cols-3">
                                         <input type="text" name="about_team[__INDEX__][name]" placeholder="Imię i nazwisko" aria-label="Imię członka zespołu" class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
                                         <input type="text" name="about_team[__INDEX__][name_genitive]" placeholder="Odmiana (np. Alicji, Ziemowita)" aria-label="Odmiana imienia" class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
                                         <input type="text" name="about_team[__INDEX__][role]" placeholder="Co robi w FEER" aria-label="Co robi w FEER" class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
                                     </div>
-                                    <div class="flex items-center gap-3 rounded-lg border border-gray-200 bg-white p-2">
-                                        <span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-gray-100 text-gray-400" aria-hidden="true"><i class="fa-solid fa-user"></i></span>
-                                        <div class="min-w-0 flex-1 space-y-1">
-                                            <input type="file" name="about_team_photos[__INDEX__]" accept="image/*" aria-label="Wgraj zdjęcie członka zespołu"
-                                                class="block w-full cursor-pointer text-xs text-muted file:mr-2 file:cursor-pointer file:rounded file:border-0 file:bg-brand file:px-3 file:py-1 file:text-xs file:font-bold file:text-white hover:file:bg-brand-dark">
-                                            <input type="text" name="about_team[__INDEX__][photo]" placeholder="…albo wklej URL zdjęcia" aria-label="URL zdjęcia członka zespołu" class="w-full rounded border-gray-300 text-xs focus:border-brand focus:ring-brand">
-                                        </div>
-                                    </div>
-                                    <textarea name="about_team[__INDEX__][bio]" rows="2" placeholder="Trochę o mnie" aria-label="Trochę o mnie" class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand"></textarea>
-                                    <div class="grid gap-2 sm:grid-cols-3">
-                                        <input type="url" name="about_team[__INDEX__][facebook]" placeholder="Facebook (URL)" aria-label="Facebook" class="w-full rounded border-gray-300 text-xs focus:border-brand focus:ring-brand">
-                                        <input type="url" name="about_team[__INDEX__][instagram]" placeholder="Instagram (URL)" aria-label="Instagram" class="w-full rounded border-gray-300 text-xs focus:border-brand focus:ring-brand">
-                                        <input type="url" name="about_team[__INDEX__][linkedin]" placeholder="LinkedIn (URL)" aria-label="LinkedIn" class="w-full rounded border-gray-300 text-xs focus:border-brand focus:ring-brand">
-                                        <input type="url" name="about_team[__INDEX__][website]" placeholder="Własna strona WWW (URL)" aria-label="Własna strona WWW" class="w-full rounded border-gray-300 text-xs focus:border-brand focus:ring-brand">
-                                        <input type="url" name="about_team[__INDEX__][substack]" placeholder="Substack (URL)" aria-label="Substack" class="w-full rounded border-gray-300 text-xs focus:border-brand focus:ring-brand">
-                                    </div>
-                                    <div class="flex items-center justify-end gap-1">
-                                        <button type="button" data-repeater-move="up" class="rounded p-1.5 text-muted hover:bg-gray-100 hover:text-brand" aria-label="Przenieś osobę wyżej"><i class="fa-solid fa-arrow-up" aria-hidden="true"></i></button>
-                                        <button type="button" data-repeater-move="down" class="rounded p-1.5 text-muted hover:bg-gray-100 hover:text-brand" aria-label="Przenieś osobę niżej"><i class="fa-solid fa-arrow-down" aria-hidden="true"></i></button>
-                                        <button type="button" data-repeater-remove class="inline-flex items-center gap-1.5 rounded p-1.5 text-xs font-bold text-muted hover:bg-red-50 hover:text-red-600" aria-label="Usuń członka zespołu"><i class="fa-solid fa-trash" aria-hidden="true"></i> Usuń</button>
+                                    <div class="flex shrink-0 items-center gap-1">
+                                        <button type="button" data-repeater-move="up" class="rounded p-1.5 text-muted hover:bg-gray-100 hover:text-brand" aria-label="Przenieś osobę wyżej"><i class="fa-solid fa-arrow-up text-xs" aria-hidden="true"></i></button>
+                                        <button type="button" data-repeater-move="down" class="rounded p-1.5 text-muted hover:bg-gray-100 hover:text-brand" aria-label="Przenieś osobę niżej"><i class="fa-solid fa-arrow-down text-xs" aria-hidden="true"></i></button>
+                                        <button type="button" data-repeater-remove class="rounded p-1.5 text-muted hover:bg-red-50 hover:text-red-600" aria-label="Usuń członka zespołu"><i class="fa-solid fa-trash text-xs" aria-hidden="true"></i></button>
                                     </div>
                                 </div>
                             </template>
