@@ -171,7 +171,7 @@
         $aboutValues = collect($page->about_values ?? []);
         $aboutTeam = collect($page->about_team ?? []);
         $personPagesByName = \App\Models\Page::where('type', 'about_person')->where('is_published', true)
-            ->get(['id', 'title', 'slug'])
+            ->get(['id', 'type', 'title', 'slug', 'content_image'])
             ->keyBy(fn ($p) => mb_strtolower(trim($p->title)));
         $aboutImages = $page->images->filter(fn ($img) => $img->image_url)->values();
         // Pierwsze 2–3 zdjęcia jako kolaż obok wstępu; reszta trafia do galerii.
