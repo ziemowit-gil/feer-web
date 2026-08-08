@@ -108,5 +108,20 @@
             document.getElementById('push-prompt')?.classList.remove('hidden');
         }
     </script>
+    <script>
+        (function () {
+            function checkAdminReload() {
+                try {
+                    var d = JSON.parse(localStorage.getItem('feer_reload') || 'null');
+                    if (d && d.url === window.location.href && (Date.now() - d.at) < 600000) {
+                        localStorage.removeItem('feer_reload');
+                        window.location.reload();
+                    }
+                } catch (e) {}
+            }
+            document.addEventListener('visibilitychange', function () { if (!document.hidden) checkAdminReload(); });
+            window.addEventListener('focus', checkAdminReload);
+        })();
+    </script>
 </body>
 </html>

@@ -136,7 +136,9 @@ class PageController extends Controller
 
         $page = Page::create($data);
 
-        return redirect()->route('admin.podstrony.index')->with('status', 'Strona „' . $page->title . '” została utworzona.');
+        return redirect()->route('admin.podstrony.index')
+            ->with('status', 'Strona „' . $page->title . '” została utworzona.')
+            ->with('reload_url', $page->publicUrl());
     }
 
     /** Wyświetla formularz edycji podstrony (zablokowaną stronę może edytować tylko admin). */
@@ -168,7 +170,9 @@ class PageController extends Controller
 
         $page->update($data);
 
-        return redirect()->route('admin.podstrony.index')->with('status', 'Strona została zaktualizowana.');
+        return redirect()->route('admin.podstrony.index')
+            ->with('status', 'Strona została zaktualizowana.')
+            ->with('reload_url', $page->publicUrl());
     }
 
     /** Usuwa podstronę (stron systemowych nie można usunąć). */

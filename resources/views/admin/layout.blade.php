@@ -734,6 +734,9 @@
                     {{ session('status') }}
                 </div>
             @endif
+            @if (session('reload_url'))
+                <script>try{localStorage.setItem('feer_reload',JSON.stringify({url:@json(session('reload_url')),at:Date.now()}))}catch(e){}</script>
+            @endif
 
             @if (session('error'))
                 <div role="alert" class="mb-4 rounded border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-800">
