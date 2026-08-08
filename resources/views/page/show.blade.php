@@ -170,10 +170,33 @@
         $aboutTimeline = collect($page->about_timeline ?? []);
         $aboutValues = collect($page->about_values ?? []);
         $aboutTeam = collect($page->about_team ?? []);
+        $personPagesByName = \App\Models\Page::where('type', 'about_person')->where('is_published', true)
+            ->get(['id', 'title', 'slug'])
+            ->keyBy(fn ($p) => mb_strtolower(trim($p->title)));
         $aboutImages = $page->images->filter(fn ($img) => $img->image_url)->values();
         // Pierwsze 2–3 zdjęcia jako kolaż obok wstępu; reszta trafia do galerii.
         $introPhotos = $aboutImages->take(3)->values();
         $galleryPhotos = $aboutImages->slice(3)->values();
+
+        $aboutPressItems = collect($page->about_press ?? [])->filter(fn ($p) => ! empty($p['url']) || ! empty($p['title']));
+        $aboutSectionLabels = ['intro' => 'O nas', 'stats' => 'W liczbach', 'values' => 'Wartości', 'timeline' => 'Historia', 'team' => 'Zespół', 'gallery' => 'Galeria', 'partners' => 'Partnerzy', 'press' => 'Media', 'documents' => 'Dokumenty', 'faq' => 'FAQ'];
+        $activeAboutSections = [];
+        foreach ($page->orderedAboutSections() as $_s) {
+            $has = match ($_s) {
+                'intro'     => filled($page->about_intro) || $page->content || $introPhotos->isNotEmpty(),
+                'stats'     => $aboutStats->isNotEmpty(),
+                'values'    => $aboutValues->isNotEmpty(),
+                'timeline'  => $aboutTimeline->isNotEmpty(),
+                'team'      => $aboutTeam->isNotEmpty(),
+                'gallery'   => $galleryPhotos->isNotEmpty(),
+                'partners'  => ! empty($page->about_partner_ids),
+                'documents' => $page->attachments->isNotEmpty() || filled($page->about_documents_intro),
+                'press'     => $aboutPressItems->isNotEmpty() || filled($page->about_press_intro),
+                'faq'       => (bool) $page->about_faq_visible,
+                default     => false,
+            };
+            if ($has) $activeAboutSections[$_s] = $aboutSectionLabels[$_s] ?? $_s;
+        }
     @endphp
 
     <article>
@@ -193,13 +216,27 @@
             </div>
         </header>
 
+        @if (count($activeAboutSections) > 1)
+        <nav aria-label="Sekcje na stronie" class="sticky top-0 z-20 border-b border-gray-200 bg-white/95 backdrop-blur-sm">
+            <div class="mx-auto flex max-w-6xl gap-1 overflow-x-auto px-4 py-2" style="scrollbar-width:none">
+                @foreach ($activeAboutSections as $navKey => $navLabel)
+                    <a href="#sekcja-{{ $navKey }}"
+                       class="shrink-0 rounded-full px-4 py-1.5 text-sm font-medium transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand
+                              {{ $navKey === 'team' ? 'bg-brand text-white hover:bg-brand-dark' : 'text-muted hover:bg-gray-100 hover:text-ink' }}">
+                        {{ $navLabel }}
+                    </a>
+                @endforeach
+            </div>
+        </nav>
+        @endif
+
         @foreach ($page->orderedAboutSections() as $aboutSection)
         @switch($aboutSection)
 
         @case('intro')
         {{-- Wstęp (pole) + kolaż 2–3 zdjęć obok --}}
         @if (filled($page->about_intro) || $page->content || $introPhotos->isNotEmpty())
-            <section class="mx-auto max-w-6xl px-4 py-16">
+            <section id="sekcja-intro" class="mx-auto max-w-6xl px-4 py-16">
                 <div class="grid items-center gap-10 {{ $introPhotos->isNotEmpty() ? 'lg:grid-cols-2' : '' }}">
                     <div>
                         @if (filled($page->about_intro))
@@ -231,7 +268,7 @@
         @case('stats')
         {{-- Statystyki: pas w gradiencie marki, dzielniki, animacja liczenia --}}
         @if ($aboutStats->isNotEmpty())
-            <section class="relative overflow-hidden bg-gradient-to-br from-brand to-brand-dark px-4 py-12 text-white" aria-label="W liczbach" data-countup>
+            <section id="sekcja-stats" class="relative overflow-hidden bg-gradient-to-br from-brand to-brand-dark px-4 py-12 text-white" aria-label="W liczbach" data-countup>
                 <i class="fa-solid fa-arrow-trend-up pointer-events-none absolute -bottom-10 -right-2 text-[11rem] text-white/10" aria-hidden="true"></i>
                 <dl class="relative mx-auto grid max-w-4xl grid-cols-2 gap-6 md:grid-cols-4 md:divide-x md:divide-white/20">
                     @foreach ($aboutStats as $stat)
@@ -252,7 +289,7 @@
         @case('gallery')
         {{-- Galeria: pozostałe zdjęcia w układzie bento (pierwsze duże) --}}
         @if ($galleryPhotos->isNotEmpty())
-            <section class="mx-auto max-w-6xl px-4 py-16">
+            <section id="sekcja-gallery" class="mx-auto max-w-6xl px-4 py-16">
                 <h2 class="mb-8 text-center text-2xl font-bold text-ink md:text-3xl">Galeria</h2>
                 <div class="grid auto-rows-[160px] grid-cols-2 gap-3 md:auto-rows-[220px] md:grid-cols-4" data-lightbox>
                     @foreach ($galleryPhotos as $image)
@@ -274,7 +311,7 @@
         @case('values')
         {{-- Wartości: poziome wiersze z okrągłą ikoną --}}
         @if ($aboutValues->isNotEmpty())
-            <section class="bg-gray-50 px-4 py-16" aria-label="Nasze wartości">
+            <section id="sekcja-values" class="bg-gray-50 px-4 py-16" aria-label="Nasze wartości">
                 <div class="mx-auto max-w-4xl">
                     <h2 class="mb-10 text-center text-2xl font-bold text-ink md:text-3xl">Nasze wartości</h2>
                     <div class="grid gap-x-12 gap-y-9 sm:grid-cols-2">
@@ -304,7 +341,7 @@
         @case('timeline')
         {{-- Oś czasu --}}
         @if ($aboutTimeline->isNotEmpty())
-            <section class="mx-auto max-w-3xl px-4 py-16" aria-label="Nasza historia">
+            <section id="sekcja-timeline" class="mx-auto max-w-3xl px-4 py-16" aria-label="Nasza historia">
                 <h2 class="mb-10 text-center text-2xl font-bold text-ink md:text-3xl">Nasza historia</h2>
                 <ol class="relative ml-3 space-y-8 border-l-2 border-brand/30 pl-8">
                     @foreach ($aboutTimeline as $entry)
@@ -348,10 +385,10 @@
         @case('team')
         {{-- Zespół — kolorowe karty --}}
         @if ($aboutTeam->isNotEmpty())
-            <section class="bg-gray-50 px-4 py-16" aria-label="Nasz zespół">
+            <section id="sekcja-team" class="bg-gray-50 px-4 py-16" aria-label="Nasz zespół">
                 <div class="mx-auto max-w-5xl">
                     <h2 class="mb-10 text-center text-2xl font-bold text-ink md:text-3xl">Nasz zespół</h2>
-                    @include('partials.team', ['members' => $aboutTeam])
+                    @include('partials.team', ['members' => $aboutTeam, 'personPagesByName' => $personPagesByName])
                 </div>
             </section>
         @endif
@@ -361,7 +398,7 @@
         {{-- Nasi partnerzy — wybrane logotypy --}}
         @php $aboutPartners = $page->aboutPartners(); @endphp
         @if ($aboutPartners->isNotEmpty())
-            <section class="bg-gray-50 px-4 py-16" aria-label="Nasi partnerzy">
+            <section id="sekcja-partners" class="bg-gray-50 px-4 py-16" aria-label="Nasi partnerzy">
                 <div class="mx-auto max-w-5xl text-center">
                     <h2 class="mb-2 text-2xl font-bold text-ink md:text-3xl">Nasi partnerzy — wspierają nas</h2>
                     <p class="mb-10 text-muted">Dziękujemy organizacjom i instytucjom, które nas wspierają.</p>
@@ -391,7 +428,7 @@
         @case('documents')
         {{-- Dokumenty i sprawozdania: wybrane pliki + odnośnik do BIP po resztę --}}
         @if ($page->attachments->isNotEmpty() || filled($page->about_documents_intro))
-            <section class="mx-auto max-w-6xl px-4 py-16" aria-label="Dokumenty i sprawozdania">
+            <section id="sekcja-documents" class="mx-auto max-w-6xl px-4 py-16" aria-label="Dokumenty i sprawozdania">
                 <h2 class="mb-10 text-center text-2xl font-bold text-ink md:text-3xl">Dokumenty i sprawozdania</h2>
                 <div class="grid gap-10 lg:grid-cols-2">
                     <div class="prose max-w-none text-ink">
@@ -430,7 +467,7 @@
         {{-- Piszą o nas — wzmianki prasowe z obrazkiem (og:image) --}}
         @php $aboutPress = collect($page->about_press ?? [])->filter(fn ($p) => ! empty($p['url']) || ! empty($p['title'])); @endphp
         @if ($aboutPress->isNotEmpty() || filled($page->about_press_intro))
-            <section class="bg-gray-50 px-4 py-16" aria-label="My w mediach">
+            <section id="sekcja-press" class="bg-gray-50 px-4 py-16" aria-label="My w mediach">
                 <div class="mx-auto max-w-5xl">
                     <h2 class="mb-3 text-center text-2xl font-bold text-ink md:text-3xl">My w mediach</h2>
                     @if (filled($page->about_press_intro))
@@ -465,7 +502,7 @@
         @case('faq')
         {{-- Odnośnik do FAQ — zawsze prowadzi do /faq --}}
         @if ($page->about_faq_visible)
-            <section class="mx-auto max-w-4xl px-4 py-12">
+            <section id="sekcja-faq" class="mx-auto max-w-4xl px-4 py-12">
                 <div class="flex flex-col items-center gap-4 rounded-2xl bg-brand-light p-8 text-center sm:flex-row sm:justify-between sm:text-left">
                     <div>
                         <h2 class="flex items-center gap-2 text-xl font-bold text-ink">
