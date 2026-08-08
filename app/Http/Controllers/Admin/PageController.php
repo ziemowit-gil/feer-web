@@ -390,6 +390,7 @@ class PageController extends Controller
             'about_team.*.name' => ['nullable', 'string', 'max:120'],
             'about_team.*.name_genitive' => ['nullable', 'string', 'max:120'],
             'about_team.*.role' => ['nullable', 'string', 'max:120'],
+            'about_team.*.bio' => ['nullable', 'string', 'max:300'],
             'about_section_order' => ['sometimes', 'array'],
             'about_section_order.*' => ['integer'],
             'about_partner_ids' => ['nullable', 'array'],
@@ -506,7 +507,7 @@ class PageController extends Controller
             $data['about_timeline'] = $this->compactRows($request->input('about_timeline', []), ['year', 'text', 'url', 'label', 'url2', 'label2', 'url3', 'label3', 'color']);
             $data['about_values'] = $this->compactRows($request->input('about_values', []), ['icon', 'title', 'text']);
 
-            $data['about_team'] = $this->compactRows($request->input('about_team', []), ['name', 'name_genitive', 'role']);
+            $data['about_team'] = $this->compactRows($request->input('about_team', []), ['name', 'name_genitive', 'role', 'bio']);
 
             $positions = $request->input('about_section_order', []);
             $data['about_section_order'] = collect(array_keys(Page::ABOUT_SECTIONS))

@@ -541,7 +541,8 @@
                                             'parent_id' => $page->id ?? '',
                                         ]]);
                                     @endphp
-                                    <div data-repeater-row class="flex items-center gap-2 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2">
+                                    <div data-repeater-row class="space-y-2 rounded-lg border border-gray-200 bg-gray-50 p-3">
+                                        <div class="flex items-center gap-2">
                                         <div class="grid min-w-0 flex-1 gap-2 sm:grid-cols-3">
                                             <input type="text" name="about_team[{{ $i }}][name]" value="{{ $row['name'] ?? '' }}" placeholder="Imię i nazwisko" aria-label="Imię członka zespołu {{ $i + 1 }}" class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
                                             <input type="text" name="about_team[{{ $i }}][name_genitive]" value="{{ $row['name_genitive'] ?? '' }}" placeholder="Odmiana (np. Alicji, Ziemowita)" aria-label="Odmiana imienia — członek zespołu {{ $i + 1 }}" class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
@@ -565,12 +566,15 @@
                                             <button type="button" data-repeater-move="down" class="rounded p-1.5 text-muted hover:bg-gray-100 hover:text-brand" aria-label="Przenieś osobę niżej"><i class="fa-solid fa-arrow-down text-xs" aria-hidden="true"></i></button>
                                             <button type="button" data-repeater-remove class="rounded p-1.5 text-muted hover:bg-red-50 hover:text-red-600" aria-label="Usuń członka zespołu"><i class="fa-solid fa-trash text-xs" aria-hidden="true"></i></button>
                                         </div>
+                                        </div>
+                                        <textarea name="about_team[{{ $i }}][bio]" rows="2" maxlength="300" placeholder="Krótko o tej osobie (maks. 300 znaków)" aria-label="Krótkie o mnie — członek zespołu {{ $i + 1 }}" class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">{{ $row['bio'] ?? '' }}</textarea>
                                     </div>
                                 @endforeach
                             </div>
                             <button type="button" data-repeater-add class="mt-2 inline-flex items-center gap-2 rounded border border-brand px-3 py-1.5 text-sm font-bold text-brand hover:bg-brand-light"><i class="fa-solid fa-plus" aria-hidden="true"></i> Dodaj osobę</button>
                             <template data-repeater-template>
-                                <div data-repeater-row class="flex items-center gap-2 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2">
+                                <div data-repeater-row class="space-y-2 rounded-lg border border-gray-200 bg-gray-50 p-3">
+                                    <div class="flex items-center gap-2">
                                     <div class="grid min-w-0 flex-1 gap-2 sm:grid-cols-3">
                                         <input type="text" name="about_team[__INDEX__][name]" placeholder="Imię i nazwisko" aria-label="Imię członka zespołu" class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
                                         <input type="text" name="about_team[__INDEX__][name_genitive]" placeholder="Odmiana (np. Alicji, Ziemowita)" aria-label="Odmiana imienia" class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
@@ -581,6 +585,8 @@
                                         <button type="button" data-repeater-move="down" class="rounded p-1.5 text-muted hover:bg-gray-100 hover:text-brand" aria-label="Przenieś osobę niżej"><i class="fa-solid fa-arrow-down text-xs" aria-hidden="true"></i></button>
                                         <button type="button" data-repeater-remove class="rounded p-1.5 text-muted hover:bg-red-50 hover:text-red-600" aria-label="Usuń członka zespołu"><i class="fa-solid fa-trash text-xs" aria-hidden="true"></i></button>
                                     </div>
+                                    </div>
+                                    <textarea name="about_team[__INDEX__][bio]" rows="2" maxlength="300" placeholder="Krótko o tej osobie (maks. 300 znaków)" aria-label="Krótkie o mnie" class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand"></textarea>
                                 </div>
                             </template>
                         </div>

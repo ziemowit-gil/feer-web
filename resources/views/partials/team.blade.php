@@ -32,6 +32,9 @@
                     @if (! empty($m['role']))
                         <p class="truncate text-sm text-muted">{{ $m['role'] }}</p>
                     @endif
+                    @if (! empty($m['bio']))
+                        <p class="mt-1 text-sm leading-relaxed text-muted">{{ $m['bio'] }}</p>
+                    @endif
                     @if ($personPage)
                         <a href="{{ $personPage->publicUrl() }}"
                             class="mt-2 inline-flex items-center gap-1.5 rounded bg-brand px-3 py-1.5 text-sm font-semibold text-white hover:bg-brand-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
