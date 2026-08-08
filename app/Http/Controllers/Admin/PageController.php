@@ -97,10 +97,28 @@ class PageController extends Controller
     }
 
     /** Wyświetla formularz tworzenia nowej podstrony. */
-    public function create()
+    public function create(Request $request)
     {
+        $page = new Page;
+
+        if ($request->has('prefill')) {
+            $p = array_map(fn ($v) => is_string($v) ? trim($v) : $v, (array) $request->query('prefill', []));
+            $page->type = 'about_person';
+            $page->title = $p['title'] ?? '';
+            $page->person_role = filled($p['person_role'] ?? '') ? $p['person_role'] : null;
+            $page->person_bio = filled($p['person_bio'] ?? '') ? $p['person_bio'] : null;
+            $page->content_image = filled($p['content_image'] ?? '') ? $p['content_image'] : null;
+            $social = array_filter([
+                'facebook' => $p['facebook'] ?? null,
+                'instagram' => $p['instagram'] ?? null,
+                'linkedin' => $p['linkedin'] ?? null,
+                'website' => $p['website'] ?? null,
+            ]);
+            $page->person_social = $social ?: null;
+        }
+
         return view('admin.pages.form', [
-            'page' => new Page,
+            'page' => $page,
             'parentOptions' => Page::orderBy('title')->get(),
             'projectOptions' => Project::orderBy('title')->get(),
             'partnerOptions' => \App\Models\Partner::orderBy('order')->orderBy('name')->get(),

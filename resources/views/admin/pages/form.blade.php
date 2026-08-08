@@ -13,6 +13,9 @@
         $aboutTimeline = array_values((array) old('about_timeline', $page->about_timeline ?? []));
         $aboutValues = array_values((array) old('about_values', $page->about_values ?? []));
         $aboutTeam = array_values((array) old('about_team', $page->about_team ?? []));
+        $personPagesByTitle = \App\Models\Page::where('type', 'about_person')
+            ->get(['id', 'title'])
+            ->keyBy(fn ($p) => mb_strtolower(trim($p->title)));
         $aboutPress = array_values((array) old('about_press', $page->about_press ?? []));
         $faqItems = array_values((array) old('faq_items', $page->faq_items ?? []));
     @endphp
@@ -552,10 +555,45 @@
                                             <input type="url" name="about_team[{{ $i }}][website]" value="{{ $row['website'] ?? '' }}" placeholder="Własna strona WWW (URL)" aria-label="Własna strona WWW — członek zespołu {{ $i + 1 }}" class="w-full rounded border-gray-300 text-xs focus:border-brand focus:ring-brand">
                                             <input type="url" name="about_team[{{ $i }}][substack]" value="{{ $row['substack'] ?? '' }}" placeholder="Substack (URL)" aria-label="Substack — członek zespołu {{ $i + 1 }}" class="w-full rounded border-gray-300 text-xs focus:border-brand focus:ring-brand">
                                         </div>
-                                        <div class="flex items-center justify-end gap-1">
-                                            <button type="button" data-repeater-move="up" class="rounded p-1.5 text-muted hover:bg-gray-100 hover:text-brand" aria-label="Przenieś osobę wyżej"><i class="fa-solid fa-arrow-up" aria-hidden="true"></i></button>
-                                            <button type="button" data-repeater-move="down" class="rounded p-1.5 text-muted hover:bg-gray-100 hover:text-brand" aria-label="Przenieś osobę niżej"><i class="fa-solid fa-arrow-down" aria-hidden="true"></i></button>
-                                            <button type="button" data-repeater-remove class="inline-flex items-center gap-1.5 rounded p-1.5 text-xs font-bold text-muted hover:bg-red-50 hover:text-red-600" aria-label="Usuń członka zespołu"><i class="fa-solid fa-trash" aria-hidden="true"></i> Usuń</button>
+                                        @php
+                                            $memberName = trim($row['name'] ?? '');
+                                            $existingPersonPage = filled($memberName)
+                                                ? ($personPagesByTitle[mb_strtolower($memberName)] ?? null)
+                                                : null;
+                                            $prefillUrl = route('admin.podstrony.create') . '?' . http_build_query(['prefill' => [
+                                                'title'         => $memberName,
+                                                'person_role'   => $row['role'] ?? '',
+                                                'person_bio'    => $row['bio'] ?? '',
+                                                'content_image' => $row['photo'] ?? '',
+                                                'facebook'      => $row['facebook'] ?? '',
+                                                'instagram'     => $row['instagram'] ?? '',
+                                                'linkedin'      => $row['linkedin'] ?? '',
+                                                'website'       => $row['website'] ?? '',
+                                            ]]);
+                                        @endphp
+                                        <div class="flex items-center justify-between gap-1">
+                                            <div class="flex items-center gap-1">
+                                                @if ($existingPersonPage)
+                                                    <a href="{{ route('admin.podstrony.edit', $existingPersonPage) }}"
+                                                       target="_blank"
+                                                       class="inline-flex items-center gap-1.5 rounded border border-brand px-2 py-1 text-xs font-bold text-brand hover:bg-brand-light"
+                                                       aria-label="Przejdź do podstrony osoby {{ $memberName }}">
+                                                        <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i> Podstrona osoby
+                                                    </a>
+                                                @elseif (filled($memberName))
+                                                    <a href="{{ $prefillUrl }}"
+                                                       target="_blank"
+                                                       class="inline-flex items-center gap-1.5 rounded border border-gray-300 px-2 py-1 text-xs font-bold text-muted hover:border-brand hover:text-brand"
+                                                       aria-label="Utwórz podstronę dla {{ $memberName }}">
+                                                        <i class="fa-solid fa-user-plus" aria-hidden="true"></i> Utwórz podstronę
+                                                    </a>
+                                                @endif
+                                            </div>
+                                            <div class="flex items-center gap-1">
+                                                <button type="button" data-repeater-move="up" class="rounded p-1.5 text-muted hover:bg-gray-100 hover:text-brand" aria-label="Przenieś osobę wyżej"><i class="fa-solid fa-arrow-up" aria-hidden="true"></i></button>
+                                                <button type="button" data-repeater-move="down" class="rounded p-1.5 text-muted hover:bg-gray-100 hover:text-brand" aria-label="Przenieś osobę niżej"><i class="fa-solid fa-arrow-down" aria-hidden="true"></i></button>
+                                                <button type="button" data-repeater-remove class="inline-flex items-center gap-1.5 rounded p-1.5 text-xs font-bold text-muted hover:bg-red-50 hover:text-red-600" aria-label="Usuń członka zespołu"><i class="fa-solid fa-trash" aria-hidden="true"></i> Usuń</button>
+                                            </div>
                                         </div>
                                     </div>
                                 @endforeach
