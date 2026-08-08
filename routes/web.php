@@ -86,6 +86,10 @@ use App\Http\Controllers\Admin\HealthCheckController as AdminHealthCheckControll
 use App\Http\Controllers\EtrController;
 use App\Http\Controllers\MemberInvitationController;
 use App\Http\Controllers\VolunteerController;
+use App\Http\Controllers\CampaignController;
+use App\Http\Controllers\SubscribeController;
+use App\Http\Controllers\Admin\CampaignController as AdminCampaignController;
+use App\Http\Controllers\Admin\SubscriberController as AdminSubscriberController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -146,6 +150,18 @@ Route::middleware('module:landing')->group(function () {
 Route::get('/szukaj', [SearchController::class, 'index'])->name('search');
 
 Route::get('/newsletter', [NewsletterController::class, 'index'])->name('newsletter.show');
+
+// Kampanie zbiórkowe
+Route::get('/kampanie', [CampaignController::class, 'index'])->name('kampanie.index');
+Route::get('/kampanie/{slug}', [CampaignController::class, 'show'])->name('kampanie.show');
+
+// Subskrypcje tematyczne
+Route::get('/subskrypcje', [SubscribeController::class, 'create'])->name('subskrypcje.form');
+Route::post('/subskrypcje', [SubscribeController::class, 'store'])->name('subskrypcje.store')->middleware('throttle:5,1');
+Route::get('/subskrypcje/oczekiwanie', [SubscribeController::class, 'pending'])->name('subskrypcje.pending');
+Route::get('/subskrypcje/potwierdz/{token}', [SubscribeController::class, 'confirm'])->name('subskrypcje.confirm');
+Route::get('/subskrypcje/wypisz/{token}', [SubscribeController::class, 'unsubscribe'])->name('subskrypcje.unsubscribe');
+Route::delete('/subskrypcje/wypisz/{token}', [SubscribeController::class, 'doUnsubscribe'])->name('subskrypcje.do-unsubscribe');
 
 Route::get('/wsparcie', [SupportController::class, 'index'])->name('support.show')->middleware('module:support');
 
@@ -408,6 +424,13 @@ Route::middleware(['auth', 'verified', '2fa'])->prefix(config('app.admin_prefix'
 
         Route::get('newsletter', [AdminNewsletterController::class, 'edit'])->name('newsletter.edit');
         Route::put('newsletter', [AdminNewsletterController::class, 'update'])->name('newsletter.update');
+
+        Route::get('subskrybenci', [AdminSubscriberController::class, 'index'])->name('subskrybenci.index');
+        Route::get('subskrybenci/eksport', [AdminSubscriberController::class, 'export'])->name('subskrybenci.export');
+        Route::delete('subskrybenci/{subscriber}', [AdminSubscriberController::class, 'destroy'])->name('subskrybenci.destroy');
+
+        Route::resource('kampanie', AdminCampaignController::class)->parameters(['kampanie' => 'campaign'])->except('show');
+        Route::post('kampanie/zbiorczo', [AdminCampaignController::class, 'bulk'])->name('kampanie.bulk');
 
         Route::resource('pozycje-menu', NavItemController::class)->parameters(['pozycje-menu' => 'navItem'])->except('show');
         Route::patch('pozycje-menu/{navItem}/przenies', [NavItemController::class, 'move'])->name('pozycje-menu.przenies');

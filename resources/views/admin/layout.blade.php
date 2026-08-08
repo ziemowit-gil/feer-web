@@ -95,13 +95,13 @@
             $pagesRoutes = ['admin.podstrony.*', 'admin.pozycje-menu.*', 'admin.os-czasu.*'];
 
             // ② PUBLIKACJE — dynamiczna treść redakcyjna (razem z Projektami)
-            $pubRoutes = ['admin.newsy.*', 'admin.kategorie-newsow.*', 'admin.tagi.*', 'admin.wiem-feer.*', 'admin.komentarze-bloga.*', 'admin.materialy-edukacyjne.*', 'admin.zapisy-materialy.*', 'admin.wolontariat.*', 'admin.wydarzenia.*', 'admin.prowadzacy.*', 'admin.kategorie.*', 'admin.projekty.*', 'admin.faq.*', 'admin.sprawozdania.*', 'admin.bip-dokumenty.*', 'admin.lp.*', 'admin.ankiety.*'];
+            $pubRoutes = ['admin.newsy.*', 'admin.kategorie-newsow.*', 'admin.tagi.*', 'admin.wiem-feer.*', 'admin.komentarze-bloga.*', 'admin.materialy-edukacyjne.*', 'admin.zapisy-materialy.*', 'admin.wolontariat.*', 'admin.wydarzenia.*', 'admin.prowadzacy.*', 'admin.kategorie.*', 'admin.projekty.*', 'admin.faq.*', 'admin.sprawozdania.*', 'admin.bip-dokumenty.*', 'admin.lp.*', 'admin.ankiety.*', 'admin.kampanie.*'];
 
             // ③ STRONA GŁÓWNA — sekcje wizualne homepage
             $appearanceRoutes = ['admin.hero.*', 'admin.galeria.*', 'admin.szybkie-akcje.*', 'admin.partnerzy.*'];
 
             // ④ MARKETING — narzędzia promocji
-            $marketingRoutes = ['admin.banery.*', 'admin.strefy-bannerow.*', 'admin.newsletter.*'];
+            $marketingRoutes = ['admin.banery.*', 'admin.strefy-bannerow.*', 'admin.newsletter.*', 'admin.subskrybenci.*'];
 
             // ⑤ SKRZYNKA — zgłoszenia od odwiedzających
             $inboxRoutes = ['admin.zgloszenia-spotkania.*', 'admin.zgloszenia-barier.*'];
@@ -345,6 +345,12 @@
                             </a>
                         @endif
 
+                        {{-- Kampanie zbiórkowe --}}
+                        <a href="{{ route('admin.kampanie.index') }}" class="{{ $itemClass('admin.kampanie.*') }}" title="Kampanie zbiórkowe">
+                            <i class="fa-solid fa-hand-holding-heart {{ $iconClass('admin.kampanie.*') }}"></i>
+                            <span class="nav-label">Kampanie zbiórkowe</span>
+                        </a>
+
                     </div>
                 </div>
             @endif
@@ -404,6 +410,10 @@
                         <a href="{{ route('admin.newsletter.edit') }}" class="{{ $itemClass('admin.newsletter.*') }}" title="Newsletter">
                             <i class="fa-solid fa-envelope {{ $iconClass('admin.newsletter.*') }}"></i>
                             <span class="nav-label">Newsletter</span>
+                        </a>
+                        <a href="{{ route('admin.subskrybenci.index') }}" class="{{ $itemClass('admin.subskrybenci.*') }}" title="Subskrybenci">
+                            <i class="fa-solid fa-bell {{ $iconClass('admin.subskrybenci.*') }}"></i>
+                            <span class="nav-label">Subskrybenci</span>
                         </a>
                     </div>
                 </div>
