@@ -131,9 +131,9 @@ class PageController extends Controller
         $data = $this->validated($request);
         $data['slug'] = $this->uniqueSlug($data['slug'] !== '' ? $data['slug'] : $data['title']);
 
-        Page::create($data);
+        $page = Page::create($data);
 
-        return redirect()->route('admin.podstrony.index')->with('status', 'Strona została utworzona.');
+        return redirect()->route('admin.podstrony.index')->with('status', "Strona „{$page->title}" została utworzona.");
     }
 
     /** Wyświetla formularz edycji podstrony (zablokowaną stronę może edytować tylko admin). */
@@ -177,9 +177,10 @@ class PageController extends Controller
             return redirect()->route('admin.podstrony.index')->with('error', 'Strony systemowej nie można usunąć.');
         }
 
+        $title = $page->title;
         $page->delete();
 
-        return redirect()->route('admin.podstrony.index')->with('status', 'Strona została usunięta.');
+        return redirect()->route('admin.podstrony.index')->with('status', "Strona „{$title}" została usunięta.");
     }
 
     /** Przełącza widoczność podstrony (publikuj / ukryj). */
