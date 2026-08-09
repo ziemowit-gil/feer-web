@@ -16,12 +16,6 @@
 --}}
 @if ($isAdmin)
 <div x-data="homepageEditor(@js($sectionOrder), '{{ route('admin.homepage.section-order') }}')">
-{{-- Spacer dopasowany do wysokości paska (zwinięty ~32px / rozwinięty ~56px) --}}
-<div
-    aria-hidden="true"
-    class="print:hidden transition-[height] duration-200"
-    :class="collapsed ? 'h-8' : 'h-14'"
-></div>
 @endif
 
     {{-- Kontener sekcji: w trybie edycji staje się flex-col, by CSS `order` działało --}}
