@@ -109,7 +109,7 @@
                                     title="Edytuj" aria-label="Edytuj {{ $person->title }}">
                                     <i class="fa-solid fa-pen-to-square" aria-hidden="true"></i>
                                 </a>
-                                <form method="POST" action="{{ route('admin.podstrony.destroy', $person) }}"
+                                <form method="POST" action="{{ route('admin.osoby.destroy', $person) }}"
                                     data-confirm="Usunąć osobę „{{ $person->title }}"? Tej operacji nie można cofnąć.">
                                     @csrf
                                     @method('DELETE')
