@@ -86,7 +86,7 @@ class PageController extends Controller
         $persons = Page::with('parent')
             ->where('type', 'about_person')
             ->when($search !== '', fn ($q) => $q->where('title', 'like', "%{$search}%"))
-            ->when($dept !== '', fn ($q) => $q->where('person_department', 'like', "%{$dept}%"))
+            ->when($dept !== '', fn ($q) => $q->whereJsonContains('person_department', $dept))
             ->orderBy('order')
             ->orderBy('title')
             ->paginate(50)
@@ -498,6 +498,7 @@ class PageController extends Controller
             'person_social.linkedin' => ['nullable', 'string', 'max:500'],
             'person_social.website' => ['nullable', 'string', 'max:500'],
             'person_member_label' => ['nullable', 'string', 'max:60'],
+            'person_name_genitive' => ['nullable', 'string', 'max:80'],
             'person_department' => ['nullable', 'array'],
             'person_department.*' => ['string', 'max:120'],
         ]);
@@ -613,7 +614,6 @@ class PageController extends Controller
             $data['about_values'] = null;
             $data['about_team'] = null;
             $data['about_partner_ids'] = null;
-            $data['about_faq_page_id'] = null;
             $data['about_documents_intro'] = null;
             $data['about_documents_bip_url'] = null;
             $data['about_press_intro'] = null;
@@ -728,6 +728,7 @@ class PageController extends Controller
             $social = array_map('trim', array_filter((array) ($data['person_social'] ?? [])));
             $data['person_social'] = array_filter($social) ?: null;
             $data['person_member_label'] = trim((string) ($data['person_member_label'] ?? '')) ?: null;
+            $data['person_name_genitive'] = trim((string) ($data['person_name_genitive'] ?? '')) ?: null;
             $departments = array_values(array_filter(array_map('trim', (array) ($data['person_department'] ?? []))));
             $data['person_department'] = $departments ?: null;
         } else {
@@ -737,6 +738,7 @@ class PageController extends Controller
             $data['person_email'] = null;
             $data['person_social'] = null;
             $data['person_member_label'] = null;
+            $data['person_name_genitive'] = null;
             $data['person_department'] = null;
         }
 
