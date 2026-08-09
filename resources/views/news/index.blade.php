@@ -29,10 +29,7 @@
                                 $ngoAccent = $item->accent_color ?: (($item->audience ?? 'brand') === 'ngo' ? $siteSettings->audienceColor('ngo') : null);
                                 $img = $item->imageUrlOrDefault();
                             @endphp
-                            <li @class([
-                                'group py-5 first:pt-0 last:pb-0',
-                                'rounded-xl border-l-4 border-amber-400 bg-amber-50/50 px-4 py-5' => $item->is_featured,
-                            ])>
+                            <li class="group py-5 first:pt-0 last:pb-0">
                                 <article class="flex items-start gap-4">
                                     <div class="hidden w-16 shrink-0 text-center sm:block" aria-hidden="true">
                                         <span class="block text-2xl font-bold leading-none text-ink">{{ $item->published_at->format('d') }}</span>
@@ -46,11 +43,6 @@
                                                 <span class="inline-block rounded px-2 py-0.5 text-xs font-bold uppercase text-white"
                                                     style="background-color: {{ $item->category->badgeColor() }}">
                                                     {{ $item->category->name }}
-                                                </span>
-                                            @endif
-                                            @if ($item->is_featured)
-                                                <span class="inline-flex items-center gap-1 rounded-full bg-amber-400/20 px-2 py-0.5 text-xs font-bold text-amber-700">
-                                                    <i class="fa-solid fa-star" aria-hidden="true"></i> Wyróżnione
                                                 </span>
                                             @endif
                                             <time datetime="{{ $item->published_at->toDateString() }}"
@@ -158,10 +150,7 @@
                                 $ngoAccent = $item->accent_color ?: (($item->audience ?? 'brand') === 'ngo' ? $siteSettings->audienceColor('ngo') : null);
                                 $img = $item->imageUrlOrDefault();
                             @endphp
-                            <li @class([
-                                'group py-5 first:pt-0 last:pb-0',
-                                'rounded-xl border-2 border-amber-400 bg-amber-50/50 px-4' => $item->is_featured,
-                            ])>
+                            <li class="group py-5 first:pt-0 last:pb-0">
                                 <article class="flex items-center gap-5">
                                     {{-- Kwadratowe zdjęcie --}}
                                     <a href="{{ route('news.show', $item) }}"
@@ -182,11 +171,6 @@
                                                 <span class="inline-block rounded px-2 py-0.5 text-xs font-bold uppercase text-white"
                                                     style="background-color: {{ $item->category->badgeColor() }}">
                                                     {{ $item->category->name }}
-                                                </span>
-                                            @endif
-                                            @if ($item->is_featured)
-                                                <span class="inline-flex items-center gap-1 rounded-full bg-amber-400/20 px-2 py-0.5 text-xs font-bold text-amber-700">
-                                                    <i class="fa-solid fa-star" aria-hidden="true"></i> Wyróżnione
                                                 </span>
                                             @endif
                                             <time datetime="{{ $item->published_at->toDateString() }}"
@@ -234,10 +218,9 @@
                             <a href="{{ route('news.show', $item) }}"
                                 @class([
                                     'group block',
-                                    'rounded-xl border-2 border-amber-400 bg-amber-50/50 p-3' => $item->is_featured,
-                                    'rounded-xl border-2 p-3' => $ngoAccent && ! $item->is_featured,
+                                    'rounded-xl border-2 p-3' => $ngoAccent,
                                 ])
-                                @if ($ngoAccent && ! $item->is_featured) style="border-color: {{ $ngoAccent }};" @endif>
+                                @if ($ngoAccent) style="border-color: {{ $ngoAccent }};" @endif>
                                 @php $img = $item->imageUrlOrDefault(); @endphp
                                 @if ($img)
                                     <div class="relative mb-3 h-44 overflow-hidden rounded-lg bg-gray-100">
@@ -246,11 +229,6 @@
                                             <span class="absolute left-3 top-3 rounded px-2 py-1 text-xs font-bold uppercase text-white" style="background-color: {{ $item->category->badgeColor() }}">{{ $item->category->name }}</span>
                                         @endif
                                     </div>
-                                @endif
-                                @if ($item->is_featured)
-                                    <span class="mb-1 inline-flex items-center gap-1 rounded-full bg-amber-400/20 px-2 py-0.5 text-xs font-bold text-amber-700">
-                                        <i class="fa-solid fa-star" aria-hidden="true"></i> Wyróżnione
-                                    </span>
                                 @endif
                                 <div class="text-xs font-medium text-muted">{{ $item->published_at->format('d.m.Y') }}</div>
                                 <h3 class="mt-1 font-bold text-ink group-hover:text-brand">{{ $item->title }}</h3>

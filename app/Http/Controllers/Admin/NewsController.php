@@ -183,7 +183,6 @@ class NewsController extends Controller
         $clone->title = "{$news->title} (kopia)";
         $clone->slug = $this->uniqueSlug($clone->title);
         $clone->is_published = false;
-        $clone->is_featured = false;
         $clone->is_clone = true;
         $clone->cloned_from_id = $news->id;
         $clone->save();
@@ -260,7 +259,6 @@ class NewsController extends Controller
         $data['image_focal_y'] = (int) ($data['image_focal_y'] ?? 50);
         $data['article_layout'] = $data['article_layout'] ?? 'default';
         $data['is_published'] = $request->boolean('is_published');
-        $data['is_featured'] = $request->boolean('is_featured');
         $data['is_archived'] = $request->boolean('is_archived');
         $data['is_clone'] = $request->boolean('is_clone');
         unset($data['image']);

@@ -109,9 +109,6 @@
                                 @endif
                             </td>
                             <td class="px-4 py-3 font-medium">
-                                @if ($item->is_featured)
-                                    <i class="fa-solid fa-star mr-1 text-amber-400" title="Wyróżniony" aria-hidden="true"></i>
-                                @endif
                                 @if ($item->is_clone)
                                     <span class="mr-1 inline-flex items-center gap-1 rounded bg-amber-100 px-1.5 py-0.5 text-xs font-bold text-amber-700">
                                         <i class="fa-solid fa-copy" aria-hidden="true"></i> Kopia
