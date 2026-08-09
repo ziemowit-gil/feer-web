@@ -10,43 +10,52 @@
 #   ./deploy.sh
 #
 # Zmienne środowiskowe (opcjonalne):
-#   PHP_BIN       binarka PHP CLI                (domyślnie: php85 lub php84)
-#   COMPOSER_BIN  binarka Composer               (domyślnie: composer)
+#   PHP_BIN       binarka PHP CLI                (domyślnie: php84)
+#   COMPOSER_BIN  binarka Composer               (domyślnie: composer84)
 #   NPM_BIN       binarka npm                    (domyślnie: /opt/alt/alt-nodejs20/root/usr/bin/npm)
 #   BRANCH        gałąź do pobrania              (domyślnie: main)
 #
-# Przykład lokalnego testu:  PHP_BIN=php COMPOSER_BIN=composer NPM_BIN=npm ./deploy.sh
+# Przykład lokalnego testu:  PHP_BIN=php COMPOSER_BIN=composer84 NPM_BIN=npm ./deploy.sh
 set -euo pipefail
 
 # ─── Konfiguracja ─────────────────────────────────────────────────────────────
 
 if [ -z "${PHP_BIN:-}" ]; then
-    if php85 -v >/dev/null 2>&1; then
-        PHP_BIN="php85"
-    elif php84 -v >/dev/null 2>&1; then
+    if php84 -v >/dev/null 2>&1; then
         PHP_BIN="php84"
+    elif php85 -v >/dev/null 2>&1; then
+        PHP_BIN="php85"
     elif php83 -v >/dev/null 2>&1; then
         PHP_BIN="php83"
     else
         PHP_BIN="php"
     fi
 fi
-COMPOSER_BIN="${COMPOSER_BIN:-composer}"
+COMPOSER_BIN="${COMPOSER_BIN:-composer84}"
 
-# Jeśli composer nie jest dostępny w PATH, szukamy przez pełne ścieżki
-# (php85 → php84 → php83; projekt wymaga ^8.3).
+# Jeśli composer84 nie jest dostępny w PATH, szukamy alternatyw.
 if ! command -v "$COMPOSER_BIN" >/dev/null 2>&1; then
-    for _php in \
-            /opt/alt/php85/usr/bin/php \
-            /opt/alt/php84/usr/bin/php \
-            /opt/alt/php83/usr/bin/php; do
-        if [ -x "$_php" ] && [ -f /usr/local/bin/composer ]; then
-            PHP_BIN="$_php"
-            COMPOSER_BIN="/usr/local/bin/composer"
+    for _c in composer84 composer; do
+        if command -v "$_c" >/dev/null 2>&1; then
+            COMPOSER_BIN="$_c"
             break
         fi
     done
-    unset _php
+    # Ostatnia deska ratunku — pełna ścieżka do composer z aktualnym PHP.
+    if ! command -v "$COMPOSER_BIN" >/dev/null 2>&1; then
+        for _php in \
+                /opt/alt/php84/usr/bin/php \
+                /opt/alt/php85/usr/bin/php \
+                /opt/alt/php83/usr/bin/php; do
+            if [ -x "$_php" ] && [ -f /usr/local/bin/composer ]; then
+                PHP_BIN="$_php"
+                COMPOSER_BIN="/usr/local/bin/composer"
+                break
+            fi
+        done
+        unset _php
+    fi
+    unset _c
 fi
 NPM_BIN="${NPM_BIN:-/opt/alt/alt-nodejs20/root/usr/bin/npm}"
 BRANCH="${BRANCH:-main}"
@@ -198,12 +207,12 @@ if [ "$COMPOSER_FAILED" -eq 1 ]; then
     echo "│  Kod pobrany — Composer nie zadziałał.                     │"
     echo "│                                                             │"
     echo "│  Uruchom ręcznie:                                           │"
-    echo "│    /opt/alt/php84/usr/bin/php /usr/local/bin/composer \\    │"
+    echo "│    php84 /usr/local/bin/composer84 \\                       │"
     echo "│      update --no-dev --optimize-autoloader                 │"
-    echo "│    php85 artisan migrate --force                            │"
-    echo "│    php85 artisan migrate --force --database=blog \\         │"
+    echo "│    php84 artisan migrate --force                            │"
+    echo "│    php84 artisan migrate --force --database=blog \\         │"
     echo "│      --path=database/migrations/blog                       │"
-    echo "│    php85 artisan optimize:clear && php85 artisan optimize   │"
+    echo "│    php84 artisan optimize:clear && php84 artisan optimize   │"
     echo "└─────────────────────────────────────────────────────────────┘"
 else
     echo "┌─────────────────────────────────────────────────────────────┐"
