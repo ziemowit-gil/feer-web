@@ -77,6 +77,25 @@ class PageController extends Controller
         ]);
     }
 
+    /** Lista osób (about_person) — widok tabelaryczny. */
+    public function persons(Request $request)
+    {
+        $search = $request->query('q', '');
+
+        $persons = Page::with('parent')
+            ->where('type', 'about_person')
+            ->when($search !== '', fn ($q) => $q->where('title', 'like', "%{$search}%"))
+            ->orderBy('order')
+            ->orderBy('title')
+            ->paginate(50)
+            ->withQueryString();
+
+        return view('admin.pages.persons', [
+            'persons' => $persons,
+            'q'       => $search,
+        ]);
+    }
+
     /** Raport stron i newsów bez alt-tekstów zdjęć. */
     public function missingAltReport()
     {
@@ -195,9 +214,12 @@ class PageController extends Controller
         }
 
         $title = $page->title;
+        $isPerson = $page->isAboutPerson();
         $page->delete();
 
-        return redirect()->route('admin.podstrony.index')->with('status', 'Strona „' . $title . '” została usunięta.');
+        $redirect = $isPerson ? 'admin.osoby.index' : 'admin.podstrony.index';
+
+        return redirect()->route($redirect)->with('status', 'Usunięto „' . $title . '”.');
     }
 
     /** Przełącza widoczność podstrony (publikuj / ukryj). */

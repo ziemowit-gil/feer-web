@@ -9,6 +9,10 @@
             class="rounded px-3 py-1.5 {{ request()->routeIs('admin.podstrony.*') ? 'bg-brand text-white' : 'text-muted hover:bg-gray-100' }}">
             Strony
         </a>
+        <a href="{{ route('admin.osoby.index') }}"
+            class="rounded px-3 py-1.5 {{ request()->routeIs('admin.osoby.*') ? 'bg-brand text-white' : 'text-muted hover:bg-gray-100' }}">
+            Osoby
+        </a>
     @endif
     @if ($user->isAdmin())
         <a href="{{ route('admin.pozycje-menu.index', ['location' => 'main']) }}"
