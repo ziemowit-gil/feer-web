@@ -14,13 +14,13 @@
                 $photo        = $m->content_image;
             @endphp
 
-            <li class="flex items-center gap-5">
+            <li class="flex items-start gap-5">
                 {{-- Avatar --}}
                 @if ($photo)
                     <img src="{{ $photo }}" alt="{{ $m->title }}" loading="lazy"
-                        class="h-20 w-20 shrink-0 rounded-full object-cover">
+                        class="h-36 w-36 shrink-0 rounded-full object-cover">
                 @else
-                    <span class="flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-brand/10 text-2xl font-bold text-brand" aria-hidden="true">{{ $initials }}</span>
+                    <span class="flex h-36 w-36 shrink-0 items-center justify-center rounded-full bg-brand/10 text-4xl font-bold text-brand" aria-hidden="true">{{ $initials }}</span>
                 @endif
 
                 {{-- Tekst --}}
