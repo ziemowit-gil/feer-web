@@ -504,7 +504,7 @@ class PageController extends Controller
         ]);
 
         $data['parent_id'] = $data['parent_id'] ?: null;
-        $data['project_id'] = $data['project_id'] ?: null;
+        $data['project_id'] = ($data['project_id'] ?? null) ?: null;
         $data['project_display'] = $data['project_id'] ? ($data['project_display'] ?? 'link') : 'link';
         $data['slug'] = trim($data['slug'] ?? '');
         $data['is_published'] = $request->boolean('is_published');
