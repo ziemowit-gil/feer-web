@@ -147,12 +147,9 @@ class PageController extends Controller
         $page = new Page;
         $page->type = 'about_person';
 
-        return view('admin.pages.form', [
+        return view('admin.pages.person-form', [
             'page' => $page,
-            'isPersonForm' => true,
             'parentOptions' => Page::where('type', 'about')->orderBy('title')->get(),
-            'projectOptions' => collect(),
-            'partnerOptions' => collect(),
         ]);
     }
 
@@ -184,16 +181,19 @@ class PageController extends Controller
             return $response;
         }
 
-        $isPersonForm = $page->isAboutPerson();
+        if ($page->isAboutPerson()) {
+            return view('admin.pages.person-form', [
+                'page' => $page,
+                'parentOptions' => Page::where('type', 'about')->orderBy('title')->get(),
+            ]);
+        }
 
         return view('admin.pages.form', [
             'page' => $page,
-            'isPersonForm' => $isPersonForm,
-            'parentOptions' => $isPersonForm
-                ? Page::where('type', 'about')->orderBy('title')->get()
-                : Page::where('id', '!=', $page->id)->orderBy('title')->get(),
-            'projectOptions' => $isPersonForm ? collect() : Project::orderBy('title')->get(),
-            'partnerOptions' => $isPersonForm ? collect() : \App\Models\Partner::orderBy('order')->orderBy('name')->get(),
+            'isPersonForm' => false,
+            'parentOptions' => Page::where('id', '!=', $page->id)->orderBy('title')->get(),
+            'projectOptions' => Project::orderBy('title')->get(),
+            'partnerOptions' => \App\Models\Partner::orderBy('order')->orderBy('name')->get(),
         ]);
     }
 
@@ -205,9 +205,16 @@ class PageController extends Controller
         }
 
         $data = $this->validated($request);
-        $data['slug'] = $data['type'] === 'about_person'
-            ? $this->personSlug($data['title'], $data['parent_id'] ?? null, $page->id)
-            : $this->uniqueSlug($data['slug'] !== '' ? $data['slug'] : $data['title'], $page->id);
+
+        if ($data['type'] === 'about_person') {
+            $titleChanged  = Str::slug($data['title']) !== Str::slug($page->title);
+            $parentChanged = (int) ($data['parent_id'] ?? 0) !== (int) $page->parent_id;
+            $data['slug']  = ($titleChanged || $parentChanged)
+                ? $this->personSlug($data['title'], $data['parent_id'] ?? null, $page->id)
+                : $page->slug;
+        } else {
+            $data['slug'] = $this->uniqueSlug($data['slug'] !== '' ? $data['slug'] : $data['title'], $page->id);
+        }
 
         $page->update($data);
 
