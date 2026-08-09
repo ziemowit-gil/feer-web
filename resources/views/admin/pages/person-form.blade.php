@@ -236,21 +236,6 @@
                     </div>
                 </details>
 
-                @if ($page->exists)
-                    {{-- Galeria --}}
-                    <details class="rounded-lg border border-gray-200 bg-white">
-                        <summary class="cursor-pointer px-6 py-4 text-sm font-bold text-ink hover:bg-gray-50">
-                            <i class="fa-solid fa-images mr-1.5 text-muted" aria-hidden="true"></i>Galeria zdjęć
-                            @if ($page->images->isNotEmpty())
-                                <span class="ml-1 rounded-full bg-gray-100 px-1.5 py-0.5 text-xs">{{ $page->images->count() }}</span>
-                            @endif
-                        </summary>
-                        <div class="border-t border-gray-100 px-6 py-5">
-                            @include('admin.partials.page-images')
-                        </div>
-                    </details>
-                @endif
-
             </div>{{-- /kolumna główna --}}
 
             {{-- ==== SIDEBAR ==== --}}
@@ -331,4 +316,19 @@
 
         </div>{{-- /grid --}}
     </form>
+
+    @if ($page->exists)
+        {{-- Galeria poza główną formą — page-images.blade.php zawiera własne formularze --}}
+        <details class="mt-6 rounded-lg border border-gray-200 bg-white">
+            <summary class="cursor-pointer px-6 py-4 text-sm font-bold text-ink hover:bg-gray-50">
+                <i class="fa-solid fa-images mr-1.5 text-muted" aria-hidden="true"></i>Galeria zdjęć
+                @if ($page->images->isNotEmpty())
+                    <span class="ml-1 rounded-full bg-gray-100 px-1.5 py-0.5 text-xs">{{ $page->images->count() }}</span>
+                @endif
+            </summary>
+            <div class="border-t border-gray-100 px-6 py-5">
+                @include('admin.partials.page-images')
+            </div>
+        </details>
+    @endif
 @endsection
