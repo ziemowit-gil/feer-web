@@ -1,8 +1,20 @@
 @extends('admin.layout')
 
-@section('title', $page->exists ? 'Edytuj stronę' : 'Nowa strona')
+@section('title', $page->exists
+    ? ($isPersonForm ? 'Edytuj osobę' : 'Edytuj stronę')
+    : ($isPersonForm ? 'Nowa osoba' : 'Nowa strona')
+)
 
 @section('content')
+    @if ($isPersonForm)
+        <nav class="mb-4 flex items-center gap-1.5 text-sm text-muted" aria-label="Breadcrumb">
+            <a href="{{ route('admin.osoby.index') }}" class="text-brand hover:underline">
+                <i class="fa-solid fa-users mr-1" aria-hidden="true"></i>Osoby
+            </a>
+            <span aria-hidden="true">/</span>
+            <span class="text-ink">{{ $page->exists ? $page->title : 'Nowa osoba' }}</span>
+        </nav>
+    @endif
     @php
         $currentType = old('type', $page->type ?? 'standard');
         $scheduleItems = old('schedule_items', $page->schedule_items ?? []);
@@ -12,9 +24,6 @@
         $aboutStats = array_values((array) old('about_stats', $page->about_stats ?? []));
         $aboutTimeline = array_values((array) old('about_timeline', $page->about_timeline ?? []));
         $aboutValues = array_values((array) old('about_values', $page->about_values ?? []));
-        $teamPersons = $page->exists
-            ? $page->children()->where('type', 'about_person')->orderBy('order')->orderBy('title')->get()
-            : collect();
         $aboutPress = array_values((array) old('about_press', $page->about_press ?? []));
         $faqItems = array_values((array) old('faq_items', $page->faq_items ?? []));
     @endphp
@@ -164,14 +173,23 @@
             <div data-ftab-panel="typ" class="hidden space-y-6">
                 <div class="space-y-5 rounded-lg border border-gray-200 bg-white p-6">
                     <div class="sm:w-1/2">
-                        <label for="type" class="mb-1 block text-sm font-bold">Typ strony</label>
-                        <select id="type" name="type" data-page-type-select class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
-                            @foreach (\App\Models\Page::TYPES as $value => $label)
-                                <option value="{{ $value }}" {{ $currentType === $value ? 'selected' : '' }}>{{ $label }}</option>
-                            @endforeach
-                        </select>
-                        <p class="mt-1 text-xs text-muted">„Wydarzenie" dodaje pola o terminie, miejscu i rejestracji. „Harmonogram zajęć / spotkań" dodaje tabelę terminów oraz miejsce na informację o zmianie. Każdy typ ma inny układ na stronie.</p>
-                        @error('type') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                        @if ($isPersonForm)
+                            <input type="hidden" name="type" value="about_person">
+                            <label class="mb-1 block text-sm font-bold">Typ strony</label>
+                            <p class="rounded border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-muted">
+                                <i class="fa-solid fa-user mr-1.5 text-brand" aria-hidden="true"></i>
+                                Osoba (typ stały — zarządzaj przez moduł <a href="{{ route('admin.osoby.index') }}" class="text-brand underline">Osoby</a>)
+                            </p>
+                        @else
+                            <label for="type" class="mb-1 block text-sm font-bold">Typ strony</label>
+                            <select id="type" name="type" data-page-type-select class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                                @foreach (\App\Models\Page::TYPES as $value => $label)
+                                    <option value="{{ $value }}" {{ $currentType === $value ? 'selected' : '' }}>{{ $label }}</option>
+                                @endforeach
+                            </select>
+                            <p class="mt-1 text-xs text-muted">„Wydarzenie" dodaje pola o terminie, miejscu i rejestracji. „Harmonogram zajęć / spotkań" dodaje tabelę terminów oraz miejsce na informację o zmianie. Każdy typ ma inny układ na stronie.</p>
+                            @error('type') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                        @endif
                     </div>
 
                     <div class="border-t border-gray-100 pt-5 sm:w-1/2">
@@ -535,47 +553,6 @@
                                 </div>
                             </template>
                         </div>
-                            </div>
-                        </details>
-
-                        <details class="rounded-lg border border-gray-200" open>
-                            <summary class="cursor-pointer rounded-lg px-4 py-3 text-sm font-bold text-ink hover:bg-gray-50">Zespół</summary>
-                            <div class="border-t border-gray-100 px-4 py-4">
-                                @if ($teamPersons->isEmpty())
-                                    <p class="text-sm text-muted">Brak osób przypisanych do tej strony.</p>
-                                @else
-                                    <ul class="mb-3 space-y-1.5">
-                                        @foreach ($teamPersons as $tp)
-                                            <li class="flex items-center gap-3 rounded-lg border border-gray-200 px-3 py-2 text-sm">
-                                                @if (filled($tp->content_image))
-                                                    <img src="{{ $tp->content_image }}" alt="" class="h-8 w-8 shrink-0 rounded-full object-cover">
-                                                @else
-                                                    <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gray-100 text-gray-400 text-xs"><i class="fa-solid fa-user" aria-hidden="true"></i></span>
-                                                @endif
-                                                <span class="min-w-0 flex-1">
-                                                    <span class="font-medium text-ink">{{ $tp->title }}</span>
-                                                    @if ($tp->person_role)
-                                                        <span class="text-muted"> — {{ $tp->person_role }}</span>
-                                                    @endif
-                                                    @if ($tp->person_department)
-                                                        @foreach ($tp->person_department as $dept)
-                                                            <span class="ml-1 rounded-full bg-brand-light px-2 py-0.5 text-xs text-brand-dark">{{ $dept }}</span>
-                                                        @endforeach
-                                                    @endif
-                                                </span>
-                                                <a href="{{ route('admin.podstrony.edit', $tp) }}"
-                                                    class="shrink-0 text-muted hover:text-brand"
-                                                    title="Edytuj" aria-label="Edytuj {{ $tp->title }}">
-                                                    <i class="fa-solid fa-pen-to-square" aria-hidden="true"></i>
-                                                </a>
-                                            </li>
-                                        @endforeach
-                                    </ul>
-                                @endif
-                                <a href="{{ route('admin.osoby.index') }}"
-                                    class="inline-flex items-center gap-2 rounded border border-brand px-3 py-1.5 text-sm font-bold text-brand hover:bg-brand-light">
-                                    <i class="fa-solid fa-users" aria-hidden="true"></i> Zarządzaj osobami
-                                </a>
                             </div>
                         </details>
 
@@ -1373,7 +1350,11 @@
 
             <div class="flex items-center gap-3">
                 <button type="submit" class="rounded bg-brand px-5 py-2 text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">Zapisz</button>
-                <a href="{{ route('admin.podstrony.index') }}" class="text-sm text-muted hover:text-brand">Anuluj</a>
+                @if ($isPersonForm)
+                    <a href="{{ route('admin.osoby.index') }}" class="text-sm text-muted hover:text-brand">Anuluj</a>
+                @else
+                    <a href="{{ route('admin.podstrony.index') }}" class="text-sm text-muted hover:text-brand">Anuluj</a>
+                @endif
             </div>
         </form>
 

@@ -239,6 +239,7 @@ Route::middleware(['auth', 'verified', '2fa'])->prefix(config('app.admin_prefix'
 
     Route::middleware(['module:pages', 'module-access:pages'])->group(function () {
         Route::get('osoby', [AdminPageController::class, 'persons'])->name('osoby.index');
+        Route::get('osoby/create', [AdminPageController::class, 'createPerson'])->name('osoby.create');
         Route::get('podstrony/eksport', [AdminPageController::class, 'export'])->name('podstrony.eksport');
         Route::get('raporty/brakujace-alt', [AdminPageController::class, 'missingAltReport'])->name('raporty.brakujace-alt');
         Route::resource('podstrony', AdminPageController::class)->parameters(['podstrony' => 'page']);

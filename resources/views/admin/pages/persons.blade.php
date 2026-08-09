@@ -6,7 +6,11 @@
     @include('admin.partials.content-nav-tabs')
 
     <div class="mb-4 flex items-center justify-between gap-2">
-        <p class="text-sm text-muted">Osoby zarządzane przez strony „O organizacji".</p>
+        <p class="text-sm text-muted">Pełna lista osób ze wszystkich stron „O organizacji".</p>
+        <a href="{{ route('admin.osoby.create') }}"
+            class="rounded bg-brand px-4 py-2 text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
+            <i class="fa-solid fa-user-plus" aria-hidden="true"></i> Dodaj osobę
+        </a>
     </div>
 
     {{-- Filtry --}}

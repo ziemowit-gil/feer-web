@@ -132,28 +132,27 @@ class PageController extends Controller
     {
         $page = new Page;
 
-        if ($request->has('prefill')) {
-            $p = array_map(fn ($v) => is_string($v) ? trim($v) : $v, (array) $request->query('prefill', []));
-            $page->type = 'about_person';
-            $page->title = $p['title'] ?? '';
-            $page->person_role = filled($p['person_role'] ?? '') ? $p['person_role'] : null;
-            $page->person_bio = filled($p['person_bio'] ?? '') ? $p['person_bio'] : null;
-            $page->content_image = filled($p['content_image'] ?? '') ? $p['content_image'] : null;
-            $page->parent_id = filled($p['parent_id'] ?? '') ? (int) $p['parent_id'] : null;
-            $social = array_filter([
-                'facebook' => $p['facebook'] ?? null,
-                'instagram' => $p['instagram'] ?? null,
-                'linkedin' => $p['linkedin'] ?? null,
-                'website' => $p['website'] ?? null,
-            ]);
-            $page->person_social = $social ?: null;
-        }
-
         return view('admin.pages.form', [
             'page' => $page,
+            'isPersonForm' => false,
             'parentOptions' => Page::orderBy('title')->get(),
             'projectOptions' => Project::orderBy('title')->get(),
             'partnerOptions' => \App\Models\Partner::orderBy('order')->orderBy('name')->get(),
+        ]);
+    }
+
+    /** Wyświetla formularz tworzenia nowej osoby (moduł Osoby). */
+    public function createPerson()
+    {
+        $page = new Page;
+        $page->type = 'about_person';
+
+        return view('admin.pages.form', [
+            'page' => $page,
+            'isPersonForm' => true,
+            'parentOptions' => Page::where('type', 'about')->orderBy('title')->get(),
+            'projectOptions' => collect(),
+            'partnerOptions' => collect(),
         ]);
     }
 
@@ -171,8 +170,10 @@ class PageController extends Controller
             $this->syncTeamPersons($page, $request->input('team', []));
         }
 
-        return redirect()->route('admin.podstrony.index')
-            ->with('status', 'Strona „' . $page->title . '” została utworzona.')
+        $route = $page->isAboutPerson() ? 'admin.osoby.index' : 'admin.podstrony.index';
+
+        return redirect()->route($route)
+            ->with('status', $page->isAboutPerson() ? 'Osoba „' . $page->title . '” została dodana.' : 'Strona „' . $page->title . '” została utworzona.')
             ->with('reload_url', $page->publicUrl());
     }
 
@@ -183,11 +184,16 @@ class PageController extends Controller
             return $response;
         }
 
+        $isPersonForm = $page->isAboutPerson();
+
         return view('admin.pages.form', [
             'page' => $page,
-            'parentOptions' => Page::where('id', '!=', $page->id)->orderBy('title')->get(),
-            'projectOptions' => Project::orderBy('title')->get(),
-            'partnerOptions' => \App\Models\Partner::orderBy('order')->orderBy('name')->get(),
+            'isPersonForm' => $isPersonForm,
+            'parentOptions' => $isPersonForm
+                ? Page::where('type', 'about')->orderBy('title')->get()
+                : Page::where('id', '!=', $page->id)->orderBy('title')->get(),
+            'projectOptions' => $isPersonForm ? collect() : Project::orderBy('title')->get(),
+            'partnerOptions' => $isPersonForm ? collect() : \App\Models\Partner::orderBy('order')->orderBy('name')->get(),
         ]);
     }
 
@@ -209,8 +215,10 @@ class PageController extends Controller
             $this->syncTeamPersons($page, $request->input('team', []));
         }
 
-        return redirect()->route('admin.podstrony.index')
-            ->with('status', 'Strona została zaktualizowana.')
+        $route = $page->isAboutPerson() ? 'admin.osoby.index' : 'admin.podstrony.index';
+
+        return redirect()->route($route)
+            ->with('status', $page->isAboutPerson() ? 'Osoba „' . $page->title . '" została zaktualizowana.' : 'Strona została zaktualizowana.')
             ->with('reload_url', $page->publicUrl());
     }
 
