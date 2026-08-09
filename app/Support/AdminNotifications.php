@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\TaskController;
 use App\Models\AccessibilityReport;
 use Modules\Blog\Models\BlogComment;
 use App\Models\MeetingSignup;
+use App\Modules\ModuleManager;
 use App\Models\User;
 use Illuminate\Support\Carbon;
 
@@ -31,7 +32,7 @@ class AdminNotifications
         self::push($items, 'Moje zadania', TaskController::myPendingCount($user->id),
             route('admin.zadania.index', ['moje' => 1]), 'fa-list-check');
 
-        if ($user->canAccessModule('blog')) {
+        if ($user->canAccessModule('blog') && app(ModuleManager::class)->isActive('blog')) {
             self::push($items, 'Komentarze do moderacji', BlogComment::pending()->count(),
                 route('admin.komentarze-bloga.index'), 'fa-comments');
         }
