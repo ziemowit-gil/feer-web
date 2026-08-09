@@ -541,19 +541,41 @@
                         <details class="rounded-lg border border-gray-200" open>
                             <summary class="cursor-pointer rounded-lg px-4 py-3 text-sm font-bold text-ink hover:bg-gray-50">Zespół</summary>
                             <div class="border-t border-gray-100 px-4 py-4">
-                                <p class="mb-4 text-xs text-muted">Każda osoba to osobna podstrona — możesz tu edytować wszystko bez wchodzenia w osobne zakładki.</p>
-                                <div class="space-y-3" id="team-persons-list">
-                                    @foreach ($teamPersons as $ti => $tp)
-                                        @include('admin.pages._team_person_row', ['tp' => $tp, 'ti' => $ti])
-                                    @endforeach
-                                </div>
-                                <button type="button" id="team-add-person"
-                                    class="mt-3 inline-flex items-center gap-2 rounded border border-brand px-3 py-1.5 text-sm font-bold text-brand hover:bg-brand-light">
-                                    <i class="fa-solid fa-user-plus" aria-hidden="true"></i> Dodaj osobę
-                                </button>
-                                <template id="team-person-template">
-                                    @include('admin.pages._team_person_row', ['tp' => null, 'ti' => '__INDEX__'])
-                                </template>
+                                @if ($teamPersons->isEmpty())
+                                    <p class="text-sm text-muted">Brak osób przypisanych do tej strony.</p>
+                                @else
+                                    <ul class="mb-3 space-y-1.5">
+                                        @foreach ($teamPersons as $tp)
+                                            <li class="flex items-center gap-3 rounded-lg border border-gray-200 px-3 py-2 text-sm">
+                                                @if (filled($tp->content_image))
+                                                    <img src="{{ $tp->content_image }}" alt="" class="h-8 w-8 shrink-0 rounded-full object-cover">
+                                                @else
+                                                    <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gray-100 text-gray-400 text-xs"><i class="fa-solid fa-user" aria-hidden="true"></i></span>
+                                                @endif
+                                                <span class="min-w-0 flex-1">
+                                                    <span class="font-medium text-ink">{{ $tp->title }}</span>
+                                                    @if ($tp->person_role)
+                                                        <span class="text-muted"> — {{ $tp->person_role }}</span>
+                                                    @endif
+                                                    @if ($tp->person_department)
+                                                        @foreach ($tp->person_department as $dept)
+                                                            <span class="ml-1 rounded-full bg-brand-light px-2 py-0.5 text-xs text-brand-dark">{{ $dept }}</span>
+                                                        @endforeach
+                                                    @endif
+                                                </span>
+                                                <a href="{{ route('admin.podstrony.edit', $tp) }}"
+                                                    class="shrink-0 text-muted hover:text-brand"
+                                                    title="Edytuj" aria-label="Edytuj {{ $tp->title }}">
+                                                    <i class="fa-solid fa-pen-to-square" aria-hidden="true"></i>
+                                                </a>
+                                            </li>
+                                        @endforeach
+                                    </ul>
+                                @endif
+                                <a href="{{ route('admin.osoby.index') }}"
+                                    class="inline-flex items-center gap-2 rounded border border-brand px-3 py-1.5 text-sm font-bold text-brand hover:bg-brand-light">
+                                    <i class="fa-solid fa-users" aria-hidden="true"></i> Zarządzaj osobami
+                                </a>
                             </div>
                         </details>
 
@@ -1052,6 +1074,35 @@
                                 placeholder="np. Koordynatorka projektów, wolontariusz…"
                                 class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
                             @error('person_role') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                        </div>
+
+                        <div x-data="{
+                            tags: @json(old('person_department', $page->person_department ?? [])),
+                            input: '',
+                            add() {
+                                const v = this.input.trim();
+                                if (v && !this.tags.includes(v)) this.tags.push(v);
+                                this.input = '';
+                            },
+                            remove(t) { this.tags = this.tags.filter(x => x !== t); }
+                        }">
+                            <label class="mb-1 block text-sm font-bold">Działy / sekcje <span class="font-normal text-muted">(opcjonalnie, można dodać kilka)</span></label>
+                            <div class="flex flex-wrap gap-1.5 rounded border border-gray-300 bg-white p-2 focus-within:border-brand focus-within:ring-1 focus-within:ring-brand">
+                                <template x-for="t in tags" :key="t">
+                                    <span class="inline-flex items-center gap-1 rounded-full bg-brand-light px-2.5 py-0.5 text-xs font-bold text-brand-dark">
+                                        <span x-text="t"></span>
+                                        <button type="button" @click="remove(t)" class="text-brand hover:text-red-600" :aria-label="'Usuń ' + t">&times;</button>
+                                        <input type="hidden" :name="'person_department[]'" :value="t">
+                                    </span>
+                                </template>
+                                <input type="text" x-model="input"
+                                    @keydown.enter.prevent="add()"
+                                    @keydown.comma.prevent="add()"
+                                    placeholder="Wpisz dział i naciśnij Enter…"
+                                    class="min-w-[180px] flex-1 border-0 p-0 text-sm focus:ring-0">
+                            </div>
+                            <p class="mt-1 text-xs text-muted">np. Zarząd, Biuro, Wolontariat — Enter lub przecinek dodaje dział</p>
+                            @error('person_department') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                         </div>
 
                         <div>
@@ -1712,71 +1763,5 @@
             if (form) form.addEventListener('submit', function () { if (window.tinymce) window.tinymce.triggerSave(); });
         })();
 
-        // ===== Inline edytor osób (sekcja Zespół) =====
-        (function () {
-            var list = document.getElementById('team-persons-list');
-            var tpl  = document.getElementById('team-person-template');
-            var btn  = document.getElementById('team-add-person');
-            if (!list || !tpl || !btn) return;
-
-            function reindex() {
-                list.querySelectorAll('.team-person-row').forEach(function (row, i) {
-                    row.dataset.index = i;
-                    row.querySelectorAll('[name]').forEach(function (el) {
-                        el.name = el.name.replace(/team\[[^\]]*\]/, 'team[' + i + ']');
-                    });
-                });
-            }
-
-            function bindRow(row) {
-                row.querySelector('.team-expand')?.addEventListener('click', function () {
-                    var details = row.querySelector('.team-details');
-                    if (details) {
-                        details.classList.toggle('hidden');
-                        var icon = this.querySelector('i');
-                        if (icon) icon.classList.toggle('fa-chevron-down', details.classList.contains('hidden'));
-                        if (icon) icon.classList.toggle('fa-chevron-up', !details.classList.contains('hidden'));
-                    }
-                });
-                row.querySelector('.team-remove')?.addEventListener('click', function () {
-                    if (confirm('Usunąć tę osobę? Zapis formularza trwale usunie jej podstronę.')) {
-                        row.remove();
-                        reindex();
-                    }
-                });
-                row.querySelector('.team-move-up')?.addEventListener('click', function () {
-                    var prev = row.previousElementSibling;
-                    if (prev && prev.classList.contains('team-person-row')) {
-                        list.insertBefore(row, prev);
-                        reindex();
-                    }
-                });
-                row.querySelector('.team-move-down')?.addEventListener('click', function () {
-                    var next = row.nextElementSibling;
-                    if (next && next.classList.contains('team-person-row')) {
-                        list.insertBefore(next, row);
-                        reindex();
-                    }
-                });
-            }
-
-            // Podpnij istniejące wiersze
-            list.querySelectorAll('.team-person-row').forEach(bindRow);
-
-            // Dodaj nową osobę
-            btn.addEventListener('click', function () {
-                var nextIdx = list.querySelectorAll('.team-person-row').length;
-                var html = tpl.innerHTML.replace(/__INDEX__/g, nextIdx);
-                var tmp = document.createElement('div');
-                tmp.innerHTML = html;
-                var newRow = tmp.firstElementChild;
-                // Nowe osoby mają szczegóły rozwinięte od razu
-                var details = newRow.querySelector('.team-details');
-                if (details) details.classList.remove('hidden');
-                list.appendChild(newRow);
-                bindRow(newRow);
-                newRow.querySelector('input[type="text"]')?.focus();
-            });
-        })();
     </script>
 @endsection

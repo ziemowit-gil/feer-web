@@ -81,18 +81,30 @@ class PageController extends Controller
     public function persons(Request $request)
     {
         $search = $request->query('q', '');
+        $dept   = $request->query('dept', '');
 
         $persons = Page::with('parent')
             ->where('type', 'about_person')
             ->when($search !== '', fn ($q) => $q->where('title', 'like', "%{$search}%"))
+            ->when($dept !== '', fn ($q) => $q->where('person_department', 'like', "%{$dept}%"))
             ->orderBy('order')
             ->orderBy('title')
             ->paginate(50)
             ->withQueryString();
 
+        $departments = Page::where('type', 'about_person')
+            ->whereNotNull('person_department')
+            ->pluck('person_department')
+            ->flatten()
+            ->unique()
+            ->sort()
+            ->values();
+
         return view('admin.pages.persons', [
-            'persons' => $persons,
-            'q'       => $search,
+            'persons'     => $persons,
+            'q'           => $search,
+            'dept'        => $dept,
+            'departments' => $departments,
         ]);
     }
 
@@ -155,7 +167,7 @@ class PageController extends Controller
 
         $page = Page::create($data);
 
-        if ($page->isAbout()) {
+        if ($page->isAbout() && $request->has('team')) {
             $this->syncTeamPersons($page, $request->input('team', []));
         }
 
@@ -193,7 +205,7 @@ class PageController extends Controller
 
         $page->update($data);
 
-        if ($page->isAbout()) {
+        if ($page->isAbout() && $request->has('team')) {
             $this->syncTeamPersons($page, $request->input('team', []));
         }
 
@@ -471,6 +483,8 @@ class PageController extends Controller
             'person_social.linkedin' => ['nullable', 'string', 'max:500'],
             'person_social.website' => ['nullable', 'string', 'max:500'],
             'person_member_label' => ['nullable', 'string', 'max:60'],
+            'person_department' => ['nullable', 'array'],
+            'person_department.*' => ['string', 'max:120'],
         ]);
 
         $data['parent_id'] = $data['parent_id'] ?: null;
@@ -699,6 +713,8 @@ class PageController extends Controller
             $social = array_map('trim', array_filter((array) ($data['person_social'] ?? [])));
             $data['person_social'] = array_filter($social) ?: null;
             $data['person_member_label'] = trim((string) ($data['person_member_label'] ?? '')) ?: null;
+            $departments = array_values(array_filter(array_map('trim', (array) ($data['person_department'] ?? []))));
+            $data['person_department'] = $departments ?: null;
         } else {
             $data['person_phone'] = null;
             $data['person_role'] = null;
@@ -706,6 +722,7 @@ class PageController extends Controller
             $data['person_email'] = null;
             $data['person_social'] = null;
             $data['person_member_label'] = null;
+            $data['person_department'] = null;
         }
 
         return $this->applyApprovalWorkflow($data);

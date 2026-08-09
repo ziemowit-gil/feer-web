@@ -6,27 +6,31 @@
     @include('admin.partials.content-nav-tabs')
 
     <div class="mb-4 flex items-center justify-between gap-2">
-        <p class="text-sm text-muted">Osoby zarządzane przez formularze stron „O organizacji".</p>
-        <a href="{{ route('admin.podstrony.create') }}"
-            class="rounded bg-brand px-4 py-2 text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
-            <i class="fa-solid fa-plus" aria-hidden="true"></i> Dodaj stronę
-        </a>
+        <p class="text-sm text-muted">Osoby zarządzane przez strony „O organizacji".</p>
     </div>
 
-    {{-- Wyszukiwarka --}}
-    <form method="GET" action="{{ route('admin.osoby.index') }}" class="mb-4 flex gap-2">
+    {{-- Filtry --}}
+    <form method="GET" action="{{ route('admin.osoby.index') }}" class="mb-4 flex flex-wrap gap-2">
         <input
             type="search"
             name="q"
             value="{{ $q }}"
             placeholder="Szukaj po nazwisku…"
-            class="w-72 rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:border-brand focus:ring-brand"
+            class="w-60 rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:border-brand focus:ring-brand"
             aria-label="Szukaj osoby"
         >
+        @if ($departments->isNotEmpty())
+            <select name="dept" class="rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:border-brand focus:ring-brand" aria-label="Filtruj po dziale">
+                <option value="">Wszystkie działy</option>
+                @foreach ($departments as $d)
+                    <option value="{{ $d }}" @selected($dept === $d)>{{ $d }}</option>
+                @endforeach
+            </select>
+        @endif
         <button type="submit" class="rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-sm font-bold text-muted hover:bg-gray-50">
             <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i> Szukaj
         </button>
-        @if ($q)
+        @if ($q || $dept)
             <a href="{{ route('admin.osoby.index') }}" class="rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-sm text-muted hover:bg-gray-50">
                 <i class="fa-solid fa-xmark" aria-hidden="true"></i> Wyczyść
             </a>
@@ -41,9 +45,10 @@
         <table class="min-w-full text-sm">
             <thead class="border-b border-gray-200 bg-gray-50 text-left text-xs font-bold uppercase tracking-wide text-muted">
                 <tr>
-                    <th class="w-16 px-3 py-2">Zdjęcie</th>
+                    <th class="w-14 px-3 py-2">Zdjęcie</th>
                     <th class="px-4 py-2">Imię i nazwisko</th>
                     <th class="px-4 py-2">Stanowisko</th>
+                    <th class="px-4 py-2">Działy</th>
                     <th class="px-4 py-2">Strona nadrzędna</th>
                     <th class="px-4 py-2 text-center">Status</th>
                     <th class="px-4 py-2"></th>
@@ -61,18 +66,23 @@
                                 </span>
                             @endif
                         </td>
-                        <td class="px-4 py-2 font-medium text-ink">
-                            {{ $person->title }}
-                        </td>
-                        <td class="px-4 py-2 text-muted">
-                            {{ $person->person_role ?? '—' }}
+                        <td class="px-4 py-2 font-medium text-ink">{{ $person->title }}</td>
+                        <td class="px-4 py-2 text-muted">{{ $person->person_role ?? '—' }}</td>
+                        <td class="px-4 py-2">
+                            @if ($person->person_department)
+                                <div class="flex flex-wrap gap-1">
+                                    @foreach ($person->person_department as $d)
+                                        <span class="rounded-full bg-brand-light px-2 py-0.5 text-xs font-bold text-brand-dark">{{ $d }}</span>
+                                    @endforeach
+                                </div>
+                            @else
+                                <span class="text-muted">—</span>
+                            @endif
                         </td>
                         <td class="px-4 py-2 text-muted">
                             @if ($person->parent)
                                 <a href="{{ route('admin.podstrony.edit', $person->parent) }}"
-                                    class="text-brand hover:underline">
-                                    {{ $person->parent->title }}
-                                </a>
+                                    class="text-brand hover:underline">{{ $person->parent->title }}</a>
                             @else
                                 —
                             @endif
@@ -110,9 +120,9 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="6" class="px-4 py-8 text-center text-muted">
-                            @if ($q)
-                                Nie znaleziono osób pasujących do „{{ $q }}".
+                        <td colspan="7" class="px-4 py-8 text-center text-muted">
+                            @if ($q || $dept)
+                                Nie znaleziono osób pasujących do podanych filtrów.
                             @else
                                 Brak osób. Dodaj je przez formularz strony „O organizacji".
                             @endif

@@ -30,13 +30,14 @@ class SearchController extends Controller
      * @var array<int, array{0:string,1:class-string,2:string,3:string,4:string,5:string}>
      */
     private const CONTENT = [
-        // [moduł, model, pole, trasa edycji, etykieta typu, ikona]
-        ['pages', Page::class, 'title', 'admin.podstrony.edit', 'Strona', 'fa-file-lines'],
-        ['news', News::class, 'title', 'admin.newsy.edit', 'Aktualność', 'fa-newspaper'],
-        ['projects', Project::class, 'title', 'admin.projekty.edit', 'Projekt', 'fa-diagram-project'],
-        ['events', Event::class, 'title', 'admin.wydarzenia.edit', 'Wydarzenie', 'fa-calendar-days'],
-        ['partners', Partner::class, 'name', 'admin.partnerzy.edit', 'Partner', 'fa-handshake'],
-        ['faq', Faq::class, 'question', 'admin.faq.edit', 'FAQ', 'fa-circle-question'],
+        // [moduł, model, pole, trasa edycji, etykieta typu, ikona, where-closure|null]
+        ['pages', Page::class, 'title', 'admin.podstrony.edit', 'Strona', 'fa-file-lines', ['type', '!=', 'about_person']],
+        ['pages', Page::class, 'title', 'admin.podstrony.edit', 'Osoba', 'fa-user', ['type', '=', 'about_person']],
+        ['news', News::class, 'title', 'admin.newsy.edit', 'Aktualność', 'fa-newspaper', null],
+        ['projects', Project::class, 'title', 'admin.projekty.edit', 'Projekt', 'fa-diagram-project', null],
+        ['events', Event::class, 'title', 'admin.wydarzenia.edit', 'Wydarzenie', 'fa-calendar-days', null],
+        ['partners', Partner::class, 'name', 'admin.partnerzy.edit', 'Partner', 'fa-handshake', null],
+        ['faq', Faq::class, 'question', 'admin.faq.edit', 'FAQ', 'fa-circle-question', null],
     ];
 
     /** Obsługuje wyszukiwarkę poleceń Ctrl+K — treści i sekcje panelu. */
@@ -51,17 +52,27 @@ class SearchController extends Controller
         $user = $request->user();
         $results = [];
 
-        foreach (self::CONTENT as [$module, $class, $field, $route, $label, $icon]) {
+        foreach (self::CONTENT as [$module, $class, $field, $route, $label, $icon, $where]) {
             if (! $user->canAccessModule($module)) {
                 continue;
             }
 
-            foreach ($class::where($field, 'like', '%' . $q . '%')->limit(6)->get() as $model) {
+            $query = $class::where($field, 'like', '%' . $q . '%');
+            if ($where !== null) {
+                $query->where($where[0], $where[1], $where[2]);
+            }
+
+            foreach ($query->limit(5)->get() as $model) {
+                $secondary = null;
+                if ($label === 'Osoba') {
+                    $secondary = $model->person_role;
+                }
                 $results[] = [
-                    'label' => $label,
-                    'title' => (string) $model->{$field},
-                    'url' => route($route, $model),
-                    'icon' => $icon,
+                    'label'     => $label,
+                    'title'     => (string) $model->{$field},
+                    'secondary' => $secondary,
+                    'url'       => route($route, $model),
+                    'icon'      => $icon,
                 ];
             }
         }
@@ -96,6 +107,7 @@ class SearchController extends Controller
 
         if ($user->canAccessModule('pages')) {
             $add('Strony', 'admin.podstrony.index');
+            $add('Osoby', 'admin.osoby.index');
         }
         if ($user->canAccessModule('news')) {
             $add('Aktualności', 'admin.newsy.index');

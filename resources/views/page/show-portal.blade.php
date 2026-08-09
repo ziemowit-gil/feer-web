@@ -28,7 +28,7 @@
     <header class="relative overflow-hidden bg-brand text-white">
         @if (filled($page->content_image))
             <img src="{{ $page->content_image }}"
-                 alt="{{ $page->content_image_alt ?? '' }}"
+                 alt="{{ $page->content_image_alt ?: 'Grafika ilustracyjna' }}"
                  class="absolute inset-0 h-full w-full object-cover opacity-35"
                  aria-hidden="true">
         @endif

@@ -767,24 +767,33 @@
                     class="w-full border-0 py-3 text-sm focus:ring-0">
                 <span x-show="loading" class="text-xs text-muted">…</span>
             </div>
-            <ul class="max-h-80 overflow-y-auto py-2" role="listbox">
-                <template x-for="(item, i) in results" :key="i">
-                    <li role="option" :aria-selected="i === active"
-                        @click="go(item)" @mouseenter="active = i"
-                        :class="i === active ? 'bg-brand/10 text-brand' : 'text-ink'"
-                        class="flex cursor-pointer items-center gap-3 px-4 py-2 text-sm">
-                        <i class="fa-solid w-4 text-center text-gray-400" :class="item.icon" aria-hidden="true"></i>
-                        <span class="min-w-0 flex-1 truncate" x-text="item.title"></span>
-                        <span class="shrink-0 rounded bg-gray-100 px-2 py-0.5 text-xs text-muted" x-text="item.label"></span>
-                    </li>
+            <ul class="max-h-96 overflow-y-auto py-1" role="listbox">
+                <template x-for="(item, i) in grouped" :key="i">
+                    <template x-if="item._header">
+                        <li class="sticky top-0 bg-gray-50 px-4 py-1 text-[11px] font-bold uppercase tracking-widest text-muted" role="presentation" x-text="item._header"></li>
+                    </template>
+                    <template x-if="!item._header">
+                        <li role="option" :aria-selected="item._idx === active"
+                            @click="go(item)" @mouseenter="active = item._idx"
+                            :class="item._idx === active ? 'bg-brand/10' : ''"
+                            class="flex cursor-pointer items-center gap-3 px-4 py-2.5 text-sm transition-colors">
+                            <i class="fa-solid w-4 shrink-0 text-center" :class="item._idx === active ? 'text-brand' : 'text-gray-400'" aria-hidden="true" x-bind:class="item.icon"></i>
+                            <span class="min-w-0 flex-1">
+                                <span class="block truncate font-medium" :class="item._idx === active ? 'text-brand' : 'text-ink'" x-text="item.title"></span>
+                                <span x-show="item.secondary" class="block truncate text-xs text-muted" x-text="item.secondary"></span>
+                            </span>
+                            <span class="shrink-0 rounded-full bg-gray-100 px-2 py-0.5 text-xs text-muted" x-text="item.label"></span>
+                        </li>
+                    </template>
                 </template>
                 <li x-show="! loading && q.trim().length >= 2 && results.length === 0"
-                    class="px-4 py-6 text-center text-sm text-muted">
-                    Brak wyników.
+                    class="px-4 py-8 text-center text-sm text-muted">
+                    Brak wyników dla „<span x-text="q"></span>".
                 </li>
                 <li x-show="q.trim().length < 2"
-                    class="px-4 py-6 text-center text-sm text-muted">
-                    Wpisz co najmniej 2 znaki. ↑↓ nawigacja, Enter otwiera, Esc zamyka.
+                    class="px-4 py-8 text-center text-sm text-muted">
+                    Zacznij pisać — strony, aktualności, osoby, sekcje…
+                    <br><span class="mt-1 block text-xs opacity-60">↑↓ nawigacja &nbsp;·&nbsp; Enter otwiera &nbsp;·&nbsp; Esc zamyka</span>
                 </li>
             </ul>
         </div>
@@ -794,6 +803,18 @@
         function commandPalette() {
             return {
                 open: false, q: '', results: [], active: 0, loading: false, timer: null,
+                get grouped() {
+                    const out = [];
+                    let lastLabel = null, idx = 0;
+                    for (const item of this.results) {
+                        if (item.label !== lastLabel) {
+                            out.push({ _header: item.label });
+                            lastLabel = item.label;
+                        }
+                        out.push({ ...item, _idx: idx++ });
+                    }
+                    return out;
+                },
                 openPalette() { this.open = true; this.$nextTick(() => this.$refs.input && this.$refs.input.focus()); },
                 close() { this.open = false; this.q = ''; this.results = []; this.active = 0; },
                 hotkey(e) {
@@ -816,7 +837,7 @@
                     this.loading = false;
                 },
                 move(d) { if (this.results.length) { this.active = (this.active + d + this.results.length) % this.results.length; } },
-                go(item) { if (item) { window.location.href = item.url; } },
+                go(item) { if (item && item.url) { window.location.href = item.url; } },
             };
         }
     </script>
