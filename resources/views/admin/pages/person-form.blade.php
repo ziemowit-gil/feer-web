@@ -2,6 +2,20 @@
 
 @section('title', $page->exists ? 'Edytuj osobę' : 'Nowa osoba')
 
+@push('page_module_banner')
+    <div class="flex items-center gap-3 border-b border-red-300 bg-red-600 px-6 py-2 text-sm font-semibold text-white"
+         role="note" aria-label="Informacja o module">
+        <i class="fa-solid fa-id-card-clip shrink-0" aria-hidden="true"></i>
+        <span>Moduł dedykowany tylko dla FEER</span>
+        @if ($page->exists && $page->parent)
+            <a href="{{ route('admin.podstrony.edit', $page->parent) }}"
+               class="ml-auto text-xs font-normal text-red-200 hover:text-white hover:underline">
+                ← O organizacji: {{ $page->parent->title }}
+            </a>
+        @endif
+    </div>
+@endpush
+
 @section('content')
     <nav class="mb-4 flex items-center gap-1.5 text-sm text-muted" aria-label="Breadcrumb">
         <a href="{{ route('admin.osoby.index') }}" class="text-brand hover:underline">

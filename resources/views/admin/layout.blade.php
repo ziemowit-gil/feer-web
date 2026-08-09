@@ -728,6 +728,8 @@
         </div>
         @endif
 
+        @stack('page_module_banner')
+
         <main class="p-6">
             @if (session('status'))
                 <div role="status" aria-live="polite" class="mb-4 rounded border border-green-300 bg-green-50 px-4 py-3 text-sm text-green-800">
