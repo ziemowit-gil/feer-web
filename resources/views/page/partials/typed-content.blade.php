@@ -231,9 +231,9 @@
         @if ($aboutStats->isNotEmpty())
             <section id="sekcja-stats" class="relative overflow-hidden bg-gradient-to-br from-brand to-brand-dark px-4 py-12 text-white" aria-label="W liczbach" data-countup>
                 <i class="fa-solid fa-arrow-trend-up pointer-events-none absolute -bottom-10 -right-2 text-[11rem] text-white/10" aria-hidden="true"></i>
-                <dl class="relative mx-auto grid max-w-4xl grid-cols-2 gap-6 md:grid-cols-4 md:divide-x md:divide-white/20">
+                <dl class="relative mx-auto flex max-w-4xl items-center justify-center">
                     @foreach ($aboutStats as $stat)
-                        <div class="flex flex-col items-center px-4 text-center">
+                        <div class="flex flex-1 flex-col items-center px-6 text-center {{ !$loop->first ? 'border-l border-white/20' : '' }}">
                             <dt class="sr-only">{{ $stat['label'] ?? '' }}</dt>
                             <dd class="flex flex-col items-center">
                                 <span class="block text-3xl font-extrabold leading-none tracking-tight md:text-4xl" data-countup-value>{{ $stat['value'] ?? '' }}</span>
