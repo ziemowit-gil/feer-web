@@ -877,7 +877,7 @@ class PageController extends Controller
         $slug = $base;
         $suffix = 2;
 
-        $isTaken = fn ($c) => Page::where('slug', $c)
+        $isTaken = fn ($c) => Page::withTrashed()->where('slug', $c)
             ->when($ignoreId, fn ($q) => $q->where('id', '!=', $ignoreId))
             ->exists();
 
@@ -896,7 +896,7 @@ class PageController extends Controller
         $suffix = 2;
 
         $isTaken = fn (string $candidate) => in_array($candidate, Page::RESERVED_SLUGS, true)
-            || Page::where('slug', $candidate)->when($ignoreId, fn ($q) => $q->where('id', '!=', $ignoreId))->exists();
+            || Page::withTrashed()->where('slug', $candidate)->when($ignoreId, fn ($q) => $q->where('id', '!=', $ignoreId))->exists();
 
         while ($isTaken($slug)) {
             $slug = "{$base}-{$suffix}";
