@@ -302,7 +302,7 @@ function templateModal(type, fields) {
                                : this.fields.includes('body') ? 'body' : null;
             if (contentField) {
                 if (window.tinymce) {
-                    const ed = tinymce.get(contentField) || tinymce.editors[0];
+                    const ed = tinymce.get(contentField) || tinymce.activeEditor;
                     if (ed) data[contentField] = ed.getContent();
                 }
                 if (window.ckeditorInstances && window.ckeditorInstances[contentField]) {
