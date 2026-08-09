@@ -53,11 +53,19 @@ class HomeController extends Controller
         $newsTtl = $settings->isModuleEnabled('news') && $settings->cacheEnabled('news')
             ? $settings->cacheTtl('news_item', 3600)
             : 0;
-        $news = $settings->isModuleEnabled('news')
-            ? ($newsTtl > 0
-                ? Cache::remember('news_latest3', $newsTtl, fn () => News::published()->with('category')->orderByDesc('published_at')->limit(3)->get())
-                : News::published()->with('category')->orderByDesc('published_at')->limit(3)->get())
-            : collect();
+        $newsQuery = fn () => News::published()->with('category')->orderByDesc('published_at')->limit(3)->get();
+        $news = collect();
+        if ($settings->isModuleEnabled('news')) {
+            if ($newsTtl > 0) {
+                $news = Cache::remember('news_latest3', $newsTtl, $newsQuery);
+                if (! $news instanceof \Illuminate\Database\Eloquent\Collection) {
+                    Cache::forget('news_latest3');
+                    $news = $newsQuery();
+                }
+            } else {
+                $news = $newsQuery();
+            }
+        }
 
         $events = $settings->isModuleEnabled('events')
             ? Event::upcoming()->limit(3)->get()

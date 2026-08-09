@@ -48,11 +48,19 @@ class SupportController extends Controller
         $newsTtl    = $settings->isModuleEnabled('news') && $settings->cacheEnabled('news')
             ? $settings->cacheTtl('news_item', 3600)
             : 0;
-        $latestNews = $settings->isModuleEnabled('news')
-            ? ($newsTtl > 0
-                ? Cache::remember('news_latest3', $newsTtl, fn () => News::published()->with('category')->orderByDesc('published_at')->limit(3)->get())
-                : News::published()->orderByDesc('published_at')->take(3)->get())
-            : collect();
+        $latestNews = collect();
+        if ($settings->isModuleEnabled('news')) {
+            $latestNewsQuery = fn () => News::published()->with('category')->orderByDesc('published_at')->limit(3)->get();
+            if ($newsTtl > 0) {
+                $latestNews = Cache::remember('news_latest3', $newsTtl, $latestNewsQuery);
+                if (! $latestNews instanceof \Illuminate\Database\Eloquent\Collection) {
+                    Cache::forget('news_latest3');
+                    $latestNews = $latestNewsQuery();
+                }
+            } else {
+                $latestNews = $latestNewsQuery();
+            }
+        }
 
         return view('support.show', compact('stats', 'photos', 'partners', 'latestNews'));
     }

@@ -106,7 +106,14 @@ class News extends Model implements HasMedia
 
         $ttl = $settings->cacheTtl('news_item', 3600);
 
-        return Cache::remember("news_item_{$value}", $ttl, fn () => parent::resolveRouteBinding($value, $field));
+        $result = Cache::remember("news_item_{$value}", $ttl, fn () => parent::resolveRouteBinding($value, $field));
+
+        if (! $result instanceof self && $result !== null) {
+            Cache::forget("news_item_{$value}");
+            return parent::resolveRouteBinding($value, $field);
+        }
+
+        return $result;
     }
 
     public function scopePublished(Builder $query): Builder
