@@ -61,6 +61,16 @@ class Page extends Model
         'forgot-password', 'reset-password', 'verify-email', 'confirm-password',
     ];
 
+    /** Visual frontend templates selectable per page (apply to standard/content pages). */
+    public const TEMPLATES = [
+        'default' => 'Domyślny (tytuł + treść + boczna nawigacja)',
+        'wide'    => 'Szeroki (pełna szerokość, bez bocznej nawigacji)',
+        'hero'    => 'Z hero (kolorowy baner z tytułem nad treścią)',
+        'landing' => 'Landing page (duży hero, bez okruszków nawigacyjnych)',
+        'portal'  => 'Portal (hero ze zdjęciem, treść + sidebar, galeria, kontakt)',
+        'minimal' => 'Minimalna (bez nagłówka i stopki serwisu)',
+    ];
+
     /** Page types: a plain content page, an event (webinar / on-site), a schedule listing, or an "about the organisation" page — each with its own layout. */
     public const TYPES = [
         'standard' => 'Standardowa',
@@ -185,6 +195,7 @@ class Page extends Model
         'legacy_name', 'legacy_intro',
         'brand_brandbook_url', 'brand_sections',
         'person_phone', 'person_role', 'person_bio', 'person_email', 'person_social', 'person_member_label', 'person_name_genitive',
+        'page_template',
     ];
 
     protected $casts = [
@@ -268,6 +279,16 @@ class Page extends Model
     public function isAboutPerson(): bool
     {
         return $this->type === 'about_person';
+    }
+
+    /** Czy strona używa standardowej sekcji treści (a nie własnego układu typowego). */
+    public function usesStandardLayout(): bool
+    {
+        return ! in_array($this->type, [
+            'event', 'schedule', 'about', 'faq', 'bip_move',
+            'internal_hub', 'training_institution', 'brand_assets',
+            'legacy', 'about_person',
+        ], true);
     }
 
     /** Kanoniczny publiczny URL strony (uwzględnia wielosegmentowy slug dla stron osoby). */

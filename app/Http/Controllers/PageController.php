@@ -59,7 +59,16 @@ class PageController extends Controller
             $data['szoPanelUrl'] = $settings->szoPanelUrl();
         }
 
-        return response()->view('page.show', $data);
+        $view = match ($page->page_template) {
+            'wide'    => 'page.show-wide',
+            'hero'    => 'page.show-hero',
+            'landing' => 'page.show-landing',
+            'portal'  => 'page.show-portal',
+            'minimal' => 'page.show-minimal',
+            default   => 'page.show',
+        };
+
+        return response()->view($view, $data);
     }
 
     /** Formularz logowania dla strony z zasobami marki (indywidualny login+hasło). */

@@ -76,6 +76,11 @@
 
             {{-- ============================ TREŚĆ ============================ --}}
             <div data-ftab-panel="tresc" class="space-y-6">
+                @include('admin.partials.template-panel', [
+                    'templateType'   => 'page',
+                    'templateFields' => ['content', 'meta_title', 'meta_description'],
+                ])
+
                 <div class="space-y-5 rounded-lg border border-gray-200 bg-white p-6">
                     <div class="grid gap-5 sm:grid-cols-2">
                         <div>
@@ -167,6 +172,17 @@
                         </select>
                         <p class="mt-1 text-xs text-muted">„Wydarzenie" dodaje pola o terminie, miejscu i rejestracji. „Harmonogram zajęć / spotkań" dodaje tabelę terminów oraz miejsce na informację o zmianie. Każdy typ ma inny układ na stronie.</p>
                         @error('type') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </div>
+
+                    <div class="border-t border-gray-100 pt-5 sm:w-1/2">
+                        <label for="page_template" class="mb-1 block text-sm font-bold">Szablon wizualny</label>
+                        <select id="page_template" name="page_template" class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                            @foreach (\App\Models\Page::TEMPLATES as $value => $label)
+                                <option value="{{ $value }}" {{ old('page_template', $page->page_template ?? 'default') === $value ? 'selected' : '' }}>{{ $label }}</option>
+                            @endforeach
+                        </select>
+                        <p class="mt-1 text-xs text-muted">Zmienia wygląd i układ strony publicznej. Działa dla stron typu „Standardowa", „Wewnętrzna" i „FAQ". Dla pozostałych typów układ jest stały.</p>
+                        @error('page_template') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
 
                     <div data-event-fields class="space-y-5 border-t border-gray-100 pt-5 {{ $currentType === 'event' ? '' : 'hidden' }}">

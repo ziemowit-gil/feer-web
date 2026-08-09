@@ -45,7 +45,7 @@ class ContentTemplateController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-            'type' => ['required', 'string', 'in:news,event,volunteer_ad'],
+            'type' => ['required', 'string', 'in:news,event,volunteer_ad,page'],
             'name' => ['required', 'string', 'max:120'],
             'data' => ['present', 'array'],
         ]);

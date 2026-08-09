@@ -351,6 +351,7 @@ class PageController extends Controller
             'wip_mode' => ['nullable', Rule::in(array_keys(Page::WIP_MODES))],
             'wip_message' => ['nullable', 'string', 'max:2000'],
             'type' => ['required', Rule::in(array_keys(Page::TYPES))],
+            'page_template' => ['nullable', Rule::in(array_keys(Page::TEMPLATES))],
             'access_mode' => ['nullable', Rule::in(array_keys(Page::ACCESS_MODES))],
             'access_password' => ['nullable', 'string', 'max:255'],
             'hub_hero' => ['nullable', 'string', 'max:1000'],

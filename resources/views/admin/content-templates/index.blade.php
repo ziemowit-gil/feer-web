@@ -14,7 +14,7 @@
     @else
         @foreach ($templates->groupBy('type') as $type => $group)
             <h2 class="mb-2 mt-6 text-sm font-bold uppercase tracking-wide text-muted">
-                {{ match ($type) { 'news' => 'Aktualności', 'event' => 'Wydarzenia', 'volunteer_ad' => 'Wolontariat', default => $type } }}
+                {{ match ($type) { 'news' => 'Aktualności', 'event' => 'Wydarzenia', 'volunteer_ad' => 'Wolontariat', 'page' => 'Strony', default => $type } }}
             </h2>
             <div class="overflow-hidden rounded-lg border border-gray-200 bg-white">
                 <table class="w-full text-left text-sm">
