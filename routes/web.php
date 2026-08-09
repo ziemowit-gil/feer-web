@@ -79,6 +79,7 @@ use App\Http\Controllers\Admin\DocxImportController;
 use App\Http\Controllers\Admin\FacilitatorController as AdminFacilitatorController;
 use App\Http\Controllers\Admin\EtrController as AdminEtrController;
 use App\Http\Controllers\Admin\MemberInvitationController as AdminMemberInvitationController;
+use App\Http\Controllers\Admin\CacheController as AdminCacheController;
 use App\Http\Controllers\Admin\HealthCheckController as AdminHealthCheckController;
 use App\Http\Controllers\EtrController;
 use App\Http\Controllers\MemberInvitationController;
@@ -465,6 +466,10 @@ Route::middleware(['auth', 'verified', '2fa'])->prefix(config('app.admin_prefix'
             ->only(['index', 'create', 'store', 'destroy']);
 
         Route::get('health', [AdminHealthCheckController::class, 'index'])->name('health.index');
+        Route::get('cache', [AdminCacheController::class, 'index'])->name('cache.index');
+        Route::put('cache', [AdminCacheController::class, 'update'])->name('cache.update');
+        Route::post('cache/{group}/flush', [AdminCacheController::class, 'flush'])->name('cache.flush');
+        Route::post('cache/flush-all', [AdminCacheController::class, 'flushAll'])->name('cache.flush-all');
 
         Route::get('dziennik', [AdminActivityController::class, 'index'])->name('dziennik.index');
         Route::get('martwe-linki', [AdminLinkCheckController::class, 'index'])->name('martwe-linki.index');

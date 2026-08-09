@@ -110,7 +110,7 @@
             $usersRoutes = ['admin.uzytkownicy.*', 'admin.grupy.*', 'admin.zaproszenia-strefy.*'];
 
             // ⑧ SYSTEM — narzędzia techniczne
-            $systemRoutes = ['admin.ustawienia.*', 'admin.szablony.*', 'admin.tresc.*', 'admin.przekierowania.*', 'admin.martwe-linki.*', 'admin.dziennik.*', 'admin.wcag-scans.*', 'admin.mail-templates.*', 'admin.health.*', 'admin.moduly.*'];
+            $systemRoutes = ['admin.ustawienia.*', 'admin.szablony.*', 'admin.tresc.*', 'admin.przekierowania.*', 'admin.martwe-linki.*', 'admin.dziennik.*', 'admin.wcag-scans.*', 'admin.mail-templates.*', 'admin.health.*', 'admin.moduly.*', 'admin.cache.*'];
         @endphp
 
         <nav class="flex-1 space-y-1.5 overflow-y-auto px-3 py-4 text-sm font-medium">
@@ -579,6 +579,10 @@
                         <a href="{{ route('admin.health.index') }}" class="{{ $itemClass('admin.health.*') }}" title="Health Check">
                             <i class="fa-solid fa-heart-pulse {{ $iconClass('admin.health.*') }}"></i>
                             <span class="nav-label">Health Check</span>
+                        </a>
+                        <a href="{{ route('admin.cache.index') }}" class="{{ $itemClass('admin.cache.*') }}" title="Cache">
+                            <i class="fa-solid fa-bolt {{ $iconClass('admin.cache.*') }}"></i>
+                            <span class="nav-label">Cache</span>
                         </a>
                     </div>
                 </div>

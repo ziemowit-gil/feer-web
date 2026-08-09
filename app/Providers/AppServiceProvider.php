@@ -4,11 +4,18 @@ namespace App\Providers;
 
 use App\Models\Banner;
 use App\Models\Category;
+use App\Models\Event as EventModel;
 use App\Models\NavItem;
+use App\Models\News;
+use App\Models\NewsCategory;
 use App\Models\Page;
 use App\Models\Project;
 use App\Models\SiteSetting;
 use App\Observers\BannerObserver;
+use App\Observers\EventObserver;
+use App\Observers\NewsCategoryObserver;
+use App\Observers\NewsObserver;
+use App\Observers\PageObserver;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\View;
@@ -37,6 +44,10 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Banner::observe(BannerObserver::class);
+        News::observe(NewsObserver::class);
+        NewsCategory::observe(NewsCategoryObserver::class);
+        Page::observe(PageObserver::class);
+        EventModel::observe(EventObserver::class);
 
         // Rejestracja providera Microsoft 365 dla Laravel Socialite.
         Event::listen(function (SocialiteWasCalled $event) {

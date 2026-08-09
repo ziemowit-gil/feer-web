@@ -9,6 +9,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
+use App\Models\SiteSetting;
+use Illuminate\Support\Facades\Cache;
 use Laravel\Scout\Searchable;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
@@ -92,6 +94,20 @@ class News extends Model implements HasMedia
     public function clones(): HasMany
     {
         return $this->hasMany(self::class, 'cloned_from_id');
+    }
+
+    public function resolveRouteBinding($value, $field = null): ?self
+    {
+        $resolveField = $field ?? $this->getRouteKeyName();
+        $settings = SiteSetting::current();
+
+        if ($resolveField !== 'slug' || ! $settings->cacheEnabled('news')) {
+            return parent::resolveRouteBinding($value, $field);
+        }
+
+        $ttl = $settings->cacheTtl('news_item', 3600);
+
+        return Cache::remember("news_item_{$value}", $ttl, fn () => parent::resolveRouteBinding($value, $field));
     }
 
     public function scopePublished(Builder $query): Builder

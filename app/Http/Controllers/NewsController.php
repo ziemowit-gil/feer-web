@@ -7,6 +7,7 @@ use App\Models\NewsCategory;
 use App\Models\SiteSetting;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 use Spatie\Browsershot\Browsershot;
 
@@ -22,7 +23,11 @@ class NewsController extends Controller
     /** Wyświetla listing aktualności z opcjonalnym filtrem kategorii i paginacją. */
     public function index(Request $request)
     {
-        $categories = NewsCategory::orderBy('order')->orderBy('name')->get();
+        $settings = \App\Models\SiteSetting::current();
+        $categoriesTtl = $settings->cacheEnabled('news') ? $settings->cacheTtl('news_categories', 86400) : 0;
+        $categories = $categoriesTtl > 0
+            ? Cache::remember('news_categories', $categoriesTtl, fn () => NewsCategory::orderBy('order')->orderBy('name')->get())
+            : NewsCategory::orderBy('order')->orderBy('name')->get();
         $activeCategory = $request->query('kategoria')
             ? $categories->firstWhere('slug', $request->query('kategoria'))
             : null;

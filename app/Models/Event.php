@@ -2,11 +2,13 @@
 
 namespace App\Models;
 
+use App\Models\SiteSetting;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Cache;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 
@@ -72,6 +74,19 @@ class Event extends Model implements HasMedia
     public function getRouteKeyName(): string
     {
         return 'slug';
+    }
+
+    public function resolveRouteBinding($value, $field = null): ?self
+    {
+        $settings = SiteSetting::current();
+
+        if (! $settings->cacheEnabled('events')) {
+            return parent::resolveRouteBinding($value, $field);
+        }
+
+        $ttl = $settings->cacheTtl('event_item', 3600);
+
+        return Cache::remember("event_item_{$value}", $ttl, fn () => parent::resolveRouteBinding($value, $field));
     }
 
     // -------------------------------------------------------------------------

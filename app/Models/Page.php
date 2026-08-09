@@ -4,11 +4,13 @@ namespace App\Models;
 
 use App\Models\Concerns\Approvable;
 use App\Models\Concerns\LogsActivity;
+use App\Models\SiteSetting;
 use Laravel\Scout\Searchable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
 
 class Page extends Model
@@ -226,6 +228,20 @@ class Page extends Model
         'person_social'      => 'array',
         'person_department'  => 'array',
     ];
+
+    public function resolveRouteBinding($value, $field = null): ?self
+    {
+        $resolveField = $field ?? $this->getRouteKeyName();
+        $settings = SiteSetting::current();
+
+        if ($resolveField !== 'slug' || ! $settings->cacheEnabled('pages')) {
+            return parent::resolveRouteBinding($value, $field);
+        }
+
+        $ttl = $settings->cacheTtl('page_item', 3600);
+
+        return Cache::remember("page_item_{$value}", $ttl, fn () => parent::resolveRouteBinding($value, $field));
+    }
 
     public function isEvent(): bool
     {

@@ -183,6 +183,7 @@ class SiteSetting extends Model implements HasMedia
         'support_method2_title', 'support_method2_text', 'support_method2_cta_label',
         'support_method3_title', 'support_method3_text', 'support_method3_cta_label',
         'support_outro_title', 'support_outro_subtitle',
+        'cache_config',
     ];
 
     /**
@@ -289,6 +290,7 @@ class SiteSetting extends Model implements HasMedia
         'accessibility_page_published_at' => 'date',
         'accessibility_page_updated_at' => 'date',
         'accessibility_declaration_date' => 'date',
+        'cache_config' => 'array',
     ];
 
     /** Status zgodności z ustawą o dostępności cyfrowej (deklaracja dostępności). */
@@ -670,6 +672,36 @@ class SiteSetting extends Model implements HasMedia
         return filled($this->unsplash_access_key)
             ? $this->unsplash_access_key
             : (config('services.unsplash.access_key') ?: null);
+    }
+
+    /** Domyślne wartości konfiguracji cache — używane gdy brak własnej konfiguracji. */
+    public const CACHE_DEFAULTS = [
+        'news_enabled'          => true,
+        'events_enabled'        => true,
+        'pages_enabled'         => true,
+        'news_item_ttl'         => 3600,
+        'news_categories_ttl'   => 86400,
+        'event_item_ttl'        => 3600,
+        'events_upcoming_ttl'   => 900,
+        'page_item_ttl'         => 3600,
+    ];
+
+    /** Czy cache jest włączony dla danej grupy (news / events / pages). */
+    public function cacheEnabled(string $group): bool
+    {
+        $config = $this->cache_config ?? [];
+        $key = "{$group}_enabled";
+
+        return (bool) ($config[$key] ?? self::CACHE_DEFAULTS[$key] ?? true);
+    }
+
+    /** TTL (sekundy) dla danego klucza cache. Minimum 60 s. */
+    public function cacheTtl(string $key, int $default): int
+    {
+        $config = $this->cache_config ?? [];
+        $ttlKey = "{$key}_ttl";
+
+        return max(60, (int) ($config[$ttlKey] ?? self::CACHE_DEFAULTS[$ttlKey] ?? $default));
     }
 
     private static ?self $cached = null;

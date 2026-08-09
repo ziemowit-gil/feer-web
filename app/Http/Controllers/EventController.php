@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Event;
+use Illuminate\Support\Facades\Cache;
 
 /**
  * Publiczna lista nadchodzących szkoleń/wydarzeń i widok szczegółów pojedynczego wydarzenia.
@@ -16,9 +17,13 @@ class EventController extends Controller
     /** Wyświetla listę nadchodzących wydarzeń/szkoleń. */
     public function index()
     {
-        return view('events.index', [
-            'events' => Event::upcoming()->get(),
-        ]);
+        $settings = \App\Models\SiteSetting::current();
+        $ttl = $settings->cacheEnabled('events') ? $settings->cacheTtl('events_upcoming', 900) : 0;
+        $events = $ttl > 0
+            ? Cache::remember('events_upcoming', $ttl, fn () => Event::upcoming()->get())
+            : Event::upcoming()->get();
+
+        return view('events.index', compact('events'));
     }
 
     /** Wyświetla stronę szczegółów opublikowanego wydarzenia; zakończone pozostają dostępne po linku. */
