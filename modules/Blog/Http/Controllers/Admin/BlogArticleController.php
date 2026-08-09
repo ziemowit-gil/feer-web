@@ -1,23 +1,15 @@
 <?php
 
-namespace App\Http\Controllers\Admin;
+namespace Modules\Blog\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\BlogArticle;
+use Modules\Blog\Models\BlogArticle;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
-/**
- * Panel admin: CRUD artykułów bloga Wiem FEER z klonowaniem i przełącznikiem „wyłącz artykuł".
- *
- * Metody: index(), create(), store(), edit(), update(), destroy(), clone(), toggleDisabled().
- *
- * @author Ziemowit Gil <ziemowit.gil@feer.org.pl>
- */
 class BlogArticleController extends Controller
 {
-    /** Wyświetla listę artykułów bloga Wiem FEER z licznikami komentarzy. */
     public function index()
     {
         $articles = BlogArticle::withCount([
@@ -25,16 +17,14 @@ class BlogArticleController extends Controller
             'comments as pending_comments_count' => fn ($q) => $q->where('is_approved', false),
         ])->orderByDesc('created_at')->get();
 
-        return view('admin.blog.index', compact('articles'));
+        return view('blog::admin.index', compact('articles'));
     }
 
-    /** Wyświetla formularz tworzenia nowego artykułu. */
     public function create()
     {
-        return view('admin.blog.form', ['article' => new BlogArticle]);
+        return view('blog::admin.form', ['article' => new BlogArticle]);
     }
 
-    /** Zapisuje nowy artykuł bloga z wygenerowanym unikalnym slugiem. */
     public function store(Request $request)
     {
         $data = $this->validated($request);
@@ -45,13 +35,11 @@ class BlogArticleController extends Controller
         return redirect()->route('admin.wiem-feer.index')->with('status', 'Artykuł został utworzony.');
     }
 
-    /** Wyświetla formularz edycji artykułu. */
     public function edit(BlogArticle $article)
     {
-        return view('admin.blog.form', compact('article'));
+        return view('blog::admin.form', compact('article'));
     }
 
-    /** Aktualizuje artykuł bloga. */
     public function update(Request $request, BlogArticle $article)
     {
         $data = $this->validated($request);
@@ -62,7 +50,6 @@ class BlogArticleController extends Controller
         return redirect()->route('admin.wiem-feer.index')->with('status', 'Artykuł został zaktualizowany.');
     }
 
-    /** Usuwa artykuł bloga. */
     public function destroy(BlogArticle $article)
     {
         $article->delete();
@@ -70,7 +57,6 @@ class BlogArticleController extends Controller
         return redirect()->route('admin.wiem-feer.index')->with('status', 'Artykuł został usunięty.');
     }
 
-    /** Klonuje artykuł jako nowy szkic z unikalnym tytułem i slugiem. */
     public function clone(BlogArticle $article)
     {
         $clone = $article->replicate();
@@ -82,17 +68,16 @@ class BlogArticleController extends Controller
         $clone->save();
 
         return redirect()->route('admin.wiem-feer.edit', $clone)
-            ->with('status', 'Artykuł został sklonowany jako "' . $clone->title . '". Jest zapisany jako wyłączony.');
+            ->with('status', 'Artykul zostal sklonowany jako: ' . $clone->title . '. Jest zapisany jako wylaczony.');
     }
 
-    /** Przełącza flagę wyłączenia artykułu (ukrywa lub przywraca go na froncie). */
     public function toggleDisabled(BlogArticle $article)
     {
         $article->update(['is_disabled' => ! $article->is_disabled]);
 
         $message = $article->is_disabled
-            ? "Artykuł „{$article->title}” został wyłączony."
-            : "Artykuł „{$article->title}” został ponownie włączony.";
+            ? 'Artykuł „' . $article->title . '" został wyłączony.'
+            : 'Artykuł „' . $article->title . '" został ponownie włączony.';
 
         return redirect()->route('admin.wiem-feer.index')->with('status', $message);
     }
@@ -100,26 +85,23 @@ class BlogArticleController extends Controller
     private function validated(Request $request): array
     {
         $data = $request->validate([
-            'title' => ['required', 'string', 'max:255'],
-            'slug' => ['nullable', 'string', 'max:255'],
-            'author_name' => ['nullable', 'string', 'max:255'],
-            'excerpt' => ['nullable', 'string', 'max:500'],
-            'body' => ['required', 'string'],
-            'published_at' => ['nullable', 'date'],
+            'title'            => ['required', 'string', 'max:255'],
+            'slug'             => ['nullable', 'string', 'max:255'],
+            'author_name'      => ['nullable', 'string', 'max:255'],
+            'excerpt'          => ['nullable', 'string', 'max:500'],
+            'body'             => ['required', 'string'],
+            'published_at'     => ['nullable', 'date'],
             'disabled_message' => ['nullable', 'string', 'max:2000'],
-            'wip_mode' => ['nullable', Rule::in(array_keys(BlogArticle::WIP_MODES))],
-            'wip_message' => ['nullable', 'string', 'max:2000'],
+            'wip_mode'         => ['nullable', Rule::in(array_keys(BlogArticle::WIP_MODES))],
+            'wip_message'      => ['nullable', 'string', 'max:2000'],
         ]);
 
         $data['slug'] = trim($data['slug'] ?? '');
         $data['is_published'] = $request->boolean('is_published');
         $data['published_at'] = $data['published_at'] ?? ($data['is_published'] ? now() : null);
-
-        // Availability controls: "disable article" and "under construction" mode.
         $data['is_disabled'] = $request->boolean('is_disabled');
         $data['disabled_message'] = trim((string) ($data['disabled_message'] ?? '')) ?: null;
         $data['wip_mode'] = $data['wip_mode'] ?? null;
-        // A message without a mode selected would never surface — drop it.
         $data['wip_message'] = $data['wip_mode']
             ? (trim((string) ($data['wip_message'] ?? '')) ?: null)
             : null;

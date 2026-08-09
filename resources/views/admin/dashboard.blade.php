@@ -161,7 +161,7 @@
                 if ($can('pages'))      $shortcuts[] = ['route' => route('admin.podstrony.create'),          'label' => 'Nowa strona',         'icon' => 'fa-file-lines',     'color' => 'purple'];
                 if ($can('landing'))    $shortcuts[] = ['route' => route('admin.lp.create'),                 'label' => 'Nowy landing page',   'icon' => 'fa-bullhorn',       'color' => 'orange'];
                 if ($can('reports'))    $shortcuts[] = ['route' => route('admin.sprawozdania.create'),       'label' => 'Nowe sprawozdanie',   'icon' => 'fa-file-invoice',   'color' => 'slate'];
-                if ($siteSettings->isModuleEnabled('blog'))
+                if (app(\App\Modules\ModuleManager::class)->isActive('blog'))
                                         $shortcuts[] = ['route' => route('admin.wiem-feer.create'),          'label' => 'Nowy wpis bloga',     'icon' => 'fa-feather-pointed','color' => 'rose'];
             @endphp
 

@@ -80,7 +80,7 @@
                 </label>
                 <div class="mt-3 sm:pl-6" data-disable-message>
                     <label for="disabled_message" class="mb-1 block text-sm font-bold">Komunikat <span class="font-normal text-muted">(opcjonalnie)</span></label>
-                    <textarea id="disabled_message" name="disabled_message" rows="2" placeholder="{{ \App\Models\BlogArticle::DEFAULT_DISABLED_MESSAGE }}"
+                    <textarea id="disabled_message" name="disabled_message" rows="2" placeholder="{{ \Modules\Blog\Models\BlogArticle::DEFAULT_DISABLED_MESSAGE }}"
                         class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">{{ old('disabled_message', $article->disabled_message) }}</textarea>
                     <p class="mt-1 text-xs text-muted">Zostaw puste, aby użyć domyślnego komunikatu.</p>
                     @error('disabled_message') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
@@ -98,7 +98,7 @@
                             class="mt-0.5 border-gray-300 text-brand focus:ring-brand">
                         <span class="text-sm">Wyłączone <span class="text-muted">— artykuł działa normalnie</span></span>
                     </label>
-                    @foreach (\App\Models\BlogArticle::WIP_MODES as $value => $label)
+                    @foreach (\Modules\Blog\Models\BlogArticle::WIP_MODES as $value => $label)
                         <label class="flex items-start gap-2">
                             <input type="radio" name="wip_mode" value="{{ $value }}" {{ $currentWip === $value ? 'checked' : '' }}
                                 class="mt-0.5 border-gray-300 text-brand focus:ring-brand">
@@ -110,7 +110,7 @@
 
                 <div class="mt-3 sm:pl-6 {{ $currentWip ? '' : 'hidden' }}" data-wip-message>
                     <label for="wip_message" class="mb-1 block text-sm font-bold">Treść komunikatu <span class="font-normal text-muted">(opcjonalnie)</span></label>
-                    <textarea id="wip_message" name="wip_message" rows="2" placeholder="{{ \App\Models\BlogArticle::DEFAULT_WIP_NOTICE_MESSAGE }}"
+                    <textarea id="wip_message" name="wip_message" rows="2" placeholder="{{ \Modules\Blog\Models\BlogArticle::DEFAULT_WIP_NOTICE_MESSAGE }}"
                         class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">{{ old('wip_message', $article->wip_message) }}</textarea>
                     <p class="mt-1 text-xs text-muted">Zostaw puste, aby użyć domyślnego komunikatu dla wybranego trybu.</p>
                     @error('wip_message') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror

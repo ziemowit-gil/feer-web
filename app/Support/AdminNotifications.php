@@ -5,7 +5,7 @@ namespace App\Support;
 use App\Http\Controllers\Admin\ApprovalController;
 use App\Http\Controllers\Admin\TaskController;
 use App\Models\AccessibilityReport;
-use App\Models\BlogComment;
+use Modules\Blog\Models\BlogComment;
 use App\Models\MeetingSignup;
 use App\Models\User;
 use Illuminate\Support\Carbon;

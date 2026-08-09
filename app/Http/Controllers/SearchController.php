@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\BlogArticle;
+use Modules\Blog\Models\BlogArticle;
 use App\Models\EducationalMaterial;
 use App\Models\News;
 use App\Models\Page;

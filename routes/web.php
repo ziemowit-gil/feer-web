@@ -45,13 +45,10 @@ use App\Http\Controllers\Admin\TagController as AdminTagController;
 use App\Http\Controllers\Admin\TaskController as AdminTaskController;
 use App\Http\Controllers\Admin\VolunteerAdController as AdminVolunteerAdController;
 use App\Http\Controllers\Admin\MailTemplateController as AdminMailTemplateController;
+use App\Http\Controllers\Admin\ModuleController as AdminModuleController;
 use App\Http\Controllers\Admin\WcagScanController as AdminWcagScanController;
 use App\Http\Controllers\AccessibilityController;
 use App\Http\Controllers\AccessibilityReportController;
-use App\Http\Controllers\Admin\BlogArticleController as AdminBlogArticleController;
-use App\Http\Controllers\Admin\BlogCommentController as AdminBlogCommentController;
-use App\Http\Controllers\BlogController;
-use App\Http\Controllers\BlogCommentController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\EducationalMaterialController;
 use App\Http\Controllers\EventController;
@@ -119,13 +116,6 @@ Route::middleware('module:materials')->group(function () {
     Route::post('/materialy/zapis', [MaterialSubscriberController::class, 'store'])->name('materials.subscribe');
 });
 
-// Blog „Wiem FEER" — artykuły z komentarzami (osobna baza SQLite).
-Route::middleware('module:blog')->group(function () {
-    Route::get('/wiem-feer', [BlogController::class, 'index'])->name('blog.index');
-    Route::get('/wiem-feer/{article:slug}', [BlogController::class, 'show'])->name('blog.show');
-    Route::post('/wiem-feer/{article:slug}/komentarz', [BlogCommentController::class, 'store'])
-        ->name('blog.comments.store')->middleware('throttle:5,1');
-});
 
 Route::middleware('module:volunteering')->group(function () {
     Route::get('/wolontariat', [VolunteerController::class, 'index'])->name('volunteer.index');
@@ -363,15 +353,6 @@ Route::middleware(['auth', 'verified', '2fa'])->prefix(config('app.admin_prefix'
 
     // Blog „Wiem FEER" — gdy moduł włączony, dostępny dla każdego użytkownika
     // panelu (jak multimedia); wyłączenie modułu chowa całą sekcję.
-    Route::middleware('module:blog')->group(function () {
-        Route::resource('wiem-feer', AdminBlogArticleController::class)->parameters(['wiem-feer' => 'article'])->except('show');
-        Route::patch('wiem-feer/{article}/wylacz', [AdminBlogArticleController::class, 'toggleDisabled'])->name('wiem-feer.wylacz');
-        Route::post('wiem-feer/{article}/klonuj', [AdminBlogArticleController::class, 'clone'])->name('wiem-feer.klonuj');
-        Route::get('komentarze-bloga', [AdminBlogCommentController::class, 'index'])->name('komentarze-bloga.index');
-        Route::patch('komentarze-bloga/{comment}/zatwierdz', [AdminBlogCommentController::class, 'approve'])->name('komentarze-bloga.approve');
-        Route::delete('komentarze-bloga/{comment}', [AdminBlogCommentController::class, 'destroy'])->name('komentarze-bloga.destroy');
-    });
-
     Route::get('multimedia', [MediaLibraryController::class, 'index'])->name('multimedia.index');
     Route::get('multimedia/obrazy', [MediaLibraryController::class, 'imagesJson'])->name('multimedia.images');
     Route::get('multimedia/audyt-alt', [MediaLibraryController::class, 'altAudit'])->name('multimedia.alt-audit');
@@ -415,6 +396,11 @@ Route::middleware(['auth', 'verified', '2fa'])->prefix(config('app.admin_prefix'
         Route::post('ustawienia/prefix-panelu', [SiteSettingController::class, 'updateAdminPrefix'])->name('ustawienia.prefix');
         Route::get('ustawienia/dev', [SiteSettingController::class, 'dev'])->name('ustawienia.dev');
         Route::post('push/wyslij', [SiteSettingController::class, 'sendPush'])->name('push.send');
+
+        Route::get('moduly', [AdminModuleController::class, 'index'])->name('moduly.index');
+        Route::post('moduly/{identifier}/install', [AdminModuleController::class, 'install'])->name('moduly.install');
+        Route::post('moduly/{identifier}/activate', [AdminModuleController::class, 'activate'])->name('moduly.activate');
+        Route::post('moduly/{identifier}/deactivate', [AdminModuleController::class, 'deactivate'])->name('moduly.deactivate');
 
         Route::get('zgloszenia-spotkania', [AdminMeetingSignupController::class, 'index'])->name('zgloszenia-spotkania.index');
         Route::get('zgloszenia-spotkania/eksport', [AdminMeetingSignupController::class, 'export'])->name('zgloszenia-spotkania.export');

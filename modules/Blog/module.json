@@ -1,0 +1,11 @@
+{
+    "identifier":   "blog",
+    "name":         "Wiem FEER (blog)",
+    "version":      "1.0.0",
+    "description":  "Blog Wiem FEER — artykuły, komentarze, moderacja. Osobna baza SQLite.",
+    "author":       "FEER",
+    "provider":     "Modules\\Blog\\Providers\\BlogServiceProvider",
+    "migrations":   false,
+    "assets":       false,
+    "requires":     []
+}

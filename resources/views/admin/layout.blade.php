@@ -110,7 +110,7 @@
             $usersRoutes = ['admin.uzytkownicy.*', 'admin.grupy.*', 'admin.zaproszenia-strefy.*'];
 
             // ⑧ SYSTEM — narzędzia techniczne
-            $systemRoutes = ['admin.ustawienia.*', 'admin.szablony.*', 'admin.tresc.*', 'admin.przekierowania.*', 'admin.martwe-linki.*', 'admin.dziennik.*', 'admin.wcag-scans.*', 'admin.mail-templates.*', 'admin.health.*'];
+            $systemRoutes = ['admin.ustawienia.*', 'admin.szablony.*', 'admin.tresc.*', 'admin.przekierowania.*', 'admin.martwe-linki.*', 'admin.dziennik.*', 'admin.wcag-scans.*', 'admin.mail-templates.*', 'admin.health.*', 'admin.moduly.*'];
         @endphp
 
         <nav class="flex-1 space-y-1.5 overflow-y-auto px-3 py-4 text-sm font-medium">
@@ -155,7 +155,7 @@
             @endif
 
             {{-- ② PUBLIKACJE --}}
-            @if ($can('news') || $can('polls') || $can('materials') || $can('volunteering') || $can('events') || $can('faq') || $can('reports') || $can('landing') || $can('projects') || $siteSettings->isModuleEnabled('blog'))
+            @if ($can('news') || $can('polls') || $can('materials') || $can('volunteering') || $can('events') || $can('faq') || $can('reports') || $can('landing') || $can('projects') || app(\App\Modules\ModuleManager::class)->isActive('blog'))
                 <div class="section-divider"></div>
                 <div x-data="{ open: {{ request()->routeIs($pubRoutes) ? 'true' : 'false' }} }">
                     <button type="button" @click="open = !open" :aria-expanded="open" aria-controls="nav-section-pub"
@@ -198,7 +198,7 @@
                         @endif
 
                         {{-- Wiem FEER + Komentarze --}}
-                        @if ($siteSettings->isModuleEnabled('blog'))
+                        @if (app(\App\Modules\ModuleManager::class)->isActive('blog'))
                             @php $blogActive = request()->routeIs(['admin.wiem-feer.*', 'admin.komentarze-bloga.*']); @endphp
                             <div x-data="{ open: {{ $blogActive ? 'true' : 'false' }} }">
                                 <div class="flex items-center {{ $itemClass(['admin.wiem-feer.*', 'admin.komentarze-bloga.*']) }}">
@@ -571,6 +571,10 @@
                         <a href="{{ route('admin.wcag-scans.index') }}" class="{{ $itemClass('admin.wcag-scans.*') }}" title="Skaner WCAG">
                             <i class="fa-solid fa-universal-access {{ $iconClass('admin.wcag-scans.*') }}"></i>
                             <span class="nav-label">Skaner WCAG</span>
+                        </a>
+                        <a href="{{ route('admin.moduly.index') }}" class="{{ $itemClass('admin.moduly.*') }}" title="Moduły systemu">
+                            <i class="fa-solid fa-puzzle-piece {{ $iconClass('admin.moduly.*') }}"></i>
+                            <span class="nav-label">Moduły</span>
                         </a>
                         <a href="{{ route('admin.health.index') }}" class="{{ $itemClass('admin.health.*') }}" title="Health Check">
                             <i class="fa-solid fa-heart-pulse {{ $iconClass('admin.health.*') }}"></i>
