@@ -833,7 +833,7 @@
         odOpenBtn.addEventListener('click', function () {
             loadOneDriveSdk(function () {
                 window.OneDrive.open({
-                    clientId: {{ json_encode($msClientId) }},
+                    clientId: @json($msClientId),
                     action: 'download',
                     multiSelect: false,
                     advanced: { filter: '.jpg,.jpeg,.png,.gif,.webp,.bmp,.avif,.svg' },
@@ -2103,7 +2103,7 @@
             hvModal.classList.remove('hidden');
             hvModal.classList.add('flex');
             if (revisions !== null) return;
-            fetch({{ json_encode($historyJsonUrl) }})
+            fetch(@json($historyJsonUrl))
                 .then(function (r) { return r.json(); })
                 .then(function (data) { revisions = data; hvRender(data); })
                 .catch(function () {
@@ -2189,7 +2189,7 @@
 (function () {
     var docxInput  = document.getElementById('{{ $editorId }}-docx-input');
     var docxBtn    = document.getElementById('{{ $editorId }}-docx-btn');
-    var importUrl  = {{ json_encode($docxImportUrl) }};
+    var importUrl  = @json($docxImportUrl);
     var csrfToken  = document.querySelector('meta[name="csrf-token"]')?.content ?? '';
 
     function triggerPick() { if (docxInput) docxInput.click(); }
