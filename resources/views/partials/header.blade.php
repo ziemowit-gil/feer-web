@@ -31,7 +31,10 @@
             @php
                 $wmMission = null;
                 if ($siteSettings->wide_mission_show_mission) {
-                    $wmMission = \App\Models\Page::where('type', 'about')->value('about_motto');
+                    $pageTtl   = $siteSettings->cacheEnabled('pages') ? $siteSettings->cacheTtl('page_item', 3600) : 0;
+                    $wmMission = $pageTtl > 0
+                        ? \Illuminate\Support\Facades\Cache::remember('page_about_motto', $pageTtl, fn () => \App\Models\Page::where('type', 'about')->value('about_motto'))
+                        : \App\Models\Page::where('type', 'about')->value('about_motto');
                 }
                 $wmMission = $wmMission ?: $siteSettings->tagline;
             @endphp

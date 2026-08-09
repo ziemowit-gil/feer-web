@@ -12,6 +12,7 @@ use App\Models\Poll;
 use App\Models\QuickAction;
 use App\Models\SiteSetting;
 use App\Support\SubstackFeed;
+use Illuminate\Support\Facades\Cache;
 
 /**
  * Strona główna serwisu — agreguje dane ze wszystkich włączonych modułów
@@ -31,8 +32,12 @@ class HomeController extends Controller
         $slides = $settings->isModuleEnabled('hero') ? HeroSlide::orderBy('order')->get() : collect();
 
         if ($settings->hero_mission_slide && $slides->isNotEmpty()) {
-            $missionText = Page::where('type', 'about')->value('about_motto') ?: $settings->tagline;
-            if ($missionText) {
+            $mottoTtl    = $settings->cacheEnabled('pages') ? $settings->cacheTtl('page_item', 3600) : 0;
+            $missionText = ($mottoTtl > 0
+                ? Cache::remember('page_about_motto', $mottoTtl, fn () => Page::where('type', 'about')->value('about_motto'))
+                : Page::where('type', 'about')->value('about_motto')
+            ) ?: $settings->tagline;
+            if (filled($missionText)) {
                 $missionSlide = (object) [
                     'mission_text'   => $missionText,
                     'logo_url'       => $settings->logoUrl(),
@@ -45,8 +50,13 @@ class HomeController extends Controller
             }
         }
 
+        $newsTtl = $settings->isModuleEnabled('news') && $settings->cacheEnabled('news')
+            ? $settings->cacheTtl('news_item', 3600)
+            : 0;
         $news = $settings->isModuleEnabled('news')
-            ? News::published()->with('category')->orderByDesc('published_at')->limit(3)->get()
+            ? ($newsTtl > 0
+                ? Cache::remember('news_latest3', $newsTtl, fn () => News::published()->with('category')->orderByDesc('published_at')->limit(3)->get())
+                : News::published()->with('category')->orderByDesc('published_at')->limit(3)->get())
             : collect();
 
         $events = $settings->isModuleEnabled('events')
