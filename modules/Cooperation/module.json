@@ -1,0 +1,12 @@
+{
+    "identifier":   "cooperation",
+    "name":         "Współpraca z FEER",
+    "version":      "1.0.0",
+    "description":  "Strona partnerstwa i współpracy — sektory, formy wsparcia, logotypy partnerów, CTA do kontaktu.",
+    "author":       "FEER",
+    "provider":     "Modules\\Cooperation\\Providers\\CooperationServiceProvider",
+    "migrations":   false,
+    "assets":       false,
+    "built_in":     true,
+    "requires":     []
+}

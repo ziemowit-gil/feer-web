@@ -639,6 +639,205 @@
             <p class="text-center text-muted">Brak dodanych linków. Dodaj je w panelu (edycja strony → Strefa współpracownika).</p>
         @endif
     </section>
+    @elseif ($page->isLinksHub())
+    @php $hubLinks = collect($page->hub_links ?? [])->filter(fn ($l) => filled($l['label'] ?? null) && filled($l['url'] ?? null)); @endphp
+
+    <section class="border-b border-gray-200 bg-brand text-white"
+        @if ($page->hub_hero) style="background-image: linear-gradient(0deg, rgba(0,0,0,.55), rgba(0,0,0,.35)), url('{{ $page->hub_hero }}'); background-size: cover; background-position: center;" @endif>
+        <div class="mx-auto max-w-5xl px-4 py-16 text-center">
+            <h1 class="text-3xl font-bold md:text-4xl">{{ $page->title }}</h1>
+            @if (filled($page->hub_intro))
+                <p class="mx-auto mt-3 max-w-2xl text-white/90">{{ $page->hub_intro }}</p>
+            @endif
+        </div>
+    </section>
+
+    <section class="mx-auto max-w-5xl px-4 py-12">
+        @if ($page->content)
+            <div class="prose mx-auto mb-10 max-w-none text-ink">{!! $page->content !!}</div>
+        @endif
+
+        @if ($hubLinks->isNotEmpty())
+            <ul class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3" role="list">
+                @foreach ($hubLinks as $link)
+                    <li>
+                        <a href="{{ $link['url'] }}"
+                            class="group flex h-full items-start gap-3 rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition hover:border-brand hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
+                            <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-brand-light text-lg text-brand" aria-hidden="true">
+                                <i class="{{ filled($link['icon'] ?? null) ? $link['icon'] : 'fa-solid fa-arrow-right' }}"></i>
+                            </span>
+                            <span class="min-w-0">
+                                <span class="block font-bold text-ink group-hover:text-brand">{{ $link['label'] }}</span>
+                                @if (filled($link['description'] ?? null))
+                                    <span class="mt-0.5 block text-sm text-muted">{{ $link['description'] }}</span>
+                                @endif
+                            </span>
+                        </a>
+                    </li>
+                @endforeach
+            </ul>
+        @endif
+    </section>
+    @elseif ($page->isCooperation())
+    @php
+        $cd       = $page->cooperation_data ?? [];
+        $cdSectors = $cd['sectors'] ?? [
+            ['icon' => 'fa-solid fa-building',    'color' => 'blue',   'title' => 'Biznes',                'text' => '', 'tag1' => 'CSR / ESG',          'tag2' => 'Wolontariat pracowniczy', 'tag3' => 'Wizerunek marki'],
+            ['icon' => 'fa-solid fa-landmark',    'color' => 'green',  'title' => 'Samorząd i instytucje', 'text' => '', 'tag1' => 'Dialog obywatelski',  'tag2' => 'Polityka społeczna',      'tag3' => 'Aktywizacja lokalna'],
+            ['icon' => 'fa-solid fa-flask',       'color' => 'purple', 'title' => 'Nauka i edukacja',      'text' => '', 'tag1' => 'Innowacje społeczne', 'tag2' => 'Praktyki i badania',      'tag3' => 'Transfer wiedzy'],
+            ['icon' => 'fa-solid fa-people-group','color' => 'orange', 'title' => 'Inne NGO',              'text' => '', 'tag1' => 'Koalicje i synergia', 'tag2' => 'Wymiana zasobów',         'tag3' => 'Wspólny advocacy'],
+        ];
+        $cdForms = $cd['forms'] ?? [
+            ['icon' => 'fa-solid fa-star',                  'title' => 'Partnerstwo strategiczne',  'text' => ''],
+            ['icon' => 'fa-solid fa-circle-dollar-to-slot', 'title' => 'Sponsoring',               'text' => ''],
+            ['icon' => 'fa-solid fa-user-gear',             'title' => 'Wolontariat kompetencyjny','text' => ''],
+            ['icon' => 'fa-solid fa-sitemap',               'title' => 'Koalicje i sieci',         'text' => ''],
+        ];
+        $colorMap = [
+            'blue'   => ['bg' => 'bg-blue-50',   'text' => 'text-blue-600',   'pill' => 'bg-blue-50 text-blue-700'],
+            'green'  => ['bg' => 'bg-green-50',  'text' => 'text-green-600',  'pill' => 'bg-green-50 text-green-700'],
+            'purple' => ['bg' => 'bg-purple-50', 'text' => 'text-purple-600', 'pill' => 'bg-purple-50 text-purple-700'],
+            'orange' => ['bg' => 'bg-orange-50', 'text' => 'text-orange-600', 'pill' => 'bg-orange-50 text-orange-700'],
+            'brand'  => ['bg' => 'bg-brand-light','text' => 'text-brand',     'pill' => 'bg-brand-light text-brand'],
+        ];
+        $partners = \App\Models\Partner::orderBy('order')->orderBy('name')->with('media')->get();
+    @endphp
+
+    {{-- Hero --}}
+    <section class="relative overflow-hidden bg-brand text-white">
+        <div class="mx-auto max-w-5xl px-4 py-20 text-center md:py-28">
+            @if (filled($cd['hero_badge'] ?? 'Partnerstwo i współpraca'))
+                <span class="mb-4 inline-flex items-center gap-2 rounded-full bg-white/15 px-4 py-1.5 text-sm font-bold backdrop-blur">
+                    <i class="fa-solid fa-handshake" aria-hidden="true"></i> {{ $cd['hero_badge'] ?? 'Partnerstwo i współpraca' }}
+                </span>
+            @endif
+            <h1 class="mx-auto max-w-3xl text-3xl font-extrabold leading-tight md:text-5xl">{{ $page->title }}</h1>
+            @if (filled($cd['hero_subtitle'] ?? null))
+                <p class="mx-auto mt-4 max-w-2xl text-lg text-white/85">{{ $cd['hero_subtitle'] }}</p>
+            @endif
+            <div class="mt-8 flex flex-wrap justify-center gap-3">
+                @if (filled($cd['hero_cta1_label'] ?? null))
+                    <a href="{{ $cd['hero_cta1_url'] ?? route('contact.show') }}"
+                       class="inline-flex items-center gap-2 rounded-xl bg-white px-6 py-3 font-bold text-brand shadow-sm transition hover:bg-brand-light focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">
+                        <i class="fa-solid fa-envelope" aria-hidden="true"></i> {{ $cd['hero_cta1_label'] }}
+                    </a>
+                @endif
+                @if (filled($cd['hero_cta2_label'] ?? null))
+                    <a href="#formy-wspolpracy"
+                       class="inline-flex items-center gap-2 rounded-xl border border-white/40 px-6 py-3 font-semibold text-white transition hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">
+                        <i class="fa-solid fa-chevron-down" aria-hidden="true"></i> {{ $cd['hero_cta2_label'] }}
+                    </a>
+                @endif
+            </div>
+        </div>
+        <div class="absolute -bottom-px left-0 right-0 overflow-hidden leading-none" aria-hidden="true">
+            <svg viewBox="0 0 1440 40" preserveAspectRatio="none" class="h-10 w-full fill-white"><path d="M0,40 L1440,40 L1440,0 Q720,40 0,0 Z"/></svg>
+        </div>
+    </section>
+
+    {{-- Sektory --}}
+    <section class="mx-auto max-w-5xl px-4 py-16" aria-labelledby="sektory-heading">
+        <div class="mb-10 text-center">
+            <h2 id="sektory-heading" class="text-2xl font-bold text-ink md:text-3xl">{{ $cd['sectors_heading'] ?? 'Dlaczego warto z nami współpracować?' }}</h2>
+            @if (filled($cd['sectors_subtitle'] ?? null))
+                <p class="mt-2 text-muted">{{ $cd['sectors_subtitle'] }}</p>
+            @endif
+        </div>
+        <ul class="grid gap-6 sm:grid-cols-2" role="list">
+            @foreach ($cdSectors as $sector)
+                @php $colors = $colorMap[$sector['color'] ?? 'brand'] ?? $colorMap['brand']; @endphp
+                <li class="flex flex-col gap-4 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+                    <span class="flex h-12 w-12 items-center justify-center rounded-xl {{ $colors['bg'] }} {{ $colors['text'] }}" aria-hidden="true">
+                        <i class="{{ $sector['icon'] ?? 'fa-solid fa-circle' }} text-xl"></i>
+                    </span>
+                    <div>
+                        <h3 class="text-lg font-bold text-ink">{{ $sector['title'] ?? '' }}</h3>
+                        @if (filled($sector['text'] ?? null))
+                            <p class="mt-1 text-sm text-muted">{{ $sector['text'] }}</p>
+                        @endif
+                    </div>
+                    @php $tags = array_filter([$sector['tag1'] ?? null, $sector['tag2'] ?? null, $sector['tag3'] ?? null]); @endphp
+                    @if ($tags)
+                        <ul class="mt-auto flex flex-wrap gap-2 text-xs" aria-label="Korzyści">
+                            @foreach ($tags as $tag)
+                                <li class="rounded-full {{ $colors['pill'] }} px-3 py-1 font-medium">{{ $tag }}</li>
+                            @endforeach
+                        </ul>
+                    @endif
+                </li>
+            @endforeach
+        </ul>
+    </section>
+
+    {{-- Formy współpracy --}}
+    <section id="formy-wspolpracy" class="bg-gray-50 py-16" aria-labelledby="formy-heading">
+        <div class="mx-auto max-w-5xl px-4">
+            <div class="mb-10 text-center">
+                <h2 id="formy-heading" class="text-2xl font-bold text-ink md:text-3xl">{{ $cd['forms_heading'] ?? 'Formy współpracy' }}</h2>
+                @if (filled($cd['forms_subtitle'] ?? null))
+                    <p class="mt-2 text-muted">{{ $cd['forms_subtitle'] }}</p>
+                @endif
+            </div>
+            <ul class="grid gap-5 sm:grid-cols-2 lg:grid-cols-4" role="list">
+                @foreach ($cdForms as $form)
+                    <li class="rounded-2xl border border-gray-200 bg-white p-6 text-center shadow-sm">
+                        <span class="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-brand-light text-brand" aria-hidden="true">
+                            <i class="{{ $form['icon'] ?? 'fa-solid fa-circle' }} text-xl"></i>
+                        </span>
+                        <h3 class="font-bold text-ink">{{ $form['title'] ?? '' }}</h3>
+                        @if (filled($form['text'] ?? null))
+                            <p class="mt-2 text-sm text-muted">{{ $form['text'] }}</p>
+                        @endif
+                    </li>
+                @endforeach
+            </ul>
+        </div>
+    </section>
+
+    {{-- Partnerzy --}}
+    @if ($partners->isNotEmpty())
+    <section class="mx-auto max-w-5xl px-4 py-16" aria-labelledby="partnerzy-heading">
+        <h2 id="partnerzy-heading" class="mb-8 text-center text-2xl font-bold text-ink">Nasi partnerzy</h2>
+        <ul class="flex flex-wrap items-center justify-center gap-6" role="list" aria-label="Logotypy partnerów">
+            @foreach ($partners as $partner)
+                @php $logo = $partner->logo_url; @endphp
+                <li>
+                    @if ($logo)
+                        @if ($partner->url)
+                            <a href="{{ $partner->url }}" target="_blank" rel="noopener noreferrer"
+                               class="block rounded-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+                               title="{{ $partner->name }}">
+                                <img src="{{ $logo }}" alt="{{ $partner->name }}" loading="lazy"
+                                     class="h-12 w-auto object-contain opacity-70 grayscale transition hover:opacity-100 hover:grayscale-0">
+                            </a>
+                        @else
+                            <img src="{{ $logo }}" alt="{{ $partner->name }}" loading="lazy"
+                                 class="h-12 w-auto object-contain opacity-70 grayscale">
+                        @endif
+                    @else
+                        <span class="inline-flex items-center rounded-lg border border-gray-200 px-4 py-2 text-sm font-semibold text-muted">{{ $partner->name }}</span>
+                    @endif
+                </li>
+            @endforeach
+        </ul>
+    </section>
+    @endif
+
+    {{-- CTA --}}
+    <section class="bg-brand py-16 text-white" aria-labelledby="cta-heading">
+        <div class="mx-auto max-w-3xl px-4 text-center">
+            <h2 id="cta-heading" class="text-2xl font-bold md:text-3xl">{{ $cd['cta_heading'] ?? 'Zacznijmy rozmowę' }}</h2>
+            @if (filled($cd['cta_text'] ?? null))
+                <p class="mt-3 text-white/85">{{ $cd['cta_text'] }}</p>
+            @endif
+            @if (filled($cd['cta_button_label'] ?? null))
+                <a href="{{ $cd['cta_button_url'] ?? route('contact.show') }}"
+                   class="mt-8 inline-flex items-center gap-2 rounded-xl bg-white px-8 py-4 font-bold text-brand shadow-sm transition hover:bg-brand-light focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">
+                    <i class="fa-solid fa-envelope" aria-hidden="true"></i> {{ $cd['cta_button_label'] }}
+                </a>
+            @endif
+        </div>
+    </section>
     @elseif ($page->isTrainingInstitution())
     <section class="border-b border-gray-200 bg-gray-50">
         <div class="mx-auto max-w-4xl px-4 py-12 md:py-16">

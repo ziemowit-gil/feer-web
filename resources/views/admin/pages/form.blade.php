@@ -760,8 +760,8 @@
 
                     {{-- Panel współpracownika: hero + wstęp + kafelki linków do systemów --}}
                     @php $hubLinks = array_values((array) old('hub_links', $page->hub_links ?? [])); @endphp
-                    <div data-hub-fields class="space-y-5 border-t border-gray-100 pt-5 {{ $currentType === 'internal_hub' ? '' : 'hidden' }}">
-                        <p class="text-sm font-bold uppercase tracking-wide text-muted">Panel współpracownika</p>
+                    <div data-hub-fields class="space-y-5 border-t border-gray-100 pt-5 {{ in_array($currentType, ['internal_hub', 'links_hub'], true) ? '' : 'hidden' }}">
+                        <p class="text-sm font-bold uppercase tracking-wide text-muted">Kafelki i linki</p>
 
                         <div>
                             <label class="mb-1 block text-sm font-bold">Obraz hero (u góry panelu)</label>
@@ -1123,6 +1123,159 @@
                 </div>
             </div>
 
+                    {{-- ======= WSPÓŁPRACA — pola edycji sekcji ======= --}}
+                    @php
+                        $cd = old('cooperation_data', $page->cooperation_data ?? []);
+                        $cdSectors = $cd['sectors'] ?? [
+                            ['icon' => 'fa-solid fa-building',    'color' => 'blue',   'title' => 'Biznes',               'text' => '', 'tag1' => 'CSR / ESG', 'tag2' => 'Wolontariat pracowniczy', 'tag3' => 'Wizerunek marki'],
+                            ['icon' => 'fa-solid fa-landmark',    'color' => 'green',  'title' => 'Samorząd i instytucje','text' => '', 'tag1' => 'Dialog obywatelski', 'tag2' => 'Polityka społeczna', 'tag3' => 'Aktywizacja lokalna'],
+                            ['icon' => 'fa-solid fa-flask',       'color' => 'purple', 'title' => 'Nauka i edukacja',     'text' => '', 'tag1' => 'Innowacje społeczne', 'tag2' => 'Praktyki i badania', 'tag3' => 'Transfer wiedzy'],
+                            ['icon' => 'fa-solid fa-people-group','color' => 'orange', 'title' => 'Inne NGO',             'text' => '', 'tag1' => 'Koalicje i synergia', 'tag2' => 'Wymiana zasobów', 'tag3' => 'Wspólny advocacy'],
+                        ];
+                        $cdForms = $cd['forms'] ?? [
+                            ['icon' => 'fa-solid fa-star',                    'title' => 'Partnerstwo strategiczne',  'text' => ''],
+                            ['icon' => 'fa-solid fa-circle-dollar-to-slot',   'title' => 'Sponsoring',               'text' => ''],
+                            ['icon' => 'fa-solid fa-user-gear',               'title' => 'Wolontariat kompetencyjny','text' => ''],
+                            ['icon' => 'fa-solid fa-sitemap',                 'title' => 'Koalicje i sieci',         'text' => ''],
+                        ];
+                    @endphp
+                    <div data-cooperation-fields class="space-y-6 border-t border-gray-100 pt-5 {{ $currentType === 'wspolpraca' ? '' : 'hidden' }}">
+                        <p class="text-sm font-bold uppercase tracking-wide text-muted">Współpraca — treść sekcji</p>
+
+                        {{-- Hero --}}
+                        <div class="rounded-lg border border-gray-100 bg-gray-50 p-4 space-y-3">
+                            <p class="text-xs font-bold uppercase text-muted">Hero</p>
+                            <div class="grid gap-3 sm:grid-cols-2">
+                                <div>
+                                    <label class="mb-1 block text-xs font-bold">Badge (tekst przy ikonie)</label>
+                                    <input type="text" name="cooperation_data[hero_badge]" value="{{ $cd['hero_badge'] ?? 'Partnerstwo i współpraca' }}" class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                                </div>
+                                <div>
+                                    <label class="mb-1 block text-xs font-bold">Tytuł sekcji (h1)</label>
+                                    <p class="text-xs text-muted">Pobierany z pola <strong>Tytuł strony</strong> powyżej.</p>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="mb-1 block text-xs font-bold">Podtytuł hero</label>
+                                <textarea name="cooperation_data[hero_subtitle]" rows="2" class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">{{ $cd['hero_subtitle'] ?? 'FEER łączy biznes, samorząd, naukę i organizacje pozarządowe wokół wspólnych wartości. Razem działamy skuteczniej, docieramy dalej i tworzymy zmiany, które zostają.' }}</textarea>
+                            </div>
+                            <div class="grid gap-3 sm:grid-cols-2">
+                                <div>
+                                    <label class="mb-1 block text-xs font-bold">Przycisk CTA 1 — etykieta</label>
+                                    <input type="text" name="cooperation_data[hero_cta1_label]" value="{{ $cd['hero_cta1_label'] ?? 'Zostań partnerem' }}" class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                                </div>
+                                <div>
+                                    <label class="mb-1 block text-xs font-bold">Przycisk CTA 1 — URL</label>
+                                    <input type="text" name="cooperation_data[hero_cta1_url]" value="{{ $cd['hero_cta1_url'] ?? '/kontakt' }}" class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                                </div>
+                                <div>
+                                    <label class="mb-1 block text-xs font-bold">Przycisk CTA 2 — etykieta</label>
+                                    <input type="text" name="cooperation_data[hero_cta2_label]" value="{{ $cd['hero_cta2_label'] ?? 'Poznaj formy współpracy' }}" class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                                </div>
+                            </div>
+                        </div>
+
+                        {{-- Sektory --}}
+                        <div class="rounded-lg border border-gray-100 bg-gray-50 p-4 space-y-3">
+                            <p class="text-xs font-bold uppercase text-muted">Sekcja: Dlaczego warto (4 sektory)</p>
+                            <div class="grid gap-3 sm:grid-cols-2">
+                                <div>
+                                    <label class="mb-1 block text-xs font-bold">Nagłówek sekcji</label>
+                                    <input type="text" name="cooperation_data[sectors_heading]" value="{{ $cd['sectors_heading'] ?? 'Dlaczego warto z nami współpracować?' }}" class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                                </div>
+                                <div>
+                                    <label class="mb-1 block text-xs font-bold">Podtytuł sekcji</label>
+                                    <input type="text" name="cooperation_data[sectors_subtitle]" value="{{ $cd['sectors_subtitle'] ?? 'Każdy sektor ma inne potrzeby — mamy na to odpowiedź.' }}" class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                                </div>
+                            </div>
+                            @foreach ($cdSectors as $si => $sector)
+                                <div class="rounded border border-gray-200 bg-white p-3 space-y-2">
+                                    <p class="text-xs font-bold text-muted">Karta {{ $si + 1 }}: {{ $sector['title'] ?? '' }}</p>
+                                    <div class="grid gap-2 sm:grid-cols-3">
+                                        <div>
+                                            <label class="mb-0.5 block text-xs">Ikona (fa-solid fa-…)</label>
+                                            <input type="text" name="cooperation_data[sectors][{{ $si }}][icon]" value="{{ $sector['icon'] ?? '' }}" class="w-full rounded border-gray-300 text-xs focus:border-brand focus:ring-brand">
+                                        </div>
+                                        <div>
+                                            <label class="mb-0.5 block text-xs">Kolor (blue/green/purple/orange)</label>
+                                            <input type="text" name="cooperation_data[sectors][{{ $si }}][color]" value="{{ $sector['color'] ?? '' }}" class="w-full rounded border-gray-300 text-xs focus:border-brand focus:ring-brand">
+                                        </div>
+                                        <div>
+                                            <label class="mb-0.5 block text-xs">Tytuł</label>
+                                            <input type="text" name="cooperation_data[sectors][{{ $si }}][title]" value="{{ $sector['title'] ?? '' }}" class="w-full rounded border-gray-300 text-xs focus:border-brand focus:ring-brand">
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label class="mb-0.5 block text-xs">Treść</label>
+                                        <textarea name="cooperation_data[sectors][{{ $si }}][text]" rows="2" class="w-full rounded border-gray-300 text-xs focus:border-brand focus:ring-brand">{{ $sector['text'] ?? '' }}</textarea>
+                                    </div>
+                                    <div class="grid gap-2 sm:grid-cols-3">
+                                        <div><label class="mb-0.5 block text-xs">Tag 1</label><input type="text" name="cooperation_data[sectors][{{ $si }}][tag1]" value="{{ $sector['tag1'] ?? '' }}" class="w-full rounded border-gray-300 text-xs focus:border-brand focus:ring-brand"></div>
+                                        <div><label class="mb-0.5 block text-xs">Tag 2</label><input type="text" name="cooperation_data[sectors][{{ $si }}][tag2]" value="{{ $sector['tag2'] ?? '' }}" class="w-full rounded border-gray-300 text-xs focus:border-brand focus:ring-brand"></div>
+                                        <div><label class="mb-0.5 block text-xs">Tag 3</label><input type="text" name="cooperation_data[sectors][{{ $si }}][tag3]" value="{{ $sector['tag3'] ?? '' }}" class="w-full rounded border-gray-300 text-xs focus:border-brand focus:ring-brand"></div>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+
+                        {{-- Formy --}}
+                        <div class="rounded-lg border border-gray-100 bg-gray-50 p-4 space-y-3">
+                            <p class="text-xs font-bold uppercase text-muted">Sekcja: Formy współpracy (4 karty)</p>
+                            <div class="grid gap-3 sm:grid-cols-2">
+                                <div>
+                                    <label class="mb-1 block text-xs font-bold">Nagłówek sekcji</label>
+                                    <input type="text" name="cooperation_data[forms_heading]" value="{{ $cd['forms_heading'] ?? 'Formy współpracy' }}" class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                                </div>
+                                <div>
+                                    <label class="mb-1 block text-xs font-bold">Podtytuł sekcji</label>
+                                    <input type="text" name="cooperation_data[forms_subtitle]" value="{{ $cd['forms_subtitle'] ?? 'Wybierz formułę dopasowaną do Twoich możliwości i celów.' }}" class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                                </div>
+                            </div>
+                            @foreach ($cdForms as $fi => $form)
+                                <div class="rounded border border-gray-200 bg-white p-3 space-y-2">
+                                    <p class="text-xs font-bold text-muted">Karta {{ $fi + 1 }}: {{ $form['title'] ?? '' }}</p>
+                                    <div class="grid gap-2 sm:grid-cols-2">
+                                        <div>
+                                            <label class="mb-0.5 block text-xs">Ikona (fa-solid fa-…)</label>
+                                            <input type="text" name="cooperation_data[forms][{{ $fi }}][icon]" value="{{ $form['icon'] ?? '' }}" class="w-full rounded border-gray-300 text-xs focus:border-brand focus:ring-brand">
+                                        </div>
+                                        <div>
+                                            <label class="mb-0.5 block text-xs">Tytuł</label>
+                                            <input type="text" name="cooperation_data[forms][{{ $fi }}][title]" value="{{ $form['title'] ?? '' }}" class="w-full rounded border-gray-300 text-xs focus:border-brand focus:ring-brand">
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label class="mb-0.5 block text-xs">Treść</label>
+                                        <textarea name="cooperation_data[forms][{{ $fi }}][text]" rows="2" class="w-full rounded border-gray-300 text-xs focus:border-brand focus:ring-brand">{{ $form['text'] ?? '' }}</textarea>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+
+                        {{-- CTA --}}
+                        <div class="rounded-lg border border-gray-100 bg-gray-50 p-4 space-y-3">
+                            <p class="text-xs font-bold uppercase text-muted">Sekcja: CTA — Zacznijmy rozmowę</p>
+                            <div>
+                                <label class="mb-1 block text-xs font-bold">Nagłówek CTA</label>
+                                <input type="text" name="cooperation_data[cta_heading]" value="{{ $cd['cta_heading'] ?? 'Zacznijmy rozmowę' }}" class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                            </div>
+                            <div>
+                                <label class="mb-1 block text-xs font-bold">Treść CTA</label>
+                                <textarea name="cooperation_data[cta_text]" rows="2" class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">{{ $cd['cta_text'] ?? 'Każda trwała współpraca zaczyna się od jednej wiadomości. Napisz do nas — opowiedz, kim jesteś i co chcesz osiągnąć, a my odpiszemy z propozycją kolejnych kroków.' }}</textarea>
+                            </div>
+                            <div class="grid gap-3 sm:grid-cols-2">
+                                <div>
+                                    <label class="mb-1 block text-xs font-bold">Etykieta przycisku</label>
+                                    <input type="text" name="cooperation_data[cta_button_label]" value="{{ $cd['cta_button_label'] ?? 'Napisz do nas' }}" class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                                </div>
+                                <div>
+                                    <label class="mb-1 block text-xs font-bold">URL przycisku</label>
+                                    <input type="text" name="cooperation_data[cta_button_url]" value="{{ $cd['cta_button_url'] ?? '/kontakt' }}" class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
             {{-- ==================== PUBLIKACJA I POWIĄZANIA ==================== --}}
             <div data-ftab-panel="ustawienia" class="hidden space-y-6">
                 {{-- Karta: widoczność i status --}}
@@ -1442,6 +1595,7 @@
             const contentField = document.querySelector('[data-content-field]');
             const brandFields = document.querySelector('[data-brand-fields]');
             const aboutPersonFields = document.querySelector('[data-about-person-fields]');
+            const cooperationFields = document.querySelector('[data-cooperation-fields]');
             if (typeSelect) {
                 typeSelect.addEventListener('change', function () {
                     if (eventFields) eventFields.classList.toggle('hidden', typeSelect.value !== 'event');
@@ -1450,11 +1604,12 @@
                     if (faqFields) faqFields.classList.toggle('hidden', typeSelect.value !== 'faq');
                     if (bipMoveFields) bipMoveFields.classList.toggle('hidden', typeSelect.value !== 'bip_move');
                     if (internalFields) internalFields.classList.toggle('hidden', ! ['internal', 'internal_hub'].includes(typeSelect.value));
-                    if (hubFields) hubFields.classList.toggle('hidden', typeSelect.value !== 'internal_hub');
+                    if (hubFields) hubFields.classList.toggle('hidden', ! ['internal_hub', 'links_hub'].includes(typeSelect.value));
                     if (legacyFields) legacyFields.classList.toggle('hidden', typeSelect.value !== 'legacy');
                     if (trainingFields) trainingFields.classList.toggle('hidden', typeSelect.value !== 'training_institution');
                     if (brandFields) brandFields.classList.toggle('hidden', typeSelect.value !== 'brand_assets');
                     if (aboutPersonFields) aboutPersonFields.classList.toggle('hidden', typeSelect.value !== 'about_person');
+                    if (cooperationFields) cooperationFields.classList.toggle('hidden', typeSelect.value !== 'wspolpraca');
                     if (contentField) contentField.classList.toggle('hidden', ['about', 'bip_move'].includes(typeSelect.value));
                     // Galeria „O organizacji" jest osobna — ukryj generyczny przełącznik dla tego typu.
                     document.querySelectorAll('[data-gallery-toggle]').forEach(function (el) {

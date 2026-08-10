@@ -501,6 +501,32 @@ class PageController extends Controller
             'person_name_genitive' => ['nullable', 'string', 'max:80'],
             'person_department' => ['nullable', 'array'],
             'person_department.*' => ['string', 'max:120'],
+            'cooperation_data' => ['nullable', 'array'],
+            'cooperation_data.hero_badge' => ['nullable', 'string', 'max:100'],
+            'cooperation_data.hero_subtitle' => ['nullable', 'string', 'max:600'],
+            'cooperation_data.hero_cta1_label' => ['nullable', 'string', 'max:80'],
+            'cooperation_data.hero_cta1_url' => ['nullable', 'string', 'max:500'],
+            'cooperation_data.hero_cta2_label' => ['nullable', 'string', 'max:80'],
+            'cooperation_data.sectors_heading' => ['nullable', 'string', 'max:200'],
+            'cooperation_data.sectors_subtitle' => ['nullable', 'string', 'max:400'],
+            'cooperation_data.sectors' => ['nullable', 'array'],
+            'cooperation_data.sectors.*.icon' => ['nullable', 'string', 'max:100'],
+            'cooperation_data.sectors.*.color' => ['nullable', 'string', 'max:30'],
+            'cooperation_data.sectors.*.title' => ['nullable', 'string', 'max:120'],
+            'cooperation_data.sectors.*.text' => ['nullable', 'string', 'max:600'],
+            'cooperation_data.sectors.*.tag1' => ['nullable', 'string', 'max:80'],
+            'cooperation_data.sectors.*.tag2' => ['nullable', 'string', 'max:80'],
+            'cooperation_data.sectors.*.tag3' => ['nullable', 'string', 'max:80'],
+            'cooperation_data.forms_heading' => ['nullable', 'string', 'max:200'],
+            'cooperation_data.forms_subtitle' => ['nullable', 'string', 'max:400'],
+            'cooperation_data.forms' => ['nullable', 'array'],
+            'cooperation_data.forms.*.icon' => ['nullable', 'string', 'max:100'],
+            'cooperation_data.forms.*.title' => ['nullable', 'string', 'max:120'],
+            'cooperation_data.forms.*.text' => ['nullable', 'string', 'max:600'],
+            'cooperation_data.cta_heading' => ['nullable', 'string', 'max:200'],
+            'cooperation_data.cta_text' => ['nullable', 'string', 'max:600'],
+            'cooperation_data.cta_button_label' => ['nullable', 'string', 'max:80'],
+            'cooperation_data.cta_button_url' => ['nullable', 'string', 'max:500'],
         ]);
 
         $data['parent_id'] = $data['parent_id'] ?: null;
@@ -718,6 +744,49 @@ class PageController extends Controller
         } else {
             $data['brand_brandbook_url'] = null;
             $data['brand_sections'] = null;
+        }
+
+        if ($data['type'] === 'wspolpraca') {
+            $cd = (array) $request->input('cooperation_data', []);
+            $sectors = [];
+            foreach ((array) ($cd['sectors'] ?? []) as $row) {
+                $sectors[] = [
+                    'icon'  => trim((string) ($row['icon'] ?? '')),
+                    'color' => trim((string) ($row['color'] ?? 'brand')),
+                    'title' => trim((string) ($row['title'] ?? '')),
+                    'text'  => trim((string) ($row['text'] ?? '')),
+                    'tag1'  => trim((string) ($row['tag1'] ?? '')),
+                    'tag2'  => trim((string) ($row['tag2'] ?? '')),
+                    'tag3'  => trim((string) ($row['tag3'] ?? '')),
+                ];
+            }
+            $forms = [];
+            foreach ((array) ($cd['forms'] ?? []) as $row) {
+                $forms[] = [
+                    'icon'  => trim((string) ($row['icon'] ?? '')),
+                    'title' => trim((string) ($row['title'] ?? '')),
+                    'text'  => trim((string) ($row['text'] ?? '')),
+                ];
+            }
+            $data['cooperation_data'] = [
+                'hero_badge'       => trim((string) ($cd['hero_badge'] ?? '')),
+                'hero_subtitle'    => trim((string) ($cd['hero_subtitle'] ?? '')),
+                'hero_cta1_label'  => trim((string) ($cd['hero_cta1_label'] ?? '')),
+                'hero_cta1_url'    => trim((string) ($cd['hero_cta1_url'] ?? '')),
+                'hero_cta2_label'  => trim((string) ($cd['hero_cta2_label'] ?? '')),
+                'sectors_heading'  => trim((string) ($cd['sectors_heading'] ?? '')),
+                'sectors_subtitle' => trim((string) ($cd['sectors_subtitle'] ?? '')),
+                'sectors'          => $sectors,
+                'forms_heading'    => trim((string) ($cd['forms_heading'] ?? '')),
+                'forms_subtitle'   => trim((string) ($cd['forms_subtitle'] ?? '')),
+                'forms'            => $forms,
+                'cta_heading'      => trim((string) ($cd['cta_heading'] ?? '')),
+                'cta_text'         => trim((string) ($cd['cta_text'] ?? '')),
+                'cta_button_label' => trim((string) ($cd['cta_button_label'] ?? '')),
+                'cta_button_url'   => trim((string) ($cd['cta_button_url'] ?? '')),
+            ];
+        } else {
+            $data['cooperation_data'] = null;
         }
 
         if ($data['type'] === 'about_person') {

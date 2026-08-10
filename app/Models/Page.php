@@ -84,6 +84,8 @@ class Page extends Model
         'bip_move' => 'Przeniesiono do BIP',
         'internal' => 'Wewnętrzna (dostęp ograniczony)',
         'internal_hub' => 'Strefa współpracownika (wewnętrzny panel: komunikaty i odnośniki)',
+        'links_hub' => 'Strona z kafelkami (publiczne linki do działów)',
+        'wspolpraca' => 'Współpraca z FEER (partnerstwo, sektory, formy, CTA)',
         'legacy' => 'Prezentacja tego, co było',
         'brand_assets'  => 'Marka — identyfikacja wizualna (pliki do pobrania)',
         'about_person'  => 'O organizacji — osoba',
@@ -198,6 +200,7 @@ class Page extends Model
         'brand_brandbook_url', 'brand_sections',
         'person_phone', 'person_role', 'person_bio', 'person_email', 'person_social', 'person_member_label', 'person_name_genitive', 'person_department',
         'page_template',
+        'cooperation_data',
     ];
 
     protected $casts = [
@@ -227,6 +230,7 @@ class Page extends Model
         'brand_sections' => 'array',
         'person_social'      => 'array',
         'person_department'  => 'array',
+        'cooperation_data'   => 'array',
     ];
 
     public function resolveRouteBinding($value, $field = null): ?self
@@ -304,6 +308,16 @@ class Page extends Model
         return $this->type === 'internal_hub';
     }
 
+    public function isLinksHub(): bool
+    {
+        return $this->type === 'links_hub';
+    }
+
+    public function isCooperation(): bool
+    {
+        return $this->type === 'wspolpraca';
+    }
+
     public function isLegacy(): bool
     {
         return $this->type === 'legacy';
@@ -324,7 +338,7 @@ class Page extends Model
     {
         return ! in_array($this->type, [
             'event', 'schedule', 'about', 'faq', 'bip_move',
-            'internal_hub', 'training_institution', 'brand_assets',
+            'internal_hub', 'links_hub', 'wspolpraca', 'training_institution', 'brand_assets',
             'legacy', 'about_person',
         ], true);
     }
