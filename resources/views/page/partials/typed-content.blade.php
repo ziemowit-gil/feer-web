@@ -134,17 +134,19 @@
         $aboutTimeline = collect($page->about_timeline ?? []);
         $aboutValues = collect($page->about_values ?? []);
         $aboutTeam = $page->children()->where('type', 'about_person')->where('is_published', true)->orderBy('order')->orderBy('title')->get();
+        $aboutFounder = $aboutTeam->firstWhere('is_featured', true);
         $aboutImages = $page->images->filter(fn ($img) => $img->image_url)->values();
         // Pierwsze 2–3 zdjęcia jako kolaż obok wstępu; reszta trafia do galerii.
         $introPhotos = $aboutImages->take(3)->values();
         $galleryPhotos = $aboutImages->slice(3)->values();
 
         $aboutPressItems = collect($page->about_press ?? [])->filter(fn ($p) => ! empty($p['url']) || ! empty($p['title']));
-        $aboutSectionLabels = ['intro' => 'O nas', 'stats' => 'W liczbach', 'values' => 'Wartości', 'timeline' => 'Historia', 'team' => 'Zespół', 'gallery' => 'Galeria', 'partners' => 'Partnerzy', 'press' => 'Media', 'documents' => 'Dokumenty', 'faq' => 'FAQ'];
+        $aboutSectionLabels = ['intro' => 'O nas', 'founder' => 'Od Fundatora', 'stats' => 'W liczbach', 'values' => 'Wartości', 'timeline' => 'Historia', 'team' => 'Zespół', 'gallery' => 'Galeria', 'partners' => 'Partnerzy', 'press' => 'Media', 'documents' => 'Dokumenty', 'faq' => 'FAQ'];
         $activeAboutSections = [];
         foreach ($page->orderedAboutSections() as $_s) {
             $has = match ($_s) {
                 'intro'     => filled($page->about_intro) || $page->content || $introPhotos->isNotEmpty(),
+                'founder'   => $aboutFounder !== null,
                 'stats'     => $aboutStats->isNotEmpty(),
                 'values'    => $aboutValues->isNotEmpty(),
                 'timeline'  => $aboutTimeline->isNotEmpty(),
@@ -223,6 +225,66 @@
                     @endif
                 </div>
             </section>
+        @endif
+        @break
+
+        @case('founder')
+        {{-- Słowo od Fundatora: wyróżniona podstrona about_person, narracyjny split-screen --}}
+        @if ($aboutFounder)
+        @php
+            $founderQuote = $aboutFounder->content
+                ? \Illuminate\Support\Str::limit(strip_tags($aboutFounder->content), 520, '…')
+                : '';
+            $founderInitials = \Illuminate\Support\Str::of($aboutFounder->title)
+                ->explode(' ')->map(fn ($w) => mb_substr($w, 0, 1))->take(2)->implode('');
+        @endphp
+        <section id="sekcja-founder" class="overflow-hidden">
+            <div class="grid min-h-[480px] lg:grid-cols-2 lg:min-h-[620px]">
+
+                {{-- ══ LEWA: zdjęcie full-bleed ══ --}}
+                <div class="relative min-h-[340px] lg:min-h-0">
+                    @if (filled($aboutFounder->content_image))
+                        <img src="{{ $aboutFounder->content_image }}"
+                            alt="{{ $aboutFounder->content_image_alt ?: $aboutFounder->title }}"
+                            class="absolute inset-0 h-full w-full object-cover object-top">
+                        {{-- Gradient na dole z imieniem --}}
+                        <div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent px-10 py-8">
+                            <p class="text-xl font-bold text-white">{{ $aboutFounder->title }}</p>
+                            @if (filled($aboutFounder->person_role))
+                                <p class="mt-0.5 text-sm font-medium text-white/80">{{ $aboutFounder->person_role }}</p>
+                            @endif
+                        </div>
+                    @else
+                        <div class="flex h-full min-h-[340px] items-center justify-center bg-brand/10 text-8xl font-bold text-brand">
+                            {{ $founderInitials }}
+                        </div>
+                    @endif
+                </div>
+
+                {{-- ══ PRAWA: narracja ══ --}}
+                <div class="flex flex-col justify-center bg-gray-50 px-8 py-16 lg:px-16 lg:py-24">
+                    <p class="mb-6 text-xs font-bold uppercase tracking-widest text-brand">
+                        Słowo od Fundatora
+                    </p>
+
+                    {{-- Ozdobny cudzysłów --}}
+                    <i class="fa-solid fa-quote-left mb-5 block text-6xl leading-none text-brand/15" aria-hidden="true"></i>
+
+                    @if ($founderQuote)
+                        <p class="text-2xl italic leading-relaxed text-ink/90 md:text-3xl">
+                            {{ $founderQuote }}
+                        </p>
+                    @endif
+
+                    <a href="{{ url('/' . $aboutFounder->slug) }}"
+                        class="mt-10 inline-flex items-center gap-2 self-start text-sm font-bold text-brand hover:text-brand-dark focus-visible:rounded focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
+                        Poznaj moją historię
+                        <i class="fa-solid fa-arrow-right text-xs" aria-hidden="true"></i>
+                    </a>
+                </div>
+
+            </div>
+        </section>
         @endif
         @break
 

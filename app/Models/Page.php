@@ -153,16 +153,17 @@ class Page extends Model
 
     /** Reorderable sections of an "about the organisation" page (the hero always comes first). */
     public const ABOUT_SECTIONS = [
-        'intro' => 'Wstęp i zdjęcia',
-        'stats' => 'Statystyki',
-        'values' => 'Wartości',
-        'timeline' => 'Oś czasu',
-        'team' => 'Zespół',
-        'gallery' => 'Galeria',
-        'partners' => 'Nasi partnerzy',
-        'press' => 'My w mediach',
+        'intro'     => 'Wstęp i zdjęcia',
+        'founder'   => 'Słowo od Fundatora',
+        'stats'     => 'Statystyki',
+        'values'    => 'Wartości',
+        'timeline'  => 'Oś czasu',
+        'team'      => 'Zespół',
+        'gallery'   => 'Galeria',
+        'partners'  => 'Nasi partnerzy',
+        'press'     => 'My w mediach',
         'documents' => 'Dokumenty i sprawozdania',
-        'faq' => 'Odnośnik do FAQ',
+        'faq'       => 'Odnośnik do FAQ',
     ];
 
     /** How a page attached to a project is surfaced on that project's page. */
