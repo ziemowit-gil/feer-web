@@ -27,7 +27,6 @@ class SiteSetting extends Model implements HasMedia
         'quick_actions' => 'Szybkie akcje',
         'partners' => 'Partnerzy',
         'materials' => 'Materiały edukacyjne',
-        'volunteering' => 'Wolontariat',
         'faq' => 'FAQ (najczęstsze pytania)',
         'support' => 'Wesprzyj nas',
         'bip' => 'BIP — dokumenty publiczne',

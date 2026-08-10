@@ -1,0 +1,12 @@
+{
+    "identifier":   "volunteering",
+    "name":         "Ogłoszenia o wolontariat",
+    "version":      "1.0.0",
+    "description":  "Ogłoszenia wolontariackie wg zasady 6 pytań KCW — publiczna lista i szczegóły, zarządzanie w panelu.",
+    "author":       "FEER",
+    "provider":     "Modules\\Volunteering\\Providers\\VolunteeringServiceProvider",
+    "migrations":   false,
+    "assets":       false,
+    "built_in":     true,
+    "requires":     []
+}
