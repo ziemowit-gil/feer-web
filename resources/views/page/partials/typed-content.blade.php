@@ -275,50 +275,32 @@
             $founderInitials = \Illuminate\Support\Str::of($aboutFounder->title)
                 ->explode(' ')->map(fn ($w) => mb_substr($w, 0, 1))->take(2)->implode('');
         @endphp
+        @if ($founderPhoto)
+        {{-- ══ WARIANT ZE ZDJĘCIEM: split-screen ══ --}}
         <section id="sekcja-founder" class="overflow-hidden bg-gray-950">
             <div class="grid lg:grid-cols-2">
 
-                {{-- ══ LEWA: zdjęcie full-bleed ══ --}}
                 <div class="relative min-h-[360px] lg:min-h-[640px]">
-                    @if ($founderPhoto)
-                        <img src="{{ $founderPhoto }}"
-                            alt="{{ $founderPhotoAlt }}"
-                            class="absolute inset-0 h-full w-full object-cover object-center">
-                        {{-- Subtelny gradient przejścia w prawo na desktop --}}
-                        <div class="absolute inset-0 bg-gradient-to-r from-transparent via-transparent to-gray-950/60 hidden lg:block" aria-hidden="true"></div>
-                        {{-- Gradient na dole na mobile --}}
-                        <div class="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-gray-950 to-transparent lg:hidden" aria-hidden="true"></div>
-                    @else
-                        <div class="flex h-full items-center justify-center bg-gray-800 text-7xl font-bold tracking-tight text-white/20">
-                            {{ $founderInitials }}
-                        </div>
-                    @endif
+                    <img src="{{ $founderPhoto }}"
+                        alt="{{ $founderPhotoAlt }}"
+                        class="absolute inset-0 h-full w-full object-cover object-center">
+                    <div class="absolute inset-0 bg-gradient-to-r from-transparent via-transparent to-gray-950/60 hidden lg:block" aria-hidden="true"></div>
+                    <div class="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-gray-950 to-transparent lg:hidden" aria-hidden="true"></div>
                 </div>
 
-                {{-- ══ PRAWA: treść personal-page ══ --}}
                 <div class="flex flex-col justify-center px-8 py-16 lg:px-16 lg:py-24">
-
-                    <p class="mb-6 text-xs font-bold uppercase tracking-[0.2em] text-amber-400">
-                        Słowo od Fundatora
-                    </p>
-
-                    <h2 class="mb-1 text-3xl font-bold leading-tight text-white md:text-4xl">
-                        {{ $aboutFounder->title }}
-                    </h2>
+                    <p class="mb-6 text-xs font-bold uppercase tracking-[0.2em] text-amber-400">Słowo od Fundatora</p>
+                    <h2 class="mb-1 text-3xl font-bold leading-tight text-white md:text-4xl">{{ $aboutFounder->title }}</h2>
                     @if (filled($aboutFounder->person_role))
                         <p class="mb-8 text-base font-medium text-white/50">{{ $aboutFounder->person_role }}</p>
                     @else
                         <div class="mb-8"></div>
                     @endif
-
                     @if ($founderQuote)
                         <i class="fa-solid fa-quote-left mb-4 block text-5xl leading-none text-white/10" aria-hidden="true"></i>
-                        <p class="text-xl italic leading-relaxed text-white/80 md:text-2xl">
-                            {{ $founderQuote }}
-                        </p>
+                        <p class="text-xl italic leading-relaxed text-white/80 md:text-2xl">{{ $founderQuote }}</p>
                     @endif
-
-                    <div class="mt-10 flex items-center gap-5">
+                    <div class="mt-10">
                         <a href="{{ url('/' . $aboutFounder->slug) }}"
                             class="inline-flex items-center gap-2 rounded-full bg-amber-400 px-6 py-2.5 text-sm font-bold text-gray-900 transition hover:bg-amber-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400">
                             Poznaj moją historię
@@ -329,6 +311,40 @@
 
             </div>
         </section>
+
+        @else
+        {{-- ══ WARIANT BEZ ZDJĘCIA: pełnoszeroki pull-quote ══ --}}
+        <section id="sekcja-founder" class="bg-gray-950 py-20 md:py-28">
+            <div class="mx-auto max-w-3xl px-6 text-center">
+
+                <p class="mb-8 text-xs font-bold uppercase tracking-[0.2em] text-amber-400">Słowo od Fundatora</p>
+
+                @if ($founderQuote)
+                    <i class="fa-solid fa-quote-left mb-6 block text-7xl leading-none text-white/8" aria-hidden="true"></i>
+                    <p class="text-2xl italic leading-relaxed text-white/85 md:text-3xl lg:text-4xl">
+                        {{ $founderQuote }}
+                    </p>
+                @endif
+
+                <div class="mt-10 flex flex-col items-center gap-1">
+                    <span class="mb-3 block h-px w-12 bg-amber-400/50" aria-hidden="true"></span>
+                    <p class="text-lg font-bold text-white">{{ $aboutFounder->title }}</p>
+                    @if (filled($aboutFounder->person_role))
+                        <p class="text-sm font-medium text-white/50">{{ $aboutFounder->person_role }}</p>
+                    @endif
+                </div>
+
+                <div class="mt-10">
+                    <a href="{{ url('/' . $aboutFounder->slug) }}"
+                        class="inline-flex items-center gap-2 rounded-full bg-amber-400 px-6 py-2.5 text-sm font-bold text-gray-900 transition hover:bg-amber-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400">
+                        Poznaj moją historię
+                        <i class="fa-solid fa-arrow-right text-xs" aria-hidden="true"></i>
+                    </a>
+                </div>
+
+            </div>
+        </section>
+        @endif
         @endif
         @break
 
