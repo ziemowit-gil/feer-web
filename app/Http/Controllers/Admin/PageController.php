@@ -108,6 +108,66 @@ class PageController extends Controller
         ]);
     }
 
+    /** Kreator scalania dwóch stron about_person. */
+    public function showMergePerson(Page $page, Request $request)
+    {
+        abort_if($page->type !== 'about_person', 404);
+
+        $targetId = (int) $request->query('with', 0);
+        $target   = $targetId ? Page::where('type', 'about_person')->where('id', '!=', $page->id)->find($targetId) : null;
+
+        $candidates = Page::where('type', 'about_person')
+            ->where('id', '!=', $page->id)
+            ->orderBy('title')
+            ->get(['id', 'title', 'person_role', 'parent_id']);
+
+        return view('admin.pages.persons-merge', compact('page', 'target', 'candidates'));
+    }
+
+    /** Wykonuje scalanie: przenosi wybrane pola do $page i usuwa duplikat. */
+    public function performMergePerson(Page $page, Request $request)
+    {
+        abort_if($page->type !== 'about_person', 404);
+
+        $target = Page::where('type', 'about_person')
+            ->where('id', '!=', $page->id)
+            ->findOrFail($request->input('target_id'));
+
+        $fields = [
+            'title', 'person_role', 'person_bio', 'person_email',
+            'person_phone', 'person_member_label', 'person_social',
+            'person_department', 'content', 'content_image', 'content_image_alt',
+        ];
+
+        $updates = [];
+        foreach ($fields as $field) {
+            $keep = $request->input("keep.{$field}", 'base');
+            if ($keep === 'target') {
+                $updates[$field] = $target->{$field};
+            }
+        }
+
+        if ($request->boolean('is_featured')) {
+            $updates['is_featured'] = true;
+            Page::where('type', 'about_person')
+                ->where('parent_id', $page->parent_id)
+                ->where('id', '!=', $page->id)
+                ->update(['is_featured' => false]);
+        } else {
+            $updates['is_featured'] = false;
+        }
+
+        if (! empty($updates)) {
+            $page->update($updates);
+        }
+
+        $targetTitle = $target->title;
+        $target->delete();
+
+        return redirect()->route('admin.osoby.index')
+            ->with('status', 'Scalono: "' . $targetTitle . '" zostala polaczona ze strona "' . $page->fresh()->title . '".');
+    }
+
     /** Raport stron i newsów bez alt-tekstów zdjęć. */
     public function missingAltReport()
     {
