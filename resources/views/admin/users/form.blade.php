@@ -31,9 +31,30 @@
             </select>
             @error('role') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
 
+            {{-- Podpowiedzi per rola --}}
+            <p x-show="role === 'content_editor'" x-cloak class="mt-1.5 rounded border border-green-200 bg-green-50 px-3 py-2 text-xs text-green-800">
+                <i class="fa-solid fa-circle-info mr-1" aria-hidden="true"></i>
+                Edytor treści ma dostęp do wszystkich aktywnych modułów z treścią (aktualności, blog, wydarzenia, materiały, projekty itp.), bez ustawień i systemu.
+            </p>
+            <p x-show="role === 'coordinator'" x-cloak class="mt-1.5 rounded border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
+                <i class="fa-solid fa-circle-info mr-1" aria-hidden="true"></i>
+                Koordynator ma dostęp do: wolontariat, ogłoszenia o pracę, szkolenia i wydarzenia, materiały edukacyjne.
+            </p>
+            <p x-show="role === 'pr_editor'" x-cloak class="mt-1.5 rounded border border-purple-200 bg-purple-50 px-3 py-2 text-xs text-purple-800">
+                <i class="fa-solid fa-circle-info mr-1" aria-hidden="true"></i>
+                Redaktor PR ma dostęp do: aktualności, blog Wiem FEER, landing pages, projekty, ankiety.
+            </p>
+            <p x-show="role === 'bip_editor_plus'" x-cloak class="mt-1.5 rounded border border-blue-200 bg-blue-50 px-3 py-2 text-xs text-blue-800">
+                <i class="fa-solid fa-circle-info mr-1" aria-hidden="true"></i>
+                Edytor BIP+ ma dostęp do modułu BIP oraz sprawozdań finansowych.
+            </p>
             <p x-show="role === 'bip_editor'" x-cloak class="mt-1.5 rounded border border-blue-200 bg-blue-50 px-3 py-2 text-xs text-blue-800">
                 <i class="fa-solid fa-circle-info mr-1" aria-hidden="true"></i>
                 Edytor BIP ma dostęp wyłącznie do modułu BIP. Imię i nazwisko są wymagane — widoczne publicznie na stronie BIP.
+            </p>
+            <p x-show="role === 'editor'" x-cloak class="mt-1.5 rounded border border-gray-200 bg-gray-50 px-3 py-2 text-xs text-gray-700">
+                <i class="fa-solid fa-circle-info mr-1" aria-hidden="true"></i>
+                Edytor (grupy) ma dostęp tylko do modułów przypisanych przez grupę poniżej.
             </p>
         </div>
 
@@ -48,7 +69,7 @@
                     </option>
                 @endforeach
             </select>
-            <p class="mt-1 text-xs text-muted">Decyduje, do których modułów panelu edytor ma dostęp. Dotyczy tylko roli Edytor.</p>
+            <p class="mt-1 text-xs text-muted">Decyduje, do których modułów panelu edytor ma dostęp. Dotyczy tylko roli Edytor (grupy).</p>
             @error('user_group_id') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
         </div>
 

@@ -21,16 +21,22 @@ class User extends Authenticatable
 
     use LogsActivity;
 
-    public const ROLE_ADMIN = 'admin';
-
-    public const ROLE_EDITOR = 'editor';
-
-    public const ROLE_BIP_EDITOR = 'bip_editor';
+    public const ROLE_ADMIN          = 'admin';
+    public const ROLE_CONTENT_EDITOR = 'content_editor';
+    public const ROLE_COORDINATOR    = 'coordinator';
+    public const ROLE_PR_EDITOR      = 'pr_editor';
+    public const ROLE_BIP_EDITOR_PLUS = 'bip_editor_plus';
+    public const ROLE_BIP_EDITOR     = 'bip_editor';
+    public const ROLE_EDITOR         = 'editor';
 
     public const ROLES = [
-        self::ROLE_EDITOR     => 'Edytor',
-        self::ROLE_BIP_EDITOR => 'Edytor BIP',
-        self::ROLE_ADMIN      => 'Administrator',
+        self::ROLE_ADMIN           => 'Administrator',
+        self::ROLE_CONTENT_EDITOR  => 'Edytor treści',
+        self::ROLE_COORDINATOR     => 'Koordynator',
+        self::ROLE_PR_EDITOR       => 'Redaktor PR',
+        self::ROLE_BIP_EDITOR_PLUS => 'Edytor BIP+',
+        self::ROLE_BIP_EDITOR      => 'Edytor BIP',
+        self::ROLE_EDITOR          => 'Edytor (grupy)',
     ];
 
     /**
@@ -87,7 +93,22 @@ class User extends Authenticatable
      */
     public function isBipEditor(): bool
     {
-        return $this->role === self::ROLE_BIP_EDITOR;
+        return in_array($this->role, [self::ROLE_BIP_EDITOR, self::ROLE_BIP_EDITOR_PLUS], true);
+    }
+
+    public function isCoordinator(): bool
+    {
+        return $this->role === self::ROLE_COORDINATOR;
+    }
+
+    public function isPrEditor(): bool
+    {
+        return $this->role === self::ROLE_PR_EDITOR;
+    }
+
+    public function isContentEditor(): bool
+    {
+        return $this->role === self::ROLE_CONTENT_EDITOR;
     }
 
     public function canAccessModule(string $module): bool
@@ -96,11 +117,15 @@ class User extends Authenticatable
             return true;
         }
 
-        if ($this->isBipEditor()) {
-            return $module === 'bip';
-        }
-
-        return $this->group && $this->group->hasModule($module);
+        return match ($this->role) {
+            self::ROLE_CONTENT_EDITOR  => true,
+            self::ROLE_COORDINATOR     => in_array($module, ['volunteering', 'jobs', 'events', 'materials'], true),
+            self::ROLE_PR_EDITOR       => in_array($module, ['news', 'blog', 'landing', 'projects', 'polls'], true),
+            self::ROLE_BIP_EDITOR_PLUS => in_array($module, ['bip', 'reports'], true),
+            self::ROLE_BIP_EDITOR      => $module === 'bip',
+            self::ROLE_EDITOR          => $this->group && $this->group->hasModule($module),
+            default                    => false,
+        };
     }
 
     /**
