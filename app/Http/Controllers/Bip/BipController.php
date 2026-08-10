@@ -26,7 +26,7 @@ class BipController extends Controller
         $documents = collect();
         $recentChanges = collect();
 
-        if (! $isExternal && $settings->isModuleEnabled('bip')) {
+        if (! $isExternal) {
             $documents = BipDocument::published()
                 ->orderBy('category')
                 ->orderBy('order')

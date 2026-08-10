@@ -164,10 +164,12 @@ Route::delete('/subskrypcje/wypisz/{token}', [SubscribeController::class, 'doUns
 
 Route::get('/wsparcie', [SupportController::class, 'index'])->name('support.show')->middleware('module:support');
 
-// BIP: strona główna, rejestr zmian (wymóg rozporządzenia) i szczegół dokumentu.
-Route::get('/bip', [BipController::class, 'index'])->name('bip');
-Route::get('/bip/rejestr-zmian', [BipController::class, 'changeLog'])->name('bip.changelog');
-Route::get('/bip/{bipDocument:slug}', [BipController::class, 'show'])->name('bip.document')->middleware('module:bip');
+// BIP: strona główna, rejestr zmian i szczegół dokumentu — kontrolowane przez moduł.
+Route::middleware('module:bip')->group(function () {
+    Route::get('/bip', [BipController::class, 'index'])->name('bip');
+    Route::get('/bip/rejestr-zmian', [BipController::class, 'changeLog'])->name('bip.changelog');
+    Route::get('/bip/{bipDocument:slug}', [BipController::class, 'show'])->name('bip.document');
+});
 Route::get('/instagram', [ShortcutController::class, 'instagram'])->name('shortcut.instagram');
 Route::get('/fb', [ShortcutController::class, 'facebook'])->name('shortcut.fb');
 Route::get('/facebook', [ShortcutController::class, 'facebook'])->name('shortcut.facebook');
