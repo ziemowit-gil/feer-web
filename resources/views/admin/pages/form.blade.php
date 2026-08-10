@@ -1210,9 +1210,9 @@
                             </div>
                         </div>
 
-                        {{-- Sektory --}}
+                        {{-- Sektory — dynamiczny repeater --}}
                         <div class="rounded-lg border border-gray-100 bg-gray-50 p-4 space-y-3">
-                            <p class="text-xs font-bold uppercase text-muted">Sekcja: Dlaczego warto (4 sektory)</p>
+                            <p class="text-xs font-bold uppercase text-muted">Sekcja: Dlaczego warto (sektory)</p>
                             <div class="grid gap-3 sm:grid-cols-2">
                                 <div>
                                     <label class="mb-1 block text-xs font-bold">Nagłówek sekcji</label>
@@ -1223,39 +1223,90 @@
                                     <input type="text" name="cooperation_data[sectors_subtitle]" value="{{ $cd['sectors_subtitle'] ?? 'Każdy sektor ma inne potrzeby — mamy na to odpowiedź.' }}" class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
                                 </div>
                             </div>
-                            @foreach ($cdSectors as $si => $sector)
-                                <div class="rounded border border-gray-200 bg-white p-3 space-y-2">
-                                    <p class="text-xs font-bold text-muted">Karta {{ $si + 1 }}: {{ $sector['title'] ?? '' }}</p>
-                                    <div class="grid gap-2 sm:grid-cols-3">
-                                        <div>
-                                            <label class="mb-0.5 block text-xs">Ikona (fa-solid fa-…)</label>
-                                            <input type="text" name="cooperation_data[sectors][{{ $si }}][icon]" value="{{ $sector['icon'] ?? '' }}" class="w-full rounded border-gray-300 text-xs focus:border-brand focus:ring-brand">
+                            <div data-repeater>
+                                <div data-repeater-rows class="space-y-3">
+                                    @foreach ($cdSectors as $si => $sector)
+                                        <div data-repeater-row class="rounded border border-gray-200 bg-white p-3 space-y-2">
+                                            <div class="grid gap-2 sm:grid-cols-3">
+                                                <div>
+                                                    <label class="mb-0.5 block text-xs">Ikona (fa-solid fa-…)</label>
+                                                    <input type="text" name="cooperation_data[sectors][{{ $si }}][icon]" value="{{ $sector['icon'] ?? '' }}" placeholder="fa-solid fa-building" class="w-full rounded border-gray-300 text-xs focus:border-brand focus:ring-brand">
+                                                </div>
+                                                <div>
+                                                    <label class="mb-0.5 block text-xs">Kolor</label>
+                                                    <select name="cooperation_data[sectors][{{ $si }}][color]" class="w-full rounded border-gray-300 text-xs focus:border-brand focus:ring-brand">
+                                                        @foreach (['blue' => 'Niebieski', 'green' => 'Zielony', 'purple' => 'Fioletowy', 'orange' => 'Pomarańczowy', 'brand' => 'Brand'] as $val => $lbl)
+                                                            <option value="{{ $val }}" {{ ($sector['color'] ?? 'blue') === $val ? 'selected' : '' }}>{{ $lbl }}</option>
+                                                        @endforeach
+                                                    </select>
+                                                </div>
+                                                <div>
+                                                    <label class="mb-0.5 block text-xs">Tytuł</label>
+                                                    <input type="text" name="cooperation_data[sectors][{{ $si }}][title]" value="{{ $sector['title'] ?? '' }}" class="w-full rounded border-gray-300 text-xs focus:border-brand focus:ring-brand">
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <label class="mb-0.5 block text-xs">Treść</label>
+                                                <textarea name="cooperation_data[sectors][{{ $si }}][text]" rows="2" class="w-full rounded border-gray-300 text-xs focus:border-brand focus:ring-brand">{{ $sector['text'] ?? '' }}</textarea>
+                                            </div>
+                                            <div class="grid gap-2 sm:grid-cols-3">
+                                                <div><label class="mb-0.5 block text-xs">Tag 1</label><input type="text" name="cooperation_data[sectors][{{ $si }}][tag1]" value="{{ $sector['tag1'] ?? '' }}" class="w-full rounded border-gray-300 text-xs focus:border-brand focus:ring-brand"></div>
+                                                <div><label class="mb-0.5 block text-xs">Tag 2</label><input type="text" name="cooperation_data[sectors][{{ $si }}][tag2]" value="{{ $sector['tag2'] ?? '' }}" class="w-full rounded border-gray-300 text-xs focus:border-brand focus:ring-brand"></div>
+                                                <div><label class="mb-0.5 block text-xs">Tag 3</label><input type="text" name="cooperation_data[sectors][{{ $si }}][tag3]" value="{{ $sector['tag3'] ?? '' }}" class="w-full rounded border-gray-300 text-xs focus:border-brand focus:ring-brand"></div>
+                                            </div>
+                                            <div class="flex items-center justify-end gap-1">
+                                                <button type="button" data-repeater-move="up" class="rounded p-1.5 text-muted hover:bg-gray-100 hover:text-brand" aria-label="Wyżej"><i class="fa-solid fa-arrow-up" aria-hidden="true"></i></button>
+                                                <button type="button" data-repeater-move="down" class="rounded p-1.5 text-muted hover:bg-gray-100 hover:text-brand" aria-label="Niżej"><i class="fa-solid fa-arrow-down" aria-hidden="true"></i></button>
+                                                <button type="button" data-repeater-remove class="inline-flex items-center gap-1.5 rounded p-1.5 text-xs font-bold text-muted hover:bg-red-50 hover:text-red-600" aria-label="Usuń sektor"><i class="fa-solid fa-trash" aria-hidden="true"></i> Usuń</button>
+                                            </div>
                                         </div>
-                                        <div>
-                                            <label class="mb-0.5 block text-xs">Kolor (blue/green/purple/orange)</label>
-                                            <input type="text" name="cooperation_data[sectors][{{ $si }}][color]" value="{{ $sector['color'] ?? '' }}" class="w-full rounded border-gray-300 text-xs focus:border-brand focus:ring-brand">
-                                        </div>
-                                        <div>
-                                            <label class="mb-0.5 block text-xs">Tytuł</label>
-                                            <input type="text" name="cooperation_data[sectors][{{ $si }}][title]" value="{{ $sector['title'] ?? '' }}" class="w-full rounded border-gray-300 text-xs focus:border-brand focus:ring-brand">
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <label class="mb-0.5 block text-xs">Treść</label>
-                                        <textarea name="cooperation_data[sectors][{{ $si }}][text]" rows="2" class="w-full rounded border-gray-300 text-xs focus:border-brand focus:ring-brand">{{ $sector['text'] ?? '' }}</textarea>
-                                    </div>
-                                    <div class="grid gap-2 sm:grid-cols-3">
-                                        <div><label class="mb-0.5 block text-xs">Tag 1</label><input type="text" name="cooperation_data[sectors][{{ $si }}][tag1]" value="{{ $sector['tag1'] ?? '' }}" class="w-full rounded border-gray-300 text-xs focus:border-brand focus:ring-brand"></div>
-                                        <div><label class="mb-0.5 block text-xs">Tag 2</label><input type="text" name="cooperation_data[sectors][{{ $si }}][tag2]" value="{{ $sector['tag2'] ?? '' }}" class="w-full rounded border-gray-300 text-xs focus:border-brand focus:ring-brand"></div>
-                                        <div><label class="mb-0.5 block text-xs">Tag 3</label><input type="text" name="cooperation_data[sectors][{{ $si }}][tag3]" value="{{ $sector['tag3'] ?? '' }}" class="w-full rounded border-gray-300 text-xs focus:border-brand focus:ring-brand"></div>
-                                    </div>
+                                    @endforeach
                                 </div>
-                            @endforeach
+                                <button type="button" data-repeater-add class="mt-2 inline-flex items-center gap-2 rounded border border-brand px-3 py-1.5 text-sm font-bold text-brand hover:bg-brand-light"><i class="fa-solid fa-plus" aria-hidden="true"></i> Dodaj sektor</button>
+                                <template data-repeater-template>
+                                    <div data-repeater-row class="rounded border border-gray-200 bg-white p-3 space-y-2">
+                                        <div class="grid gap-2 sm:grid-cols-3">
+                                            <div>
+                                                <label class="mb-0.5 block text-xs">Ikona (fa-solid fa-…)</label>
+                                                <input type="text" name="cooperation_data[sectors][__INDEX__][icon]" placeholder="fa-solid fa-building" class="w-full rounded border-gray-300 text-xs focus:border-brand focus:ring-brand">
+                                            </div>
+                                            <div>
+                                                <label class="mb-0.5 block text-xs">Kolor</label>
+                                                <select name="cooperation_data[sectors][__INDEX__][color]" class="w-full rounded border-gray-300 text-xs focus:border-brand focus:ring-brand">
+                                                    <option value="blue">Niebieski</option>
+                                                    <option value="green">Zielony</option>
+                                                    <option value="purple">Fioletowy</option>
+                                                    <option value="orange">Pomarańczowy</option>
+                                                    <option value="brand">Brand</option>
+                                                </select>
+                                            </div>
+                                            <div>
+                                                <label class="mb-0.5 block text-xs">Tytuł</label>
+                                                <input type="text" name="cooperation_data[sectors][__INDEX__][title]" class="w-full rounded border-gray-300 text-xs focus:border-brand focus:ring-brand">
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <label class="mb-0.5 block text-xs">Treść</label>
+                                            <textarea name="cooperation_data[sectors][__INDEX__][text]" rows="2" class="w-full rounded border-gray-300 text-xs focus:border-brand focus:ring-brand"></textarea>
+                                        </div>
+                                        <div class="grid gap-2 sm:grid-cols-3">
+                                            <div><label class="mb-0.5 block text-xs">Tag 1</label><input type="text" name="cooperation_data[sectors][__INDEX__][tag1]" class="w-full rounded border-gray-300 text-xs focus:border-brand focus:ring-brand"></div>
+                                            <div><label class="mb-0.5 block text-xs">Tag 2</label><input type="text" name="cooperation_data[sectors][__INDEX__][tag2]" class="w-full rounded border-gray-300 text-xs focus:border-brand focus:ring-brand"></div>
+                                            <div><label class="mb-0.5 block text-xs">Tag 3</label><input type="text" name="cooperation_data[sectors][__INDEX__][tag3]" class="w-full rounded border-gray-300 text-xs focus:border-brand focus:ring-brand"></div>
+                                        </div>
+                                        <div class="flex items-center justify-end gap-1">
+                                            <button type="button" data-repeater-move="up" class="rounded p-1.5 text-muted hover:bg-gray-100 hover:text-brand" aria-label="Wyżej"><i class="fa-solid fa-arrow-up" aria-hidden="true"></i></button>
+                                            <button type="button" data-repeater-move="down" class="rounded p-1.5 text-muted hover:bg-gray-100 hover:text-brand" aria-label="Niżej"><i class="fa-solid fa-arrow-down" aria-hidden="true"></i></button>
+                                            <button type="button" data-repeater-remove class="inline-flex items-center gap-1.5 rounded p-1.5 text-xs font-bold text-muted hover:bg-red-50 hover:text-red-600" aria-label="Usuń sektor"><i class="fa-solid fa-trash" aria-hidden="true"></i> Usuń</button>
+                                        </div>
+                                    </div>
+                                </template>
+                            </div>
                         </div>
 
-                        {{-- Formy --}}
+                        {{-- Formy współpracy — dynamiczny repeater --}}
                         <div class="rounded-lg border border-gray-100 bg-gray-50 p-4 space-y-3">
-                            <p class="text-xs font-bold uppercase text-muted">Sekcja: Formy współpracy (4 karty)</p>
+                            <p class="text-xs font-bold uppercase text-muted">Sekcja: Formy współpracy</p>
                             <div class="grid gap-3 sm:grid-cols-2">
                                 <div>
                                     <label class="mb-1 block text-xs font-bold">Nagłówek sekcji</label>
@@ -1266,25 +1317,57 @@
                                     <input type="text" name="cooperation_data[forms_subtitle]" value="{{ $cd['forms_subtitle'] ?? 'Wybierz formułę dopasowaną do Twoich możliwości i celów.' }}" class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
                                 </div>
                             </div>
-                            @foreach ($cdForms as $fi => $form)
-                                <div class="rounded border border-gray-200 bg-white p-3 space-y-2">
-                                    <p class="text-xs font-bold text-muted">Karta {{ $fi + 1 }}: {{ $form['title'] ?? '' }}</p>
-                                    <div class="grid gap-2 sm:grid-cols-2">
-                                        <div>
-                                            <label class="mb-0.5 block text-xs">Ikona (fa-solid fa-…)</label>
-                                            <input type="text" name="cooperation_data[forms][{{ $fi }}][icon]" value="{{ $form['icon'] ?? '' }}" class="w-full rounded border-gray-300 text-xs focus:border-brand focus:ring-brand">
+                            <div data-repeater>
+                                <div data-repeater-rows class="space-y-3">
+                                    @foreach ($cdForms as $fi => $form)
+                                        <div data-repeater-row class="rounded border border-gray-200 bg-white p-3 space-y-2">
+                                            <div class="grid gap-2 sm:grid-cols-2">
+                                                <div>
+                                                    <label class="mb-0.5 block text-xs">Ikona (fa-solid fa-…)</label>
+                                                    <input type="text" name="cooperation_data[forms][{{ $fi }}][icon]" value="{{ $form['icon'] ?? '' }}" placeholder="fa-solid fa-star" class="w-full rounded border-gray-300 text-xs focus:border-brand focus:ring-brand">
+                                                </div>
+                                                <div>
+                                                    <label class="mb-0.5 block text-xs">Tytuł</label>
+                                                    <input type="text" name="cooperation_data[forms][{{ $fi }}][title]" value="{{ $form['title'] ?? '' }}" class="w-full rounded border-gray-300 text-xs focus:border-brand focus:ring-brand">
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <label class="mb-0.5 block text-xs">Treść</label>
+                                                <textarea name="cooperation_data[forms][{{ $fi }}][text]" rows="2" class="w-full rounded border-gray-300 text-xs focus:border-brand focus:ring-brand">{{ $form['text'] ?? '' }}</textarea>
+                                            </div>
+                                            <div class="flex items-center justify-end gap-1">
+                                                <button type="button" data-repeater-move="up" class="rounded p-1.5 text-muted hover:bg-gray-100 hover:text-brand" aria-label="Wyżej"><i class="fa-solid fa-arrow-up" aria-hidden="true"></i></button>
+                                                <button type="button" data-repeater-move="down" class="rounded p-1.5 text-muted hover:bg-gray-100 hover:text-brand" aria-label="Niżej"><i class="fa-solid fa-arrow-down" aria-hidden="true"></i></button>
+                                                <button type="button" data-repeater-remove class="inline-flex items-center gap-1.5 rounded p-1.5 text-xs font-bold text-muted hover:bg-red-50 hover:text-red-600" aria-label="Usuń formę"><i class="fa-solid fa-trash" aria-hidden="true"></i> Usuń</button>
+                                            </div>
                                         </div>
-                                        <div>
-                                            <label class="mb-0.5 block text-xs">Tytuł</label>
-                                            <input type="text" name="cooperation_data[forms][{{ $fi }}][title]" value="{{ $form['title'] ?? '' }}" class="w-full rounded border-gray-300 text-xs focus:border-brand focus:ring-brand">
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <label class="mb-0.5 block text-xs">Treść</label>
-                                        <textarea name="cooperation_data[forms][{{ $fi }}][text]" rows="2" class="w-full rounded border-gray-300 text-xs focus:border-brand focus:ring-brand">{{ $form['text'] ?? '' }}</textarea>
-                                    </div>
+                                    @endforeach
                                 </div>
-                            @endforeach
+                                <button type="button" data-repeater-add class="mt-2 inline-flex items-center gap-2 rounded border border-brand px-3 py-1.5 text-sm font-bold text-brand hover:bg-brand-light"><i class="fa-solid fa-plus" aria-hidden="true"></i> Dodaj formę</button>
+                                <template data-repeater-template>
+                                    <div data-repeater-row class="rounded border border-gray-200 bg-white p-3 space-y-2">
+                                        <div class="grid gap-2 sm:grid-cols-2">
+                                            <div>
+                                                <label class="mb-0.5 block text-xs">Ikona (fa-solid fa-…)</label>
+                                                <input type="text" name="cooperation_data[forms][__INDEX__][icon]" placeholder="fa-solid fa-star" class="w-full rounded border-gray-300 text-xs focus:border-brand focus:ring-brand">
+                                            </div>
+                                            <div>
+                                                <label class="mb-0.5 block text-xs">Tytuł</label>
+                                                <input type="text" name="cooperation_data[forms][__INDEX__][title]" class="w-full rounded border-gray-300 text-xs focus:border-brand focus:ring-brand">
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <label class="mb-0.5 block text-xs">Treść</label>
+                                            <textarea name="cooperation_data[forms][__INDEX__][text]" rows="2" class="w-full rounded border-gray-300 text-xs focus:border-brand focus:ring-brand"></textarea>
+                                        </div>
+                                        <div class="flex items-center justify-end gap-1">
+                                            <button type="button" data-repeater-move="up" class="rounded p-1.5 text-muted hover:bg-gray-100 hover:text-brand" aria-label="Wyżej"><i class="fa-solid fa-arrow-up" aria-hidden="true"></i></button>
+                                            <button type="button" data-repeater-move="down" class="rounded p-1.5 text-muted hover:bg-gray-100 hover:text-brand" aria-label="Niżej"><i class="fa-solid fa-arrow-down" aria-hidden="true"></i></button>
+                                            <button type="button" data-repeater-remove class="inline-flex items-center gap-1.5 rounded p-1.5 text-xs font-bold text-muted hover:bg-red-50 hover:text-red-600" aria-label="Usuń formę"><i class="fa-solid fa-trash" aria-hidden="true"></i> Usuń</button>
+                                        </div>
+                                    </div>
+                                </template>
+                            </div>
                         </div>
 
                         {{-- CTA --}}

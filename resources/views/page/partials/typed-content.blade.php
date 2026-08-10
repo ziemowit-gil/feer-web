@@ -792,27 +792,16 @@
     </section>
     @endif
 
-    {{-- ══ SEKCJA DLA FIRM / NGO — split 2+2 ══ --}}
-    @php
-        $firmSectors = array_slice($cdSectors, 0, 2);
-        $ngoSectors  = array_slice($cdSectors, 2, 2);
-    @endphp
-
-    {{-- Dla firm i biznesu --}}
-    <section id="dla-firm" class="bg-white py-16" aria-labelledby="firms-heading">
+    {{-- ══ SEKTORY ══ --}}
+    @if (!empty($cdSectors))
+    <section id="dla-firm" class="bg-white py-16" aria-labelledby="sectors-heading">
         <div class="mx-auto max-w-5xl px-4">
-            <div class="mb-3 flex items-center gap-3">
-                <span class="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-50 text-blue-600" aria-hidden="true">
-                    <i class="fa-solid fa-building"></i>
-                </span>
-                <p class="text-xs font-bold uppercase tracking-widest text-blue-600">Dla firm i biznesu</p>
-            </div>
-            <h2 id="firms-heading" class="mb-2 text-2xl font-bold text-ink md:text-3xl">{{ $cd['sectors_heading'] ?? 'Partnerstwo, które buduje Twoją markę' }}</h2>
+            <h2 id="sectors-heading" class="mb-2 text-2xl font-bold text-ink md:text-3xl">{{ $cd['sectors_heading'] ?? 'Dlaczego warto z nami współpracować?' }}</h2>
             @if (filled($cd['sectors_subtitle'] ?? null))
                 <p class="mb-10 max-w-2xl text-muted">{{ $cd['sectors_subtitle'] }}</p>
             @endif
             <div class="grid gap-6 sm:grid-cols-2">
-                @foreach ($firmSectors as $sector)
+                @foreach ($cdSectors as $sector)
                     @php $colors = $colorMap[$sector['color'] ?? 'blue'] ?? $colorMap['blue']; @endphp
                     <article class="flex gap-5 rounded-2xl border {{ $colors['border'] }} bg-white p-6 shadow-sm">
                         <span class="mt-0.5 flex h-11 w-11 shrink-0 items-center justify-center rounded-xl {{ $colors['bg'] }} {{ $colors['text'] }}" aria-hidden="true">
@@ -837,44 +826,7 @@
             </div>
         </div>
     </section>
-
-    {{-- Dla NGO i nauki --}}
-    <section id="dla-ngo" class="bg-gray-50 py-16" aria-labelledby="ngo-heading">
-        <div class="mx-auto max-w-5xl px-4">
-            <div class="mb-3 flex items-center gap-3">
-                <span class="flex h-9 w-9 items-center justify-center rounded-lg bg-orange-50 text-orange-600" aria-hidden="true">
-                    <i class="fa-solid fa-people-group"></i>
-                </span>
-                <p class="text-xs font-bold uppercase tracking-widest text-orange-600">Dla NGO i świata nauki</p>
-            </div>
-            <h2 id="ngo-heading" class="mb-2 text-2xl font-bold text-ink md:text-3xl">Wspólnie więcej możemy</h2>
-            <p class="mb-10 max-w-2xl text-muted">Synergia organizacji i środowisk akademickich to siła, której nie osiągniemy osobno.</p>
-            <div class="grid gap-6 sm:grid-cols-2">
-                @foreach ($ngoSectors as $sector)
-                    @php $colors = $colorMap[$sector['color'] ?? 'orange'] ?? $colorMap['orange']; @endphp
-                    <article class="flex gap-5 rounded-2xl border {{ $colors['border'] }} bg-white p-6 shadow-sm">
-                        <span class="mt-0.5 flex h-11 w-11 shrink-0 items-center justify-center rounded-xl {{ $colors['bg'] }} {{ $colors['text'] }}" aria-hidden="true">
-                            <i class="{{ $sector['icon'] ?? 'fa-solid fa-circle' }} text-lg"></i>
-                        </span>
-                        <div class="min-w-0">
-                            <h3 class="font-bold text-ink">{{ $sector['title'] ?? '' }}</h3>
-                            @if (filled($sector['text'] ?? null))
-                                <p class="mt-1 text-sm text-muted leading-relaxed">{{ $sector['text'] }}</p>
-                            @endif
-                            @php $tags = array_filter([$sector['tag1'] ?? null, $sector['tag2'] ?? null, $sector['tag3'] ?? null]); @endphp
-                            @if ($tags)
-                                <ul class="mt-3 flex flex-wrap gap-1.5" aria-label="Obszary">
-                                    @foreach ($tags as $tag)
-                                        <li class="rounded-full {{ $colors['pill'] }} px-2.5 py-0.5 text-xs font-medium">{{ $tag }}</li>
-                                    @endforeach
-                                </ul>
-                            @endif
-                        </div>
-                    </article>
-                @endforeach
-            </div>
-        </div>
-    </section>
+    @endif
 
     {{-- ══ FORMY WSPÓŁPRACY ══ --}}
     <section id="formy-wspolpracy" class="bg-white py-16" aria-labelledby="formy-heading">
