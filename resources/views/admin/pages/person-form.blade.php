@@ -226,6 +226,58 @@
                     </div>
                 </div>
 
+                {{-- Słowo od Fundatora --}}
+                <div class="rounded-lg border border-amber-200 bg-amber-50/40 p-6 space-y-5">
+                    <div>
+                        <h2 class="text-base font-bold text-ink mb-1">Słowo od Fundatora</h2>
+                        <p class="text-xs text-muted">Pola widoczne tylko gdy osoba jest fundatorem. Niezależne od profilu osoby.</p>
+                    </div>
+
+                    <div>
+                        <input type="hidden" name="is_featured" value="0">
+                        <label class="flex cursor-pointer items-center gap-2.5">
+                            <input type="checkbox" name="is_featured" value="1"
+                                {{ old('is_featured', $page->is_featured) ? 'checked' : '' }}
+                                class="rounded border-gray-300 text-brand focus:ring-brand">
+                            <span class="text-sm font-bold text-ink">To jest fundator/ka organizacji</span>
+                        </label>
+                        <p class="mt-1 pl-6 text-xs text-muted">Sekcja „Słowo od Fundatora" pojawi się na stronie O organizacji.</p>
+                    </div>
+
+                    <div>
+                        <label for="founder_quote" class="mb-1 block text-sm font-bold">Treść cytatu / słowa od fundatora</label>
+                        <textarea id="founder_quote" name="founder_quote" rows="5"
+                            placeholder="Wpisz cytat lub krótkie słowo od fundatora…"
+                            class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">{{ old('founder_quote', $page->founder_quote ?? '') }}</textarea>
+                        @error('founder_quote') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </div>
+
+                    <div>
+                        <p class="mb-1 text-sm font-bold">Zdjęcie do tej sekcji <span class="font-normal text-muted">(inne niż profilowe)</span></p>
+                        @if (filled(old('founder_image', $page->founder_image ?? null)))
+                            <div class="mb-3 flex items-center gap-3">
+                                <img src="{{ old('founder_image', $page->founder_image) }}" alt=""
+                                    class="h-20 w-32 rounded object-cover" loading="lazy">
+                                <label class="flex items-center gap-1.5 text-xs text-red-600">
+                                    <input type="checkbox" name="remove_founder_image" value="1"
+                                        class="rounded border-gray-300 text-red-500 focus:ring-red-400">
+                                    Usuń zdjęcie
+                                </label>
+                            </div>
+                        @endif
+                        <input type="file" name="founder_image_file" accept="image/*"
+                            aria-label="Wgraj zdjęcie do sekcji Słowo od Fundatora"
+                            class="block w-full text-sm text-muted file:mr-3 file:cursor-pointer file:rounded file:border-0 file:bg-amber-100 file:px-3 file:py-1.5 file:text-sm file:font-bold file:text-amber-700 hover:file:bg-amber-200">
+                        <div class="mt-2">
+                            <label for="founder_image_alt" class="mb-1 block text-xs font-bold">Tekst alternatywny <span class="font-normal text-muted">(dostępność)</span></label>
+                            <input type="text" id="founder_image_alt" name="founder_image_alt"
+                                value="{{ old('founder_image_alt', $page->founder_image_alt ?? '') }}"
+                                placeholder="np. Ziemowit Gil podczas konferencji"
+                                class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                        </div>
+                    </div>
+                </div>
+
                 {{-- SEO --}}
                 <details class="rounded-lg border border-gray-200 bg-white">
                     <summary class="cursor-pointer px-6 py-4 text-sm font-bold text-ink hover:bg-gray-50">
