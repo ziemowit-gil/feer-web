@@ -345,6 +345,17 @@
             @php $subBrands = array_values((array) old('sub_brands', $settings->sub_brands ?? [])); @endphp
             <p class="text-xs text-muted">Kolor przewodni strony oraz nazwane kolory submarek dla różnych treści (projektów i aktualności). Każdy kolor jest przy zapisie przyciemniany do kontrastu WCAG AA wobec bieli.</p>
 
+            <div class="flex items-start gap-3 rounded-lg border border-amber-200 bg-amber-50 p-3 dark:border-amber-700 dark:bg-amber-950">
+                <input type="hidden" name="brand_skip_contrast" value="0">
+                <input type="checkbox" id="brand_skip_contrast" name="brand_skip_contrast" value="1"
+                    {{ old('brand_skip_contrast', $settings->brand_skip_contrast) ? 'checked' : '' }}
+                    class="mt-0.5 rounded border-gray-300 text-brand focus:ring-brand">
+                <label for="brand_skip_contrast" class="text-sm leading-snug">
+                    <span class="font-bold">Wyłącz automatyczne korygowanie kontrastu</span>
+                    <span class="block text-xs text-muted">Kolory nie będą przyciemniane przy zapisie. Użyj tylko gdy identyfikacja wizualna organizacji wymaga konkretnego koloru niespełniającego WCAG AA.</span>
+                </label>
+            </div>
+
             <div>
                 <label for="brand_color" class="mb-1 block text-sm font-bold">Kolor przewodni (marka)</label>
                 <div class="flex flex-wrap items-center gap-3">
@@ -2144,8 +2155,15 @@
             const textInput = document.getElementById('brand_color_text');
             const colorInput = document.getElementById('brand_color');
             const fixButton = document.getElementById('contrast-fix-button');
+            const skipCheckbox = document.getElementById('brand_skip_contrast');
 
             function update() {
+                if (skipCheckbox && skipCheckbox.checked) {
+                    badge.textContent = 'Sprawdzanie kontrastu wyłączone';
+                    badge.className = 'rounded-full px-3 py-1 text-xs font-bold bg-gray-100 text-gray-500';
+                    fixButton.hidden = true;
+                    return;
+                }
                 const ratio = contrastWithWhite(colorInput.value);
                 if (ratio === null) {
                     badge.textContent = '';
@@ -2170,6 +2188,7 @@
                 update();
             });
             textInput.addEventListener('input', update);
+            if (skipCheckbox) skipCheckbox.addEventListener('change', update);
             update();
         })();
 

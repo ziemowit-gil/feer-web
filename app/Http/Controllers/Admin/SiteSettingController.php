@@ -363,21 +363,27 @@ class SiteSettingController extends Controller
             }
         }
 
-        $data['brand_color'] = $settings->contrastSafeColor($data['brand_color']);
+        $skipContrast = (bool) ($data['brand_skip_contrast'] ?? false);
+
+        $data['brand_color'] = $skipContrast
+            ? $data['brand_color']
+            : $settings->contrastSafeColor($data['brand_color']);
 
         // Dodatkowe kolory marki: puste = null, w przeciwnym razie kontrast AA na białym.
         foreach (['brand_color_2', 'brand_color_3', 'brand_color_4'] as $key) {
-            $data[$key] = filled($data[$key] ?? null) ? $settings->contrastSafeColor($data[$key]) : null;
+            $data[$key] = filled($data[$key] ?? null)
+                ? ($skipContrast ? $data[$key] : $settings->contrastSafeColor($data[$key]))
+                : null;
         }
 
         // Kolor NGO także pilnujemy pod kątem kontrastu (używany jak text-brand na białym).
         $data['ngo_color'] = filled($data['ngo_color'] ?? null)
-            ? $settings->contrastSafeColor($data['ngo_color'])
+            ? ($skipContrast ? $data['ngo_color'] : $settings->contrastSafeColor($data['ngo_color']))
             : null;
 
         // Kolor sekcji wydarzeń na stronie głównej: pusty = kolor marki.
         $data['events_home_color'] = filled($data['events_home_color'] ?? null)
-            ? $settings->contrastSafeColor($data['events_home_color'])
+            ? ($skipContrast ? $data['events_home_color'] : $settings->contrastSafeColor($data['events_home_color']))
             : null;
 
         // Kolory submarek: odrzucamy puste wiersze i pilnujemy kontrastu każdego koloru.
@@ -387,13 +393,16 @@ class SiteSettingController extends Controller
                 'color' => trim((string) ($s['color'] ?? '')),
             ])
             ->filter(fn ($s) => $s['name'] !== '' && preg_match('/^#[0-9a-fA-F]{6}$/', $s['color']))
-            ->map(fn ($s) => ['name' => $s['name'], 'color' => $settings->contrastSafeColor($s['color'])])
+            ->map(fn ($s) => [
+                'name' => $s['name'],
+                'color' => $skipContrast ? $s['color'] : $settings->contrastSafeColor($s['color']),
+            ])
             ->values()
             ->all() ?: null;
 
         unset($data['logo'], $data['remove_logo'], $data['og_image'], $data['remove_og_image'], $data['support_image'], $data['remove_support_image'], $data['support_gallery'], $data['remove_support_gallery'], $data['news_default_image'], $data['remove_news_default_image'], $data['bip_logo'], $data['remove_bip_logo'], $data['enabled_modules'], $data['section_order_json'], $data['notify_schedule_change']);
 
-        $colorWasAdjusted = $data['brand_color'] !== $request->input('brand_color');
+        $colorWasAdjusted = ! $skipContrast && $data['brand_color'] !== $request->input('brand_color');
 
         $settings->update($data);
 

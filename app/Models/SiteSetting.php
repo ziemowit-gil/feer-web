@@ -141,7 +141,7 @@ class SiteSetting extends Model implements HasMedia
     ];
 
     protected $fillable = [
-        'site_name', 'tagline', 'brand_color', 'brand_color_2', 'brand_color_3', 'brand_color_4', 'meta_description', 'allow_indexing', 'ga_measurement_id', 'disabled_modules', 'homepage_section_order', 'events_home_color',
+        'site_name', 'tagline', 'brand_color', 'brand_color_2', 'brand_color_3', 'brand_color_4', 'brand_skip_contrast', 'meta_description', 'allow_indexing', 'ga_measurement_id', 'disabled_modules', 'homepage_section_order', 'events_home_color',
         'bip_url', 'bip_intro', 'bip_editor_name', 'bip_editor_email', 'bip_gov_url', 'bip_mode', 'facebook_url', 'facebook_group_url', 'twitter_url', 'instagram_url', 'linkedin_url', 'youtube_url', 'substack_url',
         'contact_address', 'contact_city', 'contact_email', 'contact_phone', 'contact_office_hours', 'contact_intro', 'contact_bank_accounts',
         'contact_meeting_title', 'contact_online_meeting_url', 'contact_online_meeting_label', 'contact_online_meeting_text',
@@ -282,6 +282,7 @@ class SiteSetting extends Model implements HasMedia
         'mail_password' => 'encrypted',
         'mail_port' => 'integer',
         'show_coordinators' => 'boolean',
+        'brand_skip_contrast' => 'boolean',
         'sub_brands' => 'array',
         'contact_box_visible_from' => 'datetime',
         'contact_box_visible_until' => 'datetime',
