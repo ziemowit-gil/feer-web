@@ -81,7 +81,13 @@
         </div>
 
         @php
-            $can = fn (string $module) => $siteSettings->isModuleEnabled($module) && auth()->user()->canAccessModule($module);
+            $moduleManager = app(\App\Modules\ModuleManager::class);
+            // Moduły zarządzane przez ModuleManager sprawdzamy w nim; pozostałe — w SiteSetting.
+            $can = fn (string $module) => (
+                $moduleManager->get($module) !== null
+                    ? $moduleManager->isActive($module)
+                    : $siteSettings->isModuleEnabled($module)
+            ) && auth()->user()->canAccessModule($module);
 
             $itemClass = fn ($patterns) => 'group flex items-center gap-3 rounded-lg px-3 py-2 transition-colors '
                 . (request()->routeIs($patterns)
@@ -95,7 +101,7 @@
             $pagesRoutes = ['admin.podstrony.*', 'admin.pozycje-menu.*', 'admin.os-czasu.*'];
 
             // ② PUBLIKACJE — dynamiczna treść redakcyjna (razem z Projektami)
-            $pubRoutes = ['admin.newsy.*', 'admin.kategorie-newsow.*', 'admin.tagi.*', 'admin.wiem-feer.*', 'admin.komentarze-bloga.*', 'admin.materialy-edukacyjne.*', 'admin.zapisy-materialy.*', 'admin.wolontariat.*', 'admin.wydarzenia.*', 'admin.prowadzacy.*', 'admin.kategorie.*', 'admin.projekty.*', 'admin.faq.*', 'admin.sprawozdania.*', 'admin.bip-dokumenty.*', 'admin.lp.*', 'admin.ankiety.*', 'admin.kampanie.*'];
+            $pubRoutes = ['admin.newsy.*', 'admin.kategorie-newsow.*', 'admin.tagi.*', 'admin.wiem-feer.*', 'admin.komentarze-bloga.*', 'admin.materialy-edukacyjne.*', 'admin.zapisy-materialy.*', 'admin.wolontariat.*', 'admin.wydarzenia.*', 'admin.prowadzacy.*', 'admin.kategorie.*', 'admin.projekty.*', 'admin.faq.*', 'admin.sprawozdania.*', 'admin.bip-dokumenty.*', 'admin.lp.*', 'admin.ankiety.*', 'admin.kampanie.*', 'admin.praca.*'];
 
             // ③ STRONA GŁÓWNA — sekcje wizualne homepage
             $appearanceRoutes = ['admin.hero.*', 'admin.galeria.*', 'admin.szybkie-akcje.*', 'admin.partnerzy.*'];
@@ -155,7 +161,7 @@
             @endif
 
             {{-- ② PUBLIKACJE --}}
-            @if ($can('news') || $can('polls') || $can('materials') || $can('volunteering') || $can('events') || $can('faq') || $can('reports') || $can('landing') || $can('projects') || app(\App\Modules\ModuleManager::class)->isActive('blog'))
+            @if ($can('news') || $can('polls') || $can('materials') || $can('volunteering') || $can('events') || $can('faq') || $can('reports') || $can('landing') || $can('projects') || $can('jobs') || $moduleManager->isActive('blog'))
                 <div class="section-divider"></div>
                 <div x-data="{ open: {{ request()->routeIs($pubRoutes) ? 'true' : 'false' }} }">
                     <button type="button" @click="open = !open" :aria-expanded="open" aria-controls="nav-section-pub"
@@ -277,6 +283,14 @@
                             <a href="{{ route('admin.wolontariat.index') }}" class="{{ $itemClass('admin.wolontariat.*') }}" title="Wolontariat">
                                 <i class="fa-solid fa-hands-helping {{ $iconClass('admin.wolontariat.*') }}"></i>
                                 <span class="nav-label">Wolontariat</span>
+                            </a>
+                        @endif
+
+                        {{-- Ogłoszenia o pracę --}}
+                        @if ($can('jobs'))
+                            <a href="{{ route('admin.praca.index') }}" class="{{ $itemClass('admin.praca.*') }}" title="Ogłoszenia o pracę">
+                                <i class="fa-solid fa-briefcase {{ $iconClass('admin.praca.*') }}"></i>
+                                <span class="nav-label">Ogłoszenia o pracę</span>
                             </a>
                         @endif
 
