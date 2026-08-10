@@ -184,13 +184,42 @@
             <div class="mx-auto flex max-w-6xl gap-1 overflow-x-auto px-4 py-2" style="scrollbar-width:none">
                 @foreach ($activeAboutSections as $navKey => $navLabel)
                     <a href="#sekcja-{{ $navKey }}"
-                       class="shrink-0 rounded-full px-4 py-1.5 text-sm font-medium transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand
-                              {{ $navKey === 'team' ? 'bg-brand text-white hover:bg-brand-dark' : 'text-muted hover:bg-gray-100 hover:text-ink' }}">
+                       data-about-nav="{{ $navKey }}"
+                       class="shrink-0 rounded-full px-4 py-1.5 text-sm font-medium transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand text-muted hover:bg-gray-100 hover:text-ink">
                         {{ $navLabel }}
                     </a>
                 @endforeach
             </div>
         </nav>
+        <script>
+        (function () {
+            var links = document.querySelectorAll('[data-about-nav]');
+            if (!links.length) return;
+            var active = null;
+            function setActive(key) {
+                if (active === key) return;
+                active = key;
+                links.forEach(function (a) {
+                    var on = a.dataset.aboutNav === key;
+                    a.classList.toggle('bg-brand', on);
+                    a.classList.toggle('text-white', on);
+                    a.classList.toggle('hover:bg-brand-dark', on);
+                    a.classList.toggle('text-muted', !on);
+                    a.classList.toggle('hover:bg-gray-100', !on);
+                    a.classList.toggle('hover:text-ink', !on);
+                });
+            }
+            var observer = new IntersectionObserver(function (entries) {
+                entries.forEach(function (e) {
+                    if (e.isIntersecting) setActive(e.target.id.replace('sekcja-', ''));
+                });
+            }, { rootMargin: '-40% 0px -55% 0px' });
+            links.forEach(function (a) {
+                var sec = document.getElementById('sekcja-' + a.dataset.aboutNav);
+                if (sec) observer.observe(sec);
+            });
+        })();
+        </script>
         @endif
 
         @foreach ($page->orderedAboutSections() as $aboutSection)
