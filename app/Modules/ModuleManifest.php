@@ -16,6 +16,7 @@ final readonly class ModuleManifest
         public string $basePath,
         public bool   $hasMigrations,
         public bool   $hasAssets,
+        public bool   $isBuiltIn,
         /** @var string[] */
         public array  $requires,
     ) {}
@@ -33,6 +34,7 @@ final readonly class ModuleManifest
             basePath:      $basePath,
             hasMigrations: (bool) ($data['migrations'] ?? false),
             hasAssets:     (bool) ($data['assets'] ?? false),
+            isBuiltIn:     (bool) ($data['built_in'] ?? false),
             requires:      (array) ($data['requires'] ?? []),
         );
     }

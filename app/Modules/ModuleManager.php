@@ -70,6 +70,26 @@ final class ModuleManager
             }
 
             $this->statuses = DB::table('plugins')->pluck('status', 'identifier');
+
+            // Wbudowane moduły (built_in: true) są auto-rejestrowane jako 'active'
+            // przy pierwszym uruchomieniu — brak wpisu w plugins traktujemy jak
+            // aktywność domyślną, żeby nie zepsuć istniejących instalacji.
+            $now = now();
+            foreach ($this->discovered->filter(fn ($m) => $m->isBuiltIn) as $manifest) {
+                if (! $this->statuses->has($manifest->identifier)) {
+                    DB::table('plugins')->insert([
+                        'identifier'   => $manifest->identifier,
+                        'name'         => $manifest->name,
+                        'version'      => $manifest->version,
+                        'status'       => 'active',
+                        'installed_at' => $now,
+                        'activated_at' => $now,
+                        'created_at'   => $now,
+                        'updated_at'   => $now,
+                    ]);
+                    $this->statuses->put($manifest->identifier, 'active');
+                }
+            }
         } catch (\Throwable) {
             // Baza niedostępna (np. faza instalacji). Traktujemy wszystko jako inactive.
         }

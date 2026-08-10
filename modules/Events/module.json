@@ -1,0 +1,12 @@
+{
+    "identifier":   "events",
+    "name":         "Szkolenia i wydarzenia",
+    "version":      "1.0.0",
+    "description":  "Szkolenia, warsztaty i webinary — publiczna lista i szczegóły, zarządzanie w panelu (uczestnicy, powtarzania, prowadzący, archiwum).",
+    "author":       "FEER",
+    "provider":     "Modules\\Events\\Providers\\EventsServiceProvider",
+    "migrations":   false,
+    "assets":       false,
+    "built_in":     true,
+    "requires":     []
+}
