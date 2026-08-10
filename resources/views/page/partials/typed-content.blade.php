@@ -266,12 +266,8 @@
                 : ($aboutFounder->person_bio
                     ? \Illuminate\Support\Str::limit(strip_tags($aboutFounder->person_bio), 480, '…')
                     : '');
-            $founderPhoto = filled($aboutFounder->founder_image)
-                ? $aboutFounder->founder_image
-                : $aboutFounder->content_image;
-            $founderPhotoAlt = filled($aboutFounder->founder_image)
-                ? ($aboutFounder->founder_image_alt ?: $aboutFounder->title)
-                : ($aboutFounder->content_image_alt ?: $aboutFounder->title);
+            $founderPhoto    = filled($aboutFounder->founder_image) ? $aboutFounder->founder_image : null;
+            $founderPhotoAlt = $aboutFounder->founder_image_alt ?: $aboutFounder->title;
             $founderInitials = \Illuminate\Support\Str::of($aboutFounder->title)
                 ->explode(' ')->map(fn ($w) => mb_substr($w, 0, 1))->take(2)->implode('');
         @endphp
