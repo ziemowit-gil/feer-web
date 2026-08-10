@@ -1035,6 +1035,34 @@
                                 <span class="font-semibold text-ink">Fundator — wprowadzenie</span>
                             </label>
                             <p class="mt-1.5 pl-6 text-xs text-muted">Zaznacz dla fundatora/ki — sekcja „Słowo od Fundatora" pojawi się na stronie O organizacji.</p>
+
+                            <div class="mt-4 border-t border-amber-200 pt-4">
+                                <p class="mb-2 text-xs font-bold text-ink">Zdjęcie do sekcji „Słowo od Fundatora"</p>
+                                <p class="mb-3 text-xs text-muted">Osobna fotografia do tej sekcji (np. szeroka, reportażowa). Jeśli puste — użyte zostanie zdjęcie profilowe z zakładki Treść.</p>
+
+                                @if (filled(old('founder_image', $page->founder_image ?? null)))
+                                    <div class="mb-3 flex items-center gap-3">
+                                        <img src="{{ old('founder_image', $page->founder_image) }}" alt=""
+                                            class="h-20 w-32 rounded object-cover" loading="lazy">
+                                        <label class="flex items-center gap-1.5 text-xs text-red-600">
+                                            <input type="checkbox" name="remove_founder_image" value="1"
+                                                class="rounded border-gray-300 text-red-500 focus:ring-red-400">
+                                            Usuń zdjęcie
+                                        </label>
+                                    </div>
+                                @endif
+
+                                <input type="file" name="founder_image_file" accept="image/*"
+                                    class="block w-full text-xs text-muted file:mr-3 file:cursor-pointer file:rounded file:border-0 file:bg-amber-100 file:px-3 file:py-1.5 file:text-xs file:font-bold file:text-amber-700 hover:file:bg-amber-200">
+
+                                <div class="mt-2">
+                                    <label for="founder_image_alt" class="mb-1 block text-xs font-bold">Tekst alternatywny <span class="font-normal text-muted">(dostępność)</span></label>
+                                    <input type="text" id="founder_image_alt" name="founder_image_alt"
+                                        value="{{ old('founder_image_alt', $page->founder_image_alt ?? '') }}"
+                                        placeholder="np. Jan Kowalski podczas konferencji"
+                                        class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                                </div>
+                            </div>
                         </div>
 
                         <div>

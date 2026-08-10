@@ -258,58 +258,73 @@
         @break
 
         @case('founder')
-        {{-- Słowo od Fundatora: wyróżniona podstrona about_person, narracyjny split-screen --}}
+        {{-- Słowo od Fundatora: ciemna sekcja personal-page z osobnym zdjęciem --}}
         @if ($aboutFounder)
         @php
             $founderQuote = $aboutFounder->content
-                ? \Illuminate\Support\Str::limit(strip_tags($aboutFounder->content), 520, '…')
-                : '';
+                ? \Illuminate\Support\Str::limit(strip_tags($aboutFounder->content), 480, '…')
+                : ($aboutFounder->person_bio
+                    ? \Illuminate\Support\Str::limit(strip_tags($aboutFounder->person_bio), 480, '…')
+                    : '');
+            $founderPhoto = filled($aboutFounder->founder_image)
+                ? $aboutFounder->founder_image
+                : $aboutFounder->content_image;
+            $founderPhotoAlt = filled($aboutFounder->founder_image)
+                ? ($aboutFounder->founder_image_alt ?: $aboutFounder->title)
+                : ($aboutFounder->content_image_alt ?: $aboutFounder->title);
             $founderInitials = \Illuminate\Support\Str::of($aboutFounder->title)
                 ->explode(' ')->map(fn ($w) => mb_substr($w, 0, 1))->take(2)->implode('');
         @endphp
-        <section id="sekcja-founder" class="overflow-hidden">
-            <div class="grid min-h-[480px] lg:grid-cols-2 lg:min-h-[620px]">
+        <section id="sekcja-founder" class="overflow-hidden bg-gray-950">
+            <div class="grid lg:grid-cols-2">
 
                 {{-- ══ LEWA: zdjęcie full-bleed ══ --}}
-                <div class="relative min-h-[340px] lg:min-h-0">
-                    @if (filled($aboutFounder->content_image))
-                        <img src="{{ $aboutFounder->content_image }}"
-                            alt="{{ $aboutFounder->content_image_alt ?: $aboutFounder->title }}"
-                            class="absolute inset-0 h-full w-full object-cover object-top">
-                        {{-- Gradient na dole z imieniem --}}
-                        <div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent px-10 py-8">
-                            <p class="text-xl font-bold text-white">{{ $aboutFounder->title }}</p>
-                            @if (filled($aboutFounder->person_role))
-                                <p class="mt-0.5 text-sm font-medium text-white/80">{{ $aboutFounder->person_role }}</p>
-                            @endif
-                        </div>
+                <div class="relative min-h-[360px] lg:min-h-[640px]">
+                    @if ($founderPhoto)
+                        <img src="{{ $founderPhoto }}"
+                            alt="{{ $founderPhotoAlt }}"
+                            class="absolute inset-0 h-full w-full object-cover object-center">
+                        {{-- Subtelny gradient przejścia w prawo na desktop --}}
+                        <div class="absolute inset-0 bg-gradient-to-r from-transparent via-transparent to-gray-950/60 hidden lg:block" aria-hidden="true"></div>
+                        {{-- Gradient na dole na mobile --}}
+                        <div class="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-gray-950 to-transparent lg:hidden" aria-hidden="true"></div>
                     @else
-                        <div class="flex h-full min-h-[340px] items-center justify-center bg-brand/10 text-8xl font-bold text-brand">
+                        <div class="flex h-full items-center justify-center bg-gray-800 text-7xl font-bold tracking-tight text-white/20">
                             {{ $founderInitials }}
                         </div>
                     @endif
                 </div>
 
-                {{-- ══ PRAWA: narracja ══ --}}
-                <div class="flex flex-col justify-center bg-gray-50 px-8 py-16 lg:px-16 lg:py-24">
-                    <p class="mb-6 text-xs font-bold uppercase tracking-widest text-brand">
+                {{-- ══ PRAWA: treść personal-page ══ --}}
+                <div class="flex flex-col justify-center px-8 py-16 lg:px-16 lg:py-24">
+
+                    <p class="mb-6 text-xs font-bold uppercase tracking-[0.2em] text-amber-400">
                         Słowo od Fundatora
                     </p>
 
-                    {{-- Ozdobny cudzysłów --}}
-                    <i class="fa-solid fa-quote-left mb-5 block text-6xl leading-none text-brand/15" aria-hidden="true"></i>
+                    <h2 class="mb-1 text-3xl font-bold leading-tight text-white md:text-4xl">
+                        {{ $aboutFounder->title }}
+                    </h2>
+                    @if (filled($aboutFounder->person_role))
+                        <p class="mb-8 text-base font-medium text-white/50">{{ $aboutFounder->person_role }}</p>
+                    @else
+                        <div class="mb-8"></div>
+                    @endif
 
                     @if ($founderQuote)
-                        <p class="text-2xl italic leading-relaxed text-ink/90 md:text-3xl">
+                        <i class="fa-solid fa-quote-left mb-4 block text-5xl leading-none text-white/10" aria-hidden="true"></i>
+                        <p class="text-xl italic leading-relaxed text-white/80 md:text-2xl">
                             {{ $founderQuote }}
                         </p>
                     @endif
 
-                    <a href="{{ url('/' . $aboutFounder->slug) }}"
-                        class="mt-10 inline-flex items-center gap-2 self-start text-sm font-bold text-brand hover:text-brand-dark focus-visible:rounded focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
-                        Poznaj moją historię
-                        <i class="fa-solid fa-arrow-right text-xs" aria-hidden="true"></i>
-                    </a>
+                    <div class="mt-10 flex items-center gap-5">
+                        <a href="{{ url('/' . $aboutFounder->slug) }}"
+                            class="inline-flex items-center gap-2 rounded-full bg-amber-400 px-6 py-2.5 text-sm font-bold text-gray-900 transition hover:bg-amber-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400">
+                            Poznaj moją historię
+                            <i class="fa-solid fa-arrow-right text-xs" aria-hidden="true"></i>
+                        </a>
+                    </div>
                 </div>
 
             </div>

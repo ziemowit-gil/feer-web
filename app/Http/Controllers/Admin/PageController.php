@@ -549,6 +549,10 @@ class PageController extends Controller
             'brand_sections.*.title' => ['nullable', 'string', 'max:120'],
             'brand_sections.*.key' => ['nullable', 'string', 'max:80'],
             'is_featured' => ['nullable', 'boolean'],
+            'founder_image' => ['nullable', 'string', 'max:1000'],
+            'founder_image_file' => ['nullable', 'image', 'max:8192'],
+            'remove_founder_image' => ['nullable', 'boolean'],
+            'founder_image_alt' => ['nullable', 'string', 'max:255'],
             'person_phone' => ['nullable', 'string', 'max:60'],
             'person_role' => ['nullable', 'string', 'max:255'],
             'person_bio' => ['nullable', 'string', 'max:10000'],
@@ -785,6 +789,19 @@ class PageController extends Controller
         $data['content_image_alt'] = trim((string) ($data['content_image_alt'] ?? '')) ?: null;
         $data['content_image_width'] = trim((string) ($data['content_image_width'] ?? '')) ?: null;
         unset($data['content_image_file'], $data['remove_content_image']);
+
+        // Zdjęcie fundatora (osobna fotografia na sekcję O organizacji).
+        if ($request->hasFile('founder_image_file')) {
+            $data['founder_image'] = \Illuminate\Support\Facades\Storage::disk('public')->url(
+                $request->file('founder_image_file')->store('pages', 'public')
+            );
+        } elseif ($request->boolean('remove_founder_image')) {
+            $data['founder_image'] = null;
+        } else {
+            $data['founder_image'] = trim((string) ($data['founder_image'] ?? '')) ?: null;
+        }
+        $data['founder_image_alt'] = trim((string) ($data['founder_image_alt'] ?? '')) ?: null;
+        unset($data['founder_image_file'], $data['remove_founder_image']);
 
         // „Prezentacja tego, co było": nazwa poprzednika + wstęp; poza typem czyścimy.
         if ($data['type'] === 'legacy') {
