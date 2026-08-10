@@ -1329,16 +1329,16 @@
         <div class="mx-auto flex max-w-5xl flex-col gap-10 md:flex-row md:items-start md:gap-16">
 
             {{-- Zdjęcie --}}
-            <div class="shrink-0 md:w-2/5">
+            <div class="shrink-0 md:w-52">
                 @if (filled($page->content_image))
                     <div class="overflow-hidden rounded-2xl shadow-md">
                         <img src="{{ $page->content_image }}"
                             alt="{{ $page->content_image_alt ?: $page->title }}"
-                            class="aspect-[4/5] w-full object-cover object-top">
+                            class="aspect-square w-full object-cover object-top">
                     </div>
                 @else
-                    <div class="flex aspect-[4/5] w-full items-center justify-center rounded-2xl bg-brand/10">
-                        <span class="text-6xl font-bold text-brand" aria-hidden="true">{{ $personInitials }}</span>
+                    <div class="flex aspect-square w-full items-center justify-center rounded-2xl bg-brand/10">
+                        <span class="text-5xl font-bold text-brand" aria-hidden="true">{{ $personInitials }}</span>
                     </div>
                 @endif
             </div>
