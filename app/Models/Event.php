@@ -85,8 +85,28 @@ class Event extends Model implements HasMedia
         }
 
         $ttl = $settings->cacheTtl('event_item', 3600);
+        $cacheKey = "event_item_{$value}";
 
-        return Cache::remember("event_item_{$value}", $ttl, fn () => parent::resolveRouteBinding($value, $field));
+        try {
+            $cached = Cache::get($cacheKey);
+
+            if ($cached !== null) {
+                if ($cached instanceof self) {
+                    return $cached;
+                }
+                Cache::forget($cacheKey);
+            }
+        } catch (\Throwable) {
+            Cache::forget($cacheKey);
+        }
+
+        $event = parent::resolveRouteBinding($value, $field);
+
+        if ($event !== null) {
+            Cache::put($cacheKey, $event, $ttl);
+        }
+
+        return $event;
     }
 
     // -------------------------------------------------------------------------

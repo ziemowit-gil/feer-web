@@ -24,10 +24,28 @@ class SupportController extends Controller
 
         // Liczby ze statystyk strony „O organizacji" (about_stats) — na wsparciu
         // pokazujemy do 6 kompletnych kafelków, żeby mocniej pokazać skalę działań.
-        $pageTtl   = $settings->cacheEnabled('pages') ? $settings->cacheTtl('page_item', 3600) : 0;
-        $aboutPage = $pageTtl > 0
-            ? Cache::remember('page_about_first', $pageTtl, fn () => Page::where('type', 'about')->orderBy('order')->first())
-            : Page::where('type', 'about')->orderBy('order')->first();
+        $pageTtl = $settings->cacheEnabled('pages') ? $settings->cacheTtl('page_item', 3600) : 0;
+        if ($pageTtl > 0) {
+            try {
+                $cached = Cache::get('page_about_first');
+                if ($cached instanceof Page) {
+                    $aboutPage = $cached;
+                } else {
+                    if ($cached !== null) {
+                        Cache::forget('page_about_first');
+                    }
+                    $aboutPage = Page::where('type', 'about')->orderBy('order')->first();
+                    if ($aboutPage !== null) {
+                        Cache::put('page_about_first', $aboutPage, $pageTtl);
+                    }
+                }
+            } catch (\Throwable) {
+                Cache::forget('page_about_first');
+                $aboutPage = Page::where('type', 'about')->orderBy('order')->first();
+            }
+        } else {
+            $aboutPage = Page::where('type', 'about')->orderBy('order')->first();
+        }
         $stats = collect($aboutPage->about_stats ?? [])
             ->filter(fn ($s) => filled($s['value'] ?? null) && filled($s['label'] ?? null))
             ->take(6)

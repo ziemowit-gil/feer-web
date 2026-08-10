@@ -25,9 +25,25 @@ class NewsController extends Controller
     {
         $settings = \App\Models\SiteSetting::current();
         $categoriesTtl = $settings->cacheEnabled('news') ? $settings->cacheTtl('news_categories', 86400) : 0;
-        $categories = $categoriesTtl > 0
-            ? Cache::remember('news_categories', $categoriesTtl, fn () => NewsCategory::orderBy('order')->orderBy('name')->get())
-            : NewsCategory::orderBy('order')->orderBy('name')->get();
+        if ($categoriesTtl > 0) {
+            try {
+                $cached = Cache::get('news_categories');
+                if ($cached instanceof \Illuminate\Database\Eloquent\Collection) {
+                    $categories = $cached;
+                } else {
+                    if ($cached !== null) {
+                        Cache::forget('news_categories');
+                    }
+                    $categories = NewsCategory::orderBy('order')->orderBy('name')->get();
+                    Cache::put('news_categories', $categories, $categoriesTtl);
+                }
+            } catch (\Throwable) {
+                Cache::forget('news_categories');
+                $categories = NewsCategory::orderBy('order')->orderBy('name')->get();
+            }
+        } else {
+            $categories = NewsCategory::orderBy('order')->orderBy('name')->get();
+        }
         $activeCategory = $request->query('kategoria')
             ? $categories->firstWhere('slug', $request->query('kategoria'))
             : null;

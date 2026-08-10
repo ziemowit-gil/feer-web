@@ -239,8 +239,29 @@ class Page extends Model
         }
 
         $ttl = $settings->cacheTtl('page_item', 3600);
+        $cacheKey = "page_item_{$value}";
 
-        return Cache::remember("page_item_{$value}", $ttl, fn () => parent::resolveRouteBinding($value, $field));
+        try {
+            $cached = Cache::get($cacheKey);
+
+            if ($cached !== null) {
+                if ($cached instanceof self) {
+                    return $cached;
+                }
+                // Stale/corrupted serialized class — drop and re-fetch from DB.
+                Cache::forget($cacheKey);
+            }
+        } catch (\Throwable) {
+            Cache::forget($cacheKey);
+        }
+
+        $page = parent::resolveRouteBinding($value, $field);
+
+        if ($page !== null) {
+            Cache::put($cacheKey, $page, $ttl);
+        }
+
+        return $page;
     }
 
     public function isEvent(): bool

@@ -19,9 +19,25 @@ class EventController extends Controller
     {
         $settings = \App\Models\SiteSetting::current();
         $ttl = $settings->cacheEnabled('events') ? $settings->cacheTtl('events_upcoming', 900) : 0;
-        $events = $ttl > 0
-            ? Cache::remember('events_upcoming', $ttl, fn () => Event::upcoming()->get())
-            : Event::upcoming()->get();
+        if ($ttl > 0) {
+            try {
+                $cached = Cache::get('events_upcoming');
+                if ($cached instanceof \Illuminate\Database\Eloquent\Collection) {
+                    $events = $cached;
+                } else {
+                    if ($cached !== null) {
+                        Cache::forget('events_upcoming');
+                    }
+                    $events = Event::upcoming()->get();
+                    Cache::put('events_upcoming', $events, $ttl);
+                }
+            } catch (\Throwable) {
+                Cache::forget('events_upcoming');
+                $events = Event::upcoming()->get();
+            }
+        } else {
+            $events = Event::upcoming()->get();
+        }
 
         return view('events.index', compact('events'));
     }
