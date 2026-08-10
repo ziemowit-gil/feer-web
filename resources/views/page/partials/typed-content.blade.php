@@ -640,37 +640,54 @@
         @endif
     </section>
     @elseif ($page->isLinksHub())
-    @php $hubLinks = collect($page->hub_links ?? [])->filter(fn ($l) => filled($l['label'] ?? null) && filled($l['url'] ?? null)); @endphp
+    @php
+        $hubLinks = collect($page->hub_links ?? [])->filter(fn ($l) => filled($l['label'] ?? null) && filled($l['url'] ?? null))->values();
+        $metroGradients = [
+            'linear-gradient(135deg, #1a56a4 0%, #2563eb 100%)',   // brand blue
+            'linear-gradient(135deg, #1f2937 0%, #374151 100%)',   // dark slate
+            'linear-gradient(135deg, #166534 0%, #16a34a 100%)',   // green
+            'linear-gradient(135deg, #581c87 0%, #7e22ce 100%)',   // purple
+        ];
+    @endphp
 
-    <section class="border-b border-gray-200 bg-brand text-white"
+    {{-- Hero --}}
+    <section class="bg-brand text-white"
         @if ($page->hub_hero) style="background-image: linear-gradient(0deg, rgba(0,0,0,.55), rgba(0,0,0,.35)), url('{{ $page->hub_hero }}'); background-size: cover; background-position: center;" @endif>
-        <div class="mx-auto max-w-5xl px-4 py-16 text-center">
-            <h1 class="text-3xl font-bold md:text-4xl">{{ $page->title }}</h1>
+        <div class="mx-auto max-w-5xl px-4 py-20 text-center md:py-28">
+            <h1 class="text-4xl font-extrabold leading-tight tracking-tight md:text-5xl">{{ $page->title }}</h1>
             @if (filled($page->hub_intro))
-                <p class="mx-auto mt-3 max-w-2xl text-white/90">{{ $page->hub_intro }}</p>
+                <p class="mx-auto mt-5 max-w-2xl text-lg text-white/85">{{ $page->hub_intro }}</p>
             @endif
         </div>
     </section>
 
-    <section class="mx-auto max-w-5xl px-4 py-12">
+    {{-- Metro kafelki --}}
+    <section class="mx-auto max-w-5xl px-4 py-14" aria-label="{{ $page->title }}">
         @if ($page->content)
             <div class="prose mx-auto mb-10 max-w-none text-ink">{!! $page->content !!}</div>
         @endif
 
         @if ($hubLinks->isNotEmpty())
-            <ul class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3" role="list">
-                @foreach ($hubLinks as $link)
+            <ul class="grid gap-5 {{ $hubLinks->count() === 2 ? 'sm:grid-cols-2' : ($hubLinks->count() === 3 ? 'sm:grid-cols-3' : 'sm:grid-cols-2 lg:grid-cols-4') }}" role="list">
+                @foreach ($hubLinks as $i => $link)
+                    @php $grad = $metroGradients[$i % count($metroGradients)]; @endphp
                     <li>
                         <a href="{{ $link['url'] }}"
-                            class="group flex h-full items-start gap-3 rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition hover:border-brand hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
-                            <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-brand-light text-lg text-brand" aria-hidden="true">
-                                <i class="{{ filled($link['icon'] ?? null) ? $link['icon'] : 'fa-solid fa-arrow-right' }}"></i>
-                            </span>
-                            <span class="min-w-0">
-                                <span class="block font-bold text-ink group-hover:text-brand">{{ $link['label'] }}</span>
-                                @if (filled($link['description'] ?? null))
-                                    <span class="mt-0.5 block text-sm text-muted">{{ $link['description'] }}</span>
+                           class="group relative flex min-h-52 flex-col justify-end overflow-hidden rounded-2xl p-8 text-white shadow-md transition hover:shadow-xl focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+                           style="background: {{ $grad }}">
+                            <span class="relative z-10">
+                                @if (filled($link['icon'] ?? null))
+                                    <span class="mb-3 inline-flex h-11 w-11 items-center justify-center rounded-xl bg-white/20 backdrop-blur" aria-hidden="true">
+                                        <i class="{{ $link['icon'] }} text-xl text-white"></i>
+                                    </span>
                                 @endif
+                                <span class="block text-2xl font-extrabold leading-tight">{{ $link['label'] }}</span>
+                                @if (filled($link['description'] ?? null))
+                                    <span class="mt-1 block text-sm text-white/80">{{ $link['description'] }}</span>
+                                @endif
+                                <span class="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-white/90 transition group-hover:gap-3">
+                                    Dowiedz się więcej <i class="fa-solid fa-arrow-right text-xs" aria-hidden="true"></i>
+                                </span>
                             </span>
                         </a>
                     </li>
