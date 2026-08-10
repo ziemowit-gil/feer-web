@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\AnnualReport;
-use App\Models\BlogArticle;
+use Modules\Blog\Models\BlogArticle;
 use App\Models\EducationalMaterial;
 use App\Models\Event;
 use App\Models\Faq;
