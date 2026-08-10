@@ -488,6 +488,7 @@ class PageController extends Controller
             'brand_sections' => ['nullable', 'array'],
             'brand_sections.*.title' => ['nullable', 'string', 'max:120'],
             'brand_sections.*.key' => ['nullable', 'string', 'max:80'],
+            'is_featured' => ['nullable', 'boolean'],
             'person_phone' => ['nullable', 'string', 'max:60'],
             'person_role' => ['nullable', 'string', 'max:255'],
             'person_bio' => ['nullable', 'string', 'max:10000'],
@@ -814,6 +815,7 @@ class PageController extends Controller
         }
 
         if ($data['type'] === 'about_person') {
+            $data['is_featured'] = ! empty($data['is_featured']);
             $data['person_phone'] = trim((string) ($data['person_phone'] ?? '')) ?: null;
             $data['person_role'] = trim((string) ($data['person_role'] ?? '')) ?: null;
             $data['person_bio'] = trim((string) ($data['person_bio'] ?? '')) ?: null;

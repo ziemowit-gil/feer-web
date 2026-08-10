@@ -1026,6 +1026,17 @@
                         <p class="text-sm font-bold uppercase tracking-wide text-muted">O organizacji — osoba</p>
                         <p class="text-xs text-muted">Tytuł strony to imię i nazwisko osoby. Zdjęcie profilowe dodaj w sekcji „Zdjęcie w treści" na zakładce Treść. Slug generowany automatycznie: {org}/osoba/{imie-nazwisko}. Strony osób nie mają podstron i nie pojawiają się samodzielnie w menu.</p>
 
+                        <div class="rounded-lg border border-amber-200 bg-amber-50/50 p-4">
+                            <input type="hidden" name="is_featured" value="0">
+                            <label class="flex cursor-pointer items-center gap-2.5 text-sm">
+                                <input type="checkbox" name="is_featured" value="1"
+                                    {{ old('is_featured', $page->is_featured) ? 'checked' : '' }}
+                                    class="rounded border-gray-300 text-brand focus:ring-brand">
+                                <span class="font-semibold text-ink">Fundator — wprowadzenie</span>
+                            </label>
+                            <p class="mt-1.5 pl-6 text-xs text-muted">Zaznacz dla fundatora/ki — sekcja „Słowo od Fundatora" pojawi się na stronie O organizacji.</p>
+                        </div>
+
                         <div>
                             <label for="person_member_label" class="mb-2 block text-sm font-bold">Etykieta członkostwa <span class="font-normal text-muted">(opcjonalnie)</span></label>
                             <div class="mb-2 flex flex-wrap gap-2">
