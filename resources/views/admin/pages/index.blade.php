@@ -77,7 +77,7 @@
                 </div>
             </div>
 
-            <div class="overflow-hidden rounded-lg border border-gray-200 bg-white">
+            <div class="rounded-lg border border-gray-200 bg-white">
                 <table class="w-full text-left text-sm">
                     <thead class="border-b border-gray-100 bg-gray-50/80">
                         <tr>
