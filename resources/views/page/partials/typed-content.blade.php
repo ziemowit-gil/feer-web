@@ -960,7 +960,13 @@
                     @if (filled($cd['cta_text'] ?? null))
                         <p class="mt-4 max-w-lg leading-relaxed text-white/80">{{ $cd['cta_text'] }}</p>
                     @endif
-                    @if (filled($cd['cta_button_label'] ?? null))
+                    @if (! empty($cd['form_enabled']))
+                        <a href="{{ route('cooperation.form.show', $page) }}"
+                           class="mt-8 inline-flex items-center gap-2 rounded-xl bg-white px-7 py-3.5 font-bold text-brand shadow-md transition hover:bg-brand-light focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">
+                            <i class="fa-solid fa-paper-plane" aria-hidden="true"></i>
+                            {{ $cd['cta_button_label'] ?? 'Wyślij zgłoszenie' }}
+                        </a>
+                    @elseif (filled($cd['cta_button_label'] ?? null))
                         <a href="{{ $cd['cta_button_url'] ?? route('contact.show') }}"
                            class="mt-8 inline-flex items-center gap-2 rounded-xl bg-white px-7 py-3.5 font-bold text-brand shadow-md transition hover:bg-brand-light focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">
                             {{ $cd['cta_button_label'] }}

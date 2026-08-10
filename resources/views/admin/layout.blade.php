@@ -98,7 +98,7 @@
                 . (request()->routeIs($patterns) ? 'text-brand' : 'text-gray-400 group-hover:text-brand');
 
             // ① STRONY — statyczna struktura serwisu
-            $pagesRoutes = ['admin.podstrony.*', 'admin.pozycje-menu.*', 'admin.os-czasu.*'];
+            $pagesRoutes = ['admin.podstrony.*', 'admin.pozycje-menu.*', 'admin.os-czasu.*', 'admin.wspolpraca-zgloszenia.*'];
 
             // ② PUBLIKACJE — dynamiczna treść redakcyjna (razem z Projektami)
             $pubRoutes = ['admin.newsy.*', 'admin.kategorie-newsow.*', 'admin.tagi.*', 'admin.wiem-feer.*', 'admin.komentarze-bloga.*', 'admin.materialy-edukacyjne.*', 'admin.zapisy-materialy.*', 'admin.wolontariat.*', 'admin.wydarzenia.*', 'admin.prowadzacy.*', 'admin.kategorie.*', 'admin.projekty.*', 'admin.faq.*', 'admin.sprawozdania.*', 'admin.bip-dokumenty.*', 'admin.lp.*', 'admin.ankiety.*', 'admin.kampanie.*', 'admin.praca.*'];
@@ -155,6 +155,14 @@
                         <a href="{{ route('admin.os-czasu.edit') }}" class="{{ $itemClass('admin.os-czasu.*') }}" title="Oś czasu">
                             <i class="fa-solid fa-timeline {{ $iconClass('admin.os-czasu.*') }}"></i>
                             <span class="nav-label">Oś czasu (historia)</span>
+                        </a>
+                        @php $unreadCooperation = \App\Models\CooperationRequest::whereNull('read_at')->count(); @endphp
+                        <a href="{{ route('admin.wspolpraca-zgloszenia.index') }}" class="{{ $itemClass('admin.wspolpraca-zgloszenia.*') }}" title="Zgłoszenia współpracy">
+                            <i class="fa-solid fa-handshake {{ $iconClass('admin.wspolpraca-zgloszenia.*') }}"></i>
+                            <span class="nav-label">Zgłoszenia współpracy</span>
+                            @if ($unreadCooperation > 0)
+                                <span class="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-brand px-1 text-[10px] font-bold text-white" aria-label="{{ $unreadCooperation }} nowych">{{ $unreadCooperation }}</span>
+                            @endif
                         </a>
                     </div>
                 </div>

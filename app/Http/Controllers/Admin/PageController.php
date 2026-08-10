@@ -530,6 +530,11 @@ class PageController extends Controller
             'cooperation_data.cta_text' => ['nullable', 'string', 'max:600'],
             'cooperation_data.cta_button_label' => ['nullable', 'string', 'max:80'],
             'cooperation_data.cta_button_url' => ['nullable', 'string', 'max:500'],
+            'cooperation_data.form_enabled' => ['nullable', 'boolean'],
+            'cooperation_data.form_recipient' => ['nullable', 'email', 'max:200'],
+            'cooperation_data.form_title' => ['nullable', 'string', 'max:150'],
+            'cooperation_data.form_subtitle' => ['nullable', 'string', 'max:400'],
+            'cooperation_data.form_confirmation' => ['nullable', 'string', 'max:400'],
         ]);
 
         $data['parent_id'] = $data['parent_id'] ?: null;

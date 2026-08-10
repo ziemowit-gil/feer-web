@@ -91,6 +91,8 @@ use App\Http\Controllers\Admin\SubscriberController as AdminSubscriberController
 use App\Http\Controllers\JobOfferController;
 use App\Http\Controllers\Admin\JobOfferController as AdminJobOfferController;
 use App\Http\Controllers\JoinUsController;
+use App\Http\Controllers\CooperationFormController;
+use App\Http\Controllers\Admin\CooperationRequestController as AdminCooperationRequestController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -268,6 +270,11 @@ Route::middleware(['auth', 'verified', '2fa'])->prefix(config('app.admin_prefix'
         // Oś czasu (historia) strony „O organizacji" jako osobna pozycja w menu.
         Route::get('os-czasu', [AdminTimelineController::class, 'edit'])->name('os-czasu.edit');
         Route::put('os-czasu/{page}', [AdminTimelineController::class, 'update'])->name('os-czasu.update');
+
+        // Zgłoszenia z formularzy współpracy.
+        Route::get('wspolpraca-zgloszenia', [AdminCooperationRequestController::class, 'index'])->name('wspolpraca-zgloszenia.index');
+        Route::get('wspolpraca-zgloszenia/{cooperationRequest}', [AdminCooperationRequestController::class, 'show'])->name('wspolpraca-zgloszenia.show');
+        Route::delete('wspolpraca-zgloszenia/{cooperationRequest}', [AdminCooperationRequestController::class, 'destroy'])->name('wspolpraca-zgloszenia.destroy');
     });
 
     Route::middleware(['module:hero', 'module-access:hero'])->group(function () {
@@ -573,6 +580,10 @@ Route::post('/{page:slug}/wyloguj', [PageController::class, 'brandLogout'])->nam
 Route::get('/{parentSlug}/osoba/{personSlug}', [PageController::class, 'showPerson'])
     ->name('page.person')
     ->middleware('module:pages');
+
+// Formularz współpracy (musi być przed catch-all /{page:slug}).
+Route::get('/{page:slug}/formularz', [CooperationFormController::class, 'show'])->name('cooperation.form.show')->middleware('module:pages');
+Route::post('/{page:slug}/formularz', [CooperationFormController::class, 'store'])->name('cooperation.form.store')->middleware(['module:pages', 'throttle:5,10']);
 
 // Catch-all for top-level pages (e.g. /fundacja instead of /strona/fundacja).
 // Kept last so every more specific route above always wins; a page whose

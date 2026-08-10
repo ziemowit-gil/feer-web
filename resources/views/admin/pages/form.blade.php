@@ -1392,6 +1392,53 @@
                                 </div>
                             </div>
                         </div>
+
+                        {{-- Formularz zgłoszeniowy --}}
+                        <div class="rounded-lg border border-brand/20 bg-brand-light/30 p-4">
+                            <div class="mb-3 flex items-center justify-between">
+                                <div>
+                                    <p class="text-sm font-bold text-ink">Formularz zgłoszeniowy</p>
+                                    <p class="text-xs text-muted">Formularz dostępny pod adresem /{slug}/formularz</p>
+                                </div>
+                                <label class="inline-flex items-center gap-2 text-sm">
+                                    <input type="hidden" name="cooperation_data[form_enabled]" value="0">
+                                    <input type="checkbox" name="cooperation_data[form_enabled]" value="1"
+                                        {{ !empty($cd['form_enabled']) ? 'checked' : '' }}
+                                        class="rounded border-gray-300 text-brand focus:ring-brand">
+                                    <span class="font-semibold text-ink">Aktywny</span>
+                                </label>
+                            </div>
+                            <div class="grid gap-3 sm:grid-cols-2">
+                                <div>
+                                    <label class="mb-1 block text-xs font-bold">Tytuł formularza</label>
+                                    <input type="text" name="cooperation_data[form_title]"
+                                        value="{{ $cd['form_title'] ?? 'Formularz współpracy' }}"
+                                        class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                                </div>
+                                <div>
+                                    <label class="mb-1 block text-xs font-bold">E-mail odbiorcy zgłoszeń</label>
+                                    <input type="email" name="cooperation_data[form_recipient]"
+                                        value="{{ $cd['form_recipient'] ?? '' }}"
+                                        placeholder="Domyślnie: kontaktowy z Ustawień"
+                                        class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                                </div>
+                                <div class="sm:col-span-2">
+                                    <label class="mb-1 block text-xs font-bold">Podtytuł / intro formularza</label>
+                                    <input type="text" name="cooperation_data[form_subtitle]"
+                                        value="{{ $cd['form_subtitle'] ?? '' }}"
+                                        placeholder="np. Wypełnij poniższe pola — odezwiemy się w ciągu 2 dni roboczych."
+                                        class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                                </div>
+                                <div class="sm:col-span-2">
+                                    <label class="mb-1 block text-xs font-bold">Komunikat po wysłaniu</label>
+                                    <input type="text" name="cooperation_data[form_confirmation]"
+                                        value="{{ $cd['form_confirmation'] ?? '' }}"
+                                        placeholder="np. Dziękujemy! Odezwiemy się wkrótce."
+                                        class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                     </div>
 
             {{-- ==================== PUBLIKACJA I POWIĄZANIA ==================== --}}
