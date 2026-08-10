@@ -553,6 +553,7 @@ class PageController extends Controller
             'founder_image_file' => ['nullable', 'image', 'max:8192'],
             'remove_founder_image' => ['nullable', 'boolean'],
             'founder_image_alt' => ['nullable', 'string', 'max:255'],
+            'founder_quote' => ['nullable', 'string', 'max:2000'],
             'person_phone' => ['nullable', 'string', 'max:60'],
             'person_role' => ['nullable', 'string', 'max:255'],
             'person_bio' => ['nullable', 'string', 'max:10000'],
@@ -893,6 +894,7 @@ class PageController extends Controller
 
         if ($data['type'] === 'about_person') {
             $data['is_featured'] = ! empty($data['is_featured']);
+            $data['founder_quote'] = trim((string) ($data['founder_quote'] ?? '')) ?: null;
             $data['person_phone'] = trim((string) ($data['person_phone'] ?? '')) ?: null;
             $data['person_role'] = trim((string) ($data['person_role'] ?? '')) ?: null;
             $data['person_bio'] = trim((string) ($data['person_bio'] ?? '')) ?: null;

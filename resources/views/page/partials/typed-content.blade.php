@@ -261,11 +261,9 @@
         {{-- Słowo od Fundatora: ciemna sekcja personal-page z osobnym zdjęciem --}}
         @if ($aboutFounder)
         @php
-            $founderQuote = $aboutFounder->content
-                ? \Illuminate\Support\Str::limit(strip_tags($aboutFounder->content), 480, '…')
-                : ($aboutFounder->person_bio
-                    ? \Illuminate\Support\Str::limit(strip_tags($aboutFounder->person_bio), 480, '…')
-                    : '');
+            $founderQuote = filled($aboutFounder->founder_quote)
+                ? \Illuminate\Support\Str::limit($aboutFounder->founder_quote, 600, '…')
+                : '';
             $founderPhoto    = filled($aboutFounder->founder_image) ? $aboutFounder->founder_image : null;
             $founderPhotoAlt = $aboutFounder->founder_image_alt ?: $aboutFounder->title;
             $founderInitials = \Illuminate\Support\Str::of($aboutFounder->title)

@@ -196,7 +196,7 @@ class Page extends Model
         'faq_intro', 'faq_items', 'bip_move_url', 'bip_move_note', 'show_gallery',
         'training_manager_name', 'training_manager_title', 'training_ris_number', 'training_bur_number', 'training_extra_info', 'training_bur_note',
         'content_image', 'content_image_alt', 'content_image_width',
-        'founder_image', 'founder_image_alt',
+        'founder_image', 'founder_image_alt', 'founder_quote',
         'access_mode', 'access_password', 'hub_hero', 'hub_intro', 'hub_links',
         'legacy_name', 'legacy_intro',
         'brand_brandbook_url', 'brand_sections',

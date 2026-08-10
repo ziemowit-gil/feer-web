@@ -1037,6 +1037,15 @@
                             <p class="mt-1.5 pl-6 text-xs text-muted">Zaznacz dla fundatora/ki — sekcja „Słowo od Fundatora" pojawi się na stronie O organizacji.</p>
 
                             <div class="mt-4 border-t border-amber-200 pt-4">
+                                <label for="founder_quote" class="mb-1 block text-xs font-bold text-ink">Słowo od Fundatora — treść cytatu</label>
+                                <p class="mb-2 text-xs text-muted">Niezależne od biografii osoby. Pojawi się jako cytat w sekcji na stronie O organizacji.</p>
+                                <textarea id="founder_quote" name="founder_quote" rows="5"
+                                    placeholder="Wpisz cytat lub krótkie słowo od fundatora…"
+                                    class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">{{ old('founder_quote', $page->founder_quote ?? '') }}</textarea>
+                                @error('founder_quote') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                            </div>
+
+                            <div class="mt-4 border-t border-amber-200 pt-4">
                                 <p class="mb-2 text-xs font-bold text-ink">Zdjęcie do sekcji „Słowo od Fundatora"</p>
                                 <p class="mb-3 text-xs text-muted">Osobna fotografia do tej sekcji (np. szeroka, reportażowa). Jeśli puste — użyte zostanie zdjęcie profilowe z zakładki Treść.</p>
 
