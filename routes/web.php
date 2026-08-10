@@ -90,6 +90,7 @@ use App\Http\Controllers\Admin\CampaignController as AdminCampaignController;
 use App\Http\Controllers\Admin\SubscriberController as AdminSubscriberController;
 use App\Http\Controllers\JobOfferController;
 use App\Http\Controllers\Admin\JobOfferController as AdminJobOfferController;
+use App\Http\Controllers\JoinUsController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -130,6 +131,8 @@ Route::middleware('module:jobs')->group(function () {
     Route::get('/praca/{offer:slug}/pdf', [JobOfferController::class, 'pdf'])->name('praca.pdf');
     Route::get('/praca/{offer:slug}', [JobOfferController::class, 'show'])->name('praca.show');
 });
+
+Route::get('/dolacz-do-nas', [JoinUsController::class, 'index'])->name('join-us.index');
 
 Route::middleware('module:events')->group(function () {
     Route::get('/wydarzenia', [EventController::class, 'index'])->name('events.index');

@@ -1,0 +1,12 @@
+{
+    "identifier":   "materials",
+    "name":         "Materiały edukacyjne",
+    "version":      "1.0.0",
+    "description":  "Biblioteka materiałów edukacyjnych z dostępem po zapisie e-mail i eksportem listy subskrybentów.",
+    "author":       "FEER",
+    "provider":     "Modules\\Materials\\Providers\\MaterialsServiceProvider",
+    "migrations":   false,
+    "assets":       false,
+    "built_in":     true,
+    "requires":     []
+}

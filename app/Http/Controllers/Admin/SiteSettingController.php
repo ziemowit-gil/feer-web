@@ -108,7 +108,8 @@ class SiteSettingController extends Controller
             'mail_password' => ['nullable', 'string', 'max:1000'],
             'mail_encryption' => ['nullable', Rule::in(['', 'tls', 'ssl'])],
             'show_coordinators' => ['sometimes', 'boolean'],
-            'ngo_color' => ['nullable', 'regex:/^#[0-9a-fA-F]{6}$/'],
+            'ngo_color'          => ['nullable', 'regex:/^#[0-9a-fA-F]{6}$/'],
+            'ngo_skip_contrast'  => ['nullable', 'boolean'],
             'sub_brands' => ['nullable', 'array'],
             'sub_brands.*.name' => ['nullable', 'string', 'max:60'],
             'sub_brands.*.color' => ['nullable', 'regex:/^#[0-9a-fA-F]{6}$/'],
@@ -376,9 +377,11 @@ class SiteSettingController extends Controller
                 : null;
         }
 
+        $skipNgoContrast = $skipContrast || (bool) ($data['ngo_skip_contrast'] ?? false);
+
         // Kolor NGO także pilnujemy pod kątem kontrastu (używany jak text-brand na białym).
         $data['ngo_color'] = filled($data['ngo_color'] ?? null)
-            ? ($skipContrast ? $data['ngo_color'] : $settings->contrastSafeColor($data['ngo_color']))
+            ? ($skipNgoContrast ? $data['ngo_color'] : $settings->contrastSafeColor($data['ngo_color']))
             : null;
 
         // Kolor sekcji wydarzeń na stronie głównej: pusty = kolor marki.

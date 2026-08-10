@@ -14,12 +14,19 @@ class EnsureModuleEnabled
 
     public function handle(Request $request, Closure $next, string $module): Response
     {
-        if ($this->modules->get($module) !== null) {
-            // Moduł zarządzany przez ModuleManager — sprawdź status w plugins.
-            abort_unless($this->modules->isActive($module), 404);
-        } else {
-            // Wbudowany przełącznik — sprawdź disabled_modules w SiteSetting.
-            abort_unless(SiteSetting::current()->isModuleEnabled($module), 404);
+        $isActive = $this->modules->get($module) !== null
+            ? $this->modules->isActive($module)
+            : SiteSetting::current()->isModuleEnabled($module);
+
+        if (! $isActive) {
+            if ($request->routeIs('admin.*')) {
+                $manifest = $this->modules->get($module);
+                return response()->view('admin.modules.disabled', [
+                    'moduleName'  => $manifest?->name ?? $module,
+                    'identifier'  => $module,
+                ]);
+            }
+            abort(404);
         }
 
         return $next($request);

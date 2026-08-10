@@ -1,10 +1,12 @@
 {
-    "identifier": "jobs",
-    "name": "Ogłoszenia o pracę",
-    "version": "1.0.0",
-    "provider": "Modules\\JobOffers\\Providers\\JobOffersServiceProvider",
-    "migrations": false,
-    "assets": false,
-    "built_in": true,
-    "requires": []
+    "identifier":   "jobs",
+    "name":         "Ogłoszenia o pracę",
+    "version":      "1.0.0",
+    "description":  "Ogłoszenia o pracę z typem umowy, grupą docelową i eksportem PDF — publiczna lista i szczegóły, zarządzanie w panelu.",
+    "author":       "FEER",
+    "provider":     "Modules\\JobOffers\\Providers\\JobOffersServiceProvider",
+    "migrations":   false,
+    "assets":       false,
+    "built_in":     true,
+    "requires":     []
 }

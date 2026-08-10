@@ -1,0 +1,12 @@
+{
+    "identifier":   "faq",
+    "name":         "FAQ (najczęstsze pytania)",
+    "version":      "1.0.0",
+    "description":  "Publiczna lista pytań i odpowiedzi wyświetlana na podstronie O nas — zarządzanie w panelu.",
+    "author":       "FEER",
+    "provider":     "Modules\\Faq\\Providers\\FaqServiceProvider",
+    "migrations":   false,
+    "assets":       false,
+    "built_in":     true,
+    "requires":     []
+}

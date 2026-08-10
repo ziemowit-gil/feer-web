@@ -1,10 +1,12 @@
 {
-    "identifier": "bip",
-    "name": "BIP — dokumenty publiczne",
-    "version": "1.0.0",
-    "provider": "Modules\\Bip\\Providers\\BipServiceProvider",
-    "migrations": false,
-    "assets": false,
-    "built_in": true,
-    "requires": []
+    "identifier":   "bip",
+    "name":         "BIP — dokumenty publiczne",
+    "version":      "1.0.0",
+    "description":  "Biuletyn Informacji Publicznej: dokumenty publikowane wg kategorii, rejestr zmian i opcjonalne przekierowanie do zewnętrznego BIP.",
+    "author":       "FEER",
+    "provider":     "Modules\\Bip\\Providers\\BipServiceProvider",
+    "migrations":   false,
+    "assets":       false,
+    "built_in":     true,
+    "requires":     []
 }

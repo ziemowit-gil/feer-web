@@ -410,6 +410,15 @@
                 </div>
                 <p class="mt-1 text-xs text-muted">Wbudowana submarka „NGO", wybierana przy projektach i aktualnościach. Zostaw puste, aby używać koloru przewodniego.</p>
                 @error('ngo_color') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                <div class="mt-3 flex items-start gap-2">
+                    <input type="hidden" name="ngo_skip_contrast" value="0">
+                    <input type="checkbox" id="ngo_skip_contrast" name="ngo_skip_contrast" value="1"
+                        {{ old('ngo_skip_contrast', $settings->ngo_skip_contrast) ? 'checked' : '' }}
+                        class="mt-0.5 rounded border-gray-300 text-brand focus:ring-brand">
+                    <label for="ngo_skip_contrast" class="text-xs leading-snug text-muted">
+                        Wyłącz korygowanie kontrastu dla tego koloru
+                    </label>
+                </div>
             </div>
 
             <div class="border-t border-gray-100 pt-5" data-subbrands>
