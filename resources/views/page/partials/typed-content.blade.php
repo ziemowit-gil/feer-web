@@ -767,29 +767,6 @@
             </div>
         </div>
 
-        {{-- Audience strip --}}
-        <div class="relative border-t border-white/10 bg-white/5 backdrop-blur-sm">
-            <div class="mx-auto grid max-w-5xl grid-cols-3 divide-x divide-white/10">
-                <div class="flex items-center justify-center gap-3 px-4 py-5 text-center text-sm font-semibold text-white/75">
-                    <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white/10" aria-hidden="true">
-                        <i class="fa-solid fa-building text-xs"></i>
-                    </span>
-                    <span>Firmy i CSR</span>
-                </div>
-                <div class="flex items-center justify-center gap-3 px-4 py-5 text-center text-sm font-semibold text-white/75">
-                    <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white/10" aria-hidden="true">
-                        <i class="fa-solid fa-landmark text-xs"></i>
-                    </span>
-                    <span>Samorząd i instytucje</span>
-                </div>
-                <div class="flex items-center justify-center gap-3 px-4 py-5 text-center text-sm font-semibold text-white/75">
-                    <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white/10" aria-hidden="true">
-                        <i class="fa-solid fa-people-group text-xs"></i>
-                    </span>
-                    <span>NGO i nauka</span>
-                </div>
-            </div>
-        </div>
     </section>
 
     {{-- ══ STATYSTYKI ══ --}}
