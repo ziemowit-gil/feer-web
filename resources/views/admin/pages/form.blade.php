@@ -47,27 +47,29 @@
                 <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i> SEO
             </button>
             @if ($page->exists)
-                <button type="button" data-ftab-btn="pliki" role="tab" aria-selected="false"
+                @if ($currentType !== 'wspolpraca')
+                <button type="button" data-ftab-btn="pliki" data-wspolpraca-tab role="tab" aria-selected="false"
                     class="-mb-px border-b-2 border-transparent px-4 py-2 text-sm font-bold text-muted hover:text-brand">
                     <i class="fa-solid fa-paperclip" aria-hidden="true"></i> Pliki do pobrania
                     @if ($page->attachments->isNotEmpty())
                         <span class="ml-1 rounded-full bg-gray-100 px-1.5 py-0.5 text-xs">{{ $page->attachments->count() }}</span>
                     @endif
                 </button>
-                <button type="button" data-ftab-btn="galeria" role="tab" aria-selected="false"
+                <button type="button" data-ftab-btn="galeria" data-wspolpraca-tab role="tab" aria-selected="false"
                     class="-mb-px border-b-2 border-transparent px-4 py-2 text-sm font-bold text-muted hover:text-brand">
                     <i class="fa-solid fa-images" aria-hidden="true"></i> Galeria
                     @if ($page->images->isNotEmpty())
                         <span class="ml-1 rounded-full bg-gray-100 px-1.5 py-0.5 text-xs">{{ $page->images->count() }}</span>
                     @endif
                 </button>
-                <button type="button" data-ftab-btn="etr" role="tab" aria-selected="false"
+                <button type="button" data-ftab-btn="etr" data-wspolpraca-tab role="tab" aria-selected="false"
                     class="-mb-px border-b-2 border-transparent px-4 py-2 text-sm font-bold text-muted hover:text-brand">
                     <i class="fa-solid fa-book-open-reader" aria-hidden="true"></i> ETR
                     @if ($page->etr?->is_enabled)
                         <span class="ml-1 rounded-full bg-sky-100 px-1.5 py-0.5 text-xs text-sky-700">aktywna</span>
                     @endif
                 </button>
+                @endif
                 <a href="{{ route('admin.historia.index', ['type' => 'page', 'id' => $page->id]) }}"
                     class="ml-auto -mb-px border-b-2 border-transparent px-4 py-2 text-sm font-bold text-muted hover:text-brand">
                     <i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i> Historia zmian
@@ -112,7 +114,7 @@
 
                     {{-- Główny edytor treści — ukryty dla typów bez swobodnej treści
                          („O organizacji" i „Przeniesiono do BIP" mają własne pola). --}}
-                    <div data-content-field class="{{ in_array($currentType, ['about', 'bip_move'], true) ? 'hidden' : '' }}">
+                    <div data-content-field class="{{ in_array($currentType, ['about', 'bip_move', 'wspolpraca'], true) ? 'hidden' : '' }}">
                         <label class="mb-1 block text-sm font-bold">Treść</label>
                         @include('admin.partials.editor', ['name' => 'content', 'value' => old('content', $page->content), 'revisionable' => $page->exists ? ['type' => 'page', 'id' => $page->id] : null])
                         @error('content') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
@@ -1393,6 +1395,18 @@
                             </div>
                         </div>
 
+                        {{-- Strona w budowie --}}
+                        <div class="rounded-lg border border-amber-200 bg-amber-50/50 p-4">
+                            <label class="flex cursor-pointer items-center gap-2.5 text-sm">
+                                <input type="hidden" name="cooperation_data[under_construction]" value="0">
+                                <input type="checkbox" name="cooperation_data[under_construction]" value="1"
+                                    {{ !empty($cd['under_construction']) ? 'checked' : '' }}
+                                    class="rounded border-gray-300 text-brand focus:ring-brand">
+                                <span class="font-semibold text-ink">Strona w budowie</span>
+                            </label>
+                            <p class="ml-6 mt-1 text-xs text-muted">Gdy zaznaczone, zamiast pełnej treści odwiedzający widzą komunikat „W przygotowaniu".</p>
+                        </div>
+
                         {{-- Formularz zgłoszeniowy --}}
                         <div class="rounded-lg border border-brand/20 bg-brand-light/30 p-4">
                             <div class="mb-3 flex items-center justify-between">
@@ -1775,7 +1789,14 @@
                     if (brandFields) brandFields.classList.toggle('hidden', typeSelect.value !== 'brand_assets');
                     if (aboutPersonFields) aboutPersonFields.classList.toggle('hidden', typeSelect.value !== 'about_person');
                     if (cooperationFields) cooperationFields.classList.toggle('hidden', typeSelect.value !== 'wspolpraca');
-                    if (contentField) contentField.classList.toggle('hidden', ['about', 'bip_move'].includes(typeSelect.value));
+                    if (contentField) contentField.classList.toggle('hidden', ['about', 'bip_move', 'wspolpraca'].includes(typeSelect.value));
+                    document.querySelectorAll('[data-wspolpraca-tab]').forEach(function (btn) {
+                        const isWspolpraca = typeSelect.value === 'wspolpraca';
+                        btn.classList.toggle('hidden', isWspolpraca);
+                        if (isWspolpraca && btn.getAttribute('aria-selected') === 'true') {
+                            document.querySelector('[data-ftab-btn="tresc"]')?.click();
+                        }
+                    });
                     // Galeria „O organizacji" jest osobna — ukryj generyczny przełącznik dla tego typu.
                     document.querySelectorAll('[data-gallery-toggle]').forEach(function (el) {
                         el.classList.toggle('hidden', typeSelect.value === 'about');

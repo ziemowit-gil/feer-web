@@ -730,6 +730,19 @@
         $partners = \App\Models\Partner::orderBy('order')->orderBy('name')->with('media')->get();
     @endphp
 
+    @if (!empty($cd['under_construction']))
+    <section class="flex min-h-[60vh] items-center justify-center bg-gray-50 py-24 text-center">
+        <div class="mx-auto max-w-xl px-6">
+            <span class="mb-5 inline-flex items-center gap-2 rounded-full border border-amber-200 bg-amber-50 px-4 py-1.5 text-sm font-bold text-amber-700">
+                <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
+                W przygotowaniu
+            </span>
+            <h1 class="mt-4 text-3xl font-bold tracking-tight text-ink">{{ $page->title }}</h1>
+            <p class="mt-4 text-lg text-muted">Ta sekcja jest aktualnie w przygotowaniu. Wróć wkrótce — pracujemy nad treścią.</p>
+        </div>
+    </section>
+    @else
+
     {{-- ══ HERO ══ --}}
     <section class="relative overflow-hidden bg-brand text-white">
         {{-- Dekoracja tła --}}
@@ -982,6 +995,7 @@
             </div>
         </div>
     </section>
+    @endif
     @elseif ($page->isTrainingInstitution())
     <section class="border-b border-gray-200 bg-gray-50">
         <div class="mx-auto max-w-4xl px-4 py-12 md:py-16">
