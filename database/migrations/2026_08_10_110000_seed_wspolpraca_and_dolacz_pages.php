@@ -58,9 +58,9 @@ return new class extends Migration
             'show_side_nav'=> false,
             'hub_intro'    => 'Wybierz jak chcesz się zaangażować — każda forma jest cenna.',
             'hub_links'    => json_encode([
-                ['icon' => 'fa-solid fa-hands-helping', 'label' => 'Wolontariat', 'url' => '/wolontariat', 'description' => 'Działaj z nami jako wolontariusz — angażuj czas i umiejętności.'],
-                ['icon' => 'fa-solid fa-briefcase',     'label' => 'Praca',       'url' => '/praca',       'description' => 'Dołącz do zespołu FEER — sprawdź aktualne oferty zatrudnienia.'],
-                ['icon' => 'fa-solid fa-handshake',     'label' => 'Współpraca',  'url' => '/wspolpraca',  'description' => 'Zostań partnerem — biznes, samorząd, nauka lub NGO.'],
+                ['icon' => 'fa-solid fa-hands-helping', 'color' => 'blue',  'label' => 'Wolontariat', 'url' => '/wolontariat', 'description' => 'Działaj z nami jako wolontariusz — angażuj czas i umiejętności.', 'cta_label' => 'Dowiedz się więcej o wolontariacie'],
+                ['icon' => 'fa-solid fa-briefcase',     'color' => 'dark',  'label' => 'Praca',       'url' => '/praca',       'description' => 'Dołącz do zespołu FEER — sprawdź aktualne oferty zatrudnienia.', 'cta_label' => 'Dowiedz się więcej o pracy'],
+                ['icon' => 'fa-solid fa-handshake',     'color' => 'green', 'label' => 'Współpraca',  'url' => '/wspolpraca',  'description' => 'Zostań partnerem — biznes, samorząd, nauka lub NGO.', 'cta_label' => 'Dowiedz się więcej o współpracy'],
             ]),
             'created_at' => $now,
             'updated_at' => $now,

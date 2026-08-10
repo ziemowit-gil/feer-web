@@ -642,12 +642,15 @@
     @elseif ($page->isLinksHub())
     @php
         $hubLinks = collect($page->hub_links ?? [])->filter(fn ($l) => filled($l['label'] ?? null) && filled($l['url'] ?? null))->values();
-        $metroGradients = [
-            'linear-gradient(135deg, #1a56a4 0%, #2563eb 100%)',   // brand blue
-            'linear-gradient(135deg, #1f2937 0%, #374151 100%)',   // dark slate
-            'linear-gradient(135deg, #166534 0%, #16a34a 100%)',   // green
-            'linear-gradient(135deg, #581c87 0%, #7e22ce 100%)',   // purple
+        $metroGradientMap = [
+            'blue'   => 'linear-gradient(135deg, #1a56a4 0%, #2563eb 100%)',
+            'dark'   => 'linear-gradient(135deg, #1f2937 0%, #374151 100%)',
+            'green'  => 'linear-gradient(135deg, #166534 0%, #16a34a 100%)',
+            'purple' => 'linear-gradient(135deg, #581c87 0%, #7e22ce 100%)',
+            'orange' => 'linear-gradient(135deg, #c2410c 0%, #f97316 100%)',
+            'red'    => 'linear-gradient(135deg, #991b1b 0%, #ef4444 100%)',
         ];
+        $metroGradientFallback = array_values($metroGradientMap);
     @endphp
 
     {{-- Hero --}}
@@ -670,7 +673,13 @@
         @if ($hubLinks->isNotEmpty())
             <ul class="grid gap-5 {{ $hubLinks->count() === 2 ? 'sm:grid-cols-2' : ($hubLinks->count() === 3 ? 'sm:grid-cols-3' : 'sm:grid-cols-2 lg:grid-cols-4') }}" role="list">
                 @foreach ($hubLinks as $i => $link)
-                    @php $grad = $metroGradients[$i % count($metroGradients)]; @endphp
+                    @php
+                        $colorKey = $link['color'] ?? null;
+                        $grad = isset($colorKey) && isset($metroGradientMap[$colorKey])
+                            ? $metroGradientMap[$colorKey]
+                            : $metroGradientFallback[$i % count($metroGradientFallback)];
+                        $ctaLabel = filled($link['cta_label'] ?? null) ? $link['cta_label'] : 'Dowiedz się więcej';
+                    @endphp
                     <li>
                         <a href="{{ $link['url'] }}"
                            class="group relative flex min-h-52 flex-col justify-end overflow-hidden rounded-2xl p-8 text-white shadow-md transition hover:shadow-xl focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
@@ -686,7 +695,7 @@
                                     <span class="mt-1 block text-sm text-white/80">{{ $link['description'] }}</span>
                                 @endif
                                 <span class="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-white/90 transition group-hover:gap-3">
-                                    Dowiedz się więcej <i class="fa-solid fa-arrow-right text-xs" aria-hidden="true"></i>
+                                    {{ $ctaLabel }} <i class="fa-solid fa-arrow-right text-xs" aria-hidden="true"></i>
                                 </span>
                             </span>
                         </a>

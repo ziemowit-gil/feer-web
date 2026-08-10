@@ -791,12 +791,18 @@
                                 @foreach ($hubLinks as $i => $row)
                                     <div data-repeater-row class="space-y-2 rounded-lg border border-gray-200 bg-gray-50 p-4">
                                         <div class="grid gap-2 sm:grid-cols-[2fr_3fr]">
-                                            <input type="text" name="hub_links[{{ $i }}][label]" value="{{ $row['label'] ?? '' }}" placeholder="Nazwa systemu" aria-label="Nazwa linku {{ $i + 1 }}" class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
-                                            <input type="url" name="hub_links[{{ $i }}][url]" value="{{ $row['url'] ?? '' }}" placeholder="Adres (URL)" aria-label="Adres linku {{ $i + 1 }}" class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                                            <input type="text" name="hub_links[{{ $i }}][label]" value="{{ $row['label'] ?? '' }}" placeholder="Tytuł kafelka" aria-label="Tytuł kafelka {{ $i + 1 }}" class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                                            <input type="text" name="hub_links[{{ $i }}][url]" value="{{ $row['url'] ?? '' }}" placeholder="Adres (URL lub /sciezka)" aria-label="Adres linku {{ $i + 1 }}" class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
                                         </div>
-                                        <div class="grid gap-2 sm:grid-cols-[3fr_2fr]">
-                                            <input type="text" name="hub_links[{{ $i }}][description]" value="{{ $row['description'] ?? '' }}" placeholder="Krótki opis (opcjonalnie)" aria-label="Opis linku {{ $i + 1 }}" class="w-full rounded border-gray-300 text-xs focus:border-brand focus:ring-brand">
-                                            <input type="text" name="hub_links[{{ $i }}][icon]" value="{{ $row['icon'] ?? '' }}" placeholder="Ikona, np. fa-solid fa-envelope" aria-label="Ikona linku {{ $i + 1 }}" class="w-full rounded border-gray-300 text-xs focus:border-brand focus:ring-brand">
+                                        <input type="text" name="hub_links[{{ $i }}][description]" value="{{ $row['description'] ?? '' }}" placeholder="Krótki opis pod tytułem" aria-label="Opis kafelka {{ $i + 1 }}" class="w-full rounded border-gray-300 text-xs focus:border-brand focus:ring-brand">
+                                        <div class="grid gap-2 sm:grid-cols-3">
+                                            <input type="text" name="hub_links[{{ $i }}][icon]" value="{{ $row['icon'] ?? '' }}" placeholder="fa-solid fa-handshake" aria-label="Ikona {{ $i + 1 }}" class="w-full rounded border-gray-300 text-xs focus:border-brand focus:ring-brand">
+                                            <select name="hub_links[{{ $i }}][color]" aria-label="Kolor kafelka {{ $i + 1 }}" class="w-full rounded border-gray-300 text-xs focus:border-brand focus:ring-brand">
+                                                @foreach (['blue' => 'Niebieski', 'dark' => 'Ciemny (grafitowy)', 'green' => 'Zielony', 'purple' => 'Fioletowy', 'orange' => 'Pomarańczowy', 'red' => 'Czerwony'] as $val => $lbl)
+                                                    <option value="{{ $val }}" {{ ($row['color'] ?? 'blue') === $val ? 'selected' : '' }}>{{ $lbl }}</option>
+                                                @endforeach
+                                            </select>
+                                            <input type="text" name="hub_links[{{ $i }}][cta_label]" value="{{ $row['cta_label'] ?? '' }}" placeholder="Tekst przycisku, np. Dowiedz się więcej" aria-label="Tekst przycisku {{ $i + 1 }}" class="w-full rounded border-gray-300 text-xs focus:border-brand focus:ring-brand">
                                         </div>
                                         <div class="flex items-center justify-end gap-1">
                                             <button type="button" data-repeater-move="up" class="rounded p-1.5 text-muted hover:bg-gray-100 hover:text-brand" aria-label="Wyżej"><i class="fa-solid fa-arrow-up" aria-hidden="true"></i></button>
@@ -806,16 +812,25 @@
                                     </div>
                                 @endforeach
                             </div>
-                            <button type="button" data-repeater-add class="mt-2 inline-flex items-center gap-2 rounded border border-brand px-3 py-1.5 text-sm font-bold text-brand hover:bg-brand-light"><i class="fa-solid fa-plus" aria-hidden="true"></i> Dodaj link</button>
+                            <button type="button" data-repeater-add class="mt-2 inline-flex items-center gap-2 rounded border border-brand px-3 py-1.5 text-sm font-bold text-brand hover:bg-brand-light"><i class="fa-solid fa-plus" aria-hidden="true"></i> Dodaj kafelek</button>
                             <template data-repeater-template>
                                 <div data-repeater-row class="space-y-2 rounded-lg border border-gray-200 bg-gray-50 p-4">
                                     <div class="grid gap-2 sm:grid-cols-[2fr_3fr]">
-                                        <input type="text" name="hub_links[__INDEX__][label]" placeholder="Nazwa systemu" aria-label="Nazwa linku" class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
-                                        <input type="url" name="hub_links[__INDEX__][url]" placeholder="Adres (URL)" aria-label="Adres linku" class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                                        <input type="text" name="hub_links[__INDEX__][label]" placeholder="Tytuł kafelka" aria-label="Tytuł kafelka" class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                                        <input type="text" name="hub_links[__INDEX__][url]" placeholder="Adres (URL lub /sciezka)" aria-label="Adres linku" class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
                                     </div>
-                                    <div class="grid gap-2 sm:grid-cols-[3fr_2fr]">
-                                        <input type="text" name="hub_links[__INDEX__][description]" placeholder="Krótki opis (opcjonalnie)" aria-label="Opis linku" class="w-full rounded border-gray-300 text-xs focus:border-brand focus:ring-brand">
-                                        <input type="text" name="hub_links[__INDEX__][icon]" placeholder="Ikona, np. fa-solid fa-envelope" aria-label="Ikona linku" class="w-full rounded border-gray-300 text-xs focus:border-brand focus:ring-brand">
+                                    <input type="text" name="hub_links[__INDEX__][description]" placeholder="Krótki opis pod tytułem" aria-label="Opis kafelka" class="w-full rounded border-gray-300 text-xs focus:border-brand focus:ring-brand">
+                                    <div class="grid gap-2 sm:grid-cols-3">
+                                        <input type="text" name="hub_links[__INDEX__][icon]" placeholder="fa-solid fa-handshake" aria-label="Ikona" class="w-full rounded border-gray-300 text-xs focus:border-brand focus:ring-brand">
+                                        <select name="hub_links[__INDEX__][color]" aria-label="Kolor kafelka" class="w-full rounded border-gray-300 text-xs focus:border-brand focus:ring-brand">
+                                            <option value="blue">Niebieski</option>
+                                            <option value="dark">Ciemny (grafitowy)</option>
+                                            <option value="green">Zielony</option>
+                                            <option value="purple">Fioletowy</option>
+                                            <option value="orange">Pomarańczowy</option>
+                                            <option value="red">Czerwony</option>
+                                        </select>
+                                        <input type="text" name="hub_links[__INDEX__][cta_label]" placeholder="Tekst przycisku" aria-label="Tekst przycisku" class="w-full rounded border-gray-300 text-xs focus:border-brand focus:ring-brand">
                                     </div>
                                     <div class="flex items-center justify-end gap-1">
                                         <button type="button" data-repeater-move="up" class="rounded p-1.5 text-muted hover:bg-gray-100 hover:text-brand" aria-label="Wyżej"><i class="fa-solid fa-arrow-up" aria-hidden="true"></i></button>
@@ -1172,6 +1187,26 @@
                                     <label class="mb-1 block text-xs font-bold">Przycisk CTA 2 — etykieta</label>
                                     <input type="text" name="cooperation_data[hero_cta2_label]" value="{{ $cd['hero_cta2_label'] ?? 'Poznaj formy współpracy' }}" class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
                                 </div>
+                            </div>
+                        </div>
+
+                        {{-- Statystyki --}}
+                        @php $cdStats = $cd['stats'] ?? [['value'=>'','label'=>''],['value'=>'','label'=>''],['value'=>'','label'=>''],['value'=>'','label'=>'']]; @endphp
+                        <div class="rounded-lg border border-gray-100 bg-gray-50 p-4 space-y-3">
+                            <p class="text-xs font-bold uppercase text-muted">Pasek liczb (opcjonalne — maks. 4)</p>
+                            <div class="grid gap-3 sm:grid-cols-2">
+                                @foreach ($cdStats as $si => $stat)
+                                <div class="flex gap-2">
+                                    <div class="flex-1">
+                                        <label class="mb-0.5 block text-xs">Wartość {{ $si + 1 }}</label>
+                                        <input type="text" name="cooperation_data[stats][{{ $si }}][value]" value="{{ $stat['value'] ?? '' }}" placeholder="np. 15 lat" class="w-full rounded border-gray-300 text-xs focus:border-brand focus:ring-brand">
+                                    </div>
+                                    <div class="flex-1">
+                                        <label class="mb-0.5 block text-xs">Etykieta {{ $si + 1 }}</label>
+                                        <input type="text" name="cooperation_data[stats][{{ $si }}][label]" value="{{ $stat['label'] ?? '' }}" placeholder="np. doświadczenia" class="w-full rounded border-gray-300 text-xs focus:border-brand focus:ring-brand">
+                                    </div>
+                                </div>
+                                @endforeach
                             </div>
                         </div>
 
