@@ -10,24 +10,27 @@
             class="inline-flex items-center gap-1.5 rounded border border-gray-300 bg-white px-3 py-2 text-sm font-bold text-muted hover:border-gray-400 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
             <i class="fa-solid fa-file-csv" aria-hidden="true"></i> Eksportuj CSV
         </a>
-        <a href="{{ route('admin.podstrony.create') }}" class="rounded bg-brand px-4 py-2 text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
+        <a href="{{ route('admin.podstrony.create') }}"
+            class="rounded bg-brand px-4 py-2 text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
             <i class="fa-solid fa-plus" aria-hidden="true"></i> Dodaj stronę
         </a>
     </div>
 
     @include('admin.partials.list-filters', [
-        'action' => route('admin.podstrony.index'),
-        'q' => $q,
-        'status' => $status,
-        'sort' => $sort,
+        'action'      => route('admin.podstrony.index'),
+        'q'           => $q,
+        'status'      => $status,
+        'sort'        => $sort,
         'sortOptions' => ['default' => 'Domyślne (kolejność)', 'title_asc' => 'Tytuł A–Z', 'title_desc' => 'Tytuł Z–A'],
-        'total' => $pages->total(),
+        'total'       => $pages->total(),
     ])
 
     <form id="bulk-pages-form" method="POST" action="{{ route('admin.podstrony.bulk') }}">
         @csrf
 
-        <div id="bulk-pages-bar" class="mb-3 hidden items-center gap-3 rounded-lg border border-blue-200 bg-blue-50 px-4 py-2">
+        {{-- Pasek operacji zbiorczych --}}
+        <div id="bulk-pages-bar"
+            class="mb-3 hidden items-center gap-3 rounded-lg border border-blue-200 bg-blue-50 px-4 py-2">
             <span id="bulk-pages-count" class="text-sm font-bold text-blue-800"></span>
             <select name="action" class="rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
                 <option value="publish">Opublikuj</option>
@@ -41,192 +44,306 @@
             </button>
         </div>
 
-    {{-- Tabela z konfigurowalnymi kolumnami --}}
-    <div
-        x-data="{
-            open: false,
-            cols: (() => {
-                try { return { thumb: false, slug: true, type: true, order: true, ...JSON.parse(localStorage.getItem('pages-cols') || '{}') }; }
-                catch (e) { return { thumb: false, slug: true, type: true, order: true }; }
-            })(),
-        }"
-        x-effect="localStorage.setItem('pages-cols', JSON.stringify(cols))"
-        x-cloak>
+        <div
+            x-data="{
+                open: false,
+                cols: (() => {
+                    try { return { thumb: false, order: true, ...JSON.parse(localStorage.getItem('pages-cols') || '{}') }; }
+                    catch (e) { return { thumb: false, order: true }; }
+                })(),
+            }"
+            x-effect="localStorage.setItem('pages-cols', JSON.stringify(cols))"
+            x-cloak>
 
-        {{-- Przycisk wyboru kolumn --}}
-        <div class="mb-2 flex justify-end">
-            <div class="relative">
-                <button type="button" @click="open = !open" :aria-expanded="open"
-                    class="inline-flex items-center gap-1.5 rounded border border-gray-300 bg-white px-3 py-1.5 text-xs font-bold text-muted hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
-                    <i class="fa-solid fa-sliders" aria-hidden="true"></i> Kolumny
-                    <i class="fa-solid fa-chevron-down text-[10px] transition" :class="open ? 'rotate-180' : ''" aria-hidden="true"></i>
-                </button>
-                <div x-show="open" @click.outside="open = false" x-transition
-                    class="absolute right-0 top-full z-20 mt-1 min-w-[160px] rounded-lg border border-gray-200 bg-white py-2 shadow-lg">
-                    <p class="mb-1 px-3 text-[10px] font-bold uppercase tracking-wide text-muted">Pokaż kolumny</p>
-                    @foreach (['thumb' => 'Miniatura', 'slug' => 'Slug', 'type' => 'Typ', 'order' => 'Kolejność'] as $key => $label)
-                        <label class="flex cursor-pointer items-center gap-2 px-3 py-1.5 hover:bg-gray-50">
-                            <input type="checkbox" x-model="cols.{{ $key }}" class="rounded border-gray-300 text-brand focus:ring-brand">
-                            <span class="text-sm">{{ $label }}</span>
-                        </label>
-                    @endforeach
+            {{-- Konfigurator kolumn --}}
+            <div class="mb-2 flex justify-end">
+                <div class="relative">
+                    <button type="button" @click="open = !open" :aria-expanded="open"
+                        class="inline-flex items-center gap-1.5 rounded border border-gray-300 bg-white px-3 py-1.5 text-xs font-bold text-muted hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                        <i class="fa-solid fa-sliders" aria-hidden="true"></i> Kolumny
+                        <i class="fa-solid fa-chevron-down text-[10px] transition" :class="open ? 'rotate-180' : ''" aria-hidden="true"></i>
+                    </button>
+                    <div x-show="open" @click.outside="open = false" x-transition
+                        class="absolute right-0 top-full z-20 mt-1 min-w-[150px] rounded-lg border border-gray-200 bg-white py-2 shadow-lg">
+                        <p class="mb-1 px-3 text-[10px] font-bold uppercase tracking-wide text-muted">Pokaż kolumny</p>
+                        @foreach (['thumb' => 'Miniatura', 'order' => 'Kolejność'] as $key => $label)
+                            <label class="flex cursor-pointer items-center gap-2 px-3 py-1.5 hover:bg-gray-50">
+                                <input type="checkbox" x-model="cols.{{ $key }}"
+                                    class="rounded border-gray-300 text-brand focus:ring-brand">
+                                <span class="text-sm">{{ $label }}</span>
+                            </label>
+                        @endforeach
+                    </div>
                 </div>
             </div>
-        </div>
 
-    <div class="overflow-hidden rounded-lg border border-gray-200 bg-white">
-        <table class="w-full text-left text-sm">
-            <thead class="bg-gray-50 text-xs font-bold uppercase text-muted">
-                <tr>
-                    <th class="w-8 px-4 py-3">
-                        <input type="checkbox" id="pages-select-all" class="rounded border-gray-300" aria-label="Zaznacz wszystkie strony">
-                    </th>
-                    <th x-show="cols.thumb" class="w-16 px-4 py-3">Foto</th>
-                    <th class="px-4 py-3">Tytuł</th>
-                    <th x-show="cols.slug" class="px-4 py-3">Slug</th>
-                    <th x-show="cols.type" class="px-4 py-3">Typ</th>
-                    <th x-show="cols.order" class="px-4 py-3">Kolejność</th>
-                    <th class="px-4 py-3">Status</th>
-                    <th class="px-4 py-3 text-right">Akcje</th>
-                </tr>
-            </thead>
-            <tbody class="divide-y divide-gray-100">
-                @forelse ($pages as $page)
-                    <tr @if ($page->is_featured) class="ring-1 ring-inset ring-amber-300 bg-amber-50/40" @endif>
-                        <td class="px-4 py-3">
-                            @unless ($page->is_system)
-                                <input type="checkbox" name="ids[]" value="{{ $page->id }}" class="page-row-check rounded border-gray-300" aria-label="Zaznacz {{ $page->title }}">
-                            @else
-                                <span class="block h-4 w-4"></span>
-                            @endunless
-                        </td>
-                        <td x-show="cols.thumb" class="px-4 py-2">
-                            @if (filled($page->content_image))
-                                <img src="{{ $page->content_image }}" alt="" class="h-10 w-14 rounded object-cover" loading="lazy">
-                            @else
-                                <div class="h-10 w-14 rounded bg-gray-100 flex items-center justify-center">
-                                    <i class="fa-regular fa-image text-gray-300 text-xs" aria-hidden="true"></i>
-                                </div>
-                            @endif
-                        </td>
-                        <td class="px-4 py-3 font-medium">
-                            @if ($page->parent_id)
-                                <span class="pl-4 text-muted">↳</span>
-                            @endif
-                            {{ $page->title }}
-                            @if ($page->parent)
-                                <span class="ml-1 text-xs font-normal text-muted">(w: {{ $page->parent->title }})</span>
-                            @endif
-                        </td>
-                        <td x-show="cols.slug" class="px-4 py-3 text-muted">/{{ $page->slug }}</td>
-                        <td x-show="cols.type" class="px-4 py-3">
+            <div class="overflow-hidden rounded-lg border border-gray-200 bg-white">
+                <table class="w-full text-left text-sm">
+                    <thead class="border-b border-gray-100 bg-gray-50/80">
+                        <tr>
+                            <th class="w-8 px-4 py-3">
+                                <input type="checkbox" id="pages-select-all"
+                                    class="rounded border-gray-300 text-brand focus:ring-brand"
+                                    aria-label="Zaznacz wszystkie strony">
+                            </th>
+                            <th x-show="cols.thumb" class="w-16 px-4 py-3 text-xs font-bold uppercase tracking-wide text-muted">Foto</th>
+                            <th class="px-4 py-3 text-xs font-bold uppercase tracking-wide text-muted">Strona</th>
+                            <th class="px-4 py-3 text-xs font-bold uppercase tracking-wide text-muted">Status</th>
+                            <th x-show="cols.order" class="px-4 py-3 text-xs font-bold uppercase tracking-wide text-muted">Kolejność</th>
+                            <th class="px-4 py-3 text-right text-xs font-bold uppercase tracking-wide text-muted">Akcje</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-50">
+                        @php
+                            $typeColors = [
+                                'standard'             => 'bg-gray-100 text-gray-700',
+                                'event'                => 'bg-blue-50 text-blue-700',
+                                'schedule'             => 'bg-indigo-50 text-indigo-700',
+                                'about'                => 'bg-green-50 text-green-700',
+                                'faq'                  => 'bg-amber-50 text-amber-700',
+                                'training_institution' => 'bg-teal-50 text-teal-700',
+                                'bip_move'             => 'bg-slate-100 text-slate-600',
+                                'internal'             => 'bg-slate-100 text-slate-600',
+                                'internal_hub'         => 'bg-purple-50 text-purple-700',
+                                'links_hub'            => 'bg-violet-50 text-violet-700',
+                                'wspolpraca'           => 'bg-orange-50 text-orange-700',
+                                'legacy'               => 'bg-stone-100 text-stone-600',
+                                'brand_assets'         => 'bg-amber-50 text-amber-700',
+                                'about_person'         => 'bg-emerald-50 text-emerald-700',
+                            ];
+                        @endphp
+
+                        @forelse ($pages as $page)
                             @php
-                                $typeIcons = ['standard' => 'fa-file-lines', 'event' => 'fa-calendar-day', 'schedule' => 'fa-calendar-days', 'about' => 'fa-people-group', 'faq' => 'fa-circle-question', 'bip_move' => 'fa-landmark'];
+                                $badgeClass = $typeColors[$page->type] ?? 'bg-gray-100 text-gray-700';
                             @endphp
-                            <span class="inline-flex items-center gap-1.5 rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-ink" title="Typ strony">
-                                <i class="fa-solid {{ $typeIcons[$page->type] ?? 'fa-file-lines' }} text-muted" aria-hidden="true"></i>
-                                {{ \App\Models\Page::TYPES[$page->type] ?? $page->type }}
-                            </span>
-                        </td>
-                        <td x-show="cols.order" class="px-4 py-3">
-                            <form method="POST" action="{{ route('admin.podstrony.kolejnosc', $page) }}" class="flex items-center gap-1">
-                                @csrf
-                                @method('PATCH')
-                                <input type="number" name="order" min="0" value="{{ $page->order }}" aria-label="Kolejność strony {{ $page->title }}"
-                                    class="w-16 rounded border-gray-300 py-1 text-sm focus:border-brand focus:ring-brand">
-                                <button type="submit" class="rounded p-1.5 text-muted hover:bg-gray-100 hover:text-brand" title="Zapisz kolejność" aria-label="Zapisz kolejność"><i class="fa-solid fa-check"></i></button>
-                            </form>
-                        </td>
-                        <td class="px-4 py-3">
-                            @if ($page->is_featured)
-                                <span class="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-bold text-amber-700"><i class="fa-solid fa-star"></i> Wyróżniona</span>
-                            @endif
-                            @if ($page->is_published && ($page->publish_at === null || $page->publish_at->isPast()))
-                                <span class="rounded-full bg-green-100 px-2 py-0.5 text-xs font-bold text-green-700">Opublikowana</span>
-                            @elseif ($page->is_published)
-                                <span class="rounded-full bg-blue-100 px-2 py-0.5 text-xs font-bold text-blue-700" title="Pojawi się {{ $page->publish_at?->format('d.m.Y H:i') }}"><i class="fa-regular fa-clock"></i> Zaplanowana</span>
-                            @else
-                                <span class="rounded-full bg-gray-100 px-2 py-0.5 text-xs font-bold text-gray-500">Szkic</span>
-                            @endif
-                            @if ($page->is_disabled)
-                                <span class="rounded-full bg-red-100 px-2 py-0.5 text-xs font-bold text-red-700"><i class="fa-solid fa-ban"></i> Wyłączona</span>
-                            @endif
-                            @if ($page->isWip())
-                                <span class="rounded-full bg-orange-100 px-2 py-0.5 text-xs font-bold text-orange-700"><i class="fa-solid fa-person-digging"></i> W przygotowaniu</span>
-                            @endif
-                            @if (! $page->parent_id && $page->show_in_menu)
-                                <span class="rounded-full bg-brand-light px-2 py-0.5 text-xs font-bold text-brand">W menu</span>
-                            @endif
-                            @if ($page->is_system)
-                                <span class="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-bold text-amber-700"><i class="fa-solid fa-lock"></i> Systemowa</span>
-                            @endif
-                        </td>
-                        <td class="px-4 py-3">
-                            <div class="flex items-center justify-end gap-3">
-                                <form method="POST" action="{{ route('admin.podstrony.wyroznienie', $page) }}">
-                                    @csrf
-                                    @method('PATCH')
-                                    @if ($page->is_featured)
-                                        <button type="submit" class="text-amber-500 hover:text-muted" title="Usuń wyróżnienie" aria-label="Usuń wyróżnienie strony {{ $page->title }}"><i class="fa-solid fa-star" aria-hidden="true"></i></button>
+                            <tr class="group hover:bg-gray-50/60 @if ($page->is_featured) bg-amber-50/40 @endif">
+
+                                {{-- Checkbox --}}
+                                <td class="px-4 py-3">
+                                    @unless ($page->is_system)
+                                        <input type="checkbox" name="ids[]" value="{{ $page->id }}"
+                                            class="page-row-check rounded border-gray-300 text-brand focus:ring-brand"
+                                            aria-label="Zaznacz {{ $page->title }}">
                                     @else
-                                        <button type="submit" class="text-muted hover:text-amber-500" title="Wyróżnij stronę" aria-label="Wyróżnij stronę {{ $page->title }}"><i class="fa-regular fa-star" aria-hidden="true"></i></button>
-                                    @endif
-                                </form>
-                                @unless ($page->parent_id || $page->isAboutPerson())
-                                    <a href="{{ route('admin.podstrony.create', ['parent_id' => $page->id]) }}"
-                                        class="inline-flex items-center gap-1 text-xs font-bold text-brand hover:text-brand-dark" title="Dodaj podstronę jako podrzędną w „{{ $page->title }}"">
-                                        <i class="fa-solid fa-plus" aria-hidden="true"></i> podstrona
-                                    </a>
-                                @endunless
-                                @if ($page->is_published && ($page->publish_at === null || $page->publish_at->isPast()))
-                                    <a href="{{ $page->publicUrl() }}" target="_blank" class="text-muted hover:text-brand" title="Podgląd"><i class="fa-solid fa-eye" aria-hidden="true"></i></a>
-                                @else
-                                    <a href="{{ $page->previewUrl() }}" target="_blank" rel="noopener" class="text-amber-600 hover:text-amber-700" title="{{ $page->is_published ? 'Zaplanowana — podgląd wersji roboczej' : 'Podgląd wersji roboczej (link ważny 14 dni)' }}"><i class="fa-solid fa-eye" aria-hidden="true"></i></a>
-                                @endif
-                                <a href="{{ route('admin.podstrony.edit', $page) }}" class="text-muted hover:text-brand" title="Edytuj"><i class="fa-solid fa-pen" aria-hidden="true"></i></a>
-                                <form method="POST" action="{{ route('admin.podstrony.clone', $page) }}" data-confirm="Zduplikować stronę „{{ $page->title }}"? Kopia zostanie zapisana jako szkic.">
-                                    @csrf
-                                    <button type="submit" class="text-muted hover:text-brand" title="Klonuj stronę" aria-label="Klonuj stronę {{ $page->title }}"><i class="fa-solid fa-clone" aria-hidden="true"></i></button>
-                                </form>
-                                <form method="POST" action="{{ route('admin.podstrony.widocznosc', $page) }}">
-                                    @csrf
-                                    @method('PATCH')
-                                    @if ($page->is_published)
-                                        <button type="submit" class="text-muted hover:text-amber-600" title="Ukryj (cofnij publikację)" aria-label="Ukryj (cofnij publikację)"><i class="fa-solid fa-eye-slash"></i></button>
+                                        <span class="block h-4 w-4"></span>
+                                    @endunless
+                                </td>
+
+                                {{-- Miniatura --}}
+                                <td x-show="cols.thumb" class="px-4 py-3">
+                                    @if (filled($page->content_image))
+                                        <img src="{{ $page->content_image }}" alt=""
+                                            class="h-10 w-14 rounded object-cover" loading="lazy">
                                     @else
-                                        <button type="submit" class="text-muted hover:text-green-600" title="Opublikuj (pokaż)" aria-label="Opublikuj (pokaż)"><i class="fa-solid fa-eye" aria-hidden="true"></i></button>
+                                        <div class="flex h-10 w-14 items-center justify-center rounded bg-gray-100">
+                                            <i class="fa-regular fa-image text-xs text-gray-300" aria-hidden="true"></i>
+                                        </div>
                                     @endif
-                                </form>
-                                <form method="POST" action="{{ route('admin.podstrony.wylacz', $page) }}">
-                                    @csrf
-                                    @method('PATCH')
-                                    @if ($page->is_disabled)
-                                        <button type="submit" class="text-red-600 hover:text-green-600" title="Włącz stronę (jest wyłączona)" aria-label="Włącz stronę (jest wyłączona)"><i class="fa-solid fa-ban"></i></button>
-                                    @else
-                                        <button type="submit" class="text-muted hover:text-red-600" title="Wyłącz stronę" aria-label="Wyłącz stronę"><i class="fa-solid fa-power-off"></i></button>
+                                </td>
+
+                                {{-- Tytuł + typ + slug --}}
+                                <td class="px-4 py-3">
+                                    @if ($page->parent_id)
+                                        <span class="mr-1 text-gray-300" aria-hidden="true">↳</span>
                                     @endif
-                                </form>
-                                @if ($page->is_system)
-                                    <span class="cursor-not-allowed text-gray-300" title="Strony systemowej nie można usunąć"><i class="fa-solid fa-trash" aria-hidden="true"></i></span>
-                                @else
-                                    <form method="POST" action="{{ route('admin.podstrony.destroy', $page) }}" data-confirm="Usunąć stronę „{{ $page->title }}"?">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="text-muted hover:text-red-600" title="Usuń" aria-label="Usuń stronę {{ $page->title }}"><i class="fa-solid fa-trash" aria-hidden="true"></i></button>
+                                    <span class="font-semibold text-ink">{{ $page->title }}</span>
+                                    @if ($page->parent)
+                                        <span class="ml-1 text-xs text-muted">(w: {{ $page->parent->title }})</span>
+                                    @endif
+                                    <div class="mt-1 flex flex-wrap items-center gap-1.5">
+                                        <span class="rounded-full px-2 py-0.5 text-[11px] font-semibold {{ $badgeClass }}">
+                                            {{ \App\Models\Page::TYPES[$page->type] ?? $page->type }}
+                                        </span>
+                                        <span class="font-mono text-xs text-muted">/{{ $page->slug }}</span>
+                                    </div>
+                                </td>
+
+                                {{-- Status --}}
+                                <td class="px-4 py-3">
+                                    <div class="flex flex-wrap gap-1">
+                                        @if ($page->is_published && ($page->publish_at === null || $page->publish_at->isPast()))
+                                            <span class="inline-flex items-center gap-1 rounded-full bg-green-100 px-2 py-0.5 text-[11px] font-bold text-green-700">
+                                                <span class="h-1.5 w-1.5 rounded-full bg-green-500" aria-hidden="true"></span>Opublikowana
+                                            </span>
+                                        @elseif ($page->is_published)
+                                            <span class="rounded-full bg-blue-100 px-2 py-0.5 text-[11px] font-bold text-blue-700"
+                                                title="Pojawi się {{ $page->publish_at?->format('d.m.Y H:i') }}">
+                                                <i class="fa-regular fa-clock" aria-hidden="true"></i> Zaplanowana
+                                            </span>
+                                        @else
+                                            <span class="rounded-full bg-gray-100 px-2 py-0.5 text-[11px] font-bold text-gray-500">Szkic</span>
+                                        @endif
+
+                                        @if ($page->is_disabled)
+                                            <span class="rounded-full bg-red-100 px-2 py-0.5 text-[11px] font-bold text-red-700">
+                                                <i class="fa-solid fa-ban" aria-hidden="true"></i> Wyłączona
+                                            </span>
+                                        @endif
+                                        @if ($page->isWip())
+                                            <span class="rounded-full bg-orange-100 px-2 py-0.5 text-[11px] font-bold text-orange-700">
+                                                <i class="fa-solid fa-person-digging" aria-hidden="true"></i> WIP
+                                            </span>
+                                        @endif
+                                        @if ($page->is_featured)
+                                            <span class="rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-bold text-amber-700">
+                                                <i class="fa-solid fa-star" aria-hidden="true"></i> Wyróżniona
+                                            </span>
+                                        @endif
+                                        @if (! $page->parent_id && $page->show_in_menu)
+                                            <span class="rounded-full bg-brand-light px-2 py-0.5 text-[11px] font-bold text-brand">W menu</span>
+                                        @endif
+                                        @if ($page->is_system)
+                                            <span class="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-bold text-slate-600">
+                                                <i class="fa-solid fa-lock" aria-hidden="true"></i> Systemowa
+                                            </span>
+                                        @endif
+                                    </div>
+                                </td>
+
+                                {{-- Kolejność --}}
+                                <td x-show="cols.order" class="px-4 py-3">
+                                    <form method="POST" action="{{ route('admin.podstrony.kolejnosc', $page) }}" class="flex items-center gap-1">
+                                        @csrf @method('PATCH')
+                                        <input type="number" name="order" min="0" value="{{ $page->order }}"
+                                            aria-label="Kolejność strony {{ $page->title }}"
+                                            class="w-16 rounded border-gray-300 py-1 text-sm focus:border-brand focus:ring-brand">
+                                        <button type="submit"
+                                            class="rounded p-1.5 text-muted hover:bg-gray-100 hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+                                            title="Zapisz kolejność" aria-label="Zapisz kolejność">
+                                            <i class="fa-solid fa-check text-xs" aria-hidden="true"></i>
+                                        </button>
                                     </form>
-                                @endif
-                            </div>
-                        </td>
-                    </tr>
-                @empty
-                    <tr>
-                        <td colspan="8" class="px-4 py-6 text-center text-muted">Brak stron. Dodaj pierwszą powyżej.</td>
-                    </tr>
-                @endforelse
-            </tbody>
-        </table>
-    </div>
-    </div>
+                                </td>
+
+                                {{-- Akcje --}}
+                                <td class="px-4 py-3">
+                                    <div class="flex items-center justify-end gap-1.5">
+
+                                        {{-- Edytuj --}}
+                                        <a href="{{ route('admin.podstrony.edit', $page) }}"
+                                            class="inline-flex items-center gap-1.5 rounded border border-gray-200 bg-white px-3 py-1.5 text-xs font-bold text-ink hover:border-brand hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                                            <i class="fa-solid fa-pen text-xs" aria-hidden="true"></i> Edytuj
+                                        </a>
+
+                                        {{-- Podgląd --}}
+                                        @if ($page->is_published && ($page->publish_at === null || $page->publish_at->isPast()))
+                                            <a href="{{ $page->publicUrl() }}" target="_blank" rel="noopener"
+                                                class="inline-flex h-[30px] w-[30px] items-center justify-center rounded border border-gray-200 bg-white text-muted hover:border-brand hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+                                                title="Podgląd publiczny" aria-label="Podgląd publiczny {{ $page->title }}">
+                                                <i class="fa-solid fa-eye text-xs" aria-hidden="true"></i>
+                                            </a>
+                                        @else
+                                            <a href="{{ $page->previewUrl() }}" target="_blank" rel="noopener"
+                                                class="inline-flex h-[30px] w-[30px] items-center justify-center rounded border border-amber-200 bg-amber-50 text-amber-600 hover:text-amber-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400"
+                                                title="Podgląd roboczy" aria-label="Podgląd roboczy {{ $page->title }}">
+                                                <i class="fa-solid fa-eye text-xs" aria-hidden="true"></i>
+                                            </a>
+                                        @endif
+
+                                        {{-- Dropdown: pozostałe akcje --}}
+                                        <div class="relative" x-data="{ open: false }">
+                                            <button type="button" @click="open = !open" :aria-expanded="open"
+                                                class="inline-flex h-[30px] w-[30px] items-center justify-center rounded border border-gray-200 bg-white text-muted hover:border-gray-300 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+                                                aria-label="Więcej akcji dla {{ $page->title }}">
+                                                <i class="fa-solid fa-ellipsis-vertical text-xs" aria-hidden="true"></i>
+                                            </button>
+
+                                            <div x-show="open" @click.outside="open = false"
+                                                x-transition:enter="transition ease-out duration-100"
+                                                x-transition:enter-start="opacity-0 scale-95"
+                                                x-transition:enter-end="opacity-100 scale-100"
+                                                class="absolute right-0 top-full z-20 mt-1 w-52 rounded-lg border border-gray-200 bg-white py-1.5 shadow-lg">
+
+                                                <form method="POST" action="{{ route('admin.podstrony.wyroznienie', $page) }}">
+                                                    @csrf @method('PATCH')
+                                                    <button type="submit"
+                                                        class="flex w-full items-center gap-3 px-4 py-2 text-sm text-ink hover:bg-gray-50">
+                                                        @if ($page->is_featured)
+                                                            <i class="fa-solid fa-star w-4 text-center text-amber-500" aria-hidden="true"></i> Usuń wyróżnienie
+                                                        @else
+                                                            <i class="fa-regular fa-star w-4 text-center text-muted" aria-hidden="true"></i> Wyróżnij
+                                                        @endif
+                                                    </button>
+                                                </form>
+
+                                                @unless ($page->parent_id || $page->isAboutPerson())
+                                                    <a href="{{ route('admin.podstrony.create', ['parent_id' => $page->id]) }}"
+                                                        class="flex items-center gap-3 px-4 py-2 text-sm text-ink hover:bg-gray-50">
+                                                        <i class="fa-solid fa-plus w-4 text-center text-muted" aria-hidden="true"></i> Dodaj podstronę
+                                                    </a>
+                                                @endunless
+
+                                                <form method="POST" action="{{ route('admin.podstrony.clone', $page) }}"
+                                                    data-confirm="Zduplikować stronę „{{ $page->title }}"? Kopia zostanie zapisana jako szkic.">
+                                                    @csrf
+                                                    <button type="submit"
+                                                        class="flex w-full items-center gap-3 px-4 py-2 text-sm text-ink hover:bg-gray-50">
+                                                        <i class="fa-solid fa-clone w-4 text-center text-muted" aria-hidden="true"></i> Klonuj
+                                                    </button>
+                                                </form>
+
+                                                <hr class="my-1 border-gray-100">
+
+                                                <form method="POST" action="{{ route('admin.podstrony.widocznosc', $page) }}">
+                                                    @csrf @method('PATCH')
+                                                    <button type="submit"
+                                                        class="flex w-full items-center gap-3 px-4 py-2 text-sm text-ink hover:bg-gray-50">
+                                                        @if ($page->is_published)
+                                                            <i class="fa-solid fa-eye-slash w-4 text-center text-muted" aria-hidden="true"></i> Cofnij publikację
+                                                        @else
+                                                            <i class="fa-solid fa-eye w-4 text-center text-green-600" aria-hidden="true"></i> Opublikuj
+                                                        @endif
+                                                    </button>
+                                                </form>
+
+                                                <form method="POST" action="{{ route('admin.podstrony.wylacz', $page) }}">
+                                                    @csrf @method('PATCH')
+                                                    <button type="submit"
+                                                        class="flex w-full items-center gap-3 px-4 py-2 text-sm text-ink hover:bg-gray-50">
+                                                        @if ($page->is_disabled)
+                                                            <i class="fa-solid fa-power-off w-4 text-center text-green-600" aria-hidden="true"></i> Włącz stronę
+                                                        @else
+                                                            <i class="fa-solid fa-ban w-4 text-center text-muted" aria-hidden="true"></i> Wyłącz stronę
+                                                        @endif
+                                                    </button>
+                                                </form>
+
+                                                @unless ($page->is_system)
+                                                    <hr class="my-1 border-gray-100">
+                                                    <form method="POST" action="{{ route('admin.podstrony.destroy', $page) }}"
+                                                        data-confirm="Usunąć stronę „{{ $page->title }}"?">
+                                                        @csrf @method('DELETE')
+                                                        <button type="submit"
+                                                            class="flex w-full items-center gap-3 px-4 py-2 text-sm text-red-600 hover:bg-red-50">
+                                                            <i class="fa-solid fa-trash w-4 text-center" aria-hidden="true"></i> Usuń
+                                                        </button>
+                                                    </form>
+                                                @endunless
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="7" class="px-4 py-12 text-center">
+                                    <div class="mx-auto max-w-xs">
+                                        <i class="fa-regular fa-file text-4xl text-gray-200" aria-hidden="true"></i>
+                                        <p class="mt-3 font-semibold text-muted">Brak stron</p>
+                                        <p class="mt-1 text-sm text-muted">Żadna strona nie pasuje do filtrów lub lista jest pusta.</p>
+                                        <a href="{{ route('admin.podstrony.create') }}"
+                                            class="mt-4 inline-flex items-center gap-1.5 rounded bg-brand px-4 py-2 text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
+                                            <i class="fa-solid fa-plus" aria-hidden="true"></i> Dodaj pierwszą stronę
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </form>
 
     @if ($pages->hasPages())
@@ -246,12 +363,14 @@
                 countEl.textContent = 'Zaznaczono: ' + checked.length;
             }
 
-            selectAll.addEventListener('change', () => {
-                document.querySelectorAll('.page-row-check').forEach(cb => { cb.checked = selectAll.checked; });
+            selectAll.addEventListener('change', function () {
+                document.querySelectorAll('.page-row-check').forEach(function (cb) {
+                    cb.checked = selectAll.checked;
+                });
                 updateBar();
             });
 
-            document.querySelectorAll('.page-row-check').forEach(cb => {
+            document.querySelectorAll('.page-row-check').forEach(function (cb) {
                 cb.addEventListener('change', updateBar);
             });
         })();

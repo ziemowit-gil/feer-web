@@ -29,41 +29,41 @@
     @endphp
 
     <div data-page-form-tabs>
-        <div class="mb-6 flex flex-wrap gap-1 border-b border-gray-200" role="tablist">
+        <div class="mb-6 flex flex-wrap items-center gap-1.5 rounded-xl bg-gray-100/70 p-1.5" role="tablist">
             <button type="button" data-ftab-btn="tresc" role="tab" aria-selected="true"
-                class="-mb-px border-b-2 border-brand px-4 py-2 text-sm font-bold text-brand">
+                class="rounded-lg bg-white px-4 py-2 text-sm font-semibold text-brand shadow-sm transition-all">
                 <i class="fa-solid fa-align-left" aria-hidden="true"></i> Treść
             </button>
             <button type="button" data-ftab-btn="typ" role="tab" aria-selected="false"
-                class="-mb-px border-b-2 border-transparent px-4 py-2 text-sm font-bold text-muted hover:text-brand">
+                class="rounded-lg px-4 py-2 text-sm font-semibold text-gray-500 transition-all hover:text-ink">
                 <i class="fa-solid fa-table-cells-large" aria-hidden="true"></i> Typ i układ
             </button>
             <button type="button" data-ftab-btn="ustawienia" role="tab" aria-selected="false"
-                class="-mb-px border-b-2 border-transparent px-4 py-2 text-sm font-bold text-muted hover:text-brand">
-                <i class="fa-solid fa-gear" aria-hidden="true"></i> Publikacja i powiązania
+                class="rounded-lg px-4 py-2 text-sm font-semibold text-gray-500 transition-all hover:text-ink">
+                <i class="fa-solid fa-gear" aria-hidden="true"></i> Publikacja
             </button>
             <button type="button" data-ftab-btn="seo" role="tab" aria-selected="false"
-                class="-mb-px border-b-2 border-transparent px-4 py-2 text-sm font-bold text-muted hover:text-brand">
+                class="rounded-lg px-4 py-2 text-sm font-semibold text-gray-500 transition-all hover:text-ink">
                 <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i> SEO
             </button>
             @if ($page->exists)
                 @if ($currentType !== 'wspolpraca')
                 <button type="button" data-ftab-btn="pliki" data-wspolpraca-tab role="tab" aria-selected="false"
-                    class="-mb-px border-b-2 border-transparent px-4 py-2 text-sm font-bold text-muted hover:text-brand">
-                    <i class="fa-solid fa-paperclip" aria-hidden="true"></i> Pliki do pobrania
+                    class="rounded-lg px-4 py-2 text-sm font-semibold text-gray-500 transition-all hover:text-ink">
+                    <i class="fa-solid fa-paperclip" aria-hidden="true"></i> Pliki
                     @if ($page->attachments->isNotEmpty())
-                        <span class="ml-1 rounded-full bg-gray-100 px-1.5 py-0.5 text-xs">{{ $page->attachments->count() }}</span>
+                        <span class="ml-1 rounded-full bg-gray-200 px-1.5 py-0.5 text-xs">{{ $page->attachments->count() }}</span>
                     @endif
                 </button>
                 <button type="button" data-ftab-btn="galeria" data-wspolpraca-tab role="tab" aria-selected="false"
-                    class="-mb-px border-b-2 border-transparent px-4 py-2 text-sm font-bold text-muted hover:text-brand">
+                    class="rounded-lg px-4 py-2 text-sm font-semibold text-gray-500 transition-all hover:text-ink">
                     <i class="fa-solid fa-images" aria-hidden="true"></i> Galeria
                     @if ($page->images->isNotEmpty())
-                        <span class="ml-1 rounded-full bg-gray-100 px-1.5 py-0.5 text-xs">{{ $page->images->count() }}</span>
+                        <span class="ml-1 rounded-full bg-gray-200 px-1.5 py-0.5 text-xs">{{ $page->images->count() }}</span>
                     @endif
                 </button>
                 <button type="button" data-ftab-btn="etr" data-wspolpraca-tab role="tab" aria-selected="false"
-                    class="-mb-px border-b-2 border-transparent px-4 py-2 text-sm font-bold text-muted hover:text-brand">
+                    class="rounded-lg px-4 py-2 text-sm font-semibold text-gray-500 transition-all hover:text-ink">
                     <i class="fa-solid fa-book-open-reader" aria-hidden="true"></i> ETR
                     @if ($page->etr?->is_enabled)
                         <span class="ml-1 rounded-full bg-sky-100 px-1.5 py-0.5 text-xs text-sky-700">aktywna</span>
@@ -71,8 +71,8 @@
                 </button>
                 @endif
                 <a href="{{ route('admin.historia.index', ['type' => 'page', 'id' => $page->id]) }}"
-                    class="ml-auto -mb-px border-b-2 border-transparent px-4 py-2 text-sm font-bold text-muted hover:text-brand">
-                    <i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i> Historia zmian
+                    class="ml-auto rounded-lg px-4 py-2 text-sm font-semibold text-gray-400 transition-all hover:text-ink">
+                    <i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i> Historia
                 </a>
             @endif
         </div>
@@ -1967,10 +1967,10 @@
             function activate(key) {
                 buttons.forEach(function (b) {
                     const active = b.dataset.ftabBtn === key;
-                    b.classList.toggle('border-brand', active);
+                    b.classList.toggle('bg-white', active);
+                    b.classList.toggle('shadow-sm', active);
                     b.classList.toggle('text-brand', active);
-                    b.classList.toggle('border-transparent', !active);
-                    b.classList.toggle('text-muted', !active);
+                    b.classList.toggle('text-gray-500', !active);
                     b.setAttribute('aria-selected', active ? 'true' : 'false');
                 });
                 panels.forEach(function (p) {
