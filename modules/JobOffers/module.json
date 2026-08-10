@@ -1,0 +1,10 @@
+{
+    "identifier": "jobs",
+    "name": "Ogłoszenia o pracę",
+    "version": "1.0.0",
+    "provider": "Modules\\JobOffers\\Providers\\JobOffersServiceProvider",
+    "migrations": false,
+    "assets": false,
+    "built_in": true,
+    "requires": []
+}

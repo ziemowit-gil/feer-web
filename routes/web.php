@@ -88,6 +88,8 @@ use App\Http\Controllers\CampaignController;
 use App\Http\Controllers\SubscribeController;
 use App\Http\Controllers\Admin\CampaignController as AdminCampaignController;
 use App\Http\Controllers\Admin\SubscriberController as AdminSubscriberController;
+use App\Http\Controllers\JobOfferController;
+use App\Http\Controllers\Admin\JobOfferController as AdminJobOfferController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -121,6 +123,12 @@ Route::middleware('module:materials')->group(function () {
 Route::middleware('module:volunteering')->group(function () {
     Route::get('/wolontariat', [VolunteerController::class, 'index'])->name('volunteer.index');
     Route::get('/wolontariat/{ad:slug}', [VolunteerController::class, 'show'])->name('volunteer.show');
+});
+
+Route::middleware('module:jobs')->group(function () {
+    Route::get('/praca', [JobOfferController::class, 'index'])->name('praca.index');
+    Route::get('/praca/{offer:slug}/pdf', [JobOfferController::class, 'pdf'])->name('praca.pdf');
+    Route::get('/praca/{offer:slug}', [JobOfferController::class, 'show'])->name('praca.show');
 });
 
 Route::middleware('module:events')->group(function () {
@@ -312,6 +320,14 @@ Route::middleware(['auth', 'verified', '2fa'])->prefix(config('app.admin_prefix'
         Route::put('wolontariat/{wolontariat}/przywroc', [AdminVolunteerAdController::class, 'restore'])->name('wolontariat.restore');
         Route::post('wolontariat/{wolontariat}/klonuj', [AdminVolunteerAdController::class, 'clone'])->name('wolontariat.klonuj');
         Route::post('wolontariat/zbiorczo', [AdminVolunteerAdController::class, 'bulk'])->name('wolontariat.bulk');
+    });
+
+    Route::middleware(['module:jobs', 'module-access:jobs'])->group(function () {
+        Route::resource('praca', AdminJobOfferController::class)->parameters(['praca' => 'praca'])->except('show');
+        Route::put('praca/{praca}/archiwizuj', [AdminJobOfferController::class, 'archive'])->name('praca.archive');
+        Route::put('praca/{praca}/przywroc', [AdminJobOfferController::class, 'restore'])->name('praca.restore');
+        Route::post('praca/{praca}/klonuj', [AdminJobOfferController::class, 'clone'])->name('praca.klonuj');
+        Route::post('praca/zbiorczo', [AdminJobOfferController::class, 'bulk'])->name('praca.bulk');
     });
 
     Route::middleware(['module:events', 'module-access:events'])->group(function () {
