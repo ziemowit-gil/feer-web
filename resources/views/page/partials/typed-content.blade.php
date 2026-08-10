@@ -1527,41 +1527,70 @@
                         @endif
                     </div>
                 @endif
-                @if (! empty($pSocial))
-                    <div class="mt-4 flex items-center justify-center gap-2 sm:justify-start">
-                        @if (! empty($pSocial['facebook']))
-                            <a href="{{ $pSocial['facebook'] }}" target="_blank" rel="noopener noreferrer"
-                                class="flex h-9 w-9 items-center justify-center rounded-full bg-[#1877f2] text-white hover:opacity-80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
-                                aria-label="Facebook — {{ $page->title }}">
-                                <i class="fa-brands fa-facebook-f text-sm" aria-hidden="true"></i>
-                            </a>
-                        @endif
-                        @if (! empty($pSocial['instagram']))
-                            <a href="{{ $pSocial['instagram'] }}" target="_blank" rel="noopener noreferrer"
-                                class="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-[#f09433] via-[#e6683c] to-[#bc1888] text-white hover:opacity-80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
-                                aria-label="Instagram — {{ $page->title }}">
-                                <i class="fa-brands fa-instagram text-sm" aria-hidden="true"></i>
-                            </a>
-                        @endif
-                        @if (! empty($pSocial['linkedin']))
-                            <a href="{{ $pSocial['linkedin'] }}" target="_blank" rel="noopener noreferrer"
-                                class="flex h-9 w-9 items-center justify-center rounded-full bg-[#0a66c2] text-white hover:opacity-80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
-                                aria-label="LinkedIn — {{ $page->title }}">
-                                <i class="fa-brands fa-linkedin-in text-sm" aria-hidden="true"></i>
-                            </a>
-                        @endif
-                        @if (! empty($pSocial['website']))
-                            <a href="{{ $pSocial['website'] }}" target="_blank" rel="noopener noreferrer"
-                                class="flex h-9 w-9 items-center justify-center rounded-full bg-gray-600 text-white hover:opacity-80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
-                                aria-label="Strona internetowa — {{ $page->title }}">
-                                <i class="fa-solid fa-globe text-sm" aria-hidden="true"></i>
-                            </a>
-                        @endif
-                    </div>
-                @endif
             </div>
         </div>
     </section>
+
+    @if (! empty($pSocial))
+        <section class="border-b border-gray-100 px-4 py-8" aria-label="Social media">
+            <div class="mx-auto max-w-4xl grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                @if (! empty($pSocial['linkedin']))
+                    <a href="{{ $pSocial['linkedin'] }}" target="_blank" rel="noopener noreferrer"
+                        class="group flex items-center gap-4 rounded-xl border border-gray-100 bg-white px-5 py-4 shadow-sm transition hover:border-[#0a66c2] hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
+                        <span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[#0a66c2]/10 text-[#0a66c2]">
+                            <i class="fa-brands fa-linkedin text-2xl" aria-hidden="true"></i>
+                        </span>
+                        <div class="min-w-0">
+                            <p class="font-bold text-ink">LinkedIn</p>
+                            <p class="text-xs text-muted">Profil zawodowy</p>
+                        </div>
+                        <i class="fa-solid fa-arrow-up-right-from-square ml-auto shrink-0 text-xs text-muted group-hover:text-[#0a66c2]" aria-hidden="true"></i>
+                    </a>
+                @endif
+                @if (! empty($pSocial['facebook']))
+                    <a href="{{ $pSocial['facebook'] }}" target="_blank" rel="noopener noreferrer"
+                        class="group flex items-center gap-4 rounded-xl border border-gray-100 bg-white px-5 py-4 shadow-sm transition hover:border-[#1877f2] hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
+                        <span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[#1877f2]/10 text-[#1877f2]">
+                            <i class="fa-brands fa-facebook text-2xl" aria-hidden="true"></i>
+                        </span>
+                        <div class="min-w-0">
+                            <p class="font-bold text-ink">Facebook</p>
+                            <p class="text-xs text-muted">Strona na Facebooku</p>
+                        </div>
+                        <i class="fa-solid fa-arrow-up-right-from-square ml-auto shrink-0 text-xs text-muted group-hover:text-[#1877f2]" aria-hidden="true"></i>
+                    </a>
+                @endif
+                @if (! empty($pSocial['instagram']))
+                    <a href="{{ $pSocial['instagram'] }}" target="_blank" rel="noopener noreferrer"
+                        class="group flex items-center gap-4 rounded-xl border border-gray-100 bg-white px-5 py-4 shadow-sm transition hover:border-[#e6683c] hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
+                        <span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#f09433]/15 to-[#bc1888]/15 text-[#e6683c]">
+                            <i class="fa-brands fa-instagram text-2xl" aria-hidden="true"></i>
+                        </span>
+                        <div class="min-w-0">
+                            <p class="font-bold text-ink">Instagram</p>
+                            <p class="text-xs text-muted">Konto na Instagramie</p>
+                        </div>
+                        <i class="fa-solid fa-arrow-up-right-from-square ml-auto shrink-0 text-xs text-muted group-hover:text-[#e6683c]" aria-hidden="true"></i>
+                    </a>
+                @endif
+                @if (! empty($pSocial['website']))
+                    @php $websiteHost = parse_url($pSocial['website'], PHP_URL_HOST) ?: $pSocial['website']; @endphp
+                    <a href="{{ $pSocial['website'] }}" target="_blank" rel="noopener noreferrer"
+                        class="group flex items-center gap-4 rounded-xl border border-gray-100 bg-white px-5 py-4 shadow-sm transition hover:border-brand hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
+                        <span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-brand/10 text-brand">
+                            <i class="fa-solid fa-globe text-2xl" aria-hidden="true"></i>
+                        </span>
+                        <div class="min-w-0">
+                            <p class="font-bold text-ink">Strona www</p>
+                            <p class="truncate text-xs text-muted">{{ $websiteHost }}</p>
+                        </div>
+                        <i class="fa-solid fa-arrow-up-right-from-square ml-auto shrink-0 text-xs text-muted group-hover:text-brand" aria-hidden="true"></i>
+                    </a>
+                @endif
+            </div>
+        </section>
+    @endif
+
     <section class="mx-auto max-w-4xl px-4 py-12">
         @if (filled($page->person_bio))
             <p class="mb-8 text-lg leading-relaxed text-ink">{{ $page->person_bio }}</p>
