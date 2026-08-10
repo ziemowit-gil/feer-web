@@ -42,7 +42,7 @@ class FounderPageSeeder extends Seeder
             'title'       => 'Imię Nazwisko Fundatora',
             'slug'        => $slug,
             'person_role' => 'Fundator FEER',
-            'content'     => '<p>Tu wpisz cytat lub krótkie wprowadzenie fundatora, które pojawi się w sekcji „Słowo od Fundatora" na stronie O organizacji. Możesz go edytować w panelu admina.</p>',
+            'content'     => null,
             'is_published' => true,
             'is_featured'  => true,
             'order'        => 0,
