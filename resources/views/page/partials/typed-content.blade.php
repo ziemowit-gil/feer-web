@@ -276,71 +276,63 @@
                 ->explode(' ')->map(fn ($w) => mb_substr($w, 0, 1))->take(2)->implode('');
         @endphp
         @if ($founderPhoto)
-        {{-- ══ WARIANT ZE ZDJĘCIEM: split-screen ══ --}}
-        <section id="sekcja-founder" class="overflow-hidden bg-gray-950">
-            <div class="grid lg:grid-cols-2">
+        {{-- ══ WARIANT ZE ZDJĘCIEM ══ --}}
+        <section id="sekcja-founder" class="mx-auto max-w-6xl px-4 py-16">
+            <div class="grid items-center gap-12 lg:grid-cols-2">
 
-                <div class="relative min-h-[360px] lg:min-h-[640px]">
-                    <img src="{{ $founderPhoto }}"
-                        alt="{{ $founderPhotoAlt }}"
-                        class="absolute inset-0 h-full w-full object-cover object-center">
-                    <div class="absolute inset-0 bg-gradient-to-r from-transparent via-transparent to-gray-950/60 hidden lg:block" aria-hidden="true"></div>
-                    <div class="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-gray-950 to-transparent lg:hidden" aria-hidden="true"></div>
+                <div class="relative mx-auto w-full max-w-sm lg:mx-0">
+                    <span class="absolute -left-3 -top-3 h-full w-full rounded-2xl bg-brand/10" aria-hidden="true"></span>
+                    <img src="{{ $founderPhoto }}" alt="{{ $founderPhotoAlt }}"
+                        class="relative aspect-[3/4] w-full rounded-2xl object-cover shadow-md">
                 </div>
 
-                <div class="flex flex-col justify-center px-8 py-16 lg:px-16 lg:py-24">
-                    <p class="mb-6 text-xs font-bold uppercase tracking-[0.2em] text-amber-400">Słowo od Fundatora</p>
-                    <h2 class="mb-1 text-3xl font-bold leading-tight text-white md:text-4xl">{{ $aboutFounder->title }}</h2>
+                <div>
+                    <p class="mb-4 text-xs font-bold uppercase tracking-widest text-brand">Słowo od Fundatora</p>
+                    <h2 class="mb-1 text-2xl font-bold text-ink md:text-3xl">{{ $aboutFounder->title }}</h2>
                     @if (filled($aboutFounder->person_role))
-                        <p class="mb-8 text-base font-medium text-white/50">{{ $aboutFounder->person_role }}</p>
+                        <p class="mb-6 text-sm font-medium text-muted">{{ $aboutFounder->person_role }}</p>
                     @else
-                        <div class="mb-8"></div>
+                        <div class="mb-6"></div>
                     @endif
                     @if ($founderQuote)
-                        <i class="fa-solid fa-quote-left mb-4 block text-5xl leading-none text-white/10" aria-hidden="true"></i>
-                        <p class="text-xl italic leading-relaxed text-white/80 md:text-2xl">{{ $founderQuote }}</p>
+                        <i class="fa-solid fa-quote-left mb-3 block text-4xl leading-none text-brand/20" aria-hidden="true"></i>
+                        <p class="text-lg italic leading-relaxed text-ink/80 md:text-xl">{{ $founderQuote }}</p>
                     @endif
-                    <div class="mt-10">
-                        <a href="{{ url('/' . $aboutFounder->slug) }}"
-                            class="inline-flex items-center gap-2 rounded-full bg-amber-400 px-6 py-2.5 text-sm font-bold text-gray-900 transition hover:bg-amber-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400">
-                            Poznaj moją historię
-                            <i class="fa-solid fa-arrow-right text-xs" aria-hidden="true"></i>
-                        </a>
-                    </div>
+                    <a href="{{ url('/' . $aboutFounder->slug) }}"
+                        class="mt-8 inline-flex items-center gap-2 text-sm font-bold text-brand hover:text-brand-dark focus-visible:rounded focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
+                        Poznaj moją historię
+                        <i class="fa-solid fa-arrow-right text-xs" aria-hidden="true"></i>
+                    </a>
                 </div>
 
             </div>
         </section>
 
         @else
-        {{-- ══ WARIANT BEZ ZDJĘCIA: pełnoszeroki pull-quote ══ --}}
-        <section id="sekcja-founder" class="bg-gray-950 py-20 md:py-28">
-            <div class="mx-auto max-w-3xl px-6 text-center">
+        {{-- ══ WARIANT BEZ ZDJĘCIA ══ --}}
+        <section id="sekcja-founder" class="bg-gray-50 px-4 py-16">
+            <div class="mx-auto max-w-3xl text-center">
 
-                <p class="mb-8 text-xs font-bold uppercase tracking-[0.2em] text-amber-400">Słowo od Fundatora</p>
+                <p class="mb-6 text-xs font-bold uppercase tracking-widest text-brand">Słowo od Fundatora</p>
 
                 @if ($founderQuote)
-                    <i class="fa-solid fa-quote-left mb-6 block text-7xl leading-none text-white/8" aria-hidden="true"></i>
-                    <p class="text-2xl italic leading-relaxed text-white/85 md:text-3xl lg:text-4xl">
-                        {{ $founderQuote }}
-                    </p>
+                    <i class="fa-solid fa-quote-left mb-4 block text-5xl leading-none text-brand/15" aria-hidden="true"></i>
+                    <p class="text-xl italic leading-relaxed text-ink/80 md:text-2xl">{{ $founderQuote }}</p>
                 @endif
 
-                <div class="mt-10 flex flex-col items-center gap-1">
-                    <span class="mb-3 block h-px w-12 bg-amber-400/50" aria-hidden="true"></span>
-                    <p class="text-lg font-bold text-white">{{ $aboutFounder->title }}</p>
+                <div class="mt-8 flex flex-col items-center gap-0.5">
+                    <span class="mb-4 block h-px w-10 rounded-full bg-brand/30" aria-hidden="true"></span>
+                    <p class="font-bold text-ink">{{ $aboutFounder->title }}</p>
                     @if (filled($aboutFounder->person_role))
-                        <p class="text-sm font-medium text-white/50">{{ $aboutFounder->person_role }}</p>
+                        <p class="text-sm text-muted">{{ $aboutFounder->person_role }}</p>
                     @endif
                 </div>
 
-                <div class="mt-10">
-                    <a href="{{ url('/' . $aboutFounder->slug) }}"
-                        class="inline-flex items-center gap-2 rounded-full bg-amber-400 px-6 py-2.5 text-sm font-bold text-gray-900 transition hover:bg-amber-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400">
-                        Poznaj moją historię
-                        <i class="fa-solid fa-arrow-right text-xs" aria-hidden="true"></i>
-                    </a>
-                </div>
+                <a href="{{ url('/' . $aboutFounder->slug) }}"
+                    class="mt-8 inline-flex items-center gap-2 text-sm font-bold text-brand hover:text-brand-dark focus-visible:rounded focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
+                    Poznaj moją historię
+                    <i class="fa-solid fa-arrow-right text-xs" aria-hidden="true"></i>
+                </a>
 
             </div>
         </section>
