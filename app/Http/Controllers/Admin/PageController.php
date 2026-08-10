@@ -523,6 +523,9 @@ class PageController extends Controller
             'cooperation_data.forms.*.icon' => ['nullable', 'string', 'max:100'],
             'cooperation_data.forms.*.title' => ['nullable', 'string', 'max:120'],
             'cooperation_data.forms.*.text' => ['nullable', 'string', 'max:600'],
+            'cooperation_data.stats' => ['nullable', 'array'],
+            'cooperation_data.stats.*.value' => ['nullable', 'string', 'max:30'],
+            'cooperation_data.stats.*.label' => ['nullable', 'string', 'max:80'],
             'cooperation_data.cta_heading' => ['nullable', 'string', 'max:200'],
             'cooperation_data.cta_text' => ['nullable', 'string', 'max:600'],
             'cooperation_data.cta_button_label' => ['nullable', 'string', 'max:80'],
@@ -768,12 +771,21 @@ class PageController extends Controller
                     'text'  => trim((string) ($row['text'] ?? '')),
                 ];
             }
+            $stats = [];
+            foreach ((array) ($cd['stats'] ?? []) as $row) {
+                $val = trim((string) ($row['value'] ?? ''));
+                $lbl = trim((string) ($row['label'] ?? ''));
+                if ($val !== '' && $lbl !== '') {
+                    $stats[] = ['value' => $val, 'label' => $lbl];
+                }
+            }
             $data['cooperation_data'] = [
                 'hero_badge'       => trim((string) ($cd['hero_badge'] ?? '')),
                 'hero_subtitle'    => trim((string) ($cd['hero_subtitle'] ?? '')),
                 'hero_cta1_label'  => trim((string) ($cd['hero_cta1_label'] ?? '')),
                 'hero_cta1_url'    => trim((string) ($cd['hero_cta1_url'] ?? '')),
                 'hero_cta2_label'  => trim((string) ($cd['hero_cta2_label'] ?? '')),
+                'stats'            => $stats ?: null,
                 'sectors_heading'  => trim((string) ($cd['sectors_heading'] ?? '')),
                 'sectors_subtitle' => trim((string) ($cd['sectors_subtitle'] ?? '')),
                 'sectors'          => $sectors,

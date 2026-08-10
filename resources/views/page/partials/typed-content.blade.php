@@ -792,38 +792,81 @@
     </section>
     @endif
 
-    {{-- ══ SEKTORY ══ --}}
+    {{-- ══ OŚ KORZYŚCI ══ --}}
     @if (!empty($cdSectors))
-    <section id="dla-firm" class="bg-white py-16" aria-labelledby="sectors-heading">
-        <div class="mx-auto max-w-5xl px-4">
-            <h2 id="sectors-heading" class="mb-2 text-2xl font-bold text-ink md:text-3xl">{{ $cd['sectors_heading'] ?? 'Dlaczego warto z nami współpracować?' }}</h2>
-            @if (filled($cd['sectors_subtitle'] ?? null))
-                <p class="mb-10 max-w-2xl text-muted">{{ $cd['sectors_subtitle'] }}</p>
-            @endif
-            <div class="grid gap-6 sm:grid-cols-2">
-                @foreach ($cdSectors as $sector)
-                    @php $colors = $colorMap[$sector['color'] ?? 'blue'] ?? $colorMap['blue']; @endphp
-                    <article class="flex gap-5 rounded-2xl border {{ $colors['border'] }} bg-white p-6 shadow-sm">
-                        <span class="mt-0.5 flex h-11 w-11 shrink-0 items-center justify-center rounded-xl {{ $colors['bg'] }} {{ $colors['text'] }}" aria-hidden="true">
-                            <i class="{{ $sector['icon'] ?? 'fa-solid fa-circle' }} text-lg"></i>
-                        </span>
-                        <div class="min-w-0">
-                            <h3 class="font-bold text-ink">{{ $sector['title'] ?? '' }}</h3>
-                            @if (filled($sector['text'] ?? null))
-                                <p class="mt-1 text-sm text-muted leading-relaxed">{{ $sector['text'] }}</p>
-                            @endif
-                            @php $tags = array_filter([$sector['tag1'] ?? null, $sector['tag2'] ?? null, $sector['tag3'] ?? null]); @endphp
-                            @if ($tags)
-                                <ul class="mt-3 flex flex-wrap gap-1.5" aria-label="Obszary">
-                                    @foreach ($tags as $tag)
-                                        <li class="rounded-full {{ $colors['pill'] }} px-2.5 py-0.5 text-xs font-medium">{{ $tag }}</li>
-                                    @endforeach
-                                </ul>
-                            @endif
-                        </div>
-                    </article>
-                @endforeach
+    <section id="dla-firm" class="bg-white py-16 md:py-20" aria-labelledby="sectors-heading">
+        <div class="mx-auto max-w-4xl px-4">
+            <div class="mb-14 text-center">
+                <h2 id="sectors-heading" class="text-2xl font-bold text-ink md:text-3xl">{{ $cd['sectors_heading'] ?? 'Dlaczego warto z nami współpracować?' }}</h2>
+                @if (filled($cd['sectors_subtitle'] ?? null))
+                    <p class="mt-3 text-muted">{{ $cd['sectors_subtitle'] }}</p>
+                @endif
             </div>
+
+            {{-- Oś --}}
+            <ol class="relative" aria-label="Korzyści współpracy">
+                {{-- Pionowa linia osi --}}
+                <li class="pointer-events-none absolute inset-y-0 left-1/2 hidden w-px -translate-x-1/2 bg-gray-200 md:block" aria-hidden="true"></li>
+
+                @foreach ($cdSectors as $idx => $sector)
+                    @php
+                        $colors  = $colorMap[$sector['color'] ?? 'blue'] ?? $colorMap['blue'];
+                        $isEven  = $idx % 2 === 0;
+                        $tags    = array_filter([$sector['tag1'] ?? null, $sector['tag2'] ?? null, $sector['tag3'] ?? null]);
+                    @endphp
+                    <li class="relative mb-10 last:mb-0 md:mb-14 md:grid md:grid-cols-2 md:gap-12 md:items-center">
+
+                        {{-- Węzeł osi (tylko desktop) --}}
+                        <span class="pointer-events-none absolute left-1/2 top-6 hidden h-5 w-5 -translate-x-1/2 items-center justify-center rounded-full border-4 border-white {{ $colors['bg'] }} ring-2 ring-gray-200 md:flex" aria-hidden="true"></span>
+
+                        @if ($isEven)
+                            {{-- Lewa strona: karta --}}
+                            <article class="md:pr-8 md:text-right">
+                                <div class="inline-flex flex-col rounded-2xl border {{ $colors['border'] }} bg-white p-6 shadow-sm md:items-end">
+                                    <span class="mb-3 flex h-11 w-11 shrink-0 items-center justify-center rounded-xl {{ $colors['bg'] }} {{ $colors['text'] }}" aria-hidden="true">
+                                        <i class="{{ $sector['icon'] ?? 'fa-solid fa-circle' }} text-lg"></i>
+                                    </span>
+                                    <h3 class="text-lg font-bold text-ink">{{ $sector['title'] ?? '' }}</h3>
+                                    @if (filled($sector['text'] ?? null))
+                                        <p class="mt-1 text-sm text-muted leading-relaxed">{{ $sector['text'] }}</p>
+                                    @endif
+                                    @if ($tags)
+                                        <ul class="mt-3 flex flex-wrap justify-start gap-1.5 md:justify-end" aria-label="Obszary">
+                                            @foreach ($tags as $tag)
+                                                <li class="rounded-full {{ $colors['pill'] }} px-2.5 py-0.5 text-xs font-medium">{{ $tag }}</li>
+                                            @endforeach
+                                        </ul>
+                                    @endif
+                                </div>
+                            </article>
+                            {{-- Prawa strona: pusta (wyrównanie osi) --}}
+                            <div class="hidden md:block"></div>
+                        @else
+                            {{-- Lewa strona: pusta --}}
+                            <div class="hidden md:block"></div>
+                            {{-- Prawa strona: karta --}}
+                            <article class="md:pl-8">
+                                <div class="inline-flex flex-col rounded-2xl border {{ $colors['border'] }} bg-white p-6 shadow-sm">
+                                    <span class="mb-3 flex h-11 w-11 shrink-0 items-center justify-center rounded-xl {{ $colors['bg'] }} {{ $colors['text'] }}" aria-hidden="true">
+                                        <i class="{{ $sector['icon'] ?? 'fa-solid fa-circle' }} text-lg"></i>
+                                    </span>
+                                    <h3 class="text-lg font-bold text-ink">{{ $sector['title'] ?? '' }}</h3>
+                                    @if (filled($sector['text'] ?? null))
+                                        <p class="mt-1 text-sm text-muted leading-relaxed">{{ $sector['text'] }}</p>
+                                    @endif
+                                    @if ($tags)
+                                        <ul class="mt-3 flex flex-wrap gap-1.5" aria-label="Obszary">
+                                            @foreach ($tags as $tag)
+                                                <li class="rounded-full {{ $colors['pill'] }} px-2.5 py-0.5 text-xs font-medium">{{ $tag }}</li>
+                                            @endforeach
+                                        </ul>
+                                    @endif
+                                </div>
+                            </article>
+                        @endif
+                    </li>
+                @endforeach
+            </ol>
         </div>
     </section>
     @endif
