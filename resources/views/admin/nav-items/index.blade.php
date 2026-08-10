@@ -47,19 +47,21 @@
             </button>
         </div>
 
-        <div class="rounded-lg border border-gray-200 bg-white p-2">
-            @forelse ($navItems as $index => $item)
-                @if ($loop->first)
-                    <ul role="tree" aria-label="Struktura menu — {{ \App\Models\NavItem::LOCATIONS[$location] ?? $location }}" class="divide-y divide-gray-100">
-                @endif
-                    @include('admin.nav-items._row', ['item' => $item, 'level' => 1, 'position' => $index + 1, 'setsize' => $navItems->count()])
-                @if ($loop->last)
-                    </ul>
-                @endif
-            @empty
-                <p class="px-4 py-6 text-center text-muted">Brak pozycji menu. Dodaj pierwszą powyżej.</p>
-            @endforelse
-        </div>
+        @forelse ($navItems as $index => $item)
+            @if ($loop->first)
+                <ul role="tree" aria-label="Struktura menu — {{ \App\Models\NavItem::LOCATIONS[$location] ?? $location }}"
+                    class="space-y-2">
+            @endif
+                @include('admin.nav-items._row', ['item' => $item, 'level' => 1, 'position' => $index + 1, 'setsize' => $navItems->count()])
+            @if ($loop->last)
+                </ul>
+            @endif
+        @empty
+            <div class="rounded-lg border border-dashed border-gray-200 py-10 text-center text-muted">
+                <i class="fa-solid fa-bars mb-2 text-2xl text-gray-300" aria-hidden="true"></i>
+                <p class="text-sm">Brak pozycji menu. Dodaj pierwszą powyżej.</p>
+            </div>
+        @endforelse
 
         {{-- ============================ MODAL EDYCJI ============================ --}}
         <div x-show="open" x-cloak class="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto p-4 sm:p-6" style="display: none">
