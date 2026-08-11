@@ -249,6 +249,14 @@
                 </div>
             @endif
 
+            {{-- Podcasty --}}
+            @if ($can('podcasts'))
+                <a href="{{ route('admin.podcasty.index') }}" class="{{ $itemClass('admin.podcasty.*') }}" title="Podcasty">
+                    <i class="fa-solid fa-podcast {{ $iconClass('admin.podcasty.*') }}"></i>
+                    <span class="nav-label flex-1">Podcasty</span>
+                </a>
+            @endif
+
             {{-- Materiały edukacyjne --}}
             @if ($can('materials'))
                 @php $matActive = request()->routeIs(['admin.materialy-edukacyjne.*', 'admin.zapisy-materialy.*']); @endphp
@@ -666,6 +674,75 @@
                     <span class="hidden sm:inline">Szukaj…</span>
                     <kbd class="hidden rounded border border-gray-300 bg-gray-50 px-1.5 text-xs sm:inline">Ctrl K</kbd>
                 </button>
+
+                {{-- Dostępność --}}
+                <div x-data="{ open: false }" class="relative">
+                    <button type="button" @click="open = ! open" :aria-expanded="open.toString()"
+                        class="rounded-lg border border-gray-300 px-3 py-2 text-muted hover:border-brand hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+                        aria-label="Ułatwienia dostępu">
+                        <i class="fa-solid fa-universal-access" aria-hidden="true"></i>
+                    </button>
+                    <div x-show="open" x-cloak @click.outside="open = false" @keydown.escape.window="open = false"
+                        class="absolute right-0 z-50 mt-2 w-64 overflow-hidden rounded-lg border border-gray-200 bg-white shadow-xl"
+                        role="dialog" aria-label="Ułatwienia dostępu">
+                        <div class="border-b border-gray-100 px-4 py-2 text-xs font-bold uppercase tracking-wide text-muted">Ułatwienia dostępu</div>
+
+                        {{-- Rozmiar tekstu --}}
+                        <div class="flex items-center gap-2 border-b border-gray-100 px-4 py-3">
+                            <span class="flex-1 text-sm text-ink">Rozmiar tekstu</span>
+                            <button type="button" data-a11y-font="decrease"
+                                class="flex h-8 w-8 items-center justify-center rounded border border-gray-300 text-sm text-muted hover:border-brand hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+                                aria-label="Zmniejsz tekst">A<sup>−</sup></button>
+                            <button type="button" data-a11y-font="reset"
+                                class="flex h-8 w-8 items-center justify-center rounded border border-gray-300 text-sm text-muted hover:border-brand hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+                                aria-label="Domyślny rozmiar tekstu">A</button>
+                            <button type="button" data-a11y-font="increase"
+                                class="flex h-8 w-8 items-center justify-center rounded border border-gray-300 text-sm text-muted hover:border-brand hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+                                aria-label="Powiększ tekst">A<sup>+</sup></button>
+                        </div>
+
+                        {{-- Tryby kontrastowe --}}
+                        <div class="border-b border-gray-100 px-4 py-3">
+                            <p class="mb-2 text-xs font-semibold text-muted">Kontrast</p>
+                            <div class="flex flex-wrap gap-1.5">
+                                <button type="button" data-a11y-contrast="off"
+                                    class="rounded border border-gray-300 px-2 py-1 text-xs text-muted hover:border-brand hover:text-brand aria-pressed:border-brand aria-pressed:bg-brand-light aria-pressed:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+                                    aria-pressed="false" aria-label="Normalny kontrast">Normalny</button>
+                                <button type="button" data-a11y-contrast="contrast"
+                                    class="rounded border border-gray-300 px-2 py-1 text-xs text-muted hover:border-brand hover:text-brand aria-pressed:border-brand aria-pressed:bg-brand-light aria-pressed:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+                                    aria-pressed="false" aria-label="Wysoki kontrast czarno-biały">Wysoki</button>
+                                <button type="button" data-a11y-contrast="contrast-bw"
+                                    class="rounded border border-gray-300 px-2 py-1 text-xs text-muted hover:border-brand hover:text-brand aria-pressed:border-brand aria-pressed:bg-brand-light aria-pressed:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+                                    aria-pressed="false" aria-label="Kontrast czarno-żółty">Czarno-żółty</button>
+                                <button type="button" data-a11y-contrast="contrast-gray"
+                                    class="rounded border border-gray-300 px-2 py-1 text-xs text-muted hover:border-brand hover:text-brand aria-pressed:border-brand aria-pressed:bg-brand-light aria-pressed:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+                                    aria-pressed="false" aria-label="Skala szarości">Szary</button>
+                            </div>
+                        </div>
+
+                        {{-- Odstępy i czcionka --}}
+                        <div class="flex flex-col gap-1 px-4 py-3">
+                            <button type="button" data-a11y-ls
+                                class="flex items-center gap-3 rounded px-1 py-1.5 text-sm text-ink hover:bg-gray-50 aria-pressed:font-semibold aria-pressed:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+                                aria-pressed="false">
+                                <i class="fa-solid fa-text-width w-4 text-center text-muted" aria-hidden="true"></i>
+                                Zwiększ odstęp liter
+                            </button>
+                            <button type="button" data-a11y-sans
+                                class="flex items-center gap-3 rounded px-1 py-1.5 text-sm text-ink hover:bg-gray-50 aria-pressed:font-semibold aria-pressed:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+                                aria-pressed="false">
+                                <i class="fa-solid fa-font w-4 text-center text-muted" aria-hidden="true"></i>
+                                Czcionka bezszeryfowa
+                            </button>
+                            <button type="button" data-a11y-animations
+                                class="flex items-center gap-3 rounded px-1 py-1.5 text-sm text-ink hover:bg-gray-50 aria-pressed:font-semibold aria-pressed:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+                                aria-pressed="false">
+                                <i class="fa-solid fa-person-running w-4 text-center text-muted" aria-hidden="true"></i>
+                                Wstrzymaj animacje
+                            </button>
+                        </div>
+                    </div>
+                </div>
 
                 @php
                     $notifItems = \App\Support\AdminNotifications::items(auth()->user());
