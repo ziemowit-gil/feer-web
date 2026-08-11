@@ -83,6 +83,14 @@
             </span>
         </label>
 
+        <label class="flex items-start gap-2">
+            <input type="checkbox" name="is_premium" value="1" {{ old('is_premium', $material->is_premium ?? false) ? 'checked' : '' }}
+                class="mt-0.5 rounded border-gray-300 text-brand focus:ring-brand">
+            <span class="text-sm font-bold">Materiał premium (płatny)
+                <span class="block font-normal text-muted">Dostępny tylko dla subskrybentów lub po jednorazowym zakupie.</span>
+            </span>
+        </label>
+
         <div class="flex items-center gap-3 border-t border-gray-100 pt-5">
             <button type="submit" class="rounded bg-brand px-5 py-2 text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">Zapisz</button>
             <a href="{{ route('admin.materialy-edukacyjne.index') }}" class="text-sm text-muted hover:text-brand">Anuluj</a>

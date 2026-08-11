@@ -130,6 +130,7 @@ class EducationalMaterialController extends Controller
         $data['order'] = $data['order'] ?? 0;
         $data['is_published'] = $request->boolean('is_published');
         $data['is_archival'] = $request->boolean('is_archival');
+        $data['is_premium'] = $request->boolean('is_premium');
 
         if ($data['type'] !== 'video') {
             $data['video_url'] = null;

@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Models\EducationalMaterial;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class PayuOrder extends Model
@@ -12,6 +13,7 @@ class PayuOrder extends Model
         'payu_order_id',
         'plan_slug',
         'podcast_id',
+        'material_id',
         'status',
         'amount_grosze',
         'currency',
@@ -34,5 +36,10 @@ class PayuOrder extends Model
     public function podcast(): BelongsTo
     {
         return $this->belongsTo(Podcast::class);
+    }
+
+    public function material(): BelongsTo
+    {
+        return $this->belongsTo(EducationalMaterial::class);
     }
 }

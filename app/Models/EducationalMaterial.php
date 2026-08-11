@@ -19,12 +19,13 @@ class EducationalMaterial extends Model implements HasMedia
     ];
 
     protected $fillable = [
-        'title', 'description', 'target_group', 'type', 'video_url', 'order', 'is_published', 'is_archival',
+        'title', 'description', 'target_group', 'type', 'video_url', 'order', 'is_published', 'is_archival', 'is_premium',
     ];
 
     protected $casts = [
         'is_published' => 'boolean',
         'is_archival' => 'boolean',
+        'is_premium' => 'boolean',
     ];
 
     public function registerMediaCollections(): void

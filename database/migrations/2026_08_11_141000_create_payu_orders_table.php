@@ -14,6 +14,7 @@ return new class extends Migration
             $table->string('payu_order_id')->unique();
             $table->string('plan_slug')->nullable();
             $table->unsignedBigInteger('podcast_id')->nullable();
+            $table->unsignedBigInteger('material_id')->nullable();
             $table->string('status', 32)->default('PENDING');
             $table->unsignedInteger('amount_grosze');
             $table->string('currency', 3)->default('PLN');

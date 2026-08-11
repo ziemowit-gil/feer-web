@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\EducationalMaterial;
 use App\Models\PayuOrder;
 use App\Models\Podcast;
 use App\Models\User;
@@ -17,6 +18,8 @@ class PaymentProcessor
 
         if ($order->podcast_id) {
             $this->processPodcast($user, $order->podcast_id);
+        } elseif ($order->material_id) {
+            $this->processMaterial($user, $order->material_id);
         } elseif ($order->plan_slug) {
             $this->processPlan($user, $order->plan_slug);
         }
@@ -52,6 +55,26 @@ class PaymentProcessor
         Feature::firstOrCreate(
             ['slug' => $slug],
             ['name' => "Podcast: {$podcast->title}", 'type' => 'toggle', 'sort_order' => 100]
+        );
+
+        if (! $user->hasFeature($slug)) {
+            $user->grantFeature($slug);
+        }
+    }
+
+    private function processMaterial(User $user, int $materialId): void
+    {
+        $material = EducationalMaterial::find($materialId);
+        if (! $material) {
+            Log::warning("PaymentProcessor: material not found [{$materialId}]");
+            return;
+        }
+
+        $slug = "material:{$materialId}";
+
+        Feature::firstOrCreate(
+            ['slug' => $slug],
+            ['name' => "Materiał: {$material->title}", 'type' => 'toggle', 'sort_order' => 101]
         );
 
         if (! $user->hasFeature($slug)) {

@@ -20,6 +20,11 @@ class SubscriptionPlansSeeder extends Seeder
             ['name' => 'Pobieranie podcastów', 'type' => 'toggle', 'sort_order' => 2]
         );
 
+        $materialsFeature = Feature::firstOrCreate(
+            ['slug' => 'access-premium-materials'],
+            ['name' => 'Dostęp do materiałów premium', 'type' => 'toggle', 'sort_order' => 3]
+        );
+
         $free = Plan::firstOrCreate(
             ['slug' => 'free'],
             [
@@ -37,7 +42,7 @@ class SubscriptionPlansSeeder extends Seeder
             ['slug' => 'plus'],
             [
                 'name' => 'Plus (miesięczny)',
-                'description' => 'Pełny dostęp do podcastów premium — rozliczenie miesięczne.',
+                'description' => 'Pełny dostęp do podcastów i materiałów premium — rozliczenie miesięczne.',
                 'is_free' => false,
                 'is_active' => true,
                 'billing_period' => 1,
@@ -62,6 +67,9 @@ class SubscriptionPlansSeeder extends Seeder
         foreach ([$plus, $premium] as $plan) {
             if (! $plan->features()->where('slug', 'access-premium-podcasts')->exists()) {
                 $plan->features()->attach($accessFeature->id, ['value' => '0']);
+            }
+            if (! $plan->features()->where('slug', 'access-premium-materials')->exists()) {
+                $plan->features()->attach($materialsFeature->id, ['value' => '0']);
             }
         }
 

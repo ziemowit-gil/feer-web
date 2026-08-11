@@ -1,3 +1,9 @@
+@php
+    $canAccessMaterial = ! $material->is_premium
+        || ($userCanAccessPremium ?? false)
+        || (auth()->user()?->hasFeature("material:{$material->id}") ?? false);
+    $isPremiumLocked = ! $canAccessMaterial;
+@endphp
 <article class="group flex flex-col overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm transition duration-200 hover:-translate-y-1 hover:border-brand/40 hover:shadow-lg">
     {{-- Miniatura --}}
     <div data-thumb-wrap class="relative aspect-video overflow-hidden {{ $material->isVideo() ? 'bg-linear-to-br from-brand to-brand-dark' : 'bg-gray-100' }}">
@@ -32,6 +38,17 @@
                 title="Materiał archiwalny">
                 <i class="fa-solid fa-hourglass-half" aria-hidden="true"></i> z dawien dawna
             </span>
+        @elseif ($material->is_premium)
+            <span class="absolute right-3 top-3 z-20 inline-flex items-center gap-1 rounded-full bg-amber-400 px-2.5 py-1 text-xs font-bold uppercase tracking-wide text-white shadow-sm"
+                title="Materiał płatny">
+                <i class="fa-solid fa-star" aria-hidden="true"></i> Premium
+            </span>
+        @endif
+
+        @if ($isPremiumLocked)
+            <span class="absolute inset-0 z-10 flex items-center justify-center bg-gray-900/40 backdrop-blur-[2px]" aria-hidden="true">
+                <i class="fa-solid fa-lock text-3xl text-white/80"></i>
+            </span>
         @endif
     </div>
 
@@ -40,7 +57,24 @@
         <h2 class="mb-1 text-lg font-bold text-ink">{{ $material->title }}</h2>
         <p class="mb-4 flex-1 text-sm text-muted">{{ $material->description }}</p>
 
-        @if ($material->isVideo() && $material->video_url)
+        @if ($isPremiumLocked)
+            <div class="mt-auto">
+                <p class="mb-2 text-xs font-medium text-amber-700">
+                    <i class="fa-solid fa-lock" aria-hidden="true"></i> Materiał dostępny w subskrypcji Premium.
+                </p>
+                @auth
+                    <a href="{{ route('podcasts.index') }}"
+                        class="inline-flex w-fit items-center gap-2 rounded bg-amber-500 px-4 py-2 text-sm font-bold text-white hover:bg-amber-600 focus-visible:outline-2 focus-visible:outline-amber-500">
+                        Kup dostęp
+                    </a>
+                @else
+                    <a href="{{ route('login') }}"
+                        class="inline-flex w-fit items-center gap-2 rounded bg-brand px-4 py-2 text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-2 focus-visible:outline-brand">
+                        Zaloguj się
+                    </a>
+                @endauth
+            </div>
+        @elseif ($material->isVideo() && $material->video_url)
             <a href="{{ $material->video_url }}" target="_blank" rel="noopener"
                 class="mt-auto inline-flex w-fit items-center gap-2 rounded bg-brand px-4 py-2 text-sm font-bold text-white hover:bg-brand-dark">
                 <i class="fa-solid fa-play" aria-hidden="true"></i> Obejrzyj nagranie
