@@ -247,6 +247,7 @@ class DatabaseSeeder extends Seeder
             AnnualReportSeeder::class,
             EducationalMaterialSeeder::class,
             QuickActionSeeder::class,
+            SubscriptionPlansSeeder::class,
         ]);
     }
 

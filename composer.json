@@ -18,6 +18,7 @@
         "phpoffice/phpword": "^1.4",
         "pragmarx/google2fa-qrcode": "^4.0",
         "predis/predis": "^3.5",
+        "revoltify/subscriptionify": "^1.0",
         "socialiteproviders/microsoft": "^4.10",
         "spatie/browsershot": "^5.4",
         "spatie/laravel-activitylog": "^5.0",

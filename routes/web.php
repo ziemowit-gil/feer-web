@@ -94,6 +94,9 @@ use App\Http\Controllers\Admin\JobOfferController as AdminJobOfferController;
 use App\Http\Controllers\JoinUsController;
 use App\Http\Controllers\CooperationFormController;
 use App\Http\Controllers\Admin\CooperationRequestController as AdminCooperationRequestController;
+use App\Http\Controllers\PodcastController;
+use App\Http\Controllers\PayuWebhookController;
+use App\Http\Controllers\Admin\PodcastController as AdminPodcastController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -170,6 +173,14 @@ Route::get('/subskrypcje/wypisz/{token}', [SubscribeController::class, 'unsubscr
 Route::delete('/subskrypcje/wypisz/{token}', [SubscribeController::class, 'doUnsubscribe'])->name('subskrypcje.do-unsubscribe');
 
 Route::get('/wsparcie', [SupportController::class, 'index'])->name('support.show')->middleware('module:support');
+
+// Podcasty
+Route::get('/podcasty', [PodcastController::class, 'index'])->name('podcasts.index');
+Route::get('/podcasty/{podcast:slug}', [PodcastController::class, 'show'])->name('podcasts.show');
+Route::get('/podcasty/{podcast}/audio', [PodcastController::class, 'stream'])->name('podcasts.stream')->middleware('auth');
+
+// PayU — webhook bez CSRF (przyjmuje JSON od serwera PayU)
+Route::post('/payu/webhook', [PayuWebhookController::class, 'handle'])->name('payu.webhook')->withoutMiddleware([\Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class]);
 
 // BIP: strona główna, rejestr zmian i szczegół dokumentu — kontrolowane przez moduł.
 Route::middleware('module:bip')->group(function () {
@@ -308,6 +319,10 @@ Route::middleware(['auth', 'verified', '2fa'])->prefix(config('app.admin_prefix'
         Route::put('tagi/{tag}', [AdminTagController::class, 'update'])->name('tagi.update');
         Route::delete('tagi/{tag}', [AdminTagController::class, 'destroy'])->name('tagi.destroy');
     });
+
+    Route::resource('podcasty', AdminPodcastController::class)
+        ->parameters(['podcasty' => 'podcast'])
+        ->except('show');
 
     Route::middleware(['module:polls', 'module-access:polls'])->group(function () {
         Route::resource('ankiety', AdminPollController::class)->parameters(['ankiety' => 'poll'])->except('show');

@@ -54,4 +54,13 @@ return [
         'no_sandbox' => env('BROWSERSHOT_NO_SANDBOX', false),
     ],
 
+    'payu' => [
+        'pos_id'     => env('PAYU_POS_ID'),
+        'md5_key'    => env('PAYU_MD5_KEY'),
+        'second_key' => env('PAYU_SECOND_KEY'),
+        'oauth_client_id'     => env('PAYU_OAUTH_CLIENT_ID'),
+        'oauth_client_secret' => env('PAYU_OAUTH_CLIENT_SECRET'),
+        'sandbox'    => env('PAYU_SANDBOX', true),
+    ],
+
 ];
