@@ -8,6 +8,16 @@
                 <button type="button" data-a11y-font="reset" class="flex min-h-6 min-w-6 items-center justify-center rounded border border-gray-300 hover:border-brand hover:text-brand" aria-label="Domyślny rozmiar czcionki">A</button>
                 <button type="button" data-a11y-font="up" class="flex min-h-6 min-w-6 items-center justify-center rounded border border-gray-300 hover:border-brand hover:text-brand" aria-label="Zwiększ czcionkę">A+</button>
             </div>
+            <button type="button" data-a11y-ls
+                class="flex min-h-6 items-center gap-1 hover:text-brand aria-pressed:font-bold aria-pressed:text-brand"
+                aria-pressed="false" aria-label="Rozstrzał liter">
+                <i class="fa-solid fa-text-width" aria-hidden="true"></i> Zwiększ odstęp
+            </button>
+            <button type="button" data-a11y-sans
+                class="flex min-h-6 items-center gap-1 hover:text-brand aria-pressed:font-bold aria-pressed:text-brand"
+                aria-pressed="false" aria-label="Czcionka bezszeryfowa">
+                <i class="fa-solid fa-font" aria-hidden="true"></i> Czcionka
+            </button>
             <div role="group" aria-label="Tryb kontrastowy" class="flex items-center gap-2">
                 <button type="button" data-a11y-contrast="contrast" class="flex min-h-6 items-center gap-1 hover:text-brand aria-pressed:font-bold aria-pressed:text-brand" aria-pressed="false" aria-label="Kontrast klasyczny">
                     <i class="fa-solid fa-circle-half-stroke" aria-hidden="true"></i> Kontrast

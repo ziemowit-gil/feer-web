@@ -216,6 +216,16 @@
                     aria-pressed="false" aria-label="Wyłącz animacje">
                     <i class="fa-solid fa-film" aria-hidden="true"></i>
                 </button>
+                <button type="button" data-a11y-ls
+                    class="flex min-h-9 min-w-9 items-center justify-center rounded border border-gray-200 text-muted hover:border-brand hover:text-brand aria-pressed:border-brand aria-pressed:text-brand"
+                    aria-pressed="false" aria-label="Zwiększ odstęp liter">
+                    <i class="fa-solid fa-text-width" aria-hidden="true"></i>
+                </button>
+                <button type="button" data-a11y-sans
+                    class="flex min-h-9 min-w-9 items-center justify-center rounded border border-gray-200 text-muted hover:border-brand hover:text-brand aria-pressed:border-brand aria-pressed:text-brand"
+                    aria-pressed="false" aria-label="Czcionka bezszeryfowa">
+                    <i class="fa-solid fa-font" aria-hidden="true"></i>
+                </button>
             </div>
         </div>
 

@@ -241,6 +241,51 @@ if (storedFontSize) {
     applyFontSize(parseInt(storedFontSize, 10));
 }
 
+// Rozstrzał liter: '' | 'a11y-ls-1' | 'a11y-ls-2'
+const LS_MODES = ['', 'a11y-ls-1', 'a11y-ls-2'];
+const LS_LABELS = ['Normalny', 'Szeroki', 'Bardzo szeroki'];
+
+function applyLetterSpacing(mode) {
+    LS_MODES.forEach((cls) => { if (cls) document.documentElement.classList.remove(cls); });
+    if (mode) document.documentElement.classList.add(mode);
+    localStorage.setItem('a11y-ls', mode || '');
+    document.querySelectorAll('[data-a11y-ls]').forEach((btn) => {
+        const idx = LS_MODES.indexOf(mode);
+        const next = LS_MODES[(idx + 1) % LS_MODES.length];
+        btn.setAttribute('aria-label', 'Rozstrzał liter: ' + (LS_LABELS[idx] || 'Normalny') + ' → kliknij: ' + LS_LABELS[(idx + 1) % LS_MODES.length]);
+        btn.setAttribute('aria-pressed', String(!!mode));
+    });
+}
+
+const storedLs = localStorage.getItem('a11y-ls') || '';
+if (storedLs) applyLetterSpacing(storedLs);
+
+document.querySelectorAll('[data-a11y-ls]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+        const current = localStorage.getItem('a11y-ls') || '';
+        const idx = LS_MODES.indexOf(current);
+        applyLetterSpacing(LS_MODES[(idx + 1) % LS_MODES.length]);
+    });
+});
+
+// Czcionka bezszeryfowa (systemowa — czytelność dla dyslektyków)
+function applySansFont(active) {
+    document.documentElement.classList.toggle('a11y-sans', active);
+    localStorage.setItem('a11y-sans', active ? '1' : '0');
+    document.querySelectorAll('[data-a11y-sans]').forEach((btn) => {
+        btn.setAttribute('aria-pressed', String(active));
+    });
+}
+
+const storedSans = localStorage.getItem('a11y-sans') === '1';
+if (storedSans) applySansFont(true);
+
+document.querySelectorAll('[data-a11y-sans]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+        applySansFont(!document.documentElement.classList.contains('a11y-sans'));
+    });
+});
+
 // Tryby kontrastowe: '' (brak) | 'contrast' | 'contrast-bw' | 'contrast-gray'
 const CONTRAST_CLASSES = ['contrast', 'contrast-bw', 'contrast-gray'];
 

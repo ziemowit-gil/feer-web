@@ -120,6 +120,16 @@ html {
     font-size: var(--a11y-font-size, 100%);
 }
 
+/* Dostępność: rozstrzał liter (WCAG 1.4.12 Text Spacing). */
+html.a11y-ls-1 * { letter-spacing: 0.05em !important; }
+html.a11y-ls-2 * { letter-spacing: 0.12em !important; }
+
+/* Dostępność: systemowa czcionka bezszeryfowa (czytelniejsza dla dyslektyków). */
+html.a11y-sans,
+html.a11y-sans * {
+    font-family: Arial, Helvetica, 'Liberation Sans', sans-serif !important;
+}
+
 /* Opcja dostępności „Wyłącz animacje” (WCAG 2.3.3 Animation from Interactions).
    Skracamy czas do zera zamiast usuwać animacje przez `none`, aby zdarzenia
    transitionend/animationend nadal się wyzwalały i logika na nich oparta nie
