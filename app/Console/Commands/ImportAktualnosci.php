@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Models\News;
 use App\Models\NewsCategory;
+use App\Models\Redirect;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
@@ -15,11 +16,47 @@ class ImportAktualnosci extends Command
                                 {--skip-images : Nie pobieraj zdjęć (tylko metadane)}
                                 {--force : Nadpisz rekordy o tym samym slugu}';
 
-    protected $description = 'Importuje aktualności z feer-demo.2clicks.pl do News; starsze niż 1 rok oznacza jako archiwalne';
+    protected $description = 'Importuje aktualności z feer-demo.2clicks.pl; starsze niż 1 rok oznacza jako archiwalne';
 
     private const UA          = 'Mozilla/5.0 (compatible; FEER-Importer/1.0; +https://feer.org.pl)';
     private const SOURCE_BASE = 'https://feer-demo.2clicks.pl';
     private const RSS_URL     = 'https://feer-demo.2clicks.pl/rss/aktualnosci_pl.xml?all=true';
+
+    /**
+     * Kategorie tworzone automatycznie (name → slug).
+     * Kolejność w tablicy CATEGORIES_MAP decyduje o priorytecie dopasowania.
+     */
+    private const CATEGORY_DEFS = [
+        'materialy-edukacyjne'  => 'Materiały edukacyjne',
+        'webinary-i-szkolenia'  => 'Webinary i szkolenia',
+        'warsztaty'             => 'Warsztaty',
+        'dla-ngo-i-biznesu'     => 'Dla NGO i biznesu',
+        'komunikaty'            => 'Komunikaty',
+        'ogolne'                => 'Ogólne',
+    ];
+
+    /** Słowa kluczowe tytułu/treści → slug kategorii (pierwsza pasująca wygrywa). */
+    private const CATEGORIES_MAP = [
+        'materialy-edukacyjne' => [
+            'karta pracy', 'karty pracy', 'bezpłatna prezentacja', 'bezpłatne karty',
+            'materiał edukacyjny', 'materiały edukacyjne', 'mini komiks',
+            'ciekawy artykuł',
+        ],
+        'webinary-i-szkolenia' => [
+            'webinar', 'szkolenie', 'bezpłatne szkolenie',
+        ],
+        'warsztaty' => [
+            'warsztaty', 'warsztat',
+        ],
+        'dla-ngo-i-biznesu' => [
+            'ngo', 'dla organizacji', 'canva', 'gtd', 'cyfrowe', 'kompetencji it',
+        ],
+        'komunikaty' => [
+            'komunikat', 'zmiana godzin', 'godziny pracy', 'nieczynny', 'nieczynna',
+            'nie pracujemy', 'przerwa wakacyjna', 'zmiana numeru', 'harmonogram',
+            'odwołanie', 'zmiana', 'poszukujemy', 'dni wolne',
+        ],
+    ];
 
     public function handle(): int
     {
@@ -41,8 +78,7 @@ class ImportAktualnosci extends Command
             return 1;
         }
 
-        $category = $this->findOrCreateCategory($isDry);
-        $this->info(sprintf('Kategoria: %s (id=%s)', $category->name, $category->id ?? '—'));
+        $categories = $isDry ? [] : $this->ensureCategories();
 
         $imported = 0;
         $skipped  = 0;
@@ -60,14 +96,17 @@ class ImportAktualnosci extends Command
                 continue;
             }
 
-            $publishedAt = $this->parseDate($item['pubDate']);
-            $isArchived  = $publishedAt && $publishedAt->lessThan($archiveAt);
-            $content     = $item['content'];
-            $excerpt     = $this->makeExcerpt($content);
+            $publishedAt  = $this->parseDate($item['pubDate']);
+            $isArchived   = $publishedAt && $publishedAt->lessThan($archiveAt);
+            $content      = $item['content'];
+            $excerpt      = $this->makeExcerpt($content);
+            $categorySlug = $this->classifyArticle($item['title'], $content);
+            $categoryId   = $categories[$categorySlug] ?? null;
 
-            $this->line(sprintf('  Data: %s | %s',
+            $this->line(sprintf('  Data: %s | %s | Kategoria: %s',
                 $publishedAt?->format('Y-m-d') ?? '?',
-                $isArchived ? 'ARCHIWALNE' : 'bieżące'
+                $isArchived ? 'ARCHIWALNE' : 'bieżące',
+                $categorySlug
             ));
 
             if ($isDry) {
@@ -76,7 +115,7 @@ class ImportAktualnosci extends Command
             }
 
             $data = [
-                'news_category_id' => $category->id,
+                'news_category_id' => $categoryId,
                 'title'            => $item['title'],
                 'slug'             => $slug,
                 'excerpt'          => $excerpt,
@@ -96,6 +135,17 @@ class ImportAktualnosci extends Command
                 $this->line('  → zapisano.');
             }
 
+            // Przekierowanie: /aktualnosci/stary-slug.html → /aktualnosci/nowy-slug
+            $oldPath = '/aktualnosci/' . ltrim(preg_replace('#^aktualnosci/#', '', $item['link']), '/');
+            $newUrl  = route('news.show', $news);
+            if ($oldPath !== Redirect::normalizePath($newUrl)) {
+                Redirect::firstOrCreate(
+                    ['from_path' => Redirect::normalizePath($oldPath)],
+                    ['to_url' => $newUrl, 'is_active' => true]
+                );
+                $this->line('  → przekierowanie zarejestrowane.');
+            }
+
             if ($item['image_url'] && ! $skipImages && ! $news->getFirstMedia('image')) {
                 $this->line('  Pobieranie zdjęcia…');
                 try {
@@ -112,6 +162,38 @@ class ImportAktualnosci extends Command
         $this->newLine();
         $this->info(sprintf('Gotowe. Zaimportowano/zaktualizowano: %d, pominięto: %d z %d.', $imported, $skipped, $total));
         return 0;
+    }
+
+    /** Zwraca mapę slug → id wszystkich kategorii (tworzy brakujące). */
+    private function ensureCategories(): array
+    {
+        $map = [];
+        $order = 10;
+        foreach (self::CATEGORY_DEFS as $slug => $name) {
+            $cat = NewsCategory::firstOrCreate(
+                ['slug' => $slug],
+                ['name' => $name, 'order' => $order]
+            );
+            $map[$slug] = $cat->id;
+            $order += 10;
+        }
+        return $map;
+    }
+
+    /** Dopasowuje artykuł do kategorii na podstawie tytułu i treści. */
+    private function classifyArticle(string $title, string $content): string
+    {
+        $haystack = mb_strtolower($title . ' ' . strip_tags($content));
+
+        foreach (self::CATEGORIES_MAP as $slug => $keywords) {
+            foreach ($keywords as $kw) {
+                if (str_contains($haystack, $kw)) {
+                    return $slug;
+                }
+            }
+        }
+
+        return 'ogolne';
     }
 
     private function checkConnectivity(): bool
@@ -138,11 +220,9 @@ class ImportAktualnosci extends Command
             return [];
         }
 
-        $xml = $response->body();
-
         $dom = new \DOMDocument();
         libxml_use_internal_errors(true);
-        $dom->loadXML($xml);
+        $dom->loadXML($response->body());
         libxml_clear_errors();
         $xpath = new \DOMXPath($dom);
 
@@ -181,11 +261,9 @@ class ImportAktualnosci extends Command
 
     private function slugFromLink(string $link): string
     {
-        // "aktualnosci/komunikat-zmiana-adresu-do-e-doreczen.html" → "komunikat-zmiana-adresu-do-e-doreczen"
         $path = ltrim($link, '/');
         $path = preg_replace('#^aktualnosci/#', '', $path);
         $path = preg_replace('#\.html$#', '', $path);
-        // Zabezpieczenie na wypadek ukraińskich/cyrylickich slugów
         return Str::slug($path) ?: Str::slug($path, '-', 'pl');
     }
 
@@ -202,26 +280,6 @@ class ImportAktualnosci extends Command
     {
         $text = strip_tags($html);
         $text = preg_replace('/\s+/', ' ', $text);
-        $text = trim($text);
-        return mb_substr($text, 0, 200);
-    }
-
-    private function findOrCreateCategory(bool $isDry): NewsCategory
-    {
-        $cat = NewsCategory::where('slug', 'archiwum')->first();
-
-        if ($cat) {
-            return $cat;
-        }
-
-        if ($isDry) {
-            return new NewsCategory(['id' => null, 'name' => 'Archiwum', 'slug' => 'archiwum']);
-        }
-
-        return NewsCategory::create([
-            'name'  => 'Archiwum',
-            'slug'  => 'archiwum',
-            'order' => 99,
-        ]);
+        return mb_substr(trim($text), 0, 200);
     }
 }

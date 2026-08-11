@@ -39,7 +39,7 @@ class News extends Model implements HasMedia
 
     public function shouldBeSearchable(): bool
     {
-        return (bool) $this->is_published && ! $this->is_archived && ! $this->is_legacy && ! $this->trashed();
+        return (bool) $this->is_published && ! $this->is_archived && ! $this->trashed();
     }
 
     public function revisionFields(): array
@@ -121,8 +121,7 @@ class News extends Model implements HasMedia
     {
         return $query->where('is_published', true)
             ->where('published_at', '<=', now())
-            ->where('is_archived', false)
-            ->where('is_legacy', false);
+            ->where('is_archived', false);
     }
 
     public function registerMediaCollections(): void
