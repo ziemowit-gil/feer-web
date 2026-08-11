@@ -55,7 +55,7 @@ class PodcastController extends Controller
             $podcast->addMediaFromRequest('cover')->toMediaCollection('cover');
         }
 
-        return redirect()->route('admin.podcasts.index')
+        return redirect()->route('admin.podcasty.index')
             ->with('success', 'Podcast „' . $podcast->title . '" został dodany.');
     }
 
@@ -91,7 +91,7 @@ class PodcastController extends Controller
             $podcast->addMediaFromRequest('cover')->toMediaCollection('cover');
         }
 
-        return redirect()->route('admin.podcasts.index')
+        return redirect()->route('admin.podcasty.index')
             ->with('success', 'Podcast „' . $podcast->title . '" został zaktualizowany.');
     }
 
@@ -99,7 +99,16 @@ class PodcastController extends Controller
     {
         $podcast->delete();
 
-        return redirect()->route('admin.podcasts.index')
-            ->with('success', 'Podcast usunięty.');
+        return redirect()->route('admin.podcasty.index')
+            ->with('success', 'Podcast „' . $podcast->title . '" został usunięty.');
+    }
+
+    public function restore(int $id): RedirectResponse
+    {
+        $podcast = Podcast::withTrashed()->findOrFail($id);
+        $podcast->restore();
+
+        return redirect()->route('admin.podcasty.index')
+            ->with('success', 'Podcast „' . $podcast->title . '" został przywrócony.');
     }
 }

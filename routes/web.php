@@ -323,6 +323,7 @@ Route::middleware(['auth', 'verified', '2fa'])->prefix(config('app.admin_prefix'
     Route::resource('podcasty', AdminPodcastController::class)
         ->parameters(['podcasty' => 'podcast'])
         ->except('show');
+    Route::patch('podcasty/{id}/przywroc', [AdminPodcastController::class, 'restore'])->name('podcasty.restore');
 
     Route::middleware(['module:polls', 'module-access:polls'])->group(function () {
         Route::resource('ankiety', AdminPollController::class)->parameters(['ankiety' => 'poll'])->except('show');

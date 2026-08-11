@@ -122,8 +122,8 @@ class User extends Authenticatable implements Subscribable
 
         return match ($this->role) {
             self::ROLE_CONTENT_EDITOR  => true,
-            self::ROLE_COORDINATOR     => in_array($module, ['volunteering', 'jobs', 'events', 'materials'], true),
-            self::ROLE_PR_EDITOR       => in_array($module, ['news', 'blog', 'landing', 'projects', 'polls'], true),
+            self::ROLE_COORDINATOR     => in_array($module, ['volunteering', 'jobs', 'events', 'materials', 'podcasts'], true),
+            self::ROLE_PR_EDITOR       => in_array($module, ['news', 'blog', 'landing', 'projects', 'polls', 'podcasts'], true),
             self::ROLE_BIP_EDITOR_PLUS => in_array($module, ['bip', 'reports'], true),
             self::ROLE_BIP_EDITOR      => $module === 'bip',
             self::ROLE_EDITOR          => $this->group && $this->group->hasModule($module),
