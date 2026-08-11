@@ -53,7 +53,9 @@
 
     {{-- Układ "obok": max-w-5xl, żeby było miejsce na dwie kolumny --}}
     <section class="mx-auto px-4 py-12 {{ $isSide ? 'max-w-5xl' : 'max-w-2xl' }}" x-data="audioPlayer()">
-        @if ($news->is_archived)
+        @if ($news->is_legacy)
+            @include('partials.legacy-notice')
+        @elseif ($news->is_archived)
             @include('partials.archival-notice', ['date' => $news->published_at])
         @endif
 

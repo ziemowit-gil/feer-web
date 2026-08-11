@@ -54,6 +54,7 @@
                                                     {{ $item->category->name }}
                                                 </span>
                                             @endif
+                                            @include('news._legacy-badge')
                                             <time datetime="{{ $item->published_at->toDateString() }}"
                                                 class="text-xs text-muted sm:hidden">
                                                 {{ $item->published_at->format('d.m.Y') }}
@@ -113,14 +114,14 @@
                                 </a>
 
                                 <div class="flex flex-1 flex-col p-4">
-                                    <div class="mb-2 flex items-center justify-between text-xs text-muted">
+                                    <div class="mb-2 flex flex-wrap items-center gap-2 text-xs text-muted">
                                         <span class="flex items-center gap-1">
                                             <i class="fa-regular fa-clock text-brand" aria-hidden="true"></i>
                                             <time datetime="{{ $item->published_at->toDateString() }}">
                                                 {{ $item->published_at->format('d - m - Y') }}
                                             </time>
                                         </span>
-                                        <i class="fa-solid fa-rss opacity-40" aria-hidden="true"></i>
+                                        @include('news._legacy-badge')
                                     </div>
 
                                     <h3 class="mb-2 font-bold leading-snug text-ink">
@@ -182,6 +183,7 @@
                                                     {{ $item->category->name }}
                                                 </span>
                                             @endif
+                                            @include('news._legacy-badge')
                                             <time datetime="{{ $item->published_at->toDateString() }}"
                                                 class="text-xs text-muted">
                                                 {{ $item->published_at->format('d.m.Y') }}
@@ -239,7 +241,10 @@
                                         @endif
                                     </div>
                                 @endif
-                                <div class="text-xs font-medium text-muted">{{ $item->published_at->format('d.m.Y') }}</div>
+                                <div class="flex flex-wrap items-center gap-2 text-xs font-medium text-muted">
+                                    {{ $item->published_at->format('d.m.Y') }}
+                                    @include('news._legacy-badge')
+                                </div>
                                 <h3 class="mt-1 font-bold text-ink group-hover:text-brand">{{ $item->title }}</h3>
                                 @if ($item->excerpt)
                                     <p class="mt-1 text-sm text-muted">{{ $item->excerpt }}</p>
