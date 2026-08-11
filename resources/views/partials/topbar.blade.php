@@ -8,9 +8,17 @@
                 <button type="button" data-a11y-font="reset" class="flex min-h-6 min-w-6 items-center justify-center rounded border border-gray-300 hover:border-brand hover:text-brand" aria-label="Domyślny rozmiar czcionki">A</button>
                 <button type="button" data-a11y-font="up" class="flex min-h-6 min-w-6 items-center justify-center rounded border border-gray-300 hover:border-brand hover:text-brand" aria-label="Zwiększ czcionkę">A+</button>
             </div>
-            <button type="button" data-a11y-contrast class="flex min-h-6 items-center gap-1 hover:text-brand" aria-pressed="false">
-                <i class="fa-solid fa-circle-half-stroke" aria-hidden="true"></i> Wersja kontrastowa
-            </button>
+            <div role="group" aria-label="Tryb kontrastowy" class="flex items-center gap-2">
+                <button type="button" data-a11y-contrast="contrast" class="flex min-h-6 items-center gap-1 hover:text-brand aria-pressed:font-bold aria-pressed:text-brand" aria-pressed="false" aria-label="Kontrast klasyczny">
+                    <i class="fa-solid fa-circle-half-stroke" aria-hidden="true"></i> Kontrast
+                </button>
+                <button type="button" data-a11y-contrast="contrast-bw" class="flex min-h-6 items-center gap-1 hover:text-brand aria-pressed:font-bold aria-pressed:text-brand" aria-pressed="false" aria-label="Kontrast czarno-żółty">
+                    <span class="inline-flex h-4 w-4 items-center justify-center rounded-sm border border-current text-[9px] font-black leading-none" aria-hidden="true" style="background:#000;color:#ff0">A</span> Czarny/żółty
+                </button>
+                <button type="button" data-a11y-contrast="contrast-gray" class="flex min-h-6 items-center gap-1 hover:text-brand aria-pressed:font-bold aria-pressed:text-brand" aria-pressed="false" aria-label="Tryb szary (odcienie szarości)">
+                    <span class="inline-flex h-4 w-4 items-center justify-center rounded-sm border border-current text-[9px] font-black leading-none" aria-hidden="true" style="background:#888;color:#fff">A</span> Szary
+                </button>
+            </div>
             <button type="button" data-a11y-animations class="flex min-h-6 items-center gap-1 hover:text-brand" aria-pressed="false">
                 <i class="fa-solid fa-film" aria-hidden="true"></i> Wyłącz animacje
             </button>

@@ -196,10 +196,20 @@
                         class="flex min-h-9 min-w-9 items-center justify-center rounded-r border border-gray-200 text-sm text-muted hover:border-brand hover:text-brand"
                         aria-label="Zwiększ czcionkę">A+</button>
                 </div>
-                <button type="button" data-a11y-contrast
-                    class="flex min-h-9 min-w-9 items-center justify-center rounded border border-gray-200 text-muted hover:border-brand hover:text-brand"
-                    aria-pressed="false" aria-label="Wersja kontrastowa">
+                <button type="button" data-a11y-contrast="contrast"
+                    class="flex min-h-9 min-w-9 items-center justify-center rounded border border-gray-200 text-muted hover:border-brand hover:text-brand aria-pressed:border-brand aria-pressed:text-brand"
+                    aria-pressed="false" aria-label="Kontrast klasyczny">
                     <i class="fa-solid fa-circle-half-stroke" aria-hidden="true"></i>
+                </button>
+                <button type="button" data-a11y-contrast="contrast-bw"
+                    class="flex min-h-9 min-w-9 items-center justify-center rounded border border-gray-200 text-muted hover:border-brand hover:text-brand aria-pressed:border-brand aria-pressed:text-brand"
+                    aria-pressed="false" aria-label="Kontrast czarno-żółty">
+                    <span class="text-xs font-black leading-none" aria-hidden="true" style="background:#000;color:#ff0;padding:1px 3px;border-radius:2px">A</span>
+                </button>
+                <button type="button" data-a11y-contrast="contrast-gray"
+                    class="flex min-h-9 min-w-9 items-center justify-center rounded border border-gray-200 text-muted hover:border-brand hover:text-brand aria-pressed:border-brand aria-pressed:text-brand"
+                    aria-pressed="false" aria-label="Tryb szary">
+                    <span class="text-xs font-black leading-none" aria-hidden="true" style="background:#888;color:#fff;padding:1px 3px;border-radius:2px">A</span>
                 </button>
                 <button type="button" data-a11y-animations
                     class="flex min-h-9 min-w-9 items-center justify-center rounded border border-gray-200 text-muted hover:border-brand hover:text-brand"

@@ -241,19 +241,39 @@ if (storedFontSize) {
     applyFontSize(parseInt(storedFontSize, 10));
 }
 
-const contrastButton = document.querySelector('[data-a11y-contrast]');
-if (contrastButton) {
-    if (localStorage.getItem('a11y-contrast') === '1') {
-        document.documentElement.classList.add('contrast');
-        contrastButton.setAttribute('aria-pressed', 'true');
-    }
+// Tryby kontrastowe: '' (brak) | 'contrast' | 'contrast-bw' | 'contrast-gray'
+const CONTRAST_CLASSES = ['contrast', 'contrast-bw', 'contrast-gray'];
 
-    contrastButton.addEventListener('click', () => {
-        const isActive = document.documentElement.classList.toggle('contrast');
-        contrastButton.setAttribute('aria-pressed', String(isActive));
-        localStorage.setItem('a11y-contrast', isActive ? '1' : '0');
+function applyContrastMode(mode) {
+    CONTRAST_CLASSES.forEach((cls) => document.documentElement.classList.remove(cls));
+    if (mode) document.documentElement.classList.add(mode);
+    localStorage.setItem('a11y-contrast-mode', mode || '');
+
+    document.querySelectorAll('[data-a11y-contrast]').forEach((btn) => {
+        const btnMode = btn.dataset.a11yContrast || 'contrast';
+        btn.setAttribute('aria-pressed', String(btnMode === mode));
     });
 }
+
+// Migracja ze starego klucza binarnego
+const legacyContrast = localStorage.getItem('a11y-contrast');
+if (legacyContrast === '1') {
+    localStorage.setItem('a11y-contrast-mode', 'contrast');
+    localStorage.removeItem('a11y-contrast');
+} else if (legacyContrast === '0') {
+    localStorage.removeItem('a11y-contrast');
+}
+
+const savedContrastMode = localStorage.getItem('a11y-contrast-mode') || '';
+if (savedContrastMode) applyContrastMode(savedContrastMode);
+
+document.querySelectorAll('[data-a11y-contrast]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+        const btnMode = btn.dataset.a11yContrast || 'contrast';
+        const current = localStorage.getItem('a11y-contrast-mode') || '';
+        applyContrastMode(current === btnMode ? '' : btnMode);
+    });
+});
 
 // Wyłączanie animacji: klasa `no-animations` na <html> zeruje animacje i przejścia
 // (CSS), a zdarzenie `a11y-animations-changed` pozwala też wstrzymać karuzelę hero.

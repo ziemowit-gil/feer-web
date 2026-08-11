@@ -37,6 +37,85 @@ html.contrast img,
 html.contrast video {
     filter: invert(1) hue-rotate(180deg);
 }
+
+/* Kontrast: czarny tło + żółty tekst (WCAG AA dla osób słabowidzących). */
+html.contrast-bw {
+    background: #000 !important;
+}
+html.contrast-bw body,
+html.contrast-bw header,
+html.contrast-bw footer,
+html.contrast-bw main,
+html.contrast-bw nav,
+html.contrast-bw section,
+html.contrast-bw article,
+html.contrast-bw aside,
+html.contrast-bw div,
+html.contrast-bw ul,
+html.contrast-bw ol,
+html.contrast-bw li,
+html.contrast-bw form,
+html.contrast-bw fieldset {
+    background-color: #000 !important;
+    color: #ff0 !important;
+    border-color: #ff0 !important;
+}
+html.contrast-bw p,
+html.contrast-bw span,
+html.contrast-bw h1,
+html.contrast-bw h2,
+html.contrast-bw h3,
+html.contrast-bw h4,
+html.contrast-bw h5,
+html.contrast-bw h6,
+html.contrast-bw label,
+html.contrast-bw td,
+html.contrast-bw th,
+html.contrast-bw caption,
+html.contrast-bw time,
+html.contrast-bw strong,
+html.contrast-bw em {
+    color: #ff0 !important;
+}
+html.contrast-bw a,
+html.contrast-bw a:visited,
+html.contrast-bw a:hover {
+    color: #ff0 !important;
+    text-decoration: underline !important;
+    text-decoration-color: #ff0 !important;
+}
+html.contrast-bw button,
+html.contrast-bw [type='button'],
+html.contrast-bw [type='submit'] {
+    background-color: #000 !important;
+    color: #ff0 !important;
+    border: 2px solid #ff0 !important;
+}
+html.contrast-bw input,
+html.contrast-bw select,
+html.contrast-bw textarea {
+    background-color: #000 !important;
+    color: #ff0 !important;
+    border: 2px solid #ff0 !important;
+}
+html.contrast-bw :focus-visible {
+    outline: 3px solid #ff0 !important;
+    outline-offset: 2px;
+}
+html.contrast-bw img,
+html.contrast-bw video {
+    filter: grayscale(50%) contrast(1.2) !important;
+    border: 2px solid #ff0;
+}
+html.contrast-bw svg {
+    fill: #ff0;
+}
+
+/* Kontrast: odcienie szarości (desaturacja — pomocne przy zaburzeniach percepcji barw). */
+html.contrast-gray {
+    filter: grayscale(100%);
+}
+
 html {
     font-size: var(--a11y-font-size, 100%);
 }
