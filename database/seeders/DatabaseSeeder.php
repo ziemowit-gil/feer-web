@@ -248,6 +248,7 @@ class DatabaseSeeder extends Seeder
             EducationalMaterialSeeder::class,
             QuickActionSeeder::class,
             SubscriptionPlansSeeder::class,
+            JrwaClassSeeder::class,
         ]);
     }
 
