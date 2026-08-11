@@ -23,38 +23,25 @@ class ImportAktualnosci extends Command
     private const RSS_URL     = 'https://feer-demo.2clicks.pl/rss/aktualnosci_pl.xml?all=true';
 
     /**
-     * Kategorie tworzone automatycznie (name → slug).
-     * Kolejność w tablicy CATEGORIES_MAP decyduje o priorytecie dopasowania.
+     * Nowe kategorie tworzone przez importer, gdy nie istnieją.
+     * Istniejące (fundacja, szkolenia) są pobierane z bazy — nie ma ich tu.
      */
-    private const CATEGORY_DEFS = [
-        'materialy-edukacyjne'  => 'Materiały edukacyjne',
-        'webinary-i-szkolenia'  => 'Webinary i szkolenia',
-        'warsztaty'             => 'Warsztaty',
-        'dla-ngo-i-biznesu'     => 'Dla NGO i biznesu',
-        'komunikaty'            => 'Komunikaty',
-        'ogolne'                => 'Ogólne',
+    private const NEW_CATEGORY_DEFS = [
+        'materialy-edukacyjne' => 'Materiały edukacyjne',
     ];
 
-    /** Słowa kluczowe tytułu/treści → slug kategorii (pierwsza pasująca wygrywa). */
+    /**
+     * Słowa kluczowe (w tytule lub treści) → slug kategorii.
+     * Kolejność: od najbardziej szczegółowej do najszerszej.
+     * Brak dopasowania → istniejąca kategoria 'fundacja' (fallback).
+     */
     private const CATEGORIES_MAP = [
         'materialy-edukacyjne' => [
             'karta pracy', 'karty pracy', 'bezpłatna prezentacja', 'bezpłatne karty',
-            'materiał edukacyjny', 'materiały edukacyjne', 'mini komiks',
-            'ciekawy artykuł',
+            'mini komiks', 'ciekawy artykuł', 'materiał edukacyjny',
         ],
-        'webinary-i-szkolenia' => [
-            'webinar', 'szkolenie', 'bezpłatne szkolenie',
-        ],
-        'warsztaty' => [
-            'warsztaty', 'warsztat',
-        ],
-        'dla-ngo-i-biznesu' => [
-            'ngo', 'dla organizacji', 'canva', 'gtd', 'cyfrowe', 'kompetencji it',
-        ],
-        'komunikaty' => [
-            'komunikat', 'zmiana godzin', 'godziny pracy', 'nieczynny', 'nieczynna',
-            'nie pracujemy', 'przerwa wakacyjna', 'zmiana numeru', 'harmonogram',
-            'odwołanie', 'zmiana', 'poszukujemy', 'dni wolne',
+        'szkolenia' => [
+            'webinar', 'szkolenie', 'warsztat', 'canva', 'gtd',
         ],
     ];
 
@@ -164,19 +151,30 @@ class ImportAktualnosci extends Command
         return 0;
     }
 
-    /** Zwraca mapę slug → id wszystkich kategorii (tworzy brakujące). */
+    /**
+     * Zwraca mapę slug → id kategorii.
+     * Istniejące pobiera z bazy; nowe (z NEW_CATEGORY_DEFS) tworzy, jeśli brak.
+     */
     private function ensureCategories(): array
     {
         $map = [];
-        $order = 10;
-        foreach (self::CATEGORY_DEFS as $slug => $name) {
-            $cat = NewsCategory::firstOrCreate(
-                ['slug' => $slug],
-                ['name' => $name, 'order' => $order]
-            );
-            $map[$slug] = $cat->id;
-            $order += 10;
+
+        // Istniejące kategorie — pobieramy wszystkie i indeksujemy po slugu
+        foreach (NewsCategory::all() as $cat) {
+            $map[$cat->slug] = $cat->id;
         }
+
+        // Tworzymy wyłącznie nowe, jeszcze nieistniejące
+        $maxOrder = NewsCategory::max('order') ?? 0;
+        foreach (self::NEW_CATEGORY_DEFS as $slug => $name) {
+            if (! isset($map[$slug])) {
+                $maxOrder += 10;
+                $cat = NewsCategory::create(['name' => $name, 'slug' => $slug, 'order' => $maxOrder]);
+                $map[$slug] = $cat->id;
+                $this->info("  Utworzono kategorię: {$name}");
+            }
+        }
+
         return $map;
     }
 
@@ -193,7 +191,8 @@ class ImportAktualnosci extends Command
             }
         }
 
-        return 'ogolne';
+        // Fallback do istniejącej kategorii ogólnej
+        return 'fundacja';
     }
 
     private function checkConnectivity(): bool
