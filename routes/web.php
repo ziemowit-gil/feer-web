@@ -58,6 +58,7 @@ use App\Http\Controllers\LandingPageController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\MaterialSubscriberController;
 use App\Http\Controllers\MeetingSignupController;
+use App\Http\Controllers\NewsArchiveController;
 use App\Http\Controllers\NewsController;
 use App\Http\Controllers\NewsletterController;
 use App\Http\Controllers\PageController;
@@ -111,6 +112,7 @@ Route::middleware('module:projects')->group(function () {
 
 Route::middleware('module:news')->group(function () {
     Route::get('/aktualnosci', [NewsController::class, 'index'])->name('news.index');
+    Route::get('/archiwum', [NewsArchiveController::class, 'index'])->name('news.archiwum');
     Route::get('/aktualnosci/{news:slug}', [NewsController::class, 'show'])->name('news.show');
     Route::get('/aktualnosci/{news:slug}/pdf', [NewsController::class, 'pdf'])->name('news.pdf');
 });

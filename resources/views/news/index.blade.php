@@ -16,6 +16,15 @@
             <aside class="flex flex-col gap-4 md:sticky md:top-4 md:self-start">
                 <div class="rounded-xl border border-gray-200 bg-white p-3">
                     @include('partials.news-category-picker', ['categories' => $categories, 'active' => $activeCategory, 'baseUrl' => route('news.index')])
+                    <div class="mt-3 border-t border-gray-100 pt-3">
+                        <a href="{{ route('news.archiwum') }}"
+                            class="flex items-center gap-2 rounded px-2 py-1.5 text-sm font-medium text-muted hover:bg-gray-50 hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-brand">
+                            <svg class="h-4 w-4 shrink-0" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="m20.25 7.5-.625 10.632a2.25 2.25 0 0 1-2.247 2.118H6.622a2.25 2.25 0 0 1-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125Z" />
+                            </svg>
+                            Archiwum
+                        </a>
+                    </div>
                 </div>
                 <x-banner-zone name="sidebar" />
             </aside>
