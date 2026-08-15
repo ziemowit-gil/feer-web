@@ -257,6 +257,24 @@
                 </a>
             @endif
 
+            {{-- Kreator formularzy --}}
+            @if ($can('forms'))
+                @php $formsActive = request()->routeIs(['admin.formularze.*']); @endphp
+                <div x-data="{ open: {{ $formsActive ? 'true' : 'false' }} }">
+                    <div class="flex items-center {{ $itemClass('admin.formularze.*') }}">
+                        <a href="{{ route('admin.formularze.index') }}" class="flex min-w-0 flex-1 items-center gap-3" title="Formularze">
+                            <i class="fa-solid fa-wpforms {{ $iconClass('admin.formularze.*') }}"></i>
+                            <span class="nav-label">Formularze</span>
+                        </a>
+                        @php $totalUnread = \App\Models\FormSubmission::whereNull('read_at')->count(); @endphp
+                        @if ($totalUnread > 0)
+                            <span class="nav-label ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-brand px-1 text-[10px] font-bold text-white"
+                                aria-label="{{ $totalUnread }} nowych zgłoszeń">{{ $totalUnread }}</span>
+                        @endif
+                    </div>
+                </div>
+            @endif
+
             {{-- Materiały edukacyjne --}}
             @if ($can('materials'))
                 @php $matActive = request()->routeIs(['admin.materialy-edukacyjne.*', 'admin.zapisy-materialy.*']); @endphp

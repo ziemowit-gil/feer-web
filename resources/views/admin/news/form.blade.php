@@ -22,6 +22,11 @@
                         <span class="ml-1 rounded-full bg-gray-100 px-1.5 py-0.5 text-xs">{{ $news->attachments->count() }}</span>
                     @endif
                 </button>
+                <a href="{{ $news->previewUrl() }}" target="_blank" rel="noopener"
+                    class="-mb-px border-b-2 border-transparent px-4 py-2 text-sm font-bold text-amber-600 hover:text-amber-700"
+                    title="Podgląd aktualności przed publikacją (link ważny 14 dni)">
+                    <i class="fa-solid fa-eye" aria-hidden="true"></i> Podgląd
+                </a>
                 <a href="{{ route('admin.historia.index', ['type' => 'news', 'id' => $news->id]) }}"
                     class="ml-auto -mb-px border-b-2 border-transparent px-4 py-2 text-sm font-bold text-muted hover:text-brand">
                     <i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i> Historia zmian

@@ -97,6 +97,8 @@ use App\Http\Controllers\Admin\CooperationRequestController as AdminCooperationR
 use App\Http\Controllers\PodcastController;
 use App\Http\Controllers\PayuWebhookController;
 use App\Http\Controllers\Admin\PodcastController as AdminPodcastController;
+use App\Http\Controllers\FormController;
+use App\Http\Controllers\Admin\FormularzeController as AdminFormularzeController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -401,6 +403,15 @@ Route::middleware(['auth', 'verified', '2fa'])->prefix(config('app.admin_prefix'
         Route::get('lp/{landing}/zapisy/eksport', [AdminLandingPageController::class, 'exportRegistrations'])->name('lp.registrations.export');
     });
 
+    Route::middleware(['module:forms', 'module-access:forms'])->group(function () {
+        Route::resource('formularze', AdminFormularzeController::class)
+            ->parameters(['formularze' => 'formularz'])
+            ->except('show');
+        Route::get('formularze/{formularz}/zgloszenia', [AdminFormularzeController::class, 'zgloszenia'])->name('formularze.zgloszenia');
+        Route::get('formularze/{formularz}/zgloszenia/eksport', [AdminFormularzeController::class, 'eksportZgloszen'])->name('formularze.zgloszenia.eksport');
+        Route::delete('formularze/{formularz}/zgloszenia/{submission}', [AdminFormularzeController::class, 'destroyZgloszenie'])->name('formularze.zgloszenia.destroy');
+    });
+
     // Blog „Wiem FEER" — gdy moduł włączony, dostępny dla każdego użytkownika
     // panelu (jak multimedia); wyłączenie modułu chowa całą sekcję.
     Route::get('multimedia', [MediaLibraryController::class, 'index'])->name('multimedia.index');
@@ -604,6 +615,12 @@ Route::get('/{parentSlug}/osoba/{personSlug}', [PageController::class, 'showPers
 // Formularz współpracy (musi być przed catch-all /{page:slug}).
 Route::get('/{page:slug}/formularz', [CooperationFormController::class, 'show'])->name('cooperation.form.show')->middleware('module:pages');
 Route::post('/{page:slug}/formularz', [CooperationFormController::class, 'store'])->name('cooperation.form.store')->middleware(['module:pages', 'throttle:5,10']);
+
+// Kreator formularzy — publiczne wyświetlenie i zapis zgłoszenia.
+Route::middleware('module:forms')->group(function () {
+    Route::get('/formularz/{formularz:slug}', [FormController::class, 'show'])->name('formularz.show');
+    Route::post('/formularz/{formularz:slug}', [FormController::class, 'store'])->name('formularz.store')->middleware('throttle:5,10');
+});
 
 // Catch-all for top-level pages (e.g. /fundacja instead of /strona/fundacja).
 // Kept last so every more specific route above always wins; a page whose

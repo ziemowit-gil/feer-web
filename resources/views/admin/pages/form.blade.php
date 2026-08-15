@@ -70,6 +70,11 @@
                     @endif
                 </button>
                 @endif
+                <a href="{{ $page->previewUrl() }}" target="_blank" rel="noopener"
+                    class="rounded-lg px-4 py-2 text-sm font-semibold text-amber-600 transition-all hover:text-amber-700"
+                    title="Podgląd strony przed publikacją (link ważny 14 dni)">
+                    <i class="fa-solid fa-eye" aria-hidden="true"></i> Podgląd
+                </a>
                 <a href="{{ route('admin.historia.index', ['type' => 'page', 'id' => $page->id]) }}"
                     class="ml-auto rounded-lg px-4 py-2 text-sm font-semibold text-gray-400 transition-all hover:text-ink">
                     <i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i> Historia

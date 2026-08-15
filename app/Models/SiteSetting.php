@@ -21,6 +21,7 @@ class SiteSetting extends Model implements HasMedia
         'pages' => 'Podstrony',
         'news' => 'Aktualności',
         'polls' => 'Ankiety',
+        'forms' => 'Kreator formularzy',
         'hero' => 'Slajder (hero)',
         'gallery' => 'Galeria',
         'projects' => 'Projekty',
