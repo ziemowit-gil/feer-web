@@ -84,7 +84,8 @@ class Page extends Model
         'bip_move' => 'Przeniesiono do BIP',
         'internal' => 'Wewnętrzna (dostęp ograniczony)',
         'internal_hub' => 'Strefa współpracownika (wewnętrzny panel: komunikaty i odnośniki)',
-        'links_hub' => 'Strona z kafelkami (publiczne linki do działów)',
+        'links_hub' => 'Strona z kafelkami — metro (publiczne linki do działów)',
+        'tiles_grid' => 'Siatka kafelków (ikony + linki, dowolny układ)',
         'wspolpraca' => 'Współpraca z FEER (partnerstwo, sektory, formy, CTA)',
         'legacy' => 'Prezentacja tego, co było',
         'brand_assets'  => 'Marka — identyfikacja wizualna (pliki do pobrania)',
@@ -197,7 +198,7 @@ class Page extends Model
         'training_manager_name', 'training_manager_title', 'training_ris_number', 'training_bur_number', 'training_extra_info', 'training_bur_note',
         'content_image', 'content_image_alt', 'content_image_width',
         'founder_image', 'founder_image_alt', 'founder_quote',
-        'access_mode', 'access_password', 'hub_hero', 'hub_intro', 'hub_links',
+        'access_mode', 'access_password', 'hub_hero', 'hub_intro', 'hub_links', 'tiles',
         'legacy_name', 'legacy_intro',
         'brand_brandbook_url', 'brand_sections',
         'person_phone', 'person_role', 'person_bio', 'person_email', 'person_social', 'person_member_label', 'person_name_genitive', 'person_department',
@@ -225,6 +226,7 @@ class Page extends Model
         'about_team' => 'array',
         'about_faq_visible' => 'boolean',
         'hub_links' => 'array',
+        'tiles'     => 'array',
         'about_section_order' => 'array',
         'about_partner_ids' => 'array',
         'about_press' => 'array',
@@ -313,6 +315,11 @@ class Page extends Model
     public function isLinksHub(): bool
     {
         return $this->type === 'links_hub';
+    }
+
+    public function isTilesGrid(): bool
+    {
+        return $this->type === 'tiles_grid';
     }
 
     public function isCooperation(): bool

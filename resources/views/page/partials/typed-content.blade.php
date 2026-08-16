@@ -812,6 +812,22 @@
             </ul>
         @endif
     </section>
+    @elseif ($page->isTilesGrid())
+    @php $pageTiles = collect($page->tiles ?? [])->filter(fn ($t) => filled($t['label'] ?? null) && filled($t['url'] ?? null))->values(); @endphp
+
+    <section class="mx-auto max-w-5xl px-4 py-12">
+        <h1 class="mb-6 text-3xl font-bold text-ink">{{ $page->title }}</h1>
+
+        @if ($page->content)
+            <div class="prose mb-8 max-w-none text-ink">@shortcodes($page->content)</div>
+        @endif
+
+        @if ($pageTiles->isNotEmpty())
+            @include('partials._tiles-grid', ['tiles' => $pageTiles, 'label' => $page->title])
+        @else
+            <p class="text-center text-muted">Brak dodanych kafelków. Dodaj je w panelu (edycja strony → Typ i układ → Kafelki).</p>
+        @endif
+    </section>
     @elseif ($page->isCooperation())
     @php
         $cd      = $page->cooperation_data ?? [];

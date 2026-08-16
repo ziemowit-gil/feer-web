@@ -85,6 +85,10 @@
     $activeForms = ($siteSettings->isModuleEnabled('forms'))
         ? \App\Models\FormDefinition::where('is_active', true)->orderBy('title')->get(['id', 'title', 'slug'])
         : collect();
+    $activeTilesGridPages = \App\Models\Page::where('is_published', true)
+        ->where('type', 'tiles_grid')
+        ->orderBy('title')
+        ->get(['id', 'title', 'slug']);
 @endphp
 
 @php $mi = 'flex w-full items-center gap-2 rounded px-3 py-2 text-left text-xs font-bold text-ink hover:bg-brand-light hover:text-brand'; @endphp
@@ -137,6 +141,16 @@
                     <option value="">— wybierz formularz —</option>
                     @foreach ($activeForms as $af)
                         <option value="{{ $af->slug }}">{{ $af->title }}</option>
+                    @endforeach
+                </select>
+            @endif
+            @if ($activeTilesGridPages->isNotEmpty())
+                <hr class="my-1 border-gray-100" role="separator">
+                <label for="{{ $editorId }}-tiles-pick" class="block px-3 pb-1 pt-0.5 text-[0.65rem] font-bold uppercase tracking-wide text-muted">Wstaw siatkę kafelków</label>
+                <select id="{{ $editorId }}-tiles-pick" @change="open = false" class="w-full rounded border-gray-300 px-2 py-1.5 text-xs font-bold text-ink focus:border-brand focus:ring-brand">
+                    <option value="">— wybierz siatkę —</option>
+                    @foreach ($activeTilesGridPages as $tg)
+                        <option value="{{ $tg->slug }}">{{ $tg->title }}</option>
                     @endforeach
                 </select>
             @endif
@@ -1609,6 +1623,19 @@
                         });
                     }
 
+                    var tilesPickSelect = document.getElementById('{{ $editorId }}-tiles-pick');
+                    if (tilesPickSelect) {
+                        tilesPickSelect.addEventListener('change', function () {
+                            if (!this.value) return;
+                            var shortcode = '[kafelki:' + this.value + ']';
+                            var viewFragment = editor.data.processor.toView('<p>' + shortcode + '</p>');
+                            var modelFragment = editor.data.toModel(viewFragment);
+                            editor.model.insertContent(modelFragment);
+                            editor.editing.view.focus();
+                            this.selectedIndex = 0;
+                        });
+                    }
+
                     modal.addEventListener('media-picked', function (event) {
                         var image = event.detail;
                         var html = '<img src="' + image.url + '" alt="' + image.alt.replace(/&/g, '&amp;').replace(/"/g, '&quot;') + '">';
@@ -1702,6 +1729,7 @@
                 var scheduleLinks = {!! json_encode($schedulePages->map(fn ($p) => ['url' => '/'.$p->slug, 'title' => $p->title])->values()) !!};
                 var eventBoxes = {!! json_encode($eventBoxOptions->map(fn ($o) => ['title' => $o['title'], 'html' => $o['html']])->values()) !!};
                 var activeForms = {!! json_encode($activeForms->map(fn ($f) => ['slug' => $f->slug, 'title' => $f->title])->values()) !!};
+                var activeTilesGridPages = {!! json_encode($activeTilesGridPages->map(fn ($p) => ['slug' => $p->slug, 'title' => $p->title])->values()) !!};
                 var newsLinks = {!! json_encode($newsForPicker->map(fn ($n) => ['url' => route('news.show', $n), 'title' => $n->title])->values()) !!};
                 var eventLinks = {!! json_encode($eventsForBox->map(fn ($e) => ['url' => '/wydarzenia/'.$e->slug, 'title' => $e->title])->values()) !!};
                 var personLinks = {!! json_encode($personPages->map(fn ($p) => ['url' => '/'.$p->slug, 'title' => $p->title])->values()) !!};
@@ -1825,6 +1853,14 @@
                                     items.push({ type: 'nestedmenuitem', text: 'Wstaw formularz', getSubmenuItems: function () {
                                         return activeForms.map(function (f) {
                                             return { type: 'menuitem', text: f.title, onAction: function () { editor.insertContent('[formularz:' + f.slug + ']'); } };
+                                        });
+                                    } });
+                                }
+                                if (activeTilesGridPages.length) {
+                                    items.push({ type: 'separator' });
+                                    items.push({ type: 'nestedmenuitem', text: 'Wstaw siatkę kafelków', getSubmenuItems: function () {
+                                        return activeTilesGridPages.map(function (p) {
+                                            return { type: 'menuitem', text: p.title, onAction: function () { editor.insertContent('[kafelki:' + p.slug + ']'); } };
                                         });
                                     } });
                                 }

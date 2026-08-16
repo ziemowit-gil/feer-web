@@ -471,6 +471,14 @@ class PageController extends Controller
             'hub_links.*.url' => ['nullable', 'string', 'max:500'],
             'hub_links.*.description' => ['nullable', 'string', 'max:255'],
             'hub_links.*.icon' => ['nullable', 'string', 'max:100'],
+            'tiles' => ['nullable', 'array'],
+            'tiles.*.label' => ['nullable', 'string', 'max:120'],
+            'tiles.*.url' => ['nullable', 'string', 'max:500'],
+            'tiles.*.icon' => ['nullable', 'string', 'max:100'],
+            'tiles.*.color' => ['nullable', 'regex:/^#[0-9a-fA-F]{6}$/'],
+            'tiles.*.cols' => ['nullable', 'integer', 'in:1,2,3'],
+            'tiles.*.is_negative' => ['nullable', 'boolean'],
+            'tiles.*.strip' => ['nullable', 'boolean'],
             'legacy_name' => ['nullable', 'string', 'max:255'],
             'legacy_intro' => ['nullable', 'string', 'max:2000'],
             'event_mode' => ['nullable', Rule::in(array_keys(Page::EVENT_MODES))],
@@ -773,6 +781,29 @@ class PageController extends Controller
             $data['hub_hero'] = null;
             $data['hub_intro'] = null;
             $data['hub_links'] = null;
+        }
+
+        // Siatka kafelków (tiles_grid): zapisz kafelki z pełnymi polami stylu.
+        if ($data['type'] === 'tiles_grid') {
+            $rawTiles = $request->input('tiles', []);
+            $tiles = [];
+            foreach ((array) $rawTiles as $row) {
+                $label = trim((string) ($row['label'] ?? ''));
+                $url   = trim((string) ($row['url'] ?? ''));
+                if ($label === '' && $url === '') continue;
+                $tiles[] = [
+                    'label'       => $label,
+                    'url'         => $url,
+                    'icon'        => trim((string) ($row['icon'] ?? 'bi-lightning')),
+                    'color'       => filled($row['color'] ?? null) ? trim($row['color']) : null,
+                    'is_negative' => (bool) ($row['is_negative'] ?? false),
+                    'cols'        => (int) ($row['cols'] ?? 1),
+                    'strip'       => (bool) ($row['strip'] ?? false),
+                ];
+            }
+            $data['tiles'] = $tiles ?: null;
+        } else {
+            $data['tiles'] = null;
         }
 
         unset($data['hub_hero_file']);

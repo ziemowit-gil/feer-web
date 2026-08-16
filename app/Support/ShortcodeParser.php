@@ -3,6 +3,7 @@
 namespace App\Support;
 
 use App\Models\FormDefinition;
+use App\Models\Page;
 use Illuminate\Support\Facades\View;
 
 /**
@@ -10,6 +11,7 @@ use Illuminate\Support\Facades\View;
  *
  * Obsługiwane shortcody:
  *   [formularz:slug] — osadza formularz o podanym identyfikatorze
+ *   [kafelki:slug]   — osadza siatkę kafelków ze strony typu tiles_grid
  */
 class ShortcodeParser
 {
@@ -20,11 +22,19 @@ class ShortcodeParser
             return '';
         }
 
-        return preg_replace_callback(
+        $content = preg_replace_callback(
             '/\[formularz:([a-z0-9_\-]+)\]/i',
             fn ($matches) => static::renderForm(trim($matches[1])),
             $content,
         );
+
+        $content = preg_replace_callback(
+            '/\[kafelki:([a-z0-9_\-]+)\]/i',
+            fn ($matches) => static::renderTilesGrid(trim($matches[1])),
+            $content,
+        );
+
+        return $content;
     }
 
     private static function renderForm(string $slug): string
@@ -44,5 +54,33 @@ class ShortcodeParser
         }
 
         return View::make('formularz._embed', ['form' => $form])->render();
+    }
+
+    private static function renderTilesGrid(string $slug): string
+    {
+        static $cache = [];
+
+        if (! isset($cache[$slug])) {
+            $cache[$slug] = Page::where('slug', $slug)
+                ->where('type', 'tiles_grid')
+                ->where('is_published', true)
+                ->first();
+        }
+
+        $page = $cache[$slug];
+
+        if (! $page) {
+            return '';
+        }
+
+        $tiles = collect($page->tiles ?? [])
+            ->filter(fn ($t) => filled($t['label'] ?? null) && filled($t['url'] ?? null))
+            ->values();
+
+        if ($tiles->isEmpty()) {
+            return '';
+        }
+
+        return View::make('partials._tiles-grid', ['tiles' => $tiles, 'label' => $page->title])->render();
     }
 }
