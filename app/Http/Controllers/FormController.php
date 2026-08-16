@@ -7,6 +7,7 @@ use App\Models\FormSubmission;
 use App\Models\SiteSetting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Validator;
 
 class FormController extends Controller
 {
@@ -24,11 +25,19 @@ class FormController extends Controller
     {
         abort_unless($formularz->is_active, 404);
 
-        $request->validate(
+        $validator = Validator::make(
+            $request->all(),
             $formularz->validationRules(),
             [],
             $formularz->validationAttributes(),
         );
+
+        if ($validator->fails()) {
+            return back()
+                ->withErrors($validator)
+                ->withInput()
+                ->with('_form_slug', $formularz->slug);
+        }
 
         $submission = FormSubmission::create([
             'form_definition_id' => $formularz->id,
@@ -45,9 +54,9 @@ class FormController extends Controller
             ? $formularz->settings['confirmation_message']
             : 'Dziękujemy! Twoje zgłoszenie zostało przyjęte.';
 
-        return redirect()
-            ->route('formularz.show', $formularz->slug)
-            ->with('success', $confirmationMessage);
+        return back()
+            ->with('success', $confirmationMessage)
+            ->with('_form_slug', $formularz->slug);
     }
 
     private function sendNotification(FormDefinition $formularz, FormSubmission $submission, string $to): void

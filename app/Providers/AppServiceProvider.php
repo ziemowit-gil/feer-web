@@ -16,6 +16,7 @@ use App\Observers\EventObserver;
 use App\Observers\NewsCategoryObserver;
 use App\Observers\NewsObserver;
 use App\Observers\PageObserver;
+use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\View;
@@ -43,6 +44,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        Blade::directive('shortcodes', fn ($expr) => "<?php echo \\App\\Support\\ShortcodeParser::render($expr); ?>");
+
         Banner::observe(BannerObserver::class);
         News::observe(NewsObserver::class);
         NewsCategory::observe(NewsCategoryObserver::class);

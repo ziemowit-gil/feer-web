@@ -29,7 +29,7 @@
         <section class="mx-auto max-w-5xl px-4 py-12">
             @include('partials.page-content-image')
 
-            <div class="prose max-w-none text-ink">{!! $page->content !!}</div>
+            <div class="prose max-w-none text-ink">@shortcodes($page->content)</div>
 
             @include('partials.page-gallery', ['page' => $page])
 

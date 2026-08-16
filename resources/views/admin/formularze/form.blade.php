@@ -223,11 +223,25 @@
             </div>
         </fieldset>
 
-        {{-- Link do osadzenia --}}
+        {{-- Osadzanie formularza --}}
         @if ($form->exists)
             <div class="rounded-lg border border-blue-200 bg-blue-50 p-4 text-sm">
-                <p class="mb-1 font-bold text-blue-800">Link do formularza</p>
-                <code class="break-all text-blue-700">{{ route('formularz.show', $form->slug) }}</code>
+                <p class="mb-2 font-bold text-blue-800">
+                    <i class="fa-solid fa-code mr-1" aria-hidden="true"></i>
+                    Osadzanie formularza
+                </p>
+                <p class="mb-2 text-blue-700">Wklej shortcode w dowolne miejsce treści strony lub aktualności:</p>
+                <div class="flex items-center gap-2">
+                    <code id="form-shortcode" class="flex-1 rounded bg-white px-3 py-1.5 font-mono text-blue-800 ring-1 ring-blue-200">[formularz:{{ $form->slug }}]</code>
+                    <button type="button"
+                        onclick="navigator.clipboard.writeText('[formularz:{{ $form->slug }}]').then(() => { this.textContent='Skopiowano!'; setTimeout(() => this.textContent='Kopiuj', 2000) })"
+                        class="rounded bg-blue-700 px-3 py-1.5 text-xs font-bold text-white hover:bg-blue-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600">
+                        Kopiuj
+                    </button>
+                </div>
+                <p class="mt-2 text-xs text-blue-600">
+                    Bezpośredni link: <a href="{{ route('formularz.show', $form->slug) }}" target="_blank" rel="noopener" class="underline hover:no-underline">{{ route('formularz.show', $form->slug) }}</a>
+                </p>
             </div>
         @endif
 

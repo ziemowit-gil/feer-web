@@ -49,7 +49,7 @@
 
                     @include('partials.page-content-image')
 
-                    <div class="prose max-w-none text-ink">{!! $page->content !!}</div>
+                    <div class="prose max-w-none text-ink">@shortcodes($page->content)</div>
 
                     @include('partials.page-gallery', ['page' => $page])
 

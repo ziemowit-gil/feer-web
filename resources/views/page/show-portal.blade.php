@@ -55,7 +55,7 @@
             {{-- Lewa: główna treść --}}
             <main>
                 @if ($page->content)
-                    <div class="prose max-w-none text-ink">{!! $page->content !!}</div>
+                    <div class="prose max-w-none text-ink">@shortcodes($page->content)</div>
                 @endif
 
                 @include('partials.page-gallery', ['page' => $page])

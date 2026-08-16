@@ -30,7 +30,7 @@
                     @include('partials.page-content-image')
 
                     @if ($page->content)
-                        <div class="prose max-w-none text-ink">{!! $page->content !!}</div>
+                        <div class="prose max-w-none text-ink">@shortcodes($page->content)</div>
                     @endif
 
                     @if ($page->event_how_to_join)
@@ -113,7 +113,7 @@
                 @include('partials.page-content-image')
 
                 @if ($page->content)
-                    <div class="prose max-w-none text-ink">{!! $page->content !!}</div>
+                    <div class="prose max-w-none text-ink">@shortcodes($page->content)</div>
                 @endif
 
                 @include('partials.schedule', ['page' => $page, 'showHeading' => true])
@@ -234,7 +234,7 @@
                         @if (filled($page->about_intro))
                             <div class="prose prose-lg max-w-none text-ink">{!! nl2br(e($page->about_intro)) !!}</div>
                         @elseif ($page->content)
-                            <div class="prose prose-lg max-w-none text-ink">{!! $page->content !!}</div>
+                            <div class="prose prose-lg max-w-none text-ink">@shortcodes($page->content)</div>
                         @endif
                     </div>
 
@@ -645,7 +645,7 @@
         @include('partials.page-content-image')
 
         @if ($page->content)
-            <div class="prose mb-6 max-w-none text-ink">{!! $page->content !!}</div>
+            <div class="prose mb-6 max-w-none text-ink">@shortcodes($page->content)</div>
         @endif
 
         @include('partials.faq', ['page' => $page, 'faqLdJson' => true])
@@ -666,7 +666,7 @@
             <h1 class="mb-4 text-2xl font-bold text-ink md:text-3xl">{{ $page->title }}</h1>
 
             @if ($page->content)
-                <div class="prose mx-auto mb-6 max-w-none text-ink">{!! $page->content !!}</div>
+                <div class="prose mx-auto mb-6 max-w-none text-ink">@shortcodes($page->content)</div>
             @endif
 
             <p class="mb-6 leading-relaxed text-muted">
@@ -717,7 +717,7 @@
         @include('partials.strefa-tozsamosc')
 
         @if ($page->content)
-            <div class="prose mx-auto mb-10 max-w-none text-ink">{!! $page->content !!}</div>
+            <div class="prose mx-auto mb-10 max-w-none text-ink">@shortcodes($page->content)</div>
         @endif
 
         @isset($szoKomunikaty)
@@ -775,7 +775,7 @@
     {{-- Metro kafelki --}}
     <section class="mx-auto max-w-5xl px-4 py-14" aria-label="{{ $page->title }}">
         @if ($page->content)
-            <div class="prose mx-auto mb-10 max-w-none text-ink">{!! $page->content !!}</div>
+            <div class="prose mx-auto mb-10 max-w-none text-ink">@shortcodes($page->content)</div>
         @endif
 
         @if ($hubLinks->isNotEmpty())
@@ -1161,7 +1161,7 @@
             {{-- Treść i dodatkowe informacje --}}
             @include('partials.page-content-image')
             @if ($page->content)
-                <div class="prose max-w-none text-ink">{!! $page->content !!}</div>
+                <div class="prose max-w-none text-ink">@shortcodes($page->content)</div>
             @endif
 
             @if (filled($page->training_extra_info))
@@ -1186,7 +1186,7 @@
                     </span>
                     <h1 class="text-3xl font-bold text-ink md:text-4xl">{{ $page->title }}</h1>
                     @if ($page->content)
-                        <div class="prose mt-3 max-w-2xl text-muted">{!! $page->content !!}</div>
+                        <div class="prose mt-3 max-w-2xl text-muted">@shortcodes($page->content)</div>
                     @endif
                 </div>
                 <form method="POST" action="{{ route('page.brand-logout', $page) }}" class="flex-none">
@@ -1292,7 +1292,7 @@
     <section class="mx-auto max-w-4xl px-4 py-12">
         @include('partials.page-content-image')
         @if ($page->content)
-            <div class="prose max-w-none text-ink">{!! $page->content !!}</div>
+            <div class="prose max-w-none text-ink">@shortcodes($page->content)</div>
         @endif
         @include('partials.page-gallery', ['page' => $page])
         @include('partials.attachments-list', ['attachments' => $page->attachments])
@@ -1469,7 +1469,7 @@
                     prose-headings:font-bold prose-headings:text-ink
                     prose-p:leading-relaxed prose-p:text-ink/85
                     prose-a:text-brand prose-a:no-underline hover:prose-a:underline">
-                    {!! $page->content !!}
+                    @shortcodes($page->content)
                 </div>
             </div>
         </section>
@@ -1596,7 +1596,7 @@
             <p class="mb-8 text-lg leading-relaxed text-ink">{{ $page->person_bio }}</p>
         @endif
         @if ($page->content)
-            <div class="prose max-w-none text-ink">{!! $page->content !!}</div>
+            <div class="prose max-w-none text-ink">@shortcodes($page->content)</div>
         @endif
         @include('partials.page-gallery', ['page' => $page])
         @include('partials.attachments-list', ['attachments' => $page->attachments])
