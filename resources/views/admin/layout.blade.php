@@ -521,6 +521,10 @@
                                         {{ $tabLabel }}
                                     </a>
                                 @endforeach
+                                <a href="{{ route('admin.ustawienia.env') }}"
+                                    class="block rounded-lg px-3 py-1.5 text-sm {{ request()->routeIs('admin.ustawienia.env*') ? 'bg-brand-light font-semibold text-brand' : 'text-muted hover:bg-gray-100 hover:text-brand' }}">
+                                    <i class="fa-solid fa-file-code mr-1 text-[0.7rem]" aria-hidden="true"></i> Plik .env
+                                </a>
                             </div>
                         </div>
                         {{-- Szablony treści + maili --}}

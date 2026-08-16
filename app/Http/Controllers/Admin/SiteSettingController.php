@@ -589,4 +589,48 @@ class SiteSettingController extends Controller
 
         return redirect()->back()->with('status', "Powiadomienie push wysłane do {$count} subskrybentów.");
     }
+
+    public function envEdit()
+    {
+        $path  = base_path('.env');
+        $lines = file_exists($path) ? file($path, FILE_IGNORE_NEW_LINES) : [];
+
+        return view('admin.settings.env', ['lines' => $lines]);
+    }
+
+    public function envUpdate(Request $request): RedirectResponse
+    {
+        $path = base_path('.env');
+
+        if (! file_exists($path)) {
+            return back()->with('error', 'Plik .env nie istnieje.');
+        }
+
+        $incoming = $request->input('env', []);
+        $raw      = file($path, FILE_IGNORE_NEW_LINES);
+        $output   = [];
+
+        foreach ($raw as $line) {
+            if (preg_match('/^([A-Z0-9_]+)\s*=\s*(.*)/i', $line, $m)) {
+                $key = $m[1];
+                if (array_key_exists($key, $incoming)) {
+                    $val = $incoming[$key];
+                    // Re-quote if value contains spaces or special chars and original was quoted
+                    if (preg_match('/\s/', $val) || str_contains($val, '#')) {
+                        $val = '"' . addcslashes($val, '"\\') . '"';
+                    }
+                    $output[] = $key . '=' . $val;
+                    continue;
+                }
+            }
+            $output[] = $line;
+        }
+
+        file_put_contents($path, implode("\n", $output) . "\n");
+
+        Artisan::call('config:clear');
+        Artisan::call('cache:clear');
+
+        return back()->with('status', 'Plik .env został zaktualizowany. Konfiguracja wyczyszczona.');
+    }
 }

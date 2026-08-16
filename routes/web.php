@@ -456,6 +456,8 @@ Route::middleware(['auth', 'verified', '2fa'])->prefix(config('app.admin_prefix'
         Route::post('ustawienia/strefa-nadpisz', [SiteSettingController::class, 'overwriteStrefa'])->name('strefa.overwrite');
         Route::post('ustawienia/prefix-panelu', [SiteSettingController::class, 'updateAdminPrefix'])->name('ustawienia.prefix');
         Route::get('ustawienia/dev', [SiteSettingController::class, 'dev'])->name('ustawienia.dev');
+        Route::get('ustawienia/env', [SiteSettingController::class, 'envEdit'])->name('ustawienia.env');
+        Route::post('ustawienia/env', [SiteSettingController::class, 'envUpdate'])->name('ustawienia.env.update');
         Route::post('push/wyslij', [SiteSettingController::class, 'sendPush'])->name('push.send');
 
         Route::get('moduly', [AdminModuleController::class, 'index'])->name('moduly.index');
