@@ -25,6 +25,10 @@ class FormController extends Controller
     {
         abort_unless($formularz->is_active, 404);
 
+        if (filled($request->input('website'))) {
+            return back()->with('_form_slug', $formularz->slug);
+        }
+
         $validator = Validator::make(
             $request->all(),
             $formularz->validationRules(),

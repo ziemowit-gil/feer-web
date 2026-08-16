@@ -61,6 +61,7 @@
         novalidate
         class="space-y-5">
         @csrf
+        <input type="text" name="website" value="" tabindex="-1" autocomplete="off" aria-hidden="true" class="hidden" style="display:none!important">
 
         @if (count($fields) > 0)
             <p class="text-xs text-muted">

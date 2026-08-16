@@ -122,11 +122,11 @@ Route::middleware('module:news')->group(function () {
     Route::get('/aktualnosci/{news:slug}/pdf', [NewsController::class, 'pdf'])->name('news.pdf');
 });
 
-Route::post('/ankieta/{poll}/glosuj', [PollVoteController::class, 'store'])->name('polls.vote')->middleware('module:polls');
+Route::post('/ankieta/{poll}/glosuj', [PollVoteController::class, 'store'])->name('polls.vote')->middleware(['module:polls', 'throttle:3,1']);
 
 Route::middleware('module:materials')->group(function () {
     Route::get('/materialy', [EducationalMaterialController::class, 'index'])->name('materials.index');
-    Route::post('/materialy/zapis', [MaterialSubscriberController::class, 'store'])->name('materials.subscribe');
+    Route::post('/materialy/zapis', [MaterialSubscriberController::class, 'store'])->name('materials.subscribe')->middleware('throttle:5,1');
 });
 
 
