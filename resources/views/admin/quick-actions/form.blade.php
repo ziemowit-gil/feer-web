@@ -63,28 +63,57 @@
         </div>
 
         {{-- Styl kafelka --}}
-        <fieldset class="space-y-3 rounded-lg border border-gray-200 p-4">
-            <legend class="px-1 text-sm font-bold text-ink">Styl kafelka</legend>
+        <fieldset class="space-y-4 rounded-lg border border-gray-200 p-4">
+            <legend class="px-1 text-sm font-bold text-ink">Układ kafelka</legend>
 
-            <label class="flex cursor-pointer items-start gap-3">
+            {{-- Szerokość --}}
+            <div>
+                <label class="mb-1.5 block text-sm font-bold">Szerokość <span class="font-normal text-muted">(kolumny)</span></label>
+                <div class="flex gap-2" role="radiogroup" aria-label="Szerokość kafelka">
+                    @foreach ([1 => '1 — wąski', 2 => '2 — połowa', 3 => '3 — cały rząd'] as $val => $lbl)
+                        <label class="flex cursor-pointer items-center gap-1.5 rounded-lg border px-3 py-2 text-sm transition
+                            has-[:checked]:border-brand has-[:checked]:bg-brand-light has-[:checked]:text-brand
+                            border-gray-300 hover:border-brand">
+                            <input type="radio" name="cols" value="{{ $val }}"
+                                {{ (int) old('cols', $quickAction->cols ?? 1) === $val ? 'checked' : '' }}
+                                class="sr-only">
+                            {{ $lbl }}
+                        </label>
+                    @endforeach
+                </div>
+                <p class="mt-1 text-xs text-muted">W siatce 3 kolumn. Na telefonach zawsze 2 kolumny.</p>
+            </div>
+
+            {{-- Układ wewnętrzny --}}
+            <div>
+                <label class="mb-1.5 block text-sm font-bold">Układ wewnętrzny</label>
+                <div class="flex gap-2" role="radiogroup" aria-label="Układ wewnętrzny kafelka">
+                    <label class="flex cursor-pointer items-center gap-1.5 rounded-lg border px-3 py-2 text-sm transition
+                        border-gray-300 hover:border-brand has-[:checked]:border-brand has-[:checked]:bg-brand-light has-[:checked]:text-brand">
+                        <input type="radio" name="strip" value="0"
+                            {{ ! old('strip', $quickAction->strip ?? false) ? 'checked' : '' }}
+                            class="sr-only">
+                        <i class="fa-solid fa-square text-[0.7rem]" aria-hidden="true"></i> Karta (ikona nad tekstem)
+                    </label>
+                    <label class="flex cursor-pointer items-center gap-1.5 rounded-lg border px-3 py-2 text-sm transition
+                        border-gray-300 hover:border-brand has-[:checked]:border-brand has-[:checked]:bg-brand-light has-[:checked]:text-brand">
+                        <input type="radio" name="strip" value="1"
+                            {{ old('strip', $quickAction->strip ?? false) ? 'checked' : '' }}
+                            class="sr-only">
+                        <i class="fa-solid fa-minus text-[0.7rem]" aria-hidden="true"></i> Pasek (ikona obok tekstu)
+                    </label>
+                </div>
+            </div>
+
+            {{-- Negatyw --}}
+            <label class="flex cursor-pointer items-start gap-3 border-t border-gray-100 pt-3">
                 <input type="hidden" name="is_negative" value="0">
                 <input type="checkbox" name="is_negative" value="1"
                     {{ old('is_negative', $quickAction->is_negative ?? false) ? 'checked' : '' }}
                     class="mt-0.5 h-4 w-4 rounded border-gray-300 text-brand focus:ring-brand">
                 <div>
                     <span class="text-sm font-bold text-ink">Negatyw</span>
-                    <p class="text-xs text-muted">Kafelek z wypełnionym kolorem tła (ikona i tekst białe). Wymaga ustawionego koloru akcentu lub użyje koloru marki.</p>
-                </div>
-            </label>
-
-            <label class="flex cursor-pointer items-start gap-3">
-                <input type="hidden" name="wide" value="0">
-                <input type="checkbox" name="wide" value="1"
-                    {{ old('wide', $quickAction->wide ?? false) ? 'checked' : '' }}
-                    class="mt-0.5 h-4 w-4 rounded border-gray-300 text-brand focus:ring-brand">
-                <div>
-                    <span class="text-sm font-bold text-ink">Szeroki (cały rząd)</span>
-                    <p class="text-xs text-muted">Kafelek zajmuje całą szerokość siatki (3 kolumny).</p>
+                    <p class="text-xs text-muted">Wypełnione tło kolorem akcentu, ikona i tekst białe.</p>
                 </div>
             </label>
         </fieldset>

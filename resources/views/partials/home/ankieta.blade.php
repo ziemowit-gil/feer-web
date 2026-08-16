@@ -51,37 +51,66 @@
                             $hasColor  = \App\Support\Color::isValid($link->color);
                             $qa        = $hasColor ? \App\Support\Color::button($link->color) : null;
                             $bgColor   = $hasColor ? $qa['bg'] : 'var(--color-brand)';
-                            $textColor = $hasColor ? $qa['text'] : '#ffffff';
-                            $colSpan   = $link->wide ? 'col-span-2 sm:col-span-3' : '';
+                            $fgColor   = $hasColor ? $qa['text'] : '#ffffff';
+                            $isNeg     = (bool) $link->is_negative;
+                            $isStrip   = (bool) $link->strip;
+                            $colSpan   = $link->colSpanClass();
+
+                            // Klasy bazowe wspólne dla każdego wariantu
+                            $base = 'rounded-lg shadow-sm transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 ' . $colSpan;
                         @endphp
 
-                        @if ($link->is_negative)
-                            {{-- ── Negatyw: wypełniony kolor tła ──────────────────── --}}
+                        @if ($isStrip)
+                            {{-- ════ PASEK: ikona obok tekstu ════════════════════════ --}}
                             <a href="{{ $link->url }}"
-                                class="flex flex-col items-center gap-2 rounded-lg px-4 py-6 text-center shadow-sm transition hover:opacity-90 hover:shadow-md {{ $colSpan }}"
-                                style="background-color: {{ $bgColor }}; color: {{ $textColor }};">
-                                <span class="flex h-14 w-14 flex-none items-center justify-center rounded-full text-2xl"
+                                class="{{ $base }} flex items-center gap-4 px-5 py-4 hover:shadow-md
+                                    @if ($isNeg) hover:opacity-90 @else border-2 border-gray-200 bg-white hover:border-brand @endif"
+                                @if ($isNeg)
+                                    style="background-color: {{ $bgColor }}; color: {{ $fgColor }};"
+                                @endif>
+                                <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-xl"
+                                    @if ($isNeg)
+                                        style="background-color: rgba(255,255,255,0.2);"
+                                    @elseif ($hasColor)
+                                        style="background-color: {{ $bgColor }}; color: {{ $fgColor }};"
+                                    @else
+                                        class="bg-brand-light text-brand"
+                                    @endif>
+                                    <i class="bi {{ $link->icon }}" aria-hidden="true"></i>
+                                </span>
+                                <span class="text-sm font-bold @if (!$isNeg) text-ink @endif">{{ $link->label }}</span>
+                                <i class="fa-solid fa-chevron-right ml-auto text-[0.65rem] opacity-40" aria-hidden="true"></i>
+                            </a>
+
+                        @elseif ($isNeg)
+                            {{-- ════ KARTA NEGATYW: pełne tło kolorem ════════════════ --}}
+                            <a href="{{ $link->url }}"
+                                class="{{ $base }} flex flex-col items-center gap-2 px-4 py-6 text-center hover:opacity-90 hover:shadow-md"
+                                style="background-color: {{ $bgColor }}; color: {{ $fgColor }};">
+                                <span class="flex h-14 w-14 shrink-0 items-center justify-center rounded-full text-2xl"
                                     style="background-color: rgba(255,255,255,0.2);">
                                     <i class="bi {{ $link->icon }}" aria-hidden="true"></i>
                                 </span>
                                 <span class="text-sm font-bold">{{ $link->label }}</span>
                             </a>
+
                         @elseif ($hasColor)
-                            {{-- ── Własny kolor: biały kafelek z kolorową ikoną ───── --}}
+                            {{-- ════ KARTA Z KOLOREM: biały kafelek z kolorową ikoną ═ --}}
                             <a href="{{ $link->url }}"
-                                class="flex flex-col items-center gap-2 rounded-lg border-2 border-gray-200 bg-white px-4 py-6 text-center shadow-sm transition hover:shadow-md {{ $colSpan }}"
-                                onmouseover="this.style.borderColor='{{ $qa['bg'] }}'" onmouseout="this.style.borderColor=''">
-                                <span class="flex h-14 w-14 flex-none items-center justify-center rounded-full text-2xl"
-                                    style="background-color: {{ $qa['bg'] }}; color: {{ $qa['text'] }};">
+                                class="{{ $base }} flex flex-col items-center gap-2 border-2 border-gray-200 bg-white px-4 py-6 text-center hover:shadow-md"
+                                onmouseover="this.style.borderColor='{{ $bgColor }}'" onmouseout="this.style.borderColor=''">
+                                <span class="flex h-14 w-14 shrink-0 items-center justify-center rounded-full text-2xl"
+                                    style="background-color: {{ $bgColor }}; color: {{ $fgColor }};">
                                     <i class="bi {{ $link->icon }}" aria-hidden="true"></i>
                                 </span>
-                                <span class="text-sm font-bold">{{ $link->label }}</span>
+                                <span class="text-sm font-bold text-ink">{{ $link->label }}</span>
                             </a>
+
                         @else
-                            {{-- ── Domyślny: biały kafelek z kolorem marki ─────────── --}}
+                            {{-- ════ KARTA DOMYŚLNA: kolor marki ════════════════════ --}}
                             <a href="{{ $link->url }}"
-                                class="flex flex-col items-center gap-2 rounded-lg border-2 border-gray-200 bg-white px-4 py-6 text-center shadow-sm transition hover:border-brand hover:text-brand hover:shadow-md {{ $colSpan }}">
-                                <span class="flex h-14 w-14 flex-none items-center justify-center rounded-full bg-brand-light text-2xl text-brand">
+                                class="{{ $base }} flex flex-col items-center gap-2 border-2 border-gray-200 bg-white px-4 py-6 text-center hover:border-brand hover:text-brand hover:shadow-md">
+                                <span class="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-brand-light text-2xl text-brand">
                                     <i class="bi {{ $link->icon }}" aria-hidden="true"></i>
                                 </span>
                                 <span class="text-sm font-bold">{{ $link->label }}</span>

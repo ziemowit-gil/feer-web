@@ -68,12 +68,14 @@ class QuickActionController extends Controller
             'order' => ['nullable', 'integer', 'min:0'],
             'color'       => ['nullable', 'regex:/^#[0-9a-fA-F]{6}$/'],
             'is_negative' => ['nullable', 'boolean'],
-            'wide'        => ['nullable', 'boolean'],
+            'cols'        => ['nullable', 'integer', 'in:1,2,3'],
+            'strip'       => ['nullable', 'boolean'],
         ]);
 
         $data['order']       = $data['order'] ?? 0;
         $data['is_negative'] = (bool) ($data['is_negative'] ?? false);
-        $data['wide']        = (bool) ($data['wide'] ?? false);
+        $data['cols']        = (int) ($data['cols'] ?? 1);
+        $data['strip']       = (bool) ($data['strip'] ?? false);
 
         return $data;
     }
