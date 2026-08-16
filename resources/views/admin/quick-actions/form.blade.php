@@ -62,6 +62,33 @@
                 class="w-28 rounded border-gray-300 focus:border-brand focus:ring-brand">
         </div>
 
+        {{-- Styl kafelka --}}
+        <fieldset class="space-y-3 rounded-lg border border-gray-200 p-4">
+            <legend class="px-1 text-sm font-bold text-ink">Styl kafelka</legend>
+
+            <label class="flex cursor-pointer items-start gap-3">
+                <input type="hidden" name="is_negative" value="0">
+                <input type="checkbox" name="is_negative" value="1"
+                    {{ old('is_negative', $quickAction->is_negative ?? false) ? 'checked' : '' }}
+                    class="mt-0.5 h-4 w-4 rounded border-gray-300 text-brand focus:ring-brand">
+                <div>
+                    <span class="text-sm font-bold text-ink">Negatyw</span>
+                    <p class="text-xs text-muted">Kafelek z wypełnionym kolorem tła (ikona i tekst białe). Wymaga ustawionego koloru akcentu lub użyje koloru marki.</p>
+                </div>
+            </label>
+
+            <label class="flex cursor-pointer items-start gap-3">
+                <input type="hidden" name="wide" value="0">
+                <input type="checkbox" name="wide" value="1"
+                    {{ old('wide', $quickAction->wide ?? false) ? 'checked' : '' }}
+                    class="mt-0.5 h-4 w-4 rounded border-gray-300 text-brand focus:ring-brand">
+                <div>
+                    <span class="text-sm font-bold text-ink">Szeroki (cały rząd)</span>
+                    <p class="text-xs text-muted">Kafelek zajmuje całą szerokość siatki (3 kolumny).</p>
+                </div>
+            </label>
+        </fieldset>
+
         <div class="flex items-center gap-3 border-t border-gray-100 pt-5">
             <button type="submit" class="rounded bg-brand px-5 py-2 text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">Zapisz</button>
             <a href="{{ route('admin.szybkie-akcje.index') }}" class="text-sm text-muted hover:text-brand">Anuluj</a>

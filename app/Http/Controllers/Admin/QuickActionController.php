@@ -66,10 +66,14 @@ class QuickActionController extends Controller
             'icon' => ['required', 'string', 'max:100'],
             'url' => ['required', 'string', 'max:255'],
             'order' => ['nullable', 'integer', 'min:0'],
-            'color' => ['nullable', 'regex:/^#[0-9a-fA-F]{6}$/'],
+            'color'       => ['nullable', 'regex:/^#[0-9a-fA-F]{6}$/'],
+            'is_negative' => ['nullable', 'boolean'],
+            'wide'        => ['nullable', 'boolean'],
         ]);
 
-        $data['order'] = $data['order'] ?? 0;
+        $data['order']       = $data['order'] ?? 0;
+        $data['is_negative'] = (bool) ($data['is_negative'] ?? false);
+        $data['wide']        = (bool) ($data['wide'] ?? false);
 
         return $data;
     }
