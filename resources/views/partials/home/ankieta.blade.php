@@ -3,7 +3,7 @@
     $quickLinksHere = ($sidebarActive && $quickLinks->isNotEmpty()) ? collect() : $quickLinks;
 @endphp
 @if ($poll || $quickLinksHere->isNotEmpty())
-<section class="border-t border-gray-100 bg-gray-50">
+<section class="border-t border-gray-100 {{ ($siteSettings->quick_actions_panel_negative ?? false) ? 'bg-white' : 'bg-gray-50' }}">
     <div class="mx-auto max-w-6xl px-4 py-12 {{ $poll ? 'grid gap-10 md:grid-cols-2' : '' }}">
         @if ($poll)
             <div id="ankieta">

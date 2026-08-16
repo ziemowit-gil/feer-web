@@ -175,6 +175,28 @@
             </div>
         </div>
 
+        {{-- Instrukcja aplikowania --}}
+        <div class="rounded-lg border border-gray-200 bg-white p-6">
+            <h2 class="mb-4 text-base font-bold text-ink">Instrukcja wysyłania dokumentów <span class="font-normal text-sm text-muted">(opcjonalnie)</span></h2>
+            <div>
+                <label for="apply_note" class="mb-1 block text-sm font-bold">Dodatkowa informacja dla kandydatów</label>
+                <textarea id="apply_note" name="apply_note" rows="3"
+                    placeholder="np. Prosimy o CV na maila fundacja@feer.org.pl, w temacie proszę wpisać nazwę stanowiska."
+                    class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">{{ old('apply_note', $offer->apply_note) }}</textarea>
+                <p class="mt-1 text-xs text-muted">Tekst ten pojawi się w sekcji „Jak aplikować?" na stronie ogłoszenia.</p>
+            </div>
+            <label class="mt-4 flex cursor-pointer items-start gap-3 border-t border-gray-100 pt-4">
+                <input type="hidden" name="grant_condition" value="0">
+                <input type="checkbox" name="grant_condition" value="1"
+                    {{ old('grant_condition', $offer->grant_condition ?? false) ? 'checked' : '' }}
+                    class="mt-0.5 h-4 w-4 rounded border-gray-300 text-brand focus:ring-brand">
+                <div>
+                    <span class="text-sm font-bold text-ink">Oferta warunkowa (dotacja)</span>
+                    <p class="text-xs text-muted">Na stronie ogłoszenia pojawi się: <em>Oferta ma charakter informacyjny. Związanie ofertą oraz zawarcie umowy warunkowane jest pozyskaniem środków zewnętrznych (dotacji) na realizację zadania.</em></p>
+                </div>
+            </label>
+        </div>
+
         {{-- Publikacja --}}
         <div class="rounded-lg border border-gray-200 bg-white p-6">
             <h2 class="mb-4 text-base font-bold text-ink">Publikacja</h2>

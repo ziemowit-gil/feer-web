@@ -36,7 +36,7 @@ class JobOffer extends Model
         'contract_duration_type', 'contract_duration', 'start_date',
         'duties', 'requirements', 'benefits',
         'contact_name', 'contact_email',
-        'application_url', 'application_cta_label',
+        'application_url', 'application_cta_label', 'apply_note', 'grant_condition',
         'audience', 'is_published', 'closes_at', 'order', 'archived_at',
     ];
 
@@ -45,6 +45,7 @@ class JobOffer extends Model
         'requirements' => 'array',
         'benefits'     => 'array',
         'is_published' => 'boolean',
+        'grant_condition' => 'boolean',
         'closes_at'    => 'date',
         'start_date'   => 'date',
         'archived_at'  => 'datetime',

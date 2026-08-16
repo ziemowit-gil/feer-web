@@ -1714,6 +1714,18 @@
                 </label>
             </div>
 
+            {{-- Sekcja skrótów —- styl tła --}}
+            <div class="mt-6 rounded-lg border border-gray-200 bg-gray-50 p-5">
+                <p class="mb-3 text-sm font-bold text-ink">Sekcja szybkich akcji</p>
+                <label class="flex items-center gap-2 rounded-lg border border-gray-200 bg-white p-3">
+                    <input type="hidden" name="quick_actions_panel_negative" value="0">
+                    <input type="checkbox" name="quick_actions_panel_negative" value="1"
+                        {{ old('quick_actions_panel_negative', $settings->quick_actions_panel_negative ?? false) ? 'checked' : '' }}
+                        class="rounded border-gray-300 text-brand focus:ring-brand">
+                    <span class="text-sm font-bold">Białe tło sekcji <span class="font-normal text-muted">(domyślnie sekcja ma szare tło — zaznacz, aby zmienić na białe)</span></span>
+                </label>
+            </div>
+
             {{-- Kolor sekcji „Szkolenia i wydarzenia" na stronie głównej --}}
             <div class="mt-6 rounded-lg border border-gray-200 bg-gray-50 p-5">
                 <label for="events_home_color_text" class="mb-1 block text-sm font-bold">Kolor sekcji „Szkolenia i wydarzenia"</label>

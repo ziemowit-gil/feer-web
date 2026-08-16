@@ -56,6 +56,8 @@ class JobOfferRequest extends FormRequest
             'contact_email'          => ['nullable', 'email', 'max:255'],
             'application_url'        => ['nullable', 'url', 'max:500'],
             'application_cta_label'  => ['nullable', 'string', 'max:60'],
+            'apply_note'             => ['nullable', 'string', 'max:1000'],
+            'grant_condition'        => ['sometimes', 'boolean'],
             'audience'               => ['required', 'string', 'max:60'],
             'is_published'           => ['sometimes', 'boolean'],
             'closes_at'              => ['nullable', 'date'],

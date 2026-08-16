@@ -232,6 +232,7 @@ class SiteSettingController extends Controller
             'wide_mission_nav_align' => ['nullable', 'in:left,center'],
             'wide_mission_search_in_nav' => ['sometimes', 'boolean'],
             'hero_mission_slide' => ['sometimes', 'boolean'],
+            'quick_actions_panel_negative' => ['sometimes', 'boolean'],
             'wide_mission_sidebar' => ['sometimes', 'boolean'],
             'wide_mission_sidebar_style' => ['nullable', 'in:mission,colored,cards'],
             'wide_mission_nav_style' => ['nullable', 'in:brand_bar,icons_white'],

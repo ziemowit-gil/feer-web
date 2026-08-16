@@ -104,6 +104,15 @@
                 <h2 id="apply-heading" class="flex items-center gap-2 text-xl font-bold text-ink">
                     <i class="fa-solid fa-paper-plane" aria-hidden="true" style="color: var(--accent)"></i> Jak aplikować?
                 </h2>
+                @if ($offer->apply_note)
+                    <p class="mt-3 text-sm text-gray-700">{{ $offer->apply_note }}</p>
+                @endif
+                @if ($offer->grant_condition)
+                    <p class="mt-3 flex items-start gap-2 text-sm text-gray-600">
+                        <i class="fa-solid fa-circle-info mt-0.5 shrink-0" aria-hidden="true" style="color: var(--accent)"></i>
+                        Oferta ma charakter informacyjny. Związanie ofertą oraz zawarcie umowy warunkowane jest pozyskaniem środków zewnętrznych (dotacji) na realizację zadania.
+                    </p>
+                @endif
                 @if ($offer->contact_name || $offer->contact_email)
                     <p class="mt-3 text-sm text-gray-700">
                         <i class="fa-solid fa-user mr-1" aria-hidden="true" style="color: var(--accent)"></i>
