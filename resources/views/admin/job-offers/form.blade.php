@@ -10,6 +10,7 @@
     };
     $dutiesText       = $oldArrayText('duties', $offer->duties);
     $requirementsText = $oldArrayText('requirements', $offer->requirements);
+    $niceToHaveText   = $oldArrayText('nice_to_have', $offer->nice_to_have);
     $benefitsText     = $oldArrayText('benefits', $offer->benefits);
     $action = $offer->exists ? route('admin.praca.update', $offer) : route('admin.praca.store');
 @endphp
@@ -140,6 +141,16 @@
             @error('requirements') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
         </fieldset>
 
+        {{-- Wymagania mile widziane --}}
+        <fieldset class="rounded-lg border border-gray-200 bg-white p-6">
+            <legend class="px-2 text-sm font-bold text-brand">Wymagania mile widziane <span class="font-normal text-muted">(opcjonalnie)</span></legend>
+            <label for="nice_to_have" class="mb-1 block text-xs text-muted">Jedno wymaganie w wierszu — umiejętności dodatkowe, których posiadanie będzie atutem.</label>
+            <textarea id="nice_to_have" name="nice_to_have" rows="4"
+                placeholder="Doświadczenie z czytnikami ekranu&#10;Znajomość języka migowego&#10;Certyfikat IAAP"
+                class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">{{ $niceToHaveText }}</textarea>
+            @error('nice_to_have') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
+        </fieldset>
+
         {{-- Benefity --}}
         <fieldset class="rounded-lg border border-gray-200 bg-white p-6">
             <legend class="px-2 text-sm font-bold text-brand">Co oferujemy <span class="font-normal text-muted">(opcjonalnie)</span></legend>
@@ -185,6 +196,24 @@
                     class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">{{ old('apply_note', $offer->apply_note) }}</textarea>
                 <p class="mt-1 text-xs text-muted">Tekst ten pojawi się w sekcji „Jak aplikować?" na stronie ogłoszenia.</p>
             </div>
+            <div class="mt-4 grid gap-4 border-t border-gray-100 pt-4 sm:grid-cols-2">
+                <div>
+                    <label for="offer_deadline" class="mb-1 block text-sm font-bold">Składanie ofert do <span class="font-normal text-muted">(opcjonalnie)</span></label>
+                    <input type="date" id="offer_deadline" name="offer_deadline"
+                        value="{{ old('offer_deadline', $offer->offer_deadline?->format('Y-m-d')) }}"
+                        class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                    <p class="mt-1 text-xs text-muted">Data graniczna składania dokumentów, wyświetlana na stronie ogłoszenia.</p>
+                </div>
+                <div>
+                    <label for="task_period" class="mb-1 block text-sm font-bold">Realizacja zadania <span class="font-normal text-muted">(opcjonalnie)</span></label>
+                    <input type="text" id="task_period" name="task_period"
+                        value="{{ old('task_period', $offer->task_period) }}"
+                        placeholder="np. od 1 września 2026 lub I kwartał 2027"
+                        class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                    <p class="mt-1 text-xs text-muted">Prawdopodobny okres realizacji zadania, wyświetlany na stronie ogłoszenia.</p>
+                </div>
+            </div>
+
             <label class="mt-4 flex cursor-pointer items-start gap-3 border-t border-gray-100 pt-4">
                 <input type="hidden" name="grant_condition" value="0">
                 <input type="checkbox" name="grant_condition" value="1"
@@ -233,4 +262,18 @@
             <a href="{{ route('admin.praca.index') }}" class="text-sm text-muted hover:text-ink">Anuluj</a>
         </div>
     </form>
+
+    @if ($offer->exists)
+        <div class="mt-8 max-w-3xl">
+            @include('admin.partials.attachments', [
+                'attachments' => $offer->attachments,
+                'storeRoute' => route('admin.praca.pliki.store', $offer),
+            ])
+        </div>
+    @else
+        <p class="mt-4 max-w-3xl text-sm text-muted">
+            <i class="fa-solid fa-circle-info mr-1" aria-hidden="true"></i>
+            Zapisz ogłoszenie, aby móc dodawać pliki do pobrania.
+        </p>
+    @endif
 @endsection

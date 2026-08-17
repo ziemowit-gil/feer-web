@@ -362,6 +362,7 @@ Route::middleware(['auth', 'verified', '2fa'])->prefix(config('app.admin_prefix'
         Route::put('praca/{praca}/przywroc', [AdminJobOfferController::class, 'restore'])->name('praca.restore');
         Route::post('praca/{praca}/klonuj', [AdminJobOfferController::class, 'clone'])->name('praca.klonuj');
         Route::post('praca/zbiorczo', [AdminJobOfferController::class, 'bulk'])->name('praca.bulk');
+        Route::post('praca/{praca}/pliki', [AdminAttachmentController::class, 'storeForJobOffer'])->name('praca.pliki.store');
     });
 
     Route::middleware(['module:events', 'module-access:events'])->group(function () {

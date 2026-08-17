@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
+use App\Models\Attachment;
 
 class JobOffer extends Model
 {
@@ -34,22 +36,30 @@ class JobOffer extends Model
         'title', 'slug', 'lead',
         'job_type', 'mode', 'location', 'salary_range', 'hourly_rate',
         'contract_duration_type', 'contract_duration', 'start_date',
-        'duties', 'requirements', 'benefits',
+        'duties', 'requirements', 'nice_to_have', 'benefits',
         'contact_name', 'contact_email',
         'application_url', 'application_cta_label', 'apply_note', 'grant_condition',
+        'offer_deadline', 'task_period',
         'audience', 'is_published', 'closes_at', 'order', 'archived_at',
     ];
 
     protected $casts = [
-        'duties'       => 'array',
-        'requirements' => 'array',
-        'benefits'     => 'array',
+        'duties'        => 'array',
+        'requirements'  => 'array',
+        'nice_to_have'  => 'array',
+        'benefits'      => 'array',
         'is_published' => 'boolean',
         'grant_condition' => 'boolean',
+        'offer_deadline' => 'date',
         'closes_at'    => 'date',
         'start_date'   => 'date',
         'archived_at'  => 'datetime',
     ];
+
+    public function attachments(): MorphMany
+    {
+        return $this->morphMany(Attachment::class, 'attachable')->orderBy('order');
+    }
 
     public function isUop(): bool
     {

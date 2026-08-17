@@ -37,9 +37,23 @@
                         <dd>{{ $offer->salary_range }}</dd>
                     </div>
                 @endif
-                @if ($offer->closes_at)
+                @if ($offer->offer_deadline)
                     <div class="inline-flex items-center gap-2 rounded-full bg-gray-100 px-3 py-1.5">
                         <i class="fa-solid fa-calendar-day" aria-hidden="true" style="color: var(--accent)"></i>
+                        <dt class="sr-only">Termin składania ofert</dt>
+                        <dd>Składanie ofert do {{ $offer->offer_deadline->locale('pl')->isoFormat('D MMMM YYYY') }}</dd>
+                    </div>
+                @endif
+                @if ($offer->task_period)
+                    <div class="inline-flex items-center gap-2 rounded-full bg-gray-100 px-3 py-1.5">
+                        <i class="fa-solid fa-clock" aria-hidden="true" style="color: var(--accent)"></i>
+                        <dt class="sr-only">Okres realizacji</dt>
+                        <dd>Realizacja prawdopodobnie: {{ $offer->task_period }}</dd>
+                    </div>
+                @endif
+                @if ($offer->closes_at)
+                    <div class="inline-flex items-center gap-2 rounded-full bg-gray-100 px-3 py-1.5">
+                        <i class="fa-solid fa-calendar-xmark" aria-hidden="true" style="color: var(--accent)"></i>
                         <dt class="sr-only">Termin aplikacji</dt>
                         <dd>Aplikuj do {{ $offer->closes_at->locale('pl')->isoFormat('D MMMM YYYY') }}</dd>
                     </div>
@@ -84,6 +98,22 @@
                 </ul>
             </section>
 
+            @if (!empty($offer->nice_to_have))
+                <section aria-labelledby="nice-heading">
+                    <h2 id="nice-heading" class="flex items-center gap-2 text-xl font-bold text-ink">
+                        <i class="fa-solid fa-circle-plus" aria-hidden="true" style="color: var(--accent)"></i> Wymagania mile widziane
+                    </h2>
+                    <ul class="mt-3 space-y-1.5">
+                        @foreach ($offer->nice_to_have as $item)
+                            <li class="flex gap-2 text-gray-700">
+                                <i class="fa-solid fa-circle-dot mt-1.5 shrink-0 text-[8px]" aria-hidden="true" style="color: var(--accent)"></i>
+                                <span>{{ $item }}</span>
+                            </li>
+                        @endforeach
+                    </ul>
+                </section>
+            @endif
+
             @if (!empty($offer->benefits))
                 <section aria-labelledby="benefits-heading">
                     <h2 id="benefits-heading" class="flex items-center gap-2 text-xl font-bold text-ink">
@@ -92,7 +122,7 @@
                     <ul class="mt-3 grid gap-2 sm:grid-cols-2">
                         @foreach ($offer->benefits as $benefit)
                             <li class="flex gap-2 rounded-lg bg-gray-50 p-3 text-gray-700">
-                                <i class="fa-solid fa-star mt-0.5 shrink-0" aria-hidden="true" style="color: var(--accent)"></i>
+                                <i class="fa-solid fa-check mt-0.5 shrink-0" aria-hidden="true" style="color: var(--accent)"></i>
                                 <span>{{ $benefit }}</span>
                             </li>
                         @endforeach
@@ -131,6 +161,15 @@
                     </a>
                 @endif
             </section>
+
+            @if ($offer->attachments->isNotEmpty())
+                <section aria-labelledby="attachments-heading" class="border-t border-gray-100 pt-6">
+                    <h2 id="attachments-heading" class="mb-4 flex items-center gap-2 text-xl font-bold text-ink">
+                        <i class="fa-solid fa-paperclip" aria-hidden="true" style="color: var(--accent)"></i> Materiały do pobrania
+                    </h2>
+                    @include('partials.attachments-list', ['attachments' => $offer->attachments])
+                </section>
+            @endif
         </div>
     </article>
 @endsection

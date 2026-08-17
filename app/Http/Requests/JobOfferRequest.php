@@ -16,9 +16,10 @@ class JobOfferRequest extends FormRequest
     protected function prepareForValidation(): void
     {
         $this->merge([
-            'duties'       => $this->linesToArray($this->input('duties')),
-            'requirements' => $this->linesToArray($this->input('requirements')),
-            'benefits'     => $this->linesToArray($this->input('benefits')),
+            'duties'        => $this->linesToArray($this->input('duties')),
+            'requirements'  => $this->linesToArray($this->input('requirements')),
+            'nice_to_have'  => $this->linesToArray($this->input('nice_to_have')),
+            'benefits'      => $this->linesToArray($this->input('benefits')),
         ]);
     }
 
@@ -50,6 +51,8 @@ class JobOfferRequest extends FormRequest
             'duties.*'               => ['required', 'string', 'max:300'],
             'requirements'           => ['required', 'array', 'min:1'],
             'requirements.*'         => ['required', 'string', 'max:300'],
+            'nice_to_have'           => ['nullable', 'array'],
+            'nice_to_have.*'         => ['required', 'string', 'max:300'],
             'benefits'               => ['nullable', 'array'],
             'benefits.*'             => ['required', 'string', 'max:300'],
             'contact_name'           => ['nullable', 'string', 'max:255'],
@@ -58,6 +61,8 @@ class JobOfferRequest extends FormRequest
             'application_cta_label'  => ['nullable', 'string', 'max:60'],
             'apply_note'             => ['nullable', 'string', 'max:1000'],
             'grant_condition'        => ['sometimes', 'boolean'],
+            'offer_deadline'         => ['nullable', 'date'],
+            'task_period'            => ['nullable', 'string', 'max:255'],
             'audience'               => ['required', 'string', 'max:60'],
             'is_published'           => ['sometimes', 'boolean'],
             'closes_at'              => ['nullable', 'date'],

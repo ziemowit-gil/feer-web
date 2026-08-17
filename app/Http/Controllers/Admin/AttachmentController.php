@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Attachment;
+use App\Models\JobOffer;
 use App\Models\News;
 use App\Models\Page;
 use Illuminate\Http\Request;
@@ -33,6 +34,14 @@ class AttachmentController extends Controller
         $this->storeFor($request, $news);
 
         return redirect()->route('admin.newsy.edit', $news)->with('status', 'Plik został dodany.');
+    }
+
+    /** Dodaje załącznik do ogłoszenia o pracę. */
+    public function storeForJobOffer(Request $request, JobOffer $praca)
+    {
+        $this->storeFor($request, $praca);
+
+        return redirect()->route('admin.praca.edit', $praca)->with('status', 'Plik został dodany.');
     }
 
     /**
@@ -71,7 +80,7 @@ class AttachmentController extends Controller
         return redirect()->back()->with('status', 'Plik został usunięty.');
     }
 
-    private function storeFor(Request $request, Page|News $attachable, int $maxKb = 10240): void
+    private function storeFor(Request $request, Page|News|JobOffer $attachable, int $maxKb = 10240): void
     {
         $data = $request->validate([
             'label' => ['required', 'string', 'max:255'],
