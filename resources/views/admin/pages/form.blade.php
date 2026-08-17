@@ -2116,10 +2116,10 @@
             // --- Form tabs -------------------------------------------------
             const wrap = document.querySelector('[data-page-form-tabs]');
             if (!wrap) return;
-            const buttons = Array.prototype.slice.call(wrap.querySelectorAll('[data-ftab-btn]'));
-            const panels = Array.prototype.slice.call(wrap.querySelectorAll('[data-ftab-panel]'));
+            const buttons = Array.prototype.slice.call(document.querySelectorAll('[data-ftab-btn]'));
+            const panels = Array.prototype.slice.call(document.querySelectorAll('[data-ftab-panel]'));
 
-            const mainFormActions = wrap.querySelector('[data-main-form-actions]');
+            const mainFormActions = document.querySelector('[data-main-form-actions]');
             const externalTabs = ['pliki', 'galeria', 'etr'];
 
             function activate(key) {
