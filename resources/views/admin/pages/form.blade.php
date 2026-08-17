@@ -911,10 +911,11 @@
 
                     {{-- Siatka kafelków --}}
                     @php $tilesRows = array_values((array) old('tiles', $page->tiles ?? [])); @endphp
-                    <div data-tiles-fields class="space-y-5 border-t border-gray-100 pt-5 {{ $currentType === 'tiles_grid' ? '' : 'hidden' }}">
+                    <div data-tiles-fields class="space-y-5 border-t border-gray-100 pt-5">
                         <p class="text-sm font-bold uppercase tracking-wide text-muted">Kafelki</p>
                         <p class="rounded border border-blue-200 bg-blue-50 px-3 py-2 text-xs text-blue-800">
                             Każdy kafelek to link z ikoną Bootstrap Icons (<code>bi-*</code>). Ustaw szerokość i układ indywidualnie dla każdego kafelka.
+                            Dla typu <strong>Siatka kafelków</strong> kafelki stanowią główną treść strony; dla innych typów wyświetlają się jako dodatkowa sekcja pod treścią.
                         </p>
 
                         <div data-repeater>
@@ -1832,7 +1833,7 @@
                 @include('admin.partials.seo-fields', ['model' => $page])
             </div>
 
-            <div class="flex items-center gap-3">
+            <div class="flex items-center gap-3" data-main-form-actions>
                 <button type="submit" class="rounded bg-brand px-5 py-2 text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">Zapisz</button>
                 @if ($isPersonForm)
                     <a href="{{ route('admin.osoby.index') }}" class="text-sm text-muted hover:text-brand">Anuluj</a>
@@ -1942,7 +1943,7 @@
                     if (brandFields) brandFields.classList.toggle('hidden', typeSelect.value !== 'brand_assets');
                     if (aboutPersonFields) aboutPersonFields.classList.toggle('hidden', typeSelect.value !== 'about_person');
                     if (cooperationFields) cooperationFields.classList.toggle('hidden', typeSelect.value !== 'wspolpraca');
-                    if (tilesFields) tilesFields.classList.toggle('hidden', typeSelect.value !== 'tiles_grid');
+                    // Kafelki dostępne dla każdego typu strony
                     if (contentField) contentField.classList.toggle('hidden', ['about', 'bip_move', 'wspolpraca'].includes(typeSelect.value));
                     document.querySelectorAll('[data-wspolpraca-tab]').forEach(function (btn) {
                         const isWspolpraca = typeSelect.value === 'wspolpraca';
@@ -2118,6 +2119,9 @@
             const buttons = Array.prototype.slice.call(wrap.querySelectorAll('[data-ftab-btn]'));
             const panels = Array.prototype.slice.call(wrap.querySelectorAll('[data-ftab-panel]'));
 
+            const mainFormActions = wrap.querySelector('[data-main-form-actions]');
+            const externalTabs = ['pliki', 'galeria', 'etr'];
+
             function activate(key) {
                 buttons.forEach(function (b) {
                     const active = b.dataset.ftabBtn === key;
@@ -2130,6 +2134,9 @@
                 panels.forEach(function (p) {
                     p.classList.toggle('hidden', p.dataset.ftabPanel !== key);
                 });
+                if (mainFormActions) {
+                    mainFormActions.classList.toggle('hidden', externalTabs.includes(key));
+                }
                 // A rich editor initialised inside a hidden panel can render
                 // blank; toggling it re-lays it out once its tab is visible.
                 const shown = panels.find(function (p) { return p.dataset.ftabPanel === key; });
