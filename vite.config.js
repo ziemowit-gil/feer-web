@@ -72,8 +72,9 @@ export default defineConfig({
     ],
 
     build: {
-        // Terser zamiast esbuild jako minifier (na produkcji obsługiwany przez plugin powyżej).
-        minify: isProd ? 'terser' : 'esbuild',
+        // Vite 8 używa rolldown — domyślna minifikacja wbudowana.
+        // Terser jako dodatkowy pass (plugin powyżej) działa niezależnie.
+        minify: isProd ? 'rolldown-minify' : false,
     },
 
     server: {

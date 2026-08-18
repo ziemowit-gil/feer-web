@@ -19,11 +19,16 @@
         <meta property="og:image" content="{{ $ogImage }}">
     @endif
 
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    {{-- Czcionki Google Fonts: ładowane nieblokująco (preload + onload swap). --}}
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;700&family=Montserrat:wght@400;700&family=Pacifico&family=Lato:wght@700&display=swap">
+    <link rel="preload" as="style"
+          href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;700&family=Montserrat:wght@400;700&family=Pacifico&family=Lato:wght@700&display=swap"
+          onload="this.onload=null;this.rel='stylesheet'">
+    <noscript>
+        <link rel="stylesheet"
+              href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;700&family=Montserrat:wght@400;700&family=Pacifico&family=Lato:wght@700&display=swap">
+    </noscript>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @php $brandPalette = $siteSettings->brandPalette($brandColor ?? null); @endphp
     <style>
