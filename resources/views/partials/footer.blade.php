@@ -3,6 +3,12 @@
     $footerNavItems ??= collect();
 @endphp
 
+@if (($siteSettings->site_template ?? 'default') === 'municipality')
+    @include('templates.municipality.partials.footer')
+@elseif (($siteSettings->site_template ?? 'default') === 'ngo')
+    @include('templates.ngo.partials.footer')
+@else
+
 <footer>
     @if ($partners->isNotEmpty())
         <div class="mx-auto max-w-6xl px-4 py-8" role="region" aria-label="Partnerzy i systemy powiązane">
@@ -100,3 +106,5 @@
         </a>
     </div>
 </footer>
+
+@endif

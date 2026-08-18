@@ -100,7 +100,7 @@
             $pagesRoutes      = ['admin.podstrony.*', 'admin.pozycje-menu.*', 'admin.os-czasu.*', 'admin.wspolpraca-zgloszenia.*'];
             $appearanceRoutes = ['admin.hero.*', 'admin.galeria.*', 'admin.szybkie-akcje.*', 'admin.partnerzy.*'];
             $marketingRoutes  = ['admin.banery.*', 'admin.strefy-bannerow.*', 'admin.newsletter.*', 'admin.subskrybenci.*', 'admin.kampanie.*'];
-            $inboxRoutes      = ['admin.zgloszenia-spotkania.*', 'admin.zgloszenia-barier.*'];
+            $inboxRoutes      = ['admin.zgloszenia-spotkania.*', 'admin.zgloszenia-barier.*', 'admin.wiadomosci-kontaktowe.*'];
             $usersRoutes      = ['admin.uzytkownicy.*', 'admin.grupy.*', 'admin.zaproszenia-strefy.*'];
             $systemRoutes     = ['admin.ustawienia.*', 'admin.szablony.*', 'admin.tresc.*', 'admin.przekierowania.*', 'admin.martwe-linki.*', 'admin.dziennik.*', 'admin.wcag-scans.*', 'admin.mail-templates.*', 'admin.health.*', 'admin.moduly.*', 'admin.cache.*'];
         @endphp
@@ -453,6 +453,16 @@
                         <i class="fa-solid fa-chevron-down text-[0.6rem] text-gray-400 transition-transform duration-200" :class="{ 'rotate-180': open }"></i>
                     </button>
                     <div id="nav-section-inbox" x-show="open" @unless (request()->routeIs($inboxRoutes)) style="display: none" @endunless class="section-content mt-1 space-y-1">
+                        @php $contactUnread = \App\Models\ContactMessage::unreadCount(); @endphp
+                        <a href="{{ route('admin.wiadomosci-kontaktowe.index') }}" class="{{ $itemClass('admin.wiadomosci-kontaktowe.*') }}" title="Wiadomości kontaktowe">
+                            <i class="fa-solid fa-envelope {{ $iconClass('admin.wiadomosci-kontaktowe.*') }}"></i>
+                            <span class="nav-label flex items-center gap-1.5">
+                                Wiadomości kontaktowe
+                                @if ($contactUnread > 0)
+                                    <span class="inline-flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-brand px-1 text-[10px] font-bold text-white">{{ $contactUnread }}</span>
+                                @endif
+                            </span>
+                        </a>
                         <a href="{{ route('admin.zgloszenia-spotkania.index') }}" class="{{ $itemClass('admin.zgloszenia-spotkania.*') }}" title="Zgłoszenia spotkań">
                             <i class="fa-solid fa-handshake-angle {{ $iconClass('admin.zgloszenia-spotkania.*') }}"></i>
                             <span class="nav-label">Zgłoszenia (spotkania)</span>

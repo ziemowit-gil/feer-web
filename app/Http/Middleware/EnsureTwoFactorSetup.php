@@ -24,6 +24,7 @@ class EnsureTwoFactorSetup
             && $request->session()->get('login_method') === 'password'
             && SiteSetting::current()->two_factor_required_admins
             && ! $user->hasTwoFactorEnabled()
+            && ! $user->isDemoAccount()
         ) {
             return redirect()->route('profile.edit')->withFragment('dwuetapowe')
                 ->with('status', 'two-factor-required');

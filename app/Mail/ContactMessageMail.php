@@ -2,6 +2,7 @@
 
 namespace App\Mail;
 
+use App\Models\ContactMessage;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
@@ -12,24 +13,22 @@ class ContactMessageMail extends Mailable
 {
     use Queueable, SerializesModels;
 
-    public function __construct(
-        public string $senderName,
-        public string $senderEmail,
-        public string $messageBody,
-    ) {}
+    public function __construct(public ContactMessage $contactMessage) {}
 
     public function envelope(): Envelope
     {
+        $subject = $this->contactMessage->subject
+            ? "Wiadomość: {$this->contactMessage->subject}"
+            : "Nowa wiadomość od {$this->contactMessage->name}";
+
         return new Envelope(
-            subject: "Wiadomość ze strony od {$this->senderName}",
-            replyTo: [$this->senderEmail],
+            subject: $subject,
+            replyTo: [$this->contactMessage->email],
         );
     }
 
     public function content(): Content
     {
-        return new Content(
-            view: 'emails.contact-message',
-        );
+        return new Content(view: 'emails.contact-message');
     }
 }

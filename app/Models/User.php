@@ -85,6 +85,13 @@ class User extends Authenticatable implements Subscribable
         return $this->hasTotpEnabled() || $this->hasYubikey();
     }
 
+    /** Konta na domenach demo.* nie wymagają 2FA (dostęp demonstracyjny). */
+    public function isDemoAccount(): bool
+    {
+        $domain = substr(strrchr($this->email, '@'), 1);
+        return str_starts_with($domain, 'demo.');
+    }
+
     public function group(): BelongsTo
     {
         return $this->belongsTo(UserGroup::class, 'user_group_id');

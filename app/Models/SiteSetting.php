@@ -59,6 +59,7 @@ class SiteSetting extends Model implements HasMedia
         'content' => 'Treści',
         'modules' => 'Moduły',
         'homepage' => 'Strona główna',
+        'template' => 'Szablon strony',
         'login' => 'Logowanie',
         'mail' => 'Poczta',
     ];
@@ -74,6 +75,15 @@ class SiteSetting extends Model implements HasMedia
         'ankieta' => 'Ankieta i szybkie akcje',
         'gallery' => 'Galeria',
         'substack' => 'O tym piszemy (Substack)',
+    ];
+
+    /**
+     * Available site templates, keyed by the value stored in `site_template`.
+     */
+    public const SITE_TEMPLATES = [
+        'default'      => 'Domyślny (NGO/fundacja — klasyczny)',
+        'ngo'          => 'NGO / fundacja (rozbudowany)',
+        'municipality' => 'Gmina / urząd',
     ];
 
     /**
@@ -152,6 +162,8 @@ class SiteSetting extends Model implements HasMedia
         'show_coordinators', 'ngo_color', 'sub_brands',
         'logo_alt', 'logo_only',
         'news_layout', 'volunteer_layout',
+        'site_template', 'municipality_shortcuts_slug', 'municipality_carousel_title',
+        'municipality_weather_lat', 'municipality_weather_lon', 'municipality_show_google_translate',
         'wide_mission_social_1', 'wide_mission_social_2', 'wide_mission_cta_label', 'wide_mission_cta_url', 'wide_mission_show_mission', 'wide_mission_highlight_account', 'wide_mission_nav_align', 'wide_mission_search_in_nav', 'wide_mission_sidebar', 'wide_mission_sidebar_style', 'wide_mission_nav_style', 'wide_mission_nav_hover_white', 'wide_mission_nav_active_white', 'wide_mission_nav_icons_white', 'hero_mission_slide', 'hero_mission_bg', 'hero_mission_order',
         'krs_number', 'nip_number', 'regon_number', 'projects_intro', 'materials_intro', 'materials_notice',
         'accessibility_entity_name', 'accessibility_status', 'accessibility_status_note',
@@ -286,6 +298,9 @@ class SiteSetting extends Model implements HasMedia
         'accessibility_page_updated_at' => 'date',
         'accessibility_declaration_date' => 'date',
         'cache_config' => 'array',
+        'municipality_show_google_translate' => 'boolean',
+        'municipality_weather_lat' => 'decimal:6',
+        'municipality_weather_lon' => 'decimal:6',
     ];
 
     /** Status zgodności z ustawą o dostępności cyfrowej (deklaracja dostępności). */

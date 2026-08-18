@@ -57,7 +57,12 @@
 
         {{-- Automatyczne podstrony powiązanej strony (jeśli link prowadzi do strony z podstronami). --}}
         @foreach ($pageChildren as $child)
-            @php $isCurrentPage = request()->routeIs('page.show') && request()->route('page')?->id === $child->id; @endphp
+            @php
+                $routePage = request()->route('page');
+                $isCurrentPage = request()->routeIs('page.show')
+                    && is_object($routePage)
+                    && $routePage->id === $child->id;
+            @endphp
             <li>
                 <a href="{{ $child->publicUrl() }}" @if ($isCurrentPage) aria-current="page" @endif
                     class="block px-4 py-2 text-sm font-medium normal-case {{ $isCurrentPage ? 'text-brand' : 'text-ink' }} hover:bg-gray-50 hover:text-brand focus-visible:bg-gray-50">

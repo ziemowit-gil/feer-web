@@ -19,6 +19,10 @@ class EnsureSiteAvailable
 {
     public function handle(Request $request, Closure $next): Response
     {
+        if ($request->is('install', 'install/*')) {
+            return $next($request);
+        }
+
         $settings = SiteSetting::current();
 
         if (! $settings->maintenance_mode) {

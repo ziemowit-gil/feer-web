@@ -64,8 +64,17 @@
         @include('partials.preview-bar')
     @endif
 
-    @include('partials.topbar')
-    @include('partials.header')
+    @php $siteTemplate = $siteSettings->site_template ?? 'default'; @endphp
+    @if ($siteTemplate === 'municipality')
+        @include('templates.municipality.partials.topbar')
+        @include('templates.municipality.partials.header')
+    @elseif ($siteTemplate === 'ngo')
+        @include('templates.ngo.partials.topbar')
+        @include('templates.ngo.partials.header')
+    @else
+        @include('partials.topbar')
+        @include('partials.header')
+    @endif
 
     <main id="main-content" class="flex-1">
         @hasSection('breadcrumbs')

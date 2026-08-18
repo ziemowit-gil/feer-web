@@ -1795,6 +1795,101 @@
             </div>
         </div>
 
+        {{-- ═══ SZABLON STRONY ════════════════════════════════════════════════════════ --}}
+        <div x-show="tab === 'template'" x-cloak class="space-y-6">
+
+            <div>
+                <h2 class="text-base font-bold text-ink">Szablon strony</h2>
+                <p class="mt-1 text-xs text-muted">
+                    Szablon określa ogólny wygląd serwisu: układ nagłówka, stopki oraz strony głównej.
+                    Zmiana szablonu nie usuwa żadnych treści.
+                </p>
+            </div>
+
+            <div>
+                <label for="site_template" class="mb-1 block text-sm font-bold">Aktywny szablon</label>
+                <select id="site_template" name="site_template"
+                    class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                    @foreach (\App\Models\SiteSetting::SITE_TEMPLATES as $value => $label)
+                        <option value="{{ $value }}"
+                            {{ old('site_template', $settings->site_template ?? 'default') === $value ? 'selected' : '' }}>
+                            {{ $label }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+
+            {{-- Ustawienia szablonu Gmina / urząd --}}
+            <div class="rounded-lg border border-gray-200 p-5 space-y-5">
+                <h3 class="text-sm font-bold text-ink">Ustawienia szablonu: Gmina / urząd</h3>
+                <p class="text-xs text-muted">Poniższe pola mają zastosowanie tylko gdy wybrany szablon to „Gmina / urząd".</p>
+
+                <div>
+                    <label for="municipality_shortcuts_slug" class="mb-1 block text-sm font-bold">
+                        Slug strony „Na skróty" (typ: siatka kafelków)
+                    </label>
+                    <input type="text" id="municipality_shortcuts_slug" name="municipality_shortcuts_slug"
+                        value="{{ old('municipality_shortcuts_slug', $settings->municipality_shortcuts_slug) }}"
+                        placeholder="np. na-skroty"
+                        class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                    <p class="mt-1 text-xs text-muted">
+                        Utwórz stronę o typie „Siatka kafelków" (podstrony → nowa → typ: Siatka kafelków),
+                        wpisz jej slug (bez ukośnika).
+                    </p>
+                    @error('municipality_shortcuts_slug')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div>
+                    <label for="municipality_carousel_title" class="mb-1 block text-sm font-bold">
+                        Tytuł sekcji „Polecamy"
+                    </label>
+                    <input type="text" id="municipality_carousel_title" name="municipality_carousel_title"
+                        value="{{ old('municipality_carousel_title', $settings->municipality_carousel_title) }}"
+                        placeholder="Polecamy"
+                        class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                </div>
+
+                <div class="grid gap-4 sm:grid-cols-2">
+                    <div>
+                        <label for="municipality_weather_lat" class="mb-1 block text-sm font-bold">
+                            Pogoda — szerokość geograficzna (lat)
+                        </label>
+                        <input type="number" id="municipality_weather_lat" name="municipality_weather_lat"
+                            step="0.000001" min="-90" max="90"
+                            value="{{ old('municipality_weather_lat', $settings->municipality_weather_lat) }}"
+                            placeholder="np. 53.136985"
+                            class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                        <p class="mt-1 text-xs text-muted">Pozostaw puste, by ukryć pogodę.</p>
+                    </div>
+                    <div>
+                        <label for="municipality_weather_lon" class="mb-1 block text-sm font-bold">
+                            Pogoda — długość geograficzna (lon)
+                        </label>
+                        <input type="number" id="municipality_weather_lon" name="municipality_weather_lon"
+                            step="0.000001" min="-180" max="180"
+                            value="{{ old('municipality_weather_lon', $settings->municipality_weather_lon) }}"
+                            placeholder="np. 17.057556"
+                            class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="flex items-center gap-2 text-sm font-medium">
+                        <input type="checkbox" name="municipality_show_google_translate" value="1"
+                            {{ old('municipality_show_google_translate', $settings->municipality_show_google_translate) ? 'checked' : '' }}
+                            class="rounded border-gray-300 text-brand focus:ring-brand">
+                        Pokaż przycisk Google Translate w pasku górnym
+                    </label>
+                    <p class="ml-6 mt-1 text-xs text-muted">
+                        Wymaga połączenia z serwerami Google. Narzędzie ładuje się po kliknięciu przycisku.
+                    </p>
+                </div>
+            </div>
+
+        </div>
+
         <div x-show="tab === 'login'" x-cloak class="space-y-6" x-data="{ msEnabled: {{ old('microsoft_login_enabled', $settings->microsoft_login_enabled) ? 'true' : 'false' }} }">
             <div>
                 <h2 class="text-base font-bold text-ink">Logowanie przez Microsoft 365</h2>
@@ -2007,13 +2102,31 @@
         </div>
 
         <div x-show="tab === 'mail'" x-cloak class="space-y-6" x-data="{ transport: '{{ old('mail_transport', $settings->mail_transport ?: 'default') }}' }">
-            <div>
-                <h2 class="text-base font-bold text-ink">Wysyłka poczty</h2>
-                <p class="mt-1 text-xs text-muted">
-                    Konfiguracja bramki e-mail (m.in. formularz kontaktowy). Wybierz „Dziedzicz z serwera", aby użyć ustawień
-                    z pliku <code>.env</code>, albo skonfiguruj własny serwer SMTP poniżej.
-                </p>
+            <div class="flex flex-wrap items-start justify-between gap-4">
+                <div>
+                    <h2 class="text-base font-bold text-ink">Wysyłka poczty</h2>
+                    <p class="mt-1 text-xs text-muted">
+                        Konfiguracja bramki e-mail (m.in. formularz kontaktowy). Wybierz „Dziedzicz z serwera", aby użyć ustawień
+                        z pliku <code>.env</code>, albo skonfiguruj własny serwer SMTP poniżej.
+                    </p>
+                </div>
+                <form method="POST" action="{{ route('admin.ustawienia.mail-test') }}">
+                    @csrf
+                    <button type="submit"
+                            class="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-bold text-muted hover:bg-gray-50 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-brand">
+                        <i class="fa-solid fa-paper-plane" aria-hidden="true"></i>
+                        Testuj wysyłkę
+                    </button>
+                </form>
             </div>
+            @if (session('mail_test_status'))
+                <div class="flex items-center gap-2 rounded-xl border px-4 py-3 text-sm font-medium
+                            {{ session('mail_test_status') === 'success' ? 'border-green-200 bg-green-50 text-green-800' : 'border-red-200 bg-red-50 text-red-800' }}"
+                     role="alert">
+                    <i class="fa-solid {{ session('mail_test_status') === 'success' ? 'fa-circle-check text-green-600' : 'fa-circle-xmark text-red-600' }}" aria-hidden="true"></i>
+                    {{ session('mail_test_msg') }}
+                </div>
+            @endif
 
             <div>
                 <label for="mail_transport" class="mb-1 block text-sm font-bold">Tryb wysyłki</label>

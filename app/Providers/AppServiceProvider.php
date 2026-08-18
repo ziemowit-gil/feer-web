@@ -67,7 +67,7 @@ class AppServiceProvider extends ServiceProvider
             // Brak zmigrowanej bazy / ustawień — zostajemy przy konfiguracji z .env.
         }
 
-        View::composer('partials.header', function ($view) {
+        View::composer(['partials.header', 'templates.municipality.partials.header', 'templates.ngo.partials.header'], function ($view) {
             // Only categories that have at least one active (non-completed)
             // project appear in the menu — mirroring the projects list and the
             // category pages, which hide completed projects. Categories with no
@@ -102,7 +102,7 @@ class AppServiceProvider extends ServiceProvider
             );
         });
 
-        View::composer('partials.footer', function ($view) {
+        View::composer(['partials.footer', 'templates.municipality.partials.footer', 'templates.ngo.partials.footer'], function ($view) {
             $siteSettings = SiteSetting::current();
 
             $view->with(

@@ -62,7 +62,8 @@ class AuthenticatedSessionController extends Controller
 
         // Jeśli konto ma włączone 2FA — wyloguj i wymagaj drugiego składnika
         // przed pełnym zalogowaniem (dane oczekujące trzymamy w sesji).
-        if ($user->hasTwoFactorEnabled()) {
+        // Konta demo.* pomijają weryfikację 2FA.
+        if ($user->hasTwoFactorEnabled() && ! $user->isDemoAccount()) {
             $remember = $request->boolean('remember');
             Auth::guard('web')->logout();
 

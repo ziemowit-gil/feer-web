@@ -9,10 +9,12 @@ use App\Models\News;
 use App\Models\Page;
 use App\Models\Partner;
 use App\Models\Poll;
+use App\Models\Project;
 use App\Models\QuickAction;
 use App\Models\SiteSetting;
 use App\Support\SubstackFeed;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Collection;
 
 /**
  * Strona główna serwisu — agreguje dane ze wszystkich włączonych modułów
@@ -24,6 +26,48 @@ use Illuminate\Support\Facades\Cache;
  */
 class HomeController extends Controller
 {
+    /** Renderuje stronę główną w szablonie gminy. */
+    private function municipalityHome(SiteSetting $settings, Collection $slides, Collection $partners)
+    {
+        $newsSidebar = $settings->isModuleEnabled('news')
+            ? News::published()->with('category')->orderByDesc('published_at')->limit(3)->get()
+            : collect();
+
+        $newsGrid = $settings->isModuleEnabled('news')
+            ? News::published()->with('category')->orderByDesc('published_at')->skip(3)->limit(8)->get()
+            : collect();
+
+        $shortcuts = collect();
+        if ($settings->municipality_shortcuts_slug) {
+            $tilesPage = Page::where('slug', $settings->municipality_shortcuts_slug)
+                ->where('type', 'tiles_grid')
+                ->first();
+            if ($tilesPage && !empty($tilesPage->tiles)) {
+                $shortcuts = collect($tilesPage->tiles);
+            }
+        }
+
+        return view('templates.municipality.home', compact('slides', 'newsSidebar', 'newsGrid', 'shortcuts', 'partners'));
+    }
+
+    /** Renderuje stronę główną w szablonie NGO/fundacja. */
+    private function ngoHome(SiteSetting $settings, Collection $slides, Collection $partners)
+    {
+        $newsItems = $settings->isModuleEnabled('news')
+            ? News::published()->with('category')->orderByDesc('published_at')->limit(4)->get()
+            : collect();
+
+        $projects = $settings->isModuleEnabled('projects')
+            ? Project::where('is_published', true)->orderBy('order')->limit(3)->get()
+            : collect();
+
+        $events = $settings->isModuleEnabled('events')
+            ? Event::upcoming()->limit(3)->get()
+            : collect();
+
+        return view('templates.ngo.home', compact('slides', 'newsItems', 'projects', 'events', 'partners'));
+    }
+
     /** Wyświetla stronę główną z danymi wszystkich włączonych modułów (hero, aktualności, ankieta itp.). */
     public function index()
     {
@@ -82,6 +126,14 @@ class HomeController extends Controller
         $substackPosts = $settings->substack_url ? SubstackFeed::posts($settings->substack_url) : [];
 
         $sectionOrder = $settings->orderedHomepageSections();
+
+        $template = $settings->site_template ?? 'default';
+        if ($template === 'municipality') {
+            return $this->municipalityHome($settings, $slides, $partners);
+        }
+        if ($template === 'ngo') {
+            return $this->ngoHome($settings, $slides, $partners);
+        }
 
         return view('home', compact('slides', 'news', 'events', 'poll', 'quickLinks', 'gallery', 'partners', 'sectionOrder', 'substackPosts'));
     }

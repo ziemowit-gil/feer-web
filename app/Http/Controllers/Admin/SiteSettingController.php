@@ -274,11 +274,18 @@ class SiteSettingController extends Controller
             'enabled_modules.*' => ['string', Rule::in(array_keys(SiteSetting::MODULES))],
             'section_order_json' => ['sometimes', 'nullable', 'string'],
             'events_home_color' => ['nullable', 'regex:/^#[0-9a-fA-F]{6}$/'],
+            'site_template'                    => ['nullable', Rule::in(array_keys(SiteSetting::SITE_TEMPLATES))],
+            'municipality_shortcuts_slug'      => ['nullable', 'string', 'max:255'],
+            'municipality_carousel_title'      => ['nullable', 'string', 'max:255'],
+            'municipality_weather_lat'         => ['nullable', 'numeric', 'between:-90,90'],
+            'municipality_weather_lon'         => ['nullable', 'numeric', 'between:-180,180'],
+            'municipality_show_google_translate' => ['sometimes', 'boolean'],
         ]);
 
         $data['allow_indexing'] = $request->boolean('allow_indexing');
         $data['logo_only'] = $request->boolean('logo_only');
         $data['maintenance_mode'] = $request->boolean('maintenance_mode');
+        $data['municipality_show_google_translate'] = $request->boolean('municipality_show_google_translate');
         $data['site_url'] = filled($data['site_url'] ?? null) ? rtrim($data['site_url'], '/') : null;
         $data['microsoft_login_enabled'] = $request->boolean('microsoft_login_enabled');
         $data['microsoft_only_login'] = $request->boolean('microsoft_only_login');

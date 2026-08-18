@@ -99,7 +99,16 @@ use App\Http\Controllers\PayuWebhookController;
 use App\Http\Controllers\Admin\PodcastController as AdminPodcastController;
 use App\Http\Controllers\FormController;
 use App\Http\Controllers\Admin\FormularzeController as AdminFormularzeController;
+use App\Http\Controllers\Admin\ContactMessageController as AdminContactMessageController;
+use App\Http\Controllers\InstallController;
+use App\Http\Middleware\RedirectIfInstalled;
 use Illuminate\Support\Facades\Route;
+
+// ── Instalator ────────────────────────────────────────────────────────────────
+Route::middleware([RedirectIfInstalled::class])->prefix('install')->group(function () {
+    Route::get('/',  [InstallController::class, 'index'])->name('install.index');
+    Route::post('/', [InstallController::class, 'post'])->name('install.post');
+});
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
 
@@ -473,6 +482,12 @@ Route::middleware(['auth', 'verified', '2fa'])->prefix(config('app.admin_prefix'
         Route::get('zgloszenia-barier', [AdminAccessibilityReportController::class, 'index'])->name('zgloszenia-barier.index');
         Route::get('zgloszenia-barier/eksport', [AdminAccessibilityReportController::class, 'export'])->name('zgloszenia-barier.export');
         Route::delete('zgloszenia-barier/{report}', [AdminAccessibilityReportController::class, 'destroy'])->name('zgloszenia-barier.destroy');
+
+        Route::get('wiadomosci-kontaktowe', [AdminContactMessageController::class, 'index'])->name('wiadomosci-kontaktowe.index');
+        Route::get('wiadomosci-kontaktowe/{contactMessage}', [AdminContactMessageController::class, 'show'])->name('wiadomosci-kontaktowe.show');
+        Route::post('wiadomosci-kontaktowe/{contactMessage}/replied', [AdminContactMessageController::class, 'markReplied'])->name('wiadomosci-kontaktowe.replied');
+        Route::delete('wiadomosci-kontaktowe/{contactMessage}', [AdminContactMessageController::class, 'destroy'])->name('wiadomosci-kontaktowe.destroy');
+        Route::post('ustawienia/mail/test', [AdminContactMessageController::class, 'mailTest'])->name('ustawienia.mail-test');
 
         Route::get('newsletter', [AdminNewsletterController::class, 'edit'])->name('newsletter.edit');
         Route::put('newsletter', [AdminNewsletterController::class, 'update'])->name('newsletter.update');
