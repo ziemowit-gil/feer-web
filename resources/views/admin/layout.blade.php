@@ -453,7 +453,10 @@
                         <i class="fa-solid fa-chevron-down text-[0.6rem] text-gray-400 transition-transform duration-200" :class="{ 'rotate-180': open }"></i>
                     </button>
                     <div id="nav-section-inbox" x-show="open" @unless (request()->routeIs($inboxRoutes)) style="display: none" @endunless class="section-content mt-1 space-y-1">
-                        @php $contactUnread = \App\Models\ContactMessage::unreadCount(); @endphp
+                        @php
+                            try { $contactUnread = \App\Models\ContactMessage::unreadCount(); }
+                            catch (\Throwable) { $contactUnread = 0; }
+                        @endphp
                         <a href="{{ route('admin.wiadomosci-kontaktowe.index') }}" class="{{ $itemClass('admin.wiadomosci-kontaktowe.*') }}" title="Wiadomości kontaktowe">
                             <i class="fa-solid fa-envelope {{ $iconClass('admin.wiadomosci-kontaktowe.*') }}"></i>
                             <span class="nav-label flex items-center gap-1.5">
