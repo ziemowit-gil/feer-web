@@ -4,6 +4,8 @@ import { bunny } from 'laravel-vite-plugin/fonts';
 import tailwindcss from '@tailwindcss/vite';
 import terser from '@rollup/plugin-terser';
 import obfuscatorPlugin from 'vite-plugin-javascript-obfuscator';
+import compression from 'vite-plugin-compression';
+import { visualizer } from 'rollup-plugin-visualizer';
 
 const isProd = process.env.NODE_ENV === 'production';
 
@@ -51,6 +53,22 @@ export default defineConfig({
             // Nie zaciemniaj Alpine.js — reaguje na nazwy funkcji w HTML.
             exclude: [/alpine/i, /node_modules/],
         })] : []),
+
+        // Pre-kompresja gzip i brotli — Nginx serwuje gotowe pliki bez obciążenia CPU.
+        // Wymaga: gzip_static on; / brotli_static on; w konfiguracji Nginx.
+        ...(isProd ? [
+            compression({ algorithm: 'gzip', ext: '.gz' }),
+            compression({ algorithm: 'brotliCompress', ext: '.br' }),
+        ] : []),
+
+        // Mapa treemap paczki — generuje public/build/stats.html po każdym buildzie.
+        visualizer({
+            filename: 'public/build/stats.html',
+            open: false,
+            gzipSize: true,
+            brotliSize: true,
+            template: 'treemap',
+        }),
     ],
 
     build: {
