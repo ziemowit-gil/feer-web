@@ -266,6 +266,14 @@
         <i class="fa-solid fa-universal-access" aria-hidden="true"></i> Dostępność
     </button>
 
+    {{-- Struktura nagłówków (WCAG 1.3.1) --}}
+    <button type="button" id="{{ $editorId }}-h-btn"
+        title="Pokaż strukturę nagłówków (WCAG 1.3.1)"
+        aria-label="Pokaż strukturę nagłówków"
+        class="inline-flex items-center gap-2 rounded border border-gray-300 px-3 py-1.5 text-xs font-bold text-ink hover:border-violet-500 hover:text-violet-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+        <i class="fa-solid fa-heading" aria-hidden="true"></i> Nagłówki
+    </button>
+
     @if ($historyJsonUrl)
     {{-- Historia wersji --}}
     <button type="button" @click="window['__historyOpen_{{ $editorId }}']?.()"
@@ -289,6 +297,13 @@
     <div class="flex items-start gap-2">
         <div id="{{ $editorId }}-a11y-content" class="flex-1"></div>
         <button type="button" id="{{ $editorId }}-a11y-close" class="flex-none text-muted hover:text-red-600" aria-label="Zamknij wyniki sprawdzenia dostępności"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
+    </div>
+</div>
+
+<div id="{{ $editorId }}-h-panel" class="mt-2 hidden rounded-lg border border-violet-200 bg-violet-50 p-3 text-sm" role="region" aria-label="Struktura nagłówków">
+    <div class="flex items-start gap-2">
+        <div id="{{ $editorId }}-h-content" class="flex-1 leading-snug"></div>
+        <button type="button" id="{{ $editorId }}-h-close" class="flex-none text-muted hover:text-red-600" aria-label="Zamknij strukturę nagłówków"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
     </div>
 </div>
 
@@ -1409,6 +1424,72 @@
     }
     if (a11yClose && a11yPanel) {
         a11yClose.addEventListener('click', function () { a11yPanel.classList.add('hidden'); });
+    }
+})();
+</script>
+
+<script>
+(function () {
+    var hBtn    = document.getElementById('{{ $editorId }}-h-btn');
+    var hPanel  = document.getElementById('{{ $editorId }}-h-panel');
+    var hContent = document.getElementById('{{ $editorId }}-h-content');
+    var hClose  = document.getElementById('{{ $editorId }}-h-close');
+
+    function esc(s) { return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+
+    function buildTree(html) {
+        var doc = new DOMParser().parseFromString(html, 'text/html');
+        var headings = Array.from(doc.querySelectorAll('h1,h2,h3,h4,h5,h6'));
+        if (!headings.length) {
+            return '<p style="color:#6b7280;font-style:italic">Brak nagłówków w treści.</p>';
+        }
+        var levels = headings.map(function (h) { return parseInt(h.tagName[1], 10); });
+        var h1Count = levels.filter(function (l) { return l === 1; }).length;
+
+        var warnings = [];
+        if (h1Count > 1) warnings.push('Wiele nagłówków H1 (' + h1Count + ') — powinna być co najwyżej jedna.');
+        for (var i = 1; i < levels.length; i++) {
+            if (levels[i] - levels[i - 1] > 1) {
+                warnings.push('Przeskok: H' + levels[i - 1] + ' → H' + levels[i] + '.');
+            }
+        }
+        headings.forEach(function (h) {
+            if (!h.textContent.trim()) warnings.push('Pusty nagłówek H' + h.tagName[1] + '.');
+        });
+
+        var summary = warnings.length
+            ? '<p style="color:#92400e;font-weight:700;margin-bottom:.35rem">⚠ ' + warnings.join(' ') + '</p>'
+            : '<p style="color:#14532d;font-weight:700;margin-bottom:.35rem">✓ Hierarchia nagłówków jest poprawna.</p>';
+
+        var rows = '';
+        for (var j = 0; j < headings.length; j++) {
+            var lvl   = levels[j];
+            var text  = headings[j].textContent.trim();
+            var prev  = j > 0 ? levels[j - 1] : 0;
+            var bad   = (j > 0 && lvl - prev > 1) || (!text) || (lvl === 1 && h1Count > 1);
+            var color = bad ? '#92400e' : '#166534';
+            var note  = '';
+            if (!text)                    note = ' <em style="opacity:.65">(pusty)</em>';
+            else if (j > 0 && lvl - prev > 1) note = ' <span style="font-size:.78em;opacity:.7">⚠ przeskok</span>';
+            rows += '<div style="padding-left:' + ((lvl - 1) * 14) + 'px;color:' + color + ';padding-top:3px">'
+                  + '<strong>H' + lvl + '</strong> '
+                  + (text ? esc(text) : '')
+                  + note + '</div>';
+        }
+        return summary + '<div style="font-family:monospace;font-size:.8rem">' + rows + '</div>';
+    }
+
+    if (hBtn && hPanel && hContent) {
+        hBtn.addEventListener('click', function () {
+            var getContent = window['__getContent_{{ $editorId }}'];
+            if (!getContent) return;
+            hContent.innerHTML = buildTree(getContent());
+            hPanel.classList.remove('hidden');
+            hPanel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        });
+    }
+    if (hClose && hPanel) {
+        hClose.addEventListener('click', function () { hPanel.classList.add('hidden'); });
     }
 })();
 </script>
