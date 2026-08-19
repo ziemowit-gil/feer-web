@@ -18,6 +18,22 @@
 # Przykład lokalnego testu:  PHP_BIN=php COMPOSER_BIN=composer84 NPM_BIN=npm ./deploy.sh
 set -euo pipefail
 
+# ─── Kolory ───────────────────────────────────────────────────────────────────
+
+if [ -t 1 ]; then
+    GRN=$'\033[0;32m'; YEL=$'\033[0;33m'; RED=$'\033[0;31m'
+    CYN=$'\033[0;36m'; BLD=$'\033[1m';    DIM=$'\033[2m'; NC=$'\033[0m'
+else
+    GRN=''; YEL=''; RED=''; CYN=''; BLD=''; DIM=''; NC=''
+fi
+
+NSTEPS=7
+ok()   { printf "    ${GRN}✓${NC}  %s\n" "$1"; }
+warn() { printf "    ${YEL}⚠${NC}  %s\n" "$1"; }
+fail() { printf "    ${RED}✗${NC}  %s\n" "$1"; }
+info() { printf "       ${DIM}%s${NC}\n" "$1"; }
+step() { printf "\n  ${CYN}${BLD}[%d/%d]${NC} %s\n" "$1" "$NSTEPS" "$2"; }
+
 # ─── Konfiguracja ─────────────────────────────────────────────────────────────
 
 if [ -z "${PHP_BIN:-}" ]; then
@@ -67,15 +83,15 @@ cd "$(dirname "$0")"
 # ─── Nagłówek ─────────────────────────────────────────────────────────────────
 
 echo ""
-echo "┌─────────────────────────────────────────────────────────────┐"
-printf "│  %-61s│\n" "Deploy FEER-web"
-printf "│  %-61s│\n" "Gałąź: $BRANCH  |  PHP: $PHP_BIN"
-echo "└─────────────────────────────────────────────────────────────┘"
+printf "${BLD}┌─────────────────────────────────────────────────────────────┐${NC}\n"
+printf "${BLD}│${NC}  %-61s${BLD}│${NC}\n" "Deploy FEER-web"
+printf "${BLD}│${NC}  ${DIM}%-61s${NC}${BLD}│${NC}\n" "Gałąź: $BRANCH  |  PHP: $PHP_BIN"
+printf "${BLD}└─────────────────────────────────────────────────────────────┘${NC}\n"
 echo ""
 
 # ─── Podgląd nadchodzących commitów ───────────────────────────────────────────
 
-echo "  Pobieranie informacji o zmianach..."
+info "Pobieranie informacji o zmianach..."
 git fetch origin "$BRANCH" --quiet
 
 INCOMING=$(git log --oneline --graph HEAD..origin/"$BRANCH" 2>/dev/null || true)
@@ -103,16 +119,15 @@ else
     [[ "$confirm" =~ ^[tTyY]$ ]] || { echo "  Anulowano."; exit 0; }
 fi
 
-echo ""
-
 # ─── Tryb serwisowy ───────────────────────────────────────────────────────────
 
-echo "  [1/7] Tryb serwisowy: włączam..."
+step 1 "Tryb serwisowy"
 "$PHP_BIN" artisan down --render="errors::503" --retry=30 2>/dev/null || true
+ok "Włączony."
 
 _przywroc_serwis() {
     echo ""
-    echo "  !!! Błąd — wyłączam tryb serwisowy awaryjnie..."
+    fail "Błąd — wyłączam tryb serwisowy awaryjnie..."
     "$PHP_BIN" artisan up 2>/dev/null || true
 }
 trap _przywroc_serwis ERR
@@ -123,55 +138,55 @@ TS=$(date +%Y%m%d-%H%M%S)
 BACKUP=""
 BLOG_BACKUP=""
 
-echo "  [2/7] Kopia zapasowa baz..."
+step 2 "Kopia zapasowa baz"
 if [ -f "$DB" ]; then
     BACKUP="/tmp/feer-db-$TS.sqlite"
     cp "$DB" "$BACKUP"
-    echo "        Główna:  $BACKUP"
+    info "Główna  → $BACKUP"
 fi
 if [ -f "$BLOG_DB" ]; then
     BLOG_BACKUP="/tmp/feer-blog-db-$TS.sqlite"
     cp "$BLOG_DB" "$BLOG_BACKUP"
-    echo "        Blog:    $BLOG_BACKUP"
+    info "Blog    → $BLOG_BACKUP"
 fi
+ok "Gotowe."
 
 # ─── Git pull ─────────────────────────────────────────────────────────────────
 
-echo "  [3/7] Pobieranie kodu..."
+step 3 "Pobieranie kodu (git pull)"
 git checkout -- "$DB" 2>/dev/null || true
 git checkout -- "$BLOG_DB" 2>/dev/null || true
 git pull origin "$BRANCH"
 
 if [ -n "$BACKUP" ]; then
     cp "$BACKUP" "$DB"
-    echo "        Przywrócono bazę główną."
+    info "Przywrócono bazę główną."
 fi
 if [ -n "$BLOG_BACKUP" ]; then
     cp "$BLOG_BACKUP" "$BLOG_DB"
-    echo "        Przywrócono bazę bloga."
+    info "Przywrócono bazę bloga."
 fi
+ok "Kod zaktualizowany."
 
 # ─── Composer ─────────────────────────────────────────────────────────────────
 
 COMPOSER_FAILED=0
-echo "  [4/7] Composer update..."
+step 4 "Composer update"
 COMPOSER_PATH="$(command -v "$COMPOSER_BIN" 2>/dev/null || echo "$COMPOSER_BIN")"
 if "$PHP_BIN" "$COMPOSER_PATH" update \
         --no-interaction \
         --no-dev \
         --optimize-autoloader \
         --quiet; then
-    echo "        OK."
+    ok "Zależności zaktualizowane."
 else
     COMPOSER_FAILED=1
-    echo ""
-    echo "  ⚠  Composer zakończył błędem — pomijam zależności PHP."
-    echo "     Kod Git został już pobrany; zależności i cache wymagają ręcznego uruchomienia."
+    warn "Composer zakończył błędem — pomijam zależności PHP."
 fi
 
 # ─── Assety front-endowe ──────────────────────────────────────────────────────
 
-echo "  [5/7] Budowanie assetów (npm)..."
+step 5 "Budowanie assetów (npm)"
 export PATH="$(dirname "$NPM_BIN"):$PATH"
 if [ -f package-lock.json ]; then
     "$NPM_BIN" ci --silent
@@ -179,22 +194,30 @@ else
     "$NPM_BIN" install --silent
 fi
 "$NPM_BIN" run build
+ok "Assety zbudowane."
 
 # ─── Migracje ─────────────────────────────────────────────────────────────────
 
-echo "  [6/7] Migracje..."
-echo "        Baza główna..."
+step 6 "Migracje"
+info "Baza główna..."
 "$PHP_BIN" artisan migrate --force
-echo "        Baza bloga..."
+info "Baza bloga..."
 "$PHP_BIN" artisan migrate --force \
     --database=blog \
     --path=database/migrations/blog
+ok "Migracje zastosowane."
 
 # ─── Cache i optymalizacja ────────────────────────────────────────────────────
 
-echo "  [7/7] Czyszczenie i optymalizacja cache..."
-"$PHP_BIN" artisan optimize:clear --quiet
+step 7 "Cache i optymalizacja"
+for _cmd in config:clear view:clear route:clear cache:clear; do
+    "$PHP_BIN" artisan "$_cmd" --quiet
+    info "artisan $_cmd"
+done
+unset _cmd
 "$PHP_BIN" artisan optimize --quiet
+info "artisan optimize"
+ok "Cache wyczyszczony, kod zoptymalizowany."
 
 # ─── Koniec ───────────────────────────────────────────────────────────────────
 
@@ -203,20 +226,22 @@ trap - ERR
 
 echo ""
 if [ "$COMPOSER_FAILED" -eq 1 ]; then
-    echo "┌─────────────────────────────────────────────────────────────┐"
-    echo "│  Kod pobrany — Composer nie zadziałał.                     │"
-    echo "│                                                             │"
-    echo "│  Uruchom ręcznie:                                           │"
-    echo "│    php84 /usr/local/bin/composer84 \\                       │"
-    echo "│      update --no-dev --optimize-autoloader                 │"
-    echo "│    php84 artisan migrate --force                            │"
-    echo "│    php84 artisan migrate --force --database=blog \\         │"
-    echo "│      --path=database/migrations/blog                       │"
-    echo "│    php84 artisan optimize:clear && php84 artisan optimize   │"
-    echo "└─────────────────────────────────────────────────────────────┘"
+    printf "${YEL}┌─────────────────────────────────────────────────────────────┐${NC}\n"
+    printf "${YEL}│${NC}  ${BLD}%-61s${NC}${YEL}│${NC}\n" "Kod pobrany — Composer nie zadziałał."
+    printf "${YEL}│${NC}  %-61s${YEL}│${NC}\n" ""
+    printf "${YEL}│${NC}  %-61s${YEL}│${NC}\n" "Uruchom ręcznie:"
+    printf "${YEL}│${NC}    ${DIM}%-59s${NC}${YEL}│${NC}\n" "php84 /usr/local/bin/composer84 \\"
+    printf "${YEL}│${NC}      ${DIM}%-57s${NC}${YEL}│${NC}\n" "update --no-dev --optimize-autoloader"
+    printf "${YEL}│${NC}    ${DIM}%-59s${NC}${YEL}│${NC}\n" "php84 artisan migrate --force"
+    printf "${YEL}│${NC}    ${DIM}%-59s${NC}${YEL}│${NC}\n" "php84 artisan migrate --force --database=blog \\"
+    printf "${YEL}│${NC}      ${DIM}%-57s${NC}${YEL}│${NC}\n" "--path=database/migrations/blog"
+    printf "${YEL}│${NC}    ${DIM}%-59s${NC}${YEL}│${NC}\n" "php84 artisan config:clear"
+    printf "${YEL}│${NC}    ${DIM}%-59s${NC}${YEL}│${NC}\n" "php84 artisan view:clear"
+    printf "${YEL}│${NC}    ${DIM}%-59s${NC}${YEL}│${NC}\n" "php84 artisan optimize"
+    printf "${YEL}└─────────────────────────────────────────────────────────────┘${NC}\n"
 else
-    echo "┌─────────────────────────────────────────────────────────────┐"
-    echo "│  Deploy zakończony pomyślnie.                               │"
-    echo "└─────────────────────────────────────────────────────────────┘"
+    printf "${GRN}┌─────────────────────────────────────────────────────────────┐${NC}\n"
+    printf "${GRN}│${NC}  ${BLD}%-61s${NC}${GRN}│${NC}\n" "Deploy zakończony pomyślnie."
+    printf "${GRN}└─────────────────────────────────────────────────────────────┘${NC}\n"
 fi
 echo ""
