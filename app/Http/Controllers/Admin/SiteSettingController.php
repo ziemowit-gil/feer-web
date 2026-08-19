@@ -109,6 +109,7 @@ class SiteSettingController extends Controller
             'mail_encryption' => ['nullable', Rule::in(['', 'tls', 'ssl'])],
             'show_coordinators' => ['sometimes', 'boolean'],
             'ngo_color'          => ['nullable', 'regex:/^#[0-9a-fA-F]{6}$/'],
+            'brand_skip_contrast' => ['sometimes', 'boolean'],
             'ngo_skip_contrast'  => ['nullable', 'boolean'],
             'nav_dark_text'      => ['sometimes', 'boolean'],
             'sub_brands' => ['nullable', 'array'],
@@ -506,7 +507,12 @@ class SiteSettingController extends Controller
             ? "Ustawienia zostały zapisane. Kolor przewodni był zbyt jasny dla kontrastu WCAG, więc został automatycznie przyciemniony do {$data['brand_color']}."
             : 'Ustawienia zostały zapisane.').$notifyMsg;
 
-        return redirect()->route('admin.ustawienia.edit')->with('status', $status);
+        $redirectTab = $request->input('_redirect_tab');
+        $redirectTab = in_array($redirectTab, array_keys(SiteSetting::SETTINGS_TABS), true)
+            ? $redirectTab
+            : 'general';
+
+        return redirect()->route('admin.ustawienia.edit', ['tab' => $redirectTab])->with('status', $status);
     }
 
     /**

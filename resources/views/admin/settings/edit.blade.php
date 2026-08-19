@@ -39,6 +39,7 @@
         class="rounded-lg border border-gray-200 bg-white p-6">
         @csrf
         @method('PUT')
+        <input type="hidden" name="_redirect_tab" :value="tab">
 
         {{-- Zakładki ustawień są w bocznym menu panelu (Ustawienia → …).
              Sekcje przełączamy przez ?tab=… ustawiane z menu bocznego. --}}
