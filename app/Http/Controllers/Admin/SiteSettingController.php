@@ -110,6 +110,7 @@ class SiteSettingController extends Controller
             'show_coordinators' => ['sometimes', 'boolean'],
             'ngo_color'          => ['nullable', 'regex:/^#[0-9a-fA-F]{6}$/'],
             'ngo_skip_contrast'  => ['nullable', 'boolean'],
+            'nav_dark_text'      => ['sometimes', 'boolean'],
             'sub_brands' => ['nullable', 'array'],
             'sub_brands.*.name' => ['nullable', 'string', 'max:60'],
             'sub_brands.*.color' => ['nullable', 'regex:/^#[0-9a-fA-F]{6}$/'],

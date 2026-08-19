@@ -102,12 +102,12 @@
 
                 {{-- Menu desktop --}}
                 <div class="hidden md:block">
-                    @include('partials.main-nav-items', ['onBrand' => true])
+                    @include('partials.main-nav-items', ['onBrand' => true, 'navDarkText' => $siteSettings->navDarkText()])
                 </div>
 
                 {{-- Przycisk mobilny --}}
                 <button type="button" @click="mobileOpen = !mobileOpen"
-                    class="ml-auto flex h-12 w-12 items-center justify-center text-white md:hidden"
+                    class="ml-auto flex h-12 w-12 items-center justify-center {{ $siteSettings->navDarkText() ? 'text-gray-900' : 'text-white' }} md:hidden"
                     :aria-expanded="mobileOpen" aria-controls="mun-mobile-menu"
                     aria-label="Menu">
                     <i class="fa-solid fa-bars text-xl" x-show="!mobileOpen" aria-hidden="true"></i>

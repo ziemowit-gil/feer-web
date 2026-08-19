@@ -476,3 +476,20 @@ html.no-animations *::after {
 
 /* Strzałki rozwijające podmenu — białe gdy nav na tle marki */
 .nav-on-brand > li > div.border-b-2 > button.text-brand { color: rgba(255,255,255,0.7); }
+
+/* Wariant z ciemną czcionką — gdy kolor marki jest jasny i białe litery nie mają kontrastu */
+.nav-on-brand-dark > li > a,
+.nav-on-brand-dark > li > button { color: #111; }
+.nav-on-brand-dark > li > a:hover,
+.nav-on-brand-dark > li > div.border-b-2 > a:hover,
+.nav-on-brand-dark > li > button:hover,
+.nav-on-brand-dark > li > div.border-b-2 > button:hover { color: rgba(0,0,0,0.65); }
+.nav-on-brand-dark > li > a:hover,
+.nav-on-brand-dark > li > div.border-b-2:hover,
+.nav-on-brand-dark > li > button:hover { border-color: rgba(0,0,0,0.4); }
+.nav-on-brand-dark > li > a.border-brand,
+.nav-on-brand-dark > li > div.border-brand,
+.nav-on-brand-dark > li > button.border-brand { border-color: rgba(0,0,0,0.5); }
+.nav-on-brand-dark > li > div.border-b-2 > button.text-brand { color: rgba(0,0,0,0.5); }
+.nav-on-brand-dark > li > a.bg-brand,
+.nav-on-brand-dark > li > a.bg-brand-dark { background-color: rgba(0,0,0,0.12); color: #111; }

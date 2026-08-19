@@ -151,7 +151,7 @@
     {{-- Substyl domyślny: pasek koloru marki --}}
     <nav aria-label="Menu główne" class="hidden border-b border-white/25 bg-brand shadow-sm lg:block">
         <div @class(['mx-auto max-w-6xl px-4 flex items-center', 'justify-center' => ($siteSettings->wide_mission_nav_align ?? 'left') === 'center'])>
-            @include('partials.main-nav-items', ['onBrand' => true])
+            @include('partials.main-nav-items', ['onBrand' => true, 'navDarkText' => $siteSettings->navDarkText()])
             @if ($siteSettings->wide_mission_search_in_nav ?? false)
                 <form action="{{ route('search') }}" method="GET" class="ml-auto flex shrink-0 items-center py-1" role="search">
                     <label for="nav-search" class="sr-only">Wyszukaj w serwisie</label>
@@ -281,7 +281,7 @@
 
         @unless ($headerLayout === 'brand_bar')
             <nav aria-label="Menu główne" class="hidden lg:block">
-                @include('partials.main-nav-items', ['onBrand' => $inlineOnBrand])
+                @include('partials.main-nav-items', ['onBrand' => $inlineOnBrand, 'navDarkText' => $siteSettings->navDarkText()])
             </nav>
         @endunless
     </div>
@@ -289,7 +289,7 @@
     @if ($headerLayout === 'brand_bar')
         <nav aria-label="Menu główne" class="hidden bg-brand lg:block">
             <div class="mx-auto flex max-w-6xl justify-center px-4">
-                @include('partials.main-nav-items', ['onBrand' => true])
+                @include('partials.main-nav-items', ['onBrand' => true, 'navDarkText' => $siteSettings->navDarkText()])
             </div>
         </nav>
     @endif

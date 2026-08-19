@@ -356,6 +356,17 @@
                 </label>
             </div>
 
+            <div class="flex items-start gap-3 rounded-lg border border-gray-200 bg-gray-50 p-3 dark:border-gray-700 dark:bg-gray-900">
+                <input type="hidden" name="nav_dark_text" value="0">
+                <input type="checkbox" id="nav_dark_text" name="nav_dark_text" value="1"
+                    {{ old('nav_dark_text', $settings->nav_dark_text) ? 'checked' : '' }}
+                    class="mt-0.5 rounded border-gray-300 text-brand focus:ring-brand">
+                <label for="nav_dark_text" class="text-sm leading-snug">
+                    <span class="font-bold">Czarna czcionka w menu nawigacyjnym</span>
+                    <span class="block text-xs text-muted">Gdy kolor marki jest jasny i białe litery w menu nie mają wystarczającego kontrastu, zaznacz tę opcję, aby linki menu były czarne.</span>
+                </label>
+            </div>
+
             <div>
                 <label for="brand_color" class="mb-1 block text-sm font-bold">Kolor przewodni (marka)</label>
                 <div class="flex flex-wrap items-center gap-3">

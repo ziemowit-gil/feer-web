@@ -76,7 +76,7 @@
 
                 {{-- Menu desktop --}}
                 <div class="hidden md:block">
-                    @include('partials.main-nav-items', ['onBrand' => true])
+                    @include('partials.main-nav-items', ['onBrand' => true, 'navDarkText' => $siteSettings->navDarkText()])
                 </div>
 
                 {{-- CTA w prawym rogu paska nav --}}
@@ -99,7 +99,7 @@
                 {{-- Przycisk mobilny (w nav) --}}
                 <div class="ml-auto py-1 md:hidden">
                     <button type="button" @click="mobileOpen = !mobileOpen"
-                        class="flex h-10 w-10 items-center justify-center text-white"
+                        class="flex h-10 w-10 items-center justify-center {{ $siteSettings->navDarkText() ? 'text-gray-900' : 'text-white' }}"
                         :aria-expanded="mobileOpen"
                         aria-label="Menu">
                         <i class="fa-solid fa-bars text-lg" x-show="!mobileOpen" aria-hidden="true"></i>
