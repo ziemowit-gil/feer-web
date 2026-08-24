@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\FormDefinition;
 use App\Models\FormSubmission;
+use App\Services\SzoClient;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
@@ -29,9 +30,22 @@ class FormularzeController extends Controller
     public function create()
     {
         return view('admin.formularze.form', [
-            'form'   => new FormDefinition(['fields' => [], 'settings' => []]),
-            'types'  => FormDefinition::FIELD_TYPES,
+            'form'     => new FormDefinition(['fields' => [], 'settings' => []]),
+            'types'    => FormDefinition::FIELD_TYPES,
+            'szoForms' => $this->szoForms(),
         ]);
+    }
+
+    /**
+     * Formularze zdefiniowane w SZO — do wyboru przy podpinaniu.
+     *
+     * Pusta lista (integracja wyłączona albo SZO nie odpowiada) nie może
+     * zablokować edycji formularza, więc widok po prostu pokazuje wtedy
+     * instrukcję zamiast listy.
+     */
+    protected function szoForms(): array
+    {
+        return app(SzoClient::class)->forms();
     }
 
     public function store(Request $request)
@@ -48,8 +62,9 @@ class FormularzeController extends Controller
     public function edit(FormDefinition $formularz)
     {
         return view('admin.formularze.form', [
-            'form'   => $formularz,
-            'types'  => FormDefinition::FIELD_TYPES,
+            'form'     => $formularz,
+            'types'    => FormDefinition::FIELD_TYPES,
+            'szoForms' => $this->szoForms(),
         ]);
     }
 
@@ -153,6 +168,7 @@ class FormularzeController extends Controller
             'fields.*.help_text'             => 'nullable|string|max:500',
             'settings.confirmation_message'  => 'nullable|string|max:1000',
             'settings.notification_email'    => 'nullable|email|max:255',
+            'settings.szo_form_slug'         => 'nullable|string|max:120',
         ], [], [
             'title'       => 'nazwa formularza',
             'slug'        => 'identyfikator URL',
@@ -181,6 +197,9 @@ class FormularzeController extends Controller
             'settings'    => [
                 'confirmation_message' => $request->input('settings.confirmation_message'),
                 'notification_email'   => $request->input('settings.notification_email'),
+                // Slug formularza po stronie SZO. Puste = zgłoszenia zostają
+                // wyłącznie w CMS-ie; podpięcie jest świadomą decyzją redaktora.
+                'szo_form_slug'        => $request->input('settings.szo_form_slug'),
             ],
         ];
     }

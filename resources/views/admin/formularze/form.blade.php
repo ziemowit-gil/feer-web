@@ -221,6 +221,44 @@
                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                 @enderror
             </div>
+
+            {{-- Podpięcie do CRM w SZO --}}
+            <div class="mt-4 border-t border-gray-200 pt-4">
+                <label for="szo_form_slug" class="mb-1 block text-sm font-bold">
+                    Przekazuj zgłoszenia do CRM (SZO)
+                </label>
+
+                @if (empty($szoForms))
+                    <p class="text-sm text-gray-600">
+                        Integracja z SZO jest wyłączona albo SZO nie odpowiada. Ustaw
+                        <code>SZO_ENABLED</code>, <code>SZO_URL</code> i <code>SZO_TOKEN</code>
+                        w pliku <code>.env</code>. Do czasu włączenia zgłoszenia zapisują się
+                        tylko tutaj.
+                    </p>
+                    <input type="hidden" name="settings[szo_form_slug]"
+                        value="{{ old('settings.szo_form_slug', $form->settings['szo_form_slug'] ?? '') }}">
+                @else
+                    <select id="szo_form_slug" name="settings[szo_form_slug]"
+                        class="w-full max-w-sm rounded border-gray-300 text-sm focus:border-brand focus-visible:ring-2 focus-visible:ring-brand">
+                        <option value="">— nie przekazuj —</option>
+                        @foreach ($szoForms as $szoForm)
+                            <option value="{{ $szoForm['slug'] }}"
+                                @selected(old('settings.szo_form_slug', $form->settings['szo_form_slug'] ?? '') === $szoForm['slug'])>
+                                {{ $szoForm['title'] }} ({{ $szoForm['slug'] }})
+                            </option>
+                        @endforeach
+                    </select>
+                    <p class="mt-1 text-sm text-gray-600">
+                        Zgłoszenie założy kontakt w CRM, trafi do Skrzynki CRM jako wiadomość
+                        przychodząca i utworzy działanie „odpowiedzieć". Pola dopasowywane są po
+                        nazwach — sprawdź, czy etykiety pól odpowiadają polom formularza w SZO.
+                    </p>
+                @endif
+
+                @error('settings.szo_form_slug')
+                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                @enderror
+            </div>
         </fieldset>
 
         {{-- Osadzanie formularza --}}

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\FormDefinition;
 use App\Models\FormSubmission;
 use App\Models\SiteSetting;
+use App\Services\SzoClient;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
@@ -48,6 +49,12 @@ class FormController extends Controller
             'data'               => $request->input('data', []),
             'ip_address'         => $request->ip(),
         ]);
+
+        // Przekazanie do SZO. Świadomie PO zapisie lokalnym i bez rzucania
+        // wyjątków: zgłoszenie jest już bezpieczne w bazie CMS-a, a niedostępne
+        // SZO nie może popsuć potwierdzenia dla użytkownika. Nieudane próby
+        // dosyła polecenie `php artisan szo:push-submissions`.
+        app(SzoClient::class)->pushSubmission($submission);
 
         $notificationEmail = $formularz->settings['notification_email'] ?? null;
         if (filled($notificationEmail)) {

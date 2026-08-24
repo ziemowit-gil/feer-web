@@ -12,12 +12,28 @@ class FormSubmission extends Model
         'data',
         'ip_address',
         'read_at',
+        'szo_contact_id',
+        'szo_synced_at',
+        'szo_error',
     ];
 
     protected $casts = [
-        'data'    => 'array',
-        'read_at' => 'datetime',
+        'data'          => 'array',
+        'read_at'       => 'datetime',
+        'szo_synced_at' => 'datetime',
     ];
+
+    /** Czy zgłoszenie dotarło do CRM-a w SZO. */
+    public function syncedToSzo(): bool
+    {
+        return $this->szo_synced_at !== null;
+    }
+
+    /** Zgłoszenia do ponowienia: próbowano i się nie udało. */
+    public function scopePendingSzo($query)
+    {
+        return $query->whereNull('szo_synced_at');
+    }
 
     public function form(): BelongsTo
     {
