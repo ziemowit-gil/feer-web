@@ -12,5 +12,7 @@
     @include('templates.ngo-mix.partials.trainings')
     @include('templates.ngo.partials.home.projects')
     @include('templates.ngo.partials.home.support-cta')
-    @include('templates.ngo.partials.home.carousel')
+
+    {{-- Bez karuzeli partnerów: klasyczna stopka pokazuje ten sam zestaw
+         logotypów w bloku „Współpracujemy", i to na każdej podstronie. --}}
 @endsection
