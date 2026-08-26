@@ -39,6 +39,9 @@
                 Proszę poprawić następujące błędy:
             </p>
             <ul class="mt-2 list-inside list-disc space-y-1">
+                @error('spam')
+                    <li>{{ $message }}</li>
+                @enderror
                 @foreach ($fields as $field)
                     @error("data.{$field['key']}")
                         <li>
@@ -61,7 +64,6 @@
         novalidate
         class="space-y-5">
         @csrf
-        <input type="text" name="website" value="" tabindex="-1" autocomplete="off" aria-hidden="true" class="hidden" style="display:none!important">
 
         @if (count($fields) > 0)
             <p class="text-xs text-muted">
@@ -274,6 +276,8 @@
         @endforeach
 
         @if (count($fields) > 0)
+            @include('partials.spam-protection', ['spamScope' => $fs])
+
             <div class="pt-2">
                 <button type="submit"
                     class="inline-flex items-center gap-2 rounded-lg bg-brand px-6 py-2.5 text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">

@@ -6,7 +6,9 @@ use App\Models\FormDefinition;
 use App\Models\FormSubmission;
 use App\Models\SiteSetting;
 use App\Services\SzoClient;
+use App\Support\SpamGuard;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
 
@@ -26,8 +28,23 @@ class FormController extends Controller
     {
         abort_unless($formularz->is_active, 404);
 
-        if (filled($request->input('website'))) {
-            return back()->with('_form_slug', $formularz->slug);
+        if ($spam = SpamGuard::inspect($request, $request->input('data', []), 'formularz:' . $formularz->slug)) {
+            Log::warning('Zablokowano zgłoszenie formularza jako spam', [
+                'formularz' => $formularz->slug,
+                'powód'     => $spam['reason'],
+                'ip'        => $request->ip(),
+            ]);
+
+            // Bot dostaje zwykłe potwierdzenie — nie wie, że go odfiltrowano.
+            // Filtry treści mogą trafić w człowieka, więc tam pokazujemy błąd.
+            return $spam['silent']
+                ? back()
+                    ->with('success', $this->confirmationMessage($formularz))
+                    ->with('_form_slug', $formularz->slug)
+                : back()
+                    ->withErrors(['spam' => $spam['message']])
+                    ->withInput()
+                    ->with('_form_slug', $formularz->slug);
         }
 
         $validator = Validator::make(
@@ -61,13 +78,17 @@ class FormController extends Controller
             $this->sendNotification($formularz, $submission, $notificationEmail);
         }
 
-        $confirmationMessage = filled($formularz->settings['confirmation_message'] ?? null)
+        return back()
+            ->with('success', $this->confirmationMessage($formularz))
+            ->with('_form_slug', $formularz->slug);
+    }
+
+    /** Komunikat potwierdzenia: własny z ustawień formularza albo domyślny. */
+    private function confirmationMessage(FormDefinition $formularz): string
+    {
+        return filled($formularz->settings['confirmation_message'] ?? null)
             ? $formularz->settings['confirmation_message']
             : 'Dziękujemy! Twoje zgłoszenie zostało przyjęte.';
-
-        return back()
-            ->with('success', $confirmationMessage)
-            ->with('_form_slug', $formularz->slug);
     }
 
     private function sendNotification(FormDefinition $formularz, FormSubmission $submission, string $to): void
