@@ -1128,6 +1128,33 @@
                 @error('contact_edelivery_address') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
             </div>
 
+            {{-- Wyróżniona uwaga o kierowaniu korespondencji --}}
+            <div class="mt-8 space-y-4 rounded-lg border border-amber-200 bg-amber-50 p-5">
+                <div>
+                    <h3 class="text-sm font-bold text-ink">Uwaga o kierowaniu korespondencji</h3>
+                    <p class="mt-0.5 text-xs text-muted">Wyróżniona ramka na samej górze podstrony <a href="{{ route('contact.show') }}" target="_blank" rel="noopener" class="text-brand underline">/kontakt</a>, nad formularzem — np. „Pisma urzędowe kierujcie na adres e-Doręczeń, a nie na adres biura". Zostaw treść pustą, aby ukryć ramkę.</p>
+                </div>
+
+                <div>
+                    <label for="contact_correspondence_title" class="mb-1 block text-sm font-bold">Nagłówek uwagi <span class="font-normal text-muted">(opcjonalnie)</span></label>
+                    <input type="text" id="contact_correspondence_title" name="contact_correspondence_title"
+                        value="{{ old('contact_correspondence_title', $settings->contact_correspondence_title) }}"
+                        placeholder="Ważne: kierowanie korespondencji"
+                        class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                    <p class="mt-1 text-xs text-muted">Puste = „Ważne: kierowanie korespondencji".</p>
+                    @error('contact_correspondence_title') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                </div>
+
+                <div>
+                    <label for="contact_correspondence_note" class="mb-1 block text-sm font-bold">Treść uwagi</label>
+                    <textarea id="contact_correspondence_note" name="contact_correspondence_note" rows="4"
+                        placeholder="Całą korespondencję urzędową prosimy kierować na adres e-Doręczeń. Listy wysłane na adres biura mogą dotrzeć z opóźnieniem."
+                        class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">{{ old('contact_correspondence_note', $settings->contact_correspondence_note) }}</textarea>
+                    <p class="mt-1 text-xs text-muted">Zwykły tekst — przejścia do nowej linii zostaną zachowane. Maksymalnie 1000 znaków.</p>
+                    @error('contact_correspondence_note') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                </div>
+            </div>
+
             {{-- Przesyłki: paczka / list / paczkomat --}}
             <div class="mt-8 space-y-4 rounded-lg border border-gray-200 bg-gray-50 p-5">
                 <div>

@@ -145,6 +145,8 @@ class SiteSettingController extends Controller
             'contact_phone' => ['nullable', 'string', 'max:50'],
             'contact_office_hours' => ['nullable', 'string', 'max:255'],
             'contact_edelivery_address' => ['nullable', 'string', 'max:120'],
+            'contact_correspondence_title' => ['nullable', 'string', 'max:120'],
+            'contact_correspondence_note' => ['nullable', 'string', 'max:1000'],
             'contact_shipping_note' => ['nullable', 'string', 'max:255'],
             'contact_paczkomat_code' => ['nullable', 'string', 'max:30'],
             'contact_paczkomat_address' => ['nullable', 'string', 'max:255'],

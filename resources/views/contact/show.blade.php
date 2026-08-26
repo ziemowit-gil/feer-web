@@ -17,6 +17,23 @@
             <div class="prose mb-8 max-w-2xl text-muted">{!! $siteSettings->contact_intro !!}</div>
         @endif
 
+        {{-- Wyróżniona uwaga o kierowaniu korespondencji. Świadomie nad nawigacją
+             sekcji i formularzem — ma być pierwszą rzeczą, którą widać po wstępie.
+             Treść niesie ikona, nagłówek i tekst, więc informacja nie zależy od
+             samego koloru (WCAG 1.4.1), a role="note" wskazuje ją czytnikom ekranu. --}}
+        @if ($siteSettings->hasCorrespondenceNote())
+            <div role="note" aria-labelledby="korespondencja-tytul"
+                class="mb-8 rounded-xl border border-amber-300 border-l-4 border-l-amber-600 bg-amber-50 p-5">
+                <h2 id="korespondencja-tytul" class="flex items-center gap-2 text-base font-bold text-amber-900">
+                    <i class="fa-solid fa-triangle-exclamation shrink-0" aria-hidden="true"></i>
+                    {{ $siteSettings->correspondenceTitle() }}
+                </h2>
+                <p class="mt-2 text-sm leading-relaxed text-amber-900">
+                    {!! nl2br(e($siteSettings->contact_correspondence_note)) !!}
+                </p>
+            </div>
+        @endif
+
         @php
             $meetingTitle  = $siteSettings->contact_meeting_title ?: 'Spotkajmy się';
             $onlineUrl     = $siteSettings->contact_online_meeting_url;

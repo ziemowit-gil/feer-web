@@ -146,6 +146,7 @@ class SiteSetting extends Model implements HasMedia
         'site_name', 'tagline', 'brand_color', 'brand_color_2', 'brand_color_3', 'brand_color_4', 'brand_skip_contrast', 'nav_dark_text', 'ngo_skip_contrast', 'meta_description', 'allow_indexing', 'ga_measurement_id', 'disabled_modules', 'homepage_section_order', 'events_home_color', 'quick_actions_panel_negative',
         'bip_url', 'bip_intro', 'bip_editor_name', 'bip_editor_email', 'bip_gov_url', 'bip_mode', 'facebook_url', 'facebook_group_url', 'twitter_url', 'instagram_url', 'linkedin_url', 'youtube_url', 'substack_url',
         'contact_address', 'contact_city', 'contact_email', 'contact_phone', 'contact_office_hours', 'contact_intro', 'contact_bank_accounts',
+        'contact_correspondence_title', 'contact_correspondence_note',
         'contact_meeting_title', 'contact_online_meeting_url', 'contact_online_meeting_label', 'contact_online_meeting_text',
         'contact_schedule_title', 'contact_schedule', 'contact_schedule_enabled', 'contact_no_schedule_note', 'contact_remote_note', 'contact_meeting_notify_email',
         'contact_edelivery_address',
@@ -459,6 +460,20 @@ class SiteSetting extends Model implements HasMedia
         return array_key_exists((string) $this->content_editor, self::EDITORS)
             ? $this->content_editor
             : 'tinymce';
+    }
+
+    /** Czy na /kontakt pokazać wyróżnioną uwagę o kierowaniu korespondencji. */
+    public function hasCorrespondenceNote(): bool
+    {
+        return filled($this->contact_correspondence_note);
+    }
+
+    /** Nagłówek uwagi o korespondencji — własny albo domyślny. */
+    public function correspondenceTitle(): string
+    {
+        return filled($this->contact_correspondence_title)
+            ? $this->contact_correspondence_title
+            : 'Ważne: kierowanie korespondencji';
     }
 
     /**
