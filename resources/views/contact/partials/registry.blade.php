@@ -41,7 +41,7 @@
                     <p class="text-muted">{{ $row['label'] }}</p>
                     <p class="overflow-x-auto whitespace-nowrap font-mono font-medium text-ink">{{ $row['value'] }}</p>
                     <button type="button" data-copy-button data-copy-value="{{ $row['value'] }}"
-                        class="mt-1 inline-flex items-center gap-1 text-xs font-bold text-brand hover:text-brand-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
+                        class="mt-1 inline-flex min-h-6 items-center gap-1 rounded px-1.5 py-1 text-xs font-bold text-brand transition hover:bg-brand-light hover:text-brand-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
                         <i class="fa-regular fa-copy" aria-hidden="true"></i> Kopiuj numer
                     </button>
                 </li>

@@ -96,6 +96,29 @@ class ContactLayoutTest extends TestCase
             ->assertSee('bg-black/65', false);
     }
 
+    public function test_tabs_layout_uses_accessible_tab_pattern(): void
+    {
+        $this->useLayout('tabs');
+
+        $response = $this->get('/kontakt')->assertOk()
+            ->assertSee('Zapraszamy do kontaktu!')
+            ->assertSee('Dane teleadresowe')
+            ->assertSee('Napisz do nas')
+            ->assertSee('kontakt@example.test');
+
+        $html = $response->getContent();
+
+        // Wzorzec ARIA Tabs: lista zakładek, zakładki i powiązane panele.
+        $this->assertStringContainsString('role="tablist"', $html);
+        $this->assertSame(2, substr_count($html, 'role="tab"'));
+        $this->assertSame(2, substr_count($html, 'role="tabpanel"'));
+        $this->assertStringContainsString('aria-controls="panel-dane"', $html);
+        $this->assertStringContainsString('aria-labelledby="tab-dane"', $html);
+        // Obsługa klawiatury i awaryjne odsłonięcie paneli bez JS.
+        $this->assertStringContainsString('keydown.arrow-right', $html);
+        $this->assertStringContainsString('[x-cloak] { display: block !important; }', $html);
+    }
+
     public function test_unknown_layout_falls_back_to_classic(): void
     {
         $this->useLayout('nie-ma-takiego');
