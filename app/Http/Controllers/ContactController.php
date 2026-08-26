@@ -40,6 +40,7 @@ class ContactController extends Controller
         $view = match ($settings->contactLayoutValue()) {
             'split' => 'contact.show-split',
             'card'  => 'contact.show-card',
+            'tabs'  => 'contact.show-tabs',
             default => 'contact.show',
         };
 

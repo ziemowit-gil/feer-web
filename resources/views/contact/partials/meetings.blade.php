@@ -2,9 +2,11 @@
 @php
     // Sekcje strony kontaktowej mają dwa style opakowania: „plain" — kreska nad
     // sekcją (wariant klasyczny) i „card" — karta w siatce (nowe wyglądy).
-    $sectionClass = ($sectionStyle ?? 'plain') === 'card'
-        ? 'h-full scroll-mt-24 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm'
-        : 'mt-12 scroll-mt-24 border-t border-gray-100 pt-8';
+    $sectionClass = match ($sectionStyle ?? 'plain') {
+        'card' => 'h-full scroll-mt-24 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm',
+        'bare' => 'scroll-mt-24',
+        default => 'mt-12 scroll-mt-24 border-t border-gray-100 pt-8',
+    };
 @endphp
 @if ($showMeetings)
     @php

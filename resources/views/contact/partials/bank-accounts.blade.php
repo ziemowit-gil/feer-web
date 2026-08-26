@@ -2,9 +2,11 @@
 @php
     // Sekcje strony kontaktowej mają dwa style opakowania: „plain" — kreska nad
     // sekcją (wariant klasyczny) i „card" — karta w siatce (nowe wyglądy).
-    $sectionClass = ($sectionStyle ?? 'plain') === 'card'
-        ? 'h-full scroll-mt-24 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm'
-        : 'mt-12 scroll-mt-24 border-t border-gray-100 pt-8';
+    $sectionClass = match ($sectionStyle ?? 'plain') {
+        'card' => 'h-full scroll-mt-24 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm',
+        'bare' => 'scroll-mt-24',
+        default => 'mt-12 scroll-mt-24 border-t border-gray-100 pt-8',
+    };
 @endphp
 @if (! empty($siteSettings->contact_bank_accounts))
     <div id="rachunki" class="{{ $sectionClass }}">
@@ -22,7 +24,7 @@
                         @endif
                         <p class="{{ ! empty($account['purpose']) ? 'mt-1' : '' }} overflow-x-auto whitespace-nowrap font-mono text-sm text-ink">{{ $account['number'] }}</p>
                         <button type="button" data-copy-button data-copy-value="{{ $account['number'] }}"
-                            class="mt-2.5 inline-flex items-center gap-1.5 rounded-full border border-brand px-3 py-1 text-xs font-bold text-brand transition hover:bg-brand-light">
+                            class="mt-2.5 inline-flex min-h-6 items-center gap-1.5 rounded-full border border-brand px-3 py-1 text-xs font-bold text-brand transition hover:bg-brand-light focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
                             <i class="fa-regular fa-copy" aria-hidden="true"></i> Kopiuj numer
                         </button>
                     </div>
