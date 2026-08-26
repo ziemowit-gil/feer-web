@@ -397,7 +397,7 @@
                         </div>
                     @endforeach
                 </div>
-                <p class="-mt-2 text-xs text-muted">Ikony pojawią się w nagłówku tylko wtedy, gdy adres danego serwisu jest uzupełniony w zakładce „Media i BIP".</p>
+                <p class="-mt-2 text-xs text-muted">Ikona pojawi się tylko wtedy, gdy adres danego serwisu jest uzupełniony w zakładce „Media i BIP". Puste sloty (albo takie, których adresu nie podano) uzupełniamy kolejnymi ustawionymi profilami, żeby w nagłówku były trzy ikony.</p>
 
                 <div>
                     <label for="wide_mission_cta_label" class="mb-1 block text-sm font-bold">

@@ -63,7 +63,7 @@
             {{-- Social media (wszystkie — na mobile) + wybrane 3 dla desktop --}}
             @php
                 $socials = $siteSettings->socialLinks();
-                $wmSocials = $siteSettings->chosenSocialLinks([
+                $wmSocials = $siteSettings->headerSocialLinks([
                     'wide_mission_social_1', 'wide_mission_social_2', 'wide_mission_social_3',
                 ]);
                 $wmCtaLabel = trim($siteSettings->wide_mission_cta_label ?? '');
