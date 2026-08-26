@@ -1049,7 +1049,11 @@ class SiteSetting extends Model implements HasMedia
         return '#000000';
     }
 
-    private function contrastRatio(string $hexA, string $hexB): float
+    /**
+     * Kolory bywają puste w starszych bazach — null traktujemy jak barwę bez
+     * odczytu (luminancja 0), żeby brak koloru nie wywracał całej strony.
+     */
+    private function contrastRatio(?string $hexA, ?string $hexB): float
     {
         $luminanceA = $this->relativeLuminance($hexA);
         $luminanceB = $this->relativeLuminance($hexB);
@@ -1060,9 +1064,9 @@ class SiteSetting extends Model implements HasMedia
         return round(($lighter + 0.05) / ($darker + 0.05), 2);
     }
 
-    private function relativeLuminance(string $hex): float
+    private function relativeLuminance(?string $hex): float
     {
-        $hex = ltrim($hex, '#');
+        $hex = ltrim((string) $hex, '#');
 
         if (strlen($hex) !== 6) {
             return 0;
