@@ -241,6 +241,7 @@ class SiteSettingController extends Controller
             'wide_mission_social_1' => ['nullable', Rule::in(array_keys(SiteSetting::SOCIAL_KEYS))],
             'wide_mission_social_2' => ['nullable', Rule::in(array_keys(SiteSetting::SOCIAL_KEYS))],
             'wide_mission_social_3' => ['nullable', Rule::in(array_keys(SiteSetting::SOCIAL_KEYS))],
+            'wide_mission_layout' => ['nullable', Rule::in(array_keys(SiteSetting::WIDE_MISSION_LAYOUTS))],
             'wide_mission_cta_label' => ['nullable', 'string', 'max:80'],
             'wide_mission_cta_url' => ['nullable', 'string', 'max:255'],
             'wide_mission_show_mission' => ['sometimes', 'boolean'],

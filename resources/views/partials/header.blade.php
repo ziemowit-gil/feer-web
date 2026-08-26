@@ -2,6 +2,7 @@
     $headerLayout = $siteSettings->headerLayoutValue();
     $inlineOnBrand = $headerLayout === 'brand_bar_inline';
     $wideMission   = $headerLayout === 'wide_mission';
+    $wmLayout      = $siteSettings->wideMissionLayoutValue();
     $officeBar     = $headerLayout === 'office_bar';
 @endphp
 
@@ -11,6 +12,15 @@
 @elseif ($wideMission)
 {{-- ─── Layout: Szeroka belka (logo | misja | social) ───────────────────── --}}
 <header x-data="{ mobileOpen: false }" @keydown.escape="mobileOpen = false">
+
+    {{-- Układ „bar": numer konta i „Wesprzyj" w osobnym pasku nad belką --}}
+    @if ($wmLayout === 'bar')
+        <div class="hidden border-b border-brand/15 bg-brand-light/50 sm:block">
+            <div class="mx-auto flex max-w-6xl justify-end px-4 py-1.5">
+                @include('partials.wide-support-line', ['onBar' => true])
+            </div>
+        </div>
+    @endif
 
     {{-- Górna belka: logo · misja · social --}}
     <div class="border-b border-gray-100 bg-white">
@@ -60,8 +70,9 @@
                 $wmCtaUrl   = trim($siteSettings->wide_mission_cta_url ?? '');
             @endphp
 
-            {{-- Prawa kolumna: wybrane social + CTA (góra), konto + wesprzyj (dół) --}}
-            <div class="hidden flex-none flex-col items-end gap-1.5 sm:flex">
+            {{-- Prawa kolumna: wybrane social + CTA, a w układzie „right" pod nimi
+                 numer konta i link „Wesprzyj" (w układzie „bar" stoją wyżej). --}}
+            <div class="hidden flex-none flex-col items-end gap-1.5 sm:flex {{ $wmLayout === 'bar' ? 'justify-center' : '' }}">
 
                 {{-- Wiersz 1: max 3 wybrane social media + przycisk CTA --}}
                 @if ($wmSocials || ($wmCtaLabel && $wmCtaUrl))
@@ -76,29 +87,9 @@
                     </div>
                 @endif
 
-                {{-- Wiersz 2: numer konta + link Wesprzyj --}}
-                @if ($siteSettings->bank_account_number || \Illuminate\Support\Facades\Route::has('support.show'))
-                    <div class="flex items-center gap-4 text-xs text-muted">
-                        @if ($siteSettings->bank_account_number)
-                            @if ($siteSettings->wide_mission_highlight_account)
-                                <span class="font-medium text-brand">Nr konta:
-                                    <span class="font-mono font-bold tracking-wide">{{ $siteSettings->bank_account_number }}</span>
-                                </span>
-                            @else
-                                <span>
-                                    <span class="font-medium text-ink">Nr konta:</span>
-                                    <span class="font-mono tracking-wide">{{ $siteSettings->bank_account_number }}</span>
-                                </span>
-                            @endif
-                        @endif
-                        @if (\Illuminate\Support\Facades\Route::has('support.show'))
-                            <a href="{{ route('support.show') }}"
-                                class="flex items-center gap-1 font-bold text-brand hover:text-brand-dark">
-                                <i class="fa-solid fa-heart text-[10px]" aria-hidden="true"></i>
-                                Wesprzyj naszą działalność
-                            </a>
-                        @endif
-                    </div>
+                {{-- Wiersz 2 (tylko układ „right"): numer konta + link Wesprzyj --}}
+                @if ($wmLayout === 'right')
+                    @include('partials.wide-support-line')
                 @endif
             </div>
 
