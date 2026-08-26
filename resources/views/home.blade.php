@@ -154,9 +154,6 @@
                     </li>
                 </ul>
 
-                {{-- Podpowiedź, że korespondencja może iść pod inny adres niż powyższy. --}}
-                @include('partials.correspondence-note', ['variant' => 'inline'])
-
                 <a href="{{ route('contact.show') }}" class="inline-flex w-fit items-center gap-2 rounded-full bg-white px-5 py-2.5 text-sm font-bold text-brand transition hover:bg-white/90">
                     <i class="fa-solid fa-paper-plane" aria-hidden="true"></i> Napisz do nas
                 </a>
