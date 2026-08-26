@@ -57,7 +57,7 @@
             {{-- Standardowy slajd z obrazem --}}
             <div
                 class="absolute inset-0 flex items-end bg-cover bg-center transition-opacity duration-700 motion-reduce:transition-none {{ $index === 0 ? 'opacity-100' : 'opacity-0 pointer-events-none' }}"
-                style="background-image: linear-gradient(0deg, rgba(0,0,0,.65), rgba(0,0,0,.15)), url('{{ $slide->image_url }}')"
+                style="background-image: linear-gradient(0deg, rgba(0,0,0,.75), rgba(0,0,0,.35)), url('{{ $slide->image_url }}')"
                 data-hero-slide
                 role="group"
                 aria-roledescription="slajd"
@@ -67,7 +67,7 @@
             >
                 <div class="mx-auto w-full {{ $hasSidebar ? '' : 'max-w-6xl' }} px-4 py-6 text-white">
                     <h1 class="{{ $hasSidebar ? 'text-xl md:text-2xl' : 'max-w-xl text-2xl md:text-4xl' }} font-bold leading-tight">{{ $slide->title }}</h1>
-                    <p class="mt-1.5 {{ $hasSidebar ? 'text-xs md:text-sm' : 'max-w-lg text-sm md:text-base' }} text-white/85">{{ $slide->text }}</p>
+                    <p class="mt-1.5 {{ $hasSidebar ? 'text-xs md:text-sm' : 'max-w-lg text-sm md:text-base' }} text-white/90">{{ $slide->text }}</p>
                     @if ($slide->button_label && $slide->button_url)
                         <a href="{{ $slide->button_url }}" data-hero-cta {{ $index !== 0 ? 'tabindex=-1' : '' }}
                             class="mt-4 inline-block rounded bg-brand px-5 py-2 text-sm font-bold text-white hover:bg-brand-dark">
