@@ -70,7 +70,7 @@ class SiteSettingsBankAccountsTest extends TestCase
                     ['number' => '  PL27 1090 1014 0000 0712 1981 3001  ', 'purpose' => '  Projekt Wiem FEER  '],
                 ],
             ]))
-            ->assertRedirect(route('admin.ustawienia.edit'));
+            ->assertRedirect(route('admin.ustawienia.edit', ['tab' => 'general']));
 
         $accounts = SiteSetting::query()->first()->contact_bank_accounts;
 

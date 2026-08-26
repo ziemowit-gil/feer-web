@@ -8,7 +8,7 @@
             ? request('tab')
             : 'general';
     @endphp
-    <div x-data="{ tab: '{{ $initialTab }}', wm_layout: '{{ old('header_layout', $settings->header_layout ?? 'classic') }}', wideModal: {{ $errors->has('wide_activation_code') && old('header_layout') === 'wide_mission' ? 'true' : 'false' }}, wideCode: '', wideCodeError: false, prevLayout: '{{ old('header_layout', $settings->header_layout ?? 'classic') }}' }"
+    <div x-data="{ tab: '{{ $initialTab }}', wm_layout: '{{ old('header_layout', $settings->headerLayoutValue()) }}', wideModal: {{ $errors->has('wide_activation_code') && old('header_layout') === 'wide_mission' ? 'true' : 'false' }}, wideCode: '', wideCodeError: false, prevLayout: '{{ old('header_layout', $settings->headerLayoutValue()) }}' }"
         x-init="$watch('tab', value => history.replaceState(null, '', '?tab=' + value))"
         class="max-w-3xl space-y-6">
     @if (! empty($strefaConflict))
@@ -35,7 +35,34 @@
             </div>
         </div>
     @endif
-    <form method="POST" action="{{ route('admin.ustawienia.update') }}" enctype="multipart/form-data"
+    {{-- Podsumowanie błędów walidacji (WCAG 3.3.1). Formularz ma sekcje ukryte
+         w zakładkach, więc błąd w niewidocznej sekcji byłby niewidzialny —
+         stąd lista na górze z przyciskiem przenoszącym do właściwej zakładki. --}}
+    @if ($errors->any())
+        <div id="settings-errors" role="alert" tabindex="-1"
+            class="rounded-lg border border-red-200 bg-red-50 p-5 text-sm text-red-800">
+            <p class="flex items-center gap-2 font-bold">
+                <i class="fa-solid fa-triangle-exclamation shrink-0" aria-hidden="true"></i>
+                Ustawienia nie zostały zapisane — popraw poniższe błędy:
+            </p>
+            <ul class="mt-2 space-y-1.5">
+                @foreach ($errors->keys() as $field)
+                    <li class="flex flex-wrap items-baseline gap-2">
+                        <span>{{ $errors->first($field) }}</span>
+                        <button type="button" data-settings-error-field="{{ $field }}"
+                            class="rounded underline hover:no-underline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-red-700">
+                            Pokaż pole
+                        </button>
+                    </li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
+    {{-- novalidate: przy walidacji przeglądarki puste pole wymagane w ukrytej
+         zakładce blokuje wysyłkę bez żadnego komunikatu („klikam i nic się nie
+         dzieje"). Walidację robi serwer, a błędy pokazuje lista powyżej. --}}
+    <form method="POST" action="{{ route('admin.ustawienia.update') }}" enctype="multipart/form-data" novalidate
         class="rounded-lg border border-gray-200 bg-white p-6">
         @csrf
         @method('PUT')
@@ -67,7 +94,7 @@
             <label for="content_editor" class="mb-1 block text-sm font-bold">Edytor treści (strony, aktualności, projekty)</label>
             <select id="content_editor" name="content_editor" class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
                 @foreach (\App\Models\SiteSetting::EDITORS as $value => $label)
-                    <option value="{{ $value }}" {{ old('content_editor', $settings->content_editor) === $value ? 'selected' : '' }}>{{ $label }}</option>
+                    <option value="{{ $value }}" {{ old('content_editor', $settings->contentEditorValue()) === $value ? 'selected' : '' }}>{{ $label }}</option>
                 @endforeach
             </select>
             @error('content_editor') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
@@ -151,7 +178,7 @@
                             class="mt-0.5 border-gray-300 text-brand focus:ring-brand">
                         @else
                         <input type="radio" name="header_layout" value="{{ $layoutValue }}"
-                            {{ old('header_layout', $settings->header_layout ?? 'classic') === $layoutValue ? 'checked' : '' }}
+                            {{ old('header_layout', $settings->headerLayoutValue()) === $layoutValue ? 'checked' : '' }}
                             x-model="wm_layout"
                             class="mt-0.5 border-gray-300 text-brand focus:ring-brand">
                         @endif
@@ -2122,14 +2149,14 @@
                         z pliku <code>.env</code>, albo skonfiguruj własny serwer SMTP poniżej.
                     </p>
                 </div>
-                <form method="POST" action="{{ route('admin.ustawienia.mail-test') }}">
-                    @csrf
-                    <button type="submit"
-                            class="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-bold text-muted hover:bg-gray-50 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-brand">
-                        <i class="fa-solid fa-paper-plane" aria-hidden="true"></i>
-                        Testuj wysyłkę
-                    </button>
-                </form>
+                {{-- Bez zagnieżdżonego <form> — przeglądarka zamknęłaby tu główny
+                     formularz ustawień i przycisk „Zapisz" przestałby cokolwiek
+                     wysyłać. Przycisk wskazuje formularz testu poczty atrybutem form. --}}
+                <button type="submit" form="mail-test-form"
+                        class="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-bold text-muted hover:bg-gray-50 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-brand">
+                    <i class="fa-solid fa-paper-plane" aria-hidden="true"></i>
+                    Testuj wysyłkę
+                </button>
             </div>
             @if (session('mail_test_status'))
                 <div class="flex items-center gap-2 rounded-xl border px-4 py-3 text-sm font-medium
@@ -2239,7 +2266,7 @@
     </form>
 
     {{-- Test poczty: osobny formularz (nie można zagnieżdżać formularzy), widoczny w zakładce „Poczta". --}}
-    <form method="POST" action="{{ route('admin.ustawienia.mail-test') }}" x-show="tab === 'mail'" x-cloak
+    <form id="mail-test-form" method="POST" action="{{ route('admin.ustawienia.mail-test') }}" x-show="tab === 'mail'" x-cloak
         class="rounded-lg border border-gray-200 bg-white p-6">
         @csrf
         <h2 class="mb-1 text-base font-bold text-ink">Wyślij wiadomość testową</h2>
@@ -2255,6 +2282,79 @@
         </div>
     </form>
     </div>
+
+    <script>
+        (function () {
+            // Błąd walidacji może dotyczyć pola z zakładki, która akurat jest
+            // ukryta. Zakładkę odczytujemy z najbliższego przodka z x-show,
+            // więc nie trzeba utrzymywać osobnej mapy pole → zakładka.
+            function fieldElement(name) {
+                return document.querySelector('[name="' + name + '"]')
+                    || document.getElementById(name)
+                    || document.getElementById('editor-' + name);
+            }
+
+            // Kontener zakładki, w której leży pole — stąd bierzemy jej nazwę
+            // i, przez Alpine.$data(), właściwy komponent z polem `tab`.
+            function tabContainerOf(element) {
+                for (let node = element; node; node = node.parentElement) {
+                    const match = (node.getAttribute && node.getAttribute('x-show') || '').match(/tab === '([^']+)'/);
+                    if (match) return { node: node, tab: match[1] };
+                }
+                return null;
+            }
+
+            // Po zmianie zakładki Alpine odsłania pole dopiero w kolejnym cyklu,
+            // więc fokus ponawiamy, dopóki pole nie stanie się widoczne.
+            function focusWhenVisible(element, attemptsLeft) {
+                if (element.offsetParent === null && attemptsLeft > 0) {
+                    setTimeout(function () { focusWhenVisible(element, attemptsLeft - 1); }, 50);
+                    return;
+                }
+
+                element.scrollIntoView({ block: 'center' });
+                if (element.focus) element.focus({ preventScroll: true });
+            }
+
+            function openTabOf(name) {
+                const element = fieldElement(name);
+                if (! element) return null;
+
+                const container = tabContainerOf(element);
+
+                if (container && window.Alpine) {
+                    window.Alpine.$data(container.node).tab = container.tab;
+                }
+
+                return element;
+            }
+
+            document.querySelectorAll('[data-settings-error-field]').forEach(function (button) {
+                button.addEventListener('click', function () {
+                    const element = openTabOf(button.dataset.settingsErrorField);
+                    if (element) focusWhenVisible(element, 10);
+                });
+            });
+
+            // Po nieudanym zapisie przenosimy uwagę na listę błędów i od razu
+            // otwieramy zakładkę pierwszego błędnego pola.
+            // Po nieudanym zapisie otwieramy zakładkę pierwszego błędnego pola,
+            // ale fokus zostawiamy na liście błędów — czytnik ekranu ma
+            // przeczytać całe podsumowanie, a nie pojedyncze pole (WCAG 3.3.1).
+            const summary = document.getElementById('settings-errors');
+            if (summary) {
+                const first = summary.querySelector('[data-settings-error-field]');
+
+                // Alpine startuje jako moduł, więc zakładkę przełączamy dopiero,
+                // gdy jest gotowy.
+                document.addEventListener('alpine:initialized', function () {
+                    if (first) openTabOf(first.dataset.settingsErrorField);
+                });
+
+                summary.focus();
+            }
+        })();
+    </script>
 
     <script>
         (function () {

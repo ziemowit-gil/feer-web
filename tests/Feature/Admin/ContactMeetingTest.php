@@ -104,7 +104,7 @@ class ContactMeetingTest extends TestCase
                 ['type' => 'date', 'date' => '', 'where' => 'brak daty — do odrzucenia'],
                 ['type' => 'weekly', 'weekday' => '', 'where' => 'brak dnia — do odrzucenia'],
             ],
-        ]))->assertRedirect(route('admin.ustawienia.edit'));
+        ]))->assertRedirect(route('admin.ustawienia.edit', ['tab' => 'general']));
 
         $schedule = SiteSetting::query()->first()->contact_schedule;
 
@@ -147,7 +147,7 @@ class ContactMeetingTest extends TestCase
                 ['type' => 'date', 'date' => now()->addDays(7)->toDateString(), 'time' => '10:00', 'where' => 'Kraków', 'note' => ''],
             ],
             'notify_schedule_change' => '1',
-        ]))->assertRedirect(route('admin.ustawienia.edit'));
+        ]))->assertRedirect(route('admin.ustawienia.edit', ['tab' => 'general']));
 
         Mail::assertSent(ScheduleChangeMail::class, function ($mail) {
             return $mail->hasTo('spotkania@feer.org.pl')
@@ -166,7 +166,7 @@ class ContactMeetingTest extends TestCase
             'contact_schedule' => [
                 ['type' => 'date', 'date' => now()->addDays(7)->toDateString(), 'where' => 'Kraków'],
             ],
-        ]))->assertRedirect(route('admin.ustawienia.edit'));
+        ]))->assertRedirect(route('admin.ustawienia.edit', ['tab' => 'general']));
 
         Mail::assertNothingSent();
     }

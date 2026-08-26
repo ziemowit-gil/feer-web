@@ -441,6 +441,27 @@ class SiteSetting extends Model implements HasMedia
     }
 
     /**
+     * Układ nagłówka sprowadzony do jednej z obsługiwanych opcji. Starsze bazy
+     * mają tu wartości spoza listy (np. „default”) — bez normalizacji żaden
+     * radio w ustawieniach nie byłby zaznaczony, przeglądarka nie wysłałaby
+     * pola, a wymagana walidacja odrzucałaby cały zapis ustawień.
+     */
+    public function headerLayoutValue(): string
+    {
+        return array_key_exists((string) $this->header_layout, self::HEADER_LAYOUTS)
+            ? $this->header_layout
+            : 'classic';
+    }
+
+    /** Edytor treści sprowadzony do jednej z obsługiwanych opcji (patrz wyżej). */
+    public function contentEditorValue(): string
+    {
+        return array_key_exists((string) $this->content_editor, self::EDITORS)
+            ? $this->content_editor
+            : 'tinymce';
+    }
+
+    /**
      * Whether the optional contact notice box should currently be shown: it
      * needs some content, and — if a schedule is set — "now" must fall within
      * the visible-from / visible-until window (either bound may be open).
