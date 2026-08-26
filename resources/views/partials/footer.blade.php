@@ -97,6 +97,12 @@
                             <i class="bi bi-youtube" aria-hidden="true"></i>
                         </a>
                     @endif
+
+                    @if ($siteSettings->isModuleEnabled('news'))
+                        <a href="{{ route('feed') }}" class="flex h-9 w-9 items-center justify-center rounded-full bg-brand text-white transition hover:bg-brand-dark" aria-label="Kanał RSS z aktualnościami">
+                            <i class="bi bi-rss" aria-hidden="true"></i>
+                        </a>
+                    @endif
                 </div>
 
             </div>

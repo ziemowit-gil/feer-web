@@ -9,6 +9,9 @@
     <meta name="description" content="{{ trim($__env->yieldContent('meta_description', $siteSettings->meta_description)) }}">
     <meta name="robots" content="{{ $siteSettings->allow_indexing ? 'index, follow' : 'noindex, nofollow' }}">
     <link rel="canonical" href="{{ url()->current() }}">
+    @if ($siteSettings->isModuleEnabled('news'))
+        <link rel="alternate" type="application/rss+xml" title="{{ $siteSettings->site_name }} — Aktualności" href="{{ route('feed') }}">
+    @endif
 
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="{{ $siteSettings->site_name }}">
@@ -77,7 +80,7 @@
         @include('templates.ngo.partials.topbar')
         @include('templates.ngo.partials.header')
     @else
-        @include('partials.topbar')
+        @include($siteSettings->headerLayoutValue() === 'office_bar' ? 'partials.topbar-info' : 'partials.topbar')
         @include('partials.header')
     @endif
 

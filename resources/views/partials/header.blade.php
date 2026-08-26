@@ -1,10 +1,14 @@
 @php
-    $headerLayout = $siteSettings->header_layout;
+    $headerLayout = $siteSettings->headerLayoutValue();
     $inlineOnBrand = $headerLayout === 'brand_bar_inline';
     $wideMission   = $headerLayout === 'wide_mission';
+    $officeBar     = $headerLayout === 'office_bar';
 @endphp
 
-@if ($wideMission)
+@if ($officeBar)
+@include('partials.header-office')
+
+@elseif ($wideMission)
 {{-- ─── Layout: Szeroka belka (logo | misja | social) ───────────────────── --}}
 <header x-data="{ mobileOpen: false }" @keydown.escape="mobileOpen = false">
 
@@ -46,25 +50,12 @@
                 <span class="flex-1" aria-hidden="true"></span>
             @endif
 
-            {{-- Social media (wszystkie — na mobile) + wybrane 2 dla desktop --}}
+            {{-- Social media (wszystkie — na mobile) + wybrane 3 dla desktop --}}
             @php
-                $socials = array_filter([
-                    'facebook'       => [$siteSettings->facebook_url,       'bi bi-facebook',   'Facebook'],
-                    'facebook_group' => [$siteSettings->facebook_group_url, 'bi bi-people-fill', 'Grupa Facebook'],
-                    'instagram'      => [$siteSettings->instagram_url,      'bi bi-instagram',  'Instagram'],
-                    'youtube'        => [$siteSettings->youtube_url,        'bi bi-youtube',    'YouTube'],
-                    'linkedin'       => [$siteSettings->linkedin_url,       'bi bi-linkedin',   'LinkedIn'],
-                    'twitter'        => [$siteSettings->twitter_url,        'bi bi-twitter-x',  'Twitter / X'],
-                    'substack'       => [$siteSettings->substack_url,       'bi bi-substack',   'Substack'],
-                ], fn ($s) => !empty($s[0]));
-                $socialKeys = \App\Models\SiteSetting::SOCIAL_KEYS;
-                $wmSocials = [];
-                foreach (['wide_mission_social_1', 'wide_mission_social_2'] as $_f) {
-                    $_k = $siteSettings->$_f ?? '';
-                    if ($_k && isset($socialKeys[$_k]) && !empty($siteSettings->{$_k . '_url'})) {
-                        $wmSocials[] = [$siteSettings->{$_k . '_url'}, $socialKeys[$_k]['icon'], $socialKeys[$_k]['label']];
-                    }
-                }
+                $socials = $siteSettings->socialLinks();
+                $wmSocials = $siteSettings->chosenSocialLinks([
+                    'wide_mission_social_1', 'wide_mission_social_2', 'wide_mission_social_3',
+                ]);
                 $wmCtaLabel = trim($siteSettings->wide_mission_cta_label ?? '');
                 $wmCtaUrl   = trim($siteSettings->wide_mission_cta_url ?? '');
             @endphp
@@ -72,19 +63,13 @@
             {{-- Prawa kolumna: wybrane social + CTA (góra), konto + wesprzyj (dół) --}}
             <div class="hidden flex-none flex-col items-end gap-1.5 sm:flex">
 
-                {{-- Wiersz 1: max 2 wybrane social media + przycisk CTA --}}
+                {{-- Wiersz 1: max 3 wybrane social media + przycisk CTA --}}
                 @if ($wmSocials || ($wmCtaLabel && $wmCtaUrl))
-                    <div class="flex items-center gap-2">
-                        @foreach ($wmSocials as [$url, $icon, $label])
-                            <a href="{{ $url }}" target="_blank" rel="noopener"
-                                class="flex min-h-10 min-w-10 items-center justify-center rounded-full border border-gray-200 text-lg text-muted transition hover:border-brand hover:text-brand"
-                                aria-label="{{ $label }}">
-                                <i class="{{ $icon }}" aria-hidden="true"></i>
-                            </a>
-                        @endforeach
+                    <div class="flex items-center gap-2.5">
+                        @include('partials.social-icons', ['socialIcons' => $wmSocials])
                         @if ($wmCtaLabel && $wmCtaUrl)
                             <a href="{{ $wmCtaUrl }}"
-                                class="ml-1 flex items-center gap-1.5 rounded-full bg-brand px-4 py-2 text-sm font-bold text-white transition hover:bg-brand-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
+                                class="flex items-center gap-1.5 rounded-full bg-brand px-4 py-2.5 text-sm font-bold text-white transition hover:bg-brand-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
                                 {{ $wmCtaLabel }}
                             </a>
                         @endif

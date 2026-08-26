@@ -59,6 +59,7 @@ use App\Http\Controllers\ReportController;
 use App\Http\Controllers\MaterialSubscriberController;
 use App\Http\Controllers\MeetingSignupController;
 use App\Http\Controllers\NewsArchiveController;
+use App\Http\Controllers\FeedController;
 use App\Http\Controllers\NewsController;
 use App\Http\Controllers\NewsletterController;
 use App\Http\Controllers\PageController;
@@ -127,6 +128,9 @@ Route::middleware('module:projects')->group(function () {
 Route::middleware('module:news')->group(function () {
     Route::get('/aktualnosci', [NewsController::class, 'index'])->name('news.index');
     Route::get('/archiwum', [NewsArchiveController::class, 'index'])->name('news.archiwum');
+    // Kanał RSS — przed trasą ze slugiem, inaczej „rss.xml" zostałoby uznane za slug aktualności.
+    Route::get('/aktualnosci/rss.xml', [FeedController::class, 'news'])->name('news.feed');
+    Route::get('/rss.xml', [FeedController::class, 'news'])->name('feed');
     Route::get('/aktualnosci/{news:slug}', [NewsController::class, 'show'])->name('news.show');
     Route::get('/aktualnosci/{news:slug}/pdf', [NewsController::class, 'pdf'])->name('news.pdf');
 });
@@ -202,6 +206,8 @@ Route::middleware('module:bip')->group(function () {
 Route::get('/instagram', [ShortcutController::class, 'instagram'])->name('shortcut.instagram');
 Route::get('/fb', [ShortcutController::class, 'facebook'])->name('shortcut.fb');
 Route::get('/facebook', [ShortcutController::class, 'facebook'])->name('shortcut.facebook');
+Route::get('/li', [ShortcutController::class, 'linkedin'])->name('shortcut.li');
+Route::get('/linkedin', [ShortcutController::class, 'linkedin'])->name('shortcut.linkedin');
 
 // Deklaracja dostępności (ustawa o dostępności cyfrowej) + formularz zgłaszania barier.
 Route::get('/deklaracja-dostepnosci', [AccessibilityController::class, 'show'])->name('accessibility.show');

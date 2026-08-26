@@ -94,7 +94,16 @@ class SiteSetting extends Model implements HasMedia
         'classic' => 'Klasyczny (menu na białym tle, obok logo)',
         'brand_bar' => 'Pasek w kolorze marki (menu na osobnym pasku pod logo)',
         'brand_bar_inline' => 'Pasek w kolorze marki (menu w jednym rzędzie z logo)',
-        'wide_mission' => 'Wide (logo | misja | 2×social + CTA) — menu na pasku poniżej',
+        'wide_mission' => 'Wide (logo | misja | 3×social + CTA) — menu na pasku poniżej',
+        'office_bar' => 'Urzędowy (logo | nr konta | BIP + social + szukajka z boku) — menu na pasku poniżej',
+    ];
+
+    /**
+     * Warianty wyglądu strony kontaktowej, wg wartości w `contact_layout`.
+     */
+    public const CONTACT_LAYOUTS = [
+        'classic' => 'Klasyczny (jedna kolumna: formularz + dane z boku, sekcje pod spodem)',
+        'split'   => 'Kafelkowy (nagłówek z kaflami kontaktu, formularz w karcie, dane w przyklejonym panelu)',
     ];
 
     /**
@@ -155,6 +164,9 @@ class SiteSetting extends Model implements HasMedia
         'contact_box_text', 'contact_box_link_label', 'contact_box_link_url', 'contact_box_visible_from', 'contact_box_visible_until',
         'homepage_banner_text', 'homepage_banner_link_label', 'homepage_banner_link_url', 'homepage_banner_visible_from', 'homepage_banner_visible_until',
         'newsletter_code', 'header_layout', 'show_topbar_bip', 'show_topbar_social', 'content_editor',
+        'infobar_show_date', 'infobar_show_nameday', 'office_show_account', 'office_show_search',
+        'contact_layout', 'contact_office_address', 'contact_office_city', 'contact_office_building',
+        'contact_office_note', 'contact_office_photo_alt',
         'site_url', 'maintenance_mode', 'maintenance_message',
         'microsoft_login_enabled', 'microsoft_only_login', 'emergency_login_token', 'microsoft_client_id', 'microsoft_client_secret', 'microsoft_tenant_id',
         'member_login_enabled', 'member_allowed_domains', 'szo_api_url', 'yubico_client_id', 'yubico_secret_key', 'two_factor_required_admins',
@@ -165,7 +177,7 @@ class SiteSetting extends Model implements HasMedia
         'news_layout', 'volunteer_layout',
         'site_template', 'municipality_shortcuts_slug', 'municipality_carousel_title',
         'municipality_weather_lat', 'municipality_weather_lon', 'municipality_show_google_translate',
-        'wide_mission_social_1', 'wide_mission_social_2', 'wide_mission_cta_label', 'wide_mission_cta_url', 'wide_mission_show_mission', 'wide_mission_highlight_account', 'wide_mission_nav_align', 'wide_mission_search_in_nav', 'wide_mission_sidebar', 'wide_mission_sidebar_style', 'wide_mission_nav_style', 'wide_mission_nav_hover_white', 'wide_mission_nav_active_white', 'wide_mission_nav_icons_white', 'hero_mission_slide', 'hero_mission_bg', 'hero_mission_order',
+        'wide_mission_social_1', 'wide_mission_social_2', 'wide_mission_social_3', 'wide_mission_cta_label', 'wide_mission_cta_url', 'wide_mission_show_mission', 'wide_mission_highlight_account', 'wide_mission_nav_align', 'wide_mission_search_in_nav', 'wide_mission_sidebar', 'wide_mission_sidebar_style', 'wide_mission_nav_style', 'wide_mission_nav_hover_white', 'wide_mission_nav_active_white', 'wide_mission_nav_icons_white', 'hero_mission_slide', 'hero_mission_bg', 'hero_mission_order',
         'krs_number', 'nip_number', 'regon_number', 'projects_intro', 'materials_intro', 'materials_notice',
         'accessibility_entity_name', 'accessibility_status', 'accessibility_status_note',
         'accessibility_page_published_at', 'accessibility_page_updated_at', 'accessibility_declaration_date',
@@ -301,6 +313,10 @@ class SiteSetting extends Model implements HasMedia
         'accessibility_declaration_date' => 'date',
         'cache_config' => 'array',
         'municipality_show_google_translate' => 'boolean',
+        'infobar_show_date' => 'boolean',
+        'infobar_show_nameday' => 'boolean',
+        'office_show_account' => 'boolean',
+        'office_show_search' => 'boolean',
         'municipality_weather_lat' => 'decimal:6',
         'municipality_weather_lon' => 'decimal:6',
     ];
@@ -441,6 +457,14 @@ class SiteSetting extends Model implements HasMedia
             : ($this->contact_email ?: null);
     }
 
+    /** Wariant strony kontaktowej sprowadzony do obsługiwanej wartości. */
+    public function contactLayoutValue(): string
+    {
+        return array_key_exists((string) $this->contact_layout, self::CONTACT_LAYOUTS)
+            ? $this->contact_layout
+            : 'classic';
+    }
+
     /**
      * Układ nagłówka sprowadzony do jednej z obsługiwanych opcji. Starsze bazy
      * mają tu wartości spoza listy (np. „default”) — bez normalizacji żaden
@@ -466,6 +490,24 @@ class SiteSetting extends Model implements HasMedia
     public function hasCorrespondenceNote(): bool
     {
         return filled($this->contact_correspondence_note);
+    }
+
+    /** Czy podano osobny adres biura / do korespondencji. */
+    public function hasOfficeAddress(): bool
+    {
+        return filled($this->contact_office_address) || filled($this->contact_office_city);
+    }
+
+    /** Adres biura w jednej linii (do linku do map). */
+    public function officeAddressLine(): string
+    {
+        return trim(trim((string) $this->contact_office_address).', '.trim((string) $this->contact_office_city), ', ');
+    }
+
+    /** Adres rejestrowy w jednej linii (do linku do map). */
+    public function registeredAddressLine(): string
+    {
+        return trim(trim((string) $this->contact_address).', '.trim((string) $this->contact_city), ', ');
     }
 
     /** Nagłówek uwagi o korespondencji — własny albo domyślny. */
@@ -771,9 +813,17 @@ class SiteSetting extends Model implements HasMedia
         $this->addMediaCollection('news_default_image')->singleFile();
         $this->addMediaCollection('bip_logo')->singleFile();
         $this->addMediaCollection('hero_mission_image')->singleFile();
+        // Zdjęcie biura / wejścia do budynku pokazywane na stronie kontaktowej.
+        $this->addMediaCollection('office_photo')->singleFile();
         // Osobna galeria dla strony „Wesprzyj nas" (wiele zdjęć, niezależna od
         // głównej galerii strony) — kolaż „działamy" jako dowód aktywności.
         $this->addMediaCollection('support_gallery');
+    }
+
+    /** Zdjęcie biura (wejścia do budynku) albo null, gdy nie wgrano. */
+    public function officePhotoUrl(): ?string
+    {
+        return $this->getFirstMediaUrl('office_photo') ?: null;
     }
 
     public function missionSlideImageUrl(): ?string
@@ -826,6 +876,58 @@ class SiteSetting extends Model implements HasMedia
         }
 
         return ! in_array($module, $this->disabled_modules ?? [], true);
+    }
+
+    /**
+     * Ustawione profile social media w kolejności SOCIAL_KEYS, jako trójki
+     * [adres, klasa ikony, etykieta]. Pusty adres = serwis pomijany.
+     */
+    public function socialLinks(?int $limit = null): array
+    {
+        $links = [];
+
+        foreach (self::SOCIAL_KEYS as $key => $meta) {
+            $url = trim((string) ($this->{$key.'_url'} ?? ''));
+
+            if ($url === '') {
+                continue;
+            }
+
+            $links[] = [$url, $meta['icon'], $meta['label']];
+
+            if ($limit !== null && count($links) >= $limit) {
+                break;
+            }
+        }
+
+        return $links;
+    }
+
+    /**
+     * Profile wskazane w wybranych polach ustawień (np. sloty nagłówka),
+     * bez powtórzeń i bez pozycji z pustym adresem.
+     */
+    public function chosenSocialLinks(array $fields): array
+    {
+        $links = [];
+
+        foreach ($fields as $field) {
+            $key = trim((string) ($this->$field ?? ''));
+
+            if ($key === '' || ! isset(self::SOCIAL_KEYS[$key]) || isset($links[$key])) {
+                continue;
+            }
+
+            $url = trim((string) ($this->{$key.'_url'} ?? ''));
+
+            if ($url === '') {
+                continue;
+            }
+
+            $links[$key] = [$url, self::SOCIAL_KEYS[$key]['icon'], self::SOCIAL_KEYS[$key]['label']];
+        }
+
+        return array_values($links);
     }
 
     /**
@@ -1012,7 +1114,7 @@ class SiteSetting extends Model implements HasMedia
      */
     public function brandContrastWithWhite(): float
     {
-        return $this->contrastRatio($this->brand_color, '#ffffff');
+        return $this->contrastRatio($this->audienceColor(null), '#ffffff');
     }
 
     public function brandMeetsMinimumContrast(): bool
@@ -1028,7 +1130,7 @@ class SiteSetting extends Model implements HasMedia
     public function navDarkText(): bool
     {
         return $this->nav_dark_text
-            || $this->contrastRatio($this->brand_color, '#ffffff') < 3.0;
+            || $this->contrastRatio($this->audienceColor(null), '#ffffff') < 3.0;
     }
 
     /**

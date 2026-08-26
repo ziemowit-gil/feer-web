@@ -139,6 +139,17 @@ class SiteSettingController extends Controller
             'substack_url' => ['nullable', 'string', 'max:255'],
             'show_topbar_bip' => ['sometimes', 'boolean'],
             'show_topbar_social' => ['sometimes', 'boolean'],
+            'infobar_show_date' => ['sometimes', 'boolean'],
+            'infobar_show_nameday' => ['sometimes', 'boolean'],
+            'office_show_account' => ['sometimes', 'boolean'],
+            'office_show_search' => ['sometimes', 'boolean'],
+            'contact_layout' => ['nullable', Rule::in(array_keys(SiteSetting::CONTACT_LAYOUTS))],
+            'contact_office_address' => ['nullable', 'string', 'max:255'],
+            'contact_office_city' => ['nullable', 'string', 'max:255'],
+            'contact_office_building' => ['nullable', 'string', 'max:255'],
+            'contact_office_note' => ['nullable', 'string', 'max:1000'],
+            'contact_office_photo_alt' => ['nullable', 'string', 'max:255'],
+            'office_photo' => ['nullable', 'image', 'max:4096'],
             'contact_address' => ['required', 'string', 'max:255'],
             'contact_city' => ['required', 'string', 'max:255'],
             'contact_email' => ['required', 'email', 'max:255'],
@@ -229,6 +240,7 @@ class SiteSettingController extends Controller
             'news_layout' => ['nullable', 'in:grid,list,cards'],
             'wide_mission_social_1' => ['nullable', Rule::in(array_keys(SiteSetting::SOCIAL_KEYS))],
             'wide_mission_social_2' => ['nullable', Rule::in(array_keys(SiteSetting::SOCIAL_KEYS))],
+            'wide_mission_social_3' => ['nullable', Rule::in(array_keys(SiteSetting::SOCIAL_KEYS))],
             'wide_mission_cta_label' => ['nullable', 'string', 'max:80'],
             'wide_mission_cta_url' => ['nullable', 'string', 'max:255'],
             'wide_mission_show_mission' => ['sometimes', 'boolean'],
@@ -318,6 +330,10 @@ class SiteSettingController extends Controller
         $data['wide_mission_nav_icons_white'] = $request->boolean('wide_mission_nav_icons_white');
         $data['show_topbar_bip'] = $request->boolean('show_topbar_bip');
         $data['show_topbar_social'] = $request->boolean('show_topbar_social');
+        $data['infobar_show_date'] = $request->boolean('infobar_show_date');
+        $data['infobar_show_nameday'] = $request->boolean('infobar_show_nameday');
+        $data['office_show_account'] = $request->boolean('office_show_account');
+        $data['office_show_search'] = $request->boolean('office_show_search');
         $data['contact_show_form'] = $request->boolean('contact_show_form');
         $data['contact_show_bank_accounts'] = $request->boolean('contact_show_bank_accounts');
         $data['contact_show_coordinators'] = $request->boolean('contact_show_coordinators');
@@ -415,7 +431,7 @@ class SiteSettingController extends Controller
             ->values()
             ->all() ?: null;
 
-        unset($data['logo'], $data['remove_logo'], $data['og_image'], $data['remove_og_image'], $data['support_image'], $data['remove_support_image'], $data['support_gallery'], $data['remove_support_gallery'], $data['news_default_image'], $data['remove_news_default_image'], $data['bip_logo'], $data['remove_bip_logo'], $data['enabled_modules'], $data['section_order_json'], $data['notify_schedule_change']);
+        unset($data['logo'], $data['remove_logo'], $data['og_image'], $data['remove_og_image'], $data['support_image'], $data['remove_support_image'], $data['support_gallery'], $data['remove_support_gallery'], $data['news_default_image'], $data['remove_news_default_image'], $data['bip_logo'], $data['remove_bip_logo'], $data['office_photo'], $data['remove_office_photo'], $data['enabled_modules'], $data['section_order_json'], $data['notify_schedule_change']);
 
         $colorWasAdjusted = ! $skipContrast && $data['brand_color'] !== $request->input('brand_color');
 
@@ -456,6 +472,12 @@ class SiteSettingController extends Controller
             $settings->addMediaFromRequest('bip_logo')->toMediaCollection('bip_logo');
         } elseif ($request->boolean('remove_bip_logo')) {
             $settings->clearMediaCollection('bip_logo');
+        }
+
+        if ($request->hasFile('office_photo')) {
+            $settings->addMediaFromRequest('office_photo')->toMediaCollection('office_photo');
+        } elseif ($request->boolean('remove_office_photo')) {
+            $settings->clearMediaCollection('office_photo');
         }
 
         // Osobna galeria strony „Wesprzyj nas": najpierw usuwamy odznaczone
