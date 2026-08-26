@@ -368,6 +368,21 @@
                     </div>
                 </div>
 
+                <div>
+                    <p class="mb-2 text-sm font-bold">Rozmieszczenie elementów</p>
+                    <div class="grid gap-3 sm:grid-cols-2">
+                        @foreach (\App\Models\SiteSetting::WIDE_MISSION_LAYOUTS as $wmlValue => $wmlLabel)
+                            <label class="flex cursor-pointer items-start gap-3 rounded-lg border bg-white p-3 transition has-[:checked]:border-brand has-[:checked]:bg-brand-light">
+                                <input type="radio" name="wide_mission_layout" value="{{ $wmlValue }}"
+                                    {{ old('wide_mission_layout', $settings->wideMissionLayoutValue()) === $wmlValue ? 'checked' : '' }}
+                                    class="mt-0.5 border-gray-300 text-brand focus:ring-brand">
+                                <span class="text-sm leading-snug">{{ $wmlLabel }}</span>
+                            </label>
+                        @endforeach
+                    </div>
+                    @error('wide_mission_layout') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                </div>
+
                 <div class="grid gap-4 sm:grid-cols-3">
                     @foreach ([1, 2, 3] as $smSlot)
                         @php $smField = 'wide_mission_social_'.$smSlot; @endphp
