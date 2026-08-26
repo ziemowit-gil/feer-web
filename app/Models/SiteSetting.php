@@ -104,6 +104,7 @@ class SiteSetting extends Model implements HasMedia
     public const CONTACT_LAYOUTS = [
         'classic' => 'Klasyczny (jedna kolumna: formularz + dane z boku, sekcje pod spodem)',
         'split'   => 'Kafelkowy (nagłówek z kaflami kontaktu, formularz w karcie, dane w przyklejonym panelu)',
+        'card'    => 'Wizytówka (na wierzchu adres biura, telefon i e-mail, pod spodem formularz)',
     ];
 
     /**

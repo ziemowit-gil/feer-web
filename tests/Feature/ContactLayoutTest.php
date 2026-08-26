@@ -57,6 +57,45 @@ class ContactLayoutTest extends TestCase
             ->assertSee('kontakt@example.test');
     }
 
+    public function test_card_layout_shows_office_phone_and_email_on_top(): void
+    {
+        $this->useLayout('card', [
+            'contact_office_address' => 'ul. Przykładowa 10/3',
+            'contact_office_city' => '30-001 Kraków',
+            'contact_office_building' => 'Biurowiec HEXAGON',
+        ]);
+
+        $this->get('/kontakt')->assertOk()
+            ->assertSee('Biuro / korespondencja')
+            ->assertSee('Biurowiec HEXAGON')
+            ->assertSee('+48 123 456 789')
+            ->assertSee('kontakt@example.test')
+            ->assertSee('Napisz do nas')
+            ->assertSee('Wyślij wiadomość');
+    }
+
+    public function test_card_layout_uses_the_office_photo_as_hero_background(): void
+    {
+        $this->useLayout('card');
+
+        // Bez zdjęcia nagłówek jest jednolity — brak klasy tła i przyciemnienia.
+        $this->get('/kontakt')->assertOk()->assertDontSee('contact-hero-photo', false);
+
+        $settings = SiteSetting::current();
+        $settings->addMediaFromString('udawane-zdjecie')
+            ->usingFileName('biuro.jpg')
+            ->toMediaCollection('office_photo');
+
+        \Closure::bind(function () {
+            static::$cached = null;
+        }, null, SiteSetting::class)();
+
+        $this->get('/kontakt')->assertOk()
+            ->assertSee('contact-hero-photo', false)
+            // Przyciemnienie 65% czerni daje białemu tekstowi min. 7:1 (WCAG 1.4.3).
+            ->assertSee('bg-black/65', false);
+    }
+
     public function test_unknown_layout_falls_back_to_classic(): void
     {
         $this->useLayout('nie-ma-takiego');

@@ -113,6 +113,17 @@ html.contrast-bw svg {
     fill: #ff0;
 }
 
+/* Zdjęcie w tle nagłówka strony kontaktowej: w trybach wysokiego kontrastu
+   znika, żeby tekst leżał na jednolitym tle (WCAG 1.4.3/1.4.6). */
+.contact-hero-photo {
+    background-size: cover;
+    background-position: center;
+}
+html.contrast .contact-hero-photo,
+html.contrast-bw .contact-hero-photo {
+    background-image: none !important;
+}
+
 /* Kontrast: odcienie szarości (desaturacja — pomocne przy zaburzeniach percepcji barw). */
 html.contrast-gray {
     filter: grayscale(100%);

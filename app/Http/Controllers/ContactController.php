@@ -37,7 +37,11 @@ class ContactController extends Controller
         $shipPhone = $settings->contact_shipping_phone;
         $showShipping = filled($shipNote) || filled($pkCode) || filled($pkAddr) || filled($shipPhone);
 
-        $view = $settings->contactLayoutValue() === 'split' ? 'contact.show-split' : 'contact.show';
+        $view = match ($settings->contactLayoutValue()) {
+            'split' => 'contact.show-split',
+            'card'  => 'contact.show-card',
+            default => 'contact.show',
+        };
 
         return view($view, [
             'coordinators'  => $this->loadCoordinators(),

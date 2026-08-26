@@ -16,6 +16,12 @@
 
 @section('content')
     @php
+        // Kafle szybkiego kontaktu: adres kierujemy na biuro, jeśli jest inne niż
+        // rejestrowe — tam realnie się przychodzi i wysyła pocztę.
+        $tileAddress = $siteSettings->hasOfficeAddress()
+            ? $siteSettings->officeAddressLine()
+            : $siteSettings->registeredAddressLine();
+
         $quickTiles = collect([
             [
                 'show'  => filled($siteSettings->contact_email),
@@ -32,14 +38,33 @@
                 'href'  => 'tel:'.$siteSettings->contact_phone,
             ],
             [
-                'show'  => filled($siteSettings->contact_address),
+                'show'  => filled($tileAddress),
                 'icon'  => 'fa-solid fa-location-dot',
-                'label' => 'Odwiedź nas',
-                'value' => trim($siteSettings->contact_address.', '.$siteSettings->contact_city, ', '),
-                'href'  => 'https://www.google.com/maps?q='.urlencode($siteSettings->contact_address.', '.$siteSettings->contact_city),
+                'label' => $siteSettings->hasOfficeAddress() ? 'Odwiedź biuro' : 'Odwiedź nas',
+                'value' => trim($siteSettings->contact_office_building.' · '.$tileAddress, ' ·'),
+                'href'  => 'https://www.google.com/maps?q='.urlencode($tileAddress),
                 'external' => true,
             ],
+            [
+                'show'  => filled($siteSettings->contact_office_hours),
+                'icon'  => 'fa-regular fa-clock',
+                'label' => 'Godziny pracy',
+                'value' => $siteSettings->contact_office_hours,
+            ],
+            [
+                'show'  => filled($siteSettings->contact_edelivery_address),
+                'icon'  => 'fa-solid fa-envelope-circle-check',
+                'label' => 'e-Doręczenia',
+                'value' => $siteSettings->contact_edelivery_address,
+            ],
+            [
+                'show'  => filled($siteSettings->bank_account_number),
+                'icon'  => 'fa-solid fa-building-columns',
+                'label' => 'Numer konta',
+                'value' => $siteSettings->bank_account_number,
+            ],
         ])->filter(fn ($tile) => $tile['show'])->values();
+    @endphp
     @endphp
 
     {{-- Nagłówek z kaflami szybkiego kontaktu --}}
@@ -55,18 +80,30 @@
                 <ul class="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                     @foreach ($quickTiles as $tile)
                         <li>
-                            <a href="{{ $tile['href'] }}"
-                               @if (! empty($tile['external'])) target="_blank" rel="noopener" @endif
-                               class="group flex h-full items-center gap-4 rounded-2xl border border-gray-200 bg-white p-5 transition hover:border-brand hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
-                               @if (! empty($tile['external'])) aria-label="{{ $tile['label'] }}: {{ $tile['value'] }} (otwiera mapę w nowej karcie)" @endif>
-                                <span class="flex h-12 w-12 flex-none items-center justify-center rounded-full bg-brand-light text-brand transition group-hover:bg-brand group-hover:text-white" aria-hidden="true">
-                                    <i class="{{ $tile['icon'] }} text-lg"></i>
-                                </span>
-                                <span class="min-w-0">
-                                    <span class="block text-xs font-bold uppercase tracking-wide text-muted">{{ $tile['label'] }}</span>
-                                    <span class="block break-words font-bold text-ink group-hover:text-brand">{{ $tile['value'] }}</span>
-                                </span>
-                            </a>
+                            @if (! empty($tile['href']))
+                                <a href="{{ $tile['href'] }}"
+                                   @if (! empty($tile['external'])) target="_blank" rel="noopener" @endif
+                                   class="group flex h-full items-center gap-4 rounded-2xl border border-gray-200 bg-white p-5 transition hover:border-brand hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+                                   @if (! empty($tile['external'])) aria-label="{{ $tile['label'] }}: {{ $tile['value'] }} (otwiera mapę w nowej karcie)" @endif>
+                                    <span class="flex h-12 w-12 flex-none items-center justify-center rounded-full bg-brand-light text-brand transition group-hover:bg-brand group-hover:text-white" aria-hidden="true">
+                                        <i class="{{ $tile['icon'] }} text-lg"></i>
+                                    </span>
+                                    <span class="min-w-0">
+                                        <span class="block text-xs font-bold uppercase tracking-wide text-muted">{{ $tile['label'] }}</span>
+                                        <span class="block break-words font-bold text-ink group-hover:text-brand">{{ $tile['value'] }}</span>
+                                    </span>
+                                </a>
+                            @else
+                                <div class="flex h-full items-center gap-4 rounded-2xl border border-gray-200 bg-white p-5">
+                                    <span class="flex h-12 w-12 flex-none items-center justify-center rounded-full bg-brand-light text-brand" aria-hidden="true">
+                                        <i class="{{ $tile['icon'] }} text-lg"></i>
+                                    </span>
+                                    <span class="min-w-0">
+                                        <span class="block text-xs font-bold uppercase tracking-wide text-muted">{{ $tile['label'] }}</span>
+                                        <span class="block break-words font-bold text-ink">{{ $tile['value'] }}</span>
+                                    </span>
+                                </div>
+                            @endif
                         </li>
                     @endforeach
                 </ul>
@@ -90,6 +127,7 @@
             <div class="lg:sticky lg:top-24 lg:self-start">
                 <div class="rounded-2xl border border-gray-200 bg-gray-50/70 p-6">
                     @include('contact.partials.details')
+                    @include('contact.partials.registry')
                 </div>
             </div>
         </div>
