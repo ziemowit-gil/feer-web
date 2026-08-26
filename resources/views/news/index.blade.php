@@ -107,9 +107,9 @@
                             <article class="group flex flex-col overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm transition hover:shadow-md">
                                 <a href="{{ route('news.show', $item) }}" class="block overflow-hidden" tabindex="-1" aria-hidden="true">
                                     @if ($img)
-                                        <img src="{{ $img }}" alt="" class="h-48 w-full object-cover transition group-hover:scale-105">
+                                        <img src="{{ $img }}" alt="" class="h-36 w-full object-cover transition group-hover:scale-105">
                                     @else
-                                        <div class="h-48 w-full bg-brand-light"></div>
+                                        <div class="h-36 w-full bg-brand-light"></div>
                                     @endif
                                 </a>
 
@@ -234,7 +234,7 @@
                                 @if ($ngoAccent) style="border-color: {{ $ngoAccent }};" @endif>
                                 @php $img = $item->imageUrlOrDefault(); @endphp
                                 @if ($img)
-                                    <div class="relative mb-3 h-44 overflow-hidden rounded-lg bg-gray-100">
+                                    <div class="relative mb-3 h-32 overflow-hidden rounded-lg bg-gray-100">
                                         <img src="{{ $img }}" alt="" class="h-full w-full object-cover transition group-hover:scale-105">
                                         @if ($item->category)
                                             <span class="absolute left-3 top-3 rounded px-2 py-1 text-xs font-bold uppercase text-white" style="background-color: {{ $item->category->badgeColor() }}">{{ $item->category->name }}</span>
