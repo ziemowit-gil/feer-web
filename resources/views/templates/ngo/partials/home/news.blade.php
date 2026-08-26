@@ -26,7 +26,7 @@
             <article class="group relative flex flex-col overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-gray-100 transition hover:shadow-md md:col-span-2 lg:col-span-1">
                 @if ($first->image_url)
                     <a href="{{ route('news.show', $first) }}" tabindex="-1" aria-hidden="true">
-                        <div class="aspect-[16/9] overflow-hidden">
+                        <div class="aspect-[21/9] overflow-hidden">
                             <img src="{{ $first->image_url }}" alt="{{ $first->image_alt ?? $first->title }}"
                                 class="h-full w-full object-cover transition duration-300 group-hover:scale-105">
                         </div>
@@ -54,7 +54,7 @@
             <article class="group relative flex flex-col overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-gray-100 transition hover:shadow-md">
                 @if ($item->image_url)
                     <a href="{{ route('news.show', $item) }}" tabindex="-1" aria-hidden="true">
-                        <div class="aspect-[16/9] overflow-hidden">
+                        <div class="aspect-[21/9] overflow-hidden">
                             <img src="{{ $item->image_url }}" alt="{{ $item->image_alt ?? $item->title }}"
                                 class="h-full w-full object-cover transition duration-300 group-hover:scale-105">
                         </div>
