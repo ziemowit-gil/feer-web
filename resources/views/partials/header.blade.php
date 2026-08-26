@@ -30,9 +30,9 @@
             <a href="{{ route('home') }}" class="flex flex-none items-center gap-3" aria-label="{{ $siteSettings->site_name }} — strona główna">
                 @if ($siteSettings->logoUrl())
                     <img src="{{ $siteSettings->logoUrl() }}" alt="{{ $siteSettings->logoAltText() }}"
-                        class="h-14 w-auto max-w-[12rem] rounded object-contain">
+                        class="h-20 w-auto max-w-[16rem] rounded object-contain">
                 @else
-                    <span class="flex h-12 w-12 flex-none items-center justify-center rounded bg-brand text-xl font-bold text-white">{{ mb_substr($siteSettings->site_name, 0, 1) }}</span>
+                    <span class="flex h-16 w-16 flex-none items-center justify-center rounded bg-brand text-2xl font-bold text-white">{{ mb_substr($siteSettings->site_name, 0, 1) }}</span>
                 @endif
                 @unless ($siteSettings->showLogoOnly())
                     <span class="hidden leading-tight sm:block">

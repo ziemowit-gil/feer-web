@@ -83,6 +83,7 @@ class SiteSetting extends Model implements HasMedia
     public const SITE_TEMPLATES = [
         'default'      => 'Domyślny (NGO/fundacja — klasyczny)',
         'ngo'          => 'NGO / fundacja (rozbudowany)',
+        'ngo_mix'      => 'NGO / fundacja (mieszany — klasyczna belka i stopka, rozbudowana strona główna)',
         'municipality' => 'Gmina / urząd',
     ];
 

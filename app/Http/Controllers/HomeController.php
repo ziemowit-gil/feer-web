@@ -50,11 +50,12 @@ class HomeController extends Controller
         return view('templates.municipality.home', compact('slides', 'newsSidebar', 'newsGrid', 'shortcuts', 'partners'));
     }
 
-    /** Renderuje stronę główną w szablonie NGO/fundacja. */
-    private function ngoHome(SiteSetting $settings, Collection $slides, Collection $partners)
+    /** Renderuje stronę główną w szablonie NGO/fundacja (rozbudowanym i mieszanym). */
+    private function ngoHome(SiteSetting $settings, Collection $slides, Collection $partners, string $view = 'templates.ngo.home')
     {
+        // Trzy aktualności — tyle samo co w szablonie klasycznym.
         $newsItems = $settings->isModuleEnabled('news')
-            ? News::published()->with('category')->orderByDesc('published_at')->limit(4)->get()
+            ? News::published()->with('category')->orderByDesc('published_at')->limit(3)->get()
             : collect();
 
         $projects = $settings->isModuleEnabled('projects')
@@ -65,7 +66,7 @@ class HomeController extends Controller
             ? Event::upcoming()->limit(3)->get()
             : collect();
 
-        return view('templates.ngo.home', compact('slides', 'newsItems', 'projects', 'events', 'partners'));
+        return view($view, compact('slides', 'newsItems', 'projects', 'events', 'partners'));
     }
 
     /** Wyświetla stronę główną z danymi wszystkich włączonych modułów (hero, aktualności, ankieta itp.). */
@@ -133,6 +134,9 @@ class HomeController extends Controller
         }
         if ($template === 'ngo') {
             return $this->ngoHome($settings, $slides, $partners);
+        }
+        if ($template === 'ngo_mix') {
+            return $this->ngoHome($settings, $slides, $partners, 'templates.ngo-mix.home');
         }
 
         return view('home', compact('slides', 'news', 'events', 'poll', 'quickLinks', 'gallery', 'partners', 'sectionOrder', 'substackPosts'));

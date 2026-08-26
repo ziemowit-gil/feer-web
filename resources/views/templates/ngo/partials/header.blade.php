@@ -10,9 +10,9 @@
                aria-label="{{ $siteSettings->site_name }} — strona główna">
                 @if ($siteSettings->logoUrl())
                     <img src="{{ $siteSettings->logoUrl() }}" alt="{{ $siteSettings->logoAltText() }}"
-                        class="h-14 w-auto max-w-[72px] object-contain">
+                        class="h-20 w-auto max-w-[112px] object-contain">
                 @else
-                    <span class="flex h-12 w-12 flex-none items-center justify-center rounded-full bg-brand text-xl font-bold text-white">
+                    <span class="flex h-16 w-16 flex-none items-center justify-center rounded-full bg-brand text-2xl font-bold text-white">
                         {{ mb_substr($siteSettings->site_name, 0, 1) }}
                     </span>
                 @endif
