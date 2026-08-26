@@ -58,7 +58,7 @@ class Page extends Model
      */
     public const RESERVED_SLUGS = [
         'strona', 'projekty', 'aktualnosci', 'newsletter', 'wsparcie', 'materialy', 'kontakt',
-        'bip', 'instagram', 'fb', 'facebook',
+        'bip', 'instagram', 'fb', 'facebook', 'li', 'linkedin',
         'dashboard', 'profile', 'admin', 'login', 'logout', 'ankieta', 'strefa',
         'forgot-password', 'reset-password', 'verify-email', 'confirm-password',
     ];

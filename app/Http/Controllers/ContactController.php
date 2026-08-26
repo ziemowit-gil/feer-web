@@ -19,12 +19,38 @@ use Illuminate\Support\Facades\Mail;
  */
 class ContactController extends Controller
 {
-    /** Wyświetla stronę kontaktową. */
+    /** Wyświetla stronę kontaktową w wybranym w ustawieniach wariancie wyglądu. */
     public function index()
     {
-        $coordinators = $this->loadCoordinators();
+        $settings = SiteSetting::current();
 
-        return view('contact.show', compact('coordinators'));
+        // Widoczność sekcji i ich dane liczymy tu, bo korzystają z nich oba
+        // warianty strony (klasyczny i kafelkowy) oraz wspólne partiale.
+        $meetingTitle  = $settings->contact_meeting_title ?: 'Spotkajmy się';
+        $onlineUrl     = $settings->contact_online_meeting_url;
+        $scheduleItems = $settings->contactScheduleUpcoming();
+        $showMeetings  = filled($onlineUrl) || ! empty($scheduleItems) || filled($settings->contact_remote_note);
+
+        $pkCode    = $settings->contact_paczkomat_code;
+        $pkAddr    = $settings->contact_paczkomat_address;
+        $shipNote  = $settings->contact_shipping_note;
+        $shipPhone = $settings->contact_shipping_phone;
+        $showShipping = filled($shipNote) || filled($pkCode) || filled($pkAddr) || filled($shipPhone);
+
+        $view = $settings->contactLayoutValue() === 'split' ? 'contact.show-split' : 'contact.show';
+
+        return view($view, [
+            'coordinators'  => $this->loadCoordinators(),
+            'meetingTitle'  => $meetingTitle,
+            'onlineUrl'     => $onlineUrl,
+            'scheduleItems' => $scheduleItems,
+            'showMeetings'  => $showMeetings,
+            'pkCode'        => $pkCode,
+            'pkAddr'        => $pkAddr,
+            'shipNote'      => $shipNote,
+            'shipPhone'     => $shipPhone,
+            'showShipping'  => $showShipping,
+        ]);
     }
 
     /** Waliduje wiadomość kontaktową, zapisuje do bazy i wysyła e-mail. */

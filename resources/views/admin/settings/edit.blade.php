@@ -231,6 +231,50 @@
                 </div>
             </div>
 
+            {{-- Substyl „Urzędowy" + wspólny pasek informacyjny (także szablon gminny) --}}
+            @php $officeVisible = $settings->site_template === 'municipality' ? 'true' : 'false'; @endphp
+            <div x-show="wm_layout === 'office_bar' || {{ $officeVisible }}" x-cloak
+                class="rounded-xl border border-brand-light bg-brand-light/30 p-5 space-y-4">
+                <p class="text-sm font-bold text-brand">Pasek informacyjny i belka urzędowa</p>
+                <p class="text-xs text-muted">
+                    Pasek informacyjny (data, imieniny, pogoda, narzędzia dostępności) pojawia się w substylu
+                    „Urzędowym" oraz w szablonie „Gmina / urząd". Pogodę włącza podanie współrzędnych
+                    w zakładce „Szablon strony".
+                </p>
+
+                <div class="grid gap-3 sm:grid-cols-2">
+                    <label class="flex items-center gap-2 rounded-lg border border-gray-200 bg-white p-3">
+                        <input type="checkbox" name="infobar_show_date" value="1"
+                            {{ old('infobar_show_date', $settings->infobar_show_date ?? true) ? 'checked' : '' }}
+                            class="rounded border-gray-300 text-brand focus:ring-brand">
+                        <span class="text-sm font-bold">Data <span class="font-normal text-muted">(np. „Środa, 26 sierpnia 2026")</span></span>
+                    </label>
+
+                    <label class="flex items-center gap-2 rounded-lg border border-gray-200 bg-white p-3">
+                        <input type="checkbox" name="infobar_show_nameday" value="1"
+                            {{ old('infobar_show_nameday', $settings->infobar_show_nameday ?? true) ? 'checked' : '' }}
+                            class="rounded border-gray-300 text-brand focus:ring-brand">
+                        <span class="text-sm font-bold">Imieniny</span>
+                    </label>
+
+                    <label class="flex items-center gap-2 rounded-lg border border-gray-200 bg-white p-3">
+                        <input type="checkbox" name="office_show_account" value="1"
+                            {{ old('office_show_account', $settings->office_show_account ?? true) ? 'checked' : '' }}
+                            class="rounded border-gray-300 text-brand focus:ring-brand">
+                        <span class="text-sm font-bold">Numer konta na środku belki
+                            <span class="font-normal text-muted">— numer ustawisz w zakładce „Wesprzyj nas"</span></span>
+                    </label>
+
+                    <label class="flex items-center gap-2 rounded-lg border border-gray-200 bg-white p-3">
+                        <input type="checkbox" name="office_show_search" value="1"
+                            {{ old('office_show_search', $settings->office_show_search ?? true) ? 'checked' : '' }}
+                            class="rounded border-gray-300 text-brand focus:ring-brand">
+                        <span class="text-sm font-bold">Wyszukiwarka z boku
+                            <span class="font-normal text-muted">— obok BIP i ikon social</span></span>
+                    </label>
+                </div>
+            </div>
+
             <div x-show="wm_layout === 'wide_mission'" x-cloak
                 class="rounded-xl border border-brand-light bg-brand-light/30 p-5 space-y-5">
                 <p class="text-sm font-bold text-brand">Ustawienia nagłówka WOŚP</p>
@@ -324,26 +368,21 @@
                     </div>
                 </div>
 
-                <div class="grid gap-4 sm:grid-cols-2">
-                    <div>
-                        <label class="mb-1 block text-sm font-bold">Social media 1</label>
-                        <select name="wide_mission_social_1" class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
-                            <option value="">— brak —</option>
-                            @foreach (\App\Models\SiteSetting::SOCIAL_KEYS as $smKey => $smMeta)
-                                <option value="{{ $smKey }}" {{ old('wide_mission_social_1', $settings->wide_mission_social_1) === $smKey ? 'selected' : '' }}>{{ $smMeta['label'] }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div>
-                        <label class="mb-1 block text-sm font-bold">Social media 2</label>
-                        <select name="wide_mission_social_2" class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
-                            <option value="">— brak —</option>
-                            @foreach (\App\Models\SiteSetting::SOCIAL_KEYS as $smKey => $smMeta)
-                                <option value="{{ $smKey }}" {{ old('wide_mission_social_2', $settings->wide_mission_social_2) === $smKey ? 'selected' : '' }}>{{ $smMeta['label'] }}</option>
-                            @endforeach
-                        </select>
-                    </div>
+                <div class="grid gap-4 sm:grid-cols-3">
+                    @foreach ([1, 2, 3] as $smSlot)
+                        @php $smField = 'wide_mission_social_'.$smSlot; @endphp
+                        <div>
+                            <label for="{{ $smField }}" class="mb-1 block text-sm font-bold">Social media {{ $smSlot }}</label>
+                            <select id="{{ $smField }}" name="{{ $smField }}" class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                                <option value="">— brak —</option>
+                                @foreach (\App\Models\SiteSetting::SOCIAL_KEYS as $smKey => $smMeta)
+                                    <option value="{{ $smKey }}" {{ old($smField, $settings->$smField) === $smKey ? 'selected' : '' }}>{{ $smMeta['label'] }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                    @endforeach
                 </div>
+                <p class="-mt-2 text-xs text-muted">Ikony pojawią się w nagłówku tylko wtedy, gdy adres danego serwisu jest uzupełniony w zakładce „Media i BIP".</p>
 
                 <div>
                     <label for="wide_mission_cta_label" class="mb-1 block text-sm font-bold">
@@ -1065,6 +1104,22 @@
         <div x-show="tab === 'contact'" x-cloak>
             <p class="mb-4 text-xs text-muted">Wyświetlane w sekcji „Kontakt" na dole strony głównej oraz na podstronie <a href="{{ route('contact.show') }}" target="_blank" rel="noopener" class="text-brand underline">/kontakt</a>.</p>
 
+            <div class="mb-5">
+                <p class="mb-2 text-sm font-bold">Wygląd strony kontaktowej</p>
+                <div class="grid gap-3 sm:grid-cols-2">
+                    @foreach (\App\Models\SiteSetting::CONTACT_LAYOUTS as $clValue => $clLabel)
+                        <label class="flex cursor-pointer items-start gap-3 rounded-lg border p-3 transition has-[:checked]:border-brand has-[:checked]:bg-brand-light">
+                            <input type="radio" name="contact_layout" value="{{ $clValue }}"
+                                {{ old('contact_layout', $settings->contactLayoutValue()) === $clValue ? 'checked' : '' }}
+                                class="mt-0.5 border-gray-300 text-brand focus:ring-brand">
+                            <span class="text-sm leading-snug">{{ $clLabel }}</span>
+                        </label>
+                    @endforeach
+                </div>
+                <p class="mt-2 text-xs text-muted">Oba warianty pokazują te same sekcje (formularz, spotkania, przesyłki, rachunki) — różni je układ i sposób podania danych kontaktowych.</p>
+                @error('contact_layout') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+            </div>
+
             <div class="mb-4">
                 <label for="editor-contact_intro" class="mb-1 block text-sm font-bold">Wstęp na stronie kontakt <span class="font-normal text-muted">(opcjonalnie)</span></label>
                 @include('admin.partials.editor', ['name' => 'contact_intro', 'value' => old('contact_intro', $settings->contact_intro)])
@@ -1081,17 +1136,92 @@
 
             <div class="grid gap-4 sm:grid-cols-2">
                 <div>
-                    <label for="contact_address" class="mb-1 block text-sm font-bold">Adres (ulica i numer)</label>
+                    <label for="contact_address" class="mb-1 block text-sm font-bold">Adres rejestrowy (ulica i numer)</label>
                     <input type="text" id="contact_address" name="contact_address" value="{{ old('contact_address', $settings->contact_address) }}" required
                         class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
                     @error('contact_address') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                 </div>
 
                 <div>
-                    <label for="contact_city" class="mb-1 block text-sm font-bold">Kod pocztowy i miasto</label>
+                    <label for="contact_city" class="mb-1 block text-sm font-bold">Adres rejestrowy — kod pocztowy i miasto</label>
                     <input type="text" id="contact_city" name="contact_city" value="{{ old('contact_city', $settings->contact_city) }}" required
                         class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
                     @error('contact_city') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                </div>
+
+                <div class="sm:col-span-2 mt-2 rounded-xl border border-gray-200 bg-gray-50/70 p-4">
+                    <p class="text-sm font-bold text-ink">Biuro / korespondencja</p>
+                    <p class="mb-3 text-xs text-muted">
+                        Osobny adres, pod który realnie trafia poczta. Wypełnij, jeśli różni się od rejestrowego —
+                        wtedy na stronie kontaktowej pojawią się dwie pozycje: „Adres rejestrowy" i „Biuro / korespondencja".
+                    </p>
+
+                    <div class="grid gap-4 sm:grid-cols-2">
+                        <div>
+                            <label for="contact_office_address" class="mb-1 block text-sm font-bold">Adres biura (ulica i numer)</label>
+                            <input type="text" id="contact_office_address" name="contact_office_address"
+                                value="{{ old('contact_office_address', $settings->contact_office_address) }}"
+                                placeholder="np. ul. Przykładowa 10"
+                                class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                            @error('contact_office_address') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                        </div>
+
+                        <div>
+                            <label for="contact_office_city" class="mb-1 block text-sm font-bold">Kod pocztowy i miasto</label>
+                            <input type="text" id="contact_office_city" name="contact_office_city"
+                                value="{{ old('contact_office_city', $settings->contact_office_city) }}"
+                                placeholder="np. 30-001 Kraków"
+                                class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                            @error('contact_office_city') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                        </div>
+
+                        <div class="sm:col-span-2">
+                            <label for="contact_office_building" class="mb-1 block text-sm font-bold">Nazwa budynku <span class="font-normal text-muted">(opcjonalnie)</span></label>
+                            <input type="text" id="contact_office_building" name="contact_office_building"
+                                value="{{ old('contact_office_building', $settings->contact_office_building) }}"
+                                placeholder="np. Biurowiec HEXAGON"
+                                class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                            <p class="mt-1 text-xs text-muted">Pokazujemy nad adresem — ułatwia trafienie do właściwego budynku.</p>
+                            @error('contact_office_building') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                        </div>
+
+                        <div class="sm:col-span-2">
+                            <label for="contact_office_note" class="mb-1 block text-sm font-bold">Wskazówka dojścia <span class="font-normal text-muted">(opcjonalnie)</span></label>
+                            <textarea id="contact_office_note" name="contact_office_note" rows="3"
+                                placeholder="np. Biuro dzielimy z HubKolektyw sp. z o.o. — na domofonie i recepcji szukaj tej nazwy. Nasz zespół pracuje zdalnie, więc wizytę umów wcześniej."
+                                class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">{{ old('contact_office_note', $settings->contact_office_note) }}</textarea>
+                            <p class="mt-1 text-xs text-muted">Z kim dzielicie biuro, czego szukać na domofonie, czy trzeba się umówić. Enter tworzy nowy akapit.</p>
+                            @error('contact_office_note') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                        </div>
+
+                        <div class="sm:col-span-2">
+                            <p class="mb-1 text-sm font-bold">Zdjęcie biura / wejścia</p>
+                            @if ($settings->officePhotoUrl())
+                                <div class="mb-2 flex items-center gap-3">
+                                    <img src="{{ $settings->officePhotoUrl() }}" alt="Aktualne zdjęcie biura"
+                                        class="h-20 w-auto rounded object-cover ring-1 ring-gray-200">
+                                    <label class="flex items-center gap-2 text-sm text-muted">
+                                        <input type="checkbox" name="remove_office_photo" value="1" class="rounded border-gray-300 text-brand focus:ring-brand">
+                                        Usuń zdjęcie
+                                    </label>
+                                </div>
+                            @endif
+                            <input type="file" name="office_photo" accept="image/*"
+                                class="block w-full cursor-pointer text-sm text-muted file:mr-3 file:cursor-pointer file:rounded file:border-0 file:bg-brand file:px-4 file:py-2 file:text-sm file:font-bold file:text-white hover:file:bg-brand-dark">
+                            <p class="mt-1 text-xs text-muted">Zdjęcie wejścia albo budynku — pomaga trafić na miejsce. Maks. 4 MB.</p>
+                            @error('office_photo') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                        </div>
+
+                        <div class="sm:col-span-2">
+                            <label for="contact_office_photo_alt" class="mb-1 block text-sm font-bold">Opis alternatywny zdjęcia</label>
+                            <input type="text" id="contact_office_photo_alt" name="contact_office_photo_alt"
+                                value="{{ old('contact_office_photo_alt', $settings->contact_office_photo_alt) }}"
+                                placeholder="np. Szklane wejście do biurowca HEXAGON od strony ulicy"
+                                class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                            <p class="mt-1 text-xs text-muted">Opis dla osób korzystających z czytnika ekranu (WCAG 1.1.1). Puste = zdjęcie dekoracyjne.</p>
+                            @error('contact_office_photo_alt') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                        </div>
+                    </div>
                 </div>
 
                 <div>

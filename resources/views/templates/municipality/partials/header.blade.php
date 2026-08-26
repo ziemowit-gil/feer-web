@@ -84,12 +84,13 @@
                     </svg>
                 </span>
 
-                @if ($siteSettings->facebook_url)
-                    <a href="{{ $siteSettings->facebook_url }}" target="_blank" rel="noopener"
-                       class="flex h-9 w-9 items-center justify-center rounded-full border border-gray-200 text-gray-500 transition hover:border-brand hover:text-brand"
-                       aria-label="Facebook">
-                        <i class="bi bi-facebook" aria-hidden="true"></i>
-                    </a>
+                {{-- Do 3 ustawionych profili social media, oddzielone od BIP/UE cienką kreską --}}
+                @php $munSocials = $siteSettings->socialLinks(3); @endphp
+                @if ($munSocials)
+                    <span class="hidden h-7 w-px flex-none bg-gray-200 sm:block" aria-hidden="true"></span>
+                    <nav aria-label="Media społecznościowe" class="flex items-center">
+                        @include('partials.social-icons', ['socialIcons' => $munSocials])
+                    </nav>
                 @endif
             </div>
         </div>
