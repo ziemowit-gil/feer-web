@@ -10,8 +10,8 @@
 <footer class="bg-brand text-white" aria-label="Stopka strony">
 
     {{-- Górna część: misja + kolumny --}}
-    <div class="mx-auto max-w-[1400px] px-4 py-12">
-        <div class="grid gap-10 lg:grid-cols-4">
+    <div class="mx-auto max-w-[1400px] px-4 py-8">
+        <div class="grid gap-8 lg:grid-cols-4">
 
             {{-- Kolumna 1: Misja + logo --}}
             <div class="lg:col-span-1">
@@ -25,11 +25,11 @@
                     </span>
                 </div>
                 @if ($siteSettings->tagline)
-                    <p class="mt-3 text-sm leading-relaxed text-white/70">{{ $siteSettings->tagline }}</p>
+                    <p class="mt-2 text-sm leading-relaxed text-white/85">{{ $siteSettings->tagline }}</p>
                 @endif
 
                 {{-- Social --}}
-                <div class="mt-5 flex flex-wrap gap-2" aria-label="Media społecznościowe">
+                <div class="mt-4 flex flex-wrap gap-2" aria-label="Media społecznościowe">
                     @foreach (\App\Models\SiteSetting::SOCIAL_KEYS as $key => $info)
                         @php $url = $siteSettings->{$key.'_url'} ?? null; @endphp
                         @if ($url)
@@ -45,9 +45,9 @@
 
             {{-- Kolumna 2: Nawigacja (col 1) --}}
             <div>
-                <h2 class="mb-4 text-xs font-extrabold uppercase tracking-widest text-white/50">Nawigacja</h2>
+                <h2 class="mb-3 text-xs font-extrabold uppercase tracking-widest text-white/80">Nawigacja</h2>
                 @if ($col1->isNotEmpty())
-                    <ul class="space-y-2">
+                    <ul class="space-y-1.5">
                         @foreach ($col1 as $item)
                             <li>
                                 <a href="{{ $item->url }}" class="text-sm text-white/75 transition hover:text-white">
@@ -63,9 +63,9 @@
 
             {{-- Kolumna 3: Nawigacja (col 2) --}}
             <div>
-                <h2 class="mb-4 text-xs font-extrabold uppercase tracking-widest text-white/50">Ważne linki</h2>
+                <h2 class="mb-3 text-xs font-extrabold uppercase tracking-widest text-white/80">Ważne linki</h2>
                 @if ($col2->isNotEmpty())
-                    <ul class="space-y-2">
+                    <ul class="space-y-1.5">
                         @foreach ($col2 as $item)
                             <li>
                                 <a href="{{ $item->url }}" class="text-sm text-white/75 transition hover:text-white">
@@ -96,7 +96,7 @@
 
             {{-- Kolumna 4: Kontakt --}}
             <div>
-                <h2 class="mb-4 text-xs font-extrabold uppercase tracking-widest text-white/50">Kontakt</h2>
+                <h2 class="mb-3 text-xs font-extrabold uppercase tracking-widest text-white/80">Kontakt</h2>
                 <address class="not-italic space-y-2 text-sm text-white/75">
                     @if ($siteSettings->contact_address)
                         <div class="flex items-start gap-2">
@@ -130,7 +130,7 @@
 
     {{-- Pasek dolny --}}
     <div class="border-t border-white/20 bg-black/20">
-        <div class="mx-auto flex max-w-[1400px] flex-wrap items-center justify-between gap-3 px-4 py-3 text-xs text-white/40">
+        <div class="mx-auto flex max-w-[1400px] flex-wrap items-center justify-between gap-3 px-4 py-2.5 text-xs text-white/85">
             <span>
                 &copy; {{ now()->year }} {{ $siteSettings->site_name }}
                 @if ($siteSettings->show_cms_credit ?? true)

@@ -17,6 +17,8 @@
         {{-- Grid: 1st item large, rest small --}}
         @php $first = $newsItems->first(); $rest = $newsItems->skip(1); @endphp
 
+        {{-- Przy trzech wpisach wyróżniony zajmuje kolumnę, a dwa pozostałe
+             wypełniają resztę wiersza — bez dziury po czwartej karcie. --}}
         <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
 
             {{-- First (featured) card --}}

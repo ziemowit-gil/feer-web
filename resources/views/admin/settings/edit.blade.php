@@ -2007,7 +2007,8 @@
         </div>
 
         {{-- ═══ SZABLON STRONY ════════════════════════════════════════════════════════ --}}
-        <div x-show="tab === 'template'" x-cloak class="space-y-6">
+        <div x-show="tab === 'template'" x-cloak class="space-y-6"
+            x-data="{ tpl: @js(old('site_template', $settings->site_template ?? 'default')) }">
 
             <div>
                 <h2 class="text-base font-bold text-ink">Szablon strony</h2>
@@ -2019,7 +2020,7 @@
 
             <div>
                 <label for="site_template" class="mb-1 block text-sm font-bold">Aktywny szablon</label>
-                <select id="site_template" name="site_template"
+                <select id="site_template" name="site_template" x-model="tpl"
                     class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
                     @foreach (\App\Models\SiteSetting::SITE_TEMPLATES as $value => $label)
                         <option value="{{ $value }}"
@@ -2030,10 +2031,38 @@
                 </select>
             </div>
 
+            {{-- Opis szablonów, które nie mają własnych pól --}}
+            <div x-show="tpl === 'default'" x-cloak class="rounded-lg border border-gray-200 bg-gray-50/70 p-5">
+                <h3 class="text-sm font-bold text-ink">Ustawienia szablonu: Domyślny (klasyczny)</h3>
+                <p class="mt-1 text-xs text-muted">
+                    Ten szablon nie ma własnych pól — jego wygląd ustawiasz w zakładkach
+                    <span class="font-bold">Nagłówek</span> (układ belki, pasek informacyjny, social),
+                    <span class="font-bold">Strona główna</span> (kolejność sekcji) i <span class="font-bold">Kolory</span>.
+                </p>
+            </div>
+
+            <div x-show="tpl === 'ngo'" x-cloak class="rounded-lg border border-gray-200 bg-gray-50/70 p-5">
+                <h3 class="text-sm font-bold text-ink">Ustawienia szablonu: NGO / fundacja (rozbudowany)</h3>
+                <p class="mt-1 text-xs text-muted">
+                    Szablon ma własny nagłówek, stopkę i stronę główną (hero, trzy aktualności, projekty,
+                    wezwanie do wsparcia, wydarzenia, karuzela). Treść sekcji bierze się z modułów —
+                    włączasz je w zakładce <span class="font-bold">Moduły</span>.
+                </p>
+            </div>
+
+            <div x-show="tpl === 'ngo_mix'" x-cloak class="rounded-lg border border-gray-200 bg-gray-50/70 p-5">
+                <h3 class="text-sm font-bold text-ink">Ustawienia szablonu: NGO / fundacja (mieszany)</h3>
+                <p class="mt-1 text-xs text-muted">
+                    Klasyczny górny pasek, nagłówek i stopka (ustawiasz je w zakładce <span class="font-bold">Nagłówek</span>)
+                    plus rozbudowana strona główna z sekcją szkoleń. Kolejność sekcji strony głównej jest w tym
+                    szablonie stała.
+                </p>
+            </div>
+
             {{-- Ustawienia szablonu Gmina / urząd --}}
-            <div class="rounded-lg border border-gray-200 p-5 space-y-5">
+            <div x-show="tpl === 'municipality'" x-cloak class="rounded-lg border border-gray-200 p-5 space-y-5">
                 <h3 class="text-sm font-bold text-ink">Ustawienia szablonu: Gmina / urząd</h3>
-                <p class="text-xs text-muted">Poniższe pola mają zastosowanie tylko gdy wybrany szablon to „Gmina / urząd".</p>
+                <p class="text-xs text-muted">Pola widoczne tylko przy tym szablonie. Zapisane wartości zostają w bazie, gdy przełączysz szablon na inny.</p>
 
                 <div>
                     <label for="municipality_shortcuts_slug" class="mb-1 block text-sm font-bold">
