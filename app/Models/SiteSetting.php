@@ -939,6 +939,36 @@ class SiteSetting extends Model implements HasMedia
     }
 
     /**
+     * Ikony social do nagłówka: najpierw profile wskazane w slotach, a puste
+     * (albo wskazujące serwis bez adresu) uzupełniamy kolejnymi ustawionymi
+     * profilami. Dzięki temu nagłówek pokazuje komplet ikon także wtedy, gdy
+     * ktoś wybrał w slocie serwis, którego adresu nie uzupełnił.
+     */
+    public function headerSocialLinks(array $fields, int $limit = 3): array
+    {
+        $links = $this->chosenSocialLinks($fields);
+
+        if (count($links) >= $limit) {
+            return array_slice($links, 0, $limit);
+        }
+
+        $used = array_column($links, 0);
+
+        foreach ($this->socialLinks() as $link) {
+            if (count($links) >= $limit) {
+                break;
+            }
+
+            if (! in_array($link[0], $used, true)) {
+                $links[] = $link;
+                $used[] = $link[0];
+            }
+        }
+
+        return $links;
+    }
+
+    /**
      * Profile wskazane w wybranych polach ustawień (np. sloty nagłówka),
      * bez powtórzeń i bez pozycji z pustym adresem.
      */

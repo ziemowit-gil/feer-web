@@ -68,6 +68,37 @@ class HeaderWideLayoutTest extends TestCase
         $this->assertSame(2, substr_count($html, 'PL 11 2222 3333 4444 5555 6666 7777'));
     }
 
+    public function test_header_shows_three_icons_even_when_a_slot_points_at_a_service_without_url(): void
+    {
+        $this->wide('bar');
+
+        SiteSetting::current()->forceFill([
+            // Slot 2 wskazuje Instagram, ale adresu nie podano — jego miejsce
+            // powinien zająć kolejny ustawiony profil (YouTube).
+            'wide_mission_social_1' => 'facebook',
+            'wide_mission_social_2' => 'instagram',
+            'wide_mission_social_3' => 'linkedin',
+            'facebook_url' => 'https://facebook.com/test',
+            'instagram_url' => null,
+            'linkedin_url' => 'https://linkedin.com/company/test',
+            'youtube_url' => 'https://youtube.com/@test',
+        ])->save();
+
+        \Closure::bind(function () {
+            static::$cached = null;
+        }, null, SiteSetting::class)();
+
+        $links = SiteSetting::current()->headerSocialLinks([
+            'wide_mission_social_1', 'wide_mission_social_2', 'wide_mission_social_3',
+        ]);
+
+        $this->assertSame(['Facebook', 'LinkedIn', 'YouTube'], array_column($links, 2));
+
+        $this->get('/kontakt')->assertOk()
+            ->assertSee('https://youtube.com/@test', false)
+            ->assertDontSee('aria-label="Instagram', false);
+    }
+
     public function test_unknown_wide_layout_falls_back_to_right(): void
     {
         $this->wide('nie-ma-takiego');
