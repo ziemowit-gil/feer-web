@@ -505,6 +505,22 @@ class SiteSetting extends Model implements HasMedia
         return trim(trim((string) $this->contact_office_address).', '.trim((string) $this->contact_office_city), ', ');
     }
 
+    /**
+     * Czy adres biura/korespondencyjny różni się od rejestrowego. Gdy oba są
+     * takie same, nie ma sensu pokazywać dwóch identycznych pozycji — strona
+     * kontaktowa pokazuje wtedy jeden adres.
+     */
+    public function officeDiffersFromRegistered(): bool
+    {
+        if (! $this->hasOfficeAddress()) {
+            return false;
+        }
+
+        $normalize = fn (string $value) => mb_strtolower(preg_replace('/[^\p{L}\p{N}]+/u', '', $value) ?? '');
+
+        return $normalize($this->officeAddressLine()) !== $normalize($this->registeredAddressLine());
+    }
+
     /** Adres rejestrowy w jednej linii (do linku do map). */
     public function registeredAddressLine(): string
     {

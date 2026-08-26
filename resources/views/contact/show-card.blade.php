@@ -22,7 +22,7 @@
 @section('content')
     @php
         $officePhoto = $siteSettings->officePhotoUrl();
-        $hasOffice   = $siteSettings->hasOfficeAddress();
+        $hasOffice   = $siteSettings->officeDiffersFromRegistered();
         $addressLine = $hasOffice ? $siteSettings->officeAddressLine() : $siteSettings->registeredAddressLine();
 
         $cardBase = $officePhoto
@@ -126,15 +126,27 @@
             @include('contact.partials.form')
         </div>
 
-        @include('contact.partials.meetings')
-        @include('contact.partials.shipping')
-        @include('contact.partials.bank-accounts')
+        {{-- Uporządkowany dół strony: spotkania na całą szerokość, niżej siatka
+             kart z przesyłkami, rachunkami i danymi organizacji. --}}
+        <div class="mt-12 space-y-6">
+            @if ($showMeetings)
+                @include('contact.partials.meetings', ['sectionStyle' => 'card'])
+            @endif
 
-        {{-- Pozostałe dane: adres rejestrowy, godziny, e-Doręczenia, numery, social --}}
-        <div class="mt-12 grid gap-8 border-t border-gray-100 pt-8 md:grid-cols-2">
-            @include('contact.partials.details')
-            <div>
-                @include('contact.partials.registry')
+            <div class="grid gap-6 md:grid-cols-2">
+                @if ($showShipping)
+                    @include('contact.partials.shipping', ['sectionStyle' => 'card'])
+                @endif
+
+                @if (! empty($siteSettings->contact_bank_accounts))
+                    @include('contact.partials.bank-accounts', ['sectionStyle' => 'card'])
+                @endif
+
+                <div class="h-full rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+                    <h2 class="mb-4 text-lg font-bold text-ink">Dane organizacji</h2>
+                    @include('contact.partials.details')
+                    @include('contact.partials.registry')
+                </div>
             </div>
         </div>
     </section>

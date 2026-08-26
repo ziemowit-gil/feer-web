@@ -1,9 +1,16 @@
 {{-- Przesyłki / paczkomat. Wymaga $showShipping, $shipNote, $pkCode, $pkAddr, $shipPhone. --}}
+@php
+    // Sekcje strony kontaktowej mają dwa style opakowania: „plain" — kreska nad
+    // sekcją (wariant klasyczny) i „card" — karta w siatce (nowe wyglądy).
+    $sectionClass = ($sectionStyle ?? 'plain') === 'card'
+        ? 'h-full scroll-mt-24 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm'
+        : 'mt-12 scroll-mt-24 border-t border-gray-100 pt-8';
+@endphp
 @if ($showShipping)
     @php
         $pkLoc = $siteSettings->contact_paczkomat_location;
     @endphp
-    <div id="przesylki" class="mt-12 scroll-mt-24 border-t border-gray-100 pt-8">
+    <div id="przesylki" class="{{ $sectionClass }}">
         <h2 class="mb-2 text-lg font-bold text-ink">Wyślij do nas przesyłkę</h2>
         <p class="mb-4 max-w-2xl text-sm text-muted">{{ $shipNote ?: 'Możesz nadać do nas paczkę lub list — również na paczkomat.' }}</p>
 

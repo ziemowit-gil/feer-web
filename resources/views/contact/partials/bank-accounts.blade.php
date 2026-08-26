@@ -1,6 +1,13 @@
 {{-- Numery rachunków bankowych. --}}
+@php
+    // Sekcje strony kontaktowej mają dwa style opakowania: „plain" — kreska nad
+    // sekcją (wariant klasyczny) i „card" — karta w siatce (nowe wyglądy).
+    $sectionClass = ($sectionStyle ?? 'plain') === 'card'
+        ? 'h-full scroll-mt-24 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm'
+        : 'mt-12 scroll-mt-24 border-t border-gray-100 pt-8';
+@endphp
 @if (! empty($siteSettings->contact_bank_accounts))
-    <div id="rachunki" class="mt-12 scroll-mt-24 border-t border-gray-100 pt-8">
+    <div id="rachunki" class="{{ $sectionClass }}">
         <h2 class="mb-2 text-xl font-bold text-ink">Numery rachunków bankowych</h2>
         <p class="mb-5 max-w-2xl text-sm text-muted">Przy każdym rachunku opisujemy, do czego służy i co można na niego wpłacić.</p>
         <div class="grid gap-4 sm:grid-cols-2">

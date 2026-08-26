@@ -18,7 +18,7 @@
     @php
         // Kafle szybkiego kontaktu: adres kierujemy na biuro, jeśli jest inne niż
         // rejestrowe — tam realnie się przychodzi i wysyła pocztę.
-        $tileAddress = $siteSettings->hasOfficeAddress()
+        $tileAddress = $siteSettings->officeDiffersFromRegistered()
             ? $siteSettings->officeAddressLine()
             : $siteSettings->registeredAddressLine();
 
@@ -40,8 +40,8 @@
             [
                 'show'  => filled($tileAddress),
                 'icon'  => 'fa-solid fa-location-dot',
-                'label' => $siteSettings->hasOfficeAddress() ? 'Odwiedź biuro' : 'Odwiedź nas',
-                'value' => trim($siteSettings->contact_office_building.' · '.$tileAddress, ' ·'),
+                'label' => $siteSettings->officeDiffersFromRegistered() ? 'Odwiedź biuro' : 'Odwiedź nas',
+                'value' => trim(($siteSettings->officeDiffersFromRegistered() ? $siteSettings->contact_office_building.' · ' : '').$tileAddress, ' ·'),
                 'href'  => 'https://www.google.com/maps?q='.urlencode($tileAddress),
                 'external' => true,
             ],
@@ -132,9 +132,25 @@
             </div>
         </div>
 
-        @include('contact.partials.meetings')
-        @include('contact.partials.shipping')
-        @include('contact.partials.bank-accounts')
+        {{-- Uporządkowany dół strony: spotkania na całą szerokość, niżej karty
+             z przesyłkami i rachunkami. --}}
+        <div class="mt-12 space-y-6">
+            @if ($showMeetings)
+                @include('contact.partials.meetings', ['sectionStyle' => 'card'])
+            @endif
+
+            @if ($showShipping || ! empty($siteSettings->contact_bank_accounts))
+                <div class="grid gap-6 md:grid-cols-2">
+                    @if ($showShipping)
+                        @include('contact.partials.shipping', ['sectionStyle' => 'card'])
+                    @endif
+
+                    @if (! empty($siteSettings->contact_bank_accounts))
+                        @include('contact.partials.bank-accounts', ['sectionStyle' => 'card'])
+                    @endif
+                </div>
+            @endif
+        </div>
     </section>
 
     @include('contact.partials.copy-script')

@@ -4,7 +4,7 @@
     @php
         // Gdy podano osobny adres biura, rozdzielamy pozycje: rejestrowy (dane
         // formalne) i biuro/korespondencja (tam realnie trafia poczta).
-        $hasOffice       = $siteSettings->hasOfficeAddress();
+        $hasOffice       = $siteSettings->officeDiffersFromRegistered();
         $registeredLabel = $hasOffice ? 'Adres rejestrowy' : 'Adres';
     @endphp
 

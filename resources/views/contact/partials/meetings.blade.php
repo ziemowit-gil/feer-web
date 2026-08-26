@@ -1,4 +1,11 @@
 {{-- Spotkania: online + harmonogram. Wymaga $showMeetings, $meetingTitle, $onlineUrl. --}}
+@php
+    // Sekcje strony kontaktowej mają dwa style opakowania: „plain" — kreska nad
+    // sekcją (wariant klasyczny) i „card" — karta w siatce (nowe wyglądy).
+    $sectionClass = ($sectionStyle ?? 'plain') === 'card'
+        ? 'h-full scroll-mt-24 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm'
+        : 'mt-12 scroll-mt-24 border-t border-gray-100 pt-8';
+@endphp
 @if ($showMeetings)
     @php
         $onlineLabel    = $siteSettings->contact_online_meeting_label ?: 'Wybierz dogodny termin';
@@ -9,7 +16,7 @@
         $onlineExternal = $showOnline && \Illuminate\Support\Str::startsWith($onlineUrl, ['http://', 'https://']);
     @endphp
 
-    <div id="spotkania" class="mt-12 scroll-mt-24 border-t border-gray-100 pt-8">
+    <div id="spotkania" class="{{ $sectionClass }}">
         <h2 class="mb-4 text-xl font-bold text-ink">{{ $meetingTitle }}</h2>
 
         @if ($showOnline)
