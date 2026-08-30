@@ -1,4 +1,10 @@
 {{-- Dane teleadresowe + opcjonalny box promocyjny. --}}
+@php
+    // $wideLayout = true układa pozycje w siatkę na całą szerokość zamiast
+    // wąskiej kolumny bocznej (używa tego wariant instytucjonalny).
+    $wideLayout = $wideLayout ?? false;
+@endphp
+
 <aside aria-label="Dane kontaktowe">
     <p class="mb-5 text-xl font-bold text-ink">{{ $siteSettings->site_name }}</p>
     @php
@@ -8,7 +14,7 @@
         $registeredLabel = $hasOffice ? 'Adres rejestrowy' : 'Adres';
     @endphp
 
-    <ul class="space-y-5">
+    <ul class="{{ $wideLayout ? 'grid gap-6 sm:grid-cols-2 lg:grid-cols-3' : 'space-y-5' }}">
         <li>
             <a href="https://www.google.com/maps?q={{ urlencode($siteSettings->registeredAddressLine()) }}"
                 target="_blank" rel="noopener"

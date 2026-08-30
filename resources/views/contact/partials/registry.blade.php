@@ -18,8 +18,12 @@
     $panelSocials = $siteSettings->socialLinks();
 @endphp
 
+@php $wideLayout = $wideLayout ?? false; @endphp
+
+<div class="{{ $wideLayout ? 'mt-8 grid gap-6 border-t border-gray-200 pt-6 sm:grid-cols-2 lg:grid-cols-3' : '' }}">
+
 @if ($registryRows->isNotEmpty())
-    <div class="mt-6 border-t border-gray-200 pt-5">
+    <div class="{{ $wideLayout ? '' : 'mt-6 border-t border-gray-200 pt-5' }}">
         <h3 class="mb-2 text-xs font-bold uppercase tracking-wide text-muted">Dane rejestrowe</h3>
         <dl class="space-y-1 text-sm">
             @foreach ($registryRows as $row)
@@ -33,7 +37,7 @@
 @endif
 
 @if ($accountRows->isNotEmpty())
-    <div class="mt-6 border-t border-gray-200 pt-5">
+    <div class="{{ $wideLayout ? '' : 'mt-6 border-t border-gray-200 pt-5' }}">
         <h3 class="mb-2 text-xs font-bold uppercase tracking-wide text-muted">Wpłaty</h3>
         <ul class="space-y-3 text-sm">
             @foreach ($accountRows as $row)
@@ -51,10 +55,12 @@
 @endif
 
 @if ($panelSocials)
-    <div class="mt-6 border-t border-gray-200 pt-5">
+    <div class="{{ $wideLayout ? '' : 'mt-6 border-t border-gray-200 pt-5' }}">
         <h3 class="mb-2 text-xs font-bold uppercase tracking-wide text-muted">Znajdziesz nas też tutaj</h3>
         <nav aria-label="Media społecznościowe">
             @include('partials.social-icons', ['socialIcons' => $panelSocials])
         </nav>
     </div>
 @endif
+
+</div>

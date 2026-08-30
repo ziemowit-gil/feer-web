@@ -94,32 +94,32 @@
             {{-- Zakładka: dane teleadresowe (w miejscu mapy) --}}
             <div id="panel-dane" role="tabpanel" aria-labelledby="tab-dane" tabindex="0"
                  x-show="tab === 'dane'" class="focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand">
-                <div class="grid gap-10 md:grid-cols-[1fr_340px]">
-                    <div>
-                        <h2 class="text-2xl font-bold text-ink">Zapraszamy do kontaktu!</h2>
+                {{-- Bez paska bocznego: dane teleadresowe rozkładają się na całą
+                     szerokość zakładki, w siatce zamiast wąskiej kolumny. --}}
+                <div>
+                    <h2 class="text-2xl font-bold text-ink">Zapraszamy do kontaktu!</h2>
 
-                        @if ($siteSettings->contact_intro)
-                            <div class="prose mt-3 max-w-2xl text-muted">{!! $siteSettings->contact_intro !!}</div>
-                        @endif
+                    @if ($siteSettings->contact_intro)
+                        <div class="prose mt-3 max-w-3xl text-muted">{!! $siteSettings->contact_intro !!}</div>
+                    @endif
 
-                        <div class="mt-6">
-                            @include('partials.correspondence-note')
-                        </div>
-
-                        {{-- Zdjęcia biura tu nie powtarzamy — jest już w tle nagłówka. --}}
-
-                        <p class="mt-6 text-sm text-muted">
-                            Wolisz napisać?
-                            <button type="button" @click="jump('formularz')" class="font-bold text-brand underline hover:no-underline">
-                                Przejdź do formularza kontaktowego
-                            </button>.
-                        </p>
+                    <div class="mt-6 max-w-3xl">
+                        @include('partials.correspondence-note')
                     </div>
 
-                    <div class="rounded-2xl border border-gray-200 bg-gray-50/70 p-6">
-                        @include('contact.partials.details', ['withOfficePhoto' => false])
-                        @include('contact.partials.registry')
+                    {{-- Zdjęcia biura tu nie powtarzamy — jest już w tle nagłówka. --}}
+
+                    <div class="mt-8 border-t border-gray-200 pt-8">
+                        @include('contact.partials.details', ['withOfficePhoto' => false, 'wideLayout' => true])
+                        @include('contact.partials.registry', ['wideLayout' => true])
                     </div>
+
+                    <p class="mt-8 text-sm text-muted">
+                        Wolisz napisać?
+                        <button type="button" @click="jump('formularz')" class="font-bold text-brand underline hover:no-underline">
+                            Przejdź do formularza kontaktowego
+                        </button>.
+                    </p>
                 </div>
             </div>
 
