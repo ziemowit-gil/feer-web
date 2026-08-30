@@ -149,6 +149,7 @@ class SiteSettingController extends Controller
             'contact_office_building' => ['nullable', 'string', 'max:255'],
             'contact_office_note' => ['nullable', 'string', 'max:1000'],
             'contact_office_photo_alt' => ['nullable', 'string', 'max:255'],
+            'contact_hero_photo' => ['sometimes', 'boolean'],
             'office_photo' => ['nullable', 'image', 'max:4096'],
             'contact_address' => ['required', 'string', 'max:255'],
             'contact_city' => ['required', 'string', 'max:255'],
@@ -335,6 +336,7 @@ class SiteSettingController extends Controller
         $data['infobar_show_nameday'] = $request->boolean('infobar_show_nameday');
         $data['office_show_account'] = $request->boolean('office_show_account');
         $data['office_show_search'] = $request->boolean('office_show_search');
+        $data['contact_hero_photo'] = $request->boolean('contact_hero_photo');
         $data['contact_show_form'] = $request->boolean('contact_show_form');
         $data['contact_show_bank_accounts'] = $request->boolean('contact_show_bank_accounts');
         $data['contact_show_coordinators'] = $request->boolean('contact_show_coordinators');

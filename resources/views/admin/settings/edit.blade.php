@@ -1224,6 +1224,16 @@
                             <input type="file" name="office_photo" accept="image/*"
                                 class="block w-full cursor-pointer text-sm text-muted file:mr-3 file:cursor-pointer file:rounded file:border-0 file:bg-brand file:px-4 file:py-2 file:text-sm file:font-bold file:text-white hover:file:bg-brand-dark">
                             <p class="mt-1 text-xs text-muted">Zdjęcie wejścia albo budynku — pomaga trafić na miejsce. Maks. 4 MB.</p>
+
+                            <label class="mt-3 flex items-start gap-2 rounded-lg border border-gray-200 bg-white p-3">
+                                <input type="checkbox" name="contact_hero_photo" value="1"
+                                    {{ old('contact_hero_photo', $settings->contact_hero_photo ?? true) ? 'checked' : '' }}
+                                    class="mt-0.5 rounded border-gray-300 text-brand focus:ring-brand">
+                                <span class="text-sm">
+                                    <span class="font-bold">Pokaż zdjęcie w tle nagłówka strony kontaktowej</span>
+                                    <span class="block text-xs text-muted">Dotyczy wariantów „Instytucjonalny" i „Wizytówka". Po wyłączeniu nagłówek jest jednolity, a zdjęcie zostaje przy danych biura.</span>
+                                </span>
+                            </label>
                             @error('office_photo') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                         </div>
 

@@ -21,7 +21,7 @@
 
 @section('content')
     @php
-        $officePhoto = $siteSettings->officePhotoUrl();
+        $officePhoto = $siteSettings->contactHeroPhotoUrl();
         $hasOffice   = $siteSettings->officeDiffersFromRegistered();
         $addressLine = $hasOffice ? $siteSettings->officeAddressLine() : $siteSettings->registeredAddressLine();
 
@@ -144,7 +144,7 @@
 
                 <div class="h-full rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
                     <h2 class="mb-4 text-lg font-bold text-ink">Dane organizacji</h2>
-                    @include('contact.partials.details', ['withOfficePhoto' => false])
+                    @include('contact.partials.details', ['withOfficePhoto' => ! $officePhoto])
                     @include('contact.partials.registry')
                 </div>
             </div>

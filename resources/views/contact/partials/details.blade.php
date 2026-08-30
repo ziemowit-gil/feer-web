@@ -26,9 +26,6 @@
                 <span class="min-w-0">
                     <span class="block text-xs font-bold uppercase tracking-wide text-muted">{{ $registeredLabel }}</span>
                     <span class="font-medium text-ink group-hover:text-brand">{{ $siteSettings->contact_address }}<br>{{ $siteSettings->contact_city }}</span>
-                    @if ($hasOffice)
-                        <span class="mt-0.5 block text-xs text-muted">Dane do faktur i pism formalnych — nie wysyłaj tu przesyłek.</span>
-                    @endif
                 </span>
             </a>
         </li>

@@ -27,6 +27,8 @@ class SiteSetting extends Model implements HasMedia
         'projects' => 'Projekty',
         'quick_actions' => 'Szybkie akcje',
         'partners' => 'Partnerzy',
+        'strategy' => 'Strategia organizacji (planowanie działań)',
+        'authorizations' => 'Rejestr pełnomocnictw i upoważnień',
     ];
 
     /**
@@ -163,6 +165,15 @@ class SiteSetting extends Model implements HasMedia
         'ssl' => 'SSL',
     ];
 
+    /**
+     * Moduł strategii jest opcjonalny (opt-in): każdy nowo utworzony rekord
+     * ustawień startuje z nim na liście wyłączonych — admin włącza go
+     * świadomie w Ustawienia → Moduły.
+     */
+    protected $attributes = [
+        'disabled_modules' => '["strategy"]',
+    ];
+
     protected $fillable = [
         'site_name', 'tagline', 'brand_color', 'brand_color_2', 'brand_color_3', 'brand_color_4', 'brand_skip_contrast', 'nav_dark_text', 'ngo_skip_contrast', 'meta_description', 'allow_indexing', 'ga_measurement_id', 'disabled_modules', 'homepage_section_order', 'events_home_color', 'quick_actions_panel_negative',
         'bip_url', 'bip_intro', 'bip_editor_name', 'bip_editor_email', 'bip_gov_url', 'bip_mode', 'facebook_url', 'facebook_group_url', 'twitter_url', 'instagram_url', 'linkedin_url', 'youtube_url', 'substack_url',
@@ -178,7 +189,7 @@ class SiteSetting extends Model implements HasMedia
         'newsletter_code', 'header_layout', 'show_topbar_bip', 'show_topbar_social', 'content_editor',
         'infobar_show_date', 'infobar_show_nameday', 'office_show_account', 'office_show_search',
         'contact_layout', 'contact_office_address', 'contact_office_city', 'contact_office_building',
-        'contact_office_note', 'contact_office_photo_alt',
+        'contact_office_note', 'contact_office_photo_alt', 'contact_hero_photo',
         'site_url', 'maintenance_mode', 'maintenance_message',
         'microsoft_login_enabled', 'microsoft_only_login', 'emergency_login_token', 'microsoft_client_id', 'microsoft_client_secret', 'microsoft_tenant_id',
         'member_login_enabled', 'member_allowed_domains', 'szo_api_url', 'yubico_client_id', 'yubico_secret_key', 'two_factor_required_admins',
@@ -329,6 +340,7 @@ class SiteSetting extends Model implements HasMedia
         'infobar_show_nameday' => 'boolean',
         'office_show_account' => 'boolean',
         'office_show_search' => 'boolean',
+        'contact_hero_photo' => 'boolean',
         'municipality_weather_lat' => 'decimal:6',
         'municipality_weather_lon' => 'decimal:6',
     ];
@@ -860,6 +872,16 @@ class SiteSetting extends Model implements HasMedia
     public function officePhotoUrl(): ?string
     {
         return $this->getFirstMediaUrl('office_photo') ?: null;
+    }
+
+    /**
+     * Zdjęcie biura do tła nagłówka strony kontaktowej — null, gdy nie wgrano
+     * albo gdy tło wyłączono w ustawieniach. Samo zdjęcie zostaje wtedy przy
+     * danych biura, więc wyłączenie tła nie usuwa go z serwisu.
+     */
+    public function contactHeroPhotoUrl(): ?string
+    {
+        return ($this->contact_hero_photo ?? true) ? $this->officePhotoUrl() : null;
     }
 
     public function missionSlideImageUrl(): ?string

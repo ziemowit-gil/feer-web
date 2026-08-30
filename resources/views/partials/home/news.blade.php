@@ -32,7 +32,7 @@
                     <div class="relative mb-3 h-32 overflow-hidden rounded-lg bg-gray-100">
                         <img src="{{ $img }}" alt="" class="h-full w-full object-cover transition group-hover:scale-105">
                         @if ($item->category)
-                            <span class="absolute left-3 top-3 rounded px-2 py-1 text-xs font-bold uppercase text-white" style="background-color: {{ $item->category->badgeColor() }}">{{ $item->category->name }}</span>
+                            <span class="absolute bottom-3 left-3 rounded px-2 py-1 text-xs font-bold uppercase text-white" style="background-color: {{ $item->category->badgeColor() }}">{{ $item->category->name }}</span>
                         @endif
                     </div>
                 @endif

@@ -209,6 +209,30 @@ Alpine.data('audioPlayer', () => ({
     },
 }));
 
+// Zakładki sekcji (strona kontaktowa, „Dołącz do nas", projekty) — wzorzec
+// ARIA Tabs: strzałki lewo/prawo przechodzą po zakładkach razem z fokusem,
+// Home/End skaczą na skraje (WCAG 2.1.1).
+Alpine.data('sectionTabs', (ids = [], initial = null) => ({
+    tabs: ids,
+    tab: initial ?? ids[0] ?? null,
+
+    move(step) {
+        if (!this.tabs.length) return;
+        const index = this.tabs.indexOf(this.tab);
+        this.tab = this.tabs[(index + step + this.tabs.length) % this.tabs.length];
+        this.focusActive();
+    },
+
+    jump(id) {
+        this.tab = id;
+        this.focusActive();
+    },
+
+    focusActive() {
+        this.$nextTick(() => document.getElementById('tab-' + this.tab)?.focus());
+    },
+}));
+
 Alpine.start();
 
 // Pasek dostępności: kontrast i rozmiar czcionki

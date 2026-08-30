@@ -36,23 +36,13 @@
         <style>[x-cloak] { display: block !important; }</style>
     </noscript>
 
-    <div x-data="{
-            tab: @js($tabIds[0] ?? 'dane'),
-            tabs: @js($tabIds),
-            move(step) {
-                const index = this.tabs.indexOf(this.tab);
-                this.tab = this.tabs[(index + step + this.tabs.length) % this.tabs.length];
-                this.focusActive();
-            },
-            jump(id) { this.tab = id; this.focusActive(); },
-            focusActive() { this.$nextTick(() => document.getElementById('tab-' + this.tab)?.focus()); },
-        }">
+    <div x-data="sectionTabs(@js($tabIds))">
 
         {{-- Ciemny pas z tytułem; ze zdjęciem biura w tle, jeśli je wgrano.
              Przyciemnienie 65% czerni trzyma kontrast białego tekstu na min. 7:1
              nawet przy całkiem jasnym zdjęciu (WCAG 1.4.3), a klasa
              .contact-hero-photo chowa zdjęcie w trybach wysokiego kontrastu. --}}
-        @php $tabsHeroPhoto = $siteSettings->officePhotoUrl(); @endphp
+        @php $tabsHeroPhoto = $siteSettings->contactHeroPhotoUrl(); @endphp
         <section class="relative bg-ink {{ $tabsHeroPhoto ? 'contact-hero-photo' : '' }}"
             @if ($tabsHeroPhoto) style="background-image: url('{{ $tabsHeroPhoto }}');" @endif>
 
@@ -65,29 +55,10 @@
             </div>
         </section>
 
-        {{-- Pasek zakładek --}}
-        <div class="border-t border-white/20 bg-brand">
-            <div class="mx-auto max-w-6xl px-4">
-                <div role="tablist" aria-label="Sekcje strony kontaktowej" class="flex flex-wrap">
-                    @foreach ($contactTabs as $tab)
-                        <button type="button" role="tab"
-                            id="tab-{{ $tab['id'] }}"
-                            aria-controls="panel-{{ $tab['id'] }}"
-                            :aria-selected="tab === '{{ $tab['id'] }}' ? 'true' : 'false'"
-                            :tabindex="tab === '{{ $tab['id'] }}' ? 0 : -1"
-                            @click="tab = '{{ $tab['id'] }}'"
-                            @keydown.arrow-right.prevent="move(1)"
-                            @keydown.arrow-left.prevent="move(-1)"
-                            @keydown.home.prevent="jump(tabs[0])"
-                            @keydown.end.prevent="jump(tabs[tabs.length - 1])"
-                            class="px-5 py-4 text-sm font-bold uppercase tracking-wide transition focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-white"
-                            :class="tab === '{{ $tab['id'] }}' ? 'bg-white text-ink' : 'text-white hover:bg-white/15'">
-                            {{ $tab['label'] }}
-                        </button>
-                    @endforeach
-                </div>
-            </div>
-        </div>
+        @include('partials.tab-strip', [
+            'tabItems' => $contactTabs->all(),
+            'tabsLabel' => 'Sekcje strony kontaktowej',
+        ])
 
         <div class="mx-auto max-w-6xl px-4 py-10">
 
@@ -110,7 +81,7 @@
                     {{-- Zdjęcia biura tu nie powtarzamy — jest już w tle nagłówka. --}}
 
                     <div class="mt-8 border-t border-gray-200 pt-8">
-                        @include('contact.partials.details', ['withOfficePhoto' => false, 'wideLayout' => true])
+                        @include('contact.partials.details', ['withOfficePhoto' => ! $tabsHeroPhoto, 'wideLayout' => true])
                         @include('contact.partials.registry', ['wideLayout' => true])
                     </div>
 
