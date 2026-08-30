@@ -50,7 +50,7 @@
                                 {!! nl2br(e($siteSettings->contact_office_note)) !!}
                             </p>
                         @endif
-                        @if ($photo = $siteSettings->officePhotoUrl())
+                        @if (($withOfficePhoto ?? true) && ($photo = $siteSettings->officePhotoUrl()))
                             <img src="{{ $photo }}" loading="lazy"
                                  alt="{{ $siteSettings->contact_office_photo_alt }}"
                                  class="mt-3 w-full max-w-xs rounded-lg object-cover ring-1 ring-gray-200">
