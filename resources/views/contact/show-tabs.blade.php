@@ -62,15 +62,11 @@
 
             <div class="relative mx-auto max-w-6xl px-4 {{ $tabsHeroPhoto ? 'py-16 sm:py-20' : 'py-10' }}">
                 <h1 class="text-3xl font-bold uppercase tracking-wide text-white sm:text-4xl">Kontakt</h1>
-
-                @if ($tabsHeroPhoto && filled($siteSettings->contact_office_building))
-                    <p class="mt-2 text-sm text-white/90">{{ $siteSettings->contact_office_building }}</p>
-                @endif
             </div>
         </section>
 
         {{-- Pasek zakładek --}}
-        <div class="border-t border-white/10 bg-ink">
+        <div class="border-t border-white/20 bg-brand">
             <div class="mx-auto max-w-6xl px-4">
                 <div role="tablist" aria-label="Sekcje strony kontaktowej" class="flex flex-wrap">
                     @foreach ($contactTabs as $tab)
@@ -85,7 +81,7 @@
                             @keydown.home.prevent="jump(tabs[0])"
                             @keydown.end.prevent="jump(tabs[tabs.length - 1])"
                             class="px-5 py-4 text-sm font-bold uppercase tracking-wide transition focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-white"
-                            :class="tab === '{{ $tab['id'] }}' ? 'bg-white text-ink' : 'text-white/80 hover:bg-white/10 hover:text-white'">
+                            :class="tab === '{{ $tab['id'] }}' ? 'bg-white text-ink' : 'text-white hover:bg-white/15'">
                             {{ $tab['label'] }}
                         </button>
                     @endforeach
