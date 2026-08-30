@@ -87,6 +87,7 @@ class SiteSetting extends Model implements HasMedia
         'ngo'          => 'NGO / fundacja (rozbudowany)',
         'ngo_mix'      => 'NGO / fundacja (mieszany — klasyczna belka i stopka, rozbudowana strona główna)',
         'municipality' => 'Gmina / urząd',
+        'federation'   => 'Federacja organizacji (wielobarwna, nowoczesna)',
     ];
 
     /**

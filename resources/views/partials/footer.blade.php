@@ -7,6 +7,8 @@
     @include('templates.municipality.partials.footer')
 @elseif (($siteSettings->site_template ?? 'default') === 'ngo')
     @include('templates.ngo.partials.footer')
+@elseif (($siteSettings->site_template ?? 'default') === 'federation')
+    @include('templates.federation.partials.footer')
 @else
 
 <footer>

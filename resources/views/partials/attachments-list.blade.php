@@ -31,7 +31,8 @@
                     <div class="ml-auto flex items-center gap-4">
                         <span class="text-sm text-muted">Format: {{ $attachment->file_extension }}, {{ $attachment->file_size }}</span>
                         <a href="{{ $attachment->file_url }}" download
-                            class="flex-none rounded bg-brand px-5 py-2 text-sm font-bold uppercase text-white transition hover:bg-brand-dark">
+                            class="flex flex-none items-center gap-2 rounded bg-brand px-5 py-2 text-sm font-bold uppercase text-white transition hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
+                            <i class="fa-solid fa-arrow-down" aria-hidden="true"></i>
                             Pobierz <span class="sr-only">— {{ $attachment->label }}</span>
                         </a>
                     </div>

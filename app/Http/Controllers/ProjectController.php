@@ -38,6 +38,10 @@ class ProjectController extends Controller
             ->orderBy('title')
             ->get();
 
+        if (SiteSetting::current()->site_template === 'federation') {
+            return view('templates.federation.projects-archive', compact('projects'));
+        }
+
         return view('projects.archive', compact('projects'));
     }
 
@@ -53,10 +57,14 @@ class ProjectController extends Controller
     public function show(Project $project)
     {
         abort_unless($project->is_published, 404);
-        $project->load('category', 'publishedPages');
+        $project->load('category', 'publishedPages', 'attachments');
 
         // Własny kolor akcentu ma priorytet; w przeciwnym razie preset grupy docelowej.
         $brandColor = $project->accent_color ?: SiteSetting::current()->audienceColor($project->audience);
+
+        if (SiteSetting::current()->site_template === 'federation') {
+            return view('templates.federation.projects-show', compact('project', 'brandColor'));
+        }
 
         return view('projects.show', compact('project', 'brandColor'));
     }

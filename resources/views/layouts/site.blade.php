@@ -79,6 +79,9 @@
     @elseif ($siteTemplate === 'ngo')
         @include('templates.ngo.partials.topbar')
         @include('templates.ngo.partials.header')
+    @elseif ($siteTemplate === 'federation')
+        @include('templates.federation.partials.topbar')
+        @include('templates.federation.partials.header')
     @else
         @include($siteSettings->headerLayoutValue() === 'office_bar' ? 'partials.topbar-info' : 'partials.topbar')
         @include('partials.header')

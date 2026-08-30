@@ -80,6 +80,10 @@ class SupportController extends Controller
             }
         }
 
+        if ($settings->site_template === 'federation') {
+            return view('templates.federation.support');
+        }
+
         return view('support.show', compact('stats', 'photos', 'partners', 'latestNews'));
     }
 }

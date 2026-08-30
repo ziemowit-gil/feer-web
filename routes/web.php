@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\AnnualReportController as AdminAnnualReportContro
 use App\Http\Controllers\Admin\ApprovalController as AdminApprovalController;
 use App\Http\Controllers\Admin\CalendarController as AdminCalendarController;
 use App\Http\Controllers\Admin\EditLockController as AdminEditLockController;
+use App\Http\Controllers\FederationController;
 use App\Http\Controllers\Admin\NotificationController as AdminNotificationController;
 use App\Http\Controllers\Admin\RevisionController as AdminRevisionController;
 use App\Http\Controllers\Admin\SearchController as AdminSearchController;
@@ -124,6 +125,8 @@ Route::middleware('module:projects')->group(function () {
     Route::get('/projekty/{project:slug}', [ProjectController::class, 'show'])->name('projects.show');
     Route::get('/kategoria/{category:slug}', [ProjectController::class, 'category'])->name('categories.show');
 });
+
+Route::get('/organizacje-czlonkowskie', [FederationController::class, 'organizations'])->name('federation.organizations');
 
 Route::middleware('module:news')->group(function () {
     Route::get('/aktualnosci', [NewsController::class, 'index'])->name('news.index');
