@@ -48,10 +48,24 @@
             focusActive() { this.$nextTick(() => document.getElementById('tab-' + this.tab)?.focus()); },
         }">
 
-        {{-- Ciemny pas z tytułem --}}
-        <section class="bg-ink">
-            <div class="mx-auto max-w-6xl px-4 py-10">
+        {{-- Ciemny pas z tytułem; ze zdjęciem biura w tle, jeśli je wgrano.
+             Przyciemnienie 65% czerni trzyma kontrast białego tekstu na min. 7:1
+             nawet przy całkiem jasnym zdjęciu (WCAG 1.4.3), a klasa
+             .contact-hero-photo chowa zdjęcie w trybach wysokiego kontrastu. --}}
+        @php $tabsHeroPhoto = $siteSettings->officePhotoUrl(); @endphp
+        <section class="relative bg-ink {{ $tabsHeroPhoto ? 'contact-hero-photo' : '' }}"
+            @if ($tabsHeroPhoto) style="background-image: url('{{ $tabsHeroPhoto }}');" @endif>
+
+            @if ($tabsHeroPhoto)
+                <div class="absolute inset-0 bg-black/65" aria-hidden="true"></div>
+            @endif
+
+            <div class="relative mx-auto max-w-6xl px-4 {{ $tabsHeroPhoto ? 'py-16 sm:py-20' : 'py-10' }}">
                 <h1 class="text-3xl font-bold uppercase tracking-wide text-white sm:text-4xl">Kontakt</h1>
+
+                @if ($tabsHeroPhoto && filled($siteSettings->contact_office_building))
+                    <p class="mt-2 text-sm text-white/90">{{ $siteSettings->contact_office_building }}</p>
+                @endif
             </div>
         </section>
 
@@ -96,11 +110,7 @@
                             @include('partials.correspondence-note')
                         </div>
 
-                        @if ($officePhoto = $siteSettings->officePhotoUrl())
-                            <img src="{{ $officePhoto }}" loading="lazy"
-                                 alt="{{ $siteSettings->contact_office_photo_alt }}"
-                                 class="mt-6 w-full rounded-xl object-cover ring-1 ring-gray-200">
-                        @endif
+                        {{-- Zdjęcia biura tu nie powtarzamy — jest już w tle nagłówka. --}}
 
                         <p class="mt-6 text-sm text-muted">
                             Wolisz napisać?
@@ -111,7 +121,7 @@
                     </div>
 
                     <div class="rounded-2xl border border-gray-200 bg-gray-50/70 p-6">
-                        @include('contact.partials.details')
+                        @include('contact.partials.details', ['withOfficePhoto' => false])
                         @include('contact.partials.registry')
                     </div>
                 </div>
