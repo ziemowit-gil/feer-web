@@ -247,14 +247,14 @@
                     <label class="flex items-center gap-2">
                         <input type="hidden" name="federation_show_org_spotlight" value="0">
                         <input type="checkbox" name="federation_show_org_spotlight" value="1"
-                            {{ old('federation_show_org_spotlight', $settings->federation_show_org_spotlight ?? true) ? 'checked' : '' }}
+                            {{ old('federation_show_org_spotlight', $settings->federation_show_org_spotlight ?? false) ? 'checked' : '' }}
                             class="rounded border-gray-300 text-brand focus:ring-brand">
                         <span class="text-sm font-bold">„Poznaj naszą organizację" na stronie głównej <span class="font-normal text-muted">(losowo wybrana organizacja członkowska)</span></span>
                     </label>
                     <label class="flex items-center gap-2">
                         <input type="hidden" name="federation_show_members_banner" value="0">
                         <input type="checkbox" name="federation_show_members_banner" value="1"
-                            {{ old('federation_show_members_banner', $settings->federation_show_members_banner ?? true) ? 'checked' : '' }}
+                            {{ old('federation_show_members_banner', $settings->federation_show_members_banner ?? false) ? 'checked' : '' }}
                             class="rounded border-gray-300 text-brand focus:ring-brand">
                         <span class="text-sm font-bold">Skrót do Strefy członkowskiej na stronie głównej</span>
                     </label>

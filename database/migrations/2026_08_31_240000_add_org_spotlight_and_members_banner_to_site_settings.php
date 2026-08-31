@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::table('site_settings', function (Blueprint $table) {
             $table->boolean('federation_show_org_spotlight')->default(false)->after('federation_colorful_nav_items');
-            $table->boolean('federation_show_members_banner')->default(true)->after('federation_show_org_spotlight');
+            $table->boolean('federation_show_members_banner')->default(false)->after('federation_show_org_spotlight');
         });
     }
 

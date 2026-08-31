@@ -1,5 +1,5 @@
 {{-- Skrót do strefy członkowskiej — funkcja włączana/wyłączana z panelu. Wąski pasek, celowo inny niż karta "Poznaj naszą organizację". --}}
-@if ($siteSettings->federation_show_members_banner ?? true)
+@if ($siteSettings->federation_show_members_banner ?? false)
     <section aria-labelledby="members-banner-heading">
         <div class="mx-auto max-w-[1400px] px-4">
             <div class="flex flex-col items-center justify-center gap-3 rounded-md px-6 py-4 text-center sm:flex-row sm:justify-between sm:text-left"

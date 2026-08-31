@@ -1,5 +1,5 @@
 {{-- "Poznaj naszą organizację" — losowo wybrana organizacja członkowska, funkcja włączana/wyłączana z panelu. --}}
-@if ($siteSettings->federation_show_org_spotlight ?? true)
+@if ($siteSettings->federation_show_org_spotlight ?? false)
     @php
         $spotlightOrg = \App\Models\Organization::where('is_test', false)->inRandomOrder()->first();
         $spotlightPhoto = $spotlightOrg?->getFirstMedia('photos');
