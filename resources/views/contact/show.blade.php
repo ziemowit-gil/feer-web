@@ -51,7 +51,7 @@
                 @include('contact.partials.form')
             </div>
 
-            <div class="{{ $isFederationTemplate ? 'rounded-lg border border-gray-100 bg-gray-50 p-6' : '' }}">
+            <div>
                 @include('contact.partials.details')
             </div>
         </div>
