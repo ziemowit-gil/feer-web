@@ -6,6 +6,8 @@
 @section('content')
     @include('templates.federation.partials.home.hero')
     @include('templates.federation.partials.home.projects')
+    @include('templates.federation.partials.home.organization-spotlight')
+    @include('templates.federation.partials.home.members-banner')
     @include('templates.federation.partials.home.news')
     @include('templates.federation.partials.home.cta-banner')
     @include('templates.federation.partials.home.partners')

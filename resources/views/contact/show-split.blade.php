@@ -150,6 +150,8 @@
                     @endif
                 </div>
             @endif
+
+            @include('contact.partials.locations-map', ['sectionStyle' => 'card'])
         </div>
     </section>
 

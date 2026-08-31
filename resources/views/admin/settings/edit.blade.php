@@ -241,6 +241,24 @@
                         @endforeach
                     </div>
                 </div>
+
+                {{-- Sekcje na stronie głównej — możliwe do wyłączenia --}}
+                <div class="mt-4 space-y-3 rounded-lg border border-gray-200 bg-gray-50 p-5">
+                    <label class="flex items-center gap-2">
+                        <input type="hidden" name="federation_show_org_spotlight" value="0">
+                        <input type="checkbox" name="federation_show_org_spotlight" value="1"
+                            {{ old('federation_show_org_spotlight', $settings->federation_show_org_spotlight ?? true) ? 'checked' : '' }}
+                            class="rounded border-gray-300 text-brand focus:ring-brand">
+                        <span class="text-sm font-bold">„Poznaj naszą organizację" na stronie głównej <span class="font-normal text-muted">(losowo wybrana organizacja członkowska)</span></span>
+                    </label>
+                    <label class="flex items-center gap-2">
+                        <input type="hidden" name="federation_show_members_banner" value="0">
+                        <input type="checkbox" name="federation_show_members_banner" value="1"
+                            {{ old('federation_show_members_banner', $settings->federation_show_members_banner ?? true) ? 'checked' : '' }}
+                            class="rounded border-gray-300 text-brand focus:ring-brand">
+                        <span class="text-sm font-bold">Skrót do Strefy członkowskiej na stronie głównej</span>
+                    </label>
+                </div>
             @endif
 
             {{-- Modal: sekretny kod do aktywacji stylu Wide --}}

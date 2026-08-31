@@ -5,8 +5,9 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * Punkt pomocy prezentowany na mapie (moduł "Mapa pomocy", szablon federation) —
- * np. bank żywności, schronisko, punkt poradnictwa.
+ * Ośrodek prowadzony przez KraFOS, prezentowany na mapie (moduł "Mapa pomocy",
+ * szablon federation) — nie tylko w Krakowie, ale we wszystkich lokalizacjach,
+ * w których federacja faktycznie działa.
  *
  * @author Ziemowit Gil <ziemowit.gil@feer.org.pl>
  */

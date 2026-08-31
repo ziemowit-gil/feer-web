@@ -1,7 +1,7 @@
 @extends('layouts.site')
 
-@section('title', 'Mapa pomocy — ' . $siteSettings->site_name)
-@section('meta_description', 'Znajdź punkty pomocy w Krakowie — żywność, schronienie, poradnictwo i inne formy wsparcia.')
+@section('title', 'Nasze ośrodki — ' . $siteSettings->site_name)
+@section('meta_description', 'Ośrodki prowadzone przez KraFOS w całej Małopolsce, nie tylko w Krakowie — żywność, schronienie, poradnictwo i inne formy wsparcia.')
 
 @section('breadcrumbs')
     @include('partials.breadcrumbs', ['items' => [
@@ -13,11 +13,12 @@
     <section class="mx-auto max-w-[1400px] px-4 py-12 lg:py-16">
         <p class="mb-3 text-sm font-extrabold uppercase tracking-widest text-brand">Mapa pomocy</p>
         <h1 class="mb-4 text-3xl font-extrabold leading-tight tracking-tight text-ink sm:text-4xl">
-            Gdzie szukać wsparcia KraFOS w Małopolsce?
+            Ośrodki {{ $siteSettings->site_name }} w Małopolsce
         </h1>
         <p class="mb-8 max-w-2xl text-base leading-relaxed text-muted">
-            Zebraliśmy punkty pomocy prowadzone przez organizacje członkowskie {{ $siteSettings->site_name }} i naszych
-            partnerów w całej Małopolsce — żywność, schronienie, poradnictwo, wsparcie zdrowotne i prawne.
+            {{ $siteSettings->site_name }} prowadzi ośrodki wsparcia nie tylko w Krakowie, ale w wielu miejscowościach
+            całej Małopolski — żywność, schronienie, poradnictwo, wsparcie zdrowotne i prawne. Sprawdź, gdzie działamy
+            najbliżej Ciebie.
         </p>
 
         @php
@@ -59,7 +60,7 @@
                         </li>
                     @endforeach
                     @if ($points->isEmpty())
-                        <li class="text-sm text-muted">Brak punktów pomocy do wyświetlenia.</li>
+                        <li class="text-sm text-muted">Brak ośrodków do wyświetlenia.</li>
                     @endif
                 </ul>
             </div>
@@ -73,7 +74,7 @@
                         'address' => $p->address, 'phone' => $p->phone, 'url' => $p->url,
                         'lat' => (float) $p->lat, 'lng' => (float) $p->lng,
                     ])->toJson() }}"
-                    role="img" aria-label="Mapa punktów pomocy w Krakowie">
+                    role="img" aria-label="Mapa ośrodków {{ $siteSettings->site_name }} w Małopolsce">
                 </div>
             </div>
         </div>

@@ -5,12 +5,14 @@ namespace Database\Seeders;
 use App\Models\Attachment;
 use App\Models\Category;
 use App\Models\News;
+use App\Models\Organization;
 use App\Models\Page;
 use App\Models\Partner;
 use App\Models\Project;
 use App\Models\SiteSetting;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 
 /**
  * Dane demonstracyjne dla instancji szablonu „federation" (federacja organizacji
@@ -264,6 +266,7 @@ class FederationDemoSeeder extends Seeder
             'hub_links' => [
                 ['label' => 'Dokumenty do pobrania', 'url' => '/dokumenty-do-pobrania'],
                 ['label' => 'Organizacje członkowskie', 'url' => '/organizacje-czlonkowskie'],
+                ['label' => 'Zaloguj się jako organizacja i edytuj swoją wizytówkę', 'url' => '/organizacje/logowanie'],
                 ['label' => 'Najczęściej zadawane pytania', 'url' => '/najczesciej-zadawane-pytania'],
             ],
         ]);
@@ -312,22 +315,86 @@ class FederationDemoSeeder extends Seeder
             );
         }
 
-        // Mapa pomocy — punkty wsparcia organizacji członkowskich w całej Małopolsce
-        // (moduł "help_map"), nie tylko w Krakowie.
+        // Mapa pomocy — ośrodki prowadzone przez samo KraFOS w całej Małopolsce
+        // (moduł "help_map"), nie tylko w Krakowie, ale wszędzie tam, gdzie federacja działa.
+        $helpPointNames = [
+            'Ośrodek KraFOS – Kraków Podgórze (wydawanie żywności)',
+            'Ośrodek KraFOS – Kraków Nowa Huta (jadłodajnia sąsiedzka)',
+            'Ośrodek KraFOS – Kraków (schronisko dla osób w kryzysie bezdomności)',
+            'Ośrodek KraFOS – Tarnów (poradnia rodzinna)',
+            'Ośrodek KraFOS – Nowy Sącz (poradnictwo obywatelskie)',
+            'Ośrodek KraFOS – Chrzanów (bezpłatna pomoc prawna)',
+            'Ośrodek KraFOS – Oświęcim (centrum zdrowia psychicznego)',
+            'Ośrodek KraFOS – Wadowice (świetlica środowiskowa)',
+            'Ośrodek KraFOS – Bochnia (wsparcie dla seniorów)',
+        ];
+        \App\Models\HelpPoint::whereNotIn('name', $helpPointNames)->delete();
+
         foreach ([
-            ['name' => 'Punkt wydawania żywności – Kraków Podgórze', 'category' => 'zywnosc', 'address' => 'ul. Wielicka 22, 30-552 Kraków', 'lat' => 50.0304, 'lng' => 19.9497],
-            ['name' => 'Jadłodajnia sąsiedzka – Kraków Nowa Huta', 'category' => 'zywnosc', 'address' => 'os. Centrum C 5, 31-925 Kraków', 'lat' => 50.0752, 'lng' => 20.0326],
-            ['name' => 'Schronisko dla osób w kryzysie bezdomności – Kraków', 'category' => 'schronienie', 'address' => 'ul. Makuszyńskiego 19, 31-752 Kraków', 'lat' => 50.0819, 'lng' => 20.0157],
-            ['name' => 'Poradnia rodzinna – Tarnów', 'category' => 'poradnictwo', 'address' => 'ul. Krakowska 19, 33-100 Tarnów', 'lat' => 50.0121, 'lng' => 20.9858],
-            ['name' => 'Punkt poradnictwa obywatelskiego – Nowy Sącz', 'category' => 'poradnictwo', 'address' => 'ul. Jagiellońska 50, 33-300 Nowy Sącz', 'lat' => 49.6222, 'lng' => 20.7143],
-            ['name' => 'Bezpłatna pomoc prawna – Chrzanów', 'category' => 'prawo', 'address' => 'Aleja Henryka 20, 32-500 Chrzanów', 'lat' => 50.1372, 'lng' => 19.4020],
-            ['name' => 'Centrum zdrowia psychicznego – Oświęcim', 'category' => 'zdrowie', 'address' => 'ul. Wysokie Brzegi 4, 32-600 Oświęcim', 'lat' => 50.0343, 'lng' => 19.2245],
-            ['name' => 'Świetlica środowiskowa – Wadowice', 'category' => 'inne', 'address' => 'ul. Lwowska 12, 34-100 Wadowice', 'lat' => 49.8836, 'lng' => 19.4915],
-            ['name' => 'Punkt wsparcia dla seniorów – Bochnia', 'category' => 'inne', 'address' => 'ul. Krakowska 3, 32-700 Bochnia', 'lat' => 49.9691, 'lng' => 20.4310],
+            ['name' => $helpPointNames[0], 'category' => 'zywnosc', 'address' => 'ul. Wielicka 22, 30-552 Kraków', 'lat' => 50.0304, 'lng' => 19.9497],
+            ['name' => $helpPointNames[1], 'category' => 'zywnosc', 'address' => 'os. Centrum C 5, 31-925 Kraków', 'lat' => 50.0752, 'lng' => 20.0326],
+            ['name' => $helpPointNames[2], 'category' => 'schronienie', 'address' => 'ul. Makuszyńskiego 19, 31-752 Kraków', 'lat' => 50.0819, 'lng' => 20.0157],
+            ['name' => $helpPointNames[3], 'category' => 'poradnictwo', 'address' => 'ul. Krakowska 19, 33-100 Tarnów', 'lat' => 50.0121, 'lng' => 20.9858],
+            ['name' => $helpPointNames[4], 'category' => 'poradnictwo', 'address' => 'ul. Jagiellońska 50, 33-300 Nowy Sącz', 'lat' => 49.6222, 'lng' => 20.7143],
+            ['name' => $helpPointNames[5], 'category' => 'prawo', 'address' => 'Aleja Henryka 20, 32-500 Chrzanów', 'lat' => 50.1372, 'lng' => 19.4020],
+            ['name' => $helpPointNames[6], 'category' => 'zdrowie', 'address' => 'ul. Wysokie Brzegi 4, 32-600 Oświęcim', 'lat' => 50.0343, 'lng' => 19.2245],
+            ['name' => $helpPointNames[7], 'category' => 'inne', 'address' => 'ul. Lwowska 12, 34-100 Wadowice', 'lat' => 49.8836, 'lng' => 19.4915],
+            ['name' => $helpPointNames[8], 'category' => 'inne', 'address' => 'ul. Krakowska 3, 32-700 Bochnia', 'lat' => 49.9691, 'lng' => 20.4310],
         ] as $i => $point) {
             \App\Models\HelpPoint::updateOrCreate(
                 ['name' => $point['name']],
                 $point + ['is_published' => true, 'order' => $i + 1]
+            );
+        }
+
+        // Organizacje członkowskie — katalog + wizytówki. Jedna pozycja jest
+        // wyraźnie oznaczona jako testowa (do usunięcia komendą federation:clean-demo).
+        foreach ([
+            ['name' => 'Uniwersytet Trzeciego Wieku w Andrychowie', 'town' => 'Andrychów', 'type' => 'Uniwersytet Trzeciego Wieku', 'spheres' => ['Działalność na rzecz osób w wieku emerytalnym'], 'description' => 'Uniwersytet Trzeciego Wieku prowadzący zajęcia edukacyjne i aktywizujące dla seniorów.'],
+            ['name' => 'Klub Żeglarski HORN Kraków', 'town' => 'Kraków', 'type' => 'Klub', 'spheres' => ['Turystyka i krajoznawstwo'], 'description' => 'Klub żeglarski rozwijający pasje wodniackie wśród dzieci, młodzieży i dorosłych.'],
+            ['name' => 'Ogólnopolski Związek Inwalidów Narządu Ruchu', 'town' => 'Kraków', 'type' => 'Związek', 'spheres' => ['Działalność na rzecz osób niepełnosprawnych'], 'description' => 'Ogólnopolski związek wspierający osoby z niepełnosprawnością narządu ruchu.'],
+            ['name' => 'Stowarzyszenie Absolwentów Liceum Ogólnokształcącego im. Marcina Wadowity w Wadowicach', 'town' => 'Wadowice', 'type' => 'Stowarzyszenie', 'spheres' => ['Nauka, edukacja, oświata i wychowanie'], 'description' => 'Stowarzyszenie absolwentów integrujące społeczność szkolną i wspierające edukację.'],
+            ['name' => 'Krakowskie Towarzystwo Pomocy Uzależnionym', 'town' => 'Kraków', 'type' => 'Towarzystwo', 'spheres' => ['Przeciwdziałanie uzależnieniom i patologiom społecznym'], 'description' => 'Towarzystwo wspierające osoby uzależnione i ich rodziny w powrocie do zdrowia.'],
+            ['name' => 'Stowarzyszenie Przyjaciół im. Św. Brata Alberta', 'town' => 'Kraków', 'type' => 'Stowarzyszenie', 'spheres' => ['Pomoc społeczna'], 'description' => 'Stowarzyszenie niosące pomoc osobom w kryzysie bezdomności i ubóstwie.'],
+            ['name' => 'Polski Związek Niewidomych. Okręg małopolski', 'town' => 'Kraków', 'type' => 'Związek', 'spheres' => ['Działalność na rzecz osób niepełnosprawnych'], 'description' => 'Związek wspierający osoby niewidome i słabowidzące w Małopolsce.'],
+            ['name' => 'Regionalne Stowarzyszenie Diabetyków z Siedzibą w Chrzanowie', 'town' => 'Chrzanów', 'type' => 'Stowarzyszenie', 'spheres' => ['Ochrona i promocja zdrowia'], 'description' => 'Stowarzyszenie wspierające osoby chorujące na cukrzycę i ich rodziny.'],
+            ['name' => 'Fundacja na Rzecz Chorych na SM im. bł. Anieli Salawy', 'town' => 'Kraków', 'type' => 'Fundacja', 'spheres' => ['Ochrona i promocja zdrowia'], 'description' => 'Fundacja wspierająca osoby chorujące na stwardnienie rozsiane.'],
+            ['name' => 'Polski Związek Emerytów, Rencistów i Inwalidów. Zarząd oddziału rejonowego Kraków - Podgórze', 'town' => 'Kraków', 'type' => 'Związek', 'spheres' => ['Działalność na rzecz osób w wieku emerytalnym'], 'description' => 'Związek zrzeszający emerytów, rencistów i osoby z niepełnosprawnością w Podgórzu.'],
+            ['name' => 'Stowarzyszenie Pomocy Szkole Małopolska', 'town' => 'Kraków', 'type' => 'Stowarzyszenie', 'spheres' => ['Nauka, edukacja, oświata i wychowanie'], 'description' => 'Stowarzyszenie wspierające szkoły i placówki edukacyjne w regionie.'],
+            ['name' => 'Stowarzyszenia Przyjaciół Osób Niepełnosprawnych Wspólna Radość', 'town' => 'Kraków', 'type' => 'Stowarzyszenie', 'spheres' => ['Działalność na rzecz osób niepełnosprawnych'], 'description' => 'Stowarzyszenie towarzyszące osobom z niepełnosprawnością w codziennej aktywizacji.'],
+            [
+                'name' => 'Bank Żywności w Krakowie', 'town' => 'Kraków', 'type' => 'Inna forma prawna',
+                'spheres' => ['Pomoc społeczna', 'Działalność charytatywna', 'Ekologia i ochrona zwierząt'],
+                'description' => 'Bank żywności zbierający i dystrybuujący żywność do osób potrzebujących.',
+                'bio' => 'Bank Żywności w Krakowie od lat zbiera nadwyżki żywności od producentów, sklepów i darczyńców indywidualnych, a następnie przekazuje je organizacjom pomocowym i osobom w trudnej sytuacji życiowej w całej Małopolsce. Oprócz codziennej dystrybucji żywności prowadzimy też edukację na temat przeciwdziałania marnowaniu jedzenia oraz organizujemy cykliczne zbiórki świąteczne.',
+                'website_url' => 'https://bankzywnosci.krakow.pl',
+                'facebook_url' => 'https://facebook.com/bankzywnoscikrakow',
+                'instagram_url' => 'https://instagram.com/bankzywnoscikrakow',
+                'email' => 'kontakt@bankzywnosci.krakow.pl',
+                'phone' => '12 345 67 89',
+            ],
+            ['name' => 'Stowarzyszenie Dobroczynne "Betlejem"', 'town' => 'Kraków', 'type' => 'Stowarzyszenie', 'spheres' => ['Działalność charytatywna'], 'description' => 'Stowarzyszenie dobroczynne niosące pomoc osobom w trudnej sytuacji życiowej.'],
+            ['name' => 'Chrześcijańskie Stowarzyszenie Dobroczynne', 'town' => 'Kraków', 'type' => 'Stowarzyszenie', 'spheres' => ['Działalność charytatywna'], 'description' => 'Stowarzyszenie dobroczynne działające na rzecz osób potrzebujących wsparcia.'],
+            ['name' => 'Polskie Stowarzyszenie na Rzecz Osób z Upośledzeniem Umysłowym Koło w Jabłonce', 'town' => 'Jabłonka', 'type' => 'Koło', 'spheres' => ['Działalność na rzecz osób niepełnosprawnych'], 'description' => 'Koło wspierające osoby z niepełnosprawnością intelektualną i ich rodziny.'],
+            ['name' => 'Fundacja Dla Dzieci Młodzieży I Dorosłych Niepełnosprawnych Intelektualnie', 'town' => 'Kraków', 'type' => 'Fundacja', 'spheres' => ['Działalność na rzecz osób niepełnosprawnych'], 'description' => 'Fundacja wspierająca dzieci, młodzież i dorosłych z niepełnosprawnością intelektualną.'],
+            ['name' => 'Krajowe Towarzystwo Autyzmu Oddział w Krakowie', 'town' => 'Kraków', 'type' => 'Towarzystwo', 'spheres' => ['Działalność na rzecz osób niepełnosprawnych'], 'description' => 'Towarzystwo wspierające osoby w spektrum autyzmu i ich rodziny.'],
+            ['name' => 'Stowarzyszenie na rzecz Domu Pomocy Społecznej im. Św. Brata Alberta w Krakowie oraz osób niepełnosprawnych', 'town' => 'Kraków', 'type' => 'Stowarzyszenie', 'spheres' => ['Pomoc społeczna'], 'description' => 'Stowarzyszenie wspierające Dom Pomocy Społecznej oraz osoby z niepełnosprawnością.'],
+            ['name' => 'Krakowskie Stowarzyszenie Terapeutów Uzależnień', 'town' => 'Kraków', 'type' => 'Stowarzyszenie', 'spheres' => ['Przeciwdziałanie uzależnieniom i patologiom społecznym'], 'description' => 'Stowarzyszenie zrzeszające terapeutów pracujących z osobami uzależnionymi.'],
+            ['name' => 'Stowarzyszenie Lekarzy Nadziei', 'town' => 'Kraków', 'type' => 'Stowarzyszenie', 'spheres' => ['Ochrona i promocja zdrowia'], 'description' => 'Stowarzyszenie lekarzy niosących bezpłatną pomoc medyczną osobom w potrzebie.'],
+            ['name' => 'Stowarzyszenie Rodzin Adopcyjnych i Zastępczych „Pro Familia"', 'town' => 'Kraków', 'type' => 'Stowarzyszenie', 'spheres' => ['Wspieranie rodziny i pieczy zastępczej'], 'description' => 'Stowarzyszenie wspierające rodziny adopcyjne i zastępcze.'],
+            ['name' => 'Krakowska Fundacja Pomocy Potrzebującym "Nasz Dom" im. Św. Brata Alberta', 'town' => 'Kraków', 'type' => 'Fundacja', 'spheres' => ['Działalność charytatywna'], 'description' => 'Fundacja niosąca pomoc osobom potrzebującym i w kryzysie bezdomności.'],
+            ['name' => 'Stowarzyszenie Przyjaciół Harcerstwa', 'town' => 'Kraków', 'type' => 'Stowarzyszenie', 'spheres' => ['Wypoczynek dzieci i młodzieży'], 'description' => 'Stowarzyszenie wspierające ruch harcerski oraz wychowanie dzieci i młodzieży.'],
+            ['name' => 'Stowarzyszenie Rozwoju i Integracji Młodzieży ST.R.I.M', 'town' => 'Kraków', 'type' => 'Stowarzyszenie', 'spheres' => ['Wypoczynek dzieci i młodzieży'], 'description' => 'Stowarzyszenie wspierające rozwój i integrację młodzieży.'],
+            ['name' => 'Małopolski Związek Osób Niepełnosprawnych w Bochni', 'town' => 'Bochnia', 'type' => 'Związek', 'spheres' => ['Działalność na rzecz osób niepełnosprawnych'], 'description' => 'Związek wspierający osoby z niepełnosprawnością w regionie bocheńskim.'],
+            ['name' => 'Organizacja Testowa (demo)', 'town' => 'Kraków', 'type' => 'Inna forma prawna', 'spheres' => ['Pomoc społeczna'], 'description' => 'Organizacja testowa dodana wyłącznie do celów demonstracyjnych panelu edycji.', 'is_test' => true],
+        ] as $i => $org) {
+            $slug = Str::slug($org['name']);
+
+            // Demo: każda organizacja ma własny login (jej slug), ale to samo
+            // hasło demonstracyjne — w produkcji admin ustawia unikalne hasło.
+            Organization::updateOrCreate(
+                ['slug' => $slug],
+                $org + ['order' => $i + 1, 'login' => $slug, 'password' => 'organizacja2026']
             );
         }
     }

@@ -416,6 +416,14 @@
                 </a>
             @endif
 
+            {{-- Organizacje członkowskie (tylko szablon federation) --}}
+            @if (\App\Models\SiteSetting::current()->site_template === 'federation')
+                <a href="{{ route('admin.organizacje.index') }}" class="{{ $itemClass('admin.organizacje.*') }}" title="Organizacje członkowskie">
+                    <i class="fa-solid fa-people-roof {{ $iconClass('admin.organizacje.*') }}"></i>
+                    <span class="nav-label">Organizacje członkowskie</span>
+                </a>
+            @endif
+
             {{-- Ankiety --}}
             @if ($can('polls'))
                 <a href="{{ route('admin.ankiety.index') }}" class="{{ $itemClass('admin.ankiety.*') }}" title="Ankiety">

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\FederationMembershipApplication;
+use App\Models\Organization;
 use App\Models\Page;
 use App\Models\SiteSetting;
 use Illuminate\Http\Request;
@@ -81,38 +82,45 @@ class FederationController extends Controller
             ->with('application_sent', 'Dziękujemy! Twoje zgłoszenie zostało przesłane — odezwiemy się wkrótce.');
     }
 
-    /** Lista organizacji członkowskich federacji. */
+    /** Katalog organizacji członkowskich federacji (wyszukiwarka + filtry). */
     public function organizations()
     {
-        $organizations = [
-            'Uniwersytet Trzeciego Wieku w Andrychowie',
-            'Klub Żeglarski HORN Kraków',
-            'Ogólnopolski Związek Inwalidów Narządu Ruchu',
-            'Stowarzyszenie Absolwentów Liceum Ogólnokształcącego im. Marcina Wadowity w Wadowicach',
-            'Krakowskie Towarzystwo Pomocy Uzależnionym',
-            'Stowarzyszenie Przyjaciół im. Św. Brata Alberta',
-            'Polski Związek Niewidomych. Okręg małopolski',
-            'Regionalne Stowarzyszenie Diabetyków z Siedzibą w Chrzanowie',
-            'Fundacja na Rzecz Chorych na SM im. bł. Anieli Salawy',
-            'Polski Związek Emerytów, Rencistów i Inwalidów. Zarząd oddziału rejonowego Kraków - Podgórze',
-            'Stowarzyszenie Pomocy Szkole Małopolska',
-            'Stowarzyszenia Przyjaciół Osób Niepełnosprawnych Wspólna Radość',
-            'Bank Żywności w Krakowie',
-            'Stowarzyszenie Dobroczynne "Betlejem"',
-            'Chrześcijańskie Stowarzyszenie Dobroczynne',
-            'Polskie Stowarzyszenie na Rzecz Osób z Upośledzeniem Umysłowym Koło w Jabłonce',
-            'Fundacja Dla Dzieci Młodzieży I Dorosłych Niepełnosprawnych Intelektualnie',
-            'Krajowe Towarzystwo Autyzmu Oddział w Krakowie',
-            'Stowarzyszenie na rzecz Domu Pomocy Społecznej im. Św. Brata Alberta w Krakowie oraz osób niepełnosprawnych',
-            'Krakowskie Stowarzyszenie Terapeutów Uzależnień',
-            'Stowarzyszenie Lekarzy Nadziei',
-            'Stowarzyszenie Rodzin Adopcyjnych i Zastępczych „Pro Familia"',
-            'Krakowska Fundacja Pomocy Potrzebującym "Nasz Dom" im. Św. Brata Alberta',
-            'Stowarzyszenie Przyjaciół Harcerstwa',
-            'Stowarzyszenie Rozwoju i Integracji Młodzieży ST.R.I.M',
-            'Małopolski Związek Osób Niepełnosprawnych w Bochni',
+        $organizations = Organization::where('is_test', false)
+            ->orderBy('order')->orderBy('name')->get()
+            ->map(fn ($org) => [
+                'name' => $org->name,
+                'slug' => $org->slug,
+                'town' => $org->town,
+                'type' => $org->type,
+                'spheres' => $org->spheres ?? [],
+                'sphereIcons' => $org->sphereIcons(),
+                'description' => $org->description,
+                'mapUrl' => $org->mapUrl(),
+                'showUrl' => route('federation.organizations.show', $org),
+            ])
+            ->values();
+
+        $towns = $organizations->pluck('town')->unique()->sort()->values();
+        $types = $organizations->pluck('type')->unique()->sort()->values();
+
+        $townCounts = $organizations->countBy('town')->sortDesc();
+        $sphereCounts = $organizations->pluck('spheres')->flatten()->filter()->countBy()->sortDesc();
+
+        $stats = [
+            'total' => $organizations->count(),
+            'townsCount' => $towns->count(),
+            'topTown' => $townCounts->keys()->first(),
+            'topTownCount' => $townCounts->first(),
+            'topSphere' => $sphereCounts->keys()->first(),
+            'topSphereCount' => $sphereCounts->first(),
         ];
 
-        return view('templates.federation.organizations', compact('organizations'));
+        return view('templates.federation.organizations', compact('organizations', 'towns', 'types', 'stats'));
+    }
+
+    /** Wizytówka pojedynczej organizacji członkowskiej. */
+    public function organizationShow(Organization $organization)
+    {
+        return view('templates.federation.organization-show', compact('organization'));
     }
 }

@@ -314,6 +314,8 @@ class SiteSettingController extends Controller
             'federation_colorful_nav' => ['sometimes', 'boolean'],
             'federation_colorful_nav_items' => ['nullable', 'array'],
             'federation_colorful_nav_items.*' => ['integer', 'between:0,3'],
+            'federation_show_org_spotlight' => ['sometimes', 'boolean'],
+            'federation_show_members_banner' => ['sometimes', 'boolean'],
             'federation_hero_tiles' => ['nullable', 'array'],
             'federation_hero_tiles.*.title' => ['nullable', 'string', 'max:100'],
             'federation_hero_tiles.*.value' => ['nullable', 'string', 'max:20'],
@@ -328,6 +330,8 @@ class SiteSettingController extends Controller
         $data['municipality_show_google_translate'] = $request->boolean('municipality_show_google_translate');
         $data['federation_colorful_nav'] = $request->boolean('federation_colorful_nav');
         $data['federation_colorful_nav_items'] = $request->input('federation_colorful_nav_items') ?: null;
+        $data['federation_show_org_spotlight'] = $request->boolean('federation_show_org_spotlight');
+        $data['federation_show_members_banner'] = $request->boolean('federation_show_members_banner');
         $data['site_url'] = filled($data['site_url'] ?? null) ? rtrim($data['site_url'], '/') : null;
         $data['microsoft_login_enabled'] = $request->boolean('microsoft_login_enabled');
         $data['microsoft_only_login'] = $request->boolean('microsoft_only_login');

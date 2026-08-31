@@ -52,23 +52,23 @@
                 </a>
             @endforeach
 
-            {{-- "Demo": rozwijane menu prezentujące wszystkie typy podstron --}}
+            {{-- "Demo": rozwijane menu prezentujące wszystkie typy podstron (siatka 2 kolumn zamiast długiej listy) --}}
             @php
                 $demoLinks = [
-                    ['label' => 'Strona standardowa', 'slug' => 'demo-strona-standardowa'],
-                    ['label' => 'Wydarzenie', 'slug' => 'demo-wydarzenie'],
-                    ['label' => 'Harmonogram zajęć', 'slug' => 'demo-harmonogram'],
-                    ['label' => 'O organizacji', 'slug' => 'demo-o-organizacji'],
-                    ['label' => 'FAQ', 'slug' => 'najczesciej-zadawane-pytania'],
-                    ['label' => 'Instytucja szkoleniowa', 'slug' => 'demo-instytucja-szkoleniowa'],
-                    ['label' => 'Przeniesiono do BIP', 'slug' => 'demo-przeniesiono-do-bip'],
-                    ['label' => 'Strona wewnętrzna (hasło)', 'slug' => 'demo-strona-wewnetrzna'],
-                    ['label' => 'Strefa członkowska (hasło)', 'slug' => 'strefa-czlonkowska'],
-                    ['label' => 'Siatka kafelków', 'slug' => 'demo-siatka-kafelkow'],
-                    ['label' => 'Kafelki (ikony)', 'slug' => 'demo-kafelki-ikony'],
-                    ['label' => 'Współpraca', 'slug' => 'demo-wspolpraca'],
-                    ['label' => 'Prezentacja tego, co było', 'slug' => 'demo-jak-bylo'],
-                    ['label' => 'Marka (identyfikacja wizualna)', 'slug' => 'demo-marka'],
+                    ['label' => 'Strona standardowa', 'slug' => 'demo-strona-standardowa', 'icon' => 'fa-file-lines'],
+                    ['label' => 'Wydarzenie', 'slug' => 'demo-wydarzenie', 'icon' => 'fa-calendar-days'],
+                    ['label' => 'Harmonogram zajęć', 'slug' => 'demo-harmonogram', 'icon' => 'fa-table-list'],
+                    ['label' => 'O organizacji', 'slug' => 'demo-o-organizacji', 'icon' => 'fa-building-circle-check'],
+                    ['label' => 'FAQ', 'slug' => 'najczesciej-zadawane-pytania', 'icon' => 'fa-circle-question'],
+                    ['label' => 'Instytucja szkoleniowa', 'slug' => 'demo-instytucja-szkoleniowa', 'icon' => 'fa-chalkboard-user'],
+                    ['label' => 'Przeniesiono do BIP', 'slug' => 'demo-przeniesiono-do-bip', 'icon' => 'fa-landmark'],
+                    ['label' => 'Strona wewnętrzna (hasło)', 'slug' => 'demo-strona-wewnetrzna', 'icon' => 'fa-lock'],
+                    ['label' => 'Strefa członkowska (hasło)', 'slug' => 'strefa-czlonkowska', 'icon' => 'fa-user-lock'],
+                    ['label' => 'Siatka kafelków', 'slug' => 'demo-siatka-kafelkow', 'icon' => 'fa-table-cells-large'],
+                    ['label' => 'Kafelki (ikony)', 'slug' => 'demo-kafelki-ikony', 'icon' => 'fa-icons'],
+                    ['label' => 'Współpraca', 'slug' => 'demo-wspolpraca', 'icon' => 'fa-handshake'],
+                    ['label' => 'Prezentacja tego, co było', 'slug' => 'demo-jak-bylo', 'icon' => 'fa-clock-rotate-left'],
+                    ['label' => 'Marka (identyfikacja wizualna)', 'slug' => 'demo-marka', 'icon' => 'fa-palette'],
                 ];
             @endphp
             <div class="relative" x-data="{ demoOpen: false }" @click.outside="demoOpen = false" @keydown.escape="demoOpen = false">
@@ -78,18 +78,19 @@
                     <i class="fa-solid fa-chevron-down text-xs transition-transform duration-200" :class="{ 'rotate-180': demoOpen }" aria-hidden="true"></i>
                 </button>
                 <div id="federation-demo-menu" x-show="demoOpen" x-cloak x-transition
-                    class="absolute left-0 top-full z-10 mt-2 w-72 rounded-lg border border-gray-200 bg-white p-2 shadow-lg">
-                    <ul class="max-h-96 space-y-0.5 overflow-y-auto" role="list">
+                    class="absolute left-0 top-full z-10 mt-2 w-[30rem] max-w-[90vw] rounded-lg border border-gray-200 bg-white p-3 shadow-lg">
+                    <ul class="grid max-h-[28rem] grid-cols-2 gap-1 overflow-y-auto" role="list">
                         @foreach ($demoLinks as $link)
                             <li>
-                                <a href="{{ url('/'.$link['slug']) }}" class="block rounded px-3 py-2 text-sm font-semibold text-ink hover:bg-gray-50">
-                                    {{ $link['label'] }}
+                                <a href="{{ url('/'.$link['slug']) }}" class="flex items-start gap-2 rounded-lg px-3 py-2.5 text-sm font-semibold text-ink hover:bg-gray-50">
+                                    <i class="fa-solid {{ $link['icon'] }} mt-0.5 text-xs text-brand" aria-hidden="true"></i>
+                                    <span>{{ $link['label'] }}</span>
                                 </a>
                             </li>
                         @endforeach
                         @if ($siteSettings->isModuleEnabled('help_map'))
-                            <li class="mt-0.5 border-t border-gray-100 pt-0.5">
-                                <a href="{{ route('help-map.index') }}" class="flex items-center gap-2 rounded px-3 py-2 text-sm font-semibold text-ink hover:bg-gray-50">
+                            <li class="col-span-2 mt-1 border-t border-gray-100 pt-1.5">
+                                <a href="{{ route('help-map.index') }}" class="flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm font-semibold text-ink hover:bg-gray-50">
                                     <i class="fa-solid fa-map-location-dot text-xs text-brand" aria-hidden="true"></i>
                                     Mapa lokalizacji
                                 </a>

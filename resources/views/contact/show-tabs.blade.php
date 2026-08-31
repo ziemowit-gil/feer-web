@@ -127,6 +127,8 @@
                 </div>
             @endif
         </div>
+
+        @include('contact.partials.locations-map', ['sectionStyle' => 'bare'])
     </div>
 
     @include('contact.partials.copy-script')

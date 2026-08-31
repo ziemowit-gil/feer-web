@@ -51,6 +51,7 @@
         @include('contact.partials.meetings')
         @include('contact.partials.shipping')
         @include('contact.partials.bank-accounts')
+        @include('contact.partials.locations-map')
     </section>
 
     @include('contact.partials.copy-script')

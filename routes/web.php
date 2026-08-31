@@ -7,7 +7,10 @@ use App\Http\Controllers\Admin\ApprovalController as AdminApprovalController;
 use App\Http\Controllers\Admin\CalendarController as AdminCalendarController;
 use App\Http\Controllers\Admin\EditLockController as AdminEditLockController;
 use App\Http\Controllers\Admin\HelpPointController as AdminHelpPointController;
+use App\Http\Controllers\Admin\OrganizationController as AdminOrganizationController;
 use App\Http\Controllers\FederationController;
+use App\Http\Controllers\MemberOrganizationController;
+use App\Http\Controllers\OrganizationLoginController;
 use App\Http\Controllers\Admin\NotificationController as AdminNotificationController;
 use App\Http\Controllers\Admin\RevisionController as AdminRevisionController;
 use App\Http\Controllers\Admin\SearchController as AdminSearchController;
@@ -133,6 +136,7 @@ Route::middleware('module:projects')->group(function () {
 });
 
 Route::get('/organizacje-czlonkowskie', [FederationController::class, 'organizations'])->name('federation.organizations');
+Route::get('/organizacje-czlonkowskie/{organization:slug}', [FederationController::class, 'organizationShow'])->name('federation.organizations.show');
 // Uwaga: /dolacz-do-nas jest już zajęte przez generyczną stronę „Dołącz do nas"
 // (oferty pracy + wolontariat, JoinUsController) — członkostwo w federacji ma
 // osobny, bardziej precyzyjny adres.
@@ -140,6 +144,15 @@ Route::get('/dolacz-do-federacji', [FederationController::class, 'joinUs'])->nam
 Route::post('/dolacz-do-federacji', [FederationController::class, 'submitApplication'])->name('federation.join.submit')->middleware('throttle:5,10');
 
 Route::get('/mapa-pomocy', [HelpMapController::class, 'index'])->name('help-map.index')->middleware('module:help_map');
+
+// Samoobsługowa edycja danych organizacji z poziomu Strefy członkowskiej
+// (logowanie indywidualne per organizacja — patrz OrganizationLoginController).
+Route::get('/organizacje/logowanie', [OrganizationLoginController::class, 'showLogin'])->name('organization.login');
+Route::post('/organizacje/logowanie', [OrganizationLoginController::class, 'login'])->name('organization.login.submit')->middleware('throttle:10,1');
+Route::post('/organizacje/wyloguj', [OrganizationLoginController::class, 'logout'])->name('organization.logout');
+Route::get('/organizacje/panel', [MemberOrganizationController::class, 'edit'])->name('organization.panel.edit');
+Route::put('/organizacje/panel', [MemberOrganizationController::class, 'update'])->name('organization.panel.update');
+Route::delete('/organizacje/panel/zdjecia/{media}', [MemberOrganizationController::class, 'destroyPhoto'])->name('organization.panel.photos.destroy');
 
 Route::middleware('module:news')->group(function () {
     Route::get('/aktualnosci', [NewsController::class, 'index'])->name('news.index');
@@ -334,6 +347,9 @@ Route::middleware(['auth', 'verified', '2fa'])->prefix(config('app.admin_prefix'
     Route::middleware(['module:help_map', 'module-access:help_map'])->group(function () {
         Route::resource('mapa-pomocy', AdminHelpPointController::class)->parameters(['mapa-pomocy' => 'helpPoint'])->except('show');
     });
+
+    // Organizacje członkowskie — katalog i wizytówki (tylko szablon federation, patrz OrganizationController).
+    Route::resource('organizacje', AdminOrganizationController::class)->parameters(['organizacje' => 'organization'])->except('show');
 
     Route::middleware(['module:hero', 'module-access:hero'])->group(function () {
         Route::resource('hero', HeroSlideController::class)->parameters(['hero' => 'heroSlide'])->except('show');
