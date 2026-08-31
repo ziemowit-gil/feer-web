@@ -40,7 +40,7 @@
             @foreach ($navItems as $item)
                 @php $isActive = request()->routeIs($item['route']); @endphp
                 <a href="{{ route($item['route']) }}"
-                    class="group relative py-1.5 text-sm font-semibold transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 {{ $isActive ? 'text-ink' : 'text-muted hover:text-ink' }}"
+                    class="group relative py-1.5 text-base font-bold text-ink transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 {{ $isActive ? '' : 'text-ink/70 hover:text-ink' }}"
                     @if ($isActive) aria-current="page" @endif>
                     {{ $item['label'] }}
                     <span class="pointer-events-none absolute -bottom-[1px] left-0 h-[2px] bg-brand transition-all duration-200 {{ $isActive ? 'w-full' : 'w-0 group-hover:w-full' }}" aria-hidden="true"></span>
@@ -84,7 +84,7 @@
         @click.outside="mobileOpen = false">
         <nav class="space-y-1 px-4 py-3" aria-label="Nawigacja mobilna">
             @foreach ($navItems as $item)
-                <a href="{{ route($item['route']) }}" class="block rounded-lg px-3 py-2 text-sm font-bold text-ink hover:bg-gray-50">
+                <a href="{{ route($item['route']) }}" class="block rounded-lg px-3 py-2 text-base font-bold text-ink hover:bg-gray-50">
                     {{ $item['label'] }}
                 </a>
             @endforeach

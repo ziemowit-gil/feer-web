@@ -5,7 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\SiteSetting;
 use App\Models\User;
 use App\Support\LicenseValidator;
+use App\Support\SuperAdminCertificate;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -26,6 +28,23 @@ class InstallController extends Controller
     {
         $step = session('install_step', 'welcome');
         return $this->render($step);
+    }
+
+    /**
+     * Jednorazowe pobranie certyfikatu .pfx wygenerowanego podczas instalacji.
+     * Plik istnieje wyłącznie w sesji — po pobraniu jest z niej natychmiast usuwany.
+     */
+    public function downloadCertificate(Request $request): Response
+    {
+        $pfx = $request->session()->pull('install_pfx');
+        $filename = $request->session()->pull('install_pfx_filename', 'super-admin.pfx');
+
+        abort_if(! $pfx, 404);
+
+        return response(base64_decode($pfx), 200, [
+            'Content-Type' => 'application/x-pkcs12',
+            'Content-Disposition' => 'attachment; filename="'.$filename.'"',
+        ]);
     }
 
     public function post(Request $request)
@@ -89,7 +108,10 @@ class InstallController extends Controller
             'admin_password'   => ['required', 'confirmed', Password::min(8)],
             'site_name'        => ['required', 'string', 'max:120'],
             'site_tagline'     => ['nullable', 'string', 'max:200'],
-            'site_template'    => ['required', 'in:default,ngo,municipality'],
+            'site_template'    => ['required', 'in:'.implode(',', array_keys(SiteSetting::SITE_TEMPLATES))],
+            'modules'          => ['nullable', 'array'],
+            'modules.*'        => ['string', 'in:'.implode(',', array_keys(SiteSetting::MODULES))],
+            'super_admin_cert_password' => ['required', 'string', 'min:8', 'confirmed'],
         ]);
 
         try {
@@ -119,19 +141,40 @@ class InstallController extends Controller
             Artisan::call('migrate', ['--force' => true]);
 
             // 4. Konto admina
-            User::create([
+            $admin = User::create([
                 'name'     => $request->admin_name,
                 'email'    => $request->admin_email,
                 'password' => Hash::make($request->admin_password),
                 'role'     => 'admin',
             ]);
 
-            // 5. Ustawienia serwisu
+            // 4b. Certyfikat klienta (.pfx) dla głównego administratora — logowanie pod /super.
+            // Serwer zapamiętuje wyłącznie odcisk certyfikatu; sam plik (z kluczem
+            // prywatnym) trafia do wdrażającego jednorazowo, do pobrania na kroku "done".
+            $certificate = SuperAdminCertificate::generate(
+                $request->admin_email,
+                $request->site_name,
+                $request->string('super_admin_cert_password')->value()
+            );
+            $admin->forceFill([
+                'is_super_admin' => true,
+                'certificate_fingerprint' => $certificate['fingerprint'],
+            ])->save();
+            session([
+                'install_pfx' => base64_encode($certificate['pfx']),
+                'install_pfx_filename' => \Illuminate\Support\Str::slug($request->site_name).'-super-admin.pfx',
+            ]);
+
+            // 5. Moduły i ustawienia serwisu
+            $enabledModules = $request->input('modules', array_keys(SiteSetting::MODULES));
+            $disabledModules = array_values(array_diff(array_keys(SiteSetting::MODULES), $enabledModules));
+
             $settings = SiteSetting::first() ?? new SiteSetting();
             $settings->fill([
                 'site_name'     => $request->site_name,
                 'tagline'       => $request->site_tagline,
                 'site_template' => $request->site_template,
+                'disabled_modules' => $disabledModules,
             ])->save();
 
             // 6. Dane demonstracyjne (opcjonalne)

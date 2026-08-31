@@ -678,6 +678,10 @@
                     <span class="link-label min-w-0 truncate">Wyloguj ({{ auth()->user()->email }})</span>
                 </button>
             </form>
+            <p class="link-label truncate px-3 pt-1 text-[11px] text-gray-400">
+                Napędzane przez <span class="font-bold">weCMS</span>
+                &middot; Projekt i wykonanie <a href="mailto:ziemowit.gil@gmail.com" class="hover:text-ink">Ziemowit Gil</a>
+            </p>
         </div>
     </aside>
 

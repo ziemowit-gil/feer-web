@@ -93,7 +93,13 @@
 
     <div class="border-t border-white/10">
         <div class="mx-auto flex max-w-[1400px] flex-wrap items-center justify-between gap-3 px-4 py-4 text-xs text-white/50">
-            <span>&copy; {{ now()->year }} {{ $siteSettings->site_name }}</span>
+            <span>
+                &copy; {{ now()->year }} {{ $siteSettings->site_name }}
+                @if ($siteSettings->show_cms_credit ?? true)
+                    &middot; Napędzane przez <span class="font-bold">weCMS</span>
+                    &middot; Projekt i wykonanie <a href="mailto:ziemowit.gil@gmail.com" class="hover:text-white">Ziemowit Gil</a>
+                @endif
+            </span>
             <nav aria-label="Linki stopki">
                 <ul class="flex flex-wrap gap-x-4 gap-y-1">
                     <li><a href="{{ route('accessibility.show') }}" class="rounded hover:text-white transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white">Deklaracja dostępności</a></li>

@@ -10,7 +10,10 @@ class RedirectIfInstalled
 {
     public function handle(Request $request, Closure $next): Response
     {
-        if (file_exists(storage_path('app/installed.lock'))) {
+        // Sesja, która właśnie ukończyła instalację, musi jeszcze zobaczyć ekran
+        // "Gotowe" (m.in. jednorazowe pobranie certyfikatu super-admina) — dopiero
+        // kolejni odwiedzający /install po zakończonej instalacji są przekierowywani.
+        if (file_exists(storage_path('app/installed.lock')) && $request->session()->get('install_step') !== 'done') {
             return redirect('/');
         }
 

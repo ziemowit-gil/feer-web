@@ -112,6 +112,10 @@ Route::middleware([RedirectIfInstalled::class])->prefix('install')->group(functi
     Route::post('/', [InstallController::class, 'post'])->name('install.post');
 });
 
+// Poza RedirectIfInstalled — instalacja jest już zakończona (installed.lock istnieje)
+// w chwili, gdy wdrażający dociera do kroku "done" i pobiera certyfikat.
+Route::get('/install/certificate', [InstallController::class, 'downloadCertificate'])->name('install.certificate');
+
 Route::get('/', [HomeController::class, 'index'])->name('home');
 
 Route::get('/etr', [EtrController::class, 'about'])->name('etr.about');

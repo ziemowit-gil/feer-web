@@ -42,8 +42,20 @@ class FederationDemoSeeder extends Seeder
 
             'header_layout' => 'default',
             'news_layout'   => 'grid',
-            'show_cms_credit' => false,
+            'show_cms_credit' => true,
         ]);
+
+        $settings = SiteSetting::current();
+        if (! $settings->logoUrl()) {
+            try {
+                $settings->addMediaFromUrl('https://krafos.pl/wp-content/uploads/2020/05/logo_krafos_poz.png')
+                    ->toMediaCollection('logo');
+            } catch (\Throwable $e) {
+                // Brak sieci/niedostępne źródło nie powinno wywalać wdrożenia —
+                // strona po prostu pokaże zastępczą odznakę zamiast logo.
+                report($e);
+            }
+        }
 
         $category = Category::firstOrCreate(['slug' => 'projekty'], ['name' => 'Projekty', 'order' => 1]);
 
