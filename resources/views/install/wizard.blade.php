@@ -393,6 +393,37 @@ tailwind.config = {
                     </div>
                 </div>
 
+                {{-- Ograniczenia wyboru (nagłówek, typy podstron, kontakt) --}}
+                @php
+                    $blockableGroupMeta = [
+                        'header_layouts' => ['icon' => 'fa-heading', 'title' => 'Dozwolone układy nagłówka', 'hint' => 'których administratorzy tej instalacji nie powinni móc wybrać w Ustawieniach → Nagłówek'],
+                        'page_types' => ['icon' => 'fa-file-lines', 'title' => 'Dozwolone typy podstron', 'hint' => 'których redaktorzy tej instalacji nie powinni móc wybrać przy tworzeniu podstrony'],
+                        'contact_layouts' => ['icon' => 'fa-address-card', 'title' => 'Dozwolone warianty strony kontaktowej', 'hint' => 'których administratorzy tej instalacji nie powinni móc wybrać w Ustawieniach → Kontakt'],
+                    ];
+                @endphp
+                @foreach (\App\Models\SiteSetting::blockableOptionGroups() as $groupKey => $groupOptions)
+                    @php $meta = $blockableGroupMeta[$groupKey]; @endphp
+                    <div class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-100">
+                        <h2 class="mb-1 flex items-center gap-2 text-lg font-extrabold text-gray-900">
+                            <i class="fa-solid {{ $meta['icon'] }} text-brand"></i>
+                            {{ $meta['title'] }}
+                        </h2>
+                        <p class="mb-4 text-xs text-gray-500">
+                            Odznacz opcje, {{ $meta['hint'] }}. Domyślnie dostępne są wszystkie.
+                        </p>
+                        <div class="grid gap-2.5 sm:grid-cols-2">
+                            @foreach ($groupOptions as $optKey => $optLabel)
+                                <label class="flex cursor-pointer items-center gap-2.5 rounded-lg border border-gray-200 px-3 py-2.5 transition hover:border-gray-300">
+                                    <input type="checkbox" name="allowed_{{ $groupKey }}[]" value="{{ $optKey }}"
+                                        {{ old("allowed_{$groupKey}") ? (in_array($optKey, old("allowed_{$groupKey}", [])) ? 'checked' : '') : 'checked' }}
+                                        class="h-4 w-4 flex-none rounded accent-brand">
+                                    <span class="text-sm font-medium text-gray-700">{{ $optLabel }}</span>
+                                </label>
+                            @endforeach
+                        </div>
+                    </div>
+                @endforeach
+
                 {{-- Certyfikat super-admina --}}
                 <div class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-100">
                     <h2 class="mb-1 flex items-center gap-2 text-lg font-extrabold text-gray-900">

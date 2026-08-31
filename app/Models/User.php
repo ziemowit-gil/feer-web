@@ -14,7 +14,7 @@ use Illuminate\Notifications\Notifiable;
 use Revoltify\Subscriptionify\Concerns\InteractsWithSubscriptions;
 use Revoltify\Subscriptionify\Contracts\Subscribable;
 
-#[Fillable(['name', 'email', 'password', 'role', 'user_group_id', 'microsoft_id', 'avatar', 'local_login_allowed', 'notifications_seen_at', 'notification_preferences'])]
+#[Fillable(['name', 'email', 'password', 'role', 'user_group_id', 'microsoft_id', 'google_id', 'avatar', 'local_login_allowed', 'notifications_seen_at', 'notification_preferences'])]
 #[Hidden(['password', 'remember_token', 'two_factor_secret', 'two_factor_recovery_codes'])]
 class User extends Authenticatable implements Subscribable
 {

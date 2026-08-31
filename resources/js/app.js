@@ -310,6 +310,51 @@ document.querySelectorAll('[data-a11y-sans]').forEach((btn) => {
     });
 });
 
+// Odstępy między wierszami: '' | 'a11y-lh-1' | 'a11y-lh-2'
+const LH_MODES = ['', 'a11y-lh-1', 'a11y-lh-2'];
+const LH_LABELS = ['Normalne', 'Zwiększone', 'Bardzo zwiększone'];
+
+function applyLineHeight(mode) {
+    LH_MODES.forEach((cls) => { if (cls) document.documentElement.classList.remove(cls); });
+    if (mode) document.documentElement.classList.add(mode);
+    localStorage.setItem('a11y-lh', mode || '');
+    document.querySelectorAll('[data-a11y-lh]').forEach((btn) => {
+        const idx = LH_MODES.indexOf(mode);
+        const next = LH_MODES[(idx + 1) % LH_MODES.length];
+        btn.setAttribute('aria-label', 'Odstępy między wierszami: ' + (LH_LABELS[idx] || 'Normalne') + ' → kliknij: ' + LH_LABELS[(idx + 1) % LH_MODES.length]);
+        btn.setAttribute('aria-pressed', String(!!mode));
+    });
+}
+
+const storedLh = localStorage.getItem('a11y-lh') || '';
+if (storedLh) applyLineHeight(storedLh);
+
+document.querySelectorAll('[data-a11y-lh]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+        const current = localStorage.getItem('a11y-lh') || '';
+        const idx = LH_MODES.indexOf(current);
+        applyLineHeight(LH_MODES[(idx + 1) % LH_MODES.length]);
+    });
+});
+
+// Podkreślenie linków (niezależne od koloru — pomaga przy achromatopsji/dysleksji)
+function applyUnderlineLinks(active) {
+    document.documentElement.classList.toggle('a11y-underline-links', active);
+    localStorage.setItem('a11y-underline-links', active ? '1' : '0');
+    document.querySelectorAll('[data-a11y-underline-links]').forEach((btn) => {
+        btn.setAttribute('aria-pressed', String(active));
+    });
+}
+
+const storedUnderline = localStorage.getItem('a11y-underline-links') === '1';
+if (storedUnderline) applyUnderlineLinks(true);
+
+document.querySelectorAll('[data-a11y-underline-links]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+        applyUnderlineLinks(!document.documentElement.classList.contains('a11y-underline-links'));
+    });
+});
+
 // Tryby kontrastowe: '' (brak) | 'contrast' | 'contrast-bw' | 'contrast-gray'
 const CONTRAST_CLASSES = ['contrast', 'contrast-bw', 'contrast-gray'];
 
@@ -360,6 +405,21 @@ if (animationsButton) {
         window.dispatchEvent(new CustomEvent('a11y-animations-changed', { detail: { disabled: isDisabled } }));
     });
 }
+
+// Reset — przywraca wszystkie ustawienia dostępności do wartości domyślnych
+document.querySelectorAll('[data-a11y-reset]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+        applyFontSize(100);
+        applyLetterSpacing('');
+        applyLineHeight('');
+        applySansFont(false);
+        applyUnderlineLinks(false);
+        applyContrastMode('');
+        if (document.documentElement.classList.contains('no-animations')) {
+            animationsButton?.click();
+        }
+    });
+});
 
 // Karuzela hero
 const heroSlider = document.querySelector('[data-hero-slider]');

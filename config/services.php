@@ -47,6 +47,12 @@ return [
         'tenant' => env('MICROSOFT_TENANT_ID', 'common'),
     ],
 
+    'google' => [
+        'client_id' => env('GOOGLE_CLIENT_ID'),
+        'client_secret' => env('GOOGLE_CLIENT_SECRET'),
+        'redirect' => env('GOOGLE_REDIRECT_URI'),
+    ],
+
     'browsershot' => [
         // Ścieżka do binarki Chrome/Chromium. Gdy pusta — Browsershot szuka automatycznie.
         'chrome_path' => env('BROWSERSHOT_CHROME_PATH'),

@@ -19,7 +19,28 @@
                 class="flex min-h-6 items-center gap-1 hover:text-brand aria-pressed:font-bold aria-pressed:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-1"
                 aria-pressed="false" aria-label="Rozstrzał liter">
                 <i class="fa-solid fa-text-width" aria-hidden="true"></i>
-                <span class="hidden sm:inline">Odstęp</span>
+                <span class="hidden sm:inline">Odstęp liter</span>
+            </button>
+
+            <button type="button" data-a11y-lh
+                class="flex min-h-6 items-center gap-1 hover:text-brand aria-pressed:font-bold aria-pressed:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-1"
+                aria-pressed="false" aria-label="Odstępy między wierszami">
+                <i class="fa-solid fa-arrows-up-down" aria-hidden="true"></i>
+                <span class="hidden sm:inline">Odstęp wierszy</span>
+            </button>
+
+            <button type="button" data-a11y-sans
+                class="flex min-h-6 items-center gap-1 hover:text-brand aria-pressed:font-bold aria-pressed:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-1"
+                aria-pressed="false" aria-label="Czcionka bezszeryfowa (czytelniejsza)">
+                <i class="fa-solid fa-font" aria-hidden="true"></i>
+                <span class="hidden sm:inline">Czytelna czcionka</span>
+            </button>
+
+            <button type="button" data-a11y-underline-links
+                class="flex min-h-6 items-center gap-1 hover:text-brand aria-pressed:font-bold aria-pressed:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-1"
+                aria-pressed="false" aria-label="Podkreśl linki">
+                <i class="fa-solid fa-link" aria-hidden="true"></i>
+                <span class="hidden sm:inline">Podkreśl linki</span>
             </button>
 
             <div role="group" aria-label="Tryb kontrastowy" class="flex items-center gap-2">
@@ -34,12 +55,24 @@
                     aria-pressed="false" aria-label="Czarno-żółty">
                     <span class="inline-flex h-4 w-4 items-center justify-center rounded-sm border border-current text-[9px] font-black" aria-hidden="true" style="background:#000;color:#ff0">A</span>
                 </button>
+                <button type="button" data-a11y-contrast="contrast-gray"
+                    class="flex min-h-6 items-center gap-1 hover:text-brand aria-pressed:font-bold aria-pressed:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-1"
+                    aria-pressed="false" aria-label="Skala szarości">
+                    <i class="fa-solid fa-droplet-slash" aria-hidden="true"></i>
+                </button>
             </div>
 
             <button type="button" data-a11y-animations
                 class="flex min-h-6 items-center gap-1 hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-1"
                 aria-pressed="false" aria-label="Wyłącz animacje">
                 <i class="fa-solid fa-film" aria-hidden="true"></i>
+            </button>
+
+            <button type="button" data-a11y-reset
+                class="flex min-h-6 items-center gap-1 text-muted hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-1"
+                aria-label="Przywróć domyślne ustawienia dostępności">
+                <i class="fa-solid fa-rotate-left" aria-hidden="true"></i>
+                <span class="hidden md:inline">Resetuj</span>
             </button>
         </div>
 

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Page;
 use App\Models\SiteSetting;
 use App\Models\User;
 use App\Support\LicenseValidator;
@@ -114,6 +115,13 @@ class InstallController extends Controller
             'super_admin_cert_password' => ['required', 'string', 'min:8', 'confirmed'],
         ]);
 
+        foreach (SiteSetting::blockableOptionGroups() as $group => $options) {
+            $request->validate([
+                "allowed_{$group}" => ['nullable', 'array'],
+                "allowed_{$group}.*" => ['string', 'in:'.implode(',', array_keys($options))],
+            ]);
+        }
+
         try {
             // 1. Klucz aplikacji
             if (empty(config('app.key'))) {
@@ -165,9 +173,15 @@ class InstallController extends Controller
                 'install_pfx_filename' => \Illuminate\Support\Str::slug($request->site_name).'-super-admin.pfx',
             ]);
 
-            // 5. Moduły i ustawienia serwisu
+            // 5. Moduły, dozwolone warianty (nagłówek/typy podstron/kontakt) i ustawienia serwisu
             $enabledModules = $request->input('modules', array_keys(SiteSetting::MODULES));
             $disabledModules = array_values(array_diff(array_keys(SiteSetting::MODULES), $enabledModules));
+
+            $blockedOptions = [];
+            foreach (SiteSetting::blockableOptionGroups() as $group => $options) {
+                $allowed = $request->input("allowed_{$group}", array_keys($options));
+                $blockedOptions[$group] = array_values(array_diff(array_keys($options), $allowed));
+            }
 
             $settings = SiteSetting::first() ?? new SiteSetting();
             $settings->fill([
@@ -175,6 +189,7 @@ class InstallController extends Controller
                 'tagline'       => $request->site_tagline,
                 'site_template' => $request->site_template,
                 'disabled_modules' => $disabledModules,
+                'blocked_options' => $blockedOptions,
             ])->save();
 
             // 6. Dane demonstracyjne (opcjonalne)

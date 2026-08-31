@@ -170,6 +170,7 @@
                 @php $isFeer = str_contains(request()->getHost(), 'feer.org.pl'); @endphp
                 <div class="grid gap-3 sm:grid-cols-2">
                     @foreach (\App\Models\SiteSetting::HEADER_LAYOUTS as $layoutValue => $layoutLabel)
+                    @continue($settings->isOptionBlocked('header_layouts', $layoutValue) && old('header_layout', $settings->headerLayoutValue()) !== $layoutValue)
                     <label class="flex cursor-pointer items-start gap-3 rounded-lg border p-3 transition has-[:checked]:border-brand has-[:checked]:bg-brand-light">
                         @if ($layoutValue === 'wide_mission')
                         <input type="radio" name="header_layout" value="wide_mission"
@@ -1123,6 +1124,7 @@
                 <p class="mb-2 text-sm font-bold">Wygląd strony kontaktowej</p>
                 <div class="grid gap-3 sm:grid-cols-2">
                     @foreach (\App\Models\SiteSetting::CONTACT_LAYOUTS as $clValue => $clLabel)
+                        @continue($settings->isOptionBlocked('contact_layouts', $clValue) && old('contact_layout', $settings->contactLayoutValue()) !== $clValue)
                         <label class="flex cursor-pointer items-start gap-3 rounded-lg border p-3 transition has-[:checked]:border-brand has-[:checked]:bg-brand-light">
                             <input type="radio" name="contact_layout" value="{{ $clValue }}"
                                 {{ old('contact_layout', $settings->contactLayoutValue()) === $clValue ? 'checked' : '' }}
@@ -2220,6 +2222,47 @@
                 <p class="rounded border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
                     Pozostawione puste pola dziedziczą wartości z pliku <code>.env</code>, jeśli tam je ustawiono.
                 </p>
+            </div>
+
+            {{-- ===================== Logowanie przez Google ===================== --}}
+            <div class="border-t border-gray-200 pt-6" x-data="{ googleEnabled: {{ old('google_login_enabled', $settings->google_login_enabled) ? 'true' : 'false' }} }">
+                <h2 class="text-base font-bold text-ink">Logowanie przez Google</h2>
+                <p class="mt-1 text-xs text-muted">
+                    Alternatywne logowanie do panelu kontem Google (Laravel Socialite). Dostęp otrzymują wyłącznie
+                    użytkownicy już istniejący w zakładce „Użytkownicy" (dopasowanie po adresie e-mail). Aplikację rejestruje się w
+                    <span class="font-medium">Google Cloud Console → APIs & Services → Credentials</span>, a jako
+                    Authorized redirect URI podaj:
+                </p>
+                <code class="mt-2 block break-all rounded bg-gray-50 px-3 py-2 text-xs text-ink">{{ url('/auth/google/callback') }}</code>
+
+                <label class="mt-4 flex items-center gap-2 text-sm font-medium">
+                    <input type="checkbox" name="google_login_enabled" value="1" x-model="googleEnabled"
+                        {{ old('google_login_enabled', $settings->google_login_enabled) ? 'checked' : '' }}
+                        class="rounded border-gray-300 text-brand focus:ring-brand">
+                    Włącz logowanie przez Google
+                </label>
+
+                <div class="mt-4 space-y-5" x-show="googleEnabled" x-cloak>
+                    <div>
+                        <label for="google_client_id" class="mb-1 block text-sm font-bold">Client ID</label>
+                        <input type="text" id="google_client_id" name="google_client_id" autocomplete="off"
+                            value="{{ old('google_client_id', $settings->google_client_id) }}"
+                            class="w-full rounded border-gray-300 font-mono text-sm focus:border-brand focus:ring-brand">
+                        @error('google_client_id') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </div>
+
+                    <div>
+                        <label for="google_client_secret" class="mb-1 block text-sm font-bold">Client Secret</label>
+                        <input type="password" id="google_client_secret" name="google_client_secret" autocomplete="new-password"
+                            placeholder="{{ $settings->google_client_secret ? '•••••••• (zapisany — zostaw puste, aby nie zmieniać)' : '' }}"
+                            class="w-full rounded border-gray-300 font-mono text-sm focus:border-brand focus:ring-brand">
+                        @error('google_client_secret') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </div>
+
+                    <p class="rounded border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
+                        Pozostawione puste pola dziedziczą wartości z pliku <code>.env</code>, jeśli tam je ustawiono.
+                    </p>
+                </div>
             </div>
 
             {{-- ===================== Strefa wewnętrzna (współpracownicy) ===================== --}}

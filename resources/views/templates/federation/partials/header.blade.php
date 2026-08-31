@@ -37,13 +37,17 @@
             ];
         @endphp
         <nav class="mx-auto hidden items-center gap-7 md:flex" aria-label="Nawigacja główna">
-            @foreach ($navItems as $item)
-                @php $isActive = request()->routeIs($item['route']); @endphp
+            @foreach ($navItems as $i => $item)
+                @php
+                    $isActive = request()->routeIs($item['route']);
+                    $itemColor = $siteSettings->brandColorN(($i % 4) + 1);
+                @endphp
                 <a href="{{ route($item['route']) }}"
-                    class="group relative py-1.5 text-base font-bold text-ink transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 {{ $isActive ? '' : 'text-ink/70 hover:text-ink' }}"
+                    class="group relative py-1.5 text-base font-bold transition-colors duration-200 hover:[color:var(--item-color)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:[color:var(--item-color)] {{ $isActive ? '[color:var(--item-color)]' : 'text-ink/70' }}"
+                    style="--item-color:{{ $itemColor }}; --tw-ring-color:{{ $itemColor }}"
                     @if ($isActive) aria-current="page" @endif>
                     {{ $item['label'] }}
-                    <span class="pointer-events-none absolute -bottom-[1px] left-0 h-[2px] bg-brand transition-all duration-200 {{ $isActive ? 'w-full' : 'w-0 group-hover:w-full' }}" aria-hidden="true"></span>
+                    <span class="pointer-events-none absolute -bottom-[1px] left-0 h-[2px] transition-all duration-200 {{ $isActive ? 'w-full' : 'w-0 group-hover:w-full' }}" style="background:{{ $itemColor }}" aria-hidden="true"></span>
                 </a>
             @endforeach
         </nav>
@@ -83,8 +87,9 @@
         class="border-t border-gray-100 bg-white shadow-lg md:hidden"
         @click.outside="mobileOpen = false">
         <nav class="space-y-1 px-4 py-3" aria-label="Nawigacja mobilna">
-            @foreach ($navItems as $item)
-                <a href="{{ route($item['route']) }}" class="block rounded-lg px-3 py-2 text-base font-bold text-ink hover:bg-gray-50">
+            @foreach ($navItems as $i => $item)
+                <a href="{{ route($item['route']) }}" class="flex items-center gap-2.5 rounded-lg px-3 py-2 text-base font-bold text-ink hover:bg-gray-50">
+                    <span class="h-2 w-2 flex-none rounded-full" style="background:{{ $siteSettings->brandColorN(($i % 4) + 1) }}" aria-hidden="true"></span>
                     {{ $item['label'] }}
                 </a>
             @endforeach

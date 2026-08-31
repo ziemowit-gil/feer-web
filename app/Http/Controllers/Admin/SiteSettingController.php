@@ -82,13 +82,22 @@ class SiteSettingController extends Controller
             'brand_color_2' => ['nullable', 'regex:/^#[0-9a-fA-F]{6}$/'],
             'brand_color_3' => ['nullable', 'regex:/^#[0-9a-fA-F]{6}$/'],
             'brand_color_4' => ['nullable', 'regex:/^#[0-9a-fA-F]{6}$/'],
-            'header_layout' => ['required', Rule::in(array_keys(SiteSetting::HEADER_LAYOUTS))],
+            'header_layout' => [
+                'required',
+                Rule::in(array_keys(SiteSetting::HEADER_LAYOUTS)),
+                // Wartość już zapisana pozostaje dozwolona, choćby została zablokowana
+                // później — inaczej samo zapisanie reszty ustawień by się wywalało.
+                Rule::notIn(array_diff(SiteSetting::current()->blocked_options['header_layouts'] ?? [], [SiteSetting::current()->header_layout])),
+            ],
             'content_editor' => ['required', Rule::in(array_keys(SiteSetting::EDITORS))],
             'microsoft_login_enabled' => ['sometimes', 'boolean'],
             'microsoft_only_login' => ['sometimes', 'boolean'],
             'microsoft_client_id' => ['nullable', 'string', 'max:255'],
             'microsoft_client_secret' => ['nullable', 'string', 'max:1000'],
             'microsoft_tenant_id' => ['nullable', 'string', 'max:255'],
+            'google_login_enabled' => ['sometimes', 'boolean'],
+            'google_client_id' => ['nullable', 'string', 'max:255'],
+            'google_client_secret' => ['nullable', 'string', 'max:1000'],
             'member_login_enabled' => ['sometimes', 'boolean'],
             'member_allowed_domains' => ['nullable', 'string', 'max:500'],
             'szo_api_url' => ['nullable', 'url', 'max:255'],
@@ -143,7 +152,11 @@ class SiteSettingController extends Controller
             'infobar_show_nameday' => ['sometimes', 'boolean'],
             'office_show_account' => ['sometimes', 'boolean'],
             'office_show_search' => ['sometimes', 'boolean'],
-            'contact_layout' => ['nullable', Rule::in(array_keys(SiteSetting::CONTACT_LAYOUTS))],
+            'contact_layout' => [
+                'nullable',
+                Rule::in(array_keys(SiteSetting::CONTACT_LAYOUTS)),
+                Rule::notIn(array_diff(SiteSetting::current()->blocked_options['contact_layouts'] ?? [], [SiteSetting::current()->contact_layout])),
+            ],
             'contact_office_address' => ['nullable', 'string', 'max:255'],
             'contact_office_city' => ['nullable', 'string', 'max:255'],
             'contact_office_building' => ['nullable', 'string', 'max:255'],
@@ -307,12 +320,16 @@ class SiteSettingController extends Controller
         $data['site_url'] = filled($data['site_url'] ?? null) ? rtrim($data['site_url'], '/') : null;
         $data['microsoft_login_enabled'] = $request->boolean('microsoft_login_enabled');
         $data['microsoft_only_login'] = $request->boolean('microsoft_only_login');
+        $data['google_login_enabled'] = $request->boolean('google_login_enabled');
         $data['member_login_enabled'] = $request->boolean('member_login_enabled');
         $data['two_factor_required_admins'] = $request->boolean('two_factor_required_admins');
 
         // Puste pole sekretu = zostaw zapisany (nie renderujemy go w formularzu).
         if (blank($data['microsoft_client_secret'] ?? null)) {
             unset($data['microsoft_client_secret']);
+        }
+        if (blank($data['google_client_secret'] ?? null)) {
+            unset($data['google_client_secret']);
         }
         // Puste pole klucza Yubico = zostaw zapisane (analogicznie do sekretu Microsoft).
         if (blank($data['yubico_secret_key'] ?? null)) {

@@ -28,6 +28,9 @@ class FederationDemoSeeder extends Seeder
             'brand_color_2'    => '#2EA6DE',
             'brand_color_3'    => '#FFB327',
             'brand_color_4'    => '#CE5740',
+            // Kolory pochodzą z realnej palety logo KraFOS — nie przyciemniaj ich
+            // automatycznie pod kątem kontrastu przy zapisie w panelu.
+            'brand_skip_contrast' => true,
             'meta_description' => 'Krakowskie Forum Organizacji Społecznych — jedna z pierwszych w Małopolsce federacji organizacji pozarządowych.',
             'allow_indexing'   => false,
             'content_editor'   => 'quill',

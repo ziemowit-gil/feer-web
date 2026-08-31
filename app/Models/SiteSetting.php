@@ -187,12 +187,13 @@ class SiteSetting extends Model implements HasMedia
         'contact_shipping_note', 'contact_paczkomat_code', 'contact_paczkomat_address', 'contact_paczkomat_location', 'contact_shipping_phone', 'contact_shipping_visible',
         'contact_box_text', 'contact_box_link_label', 'contact_box_link_url', 'contact_box_visible_from', 'contact_box_visible_until',
         'homepage_banner_text', 'homepage_banner_link_label', 'homepage_banner_link_url', 'homepage_banner_visible_from', 'homepage_banner_visible_until',
-        'newsletter_code', 'header_layout', 'show_topbar_bip', 'show_topbar_social', 'content_editor',
+        'newsletter_code', 'header_layout', 'blocked_options', 'show_topbar_bip', 'show_topbar_social', 'content_editor',
         'infobar_show_date', 'infobar_show_nameday', 'office_show_account', 'office_show_search',
         'contact_layout', 'contact_office_address', 'contact_office_city', 'contact_office_building',
         'contact_office_note', 'contact_office_photo_alt', 'contact_hero_photo',
         'site_url', 'maintenance_mode', 'maintenance_message',
         'microsoft_login_enabled', 'microsoft_only_login', 'emergency_login_token', 'microsoft_client_id', 'microsoft_client_secret', 'microsoft_tenant_id',
+        'google_login_enabled', 'google_client_id', 'google_client_secret',
         'member_login_enabled', 'member_allowed_domains', 'szo_api_url', 'yubico_client_id', 'yubico_secret_key', 'two_factor_required_admins',
         'unsplash_access_key', 'cookie_banner_enabled', 'cookie_banner_text', 'show_cms_credit',
         'mail_transport', 'mail_from_address', 'mail_from_name', 'mail_host', 'mail_port', 'mail_username', 'mail_password', 'mail_encryption',
@@ -294,6 +295,7 @@ class SiteSetting extends Model implements HasMedia
         'allow_indexing' => 'boolean',
         'quick_actions_panel_negative' => 'boolean',
         'disabled_modules' => 'array',
+        'blocked_options' => 'array',
         'homepage_section_order' => 'array',
         'contact_bank_accounts' => 'array',
         'contact_schedule' => 'array',
@@ -317,6 +319,8 @@ class SiteSetting extends Model implements HasMedia
         'microsoft_login_enabled' => 'boolean',
         'microsoft_only_login' => 'boolean',
         'microsoft_client_secret' => 'encrypted',
+        'google_login_enabled' => 'boolean',
+        'google_client_secret' => 'encrypted',
         'member_login_enabled' => 'boolean',
         'yubico_secret_key' => 'encrypted',
         'two_factor_required_admins' => 'boolean',
@@ -511,6 +515,30 @@ class SiteSetting extends Model implements HasMedia
             : 'classic';
     }
 
+    /**
+     * Grupy opcji, których wybrane warianty wdrażający może zablokować w kreatorze
+     * instalacyjnym (patrz `blocked_options`) — klucz grupy => [wartość => etykieta].
+     *
+     * @return array<string, array<string, string>>
+     */
+    public static function blockableOptionGroups(): array
+    {
+        return [
+            'header_layouts' => self::HEADER_LAYOUTS,
+            'page_types' => Page::TYPES,
+            'contact_layouts' => self::CONTACT_LAYOUTS,
+        ];
+    }
+
+    /**
+     * Czy dana wartość w danej grupie opcji jest zablokowana dla tej instalacji
+     * (ustalone przez wdrażającego w kreatorze instalacyjnym — patrz `blocked_options`).
+     */
+    public function isOptionBlocked(string $group, string $value): bool
+    {
+        return in_array($value, $this->blocked_options[$group] ?? [], true);
+    }
+
     /** Edytor treści sprowadzony do jednej z obsługiwanych opcji (patrz wyżej). */
     public function contentEditorValue(): string
     {
@@ -663,6 +691,39 @@ class SiteSetting extends Model implements HasMedia
         }
 
         $config = $this->microsoftConfig();
+
+        return filled($config['client_id']) && filled($config['client_secret']);
+    }
+
+    /**
+     * Konfiguracja logowania Google dla Laravel Socialite (natywny sterownik,
+     * bez dodatkowego pakietu). Wartości z panelu mają pierwszeństwo, a puste
+     * pola dziedziczą z config/services (czyli z .env).
+     */
+    public function googleConfig(): array
+    {
+        return [
+            'client_id' => $this->google_client_id ?: config('services.google.client_id'),
+            'client_secret' => $this->google_client_secret ?: config('services.google.client_secret'),
+            'redirect' => config('services.google.redirect') ?: url('/auth/google/callback'),
+        ];
+    }
+
+    /**
+     * Czy logowanie Google jest aktywne: włączone przełącznikiem i faktycznie
+     * skonfigurowane (są Client ID oraz Client Secret — z panelu lub z .env).
+     */
+    public function googleLoginEnabled(): bool
+    {
+        if ($this->maintenance_mode) {
+            return false;
+        }
+
+        if (! $this->google_login_enabled) {
+            return false;
+        }
+
+        $config = $this->googleConfig();
 
         return filled($config['client_id']) && filled($config['client_secret']);
     }
