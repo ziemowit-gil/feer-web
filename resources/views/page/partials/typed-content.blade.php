@@ -778,6 +778,7 @@
             <div class="prose mx-auto mb-10 max-w-none text-ink">@shortcodes($page->content)</div>
         @endif
 
+        @php $isFederationTemplate = ($siteSettings->site_template ?? 'default') === 'federation'; @endphp
         @if ($hubLinks->isNotEmpty())
             <ul class="grid gap-5 {{ $hubLinks->count() === 2 ? 'sm:grid-cols-2' : ($hubLinks->count() === 3 ? 'sm:grid-cols-3' : 'sm:grid-cols-2 lg:grid-cols-4') }}" role="list">
                 @foreach ($hubLinks as $i => $link)
@@ -786,12 +787,13 @@
                         $grad = isset($colorKey) && isset($metroGradientMap[$colorKey])
                             ? $metroGradientMap[$colorKey]
                             : $metroGradientFallback[$i % count($metroGradientFallback)];
+                        $flatColor = $siteSettings->brandColorN(($i % 4) + 1);
                         $ctaLabel = filled($link['cta_label'] ?? null) ? $link['cta_label'] : 'Dowiedz się więcej';
                     @endphp
                     <li>
                         <a href="{{ $link['url'] }}"
-                           class="group relative flex min-h-52 flex-col justify-end overflow-hidden rounded-2xl p-8 text-white shadow-md transition hover:shadow-xl focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
-                           style="background: {{ $grad }}">
+                           class="group relative flex min-h-52 flex-col justify-end overflow-hidden p-8 text-white shadow-sm transition hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand {{ $isFederationTemplate ? 'rounded-lg' : 'rounded-2xl' }}"
+                           style="background: {{ $isFederationTemplate ? $flatColor : $grad }}">
                             <span class="relative z-10">
                                 @if (filled($link['icon'] ?? null))
                                     <span class="mb-3 inline-flex h-11 w-11 items-center justify-center rounded-xl bg-white/20 backdrop-blur" aria-hidden="true">

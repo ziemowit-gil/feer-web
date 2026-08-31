@@ -1,5 +1,5 @@
 <header x-data="{ mobileOpen: false }" @keydown.escape="mobileOpen = false; $refs.mobileToggle.focus()"
-    class="sticky top-0 z-40 border-b border-gray-100 bg-white/80 backdrop-blur-md">
+    class="sticky top-0 z-40 border-b border-gray-100 bg-white/80 backdrop-blur-md" style="font-family:'Lato', sans-serif; font-weight:700">
     <div class="mx-auto flex max-w-[1400px] items-center gap-4 px-4 py-3">
 
         {{-- Logo --}}
@@ -44,13 +44,52 @@
                     $itemColor = $isColorful ? $siteSettings->brandColorN(($i % 4) + 1) : 'var(--color-ink)';
                 @endphp
                 <a href="{{ route($item['route']) }}"
-                    class="group relative py-1.5 text-base font-bold transition-colors duration-200 hover:[color:var(--item-color)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:[color:var(--item-color)] {{ $isActive ? '[color:var(--item-color)]' : 'text-ink/70' }}"
+                    class="group relative py-1.5 text-[1.0625rem] font-bold transition-colors duration-200 hover:[color:var(--item-color)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:[color:var(--item-color)] {{ $isActive ? '[color:var(--item-color)]' : 'text-ink/70' }}"
                     style="--item-color:{{ $itemColor }}; --tw-ring-color:{{ $itemColor }}"
                     @if ($isActive) aria-current="page" @endif>
                     {{ $item['label'] }}
                     <span class="pointer-events-none absolute -bottom-[1px] left-0 h-[2px] transition-all duration-200 {{ $isActive ? 'w-full' : 'w-0 group-hover:w-full' }}" style="background:{{ $itemColor }}" aria-hidden="true"></span>
                 </a>
             @endforeach
+
+            {{-- "Demo": rozwijane menu prezentujące wszystkie typy podstron --}}
+            @php
+                $demoLinks = [
+                    ['label' => 'Strona standardowa', 'slug' => 'demo-strona-standardowa'],
+                    ['label' => 'Wydarzenie', 'slug' => 'demo-wydarzenie'],
+                    ['label' => 'Harmonogram zajęć', 'slug' => 'demo-harmonogram'],
+                    ['label' => 'O organizacji', 'slug' => 'demo-o-organizacji'],
+                    ['label' => 'FAQ', 'slug' => 'najczesciej-zadawane-pytania'],
+                    ['label' => 'Instytucja szkoleniowa', 'slug' => 'demo-instytucja-szkoleniowa'],
+                    ['label' => 'Przeniesiono do BIP', 'slug' => 'demo-przeniesiono-do-bip'],
+                    ['label' => 'Strona wewnętrzna (hasło)', 'slug' => 'demo-strona-wewnetrzna'],
+                    ['label' => 'Strefa członkowska (hasło)', 'slug' => 'strefa-czlonkowska'],
+                    ['label' => 'Siatka kafelków', 'slug' => 'demo-siatka-kafelkow'],
+                    ['label' => 'Kafelki (ikony)', 'slug' => 'demo-kafelki-ikony'],
+                    ['label' => 'Współpraca', 'slug' => 'demo-wspolpraca'],
+                    ['label' => 'Prezentacja tego, co było', 'slug' => 'demo-jak-bylo'],
+                    ['label' => 'Marka (identyfikacja wizualna)', 'slug' => 'demo-marka'],
+                ];
+            @endphp
+            <div class="relative" x-data="{ demoOpen: false }" @click.outside="demoOpen = false" @keydown.escape="demoOpen = false">
+                <button type="button" @click="demoOpen = !demoOpen" :aria-expanded="demoOpen" aria-controls="federation-demo-menu"
+                    class="flex items-center gap-1 py-1.5 text-[1.0625rem] font-bold text-ink/50 transition-colors hover:text-ink/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
+                    Demo
+                    <i class="fa-solid fa-chevron-down text-xs transition-transform duration-200" :class="{ 'rotate-180': demoOpen }" aria-hidden="true"></i>
+                </button>
+                <div id="federation-demo-menu" x-show="demoOpen" x-cloak x-transition
+                    class="absolute left-0 top-full z-10 mt-2 w-72 rounded-lg border border-gray-200 bg-white p-2 shadow-lg">
+                    <ul class="max-h-96 space-y-0.5 overflow-y-auto" role="list">
+                        @foreach ($demoLinks as $link)
+                            <li>
+                                <a href="{{ url('/'.$link['slug']) }}" class="block rounded px-3 py-2 text-sm font-semibold text-ink hover:bg-gray-50">
+                                    {{ $link['label'] }}
+                                </a>
+                            </li>
+                        @endforeach
+                    </ul>
+                </div>
+            </div>
         </nav>
 
         {{-- Prawa strona: CTA + szukajka + mobile toggle --}}
