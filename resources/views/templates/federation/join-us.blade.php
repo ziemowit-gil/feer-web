@@ -86,11 +86,14 @@
     {{-- Formularz zgłoszeniowy --}}
     <section class="border-t border-gray-100 py-16">
         <div class="mx-auto max-w-[700px] px-4">
-            <h2 class="mb-2 text-2xl font-extrabold tracking-tight text-ink">Zgłoś swoją organizację</h2>
-            <p class="mb-8 text-sm leading-relaxed text-muted">
-                Wypełnij formularz i dołącz skany wypełnionych dokumentów (deklaracja, uchwała, statut) —
-                PDF, JPG lub PNG, maks. 8 MB na plik.
-            </p>
+            <div class="mb-8 text-center">
+                <p class="mb-2 text-sm font-extrabold uppercase tracking-widest text-brand">Krok ostatni</p>
+                <h2 class="mb-2 text-2xl font-extrabold tracking-tight text-ink sm:text-3xl">Zgłoś swoją organizację</h2>
+                <p class="mx-auto max-w-md text-sm leading-relaxed text-muted">
+                    Wypełnij formularz i dołącz skany wypełnionych dokumentów (deklaracja, uchwała, statut) —
+                    PDF, JPG lub PNG, maks. 8 MB na plik.
+                </p>
+            </div>
 
             @if (session('application_sent'))
                 <div class="mb-6 flex items-start gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800" role="alert">
@@ -109,17 +112,20 @@
                 </div>
             @endif
 
-            <form method="POST" action="{{ route('federation.join.submit') }}" enctype="multipart/form-data" class="space-y-5">
+            <form method="POST" action="{{ route('federation.join.submit') }}" enctype="multipart/form-data"
+                class="space-y-6 rounded-lg border border-gray-100 bg-white p-6 shadow-sm sm:p-8">
                 @csrf
 
                 {{-- Automatyczne pobranie danych z otwartego API Krajowego Rejestru Sądowego (opcjonalnie). --}}
-                <div x-data="{ krs: '', loading: false, status: null, message: '' }" class="rounded-lg border border-gray-200 bg-gray-50 p-4">
-                    <label for="krs_lookup" class="mb-1.5 block text-sm font-bold text-ink">
-                        Numer KRS <span class="font-normal text-muted">(opcjonalnie — pobierze nazwę i adres organizacji)</span>
+                <div x-data="{ krs: '', loading: false, status: null, message: '' }"
+                    class="rounded-lg border-l-4 bg-brand-light/40 p-4" style="border-color:{{ $siteSettings->brandColorN(1) }}">
+                    <label for="krs_lookup" class="mb-1.5 flex items-center gap-2 text-sm font-bold text-ink">
+                        <i class="fa-solid fa-bolt" style="color:{{ $siteSettings->brandColorN(1) }}" aria-hidden="true"></i>
+                        Wypełnij automatycznie po numerze KRS <span class="font-normal text-muted">(opcjonalnie)</span>
                     </label>
-                    <div class="flex gap-2">
+                    <div class="flex flex-col gap-2 sm:flex-row">
                         <input type="text" id="krs_lookup" x-model="krs" inputmode="numeric" maxlength="10" placeholder="np. 0000186434"
-                            class="flex-1 rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                            class="flex-1 rounded-md border-gray-300 text-sm focus:border-brand focus:ring-1 focus:ring-brand">
                         <button type="button" :disabled="loading || krs.replace(/\D/g, '').length < 6"
                             @click="
                                 loading = true; status = null; message = '';
@@ -138,9 +144,9 @@
                                     })
                                     .catch(() => { loading = false; status = 'error'; message = 'Błąd połączenia z rejestrem KRS. Wypełnij pola ręcznie.' })
                             "
-                            class="flex-none rounded-md border-2 px-4 py-2 text-sm font-bold transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
-                            style="border-color:{{ $siteSettings->brandColorN(1) }}; color:{{ $siteSettings->brandColorN(1) }}; --tw-ring-color:{{ $siteSettings->brandColorN(1) }}">
-                            <span x-show="!loading">Pobierz dane z KRS</span>
+                            class="flex-none rounded-md px-4 py-2 text-sm font-bold text-white transition hover:brightness-95 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
+                            style="background:{{ $siteSettings->brandColorN(1) }}; --tw-ring-color:{{ $siteSettings->brandColorN(1) }}">
+                            <span x-show="!loading"><i class="fa-solid fa-download mr-1" aria-hidden="true"></i>Pobierz z KRS</span>
                             <span x-show="loading" x-cloak>Pobieram…</span>
                         </button>
                     </div>
@@ -150,39 +156,41 @@
                 <div>
                     <label for="organization_name" class="mb-1.5 block text-sm font-bold text-ink">Nazwa organizacji</label>
                     <input type="text" id="organization_name" name="organization_name" required value="{{ old('organization_name') }}"
-                        class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                        class="w-full rounded-md border-gray-300 text-sm focus:border-brand focus:ring-1 focus:ring-brand">
                 </div>
 
                 <div class="grid gap-4 sm:grid-cols-2">
                     <div>
                         <label for="contact_name" class="mb-1.5 block text-sm font-bold text-ink">Osoba zgłaszająca</label>
                         <input type="text" id="contact_name" name="contact_name" required value="{{ old('contact_name') }}"
-                            class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                            class="w-full rounded-md border-gray-300 text-sm focus:border-brand focus:ring-1 focus:ring-brand">
                     </div>
                     <div>
                         <label for="email" class="mb-1.5 block text-sm font-bold text-ink">E-mail</label>
                         <input type="email" id="email" name="email" required value="{{ old('email') }}"
-                            class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                            class="w-full rounded-md border-gray-300 text-sm focus:border-brand focus:ring-1 focus:ring-brand">
                     </div>
                 </div>
 
                 <div>
                     <label for="phone" class="mb-1.5 block text-sm font-bold text-ink">Telefon <span class="font-normal text-muted">(opcjonalnie)</span></label>
                     <input type="tel" id="phone" name="phone" value="{{ old('phone') }}"
-                        class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                        class="w-full rounded-md border-gray-300 text-sm focus:border-brand focus:ring-1 focus:ring-brand">
                 </div>
 
                 <div>
                     <label for="message" class="mb-1.5 block text-sm font-bold text-ink">Wiadomość <span class="font-normal text-muted">(opcjonalnie)</span></label>
                     <textarea id="message" name="message" rows="3"
-                        class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">{{ old('message') }}</textarea>
+                        class="w-full rounded-md border-gray-300 text-sm focus:border-brand focus:ring-1 focus:ring-brand">{{ old('message') }}</textarea>
                 </div>
 
                 <div>
                     <label for="documents" class="mb-1.5 block text-sm font-bold text-ink">Skany dokumentów</label>
-                    <input type="file" id="documents" name="documents[]" multiple required accept=".pdf,.jpg,.jpeg,.png"
-                        class="block w-full rounded border border-gray-300 text-sm file:mr-3 file:rounded-md file:border-0 file:bg-brand file:px-3 file:py-1.5 file:text-sm file:font-bold file:text-white">
-                    <p class="mt-1 text-xs text-muted">Możesz wybrać kilka plików naraz (Ctrl/Cmd + klik).</p>
+                    <div class="rounded-md border border-dashed border-gray-300 bg-gray-50 p-4">
+                        <input type="file" id="documents" name="documents[]" multiple required accept=".pdf,.jpg,.jpeg,.png"
+                            class="block w-full text-sm file:mr-3 file:rounded-md file:border-0 file:bg-brand file:px-3 file:py-1.5 file:text-sm file:font-bold file:text-white hover:file:bg-brand-dark">
+                    </div>
+                    <p class="mt-1.5 text-xs text-muted">Możesz wybrać kilka plików naraz (Ctrl/Cmd + klik).</p>
                 </div>
 
                 <label class="flex items-start gap-2 text-sm text-muted">
@@ -191,7 +199,8 @@
                 </label>
 
                 <button type="submit"
-                    class="rounded-md bg-brand px-6 py-3 text-sm font-extrabold text-white transition hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
+                    class="flex w-full items-center justify-center gap-2 rounded-md bg-brand px-6 py-3.5 text-sm font-extrabold text-white transition hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
+                    <i class="fa-solid fa-paper-plane" aria-hidden="true"></i>
                     Wyślij zgłoszenie
                 </button>
             </form>
