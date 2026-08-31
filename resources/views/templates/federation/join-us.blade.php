@@ -112,6 +112,41 @@
             <form method="POST" action="{{ route('federation.join.submit') }}" enctype="multipart/form-data" class="space-y-5">
                 @csrf
 
+                {{-- Automatyczne pobranie danych z otwartego API Krajowego Rejestru Sądowego (opcjonalnie). --}}
+                <div x-data="{ krs: '', loading: false, status: null, message: '' }" class="rounded-lg border border-gray-200 bg-gray-50 p-4">
+                    <label for="krs_lookup" class="mb-1.5 block text-sm font-bold text-ink">
+                        Numer KRS <span class="font-normal text-muted">(opcjonalnie — pobierze nazwę i adres organizacji)</span>
+                    </label>
+                    <div class="flex gap-2">
+                        <input type="text" id="krs_lookup" x-model="krs" inputmode="numeric" maxlength="10" placeholder="np. 0000186434"
+                            class="flex-1 rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                        <button type="button" :disabled="loading || krs.replace(/\D/g, '').length < 6"
+                            @click="
+                                loading = true; status = null; message = '';
+                                fetch('{{ url('/dolacz-do-federacji/krs') }}/' + krs.replace(/\D/g, ''))
+                                    .then((r) => r.json().then((data) => ({ ok: r.ok, data })))
+                                    .then(({ ok, data }) => {
+                                        loading = false;
+                                        if (ok && data.ok) {
+                                            document.getElementById('organization_name').value = data.name || '';
+                                            status = 'success';
+                                            message = 'Pobrano: ' + data.name + (data.address ? ' — ' + data.address : '');
+                                        } else {
+                                            status = 'error';
+                                            message = data.message || 'Nie udało się pobrać danych z KRS.';
+                                        }
+                                    })
+                                    .catch(() => { loading = false; status = 'error'; message = 'Błąd połączenia z rejestrem KRS. Wypełnij pola ręcznie.' })
+                            "
+                            class="flex-none rounded-md border-2 px-4 py-2 text-sm font-bold transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
+                            style="border-color:{{ $siteSettings->brandColorN(1) }}; color:{{ $siteSettings->brandColorN(1) }}; --tw-ring-color:{{ $siteSettings->brandColorN(1) }}">
+                            <span x-show="!loading">Pobierz dane z KRS</span>
+                            <span x-show="loading" x-cloak>Pobieram…</span>
+                        </button>
+                    </div>
+                    <p class="mt-2 text-xs" :class="status === 'success' ? 'text-emerald-700' : (status === 'error' ? 'text-red-600' : 'text-muted')" role="status" aria-live="polite" x-text="message"></p>
+                </div>
+
                 <div>
                     <label for="organization_name" class="mb-1.5 block text-sm font-bold text-ink">Nazwa organizacji</label>
                     <input type="text" id="organization_name" name="organization_name" required value="{{ old('organization_name') }}"

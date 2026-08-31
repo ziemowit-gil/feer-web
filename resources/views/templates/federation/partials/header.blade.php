@@ -1,4 +1,5 @@
-<header x-data="{ mobileOpen: false }" @keydown.escape="mobileOpen = false; $refs.mobileToggle.focus()"
+<header x-data="{ mobileOpen: false, searchOpen: false }"
+    @keydown.escape="if (searchOpen) { searchOpen = false; $refs.searchToggle.focus() } else { mobileOpen = false; $refs.mobileToggle.focus() }"
     class="sticky top-0 z-40 border-b border-gray-100 bg-white/80 backdrop-blur-md" style="font-family:'Ubuntu', sans-serif; font-weight:700">
     <div class="mx-auto flex max-w-[1400px] items-center gap-4 px-4 py-3">
 
@@ -103,16 +104,12 @@
 
         {{-- Prawa strona: CTA + szukajka + mobile toggle --}}
         <div class="ml-auto flex flex-none items-center gap-2">
-            <form action="{{ route('search') }}" method="GET" role="search"
-                class="hidden items-center overflow-hidden rounded-full border border-gray-200 transition focus-within:border-brand focus-within:ring-1 focus-within:ring-brand lg:flex">
-                <label for="federation-search" class="sr-only">Wyszukaj w serwisie</label>
-                <input id="federation-search" type="search" name="q" value="{{ request('q') }}"
-                    placeholder="Szukaj…" autocomplete="off"
-                    class="w-32 border-none bg-transparent px-3 py-1.5 text-sm focus:outline-none xl:w-44">
-                <button type="submit" class="flex h-8 w-8 flex-none items-center justify-center text-muted hover:text-brand" aria-label="Szukaj">
-                    <i class="fa-solid fa-magnifying-glass text-xs" aria-hidden="true"></i>
-                </button>
-            </form>
+            <button type="button" x-ref="searchToggle" @click="searchOpen = true" aria-haspopup="dialog" :aria-expanded="searchOpen"
+                class="hidden h-10 w-10 flex-none items-center justify-center rounded-full border border-gray-200 transition hover:bg-brand-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand lg:flex"
+                style="color:{{ $siteSettings->brandColorN(1) }}"
+                aria-label="Szukaj w serwisie">
+                <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+            </button>
 
             <a href="{{ route('federation.join') }}"
                 class="hidden items-center gap-1.5 rounded-md border-2 px-4 py-2 text-sm font-extrabold transition hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 sm:flex"
@@ -166,5 +163,40 @@
                 </button>
             </div>
         </form>
+    </div>
+
+    {{-- Modal wyszukiwarki, otwierany lupką na desktopie --}}
+    <div x-show="searchOpen" x-cloak x-transition.opacity
+        class="fixed inset-0 z-50 flex items-start justify-center bg-ink/60 p-4 pt-24 sm:pt-32">
+        <div @click.outside="searchOpen = false; $refs.searchToggle.focus()"
+            x-transition
+            x-init="$watch('searchOpen', (open) => { if (open) $nextTick(() => $refs.searchModalInput.focus()) })"
+            role="dialog" aria-modal="true" aria-labelledby="federation-search-modal-heading"
+            class="w-full max-w-lg rounded-lg bg-white p-6 shadow-xl">
+            <div class="mb-4 flex items-center justify-between gap-4">
+                <h2 id="federation-search-modal-heading" class="flex items-center gap-3 text-lg font-extrabold text-ink">
+                    <i class="fa-solid fa-magnifying-glass text-2xl" style="color:{{ $siteSettings->brandColorN(1) }}" aria-hidden="true"></i>
+                    Szukaj w serwisie
+                </h2>
+                <button type="button" @click="searchOpen = false; $refs.searchToggle.focus()"
+                    class="flex h-9 w-9 flex-none items-center justify-center rounded-full text-muted hover:bg-gray-100 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+                    aria-label="Zamknij wyszukiwarkę">
+                    <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+                </button>
+            </div>
+            <form action="{{ route('search') }}" method="GET" role="search">
+                <label for="federation-search-modal-input" class="sr-only">Szukaj w serwisie</label>
+                <div class="flex items-center overflow-hidden rounded-full border-2 focus-within:ring-2"
+                    style="border-color:{{ $siteSettings->brandColorN(1) }}; --tw-ring-color:{{ $siteSettings->brandColorN(1) }}">
+                    <input id="federation-search-modal-input" x-ref="searchModalInput" type="search" name="q" value="{{ request('q') }}"
+                        placeholder="Wpisz szukaną frazę…" autocomplete="off"
+                        class="w-full border-none bg-transparent px-4 py-3 text-base focus:outline-none focus:ring-0">
+                    <button type="submit" class="flex h-11 w-11 flex-none items-center justify-center text-white"
+                        style="background:{{ $siteSettings->brandColorN(1) }}" aria-label="Szukaj">
+                        <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
 </header>

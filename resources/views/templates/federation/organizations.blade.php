@@ -58,7 +58,45 @@
         </dl>
 
         <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
-            <h2 class="text-2xl font-extrabold tracking-tight text-ink">Organizacje członkowskie</h2>
+            <div class="flex flex-wrap items-center gap-4">
+                <h2 class="text-2xl font-extrabold tracking-tight text-ink">Organizacje członkowskie</h2>
+
+                {{-- "Jak korzystać z katalogu?" jako modal, otwierany na żądanie. --}}
+                <div x-data="{ guideOpen: false }" @keydown.escape.window="if (guideOpen) { guideOpen = false; $refs.guideToggle.focus() }">
+                    <button type="button" x-ref="guideToggle" @click="guideOpen = true" aria-haspopup="dialog" :aria-expanded="guideOpen"
+                        class="inline-flex items-center gap-1.5 rounded-full border border-brand/30 bg-brand-light/50 px-3 py-1 text-sm font-bold text-brand hover:bg-brand-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                        <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
+                        Jak korzystać z katalogu?
+                    </button>
+
+                    <div x-show="guideOpen" x-cloak x-transition.opacity class="fixed inset-0 z-50 flex items-center justify-center bg-ink/60 p-4">
+                        <div @click.outside="guideOpen = false; $refs.guideToggle.focus()" x-transition
+                            x-init="$watch('guideOpen', (open) => { if (open) $nextTick(() => $refs.guideCloseBtn.focus()) })"
+                            role="dialog" aria-modal="true" aria-labelledby="org-guide-heading"
+                            class="w-full max-w-lg rounded-lg bg-white p-6 shadow-xl">
+                            <div class="mb-3 flex items-center justify-between gap-4">
+                                <h2 id="org-guide-heading" class="flex items-center gap-2 text-lg font-extrabold text-ink">
+                                    <i class="fa-solid fa-circle-info text-brand" aria-hidden="true"></i>
+                                    Jak korzystać z katalogu?
+                                </h2>
+                                <button type="button" x-ref="guideCloseBtn" @click="guideOpen = false; $refs.guideToggle.focus()"
+                                    class="flex h-9 w-9 flex-none items-center justify-center rounded-full text-muted hover:bg-gray-100 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+                                    aria-label="Zamknij instrukcję">
+                                    <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+                                </button>
+                            </div>
+                            <ul class="space-y-2 text-sm text-ink/80">
+                                <li><strong class="text-ink">1.</strong> Wpisz nazwę w wyszukiwarkę albo filtruj po miejscowości i formie prawnej.</li>
+                                <li><strong class="text-ink">2.</strong> Przełącz widok — kafelki albo tabela, jak Ci wygodniej.</li>
+                                <li><strong class="text-ink">3.</strong> Kliknij kartę organizacji, aby zobaczyć jej pełną wizytówkę.</li>
+                                <li><strong class="text-ink">4.</strong> „Mapa" pokazuje przybliżoną lokalizację w nowej karcie.</li>
+                                <li><strong class="text-ink">5.</strong> Jesteś przedstawicielem organizacji? Zaloguj się i edytuj swoje dane.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <a href="{{ route('organization.login') }}"
                 class="inline-flex items-center gap-1.5 text-sm font-bold text-brand hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
                 <i class="fa-solid fa-right-to-bracket" aria-hidden="true"></i>
@@ -71,6 +109,7 @@
                 query: '',
                 town: '',
                 type: '',
+                searchOpen: false,
                 view: (function () { try { return localStorage.getItem('org-catalog-view') || 'grid' } catch (e) { return 'grid' } })(),
                 orgs: {{ \Illuminate\Support\Js::from($organizations) }},
                 towns: [{ value: '', label: 'Wszystkie miejscowości' }, ...{{ \Illuminate\Support\Js::from($towns->map(fn ($t) => ['value' => $t, 'label' => $t])) }}],
@@ -85,15 +124,52 @@
                 },
                 setView(v) { this.view = v; try { localStorage.setItem('org-catalog-view', v) } catch (e) {} },
             }"
+            @keydown.escape.window="if (searchOpen) { searchOpen = false; $refs.orgSearchToggle.focus() }"
         >
             {{-- Wyszukiwarka, filtry i przełącznik widoku katalogu --}}
-            <div class="mb-6 grid gap-3 sm:grid-cols-[1fr_auto_auto_auto]">
+            <div class="mb-6 grid gap-3 sm:grid-cols-[auto_auto_auto_auto] sm:justify-start">
                 <div>
-                    <label for="org-search" class="sr-only">Szukaj organizacji po nazwie</label>
-                    <div class="flex items-center overflow-hidden rounded-md border border-gray-300 bg-white focus-within:border-brand focus-within:ring-1 focus-within:ring-brand">
-                        <i class="fa-solid fa-magnifying-glass ml-3 text-xs text-muted" aria-hidden="true"></i>
-                        <input id="org-search" type="search" x-model="query" placeholder="Szukaj po nazwie…" autocomplete="off"
-                            class="w-full border-none bg-transparent px-3 py-2.5 text-sm focus:outline-none focus:ring-0">
+                    <button type="button" x-ref="orgSearchToggle" @click="searchOpen = true" aria-haspopup="dialog" :aria-expanded="searchOpen"
+                        class="flex h-full w-full items-center gap-2 rounded-md border border-gray-300 bg-white px-3 py-2.5 text-sm text-muted transition hover:border-brand/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand sm:w-auto">
+                        <i class="fa-solid fa-magnifying-glass" style="color:{{ $siteSettings->brandColorN(1) }}" aria-hidden="true"></i>
+                        <span x-text="query ? query : 'Szukaj po nazwie…'" :class="query ? 'text-ink font-semibold' : ''"></span>
+                    </button>
+
+                    <div x-show="searchOpen" x-cloak x-transition.opacity class="fixed inset-0 z-50 flex items-start justify-center bg-ink/60 p-4 pt-24 sm:pt-32">
+                        <div @click.outside="searchOpen = false; $refs.orgSearchToggle.focus()" x-transition
+                            x-init="$watch('searchOpen', (open) => { if (open) $nextTick(() => $refs.orgSearchInput.focus()) })"
+                            role="dialog" aria-modal="true" aria-labelledby="org-search-modal-heading"
+                            class="w-full max-w-lg rounded-lg bg-white p-6 shadow-xl">
+                            <div class="mb-4 flex items-center justify-between gap-4">
+                                <h2 id="org-search-modal-heading" class="flex items-center gap-3 text-lg font-extrabold text-ink">
+                                    <i class="fa-solid fa-magnifying-glass text-2xl" style="color:{{ $siteSettings->brandColorN(1) }}" aria-hidden="true"></i>
+                                    Szukaj organizacji
+                                </h2>
+                                <button type="button" @click="searchOpen = false; $refs.orgSearchToggle.focus()"
+                                    class="flex h-9 w-9 flex-none items-center justify-center rounded-full text-muted hover:bg-gray-100 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+                                    aria-label="Zamknij wyszukiwarkę">
+                                    <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+                                </button>
+                            </div>
+                            <label for="org-search-modal-input" class="sr-only">Szukaj organizacji po nazwie</label>
+                            <div class="flex items-center overflow-hidden rounded-full border-2 focus-within:ring-2"
+                                style="border-color:{{ $siteSettings->brandColorN(1) }}; --tw-ring-color:{{ $siteSettings->brandColorN(1) }}">
+                                <input id="org-search-modal-input" x-ref="orgSearchInput" type="search" x-model="query"
+                                    placeholder="Wpisz nazwę organizacji…" autocomplete="off"
+                                    class="w-full border-none bg-transparent px-4 py-3 text-base focus:outline-none focus:ring-0">
+                                <span class="flex h-11 w-11 flex-none items-center justify-center text-white" style="background:{{ $siteSettings->brandColorN(1) }}" aria-hidden="true">
+                                    <i class="fa-solid fa-magnifying-glass"></i>
+                                </span>
+                            </div>
+                            <p class="mt-3 text-sm text-muted" aria-live="polite">
+                                <span x-text="filtered.length"></span> <span x-text="filtered.length === 1 ? 'wynik' : 'wyników'"></span>
+                            </p>
+                            <button type="button" @click="searchOpen = false; $refs.orgSearchToggle.focus()"
+                                class="mt-2 w-full rounded-md px-5 py-2.5 text-sm font-extrabold text-white transition hover:brightness-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
+                                style="background:{{ $siteSettings->brandColorN(1) }}; --tw-ring-color:{{ $siteSettings->brandColorN(1) }}">
+                                Pokaż wyniki
+                            </button>
+                        </div>
                     </div>
                 </div>
 

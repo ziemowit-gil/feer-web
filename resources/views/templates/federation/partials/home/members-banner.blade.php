@@ -1,22 +1,18 @@
-{{-- Skrót do strefy członkowskiej — funkcja włączana/wyłączana z panelu. --}}
+{{-- Skrót do strefy członkowskiej — funkcja włączana/wyłączana z panelu. Wąski pasek, celowo inny niż karta "Poznaj naszą organizację". --}}
 @if ($siteSettings->federation_show_members_banner ?? true)
-    <section class="py-4" aria-labelledby="members-banner-heading">
+    <section aria-labelledby="members-banner-heading">
         <div class="mx-auto max-w-[1400px] px-4">
-            <div class="flex flex-col items-center justify-between gap-6 rounded-lg border-2 border-dashed p-6 text-center sm:flex-row sm:text-left"
-                style="border-color:{{ $siteSettings->brandColorN(1) }}">
-                <div class="flex items-center gap-4">
-                    <span class="flex h-11 w-11 flex-none items-center justify-center rounded-full bg-brand-light text-brand" aria-hidden="true">
-                        <i class="fa-solid fa-user-lock text-lg"></i>
-                    </span>
-                    <div>
-                        <p id="members-banner-heading" class="text-base font-extrabold text-ink">Jesteś organizacją członkowską?</p>
-                        <p class="text-sm text-muted">Materiały, dokumenty i edycję swojej wizytówki znajdziesz w Strefie członkowskiej.</p>
-                    </div>
-                </div>
+            <div class="flex flex-col items-center justify-center gap-3 rounded-md px-6 py-4 text-center sm:flex-row sm:justify-between sm:text-left"
+                style="background:{{ $siteSettings->brandColorN(4) }}1a">
+                <p class="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-sm sm:justify-start">
+                    <i class="fa-solid fa-user-lock text-brand" aria-hidden="true"></i>
+                    <span id="members-banner-heading" class="font-extrabold text-ink">Jesteś organizacją członkowską?</span>
+                    <span class="text-muted">Materiały i edycja wizytówki czekają w Strefie członkowskiej.</span>
+                </p>
                 <a href="{{ route('page.show', 'strefa-czlonkowska') }}"
-                    class="flex-none rounded-md px-5 py-2.5 text-sm font-extrabold text-white transition hover:brightness-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
-                    style="background:{{ $siteSettings->brandColorN(1) }}; --tw-ring-color:{{ $siteSettings->brandColorN(1) }}">
+                    class="flex-none text-sm font-extrabold text-brand underline-offset-2 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
                     Przejdź do Strefy członkowskiej
+                    <i class="fa-solid fa-arrow-right ml-1 text-xs" aria-hidden="true"></i>
                 </a>
             </div>
         </div>

@@ -142,6 +142,7 @@ Route::get('/organizacje-czlonkowskie/{organization:slug}', [FederationControlle
 // osobny, bardziej precyzyjny adres.
 Route::get('/dolacz-do-federacji', [FederationController::class, 'joinUs'])->name('federation.join');
 Route::post('/dolacz-do-federacji', [FederationController::class, 'submitApplication'])->name('federation.join.submit')->middleware('throttle:5,10');
+Route::get('/dolacz-do-federacji/krs/{krs}', [FederationController::class, 'lookupKrs'])->name('federation.join.krs')->middleware('throttle:20,1')->where('krs', '[0-9]{1,10}');
 
 Route::get('/mapa-pomocy', [HelpMapController::class, 'index'])->name('help-map.index')->middleware('module:help_map');
 
