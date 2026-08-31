@@ -87,6 +87,14 @@
                                 </a>
                             </li>
                         @endforeach
+                        @if ($siteSettings->isModuleEnabled('help_map'))
+                            <li class="mt-0.5 border-t border-gray-100 pt-0.5">
+                                <a href="{{ route('help-map.index') }}" class="flex items-center gap-2 rounded px-3 py-2 text-sm font-semibold text-ink hover:bg-gray-50">
+                                    <i class="fa-solid fa-map-location-dot text-xs text-brand" aria-hidden="true"></i>
+                                    Mapa lokalizacji
+                                </a>
+                            </li>
+                        @endif
                     </ul>
                 </div>
             </div>

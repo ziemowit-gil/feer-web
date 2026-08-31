@@ -408,6 +408,14 @@
                 </a>
             @endif
 
+            {{-- Mapa pomocy --}}
+            @if ($can('help_map'))
+                <a href="{{ route('admin.mapa-pomocy.index') }}" class="{{ $itemClass('admin.mapa-pomocy.*') }}" title="Mapa pomocy">
+                    <i class="fa-solid fa-map-location-dot {{ $iconClass('admin.mapa-pomocy.*') }}"></i>
+                    <span class="nav-label">Mapa pomocy</span>
+                </a>
+            @endif
+
             {{-- Ankiety --}}
             @if ($can('polls'))
                 <a href="{{ route('admin.ankiety.index') }}" class="{{ $itemClass('admin.ankiety.*') }}" title="Ankiety">

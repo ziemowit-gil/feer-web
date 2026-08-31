@@ -26,6 +26,7 @@
     },
     "dependencies": {
         "cropperjs": "^1.6.2",
+        "leaflet": "^1.9.4",
         "pdfjs-dist": "^4.10.38"
     }
 }

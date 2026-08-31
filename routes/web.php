@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\AnnualReportController as AdminAnnualReportContro
 use App\Http\Controllers\Admin\ApprovalController as AdminApprovalController;
 use App\Http\Controllers\Admin\CalendarController as AdminCalendarController;
 use App\Http\Controllers\Admin\EditLockController as AdminEditLockController;
+use App\Http\Controllers\Admin\HelpPointController as AdminHelpPointController;
 use App\Http\Controllers\FederationController;
 use App\Http\Controllers\Admin\NotificationController as AdminNotificationController;
 use App\Http\Controllers\Admin\RevisionController as AdminRevisionController;
@@ -54,6 +55,7 @@ use App\Http\Controllers\ContactController;
 use App\Http\Controllers\EducationalMaterialController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\FaqController;
+use App\Http\Controllers\HelpMapController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\LandingPageController;
 use App\Http\Controllers\ReportController;
@@ -136,6 +138,8 @@ Route::get('/organizacje-czlonkowskie', [FederationController::class, 'organizat
 // osobny, bardziej precyzyjny adres.
 Route::get('/dolacz-do-federacji', [FederationController::class, 'joinUs'])->name('federation.join');
 Route::post('/dolacz-do-federacji', [FederationController::class, 'submitApplication'])->name('federation.join.submit')->middleware('throttle:5,10');
+
+Route::get('/mapa-pomocy', [HelpMapController::class, 'index'])->name('help-map.index')->middleware('module:help_map');
 
 Route::middleware('module:news')->group(function () {
     Route::get('/aktualnosci', [NewsController::class, 'index'])->name('news.index');
@@ -324,6 +328,11 @@ Route::middleware(['auth', 'verified', '2fa'])->prefix(config('app.admin_prefix'
         Route::get('wspolpraca-zgloszenia', [AdminCooperationRequestController::class, 'index'])->name('wspolpraca-zgloszenia.index');
         Route::get('wspolpraca-zgloszenia/{cooperationRequest}', [AdminCooperationRequestController::class, 'show'])->name('wspolpraca-zgloszenia.show');
         Route::delete('wspolpraca-zgloszenia/{cooperationRequest}', [AdminCooperationRequestController::class, 'destroy'])->name('wspolpraca-zgloszenia.destroy');
+    });
+
+    // Mapa pomocy — punkty wsparcia na interaktywnej mapie (szablon federation).
+    Route::middleware(['module:help_map', 'module-access:help_map'])->group(function () {
+        Route::resource('mapa-pomocy', AdminHelpPointController::class)->parameters(['mapa-pomocy' => 'helpPoint'])->except('show');
     });
 
     Route::middleware(['module:hero', 'module-access:hero'])->group(function () {

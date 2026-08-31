@@ -540,6 +540,12 @@ if (pdfThumbs.length) {
     import('./pdf-thumbs.js').then((module) => module.renderPdfThumbs(pdfThumbs));
 }
 
+// Mapa pomocy (Leaflet) — ładowana leniwie tylko na stronie /mapa-pomocy.
+const helpMapEl = document.getElementById('help-map');
+if (helpMapEl) {
+    import('./help-map.js').then((module) => module.initHelpMap(helpMapEl));
+}
+
 // Przechwytuje submit formularzy z data-confirm → Alpine modal zamiast confirm().
 // Jeśli formularz ma data-clone-count > 0, modal pokazuje trzeci przycisk
 // „Usuń z kopiami". Wybranie go dodaje hidden input with_clones=1 przed submit.

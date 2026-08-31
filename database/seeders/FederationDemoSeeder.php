@@ -311,5 +311,24 @@ class FederationDemoSeeder extends Seeder
                 ]
             );
         }
+
+        // Mapa pomocy — punkty wsparcia organizacji członkowskich w całej Małopolsce
+        // (moduł "help_map"), nie tylko w Krakowie.
+        foreach ([
+            ['name' => 'Punkt wydawania żywności – Kraków Podgórze', 'category' => 'zywnosc', 'address' => 'ul. Wielicka 22, 30-552 Kraków', 'lat' => 50.0304, 'lng' => 19.9497],
+            ['name' => 'Jadłodajnia sąsiedzka – Kraków Nowa Huta', 'category' => 'zywnosc', 'address' => 'os. Centrum C 5, 31-925 Kraków', 'lat' => 50.0752, 'lng' => 20.0326],
+            ['name' => 'Schronisko dla osób w kryzysie bezdomności – Kraków', 'category' => 'schronienie', 'address' => 'ul. Makuszyńskiego 19, 31-752 Kraków', 'lat' => 50.0819, 'lng' => 20.0157],
+            ['name' => 'Poradnia rodzinna – Tarnów', 'category' => 'poradnictwo', 'address' => 'ul. Krakowska 19, 33-100 Tarnów', 'lat' => 50.0121, 'lng' => 20.9858],
+            ['name' => 'Punkt poradnictwa obywatelskiego – Nowy Sącz', 'category' => 'poradnictwo', 'address' => 'ul. Jagiellońska 50, 33-300 Nowy Sącz', 'lat' => 49.6222, 'lng' => 20.7143],
+            ['name' => 'Bezpłatna pomoc prawna – Chrzanów', 'category' => 'prawo', 'address' => 'Aleja Henryka 20, 32-500 Chrzanów', 'lat' => 50.1372, 'lng' => 19.4020],
+            ['name' => 'Centrum zdrowia psychicznego – Oświęcim', 'category' => 'zdrowie', 'address' => 'ul. Wysokie Brzegi 4, 32-600 Oświęcim', 'lat' => 50.0343, 'lng' => 19.2245],
+            ['name' => 'Świetlica środowiskowa – Wadowice', 'category' => 'inne', 'address' => 'ul. Lwowska 12, 34-100 Wadowice', 'lat' => 49.8836, 'lng' => 19.4915],
+            ['name' => 'Punkt wsparcia dla seniorów – Bochnia', 'category' => 'inne', 'address' => 'ul. Krakowska 3, 32-700 Bochnia', 'lat' => 49.9691, 'lng' => 20.4310],
+        ] as $i => $point) {
+            \App\Models\HelpPoint::updateOrCreate(
+                ['name' => $point['name']],
+                $point + ['is_published' => true, 'order' => $i + 1]
+            );
+        }
     }
 }

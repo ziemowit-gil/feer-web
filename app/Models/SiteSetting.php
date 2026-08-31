@@ -40,6 +40,7 @@ class SiteSetting extends Model implements HasMedia
         'landing' => 'Landing page (kreator stron docelowych)',
         'timeline' => 'Oś czasu (historia organizacji)',
         'cooperation' => 'Zgłoszenia współpracy (formularz + skrzynka)',
+        'help_map' => 'Mapa pomocy (punkty wsparcia na mapie)',
     ];
 
     /**
