@@ -25,6 +25,10 @@ class ProjectController extends Controller
 
         $hasArchive = Project::where('is_published', true)->where('is_completed', true)->exists();
 
+        if (SiteSetting::current()->site_template === 'federation') {
+            return view('templates.federation.projects-index', compact('categories', 'hasArchive'));
+        }
+
         return view('projects.index', compact('categories', 'hasArchive'));
     }
 

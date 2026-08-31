@@ -147,6 +147,16 @@ html.a11y-underline-links a {
     text-underline-offset: 2px;
 }
 
+/* Dostępność: wyraźny wskaźnik fokusu (WCAG 2.4.7 Focus Visible / 2.4.11 Focus Not Obscured). */
+html.a11y-focus *:focus {
+    outline: 3px solid #2563eb !important;
+    outline-offset: 2px !important;
+    border-radius: 2px;
+}
+html.a11y-focus *:focus:not(:focus-visible) {
+    outline: 3px solid #2563eb !important;
+}
+
 /* Dostępność: systemowa czcionka bezszeryfowa (czytelniejsza dla dyslektyków). */
 html.a11y-sans,
 html.a11y-sans * {

@@ -149,7 +149,7 @@
                 'founder'   => $aboutFounder !== null,
                 'stats'     => $aboutStats->isNotEmpty(),
                 'values'    => $aboutValues->isNotEmpty(),
-                'timeline'  => $aboutTimeline->isNotEmpty(),
+                'timeline'  => $aboutTimeline->isNotEmpty() && $siteSettings->isModuleEnabled('timeline'),
                 'team'      => $aboutTeam->isNotEmpty(),
                 'gallery'   => $galleryPhotos->isNotEmpty(),
                 'partners'  => ! empty($page->about_partner_ids),

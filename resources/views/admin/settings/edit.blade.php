@@ -125,10 +125,21 @@
             </div>
         </div>
 
+        @php $isFeerInstall = str_contains(request()->getHost(), 'feer.org.pl'); @endphp
         <label class="flex items-center gap-2 rounded-lg border border-gray-200 bg-gray-50 p-4">
-            <input type="checkbox" name="show_cms_credit" value="1" {{ old('show_cms_credit', $settings->show_cms_credit ?? true) ? 'checked' : '' }}
-                class="rounded border-gray-300 text-brand focus:ring-brand">
-            <span class="text-sm font-bold">Pokaż nazwę CMS w stopce („weCMS · autor…")</span>
+            <input type="checkbox" name="show_cms_credit" value="1"
+                {{ ($isFeerInstall ? old('show_cms_credit', $settings->show_cms_credit ?? true) : true) ? 'checked' : '' }}
+                {{ $isFeerInstall ? '' : 'disabled' }}
+                class="rounded border-gray-300 text-brand focus:ring-brand disabled:cursor-not-allowed disabled:opacity-60">
+            @if (! $isFeerInstall)
+                <input type="hidden" name="show_cms_credit" value="1">
+            @endif
+            <span class="text-sm font-bold">
+                Pokaż nazwę CMS w stopce („weCMS · autor…")
+                @unless ($isFeerInstall)
+                    <span class="ml-1 rounded-full bg-gray-200 px-2 py-0.5 text-[0.65rem] font-semibold text-gray-600">🔒 Zawsze widoczne poza feer.org.pl</span>
+                @endunless
+            </span>
         </label>
 
         <div>
@@ -203,6 +214,34 @@
                 @enderror
                 @error('header_layout') <p class="mt-2 text-sm text-red-600">{{ $message }}</p> @enderror
             </div>
+
+            @if ($settings->site_template === 'federation')
+                {{-- Kolorowe menu — tylko szablon "federation" --}}
+                @php
+                    $navLabels = ['O nas', 'Organizacje', 'Projekty zrealizowane', 'Kontakt'];
+                    $colorfulItems = old('federation_colorful_nav_items', $settings->federation_colorful_nav_items ?? [0, 1, 2, 3]);
+                @endphp
+                <div class="rounded-lg border border-gray-200 bg-gray-50 p-5" x-data="{ colorfulNav: {{ old('federation_colorful_nav', $settings->federation_colorful_nav ?? true) ? 'true' : 'false' }} }">
+                    <label class="flex items-center gap-2">
+                        <input type="hidden" name="federation_colorful_nav" value="0">
+                        <input type="checkbox" name="federation_colorful_nav" value="1" x-model="colorfulNav"
+                            {{ old('federation_colorful_nav', $settings->federation_colorful_nav ?? true) ? 'checked' : '' }}
+                            class="rounded border-gray-300 text-brand focus:ring-brand">
+                        <span class="text-sm font-bold">Kolorowe pozycje menu <span class="font-normal text-muted">(każda zakładka w innym kolorze marki, zamiast jednolitego koloru tekstu)</span></span>
+                    </label>
+
+                    <div x-show="colorfulNav" x-cloak class="mt-3 grid gap-2 sm:grid-cols-2">
+                        @foreach ($navLabels as $i => $label)
+                            <label class="flex items-center gap-2 rounded border border-gray-200 bg-white px-3 py-2 text-sm">
+                                <input type="checkbox" name="federation_colorful_nav_items[]" value="{{ $i }}"
+                                    {{ in_array($i, $colorfulItems) ? 'checked' : '' }}
+                                    class="rounded border-gray-300 text-brand focus:ring-brand">
+                                {{ $label }}
+                            </label>
+                        @endforeach
+                    </div>
+                </div>
+            @endif
 
             {{-- Modal: sekretny kod do aktywacji stylu Wide --}}
             <div x-show="wideModal" x-cloak
@@ -1937,6 +1976,74 @@
                 </label>
             </div>
 
+            @if ($settings->site_template === 'federation')
+                {{-- Kafelki hero — tylko szablon "federation" --}}
+                @php $heroTiles = array_values((array) old('federation_hero_tiles', $settings->federationHeroTiles())); @endphp
+                <div class="mt-6 rounded-lg border border-gray-200 bg-gray-50 p-5" data-hero-tiles>
+                    <p class="mb-1 text-sm font-bold text-ink">Kafelki bloku hero (strona główna)</p>
+                    <p class="mb-3 text-xs text-muted">
+                        Mozaika kolorowych kafelków obok tekstu „O nas". Każdy kafelek to albo duża liczba (np. rok
+                        powstania), albo ikona + tytuł. „Szeroki" rozciąga kafelek na całą szerokość mozaiki.
+                    </p>
+                    <div data-hero-tiles-rows class="space-y-3">
+                        @foreach ($heroTiles as $i => $tile)
+                            <div data-hero-tiles-row class="grid gap-2 rounded-lg border border-gray-200 bg-white p-3 sm:grid-cols-12 sm:items-center">
+                                <input type="text" name="federation_hero_tiles[{{ $i }}][value]" value="{{ $tile['value'] ?? '' }}"
+                                    placeholder="Liczba, np. 1998 (puste = ikona)"
+                                    class="rounded border-gray-300 text-sm focus:border-brand focus:ring-brand sm:col-span-3">
+                                <input type="text" name="federation_hero_tiles[{{ $i }}][icon]" value="{{ $tile['icon'] ?? '' }}"
+                                    placeholder="Ikona Font Awesome, np. fa-solid fa-city"
+                                    class="rounded border-gray-300 text-sm focus:border-brand focus:ring-brand sm:col-span-3">
+                                <input type="text" name="federation_hero_tiles[{{ $i }}][title]" value="{{ $tile['title'] ?? '' }}"
+                                    placeholder="Tytuł / podpis"
+                                    class="min-w-0 rounded border-gray-300 text-sm focus:border-brand focus:ring-brand sm:col-span-3">
+                                <select name="federation_hero_tiles[{{ $i }}][color]" class="rounded border-gray-300 text-sm focus:border-brand focus:ring-brand sm:col-span-2">
+                                    @foreach ([1, 2, 3, 4] as $c)
+                                        <option value="{{ $c }}" {{ (int) ($tile['color'] ?? 1) === $c ? 'selected' : '' }}>Kolor {{ $c }}</option>
+                                    @endforeach
+                                </select>
+                                <label class="flex items-center gap-1.5 text-xs font-medium sm:col-span-1">
+                                    <input type="hidden" name="federation_hero_tiles[{{ $i }}][wide]" value="0">
+                                    <input type="checkbox" name="federation_hero_tiles[{{ $i }}][wide]" value="1"
+                                        {{ ($tile['wide'] ?? false) ? 'checked' : '' }}
+                                        class="rounded border-gray-300 text-brand focus:ring-brand">
+                                    Szeroki
+                                </label>
+                                <button type="button" data-hero-tiles-remove class="rounded p-2 text-muted hover:bg-red-50 hover:text-red-600 sm:col-span-12 sm:w-fit sm:justify-self-end" aria-label="Usuń kafelek {{ $i + 1 }}">
+                                    <i class="fa-solid fa-trash" aria-hidden="true"></i>
+                                </button>
+                            </div>
+                        @endforeach
+                    </div>
+                    <button type="button" data-hero-tiles-add class="mt-3 inline-flex items-center gap-2 rounded border border-brand px-3 py-1.5 text-sm font-bold text-brand hover:bg-brand-light">
+                        <i class="fa-solid fa-plus" aria-hidden="true"></i> Dodaj kafelek
+                    </button>
+                    <template data-hero-tiles-template>
+                        <div data-hero-tiles-row class="grid gap-2 rounded-lg border border-gray-200 bg-white p-3 sm:grid-cols-12 sm:items-center">
+                            <input type="text" name="federation_hero_tiles[__INDEX__][value]" placeholder="Liczba, np. 1998 (puste = ikona)"
+                                class="rounded border-gray-300 text-sm focus:border-brand focus:ring-brand sm:col-span-3">
+                            <input type="text" name="federation_hero_tiles[__INDEX__][icon]" placeholder="Ikona Font Awesome, np. fa-solid fa-city"
+                                class="rounded border-gray-300 text-sm focus:border-brand focus:ring-brand sm:col-span-3">
+                            <input type="text" name="federation_hero_tiles[__INDEX__][title]" placeholder="Tytuł / podpis"
+                                class="min-w-0 rounded border-gray-300 text-sm focus:border-brand focus:ring-brand sm:col-span-3">
+                            <select name="federation_hero_tiles[__INDEX__][color]" class="rounded border-gray-300 text-sm focus:border-brand focus:ring-brand sm:col-span-2">
+                                @foreach ([1, 2, 3, 4] as $c)
+                                    <option value="{{ $c }}">Kolor {{ $c }}</option>
+                                @endforeach
+                            </select>
+                            <label class="flex items-center gap-1.5 text-xs font-medium sm:col-span-1">
+                                <input type="hidden" name="federation_hero_tiles[__INDEX__][wide]" value="0">
+                                <input type="checkbox" name="federation_hero_tiles[__INDEX__][wide]" value="1" class="rounded border-gray-300 text-brand focus:ring-brand">
+                                Szeroki
+                            </label>
+                            <button type="button" data-hero-tiles-remove class="rounded p-2 text-muted hover:bg-red-50 hover:text-red-600 sm:col-span-12 sm:w-fit sm:justify-self-end" aria-label="Usuń kafelek">
+                                <i class="fa-solid fa-trash" aria-hidden="true"></i>
+                            </button>
+                        </div>
+                    </template>
+                </div>
+            @endif
+
             {{-- Sekcja skrótów —- styl tła --}}
             <div class="mt-6 rounded-lg border border-gray-200 bg-gray-50 p-5">
                 <p class="mb-3 text-sm font-bold text-ink">Sekcja szybkich akcji</p>
@@ -2744,6 +2851,33 @@
                 const remove = e.target.closest('[data-subbrands-remove]');
                 if (remove) {
                     const row = remove.closest('[data-subbrands-row]');
+                    if (row) row.remove();
+                }
+            });
+        })();
+
+        (function () {
+            // Repeater kafelków hero (Ustawienia → Strona główna, szablon "federation").
+            const wrap = document.querySelector('[data-hero-tiles]');
+            if (!wrap) return;
+            const rows = wrap.querySelector('[data-hero-tiles-rows]');
+            const template = wrap.querySelector('[data-hero-tiles-template]');
+            const addBtn = wrap.querySelector('[data-hero-tiles-add]');
+            if (!rows || !template) return;
+            let nextIndex = rows.querySelectorAll('[data-hero-tiles-row]').length;
+
+            if (addBtn) {
+                addBtn.addEventListener('click', function () {
+                    const html = template.innerHTML.replace(/__INDEX__/g, String(nextIndex++));
+                    const el = document.createElement('div');
+                    el.innerHTML = html.trim();
+                    rows.appendChild(el.firstElementChild);
+                });
+            }
+            wrap.addEventListener('click', function (e) {
+                const remove = e.target.closest('[data-hero-tiles-remove]');
+                if (remove) {
+                    const row = remove.closest('[data-hero-tiles-row]');
                     if (row) row.remove();
                 }
             });

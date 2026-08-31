@@ -19,11 +19,18 @@
                     <a href="{{ route('projects.show', $project) }}"
                         class="mt-2 inline-flex w-fit items-center gap-1.5 text-sm font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
                         style="color:{{ $accent }}; --tw-ring-color:{{ $accent }}">
-                        Dowiedz się więcej
+                        Dowiedz się więcej <span class="sr-only">o projekcie: {{ $project->title }}</span>
                         <i class="fa-solid fa-arrow-right text-xs" aria-hidden="true"></i>
                     </a>
                 </article>
             @endforeach
+        </div>
+
+        <div class="mt-10 text-center">
+            <a href="{{ route('projects.index') }}"
+                class="inline-flex items-center gap-2 rounded-md border-2 border-ink px-6 py-2.5 text-sm font-bold text-ink transition hover:bg-ink hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2">
+                Zobacz wszystkie
+            </a>
         </div>
     </div>
 </section>

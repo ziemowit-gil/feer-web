@@ -21,17 +21,18 @@
             młodzieży, jak również wspierają edukację i system pomocy zdrowotnej.
         </p>
 
-        <div class="mb-12 grid gap-3 sm:grid-cols-3" role="list" aria-label="Dokumenty organizacyjne">
-            @foreach ([
-                'Deklaracja członkostwa',
-                'Uchwała Zarządu o przystąpieniu',
-                'Statut Organizacji',
-            ] as $doc)
-                <div class="flex items-center gap-3 rounded border border-gray-200 px-4 py-3" role="listitem">
-                    <i class="fa-regular fa-file-lines flex-none text-lg text-muted" aria-hidden="true"></i>
-                    <span class="text-sm font-bold text-ink">{{ $doc }}</span>
-                </div>
-            @endforeach
+        <div class="relative mb-12 flex flex-col items-center gap-5 overflow-hidden rounded-lg p-8 text-center sm:flex-row sm:justify-between sm:text-left"
+            style="background:{{ $siteSettings->brandColorN(2) }}">
+            <i class="fa-solid fa-people-group pointer-events-none absolute -right-4 -top-4 text-[8rem] text-white/10" aria-hidden="true"></i>
+            <div class="relative">
+                <p class="text-xl font-extrabold leading-snug text-white">Chcesz dołączyć do federacji?</p>
+                <p class="mt-1 text-sm text-white/85">Sprawdź, jakie dokumenty są potrzebne i jak wygląda proces przystąpienia.</p>
+            </div>
+            <a href="{{ route('federation.join') }}"
+                class="relative flex-none rounded-md bg-white px-6 py-3 text-sm font-extrabold text-ink transition hover:bg-white/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2"
+                style="--tw-ring-offset-color:{{ $siteSettings->brandColorN(2) }}">
+                Dołącz do nas
+            </a>
         </div>
 
         <h2 class="mb-6 text-2xl font-extrabold tracking-tight text-ink">Organizacje członkowskie</h2>

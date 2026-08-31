@@ -131,6 +131,11 @@ Route::middleware('module:projects')->group(function () {
 });
 
 Route::get('/organizacje-czlonkowskie', [FederationController::class, 'organizations'])->name('federation.organizations');
+// Uwaga: /dolacz-do-nas jest już zajęte przez generyczną stronę „Dołącz do nas"
+// (oferty pracy + wolontariat, JoinUsController) — członkostwo w federacji ma
+// osobny, bardziej precyzyjny adres.
+Route::get('/dolacz-do-federacji', [FederationController::class, 'joinUs'])->name('federation.join');
+Route::post('/dolacz-do-federacji', [FederationController::class, 'submitApplication'])->name('federation.join.submit')->middleware('throttle:5,10');
 
 Route::middleware('module:news')->group(function () {
     Route::get('/aktualnosci', [NewsController::class, 'index'])->name('news.index');
@@ -306,11 +311,16 @@ Route::middleware(['auth', 'verified', '2fa'])->prefix(config('app.admin_prefix'
         Route::patch('podstrony/{page}/wylacz', [AdminPageController::class, 'toggleDisabled'])->name('podstrony.wylacz');
         Route::patch('podstrony/{page}/wyroznienie', [AdminPageController::class, 'toggleFeatured'])->name('podstrony.wyroznienie');
 
-        // Oś czasu (historia) strony „O organizacji" jako osobna pozycja w menu.
+    });
+
+    // Oś czasu (historia) strony „O organizacji" jako osobna pozycja w menu — moduł niezależny od "Podstrony".
+    Route::middleware(['module:pages', 'module:timeline', 'module-access:pages'])->group(function () {
         Route::get('os-czasu', [AdminTimelineController::class, 'edit'])->name('os-czasu.edit');
         Route::put('os-czasu/{page}', [AdminTimelineController::class, 'update'])->name('os-czasu.update');
+    });
 
-        // Zgłoszenia z formularzy współpracy.
+    // Zgłoszenia z formularzy współpracy — moduł niezależny od "Podstrony".
+    Route::middleware(['module:pages', 'module:cooperation', 'module-access:pages'])->group(function () {
         Route::get('wspolpraca-zgloszenia', [AdminCooperationRequestController::class, 'index'])->name('wspolpraca-zgloszenia.index');
         Route::get('wspolpraca-zgloszenia/{cooperationRequest}', [AdminCooperationRequestController::class, 'show'])->name('wspolpraca-zgloszenia.show');
         Route::delete('wspolpraca-zgloszenia/{cooperationRequest}', [AdminCooperationRequestController::class, 'destroy'])->name('wspolpraca-zgloszenia.destroy');
@@ -644,8 +654,8 @@ Route::get('/{parentSlug}/osoba/{personSlug}', [PageController::class, 'showPers
     ->middleware('module:pages');
 
 // Formularz współpracy (musi być przed catch-all /{page:slug}).
-Route::get('/{page:slug}/formularz', [CooperationFormController::class, 'show'])->name('cooperation.form.show')->middleware('module:pages');
-Route::post('/{page:slug}/formularz', [CooperationFormController::class, 'store'])->name('cooperation.form.store')->middleware(['module:pages', 'throttle:5,10']);
+Route::get('/{page:slug}/formularz', [CooperationFormController::class, 'show'])->name('cooperation.form.show')->middleware(['module:pages', 'module:cooperation']);
+Route::post('/{page:slug}/formularz', [CooperationFormController::class, 'store'])->name('cooperation.form.store')->middleware(['module:pages', 'module:cooperation', 'throttle:5,10']);
 
 // Kreator formularzy — publiczne wyświetlenie i zapis zgłoszenia.
 Route::middleware('module:forms')->group(function () {

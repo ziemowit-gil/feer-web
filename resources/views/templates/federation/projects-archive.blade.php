@@ -15,6 +15,9 @@
         <h1 class="mb-4 text-3xl font-extrabold leading-tight tracking-tight text-ink sm:text-4xl">
             Projekty zrealizowane
         </h1>
+
+        @include('templates.federation.partials.projects-tabs')
+
         <p class="mb-10 max-w-2xl text-base leading-relaxed text-muted">
             Poznaj projekty, które {{ $siteSettings->site_name }} zrealizowało na przestrzeni lat na rzecz
             organizacji pozarządowych i mieszkańców Krakowa.
@@ -33,7 +36,7 @@
                         @endif
                         <a href="{{ route('projects.show', $project) }}"
                             class="mt-3 inline-flex items-center gap-1.5 text-sm font-bold text-brand transition hover:text-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
-                            Dowiedz się więcej
+                            Dowiedz się więcej <span class="sr-only">o projekcie: {{ $project->title }}</span>
                             <i class="fa-solid fa-arrow-right text-xs" aria-hidden="true"></i>
                         </a>
                     </article>

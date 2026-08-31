@@ -83,9 +83,11 @@
                 <ul class="space-y-1.5 text-sm">
                     <li><a href="{{ route('home') }}" class="rounded text-white/80 transition hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white">O nas</a></li>
                     <li><a href="{{ route('federation.organizations') }}" class="rounded text-white/80 transition hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white">Organizacje członkowskie</a></li>
+                    <li><a href="{{ route('federation.join') }}" class="rounded text-white/80 transition hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white">Dołącz do nas</a></li>
                     <li><a href="{{ route('projects.archive') }}" class="rounded text-white/80 transition hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white">Projekty zrealizowane</a></li>
                     <li><a href="{{ route('support.show') }}" class="rounded text-white/80 transition hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white">Wesprzyj nas</a></li>
                     <li><a href="{{ route('contact.show') }}" class="rounded text-white/80 transition hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white">Kontakt</a></li>
+                    <li><a href="{{ url('/strefa-czlonkowska') }}" class="flex items-center gap-1.5 rounded text-white/80 transition hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"><i class="fa-solid fa-lock text-xs" aria-hidden="true"></i> Strefa członkowska</a></li>
                 </ul>
             </div>
         </div>

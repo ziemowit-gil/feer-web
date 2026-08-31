@@ -311,12 +311,23 @@ class SiteSettingController extends Controller
             'municipality_weather_lat'         => ['nullable', 'numeric', 'between:-90,90'],
             'municipality_weather_lon'         => ['nullable', 'numeric', 'between:-180,180'],
             'municipality_show_google_translate' => ['sometimes', 'boolean'],
+            'federation_colorful_nav' => ['sometimes', 'boolean'],
+            'federation_colorful_nav_items' => ['nullable', 'array'],
+            'federation_colorful_nav_items.*' => ['integer', 'between:0,3'],
+            'federation_hero_tiles' => ['nullable', 'array'],
+            'federation_hero_tiles.*.title' => ['nullable', 'string', 'max:100'],
+            'federation_hero_tiles.*.value' => ['nullable', 'string', 'max:20'],
+            'federation_hero_tiles.*.icon' => ['nullable', 'string', 'max:60'],
+            'federation_hero_tiles.*.color' => ['nullable', 'integer', 'between:1,4'],
+            'federation_hero_tiles.*.wide' => ['sometimes', 'boolean'],
         ]);
 
         $data['allow_indexing'] = $request->boolean('allow_indexing');
         $data['logo_only'] = $request->boolean('logo_only');
         $data['maintenance_mode'] = $request->boolean('maintenance_mode');
         $data['municipality_show_google_translate'] = $request->boolean('municipality_show_google_translate');
+        $data['federation_colorful_nav'] = $request->boolean('federation_colorful_nav');
+        $data['federation_colorful_nav_items'] = $request->input('federation_colorful_nav_items') ?: null;
         $data['site_url'] = filled($data['site_url'] ?? null) ? rtrim($data['site_url'], '/') : null;
         $data['microsoft_login_enabled'] = $request->boolean('microsoft_login_enabled');
         $data['microsoft_only_login'] = $request->boolean('microsoft_only_login');
@@ -361,7 +372,11 @@ class SiteSettingController extends Controller
         $data['contact_schedule_enabled'] = $request->boolean('contact_schedule_enabled');
         $data['support_show_partners'] = $request->boolean('support_show_partners');
         $data['cookie_banner_enabled'] = $request->boolean('cookie_banner_enabled');
-        $data['show_cms_credit'] = $request->boolean('show_cms_credit');
+        // Poza domeną feer.org.pl kredyt CMS w stopce nie może zostać ukryty
+        // (niezależnie od tego, co przyszło w żądaniu).
+        $data['show_cms_credit'] = str_contains($request->getHost(), 'feer.org.pl')
+            ? $request->boolean('show_cms_credit')
+            : true;
 
         // Rachunki bankowe: przycinamy pola, odrzucamy wiersze bez numeru
         // (pusty wiersz-zalążek z formularza) i przenumerowujemy listę.
@@ -448,6 +463,19 @@ class SiteSettingController extends Controller
                 'name' => $s['name'],
                 'color' => $skipContrast ? $s['color'] : $settings->contrastSafeColor($s['color']),
             ])
+            ->values()
+            ->all() ?: null;
+
+        // Kafelki hero (szablon "federation"): odrzucamy wiersze bez tytułu.
+        $data['federation_hero_tiles'] = collect($request->input('federation_hero_tiles', []))
+            ->map(fn ($t) => [
+                'title' => trim((string) ($t['title'] ?? '')),
+                'value' => filled($t['value'] ?? null) ? trim((string) $t['value']) : null,
+                'icon' => filled($t['icon'] ?? null) ? trim((string) $t['icon']) : null,
+                'color' => (int) ($t['color'] ?? 1),
+                'wide' => filled($t['wide'] ?? null) && $t['wide'] !== '0',
+            ])
+            ->filter(fn ($t) => $t['title'] !== '')
             ->values()
             ->all() ?: null;
 

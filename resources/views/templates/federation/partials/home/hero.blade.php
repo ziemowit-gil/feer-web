@@ -20,24 +20,19 @@
             </div>
         </div>
 
-        {{-- Ilustracja zastępcza: mozaika kafelków w kolorach marki (zamiast jednej dużej karty) --}}
+        {{-- Ilustracja zastępcza: mozaika kafelków w kolorach marki (zamiast jednej dużej karty) — edytowalna w panelu (Ustawienia → Strona główna). --}}
         <div class="mx-auto grid w-full max-w-sm grid-cols-2 gap-3" role="img" aria-label="Organizacje pozarządowe działające razem dla Krakowa">
-            <div class="col-span-2 flex items-center gap-4 rounded-lg p-6 text-white" style="background:{{ $siteSettings->brandColorN(1) }}">
-                <span class="text-4xl font-extrabold leading-none">1998</span>
-                <span class="text-sm font-semibold leading-snug text-white/90">rok powstania federacji</span>
-            </div>
-            <div class="flex flex-col items-start gap-3 rounded-lg p-6 text-white" style="background:{{ $siteSettings->brandColorN(2) }}">
-                <i class="fa-solid fa-people-group text-2xl" aria-hidden="true"></i>
-                <span class="text-sm font-semibold leading-snug">Organizacje członkowskie</span>
-            </div>
-            <div class="flex flex-col items-start gap-3 rounded-lg p-6 text-white" style="background:{{ $siteSettings->brandColorN(4) }}">
-                <i class="fa-solid fa-handshake-angle text-2xl" aria-hidden="true"></i>
-                <span class="text-sm font-semibold leading-snug">Partnerska współpraca</span>
-            </div>
-            <div class="col-span-2 flex flex-col items-start gap-3 rounded-lg p-6 text-ink ring-1 ring-gray-200" style="background:{{ $siteSettings->brandColorN(3) }}22">
-                <i class="fa-solid fa-city text-2xl" style="color:{{ $siteSettings->brandColorN(3) }}" aria-hidden="true"></i>
-                <span class="text-sm font-semibold leading-snug">Razem dla Krakowa i jego mieszkańców</span>
-            </div>
+            @foreach ($siteSettings->federationHeroTiles() as $tile)
+                @php $tileColor = $siteSettings->brandColorN((int) ($tile['color'] ?? 1)); @endphp
+                <div class="flex items-center gap-3 rounded-lg p-6 text-white {{ ($tile['wide'] ?? false) ? 'col-span-2' : 'flex-col items-start' }}" style="background:{{ $tileColor }}">
+                    @if (filled($tile['value'] ?? null))
+                        <span class="text-4xl font-extrabold leading-none">{{ $tile['value'] }}</span>
+                    @elseif (filled($tile['icon'] ?? null))
+                        <i class="{{ $tile['icon'] }} text-2xl" aria-hidden="true"></i>
+                    @endif
+                    <span class="text-sm font-semibold leading-snug {{ filled($tile['value'] ?? null) ? 'text-white/90' : '' }}">{{ $tile['title'] }}</span>
+                </div>
+            @endforeach
         </div>
     </div>
 </section>

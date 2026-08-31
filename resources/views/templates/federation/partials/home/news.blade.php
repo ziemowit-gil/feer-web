@@ -25,7 +25,7 @@
                         @endif
                         <a href="{{ route('news.show', $item) }}"
                             class="mt-2 inline-flex w-fit items-center gap-1.5 rounded-md bg-brand px-4 py-2 text-sm font-bold text-white transition hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
-                            Więcej
+                            Więcej <span class="sr-only">o: {{ $item->title }}</span>
                         </a>
                     </div>
                 </article>

@@ -5,10 +5,12 @@ namespace Database\Seeders;
 use App\Models\Attachment;
 use App\Models\Category;
 use App\Models\News;
+use App\Models\Page;
 use App\Models\Partner;
 use App\Models\Project;
 use App\Models\SiteSetting;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
 
 /**
  * Dane demonstracyjne dla instancji szablonu „federation" (federacja organizacji
@@ -163,6 +165,12 @@ class FederationDemoSeeder extends Seeder
                 'excerpt' => 'Dobra wiadomość – wydłużamy termin zgłoszeń do tegorocznej edycji Informatora z ofertą organizacji pozarządowych dla Mieszkanek i Mieszkańców Krakowa. Na Wasze zgłoszenia czekamy do czwartku, 20 sierpnia 2026 r.',
                 'published_at' => now()->subDays(5),
             ],
+            [
+                'title' => 'Podsumowanie roku 2025 — sprawozdanie z działalności KraFOS',
+                'slug' => 'podsumowanie-roku-2025',
+                'excerpt' => 'Za nami kolejny intensywny rok współpracy z organizacjami pozarządowymi Krakowa. Zapraszamy do zapoznania się ze sprawozdaniem z naszej działalności i najważniejszymi liczbami.',
+                'published_at' => now()->subDays(9),
+            ],
         ];
 
         foreach ($news as $data) {
@@ -189,5 +197,75 @@ class FederationDemoSeeder extends Seeder
         foreach ($partners as $i => $name) {
             Partner::updateOrCreate(['name' => $name], ['url' => null, 'order' => $i + 1]);
         }
+
+        // Strona FAQ — 3 przykładowe rozwijane pozycje (pytania i odpowiedzi).
+        Page::updateOrCreate(['slug' => 'najczesciej-zadawane-pytania'], [
+            'title' => 'Najczęściej zadawane pytania',
+            'type' => 'faq',
+            'is_published' => true,
+            'show_in_menu' => false,
+            'faq_intro' => 'Odpowiedzi na pytania, które najczęściej zadają nam organizacje zainteresowane członkostwem w KraFOS.',
+            'faq_items' => [
+                [
+                    'question' => 'Jak moja organizacja może dołączyć do KraFOS?',
+                    'answer' => '<p>Wystarczy złożyć deklarację członkostwa wraz z uchwałą zarządu o przystąpieniu do federacji oraz aktualnym statutem organizacji. Dokumenty można znaleźć na stronie <a href="/organizacje-czlonkowskie">Organizacje członkowskie</a>.</p>',
+                ],
+                [
+                    'question' => 'Czy członkostwo w federacji jest płatne?',
+                    'answer' => '<p>Nie pobieramy składek członkowskich. Członkostwo w KraFOS opiera się na wzajemnym wsparciu i współpracy między organizacjami pozarządowymi.</p>',
+                ],
+                [
+                    'question' => 'Gdzie mogę znaleźć listę organizacji członkowskich?',
+                    'answer' => '<p>Pełna lista organizacji zrzeszonych w KraFOS znajduje się na stronie <a href="/organizacje-czlonkowskie">Organizacje członkowskie</a>.</p>',
+                ],
+            ],
+        ]);
+
+        // Strona z dokumentami do pobrania — demonstracja załączników na zwykłej podstronie.
+        $docsPage = Page::updateOrCreate(['slug' => 'dokumenty-do-pobrania'], [
+            'title' => 'Dokumenty do pobrania',
+            'type' => 'standard',
+            'is_published' => true,
+            'show_in_menu' => false,
+            'content' => '<p>Poniżej znajdziesz dokumenty potrzebne do przystąpienia do Krakowskiego Forum Organizacji Społecznych.</p>',
+        ]);
+
+        foreach ([
+            ['label' => 'Deklaracja członkostwa', 'file' => 'deklaracja-czlonkostwa.pdf'],
+            ['label' => 'Statut KraFOS', 'file' => 'statut-krafos.pdf'],
+        ] as $i => $doc) {
+            if ($docsPage->attachments()->where('label', $doc['label'])->exists()) {
+                continue;
+            }
+
+            $pdfPath = tempnam(sys_get_temp_dir(), 'doc').'.pdf';
+            file_put_contents($pdfPath, "%PDF-1.4\n1 0 obj<</Type/Catalog/Pages 2 0 R>>endobj\n2 0 obj<</Type/Pages/Kids[3 0 R]/Count 1>>endobj\n3 0 obj<</Type/Page/Parent 2 0 R/MediaBox[0 0 200 200]>>endobj\nxref\n0 4\ntrailer<</Size 4/Root 1 0 R>>\n%%EOF");
+
+            $attachment = Attachment::create([
+                'attachable_type' => Page::class,
+                'attachable_id' => $docsPage->id,
+                'label' => $doc['label'],
+                'order' => $i + 1,
+            ]);
+            $attachment->addMedia($pdfPath)->usingFileName($doc['file'])->toMediaCollection('file');
+        }
+
+        // Strefa członkowska — wewnętrzna strona chroniona hasłem (dostępna infrastruktura
+        // CMS-a: typ "internal_hub", jak "Strefa współpracownika"), z linkami dla organizacji
+        // członkowskich federacji. Hasło demo: krafos2026.
+        Page::updateOrCreate(['slug' => 'strefa-czlonkowska'], [
+            'title' => 'Strefa członkowska',
+            'type' => 'internal_hub',
+            'access_mode' => 'password',
+            'access_password' => Hash::make('krafos2026'),
+            'is_published' => true,
+            'show_in_menu' => false,
+            'hub_intro' => 'Materiały i informacje dostępne wyłącznie dla organizacji członkowskich Krakowskiego Forum Organizacji Społecznych.',
+            'hub_links' => [
+                ['label' => 'Dokumenty do pobrania', 'url' => '/dokumenty-do-pobrania'],
+                ['label' => 'Organizacje członkowskie', 'url' => '/organizacje-czlonkowskie'],
+                ['label' => 'Najczęściej zadawane pytania', 'url' => '/najczesciej-zadawane-pytania'],
+            ],
+        ]);
     }
 }

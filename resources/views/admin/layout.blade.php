@@ -144,18 +144,22 @@
                             <i class="fa-solid fa-file-lines {{ $iconClass(['admin.podstrony.*', 'admin.pozycje-menu.*']) }}"></i>
                             <span class="nav-label">Strony i menu</span>
                         </a>
-                        <a href="{{ route('admin.os-czasu.edit') }}" class="{{ $itemClass('admin.os-czasu.*') }}" title="Oś czasu">
-                            <i class="fa-solid fa-timeline {{ $iconClass('admin.os-czasu.*') }}"></i>
-                            <span class="nav-label">Oś czasu (historia)</span>
-                        </a>
-                        @php $unreadCooperation = \App\Models\CooperationRequest::whereNull('read_at')->count(); @endphp
-                        <a href="{{ route('admin.wspolpraca-zgloszenia.index') }}" class="{{ $itemClass('admin.wspolpraca-zgloszenia.*') }}" title="Zgłoszenia współpracy">
-                            <i class="fa-solid fa-handshake {{ $iconClass('admin.wspolpraca-zgloszenia.*') }}"></i>
-                            <span class="nav-label">Zgłoszenia współpracy</span>
-                            @if ($unreadCooperation > 0)
-                                <span class="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-brand px-1 text-[10px] font-bold text-white" aria-label="{{ $unreadCooperation }} nowych">{{ $unreadCooperation }}</span>
-                            @endif
-                        </a>
+                        @if ($can('timeline'))
+                            <a href="{{ route('admin.os-czasu.edit') }}" class="{{ $itemClass('admin.os-czasu.*') }}" title="Oś czasu">
+                                <i class="fa-solid fa-timeline {{ $iconClass('admin.os-czasu.*') }}"></i>
+                                <span class="nav-label">Oś czasu (historia)</span>
+                            </a>
+                        @endif
+                        @if ($can('cooperation'))
+                            @php $unreadCooperation = \App\Models\CooperationRequest::whereNull('read_at')->count(); @endphp
+                            <a href="{{ route('admin.wspolpraca-zgloszenia.index') }}" class="{{ $itemClass('admin.wspolpraca-zgloszenia.*') }}" title="Zgłoszenia współpracy">
+                                <i class="fa-solid fa-handshake {{ $iconClass('admin.wspolpraca-zgloszenia.*') }}"></i>
+                                <span class="nav-label">Zgłoszenia współpracy</span>
+                                @if ($unreadCooperation > 0)
+                                    <span class="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-brand px-1 text-[10px] font-bold text-white" aria-label="{{ $unreadCooperation }} nowych">{{ $unreadCooperation }}</span>
+                                @endif
+                            </a>
+                        @endif
                     </div>
                 </div>
             @endif

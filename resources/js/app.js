@@ -355,6 +355,24 @@ document.querySelectorAll('[data-a11y-underline-links]').forEach((btn) => {
     });
 });
 
+// Wyraźny wskaźnik fokusu (gruby, kontrastowy outline na aktywnym elemencie)
+function applyFocusIndicator(active) {
+    document.documentElement.classList.toggle('a11y-focus', active);
+    localStorage.setItem('a11y-focus', active ? '1' : '0');
+    document.querySelectorAll('[data-a11y-focus]').forEach((btn) => {
+        btn.setAttribute('aria-pressed', String(active));
+    });
+}
+
+const storedFocus = localStorage.getItem('a11y-focus') === '1';
+if (storedFocus) applyFocusIndicator(true);
+
+document.querySelectorAll('[data-a11y-focus]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+        applyFocusIndicator(!document.documentElement.classList.contains('a11y-focus'));
+    });
+});
+
 // Tryby kontrastowe: '' (brak) | 'contrast' | 'contrast-bw' | 'contrast-gray'
 const CONTRAST_CLASSES = ['contrast', 'contrast-bw', 'contrast-gray'];
 

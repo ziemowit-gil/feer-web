@@ -29,6 +29,17 @@ class SiteSetting extends Model implements HasMedia
         'partners' => 'Partnerzy',
         'strategy' => 'Strategia organizacji (planowanie działań)',
         'authorizations' => 'Rejestr pełnomocnictw i upoważnień',
+        'events' => 'Szkolenia i wydarzenia',
+        'jobs' => 'Oferty pracy',
+        'volunteering' => 'Wolontariat',
+        'materials' => 'Materiały edukacyjne',
+        'faq' => 'FAQ (pytania i odpowiedzi)',
+        'bip' => 'BIP (Biuletyn Informacji Publicznej)',
+        'support' => 'Wesprzyj nas',
+        'reports' => 'Sprawozdania',
+        'landing' => 'Landing page (kreator stron docelowych)',
+        'timeline' => 'Oś czasu (historia organizacji)',
+        'cooperation' => 'Zgłoszenia współpracy (formularz + skrzynka)',
     ];
 
     /**
@@ -187,7 +198,7 @@ class SiteSetting extends Model implements HasMedia
         'contact_shipping_note', 'contact_paczkomat_code', 'contact_paczkomat_address', 'contact_paczkomat_location', 'contact_shipping_phone', 'contact_shipping_visible',
         'contact_box_text', 'contact_box_link_label', 'contact_box_link_url', 'contact_box_visible_from', 'contact_box_visible_until',
         'homepage_banner_text', 'homepage_banner_link_label', 'homepage_banner_link_url', 'homepage_banner_visible_from', 'homepage_banner_visible_until',
-        'newsletter_code', 'header_layout', 'blocked_options', 'show_topbar_bip', 'show_topbar_social', 'content_editor',
+        'newsletter_code', 'header_layout', 'blocked_options', 'federation_hero_tiles', 'federation_join_benefits', 'federation_colorful_nav', 'federation_colorful_nav_items', 'show_topbar_bip', 'show_topbar_social', 'content_editor',
         'infobar_show_date', 'infobar_show_nameday', 'office_show_account', 'office_show_search',
         'contact_layout', 'contact_office_address', 'contact_office_city', 'contact_office_building',
         'contact_office_note', 'contact_office_photo_alt', 'contact_hero_photo',
@@ -296,6 +307,10 @@ class SiteSetting extends Model implements HasMedia
         'quick_actions_panel_negative' => 'boolean',
         'disabled_modules' => 'array',
         'blocked_options' => 'array',
+        'federation_hero_tiles' => 'array',
+        'federation_join_benefits' => 'array',
+        'federation_colorful_nav' => 'boolean',
+        'federation_colorful_nav_items' => 'array',
         'homepage_section_order' => 'array',
         'contact_bank_accounts' => 'array',
         'contact_schedule' => 'array',
@@ -537,6 +552,64 @@ class SiteSetting extends Model implements HasMedia
     public function isOptionBlocked(string $group, string $value): bool
     {
         return in_array($value, $this->blocked_options[$group] ?? [], true);
+    }
+
+    /**
+     * Kafelki bloku hero na stronie głównej szablonu "federation" — edytowalne
+     * w panelu (Ustawienia → Strona główna, tylko dla tego szablonu). Zwraca
+     * sensowny domyślny układ, gdy admin nic jeszcze nie zapisał.
+     *
+     * @return array<int, array{title: string, value: ?string, icon: ?string, wide: bool, color: int}>
+     */
+    public function federationHeroTiles(): array
+    {
+        if (filled($this->federation_hero_tiles)) {
+            return $this->federation_hero_tiles;
+        }
+
+        return [
+            ['title' => 'rok powstania federacji', 'value' => '1998', 'icon' => null, 'wide' => true, 'color' => 1],
+            ['title' => 'Organizacje członkowskie', 'value' => null, 'icon' => 'fa-solid fa-people-group', 'wide' => false, 'color' => 2],
+            ['title' => 'Partnerska współpraca', 'value' => null, 'icon' => 'fa-solid fa-handshake-angle', 'wide' => false, 'color' => 4],
+            ['title' => 'Razem dla Krakowa i jego mieszkańców', 'value' => null, 'icon' => 'fa-solid fa-city', 'wide' => true, 'color' => 3],
+        ];
+    }
+
+    /**
+     * Karty „Dlaczego warto?" na stronie „Dołącz do nas" szablonu "federation" —
+     * edytowalne w panelu (Ustawienia → Strona główna, tylko dla tego szablonu).
+     *
+     * @return array<int, array{icon: string, title: string, text: string}>
+     */
+    public function federationJoinBenefits(): array
+    {
+        if (filled($this->federation_join_benefits)) {
+            return $this->federation_join_benefits;
+        }
+
+        return [
+            ['icon' => 'fa-people-group', 'title' => 'Wspólny głos', 'text' => 'Reprezentujemy interesy organizacji członkowskich wobec administracji publicznej.'],
+            ['icon' => 'fa-graduation-cap', 'title' => 'Szkolenia i wiedza', 'text' => 'Dostęp do szkoleń, warsztatów i wymiany doświadczeń między organizacjami.'],
+            ['icon' => 'fa-hands-holding-circle', 'title' => 'Wsparcie w trudnych sprawach', 'text' => 'Pomoc formalna i merytoryczna w bieżącej działalności organizacji.'],
+            ['icon' => 'fa-network-wired', 'title' => 'Sieć kontaktów', 'text' => 'Współpraca z innymi organizacjami, instytucjami i partnerami federacji.'],
+        ];
+    }
+
+    /**
+     * Czy dana pozycja menu głównego szablonu "federation" (wg indeksu 0..3)
+     * ma być kolorowa. Zawsze false, gdy kolorowe menu jest globalnie wyłączone.
+     */
+    public function isNavItemColorful(int $index): bool
+    {
+        if (! $this->federation_colorful_nav) {
+            return false;
+        }
+
+        if (! filled($this->federation_colorful_nav_items)) {
+            return true;
+        }
+
+        return in_array($index, $this->federation_colorful_nav_items, true);
     }
 
     /** Edytor treści sprowadzony do jednej z obsługiwanych opcji (patrz wyżej). */

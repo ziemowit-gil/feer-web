@@ -32,15 +32,16 @@
             $navItems = [
                 ['label' => 'O nas', 'route' => 'home'],
                 ['label' => 'Organizacje', 'route' => 'federation.organizations'],
-                ['label' => 'Projekty zrealizowane', 'route' => 'projects.archive'],
+                ['label' => 'Projekty', 'route' => 'projects.index', 'active' => ['projects.*', 'categories.*']],
                 ['label' => 'Kontakt', 'route' => 'contact.show'],
             ];
         @endphp
         <nav class="mx-auto hidden items-center gap-7 md:flex" aria-label="Nawigacja główna">
             @foreach ($navItems as $i => $item)
                 @php
-                    $isActive = request()->routeIs($item['route']);
-                    $itemColor = $siteSettings->brandColorN(($i % 4) + 1);
+                    $isActive = request()->routeIs($item['active'] ?? $item['route']);
+                    $isColorful = $siteSettings->isNavItemColorful($i);
+                    $itemColor = $isColorful ? $siteSettings->brandColorN(($i % 4) + 1) : 'var(--color-ink)';
                 @endphp
                 <a href="{{ route($item['route']) }}"
                     class="group relative py-1.5 text-base font-bold transition-colors duration-200 hover:[color:var(--item-color)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:[color:var(--item-color)] {{ $isActive ? '[color:var(--item-color)]' : 'text-ink/70' }}"
@@ -64,6 +65,13 @@
                     <i class="fa-solid fa-magnifying-glass text-xs" aria-hidden="true"></i>
                 </button>
             </form>
+
+            <a href="{{ route('federation.join') }}"
+                class="hidden items-center gap-1.5 rounded-md border-2 px-4 py-2 text-sm font-extrabold transition hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 sm:flex"
+                style="border-color:{{ $siteSettings->brandColorN(1) }}; color:{{ $siteSettings->brandColorN(1) }}; --tw-ring-color:{{ $siteSettings->brandColorN(1) }}">
+                <i class="fa-solid fa-people-group" aria-hidden="true"></i>
+                Dołącz do nas
+            </a>
 
             <a href="{{ route('support.show') }}"
                 class="hidden items-center gap-1.5 rounded-md px-4 py-2 text-sm font-extrabold text-white shadow-sm transition hover:brightness-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 sm:flex"
@@ -89,7 +97,9 @@
         <nav class="space-y-1 px-4 py-3" aria-label="Nawigacja mobilna">
             @foreach ($navItems as $i => $item)
                 <a href="{{ route($item['route']) }}" class="flex items-center gap-2.5 rounded-lg px-3 py-2 text-base font-bold text-ink hover:bg-gray-50">
-                    <span class="h-2 w-2 flex-none rounded-full" style="background:{{ $siteSettings->brandColorN(($i % 4) + 1) }}" aria-hidden="true"></span>
+                    @if ($siteSettings->isNavItemColorful($i))
+                        <span class="h-2 w-2 flex-none rounded-full" style="background:{{ $siteSettings->brandColorN(($i % 4) + 1) }}" aria-hidden="true"></span>
+                    @endif
                     {{ $item['label'] }}
                 </a>
             @endforeach
