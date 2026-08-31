@@ -10,8 +10,14 @@
 @endsection
 
 @section('content')
+    @php $isFederationTemplate = ($siteSettings->site_template ?? 'default') === 'federation'; @endphp
     <section class="mx-auto max-w-5xl px-4 py-12">
-        <h1 class="mb-6 text-3xl font-bold text-ink">Kontakt</h1>
+        @if ($isFederationTemplate)
+            <p class="mb-3 text-sm font-extrabold uppercase tracking-widest text-brand">Kontakt</p>
+            <h1 class="mb-6 text-3xl font-extrabold leading-tight tracking-tight text-ink sm:text-4xl">Napisz albo zadzwoń</h1>
+        @else
+            <h1 class="mb-6 text-3xl font-bold text-ink">Kontakt</h1>
+        @endif
 
         @if ($siteSettings->contact_intro)
             <div class="prose mb-8 max-w-2xl text-muted">{!! $siteSettings->contact_intro !!}</div>
@@ -40,12 +46,14 @@
         @endif
 
         {{-- Formularz kontaktowy + dane teleadresowe --}}
-        <div id="formularz" class="scroll-mt-24 grid gap-10 md:grid-cols-[1fr_300px]">
-            <div>
+        <div id="formularz" class="scroll-mt-24 grid gap-6 md:grid-cols-[1fr_300px] {{ $isFederationTemplate ? 'items-start' : 'gap-10' }}">
+            <div class="{{ $isFederationTemplate ? 'rounded-lg border border-gray-100 bg-white p-6 shadow-sm sm:p-8' : '' }}">
                 @include('contact.partials.form')
             </div>
 
-            @include('contact.partials.details')
+            <div class="{{ $isFederationTemplate ? 'rounded-lg border border-gray-100 bg-gray-50 p-6' : '' }}">
+                @include('contact.partials.details')
+            </div>
         </div>
 
         @include('contact.partials.meetings')
