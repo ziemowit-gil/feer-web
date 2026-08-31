@@ -267,5 +267,49 @@ class FederationDemoSeeder extends Seeder
                 ['label' => 'Najczęściej zadawane pytania', 'url' => '/najczesciej-zadawane-pytania'],
             ],
         ]);
+
+        // Formularz współpracy (moduł "Kreator formularzy") — osadzony na
+        // federacyjnej stronie typu "wspolpraca" (demo-wspolpraca).
+        \App\Models\FormDefinition::updateOrCreate(['slug' => 'wspolpraca-federacja'], [
+            'title' => 'Zgłoś propozycję współpracy',
+            'description' => 'Wypełnij formularz, a skontaktujemy się z Tobą w ciągu kilku dni roboczych.',
+            'is_active' => true,
+            'fields' => [
+                ['label' => 'Nazwa organizacji / firmy', 'type' => 'text', 'required' => true],
+                ['label' => 'Osoba kontaktowa', 'type' => 'text', 'required' => true],
+                ['label' => 'E-mail', 'type' => 'email', 'required' => true],
+                ['label' => 'Telefon', 'type' => 'tel', 'required' => false],
+                ['label' => 'Wiadomość', 'type' => 'textarea', 'required' => false],
+                ['label' => 'Wyrażam zgodę na przetwarzanie danych osobowych w celu obsługi zgłoszenia', 'type' => 'checkbox', 'required' => true],
+            ],
+        ]);
+
+        // Zespół — realna podstrona (nie demo), powiązana z "O nas". Strona główna
+        // (hero.blade.php) linkuje do niej, ale sama treść "O nas" pozostaje
+        // bespoke szablonem federacji.
+        $zespolPage = Page::updateOrCreate(['slug' => 'zespol'], [
+            'title' => 'Zespół',
+            'type' => 'about',
+            'is_published' => true,
+            'show_in_menu' => false,
+            'about_intro' => 'Poznaj osoby, które na co dzień koordynują pracę Krakowskiego Forum Organizacji Społecznych.',
+        ]);
+
+        foreach ([
+            ['title' => 'Anna Nowak', 'person_role' => 'Prezeska Zarządu'],
+            ['title' => 'Piotr Wiśniewski', 'person_role' => 'Koordynator ds. współpracy'],
+            ['title' => 'Katarzyna Zielińska', 'person_role' => 'Specjalistka ds. projektów'],
+        ] as $i => $member) {
+            Page::updateOrCreate(
+                ['slug' => 'zespol-'.\Illuminate\Support\Str::slug($member['title'])],
+                $member + [
+                    'parent_id' => $zespolPage->id,
+                    'type' => 'about_person',
+                    'is_published' => true,
+                    'show_in_menu' => false,
+                    'order' => $i + 1,
+                ]
+            );
+        }
     }
 }

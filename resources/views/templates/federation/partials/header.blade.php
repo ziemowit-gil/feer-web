@@ -1,5 +1,5 @@
 <header x-data="{ mobileOpen: false }" @keydown.escape="mobileOpen = false; $refs.mobileToggle.focus()"
-    class="sticky top-0 z-40 border-b border-gray-100 bg-white/80 backdrop-blur-md" style="font-family:'Lato', sans-serif; font-weight:700">
+    class="sticky top-0 z-40 border-b border-gray-100 bg-white/80 backdrop-blur-md" style="font-family:'Ubuntu', sans-serif; font-weight:700">
     <div class="mx-auto flex max-w-[1400px] items-center gap-4 px-4 py-3">
 
         {{-- Logo --}}

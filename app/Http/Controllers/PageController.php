@@ -59,6 +59,10 @@ class PageController extends Controller
             $data['szoPanelUrl'] = $settings->szoPanelUrl();
         }
 
+        if ($page->isCooperation() && SiteSetting::current()->site_template === 'federation') {
+            return response()->view('templates.federation.cooperation', $data);
+        }
+
         $view = match ($page->page_template) {
             'wide'    => 'page.show-wide',
             'hero'    => 'page.show-hero',

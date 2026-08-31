@@ -934,15 +934,20 @@
                 @endif
             </div>
 
+            @php $isFederationTemplate = ($siteSettings->site_template ?? 'default') === 'federation'; @endphp
             <ul class="grid gap-5 sm:grid-cols-2" role="list">
-                @foreach ($cdSectors as $sector)
+                @foreach ($cdSectors as $i => $sector)
                     @php
                         $colors = $colorMap[$sector['color'] ?? 'blue'] ?? $colorMap['blue'];
+                        $flatColor = $siteSettings->brandColorN(($i % 4) + 1);
                         $tags   = array_filter([$sector['tag1'] ?? null, $sector['tag2'] ?? null, $sector['tag3'] ?? null]);
                     @endphp
-                    <li class="flex flex-col rounded-2xl border-l-4 {{ $colors['border'] }} bg-white p-6 shadow-sm ring-1 ring-gray-100 transition hover:shadow-md">
+                    <li class="flex flex-col border-l-4 bg-white p-6 shadow-sm ring-1 ring-gray-100 transition hover:shadow-md {{ $isFederationTemplate ? 'rounded-lg' : ('rounded-2xl ' . $colors['border']) }}"
+                        @if ($isFederationTemplate) style="border-left-color:{{ $flatColor }}" @endif>
                         <div class="mb-4 flex items-center gap-3">
-                            <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl {{ $colors['bg'] }} {{ $colors['text'] }}" aria-hidden="true">
+                            <span class="flex h-10 w-10 shrink-0 items-center justify-center {{ $isFederationTemplate ? 'rounded-lg' : ('rounded-xl ' . $colors['bg'] . ' ' . $colors['text']) }}"
+                                @if ($isFederationTemplate) style="background:{{ $flatColor }}1a; color:{{ $flatColor }}" @endif
+                                aria-hidden="true">
                                 <i class="{{ $sector['icon'] ?? 'fa-solid fa-circle' }}"></i>
                             </span>
                             <h3 class="text-base font-bold text-ink">{{ $sector['title'] ?? '' }}</h3>
@@ -953,7 +958,10 @@
                         @if ($tags)
                             <ul class="mt-auto flex flex-wrap gap-1.5" aria-label="Obszary">
                                 @foreach ($tags as $tag)
-                                    <li class="rounded-full {{ $colors['pill'] }} px-2.5 py-0.5 text-xs font-medium">{{ $tag }}</li>
+                                    <li class="px-2.5 py-0.5 text-xs font-medium {{ $isFederationTemplate ? 'rounded' : ('rounded-full ' . $colors['pill']) }}"
+                                        @if ($isFederationTemplate) style="background:{{ $flatColor }}1a; color:{{ $flatColor }}" @endif>
+                                        {{ $tag }}
+                                    </li>
                                 @endforeach
                             </ul>
                         @endif

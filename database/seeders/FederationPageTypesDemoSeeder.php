@@ -47,7 +47,7 @@ class FederationPageTypesDemoSeeder extends Seeder
             ],
         ]);
 
-        Page::updateOrCreate(['slug' => 'demo-o-organizacji'], [
+        $aboutPage = Page::updateOrCreate(['slug' => 'demo-o-organizacji'], [
             'title' => 'Demo: O organizacji',
             'type' => 'about',
             'is_published' => true,
@@ -55,6 +55,25 @@ class FederationPageTypesDemoSeeder extends Seeder
             'about_intro' => 'Krakowskie Forum Organizacji Społecznych działa nieprzerwanie od 1998 roku na rzecz rozwoju społeczeństwa obywatelskiego.',
             'about_motto' => 'Razem dla lepszego jutra.',
         ]);
+
+        // Zespół — podstrony typu "about_person", dzieci strony "O organizacji"
+        // (sekcja "team" na tej stronie).
+        foreach ([
+            ['title' => 'Anna Nowak', 'person_role' => 'Prezeska Zarządu'],
+            ['title' => 'Piotr Wiśniewski', 'person_role' => 'Koordynator ds. współpracy'],
+            ['title' => 'Katarzyna Zielińska', 'person_role' => 'Specjalistka ds. projektów'],
+        ] as $i => $member) {
+            Page::updateOrCreate(
+                ['slug' => 'demo-zespol-'.\Illuminate\Support\Str::slug($member['title'])],
+                $member + [
+                    'parent_id' => $aboutPage->id,
+                    'type' => 'about_person',
+                    'is_published' => true,
+                    'show_in_menu' => false,
+                    'order' => $i + 1,
+                ]
+            );
+        }
 
         Page::updateOrCreate(['slug' => 'demo-instytucja-szkoleniowa'], [
             'title' => 'Demo: instytucja szkoleniowa',

@@ -6,8 +6,6 @@
 @section('content')
     @include('errors._layout', [
         'code' => '500',
-        'icon' => 'fa-triangle-exclamation',
-        'title' => 'Coś poszło nie tak',
-        'description' => 'Wystąpił nieoczekiwany błąd po stronie serwera. Zostaliśmy o tym powiadomieni i pracujemy nad jego usunięciem. Spróbuj ponownie za chwilę.',
+        'description' => 'Wystąpił nieoczekiwany błąd po stronie serwera. Zostaliśmy o tym powiadomieni — spróbuj ponownie za chwilę.',
     ])
 @endsection

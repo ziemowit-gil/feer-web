@@ -18,6 +18,11 @@
                     życiowej, rodzinom, jak również organizacjom, które niosą wsparcie potrzebującym.
                 </p>
             </div>
+            <a href="{{ url('/zespol') }}"
+                class="mt-4 inline-flex items-center gap-1.5 text-sm font-bold text-brand transition hover:text-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                Poznaj nasz zespół
+                <i class="fa-solid fa-arrow-right text-xs" aria-hidden="true"></i>
+            </a>
         </div>
 
         {{-- Ilustracja zastępcza: mozaika kafelków w kolorach marki (zamiast jednej dużej karty) — edytowalna w panelu (Ustawienia → Strona główna). --}}
