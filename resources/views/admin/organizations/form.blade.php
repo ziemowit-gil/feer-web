@@ -131,6 +131,30 @@
             </div>
         </div>
 
+        @if ($organization->exists)
+            @php $photos = $organization->getMedia('photos'); @endphp
+            <div class="border-t border-gray-100 pt-5">
+                <p class="mb-1 block text-sm font-bold">Zdjęcia z działalności ({{ $photos->count() }}/{{ \App\Models\Organization::MAX_PHOTOS }})</p>
+                <p class="mb-2 text-xs text-muted">Dodawane samodzielnie przez organizację w jej panelu — tutaj można je tylko przejrzeć i usunąć.</p>
+                @if ($photos->isNotEmpty())
+                    <ul class="grid grid-cols-3 gap-3 sm:grid-cols-4" role="list">
+                        @foreach ($photos as $photo)
+                            <li class="group relative overflow-hidden rounded-lg border border-gray-200">
+                                <img src="{{ $photo->getAvailableUrl(['thumb']) }}" alt="" class="h-24 w-full object-cover">
+                                <button type="submit" form="delete-org-photo-{{ $photo->id }}"
+                                    class="absolute right-1 top-1 flex h-6 w-6 items-center justify-center rounded-full bg-black/60 text-white opacity-0 transition group-hover:opacity-100 focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+                                    aria-label="Usuń zdjęcie {{ $loop->iteration }}">
+                                    <i class="fa-solid fa-xmark text-xs" aria-hidden="true"></i>
+                                </button>
+                            </li>
+                        @endforeach
+                    </ul>
+                @else
+                    <p class="text-sm text-muted">Organizacja nie dodała jeszcze żadnych zdjęć.</p>
+                @endif
+            </div>
+        @endif
+
         <div class="grid grid-cols-2 gap-4 border-t border-gray-100 pt-5">
             <div>
                 <label for="login" class="mb-1 block text-sm font-bold">Login (do panelu organizacji)</label>
@@ -168,4 +192,13 @@
             <a href="{{ route('admin.organizacje.index') }}" class="text-sm text-muted hover:text-brand">Anuluj</a>
         </div>
     </form>
+
+    @if ($organization->exists)
+        @foreach ($organization->getMedia('photos') as $photo)
+            <form id="delete-org-photo-{{ $photo->id }}" method="POST" action="{{ route('admin.organizacje.photos.destroy', [$organization, $photo->id]) }}" class="hidden">
+                @csrf
+                @method('DELETE')
+            </form>
+        @endforeach
+    @endif
 @endsection

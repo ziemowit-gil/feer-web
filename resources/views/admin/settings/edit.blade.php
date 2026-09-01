@@ -2071,6 +2071,47 @@
                         </div>
                     </template>
                 </div>
+
+                {{-- Kafelki "Dlaczego warto?" (Dołącz do nas) — tylko szablon "federation" --}}
+                @php $joinBenefits = array_values((array) old('federation_join_benefits', $settings->federationJoinBenefits())); @endphp
+                <div class="mt-6 rounded-lg border border-gray-200 bg-gray-50 p-5" data-join-benefits>
+                    <p class="mb-1 text-sm font-bold text-ink">Kafelki „Dlaczego warto?" (strona „Dołącz do nas")</p>
+                    <p class="mb-3 text-xs text-muted">Cztery (albo więcej) powody, dla których warto dołączyć do federacji — ikona, tytuł i krótki opis.</p>
+                    <div data-join-benefits-rows class="space-y-3">
+                        @foreach ($joinBenefits as $i => $benefit)
+                            <div data-join-benefits-row class="grid gap-2 rounded-lg border border-gray-200 bg-white p-3 sm:grid-cols-12 sm:items-start">
+                                <input type="text" name="federation_join_benefits[{{ $i }}][icon]" value="{{ $benefit['icon'] ?? '' }}"
+                                    placeholder="Ikona Font Awesome, np. fa-people-group"
+                                    class="rounded border-gray-300 text-sm focus:border-brand focus:ring-brand sm:col-span-3">
+                                <input type="text" name="federation_join_benefits[{{ $i }}][title]" value="{{ $benefit['title'] ?? '' }}"
+                                    placeholder="Tytuł"
+                                    class="min-w-0 rounded border-gray-300 text-sm focus:border-brand focus:ring-brand sm:col-span-3">
+                                <input type="text" name="federation_join_benefits[{{ $i }}][text]" value="{{ $benefit['text'] ?? '' }}"
+                                    placeholder="Krótki opis"
+                                    class="min-w-0 rounded border-gray-300 text-sm focus:border-brand focus:ring-brand sm:col-span-5">
+                                <button type="button" data-join-benefits-remove class="rounded p-2 text-muted hover:bg-red-50 hover:text-red-600 sm:col-span-1 sm:w-fit sm:justify-self-end" aria-label="Usuń pozycję {{ $i + 1 }}">
+                                    <i class="fa-solid fa-trash" aria-hidden="true"></i>
+                                </button>
+                            </div>
+                        @endforeach
+                    </div>
+                    <button type="button" data-join-benefits-add class="mt-3 inline-flex items-center gap-2 rounded border border-brand px-3 py-1.5 text-sm font-bold text-brand hover:bg-brand-light">
+                        <i class="fa-solid fa-plus" aria-hidden="true"></i> Dodaj pozycję
+                    </button>
+                    <template data-join-benefits-template>
+                        <div data-join-benefits-row class="grid gap-2 rounded-lg border border-gray-200 bg-white p-3 sm:grid-cols-12 sm:items-start">
+                            <input type="text" name="federation_join_benefits[__INDEX__][icon]" placeholder="Ikona Font Awesome, np. fa-people-group"
+                                class="rounded border-gray-300 text-sm focus:border-brand focus:ring-brand sm:col-span-3">
+                            <input type="text" name="federation_join_benefits[__INDEX__][title]" placeholder="Tytuł"
+                                class="min-w-0 rounded border-gray-300 text-sm focus:border-brand focus:ring-brand sm:col-span-3">
+                            <input type="text" name="federation_join_benefits[__INDEX__][text]" placeholder="Krótki opis"
+                                class="min-w-0 rounded border-gray-300 text-sm focus:border-brand focus:ring-brand sm:col-span-5">
+                            <button type="button" data-join-benefits-remove class="rounded p-2 text-muted hover:bg-red-50 hover:text-red-600 sm:col-span-1 sm:w-fit sm:justify-self-end" aria-label="Usuń pozycję">
+                                <i class="fa-solid fa-trash" aria-hidden="true"></i>
+                            </button>
+                        </div>
+                    </template>
+                </div>
             @endif
 
             {{-- Sekcja skrótów —- styl tła --}}
@@ -2907,6 +2948,33 @@
                 const remove = e.target.closest('[data-hero-tiles-remove]');
                 if (remove) {
                     const row = remove.closest('[data-hero-tiles-row]');
+                    if (row) row.remove();
+                }
+            });
+        })();
+
+        (function () {
+            // Repeater kafelków "Dlaczego warto?" (Dołącz do nas, szablon "federation").
+            const wrap = document.querySelector('[data-join-benefits]');
+            if (!wrap) return;
+            const rows = wrap.querySelector('[data-join-benefits-rows]');
+            const template = wrap.querySelector('[data-join-benefits-template]');
+            const addBtn = wrap.querySelector('[data-join-benefits-add]');
+            if (!rows || !template) return;
+            let nextIndex = rows.querySelectorAll('[data-join-benefits-row]').length;
+
+            if (addBtn) {
+                addBtn.addEventListener('click', function () {
+                    const html = template.innerHTML.replace(/__INDEX__/g, String(nextIndex++));
+                    const el = document.createElement('div');
+                    el.innerHTML = html.trim();
+                    rows.appendChild(el.firstElementChild);
+                });
+            }
+            wrap.addEventListener('click', function (e) {
+                const remove = e.target.closest('[data-join-benefits-remove]');
+                if (remove) {
+                    const row = remove.closest('[data-join-benefits-row]');
                     if (row) row.remove();
                 }
             });

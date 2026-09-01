@@ -89,6 +89,12 @@ class ContactController extends Controller
             'rodo_consent.accepted'      => 'Aby wysłać wiadomość, musisz wyrazić zgodę na przetwarzanie danych osobowych.',
             'website.prohibited'         => 'Wykryto nieprawidłowe zgłoszenie.',
             'coordinator_email.in'       => 'Wybierz koordynatora z listy.',
+        ], [
+            'name'    => 'Imię i nazwisko',
+            'email'   => 'E-mail',
+            'phone'   => 'Telefon',
+            'subject' => 'Temat',
+            'message' => 'Wiadomość',
         ]);
 
         // Znajdź wybranego koordynatora po e-mailu.

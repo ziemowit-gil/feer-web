@@ -293,12 +293,13 @@
             {{-- Widok tabeli (styl katalogu organizacji pozarządowych ngo.krakow.pl) --}}
             <div x-show="view === 'table'" class="overflow-x-auto rounded-lg border border-gray-200">
                 <table class="w-full text-left text-sm">
-                    <caption class="sr-only">Lista organizacji członkowskich z formą prawną, miejscowością i linkiem do mapy</caption>
+                    <caption class="sr-only">Lista organizacji członkowskich z formą prawną, miejscowością, sferami pożytku publicznego i linkiem do mapy</caption>
                     <thead class="bg-gray-50 text-xs font-bold uppercase tracking-wide text-muted">
                         <tr>
                             <th scope="col" class="px-4 py-3">Nazwa</th>
                             <th scope="col" class="px-4 py-3">Forma prawna</th>
                             <th scope="col" class="px-4 py-3">Miejscowość</th>
+                            <th scope="col" class="px-4 py-3">Sfery pożytku publicznego</th>
                             <th scope="col" class="px-4 py-3">Mapa</th>
                         </tr>
                     </thead>
@@ -310,6 +311,17 @@
                                 </td>
                                 <td class="px-4 py-3 text-muted" x-text="org.type"></td>
                                 <td class="px-4 py-3 text-muted" x-text="org.town"></td>
+                                <td class="px-4 py-3">
+                                    <div class="flex flex-wrap gap-1">
+                                        <template x-for="(sphere, i) in org.spheres" :key="sphere">
+                                            <span class="inline-flex items-center gap-1 rounded-full bg-brand-light px-2 py-0.5 text-xs font-semibold text-brand">
+                                                <i class="fa-solid" :class="org.sphereIcons[i] || 'fa-circle-info'" aria-hidden="true"></i>
+                                                <span x-text="sphere"></span>
+                                            </span>
+                                        </template>
+                                        <span x-show="! org.spheres.length" class="text-muted">—</span>
+                                    </div>
+                                </td>
                                 <td class="px-4 py-3">
                                     <a :href="org.mapUrl" target="_blank" rel="noopener"
                                         class="inline-flex items-center gap-1 font-bold text-brand hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">

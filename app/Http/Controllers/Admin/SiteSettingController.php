@@ -323,6 +323,10 @@ class SiteSettingController extends Controller
             'federation_hero_tiles.*.icon' => ['nullable', 'string', 'max:60'],
             'federation_hero_tiles.*.color' => ['nullable', 'integer', 'between:1,4'],
             'federation_hero_tiles.*.wide' => ['sometimes', 'boolean'],
+            'federation_join_benefits' => ['nullable', 'array'],
+            'federation_join_benefits.*.title' => ['nullable', 'string', 'max:100'],
+            'federation_join_benefits.*.text' => ['nullable', 'string', 'max:255'],
+            'federation_join_benefits.*.icon' => ['nullable', 'string', 'max:60'],
         ]);
 
         $data['allow_indexing'] = $request->boolean('allow_indexing');
@@ -481,6 +485,17 @@ class SiteSettingController extends Controller
                 'wide' => filled($t['wide'] ?? null) && $t['wide'] !== '0',
             ])
             ->filter(fn ($t) => $t['title'] !== '')
+            ->values()
+            ->all() ?: null;
+
+        // Kafelki „Dlaczego warto?" (Dołącz do nas, szablon "federation"): odrzucamy wiersze bez tytułu.
+        $data['federation_join_benefits'] = collect($request->input('federation_join_benefits', []))
+            ->map(fn ($b) => [
+                'title' => trim((string) ($b['title'] ?? '')),
+                'text' => trim((string) ($b['text'] ?? '')),
+                'icon' => filled($b['icon'] ?? null) ? trim((string) $b['icon']) : 'fa-circle-check',
+            ])
+            ->filter(fn ($b) => $b['title'] !== '')
             ->values()
             ->all() ?: null;
 

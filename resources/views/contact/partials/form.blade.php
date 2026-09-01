@@ -22,11 +22,16 @@
     </div>
 
     @if ($errors->any())
-        <div role="alert" class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
+        <div role="alert" tabindex="-1" x-data x-init="$nextTick(() => $el.focus())"
+            class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800 focus:outline-none">
             <p class="font-bold">Popraw poniższe błędy, aby wysłać wiadomość:</p>
-            <ul class="mt-1 list-disc pl-4">
-                @foreach ($errors->all() as $err)
-                    <li>{{ $err }}</li>
+            <ul class="mt-1 list-disc space-y-0.5 pl-4">
+                @foreach ($errors->keys() as $field)
+                    <li>
+                        <a href="#{{ $field }}" class="underline hover:no-underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-800">
+                            {{ $errors->first($field) }}
+                        </a>
+                    </li>
                 @endforeach
             </ul>
         </div>
@@ -34,20 +39,61 @@
 
     @if ($coordinators->isNotEmpty())
         <div>
-            <label for="coordinator_email" class="mb-1 block text-sm font-bold">
-                Do kogo piszesz? <span class="font-normal text-muted">(opcjonalnie)</span>
-            </label>
-            <select id="coordinator_email" name="coordinator_email"
-                    aria-describedby="coordinator-hint"
-                    class="w-full {{ $fieldClass }} {{ $errors->has('coordinator_email') ? 'border-red-400' : '' }}">
-                <option value="">— Ogólny kontakt —</option>
-                @foreach ($coordinators as $c)
-                    <option value="{{ $c['email'] }}" {{ old('coordinator_email') === $c['email'] ? 'selected' : '' }}>
-                        {{ $c['name'] }} ({{ $c['project'] }})
-                    </option>
-                @endforeach
-            </select>
-            <p id="coordinator-hint" class="mt-1 text-xs text-muted">Wiadomość trafi bezpośrednio do wybranej osoby.</p>
+            @if ($isFederationTemplate)
+                @php
+                    $coordinatorOptions = collect([['value' => '', 'label' => '— Ogólny kontakt —']])
+                        ->concat($coordinators->map(fn ($c) => ['value' => $c['email'], 'label' => $c['name'].' (Projekt: '.$c['project'].')']));
+                @endphp
+                <div class="relative" x-data="{
+                        open: false, active: -1,
+                        value: {{ \Illuminate\Support\Js::from(old('coordinator_email', '')) }},
+                        options: {{ \Illuminate\Support\Js::from($coordinatorOptions) }},
+                     }" @keydown.escape="open = false" @click.outside="open = false">
+                    <span id="coordinator-label" class="mb-1 block text-sm font-bold">
+                        Do kogo piszesz? <span class="font-normal text-muted">(opcjonalnie)</span>
+                    </span>
+                    <button type="button" id="coordinator_email" role="combobox" aria-haspopup="listbox" aria-labelledby="coordinator-label"
+                        aria-describedby="coordinator-hint"
+                        :aria-expanded="open" :aria-activedescendant="open && active >= 0 ? 'coordinator-opt-' + active : null"
+                        @click="open = !open; active = options.findIndex(o => o.value === value)"
+                        @keydown.arrow-down.prevent="open = true; active = Math.min(active + 1, options.length - 1)"
+                        @keydown.arrow-up.prevent="open = true; active = Math.max(active - 1, 0)"
+                        @keydown.home.prevent="open = true; active = 0"
+                        @keydown.end.prevent="open = true; active = options.length - 1"
+                        @keydown.enter.prevent="if (open && active >= 0) { value = options[active].value; open = false }"
+                        class="flex w-full items-center justify-between gap-2 {{ $fieldClass }} {{ $errors->has('coordinator_email') ? 'border-red-400' : '' }}">
+                        <span x-text="options.find(o => o.value === value)?.label" class="truncate"></span>
+                        <i class="fa-solid fa-chevron-down flex-none text-xs text-muted transition-transform duration-200" :class="{ 'rotate-180': open }" aria-hidden="true"></i>
+                    </button>
+                    <ul x-show="open" x-cloak id="coordinator-listbox" role="listbox" aria-labelledby="coordinator-label" tabindex="-1"
+                        class="absolute z-20 mt-1 max-h-64 w-full overflow-y-auto rounded-lg border border-gray-200 bg-white p-1 shadow-lg">
+                        <template x-for="(o, i) in options" :key="o.value">
+                            <li :id="'coordinator-opt-' + i" role="option" :aria-selected="value === o.value" @click="value = o.value; open = false" @mouseenter="active = i"
+                                class="flex cursor-pointer items-center justify-between rounded px-3 py-2 text-sm"
+                                :class="[value === o.value ? 'font-semibold text-brand' : 'text-ink', active === i ? 'bg-gray-50' : '']">
+                                <span x-text="o.label" class="truncate"></span>
+                                <i class="fa-solid fa-check flex-none text-xs" x-show="value === o.value" aria-hidden="true"></i>
+                            </li>
+                        </template>
+                    </ul>
+                    <input type="hidden" name="coordinator_email" :value="value">
+                </div>
+            @else
+                <label for="coordinator_email" class="mb-1 block text-sm font-bold">
+                    Do kogo piszesz? <span class="font-normal text-muted">(opcjonalnie)</span>
+                </label>
+                <select id="coordinator_email" name="coordinator_email"
+                        aria-describedby="coordinator-hint"
+                        class="w-full {{ $fieldClass }} {{ $errors->has('coordinator_email') ? 'border-red-400' : '' }}">
+                    <option value="">— Ogólny kontakt —</option>
+                    @foreach ($coordinators as $c)
+                        <option value="{{ $c['email'] }}" {{ old('coordinator_email') === $c['email'] ? 'selected' : '' }}>
+                            {{ $c['name'] }} (Projekt: {{ $c['project'] }})
+                        </option>
+                    @endforeach
+                </select>
+            @endif
+            <p id="coordinator-hint" class="mt-1 text-xs text-muted">Wiadomość trafi bezpośrednio do koordynatora wybranego projektu.</p>
             @error('coordinator_email') <p class="mt-1 text-sm text-red-600" role="alert">{{ $message }}</p> @enderror
         </div>
     @endif

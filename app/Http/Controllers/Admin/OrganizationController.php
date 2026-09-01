@@ -58,6 +58,13 @@ class OrganizationController extends Controller
         return redirect()->route('admin.organizacje.index')->with('status', 'Organizacja została usunięta.');
     }
 
+    public function destroyPhoto(Organization $organization, int $media)
+    {
+        $organization->getMedia('photos')->where('id', $media)->first()?->delete();
+
+        return redirect()->route('admin.organizacje.edit', $organization)->with('status', 'Zdjęcie zostało usunięte.');
+    }
+
     private function validated(Request $request, ?Organization $organization = null): array
     {
         $data = $request->validate([

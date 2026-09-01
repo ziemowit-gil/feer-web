@@ -155,9 +155,18 @@
                     {{ $item['label'] }}
                 </a>
             @endforeach
+            <a href="{{ route('federation.join') }}" class="flex items-center gap-2.5 rounded-lg px-3 py-2 text-base font-bold text-ink hover:bg-gray-50">
+                <i class="fa-solid fa-people-group text-sm" style="color:{{ $siteSettings->brandColorN(1) }}" aria-hidden="true"></i>
+                Dołącz do nas
+            </a>
             <a href="{{ route('support.show') }}" class="block rounded-lg px-3 py-2 text-sm font-bold text-brand hover:bg-gray-50">
                 Wesprzyj nas
             </a>
+            <button type="button" @click="a11yOpen = !a11yOpen" :aria-expanded="a11yOpen" aria-controls="federation-a11y-panel"
+                class="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-left text-sm font-bold text-ink hover:bg-gray-50">
+                <i class="fa-solid fa-universal-access text-sm" style="color:{{ $siteSettings->brandColorN(1) }}" aria-hidden="true"></i>
+                Ustawienia dostępności
+            </button>
         </nav>
         <form action="{{ route('search') }}" method="GET" role="search" class="px-4 pb-4">
             <label for="federation-search-mobile" class="sr-only">Szukaj w serwisie</label>

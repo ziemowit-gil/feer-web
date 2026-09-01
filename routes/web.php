@@ -351,6 +351,7 @@ Route::middleware(['auth', 'verified', '2fa'])->prefix(config('app.admin_prefix'
 
     // Organizacje członkowskie — katalog i wizytówki (tylko szablon federation, patrz OrganizationController).
     Route::resource('organizacje', AdminOrganizationController::class)->parameters(['organizacje' => 'organization'])->except('show');
+    Route::delete('organizacje/{organization}/zdjecia/{media}', [AdminOrganizationController::class, 'destroyPhoto'])->name('organizacje.photos.destroy');
 
     Route::middleware(['module:hero', 'module-access:hero'])->group(function () {
         Route::resource('hero', HeroSlideController::class)->parameters(['hero' => 'heroSlide'])->except('show');
