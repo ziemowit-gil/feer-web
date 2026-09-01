@@ -20,17 +20,39 @@
         @include('page.partials.typed-content')
 
         @if ($page->usesStandardLayout())
-        <section class="mx-auto max-w-6xl px-4 py-12">
-            <h1 class="mb-6 text-3xl font-bold text-ink">{{ $page->title }}</h1>
+        @php
+            $canInlineEdit = auth()->check() && auth()->user()->canAccessModule('pages');
+            $contentHasShortcode = $page->content && preg_match('/\[(formularz|kafelki):[a-z0-9_\-]+\]/i', $page->content);
+        @endphp
+        <div @if ($canInlineEdit) x-data="inlineContentEditor('page', {{ $page->id }}, '{{ route('admin.inline-edit.update') }}')" @endif>
+            @if ($canInlineEdit)
+                @include('partials.inline-edit-bar')
+            @endif
 
-            @include('partials.page-content-image')
+            <section class="mx-auto max-w-6xl px-4 py-12">
+                @if ($canInlineEdit)
+                    <h1 :contenteditable="editMode ? 'true' : 'false'" @blur="if (editMode) saveField('title', $el.innerText.trim())"
+                        :class="editMode ? 'outline-dashed outline-2 outline-offset-4 outline-brand rounded' : ''"
+                        class="mb-6 text-3xl font-bold text-ink">{{ $page->title }}</h1>
+                @else
+                    <h1 class="mb-6 text-3xl font-bold text-ink">{{ $page->title }}</h1>
+                @endif
 
-            <div class="prose max-w-none text-ink">@shortcodes($page->content)</div>
+                @include('partials.page-content-image')
 
-            @include('partials.page-gallery', ['page' => $page])
+                @if ($canInlineEdit && ! $contentHasShortcode)
+                    <div :contenteditable="editMode ? 'true' : 'false'" @blur="if (editMode) saveField('content', $el.innerHTML.trim())"
+                        :class="editMode ? 'outline-dashed outline-2 outline-offset-4 outline-brand rounded' : ''"
+                        class="prose max-w-none text-ink">@shortcodes($page->content)</div>
+                @else
+                    <div class="prose max-w-none text-ink">@shortcodes($page->content)</div>
+                @endif
 
-            @include('partials.attachments-list', ['attachments' => $page->attachments])
-        </section>
+                @include('partials.page-gallery', ['page' => $page])
+
+                @include('partials.attachments-list', ['attachments' => $page->attachments])
+            </section>
+        </div>
         @endif
     @endif
 @endsection
