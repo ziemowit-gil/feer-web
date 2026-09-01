@@ -54,6 +54,10 @@ class ProjectController extends Controller
     {
         $category->load(['publishedProjects' => fn ($query) => $query->where('is_completed', false)]);
 
+        if (SiteSetting::current()->site_template === 'federation') {
+            return view('templates.federation.projects-category', compact('category'));
+        }
+
         return view('projects.category', compact('category'));
     }
 
