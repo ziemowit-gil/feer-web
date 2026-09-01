@@ -137,16 +137,16 @@
                 </a>
             @endif
 
-            {{-- ━━ STRONY ━━ --}}
+            {{-- ━━ STRONY ━━ (najczęściej używana sekcja — domyślnie rozwinięta, w odróżnieniu od pozostałych) --}}
             @if ($can('pages'))
                 <div class="section-divider"></div>
-                <div x-data="{ open: {{ request()->routeIs($pagesRoutes) ? 'true' : 'false' }} }">
+                <div x-data="{ open: true }">
                     <button type="button" @click="open = !open" :aria-expanded="open" aria-controls="nav-section-pages"
                         class="section-header flex w-full items-center justify-between rounded-lg px-3 py-2 text-xs font-bold uppercase tracking-wider text-muted transition-colors hover:bg-gray-100 hover:text-ink">
                         <span>Strony</span>
                         <i class="fa-solid fa-chevron-down text-[0.6rem] text-gray-400 transition-transform duration-200" :class="{ 'rotate-180': open }"></i>
                     </button>
-                    <div id="nav-section-pages" x-show="open" @unless (request()->routeIs($pagesRoutes)) style="display: none" @endunless class="section-content mt-1 space-y-1">
+                    <div id="nav-section-pages" x-show="open" class="section-content mt-1 space-y-1">
                         <a href="{{ route('admin.podstrony.index') }}" class="{{ $itemClass(['admin.podstrony.*', 'admin.pozycje-menu.*']) }}" title="Strony i menu">
                             <i class="fa-solid fa-file-lines {{ $iconClass(['admin.podstrony.*', 'admin.pozycje-menu.*']) }}"></i>
                             <span class="nav-label">Strony i menu</span>
