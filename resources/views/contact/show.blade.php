@@ -47,7 +47,7 @@
 
         {{-- Formularz kontaktowy + dane teleadresowe --}}
         <div id="formularz" class="scroll-mt-24 grid gap-6 md:grid-cols-[1fr_300px] {{ $isFederationTemplate ? 'items-start' : 'gap-10' }}">
-            <div class="{{ $isFederationTemplate ? 'rounded-lg border border-gray-100 bg-white p-6 shadow-sm sm:p-8' : '' }}">
+            <div>
                 @include('contact.partials.form')
             </div>
 
