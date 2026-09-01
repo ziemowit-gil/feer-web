@@ -26,14 +26,6 @@
         @forelse ($categories as $category)
             @continue ($category->publishedProjects->isEmpty())
             <div class="mb-12">
-                <div class="mb-4 flex items-end justify-between gap-4">
-                    <h2 class="text-xl font-bold text-ink">{{ $category->name }}</h2>
-                    <a href="{{ route('categories.show', $category) }}"
-                        class="text-sm font-bold text-brand transition hover:text-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
-                        Zobacz kategorię →
-                    </a>
-                </div>
-
                 <div class="divide-y divide-gray-100 border-y border-gray-100">
                     @foreach ($category->publishedProjects as $i => $project)
                         @php $accent = $project->accent_color ?: $siteSettings->brandColorN(($i % 4) + 1); @endphp

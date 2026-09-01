@@ -80,8 +80,11 @@
         @include('templates.ngo.partials.topbar')
         @include('templates.ngo.partials.header')
     @elseif ($siteTemplate === 'federation')
-        @include('templates.federation.partials.topbar')
-        @include('templates.federation.partials.header')
+        <div x-data="{ a11yOpen: (function () { try { return localStorage.getItem('federation-a11y-open') === '1' } catch (e) { return false } })() }"
+             x-effect="try { localStorage.setItem('federation-a11y-open', a11yOpen ? '1' : '0') } catch (e) {}">
+            @include('templates.federation.partials.topbar')
+            @include('templates.federation.partials.header')
+        </div>
     @else
         @include($siteSettings->headerLayoutValue() === 'office_bar' ? 'partials.topbar-info' : 'partials.topbar')
         @include('partials.header')

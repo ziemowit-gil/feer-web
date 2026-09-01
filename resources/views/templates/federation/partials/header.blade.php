@@ -104,6 +104,13 @@
 
         {{-- Prawa strona: CTA + szukajka + mobile toggle --}}
         <div class="ml-auto flex flex-none items-center gap-2">
+            <button type="button" @click="a11yOpen = !a11yOpen" :aria-expanded="a11yOpen" aria-controls="federation-a11y-panel"
+                class="flex h-10 w-10 flex-none items-center justify-center rounded-full border border-gray-200 transition hover:bg-brand-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+                :class="a11yOpen ? 'text-white' : ''" :style="a11yOpen ? 'background:{{ $siteSettings->brandColorN(1) }}' : 'color:{{ $siteSettings->brandColorN(1) }}'"
+                aria-label="Ustawienia dostępności">
+                <i class="fa-solid fa-universal-access" aria-hidden="true"></i>
+            </button>
+
             <button type="button" x-ref="searchToggle" @click="searchOpen = true" aria-haspopup="dialog" :aria-expanded="searchOpen"
                 class="hidden h-10 w-10 flex-none items-center justify-center rounded-full border border-gray-200 transition hover:bg-brand-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand lg:flex"
                 style="color:{{ $siteSettings->brandColorN(1) }}"

@@ -1,4 +1,5 @@
-<div class="border-b border-gray-100 bg-white text-xs text-gray-600" role="region" aria-label="Ustawienia dostępności">
+<div id="federation-a11y-panel" x-show="a11yOpen" x-cloak
+    class="border-b border-gray-100 bg-white text-xs text-gray-600" role="region" aria-label="Ustawienia dostępności">
     <div class="mx-auto flex max-w-[1400px] items-center gap-4 overflow-x-auto px-4 py-2">
 
         {{-- Lewa: kontrolki dostępności --}}
