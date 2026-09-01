@@ -38,6 +38,19 @@ class InlineEditController extends Controller
                 'federation_hero_heading' => ['required', 'string', 'max:255'],
                 'federation_hero_intro' => ['nullable', 'string'],
             ],
+            // Pola-tablice (repeatery): edycja pojedynczego podpola jednego elementu.
+            // "accessor" to metoda modelu zwracająca aktualną tablicę razem z domyślnymi
+            // wartościami (ta sama, której używa widok) — dzięki temu pierwsza edycja
+            // "na żywo" domyślnych kafelków poprawnie zapisuje je do bazy w całości.
+            'array_fields' => [
+                'federation_hero_tiles' => [
+                    'accessor' => 'federationHeroTiles',
+                    'subfields' => [
+                        'title' => ['required', 'string', 'max:100'],
+                        'value' => ['nullable', 'string', 'max:20'],
+                    ],
+                ],
+            ],
         ],
     ];
 
@@ -47,11 +60,22 @@ class InlineEditController extends Controller
             'model' => ['required', 'string', Rule::in(array_keys(self::TARGETS))],
             'id' => ['required', 'integer'],
             'field' => ['required', 'string'],
+            'subfield' => ['nullable', 'string'],
+            'index' => ['required_with:subfield', 'integer', 'min:0'],
         ]);
 
         $target = self::TARGETS[$request->input('model')];
+        $field = $request->input('field');
+        $isArrayItem = $request->filled('subfield');
 
-        abort_unless($request->has('field') && array_key_exists($request->input('field'), $target['fields']), 422, 'Nieobsługiwane pole.');
+        if ($isArrayItem) {
+            abort_unless(array_key_exists($field, $target['array_fields'] ?? []), 422, 'Nieobsługiwane pole.');
+            $subfield = $request->input('subfield');
+            $subfieldRules = $target['array_fields'][$field]['subfields'][$subfield] ?? null;
+            abort_unless($subfieldRules !== null, 422, 'Nieobsługiwane podpole.');
+        } else {
+            abort_unless(array_key_exists($field, $target['fields'] ?? []), 422, 'Nieobsługiwane pole.');
+        }
 
         if ($target['admin_only'] ?? false) {
             abort_unless(auth()->user()->isAdmin(), 403);
@@ -59,17 +83,28 @@ class InlineEditController extends Controller
             abort_unless(auth()->user()->canAccessModule($target['module']), 403);
         }
 
-        $field = $request->input('field');
         $record = ($target['singleton'] ?? false)
             ? $target['model']::current()
             : $target['model']::findOrFail($request->input('id'));
 
-        $validated = validator(
-            ['value' => $request->input('value')],
-            ['value' => $target['fields'][$field]]
-        )->validate();
+        if ($isArrayItem) {
+            $accessor = $target['array_fields'][$field]['accessor'];
+            $items = $record->{$accessor}();
+            $index = (int) $request->input('index');
+            abort_unless(array_key_exists($index, $items), 404, 'Nie znaleziono elementu.');
 
-        $record->update([$field => $validated['value']]);
+            $validated = validator(['value' => $request->input('value')], ['value' => $subfieldRules])->validate();
+            $items[$index][$subfield] = $validated['value'];
+
+            $record->update([$field => array_values($items)]);
+        } else {
+            $validated = validator(
+                ['value' => $request->input('value')],
+                ['value' => $target['fields'][$field]]
+            )->validate();
+
+            $record->update([$field => $validated['value']]);
+        }
 
         return response()->json(['ok' => true]);
     }

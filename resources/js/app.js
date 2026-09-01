@@ -184,6 +184,16 @@ Alpine.data('inlineContentEditor', (model, id, saveUrl) => ({
     },
 
     async saveField(field, value) {
+        await this._save({ field, value });
+    },
+
+    // Zapis jednego podpola jednego elementu pola-tablicy (np. tytuł jednego
+    // kafelka hero). `index` to pozycja elementu w tablicy.
+    async saveArrayField(field, index, subfield, value) {
+        await this._save({ field, index, subfield, value });
+    },
+
+    async _save(payload) {
         this.saving = true;
         this.saveSuccess = false;
         this.error = null;
@@ -196,7 +206,7 @@ Alpine.data('inlineContentEditor', (model, id, saveUrl) => ({
                     'X-CSRF-TOKEN': csrfToken,
                     'Accept': 'application/json',
                 },
-                body: JSON.stringify({ model, id, field, value }),
+                body: JSON.stringify({ model, id, ...payload }),
             });
             if (!res.ok) {
                 const json = await res.json().catch(() => ({}));

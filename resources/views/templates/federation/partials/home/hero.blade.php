@@ -42,11 +42,25 @@
                 @php $tileColor = $siteSettings->brandColorN((int) ($tile['color'] ?? 1)); @endphp
                 <div class="flex items-center gap-3 rounded-lg p-6 text-white {{ ($tile['wide'] ?? false) ? 'col-span-2' : 'flex-col items-start' }}" style="background:{{ $tileColor }}">
                     @if (filled($tile['value'] ?? null))
-                        <span class="text-4xl font-extrabold leading-none">{{ $tile['value'] }}</span>
+                        @if ($canInlineEdit)
+                            <span :contenteditable="editMode ? 'true' : 'false'"
+                                @blur="if (editMode) saveArrayField('federation_hero_tiles', {{ $loop->index }}, 'value', $el.innerText.trim())"
+                                :class="editMode ? 'outline-dashed outline-2 outline-offset-2 outline-white rounded' : ''"
+                                class="text-4xl font-extrabold leading-none">{{ $tile['value'] }}</span>
+                        @else
+                            <span class="text-4xl font-extrabold leading-none">{{ $tile['value'] }}</span>
+                        @endif
                     @elseif (filled($tile['icon'] ?? null))
                         <i class="{{ $tile['icon'] }} text-2xl" aria-hidden="true"></i>
                     @endif
-                    <span class="text-sm font-semibold leading-snug {{ filled($tile['value'] ?? null) ? 'text-white/90' : '' }}">{{ $tile['title'] }}</span>
+                    @if ($canInlineEdit)
+                        <span :contenteditable="editMode ? 'true' : 'false'"
+                            @blur="if (editMode) saveArrayField('federation_hero_tiles', {{ $loop->index }}, 'title', $el.innerText.trim())"
+                            :class="editMode ? 'outline-dashed outline-2 outline-offset-2 outline-white rounded' : ''"
+                            class="text-sm font-semibold leading-snug {{ filled($tile['value'] ?? null) ? 'text-white/90' : '' }}">{{ $tile['title'] }}</span>
+                    @else
+                        <span class="text-sm font-semibold leading-snug {{ filled($tile['value'] ?? null) ? 'text-white/90' : '' }}">{{ $tile['title'] }}</span>
+                    @endif
                 </div>
             @endforeach
         </div>
