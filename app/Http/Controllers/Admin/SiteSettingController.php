@@ -74,6 +74,7 @@ class SiteSettingController extends Controller
     {
         $data = $request->validate([
             'site_name' => ['required', 'string', 'max:255'],
+            'site_name_genitive' => ['nullable', 'string', 'max:255'],
             'tagline' => ['nullable', 'string', 'max:255'],
             'site_url' => ['nullable', 'url', 'max:255'],
             'maintenance_mode' => ['sometimes', 'boolean'],

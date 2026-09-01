@@ -12,7 +12,7 @@
         <div id="nasze-lokalizacje" class="{{ $sectionClass }}" x-data="{ showList: false }">
             <h2 class="mb-2 text-xl font-bold text-ink">Nasze lokalizacje</h2>
             <p class="mb-5 max-w-2xl text-sm text-muted">
-                Ośrodki {{ $siteSettings->site_name }} nie tylko w Krakowie, ale w całej Małopolsce.
+                Ośrodki {{ $siteSettings->siteNameGenitive() }} nie tylko w Krakowie, ale w całej Małopolsce.
                 <a href="{{ route('help-map.index') }}" class="font-semibold text-brand underline-offset-2 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
                     Zobacz pełną mapę pomocy
                 </a>
@@ -31,7 +31,7 @@
                     'address' => $p->address, 'phone' => $p->phone, 'url' => $p->url,
                     'lat' => (float) $p->lat, 'lng' => (float) $p->lng,
                 ])->toJson() }}"
-                role="img" aria-label="Mapa lokalizacji {{ $siteSettings->site_name }} w Małopolsce">
+                role="img" aria-label="Mapa lokalizacji {{ $siteSettings->siteNameGenitive() }} w Małopolsce">
             </div>
 
             <ul id="nasze-lokalizacje-lista" x-show="showList" x-cloak class="mt-4 space-y-2 border-t border-gray-100 pt-4" role="list">

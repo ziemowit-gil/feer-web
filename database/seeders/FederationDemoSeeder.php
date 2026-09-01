@@ -24,6 +24,7 @@ class FederationDemoSeeder extends Seeder
     {
         SiteSetting::updateOrCreate(['id' => 1], [
             'site_name'        => 'Krakowskie Forum Organizacji Społecznych',
+            'site_name_genitive' => 'Krakowskiego Forum Organizacji Społecznych',
             'tagline'          => 'Razem dla lepszego jutra',
             'site_template'    => 'federation',
             'logo_only'        => true,

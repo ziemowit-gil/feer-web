@@ -188,7 +188,7 @@ class SiteSetting extends Model implements HasMedia
     ];
 
     protected $fillable = [
-        'site_name', 'tagline', 'brand_color', 'brand_color_2', 'brand_color_3', 'brand_color_4', 'brand_skip_contrast', 'nav_dark_text', 'ngo_skip_contrast', 'meta_description', 'allow_indexing', 'ga_measurement_id', 'disabled_modules', 'homepage_section_order', 'events_home_color', 'quick_actions_panel_negative',
+        'site_name', 'site_name_genitive', 'tagline', 'brand_color', 'brand_color_2', 'brand_color_3', 'brand_color_4', 'brand_skip_contrast', 'nav_dark_text', 'ngo_skip_contrast', 'meta_description', 'allow_indexing', 'ga_measurement_id', 'disabled_modules', 'homepage_section_order', 'events_home_color', 'quick_actions_panel_negative',
         'bip_url', 'bip_intro', 'bip_editor_name', 'bip_editor_email', 'bip_gov_url', 'bip_mode', 'facebook_url', 'facebook_group_url', 'twitter_url', 'instagram_url', 'linkedin_url', 'youtube_url', 'substack_url',
         'contact_address', 'contact_city', 'contact_email', 'contact_phone', 'contact_office_hours', 'contact_intro', 'contact_bank_accounts',
         'contact_correspondence_title', 'contact_correspondence_note',
@@ -1165,6 +1165,16 @@ class SiteSetting extends Model implements HasMedia
         $hex = $this->{'brand_color_'.$n} ?? null;
 
         return Color::isValid($hex) ? $hex : $this->brandPalette()['color'];
+    }
+
+    /**
+     * Nazwa organizacji w dopełniaczu (np. do zdań typu "Organizacje {dopełniacz}"),
+     * jeśli admin ją podał — w przeciwnym razie zwraca nazwę w mianowniku
+     * (odmiana polskich nazw własnych nie da się wygenerować niezawodnie automatycznie).
+     */
+    public function siteNameGenitive(): string
+    {
+        return filled($this->site_name_genitive) ? $this->site_name_genitive : $this->site_name;
     }
 
     /** Wszystkie ustawione kolory identyfikacji (główny + 2–4), do paska/akcentów. */

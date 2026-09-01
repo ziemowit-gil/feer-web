@@ -83,6 +83,17 @@
         </div>
 
         <div>
+            <label for="site_name_genitive" class="mb-1 block text-sm font-bold">
+                Nazwa strony w dopełniaczu <span class="font-normal text-muted">(opcjonalnie)</span>
+            </label>
+            <input type="text" id="site_name_genitive" name="site_name_genitive" value="{{ old('site_name_genitive', $settings->site_name_genitive) }}"
+                placeholder="np. Krakowskiego Forum Organizacji Społecznych"
+                class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+            <p class="mt-1 text-xs text-muted">Używana w zdaniach typu „Organizacje …”. Zostaw puste, jeśli nazwa strony nie odmienia się (np. akronim).</p>
+            @error('site_name_genitive') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+        </div>
+
+        <div>
             <label for="tagline" class="mb-1 block text-sm font-bold">Podtytuł (tagline)</label>
             <input type="text" id="tagline" name="tagline" value="{{ old('tagline', $settings->tagline) }}"
                 class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">

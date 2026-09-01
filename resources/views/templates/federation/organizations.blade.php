@@ -13,7 +13,7 @@
     <section class="mx-auto max-w-[1400px] px-4 py-12 lg:py-16">
         <p class="mb-3 text-sm font-extrabold uppercase tracking-widest text-brand">Organizacje</p>
         <h1 class="mb-4 max-w-3xl text-3xl font-extrabold leading-tight tracking-tight text-ink sm:text-4xl">
-            Poznaj organizacje członkowskie {{ $siteSettings->site_name }}
+            Poznaj organizacje członkowskie {{ $siteSettings->siteNameGenitive() }}
         </h1>
         <p class="mb-8 max-w-2xl text-base leading-relaxed text-muted">
             Organizacje zrzeszone w {{ $siteSettings->site_name }} w swojej codziennej działalności na pierwszym
@@ -38,7 +38,7 @@
         {{-- Krótkie statystyki katalogu --}}
         <dl class="mb-8 grid grid-cols-1 gap-3 sm:grid-cols-3">
             <div class="rounded-lg border border-gray-100 bg-white p-4">
-                <dt class="text-xs font-bold uppercase tracking-wide text-muted">Organizacje {{ $siteSettings->site_name }}</dt>
+                <dt class="text-xs font-bold uppercase tracking-wide text-muted">Organizacje {{ $siteSettings->siteNameGenitive() }}</dt>
                 <dd class="mt-1 text-2xl font-extrabold text-ink">{{ $stats['total'] }}</dd>
             </div>
             @if ($stats['topTown'])

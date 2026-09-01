@@ -13,7 +13,7 @@
     <section class="mx-auto max-w-[1400px] px-4 py-12 lg:py-16">
         <p class="mb-3 text-sm font-extrabold uppercase tracking-widest text-brand">Mapa pomocy</p>
         <h1 class="mb-4 text-3xl font-extrabold leading-tight tracking-tight text-ink sm:text-4xl">
-            Ośrodki {{ $siteSettings->site_name }} w Małopolsce
+            Ośrodki {{ $siteSettings->siteNameGenitive() }} w Małopolsce
         </h1>
         <p class="mb-8 max-w-2xl text-base leading-relaxed text-muted">
             {{ $siteSettings->site_name }} prowadzi ośrodki wsparcia nie tylko w Krakowie, ale w wielu miejscowościach
@@ -74,7 +74,7 @@
                         'address' => $p->address, 'phone' => $p->phone, 'url' => $p->url,
                         'lat' => (float) $p->lat, 'lng' => (float) $p->lng,
                     ])->toJson() }}"
-                    role="img" aria-label="Mapa ośrodków {{ $siteSettings->site_name }} w Małopolsce">
+                    role="img" aria-label="Mapa ośrodków {{ $siteSettings->siteNameGenitive() }} w Małopolsce">
                 </div>
             </div>
         </div>
