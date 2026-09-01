@@ -1,23 +1,34 @@
-<section class="bg-white" aria-labelledby="federation-hero-heading">
+@php
+    $canInlineEdit = auth()->check() && auth()->user()->isAdmin();
+@endphp
+<section class="bg-white" aria-labelledby="federation-hero-heading"
+    @if ($canInlineEdit) x-data="inlineContentEditor('site_setting', {{ $siteSettings->id }}, '{{ route('admin.inline-edit.update') }}')" @endif>
+    @if ($canInlineEdit)
+        @include('partials.inline-edit-bar')
+    @endif
+
     <div class="mx-auto grid max-w-[1400px] gap-12 px-4 py-16 lg:grid-cols-[1.1fr_0.9fr] lg:items-center lg:py-24">
         <div>
             <p class="mb-3 text-sm font-extrabold uppercase tracking-widest text-brand">O nas</p>
-            <h1 id="federation-hero-heading" class="mb-6 text-4xl font-extrabold leading-tight tracking-tight text-ink sm:text-5xl">
-                Razem dla lepszego jutra
-            </h1>
-            <div class="max-w-2xl space-y-4 text-base leading-relaxed text-muted">
-                <p>
-                    {{ $siteSettings->site_name }} jest jedną z pierwszych w Małopolsce federacji organizacji pozarządowych.
-                    Od 1998 roku działamy nieprzerwanie, aby szybciej i skuteczniej rozwiązywać problemy w działalności
-                    organizacji pozarządowych oraz lokalnej społeczności. Pracujemy na rzecz rozwoju społeczeństwa
-                    obywatelskiego, reprezentujemy interesy organizacji i grup nieformalnych, budujemy ich rzetelny
-                    wizerunek oraz promujemy partnerską współpracę z administracją publiczną.
-                </p>
-                <p>
-                    Najważniejszy jest dla nas człowiek, dlatego nieustannie niesiemy pomoc osobom w trudnej sytuacji
-                    życiowej, rodzinom, jak również organizacjom, które niosą wsparcie potrzebującym.
-                </p>
-            </div>
+            @if ($canInlineEdit)
+                <h1 id="federation-hero-heading" :contenteditable="editMode ? 'true' : 'false'"
+                    @blur="if (editMode) saveField('federation_hero_heading', $el.innerText.trim())"
+                    :class="editMode ? 'outline-dashed outline-2 outline-offset-4 outline-brand rounded' : ''"
+                    class="mb-6 text-4xl font-extrabold leading-tight tracking-tight text-ink sm:text-5xl">{{ $siteSettings->federationHeroHeading() }}</h1>
+            @else
+                <h1 id="federation-hero-heading" class="mb-6 text-4xl font-extrabold leading-tight tracking-tight text-ink sm:text-5xl">
+                    {{ $siteSettings->federationHeroHeading() }}
+                </h1>
+            @endif
+
+            @if ($canInlineEdit)
+                <div :contenteditable="editMode ? 'true' : 'false'"
+                    @blur="if (editMode) saveField('federation_hero_intro', $el.innerHTML.trim())"
+                    :class="editMode ? 'outline-dashed outline-2 outline-offset-4 outline-brand rounded' : ''"
+                    class="max-w-2xl space-y-4 text-base leading-relaxed text-muted">{!! $siteSettings->federationHeroIntro() !!}</div>
+            @else
+                <div class="max-w-2xl space-y-4 text-base leading-relaxed text-muted">{!! $siteSettings->federationHeroIntro() !!}</div>
+            @endif
             <a href="{{ url('/zespol') }}"
                 class="mt-4 inline-flex items-center gap-1.5 text-sm font-bold text-brand transition hover:text-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
                 Poznaj nasz zespół

@@ -2006,6 +2006,25 @@
             </div>
 
             @if ($settings->site_template === 'federation')
+                {{-- Nagłówek i wstęp hero — tylko szablon "federation". Te same pola można
+                     edytować też bezpośrednio na stronie głównej (edycja "na żywo"). --}}
+                <div class="mt-6 rounded-lg border border-gray-200 bg-gray-50 p-5">
+                    <p class="mb-3 text-sm font-bold text-ink">Nagłówek i wstęp hero (strona główna)</p>
+                    <label class="mb-3 block">
+                        <span class="mb-1 block text-xs font-bold text-muted">Nagłówek</span>
+                        <input type="text" name="federation_hero_heading"
+                            value="{{ old('federation_hero_heading', $settings->federationHeroHeading()) }}"
+                            maxlength="255"
+                            class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                    </label>
+                    <label class="block">
+                        <span class="mb-1 block text-xs font-bold text-muted">Wstęp (akapity)</span>
+                        <textarea name="federation_hero_intro" rows="5"
+                            class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">{{ old('federation_hero_intro', $settings->federationHeroIntro()) }}</textarea>
+                        <span class="mt-1 block text-xs text-muted">Proste znaczniki HTML (np. &lt;p&gt;) są dozwolone — to samo pole edytujesz też bezpośrednio na stronie głównej.</span>
+                    </label>
+                </div>
+
                 {{-- Kafelki hero — tylko szablon "federation" --}}
                 @php $heroTiles = array_values((array) old('federation_hero_tiles', $settings->federationHeroTiles())); @endphp
                 <div class="mt-6 rounded-lg border border-gray-200 bg-gray-50 p-5" data-hero-tiles>

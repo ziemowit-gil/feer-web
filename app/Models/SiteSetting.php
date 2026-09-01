@@ -199,7 +199,7 @@ class SiteSetting extends Model implements HasMedia
         'contact_shipping_note', 'contact_paczkomat_code', 'contact_paczkomat_address', 'contact_paczkomat_location', 'contact_shipping_phone', 'contact_shipping_visible',
         'contact_box_text', 'contact_box_link_label', 'contact_box_link_url', 'contact_box_visible_from', 'contact_box_visible_until',
         'homepage_banner_text', 'homepage_banner_link_label', 'homepage_banner_link_url', 'homepage_banner_visible_from', 'homepage_banner_visible_until',
-        'newsletter_code', 'header_layout', 'blocked_options', 'federation_hero_tiles', 'federation_join_benefits', 'federation_colorful_nav', 'federation_colorful_nav_items', 'federation_show_org_spotlight', 'federation_show_members_banner', 'show_topbar_bip', 'show_topbar_social', 'content_editor',
+        'newsletter_code', 'header_layout', 'blocked_options', 'federation_hero_tiles', 'federation_join_benefits', 'federation_hero_heading', 'federation_hero_intro', 'federation_colorful_nav', 'federation_colorful_nav_items', 'federation_show_org_spotlight', 'federation_show_members_banner', 'show_topbar_bip', 'show_topbar_social', 'content_editor',
         'infobar_show_date', 'infobar_show_nameday', 'office_show_account', 'office_show_search',
         'contact_layout', 'contact_office_address', 'contact_office_city', 'contact_office_building',
         'contact_office_note', 'contact_office_photo_alt', 'contact_hero_photo',
@@ -576,6 +576,36 @@ class SiteSetting extends Model implements HasMedia
             ['title' => 'Partnerska współpraca', 'value' => null, 'icon' => 'fa-solid fa-handshake-angle', 'wide' => false, 'color' => 4],
             ['title' => 'Razem dla Krakowa i jego mieszkańców', 'value' => null, 'icon' => 'fa-solid fa-city', 'wide' => true, 'color' => 3],
         ];
+    }
+
+    /**
+     * Nagłówek bloku hero na stronie głównej szablonu "federation" — edytowalny
+     * w panelu (Ustawienia → Strona główna) albo bezpośrednio na stronie (edycja "na żywo").
+     */
+    public function federationHeroHeading(): string
+    {
+        return filled($this->federation_hero_heading)
+            ? $this->federation_hero_heading
+            : 'Razem dla lepszego jutra';
+    }
+
+    /**
+     * Tekst wstępu bloku hero na stronie głównej szablonu "federation" — HTML
+     * (akapity), edytowany "na żywo" tak samo jak treść podstrony.
+     */
+    public function federationHeroIntro(): string
+    {
+        if (filled($this->federation_hero_intro)) {
+            return $this->federation_hero_intro;
+        }
+
+        return '<p>' . e($this->site_name) . ' jest jedną z pierwszych w Małopolsce federacji organizacji pozarządowych.'
+            . ' Od 1998 roku działamy nieprzerwanie, aby szybciej i skuteczniej rozwiązywać problemy w działalności'
+            . ' organizacji pozarządowych oraz lokalnej społeczności. Pracujemy na rzecz rozwoju społeczeństwa'
+            . ' obywatelskiego, reprezentujemy interesy organizacji i grup nieformalnych, budujemy ich rzetelny'
+            . ' wizerunek oraz promujemy partnerską współpracę z administracją publiczną.</p>'
+            . '<p>Najważniejszy jest dla nas człowiek, dlatego nieustannie niesiemy pomoc osobom w trudnej sytuacji'
+            . ' życiowej, rodzinom, jak również organizacjom, które niosą wsparcie potrzebującym.</p>';
     }
 
     /**

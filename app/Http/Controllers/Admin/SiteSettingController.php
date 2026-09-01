@@ -317,6 +317,8 @@ class SiteSettingController extends Controller
             'federation_colorful_nav_items.*' => ['integer', 'between:0,3'],
             'federation_show_org_spotlight' => ['sometimes', 'boolean'],
             'federation_show_members_banner' => ['sometimes', 'boolean'],
+            'federation_hero_heading' => ['nullable', 'string', 'max:255'],
+            'federation_hero_intro' => ['nullable', 'string'],
             'federation_hero_tiles' => ['nullable', 'array'],
             'federation_hero_tiles.*.title' => ['nullable', 'string', 'max:100'],
             'federation_hero_tiles.*.value' => ['nullable', 'string', 'max:20'],
