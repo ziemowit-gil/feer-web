@@ -312,6 +312,7 @@ Route::middleware(['auth', 'verified', '2fa'])->prefix(config('app.admin_prefix'
         Route::get('podstrony/eksport', [AdminPageController::class, 'export'])->name('podstrony.eksport');
         Route::get('raporty/brakujace-alt', [AdminPageController::class, 'missingAltReport'])->name('raporty.brakujace-alt');
         Route::resource('podstrony', AdminPageController::class)->parameters(['podstrony' => 'page']);
+        Route::put('edycja-na-zywo', [\App\Http\Controllers\Admin\InlineEditController::class, 'update'])->name('inline-edit.update');
         Route::post('podstrony/{page}/pliki', [AdminAttachmentController::class, 'storeForPage'])->name('podstrony.pliki.store');
         Route::get('podstrony/{page}/dostep/eksport', [AdminBrandAccessUserController::class, 'export'])->name('podstrony.dostep.eksport');
         Route::get('podstrony/{page}/dostep', [AdminBrandAccessUserController::class, 'index'])->name('podstrony.dostep.index');

@@ -6,8 +6,10 @@
         : 'rounded border-gray-300 focus:border-brand focus:ring-brand';
 @endphp
 @if (session('status'))
-    <div class="mb-6 rounded border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
-        {{ session('status') }}
+    <div role="status" tabindex="-1" x-data x-init="$nextTick(() => $el.focus())"
+        class="mb-6 flex items-start gap-2 rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800 focus:outline-none">
+        <i class="fa-solid fa-circle-check mt-0.5 flex-none" aria-hidden="true"></i>
+        <span>{{ session('status') }}</span>
     </div>
 @endif
 
@@ -61,15 +63,15 @@
                         @keydown.home.prevent="open = true; active = 0"
                         @keydown.end.prevent="open = true; active = options.length - 1"
                         @keydown.enter.prevent="if (open && active >= 0) { value = options[active].value; open = false }"
-                        class="flex w-full items-center justify-between gap-2 {{ $fieldClass }} {{ $errors->has('coordinator_email') ? 'border-red-400' : '' }}">
-                        <span x-text="options.find(o => o.value === value)?.label" class="truncate"></span>
+                        class="flex min-h-11 w-full items-center justify-between gap-2 {{ $fieldClass }} {{ $errors->has('coordinator_email') ? 'border-red-400' : '' }}">
+                        <span x-text="options.find(o => o.value === value)?.label" :title="options.find(o => o.value === value)?.label" class="truncate"></span>
                         <i class="fa-solid fa-chevron-down flex-none text-xs text-muted transition-transform duration-200" :class="{ 'rotate-180': open }" aria-hidden="true"></i>
                     </button>
                     <ul x-show="open" x-cloak id="coordinator-listbox" role="listbox" aria-labelledby="coordinator-label" tabindex="-1"
                         class="absolute z-20 mt-1 max-h-64 w-full overflow-y-auto rounded-lg border border-gray-200 bg-white p-1 shadow-lg">
                         <template x-for="(o, i) in options" :key="o.value">
-                            <li :id="'coordinator-opt-' + i" role="option" :aria-selected="value === o.value" @click="value = o.value; open = false" @mouseenter="active = i"
-                                class="flex cursor-pointer items-center justify-between rounded px-3 py-2 text-sm"
+                            <li :id="'coordinator-opt-' + i" role="option" :aria-selected="value === o.value" @click="value = o.value; open = false" @mouseenter="active = i" :title="o.label"
+                                class="flex min-h-11 cursor-pointer items-center justify-between gap-2 rounded px-3 py-2.5 text-sm"
                                 :class="[value === o.value ? 'font-semibold text-brand' : 'text-ink', active === i ? 'bg-gray-50' : '']">
                                 <span x-text="o.label" class="truncate"></span>
                                 <i class="fa-solid fa-check flex-none text-xs" x-show="value === o.value" aria-hidden="true"></i>

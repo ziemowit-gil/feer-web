@@ -168,6 +168,50 @@ Alpine.data('homepageEditor', (initialOrder, saveUrl) => ({
     },
 }));
 
+// Wizualna edycja "na żywo" — alternatywa dla formularzy admina. Kliknij pole
+// (tytuł, treść) na realnej stronie i edytuj bezpośrednio; zapis pojedynczego
+// pola przez PUT /admin/edycja-na-zywo (patrz InlineEditController).
+Alpine.data('inlineContentEditor', (model, id, saveUrl) => ({
+    editMode: localStorage.getItem('inline-edit-mode') === '1',
+    saving: false,
+    saveSuccess: false,
+    error: null,
+
+    toggleEdit() {
+        this.editMode = !this.editMode;
+        localStorage.setItem('inline-edit-mode', this.editMode ? '1' : '0');
+        this.error = null;
+    },
+
+    async saveField(field, value) {
+        this.saving = true;
+        this.saveSuccess = false;
+        this.error = null;
+        try {
+            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
+            const res = await fetch(saveUrl, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken,
+                    'Accept': 'application/json',
+                },
+                body: JSON.stringify({ model, id, field, value }),
+            });
+            if (!res.ok) {
+                const json = await res.json().catch(() => ({}));
+                throw new Error(json.message ?? `HTTP ${res.status}`);
+            }
+            this.saveSuccess = true;
+            setTimeout(() => { this.saveSuccess = false }, 2000);
+        } catch (e) {
+            this.error = 'Nie udało się zapisać zmiany. Spróbuj ponownie.';
+        } finally {
+            this.saving = false;
+        }
+    },
+}));
+
 // Odtwarzacz audio (TTS) — czyta treść artykułu przez SpeechSynthesis.
 // Używany w news/show.blade.php i page/show.blade.php.
 Alpine.data('audioPlayer', () => ({
