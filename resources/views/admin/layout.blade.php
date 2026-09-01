@@ -75,15 +75,17 @@
             </span>
         </div>
 
-        <div class="role-indicator border-b border-gray-200 px-4 py-2">
-            <p class="text-xs text-muted">Pracujesz jako</p>
-            <p class="text-sm font-bold text-ink">
-                @php $authUser = auth()->user(); @endphp
-                {{ $authUser?->name ?: $authUser?->email }}
-                <span class="ml-1 rounded px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide {{ $authUser?->isAdmin() ? 'bg-brand/10 text-brand' : 'bg-gray-100 text-muted' }}">
+        <div class="role-indicator flex items-center gap-3 border-b border-gray-200 px-4 py-3">
+            @php $authUser = auth()->user(); @endphp
+            <span class="flex h-9 w-9 flex-none items-center justify-center rounded-full bg-brand-light text-sm font-bold text-brand" aria-hidden="true">
+                {{ mb_strtoupper(mb_substr($authUser?->name ?: $authUser?->email, 0, 1)) }}
+            </span>
+            <span class="nav-label min-w-0">
+                <span class="block truncate text-sm font-bold text-ink">{{ $authUser?->name ?: $authUser?->email }}</span>
+                <span class="inline-block rounded px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide {{ $authUser?->isAdmin() ? 'bg-brand/10 text-brand' : 'bg-gray-100 text-muted' }}">
                     {{ \App\Models\User::ROLES[$authUser?->role] ?? 'Edytor' }}
                 </span>
-            </p>
+            </span>
         </div>
 
         @php
@@ -94,10 +96,10 @@
                     : $siteSettings->isModuleEnabled($module)
             ) && auth()->user()->canAccessModule($module);
 
-            $itemClass = fn ($patterns) => 'group flex items-center gap-3 rounded-lg px-3 py-2 transition-colors '
+            $itemClass = fn ($patterns) => 'group flex items-center gap-3 rounded-r-lg border-l-[3px] px-3 py-2 transition-colors '
                 . (request()->routeIs($patterns)
-                    ? 'bg-brand-light font-semibold text-brand'
-                    : 'text-ink hover:bg-gray-100 hover:text-brand');
+                    ? 'border-brand bg-brand-light font-semibold text-brand'
+                    : 'border-transparent text-ink hover:border-gray-200 hover:bg-gray-50 hover:text-brand');
 
             $iconClass = fn ($patterns) => 'w-5 shrink-0 text-center '
                 . (request()->routeIs($patterns) ? 'text-brand' : 'text-gray-400 group-hover:text-brand');
@@ -105,6 +107,11 @@
             // Trasy do aktywnego podświetlenia sekcji nadrzędnych
             $pagesRoutes      = ['admin.podstrony.*', 'admin.pozycje-menu.*', 'admin.os-czasu.*', 'admin.wspolpraca-zgloszenia.*'];
             $appearanceRoutes = ['admin.hero.*', 'admin.galeria.*', 'admin.szybkie-akcje.*', 'admin.partnerzy.*'];
+            $contentRoutes    = ['admin.newsy.*', 'admin.kategorie-newsow.*', 'admin.tagi.*', 'admin.wiem-feer.*', 'admin.komentarze-bloga.*',
+                                 'admin.podcasty.*', 'admin.formularze.*', 'admin.materialy-edukacyjne.*', 'admin.zapisy-materialy.*',
+                                 'admin.wydarzenia.*', 'admin.prowadzacy.*', 'admin.wolontariat.*', 'admin.praca.*', 'admin.projekty.*',
+                                 'admin.kategorie.*', 'admin.faq.*', 'admin.sprawozdania.*', 'admin.bip-dokumenty.*', 'admin.lp.*',
+                                 'admin.mapa-pomocy.*', 'admin.organizacje.*', 'admin.ankiety.*'];
             $marketingRoutes  = ['admin.banery.*', 'admin.strefy-bannerow.*', 'admin.newsletter.*', 'admin.subskrybenci.*', 'admin.kampanie.*'];
             $inboxRoutes      = ['admin.zgloszenia-spotkania.*', 'admin.zgloszenia-barier.*', 'admin.wiadomosci-kontaktowe.*'];
             $usersRoutes      = ['admin.uzytkownicy.*', 'admin.grupy.*', 'admin.zaproszenia-strefy.*'];
@@ -202,8 +209,16 @@
                 </div>
             @endif
 
-            {{-- ━━ MODUŁY TREŚCI — każdy moduł = osobna sekcja ━━ --}}
-            <div class="section-divider"></div>
+            {{-- ━━ MODUŁY TREŚCI ━━ --}}
+            @if ($can('news') || $can('blog') || $can('podcasts') || $can('forms') || $can('materials') || $can('events') || $can('volunteering') || $can('jobs') || $can('projects') || $can('faq') || $can('reports') || $can('bip') || $can('landing') || $can('help_map') || $can('polls') || \App\Models\SiteSetting::current()->site_template === 'federation')
+                <div class="section-divider"></div>
+                <div x-data="{ open: {{ request()->routeIs($contentRoutes) ? 'true' : 'false' }} }">
+                    <button type="button" @click="open = !open" :aria-expanded="open" aria-controls="nav-section-content"
+                        class="section-header flex w-full items-center justify-between rounded-lg px-3 py-2 text-xs font-bold uppercase tracking-wider text-muted transition-colors hover:bg-gray-100 hover:text-ink">
+                        <span>Moduły treści</span>
+                        <i class="fa-solid fa-chevron-down text-[0.6rem] text-gray-400 transition-transform duration-200" :class="{ 'rotate-180': open }"></i>
+                    </button>
+                    <div id="nav-section-content" x-show="open" @unless (request()->routeIs($contentRoutes)) style="display: none" @endunless class="section-content mt-1 space-y-1">
 
             {{-- Aktualności --}}
             @if ($can('news'))
@@ -430,6 +445,10 @@
                     <i class="fa-solid fa-square-poll-vertical {{ $iconClass('admin.ankiety.*') }}"></i>
                     <span class="nav-label">Ankiety</span>
                 </a>
+            @endif
+
+                    </div>
+                </div>
             @endif
 
             {{-- ━━ MULTIMEDIA ━━ --}}
