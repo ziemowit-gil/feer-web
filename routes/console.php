@@ -23,8 +23,3 @@ Schedule::command('approvals:notify-pending')->hourly();
 // Dosyłanie do SZO zgłoszeń formularzy, których nie udało się przekazać przy
 // zapisie (niedostępne SZO, timeout). Co 15 minut, żeby zaległość nie rosła.
 Schedule::command('szo:push-submissions')->everyFifteenMinutes()->withoutOverlapping();
-
-// Kontrola licencji tej instalacji w Helpdesku Centralnym (aktywacja/heartbeat
-// per instance_id) — co 5 minut, jak dla produktu "ShowMe" (patrz README Helpdesku).
-// Ta sama komenda dociąga też odpowiedzi na zgłoszenia z panelu "Pomoc".
-Schedule::command('helpdesk:sync')->everyFiveMinutes()->withoutOverlapping();
