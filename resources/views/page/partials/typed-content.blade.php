@@ -149,7 +149,7 @@
                 'founder'   => $aboutFounder !== null,
                 'stats'     => $aboutStats->isNotEmpty(),
                 'values'    => $aboutValues->isNotEmpty(),
-                'timeline'  => $aboutTimeline->isNotEmpty(),
+                'timeline'  => $aboutTimeline->isNotEmpty() && $siteSettings->isModuleEnabled('timeline'),
                 'team'      => $aboutTeam->isNotEmpty(),
                 'gallery'   => $galleryPhotos->isNotEmpty(),
                 'partners'  => ! empty($page->about_partner_ids),
@@ -775,6 +775,7 @@
             <div class="prose mx-auto mb-10 max-w-none text-ink">@shortcodes($page->content)</div>
         @endif
 
+        @php $isFederationTemplate = ($siteSettings->site_template ?? 'default') === 'federation'; @endphp
         @if ($hubLinks->isNotEmpty())
             <ul class="grid gap-5 {{ $hubLinks->count() === 2 ? 'sm:grid-cols-2' : ($hubLinks->count() === 3 ? 'sm:grid-cols-3' : 'sm:grid-cols-2 lg:grid-cols-4') }}" role="list">
                 @foreach ($hubLinks as $i => $link)
@@ -783,12 +784,13 @@
                         $grad = isset($colorKey) && isset($metroGradientMap[$colorKey])
                             ? $metroGradientMap[$colorKey]
                             : $metroGradientFallback[$i % count($metroGradientFallback)];
+                        $flatColor = $siteSettings->brandColorN(($i % 4) + 1);
                         $ctaLabel = filled($link['cta_label'] ?? null) ? $link['cta_label'] : 'Dowiedz się więcej';
                     @endphp
                     <li>
                         <a href="{{ $link['url'] }}"
-                           class="group relative flex min-h-52 flex-col justify-end overflow-hidden rounded-2xl p-8 text-white shadow-md transition hover:shadow-xl focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
-                           style="background: {{ $grad }}">
+                           class="group relative flex min-h-52 flex-col justify-end overflow-hidden p-8 text-white shadow-sm transition hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand {{ $isFederationTemplate ? 'rounded-lg' : 'rounded-2xl' }}"
+                           style="background: {{ $isFederationTemplate ? $flatColor : $grad }}">
                             <span class="relative z-10">
                                 @if (filled($link['icon'] ?? null))
                                     <span class="mb-3 inline-flex h-11 w-11 items-center justify-center rounded-xl bg-white/20 backdrop-blur" aria-hidden="true">
@@ -929,15 +931,20 @@
                 @endif
             </div>
 
+            @php $isFederationTemplate = ($siteSettings->site_template ?? 'default') === 'federation'; @endphp
             <ul class="grid gap-5 sm:grid-cols-2" role="list">
-                @foreach ($cdSectors as $sector)
+                @foreach ($cdSectors as $i => $sector)
                     @php
                         $colors = $colorMap[$sector['color'] ?? 'blue'] ?? $colorMap['blue'];
+                        $flatColor = $siteSettings->brandColorN(($i % 4) + 1);
                         $tags   = array_filter([$sector['tag1'] ?? null, $sector['tag2'] ?? null, $sector['tag3'] ?? null]);
                     @endphp
-                    <li class="flex flex-col rounded-2xl border-l-4 {{ $colors['border'] }} bg-white p-6 shadow-sm ring-1 ring-gray-100 transition hover:shadow-md">
+                    <li class="flex flex-col border-l-4 bg-white p-6 shadow-sm ring-1 ring-gray-100 transition hover:shadow-md {{ $isFederationTemplate ? 'rounded-lg' : ('rounded-2xl ' . $colors['border']) }}"
+                        @if ($isFederationTemplate) style="border-left-color:{{ $flatColor }}" @endif>
                         <div class="mb-4 flex items-center gap-3">
-                            <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl {{ $colors['bg'] }} {{ $colors['text'] }}" aria-hidden="true">
+                            <span class="flex h-10 w-10 shrink-0 items-center justify-center {{ $isFederationTemplate ? 'rounded-lg' : ('rounded-xl ' . $colors['bg'] . ' ' . $colors['text']) }}"
+                                @if ($isFederationTemplate) style="background:{{ $flatColor }}1a; color:{{ $flatColor }}" @endif
+                                aria-hidden="true">
                                 <i class="{{ $sector['icon'] ?? 'fa-solid fa-circle' }}"></i>
                             </span>
                             <h3 class="text-base font-bold text-ink">{{ $sector['title'] ?? '' }}</h3>
@@ -948,7 +955,10 @@
                         @if ($tags)
                             <ul class="mt-auto flex flex-wrap gap-1.5" aria-label="Obszary">
                                 @foreach ($tags as $tag)
-                                    <li class="rounded-full {{ $colors['pill'] }} px-2.5 py-0.5 text-xs font-medium">{{ $tag }}</li>
+                                    <li class="px-2.5 py-0.5 text-xs font-medium {{ $isFederationTemplate ? 'rounded' : ('rounded-full ' . $colors['pill']) }}"
+                                        @if ($isFederationTemplate) style="background:{{ $flatColor }}1a; color:{{ $flatColor }}" @endif>
+                                        {{ $tag }}
+                                    </li>
                                 @endforeach
                             </ul>
                         @endif

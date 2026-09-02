@@ -29,6 +29,18 @@ class SiteSetting extends Model implements HasMedia
         'partners' => 'Partnerzy',
         'strategy' => 'Strategia organizacji (planowanie działań)',
         'authorizations' => 'Rejestr pełnomocnictw i upoważnień',
+        'events' => 'Szkolenia i wydarzenia',
+        'jobs' => 'Oferty pracy',
+        'volunteering' => 'Wolontariat',
+        'materials' => 'Materiały edukacyjne',
+        'faq' => 'FAQ (pytania i odpowiedzi)',
+        'bip' => 'BIP (Biuletyn Informacji Publicznej)',
+        'support' => 'Wesprzyj nas',
+        'reports' => 'Sprawozdania',
+        'landing' => 'Landing page (kreator stron docelowych)',
+        'timeline' => 'Oś czasu (historia organizacji)',
+        'cooperation' => 'Zgłoszenia współpracy (formularz + skrzynka)',
+        'help_map' => 'Mapa pomocy (punkty wsparcia na mapie)',
     ];
 
     /**
@@ -87,7 +99,7 @@ class SiteSetting extends Model implements HasMedia
         'ngo'          => 'NGO / fundacja (rozbudowany)',
         'ngo_mix'      => 'NGO / fundacja (mieszany — klasyczna belka i stopka, rozbudowana strona główna)',
         'municipality' => 'Gmina / urząd',
-        'federacja'    => 'Federacja / organizacja parasolowa (z siecia sub-witryn)',
+        'federation'   => 'Federacja organizacji (wielobarwna, nowoczesna)',
     ];
 
     /**
@@ -177,7 +189,7 @@ class SiteSetting extends Model implements HasMedia
 
     protected $fillable = [
         'slug', 'domain', 'parent_site_id',
-        'site_name', 'tagline', 'brand_color', 'brand_color_2', 'brand_color_3', 'brand_color_4', 'brand_skip_contrast', 'nav_dark_text', 'ngo_skip_contrast', 'meta_description', 'allow_indexing', 'ga_measurement_id', 'disabled_modules', 'homepage_section_order', 'events_home_color', 'quick_actions_panel_negative',
+        'site_name', 'site_name_genitive', 'tagline', 'brand_color', 'brand_color_2', 'brand_color_3', 'brand_color_4', 'brand_skip_contrast', 'nav_dark_text', 'ngo_skip_contrast', 'meta_description', 'allow_indexing', 'ga_measurement_id', 'disabled_modules', 'homepage_section_order', 'events_home_color', 'quick_actions_panel_negative',
         'bip_url', 'bip_intro', 'bip_editor_name', 'bip_editor_email', 'bip_gov_url', 'bip_mode', 'facebook_url', 'facebook_group_url', 'twitter_url', 'instagram_url', 'linkedin_url', 'youtube_url', 'substack_url',
         'contact_address', 'contact_city', 'contact_email', 'contact_phone', 'contact_office_hours', 'contact_intro', 'contact_bank_accounts',
         'contact_correspondence_title', 'contact_correspondence_note',
@@ -188,12 +200,13 @@ class SiteSetting extends Model implements HasMedia
         'contact_shipping_note', 'contact_paczkomat_code', 'contact_paczkomat_address', 'contact_paczkomat_location', 'contact_shipping_phone', 'contact_shipping_visible',
         'contact_box_text', 'contact_box_link_label', 'contact_box_link_url', 'contact_box_visible_from', 'contact_box_visible_until',
         'homepage_banner_text', 'homepage_banner_link_label', 'homepage_banner_link_url', 'homepage_banner_visible_from', 'homepage_banner_visible_until',
-        'newsletter_code', 'header_layout', 'show_topbar_bip', 'show_topbar_social', 'content_editor',
+        'newsletter_code', 'header_layout', 'blocked_options', 'federation_hero_tiles', 'federation_join_benefits', 'federation_hero_heading', 'federation_hero_intro', 'federation_colorful_nav', 'federation_colorful_nav_items', 'federation_show_org_spotlight', 'federation_show_members_banner', 'show_topbar_bip', 'show_topbar_social', 'content_editor',
         'infobar_show_date', 'infobar_show_nameday', 'office_show_account', 'office_show_search',
         'contact_layout', 'contact_office_address', 'contact_office_city', 'contact_office_building',
         'contact_office_note', 'contact_office_photo_alt', 'contact_hero_photo',
         'site_url', 'maintenance_mode', 'maintenance_message',
         'microsoft_login_enabled', 'microsoft_only_login', 'emergency_login_token', 'microsoft_client_id', 'microsoft_client_secret', 'microsoft_tenant_id',
+        'google_login_enabled', 'google_client_id', 'google_client_secret',
         'member_login_enabled', 'member_allowed_domains', 'szo_api_url', 'yubico_client_id', 'yubico_secret_key', 'two_factor_required_admins',
         'unsplash_access_key', 'cookie_banner_enabled', 'cookie_banner_text', 'show_cms_credit',
         'mail_transport', 'mail_from_address', 'mail_from_name', 'mail_host', 'mail_port', 'mail_username', 'mail_password', 'mail_encryption',
@@ -295,6 +308,13 @@ class SiteSetting extends Model implements HasMedia
         'allow_indexing' => 'boolean',
         'quick_actions_panel_negative' => 'boolean',
         'disabled_modules' => 'array',
+        'blocked_options' => 'array',
+        'federation_hero_tiles' => 'array',
+        'federation_join_benefits' => 'array',
+        'federation_colorful_nav' => 'boolean',
+        'federation_colorful_nav_items' => 'array',
+        'federation_show_org_spotlight' => 'boolean',
+        'federation_show_members_banner' => 'boolean',
         'homepage_section_order' => 'array',
         'contact_bank_accounts' => 'array',
         'contact_schedule' => 'array',
@@ -318,6 +338,8 @@ class SiteSetting extends Model implements HasMedia
         'microsoft_login_enabled' => 'boolean',
         'microsoft_only_login' => 'boolean',
         'microsoft_client_secret' => 'encrypted',
+        'google_login_enabled' => 'boolean',
+        'google_client_secret' => 'encrypted',
         'member_login_enabled' => 'boolean',
         'yubico_secret_key' => 'encrypted',
         'two_factor_required_admins' => 'boolean',
@@ -512,6 +534,118 @@ class SiteSetting extends Model implements HasMedia
             : 'classic';
     }
 
+    /**
+     * Grupy opcji, których wybrane warianty wdrażający może zablokować w kreatorze
+     * instalacyjnym (patrz `blocked_options`) — klucz grupy => [wartość => etykieta].
+     *
+     * @return array<string, array<string, string>>
+     */
+    public static function blockableOptionGroups(): array
+    {
+        return [
+            'header_layouts' => self::HEADER_LAYOUTS,
+            'page_types' => Page::TYPES,
+            'contact_layouts' => self::CONTACT_LAYOUTS,
+        ];
+    }
+
+    /**
+     * Czy dana wartość w danej grupie opcji jest zablokowana dla tej instalacji
+     * (ustalone przez wdrażającego w kreatorze instalacyjnym — patrz `blocked_options`).
+     */
+    public function isOptionBlocked(string $group, string $value): bool
+    {
+        return in_array($value, $this->blocked_options[$group] ?? [], true);
+    }
+
+    /**
+     * Kafelki bloku hero na stronie głównej szablonu "federation" — edytowalne
+     * w panelu (Ustawienia → Strona główna, tylko dla tego szablonu). Zwraca
+     * sensowny domyślny układ, gdy admin nic jeszcze nie zapisał.
+     *
+     * @return array<int, array{title: string, value: ?string, icon: ?string, wide: bool, color: int}>
+     */
+    public function federationHeroTiles(): array
+    {
+        if (filled($this->federation_hero_tiles)) {
+            return $this->federation_hero_tiles;
+        }
+
+        return [
+            ['title' => 'rok powstania federacji', 'value' => '1998', 'icon' => null, 'wide' => true, 'color' => 1],
+            ['title' => 'Organizacje członkowskie', 'value' => null, 'icon' => 'fa-solid fa-people-group', 'wide' => false, 'color' => 2],
+            ['title' => 'Partnerska współpraca', 'value' => null, 'icon' => 'fa-solid fa-handshake-angle', 'wide' => false, 'color' => 4],
+            ['title' => 'Razem dla Krakowa i jego mieszkańców', 'value' => null, 'icon' => 'fa-solid fa-city', 'wide' => true, 'color' => 3],
+        ];
+    }
+
+    /**
+     * Nagłówek bloku hero na stronie głównej szablonu "federation" — edytowalny
+     * w panelu (Ustawienia → Strona główna) albo bezpośrednio na stronie (edycja "na żywo").
+     */
+    public function federationHeroHeading(): string
+    {
+        return filled($this->federation_hero_heading)
+            ? $this->federation_hero_heading
+            : 'Razem dla lepszego jutra';
+    }
+
+    /**
+     * Tekst wstępu bloku hero na stronie głównej szablonu "federation" — HTML
+     * (akapity), edytowany "na żywo" tak samo jak treść podstrony.
+     */
+    public function federationHeroIntro(): string
+    {
+        if (filled($this->federation_hero_intro)) {
+            return $this->federation_hero_intro;
+        }
+
+        return '<p>' . e($this->site_name) . ' jest jedną z pierwszych w Małopolsce federacji organizacji pozarządowych.'
+            . ' Od 1998 roku działamy nieprzerwanie, aby szybciej i skuteczniej rozwiązywać problemy w działalności'
+            . ' organizacji pozarządowych oraz lokalnej społeczności. Pracujemy na rzecz rozwoju społeczeństwa'
+            . ' obywatelskiego, reprezentujemy interesy organizacji i grup nieformalnych, budujemy ich rzetelny'
+            . ' wizerunek oraz promujemy partnerską współpracę z administracją publiczną.</p>'
+            . '<p>Najważniejszy jest dla nas człowiek, dlatego nieustannie niesiemy pomoc osobom w trudnej sytuacji'
+            . ' życiowej, rodzinom, jak również organizacjom, które niosą wsparcie potrzebującym.</p>';
+    }
+
+    /**
+     * Karty „Dlaczego warto?" na stronie „Dołącz do nas" szablonu "federation" —
+     * edytowalne w panelu (Ustawienia → Strona główna, tylko dla tego szablonu).
+     *
+     * @return array<int, array{icon: string, title: string, text: string}>
+     */
+    public function federationJoinBenefits(): array
+    {
+        if (filled($this->federation_join_benefits)) {
+            return $this->federation_join_benefits;
+        }
+
+        return [
+            ['icon' => 'fa-people-group', 'title' => 'Wspólny głos', 'text' => 'Reprezentujemy interesy organizacji członkowskich wobec administracji publicznej.'],
+            ['icon' => 'fa-graduation-cap', 'title' => 'Szkolenia i wiedza', 'text' => 'Dostęp do szkoleń, warsztatów i wymiany doświadczeń między organizacjami.'],
+            ['icon' => 'fa-hands-holding-circle', 'title' => 'Wsparcie w trudnych sprawach', 'text' => 'Pomoc formalna i merytoryczna w bieżącej działalności organizacji.'],
+            ['icon' => 'fa-network-wired', 'title' => 'Sieć kontaktów', 'text' => 'Współpraca z innymi organizacjami, instytucjami i partnerami federacji.'],
+        ];
+    }
+
+    /**
+     * Czy dana pozycja menu głównego szablonu "federation" (wg indeksu 0..3)
+     * ma być kolorowa. Zawsze false, gdy kolorowe menu jest globalnie wyłączone.
+     */
+    public function isNavItemColorful(int $index): bool
+    {
+        if (! $this->federation_colorful_nav) {
+            return false;
+        }
+
+        if (! filled($this->federation_colorful_nav_items)) {
+            return true;
+        }
+
+        return in_array($index, $this->federation_colorful_nav_items, true);
+    }
+
     /** Edytor treści sprowadzony do jednej z obsługiwanych opcji (patrz wyżej). */
     public function contentEditorValue(): string
     {
@@ -664,6 +798,39 @@ class SiteSetting extends Model implements HasMedia
         }
 
         $config = $this->microsoftConfig();
+
+        return filled($config['client_id']) && filled($config['client_secret']);
+    }
+
+    /**
+     * Konfiguracja logowania Google dla Laravel Socialite (natywny sterownik,
+     * bez dodatkowego pakietu). Wartości z panelu mają pierwszeństwo, a puste
+     * pola dziedziczą z config/services (czyli z .env).
+     */
+    public function googleConfig(): array
+    {
+        return [
+            'client_id' => $this->google_client_id ?: config('services.google.client_id'),
+            'client_secret' => $this->google_client_secret ?: config('services.google.client_secret'),
+            'redirect' => config('services.google.redirect') ?: url('/auth/google/callback'),
+        ];
+    }
+
+    /**
+     * Czy logowanie Google jest aktywne: włączone przełącznikiem i faktycznie
+     * skonfigurowane (są Client ID oraz Client Secret — z panelu lub z .env).
+     */
+    public function googleLoginEnabled(): bool
+    {
+        if ($this->maintenance_mode) {
+            return false;
+        }
+
+        if (! $this->google_login_enabled) {
+            return false;
+        }
+
+        $config = $this->googleConfig();
 
         return filled($config['client_id']) && filled($config['client_secret']);
     }
@@ -1067,6 +1234,16 @@ class SiteSetting extends Model implements HasMedia
         $hex = $this->{'brand_color_'.$n} ?? null;
 
         return Color::isValid($hex) ? $hex : $this->brandPalette()['color'];
+    }
+
+    /**
+     * Nazwa organizacji w dopełniaczu (np. do zdań typu "Organizacje {dopełniacz}"),
+     * jeśli admin ją podał — w przeciwnym razie zwraca nazwę w mianowniku
+     * (odmiana polskich nazw własnych nie da się wygenerować niezawodnie automatycznie).
+     */
+    public function siteNameGenitive(): string
+    {
+        return filled($this->site_name_genitive) ? $this->site_name_genitive : $this->site_name;
     }
 
     /** Wszystkie ustawione kolory identyfikacji (główny + 2–4), do paska/akcentów. */

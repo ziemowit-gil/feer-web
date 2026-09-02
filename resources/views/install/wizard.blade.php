@@ -341,11 +341,19 @@ tailwind.config = {
                             <div class="grid gap-3 sm:grid-cols-3">
                                 @foreach (\App\Models\SiteSetting::SITE_TEMPLATES as $tKey => $tLabel)
                                 @php
-                                    $icons = ['default' => 'fa-building-columns', 'ngo' => 'fa-hands-holding-heart', 'municipality' => 'fa-city'];
+                                    $icons = [
+                                        'default' => 'fa-building-columns',
+                                        'ngo' => 'fa-hands-holding-heart',
+                                        'ngo_mix' => 'fa-hands-holding-heart',
+                                        'municipality' => 'fa-city',
+                                        'federation' => 'fa-people-group',
+                                    ];
                                     $descs = [
                                         'default' => 'Klasyczny układ dla fundacji',
                                         'ngo' => 'Rozbudowany: misja, wsparcie, projekty',
+                                        'ngo_mix' => 'Klasyczna belka i stopka, rozbudowana strona główna',
                                         'municipality' => 'Gmina: pogoda, imieniny, BIP',
+                                        'federation' => 'Federacja organizacji: wielobarwna, nowoczesna',
                                     ];
                                 @endphp
                                 <label class="flex cursor-pointer flex-col items-center gap-2 rounded-xl border-2 p-4 text-center transition"
@@ -363,6 +371,84 @@ tailwind.config = {
                             </div>
                         </div>
                     </div>
+                </div>
+
+                {{-- Moduły --}}
+                <div class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-100">
+                    <h2 class="mb-1 flex items-center gap-2 text-lg font-extrabold text-gray-900">
+                        <i class="fa-solid fa-puzzle-piece text-brand"></i>
+                        Moduły
+                    </h2>
+                    <p class="mb-4 text-xs text-gray-500">Wybierz, które funkcje serwisu mają być włączone. Możesz to zmienić później w panelu.</p>
+                    <div class="grid gap-2.5 sm:grid-cols-2">
+                        @php $disabledByDefault = ['strategy']; @endphp
+                        @foreach (\App\Models\SiteSetting::MODULES as $mKey => $mLabel)
+                            <label class="flex cursor-pointer items-center gap-2.5 rounded-lg border border-gray-200 px-3 py-2.5 transition hover:border-gray-300">
+                                <input type="checkbox" name="modules[]" value="{{ $mKey }}"
+                                    {{ old('modules') ? (in_array($mKey, old('modules', [])) ? 'checked' : '') : (in_array($mKey, $disabledByDefault) ? '' : 'checked') }}
+                                    class="h-4 w-4 flex-none rounded accent-brand">
+                                <span class="text-sm font-medium text-gray-700">{{ $mLabel }}</span>
+                            </label>
+                        @endforeach
+                    </div>
+                </div>
+
+                {{-- Ograniczenia wyboru (nagłówek, typy podstron, kontakt) --}}
+                @php
+                    $blockableGroupMeta = [
+                        'header_layouts' => ['icon' => 'fa-heading', 'title' => 'Dozwolone układy nagłówka', 'hint' => 'których administratorzy tej instalacji nie powinni móc wybrać w Ustawieniach → Nagłówek'],
+                        'page_types' => ['icon' => 'fa-file-lines', 'title' => 'Dozwolone typy podstron', 'hint' => 'których redaktorzy tej instalacji nie powinni móc wybrać przy tworzeniu podstrony'],
+                        'contact_layouts' => ['icon' => 'fa-address-card', 'title' => 'Dozwolone warianty strony kontaktowej', 'hint' => 'których administratorzy tej instalacji nie powinni móc wybrać w Ustawieniach → Kontakt'],
+                    ];
+                @endphp
+                @foreach (\App\Models\SiteSetting::blockableOptionGroups() as $groupKey => $groupOptions)
+                    @php $meta = $blockableGroupMeta[$groupKey]; @endphp
+                    <div class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-100">
+                        <h2 class="mb-1 flex items-center gap-2 text-lg font-extrabold text-gray-900">
+                            <i class="fa-solid {{ $meta['icon'] }} text-brand"></i>
+                            {{ $meta['title'] }}
+                        </h2>
+                        <p class="mb-4 text-xs text-gray-500">
+                            Odznacz opcje, {{ $meta['hint'] }}. Domyślnie dostępne są wszystkie.
+                        </p>
+                        <div class="grid gap-2.5 sm:grid-cols-2">
+                            @foreach ($groupOptions as $optKey => $optLabel)
+                                <label class="flex cursor-pointer items-center gap-2.5 rounded-lg border border-gray-200 px-3 py-2.5 transition hover:border-gray-300">
+                                    <input type="checkbox" name="allowed_{{ $groupKey }}[]" value="{{ $optKey }}"
+                                        {{ old("allowed_{$groupKey}") ? (in_array($optKey, old("allowed_{$groupKey}", [])) ? 'checked' : '') : 'checked' }}
+                                        class="h-4 w-4 flex-none rounded accent-brand">
+                                    <span class="text-sm font-medium text-gray-700">{{ $optLabel }}</span>
+                                </label>
+                            @endforeach
+                        </div>
+                    </div>
+                @endforeach
+
+                {{-- Certyfikat super-admina --}}
+                <div class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-100">
+                    <h2 class="mb-1 flex items-center gap-2 text-lg font-extrabold text-gray-900">
+                        <i class="fa-solid fa-shield-halved text-brand"></i>
+                        Certyfikat głównego administratora
+                    </h2>
+                    <p class="mb-4 text-xs text-gray-500">
+                        Kreator wygeneruje certyfikat klienta (.pfx) do logowania pod adresem <code class="rounded bg-gray-100 px-1 py-0.5">/super</code> —
+                        niezależnego od zwykłego logowania hasłem. Certyfikat będzie można pobrać tylko raz, zaraz po instalacji.
+                    </p>
+                    <div class="grid gap-3 sm:grid-cols-2">
+                        <div>
+                            <label class="mb-1 block text-xs font-semibold text-gray-600">Hasło certyfikatu</label>
+                            <input type="password" name="super_admin_cert_password" required minlength="8"
+                                class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand">
+                        </div>
+                        <div>
+                            <label class="mb-1 block text-xs font-semibold text-gray-600">Potwierdź hasło</label>
+                            <input type="password" name="super_admin_cert_password_confirmation" required
+                                class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand">
+                        </div>
+                    </div>
+                    @error('super_admin_cert_password')
+                        <p class="mt-2 text-xs text-red-600">{{ $message }}</p>
+                    @enderror
                 </div>
 
                 {{-- Dane demo --}}
@@ -409,6 +495,26 @@ tailwind.config = {
                         Strona główna
                     </a>
                 </div>
+
+                {{-- Certyfikat super-admina — dostępny do pobrania tylko raz --}}
+                @if (session('install_pfx'))
+                <div class="mb-8 rounded-xl border-2 border-amber-300 bg-amber-50 p-5 text-left">
+                    <p class="mb-1 flex items-center gap-2 text-sm font-bold text-amber-900">
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+                        Pobierz certyfikat super-admina — teraz albo nigdy
+                    </p>
+                    <p class="mb-4 text-xs text-amber-800">
+                        Ten plik .pfx (chroniony hasłem, które podałeś/aś w kreatorze) służy do logowania pod
+                        <code class="rounded bg-white px-1 py-0.5">/super</code>. Nie jest zapisywany na serwerze —
+                        po pobraniu (lub opuszczeniu tej strony) zniknie bezpowrotnie.
+                    </p>
+                    <a href="{{ route('install.certificate') }}"
+                        class="inline-flex items-center gap-2 rounded-lg bg-amber-500 px-5 py-2.5 text-sm font-extrabold text-white shadow transition hover:bg-amber-600">
+                        <i class="fa-solid fa-download"></i>
+                        Pobierz certyfikat (.pfx)
+                    </a>
+                </div>
+                @endif
 
                 {{-- Demo data --}}
                 @if ($demoSeeded || session('demo_done'))

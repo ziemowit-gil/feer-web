@@ -25,6 +25,10 @@ class ProjectController extends Controller
 
         $hasArchive = Project::forCurrentSite()->where('is_published', true)->where('is_completed', true)->exists();
 
+        if (SiteSetting::current()->site_template === 'federation') {
+            return view('templates.federation.projects-index', compact('categories', 'hasArchive'));
+        }
+
         return view('projects.index', compact('categories', 'hasArchive'));
     }
 
@@ -38,6 +42,10 @@ class ProjectController extends Controller
             ->orderBy('title')
             ->get();
 
+        if (SiteSetting::current()->site_template === 'federation') {
+            return view('templates.federation.projects-archive', compact('projects'));
+        }
+
         return view('projects.archive', compact('projects'));
     }
 
@@ -46,6 +54,10 @@ class ProjectController extends Controller
     {
         $category->load(['publishedProjects' => fn ($query) => $query->where('is_completed', false)]);
 
+        if (SiteSetting::current()->site_template === 'federation') {
+            return view('templates.federation.projects-category', compact('category'));
+        }
+
         return view('projects.category', compact('category'));
     }
 
@@ -53,10 +65,14 @@ class ProjectController extends Controller
     public function show(Project $project)
     {
         abort_unless($project->is_published, 404);
-        $project->load('category', 'publishedPages');
+        $project->load('category', 'publishedPages', 'attachments');
 
         // Własny kolor akcentu ma priorytet; w przeciwnym razie preset grupy docelowej.
         $brandColor = $project->accent_color ?: SiteSetting::current()->audienceColor($project->audience);
+
+        if (SiteSetting::current()->site_template === 'federation') {
+            return view('templates.federation.projects-show', compact('project', 'brandColor'));
+        }
 
         return view('projects.show', compact('project', 'brandColor'));
     }

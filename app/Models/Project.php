@@ -75,6 +75,11 @@ class Project extends Model implements HasMedia
         return $this->hasMany(Page::class);
     }
 
+    public function attachments(): \Illuminate\Database\Eloquent\Relations\MorphMany
+    {
+        return $this->morphMany(Attachment::class, 'attachable')->orderBy('order');
+    }
+
     /**
      * Published subpages attached to this project, linked from the project page.
      */

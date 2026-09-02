@@ -7,6 +7,8 @@
     @include('templates.municipality.partials.footer')
 @elseif (in_array($siteSettings->site_template ?? 'default', ['ngo', 'federacja']))
     @include('templates.ngo.partials.footer')
+@elseif (($siteSettings->site_template ?? 'default') === 'federation')
+    @include('templates.federation.partials.footer')
 @else
 
 <footer>
@@ -43,7 +45,11 @@
                     <span>
                         &copy; {{ now()->year }} {{ $siteSettings->site_name }}
                         @if ($siteSettings->show_cms_credit ?? true)
-                            &middot; <span class="font-bold">weCMS</span>
+                            &middot;
+                            <span class="opacity-40 transition-opacity duration-200 hover:opacity-100 focus-within:opacity-100">
+                                Napędzane przez <span class="font-bold">weCMS</span>
+                                &middot; Projekt i wykonanie <a href="mailto:ziemowit.gil@gmail.com" class="hover:text-brand">Ziemowit Gil</a>
+                            </span>
                         @endif
                     </span>
                 </div>

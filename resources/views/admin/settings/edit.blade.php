@@ -83,6 +83,17 @@
         </div>
 
         <div>
+            <label for="site_name_genitive" class="mb-1 block text-sm font-bold">
+                Nazwa strony w dopełniaczu <span class="font-normal text-muted">(opcjonalnie)</span>
+            </label>
+            <input type="text" id="site_name_genitive" name="site_name_genitive" value="{{ old('site_name_genitive', $settings->site_name_genitive) }}"
+                placeholder="np. Krakowskiego Forum Organizacji Społecznych"
+                class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+            <p class="mt-1 text-xs text-muted">Używana w zdaniach typu „Organizacje …”. Zostaw puste, jeśli nazwa strony nie odmienia się (np. akronim).</p>
+            @error('site_name_genitive') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+        </div>
+
+        <div>
             <label for="tagline" class="mb-1 block text-sm font-bold">Podtytuł (tagline)</label>
             <input type="text" id="tagline" name="tagline" value="{{ old('tagline', $settings->tagline) }}"
                 class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
@@ -125,10 +136,21 @@
             </div>
         </div>
 
+        @php $isFeerInstall = str_contains(request()->getHost(), 'feer.org.pl'); @endphp
         <label class="flex items-center gap-2 rounded-lg border border-gray-200 bg-gray-50 p-4">
-            <input type="checkbox" name="show_cms_credit" value="1" {{ old('show_cms_credit', $settings->show_cms_credit ?? true) ? 'checked' : '' }}
-                class="rounded border-gray-300 text-brand focus:ring-brand">
-            <span class="text-sm font-bold">Pokaż nazwę CMS w stopce („weCMS · autor…")</span>
+            <input type="checkbox" name="show_cms_credit" value="1"
+                {{ ($isFeerInstall ? old('show_cms_credit', $settings->show_cms_credit ?? true) : true) ? 'checked' : '' }}
+                {{ $isFeerInstall ? '' : 'disabled' }}
+                class="rounded border-gray-300 text-brand focus:ring-brand disabled:cursor-not-allowed disabled:opacity-60">
+            @if (! $isFeerInstall)
+                <input type="hidden" name="show_cms_credit" value="1">
+            @endif
+            <span class="text-sm font-bold">
+                Pokaż nazwę CMS w stopce („weCMS · autor…")
+                @unless ($isFeerInstall)
+                    <span class="ml-1 rounded-full bg-gray-200 px-2 py-0.5 text-[0.65rem] font-semibold text-gray-600">🔒 Zawsze widoczne poza feer.org.pl</span>
+                @endunless
+            </span>
         </label>
 
         <div>
@@ -167,9 +189,10 @@
         <div x-show="tab === 'header'" x-cloak class="space-y-6">
             <div>
                 <p class="mb-3 text-sm font-bold">Układ nagłówka strony</p>
-                @php $isFeer = str_contains(request()->getHost(), 'feer.org.pl'); @endphp
+                @php $isFeer = str_contains(request()->getHost(), 'feer.org.pl') || in_array(request()->getHost(), ['localhost', '127.0.0.1'], true); @endphp
                 <div class="grid gap-3 sm:grid-cols-2">
                     @foreach (\App\Models\SiteSetting::HEADER_LAYOUTS as $layoutValue => $layoutLabel)
+                    @continue($settings->isOptionBlocked('header_layouts', $layoutValue) && old('header_layout', $settings->headerLayoutValue()) !== $layoutValue)
                     <label class="flex cursor-pointer items-start gap-3 rounded-lg border p-3 transition has-[:checked]:border-brand has-[:checked]:bg-brand-light">
                         @if ($layoutValue === 'wide_mission')
                         <input type="radio" name="header_layout" value="wide_mission"
@@ -186,7 +209,7 @@
                             {{ $layoutLabel }}
                             @if ($layoutValue === 'wide_mission' && !$isFeer)
                             <span class="ml-1 rounded-full bg-gray-200 px-2 py-0.5 text-[0.65rem] font-semibold text-gray-600">🔒 Tylko FEER</span>
-                            <span class="mt-1 block text-xs text-muted">weCMS powstał jako autorskie rozwiązanie dla FEER. Jest teraz publicznie dostępny, ale niektóre opcje pozostają zarezerwowane.</span>
+                            <span class="mt-1 block text-xs text-muted">weCMS powstał jako autorskie rozwiązanie dla FEER. Działa tylko na feer.org.pl i localhost.</span>
                             @endif
                         </span>
                     </label>
@@ -202,6 +225,52 @@
                 @enderror
                 @error('header_layout') <p class="mt-2 text-sm text-red-600">{{ $message }}</p> @enderror
             </div>
+
+            @if ($settings->site_template === 'federation')
+                {{-- Kolorowe menu — tylko szablon "federation" --}}
+                @php
+                    $navLabels = ['O nas', 'Organizacje', 'Projekty zrealizowane', 'Kontakt'];
+                    $colorfulItems = old('federation_colorful_nav_items', $settings->federation_colorful_nav_items ?? [0, 1, 2, 3]);
+                @endphp
+                <div class="rounded-lg border border-gray-200 bg-gray-50 p-5" x-data="{ colorfulNav: {{ old('federation_colorful_nav', $settings->federation_colorful_nav ?? true) ? 'true' : 'false' }} }">
+                    <label class="flex items-center gap-2">
+                        <input type="hidden" name="federation_colorful_nav" value="0">
+                        <input type="checkbox" name="federation_colorful_nav" value="1" x-model="colorfulNav"
+                            {{ old('federation_colorful_nav', $settings->federation_colorful_nav ?? true) ? 'checked' : '' }}
+                            class="rounded border-gray-300 text-brand focus:ring-brand">
+                        <span class="text-sm font-bold">Kolorowe pozycje menu <span class="font-normal text-muted">(każda zakładka w innym kolorze marki, zamiast jednolitego koloru tekstu)</span></span>
+                    </label>
+
+                    <div x-show="colorfulNav" x-cloak class="mt-3 grid gap-2 sm:grid-cols-2">
+                        @foreach ($navLabels as $i => $label)
+                            <label class="flex items-center gap-2 rounded border border-gray-200 bg-white px-3 py-2 text-sm">
+                                <input type="checkbox" name="federation_colorful_nav_items[]" value="{{ $i }}"
+                                    {{ in_array($i, $colorfulItems) ? 'checked' : '' }}
+                                    class="rounded border-gray-300 text-brand focus:ring-brand">
+                                {{ $label }}
+                            </label>
+                        @endforeach
+                    </div>
+                </div>
+
+                {{-- Sekcje na stronie głównej — możliwe do wyłączenia --}}
+                <div class="mt-4 space-y-3 rounded-lg border border-gray-200 bg-gray-50 p-5">
+                    <label class="flex items-center gap-2">
+                        <input type="hidden" name="federation_show_org_spotlight" value="0">
+                        <input type="checkbox" name="federation_show_org_spotlight" value="1"
+                            {{ old('federation_show_org_spotlight', $settings->federation_show_org_spotlight ?? false) ? 'checked' : '' }}
+                            class="rounded border-gray-300 text-brand focus:ring-brand">
+                        <span class="text-sm font-bold">„Poznaj naszą organizację" na stronie głównej <span class="font-normal text-muted">(losowo wybrana organizacja członkowska)</span></span>
+                    </label>
+                    <label class="flex items-center gap-2">
+                        <input type="hidden" name="federation_show_members_banner" value="0">
+                        <input type="checkbox" name="federation_show_members_banner" value="1"
+                            {{ old('federation_show_members_banner', $settings->federation_show_members_banner ?? false) ? 'checked' : '' }}
+                            class="rounded border-gray-300 text-brand focus:ring-brand">
+                        <span class="text-sm font-bold">Skrót do Strefy członkowskiej na stronie głównej</span>
+                    </label>
+                </div>
+            @endif
 
             {{-- Modal: sekretny kod do aktywacji stylu Wide --}}
             <div x-show="wideModal" x-cloak
@@ -1123,6 +1192,7 @@
                 <p class="mb-2 text-sm font-bold">Wygląd strony kontaktowej</p>
                 <div class="grid gap-3 sm:grid-cols-2">
                     @foreach (\App\Models\SiteSetting::CONTACT_LAYOUTS as $clValue => $clLabel)
+                        @continue($settings->isOptionBlocked('contact_layouts', $clValue) && old('contact_layout', $settings->contactLayoutValue()) !== $clValue)
                         <label class="flex cursor-pointer items-start gap-3 rounded-lg border p-3 transition has-[:checked]:border-brand has-[:checked]:bg-brand-light">
                             <input type="radio" name="contact_layout" value="{{ $clValue }}"
                                 {{ old('contact_layout', $settings->contactLayoutValue()) === $clValue ? 'checked' : '' }}
@@ -1935,6 +2005,134 @@
                 </label>
             </div>
 
+            @if ($settings->site_template === 'federation')
+                {{-- Nagłówek i wstęp hero — tylko szablon "federation". Te same pola można
+                     edytować też bezpośrednio na stronie głównej (edycja "na żywo"). --}}
+                <div class="mt-6 rounded-lg border border-gray-200 bg-gray-50 p-5">
+                    <p class="mb-3 text-sm font-bold text-ink">Nagłówek i wstęp hero (strona główna)</p>
+                    <label class="mb-3 block">
+                        <span class="mb-1 block text-xs font-bold text-muted">Nagłówek</span>
+                        <input type="text" name="federation_hero_heading"
+                            value="{{ old('federation_hero_heading', $settings->federationHeroHeading()) }}"
+                            maxlength="255"
+                            class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                    </label>
+                    <label class="block">
+                        <span class="mb-1 block text-xs font-bold text-muted">Wstęp (akapity)</span>
+                        <textarea name="federation_hero_intro" rows="5"
+                            class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">{{ old('federation_hero_intro', $settings->federationHeroIntro()) }}</textarea>
+                        <span class="mt-1 block text-xs text-muted">Proste znaczniki HTML (np. &lt;p&gt;) są dozwolone — to samo pole edytujesz też bezpośrednio na stronie głównej.</span>
+                    </label>
+                </div>
+
+                {{-- Kafelki hero — tylko szablon "federation" --}}
+                @php $heroTiles = array_values((array) old('federation_hero_tiles', $settings->federationHeroTiles())); @endphp
+                <div class="mt-6 rounded-lg border border-gray-200 bg-gray-50 p-5" data-hero-tiles>
+                    <p class="mb-1 text-sm font-bold text-ink">Kafelki bloku hero (strona główna)</p>
+                    <p class="mb-3 text-xs text-muted">
+                        Mozaika kolorowych kafelków obok tekstu „O nas". Każdy kafelek to albo duża liczba (np. rok
+                        powstania), albo ikona + tytuł. „Szeroki" rozciąga kafelek na całą szerokość mozaiki.
+                    </p>
+                    <div data-hero-tiles-rows class="space-y-3">
+                        @foreach ($heroTiles as $i => $tile)
+                            <div data-hero-tiles-row class="grid gap-2 rounded-lg border border-gray-200 bg-white p-3 sm:grid-cols-12 sm:items-center">
+                                <input type="text" name="federation_hero_tiles[{{ $i }}][value]" value="{{ $tile['value'] ?? '' }}"
+                                    placeholder="Liczba, np. 1998 (puste = ikona)"
+                                    class="rounded border-gray-300 text-sm focus:border-brand focus:ring-brand sm:col-span-3">
+                                <input type="text" name="federation_hero_tiles[{{ $i }}][icon]" value="{{ $tile['icon'] ?? '' }}"
+                                    placeholder="Ikona Font Awesome, np. fa-solid fa-city"
+                                    class="rounded border-gray-300 text-sm focus:border-brand focus:ring-brand sm:col-span-3">
+                                <input type="text" name="federation_hero_tiles[{{ $i }}][title]" value="{{ $tile['title'] ?? '' }}"
+                                    placeholder="Tytuł / podpis"
+                                    class="min-w-0 rounded border-gray-300 text-sm focus:border-brand focus:ring-brand sm:col-span-3">
+                                <select name="federation_hero_tiles[{{ $i }}][color]" class="rounded border-gray-300 text-sm focus:border-brand focus:ring-brand sm:col-span-2">
+                                    @foreach ([1, 2, 3, 4] as $c)
+                                        <option value="{{ $c }}" {{ (int) ($tile['color'] ?? 1) === $c ? 'selected' : '' }}>Kolor {{ $c }}</option>
+                                    @endforeach
+                                </select>
+                                <label class="flex items-center gap-1.5 text-xs font-medium sm:col-span-1">
+                                    <input type="hidden" name="federation_hero_tiles[{{ $i }}][wide]" value="0">
+                                    <input type="checkbox" name="federation_hero_tiles[{{ $i }}][wide]" value="1"
+                                        {{ ($tile['wide'] ?? false) ? 'checked' : '' }}
+                                        class="rounded border-gray-300 text-brand focus:ring-brand">
+                                    Szeroki
+                                </label>
+                                <button type="button" data-hero-tiles-remove class="rounded p-2 text-muted hover:bg-red-50 hover:text-red-600 sm:col-span-12 sm:w-fit sm:justify-self-end" aria-label="Usuń kafelek {{ $i + 1 }}">
+                                    <i class="fa-solid fa-trash" aria-hidden="true"></i>
+                                </button>
+                            </div>
+                        @endforeach
+                    </div>
+                    <button type="button" data-hero-tiles-add class="mt-3 inline-flex items-center gap-2 rounded border border-brand px-3 py-1.5 text-sm font-bold text-brand hover:bg-brand-light">
+                        <i class="fa-solid fa-plus" aria-hidden="true"></i> Dodaj kafelek
+                    </button>
+                    <template data-hero-tiles-template>
+                        <div data-hero-tiles-row class="grid gap-2 rounded-lg border border-gray-200 bg-white p-3 sm:grid-cols-12 sm:items-center">
+                            <input type="text" name="federation_hero_tiles[__INDEX__][value]" placeholder="Liczba, np. 1998 (puste = ikona)"
+                                class="rounded border-gray-300 text-sm focus:border-brand focus:ring-brand sm:col-span-3">
+                            <input type="text" name="federation_hero_tiles[__INDEX__][icon]" placeholder="Ikona Font Awesome, np. fa-solid fa-city"
+                                class="rounded border-gray-300 text-sm focus:border-brand focus:ring-brand sm:col-span-3">
+                            <input type="text" name="federation_hero_tiles[__INDEX__][title]" placeholder="Tytuł / podpis"
+                                class="min-w-0 rounded border-gray-300 text-sm focus:border-brand focus:ring-brand sm:col-span-3">
+                            <select name="federation_hero_tiles[__INDEX__][color]" class="rounded border-gray-300 text-sm focus:border-brand focus:ring-brand sm:col-span-2">
+                                @foreach ([1, 2, 3, 4] as $c)
+                                    <option value="{{ $c }}">Kolor {{ $c }}</option>
+                                @endforeach
+                            </select>
+                            <label class="flex items-center gap-1.5 text-xs font-medium sm:col-span-1">
+                                <input type="hidden" name="federation_hero_tiles[__INDEX__][wide]" value="0">
+                                <input type="checkbox" name="federation_hero_tiles[__INDEX__][wide]" value="1" class="rounded border-gray-300 text-brand focus:ring-brand">
+                                Szeroki
+                            </label>
+                            <button type="button" data-hero-tiles-remove class="rounded p-2 text-muted hover:bg-red-50 hover:text-red-600 sm:col-span-12 sm:w-fit sm:justify-self-end" aria-label="Usuń kafelek">
+                                <i class="fa-solid fa-trash" aria-hidden="true"></i>
+                            </button>
+                        </div>
+                    </template>
+                </div>
+
+                {{-- Kafelki "Dlaczego warto?" (Dołącz do nas) — tylko szablon "federation" --}}
+                @php $joinBenefits = array_values((array) old('federation_join_benefits', $settings->federationJoinBenefits())); @endphp
+                <div class="mt-6 rounded-lg border border-gray-200 bg-gray-50 p-5" data-join-benefits>
+                    <p class="mb-1 text-sm font-bold text-ink">Kafelki „Dlaczego warto?" (strona „Dołącz do nas")</p>
+                    <p class="mb-3 text-xs text-muted">Cztery (albo więcej) powody, dla których warto dołączyć do federacji — ikona, tytuł i krótki opis.</p>
+                    <div data-join-benefits-rows class="space-y-3">
+                        @foreach ($joinBenefits as $i => $benefit)
+                            <div data-join-benefits-row class="grid gap-2 rounded-lg border border-gray-200 bg-white p-3 sm:grid-cols-12 sm:items-start">
+                                <input type="text" name="federation_join_benefits[{{ $i }}][icon]" value="{{ $benefit['icon'] ?? '' }}"
+                                    placeholder="Ikona Font Awesome, np. fa-people-group"
+                                    class="rounded border-gray-300 text-sm focus:border-brand focus:ring-brand sm:col-span-3">
+                                <input type="text" name="federation_join_benefits[{{ $i }}][title]" value="{{ $benefit['title'] ?? '' }}"
+                                    placeholder="Tytuł"
+                                    class="min-w-0 rounded border-gray-300 text-sm focus:border-brand focus:ring-brand sm:col-span-3">
+                                <input type="text" name="federation_join_benefits[{{ $i }}][text]" value="{{ $benefit['text'] ?? '' }}"
+                                    placeholder="Krótki opis"
+                                    class="min-w-0 rounded border-gray-300 text-sm focus:border-brand focus:ring-brand sm:col-span-5">
+                                <button type="button" data-join-benefits-remove class="rounded p-2 text-muted hover:bg-red-50 hover:text-red-600 sm:col-span-1 sm:w-fit sm:justify-self-end" aria-label="Usuń pozycję {{ $i + 1 }}">
+                                    <i class="fa-solid fa-trash" aria-hidden="true"></i>
+                                </button>
+                            </div>
+                        @endforeach
+                    </div>
+                    <button type="button" data-join-benefits-add class="mt-3 inline-flex items-center gap-2 rounded border border-brand px-3 py-1.5 text-sm font-bold text-brand hover:bg-brand-light">
+                        <i class="fa-solid fa-plus" aria-hidden="true"></i> Dodaj pozycję
+                    </button>
+                    <template data-join-benefits-template>
+                        <div data-join-benefits-row class="grid gap-2 rounded-lg border border-gray-200 bg-white p-3 sm:grid-cols-12 sm:items-start">
+                            <input type="text" name="federation_join_benefits[__INDEX__][icon]" placeholder="Ikona Font Awesome, np. fa-people-group"
+                                class="rounded border-gray-300 text-sm focus:border-brand focus:ring-brand sm:col-span-3">
+                            <input type="text" name="federation_join_benefits[__INDEX__][title]" placeholder="Tytuł"
+                                class="min-w-0 rounded border-gray-300 text-sm focus:border-brand focus:ring-brand sm:col-span-3">
+                            <input type="text" name="federation_join_benefits[__INDEX__][text]" placeholder="Krótki opis"
+                                class="min-w-0 rounded border-gray-300 text-sm focus:border-brand focus:ring-brand sm:col-span-5">
+                            <button type="button" data-join-benefits-remove class="rounded p-2 text-muted hover:bg-red-50 hover:text-red-600 sm:col-span-1 sm:w-fit sm:justify-self-end" aria-label="Usuń pozycję">
+                                <i class="fa-solid fa-trash" aria-hidden="true"></i>
+                            </button>
+                        </div>
+                    </template>
+                </div>
+            @endif
+
             {{-- Sekcja skrótów —- styl tła --}}
             <div class="mt-6 rounded-lg border border-gray-200 bg-gray-50 p-5">
                 <p class="mb-3 text-sm font-bold text-ink">Sekcja szybkich akcji</p>
@@ -2220,6 +2418,47 @@
                 <p class="rounded border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
                     Pozostawione puste pola dziedziczą wartości z pliku <code>.env</code>, jeśli tam je ustawiono.
                 </p>
+            </div>
+
+            {{-- ===================== Logowanie przez Google ===================== --}}
+            <div class="border-t border-gray-200 pt-6" x-data="{ googleEnabled: {{ old('google_login_enabled', $settings->google_login_enabled) ? 'true' : 'false' }} }">
+                <h2 class="text-base font-bold text-ink">Logowanie przez Google</h2>
+                <p class="mt-1 text-xs text-muted">
+                    Alternatywne logowanie do panelu kontem Google (Laravel Socialite). Dostęp otrzymują wyłącznie
+                    użytkownicy już istniejący w zakładce „Użytkownicy" (dopasowanie po adresie e-mail). Aplikację rejestruje się w
+                    <span class="font-medium">Google Cloud Console → APIs & Services → Credentials</span>, a jako
+                    Authorized redirect URI podaj:
+                </p>
+                <code class="mt-2 block break-all rounded bg-gray-50 px-3 py-2 text-xs text-ink">{{ url('/auth/google/callback') }}</code>
+
+                <label class="mt-4 flex items-center gap-2 text-sm font-medium">
+                    <input type="checkbox" name="google_login_enabled" value="1" x-model="googleEnabled"
+                        {{ old('google_login_enabled', $settings->google_login_enabled) ? 'checked' : '' }}
+                        class="rounded border-gray-300 text-brand focus:ring-brand">
+                    Włącz logowanie przez Google
+                </label>
+
+                <div class="mt-4 space-y-5" x-show="googleEnabled" x-cloak>
+                    <div>
+                        <label for="google_client_id" class="mb-1 block text-sm font-bold">Client ID</label>
+                        <input type="text" id="google_client_id" name="google_client_id" autocomplete="off"
+                            value="{{ old('google_client_id', $settings->google_client_id) }}"
+                            class="w-full rounded border-gray-300 font-mono text-sm focus:border-brand focus:ring-brand">
+                        @error('google_client_id') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </div>
+
+                    <div>
+                        <label for="google_client_secret" class="mb-1 block text-sm font-bold">Client Secret</label>
+                        <input type="password" id="google_client_secret" name="google_client_secret" autocomplete="new-password"
+                            placeholder="{{ $settings->google_client_secret ? '•••••••• (zapisany — zostaw puste, aby nie zmieniać)' : '' }}"
+                            class="w-full rounded border-gray-300 font-mono text-sm focus:border-brand focus:ring-brand">
+                        @error('google_client_secret') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </div>
+
+                    <p class="rounded border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
+                        Pozostawione puste pola dziedziczą wartości z pliku <code>.env</code>, jeśli tam je ustawiono.
+                    </p>
+                </div>
             </div>
 
             {{-- ===================== Strefa wewnętrzna (współpracownicy) ===================== --}}
@@ -2701,6 +2940,60 @@
                 const remove = e.target.closest('[data-subbrands-remove]');
                 if (remove) {
                     const row = remove.closest('[data-subbrands-row]');
+                    if (row) row.remove();
+                }
+            });
+        })();
+
+        (function () {
+            // Repeater kafelków hero (Ustawienia → Strona główna, szablon "federation").
+            const wrap = document.querySelector('[data-hero-tiles]');
+            if (!wrap) return;
+            const rows = wrap.querySelector('[data-hero-tiles-rows]');
+            const template = wrap.querySelector('[data-hero-tiles-template]');
+            const addBtn = wrap.querySelector('[data-hero-tiles-add]');
+            if (!rows || !template) return;
+            let nextIndex = rows.querySelectorAll('[data-hero-tiles-row]').length;
+
+            if (addBtn) {
+                addBtn.addEventListener('click', function () {
+                    const html = template.innerHTML.replace(/__INDEX__/g, String(nextIndex++));
+                    const el = document.createElement('div');
+                    el.innerHTML = html.trim();
+                    rows.appendChild(el.firstElementChild);
+                });
+            }
+            wrap.addEventListener('click', function (e) {
+                const remove = e.target.closest('[data-hero-tiles-remove]');
+                if (remove) {
+                    const row = remove.closest('[data-hero-tiles-row]');
+                    if (row) row.remove();
+                }
+            });
+        })();
+
+        (function () {
+            // Repeater kafelków "Dlaczego warto?" (Dołącz do nas, szablon "federation").
+            const wrap = document.querySelector('[data-join-benefits]');
+            if (!wrap) return;
+            const rows = wrap.querySelector('[data-join-benefits-rows]');
+            const template = wrap.querySelector('[data-join-benefits-template]');
+            const addBtn = wrap.querySelector('[data-join-benefits-add]');
+            if (!rows || !template) return;
+            let nextIndex = rows.querySelectorAll('[data-join-benefits-row]').length;
+
+            if (addBtn) {
+                addBtn.addEventListener('click', function () {
+                    const html = template.innerHTML.replace(/__INDEX__/g, String(nextIndex++));
+                    const el = document.createElement('div');
+                    el.innerHTML = html.trim();
+                    rows.appendChild(el.firstElementChild);
+                });
+            }
+            wrap.addEventListener('click', function (e) {
+                const remove = e.target.closest('[data-join-benefits-remove]');
+                if (remove) {
+                    const row = remove.closest('[data-join-benefits-row]');
                     if (row) row.remove();
                 }
             });

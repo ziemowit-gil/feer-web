@@ -3,6 +3,11 @@
     // $wideLayout = true układa pozycje w siatkę na całą szerokość zamiast
     // wąskiej kolumny bocznej (używa tego wariant instytucjonalny).
     $wideLayout = $wideLayout ?? false;
+    $isFederationTemplate = ($siteSettings->site_template ?? 'default') === 'federation';
+    $iconWrapClass = $isFederationTemplate
+        ? 'flex h-11 w-11 flex-none items-center justify-center text-brand'
+        : 'flex h-10 w-10 flex-none items-center justify-center rounded-full bg-brand-light text-brand';
+    $iconSizeClass = $isFederationTemplate ? 'text-2xl' : '';
 @endphp
 
 <aside aria-label="Dane kontaktowe">
@@ -20,8 +25,8 @@
                 target="_blank" rel="noopener"
                 aria-label="{{ $registeredLabel }}: {{ $siteSettings->registeredAddressLine() }} (otwiera mapę w nowej karcie)"
                 class="group flex items-start gap-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 rounded">
-                <span class="flex h-10 w-10 flex-none items-center justify-center rounded-full bg-brand-light text-brand" aria-hidden="true">
-                    <i class="fa-solid {{ $hasOffice ? 'fa-building-columns' : 'fa-location-dot' }}"></i>
+                <span class="{{ $iconWrapClass }}" aria-hidden="true">
+                    <i class="fa-solid {{ $hasOffice ? 'fa-building-columns' : 'fa-location-dot' }} {{ $iconSizeClass }}"></i>
                 </span>
                 <span class="min-w-0">
                     <span class="block text-xs font-bold uppercase tracking-wide text-muted">{{ $registeredLabel }}</span>
@@ -33,8 +38,8 @@
         @if ($hasOffice)
             <li>
                 <div class="flex items-start gap-3">
-                    <span class="flex h-10 w-10 flex-none items-center justify-center rounded-full bg-brand-light text-brand" aria-hidden="true">
-                        <i class="fa-solid fa-location-dot"></i>
+                    <span class="{{ $iconWrapClass }}" aria-hidden="true">
+                        <i class="fa-solid fa-location-dot {{ $iconSizeClass }}"></i>
                     </span>
                     <div class="min-w-0">
                         <span class="block text-xs font-bold uppercase tracking-wide text-muted">Biuro / korespondencja</span>
@@ -64,8 +69,8 @@
         @endif
         <li>
             <a href="mailto:{{ $siteSettings->contact_email }}" class="group flex items-start gap-3 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
-                <span class="flex h-10 w-10 flex-none items-center justify-center rounded-full bg-brand-light text-brand" aria-hidden="true">
-                    <i class="fa-solid fa-envelope"></i>
+                <span class="{{ $iconWrapClass }}" aria-hidden="true">
+                    <i class="fa-solid fa-envelope {{ $iconSizeClass }}"></i>
                 </span>
                 <span class="min-w-0">
                     <span class="block text-xs font-bold uppercase tracking-wide text-muted">E-mail</span>
@@ -75,8 +80,8 @@
         </li>
         @if ($siteSettings->contact_office_hours)
             <li class="flex items-start gap-3">
-                <span class="flex h-10 w-10 flex-none items-center justify-center rounded-full bg-brand-light text-brand" aria-hidden="true">
-                    <i class="fa-regular fa-clock"></i>
+                <span class="{{ $iconWrapClass }}" aria-hidden="true">
+                    <i class="fa-regular fa-clock {{ $iconSizeClass }}"></i>
                 </span>
                 <span class="min-w-0">
                     <span class="block text-xs font-bold uppercase tracking-wide text-muted">Godziny pracy</span>
@@ -87,8 +92,8 @@
         @if ($siteSettings->contact_phone)
             <li>
                 <a href="tel:{{ $siteSettings->contact_phone }}" class="group flex items-start gap-3 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
-                    <span class="flex h-10 w-10 flex-none items-center justify-center rounded-full bg-brand-light text-brand" aria-hidden="true">
-                        <i class="fa-solid fa-phone"></i>
+                    <span class="{{ $iconWrapClass }}" aria-hidden="true">
+                        <i class="fa-solid fa-phone {{ $iconSizeClass }}"></i>
                     </span>
                     <span class="min-w-0">
                         <span class="block text-xs font-bold uppercase tracking-wide text-muted">Telefon</span>
@@ -99,8 +104,8 @@
         @endif
         @if ($siteSettings->contact_edelivery_address)
             <li class="flex items-start gap-3">
-                <span class="flex h-10 w-10 flex-none items-center justify-center rounded-full bg-brand-light text-brand" aria-hidden="true">
-                    <i class="fa-solid fa-envelope-circle-check"></i>
+                <span class="{{ $iconWrapClass }}" aria-hidden="true">
+                    <i class="fa-solid fa-envelope-circle-check {{ $iconSizeClass }}"></i>
                 </span>
                 <span class="min-w-0">
                     <span class="block text-xs font-bold uppercase tracking-wide text-muted">Adres do e-Doręczeń</span>

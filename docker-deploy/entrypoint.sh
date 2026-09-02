@@ -21,6 +21,13 @@ php artisan storage:link --quiet 2>/dev/null || true
 php artisan migrate --force --quiet
 php artisan migrate --force --database=blog --path=database/migrations/blog --quiet
 
+# Dane startowe (opcjonalnie) — np. SEED_CLASS=Database\Seeders\FederationDemoSeeder
+# Seedery używają updateOrCreate/firstOrCreate, więc bezpiecznie uruchamiać je przy każdym starcie.
+if [ -n "${SEED_CLASS:-}" ]; then
+    echo "→ Uruchamiam seeder: ${SEED_CLASS}"
+    php artisan db:seed --class="${SEED_CLASS}" --force --quiet
+fi
+
 # Cache / optymalizacja
 php artisan config:cache  --quiet
 php artisan route:cache   --quiet

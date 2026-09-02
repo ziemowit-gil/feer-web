@@ -40,27 +40,50 @@
         @php
             $menuSiblings = $page->menuSiblings();
             $showSideNav = ($page->show_side_nav ?? true) && $menuSiblings->isNotEmpty();
+            $canInlineEdit = auth()->check() && auth()->user()->canAccessModule('pages');
+            // Treść z shortcode'em (np. osadzony formularz) nie może być edytowana "na żywo" —
+            // contenteditable widzi tylko wyrenderowany HTML, zapisanie go z powrotem
+            // zgubiłoby oryginalny zapis [formularz:slug]/[kafelki:slug].
+            $contentHasShortcode = $page->content && preg_match('/\[(formularz|kafelki):[a-z0-9_\-]+\]/i', $page->content);
         @endphp
 
-        <section class="mx-auto max-w-5xl px-4 py-12">
-            <div class="grid gap-10 {{ $showSideNav ? 'md:grid-cols-[1fr_220px]' : '' }}">
-                <div>
-                    <h1 class="mb-6 text-3xl font-bold text-ink">{{ $page->title }}</h1>
+        <div @if ($canInlineEdit) x-data="inlineContentEditor('page', {{ $page->id }}, '{{ route('admin.inline-edit.update') }}')" @endif>
+            @if ($canInlineEdit)
+                @include('partials.inline-edit-bar')
+            @endif
 
-                    @include('partials.page-content-image')
+            <section class="mx-auto max-w-5xl px-4 py-12">
+                <div class="grid gap-10 {{ $showSideNav ? 'md:grid-cols-[1fr_220px]' : '' }}">
+                    <div>
+                        @if ($canInlineEdit)
+                            <h1 :contenteditable="editMode ? 'true' : 'false'" @blur="if (editMode) saveField('title', $el.innerText.trim())"
+                                :class="editMode ? 'outline-dashed outline-2 outline-offset-4 outline-brand rounded' : ''"
+                                class="mb-6 text-3xl font-bold text-ink">{{ $page->title }}</h1>
+                        @else
+                            <h1 class="mb-6 text-3xl font-bold text-ink">{{ $page->title }}</h1>
+                        @endif
 
-                    <div class="prose max-w-none text-ink">@shortcodes($page->content)</div>
+                        @include('partials.page-content-image')
 
-                    @include('partials.page-gallery', ['page' => $page])
+                        @if ($canInlineEdit && ! $contentHasShortcode)
+                            <div :contenteditable="editMode ? 'true' : 'false'" @blur="if (editMode) saveField('content', $el.innerHTML.trim())"
+                                :class="editMode ? 'outline-dashed outline-2 outline-offset-4 outline-brand rounded' : ''"
+                                class="prose max-w-none text-ink">@shortcodes($page->content)</div>
+                        @else
+                            <div class="prose max-w-none text-ink">@shortcodes($page->content)</div>
+                        @endif
 
-                    @include('partials.attachments-list', ['attachments' => $page->attachments])
+                        @include('partials.page-gallery', ['page' => $page])
+
+                        @include('partials.attachments-list', ['attachments' => $page->attachments])
+                    </div>
+
+                    @if ($showSideNav)
+                        @include('partials.page-local-nav', ['menuSiblings' => $menuSiblings])
+                    @endif
                 </div>
-
-                @if ($showSideNav)
-                    @include('partials.page-local-nav', ['menuSiblings' => $menuSiblings])
-                @endif
-            </div>
-        </section>
+            </section>
+        </div>
         @endif
     @endif
 @endsection

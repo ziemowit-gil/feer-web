@@ -20,21 +20,43 @@
         @include('page.partials.typed-content')
 
         @if ($page->usesStandardLayout())
-        <header class="bg-brand text-white">
-            <div class="mx-auto max-w-5xl px-4 py-10">
-                <h1 class="text-3xl font-bold leading-tight md:text-4xl">{{ $page->title }}</h1>
-            </div>
-        </header>
+        @php
+            $canInlineEdit = auth()->check() && auth()->user()->canAccessModule('pages');
+            $contentHasShortcode = $page->content && preg_match('/\[(formularz|kafelki):[a-z0-9_\-]+\]/i', $page->content);
+        @endphp
+        <div @if ($canInlineEdit) x-data="inlineContentEditor('page', {{ $page->id }}, '{{ route('admin.inline-edit.update') }}')" @endif>
+            @if ($canInlineEdit)
+                @include('partials.inline-edit-bar')
+            @endif
 
-        <section class="mx-auto max-w-5xl px-4 py-12">
-            @include('partials.page-content-image')
+            <header class="bg-brand text-white">
+                <div class="mx-auto max-w-5xl px-4 py-10">
+                    @if ($canInlineEdit)
+                        <h1 :contenteditable="editMode ? 'true' : 'false'" @blur="if (editMode) saveField('title', $el.innerText.trim())"
+                            :class="editMode ? 'outline-dashed outline-2 outline-offset-4 outline-white rounded' : ''"
+                            class="text-3xl font-bold leading-tight md:text-4xl">{{ $page->title }}</h1>
+                    @else
+                        <h1 class="text-3xl font-bold leading-tight md:text-4xl">{{ $page->title }}</h1>
+                    @endif
+                </div>
+            </header>
 
-            <div class="prose max-w-none text-ink">@shortcodes($page->content)</div>
+            <section class="mx-auto max-w-5xl px-4 py-12">
+                @include('partials.page-content-image')
 
-            @include('partials.page-gallery', ['page' => $page])
+                @if ($canInlineEdit && ! $contentHasShortcode)
+                    <div :contenteditable="editMode ? 'true' : 'false'" @blur="if (editMode) saveField('content', $el.innerHTML.trim())"
+                        :class="editMode ? 'outline-dashed outline-2 outline-offset-4 outline-brand rounded' : ''"
+                        class="prose max-w-none text-ink">@shortcodes($page->content)</div>
+                @else
+                    <div class="prose max-w-none text-ink">@shortcodes($page->content)</div>
+                @endif
 
-            @include('partials.attachments-list', ['attachments' => $page->attachments])
-        </section>
+                @include('partials.page-gallery', ['page' => $page])
+
+                @include('partials.attachments-list', ['attachments' => $page->attachments])
+            </section>
+        </div>
         @endif
     @endif
 @endsection

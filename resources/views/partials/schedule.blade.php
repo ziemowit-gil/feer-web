@@ -15,6 +15,7 @@
     };
     $showHeading = $showHeading ?? true;
     $headingId = 'harmonogram-'.$page->id;
+    $isFederationTemplate = ($siteSettings->site_template ?? 'default') === 'federation';
 @endphp
 
 @if ($page->schedule_pending)
@@ -44,35 +45,72 @@
         @else
             <span id="{{ $headingId }}" class="sr-only">Harmonogram</span>
         @endif
-        <div class="overflow-x-auto rounded-xl border border-gray-200">
-            <table class="w-full text-left text-sm" aria-labelledby="{{ $headingId }}">
-                <caption class="sr-only">Harmonogram — data, godzina, miejsce i uwagi. Terminy oznaczone „zmienione" uległy zmianie.</caption>
-                <thead class="bg-gray-50 text-xs font-bold uppercase tracking-wide text-muted">
-                    <tr>
-                        <th scope="col" class="px-4 py-3">Data</th>
-                        <th scope="col" class="px-4 py-3">Godzina</th>
-                        <th scope="col" class="px-4 py-3">Miejsce</th>
-                        <th scope="col" class="px-4 py-3">Uwagi</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-gray-100">
-                    @foreach ($scheduleItems as $item)
-                        <tr class="{{ ! empty($item['changed']) ? 'bg-amber-50' : '' }}">
-                            <th scope="row" class="whitespace-nowrap px-4 py-3 text-left font-medium text-ink">
-                                {{ $formatDate($item['date'] ?? null) ?? '—' }}
+        @if ($isFederationTemplate)
+            {{-- Szablon federation: płaska lista kart zamiast tabeli. --}}
+            <ul class="space-y-3" aria-labelledby="{{ $headingId }}" role="list">
+                @foreach ($scheduleItems as $item)
+                    @php
+                        $date = $formatDate($item['date'] ?? null);
+                        [$day, $month] = $date ? explode('.', $date, 3) : [null, null];
+                    @endphp
+                    <li class="flex flex-col gap-3 rounded-lg border border-gray-200 bg-white p-4 sm:flex-row sm:items-center {{ ! empty($item['changed']) ? 'border-amber-300 bg-amber-50' : '' }}">
+                        <div class="flex flex-none items-center justify-center rounded-md px-4 py-2 text-white sm:w-20 sm:flex-col"
+                            style="background:{{ $siteSettings->brandColorN(1) }}">
+                            @if ($day)
+                                <span class="text-xl font-extrabold leading-none">{{ $day }}</span>
+                                <span class="ml-1.5 text-xs font-bold uppercase sm:ml-0">{{ \Illuminate\Support\Carbon::createFromFormat('d.m.Y', $date)->translatedFormat('M') }}</span>
+                            @else
+                                <span class="text-sm font-bold">—</span>
+                            @endif
+                        </div>
+                        <div class="min-w-0 flex-1">
+                            <p class="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm font-bold text-ink">
+                                <span><i class="fa-solid fa-clock mr-1.5 text-muted" aria-hidden="true"></i>{{ $item['time'] ?? '' ?: '—' }}</span>
+                                <span><i class="fa-solid fa-location-dot mr-1.5 text-muted" aria-hidden="true"></i>{{ $item['location'] ?? '' ?: '—' }}</span>
                                 @if (! empty($item['changed']))
-                                    <span class="ml-1 inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-bold text-amber-900">
+                                    <span class="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-bold text-amber-900">
                                         <i class="fa-solid fa-rotate" aria-hidden="true"></i> Zmienione
                                     </span>
                                 @endif
-                            </th>
-                            <td class="whitespace-nowrap px-4 py-3 text-ink">{{ $item['time'] ?? '' ?: '—' }}</td>
-                            <td class="px-4 py-3 text-ink">{{ $item['location'] ?? '' ?: '—' }}</td>
-                            <td class="px-4 py-3 text-muted">{{ $item['note'] ?? '' ?: '—' }}</td>
+                            </p>
+                            @if (! empty($item['note']))
+                                <p class="mt-1 text-sm text-muted">{{ $item['note'] }}</p>
+                            @endif
+                        </div>
+                    </li>
+                @endforeach
+            </ul>
+        @else
+            <div class="overflow-x-auto rounded-xl border border-gray-200">
+                <table class="w-full text-left text-sm" aria-labelledby="{{ $headingId }}">
+                    <caption class="sr-only">Harmonogram — data, godzina, miejsce i uwagi. Terminy oznaczone „zmienione" uległy zmianie.</caption>
+                    <thead class="bg-gray-50 text-xs font-bold uppercase tracking-wide text-muted">
+                        <tr>
+                            <th scope="col" class="px-4 py-3">Data</th>
+                            <th scope="col" class="px-4 py-3">Godzina</th>
+                            <th scope="col" class="px-4 py-3">Miejsce</th>
+                            <th scope="col" class="px-4 py-3">Uwagi</th>
                         </tr>
-                    @endforeach
-                </tbody>
-            </table>
-        </div>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100">
+                        @foreach ($scheduleItems as $item)
+                            <tr class="{{ ! empty($item['changed']) ? 'bg-amber-50' : '' }}">
+                                <th scope="row" class="whitespace-nowrap px-4 py-3 text-left font-medium text-ink">
+                                    {{ $formatDate($item['date'] ?? null) ?? '—' }}
+                                    @if (! empty($item['changed']))
+                                        <span class="ml-1 inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-bold text-amber-900">
+                                            <i class="fa-solid fa-rotate" aria-hidden="true"></i> Zmienione
+                                        </span>
+                                    @endif
+                                </th>
+                                <td class="whitespace-nowrap px-4 py-3 text-ink">{{ $item['time'] ?? '' ?: '—' }}</td>
+                                <td class="px-4 py-3 text-ink">{{ $item['location'] ?? '' ?: '—' }}</td>
+                                <td class="px-4 py-3 text-muted">{{ $item['note'] ?? '' ?: '—' }}</td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        @endif
     @endif
 @endif

@@ -14,7 +14,7 @@ use Illuminate\Notifications\Notifiable;
 use Revoltify\Subscriptionify\Concerns\InteractsWithSubscriptions;
 use Revoltify\Subscriptionify\Contracts\Subscribable;
 
-#[Fillable(['name', 'email', 'password', 'role', 'user_group_id', 'microsoft_id', 'avatar', 'local_login_allowed', 'notifications_seen_at', 'notification_preferences'])]
+#[Fillable(['name', 'email', 'password', 'role', 'user_group_id', 'microsoft_id', 'google_id', 'avatar', 'local_login_allowed', 'notifications_seen_at', 'notification_preferences'])]
 #[Hidden(['password', 'remember_token', 'two_factor_secret', 'two_factor_recovery_codes'])]
 class User extends Authenticatable implements Subscribable
 {
@@ -53,6 +53,7 @@ class User extends Authenticatable implements Subscribable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'local_login_allowed' => 'boolean',
+            'is_super_admin' => 'boolean',
             'two_factor_secret' => 'encrypted',
             'two_factor_recovery_codes' => 'encrypted:array',
             'two_factor_confirmed_at' => 'datetime',
@@ -85,11 +86,14 @@ class User extends Authenticatable implements Subscribable
         return $this->hasTotpEnabled() || $this->hasYubikey();
     }
 
-    /** Konta na domenach demo.* nie wymagają 2FA (dostęp demonstracyjny). */
+    /**
+     * Konta na domenach demo.* (dostęp demonstracyjny) oraz konto serwisowe
+     * @local nie wymagają 2FA.
+     */
     public function isDemoAccount(): bool
     {
         $domain = substr(strrchr($this->email, '@'), 1);
-        return str_starts_with($domain, 'demo.');
+        return str_starts_with($domain, 'demo.') || $domain === 'local';
     }
 
     public function group(): BelongsTo

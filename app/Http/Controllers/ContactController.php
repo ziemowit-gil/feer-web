@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Mail\ContactMessageMail;
 use App\Models\ContactMessage;
+use App\Models\HelpPoint;
 use App\Models\Project;
 use App\Models\SiteSetting;
 use Illuminate\Http\Request;
@@ -37,6 +38,12 @@ class ContactController extends Controller
         $shipPhone = $settings->contact_shipping_phone;
         $showShipping = filled($shipNote) || filled($pkCode) || filled($pkAddr) || filled($shipPhone);
 
+        // Mapa „Nasze lokalizacje" — tylko w szablonie federacji, gdy moduł jest
+        // włączony; lokalizacje zarządzane z panelu (Mapa pomocy).
+        $locations = ($settings->site_template === 'federation' && $settings->isModuleEnabled('help_map'))
+            ? HelpPoint::where('is_published', true)->orderBy('order')->orderBy('name')->get()
+            : collect();
+
         $view = match ($settings->contactLayoutValue()) {
             'split' => 'contact.show-split',
             'card'  => 'contact.show-card',
@@ -55,6 +62,7 @@ class ContactController extends Controller
             'shipNote'      => $shipNote,
             'shipPhone'     => $shipPhone,
             'showShipping'  => $showShipping,
+            'locations'     => $locations,
         ]);
     }
 
@@ -81,6 +89,12 @@ class ContactController extends Controller
             'rodo_consent.accepted'      => 'Aby wysłać wiadomość, musisz wyrazić zgodę na przetwarzanie danych osobowych.',
             'website.prohibited'         => 'Wykryto nieprawidłowe zgłoszenie.',
             'coordinator_email.in'       => 'Wybierz koordynatora z listy.',
+        ], [
+            'name'    => 'Imię i nazwisko',
+            'email'   => 'E-mail',
+            'phone'   => 'Telefon',
+            'subject' => 'Temat',
+            'message' => 'Wiadomość',
         ]);
 
         // Znajdź wybranego koordynatora po e-mailu.

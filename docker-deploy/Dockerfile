@@ -1,3 +1,15 @@
+# --- Etap 1: budowanie assetów (Vite/Tailwind) na znanej wersji Node ---
+# Osobny etap zamiast pakietu nodejs z Alpine — Alpine trzyma starsze wersje
+# Node, a Vite 8 wymaga nowszej; obraz node:22 daje pewność, że build się powiedzie.
+FROM node:22-alpine AS assets
+
+WORKDIR /app
+COPY package.json package-lock.json vite.config.js ./
+COPY resources ./resources
+COPY public ./public
+RUN npm ci --silent && npm run build
+
+# --- Etap 2: aplikacja PHP ---
 FROM php:8.4-fpm-alpine
 
 # System deps
@@ -42,18 +54,9 @@ RUN composer install \
         --no-scripts \
         --quiet
 
-# --- Node.js i budowanie assetów ---
-COPY package.json package-lock.json vite.config.js tailwind.config.js postcss.config.js ./
-COPY resources ./resources
-COPY public ./public
-RUN apk add --no-cache nodejs npm \
- && npm ci --silent \
- && npm run build \
- && apk del nodejs npm \
- && rm -rf node_modules
-
-# --- Reszta kodu aplikacji ---
+# --- Reszta kodu aplikacji + zbudowane assety z etapu 1 ---
 COPY . .
+COPY --from=assets /app/public/build ./public/build
 
 # Re-run post-install scripts (e.g. php-http)
 RUN composer run-script post-autoload-dump --no-interaction --quiet 2>/dev/null || true

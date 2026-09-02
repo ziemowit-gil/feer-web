@@ -232,6 +232,60 @@ Alpine.data('newsInlineEditor', (initial, saveUrl) => ({
     },
 }));
 
+// Wizualna edycja "na żywo" — alternatywa dla formularzy admina. Kliknij pole
+// (tytuł, treść) na realnej stronie i edytuj bezpośrednio; zapis pojedynczego
+// pola przez PUT /admin/edycja-na-zywo (patrz InlineEditController).
+Alpine.data('inlineContentEditor', (model, id, saveUrl) => ({
+    editMode: localStorage.getItem('inline-edit-mode') === '1',
+    saving: false,
+    saveSuccess: false,
+    error: null,
+
+    toggleEdit() {
+        this.editMode = !this.editMode;
+        localStorage.setItem('inline-edit-mode', this.editMode ? '1' : '0');
+        this.error = null;
+    },
+
+    async saveField(field, value) {
+        await this._save({ field, value });
+    },
+
+    // Zapis jednego podpola jednego elementu pola-tablicy (np. tytuł jednego
+    // kafelka hero). `index` to pozycja elementu w tablicy.
+    async saveArrayField(field, index, subfield, value) {
+        await this._save({ field, index, subfield, value });
+    },
+
+    async _save(payload) {
+        this.saving = true;
+        this.saveSuccess = false;
+        this.error = null;
+        try {
+            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
+            const res = await fetch(saveUrl, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken,
+                    'Accept': 'application/json',
+                },
+                body: JSON.stringify({ model, id, ...payload }),
+            });
+            if (!res.ok) {
+                const json = await res.json().catch(() => ({}));
+                throw new Error(json.message ?? `HTTP ${res.status}`);
+            }
+            this.saveSuccess = true;
+            setTimeout(() => { this.saveSuccess = false }, 2000);
+        } catch (e) {
+            this.error = 'Nie udało się zapisać zmiany. Spróbuj ponownie.';
+        } finally {
+            this.saving = false;
+        }
+    },
+}));
+
 // Odtwarzacz audio (TTS) — czyta treść artykułu przez SpeechSynthesis.
 // Używany w news/show.blade.php i page/show.blade.php.
 Alpine.data('audioPlayer', () => ({
@@ -374,6 +428,69 @@ document.querySelectorAll('[data-a11y-sans]').forEach((btn) => {
     });
 });
 
+// Odstępy między wierszami: '' | 'a11y-lh-1' | 'a11y-lh-2'
+const LH_MODES = ['', 'a11y-lh-1', 'a11y-lh-2'];
+const LH_LABELS = ['Normalne', 'Zwiększone', 'Bardzo zwiększone'];
+
+function applyLineHeight(mode) {
+    LH_MODES.forEach((cls) => { if (cls) document.documentElement.classList.remove(cls); });
+    if (mode) document.documentElement.classList.add(mode);
+    localStorage.setItem('a11y-lh', mode || '');
+    document.querySelectorAll('[data-a11y-lh]').forEach((btn) => {
+        const idx = LH_MODES.indexOf(mode);
+        const next = LH_MODES[(idx + 1) % LH_MODES.length];
+        btn.setAttribute('aria-label', 'Odstępy między wierszami: ' + (LH_LABELS[idx] || 'Normalne') + ' → kliknij: ' + LH_LABELS[(idx + 1) % LH_MODES.length]);
+        btn.setAttribute('aria-pressed', String(!!mode));
+    });
+}
+
+const storedLh = localStorage.getItem('a11y-lh') || '';
+if (storedLh) applyLineHeight(storedLh);
+
+document.querySelectorAll('[data-a11y-lh]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+        const current = localStorage.getItem('a11y-lh') || '';
+        const idx = LH_MODES.indexOf(current);
+        applyLineHeight(LH_MODES[(idx + 1) % LH_MODES.length]);
+    });
+});
+
+// Podkreślenie linków (niezależne od koloru — pomaga przy achromatopsji/dysleksji)
+function applyUnderlineLinks(active) {
+    document.documentElement.classList.toggle('a11y-underline-links', active);
+    localStorage.setItem('a11y-underline-links', active ? '1' : '0');
+    document.querySelectorAll('[data-a11y-underline-links]').forEach((btn) => {
+        btn.setAttribute('aria-pressed', String(active));
+    });
+}
+
+const storedUnderline = localStorage.getItem('a11y-underline-links') === '1';
+if (storedUnderline) applyUnderlineLinks(true);
+
+document.querySelectorAll('[data-a11y-underline-links]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+        applyUnderlineLinks(!document.documentElement.classList.contains('a11y-underline-links'));
+    });
+});
+
+// Wyraźny wskaźnik fokusu (gruby, kontrastowy outline na aktywnym elemencie)
+function applyFocusIndicator(active) {
+    document.documentElement.classList.toggle('a11y-focus', active);
+    localStorage.setItem('a11y-focus', active ? '1' : '0');
+    document.querySelectorAll('[data-a11y-focus]').forEach((btn) => {
+        btn.setAttribute('aria-pressed', String(active));
+    });
+}
+
+const storedFocus = localStorage.getItem('a11y-focus') === '1';
+if (storedFocus) applyFocusIndicator(true);
+
+document.querySelectorAll('[data-a11y-focus]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+        applyFocusIndicator(!document.documentElement.classList.contains('a11y-focus'));
+    });
+});
+
 // Tryby kontrastowe: '' (brak) | 'contrast' | 'contrast-bw' | 'contrast-gray'
 const CONTRAST_CLASSES = ['contrast', 'contrast-bw', 'contrast-gray'];
 
@@ -424,6 +541,21 @@ if (animationsButton) {
         window.dispatchEvent(new CustomEvent('a11y-animations-changed', { detail: { disabled: isDisabled } }));
     });
 }
+
+// Reset — przywraca wszystkie ustawienia dostępności do wartości domyślnych
+document.querySelectorAll('[data-a11y-reset]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+        applyFontSize(100);
+        applyLetterSpacing('');
+        applyLineHeight('');
+        applySansFont(false);
+        applyUnderlineLinks(false);
+        applyContrastMode('');
+        if (document.documentElement.classList.contains('no-animations')) {
+            animationsButton?.click();
+        }
+    });
+});
 
 // Karuzela hero
 const heroSlider = document.querySelector('[data-hero-slider]');
@@ -524,6 +656,12 @@ if (galleryTrack) {
 const pdfThumbs = document.querySelectorAll('canvas[data-pdf-thumb]');
 if (pdfThumbs.length) {
     import('./pdf-thumbs.js').then((module) => module.renderPdfThumbs(pdfThumbs));
+}
+
+// Mapa pomocy (Leaflet) — ładowana leniwie tylko na stronie /mapa-pomocy.
+const helpMapEl = document.getElementById('help-map');
+if (helpMapEl) {
+    import('./help-map.js').then((module) => module.initHelpMap(helpMapEl));
 }
 
 // Przechwytuje submit formularzy z data-confirm → Alpine modal zamiast confirm().

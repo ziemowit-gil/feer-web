@@ -6,6 +6,11 @@ use App\Http\Controllers\Admin\AnnualReportController as AdminAnnualReportContro
 use App\Http\Controllers\Admin\ApprovalController as AdminApprovalController;
 use App\Http\Controllers\Admin\CalendarController as AdminCalendarController;
 use App\Http\Controllers\Admin\EditLockController as AdminEditLockController;
+use App\Http\Controllers\Admin\HelpPointController as AdminHelpPointController;
+use App\Http\Controllers\Admin\OrganizationController as AdminOrganizationController;
+use App\Http\Controllers\FederationController;
+use App\Http\Controllers\MemberOrganizationController;
+use App\Http\Controllers\OrganizationLoginController;
 use App\Http\Controllers\Admin\NotificationController as AdminNotificationController;
 use App\Http\Controllers\Admin\RevisionController as AdminRevisionController;
 use App\Http\Controllers\Admin\SearchController as AdminSearchController;
@@ -57,6 +62,7 @@ use App\Http\Controllers\EducationalMaterialController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\AuthorizationRegistryController;
 use App\Http\Controllers\FaqController;
+use App\Http\Controllers\HelpMapController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\LandingPageController;
 use App\Http\Controllers\ReportController;
@@ -115,6 +121,10 @@ Route::middleware([RedirectIfInstalled::class])->prefix('install')->group(functi
     Route::post('/', [InstallController::class, 'post'])->name('install.post');
 });
 
+// Poza RedirectIfInstalled — instalacja jest już zakończona (installed.lock istnieje)
+// w chwili, gdy wdrażający dociera do kroku "done" i pobiera certyfikat.
+Route::get('/install/certificate', [InstallController::class, 'downloadCertificate'])->name('install.certificate');
+
 Route::get('/', [HomeController::class, 'index'])->name('home');
 
 Route::get('/etr', [EtrController::class, 'about'])->name('etr.about');
@@ -128,6 +138,26 @@ Route::middleware('module:projects')->group(function () {
     Route::get('/projekty/{project:slug}', [ProjectController::class, 'show'])->name('projects.show');
     Route::get('/kategoria/{category:slug}', [ProjectController::class, 'category'])->name('categories.show');
 });
+
+Route::get('/organizacje-czlonkowskie', [FederationController::class, 'organizations'])->name('federation.organizations');
+Route::get('/organizacje-czlonkowskie/{organization:slug}', [FederationController::class, 'organizationShow'])->name('federation.organizations.show');
+// Uwaga: /dolacz-do-nas jest już zajęte przez generyczną stronę „Dołącz do nas"
+// (oferty pracy + wolontariat, JoinUsController) — członkostwo w federacji ma
+// osobny, bardziej precyzyjny adres.
+Route::get('/dolacz-do-federacji', [FederationController::class, 'joinUs'])->name('federation.join');
+Route::post('/dolacz-do-federacji', [FederationController::class, 'submitApplication'])->name('federation.join.submit')->middleware('throttle:5,10');
+Route::get('/dolacz-do-federacji/krs/{krs}', [FederationController::class, 'lookupKrs'])->name('federation.join.krs')->middleware('throttle:20,1')->where('krs', '[0-9]{1,10}');
+
+Route::get('/mapa-pomocy', [HelpMapController::class, 'index'])->name('help-map.index')->middleware('module:help_map');
+
+// Samoobsługowa edycja danych organizacji z poziomu Strefy członkowskiej
+// (logowanie indywidualne per organizacja — patrz OrganizationLoginController).
+Route::get('/organizacje/logowanie', [OrganizationLoginController::class, 'showLogin'])->name('organization.login');
+Route::post('/organizacje/logowanie', [OrganizationLoginController::class, 'login'])->name('organization.login.submit')->middleware('throttle:10,1');
+Route::post('/organizacje/wyloguj', [OrganizationLoginController::class, 'logout'])->name('organization.logout');
+Route::get('/organizacje/panel', [MemberOrganizationController::class, 'edit'])->name('organization.panel.edit');
+Route::put('/organizacje/panel', [MemberOrganizationController::class, 'update'])->name('organization.panel.update');
+Route::delete('/organizacje/panel/zdjecia/{media}', [MemberOrganizationController::class, 'destroyPhoto'])->name('organization.panel.photos.destroy');
 
 Route::middleware('module:news')->group(function () {
     Route::get('/aktualnosci', [NewsController::class, 'index'])->name('news.index');
@@ -316,6 +346,7 @@ Route::middleware(['auth', 'verified', '2fa', 'admin-site'])->prefix(config('app
         Route::get('podstrony/eksport', [AdminPageController::class, 'export'])->name('podstrony.eksport');
         Route::get('raporty/brakujace-alt', [AdminPageController::class, 'missingAltReport'])->name('raporty.brakujace-alt');
         Route::resource('podstrony', AdminPageController::class)->parameters(['podstrony' => 'page']);
+        Route::put('edycja-na-zywo', [\App\Http\Controllers\Admin\InlineEditController::class, 'update'])->name('inline-edit.update');
         Route::post('podstrony/{page}/pliki', [AdminAttachmentController::class, 'storeForPage'])->name('podstrony.pliki.store');
         Route::get('podstrony/{page}/dostep/eksport', [AdminBrandAccessUserController::class, 'export'])->name('podstrony.dostep.eksport');
         Route::get('podstrony/{page}/dostep', [AdminBrandAccessUserController::class, 'index'])->name('podstrony.dostep.index');
@@ -333,15 +364,29 @@ Route::middleware(['auth', 'verified', '2fa', 'admin-site'])->prefix(config('app
         Route::patch('podstrony/{page}/wylacz', [AdminPageController::class, 'toggleDisabled'])->name('podstrony.wylacz');
         Route::patch('podstrony/{page}/wyroznienie', [AdminPageController::class, 'toggleFeatured'])->name('podstrony.wyroznienie');
 
-        // Oś czasu (historia) strony „O organizacji" jako osobna pozycja w menu.
+    });
+
+    // Oś czasu (historia) strony „O organizacji" jako osobna pozycja w menu — moduł niezależny od "Podstrony".
+    Route::middleware(['module:pages', 'module:timeline', 'module-access:pages'])->group(function () {
         Route::get('os-czasu', [AdminTimelineController::class, 'edit'])->name('os-czasu.edit');
         Route::put('os-czasu/{page}', [AdminTimelineController::class, 'update'])->name('os-czasu.update');
+    });
 
-        // Zgłoszenia z formularzy współpracy.
+    // Zgłoszenia z formularzy współpracy — moduł niezależny od "Podstrony".
+    Route::middleware(['module:pages', 'module:cooperation', 'module-access:pages'])->group(function () {
         Route::get('wspolpraca-zgloszenia', [AdminCooperationRequestController::class, 'index'])->name('wspolpraca-zgloszenia.index');
         Route::get('wspolpraca-zgloszenia/{cooperationRequest}', [AdminCooperationRequestController::class, 'show'])->name('wspolpraca-zgloszenia.show');
         Route::delete('wspolpraca-zgloszenia/{cooperationRequest}', [AdminCooperationRequestController::class, 'destroy'])->name('wspolpraca-zgloszenia.destroy');
     });
+
+    // Mapa pomocy — punkty wsparcia na interaktywnej mapie (szablon federation).
+    Route::middleware(['module:help_map', 'module-access:help_map'])->group(function () {
+        Route::resource('mapa-pomocy', AdminHelpPointController::class)->parameters(['mapa-pomocy' => 'helpPoint'])->except('show');
+    });
+
+    // Organizacje członkowskie — katalog i wizytówki (tylko szablon federation, patrz OrganizationController).
+    Route::resource('organizacje', AdminOrganizationController::class)->parameters(['organizacje' => 'organization'])->except('show');
+    Route::delete('organizacje/{organization}/zdjecia/{media}', [AdminOrganizationController::class, 'destroyPhoto'])->name('organizacje.photos.destroy');
 
     Route::middleware(['module:hero', 'module-access:hero'])->group(function () {
         Route::resource('hero', HeroSlideController::class)->parameters(['hero' => 'heroSlide'])->except('show');
@@ -693,8 +738,8 @@ Route::get('/{parentSlug}/osoba/{personSlug}', [PageController::class, 'showPers
     ->middleware('module:pages');
 
 // Formularz współpracy (musi być przed catch-all /{page:slug}).
-Route::get('/{page:slug}/formularz', [CooperationFormController::class, 'show'])->name('cooperation.form.show')->middleware('module:pages');
-Route::post('/{page:slug}/formularz', [CooperationFormController::class, 'store'])->name('cooperation.form.store')->middleware(['module:pages', 'throttle:5,10']);
+Route::get('/{page:slug}/formularz', [CooperationFormController::class, 'show'])->name('cooperation.form.show')->middleware(['module:pages', 'module:cooperation']);
+Route::post('/{page:slug}/formularz', [CooperationFormController::class, 'store'])->name('cooperation.form.store')->middleware(['module:pages', 'module:cooperation', 'throttle:5,10']);
 
 // Kreator formularzy — publiczne wyświetlenie i zapis zgłoszenia.
 Route::middleware('module:forms')->group(function () {

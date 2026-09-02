@@ -6,6 +6,7 @@ use App\Http\Controllers\Concerns\HandlesContentApproval;
 use App\Http\Controllers\Controller;
 use App\Models\Page;
 use App\Models\Project;
+use App\Models\SiteSetting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
@@ -264,7 +265,7 @@ class PageController extends Controller
             return $response;
         }
 
-        $data = $this->validated($request);
+        $data = $this->validated($request, $page);
 
         if ($data['type'] === 'about_person') {
             $titleChanged  = Str::slug($data['title']) !== Str::slug($page->title);
@@ -439,7 +440,7 @@ class PageController extends Controller
         return null;
     }
 
-    private function validated(Request $request): array
+    private function validated(Request $request, ?Page $page = null): array
     {
         $data = $request->validate([
             'parent_id' => ['nullable', 'exists:pages,id'],
@@ -459,7 +460,13 @@ class PageController extends Controller
             'disabled_message' => ['nullable', 'string', 'max:2000'],
             'wip_mode' => ['nullable', Rule::in(array_keys(Page::WIP_MODES))],
             'wip_message' => ['nullable', 'string', 'max:2000'],
-            'type' => ['required', Rule::in(array_keys(Page::TYPES))],
+            'type' => [
+                'required',
+                Rule::in(array_keys(Page::TYPES)),
+                // Wartość już zapisana na tej stronie pozostaje dozwolona, choćby
+                // została zablokowana później dla całej instalacji.
+                Rule::notIn(array_diff(SiteSetting::current()->blocked_options['page_types'] ?? [], [$page?->type])),
+            ],
             'page_template' => ['nullable', Rule::in(array_keys(Page::TEMPLATES))],
             'access_mode' => ['nullable', Rule::in(array_keys(Page::ACCESS_MODES))],
             'access_password' => ['nullable', 'string', 'max:255'],

@@ -191,6 +191,7 @@
                             <label for="type" class="mb-1 block text-sm font-bold">Typ strony</label>
                             <select id="type" name="type" data-page-type-select class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
                                 @foreach (\App\Models\Page::TYPES as $value => $label)
+                                    @continue($siteSettings->isOptionBlocked('page_types', $value) && $currentType !== $value)
                                     <option value="{{ $value }}" {{ $currentType === $value ? 'selected' : '' }}>{{ $label }}</option>
                                 @endforeach
                             </select>

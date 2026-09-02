@@ -148,6 +148,8 @@
                     @include('contact.partials.registry')
                 </div>
             </div>
+
+            @include('contact.partials.locations-map', ['sectionStyle' => 'card'])
         </div>
     </section>
 

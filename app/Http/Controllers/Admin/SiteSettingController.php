@@ -74,6 +74,7 @@ class SiteSettingController extends Controller
     {
         $data = $request->validate([
             'site_name' => ['required', 'string', 'max:255'],
+            'site_name_genitive' => ['nullable', 'string', 'max:255'],
             'tagline' => ['nullable', 'string', 'max:255'],
             'site_url' => ['nullable', 'url', 'max:255'],
             'maintenance_mode' => ['sometimes', 'boolean'],
@@ -82,13 +83,22 @@ class SiteSettingController extends Controller
             'brand_color_2' => ['nullable', 'regex:/^#[0-9a-fA-F]{6}$/'],
             'brand_color_3' => ['nullable', 'regex:/^#[0-9a-fA-F]{6}$/'],
             'brand_color_4' => ['nullable', 'regex:/^#[0-9a-fA-F]{6}$/'],
-            'header_layout' => ['required', Rule::in(array_keys(SiteSetting::HEADER_LAYOUTS))],
+            'header_layout' => [
+                'required',
+                Rule::in(array_keys(SiteSetting::HEADER_LAYOUTS)),
+                // Wartość już zapisana pozostaje dozwolona, choćby została zablokowana
+                // później — inaczej samo zapisanie reszty ustawień by się wywalało.
+                Rule::notIn(array_diff(SiteSetting::current()->blocked_options['header_layouts'] ?? [], [SiteSetting::current()->header_layout])),
+            ],
             'content_editor' => ['required', Rule::in(array_keys(SiteSetting::EDITORS))],
             'microsoft_login_enabled' => ['sometimes', 'boolean'],
             'microsoft_only_login' => ['sometimes', 'boolean'],
             'microsoft_client_id' => ['nullable', 'string', 'max:255'],
             'microsoft_client_secret' => ['nullable', 'string', 'max:1000'],
             'microsoft_tenant_id' => ['nullable', 'string', 'max:255'],
+            'google_login_enabled' => ['sometimes', 'boolean'],
+            'google_client_id' => ['nullable', 'string', 'max:255'],
+            'google_client_secret' => ['nullable', 'string', 'max:1000'],
             'member_login_enabled' => ['sometimes', 'boolean'],
             'member_allowed_domains' => ['nullable', 'string', 'max:500'],
             'szo_api_url' => ['nullable', 'url', 'max:255'],
@@ -143,7 +153,11 @@ class SiteSettingController extends Controller
             'infobar_show_nameday' => ['sometimes', 'boolean'],
             'office_show_account' => ['sometimes', 'boolean'],
             'office_show_search' => ['sometimes', 'boolean'],
-            'contact_layout' => ['nullable', Rule::in(array_keys(SiteSetting::CONTACT_LAYOUTS))],
+            'contact_layout' => [
+                'nullable',
+                Rule::in(array_keys(SiteSetting::CONTACT_LAYOUTS)),
+                Rule::notIn(array_diff(SiteSetting::current()->blocked_options['contact_layouts'] ?? [], [SiteSetting::current()->contact_layout])),
+            ],
             'contact_office_address' => ['nullable', 'string', 'max:255'],
             'contact_office_city' => ['nullable', 'string', 'max:255'],
             'contact_office_building' => ['nullable', 'string', 'max:255'],
@@ -298,21 +312,46 @@ class SiteSettingController extends Controller
             'municipality_weather_lat'         => ['nullable', 'numeric', 'between:-90,90'],
             'municipality_weather_lon'         => ['nullable', 'numeric', 'between:-180,180'],
             'municipality_show_google_translate' => ['sometimes', 'boolean'],
+            'federation_colorful_nav' => ['sometimes', 'boolean'],
+            'federation_colorful_nav_items' => ['nullable', 'array'],
+            'federation_colorful_nav_items.*' => ['integer', 'between:0,3'],
+            'federation_show_org_spotlight' => ['sometimes', 'boolean'],
+            'federation_show_members_banner' => ['sometimes', 'boolean'],
+            'federation_hero_heading' => ['nullable', 'string', 'max:255'],
+            'federation_hero_intro' => ['nullable', 'string'],
+            'federation_hero_tiles' => ['nullable', 'array'],
+            'federation_hero_tiles.*.title' => ['nullable', 'string', 'max:100'],
+            'federation_hero_tiles.*.value' => ['nullable', 'string', 'max:20'],
+            'federation_hero_tiles.*.icon' => ['nullable', 'string', 'max:60'],
+            'federation_hero_tiles.*.color' => ['nullable', 'integer', 'between:1,4'],
+            'federation_hero_tiles.*.wide' => ['sometimes', 'boolean'],
+            'federation_join_benefits' => ['nullable', 'array'],
+            'federation_join_benefits.*.title' => ['nullable', 'string', 'max:100'],
+            'federation_join_benefits.*.text' => ['nullable', 'string', 'max:255'],
+            'federation_join_benefits.*.icon' => ['nullable', 'string', 'max:60'],
         ]);
 
         $data['allow_indexing'] = $request->boolean('allow_indexing');
         $data['logo_only'] = $request->boolean('logo_only');
         $data['maintenance_mode'] = $request->boolean('maintenance_mode');
         $data['municipality_show_google_translate'] = $request->boolean('municipality_show_google_translate');
+        $data['federation_colorful_nav'] = $request->boolean('federation_colorful_nav');
+        $data['federation_colorful_nav_items'] = $request->input('federation_colorful_nav_items') ?: null;
+        $data['federation_show_org_spotlight'] = $request->boolean('federation_show_org_spotlight');
+        $data['federation_show_members_banner'] = $request->boolean('federation_show_members_banner');
         $data['site_url'] = filled($data['site_url'] ?? null) ? rtrim($data['site_url'], '/') : null;
         $data['microsoft_login_enabled'] = $request->boolean('microsoft_login_enabled');
         $data['microsoft_only_login'] = $request->boolean('microsoft_only_login');
+        $data['google_login_enabled'] = $request->boolean('google_login_enabled');
         $data['member_login_enabled'] = $request->boolean('member_login_enabled');
         $data['two_factor_required_admins'] = $request->boolean('two_factor_required_admins');
 
         // Puste pole sekretu = zostaw zapisany (nie renderujemy go w formularzu).
         if (blank($data['microsoft_client_secret'] ?? null)) {
             unset($data['microsoft_client_secret']);
+        }
+        if (blank($data['google_client_secret'] ?? null)) {
+            unset($data['google_client_secret']);
         }
         // Puste pole klucza Yubico = zostaw zapisane (analogicznie do sekretu Microsoft).
         if (blank($data['yubico_secret_key'] ?? null)) {
@@ -344,7 +383,11 @@ class SiteSettingController extends Controller
         $data['contact_schedule_enabled'] = $request->boolean('contact_schedule_enabled');
         $data['support_show_partners'] = $request->boolean('support_show_partners');
         $data['cookie_banner_enabled'] = $request->boolean('cookie_banner_enabled');
-        $data['show_cms_credit'] = $request->boolean('show_cms_credit');
+        // Poza domeną feer.org.pl kredyt CMS w stopce nie może zostać ukryty
+        // (niezależnie od tego, co przyszło w żądaniu).
+        $data['show_cms_credit'] = str_contains($request->getHost(), 'feer.org.pl')
+            ? $request->boolean('show_cms_credit')
+            : true;
 
         // Rachunki bankowe: przycinamy pola, odrzucamy wiersze bez numeru
         // (pusty wiersz-zalążek z formularza) i przenumerowujemy listę.
@@ -431,6 +474,30 @@ class SiteSettingController extends Controller
                 'name' => $s['name'],
                 'color' => $skipContrast ? $s['color'] : $settings->contrastSafeColor($s['color']),
             ])
+            ->values()
+            ->all() ?: null;
+
+        // Kafelki hero (szablon "federation"): odrzucamy wiersze bez tytułu.
+        $data['federation_hero_tiles'] = collect($request->input('federation_hero_tiles', []))
+            ->map(fn ($t) => [
+                'title' => trim((string) ($t['title'] ?? '')),
+                'value' => filled($t['value'] ?? null) ? trim((string) $t['value']) : null,
+                'icon' => filled($t['icon'] ?? null) ? trim((string) $t['icon']) : null,
+                'color' => (int) ($t['color'] ?? 1),
+                'wide' => filled($t['wide'] ?? null) && $t['wide'] !== '0',
+            ])
+            ->filter(fn ($t) => $t['title'] !== '')
+            ->values()
+            ->all() ?: null;
+
+        // Kafelki „Dlaczego warto?" (Dołącz do nas, szablon "federation"): odrzucamy wiersze bez tytułu.
+        $data['federation_join_benefits'] = collect($request->input('federation_join_benefits', []))
+            ->map(fn ($b) => [
+                'title' => trim((string) ($b['title'] ?? '')),
+                'text' => trim((string) ($b['text'] ?? '')),
+                'icon' => filled($b['icon'] ?? null) ? trim((string) $b['icon']) : 'fa-circle-check',
+            ])
+            ->filter(fn ($b) => $b['title'] !== '')
             ->values()
             ->all() ?: null;
 

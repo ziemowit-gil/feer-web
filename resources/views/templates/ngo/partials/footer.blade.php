@@ -134,7 +134,11 @@
             <span>
                 &copy; {{ now()->year }} {{ $siteSettings->site_name }}
                 @if ($siteSettings->show_cms_credit ?? true)
-                    &middot; <span class="font-bold">weCMS</span>
+                    &middot;
+                    <span class="opacity-40 transition-opacity duration-200 hover:opacity-100 focus-within:opacity-100">
+                        Napędzane przez <span class="font-bold">weCMS</span>
+                        &middot; Projekt i wykonanie <a href="mailto:ziemowit.gil@gmail.com" class="hover:text-white">Ziemowit Gil</a>
+                    </span>
                 @endif
             </span>
             <nav aria-label="Linki stopki">

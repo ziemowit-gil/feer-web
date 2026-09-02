@@ -79,6 +79,12 @@
     @elseif (in_array($siteTemplate, ['ngo', 'federacja']))
         @include('templates.ngo.partials.topbar')
         @include('templates.ngo.partials.header')
+    @elseif ($siteTemplate === 'federation')
+        <div x-data="{ a11yOpen: (function () { try { return localStorage.getItem('federation-a11y-open') === '1' } catch (e) { return false } })() }"
+             x-effect="(() => { try { localStorage.setItem('federation-a11y-open', a11yOpen ? '1' : '0') } catch (e) {} })()">
+            @include('templates.federation.partials.topbar')
+            @include('templates.federation.partials.header')
+        </div>
     @else
         @include($siteSettings->headerLayoutValue() === 'office_bar' ? 'partials.topbar-info' : 'partials.topbar')
         @include('partials.header')
@@ -100,22 +106,27 @@
 
     {{-- Baner zgody na powiadomienia push (ukryty domyślnie, pokazywany przez JS). --}}
     <div id="push-prompt"
-         class="fixed bottom-4 left-4 right-4 z-50 mx-auto max-w-sm rounded-xl bg-white p-4 shadow-lg ring-1 ring-gray-200 hidden"
+         class="fixed bottom-4 left-4 right-4 z-50 mx-auto flex max-w-sm items-start gap-3 rounded-xl bg-white p-4 shadow-lg ring-1 ring-gray-200 hidden"
          role="region"
          aria-live="polite"
          aria-label="Powiadomienia push">
-        <p class="mb-3 text-sm font-medium text-gray-800">
-            Chcesz dostawać powiadomienia o szkoleniach i aktualnościach FEER?
-        </p>
-        <div class="flex gap-2">
-            <button id="push-subscribe-btn"
-                    class="rounded-lg bg-brand px-4 py-1.5 text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
-                Włącz
-            </button>
-            <button onclick="document.getElementById('push-prompt').remove();localStorage.setItem('push-dismissed','1')"
-                    class="rounded-lg px-4 py-1.5 text-sm text-gray-500 hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
-                Nie teraz
-            </button>
+        <span class="flex h-9 w-9 flex-none items-center justify-center rounded-full bg-brand-light text-brand" aria-hidden="true">
+            <i class="fa-solid fa-bell"></i>
+        </span>
+        <div class="min-w-0 flex-1">
+            <p class="mb-3 text-sm font-medium text-gray-800">
+                Chcesz dostawać powiadomienia o szkoleniach i aktualnościach {{ $siteSettings->site_name }}?
+            </p>
+            <div class="flex gap-2">
+                <button id="push-subscribe-btn"
+                        class="rounded-lg bg-brand px-4 py-1.5 text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
+                    Włącz
+                </button>
+                <button onclick="document.getElementById('push-prompt').remove();localStorage.setItem('push-dismissed','1')"
+                        class="rounded-lg px-4 py-1.5 text-sm text-gray-500 hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
+                    Nie teraz
+                </button>
+            </div>
         </div>
     </div>
     <script>

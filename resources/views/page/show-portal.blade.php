@@ -24,57 +24,75 @@
         </div>
     @endif
 
-    {{-- ===== HERO ===== --}}
-    <header class="relative overflow-hidden bg-brand text-white">
-        @if (filled($page->content_image))
-            <img src="{{ $page->content_image }}"
-                 alt="{{ $page->content_image_alt ?: 'Grafika ilustracyjna' }}"
-                 class="absolute inset-0 h-full w-full object-cover opacity-35"
-                 aria-hidden="true">
-        @endif
-        <div class="relative mx-auto max-w-6xl px-4 py-14 md:py-20">
-            <h1 class="max-w-3xl text-3xl font-bold leading-tight md:text-5xl">{{ $page->title }}</h1>
-            @if ($page->meta_description)
-                <p class="mt-3 max-w-2xl text-base text-white/85 md:text-lg">{{ $page->meta_description }}</p>
-            @endif
-        </div>
-    </header>
-
     @php
         $menuSiblings = $page->menuSiblings();
         $hasSidebar = $menuSiblings->isNotEmpty();
         $galleryImages = ($page->show_gallery ?? false)
             ? $page->images->filter(fn ($i) => $i->image_url)->values()
             : collect();
+        $canInlineEdit = auth()->check() && auth()->user()->canAccessModule('pages');
+        $contentHasShortcode = $page->content && preg_match('/\[(formularz|kafelki):[a-z0-9_\-]+\]/i', $page->content);
     @endphp
 
-    {{-- ===== TREŚĆ GŁÓWNA + SIDEBAR ===== --}}
-    <div class="mx-auto max-w-6xl px-4 py-12">
-        <div class="grid gap-10 {{ $hasSidebar ? 'lg:grid-cols-[1fr_280px]' : '' }}">
+    <div @if ($canInlineEdit) x-data="inlineContentEditor('page', {{ $page->id }}, '{{ route('admin.inline-edit.update') }}')" @endif>
+        @if ($canInlineEdit)
+            @include('partials.inline-edit-bar')
+        @endif
 
-            {{-- Lewa: główna treść --}}
-            <main>
-                @if ($page->content)
-                    <div class="prose max-w-none text-ink">@shortcodes($page->content)</div>
+        {{-- ===== HERO ===== --}}
+        <header class="relative overflow-hidden bg-brand text-white">
+            @if (filled($page->content_image))
+                <img src="{{ $page->content_image }}"
+                     alt="{{ $page->content_image_alt ?: 'Grafika ilustracyjna' }}"
+                     class="absolute inset-0 h-full w-full object-cover opacity-35"
+                     aria-hidden="true">
+            @endif
+            <div class="relative mx-auto max-w-6xl px-4 py-14 md:py-20">
+                @if ($canInlineEdit)
+                    <h1 :contenteditable="editMode ? 'true' : 'false'" @blur="if (editMode) saveField('title', $el.innerText.trim())"
+                        :class="editMode ? 'outline-dashed outline-2 outline-offset-4 outline-white rounded' : ''"
+                        class="max-w-3xl text-3xl font-bold leading-tight md:text-5xl">{{ $page->title }}</h1>
+                @else
+                    <h1 class="max-w-3xl text-3xl font-bold leading-tight md:text-5xl">{{ $page->title }}</h1>
+                @endif
+                @if ($page->meta_description)
+                    <p class="mt-3 max-w-2xl text-base text-white/85 md:text-lg">{{ $page->meta_description }}</p>
+                @endif
+            </div>
+        </header>
+
+        {{-- ===== TREŚĆ GŁÓWNA + SIDEBAR ===== --}}
+        <div class="mx-auto max-w-6xl px-4 py-12">
+            <div class="grid gap-10 {{ $hasSidebar ? 'lg:grid-cols-[1fr_280px]' : '' }}">
+
+                {{-- Lewa: główna treść --}}
+                <main>
+                    @if ($canInlineEdit && ! $contentHasShortcode)
+                        <div :contenteditable="editMode ? 'true' : 'false'" @blur="if (editMode) saveField('content', $el.innerHTML.trim())"
+                            :class="editMode ? 'outline-dashed outline-2 outline-offset-4 outline-brand rounded' : ''"
+                            class="prose max-w-none text-ink">@shortcodes($page->content)</div>
+                    @elseif ($page->content)
+                        <div class="prose max-w-none text-ink">@shortcodes($page->content)</div>
+                    @endif
+
+                    @include('partials.page-gallery', ['page' => $page])
+                    @include('partials.attachments-list', ['attachments' => $page->attachments])
+                </main>
+
+                {{-- Prawa: sidebar z podstronami sekcji --}}
+                @if ($hasSidebar)
+                    <aside class="space-y-6">
+                        <div class="rounded-xl border border-gray-200 bg-gray-50 p-5">
+                            <p class="mb-3 text-xs font-bold uppercase tracking-wide text-muted">
+                                <i class="fa-solid fa-sitemap mr-1.5 text-brand" aria-hidden="true"></i>
+                                W tej sekcji
+                            </p>
+                            @include('partials.page-local-nav', ['menuSiblings' => $menuSiblings])
+                        </div>
+                    </aside>
                 @endif
 
-                @include('partials.page-gallery', ['page' => $page])
-                @include('partials.attachments-list', ['attachments' => $page->attachments])
-            </main>
-
-            {{-- Prawa: sidebar z podstronami sekcji --}}
-            @if ($hasSidebar)
-                <aside class="space-y-6">
-                    <div class="rounded-xl border border-gray-200 bg-gray-50 p-5">
-                        <p class="mb-3 text-xs font-bold uppercase tracking-wide text-muted">
-                            <i class="fa-solid fa-sitemap mr-1.5 text-brand" aria-hidden="true"></i>
-                            W tej sekcji
-                        </p>
-                        @include('partials.page-local-nav', ['menuSiblings' => $menuSiblings])
-                    </div>
-                </aside>
-            @endif
-
+            </div>
         </div>
     </div>
 
