@@ -453,14 +453,6 @@
                 </a>
             @endif
 
-            {{-- Rejestr pełnomocnictw i upoważnień (zarządzanie: tylko admin) --}}
-            @if ($siteSettings->isModuleEnabled('authorizations') && auth()->user()->isAdmin())
-                <a href="{{ route('admin.pelnomocnictwa.index') }}" class="{{ $itemClass('admin.pelnomocnictwa.*') }}" title="Rejestr pełnomocnictw">
-                    <i class="fa-solid fa-file-signature {{ $iconClass('admin.pelnomocnictwa.*') }}"></i>
-                    <span class="nav-label">Rejestr pełnomocnictw</span>
-                </a>
-            @endif
-
             {{-- Landing pages --}}
             @if ($can('landing'))
                 <a href="{{ route('admin.lp.index') }}" class="{{ $itemClass('admin.lp.*') }}" title="Landing pages">
@@ -503,23 +495,6 @@
                 <i class="fa-solid fa-photo-film {{ $iconClass('admin.multimedia.*') }}"></i>
                 <span class="nav-label">Multimedia</span>
             </a>
-
-            {{-- Pomoc (zgłoszenia do Helpdesku Centralnego) --}}
-            @if (auth()->user()->isAdmin())
-                <a href="{{ route('admin.pomoc.index') }}" class="{{ $itemClass('admin.pomoc.*') }}" title="Pomoc">
-                    <i class="fa-solid fa-life-ring {{ $iconClass('admin.pomoc.*') }}"></i>
-                    <span class="nav-label">Pomoc</span>
-                </a>
-            @endif
-
-            {{-- ━━ STRATEGIA ORGANIZACJI (planowanie działań — dla całego zespołu) ━━ --}}
-            @if ($siteSettings->isModuleEnabled('strategy'))
-                <div class="section-divider"></div>
-                <a href="{{ route('admin.strategia.index') }}" class="{{ $itemClass('admin.strategia.*') }}" title="Strategia organizacji">
-                    <i class="fa-solid fa-chess {{ $iconClass('admin.strategia.*') }}"></i>
-                    <span class="nav-label">Strategia organizacji</span>
-                </a>
-            @endif
 
             {{-- ━━ MARKETING (tylko admin) ━━ --}}
             @if (auth()->user()->isAdmin())
@@ -971,23 +946,6 @@
                 <div role="alert" class="mb-4 rounded border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-800">
                     {{ session('error') }}
                 </div>
-            @endif
-
-            {{--
-                Licencja tej instalacji w Helpdesku Centralnym — komunikat tylko
-                gdy integracja jest skonfigurowana I aktywowana I obecnie nieważna
-                (patrz App\Models\LicenseStatus, App\Support\Helpdesk). Świadomie
-                bez blokowania czegokolwiek — patrz docblock klasy Helpdesk: awaria
-                sieci albo Helpdesku nigdy sama w sobie nie zmienia tego statusu.
-            --}}
-            @if (auth()->user()->isAdmin())
-                @php $licenseStatus = \App\Models\LicenseStatus::current(); @endphp
-                @if ($licenseStatus->configured() && $licenseStatus->activated && ! $licenseStatus->valid)
-                    <div role="alert" class="mb-4 flex items-center justify-between gap-3 rounded border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-800">
-                        <span><i class="fa-solid fa-triangle-exclamation mr-1.5" aria-hidden="true"></i>{{ $licenseStatus->statusLabel() }} — skontaktuj się z dostawcą, żeby ją odnowić.</span>
-                        <a href="{{ route('admin.ustawienia.edit', ['tab' => 'general']) }}" class="shrink-0 font-bold text-amber-900 hover:underline">Szczegóły</a>
-                    </div>
-                @endif
             @endif
 
             @yield('content')

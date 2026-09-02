@@ -47,9 +47,6 @@ use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\Admin\UserGroupController as AdminUserGroupController;
 use App\Http\Controllers\Admin\ContentTemplateController as AdminContentTemplateController;
 use App\Http\Controllers\Admin\TagController as AdminTagController;
-use App\Http\Controllers\Admin\AuthorizationController as AdminAuthorizationController;
-use App\Http\Controllers\Admin\StrategyDictionaryController as AdminStrategyDictionaryController;
-use App\Http\Controllers\Admin\StrategyPlanController as AdminStrategyPlanController;
 use App\Http\Controllers\Admin\TaskController as AdminTaskController;
 use App\Http\Controllers\Admin\VolunteerAdController as AdminVolunteerAdController;
 use App\Http\Controllers\Admin\MailTemplateController as AdminMailTemplateController;
@@ -60,7 +57,6 @@ use App\Http\Controllers\AccessibilityReportController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\EducationalMaterialController;
 use App\Http\Controllers\EventController;
-use App\Http\Controllers\AuthorizationRegistryController;
 use App\Http\Controllers\FaqController;
 use App\Http\Controllers\HelpMapController;
 use App\Http\Controllers\HomeController;
@@ -197,11 +193,6 @@ Route::middleware('module:events')->group(function () {
 
 Route::get('/faq', [FaqController::class, 'index'])->name('faq.index')->middleware('module:faq');
 
-// Publiczny rejestr pełnomocnictw i upoważnień (dane z systemu zewnętrznego).
-Route::get('/rejestr-pelnomocnictw', [AuthorizationRegistryController::class, 'index'])
-    ->name('authorizations.index')
-    ->middleware('module:authorizations');
-
 Route::get('/sprawozdania', [ReportController::class, 'index'])->name('reports.index')->middleware('module:reports');
 
 Route::middleware('module:landing')->group(function () {
@@ -293,31 +284,6 @@ Route::middleware(['auth', 'verified', '2fa', 'admin-site'])->prefix(config('app
     // Zadania (lista + CRUD + szybkie oznaczenie jako done).
     Route::resource('zadania', AdminTaskController::class)->parameters(['zadania' => 'zadanie'])->except('show');
     Route::post('zadania/{zadanie}/done', [AdminTaskController::class, 'done'])->name('zadania.done');
-
-    // Rejestr pełnomocnictw i upoważnień — zarządzanie wpisami (tylko admin).
-    Route::middleware(['module:authorizations', 'admin'])->group(function () {
-        Route::resource('pelnomocnictwa', AdminAuthorizationController::class)
-            ->parameters(['pelnomocnictwa' => 'pelnomocnictwo'])
-            ->except('show');
-        Route::patch('pelnomocnictwa/{pelnomocnictwo}/aktywnosc', [AdminAuthorizationController::class, 'toggleActive'])
-            ->name('pelnomocnictwa.aktywnosc');
-    });
-
-    // Strategia organizacji — planowanie działań (widok + endpointy JSON).
-    Route::middleware('module:strategy')->prefix('strategia')->name('strategia.')->group(function () {
-        Route::get('/', [AdminStrategyPlanController::class, 'index'])->name('index');
-        Route::get('plany', [AdminStrategyPlanController::class, 'list'])->name('list');
-        Route::post('plany', [AdminStrategyPlanController::class, 'store'])->name('store');
-        Route::put('plany/{plan}', [AdminStrategyPlanController::class, 'update'])->name('update');
-        Route::delete('plany/{plan}', [AdminStrategyPlanController::class, 'destroy'])->name('destroy');
-
-        // Słowniki modułu (grupy/typy/statut/finansowanie) — tylko admin.
-        Route::middleware('admin')->prefix('slowniki/{dictionary}')->name('slowniki.')->group(function () {
-            Route::post('/', [AdminStrategyDictionaryController::class, 'store'])->name('store');
-            Route::put('{id}', [AdminStrategyDictionaryController::class, 'update'])->name('update');
-            Route::delete('{id}', [AdminStrategyDictionaryController::class, 'destroy'])->name('destroy');
-        });
-    });
 
     // Blokada równoczesnej edycji (heartbeat, dostęp per moduł w kontrolerze).
     Route::post('blokada-edycji', AdminEditLockController::class)->name('edit-lock');
@@ -555,13 +521,6 @@ Route::middleware(['auth', 'verified', '2fa', 'admin-site'])->prefix(config('app
         Route::get('ustawienia/env', [SiteSettingController::class, 'envEdit'])->name('ustawienia.env');
         Route::post('ustawienia/env', [SiteSettingController::class, 'envUpdate'])->name('ustawienia.env.update');
         Route::post('push/wyslij', [SiteSettingController::class, 'sendPush'])->name('push.send');
-        Route::post('licencja/sprawdz', [\App\Http\Controllers\Admin\LicenseController::class, 'check'])->name('licencja.sprawdz');
-
-        Route::get('pomoc', [\App\Http\Controllers\Admin\HelpdeskTicketController::class, 'index'])->name('pomoc.index');
-        Route::get('pomoc/nowe', [\App\Http\Controllers\Admin\HelpdeskTicketController::class, 'create'])->name('pomoc.create');
-        Route::post('pomoc', [\App\Http\Controllers\Admin\HelpdeskTicketController::class, 'store'])->name('pomoc.store');
-        Route::get('pomoc/{ticket}', [\App\Http\Controllers\Admin\HelpdeskTicketController::class, 'show'])->name('pomoc.show');
-        Route::post('pomoc/{ticket}/odpowiedz', [\App\Http\Controllers\Admin\HelpdeskTicketController::class, 'reply'])->name('pomoc.reply');
     });
 
     // Sub-witryny sieci (federacja + Ośrodki) — tworzenie i przełącznik aktywnej
