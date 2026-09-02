@@ -25,7 +25,7 @@
 
 @section('breadcrumbs')
     @include('partials.breadcrumbs', ['items' => [
-        ['label' => 'Szkolenia i wydarzenia', 'url' => route('events.index')],
+        ['label' => 'Szkolenia i wydarzenia', 'url' => site_route('events.index')],
         ['label' => $event->title, 'url' => null],
     ]])
 @endsection

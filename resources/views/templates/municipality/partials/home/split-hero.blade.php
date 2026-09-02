@@ -99,7 +99,7 @@
             <ul class="divide-y divide-gray-100 flex-1" role="list" aria-label="Najnowsze aktualności">
                 @forelse ($newsSidebar as $item)
                     <li>
-                        <a href="{{ route('news.show', $item) }}"
+                        <a href="{{ site_route('news.show', $item) }}"
                             class="group flex items-stretch gap-3 p-4 hover:bg-gray-50 transition">
                             @if ($img = $item->imageUrlOrDefault())
                                 <div class="h-16 w-20 flex-none overflow-hidden rounded">
@@ -126,7 +126,7 @@
             </ul>
 
             <div class="border-t border-gray-100 p-4">
-                <a href="{{ route('news.index') }}"
+                <a href="{{ site_route('news.index') }}"
                    class="block w-full rounded border-2 border-[#e53935] px-4 py-2.5 text-center text-xs font-extrabold uppercase tracking-widest text-[#e53935] transition hover:bg-[#e53935] hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#e53935]">
                     Zobacz wszystkie aktualności
                 </a>

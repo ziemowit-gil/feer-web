@@ -15,6 +15,7 @@ use Spatie\MediaLibrary\InteractsWithMedia;
 class Event extends Model implements HasMedia
 {
     use InteractsWithMedia;
+    use \App\Models\Concerns\BelongsToSite;
     use \App\Models\Concerns\LogsActivity;
 
     /** Rodzaj wydarzenia (z dedykowaną ikoną w widoku). */
@@ -41,7 +42,7 @@ class Event extends Model implements HasMedia
     ];
 
     protected $fillable = [
-        'title', 'slug', 'lead', 'description',
+        'site_id', 'title', 'slug', 'lead', 'description',
         'benefits', 'show_benefits',
         'facilitator_id',
         'facilitator_name', 'facilitator_role', 'facilitator_bio',
@@ -76,6 +77,11 @@ class Event extends Model implements HasMedia
         return 'slug';
     }
 
+    public function resolveRouteBindingQuery($query, $value, $field = null)
+    {
+        return parent::resolveRouteBindingQuery($query, $value, $field)->forCurrentSite();
+    }
+
     public function resolveRouteBinding($value, $field = null): ?self
     {
         $settings = SiteSetting::current();
@@ -85,7 +91,7 @@ class Event extends Model implements HasMedia
         }
 
         $ttl = $settings->cacheTtl('event_item', 3600);
-        $cacheKey = "event_item_{$value}";
+        $cacheKey = "event_item_{$settings->id}_{$value}";
 
         try {
             $cached = Cache::get($cacheKey);

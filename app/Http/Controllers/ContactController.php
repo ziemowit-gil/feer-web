@@ -124,7 +124,7 @@ class ContactController extends Controller
             return collect();
         }
 
-        return Project::where('is_published', true)
+        return Project::forCurrentSite()->where('is_published', true)
             ->where('is_completed', false)
             ->where('show_coordinator', true)
             ->orderByDesc('is_featured_contact')

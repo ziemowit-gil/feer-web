@@ -21,7 +21,7 @@
             </div>
 
             <h2 class="font-bold text-ink">
-                <a href="{{ route('news.show', $item) }}"
+                <a href="{{ site_route('news.show', $item) }}"
                     class="hover:underline hover:text-brand focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
                     {{ $item->title }}
                 </a>
@@ -31,7 +31,7 @@
                 <p class="mt-1 text-sm text-muted line-clamp-2">{{ $item->excerpt }}</p>
             @endif
 
-            <a href="{{ route('news.show', $item) }}"
+            <a href="{{ site_route('news.show', $item) }}"
                 aria-label="Czytaj więcej: {{ $item->title }}"
                 class="mt-2 inline-block text-sm font-bold text-brand hover:text-brand-dark focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
                 Czytaj więcej →

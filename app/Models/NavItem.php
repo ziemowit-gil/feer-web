@@ -9,6 +9,7 @@ use Illuminate\Support\Str;
 
 class NavItem extends Model
 {
+    use \App\Models\Concerns\BelongsToSite;
     use \App\Models\Concerns\LogsActivity;
 
     public const TYPES = [
@@ -32,7 +33,7 @@ class NavItem extends Model
     ];
 
     protected $fillable = [
-        'parent_id', 'label', 'icon', 'url', 'type', 'module', 'location',
+        'site_id', 'parent_id', 'label', 'icon', 'url', 'type', 'module', 'location',
         'is_button', 'is_transparent_dropdown', 'is_active', 'order', 'button_color',
     ];
 

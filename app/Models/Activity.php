@@ -38,6 +38,8 @@ class Activity extends \Spatie\Activitylog\Models\Activity
         'App\\Models\\User'                 => 'Użytkownik',
         'App\\Models\\UserGroup'            => 'Grupa użytkowników',
         'App\\Models\\Task'                 => 'Zadanie',
+        'App\\Models\\StrategyPlan'         => 'Plan działania (strategia)',
+        'App\\Models\\Authorization'        => 'Wpis rejestru pełnomocnictw',
         'App\\Models\\Event'                => 'Wydarzenie',
         'App\\Models\\Poll'                 => 'Ankieta',
         'App\\Models\\Banner'               => 'Baner',

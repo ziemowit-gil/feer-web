@@ -6,7 +6,7 @@
             <h2 id="ngo-events-heading" class="text-2xl font-extrabold text-gray-900 md:text-3xl">
                 Nadchodzące wydarzenia
             </h2>
-            <a href="{{ route('events.index') }}"
+            <a href="{{ site_route('events.index') }}"
                 class="shrink-0 text-sm font-semibold text-brand hover:underline"
                 aria-label="Wszystkie wydarzenia">
                 Kalendarz &rarr;
@@ -39,7 +39,7 @@
                         @endif
                     </span>
                     <h3 class="text-sm font-bold leading-snug text-gray-900 group-hover:text-brand line-clamp-2">
-                        <a href="{{ route('events.show', $event) }}" class="stretched-link">
+                        <a href="{{ site_route('events.show', $event) }}" class="stretched-link">
                             {{ $event->title }}
                         </a>
                     </h3>

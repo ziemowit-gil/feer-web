@@ -4,7 +4,7 @@
 <nav aria-label="Ścieżka nawigacyjna" class="mx-auto max-w-6xl px-4">
     <ol class="flex flex-wrap items-center gap-1.5 py-2.5 text-xs text-muted">
         <li class="flex items-center gap-2">
-            <a href="{{ route('home') }}" class="flex min-h-6 items-center gap-1.5 hover:text-brand">
+            <a href="{{ site_route('home') }}" class="flex min-h-6 items-center gap-1.5 hover:text-brand">
                 <i class="fa-solid fa-house text-xs" aria-hidden="true"></i>
                 Strona główna
             </a>

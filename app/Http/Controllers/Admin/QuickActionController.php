@@ -18,7 +18,7 @@ class QuickActionController extends Controller
     /** Wyświetla listę szybkich akcji posortowanych wg kolejności. */
     public function index()
     {
-        $quickActions = QuickAction::orderBy('order')->get();
+        $quickActions = QuickAction::forCurrentSite()->orderBy('order')->get();
 
         return view('admin.quick-actions.index', compact('quickActions'));
     }

@@ -168,6 +168,70 @@ Alpine.data('homepageEditor', (initialOrder, saveUrl) => ({
     },
 }));
 
+// Komponent szybkiej edycji aktualności wprost na froncie (news/show.blade.php) —
+// tytuł, lead i status publikacji, bez wchodzenia do panelu. Analogiczny w
+// zachowaniu do homepageEditor (pasek u góry, tryb edycji, zapis przez fetch).
+Alpine.data('newsInlineEditor', (initial, saveUrl) => ({
+    editMode: false,
+    collapsed: localStorage.getItem('admin-bar-collapsed') === '1',
+    form: { ...initial },
+    initialForm: { ...initial },
+    saving: false,
+    saveSuccess: false,
+    error: null,
+
+    toggleBar() {
+        this.collapsed = !this.collapsed;
+        localStorage.setItem('admin-bar-collapsed', this.collapsed ? '1' : '0');
+    },
+
+    hasChanges() {
+        return JSON.stringify(this.form) !== JSON.stringify(this.initialForm);
+    },
+
+    toggleEdit() {
+        this.editMode = !this.editMode;
+        this.error = null;
+        if (!this.editMode) this.form = { ...this.initialForm };
+    },
+
+    discard() {
+        this.form = { ...this.initialForm };
+        this.editMode = false;
+        this.error = null;
+    },
+
+    async save() {
+        this.saving = true;
+        this.error = null;
+        try {
+            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
+            const res = await fetch(saveUrl, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken,
+                    'Accept': 'application/json',
+                },
+                body: JSON.stringify(this.form),
+            });
+            if (!res.ok) {
+                const json = await res.json().catch(() => ({}));
+                throw new Error(json.message ?? `HTTP ${res.status}`);
+            }
+            this.initialForm = { ...this.form };
+            this.editMode = false;
+            this.saveSuccess = true;
+            // Przeładuj po chwili, żeby PHP wyrenderował nowy tytuł (breadcrumb, <title> itd.).
+            setTimeout(() => window.location.reload(), 600);
+        } catch (e) {
+            this.error = 'Nie udało się zapisać zmian. Spróbuj ponownie.';
+        } finally {
+            this.saving = false;
+        }
+    },
+}));
+
 // Odtwarzacz audio (TTS) — czyta treść artykułu przez SpeechSynthesis.
 // Używany w news/show.blade.php i page/show.blade.php.
 Alpine.data('audioPlayer', () => ({

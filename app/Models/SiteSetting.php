@@ -87,6 +87,7 @@ class SiteSetting extends Model implements HasMedia
         'ngo'          => 'NGO / fundacja (rozbudowany)',
         'ngo_mix'      => 'NGO / fundacja (mieszany — klasyczna belka i stopka, rozbudowana strona główna)',
         'municipality' => 'Gmina / urząd',
+        'federacja'    => 'Federacja / organizacja parasolowa (z siecia sub-witryn)',
     ];
 
     /**
@@ -175,6 +176,7 @@ class SiteSetting extends Model implements HasMedia
     ];
 
     protected $fillable = [
+        'slug', 'domain', 'parent_site_id',
         'site_name', 'tagline', 'brand_color', 'brand_color_2', 'brand_color_3', 'brand_color_4', 'brand_skip_contrast', 'nav_dark_text', 'ngo_skip_contrast', 'meta_description', 'allow_indexing', 'ga_measurement_id', 'disabled_modules', 'homepage_section_order', 'events_home_color', 'quick_actions_panel_negative',
         'bip_url', 'bip_intro', 'bip_editor_name', 'bip_editor_email', 'bip_gov_url', 'bip_mode', 'facebook_url', 'facebook_group_url', 'twitter_url', 'instagram_url', 'linkedin_url', 'youtube_url', 'substack_url',
         'contact_address', 'contact_city', 'contact_email', 'contact_phone', 'contact_office_hours', 'contact_intro', 'contact_bank_accounts',
@@ -843,14 +845,52 @@ class SiteSetting extends Model implements HasMedia
 
     private static ?self $cached = null;
 
+    /**
+     * Container binding key used to override `current()` for the duration of
+     * a request — set by `ResolveSiteByDomain`/`EnsureSiteBySlug` on the
+     * public side and by `ResolveAdminActiveSite` in the admin panel, so a
+     * sub-site's own row is returned instead of the main (id 1) one.
+     */
+    public const CURRENT_SITE_BINDING = 'currentSite';
+
+    /**
+     * The site (main or sub-site) active for this request/admin session, or
+     * the main install (id 1, auto-created) when nothing overrode it.
+     */
     public static function current(): self
     {
+        if (app()->bound(self::CURRENT_SITE_BINDING)) {
+            return app(self::CURRENT_SITE_BINDING);
+        }
+
         return static::$cached ??= static::query()->firstOrCreate(['id' => 1]);
     }
 
     protected static function booted(): void
     {
-        static::saved(fn () => static::$cached = null);
+        static::saved(function (self $site) {
+            static::$cached = null;
+            if (app()->bound(self::CURRENT_SITE_BINDING) && app(self::CURRENT_SITE_BINDING)->is($site)) {
+                app()->instance(self::CURRENT_SITE_BINDING, $site);
+            }
+        });
+    }
+
+    /** Sub-sites belonging to this federation site. */
+    public function subsites(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(self::class, 'parent_site_id');
+    }
+
+    /** The federation site this sub-site belongs to, if any. */
+    public function parentSite(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(self::class, 'parent_site_id');
+    }
+
+    public function isSubsite(): bool
+    {
+        return $this->parent_site_id !== null;
     }
 
     public function registerMediaCollections(): void

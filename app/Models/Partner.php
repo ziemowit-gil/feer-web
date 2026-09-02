@@ -10,9 +10,10 @@ use Spatie\MediaLibrary\InteractsWithMedia;
 class Partner extends Model implements HasMedia
 {
     use InteractsWithMedia;
+    use \App\Models\Concerns\BelongsToSite;
     use \App\Models\Concerns\LogsActivity;
 
-    protected $fillable = ['name', 'url', 'order'];
+    protected $fillable = ['site_id', 'name', 'url', 'order'];
 
     public function registerMediaCollections(): void
     {

@@ -48,7 +48,7 @@ class NewsController extends Controller
             ? $categories->firstWhere('slug', $request->query('kategoria'))
             : null;
 
-        $news = News::published()->with(['category', 'tags'])
+        $news = News::published()->forCurrentSite()->with(['category', 'tags'])
             ->when($activeCategory, fn ($q) => $q->where('news_category_id', $activeCategory->id))
             ->orderByDesc('published_at')
             ->paginate(9)

@@ -19,7 +19,7 @@ class PollController extends Controller
     /** Wyświetla listę ankiet z opcjami głosowania. */
     public function index()
     {
-        $polls = Poll::with('options')->latest()->get();
+        $polls = Poll::forCurrentSite()->with('options')->latest()->get();
 
         return view('admin.polls.index', compact('polls'));
     }

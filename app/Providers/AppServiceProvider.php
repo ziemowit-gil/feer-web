@@ -88,7 +88,7 @@ class AppServiceProvider extends ServiceProvider
 
             $view->with(
                 'navPages',
-                Page::whereNull('parent_id')->whereNull('project_id')->where('is_published', true)->where('show_in_menu', true)->with('publishedChildren')
+                Page::forCurrentSite()->whereNull('parent_id')->whereNull('project_id')->where('is_published', true)->where('show_in_menu', true)->with('publishedChildren')
                     ->orderBy('order')->orderBy('title')->get()
             );
 
@@ -96,7 +96,7 @@ class AppServiceProvider extends ServiceProvider
 
             $view->with(
                 'navItems',
-                NavItem::where('location', 'main')->whereNull('parent_id')->where('is_active', true)->with('children')
+                NavItem::forCurrentSite()->where('location', 'main')->whereNull('parent_id')->where('is_active', true)->with('children')
                     ->orderBy('order')->get()
                     ->filter(fn (NavItem $item) => ! $item->module || $siteSettings->isModuleEnabled($item->module))
             );
@@ -107,7 +107,7 @@ class AppServiceProvider extends ServiceProvider
 
             $view->with(
                 'footerNavItems',
-                NavItem::where('location', 'footer')->where('is_active', true)
+                NavItem::forCurrentSite()->where('location', 'footer')->where('is_active', true)
                     ->orderBy('order')->get()
                     ->filter(fn (NavItem $item) => ! $item->module || $siteSettings->isModuleEnabled($item->module))
             );

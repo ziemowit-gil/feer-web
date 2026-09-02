@@ -27,7 +27,7 @@ class NavItemController extends Controller
         $location = $request->input('location', 'main');
         $location = array_key_exists($location, NavItem::LOCATIONS) ? $location : 'main';
 
-        $navItems = NavItem::where('location', $location)
+        $navItems = NavItem::forCurrentSite()->where('location', $location)
             ->whereNull('parent_id')
             ->with('allChildren')
             ->orderBy('order')

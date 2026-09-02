@@ -9,8 +9,9 @@ use Spatie\MediaLibrary\InteractsWithMedia;
 class GalleryImage extends Model implements HasMedia
 {
     use InteractsWithMedia;
+    use \App\Models\Concerns\BelongsToSite;
 
-    protected $fillable = ['caption', 'order'];
+    protected $fillable = ['site_id', 'caption', 'order'];
 
     public function registerMediaCollections(): void
     {

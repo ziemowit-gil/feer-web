@@ -30,7 +30,7 @@ class PageController extends Controller
         $status = $request->query('status', '');
         $sort = $request->query('sort', 'default');
 
-        $pages = Page::with('parent')
+        $pages = Page::forCurrentSite()->with('parent')
             ->when($search !== '', fn ($q) => $q->where(fn ($q) => $q->where('title', 'like', "%{$search}%")->orWhere('slug', 'like', "%{$search}%")))
             ->when($status === 'published', fn ($q) => $q->where('is_published', true))
             ->when($status === 'draft', fn ($q) => $q->where('is_published', false))
@@ -1101,7 +1101,8 @@ class PageController extends Controller
         $suffix = 2;
 
         $isTaken = fn (string $candidate) => in_array($candidate, Page::RESERVED_SLUGS, true)
-            || Page::withTrashed()->where('slug', $candidate)->when($ignoreId, fn ($q) => $q->where('id', '!=', $ignoreId))->exists();
+            || Page::withTrashed()->where('slug', $candidate)->when($ignoreId, fn ($q) => $q->where('id', '!=', $ignoreId))->exists()
+            || \App\Models\SiteSetting::whereNotNull('slug')->where('slug', $candidate)->exists();
 
         while ($isTaken($slug)) {
             $slug = "{$base}-{$suffix}";

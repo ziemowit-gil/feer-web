@@ -14,7 +14,7 @@
                     </h2>
                     <p class="mt-1 text-sm text-muted">Najbliższe terminy — zapisy przez stronę wydarzenia.</p>
                 </div>
-                <a href="{{ route('events.index') }}"
+                <a href="{{ site_route('events.index') }}"
                     class="shrink-0 text-sm font-semibold text-brand hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
                     Pełny kalendarz &rarr;
                 </a>
@@ -29,7 +29,7 @@
                         </p>
 
                         <h3 class="mt-2 text-lg font-bold text-ink">
-                            <a href="{{ route('events.show', $event) }}"
+                            <a href="{{ site_route('events.show', $event) }}"
                                class="hover:text-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
                                 {{ $event->title }}
                             </a>

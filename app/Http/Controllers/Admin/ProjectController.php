@@ -29,7 +29,7 @@ class ProjectController extends Controller
         $category = $request->query('category', '');
         $sort = $request->query('sort', 'default');
 
-        $projects = Project::with('category')
+        $projects = Project::forCurrentSite()->with('category')
             ->when($status === 'published', fn ($q) => $q->where('is_published', true))
             ->when($status === 'draft', fn ($q) => $q->where('is_published', false))
             ->when($category !== '', fn ($q) => $q->where('category_id', $category))

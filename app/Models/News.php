@@ -18,6 +18,7 @@ use Spatie\MediaLibrary\InteractsWithMedia;
 class News extends Model implements HasMedia
 {
     use \App\Models\Concerns\Approvable;
+    use \App\Models\Concerns\BelongsToSite;
     use \App\Models\Concerns\HasEtr;
     use \App\Models\Concerns\HasPreviewLink;
     use \App\Models\Concerns\HasRevisions;
@@ -58,7 +59,7 @@ class News extends Model implements HasMedia
     }
 
     protected $fillable = [
-        'news_category_id', 'project_id', 'title', 'slug', 'excerpt', 'audience', 'accent_color', 'image_alt', 'image_focal_x', 'image_focal_y', 'article_layout', 'content', 'published_at', 'is_published', 'is_archived', 'is_legacy', 'is_clone', 'cloned_from_id',
+        'site_id', 'news_category_id', 'project_id', 'title', 'slug', 'excerpt', 'audience', 'accent_color', 'image_alt', 'image_focal_x', 'image_focal_y', 'article_layout', 'content', 'published_at', 'is_published', 'is_archived', 'is_legacy', 'is_clone', 'cloned_from_id',
         'meta_title', 'meta_description', 'pending_approval', 'submitted_by_id',
     ];
 
@@ -96,6 +97,11 @@ class News extends Model implements HasMedia
         return $this->hasMany(self::class, 'cloned_from_id');
     }
 
+    public function resolveRouteBindingQuery($query, $value, $field = null)
+    {
+        return parent::resolveRouteBindingQuery($query, $value, $field)->forCurrentSite();
+    }
+
     public function resolveRouteBinding($value, $field = null): ?self
     {
         $resolveField = $field ?? $this->getRouteKeyName();
@@ -106,11 +112,12 @@ class News extends Model implements HasMedia
         }
 
         $ttl = $settings->cacheTtl('news_item', 3600);
+        $cacheKey = "news_item_{$settings->id}_{$value}";
 
-        $result = Cache::remember("news_item_{$value}", $ttl, fn () => parent::resolveRouteBinding($value, $field));
+        $result = Cache::remember($cacheKey, $ttl, fn () => parent::resolveRouteBinding($value, $field));
 
         if (! $result instanceof self && $result !== null) {
-            Cache::forget("news_item_{$value}");
+            Cache::forget($cacheKey);
             return parent::resolveRouteBinding($value, $field);
         }
 

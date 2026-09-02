@@ -86,6 +86,44 @@
             </p>
         </div>
 
+        @php $adminSites = \App\Models\SiteSetting::orderBy('parent_site_id')->orderBy('id')->get(); @endphp
+        @if ($authUser?->isAdmin() && $adminSites->count() > 1)
+            <div class="border-b border-gray-200 px-4 py-2" x-data="{ open: false }">
+                <p class="text-xs text-muted">Pracujesz na witrynie</p>
+                <div class="relative mt-0.5">
+                    <button type="button" @click="open = ! open" :aria-expanded="open.toString()"
+                        class="flex w-full items-center justify-between gap-2 rounded px-1.5 py-1 text-left text-sm font-bold text-ink hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                        <span class="truncate">{{ $siteSettings->site_name }}</span>
+                        <i class="fa-solid fa-chevron-down text-[0.6rem] text-gray-400" aria-hidden="true"></i>
+                    </button>
+                    <div x-show="open" x-cloak @click.outside="open = false" @keydown.escape.window="open = false"
+                        class="absolute left-0 z-50 mt-1 w-64 overflow-hidden rounded-lg border border-gray-200 bg-white py-1 shadow-xl"
+                        role="menu" aria-label="Wybierz witrynę">
+                        @foreach ($adminSites as $adminSite)
+                            <form method="POST" action="{{ route('admin.witryny.przelacz', $adminSite) }}">
+                                @csrf
+                                <button type="submit"
+                                    class="flex w-full items-center gap-2 px-3 py-2 text-left text-sm hover:bg-gray-50 {{ $adminSite->is($siteSettings) ? 'font-bold text-brand' : 'text-ink' }}">
+                                    @if ($adminSite->parent_site_id)
+                                        <i class="fa-solid fa-arrow-turn-up fa-rotate-90 ml-2 text-[0.65rem] text-gray-300" aria-hidden="true"></i>
+                                    @else
+                                        <i class="fa-solid fa-sitemap text-[0.7rem] text-gray-300" aria-hidden="true"></i>
+                                    @endif
+                                    <span class="truncate">{{ $adminSite->site_name }}</span>
+                                    @if ($adminSite->is($siteSettings))
+                                        <i class="fa-solid fa-check ml-auto text-xs" aria-hidden="true"></i>
+                                    @endif
+                                </button>
+                            </form>
+                        @endforeach
+                        <a href="{{ route('admin.witryny.index') }}" class="mt-1 flex items-center gap-2 border-t border-gray-100 px-3 py-2 text-sm text-muted hover:bg-gray-50 hover:text-brand">
+                            <i class="fa-solid fa-gear text-[0.7rem]" aria-hidden="true"></i> Zarządzaj witrynami
+                        </a>
+                    </div>
+                </div>
+            </div>
+        @endif
+
         @php
             $moduleManager = app(\App\Modules\ModuleManager::class);
             $can = fn (string $module) => (
@@ -108,7 +146,7 @@
             $marketingRoutes  = ['admin.banery.*', 'admin.strefy-bannerow.*', 'admin.newsletter.*', 'admin.subskrybenci.*', 'admin.kampanie.*'];
             $inboxRoutes      = ['admin.zgloszenia-spotkania.*', 'admin.zgloszenia-barier.*', 'admin.wiadomosci-kontaktowe.*'];
             $usersRoutes      = ['admin.uzytkownicy.*', 'admin.grupy.*', 'admin.zaproszenia-strefy.*'];
-            $systemRoutes     = ['admin.ustawienia.*', 'admin.szablony.*', 'admin.tresc.*', 'admin.przekierowania.*', 'admin.martwe-linki.*', 'admin.dziennik.*', 'admin.wcag-scans.*', 'admin.mail-templates.*', 'admin.health.*', 'admin.moduly.*', 'admin.cache.*'];
+            $systemRoutes     = ['admin.ustawienia.*', 'admin.szablony.*', 'admin.tresc.*', 'admin.przekierowania.*', 'admin.martwe-linki.*', 'admin.dziennik.*', 'admin.wcag-scans.*', 'admin.mail-templates.*', 'admin.health.*', 'admin.moduly.*', 'admin.cache.*', 'admin.witryny.*'];
         @endphp
 
         <nav class="flex-1 space-y-1.5 overflow-y-auto px-3 py-4 text-sm font-medium">
@@ -396,6 +434,14 @@
                 </a>
             @endif
 
+            {{-- Rejestr pełnomocnictw i upoważnień (zarządzanie: tylko admin) --}}
+            @if ($siteSettings->isModuleEnabled('authorizations') && auth()->user()->isAdmin())
+                <a href="{{ route('admin.pelnomocnictwa.index') }}" class="{{ $itemClass('admin.pelnomocnictwa.*') }}" title="Rejestr pełnomocnictw">
+                    <i class="fa-solid fa-file-signature {{ $iconClass('admin.pelnomocnictwa.*') }}"></i>
+                    <span class="nav-label">Rejestr pełnomocnictw</span>
+                </a>
+            @endif
+
             {{-- Landing pages --}}
             @if ($can('landing'))
                 <a href="{{ route('admin.lp.index') }}" class="{{ $itemClass('admin.lp.*') }}" title="Landing pages">
@@ -418,6 +464,23 @@
                 <i class="fa-solid fa-photo-film {{ $iconClass('admin.multimedia.*') }}"></i>
                 <span class="nav-label">Multimedia</span>
             </a>
+
+            {{-- Pomoc (zgłoszenia do Helpdesku Centralnego) --}}
+            @if (auth()->user()->isAdmin())
+                <a href="{{ route('admin.pomoc.index') }}" class="{{ $itemClass('admin.pomoc.*') }}" title="Pomoc">
+                    <i class="fa-solid fa-life-ring {{ $iconClass('admin.pomoc.*') }}"></i>
+                    <span class="nav-label">Pomoc</span>
+                </a>
+            @endif
+
+            {{-- ━━ STRATEGIA ORGANIZACJI (planowanie działań — dla całego zespołu) ━━ --}}
+            @if ($siteSettings->isModuleEnabled('strategy'))
+                <div class="section-divider"></div>
+                <a href="{{ route('admin.strategia.index') }}" class="{{ $itemClass('admin.strategia.*') }}" title="Strategia organizacji">
+                    <i class="fa-solid fa-chess {{ $iconClass('admin.strategia.*') }}"></i>
+                    <span class="nav-label">Strategia organizacji</span>
+                </a>
+            @endif
 
             {{-- ━━ MARKETING (tylko admin) ━━ --}}
             @if (auth()->user()->isAdmin())
@@ -623,6 +686,10 @@
                         <a href="{{ route('admin.cache.index') }}" class="{{ $itemClass('admin.cache.*') }}" title="Cache">
                             <i class="fa-solid fa-bolt {{ $iconClass('admin.cache.*') }}"></i>
                             <span class="nav-label">Cache</span>
+                        </a>
+                        <a href="{{ route('admin.witryny.index') }}" class="{{ $itemClass('admin.witryny.*') }}" title="Witryny sieci">
+                            <i class="fa-solid fa-sitemap {{ $iconClass('admin.witryny.*') }}"></i>
+                            <span class="nav-label">Witryny sieci</span>
                         </a>
                     </div>
                 </div>
@@ -861,6 +928,23 @@
                 <div role="alert" class="mb-4 rounded border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-800">
                     {{ session('error') }}
                 </div>
+            @endif
+
+            {{--
+                Licencja tej instalacji w Helpdesku Centralnym — komunikat tylko
+                gdy integracja jest skonfigurowana I aktywowana I obecnie nieważna
+                (patrz App\Models\LicenseStatus, App\Support\Helpdesk). Świadomie
+                bez blokowania czegokolwiek — patrz docblock klasy Helpdesk: awaria
+                sieci albo Helpdesku nigdy sama w sobie nie zmienia tego statusu.
+            --}}
+            @if (auth()->user()->isAdmin())
+                @php $licenseStatus = \App\Models\LicenseStatus::current(); @endphp
+                @if ($licenseStatus->configured() && $licenseStatus->activated && ! $licenseStatus->valid)
+                    <div role="alert" class="mb-4 flex items-center justify-between gap-3 rounded border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+                        <span><i class="fa-solid fa-triangle-exclamation mr-1.5" aria-hidden="true"></i>{{ $licenseStatus->statusLabel() }} — skontaktuj się z dostawcą, żeby ją odnowić.</span>
+                        <a href="{{ route('admin.ustawienia.edit', ['tab' => 'general']) }}" class="shrink-0 font-bold text-amber-900 hover:underline">Szczegóły</a>
+                    </div>
+                @endif
             @endif
 
             @yield('content')

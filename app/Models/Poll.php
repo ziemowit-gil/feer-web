@@ -7,9 +7,10 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Poll extends Model
 {
+    use \App\Models\Concerns\BelongsToSite;
     use \App\Models\Concerns\LogsActivity;
 
-    protected $fillable = ['question', 'is_active'];
+    protected $fillable = ['site_id', 'question', 'is_active'];
 
     protected $casts = [
         'is_active' => 'boolean',
@@ -22,7 +23,7 @@ class Poll extends Model
 
     public static function active(): ?self
     {
-        return static::where('is_active', true)->with('options')->latest()->first();
+        return static::where('is_active', true)->forCurrentSite()->with('options')->latest()->first();
     }
 
     public function totalVotes(): int

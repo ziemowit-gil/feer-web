@@ -1,0 +1,26 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::table('nav_items', function (Blueprint $table) {
+            $table->foreignId('site_id')->nullable()->after('id')
+                ->constrained('site_settings')->restrictOnDelete();
+        });
+
+        DB::table('nav_items')->whereNull('site_id')->update(['site_id' => 1]);
+    }
+
+    public function down(): void
+    {
+        Schema::table('nav_items', function (Blueprint $table) {
+            $table->dropConstrainedForeignId('site_id');
+        });
+    }
+};

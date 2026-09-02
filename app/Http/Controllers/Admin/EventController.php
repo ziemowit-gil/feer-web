@@ -80,13 +80,13 @@ class EventController extends Controller
     {
         $showArchived = $request->boolean('archived');
 
-        $events = Event::when($showArchived,
+        $events = Event::forCurrentSite()->when($showArchived,
             fn ($q) => $q->whereNotNull('archived_at'),
             fn ($q) => $q->whereNull('archived_at'))
             ->orderByDesc('starts_at')
             ->get();
 
-        $archivedCount = Event::whereNotNull('archived_at')->count();
+        $archivedCount = Event::forCurrentSite()->whereNotNull('archived_at')->count();
 
         return view('admin.events.index', compact('events', 'showArchived', 'archivedCount'));
     }

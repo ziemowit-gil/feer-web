@@ -9,8 +9,9 @@ use Spatie\MediaLibrary\InteractsWithMedia;
 class HeroSlide extends Model implements HasMedia
 {
     use InteractsWithMedia;
+    use \App\Models\Concerns\BelongsToSite;
 
-    protected $fillable = ['title', 'text', 'button_label', 'button_url', 'order', 'duration'];
+    protected $fillable = ['site_id', 'title', 'text', 'button_label', 'button_url', 'order', 'duration'];
 
     protected $casts = ['duration' => 'integer'];
 

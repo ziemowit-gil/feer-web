@@ -23,7 +23,7 @@ class ProjectController extends Controller
             ->orderBy('name')
             ->get();
 
-        $hasArchive = Project::where('is_published', true)->where('is_completed', true)->exists();
+        $hasArchive = Project::forCurrentSite()->where('is_published', true)->where('is_completed', true)->exists();
 
         return view('projects.index', compact('categories', 'hasArchive'));
     }
@@ -31,7 +31,7 @@ class ProjectController extends Controller
     /** Wyświetla archiwum zakończonych projektów. */
     public function archive()
     {
-        $projects = Project::where('is_published', true)
+        $projects = Project::forCurrentSite()->where('is_published', true)
             ->where('is_completed', true)
             ->with('category')
             ->orderBy('order')

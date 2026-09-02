@@ -286,11 +286,11 @@
         <section class="mx-auto max-w-5xl px-4 pb-14">
             <div class="mb-6 flex flex-wrap items-end justify-between gap-3">
                 <h2 class="text-2xl font-bold text-ink">Co ostatnio u nas słychać</h2>
-                <a href="{{ route('news.index') }}" class="text-sm font-bold text-brand hover:text-brand-dark">Wszystkie aktualności →</a>
+                <a href="{{ site_route('news.index') }}" class="text-sm font-bold text-brand hover:text-brand-dark">Wszystkie aktualności →</a>
             </div>
             <div class="grid gap-6 sm:grid-cols-3">
                 @foreach ($latestNews as $item)
-                    <a href="{{ route('news.show', $item) }}" class="group flex flex-col overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm transition hover:shadow-md">
+                    <a href="{{ site_route('news.show', $item) }}" class="group flex flex-col overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm transition hover:shadow-md">
                         @if ($item->imageUrlOrDefault())
                             <img src="{{ $item->imageUrlOrDefault() }}" alt="{{ $item->image_alt ?: '' }}" class="h-40 w-full object-cover" loading="lazy">
                         @endif

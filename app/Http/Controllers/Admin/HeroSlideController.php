@@ -20,7 +20,7 @@ class HeroSlideController extends Controller
     /** Wyświetla listę slajdów sekcji hero. */
     public function index()
     {
-        $heroSlides = HeroSlide::orderBy('order')->get();
+        $heroSlides = HeroSlide::forCurrentSite()->orderBy('order')->get();
 
         return view('admin.hero.index', compact('heroSlides'));
     }

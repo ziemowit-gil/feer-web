@@ -9,7 +9,7 @@
             <h2 class="text-2xl font-bold text-ink">Nadchodzące szkolenia i wydarzenia</h2>
             <p class="mt-1 text-muted">Dołącz do naszych szkoleń, warsztatów i spotkań.</p>
         </div>
-        <a href="{{ route('events.index') }}" class="rounded px-4 py-2 text-xs font-bold uppercase tracking-wide text-white transition hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2" style="background: var(--accent); outline-color: var(--accent)">Zobacz wszystkie</a>
+        <a href="{{ site_route('events.index') }}" class="rounded px-4 py-2 text-xs font-bold uppercase tracking-wide text-white transition hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2" style="background: var(--accent); outline-color: var(--accent)">Zobacz wszystkie</a>
     </div>
 
     {{-- Licznik do najbliższego wydarzenia. Serwer renderuje wartość zapasową
@@ -57,14 +57,14 @@
                 </div>
                 <div class="flex flex-1 flex-col p-5">
                     <h3 class="font-bold text-ink">
-                        <a href="{{ route('events.show', $event) }}" class="hover:text-brand focus-visible:outline-2 focus-visible:outline-offset-2" style="outline-color: var(--accent)">{{ $event->title }}</a>
+                        <a href="{{ site_route('events.show', $event) }}" class="hover:text-brand focus-visible:outline-2 focus-visible:outline-offset-2" style="outline-color: var(--accent)">{{ $event->title }}</a>
                     </h3>
                     <p class="mt-1 flex items-center gap-1.5 text-xs text-muted">
                         <i class="fa-solid fa-location-dot" aria-hidden="true" style="color: var(--accent)"></i>
                         {{ $event->modeLabel() }}@if ($event->location) · {{ $event->location }}@endif
                     </p>
                     <p class="mt-2 flex-1 text-sm text-muted">{{ \Illuminate\Support\Str::limit($event->lead, 110) }}</p>
-                    <a href="{{ route('events.show', $event) }}" class="mt-3 inline-flex items-center gap-2 self-start text-sm font-bold" style="color: var(--accent)">
+                    <a href="{{ site_route('events.show', $event) }}" class="mt-3 inline-flex items-center gap-2 self-start text-sm font-bold" style="color: var(--accent)">
                         Szczegóły i zapisy <i class="fa-solid fa-arrow-right text-xs" aria-hidden="true"></i>
                     </a>
                 </div>

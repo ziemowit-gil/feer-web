@@ -18,7 +18,7 @@ class GalleryImageController extends Controller
     /** Wyświetla listę zdjęć w galerii publicznej. */
     public function index()
     {
-        $galleryImages = GalleryImage::orderBy('order')->get();
+        $galleryImages = GalleryImage::forCurrentSite()->orderBy('order')->get();
 
         return view('admin.gallery.index', compact('galleryImages'));
     }

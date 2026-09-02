@@ -27,7 +27,7 @@
         <div class="mx-auto flex max-w-6xl items-center gap-6 px-4 py-4">
 
             {{-- Logo --}}
-            <a href="{{ route('home') }}" class="flex flex-none items-center gap-3" aria-label="{{ $siteSettings->site_name }} — strona główna">
+            <a href="{{ site_route('home') }}" class="flex flex-none items-center gap-3" aria-label="{{ $siteSettings->site_name }} — strona główna">
                 @if ($siteSettings->logoUrl())
                     <img src="{{ $siteSettings->logoUrl() }}" alt="{{ $siteSettings->logoAltText() }}"
                         class="h-16 w-auto max-w-[14rem] rounded object-contain">
@@ -234,7 +234,7 @@
 {{-- ─── Dotychczasowe layouty (classic / brand_bar / brand_bar_inline) ──── --}}
 <header class="{{ $inlineOnBrand ? 'bg-brand border-transparent' : 'bg-white' }}" x-data="{ mobileOpen: false }" @keydown.escape="mobileOpen = false">
     <div class="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-4">
-        <a href="{{ route('home') }}" class="flex items-center gap-3" aria-label="{{ $siteSettings->site_name }} — strona główna">
+        <a href="{{ site_route('home') }}" class="flex items-center gap-3" aria-label="{{ $siteSettings->site_name }} — strona główna">
             @if ($siteSettings->logoUrl())
                 <img src="{{ $siteSettings->logoUrl() }}" alt="{{ $siteSettings->logoAltText() }}" class="h-12 w-auto max-w-[16rem] flex-none rounded object-contain {{ $inlineOnBrand ? 'bg-white p-1' : '' }}">
             @else

@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
 use Throwable;
 
@@ -89,7 +90,7 @@ class InstallController extends Controller
             'admin_password'   => ['required', 'confirmed', Password::min(8)],
             'site_name'        => ['required', 'string', 'max:120'],
             'site_tagline'     => ['nullable', 'string', 'max:200'],
-            'site_template'    => ['required', 'in:default,ngo,municipality'],
+            'site_template'    => ['required', Rule::in(array_keys(SiteSetting::SITE_TEMPLATES))],
         ]);
 
         try {

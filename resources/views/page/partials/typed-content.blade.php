@@ -163,18 +163,17 @@
     @endphp
 
     <article>
-        {{-- Hero: tytuł + motto na gradiencie marki --}}
-        <header class="relative overflow-hidden bg-gradient-to-br from-brand to-brand-dark px-4 py-10 text-center text-white md:py-16">
-            <i class="fa-solid fa-quote-right pointer-events-none absolute -right-4 -top-4 text-[9rem] text-white/10 md:text-[14rem]" aria-hidden="true"></i>
-            <div class="relative mx-auto max-w-4xl">
-                <h1 class="text-3xl font-bold leading-tight md:text-5xl">{{ $page->title }}</h1>
+        {{-- Hero: tytuł + motto na neutralnym tle (bez pełnokolorowego gradientu marki) --}}
+        <header class="border-b border-gray-100 bg-gray-50 px-4 py-12 text-center md:py-16">
+            <div class="mx-auto max-w-4xl">
+                <h1 class="text-3xl font-extrabold leading-tight text-ink md:text-5xl">{{ $page->title }}</h1>
                 @if ($page->about_motto)
-                    <p class="mx-auto mt-6 max-w-3xl text-xl font-medium leading-relaxed text-white/90 md:text-2xl">
-                        „{{ $page->about_motto }}"
-                    </p>
-                    @if ($page->about_motto_author)
-                        <p class="mt-4 text-sm font-bold uppercase tracking-widest text-white/70">— {{ $page->about_motto_author }}</p>
-                    @endif
+                    <blockquote class="mx-auto mt-8 max-w-3xl rounded-r-lg border-l-4 border-brand bg-white px-6 py-4 text-left shadow-sm">
+                        <p class="text-lg italic leading-relaxed text-ink md:text-xl">„{{ $page->about_motto }}"</p>
+                        @if ($page->about_motto_author)
+                            <cite class="mt-3 block text-sm font-bold not-italic uppercase tracking-widest text-muted">— {{ $page->about_motto_author }}</cite>
+                        @endif
+                    </blockquote>
                 @endif
             </div>
         </header>
@@ -201,9 +200,8 @@
                 active = key;
                 links.forEach(function (a) {
                     var on = a.dataset.aboutNav === key;
-                    a.classList.toggle('bg-brand', on);
-                    a.classList.toggle('text-white', on);
-                    a.classList.toggle('hover:bg-brand-dark', on);
+                    a.classList.toggle('bg-brand/10', on);
+                    a.classList.toggle('text-brand', on);
                     a.classList.toggle('text-muted', !on);
                     a.classList.toggle('hover:bg-gray-100', !on);
                     a.classList.toggle('hover:text-ink', !on);
@@ -282,7 +280,7 @@
 
                 <div>
                     <p class="mb-4 text-xs font-bold uppercase tracking-widest text-brand">Słowo od Fundatora</p>
-                    <h2 class="mb-1 text-2xl font-bold text-ink md:text-3xl">{{ $aboutFounder->title }}</h2>
+                    <h2 class="mb-1 text-2xl font-extrabold text-ink md:text-3xl">{{ $aboutFounder->title }}</h2>
                     @if (filled($aboutFounder->person_role))
                         <p class="mb-6 text-sm font-medium text-muted">{{ $aboutFounder->person_role }}</p>
                     @else
@@ -335,18 +333,17 @@
         @break
 
         @case('stats')
-        {{-- Statystyki: pas w gradiencie marki, dzielniki, animacja liczenia --}}
+        {{-- Statystyki: neutralny pas, dzielniki, animacja liczenia --}}
         @if ($aboutStats->isNotEmpty())
-            <section id="sekcja-stats" class="relative overflow-hidden bg-gradient-to-br from-brand to-brand-dark px-4 py-12 text-white" aria-label="W liczbach" data-countup>
-                <i class="fa-solid fa-arrow-trend-up pointer-events-none absolute -bottom-10 -right-2 text-[11rem] text-white/10" aria-hidden="true"></i>
-                <dl class="relative mx-auto flex max-w-4xl items-center justify-center">
+            <section id="sekcja-stats" class="bg-gray-50 px-4 py-12" aria-label="W liczbach" data-countup>
+                <dl class="mx-auto flex max-w-4xl flex-wrap items-center justify-center">
                     @foreach ($aboutStats as $stat)
-                        <div class="flex flex-1 flex-col items-center px-6 text-center {{ !$loop->first ? 'border-l border-white/20' : '' }}">
+                        <div class="flex flex-1 flex-col items-center px-6 py-2 text-center {{ !$loop->first ? 'border-l border-gray-200' : '' }}">
                             <dt class="sr-only">{{ $stat['label'] ?? '' }}</dt>
                             <dd class="flex flex-col items-center">
-                                <span class="block text-3xl font-extrabold leading-none tracking-tight md:text-4xl" data-countup-value>{{ $stat['value'] ?? '' }}</span>
-                                <span class="mx-auto mt-3 block h-px w-8 rounded-full bg-white/40" aria-hidden="true"></span>
-                                <span class="mt-3 block text-xs font-medium uppercase tracking-wider text-white/75">{{ $stat['label'] ?? '' }}</span>
+                                <span class="block text-3xl font-extrabold leading-none tracking-tight text-brand md:text-4xl" data-countup-value>{{ $stat['value'] ?? '' }}</span>
+                                <span class="mx-auto mt-3 block h-px w-8 rounded-full bg-gray-300" aria-hidden="true"></span>
+                                <span class="mt-3 block text-xs font-medium uppercase tracking-wider text-muted">{{ $stat['label'] ?? '' }}</span>
                             </dd>
                         </div>
                     @endforeach
@@ -359,7 +356,7 @@
         {{-- Galeria: pozostałe zdjęcia w układzie bento (pierwsze duże) --}}
         @if ($galleryPhotos->isNotEmpty())
             <section id="sekcja-gallery" class="mx-auto max-w-6xl px-4 py-16">
-                <h2 class="mb-8 text-center text-2xl font-bold text-ink md:text-3xl">Galeria</h2>
+                <h2 class="mb-8 text-center text-2xl font-extrabold text-ink md:text-3xl">Galeria</h2>
                 <div class="grid auto-rows-[160px] grid-cols-2 gap-3 md:auto-rows-[220px] md:grid-cols-4" data-lightbox>
                     @foreach ($galleryPhotos as $image)
                         <figure class="group relative overflow-hidden rounded-2xl {{ $loop->first ? 'col-span-2 row-span-2' : '' }}">
@@ -382,7 +379,7 @@
         @if ($aboutValues->isNotEmpty())
             <section id="sekcja-values" class="bg-gray-50 px-4 py-16" aria-label="Nasze wartości">
                 <div class="mx-auto max-w-4xl">
-                    <h2 class="mb-10 text-center text-2xl font-bold text-ink md:text-3xl">Nasze wartości</h2>
+                    <h2 class="mb-10 text-center text-2xl font-extrabold text-ink md:text-3xl">Nasze wartości</h2>
                     <div class="grid gap-x-12 gap-y-9 sm:grid-cols-2">
                         @foreach ($aboutValues as $value)
                             <div class="flex items-start gap-4">
@@ -411,7 +408,7 @@
         {{-- Oś czasu --}}
         @if ($aboutTimeline->isNotEmpty())
             <section id="sekcja-timeline" class="mx-auto max-w-3xl px-4 py-16" aria-label="Nasza historia">
-                <h2 class="mb-10 text-center text-2xl font-bold text-ink md:text-3xl">Nasza historia</h2>
+                <h2 class="mb-10 text-center text-2xl font-extrabold text-ink md:text-3xl">Nasza historia</h2>
                 <ol class="relative ml-3 space-y-8 border-l-2 border-brand/30 pl-8">
                     @foreach ($aboutTimeline as $entry)
                         @php
@@ -456,7 +453,7 @@
         @if ($aboutTeam->isNotEmpty())
             <section id="sekcja-team" class="bg-gray-50 px-4 py-16" aria-label="Nasz zespół">
                 <div class="mx-auto max-w-5xl">
-                    <h2 class="mb-10 text-center text-2xl font-bold text-ink md:text-3xl">Nasz zespół</h2>
+                    <h2 class="mb-10 text-center text-2xl font-extrabold text-ink md:text-3xl">Nasz zespół</h2>
                     @include('partials.team', ['members' => $aboutTeam])
                 </div>
             </section>
@@ -469,7 +466,7 @@
         @if ($aboutPartners->isNotEmpty())
             <section id="sekcja-partners" class="bg-gray-50 px-4 py-16" aria-label="Nasi partnerzy">
                 <div class="mx-auto max-w-5xl text-center">
-                    <h2 class="mb-2 text-2xl font-bold text-ink md:text-3xl">Nasi partnerzy — wspierają nas</h2>
+                    <h2 class="mb-2 text-2xl font-extrabold text-ink md:text-3xl">Nasi partnerzy — wspierają nas</h2>
                     <p class="mb-10 text-muted">Dziękujemy organizacjom i instytucjom, które nas wspierają.</p>
                     <ul class="flex flex-wrap items-center justify-center gap-x-12 gap-y-8">
                         @foreach ($aboutPartners as $partner)
@@ -498,7 +495,7 @@
         {{-- Dokumenty i sprawozdania: wybrane pliki + odnośnik do BIP po resztę --}}
         @if ($page->attachments->isNotEmpty() || filled($page->about_documents_intro))
             <section id="sekcja-documents" class="mx-auto max-w-6xl px-4 py-16" aria-label="Dokumenty i sprawozdania">
-                <h2 class="mb-10 text-center text-2xl font-bold text-ink md:text-3xl">Dokumenty i sprawozdania</h2>
+                <h2 class="mb-10 text-center text-2xl font-extrabold text-ink md:text-3xl">Dokumenty i sprawozdania</h2>
                 <div class="grid gap-10 lg:grid-cols-2">
                     <div class="prose max-w-none text-ink">
                         @if (filled($page->about_documents_intro))
@@ -538,7 +535,7 @@
         @if ($aboutPress->isNotEmpty() || filled($page->about_press_intro))
             <section id="sekcja-press" class="bg-gray-50 px-4 py-16" aria-label="My w mediach">
                 <div class="mx-auto max-w-5xl">
-                    <h2 class="mb-3 text-center text-2xl font-bold text-ink md:text-3xl">My w mediach</h2>
+                    <h2 class="mb-3 text-center text-2xl font-extrabold text-ink md:text-3xl">My w mediach</h2>
                     @if (filled($page->about_press_intro))
                         <p class="mx-auto mb-10 max-w-2xl text-center text-muted">{{ $page->about_press_intro }}</p>
                     @endif

@@ -30,16 +30,16 @@ class HomeController extends Controller
     private function municipalityHome(SiteSetting $settings, Collection $slides, Collection $partners)
     {
         $newsSidebar = $settings->isModuleEnabled('news')
-            ? News::published()->with('category')->orderByDesc('published_at')->limit(3)->get()
+            ? News::published()->forCurrentSite()->with('category')->orderByDesc('published_at')->limit(3)->get()
             : collect();
 
         $newsGrid = $settings->isModuleEnabled('news')
-            ? News::published()->with('category')->orderByDesc('published_at')->skip(3)->limit(8)->get()
+            ? News::published()->forCurrentSite()->with('category')->orderByDesc('published_at')->skip(3)->limit(8)->get()
             : collect();
 
         $shortcuts = collect();
         if ($settings->municipality_shortcuts_slug) {
-            $tilesPage = Page::where('slug', $settings->municipality_shortcuts_slug)
+            $tilesPage = Page::forCurrentSite()->where('slug', $settings->municipality_shortcuts_slug)
                 ->where('type', 'tiles_grid')
                 ->first();
             if ($tilesPage && !empty($tilesPage->tiles)) {
@@ -55,15 +55,15 @@ class HomeController extends Controller
     {
         // Trzy aktualności — tyle samo co w szablonie klasycznym.
         $newsItems = $settings->isModuleEnabled('news')
-            ? News::published()->with('category')->orderByDesc('published_at')->limit(3)->get()
+            ? News::published()->forCurrentSite()->with('category')->orderByDesc('published_at')->limit(3)->get()
             : collect();
 
         $projects = $settings->isModuleEnabled('projects')
-            ? Project::where('is_published', true)->orderBy('order')->limit(3)->get()
+            ? Project::forCurrentSite()->where('is_published', true)->orderBy('order')->limit(3)->get()
             : collect();
 
         $events = $settings->isModuleEnabled('events')
-            ? Event::upcoming()->limit(3)->get()
+            ? Event::upcoming()->forCurrentSite()->limit(3)->get()
             : collect();
 
         return view($view, compact('slides', 'newsItems', 'projects', 'events', 'partners'));
@@ -74,13 +74,13 @@ class HomeController extends Controller
     {
         $settings = SiteSetting::current();
 
-        $slides = $settings->isModuleEnabled('hero') ? HeroSlide::orderBy('order')->get() : collect();
+        $slides = $settings->isModuleEnabled('hero') ? HeroSlide::forCurrentSite()->orderBy('order')->get() : collect();
 
         if ($settings->hero_mission_slide && $slides->isNotEmpty()) {
             $mottoTtl    = $settings->cacheEnabled('pages') ? $settings->cacheTtl('page_item', 3600) : 0;
             $missionText = ($mottoTtl > 0
-                ? Cache::remember('page_about_motto', $mottoTtl, fn () => Page::where('type', 'about')->value('about_motto'))
-                : Page::where('type', 'about')->value('about_motto')
+                ? Cache::remember("page_about_motto_{$settings->id}", $mottoTtl, fn () => Page::forCurrentSite()->where('type', 'about')->value('about_motto'))
+                : Page::forCurrentSite()->where('type', 'about')->value('about_motto')
             ) ?: $settings->tagline;
             if (filled($missionText)) {
                 $missionSlide = (object) [
@@ -98,13 +98,14 @@ class HomeController extends Controller
         $newsTtl = $settings->isModuleEnabled('news') && $settings->cacheEnabled('news')
             ? $settings->cacheTtl('news_item', 3600)
             : 0;
-        $newsQuery = fn () => News::published()->with('category')->orderByDesc('published_at')->limit(3)->get();
+        $newsQuery = fn () => News::published()->forCurrentSite()->with('category')->orderByDesc('published_at')->limit(3)->get();
         $news = collect();
         if ($settings->isModuleEnabled('news')) {
             if ($newsTtl > 0) {
-                $news = Cache::remember('news_latest3', $newsTtl, $newsQuery);
+                $newsCacheKey = "news_latest3_{$settings->id}";
+                $news = Cache::remember($newsCacheKey, $newsTtl, $newsQuery);
                 if (! $news instanceof \Illuminate\Database\Eloquent\Collection) {
-                    Cache::forget('news_latest3');
+                    Cache::forget($newsCacheKey);
                     $news = $newsQuery();
                 }
             } else {
@@ -113,16 +114,16 @@ class HomeController extends Controller
         }
 
         $events = $settings->isModuleEnabled('events')
-            ? Event::upcoming()->limit(3)->get()
+            ? Event::upcoming()->forCurrentSite()->limit(3)->get()
             : collect();
 
         $poll = $settings->isModuleEnabled('polls') ? Poll::active() : null;
 
-        $quickLinks = $settings->isModuleEnabled('quick_actions') ? QuickAction::orderBy('order')->get() : collect();
+        $quickLinks = $settings->isModuleEnabled('quick_actions') ? QuickAction::forCurrentSite()->orderBy('order')->get() : collect();
 
-        $gallery = $settings->isModuleEnabled('gallery') ? GalleryImage::orderBy('order')->get() : collect();
+        $gallery = $settings->isModuleEnabled('gallery') ? GalleryImage::forCurrentSite()->orderBy('order')->get() : collect();
 
-        $partners = $settings->isModuleEnabled('partners') ? Partner::orderBy('order')->get() : collect();
+        $partners = $settings->isModuleEnabled('partners') ? Partner::forCurrentSite()->orderBy('order')->get() : collect();
 
         $substackPosts = $settings->substack_url ? SubstackFeed::posts($settings->substack_url) : [];
 
@@ -137,6 +138,9 @@ class HomeController extends Controller
         }
         if ($template === 'ngo_mix') {
             return $this->ngoHome($settings, $slides, $partners, 'templates.ngo-mix.home');
+        }
+        if ($template === 'federacja') {
+            return $this->ngoHome($settings, $slides, $partners, 'templates.federacja.home');
         }
 
         return view('home', compact('slides', 'news', 'events', 'poll', 'quickLinks', 'gallery', 'partners', 'sectionOrder', 'substackPosts'));

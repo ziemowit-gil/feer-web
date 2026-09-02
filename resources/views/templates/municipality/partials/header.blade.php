@@ -5,7 +5,7 @@
         <div class="mx-auto flex max-w-[1400px] items-center gap-4 px-4 py-3">
 
             {{-- Logo + nazwa --}}
-            <a href="{{ route('home') }}"
+            <a href="{{ site_route('home') }}"
                class="flex flex-none items-center gap-3 group"
                aria-label="{{ $siteSettings->site_name }} — strona główna"
                title="Kliknij aby przejść do strony głównej.">

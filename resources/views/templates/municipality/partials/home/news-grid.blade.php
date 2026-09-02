@@ -14,7 +14,7 @@
         @if ($featured->isNotEmpty())
             <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                 @foreach ($featured as $item)
-                    <a href="{{ route('news.show', $item) }}"
+                    <a href="{{ site_route('news.show', $item) }}"
                         class="group block overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-gray-100 transition hover:shadow-md hover:ring-brand/20">
                         @if ($img = $item->imageUrlOrDefault())
                             <div class="aspect-[4/3] overflow-hidden bg-gray-100">
@@ -35,7 +35,7 @@
         @if ($rest->isNotEmpty())
             <div class="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                 @foreach ($rest as $item)
-                    <a href="{{ route('news.show', $item) }}"
+                    <a href="{{ site_route('news.show', $item) }}"
                         class="group block overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-gray-100 transition hover:shadow-md hover:ring-brand/20">
                         @if ($img = $item->imageUrlOrDefault())
                             <div class="h-36 overflow-hidden bg-gray-100">

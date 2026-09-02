@@ -15,7 +15,7 @@
         <div class="grid gap-8 md:grid-cols-[14rem_1fr] lg:grid-cols-[16rem_1fr]">
             <aside class="flex flex-col gap-4 md:sticky md:top-4 md:self-start">
                 <div class="rounded-xl border border-gray-200 bg-white p-3">
-                    @include('partials.news-category-picker', ['categories' => $categories, 'active' => $activeCategory, 'baseUrl' => route('news.index')])
+                    @include('partials.news-category-picker', ['categories' => $categories, 'active' => $activeCategory, 'baseUrl' => site_route('news.index')])
                     <div class="mt-3 border-t border-gray-100 pt-3">
                         <a href="{{ route('news.archiwum') }}"
                             class="flex items-center gap-2 rounded px-2 py-1.5 text-sm font-medium text-muted hover:bg-gray-50 hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-brand">
@@ -62,7 +62,7 @@
                                         </div>
 
                                         <h2 class="font-bold text-ink">
-                                            <a href="{{ route('news.show', $item) }}"
+                                            <a href="{{ site_route('news.show', $item) }}"
                                                 @if ($ngoAccent) style="text-decoration-color: {{ $ngoAccent }}" @endif
                                                 class="hover:underline focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-current {{ $ngoAccent ? '' : 'hover:text-brand' }}">
                                                 {{ $item->title }}
@@ -73,7 +73,7 @@
                                             <p class="mt-1 text-sm text-muted line-clamp-2">{{ $item->excerpt }}</p>
                                         @endif
 
-                                        <a href="{{ route('news.show', $item) }}"
+                                        <a href="{{ site_route('news.show', $item) }}"
                                             aria-label="Czytaj więcej: {{ $item->title }}"
                                             class="mt-2 inline-block text-sm font-bold text-brand hover:text-brand-dark focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
                                             Czytaj więcej →
@@ -81,7 +81,7 @@
                                     </div>
 
                                     @if ($img)
-                                        <a href="{{ route('news.show', $item) }}" class="hidden shrink-0 overflow-hidden rounded-lg lg:block" tabindex="-1" aria-hidden="true">
+                                        <a href="{{ site_route('news.show', $item) }}" class="hidden shrink-0 overflow-hidden rounded-lg lg:block" tabindex="-1" aria-hidden="true">
                                             <img src="{{ $img }}" alt=""
                                                 class="h-16 w-24 object-cover transition group-hover:scale-105">
                                         </a>
@@ -92,7 +92,7 @@
                             @if ($activeCategory)
                                 <li class="py-5 text-muted">
                                     Brak aktualności w kategorii „{{ $activeCategory->name }}".
-                                    <a href="{{ route('news.index') }}" class="font-bold text-brand hover:text-brand-dark">Zobacz wszystkie →</a>
+                                    <a href="{{ site_route('news.index') }}" class="font-bold text-brand hover:text-brand-dark">Zobacz wszystkie →</a>
                                 </li>
                             @else
                                 <li class="py-5 text-muted">Brak opublikowanych newsów.</li>
@@ -105,7 +105,7 @@
                         @forelse ($news as $item)
                             @php $img = $item->imageUrlOrDefault(); @endphp
                             <article class="group flex flex-col overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm transition hover:shadow-md">
-                                <a href="{{ route('news.show', $item) }}" class="block overflow-hidden" tabindex="-1" aria-hidden="true">
+                                <a href="{{ site_route('news.show', $item) }}" class="block overflow-hidden" tabindex="-1" aria-hidden="true">
                                     @if ($img)
                                         <img src="{{ $img }}" alt="" class="h-36 w-full object-cover transition group-hover:scale-105">
                                     @else
@@ -125,7 +125,7 @@
                                     </div>
 
                                     <h3 class="mb-2 font-bold leading-snug text-ink">
-                                        <a href="{{ route('news.show', $item) }}"
+                                        <a href="{{ site_route('news.show', $item) }}"
                                             class="hover:text-brand focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
                                             {{ $item->title }}
                                         </a>
@@ -136,7 +136,7 @@
                                     @endif
 
                                     <div class="mt-auto">
-                                        <a href="{{ route('news.show', $item) }}"
+                                        <a href="{{ site_route('news.show', $item) }}"
                                             aria-label="Czytaj więcej: {{ $item->title }}"
                                             class="inline-block rounded border border-gray-300 px-5 py-2 text-xs font-bold uppercase tracking-wide text-ink transition hover:border-brand hover:text-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
                                             Czytaj więcej
@@ -146,7 +146,7 @@
                             </article>
                         @empty
                             @if ($activeCategory)
-                                <p class="text-muted sm:col-span-3">Brak aktualności w kategorii „{{ $activeCategory->name }}". <a href="{{ route('news.index') }}" class="font-bold text-brand hover:text-brand-dark">Zobacz wszystkie →</a></p>
+                                <p class="text-muted sm:col-span-3">Brak aktualności w kategorii „{{ $activeCategory->name }}". <a href="{{ site_route('news.index') }}" class="font-bold text-brand hover:text-brand-dark">Zobacz wszystkie →</a></p>
                             @else
                                 <p class="text-muted sm:col-span-3">Brak opublikowanych newsów.</p>
                             @endif
@@ -163,7 +163,7 @@
                             <li class="group py-5 first:pt-0 last:pb-0">
                                 <article class="flex items-center gap-5">
                                     {{-- Kwadratowe zdjęcie --}}
-                                    <a href="{{ route('news.show', $item) }}"
+                                    <a href="{{ site_route('news.show', $item) }}"
                                         class="hidden shrink-0 overflow-hidden rounded-lg sm:block"
                                         tabindex="-1" aria-hidden="true">
                                         @if ($img)
@@ -191,7 +191,7 @@
                                         </div>
 
                                         <h2 class="font-bold leading-snug text-ink">
-                                            <a href="{{ route('news.show', $item) }}"
+                                            <a href="{{ site_route('news.show', $item) }}"
                                                 @if ($ngoAccent) style="text-decoration-color: {{ $ngoAccent }}" @endif
                                                 class="hover:underline focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-current {{ $ngoAccent ? '' : 'hover:text-brand' }}">
                                                 {{ $item->title }}
@@ -202,7 +202,7 @@
                                             <p class="mt-1 text-sm text-muted line-clamp-2">{{ $item->excerpt }}</p>
                                         @endif
 
-                                        <a href="{{ route('news.show', $item) }}"
+                                        <a href="{{ site_route('news.show', $item) }}"
                                             aria-label="Czytaj więcej: {{ $item->title }}"
                                             class="mt-2 inline-block text-sm font-bold text-brand hover:text-brand-dark focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
                                             Czytaj więcej →
@@ -214,7 +214,7 @@
                             @if ($activeCategory)
                                 <li class="py-5 text-muted">
                                     Brak aktualności w kategorii „{{ $activeCategory->name }}".
-                                    <a href="{{ route('news.index') }}" class="font-bold text-brand hover:text-brand-dark">Zobacz wszystkie →</a>
+                                    <a href="{{ site_route('news.index') }}" class="font-bold text-brand hover:text-brand-dark">Zobacz wszystkie →</a>
                                 </li>
                             @else
                                 <li class="py-5 text-muted">Brak opublikowanych newsów.</li>
@@ -226,7 +226,7 @@
                     <div class="grid gap-8 sm:grid-cols-2">
                         @forelse ($news as $item)
                             @php $ngoAccent = $item->accent_color ?: (($item->audience ?? 'brand') === 'ngo' ? $siteSettings->audienceColor('ngo') : null); @endphp
-                            <a href="{{ route('news.show', $item) }}"
+                            <a href="{{ site_route('news.show', $item) }}"
                                 @class([
                                     'group block',
                                     'rounded-xl border-2 p-3' => $ngoAccent,
@@ -253,7 +253,7 @@
                             </a>
                         @empty
                             @if ($activeCategory)
-                                <p class="text-muted sm:col-span-2">Brak aktualności w kategorii „{{ $activeCategory->name }}". <a href="{{ route('news.index') }}" class="font-bold text-brand hover:text-brand-dark">Zobacz wszystkie →</a></p>
+                                <p class="text-muted sm:col-span-2">Brak aktualności w kategorii „{{ $activeCategory->name }}". <a href="{{ site_route('news.index') }}" class="font-bold text-brand hover:text-brand-dark">Zobacz wszystkie →</a></p>
                             @else
                                 <p class="text-muted sm:col-span-2">Brak opublikowanych newsów.</p>
                             @endif

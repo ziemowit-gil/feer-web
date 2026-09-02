@@ -42,6 +42,9 @@ use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\Admin\UserGroupController as AdminUserGroupController;
 use App\Http\Controllers\Admin\ContentTemplateController as AdminContentTemplateController;
 use App\Http\Controllers\Admin\TagController as AdminTagController;
+use App\Http\Controllers\Admin\AuthorizationController as AdminAuthorizationController;
+use App\Http\Controllers\Admin\StrategyDictionaryController as AdminStrategyDictionaryController;
+use App\Http\Controllers\Admin\StrategyPlanController as AdminStrategyPlanController;
 use App\Http\Controllers\Admin\TaskController as AdminTaskController;
 use App\Http\Controllers\Admin\VolunteerAdController as AdminVolunteerAdController;
 use App\Http\Controllers\Admin\MailTemplateController as AdminMailTemplateController;
@@ -52,6 +55,7 @@ use App\Http\Controllers\AccessibilityReportController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\EducationalMaterialController;
 use App\Http\Controllers\EventController;
+use App\Http\Controllers\AuthorizationRegistryController;
 use App\Http\Controllers\FaqController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\LandingPageController;
@@ -163,6 +167,11 @@ Route::middleware('module:events')->group(function () {
 
 Route::get('/faq', [FaqController::class, 'index'])->name('faq.index')->middleware('module:faq');
 
+// Publiczny rejestr pełnomocnictw i upoważnień (dane z systemu zewnętrznego).
+Route::get('/rejestr-pelnomocnictw', [AuthorizationRegistryController::class, 'index'])
+    ->name('authorizations.index')
+    ->middleware('module:authorizations');
+
 Route::get('/sprawozdania', [ReportController::class, 'index'])->name('reports.index')->middleware('module:reports');
 
 Route::middleware('module:landing')->group(function () {
@@ -237,7 +246,7 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-Route::middleware(['auth', 'verified', '2fa'])->prefix(config('app.admin_prefix', 'admin'))->name('admin.')->group(function () {
+Route::middleware(['auth', 'verified', '2fa', 'admin-site'])->prefix(config('app.admin_prefix', 'admin'))->name('admin.')->group(function () {
     Route::get('/', [AdminDashboardController::class, 'index'])->name('dashboard');
 
     // Historia zmian treści (dostęp weryfikowany per moduł w kontrolerze).
@@ -254,6 +263,31 @@ Route::middleware(['auth', 'verified', '2fa'])->prefix(config('app.admin_prefix'
     // Zadania (lista + CRUD + szybkie oznaczenie jako done).
     Route::resource('zadania', AdminTaskController::class)->parameters(['zadania' => 'zadanie'])->except('show');
     Route::post('zadania/{zadanie}/done', [AdminTaskController::class, 'done'])->name('zadania.done');
+
+    // Rejestr pełnomocnictw i upoważnień — zarządzanie wpisami (tylko admin).
+    Route::middleware(['module:authorizations', 'admin'])->group(function () {
+        Route::resource('pelnomocnictwa', AdminAuthorizationController::class)
+            ->parameters(['pelnomocnictwa' => 'pelnomocnictwo'])
+            ->except('show');
+        Route::patch('pelnomocnictwa/{pelnomocnictwo}/aktywnosc', [AdminAuthorizationController::class, 'toggleActive'])
+            ->name('pelnomocnictwa.aktywnosc');
+    });
+
+    // Strategia organizacji — planowanie działań (widok + endpointy JSON).
+    Route::middleware('module:strategy')->prefix('strategia')->name('strategia.')->group(function () {
+        Route::get('/', [AdminStrategyPlanController::class, 'index'])->name('index');
+        Route::get('plany', [AdminStrategyPlanController::class, 'list'])->name('list');
+        Route::post('plany', [AdminStrategyPlanController::class, 'store'])->name('store');
+        Route::put('plany/{plan}', [AdminStrategyPlanController::class, 'update'])->name('update');
+        Route::delete('plany/{plan}', [AdminStrategyPlanController::class, 'destroy'])->name('destroy');
+
+        // Słowniki modułu (grupy/typy/statut/finansowanie) — tylko admin.
+        Route::middleware('admin')->prefix('slowniki/{dictionary}')->name('slowniki.')->group(function () {
+            Route::post('/', [AdminStrategyDictionaryController::class, 'store'])->name('store');
+            Route::put('{id}', [AdminStrategyDictionaryController::class, 'update'])->name('update');
+            Route::delete('{id}', [AdminStrategyDictionaryController::class, 'destroy'])->name('destroy');
+        });
+    });
 
     // Blokada równoczesnej edycji (heartbeat, dostęp per moduł w kontrolerze).
     Route::post('blokada-edycji', AdminEditLockController::class)->name('edit-lock');
@@ -328,6 +362,7 @@ Route::middleware(['auth', 'verified', '2fa'])->prefix(config('app.admin_prefix'
         Route::get('newsy/eksport', [AdminNewsController::class, 'export'])->name('newsy.eksport');
         Route::get('newsy/sprawdz-duplikat', [AdminNewsController::class, 'checkDuplicate'])->name('newsy.sprawdz-duplikat');
         Route::resource('newsy', AdminNewsController::class)->parameters(['newsy' => 'news'])->except('show');
+        Route::patch('newsy/{news}/szybka-edycja', [AdminNewsController::class, 'quickUpdate'])->name('newsy.szybka-edycja');
         Route::post('newsy/{news}/pliki', [AdminAttachmentController::class, 'storeForNews'])->name('newsy.pliki.store');
         Route::post('newsy/{news}/klonuj', [AdminNewsController::class, 'clone'])->name('newsy.klonuj');
         Route::post('newsy/zbiorczo', [AdminNewsController::class, 'bulk'])->name('newsy.bulk');
@@ -475,7 +510,28 @@ Route::middleware(['auth', 'verified', '2fa'])->prefix(config('app.admin_prefix'
         Route::get('ustawienia/env', [SiteSettingController::class, 'envEdit'])->name('ustawienia.env');
         Route::post('ustawienia/env', [SiteSettingController::class, 'envUpdate'])->name('ustawienia.env.update');
         Route::post('push/wyslij', [SiteSettingController::class, 'sendPush'])->name('push.send');
+        Route::post('licencja/sprawdz', [\App\Http\Controllers\Admin\LicenseController::class, 'check'])->name('licencja.sprawdz');
 
+        Route::get('pomoc', [\App\Http\Controllers\Admin\HelpdeskTicketController::class, 'index'])->name('pomoc.index');
+        Route::get('pomoc/nowe', [\App\Http\Controllers\Admin\HelpdeskTicketController::class, 'create'])->name('pomoc.create');
+        Route::post('pomoc', [\App\Http\Controllers\Admin\HelpdeskTicketController::class, 'store'])->name('pomoc.store');
+        Route::get('pomoc/{ticket}', [\App\Http\Controllers\Admin\HelpdeskTicketController::class, 'show'])->name('pomoc.show');
+        Route::post('pomoc/{ticket}/odpowiedz', [\App\Http\Controllers\Admin\HelpdeskTicketController::class, 'reply'])->name('pomoc.reply');
+    });
+
+    // Sub-witryny sieci (federacja + Ośrodki) — tworzenie i przełącznik aktywnej
+    // witryny w panelu (patrz ResolveAdminActiveSite). Bramka „can-manage-sites"
+    // (nie zwykłe „admin") — patrz EnsureCanManageSites: dopuszcza rolę admin
+    // oraz jawną furtkę awaryjną (konto serwis@local).
+    Route::middleware('can-manage-sites')->group(function () {
+        Route::resource('witryny', \App\Http\Controllers\Admin\SiteController::class)
+            ->except(['show'])
+            ->parameters(['witryny' => 'site']);
+        Route::post('witryny/{site}/przelacz', [\App\Http\Controllers\Admin\ActiveSiteController::class, 'switch'])
+            ->name('witryny.przelacz');
+    });
+
+    Route::middleware('admin')->group(function () {
         Route::get('moduly', [AdminModuleController::class, 'index'])->name('moduly.index');
         Route::post('moduly/{identifier}/install', [AdminModuleController::class, 'install'])->name('moduly.install');
         Route::post('moduly/{identifier}/activate', [AdminModuleController::class, 'activate'])->name('moduly.activate');
@@ -646,8 +702,70 @@ Route::middleware('module:forms')->group(function () {
     Route::post('/formularz/{formularz:slug}', [FormController::class, 'store'])->name('formularz.store')->middleware('throttle:5,10');
 });
 
+// ── Sub-witryny sieci (federacja + Ośrodki) ─────────────────────────────────
+// Ten sam zestaw podstawowych tras publicznych co na głównej witrynie, dostępny
+// pod trzema postaciami adresu: własna domena (zero zmian w routingu — patrz
+// middleware ResolveSiteByDomain), prefiks "/site/{siteSlug}" i „zamaskowana"
+// krótka postać "/{siteSlug}" (bez "site/"). Middleware EnsureSiteBySlug
+// (alias "site.bySlug") rozpoznaje sub-witrynę po slugu z parametru trasy
+// i wiąże jej SiteSetting jako bieżącą (SiteSetting::current()). Linki
+// generowane wewnątrz tego kontekstu powinny użyć helpera site_route()
+// (app/Support/helpers.php), nie route(), żeby zostać w obrębie sub-witryny —
+// on sam decyduje, czy wygenerować adres w postaci "/site/..." czy krótszej.
+//
+// Krótka postać strony głównej ("/{siteSlug}" bez dalszej ścieżki) nie jest
+// osobną trasą — kolidowałaby z uniwersalnym catch-allem stron poniżej.
+// Zamiast tego korzystamy z Route::missing() na catch-allu: gdy żadna
+// podstrona nie pasuje do sluga, sprawdzamy, czy to slug sub-witryny, zanim
+// zwrócimy 404. Głębsze adresy ("/{siteSlug}/aktualnosci" itd.) nie mają tego
+// problemu — żadna istniejąca trasa nie pasuje do dwuczłonowych ścieżek w tym
+// kształcie, więc rejestrujemy je wprost, bez ryzyka przechwycenia czegoś innego.
+$registerSiteContentRoutes = function () {
+    Route::middleware('module:news')->group(function () {
+        Route::get('/aktualnosci', [NewsController::class, 'index'])->name('news.index');
+        Route::get('/aktualnosci/rss.xml', [FeedController::class, 'news'])->name('news.feed');
+        Route::get('/aktualnosci/{news:slug}', [NewsController::class, 'show'])->name('news.show');
+        Route::get('/aktualnosci/{news:slug}/pdf', [NewsController::class, 'pdf'])->name('news.pdf');
+    });
+
+    Route::middleware('module:events')->group(function () {
+        Route::get('/wydarzenia', [EventController::class, 'index'])->name('events.index');
+        Route::get('/wydarzenia/{event:slug}', [EventController::class, 'show'])->name('events.show');
+    });
+
+    Route::get('/kontakt', [ContactController::class, 'index'])->name('contact.show');
+    Route::post('/kontakt', [ContactController::class, 'store'])->name('contact.store')->middleware('throttle:5,1');
+
+    // Catch-all podstron tej sub-witryny — musi zostać ostatni w grupie.
+    Route::get('/{page:slug}', [PageController::class, 'show'])->name('page.show')->middleware('module:pages');
+};
+
+// Nazwana "site-long." (nie "site."), żeby route()/site_route() zawsze
+// generowały krótką, zamaskowaną postać poniżej — ta forma zostaje tylko
+// bezpośrednio osiągalna pod swoim adresem, nigdy jako cel linku.
+Route::name('site-long.')->prefix('site/{siteSlug}')->middleware('site.bySlug')->group(function () use ($registerSiteContentRoutes) {
+    Route::get('/', [HomeController::class, 'index'])->name('home');
+    $registerSiteContentRoutes();
+});
+
+// Krótka, zamaskowana postać — to ona nosi nazwy "site.*" używane przez
+// site_route() do generowania linków wewnątrz sub-witryny.
+Route::name('site.')->prefix('{siteSlug}')->middleware('site.bySlug')->group($registerSiteContentRoutes);
+
 // Catch-all for top-level pages (e.g. /fundacja instead of /strona/fundacja).
 // Kept last so every more specific route above always wins; a page whose
 // slug collides with one of those is unreachable here, which is why
 // AdminPageController's slug generator treats reserved words as taken.
-Route::get('/{page:slug}', [PageController::class, 'show'])->name('page.show')->middleware('module:pages');
+Route::get('/{page:slug}', [PageController::class, 'show'])->name('page.show')->middleware('module:pages')
+    ->missing(function (\Illuminate\Http\Request $request) {
+        $slug = trim($request->path(), '/');
+        $site = \App\Models\SiteSetting::query()->whereNotNull('slug')->where('slug', $slug)->first();
+
+        abort_unless($site, 404);
+
+        app()->instance(\App\Models\SiteSetting::CURRENT_SITE_BINDING, $site);
+        $request->attributes->set('site_path_prefixed', true);
+        $request->attributes->set('site_slug', $slug);
+
+        return response(app(HomeController::class)->index());
+    });

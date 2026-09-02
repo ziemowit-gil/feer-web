@@ -73,11 +73,11 @@
                             </p>
 
                             <h2 class="mt-2 text-xl font-bold text-ink">
-                                <a href="{{ route('events.show', $event) }}" class="hover:underline" style="text-decoration-color: var(--accent)">{{ $event->title }}</a>
+                                <a href="{{ site_route('events.show', $event) }}" class="hover:underline" style="text-decoration-color: var(--accent)">{{ $event->title }}</a>
                             </h2>
                             <p class="mt-2 flex-1 text-muted">{{ $event->lead }}</p>
 
-                            <a href="{{ route('events.show', $event) }}" class="mt-4 inline-flex items-center gap-2 self-start font-bold" style="color: var(--accent)">
+                            <a href="{{ site_route('events.show', $event) }}" class="mt-4 inline-flex items-center gap-2 self-start font-bold" style="color: var(--accent)">
                                 Zobacz szczegóły <i class="fa-solid fa-arrow-right text-sm" aria-hidden="true"></i>
                             </a>
                         </div>

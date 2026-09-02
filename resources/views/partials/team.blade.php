@@ -1,4 +1,5 @@
-{{-- Zespół — pozioma lista.
+{{-- Zespół — siatka kart, w stylu sekcji "Nasze projekty" / "Nasza sieć"
+     z szablonów ngo/federacja (rounded-2xl, ring, stretched-link).
      $members – kolekcja Page (about_person, opublikowane, posortowane)
 --}}
 @php
@@ -6,37 +7,35 @@
 @endphp
 
 @if ($members->isNotEmpty())
-    <ul class="grid gap-6 sm:grid-cols-2" role="list">
+    <ul class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3" role="list">
         @foreach ($members as $m)
             @php
-                $initials     = \Illuminate\Support\Str::of($m->title)->explode(' ')->map(fn ($w) => mb_substr($w, 0, 1))->take(2)->implode('');
-                $nameGenitive = filled($m->person_name_genitive) ? $m->person_name_genitive : \Illuminate\Support\Str::of($m->title)->explode(' ')->first();
-                $photo        = $m->content_image;
+                $initials = \Illuminate\Support\Str::of($m->title)->explode(' ')->map(fn ($w) => mb_substr($w, 0, 1))->take(2)->implode('');
+                $photo    = $m->content_image;
             @endphp
 
-            <li class="flex items-start gap-5">
-                {{-- Avatar --}}
+            <li class="group relative flex flex-col overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-gray-100 transition hover:shadow-md">
+                {{-- Zdjęcie --}}
                 @if ($photo)
                     <img src="{{ $photo }}" alt="{{ $m->title }}" loading="lazy"
-                        class="h-36 w-36 shrink-0 rounded-full object-cover">
+                        class="aspect-square w-full object-cover">
                 @else
-                    <span class="flex h-36 w-36 shrink-0 items-center justify-center rounded-full bg-brand/10 text-4xl font-bold text-brand" aria-hidden="true">{{ $initials }}</span>
+                    <div class="flex aspect-square w-full items-center justify-center bg-brand/10 text-4xl font-bold text-brand" aria-hidden="true">
+                        {{ $initials }}
+                    </div>
                 @endif
 
                 {{-- Tekst --}}
-                <div class="min-w-0">
-                    <p class="truncate text-lg font-semibold text-ink">{{ $m->title }}</p>
+                <div class="flex flex-1 flex-col gap-1 p-5 text-center">
+                    <p class="text-base font-extrabold text-ink group-hover:text-brand">
+                        <a href="{{ $m->publicUrl() }}" class="stretched-link">{{ $m->title }}</a>
+                    </p>
                     @if (filled($m->person_role))
-                        <p class="truncate text-sm text-muted">{{ $m->person_role }}</p>
+                        <p class="text-sm text-muted">{{ $m->person_role }}</p>
                     @endif
                     @if (filled($m->person_bio))
-                        <p class="mt-1 text-sm leading-relaxed text-muted">{{ $m->person_bio }}</p>
+                        <p class="mt-1 text-sm leading-relaxed text-muted line-clamp-3">{{ $m->person_bio }}</p>
                     @endif
-                    <a href="{{ $m->publicUrl() }}"
-                        class="mt-2 inline-flex items-center gap-1.5 rounded bg-brand px-3 py-1.5 text-sm font-semibold text-white hover:bg-brand-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
-                        Więcej o {{ $nameGenitive }}
-                        <i class="fa-solid fa-arrow-right text-xs" aria-hidden="true"></i>
-                    </a>
                 </div>
             </li>
         @endforeach

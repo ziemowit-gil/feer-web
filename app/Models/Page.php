@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Concerns\Approvable;
+use App\Models\Concerns\BelongsToSite;
 use App\Models\Concerns\LogsActivity;
 use App\Models\SiteSetting;
 use Laravel\Scout\Searchable;
@@ -16,6 +17,7 @@ use Illuminate\Support\Facades\Hash;
 class Page extends Model
 {
     use Approvable;
+    use BelongsToSite;
     use \App\Models\Concerns\HasEtr;
     use \App\Models\Concerns\HasPreviewLink;
     use \App\Models\Concerns\HasRevisions;
@@ -188,7 +190,7 @@ class Page extends Model
     public const DEFAULT_WIP_NOTICE_MESSAGE = 'Wprowadzamy zmiany na tej stronie — nie wszystkie elementy mogą jeszcze działać poprawnie.';
 
     protected $fillable = [
-        'parent_id', 'project_id', 'project_display', 'title', 'slug', 'content', 'is_published', 'publish_at', 'is_featured', 'is_archived', 'show_in_menu', 'show_side_nav', 'is_system', 'is_locked', 'order',
+        'site_id', 'parent_id', 'project_id', 'project_display', 'title', 'slug', 'content', 'is_published', 'publish_at', 'is_featured', 'is_archived', 'show_in_menu', 'show_side_nav', 'is_system', 'is_locked', 'order',
         'meta_title', 'meta_description', 'pending_approval', 'submitted_by_id',
         'is_disabled', 'disabled_message', 'wip_mode', 'wip_message',
         'type', 'event_mode', 'event_when', 'event_location', 'event_how_to_join', 'event_registration_url',
@@ -237,6 +239,11 @@ class Page extends Model
         'cooperation_data'   => 'array',
     ];
 
+    public function resolveRouteBindingQuery($query, $value, $field = null)
+    {
+        return parent::resolveRouteBindingQuery($query, $value, $field)->forCurrentSite();
+    }
+
     public function resolveRouteBinding($value, $field = null): ?self
     {
         $resolveField = $field ?? $this->getRouteKeyName();
@@ -247,7 +254,7 @@ class Page extends Model
         }
 
         $ttl = $settings->cacheTtl('page_item', 3600);
-        $cacheKey = "page_item_{$value}";
+        $cacheKey = "page_item_{$settings->id}_{$value}";
 
         try {
             $cached = Cache::get($cacheKey);

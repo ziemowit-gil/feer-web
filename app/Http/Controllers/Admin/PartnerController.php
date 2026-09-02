@@ -18,7 +18,7 @@ class PartnerController extends Controller
     /** Wyświetla listę partnerów posortowaną wg kolejności. */
     public function index()
     {
-        $partners = Partner::orderBy('order')->get();
+        $partners = Partner::forCurrentSite()->orderBy('order')->get();
 
         return view('admin.partners.index', compact('partners'));
     }

@@ -23,13 +23,27 @@
 
 @section('breadcrumbs')
     @include('partials.breadcrumbs', ['items' => array_filter([
-        ['label' => 'Aktualności', 'url' => route('news.index')],
+        ['label' => 'Aktualności', 'url' => site_route('news.index')],
         $news->category ? ['label' => $news->category->name, 'url' => null] : null,
         ['label' => $news->title, 'url' => null],
     ])])
 @endsection
 
+@php
+    // Sprawdzamy uprawnienia po stronie serwera — Alpine dostaje tylko URL do
+    // zapisu, nie żadnych uprawnień. Faktyczna autoryzacja jest w quickUpdate().
+    $canQuickEdit = auth()->check() && auth()->user()->canAccessModule('news');
+@endphp
+
 @section('content')
+    @if ($canQuickEdit)
+        <div x-data="newsInlineEditor(
+            @js(['title' => $news->title, 'excerpt' => $news->excerpt, 'is_published' => $news->is_published]),
+            '{{ route('admin.newsy.szybka-edycja', $news) }}'
+        )">
+            @include('partials.news-editor-bar')
+    @endif
+
     @if ($preview ?? false)
         <div class="border-b border-amber-300 bg-amber-50 px-4 py-3" role="status">
             <div class="mx-auto flex max-w-2xl flex-wrap items-center justify-between gap-3">
@@ -62,7 +76,7 @@
         @include('partials.etr-toggle', ['etr' => $news->etr, 'title' => $news->title])
 
         <div x-show="!etr" x-cloak>
-            <a href="{{ route('news.index') }}"
+            <a href="{{ site_route('news.index') }}"
                 class="mb-6 inline-flex items-center gap-2 text-sm font-medium text-muted hover:text-brand focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
                 <i class="fa-solid fa-arrow-left text-xs" aria-hidden="true"></i>
                 Powrót do aktualności
@@ -75,7 +89,16 @@
                 @endif
             </div>
 
-            <h1 class="mb-6 text-3xl font-bold text-ink">{{ $news->title }}</h1>
+            <h1 class="mb-6 text-3xl font-bold text-ink">
+                @if ($canQuickEdit)
+                    <span x-show="!editMode" x-cloak>{{ $news->title }}</span>
+                    <input x-show="editMode" x-cloak x-model="form.title" type="text" maxlength="255"
+                        class="w-full rounded border-gray-300 text-3xl font-bold focus:border-brand focus:ring-brand"
+                        aria-label="Tytuł aktualności">
+                @else
+                    {{ $news->title }}
+                @endif
+            </h1>
 
             @if ($articleLayout === 'side' && $img)
                 {{-- ── Obok tekstu: zdjęcie po lewej, treść po prawej ── --}}
@@ -110,7 +133,7 @@
                     <i class="fa-solid fa-print text-muted" aria-hidden="true"></i>
                     Drukuj
                 </button>
-                <a href="{{ route('news.pdf', $news) }}" target="_blank" rel="noopener"
+                <a href="{{ site_route('news.pdf', $news) }}" target="_blank" rel="noopener"
                     class="inline-flex items-center gap-2 rounded border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-ink hover:bg-gray-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
                     <i class="fa-solid fa-file-pdf text-muted" aria-hidden="true"></i>
                     Tekst w PDF
@@ -120,4 +143,8 @@
             @include('partials.attachments-list', ['attachments' => $news->attachments])
         </div>
     </section>
+
+    @if ($canQuickEdit)
+        </div>
+    @endif
 @endsection

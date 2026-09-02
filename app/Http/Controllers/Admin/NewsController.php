@@ -41,7 +41,7 @@ class NewsController extends Controller
             default => ['published_at', 'desc'],
         };
 
-        $news = News::with(['category', 'tags'])
+        $news = News::forCurrentSite()->with(['category', 'tags'])
             ->withCount('clones')
             ->when($search !== '', fn ($q) => $q->where('title', 'like', "%{$search}%"))
             ->when($status === 'published', fn ($q) => $q->where('is_published', true))
@@ -162,6 +162,24 @@ class NewsController extends Controller
         $news->tags()->sync($this->resolveTagIds($request->input('tags', '')));
 
         return redirect()->route('admin.newsy.index')->with('status', 'News został zaktualizowany.');
+    }
+
+    /**
+     * Szybka edycja z paska widocznego na froncie (news/show.blade.php) — tylko
+     * tytuł, lead i status publikacji. Celowo pomija slug i treść (WYSIWYG),
+     * żeby nie nadpisać ich niepełnymi danymi z front-endu.
+     */
+    public function quickUpdate(Request $request, News $news)
+    {
+        $data = $request->validate([
+            'title' => ['required', 'string', 'max:255'],
+            'excerpt' => ['nullable', 'string', 'max:255'],
+            'is_published' => ['required', 'boolean'],
+        ]);
+
+        $news->update($data);
+
+        return response()->json(['status' => 'ok']);
     }
 
     /** Usuwa aktualność (opcjonalnie wraz z klonami). */

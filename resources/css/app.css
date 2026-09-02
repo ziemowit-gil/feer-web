@@ -160,6 +160,14 @@ html.no-animations *::after {
     display: none !important;
 }
 
+/* Rozciąga link na cały obszar najbliższego przodka `position: relative`
+   (karty projektów/wydarzeń/zespołu — cała karta klikalna, nie tylko tytuł). */
+.stretched-link::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+}
+
 /* Alternative "brand bar" main nav (SiteSetting::HEADER_LAYOUTS['brand_bar']).
    The nav partials assume a white header (text-ink, hover/current in brand
    color), which disappears against a brand-colored bar — override every

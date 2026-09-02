@@ -59,7 +59,7 @@
 
         @if ($siteSettings->isModuleEnabled('events'))
             {{-- Wyróżniony skrót do nadchodzących szkoleń/wydarzeń na końcu listy — przyciąga wzrok. --}}
-            <a href="{{ route('events.index') }}"
+            <a href="{{ site_route('events.index') }}"
                 class="mx-2 mt-2 flex items-center gap-2 rounded-lg bg-brand px-3 py-2 text-sm font-bold normal-case text-white transition-colors hover:bg-brand-dark focus-visible:bg-brand-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
                 <span class="relative flex h-2.5 w-2.5 flex-none" aria-hidden="true">
                     <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-white/70"></span>
