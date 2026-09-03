@@ -172,6 +172,42 @@ class Przelewy24Client
         }
     }
 
+    /**
+     * Odpytuje P24 o stan transakcji po naszym sessionId — siatka bezpieczeństwa
+     * na wypadek niedostarczonego webhooka (patrz SklepOrderService::reconcile()).
+     * Zwraca null, gdy integracja nie jest skonfigurowana, transakcja nie istnieje
+     * w P24, albo żądanie się nie powiodło. `status` w odpowiedzi to kod P24:
+     * 0 = brak płatności, 1 = płatność zaliczkowa, 2 = płatność wykonana,
+     * 3 = płatność zwrócona. Samo `status === 2` NIE potwierdza jeszcze
+     * transakcji — to nadal wymaga confirmTransaction() (transaction/verify).
+     */
+    public function findBySessionId(string $sessionId): ?array
+    {
+        if (! $this->configured()) {
+            return null;
+        }
+
+        $config = $this->config();
+
+        try {
+            $response = $this->request($config)->get("{$this->baseUrl()}/api/v1/transaction/by/sessionId/{$sessionId}");
+
+            if ($response->status() === 404) {
+                return null;
+            }
+
+            if (! $response->successful()) {
+                throw new \RuntimeException("HTTP {$response->status()}: ".$response->body());
+            }
+
+            return $response->json('data');
+        } catch (Throwable $e) {
+            Log::warning("[Przelewy24] Odpytanie o transakcję [{$sessionId}] nie powiodło się: ".$e->getMessage());
+
+            return null;
+        }
+    }
+
     private function sign(array $data): string
     {
         return hash('sha384', json_encode($data));

@@ -23,3 +23,7 @@ Schedule::command('approvals:notify-pending')->hourly();
 // Dosyłanie do SZO zgłoszeń formularzy, których nie udało się przekazać przy
 // zapisie (niedostępne SZO, timeout). Co 15 minut, żeby zaległość nie rosła.
 Schedule::command('szo:push-submissions')->everyFifteenMinutes()->withoutOverlapping();
+
+// Siatka bezpieczeństwa dla płatności Sklepu — dociąga zamówienia, do których
+// nie dotarł webhook Przelewy24 (patrz SklepOrderService::reconcile()).
+Schedule::command('sklep:verify-pending')->everyTenMinutes()->withoutOverlapping();
