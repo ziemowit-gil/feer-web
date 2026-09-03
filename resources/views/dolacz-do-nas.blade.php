@@ -41,7 +41,25 @@
     <style>[x-cloak] { display: block !important; }</style>
 </noscript>
 
-<div x-data="sectionTabs(@js($joinTabIds))">
+{{--
+    x-data w linii (zamiast globalnego komponentu Alpine.data('sectionTabs', ...)
+    z resources/js/app.js) celowo — ta strona nie może zależeć od tego, czy
+    zbudowany bundle JS na serwerze jest aktualny względem źródeł. Zachowanie
+    identyczne jak sectionTabs(): tabs/tab/move()/jump()/focusActive(),
+    wymagane przez partials.tab-strip.
+--}}
+<div x-data="{
+        tabs: @js($joinTabIds),
+        tab: @js($joinTabIds[0] ?? null),
+        move(step) {
+            if (!this.tabs.length) return;
+            const index = this.tabs.indexOf(this.tab);
+            this.tab = this.tabs[(index + step + this.tabs.length) % this.tabs.length];
+            this.focusActive();
+        },
+        jump(id) { this.tab = id; this.focusActive(); },
+        focusActive() { this.$nextTick(() => document.getElementById('tab-' + this.tab)?.focus()); },
+    }">
 
     {{-- Ciemny pas z tytułem --}}
     <section class="bg-ink">
