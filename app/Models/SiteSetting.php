@@ -100,6 +100,7 @@ class SiteSetting extends Model implements HasMedia
         'ngo_mix'      => 'NGO / fundacja (mieszany — klasyczna belka i stopka, rozbudowana strona główna)',
         'municipality' => 'Gmina / urząd',
         'federation'   => 'Federacja organizacji (wielobarwna, nowoczesna)',
+        'wrzos'        => 'Federacja organizacji (czerwono-biała, pasek dostępności, siatka wartości)',
     ];
 
     /**
@@ -201,6 +202,7 @@ class SiteSetting extends Model implements HasMedia
         'contact_box_text', 'contact_box_link_label', 'contact_box_link_url', 'contact_box_visible_from', 'contact_box_visible_until',
         'homepage_banner_text', 'homepage_banner_link_label', 'homepage_banner_link_url', 'homepage_banner_visible_from', 'homepage_banner_visible_until',
         'newsletter_code', 'header_layout', 'blocked_options', 'federation_hero_tiles', 'federation_join_benefits', 'federation_hero_heading', 'federation_hero_intro', 'federation_colorful_nav', 'federation_colorful_nav_items', 'federation_show_org_spotlight', 'federation_show_members_banner', 'show_topbar_bip', 'show_topbar_social', 'content_editor',
+        'wrzos_intro_heading', 'wrzos_intro_text', 'wrzos_values',
         'infobar_show_date', 'infobar_show_nameday', 'office_show_account', 'office_show_search',
         'contact_layout', 'contact_office_address', 'contact_office_city', 'contact_office_building',
         'contact_office_note', 'contact_office_photo_alt', 'contact_hero_photo',
@@ -315,6 +317,7 @@ class SiteSetting extends Model implements HasMedia
         'federation_colorful_nav_items' => 'array',
         'federation_show_org_spotlight' => 'boolean',
         'federation_show_members_banner' => 'boolean',
+        'wrzos_values' => 'array',
         'homepage_section_order' => 'array',
         'contact_bank_accounts' => 'array',
         'contact_schedule' => 'array',
@@ -546,6 +549,7 @@ class SiteSetting extends Model implements HasMedia
             'header_layouts' => self::HEADER_LAYOUTS,
             'page_types' => Page::TYPES,
             'contact_layouts' => self::CONTACT_LAYOUTS,
+            'site_templates' => self::SITE_TEMPLATES,
         ];
     }
 
@@ -644,6 +648,60 @@ class SiteSetting extends Model implements HasMedia
         }
 
         return in_array($index, $this->federation_colorful_nav_items, true);
+    }
+
+    /**
+     * Nagłówek bloku "Kim jesteśmy?" na stronie głównej szablonu "wrzos" —
+     * edytowalny w panelu (Ustawienia → Strona główna, tylko dla tego szablonu).
+     */
+    public function wrzosIntroHeading(): string
+    {
+        return filled($this->wrzos_intro_heading) ? $this->wrzos_intro_heading : 'Kim jesteśmy?';
+    }
+
+    /**
+     * Tekst wprowadzenia na stronie głównej szablonu "wrzos" — HTML (akapity).
+     */
+    public function wrzosIntroText(): string
+    {
+        if (filled($this->wrzos_intro_text)) {
+            return $this->wrzos_intro_text;
+        }
+
+        return '<p>' . e($this->site_name) . ' jest związkiem stowarzyszeń i innych osób prawnych działających'
+            . ' na rzecz profesjonalizacji działań pomocowych, przy zachowaniu zasad tolerancji, równouprawnienia'
+            . ' i otwartości.</p>'
+            . '<p>Głównym celem jest stworzenie forum wymiany informacji i doświadczeń między organizacjami'
+            . ' pozarządowymi działającymi w obszarze polityki społecznej, a sektorem administracji publicznej'
+            . ' i sektorem prywatnym.</p>';
+    }
+
+    /**
+     * Karty wartości na stronie głównej szablonu "wrzos" — edytowalne w panelu
+     * (Ustawienia → Strona główna, tylko dla tego szablonu).
+     *
+     * @return array<int, array{icon: string, title: string, text: string}>
+     */
+    public function wrzosValues(): array
+    {
+        if (filled($this->wrzos_values)) {
+            return $this->wrzos_values;
+        }
+
+        return [
+            ['icon' => 'fa-solid fa-people-group', 'title' => 'Niezależność', 'text' => 'Wolność w decydowaniu o misji, celach oraz metodach pracy, dywersyfikacja źródeł finansowania, apolityczność.'],
+            ['icon' => 'fa-solid fa-hands-holding-circle', 'title' => 'Tolerancja', 'text' => 'Oparta na szanowaniu tak w ramach organizacji, jak i poza nią każdej osoby, instytucji, organizacji i partnera.'],
+            ['icon' => 'fa-solid fa-file-signature', 'title' => 'Transparentność', 'text' => 'Udostępnianie swojego programu, statutu i zasad pracy oraz podawanie do publicznej wiadomości sprawozdań.'],
+            ['icon' => 'fa-solid fa-list-check', 'title' => 'Rzetelność', 'text' => 'Podejmowanie działań na miarę możliwości finansowych i kompetencji, wywiązywanie się z podjętych zobowiązań.'],
+            ['icon' => 'fa-solid fa-diagram-project', 'title' => 'Otwartość współpracy', 'text' => 'Poszukiwanie partnerów społecznych, równouprawnienie i umiejętność dochodzenia do kompromisu.'],
+            ['icon' => 'fa-solid fa-circle-info', 'title' => 'Nasza misja', 'text' => 'Przy zachowaniu zasad tolerancji, równouprawnienia i otwartości działamy na rzecz profesjonalizacji działań pomocowych w Polsce.'],
+        ];
+    }
+
+    /** Zdjęcie tła sekcji hero szablonu "wrzos" albo null, gdy nie wgrano. */
+    public function wrzosHeroImageUrl(): ?string
+    {
+        return $this->getFirstMediaUrl('wrzos_hero_image') ?: null;
     }
 
     /** Edytor treści sprowadzony do jednej z obsługiwanych opcji (patrz wyżej). */
@@ -1068,6 +1126,7 @@ class SiteSetting extends Model implements HasMedia
         $this->addMediaCollection('news_default_image')->singleFile();
         $this->addMediaCollection('bip_logo')->singleFile();
         $this->addMediaCollection('hero_mission_image')->singleFile();
+        $this->addMediaCollection('wrzos_hero_image')->singleFile();
         // Zdjęcie biura / wejścia do budynku pokazywane na stronie kontaktowej.
         $this->addMediaCollection('office_photo')->singleFile();
         // Osobna galeria dla strony „Wesprzyj nas" (wiele zdjęć, niezależna od

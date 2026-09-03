@@ -85,6 +85,9 @@
             @include('templates.federation.partials.topbar')
             @include('templates.federation.partials.header')
         </div>
+    @elseif ($siteTemplate === 'wrzos')
+        @include('templates.wrzos.partials.topbar')
+        @include('templates.wrzos.partials.header')
     @else
         @include($siteSettings->headerLayoutValue() === 'office_bar' ? 'partials.topbar-info' : 'partials.topbar')
         @include('partials.header')

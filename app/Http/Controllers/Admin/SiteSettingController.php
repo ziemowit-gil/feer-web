@@ -306,7 +306,13 @@ class SiteSettingController extends Controller
             'enabled_modules.*' => ['string', Rule::in(array_keys(SiteSetting::MODULES))],
             'section_order_json' => ['sometimes', 'nullable', 'string'],
             'events_home_color' => ['nullable', 'regex:/^#[0-9a-fA-F]{6}$/'],
-            'site_template'                    => ['nullable', Rule::in(array_keys(SiteSetting::SITE_TEMPLATES))],
+            'site_template' => [
+                'nullable',
+                Rule::in(array_keys(SiteSetting::SITE_TEMPLATES)),
+                // Wartość już zapisana pozostaje dozwolona, choćby została zablokowana
+                // później — inaczej samo zapisanie reszty ustawień by się wywalało.
+                Rule::notIn(array_diff(SiteSetting::current()->blocked_options['site_templates'] ?? [], [SiteSetting::current()->site_template])),
+            ],
             'municipality_shortcuts_slug'      => ['nullable', 'string', 'max:255'],
             'municipality_carousel_title'      => ['nullable', 'string', 'max:255'],
             'municipality_weather_lat'         => ['nullable', 'numeric', 'between:-90,90'],

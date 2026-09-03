@@ -2231,6 +2231,7 @@
                 <select id="site_template" name="site_template" x-model="tpl"
                     class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
                     @foreach (\App\Models\SiteSetting::SITE_TEMPLATES as $value => $label)
+                        @continue($settings->isOptionBlocked('site_templates', $value) && old('site_template', $settings->site_template ?? 'default') !== $value)
                         <option value="{{ $value }}"
                             {{ old('site_template', $settings->site_template ?? 'default') === $value ? 'selected' : '' }}>
                             {{ $label }}

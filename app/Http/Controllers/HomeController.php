@@ -69,6 +69,16 @@ class HomeController extends Controller
         return view($view, compact('slides', 'newsItems', 'projects', 'events', 'partners'));
     }
 
+    /** Renderuje stronę główną w szablonie "wrzos" (siatka aktualności 4×2, blok "Kim jesteśmy?", karty wartości). */
+    private function wrzosHome(SiteSetting $settings, Collection $partners)
+    {
+        $newsItems = $settings->isModuleEnabled('news')
+            ? News::published()->forCurrentSite()->with('category')->orderByDesc('published_at')->limit(8)->get()
+            : collect();
+
+        return view('templates.wrzos.home', compact('newsItems', 'partners'));
+    }
+
     /** Wyświetla stronę główną z danymi wszystkich włączonych modułów (hero, aktualności, ankieta itp.). */
     public function index()
     {
@@ -141,6 +151,9 @@ class HomeController extends Controller
         }
         if ($template === 'federation') {
             return $this->ngoHome($settings, $slides, $partners, 'templates.federation.home');
+        }
+        if ($template === 'wrzos') {
+            return $this->wrzosHome($settings, $partners);
         }
 
         return view('home', compact('slides', 'news', 'events', 'poll', 'quickLinks', 'gallery', 'partners', 'sectionOrder', 'substackPosts'));
