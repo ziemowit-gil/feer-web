@@ -18,14 +18,14 @@
         @if ($item->is_button && !($onBrand ?? false))
             @if (\App\Support\Color::isValid($item->button_color))
                 @php $cta = \App\Support\Color::button($item->button_color); @endphp
-                <a href="{{ $item->url }}"
+                <a href="{{ $item->url }}" @if ($item->isCurrent()) aria-current="page" @endif
                     class="block rounded px-5 py-2.5 text-center text-base font-bold uppercase tracking-wide transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-current"
                     style="background-color: {{ $cta['bg'] }}; color: {{ $cta['text'] }};"
                     onmouseover="this.style.backgroundColor='{{ $cta['hover'] }}'" onmouseout="this.style.backgroundColor='{{ $cta['bg'] }}'">
                     {{ $item->label }}
                 </a>
             @else
-                <a href="{{ $item->url }}"
+                <a href="{{ $item->url }}" @if ($item->isCurrent()) aria-current="page" @endif
                     class="block rounded px-5 py-2.5 text-center text-base font-bold uppercase tracking-wide text-white transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand {{ $item->isCurrent() ? 'bg-brand-dark' : 'bg-brand hover:bg-brand-dark' }}">
                     {{ $item->label }}
                 </a>

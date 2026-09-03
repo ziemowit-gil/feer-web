@@ -5,7 +5,7 @@
 <section class="border-t border-gray-100 py-10" aria-labelledby="ngo-carousel-heading">
     <div class="mx-auto max-w-[1400px] px-4">
 
-        <h2 id="ngo-carousel-heading" class="mb-6 text-center text-sm font-extrabold uppercase tracking-widest text-gray-400">
+        <h2 id="ngo-carousel-heading" class="mb-6 text-center text-sm font-extrabold uppercase tracking-widest text-muted">
             {{ $carouselTitle }}
         </h2>
 

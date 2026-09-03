@@ -31,7 +31,7 @@
                                 <a href="{{ $partner->url }}" target="_blank" rel="noopener"
                                    class="block opacity-80 grayscale transition hover:opacity-100 hover:grayscale-0 focus-visible:outline-2 focus-visible:outline-brand"
                                    title="{{ 'Kliknij aby przejść do ' . $partner->name . '. Strona otwiera się w nowej karcie.' }}"
-                                   aria-label="{{ $partner->name }}">
+                                   aria-label="{{ $partner->name }} (otwiera się w nowej karcie)">
                                     <img src="{{ $partner->logo_url }}" alt="{{ $partner->name }}"
                                         class="h-14 w-full object-contain">
                                 </a>

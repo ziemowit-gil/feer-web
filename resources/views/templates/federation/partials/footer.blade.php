@@ -48,20 +48,20 @@
                 <address class="not-italic space-y-2 text-sm text-white/80">
                     @if ($siteSettings->contact_address)
                         <div class="flex items-start gap-2">
-                            <i class="fa-solid fa-location-dot mt-0.5 flex-none text-white/40" aria-hidden="true"></i>
+                            <i class="fa-solid fa-location-dot mt-0.5 flex-none text-white/70" aria-hidden="true"></i>
                             <span>{{ $siteSettings->contact_address }}, {{ $siteSettings->contact_city }}</span>
                         </div>
                     @endif
                     @if ($siteSettings->contact_phone)
                         <div class="flex items-center gap-2">
-                            <i class="fa-solid fa-phone flex-none text-white/40" aria-hidden="true"></i>
+                            <i class="fa-solid fa-phone flex-none text-white/70" aria-hidden="true"></i>
                             <a href="tel:{{ preg_replace('/\s+/', '', $siteSettings->contact_phone) }}"
                                 class="rounded hover:text-white transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white">{{ $siteSettings->contact_phone }}</a>
                         </div>
                     @endif
                     @if ($siteSettings->contact_email)
                         <div class="flex items-start gap-2">
-                            <i class="fa-solid fa-envelope mt-0.5 flex-none text-white/40" aria-hidden="true"></i>
+                            <i class="fa-solid fa-envelope mt-0.5 flex-none text-white/70" aria-hidden="true"></i>
                             <a href="mailto:{{ $siteSettings->contact_email }}"
                                 class="rounded break-all hover:text-white transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white">{{ $siteSettings->contact_email }}</a>
                         </div>
@@ -69,7 +69,7 @@
                 </address>
 
                 @if ($siteSettings->hasRegistryData())
-                    <div class="mt-5 space-y-1 text-xs text-white/40">
+                    <div class="mt-5 space-y-1 text-xs text-white/70">
                         @if ($siteSettings->krs_number)<div>KRS: {{ $siteSettings->krs_number }}</div>@endif
                         @if ($siteSettings->nip_number)<div>NIP: {{ $siteSettings->nip_number }}</div>@endif
                         @if ($siteSettings->regon_number)<div>REGON: {{ $siteSettings->regon_number }}</div>@endif
@@ -94,7 +94,7 @@
     </div>
 
     <div class="border-t border-white/10">
-        <div class="mx-auto flex max-w-[1400px] flex-wrap items-center justify-between gap-3 px-4 py-4 text-xs text-white/50">
+        <div class="mx-auto flex max-w-[1400px] flex-wrap items-center justify-between gap-3 px-4 py-4 text-xs text-white/70">
             <span>
                 &copy; {{ now()->year }} {{ $siteSettings->site_name }}
                 @if ($siteSettings->show_cms_credit ?? true)

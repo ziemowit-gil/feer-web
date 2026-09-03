@@ -32,7 +32,7 @@
                 </div>
 
                 <div class="flex flex-1 flex-col gap-1 overflow-hidden">
-                    <span class="text-xs font-semibold uppercase tracking-wide text-gray-400">
+                    <span class="text-xs font-semibold uppercase tracking-wide text-muted">
                         {{ $event->typeLabel() }}
                         @if ($event->mode === 'online')
                             &middot; online
@@ -44,7 +44,7 @@
                         </a>
                     </h3>
                     <time datetime="{{ $event->starts_at->toDateString() }}"
-                        class="mt-auto text-xs text-gray-400 truncate">
+                        class="mt-auto text-xs text-muted truncate">
                         {{ $event->dateRangeLabel() }}
                     </time>
                 </div>

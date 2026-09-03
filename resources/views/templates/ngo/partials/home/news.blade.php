@@ -42,7 +42,7 @@
                         <a href="{{ site_route('news.show', $first) }}" class="stretched-link">{{ $first->title }}</a>
                     </h3>
                     <time datetime="{{ $first->published_at->toDateString() }}"
-                        class="mt-auto text-xs text-gray-400">
+                        class="mt-auto text-xs text-muted">
                         {{ $first->published_at->translatedFormat('j F Y') }}
                     </time>
                 </div>
@@ -70,7 +70,7 @@
                         <a href="{{ site_route('news.show', $item) }}" class="stretched-link">{{ $item->title }}</a>
                     </h3>
                     <time datetime="{{ $item->published_at->toDateString() }}"
-                        class="mt-auto text-xs text-gray-400">
+                        class="mt-auto text-xs text-muted">
                         {{ $item->published_at->translatedFormat('j F Y') }}
                     </time>
                 </div>

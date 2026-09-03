@@ -148,7 +148,9 @@
         @click.outside="mobileOpen = false">
         <nav class="space-y-1 px-4 py-3" aria-label="Nawigacja mobilna">
             @foreach ($navItems as $i => $item)
-                <a href="{{ route($item['route']) }}" class="flex items-center gap-2.5 rounded-lg px-3 py-2 text-base font-bold text-ink hover:bg-gray-50">
+                @php $isActive = request()->routeIs($item['active'] ?? $item['route']); @endphp
+                <a href="{{ route($item['route']) }}" @if ($isActive) aria-current="page" @endif
+                    class="flex items-center gap-2.5 rounded-lg px-3 py-2 text-base font-bold hover:bg-gray-50 {{ $isActive ? 'text-brand' : 'text-ink' }}">
                     @if ($siteSettings->isNavItemColorful($i))
                         <span class="h-2 w-2 flex-none rounded-full" style="background:{{ $siteSettings->brandColorN(($i % 4) + 1) }}" aria-hidden="true"></span>
                     @endif

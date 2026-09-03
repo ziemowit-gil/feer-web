@@ -100,7 +100,7 @@
                 <div class="ml-auto py-1 md:hidden">
                     <button type="button" @click="mobileOpen = !mobileOpen"
                         class="flex h-10 w-10 items-center justify-center {{ $siteSettings->navDarkText() ? 'text-gray-900' : 'text-white' }}"
-                        :aria-expanded="mobileOpen"
+                        :aria-expanded="mobileOpen" aria-controls="ngo-mobile-menu"
                         aria-label="Menu">
                         <i class="fa-solid fa-bars text-lg" x-show="!mobileOpen" aria-hidden="true"></i>
                         <i class="fa-solid fa-xmark text-lg" x-show="mobileOpen" x-cloak aria-hidden="true"></i>

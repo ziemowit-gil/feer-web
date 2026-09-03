@@ -28,7 +28,7 @@
                         @endforeach
                     </ul>
                 @else
-                    <p class="text-sm text-white/40">—</p>
+                    <p class="text-sm text-white/70">—</p>
                 @endif
             </div>
 
@@ -48,7 +48,7 @@
                         @endforeach
                     </ul>
                 @else
-                    <p class="text-sm text-white/40">—</p>
+                    <p class="text-sm text-white/70">—</p>
                 @endif
             </div>
 
@@ -60,7 +60,7 @@
                 @if ($siteSettings->contact_office_hours)
                     <div class="text-sm text-white/80 leading-relaxed whitespace-pre-line">{{ $siteSettings->contact_office_hours }}</div>
                 @else
-                    <p class="text-sm text-white/40">—</p>
+                    <p class="text-sm text-white/70">—</p>
                 @endif
             </div>
 
@@ -100,7 +100,7 @@
 
     {{-- Pasek dolny --}}
     <div class="border-t border-white/20 bg-black/20">
-        <div class="mx-auto flex max-w-[1400px] flex-wrap items-center justify-between gap-3 px-4 py-3 text-xs text-white/50">
+        <div class="mx-auto flex max-w-[1400px] flex-wrap items-center justify-between gap-3 px-4 py-3 text-xs text-white/70">
             <span>
                 &copy; {{ now()->year }} {{ $siteSettings->site_name }}
                 @if ($siteSettings->show_cms_credit ?? true)

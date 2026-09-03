@@ -37,7 +37,7 @@
                         <p class="text-sm leading-relaxed text-gray-500 line-clamp-3">{{ $project->excerpt }}</p>
                     @endif
                     @if ($project->for_whom)
-                        <p class="mt-auto flex items-center gap-1.5 text-xs text-gray-400">
+                        <p class="mt-auto flex items-center gap-1.5 text-xs text-muted">
                             <i class="fa-solid fa-users" aria-hidden="true"></i>
                             {{ $project->for_whom }}
                         </p>

@@ -14,11 +14,11 @@
         @if ($featured->isNotEmpty())
             <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                 @foreach ($featured as $item)
-                    <a href="{{ site_route('news.show', $item) }}"
+                    <a href="{{ site_route('news.show', $item) }}" aria-label="{{ $item->title }}"
                         class="group block overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-gray-100 transition hover:shadow-md hover:ring-brand/20">
                         @if ($img = $item->imageUrlOrDefault())
                             <div class="aspect-[4/3] overflow-hidden bg-gray-100">
-                                <img src="{{ $img }}" alt="{{ $item->title }}"
+                                <img src="{{ $img }}" alt=""
                                     class="h-full w-full object-cover transition group-hover:scale-105">
                             </div>
                         @else

@@ -57,7 +57,7 @@
                         @endforeach
                     </ul>
                 @else
-                    <p class="text-sm text-white/40">—</p>
+                    <p class="text-sm text-white/70">—</p>
                 @endif
             </div>
 
@@ -75,12 +75,12 @@
                         @endforeach
                     </ul>
                 @else
-                    <p class="text-sm text-white/40">—</p>
+                    <p class="text-sm text-white/70">—</p>
                 @endif
 
                 {{-- Dane rejestrowe --}}
                 @if ($siteSettings->hasRegistryData())
-                    <div class="mt-6 space-y-1 text-xs text-white/40">
+                    <div class="mt-6 space-y-1 text-xs text-white/70">
                         @if ($siteSettings->krs_number)
                             <div>KRS: {{ $siteSettings->krs_number }}</div>
                         @endif
@@ -100,26 +100,26 @@
                 <address class="not-italic space-y-2 text-sm text-white/75">
                     @if ($siteSettings->contact_address)
                         <div class="flex items-start gap-2">
-                            <i class="fa-solid fa-location-dot mt-0.5 flex-none text-white/40" aria-hidden="true"></i>
+                            <i class="fa-solid fa-location-dot mt-0.5 flex-none text-white/70" aria-hidden="true"></i>
                             <span>{{ $siteSettings->contact_address }}<br>{{ $siteSettings->contact_city }}</span>
                         </div>
                     @endif
                     @if ($siteSettings->contact_phone)
                         <div class="flex items-center gap-2">
-                            <i class="fa-solid fa-phone flex-none text-white/40" aria-hidden="true"></i>
+                            <i class="fa-solid fa-phone flex-none text-white/70" aria-hidden="true"></i>
                             <a href="tel:{{ preg_replace('/\s+/', '', $siteSettings->contact_phone) }}"
                                 class="hover:text-white transition">{{ $siteSettings->contact_phone }}</a>
                         </div>
                     @endif
                     @if ($siteSettings->contact_email)
                         <div class="flex items-start gap-2">
-                            <i class="fa-solid fa-envelope mt-0.5 flex-none text-white/40" aria-hidden="true"></i>
+                            <i class="fa-solid fa-envelope mt-0.5 flex-none text-white/70" aria-hidden="true"></i>
                             <a href="mailto:{{ $siteSettings->contact_email }}"
                                 class="break-all hover:text-white transition">{{ $siteSettings->contact_email }}</a>
                         </div>
                     @endif
                     @if ($siteSettings->contact_office_hours)
-                        <div class="mt-3 text-xs text-white/50 leading-relaxed whitespace-pre-line">
+                        <div class="mt-3 text-xs text-white/70 leading-relaxed whitespace-pre-line">
                             {{ $siteSettings->contact_office_hours }}
                         </div>
                     @endif

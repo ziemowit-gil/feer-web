@@ -89,6 +89,7 @@
                 {{-- Google Translate trigger --}}
                 <button type="button" id="mun-translate-btn"
                     class="mun-a11y-btn flex items-center gap-1" aria-haspopup="true"
+                    aria-expanded="false" aria-controls="google_translate_element"
                     aria-label="Tłumacz stronę (Google Translate)">
                     <span class="hidden sm:inline">Translate</span>
                     <i class="bi bi-translate" aria-hidden="true"></i>
@@ -168,7 +169,8 @@ function googleTranslateElementInit() {
 document.getElementById('mun-translate-btn')?.addEventListener('click', function () {
     var box = document.getElementById('google_translate_element');
     if (!box) return;
-    box.classList.toggle('hidden');
+    var nowHidden = box.classList.toggle('hidden');
+    this.setAttribute('aria-expanded', nowHidden ? 'false' : 'true');
     if (!window._gtLoaded) {
         window._gtLoaded = true;
         var s = document.createElement('script');

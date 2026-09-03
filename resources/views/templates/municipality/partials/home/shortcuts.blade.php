@@ -26,7 +26,7 @@
                                 ? 'bg-[#e53935] text-white ring-2 ring-[#e53935]'
                                 : 'bg-white text-ink ring-2 ring-[#e53935] hover:bg-gray-50' }}"
                         title="{{ $tileLabel . ($isExternal ? ' — Kliknij aby zobaczyć więcej informacji.' : '') }}"
-                        aria-label="{{ $tileLabel }}">
+                        aria-label="{{ $tileLabel . ($isExternal ? ' (otwiera się w nowej karcie)' : '') }}">
 
                         {{-- Ikona lub obrazek --}}
                         <div class="mb-3 flex items-center justify-center">
