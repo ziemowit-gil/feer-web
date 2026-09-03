@@ -69,6 +69,16 @@
                 class="w-28 rounded border-gray-300 focus:border-brand focus:ring-brand">
         </div>
 
+        <div>
+            <label for="price_pln" class="mb-1 block text-sm font-bold">Cena w sklepie (PLN)</label>
+            <input type="number" id="price_pln" name="price_pln" min="0" step="0.01"
+                value="{{ old('price_pln', $material->price_grosze !== null ? number_format($material->price_grosze / 100, 2, '.', '') : '') }}"
+                placeholder="np. 19.99"
+                class="w-40 rounded border-gray-300 focus:border-brand focus:ring-brand">
+            @error('price_pln') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+            <p class="mt-1 text-xs text-muted">Puste = materiał nie jest sprzedawany w <a href="{{ route('sklep.index') }}" class="text-brand hover:underline" target="_blank">sklepie</a> (płatność Przelewy24).</p>
+        </div>
+
         <label class="flex items-center gap-2">
             <input type="checkbox" name="is_published" value="1" {{ old('is_published', $material->is_published ?? true) ? 'checked' : '' }}
                 class="rounded border-gray-300 text-brand focus:ring-brand">

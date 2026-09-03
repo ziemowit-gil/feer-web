@@ -210,6 +210,7 @@ class SiteSetting extends Model implements HasMedia
         'microsoft_login_enabled', 'microsoft_only_login', 'emergency_login_token', 'microsoft_client_id', 'microsoft_client_secret', 'microsoft_tenant_id',
         'google_login_enabled', 'google_client_id', 'google_client_secret',
         'member_login_enabled', 'member_allowed_domains', 'szo_api_url', 'yubico_client_id', 'yubico_secret_key', 'two_factor_required_admins',
+        'przelewy24_sandbox', 'przelewy24_merchant_id', 'przelewy24_pos_id', 'przelewy24_crc', 'przelewy24_api_key',
         'unsplash_access_key', 'cookie_banner_enabled', 'cookie_banner_text', 'show_cms_credit',
         'mail_transport', 'mail_from_address', 'mail_from_name', 'mail_host', 'mail_port', 'mail_username', 'mail_password', 'mail_encryption',
         'show_coordinators', 'ngo_color', 'sub_brands',
@@ -346,6 +347,9 @@ class SiteSetting extends Model implements HasMedia
         'member_login_enabled' => 'boolean',
         'yubico_secret_key' => 'encrypted',
         'two_factor_required_admins' => 'boolean',
+        'przelewy24_sandbox' => 'boolean',
+        'przelewy24_crc' => 'encrypted',
+        'przelewy24_api_key' => 'encrypted',
         'unsplash_access_key' => 'encrypted',
         'mail_password' => 'encrypted',
         'mail_port' => 'integer',
@@ -891,6 +895,29 @@ class SiteSetting extends Model implements HasMedia
         $config = $this->googleConfig();
 
         return filled($config['client_id']) && filled($config['client_secret']);
+    }
+
+    /**
+     * Dane Przelewy24 (moduł Sklep) — z panelu, z fallbackiem do .env
+     * (config/przelewy24.php), gdy pole w bazie jest puste.
+     */
+    public function przelewy24Config(): array
+    {
+        return [
+            'merchant_id' => $this->przelewy24_merchant_id ?: config('przelewy24.merchant_id'),
+            'pos_id' => $this->przelewy24_pos_id ?: config('przelewy24.pos_id'),
+            'crc' => $this->przelewy24_crc ?: config('przelewy24.crc'),
+            'api_key' => $this->przelewy24_api_key ?: config('przelewy24.api_key'),
+            'sandbox' => $this->przelewy24_sandbox ?? config('przelewy24.sandbox', true),
+        ];
+    }
+
+    public function przelewy24Configured(): bool
+    {
+        $config = $this->przelewy24Config();
+
+        return filled($config['merchant_id']) && filled($config['pos_id'])
+            && filled($config['crc']) && filled($config['api_key']);
     }
 
     /**

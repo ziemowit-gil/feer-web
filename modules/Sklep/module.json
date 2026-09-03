@@ -1,0 +1,12 @@
+{
+    "identifier":   "sklep",
+    "name":         "Sklep (Przelewy24)",
+    "version":      "1.0.0",
+    "description":  "Sklep z materiałami edukacyjnymi — pojedynczy zakup, płatność Przelewy24, dostęp mailem po zaksięgowaniu wpłaty.",
+    "author":       "FEER",
+    "provider":     "Modules\\Sklep\\Providers\\SklepServiceProvider",
+    "migrations":   false,
+    "assets":       false,
+    "built_in":     true,
+    "requires":     []
+}

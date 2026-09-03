@@ -2539,6 +2539,65 @@
                 </div>
             </div>
 
+            {{-- ===================== Przelewy24 (moduł Sklep) ===================== --}}
+            <div class="border-t border-gray-200 pt-6">
+                <h2 class="text-base font-bold text-ink">Przelewy24 (Sklep)</h2>
+                <p class="mt-1 text-xs text-muted">
+                    Dane z panelu sprzedawcy <a href="https://www.przelewy24.pl/" target="_blank" rel="noopener" class="text-brand underline">Przelewy24</a>
+                    (dla testów użyj konta <a href="https://sandbox.przelewy24.pl/" target="_blank" rel="noopener" class="text-brand underline">sandbox.przelewy24.pl</a>).
+                    Klucz CRC i klucz API znajdziesz w Ustawieniach sklepu w panelu P24.
+                </p>
+
+                <div class="mt-4 grid gap-4 sm:grid-cols-2">
+                    <div>
+                        <label for="przelewy24_sandbox" class="mb-1 block text-sm font-bold">Środowisko</label>
+                        <select id="przelewy24_sandbox" name="przelewy24_sandbox"
+                            class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                            @php $currentSandbox = old('przelewy24_sandbox', $settings->przelewy24_sandbox); @endphp
+                            <option value="" @selected($currentSandbox === null)>Dziedzicz z .env ({{ config('przelewy24.sandbox', true) ? 'sandbox' : 'produkcja' }})</option>
+                            <option value="1" @selected($currentSandbox !== null && (bool) $currentSandbox === true)>Sandbox (testowe)</option>
+                            <option value="0" @selected($currentSandbox !== null && (bool) $currentSandbox === false)>Produkcja</option>
+                        </select>
+                        @error('przelewy24_sandbox') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </div>
+                    <div>
+                        <label for="przelewy24_merchant_id" class="mb-1 block text-sm font-bold">Merchant ID</label>
+                        <input type="text" id="przelewy24_merchant_id" name="przelewy24_merchant_id" autocomplete="off"
+                            value="{{ old('przelewy24_merchant_id', $settings->przelewy24_merchant_id) }}"
+                            class="w-full rounded border-gray-300 font-mono text-sm focus:border-brand focus:ring-brand">
+                        @error('przelewy24_merchant_id') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </div>
+                    <div>
+                        <label for="przelewy24_pos_id" class="mb-1 block text-sm font-bold">POS ID</label>
+                        <input type="text" id="przelewy24_pos_id" name="przelewy24_pos_id" autocomplete="off"
+                            value="{{ old('przelewy24_pos_id', $settings->przelewy24_pos_id) }}"
+                            class="w-full rounded border-gray-300 font-mono text-sm focus:border-brand focus:ring-brand">
+                        <p class="mt-1 text-xs text-muted">Zwykle taki sam jak Merchant ID, chyba że masz kilka POS-ów.</p>
+                        @error('przelewy24_pos_id') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </div>
+                    <div>
+                        <label for="przelewy24_crc" class="mb-1 block text-sm font-bold">Klucz CRC</label>
+                        <input type="password" id="przelewy24_crc" name="przelewy24_crc" autocomplete="new-password"
+                            placeholder="{{ $settings->przelewy24_crc ? '•••••••• (zapisany — zostaw puste, aby nie zmieniać)' : '' }}"
+                            class="w-full rounded border-gray-300 font-mono text-sm focus:border-brand focus:ring-brand">
+                        @error('przelewy24_crc') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </div>
+                    <div>
+                        <label for="przelewy24_api_key" class="mb-1 block text-sm font-bold">Klucz API</label>
+                        <input type="password" id="przelewy24_api_key" name="przelewy24_api_key" autocomplete="new-password"
+                            placeholder="{{ $settings->przelewy24_api_key ? '•••••••• (zapisany — zostaw puste, aby nie zmieniać)' : '' }}"
+                            class="w-full rounded border-gray-300 font-mono text-sm focus:border-brand focus:ring-brand">
+                        <p class="mt-1 text-xs text-muted">Ustawienia sklepu → Klucz do raportów. Inny niż klucz CRC.</p>
+                        @error('przelewy24_api_key') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </div>
+                </div>
+
+                <p class="mt-4 rounded border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
+                    Pozostawione puste pola dziedziczą wartości z pliku <code>.env</code>, jeśli tam je ustawiono.
+                    Status integracji: {{ $settings->przelewy24Configured() ? 'skonfigurowana' : 'nieskonfigurowana' }}.
+                </p>
+            </div>
+
             {{-- ===================== Adres URL panelu ===================== --}}
             <div class="border-t border-gray-200 pt-6">
                 <h2 class="text-base font-bold text-ink">Adres panelu administracyjnego</h2>

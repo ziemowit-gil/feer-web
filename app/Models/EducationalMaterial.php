@@ -20,13 +20,32 @@ class EducationalMaterial extends Model implements HasMedia
 
     protected $fillable = [
         'title', 'description', 'target_group', 'type', 'video_url', 'order', 'is_published', 'is_archival', 'is_premium',
+        'price_grosze', 'currency',
     ];
 
     protected $casts = [
         'is_published' => 'boolean',
         'is_archival' => 'boolean',
         'is_premium' => 'boolean',
+        'price_grosze' => 'integer',
     ];
+
+    /**
+     * Czy materiał jest sprzedawany w sklepie (ma ustaloną cenę i jest widoczny publicznie).
+     */
+    public function isPurchasable(): bool
+    {
+        return $this->price_grosze !== null && $this->is_published && ! $this->is_archival;
+    }
+
+    protected function priceFormatted(): Attribute
+    {
+        return Attribute::make(
+            get: fn () => $this->price_grosze === null
+                ? null
+                : number_format($this->price_grosze / 100, 2, ',', ' ').' '.$this->currency,
+        );
+    }
 
     public function registerMediaCollections(): void
     {

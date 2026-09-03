@@ -149,7 +149,7 @@
                                  'admin.podcasty.*', 'admin.formularze.*', 'admin.materialy-edukacyjne.*', 'admin.zapisy-materialy.*',
                                  'admin.wydarzenia.*', 'admin.prowadzacy.*', 'admin.wolontariat.*', 'admin.praca.*', 'admin.projekty.*',
                                  'admin.kategorie.*', 'admin.faq.*', 'admin.sprawozdania.*', 'admin.bip-dokumenty.*', 'admin.lp.*',
-                                 'admin.mapa-pomocy.*', 'admin.organizacje.*', 'admin.ankiety.*'];
+                                 'admin.mapa-pomocy.*', 'admin.organizacje.*', 'admin.ankiety.*', 'admin.sklep.*'];
             $marketingRoutes  = ['admin.banery.*', 'admin.strefy-bannerow.*', 'admin.newsletter.*', 'admin.subskrybenci.*', 'admin.kampanie.*'];
             $inboxRoutes      = ['admin.zgloszenia-spotkania.*', 'admin.zgloszenia-barier.*', 'admin.wiadomosci-kontaktowe.*'];
             $usersRoutes      = ['admin.uzytkownicy.*', 'admin.grupy.*', 'admin.zaproszenia-strefy.*'];
@@ -361,6 +361,14 @@
                         </a>
                     </div>
                 </div>
+            @endif
+
+            {{-- Sklep --}}
+            @if ($can('sklep'))
+                <a href="{{ route('admin.sklep.orders.index') }}" class="{{ $itemClass('admin.sklep.*') }}" title="Sklep — zamówienia">
+                    <i class="fa-solid fa-cart-shopping {{ $iconClass('admin.sklep.*') }}"></i>
+                    <span class="nav-label">Sklep</span>
+                </a>
             @endif
 
             {{-- Szkolenia i wydarzenia --}}

@@ -125,12 +125,15 @@ class EducationalMaterialController extends Controller
                 'nullable', 'file', 'mimes:pdf', 'max:10240',
             ],
             'order' => ['nullable', 'integer', 'min:0'],
+            'price_pln' => ['nullable', 'numeric', 'min:0', 'max:99999'],
         ]);
 
         $data['order'] = $data['order'] ?? 0;
         $data['is_published'] = $request->boolean('is_published');
         $data['is_archival'] = $request->boolean('is_archival');
         $data['is_premium'] = $request->boolean('is_premium');
+        $data['price_grosze'] = $data['price_pln'] !== null ? (int) round($data['price_pln'] * 100) : null;
+        unset($data['price_pln']);
 
         if ($data['type'] !== 'video') {
             $data['video_url'] = null;

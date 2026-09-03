@@ -22,6 +22,7 @@ use App\Http\Controllers\Admin\CategoryController as AdminCategoryController;
 use App\Http\Controllers\Admin\ContentPortabilityController as AdminContentPortabilityController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\EducationalMaterialController as AdminEducationalMaterialController;
+use App\Http\Controllers\Admin\SklepOrderController as AdminSklepOrderController;
 use App\Http\Controllers\Admin\EventController as AdminEventController;
 use App\Http\Controllers\Admin\FaqController as AdminFaqController;
 use App\Http\Controllers\Admin\GalleryImageController;
@@ -98,6 +99,8 @@ use App\Http\Controllers\Admin\CampaignController as AdminCampaignController;
 use App\Http\Controllers\Admin\SubscriberController as AdminSubscriberController;
 use App\Http\Controllers\JobOfferController;
 use App\Http\Controllers\Admin\JobOfferController as AdminJobOfferController;
+use App\Http\Controllers\SklepController;
+use App\Http\Controllers\Przelewy24WebhookController;
 use App\Http\Controllers\JoinUsController;
 use App\Http\Controllers\CooperationFormController;
 use App\Http\Controllers\Admin\CooperationRequestController as AdminCooperationRequestController;
@@ -172,6 +175,15 @@ Route::middleware('module:materials')->group(function () {
     Route::post('/materialy/zapis', [MaterialSubscriberController::class, 'store'])->name('materials.subscribe')->middleware('throttle:5,1');
 });
 
+// Sklep — zakup materiałów edukacyjnych, płatność Przelewy24 (zakup jako gość).
+Route::middleware('module:sklep')->prefix('sklep')->name('sklep.')->group(function () {
+    Route::get('/', [SklepController::class, 'index'])->name('index');
+    Route::get('pobierz/{token}', [SklepController::class, 'download'])->name('download');
+    Route::get('zamowienie/{order}/potwierdzenie', [SklepController::class, 'confirmation'])->name('confirmation');
+    Route::get('{material}', [SklepController::class, 'show'])->name('show');
+    Route::post('{material}/kup', [SklepController::class, 'checkout'])->name('checkout')->middleware('throttle:10,1');
+});
+
 
 Route::middleware('module:volunteering')->group(function () {
     Route::get('/wolontariat', [VolunteerController::class, 'index'])->name('volunteer.index');
@@ -226,6 +238,9 @@ Route::get('/podcasty/{podcast}/audio', [PodcastController::class, 'stream'])->n
 
 // PayU — webhook bez CSRF (przyjmuje JSON od serwera PayU)
 Route::post('/payu/webhook', [PayuWebhookController::class, 'handle'])->name('payu.webhook')->withoutMiddleware([\Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class]);
+
+// Przelewy24 — webhook bez CSRF (przyjmuje JSON od serwera P24, urlStatus)
+Route::post('/przelewy24/webhook', [Przelewy24WebhookController::class, 'handle'])->name('przelewy24.webhook')->withoutMiddleware([\Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class]);
 
 // BIP: strona główna, rejestr zmian i szczegół dokumentu — kontrolowane przez moduł.
 Route::middleware('module:bip')->group(function () {
@@ -407,6 +422,13 @@ Route::middleware(['auth', 'verified', '2fa', 'admin-site'])->prefix(config('app
         Route::get('zapisy-materialy', [AdminMaterialSubscriberController::class, 'index'])->name('zapisy-materialy.index');
         Route::get('zapisy-materialy/eksport', [AdminMaterialSubscriberController::class, 'export'])->name('zapisy-materialy.export');
         Route::delete('zapisy-materialy/{subscriber}', [AdminMaterialSubscriberController::class, 'destroy'])->name('zapisy-materialy.destroy');
+    });
+
+    // Zamówienia sklepu — dane finansowe/PII, dostęp tylko dla administratorów.
+    Route::middleware(['module:sklep', 'admin'])->prefix('sklep')->name('sklep.')->group(function () {
+        Route::get('/', [AdminSklepOrderController::class, 'index'])->name('orders.index');
+        Route::get('{order}', [AdminSklepOrderController::class, 'show'])->name('orders.show');
+        Route::post('{order}/wyslij-ponownie', [AdminSklepOrderController::class, 'resend'])->name('orders.resend');
     });
 
     Route::middleware(['module:volunteering', 'module-access:volunteering'])->group(function () {

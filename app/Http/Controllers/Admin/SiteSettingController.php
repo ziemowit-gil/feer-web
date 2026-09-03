@@ -105,6 +105,11 @@ class SiteSettingController extends Controller
             'yubico_client_id' => ['nullable', 'string', 'max:255'],
             'yubico_secret_key' => ['nullable', 'string', 'max:1000'],
             'two_factor_required_admins' => ['sometimes', 'boolean'],
+            'przelewy24_sandbox' => ['nullable', 'boolean'],
+            'przelewy24_merchant_id' => ['nullable', 'string', 'max:255'],
+            'przelewy24_pos_id' => ['nullable', 'string', 'max:255'],
+            'przelewy24_crc' => ['nullable', 'string', 'max:1000'],
+            'przelewy24_api_key' => ['nullable', 'string', 'max:1000'],
             'unsplash_access_key' => ['nullable', 'string', 'max:1000'],
             'cookie_banner_enabled' => ['sometimes', 'boolean'],
             'cookie_banner_text' => ['nullable', 'string', 'max:1000'],
@@ -351,6 +356,8 @@ class SiteSettingController extends Controller
         $data['google_login_enabled'] = $request->boolean('google_login_enabled');
         $data['member_login_enabled'] = $request->boolean('member_login_enabled');
         $data['two_factor_required_admins'] = $request->boolean('two_factor_required_admins');
+        // '' (nierozstrzygnięte w selekcie) = dziedzicz z .env — patrz SiteSetting::przelewy24Config().
+        $data['przelewy24_sandbox'] = $request->filled('przelewy24_sandbox') ? $request->boolean('przelewy24_sandbox') : null;
 
         // Puste pole sekretu = zostaw zapisany (nie renderujemy go w formularzu).
         if (blank($data['microsoft_client_secret'] ?? null)) {
@@ -366,6 +373,13 @@ class SiteSettingController extends Controller
         // Puste hasło SMTP = zostaw zapisane (analogicznie do sekretu Microsoft).
         if (blank($data['mail_password'] ?? null)) {
             unset($data['mail_password']);
+        }
+        // Puste pola CRC/API key Przelewy24 = zostaw zapisane (analogicznie do sekretu Microsoft).
+        if (blank($data['przelewy24_crc'] ?? null)) {
+            unset($data['przelewy24_crc']);
+        }
+        if (blank($data['przelewy24_api_key'] ?? null)) {
+            unset($data['przelewy24_api_key']);
         }
         if (blank($data['unsplash_access_key'] ?? null)) {
             unset($data['unsplash_access_key']);
