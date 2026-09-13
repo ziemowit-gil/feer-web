@@ -56,10 +56,10 @@
             {{-- Prawa strona: przełącznik ułatwień dostępu --}}
             <div class="ml-auto flex shrink-0 items-center">
                 <button type="button" @click="open = !open" :aria-expanded="open.toString()" aria-controls="a11y-panel"
-                    class="flex min-h-11 items-center gap-2 rounded-full px-3 py-1.5 font-bold text-white/90 transition hover:bg-white/20 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-brand">
+                    class="flex h-11 w-11 items-center justify-center rounded-full text-white/90 transition hover:bg-white/20 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-brand"
+                    :class="open ? 'bg-white/25 text-white' : ''"
+                    aria-label="Ułatwienia dostępu">
                     <i class="fa-solid fa-universal-access" aria-hidden="true"></i>
-                    <span class="hidden sm:inline">Ułatwienia dostępu</span>
-                    <i class="fa-solid fa-chevron-down text-[0.6rem] transition-transform" :class="{ 'rotate-180': open }" aria-hidden="true"></i>
                 </button>
             </div>
         </div>

@@ -10,10 +10,10 @@
         <div class="mx-auto flex max-w-[1400px] items-center gap-4 overflow-x-auto px-4 py-2">
 
             <button type="button" @click="open = !open" :aria-expanded="open.toString()" aria-controls="a11y-panel"
-                class="flex min-h-11 shrink-0 items-center gap-2 rounded-full border border-gray-300 px-3 py-1.5 font-bold text-ink transition hover:border-brand hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-1">
+                class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-gray-300 text-ink transition hover:border-brand hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-1"
+                :class="open ? 'bg-brand border-brand text-white' : ''"
+                aria-label="Ułatwienia dostępu">
                 <i class="fa-solid fa-universal-access" aria-hidden="true"></i>
-                Ułatwienia dostępu
-                <i class="fa-solid fa-chevron-down text-[0.6rem] transition-transform" :class="{ 'rotate-180': open }" aria-hidden="true"></i>
             </button>
 
             {{-- Prawa: donate CTA + social --}}
