@@ -78,7 +78,7 @@ class HomeController extends Controller
 
         // Tylko aktywne (nie zakończone) projekty — ngo_3 pokazuje bieżącą działalność, nie archiwum.
         $projects = $settings->isModuleEnabled('projects')
-            ? Project::forCurrentSite()->where('is_published', true)->where('is_completed', false)->orderBy('order')->limit(3)->get()
+            ? Project::forCurrentSite()->with('category')->where('is_published', true)->where('is_completed', false)->orderBy('order')->limit(3)->get()
             : collect();
 
         $events = $settings->isModuleEnabled('events')

@@ -8,7 +8,7 @@
     @include('templates.ngo.partials.home.hero')
     @include('templates.ngo.partials.home.news')
     @include('templates.ngo_3.partials.home.stats')
-    @include('templates.ngo.partials.home.projects')
+    @include('templates.ngo_3.partials.home.projects')
     @include('templates.ngo_3.partials.home.shortcuts')
     @include('templates.ngo.partials.home.events')
     @include('templates.ngo_3.partials.home.newsletter')
