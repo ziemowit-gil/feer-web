@@ -23,6 +23,7 @@ use App\Http\Controllers\Admin\ContentPortabilityController as AdminContentPorta
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\EducationalMaterialController as AdminEducationalMaterialController;
 use App\Http\Controllers\Admin\SklepOrderController as AdminSklepOrderController;
+use App\Http\Controllers\Admin\SklepDiscountCodeController as AdminSklepDiscountCodeController;
 use App\Http\Controllers\Admin\EventController as AdminEventController;
 use App\Http\Controllers\Admin\FaqController as AdminFaqController;
 use App\Http\Controllers\Admin\GalleryImageController;
@@ -180,8 +181,12 @@ Route::middleware('module:sklep')->prefix('sklep')->name('sklep.')->group(functi
     Route::get('/', [SklepController::class, 'index'])->name('index');
     Route::get('pobierz/{token}', [SklepController::class, 'download'])->name('download');
     Route::get('zamowienie/{order}/potwierdzenie', [SklepController::class, 'confirmation'])->name('confirmation');
+    Route::get('koszyk', [SklepController::class, 'cart'])->name('cart');
+    Route::post('koszyk/rabat', [SklepController::class, 'applyDiscount'])->name('cart.discount')->middleware('throttle:10,1');
+    Route::post('koszyk/checkout', [SklepController::class, 'checkout'])->name('checkout')->middleware('throttle:10,1');
+    Route::post('koszyk/dodaj/{material}', [SklepController::class, 'addToCart'])->name('cart.add');
+    Route::post('koszyk/usun/{material}', [SklepController::class, 'removeFromCart'])->name('cart.remove');
     Route::get('{material}', [SklepController::class, 'show'])->name('show');
-    Route::post('{material}/kup', [SklepController::class, 'checkout'])->name('checkout')->middleware('throttle:10,1');
 });
 
 
@@ -427,6 +432,7 @@ Route::middleware(['auth', 'verified', '2fa', 'admin-site'])->prefix(config('app
     // Zamówienia sklepu — dane finansowe/PII, dostęp tylko dla administratorów.
     Route::middleware(['module:sklep', 'admin'])->prefix('sklep')->name('sklep.')->group(function () {
         Route::get('/', [AdminSklepOrderController::class, 'index'])->name('orders.index');
+        Route::resource('kody-rabatowe', AdminSklepDiscountCodeController::class)->parameters(['kody-rabatowe' => 'discountCode'])->except('show');
         Route::get('{order}', [AdminSklepOrderController::class, 'show'])->name('orders.show');
         Route::post('{order}/wyslij-ponownie', [AdminSklepOrderController::class, 'resend'])->name('orders.resend');
     });

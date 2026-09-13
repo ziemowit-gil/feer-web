@@ -3,6 +3,13 @@
 @section('title', 'Sklep — zamówienia')
 
 @section('content')
+    <div class="mb-4 flex justify-end">
+        <a href="{{ route('admin.sklep.kody-rabatowe.index') }}"
+            class="inline-flex items-center gap-2 rounded border-2 border-brand px-4 py-2 text-sm font-bold text-brand hover:bg-brand-light">
+            <i class="fa-solid fa-tags" aria-hidden="true"></i> Kody rabatowe
+        </a>
+    </div>
+
     <form method="GET" action="{{ route('admin.sklep.orders.index') }}" class="mb-4 flex flex-wrap items-end gap-3 rounded-lg border border-gray-200 bg-white p-3">
         <div class="min-w-48 flex-1">
             <label for="filter-q" class="mb-1 block text-xs font-bold uppercase tracking-wide text-muted">Szukaj</label>
@@ -42,7 +49,7 @@
                 @forelse ($orders as $order)
                     <tr>
                         <td class="px-4 py-3 text-muted">{{ $order->created_at->format('d.m.Y H:i') }}</td>
-                        <td class="px-4 py-3 font-medium">{{ $order->material?->title ?? '—' }}</td>
+                        <td class="px-4 py-3 font-medium">{{ $order->items->pluck('title')->implode(', ') ?: '—' }}</td>
                         <td class="px-4 py-3">
                             {{ $order->buyer_email }}
                             @if ($order->buyer_name)

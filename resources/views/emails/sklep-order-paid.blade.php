@@ -1,13 +1,19 @@
 <p>Dzień dobry{{ $order->buyer_name ? ', ' . $order->buyer_name : '' }},</p>
 
-<p>Dziękujemy za zakup materiału <strong>{{ $order->material?->title }}</strong> w sklepie {{ config('app.name') }}.</p>
+<p>Dziękujemy za zakup w sklepie {{ config('app.name') }}:</p>
+
+<ul>
+    @foreach ($order->items as $item)
+        <li>{{ $item->title }}</li>
+    @endforeach
+</ul>
 
 <p>Płatność została zaksięgowana — dostęp możesz odebrać poniższym linkiem:</p>
 
 <p style="margin: 24px 0;">
     <a href="{{ route('sklep.download', $order->access_token) }}"
        style="background:#005fa3;color:#fff;padding:12px 24px;border-radius:6px;text-decoration:none;font-weight:bold;">
-        Odbierz materiał
+        Odbierz materiały
     </a>
 </p>
 

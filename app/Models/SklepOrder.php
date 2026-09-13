@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
 
 class SklepOrder extends Model
@@ -16,13 +17,15 @@ class SklepOrder extends Model
     ];
 
     protected $fillable = [
-        'educational_material_id',
         'buyer_name',
         'buyer_email',
         'user_id',
         'session_id',
         'p24_order_id',
         'status',
+        'subtotal_grosze',
+        'discount_code_id',
+        'discount_amount_grosze',
         'amount_grosze',
         'currency',
         'access_token',
@@ -34,6 +37,8 @@ class SklepOrder extends Model
     {
         return [
             'p24_order_id' => 'integer',
+            'subtotal_grosze' => 'integer',
+            'discount_amount_grosze' => 'integer',
             'amount_grosze' => 'integer',
             'access_delivered_at' => 'datetime',
             'payload' => 'array',
@@ -53,9 +58,14 @@ class SklepOrder extends Model
         return 'session_id';
     }
 
-    public function material(): BelongsTo
+    public function items(): HasMany
     {
-        return $this->belongsTo(EducationalMaterial::class, 'educational_material_id');
+        return $this->hasMany(SklepOrderItem::class);
+    }
+
+    public function discountCode(): BelongsTo
+    {
+        return $this->belongsTo(SklepDiscountCode::class, 'discount_code_id');
     }
 
     public function user(): BelongsTo

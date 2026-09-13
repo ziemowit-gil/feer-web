@@ -3,34 +3,51 @@
 namespace App\Services;
 
 use App\Mail\SklepOrderPaidMail;
-use App\Models\EducationalMaterial;
+use App\Models\SklepDiscountCode;
 use App\Models\SklepOrder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Mail;
 use RuntimeException;
 
 /**
  * Spina rejestrację zamówienia w Przelewy24 (Przelewy24Client) z lokalnym
- * rekordem SklepOrder oraz wysyłką dostępu po opłaceniu.
+ * rekordem SklepOrder (+ pozycje) oraz wysyłką dostępu po opłaceniu.
  */
 class SklepOrderService
 {
     public function __construct(private readonly Przelewy24Client $przelewy24) {}
 
     /**
-     * Tworzy zamówienie i rejestruje transakcję w P24. Rzuca RuntimeException,
-     * gdy P24 odrzuci rejestrację — kontroler zamienia to na komunikat dla kupującego.
+     * Tworzy zamówienie z zawartości koszyka (materiały + opcjonalny kod
+     * rabatowy) i rejestruje transakcję w P24. Rzuca RuntimeException, gdy
+     * P24 odrzuci rejestrację — kontroler zamienia to na komunikat dla kupującego.
+     *
+     * @param  Collection<int, \App\Models\EducationalMaterial>  $materials
      */
-    public function initiate(EducationalMaterial $material, string $email, ?string $name, ?int $userId): SklepOrder
+    public function initiateFromCart(Collection $materials, ?SklepDiscountCode $discountCode, string $email, ?string $name, ?int $userId): SklepOrder
     {
+        $subtotal = (int) $materials->sum('price_grosze');
+        $discountAmount = $discountCode?->calculateDiscount($subtotal) ?? 0;
+
         $order = SklepOrder::create([
-            'educational_material_id' => $material->id,
             'buyer_name' => $name,
             'buyer_email' => $email,
             'user_id' => $userId,
             'status' => 'pending',
-            'amount_grosze' => $material->price_grosze,
-            'currency' => $material->currency,
+            'subtotal_grosze' => $subtotal,
+            'discount_code_id' => $discountCode?->id,
+            'discount_amount_grosze' => $discountAmount,
+            'amount_grosze' => max(0, $subtotal - $discountAmount),
+            'currency' => $materials->first()?->currency ?? 'PLN',
         ]);
+
+        foreach ($materials as $material) {
+            $order->items()->create([
+                'educational_material_id' => $material->id,
+                'title' => $material->title,
+                'unit_price_grosze' => $material->price_grosze,
+            ]);
+        }
 
         $urlReturn = route('sklep.confirmation', $order);
         $urlStatus = route('przelewy24.webhook');
@@ -63,6 +80,7 @@ class SklepOrderService
 
         $order->markPaid($webhookPayload);
         $order->update(['access_delivered_at' => now()]);
+        $order->discountCode?->incrementUsage();
 
         Mail::to($order->buyer_email)->send(new SklepOrderPaidMail($order));
     }

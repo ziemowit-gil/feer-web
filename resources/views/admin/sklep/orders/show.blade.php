@@ -17,11 +17,19 @@
     @endif
 
     <div class="max-w-2xl space-y-5 rounded-lg border border-gray-200 bg-white p-6">
+        <div>
+            <p class="mb-1 text-sm font-bold text-muted">Pozycje zamówienia</p>
+            <ul class="divide-y divide-gray-100 rounded border border-gray-200">
+                @foreach ($order->items as $item)
+                    <li class="flex justify-between px-3 py-2 text-sm">
+                        <span>{{ $item->title }}</span>
+                        <span class="text-muted">{{ number_format($item->unit_price_grosze / 100, 2, ',', ' ') }} {{ $order->currency }}</span>
+                    </li>
+                @endforeach
+            </ul>
+        </div>
+
         <dl class="grid grid-cols-2 gap-4 text-sm">
-            <div>
-                <dt class="font-bold text-muted">Materiał</dt>
-                <dd>{{ $order->material?->title ?? '—' }}</dd>
-            </div>
             <div>
                 <dt class="font-bold text-muted">Status</dt>
                 <dd>{{ \App\Models\SklepOrder::STATUSES[$order->status] ?? $order->status }}</dd>
@@ -35,7 +43,17 @@
                 <dd>{{ $order->user?->email ?? 'zakup jako gość' }}</dd>
             </div>
             <div>
-                <dt class="font-bold text-muted">Kwota</dt>
+                <dt class="font-bold text-muted">Suma częściowa</dt>
+                <dd>{{ number_format($order->subtotal_grosze / 100, 2, ',', ' ') }} {{ $order->currency }}</dd>
+            </div>
+            @if ($order->discountCode)
+                <div>
+                    <dt class="font-bold text-muted">Kod rabatowy</dt>
+                    <dd>{{ $order->discountCode->code }} (-{{ number_format($order->discount_amount_grosze / 100, 2, ',', ' ') }} {{ $order->currency }})</dd>
+                </div>
+            @endif
+            <div>
+                <dt class="font-bold text-muted">Kwota do zapłaty</dt>
                 <dd>{{ number_format($order->amount_grosze / 100, 2, ',', ' ') }} {{ $order->currency }}</dd>
             </div>
             <div>

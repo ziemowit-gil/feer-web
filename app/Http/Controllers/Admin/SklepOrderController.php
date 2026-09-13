@@ -23,7 +23,7 @@ class SklepOrderController extends Controller
         $status = $request->string('status')->toString();
         $q = $request->string('q')->toString();
 
-        $orders = SklepOrder::with('material')
+        $orders = SklepOrder::with('items')
             ->when($status, fn ($query) => $query->where('status', $status))
             ->when($q, fn ($query) => $query->where('buyer_email', 'like', "%{$q}%"))
             ->latest()
@@ -35,7 +35,7 @@ class SklepOrderController extends Controller
 
     public function show(SklepOrder $order)
     {
-        $order->load('material', 'user');
+        $order->load('items', 'discountCode', 'user');
 
         return view('admin.sklep.orders.show', compact('order'));
     }

@@ -23,35 +23,29 @@
 
             <p class="mb-6 text-2xl font-bold text-brand">{{ $material->priceFormatted }}</p>
 
-            @if (session('error'))
-                <p class="mb-4 rounded-lg bg-red-50 px-4 py-2 text-sm font-bold text-red-700">
-                    <i class="fa-solid fa-circle-exclamation" aria-hidden="true"></i> {{ session('error') }}
-                </p>
+            @if (session('status'))
+                <p class="mb-4 rounded-lg bg-green-50 px-4 py-2 text-sm font-bold text-green-700">{{ session('status') }}</p>
             @endif
 
-            <form method="POST" action="{{ route('sklep.checkout', $material) }}" class="space-y-4">
-                @csrf
-                <div>
-                    <label for="buyer_email" class="mb-1 block text-sm font-bold">Adres e-mail</label>
-                    <input type="email" id="buyer_email" name="buyer_email" value="{{ old('buyer_email', auth()->user()->email ?? '') }}" required
-                        placeholder="twoj@email.pl" autocomplete="email"
-                        class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
-                    @error('buyer_email') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
-                    <p class="mt-1 text-xs text-muted">Na ten adres wyślemy link do pobrania materiału po zaksięgowaniu wpłaty.</p>
-                </div>
+            <div class="flex flex-wrap items-center gap-3">
+                @if ($inCart)
+                    <span class="inline-flex items-center gap-2 rounded bg-gray-100 px-5 py-2.5 text-sm font-bold text-muted">
+                        <i class="fa-solid fa-check" aria-hidden="true"></i> Materiał jest już w koszyku
+                    </span>
+                @else
+                    <form method="POST" action="{{ route('sklep.cart.add', $material) }}">
+                        @csrf
+                        <button type="submit"
+                            class="inline-flex items-center gap-2 rounded bg-brand px-5 py-2.5 text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-2 focus-visible:outline-brand">
+                            <i class="fa-solid fa-cart-plus" aria-hidden="true"></i> Dodaj do koszyka
+                        </button>
+                    </form>
+                @endif
 
-                <div>
-                    <label for="buyer_name" class="mb-1 block text-sm font-bold">Imię i nazwisko <span class="font-normal text-muted">(opcjonalnie)</span></label>
-                    <input type="text" id="buyer_name" name="buyer_name" value="{{ old('buyer_name', auth()->user()->name ?? '') }}"
-                        class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
-                    @error('buyer_name') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
-                </div>
-
-                <button type="submit"
-                    class="inline-flex items-center gap-2 rounded bg-brand px-5 py-2.5 text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-2 focus-visible:outline-brand">
-                    <i class="fa-solid fa-lock" aria-hidden="true"></i> Przejdź do płatności (Przelewy24)
-                </button>
-            </form>
+                <a href="{{ route('sklep.cart') }}" class="text-sm font-bold text-brand hover:underline">
+                    Przejdź do koszyka →
+                </a>
+            </div>
         </div>
     </section>
 @endsection

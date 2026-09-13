@@ -69,7 +69,7 @@ class Przelewy24Client
                 'sessionId' => $sessionId,
                 'amount' => $amount,
                 'currency' => $currency,
-                'description' => "Materiał: {$order->material?->title}",
+                'description' => 'Zamówienie w sklepie: '.$order->items->pluck('title')->implode(', '),
                 'email' => $order->buyer_email,
                 'country' => 'PL',
                 'language' => 'pl',
