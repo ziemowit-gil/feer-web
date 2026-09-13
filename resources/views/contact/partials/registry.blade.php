@@ -36,7 +36,7 @@
     </div>
 @endif
 
-@if ($accountRows->isNotEmpty())
+@if ($accountRows->isNotEmpty() && ($showAccounts ?? true))
     <div class="{{ $wideLayout ? '' : 'mt-6 border-t border-gray-200 pt-5' }}">
         <h3 class="mb-2 text-xs font-bold uppercase tracking-wide text-muted">Wpłaty</h3>
         <ul class="space-y-3 text-sm">

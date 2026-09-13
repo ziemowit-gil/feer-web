@@ -100,7 +100,10 @@
 
                     <div class="mt-8 border-t border-gray-200 pt-8">
                         @include('contact.partials.details', ['withOfficePhoto' => ! $tabsHeroPhoto, 'wideLayout' => true])
-                        @include('contact.partials.registry', ['wideLayout' => true])
+                        {{-- Numer konta pomijamy tutaj, gdy jest osobna zakładka
+                             „Rachunki bankowe" (contact_bank_accounts) — inaczej
+                             ten sam numer dublowałby się na dwóch zakładkach. --}}
+                        @include('contact.partials.registry', ['wideLayout' => true, 'showAccounts' => empty($siteSettings->contact_bank_accounts)])
                     </div>
 
                     <p class="mt-8 text-sm text-muted">
