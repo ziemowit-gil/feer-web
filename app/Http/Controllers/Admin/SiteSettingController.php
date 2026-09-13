@@ -340,6 +340,10 @@ class SiteSettingController extends Controller
             'federation_join_benefits.*.title' => ['nullable', 'string', 'max:100'],
             'federation_join_benefits.*.text' => ['nullable', 'string', 'max:255'],
             'federation_join_benefits.*.icon' => ['nullable', 'string', 'max:60'],
+            'ngo_3_stats' => ['nullable', 'array'],
+            'ngo_3_stats.*.value' => ['nullable', 'string', 'max:20'],
+            'ngo_3_stats.*.label' => ['nullable', 'string', 'max:100'],
+            'ngo_3_stats.*.icon' => ['nullable', 'string', 'max:60'],
         ]);
 
         $data['allow_indexing'] = $request->boolean('allow_indexing');
@@ -518,6 +522,17 @@ class SiteSettingController extends Controller
                 'icon' => filled($b['icon'] ?? null) ? trim((string) $b['icon']) : 'fa-circle-check',
             ])
             ->filter(fn ($b) => $b['title'] !== '')
+            ->values()
+            ->all() ?: null;
+
+        // Pasek statystyk (strona główna, szablon "ngo_3"): odrzucamy wiersze bez wartości.
+        $data['ngo_3_stats'] = collect($request->input('ngo_3_stats', []))
+            ->map(fn ($s) => [
+                'value' => trim((string) ($s['value'] ?? '')),
+                'label' => trim((string) ($s['label'] ?? '')),
+                'icon' => filled($s['icon'] ?? null) ? trim((string) $s['icon']) : null,
+            ])
+            ->filter(fn ($s) => $s['value'] !== '')
             ->values()
             ->all() ?: null;
 

@@ -2133,6 +2133,49 @@
                 </div>
             @endif
 
+            @if ($settings->site_template === 'ngo_3')
+                {{-- Pasek statystyk (strona główna, szablon "ngo_3") --}}
+                @php $ngo3Stats = array_values((array) old('ngo_3_stats', $settings->ngo3Stats())); @endphp
+                <div class="mt-6 rounded-lg border border-gray-200 bg-gray-50 p-5" data-ngo3-stats>
+                    <p class="mb-1 text-sm font-bold text-ink">Pasek statystyk (strona główna)</p>
+                    <p class="mb-3 text-xs text-muted">Liczby, którymi organizacja się chwali — np. lata działania, liczba projektów, wolontariuszy.</p>
+                    <div data-ngo3-stats-rows class="space-y-3">
+                        @foreach ($ngo3Stats as $i => $stat)
+                            <div data-ngo3-stats-row class="grid gap-2 rounded-lg border border-gray-200 bg-white p-3 sm:grid-cols-12 sm:items-center">
+                                <input type="text" name="ngo_3_stats[{{ $i }}][value]" value="{{ $stat['value'] ?? '' }}"
+                                    placeholder="Wartość, np. 10+"
+                                    class="rounded border-gray-300 text-sm focus:border-brand focus:ring-brand sm:col-span-3">
+                                <input type="text" name="ngo_3_stats[{{ $i }}][label]" value="{{ $stat['label'] ?? '' }}"
+                                    placeholder="Etykieta, np. Lat działania"
+                                    class="min-w-0 rounded border-gray-300 text-sm focus:border-brand focus:ring-brand sm:col-span-6">
+                                <input type="text" name="ngo_3_stats[{{ $i }}][icon]" value="{{ $stat['icon'] ?? '' }}"
+                                    placeholder="Ikona Font Awesome (opcjonalnie)"
+                                    class="min-w-0 rounded border-gray-300 text-sm focus:border-brand focus:ring-brand sm:col-span-2">
+                                <button type="button" data-ngo3-stats-remove class="rounded p-2 text-muted hover:bg-red-50 hover:text-red-600 sm:col-span-1 sm:w-fit sm:justify-self-end" aria-label="Usuń statystykę {{ $i + 1 }}">
+                                    <i class="fa-solid fa-trash" aria-hidden="true"></i>
+                                </button>
+                            </div>
+                        @endforeach
+                    </div>
+                    <button type="button" data-ngo3-stats-add class="mt-3 inline-flex items-center gap-2 rounded border border-brand px-3 py-1.5 text-sm font-bold text-brand hover:bg-brand-light">
+                        <i class="fa-solid fa-plus" aria-hidden="true"></i> Dodaj statystykę
+                    </button>
+                    <template data-ngo3-stats-template>
+                        <div data-ngo3-stats-row class="grid gap-2 rounded-lg border border-gray-200 bg-white p-3 sm:grid-cols-12 sm:items-center">
+                            <input type="text" name="ngo_3_stats[__INDEX__][value]" placeholder="Wartość, np. 10+"
+                                class="rounded border-gray-300 text-sm focus:border-brand focus:ring-brand sm:col-span-3">
+                            <input type="text" name="ngo_3_stats[__INDEX__][label]" placeholder="Etykieta, np. Lat działania"
+                                class="min-w-0 rounded border-gray-300 text-sm focus:border-brand focus:ring-brand sm:col-span-6">
+                            <input type="text" name="ngo_3_stats[__INDEX__][icon]" placeholder="Ikona Font Awesome (opcjonalnie)"
+                                class="min-w-0 rounded border-gray-300 text-sm focus:border-brand focus:ring-brand sm:col-span-2">
+                            <button type="button" data-ngo3-stats-remove class="rounded p-2 text-muted hover:bg-red-50 hover:text-red-600 sm:col-span-1 sm:w-fit sm:justify-self-end" aria-label="Usuń statystykę">
+                                <i class="fa-solid fa-trash" aria-hidden="true"></i>
+                            </button>
+                        </div>
+                    </template>
+                </div>
+            @endif
+
             {{-- Sekcja skrótów —- styl tła --}}
             <div class="mt-6 rounded-lg border border-gray-200 bg-gray-50 p-5">
                 <p class="mb-3 text-sm font-bold text-ink">Sekcja szybkich akcji</p>
@@ -2265,6 +2308,16 @@
                     Klasyczny górny pasek, nagłówek i stopka (ustawiasz je w zakładce <span class="font-bold">Nagłówek</span>)
                     plus rozbudowana strona główna z sekcją szkoleń. Kolejność sekcji strony głównej jest w tym
                     szablonie stała.
+                </p>
+            </div>
+
+            <div x-show="tpl === 'ngo_3'" x-cloak class="rounded-lg border border-gray-200 bg-gray-50/70 p-5">
+                <h3 class="text-sm font-bold text-ink">Ustawienia szablonu: NGO / fundacja (rozbudowany 3)</h3>
+                <p class="mt-1 text-xs text-muted">
+                    Nagłówek i stopka jak w szablonie „NGO / fundacja (rozbudowany)". Strona główna: hero,
+                    siatka „Na skróty" (moduł <span class="font-bold">Szybkie akcje</span>), aktualności, pasek
+                    statystyk, projekty, wydarzenia, zapis na newsletter, wezwanie do wsparcia. Statystyki
+                    edytujesz w zakładce <span class="font-bold">Strona główna</span> poniżej.
                 </p>
             </div>
 
@@ -3054,6 +3107,33 @@
                 const remove = e.target.closest('[data-join-benefits-remove]');
                 if (remove) {
                     const row = remove.closest('[data-join-benefits-row]');
+                    if (row) row.remove();
+                }
+            });
+        })();
+
+        (function () {
+            // Repeater statystyk paska liczników (strona główna, szablon "ngo_3").
+            const wrap = document.querySelector('[data-ngo3-stats]');
+            if (!wrap) return;
+            const rows = wrap.querySelector('[data-ngo3-stats-rows]');
+            const template = wrap.querySelector('[data-ngo3-stats-template]');
+            const addBtn = wrap.querySelector('[data-ngo3-stats-add]');
+            if (!rows || !template) return;
+            let nextIndex = rows.querySelectorAll('[data-ngo3-stats-row]').length;
+
+            if (addBtn) {
+                addBtn.addEventListener('click', function () {
+                    const html = template.innerHTML.replace(/__INDEX__/g, String(nextIndex++));
+                    const el = document.createElement('div');
+                    el.innerHTML = html.trim();
+                    rows.appendChild(el.firstElementChild);
+                });
+            }
+            wrap.addEventListener('click', function (e) {
+                const remove = e.target.closest('[data-ngo3-stats-remove]');
+                if (remove) {
+                    const row = remove.closest('[data-ngo3-stats-row]');
                     if (row) row.remove();
                 }
             });

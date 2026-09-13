@@ -5,7 +5,7 @@
 
 @if (($siteSettings->site_template ?? 'default') === 'municipality')
     @include('templates.municipality.partials.footer')
-@elseif (in_array($siteSettings->site_template ?? 'default', ['ngo', 'federacja']))
+@elseif (in_array($siteSettings->site_template ?? 'default', ['ngo', 'federacja', 'ngo_3']))
     @include('templates.ngo.partials.footer')
 @elseif (($siteSettings->site_template ?? 'default') === 'federation')
     @include('templates.federation.partials.footer')

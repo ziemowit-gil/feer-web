@@ -76,7 +76,7 @@
     @if ($siteTemplate === 'municipality')
         @include('templates.municipality.partials.topbar')
         @include('templates.municipality.partials.header')
-    @elseif (in_array($siteTemplate, ['ngo', 'federacja']))
+    @elseif (in_array($siteTemplate, ['ngo', 'federacja', 'ngo_3']))
         @include('templates.ngo.partials.topbar')
         @include('templates.ngo.partials.header')
     @elseif ($siteTemplate === 'federation')

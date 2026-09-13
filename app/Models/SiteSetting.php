@@ -101,6 +101,7 @@ class SiteSetting extends Model implements HasMedia
         'municipality' => 'Gmina / urząd',
         'federation'   => 'Federacja organizacji (wielobarwna, nowoczesna)',
         'wrzos'        => 'Federacja organizacji (czerwono-biała, pasek dostępności, siatka wartości)',
+        'ngo_3'        => 'NGO / fundacja (rozbudowany 3 — hero, skróty, statystyki, newsletter)',
     ];
 
     /**
@@ -203,6 +204,7 @@ class SiteSetting extends Model implements HasMedia
         'homepage_banner_text', 'homepage_banner_link_label', 'homepage_banner_link_url', 'homepage_banner_visible_from', 'homepage_banner_visible_until',
         'newsletter_code', 'header_layout', 'blocked_options', 'federation_hero_tiles', 'federation_join_benefits', 'federation_hero_heading', 'federation_hero_intro', 'federation_colorful_nav', 'federation_colorful_nav_items', 'federation_show_org_spotlight', 'federation_show_members_banner', 'show_topbar_bip', 'show_topbar_social', 'content_editor',
         'wrzos_intro_heading', 'wrzos_intro_text', 'wrzos_values',
+        'ngo_3_stats',
         'infobar_show_date', 'infobar_show_nameday', 'office_show_account', 'office_show_search',
         'contact_layout', 'contact_office_address', 'contact_office_city', 'contact_office_building',
         'contact_office_note', 'contact_office_photo_alt', 'contact_hero_photo',
@@ -319,6 +321,7 @@ class SiteSetting extends Model implements HasMedia
         'federation_show_org_spotlight' => 'boolean',
         'federation_show_members_banner' => 'boolean',
         'wrzos_values' => 'array',
+        'ngo_3_stats' => 'array',
         'homepage_section_order' => 'array',
         'contact_bank_accounts' => 'array',
         'contact_schedule' => 'array',
@@ -699,6 +702,27 @@ class SiteSetting extends Model implements HasMedia
             ['icon' => 'fa-solid fa-list-check', 'title' => 'Rzetelność', 'text' => 'Podejmowanie działań na miarę możliwości finansowych i kompetencji, wywiązywanie się z podjętych zobowiązań.'],
             ['icon' => 'fa-solid fa-diagram-project', 'title' => 'Otwartość współpracy', 'text' => 'Poszukiwanie partnerów społecznych, równouprawnienie i umiejętność dochodzenia do kompromisu.'],
             ['icon' => 'fa-solid fa-circle-info', 'title' => 'Nasza misja', 'text' => 'Przy zachowaniu zasad tolerancji, równouprawnienia i otwartości działamy na rzecz profesjonalizacji działań pomocowych w Polsce.'],
+        ];
+    }
+
+    /**
+     * Pasek liczników na stronie głównej szablonu "ngo_3" — edytowalny w panelu
+     * (Ustawienia → Strona główna, tylko dla tego szablonu). Zwraca sensowny
+     * domyślny układ, gdy admin nic jeszcze nie zapisał.
+     *
+     * @return array<int, array{value: string, label: string, icon: ?string}>
+     */
+    public function ngo3Stats(): array
+    {
+        if (filled($this->ngo_3_stats)) {
+            return $this->ngo_3_stats;
+        }
+
+        return [
+            ['value' => '10+', 'label' => 'Lat działania', 'icon' => 'fa-solid fa-calendar-days'],
+            ['value' => '50+', 'label' => 'Zrealizowanych projektów', 'icon' => 'fa-solid fa-diagram-project'],
+            ['value' => '100+', 'label' => 'Wolontariuszy', 'icon' => 'fa-solid fa-people-group'],
+            ['value' => '1000+', 'label' => 'Osób, którym pomogliśmy', 'icon' => 'fa-solid fa-hand-holding-heart'],
         ];
     }
 

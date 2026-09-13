@@ -69,6 +69,26 @@ class HomeController extends Controller
         return view($view, compact('slides', 'newsItems', 'projects', 'events', 'partners'));
     }
 
+    /** Renderuje stronę główną w szablonie "ngo_3" (hero, skróty, statystyki, newsy, projekty, wydarzenia, newsletter). */
+    private function ngo3Home(SiteSetting $settings, Collection $slides, Collection $partners, Collection $quickLinks)
+    {
+        $newsItems = $settings->isModuleEnabled('news')
+            ? News::published()->forCurrentSite()->with('category')->orderByDesc('published_at')->limit(3)->get()
+            : collect();
+
+        $projects = $settings->isModuleEnabled('projects')
+            ? Project::forCurrentSite()->where('is_published', true)->orderBy('order')->limit(3)->get()
+            : collect();
+
+        $events = $settings->isModuleEnabled('events')
+            ? Event::upcoming()->forCurrentSite()->limit(3)->get()
+            : collect();
+
+        $stats = $settings->ngo3Stats();
+
+        return view('templates.ngo_3.home', compact('slides', 'newsItems', 'projects', 'events', 'partners', 'quickLinks', 'stats'));
+    }
+
     /** Renderuje stronę główną w szablonie "wrzos" (siatka aktualności 4×2, blok "Kim jesteśmy?", karty wartości). */
     private function wrzosHome(SiteSetting $settings, Collection $partners)
     {
@@ -154,6 +174,9 @@ class HomeController extends Controller
         }
         if ($template === 'wrzos') {
             return $this->wrzosHome($settings, $partners);
+        }
+        if ($template === 'ngo_3') {
+            return $this->ngo3Home($settings, $slides, $partners, $quickLinks);
         }
 
         return view('home', compact('slides', 'news', 'events', 'poll', 'quickLinks', 'gallery', 'partners', 'sectionOrder', 'substackPosts'));
