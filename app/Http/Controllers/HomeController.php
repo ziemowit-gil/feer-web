@@ -76,15 +76,21 @@ class HomeController extends Controller
             ? News::published()->forCurrentSite()->with('category')->orderByDesc('published_at')->limit(3)->get()
             : collect();
 
+        // Tylko aktywne (nie zakończone) projekty — ngo_3 pokazuje bieżącą działalność, nie archiwum.
         $projects = $settings->isModuleEnabled('projects')
-            ? Project::forCurrentSite()->where('is_published', true)->orderBy('order')->limit(3)->get()
+            ? Project::forCurrentSite()->where('is_published', true)->where('is_completed', false)->orderBy('order')->limit(3)->get()
             : collect();
 
         $events = $settings->isModuleEnabled('events')
             ? Event::upcoming()->forCurrentSite()->limit(3)->get()
             : collect();
 
-        $stats = $settings->ngo3Stats();
+        // Statystyki biorą się ze strony "O organizacji" (about_stats), żeby nie
+        // duplikować tych samych liczb w dwóch miejscach panelu. Gdy strona
+        // "O organizacji" nie istnieje albo nie ma jeszcze statystyk, spada do
+        // domyślnego układu z ngo3Stats() (ustawienia szablonu).
+        $aboutPage = Page::where('type', 'about')->forCurrentSite()->first();
+        $stats = ($aboutPage && filled($aboutPage->about_stats)) ? $aboutPage->about_stats : $settings->ngo3Stats();
 
         return view('templates.ngo_3.home', compact('slides', 'newsItems', 'projects', 'events', 'partners', 'quickLinks', 'stats'));
     }
