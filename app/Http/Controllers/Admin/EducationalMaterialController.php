@@ -117,7 +117,8 @@ class EducationalMaterialController extends Controller
         $data = $request->validate([
             'title' => ['required', 'string', 'max:255'],
             'description' => ['required', 'string'],
-            'target_group' => ['required', 'string', 'max:255'],
+            'target_group' => ['required', Rule::in(array_keys(EducationalMaterial::TARGET_GROUPS))],
+            'category' => ['nullable', Rule::in(array_keys(EducationalMaterial::CATEGORIES))],
             'type' => ['required', Rule::in(array_keys(EducationalMaterial::TYPES))],
             'video_url' => ['required_if:type,video', 'nullable', 'url', 'max:255'],
             'file' => [

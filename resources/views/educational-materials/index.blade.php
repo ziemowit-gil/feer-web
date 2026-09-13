@@ -28,16 +28,18 @@
             <p class="text-muted">Brak materiałów do wyświetlenia.</p>
         @else
             @php
-                // Grupowanie wg grupy docelowej; materiały bez grupy trafiają na koniec.
+                // Grupowanie wg grupy docelowej (zamknięta lista — patrz EducationalMaterial::TARGET_GROUPS);
+                // materiały bez grupy trafiają na koniec.
                 $groups = $materials->groupBy(fn ($material) => $material->target_group ?: '');
                 $hasNamedGroups = $groups->keys()->filter(fn ($key) => $key !== '')->isNotEmpty();
             @endphp
 
-            @foreach ($groups as $groupName => $groupMaterials)
+            @foreach ($groups as $groupKey => $groupMaterials)
                 <div class="mb-10">
-                    @if ($groupName !== '')
+                    @if ($groupKey !== '')
                         <h2 class="mb-4 flex items-center gap-2 text-xl font-bold text-ink">
-                            <i class="fa-solid fa-user-group text-brand" aria-hidden="true"></i> {{ $groupName }}
+                            <i class="fa-solid fa-user-group text-brand" aria-hidden="true"></i>
+                            {{ \App\Models\EducationalMaterial::TARGET_GROUPS[$groupKey] ?? $groupKey }}
                         </h2>
                     @elseif ($hasNamedGroups)
                         <h2 class="mb-4 text-xl font-bold text-ink">Pozostałe materiały</h2>

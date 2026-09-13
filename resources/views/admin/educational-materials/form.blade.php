@@ -26,10 +26,23 @@
 
         <div>
             <label for="target_group" class="mb-1 block text-sm font-bold">Dla kogo</label>
-            <input type="text" id="target_group" name="target_group" value="{{ old('target_group', $material->target_group) }}" required
-                placeholder="np. Nauczyciele szkół podstawowych"
-                class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+            <select id="target_group" name="target_group" required class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                @foreach (\App\Models\EducationalMaterial::TARGET_GROUPS as $value => $label)
+                    <option value="{{ $value }}" {{ old('target_group', $material->target_group) === $value ? 'selected' : '' }}>{{ $label }}</option>
+                @endforeach
+            </select>
             @error('target_group') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+        </div>
+
+        <div>
+            <label for="category" class="mb-1 block text-sm font-bold">Kategoria <span class="font-normal text-muted">(opcjonalnie)</span></label>
+            <select id="category" name="category" class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                <option value="">— bez kategorii —</option>
+                @foreach (\App\Models\EducationalMaterial::CATEGORIES as $value => $label)
+                    <option value="{{ $value }}" {{ old('category', $material->category) === $value ? 'selected' : '' }}>{{ $label }}</option>
+                @endforeach
+            </select>
+            @error('category') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
         </div>
 
         <div>

@@ -18,8 +18,26 @@ class EducationalMaterial extends Model implements HasMedia
         'scenariusz' => 'Scenariusz',
     ];
 
+    public const CATEGORIES = [
+        'wcag' => 'WCAG i standardy dostępności',
+        'dokumenty' => 'Dokumenty i treści',
+        'projektowanie' => 'Projektowanie i UX',
+        'programowanie' => 'Programowanie i kod',
+        'edukacja' => 'Scenariusze i materiały szkolne',
+        'prawo' => 'Prawo i regulacje',
+    ];
+
+    public const TARGET_GROUPS = [
+        'nauczyciele' => 'Nauczyciele',
+        'webmasterzy' => 'Webmasterzy i redaktorzy CMS',
+        'graficy' => 'Graficy i projektanci UI',
+        'programisci' => 'Programiści',
+        'pracownicy_biurowi' => 'Pracownicy biurowi',
+        'ogolny' => 'Ogólny (dla wszystkich)',
+    ];
+
     protected $fillable = [
-        'title', 'description', 'target_group', 'type', 'video_url', 'order', 'is_published', 'is_archival', 'is_premium',
+        'title', 'description', 'target_group', 'category', 'type', 'video_url', 'order', 'is_published', 'is_archival', 'is_premium',
         'price_grosze', 'currency',
     ];
 

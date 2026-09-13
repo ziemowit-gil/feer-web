@@ -54,6 +54,11 @@
 
     {{-- Treść --}}
     <div class="flex flex-1 flex-col p-5">
+        @if ($material->category)
+            <span class="mb-1 inline-flex w-fit items-center rounded-full bg-gray-100 px-2 py-0.5 text-xs font-bold text-muted">
+                {{ \App\Models\EducationalMaterial::CATEGORIES[$material->category] ?? $material->category }}
+            </span>
+        @endif
         <h2 class="mb-1 text-lg font-bold text-ink">{{ $material->title }}</h2>
         <p class="mb-4 flex-1 text-sm text-muted">{{ $material->description }}</p>
 

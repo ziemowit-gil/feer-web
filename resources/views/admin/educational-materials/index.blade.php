@@ -47,7 +47,7 @@
                                 <i class="fa-solid {{ $material->isVideo() ? 'fa-video' : 'fa-file-pdf' }}"></i>
                                 {{ \App\Models\EducationalMaterial::TYPES[$material->type] ?? $material->type }}
                             </td>
-                            <td class="px-4 py-3 text-muted">{{ $material->target_group }}</td>
+                            <td class="px-4 py-3 text-muted">{{ \App\Models\EducationalMaterial::TARGET_GROUPS[$material->target_group] ?? $material->target_group }}</td>
                             <td class="px-4 py-3 text-muted">{{ $material->order }}</td>
                             <td class="px-4 py-3">
                                 @if ($material->is_published)
