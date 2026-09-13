@@ -2,6 +2,10 @@
     Pasek informacyjny: data, imieniny, pogoda + narzędzia dostępności.
     Wspólny dla szablonu „Gmina / urząd" i substylu „Urzędowy" nagłówka FEER.
     Poszczególne elementy wyłącza się w ustawieniach (zakładka Nagłówek).
+
+    Ułatwienia dostępu zwinięte do jednego przełącznika (wzorzec z szablonu "federation") —
+    te same data-a11y-* co dotąd, ta sama logika w resources/js/app.js, tylko domyślnie
+    schowane pod jednym przyciskiem. Stan zapamiętywany w localStorage.
 --}}
 @php
     use App\Support\PolishNameDays;
@@ -14,85 +18,96 @@
     $dateStr = $weekdays[$now->dayOfWeek] . ', ' . $now->day . ' ' . $months[$now->month] . ' ' . $now->year;
 @endphp
 
-<div class="bg-brand text-white text-xs" role="region" aria-label="Pasek informacyjny i dostępność">
-    <div class="mx-auto max-w-[1400px] flex flex-wrap items-center gap-x-4 gap-y-1 px-4 py-1.5">
+<div x-data="{ open: (function () { try { return localStorage.getItem('a11y-panel-open') === '1' } catch (e) { return false } })() }"
+     x-effect="(() => { try { localStorage.setItem('a11y-panel-open', open ? '1' : '0') } catch (e) {} })()">
 
-        {{-- Data --}}
-        @if ($siteSettings->infobar_show_date)
-            <div class="flex shrink-0 items-center gap-2 border-r border-white/30 pr-4">
-                <i class="bi bi-calendar3" aria-hidden="true"></i>
-                <time datetime="{{ $now->toDateString() }}">{{ $dateStr }}</time>
+    <div class="bg-brand text-white text-xs">
+        <div class="mx-auto max-w-[1400px] flex flex-wrap items-center gap-x-4 gap-y-1 px-4 py-1.5">
+
+            {{-- Data --}}
+            @if ($siteSettings->infobar_show_date)
+                <div class="flex shrink-0 items-center gap-2 border-r border-white/30 pr-4">
+                    <i class="bi bi-calendar3" aria-hidden="true"></i>
+                    <time datetime="{{ $now->toDateString() }}">{{ $dateStr }}</time>
+                </div>
+            @endif
+
+            {{-- Imieniny --}}
+            @if ($siteSettings->infobar_show_nameday && $nameDays)
+                <div class="flex shrink-0 items-center gap-2 border-r border-white/30 pr-4">
+                    <span class="text-white/70">Imieniny:</span>
+                    <span>{{ $nameDays }}</span>
+                </div>
+            @endif
+
+            {{-- Pogoda (pobierana przez JS z Open-Meteo jeśli skonfigurowane) --}}
+            @if ($siteSettings->municipality_weather_lat && $siteSettings->municipality_weather_lon)
+                <div id="mun-weather"
+                     class="flex shrink-0 items-center gap-2 border-r border-white/30 pr-4"
+                     data-lat="{{ $siteSettings->municipality_weather_lat }}"
+                     data-lon="{{ $siteSettings->municipality_weather_lon }}"
+                     aria-live="polite"
+                     aria-label="Aktualna pogoda">
+                    <i class="bi bi-cloud text-white/60" aria-hidden="true"></i>
+                    <span class="text-white/60">Ładowanie pogody…</span>
+                </div>
+            @endif
+
+            {{-- Prawa strona: przełącznik ułatwień dostępu --}}
+            <div class="ml-auto flex shrink-0 items-center">
+                <button type="button" @click="open = !open" :aria-expanded="open.toString()" aria-controls="a11y-panel"
+                    class="flex min-h-11 items-center gap-2 rounded-full px-3 py-1.5 font-bold text-white/90 transition hover:bg-white/20 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-brand">
+                    <i class="fa-solid fa-universal-access" aria-hidden="true"></i>
+                    <span class="hidden sm:inline">Ułatwienia dostępu</span>
+                    <i class="fa-solid fa-chevron-down text-[0.6rem] transition-transform" :class="{ 'rotate-180': open }" aria-hidden="true"></i>
+                </button>
             </div>
-        @endif
+        </div>
+    </div>
 
-        {{-- Imieniny --}}
-        @if ($siteSettings->infobar_show_nameday && $nameDays)
-            <div class="flex shrink-0 items-center gap-2 border-r border-white/30 pr-4">
-                <span class="text-white/70">Imieniny:</span>
-                <span>{{ $nameDays }}</span>
-            </div>
-        @endif
-
-        {{-- Pogoda (pobierana przez JS z Open-Meteo jeśli skonfigurowane) --}}
-        @if ($siteSettings->municipality_weather_lat && $siteSettings->municipality_weather_lon)
-            <div id="mun-weather"
-                 class="flex shrink-0 items-center gap-2 border-r border-white/30 pr-4"
-                 data-lat="{{ $siteSettings->municipality_weather_lat }}"
-                 data-lon="{{ $siteSettings->municipality_weather_lon }}"
-                 aria-live="polite"
-                 aria-label="Aktualna pogoda">
-                <i class="bi bi-cloud text-white/60" aria-hidden="true"></i>
-                <span class="text-white/60">Ładowanie pogody…</span>
-            </div>
-        @endif
-
-        {{-- Prawa strona: dostępność + Google Translate --}}
-        <div class="ml-auto flex shrink-0 flex-wrap items-center gap-3">
-
-            {{-- Rozmiar czcionki --}}
-            <div class="flex items-center gap-1" role="group" aria-label="Rozmiar czcionki">
+    <div id="a11y-panel" x-show="open" x-cloak role="region" aria-label="Ustawienia dostępności"
+        class="border-b border-gray-200 bg-gray-50 text-xs text-gray-600">
+        <div class="mx-auto flex max-w-[1400px] flex-wrap items-center gap-4 px-4 py-3">
+            <div class="flex items-center gap-1.5" role="group" aria-label="Rozmiar czcionki">
                 <button type="button" data-a11y-font="up"
-                    class="mun-a11y-btn" aria-label="Zwiększ czcionkę">A+</button>
+                    class="flex min-h-6 min-w-6 items-center justify-center rounded border border-gray-300 hover:border-brand hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-1"
+                    aria-label="Zwiększ czcionkę">A+</button>
                 <button type="button" data-a11y-font="up" data-a11y-font-step="2"
-                    class="mun-a11y-btn" aria-label="Znacznie zwiększ czcionkę">A++</button>
+                    class="flex min-h-6 min-w-6 items-center justify-center rounded border border-gray-300 hover:border-brand hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-1"
+                    aria-label="Znacznie zwiększ czcionkę">A++</button>
                 <button type="button" data-a11y-font="reset"
-                    class="mun-a11y-btn" aria-label="Domyślny rozmiar czcionki">A</button>
+                    class="flex min-h-6 min-w-6 items-center justify-center rounded border border-gray-300 hover:border-brand hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-1"
+                    aria-label="Domyślny rozmiar czcionki">A</button>
             </div>
 
-            <span class="h-4 border-l border-white/30" aria-hidden="true"></span>
-
-            {{-- Odstęp między wierszami --}}
             <button type="button" data-a11y-lh
-                class="mun-a11y-btn aria-pressed:ring-1 aria-pressed:ring-white" aria-pressed="false"
-                aria-label="Zwiększ odstęp między wierszami" title="Odstęp między wierszami">
-                <i class="bi bi-list" aria-hidden="true"></i>
+                class="flex min-h-6 items-center gap-1 hover:text-brand aria-pressed:font-bold aria-pressed:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-1"
+                aria-pressed="false" aria-label="Zwiększ odstęp między wierszami">
+                <i class="bi bi-list" aria-hidden="true"></i> Odstęp wierszy
             </button>
 
-            {{-- Rozstrzał liter --}}
             <button type="button" data-a11y-ls
-                class="mun-a11y-btn aria-pressed:ring-1 aria-pressed:ring-white" aria-pressed="false"
-                aria-label="Rozstrzał liter" title="Rozstrzał liter">
-                <i class="fa-solid fa-text-width" aria-hidden="true"></i>
+                class="flex min-h-6 items-center gap-1 hover:text-brand aria-pressed:font-bold aria-pressed:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-1"
+                aria-pressed="false" aria-label="Rozstrzał liter">
+                <i class="fa-solid fa-text-width" aria-hidden="true"></i> Odstęp liter
             </button>
 
-            <span class="h-4 border-l border-white/30" aria-hidden="true"></span>
-
-            {{-- Kontrast --}}
             <button type="button" data-a11y-contrast="contrast"
-                class="mun-a11y-btn aria-pressed:ring-1 aria-pressed:ring-white" aria-pressed="false"
-                aria-label="Kontrast" title="Tryb wysokiego kontrastu">
-                <i class="fa-solid fa-circle-half-stroke" aria-hidden="true"></i>
+                class="flex min-h-6 items-center gap-1 hover:text-brand aria-pressed:font-bold aria-pressed:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-1"
+                aria-pressed="false" aria-label="Kontrast">
+                <i class="fa-solid fa-circle-half-stroke" aria-hidden="true"></i> Kontrast
+            </button>
+
+            <button type="button" data-a11y-reset class="flex min-h-6 items-center gap-1 text-muted hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-1" aria-label="Przywróć domyślne ustawienia dostępności">
+                <i class="fa-solid fa-rotate-left" aria-hidden="true"></i> Resetuj
             </button>
 
             @if ($siteSettings->municipality_show_google_translate ?? false)
-                <span class="h-4 border-l border-white/30" aria-hidden="true"></span>
-                {{-- Google Translate trigger --}}
                 <button type="button" id="mun-translate-btn"
-                    class="mun-a11y-btn flex items-center gap-1" aria-haspopup="true"
+                    class="flex min-h-6 items-center gap-1 hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-1" aria-haspopup="true"
                     aria-expanded="false" aria-controls="google_translate_element"
                     aria-label="Tłumacz stronę (Google Translate)">
-                    <span class="hidden sm:inline">Translate</span>
-                    <i class="bi bi-translate" aria-hidden="true"></i>
+                    <i class="bi bi-translate" aria-hidden="true"></i> Translate
                 </button>
                 <div id="google_translate_element" class="hidden"></div>
             @endif
@@ -100,25 +115,8 @@
     </div>
 </div>
 
-<style>
-    .mun-a11y-btn {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: 0.25rem;
-        padding: 0.125rem 0.375rem;
-        font-size: 0.75rem;
-        color: rgba(255,255,255,0.8);
-        transition: color 0.15s, background 0.15s;
-        text-decoration: none;
-        cursor: pointer;
-        background: transparent;
-        border: none;
-    }
-    .mun-a11y-btn:hover { color: #fff; background: rgba(255,255,255,0.2); }
-    .mun-a11y-btn:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
-    .mun-a11y-btn[aria-pressed="true"] { font-weight: 700; color: #fff; }
-</style>
+<noscript><style>[x-cloak] { display: block !important; }</style></noscript>
+
 @if ($siteSettings->municipality_weather_lat && $siteSettings->municipality_weather_lon)
 <script>
 (function () {

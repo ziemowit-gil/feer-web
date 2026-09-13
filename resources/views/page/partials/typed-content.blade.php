@@ -163,15 +163,18 @@
     @endphp
 
     <article>
-        {{-- Hero: tytuł + motto na neutralnym tle (bez pełnokolorowego gradientu marki) --}}
-        <header class="border-b border-gray-100 bg-gray-50 px-4 py-12 text-center md:py-16">
-            <div class="mx-auto max-w-4xl">
-                <h1 class="text-3xl font-extrabold leading-tight text-ink md:text-5xl">{{ $page->title }}</h1>
+        {{-- Hero: pełnokolorowe tło marki z dekoracją, jak w sekcji "wspolpraca" (bg-brand + rozmyte koła) --}}
+        <header class="relative overflow-hidden bg-brand px-4 py-16 text-center text-white md:py-24">
+            <span class="pointer-events-none absolute -right-24 -top-24 h-96 w-96 rounded-full bg-white/5 blur-3xl" aria-hidden="true"></span>
+            <span class="pointer-events-none absolute -bottom-16 -left-16 h-64 w-64 rounded-full bg-white/5 blur-2xl" aria-hidden="true"></span>
+
+            <div class="relative mx-auto max-w-4xl">
+                <h1 class="text-3xl font-extrabold leading-tight md:text-5xl">{{ $page->title }}</h1>
                 @if ($page->about_motto)
-                    <blockquote class="mx-auto mt-8 max-w-3xl rounded-r-lg border-l-4 border-brand bg-white px-6 py-4 text-left shadow-sm">
-                        <p class="text-lg italic leading-relaxed text-ink md:text-xl">„{{ $page->about_motto }}"</p>
+                    <blockquote class="mx-auto mt-8 max-w-3xl rounded-xl border border-white/20 bg-white/10 px-6 py-4 text-left backdrop-blur-sm">
+                        <p class="text-lg italic leading-relaxed text-white md:text-xl">„{{ $page->about_motto }}"</p>
                         @if ($page->about_motto_author)
-                            <cite class="mt-3 block text-sm font-bold not-italic uppercase tracking-widest text-muted">— {{ $page->about_motto_author }}</cite>
+                            <cite class="mt-3 block text-sm font-bold not-italic uppercase tracking-widest text-white/70">— {{ $page->about_motto_author }}</cite>
                         @endif
                     </blockquote>
                 @endif
@@ -333,16 +336,15 @@
         @break
 
         @case('stats')
-        {{-- Statystyki: neutralny pas, dzielniki, animacja liczenia --}}
+        {{-- Statystyki: kolorowe tło + białe karty (zamiast płaskiego szarego pasa), animacja liczenia --}}
         @if ($aboutStats->isNotEmpty())
-            <section id="sekcja-stats" class="bg-gray-50 px-4 py-12" aria-label="W liczbach" data-countup>
-                <dl class="mx-auto flex max-w-4xl flex-wrap items-center justify-center">
+            <section id="sekcja-stats" class="bg-linear-to-br from-brand-light to-white px-4 py-14" aria-label="W liczbach" data-countup>
+                <dl class="mx-auto flex max-w-4xl flex-wrap items-center justify-center gap-4">
                     @foreach ($aboutStats as $stat)
-                        <div class="flex flex-1 flex-col items-center px-6 py-2 text-center {{ !$loop->first ? 'border-l border-gray-200' : '' }}">
+                        <div class="flex min-w-[160px] flex-1 flex-col items-center rounded-2xl bg-white px-6 py-6 text-center shadow-sm ring-1 ring-gray-100">
                             <dt class="sr-only">{{ $stat['label'] ?? '' }}</dt>
                             <dd class="flex flex-col items-center">
                                 <span class="block text-3xl font-extrabold leading-none tracking-tight text-brand md:text-4xl" data-countup-value>{{ $stat['value'] ?? '' }}</span>
-                                <span class="mx-auto mt-3 block h-px w-8 rounded-full bg-gray-300" aria-hidden="true"></span>
                                 <span class="mt-3 block text-xs font-medium uppercase tracking-wider text-muted">{{ $stat['label'] ?? '' }}</span>
                             </dd>
                         </div>
@@ -375,27 +377,25 @@
         @break
 
         @case('values')
-        {{-- Wartości: poziome wiersze z okrągłą ikoną --}}
+        {{-- Wartości: karty zamiast płaskich wierszy — więcej życia, ta sama treść --}}
         @if ($aboutValues->isNotEmpty())
             <section id="sekcja-values" class="bg-gray-50 px-4 py-16" aria-label="Nasze wartości">
-                <div class="mx-auto max-w-4xl">
+                <div class="mx-auto max-w-5xl">
                     <h2 class="mb-10 text-center text-2xl font-extrabold text-ink md:text-3xl">Nasze wartości</h2>
-                    <div class="grid gap-x-12 gap-y-9 sm:grid-cols-2">
+                    <div class="grid gap-6 sm:grid-cols-2">
                         @foreach ($aboutValues as $value)
-                            <div class="flex items-start gap-4">
+                            <div class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-100 transition hover:-translate-y-0.5 hover:shadow-md">
                                 @if (! empty($value['icon']))
-                                    <span class="flex h-12 w-12 flex-none items-center justify-center rounded-full bg-brand text-xl text-white" aria-hidden="true">
+                                    <span class="mb-4 flex h-12 w-12 flex-none items-center justify-center rounded-full bg-brand text-xl text-white" aria-hidden="true">
                                         <i class="{{ $value['icon'] }}"></i>
                                     </span>
                                 @endif
-                                <div class="min-w-0">
-                                    @if (! empty($value['title']))
-                                        <h3 class="text-lg font-bold text-ink">{{ $value['title'] }}</h3>
-                                    @endif
-                                    @if (! empty($value['text']))
-                                        <p class="mt-1 text-sm leading-relaxed text-muted">{{ $value['text'] }}</p>
-                                    @endif
-                                </div>
+                                @if (! empty($value['title']))
+                                    <h3 class="text-lg font-bold text-ink">{{ $value['title'] }}</h3>
+                                @endif
+                                @if (! empty($value['text']))
+                                    <p class="mt-1 text-sm leading-relaxed text-muted">{{ $value['text'] }}</p>
+                                @endif
                             </div>
                         @endforeach
                     </div>
