@@ -77,8 +77,11 @@
         @include('templates.municipality.partials.topbar')
         @include('templates.municipality.partials.header')
     @elseif (in_array($siteTemplate, ['ngo', 'federacja', 'ngo_3']))
-        @include('templates.ngo.partials.topbar')
-        @include('templates.ngo.partials.header')
+        <div x-data="{ open: (function () { try { return localStorage.getItem('a11y-panel-open') === '1' } catch (e) { return false } })() }"
+             x-effect="(() => { try { localStorage.setItem('a11y-panel-open', open ? '1' : '0') } catch (e) {} })()">
+            @include('templates.ngo.partials.header')
+            @include('templates.ngo.partials.topbar')
+        </div>
     @elseif ($siteTemplate === 'federation')
         <div x-data="{ a11yOpen: (function () { try { return localStorage.getItem('federation-a11y-open') === '1' } catch (e) { return false } })() }"
              x-effect="(() => { try { localStorage.setItem('federation-a11y-open', a11yOpen ? '1' : '0') } catch (e) {} })()">

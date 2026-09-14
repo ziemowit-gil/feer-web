@@ -26,8 +26,17 @@
                 @endunless
             </a>
 
-            {{-- Prawa strona: wyszukiwarka + social --}}
+            {{-- Prawa strona: ułatwienia dostępu + wyszukiwarka + social --}}
             <div class="ml-auto flex shrink-0 items-center gap-3">
+
+                {{-- Ułatwienia dostępu — przełącznik; sam panel jest w templates.ngo.partials.topbar,
+                     stan "open" trzymany na wspólnym wrapperze w layouts/site.blade.php. --}}
+                <button type="button" @click="open = !open" :aria-expanded="open.toString()" aria-controls="a11y-panel"
+                    class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-gray-300 text-sm text-ink transition hover:border-brand hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-1"
+                    :class="open ? 'bg-brand border-brand text-white' : ''"
+                    aria-label="Ułatwienia dostępu">
+                    <i class="fa-solid fa-universal-access" aria-hidden="true"></i>
+                </button>
 
                 {{-- Wyszukiwarka --}}
                 <form action="{{ route('search') }}" method="GET" role="search"
