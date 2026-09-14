@@ -58,8 +58,10 @@ class HomeController extends Controller
             ? News::published()->forCurrentSite()->with('category')->orderByDesc('published_at')->limit(3)->get()
             : collect();
 
+        // Tylko aktywne (nie zakończone) projekty — teaser na stronie głównej ma
+        // pokazywać bieżącą działalność, nie zamknięte/zarchiwizowane projekty.
         $projects = $settings->isModuleEnabled('projects')
-            ? Project::forCurrentSite()->where('is_published', true)->orderBy('order')->limit(3)->get()
+            ? Project::forCurrentSite()->where('is_published', true)->where('is_completed', false)->orderBy('order')->limit(3)->get()
             : collect();
 
         $events = $settings->isModuleEnabled('events')
