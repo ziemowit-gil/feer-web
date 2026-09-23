@@ -32,6 +32,7 @@ class PageController extends Controller
         $sort = $request->query('sort', 'default');
 
         $pages = Page::forCurrentSite()->with('parent')
+            ->when($status === 'trashed', fn ($q) => $q->onlyTrashed())
             ->when($search !== '', fn ($q) => $q->where(fn ($q) => $q->where('title', 'like', "%{$search}%")->orWhere('slug', 'like', "%{$search}%")))
             ->when($status === 'published', fn ($q) => $q->where('is_published', true))
             ->when($status === 'draft', fn ($q) => $q->where('is_published', false))
@@ -378,31 +379,46 @@ class PageController extends Controller
     public function bulk(Request $request): \Illuminate\Http\RedirectResponse
     {
         $data = $request->validate([
-            'action' => ['required', 'in:publish,unpublish,trash'],
+            'action' => ['required', 'in:publish,unpublish,disable,enable,feature,unfeature,trash,restore'],
             'ids'    => ['required', 'array', 'min:1'],
             'ids.*'  => ['integer'],
         ]);
 
-        $pages = Page::whereIn('id', $data['ids'])
-            ->where('is_system', false)
-            ->get();
+        // „Przywróć z kosza" działa na miękko usuniętych stronach — pozostałe
+        // operacje na aktywnych. Filtr is_system chroni strony systemowe.
+        $query = $data['action'] === 'restore'
+            ? Page::onlyTrashed()->whereIn('id', $data['ids'])
+            : Page::whereIn('id', $data['ids']);
+
+        $pages = $query->where('is_system', false)->get();
 
         if ($pages->isEmpty()) {
             return redirect()->back()->with('error', 'Nie znaleziono stron do przetworzenia.');
         }
 
         $count = $pages->count();
+        $ids = $pages->pluck('id');
 
         match ($data['action']) {
-            'publish'   => Page::whereIn('id', $pages->pluck('id'))->update(['is_published' => true]),
-            'unpublish' => Page::whereIn('id', $pages->pluck('id'))->update(['is_published' => false]),
+            'publish'   => Page::whereIn('id', $ids)->update(['is_published' => true]),
+            'unpublish' => Page::whereIn('id', $ids)->update(['is_published' => false]),
+            'disable'   => Page::whereIn('id', $ids)->update(['is_disabled' => true]),
+            'enable'    => Page::whereIn('id', $ids)->update(['is_disabled' => false]),
+            'feature'   => Page::whereIn('id', $ids)->update(['is_featured' => true]),
+            'unfeature' => Page::whereIn('id', $ids)->update(['is_featured' => false]),
             'trash'     => $pages->each->delete(),
+            'restore'   => Page::onlyTrashed()->whereIn('id', $ids)->restore(),
         };
 
         $message = match ($data['action']) {
             'publish'   => "Opublikowano stron: {$count}.",
             'unpublish' => "Cofnięto publikację stron: {$count}.",
+            'disable'   => "Oznaczono jako niedostępne stron: {$count}.",
+            'enable'    => "Przywrócono dostępność stron: {$count}.",
+            'feature'   => "Wyróżniono stron: {$count}.",
+            'unfeature' => "Cofnięto wyróżnienie stron: {$count}.",
             'trash'     => "Przeniesiono do kosza stron: {$count}.",
+            'restore'   => "Przywrócono z kosza stron: {$count}.",
         };
 
         return redirect()->back()->with('status', $message);

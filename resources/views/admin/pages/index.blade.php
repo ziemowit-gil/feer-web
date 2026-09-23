@@ -25,6 +25,21 @@
         'total'       => $pages->total(),
     ])
 
+    {{-- Przełącznik: kosz (strony usunięte) --}}
+    <div class="mb-3">
+        @if ($status === 'trashed')
+            <a href="{{ route('admin.podstrony.index') }}"
+                class="inline-flex items-center gap-1.5 text-sm font-bold text-muted hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                <i class="fa-solid fa-arrow-left text-xs" aria-hidden="true"></i> Wróć do listy stron
+            </a>
+        @else
+            <a href="{{ route('admin.podstrony.index', ['status' => 'trashed']) }}"
+                class="inline-flex items-center gap-1.5 text-sm text-muted hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                <i class="fa-solid fa-trash-can text-xs" aria-hidden="true"></i> Kosz
+            </a>
+        @endif
+    </div>
+
     <form id="bulk-pages-form" method="POST" action="{{ route('admin.podstrony.bulk') }}">
         @csrf
 
@@ -33,9 +48,17 @@
             class="mb-3 hidden items-center gap-3 rounded-lg border border-blue-200 bg-blue-50 px-4 py-2">
             <span id="bulk-pages-count" class="text-sm font-bold text-blue-800"></span>
             <select name="action" class="rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
-                <option value="publish">Opublikuj</option>
-                <option value="unpublish">Cofnij publikację (szkic)</option>
-                <option value="trash">Przenieś do kosza</option>
+                @if ($status === 'trashed')
+                    <option value="restore">Przywróć z kosza</option>
+                @else
+                    <option value="publish">Opublikuj</option>
+                    <option value="unpublish">Cofnij publikację (szkic)</option>
+                    <option value="disable">Wyłącz (oznacz jako niedostępne)</option>
+                    <option value="enable">Włącz (przywróć dostępność)</option>
+                    <option value="feature">Wyróżnij</option>
+                    <option value="unfeature">Cofnij wyróżnienie</option>
+                    <option value="trash">Przenieś do kosza</option>
+                @endif
             </select>
             <button type="button"
                 @click="Alpine.store('confirm').ask('Wykonać tę operację na zaznaczonych stronach?').then(ok => { if (ok) $el.closest('form').submit() })"
@@ -203,6 +226,7 @@
 
                                 {{-- Kolejność --}}
                                 <td x-show="cols.order" class="px-4 py-3">
+                                    @unless ($page->trashed())
                                     <form method="POST" action="{{ route('admin.podstrony.kolejnosc', $page) }}" class="flex items-center gap-1">
                                         @csrf @method('PATCH')
                                         <input type="number" name="order" min="0" value="{{ $page->order }}"
@@ -214,11 +238,15 @@
                                             <i class="fa-solid fa-check text-xs" aria-hidden="true"></i>
                                         </button>
                                     </form>
+                                    @endunless
                                 </td>
 
                                 {{-- Akcje --}}
                                 <td class="px-4 py-3">
                                     <div class="flex items-center justify-end gap-1.5">
+                                        @if ($page->trashed())
+                                            <span class="text-xs text-muted">W koszu — zaznacz i użyj „Przywróć z kosza”.</span>
+                                        @else
 
                                         {{-- Edytuj --}}
                                         <a href="{{ route('admin.podstrony.edit', $page) }}"
@@ -322,6 +350,7 @@
                                                 @endunless
                                             </div>
                                         </div>
+                                        @endif
                                     </div>
                                 </td>
                             </tr>
