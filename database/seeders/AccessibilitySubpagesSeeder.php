@@ -18,10 +18,15 @@ use Illuminate\Database\Seeder;
  * Każda strona dostaje też wersję ETR (tekst łatwy do czytania) — na froncie
  * pojawia się przełącznik „Włącz wersję ETR" (partials/etr-toggle).
  *
- * Strony powstają jako SZKICE (is_published = false), bo treść i ETR zawierają
- * pola do uzupełnienia w nawiasach [ ... ] (adresy, dane koordynatora, opisy
- * budynków). Po wypełnieniu placeholderów opublikuj je w panelu — dopiero wtedy
- * pojawią się w menu, w bocznej nawigacji działu i w mapie strony.
+ * Dane organizacji (nazwa, adres, e-maile) są wpisane na stałe zgodnie z
+ * ustawieniami FEER. NIEUZUPEŁNIONE pozostają dane, których nie wolno zmyślać:
+ * numer telefonu, imię i nazwisko koordynatora oraz WSZYSTKIE fakty o budynku
+ * (winda, podjazd, parking, toaleta), tłumaczu PJM i pętli indukcyjnej — to
+ * oświadczenia o dostępności, które muszą być prawdziwe. Uzupełnij pola [ ... ].
+ *
+ * Strony powstają jako SZKICE (is_published = false). Po wypełnieniu pozostałych
+ * pól opublikuj je w panelu — dopiero wtedy pojawią się w menu, w bocznej
+ * nawigacji działu i w mapie strony.
  *
  * Dostępność cyfrowa nie jest duplikowana — podstrona odsyła do istniejącej
  * Deklaracji dostępności (/deklaracja-dostepnosci) wraz z formularzem zgłaszania
@@ -33,6 +38,12 @@ use Illuminate\Database\Seeder;
 class AccessibilitySubpagesSeeder extends Seeder
 {
     private const PARENT_SLUG = 'dostepnosc';
+
+    /** Dane organizacji FEER (za ustawieniami serwisu). */
+    private const ORG = 'Fundacja FEER';
+    private const ADDR = 'ul. Barbackiego 28, 33-300 Nowy Sącz';
+    private const EMAIL = 'kontakt@feer.org.pl';
+    private const ACCESS_EMAIL = 'dostepnosc@feer.org.pl';
 
     public function run(): void
     {
@@ -63,7 +74,7 @@ class AccessibilitySubpagesSeeder extends Seeder
                 'title'   => 'Dostępność architektoniczna',
                 'slug'    => 'dostepnosc-architektoniczna',
                 'content' => $this->architecturalContent(),
-                'meta'    => 'Opis dostępności architektonicznej naszych budynków: dojście, parking, wejście, komunikacja wewnątrz, toalety, pies asystujący.',
+                'meta'    => 'Opis dostępności architektonicznej siedziby FEER: dojście, parking, wejście, komunikacja wewnątrz, toalety, pies asystujący.',
                 'etr'     => $this->architecturalEtr(),
             ],
             [
@@ -131,8 +142,9 @@ class AccessibilitySubpagesSeeder extends Seeder
         }
 
         $this->command->info('Utworzono rozwijaną grupę „Dostępność": 1 strona-rodzic + '.count($children).' podstrony (jako szkice), każda z wersją ETR.');
+        $this->command->info('Wpisano dane FEER (nazwa, adres, e-maile). Nieuzupełnione: telefon, koordynator i fakty o budynku/PJM/pętli — pola [ ... ].');
         $this->command->info('Dodano pozycję menu „Dostępność" (nieaktywną) → /'.self::PARENT_SLUG.'.');
-        $this->command->warn('Uzupełnij pola [w nawiasach] w treści i w ETR, opublikuj strony (Strony → Dostępność) i aktywuj pozycję menu „Dostępność" (Menu → nagłówek).');
+        $this->command->warn('Uzupełnij pozostałe pola [w nawiasach], opublikuj strony (Strony → Dostępność) i aktywuj pozycję menu „Dostępność".');
     }
 
     /**
@@ -156,13 +168,17 @@ class AccessibilitySubpagesSeeder extends Seeder
 
     private function parentContent(): string
     {
-        return <<<'HTML'
-<p><strong>[Nazwa instytucji]</strong> dokłada wszelkich starań, aby nasza siedziba, strona internetowa oraz sposób obsługi były dostępne dla każdej osoby — niezależnie od jej sprawności, wieku czy sposobu komunikowania się. Chcemy, aby każdy mógł samodzielnie i na równych zasadach korzystać z naszych usług.</p>
+        $org = self::ORG;
+        $addr = self::ADDR;
+        $email = self::EMAIL;
+
+        return <<<HTML
+<p><strong>{$org}</strong> dokłada wszelkich starań, aby nasza siedziba, strona internetowa oraz sposób obsługi były dostępne dla każdej osoby — niezależnie od jej sprawności, wieku czy sposobu komunikowania się. Chcemy, aby każdy mógł samodzielnie i na równych zasadach korzystać z naszych usług.</p>
 <p>Jeśli napotkasz barierę w kontakcie z nami — poinformuj nas. Wspólnie znajdziemy rozwiązanie.</p>
 
 <h2>W tym dziale</h2>
 <ul>
-<li><a href="/dostepnosc-architektoniczna">Dostępność architektoniczna</a> — jak przygotowane są nasze budynki (dojście, parking, wejście, windy, toalety).</li>
+<li><a href="/dostepnosc-architektoniczna">Dostępność architektoniczna</a> — jak przygotowana jest nasza siedziba (dojście, parking, wejście, windy, toalety).</li>
 <li><a href="/dostepnosc-komunikacyjna">Dostępność informacyjno-komunikacyjna</a> — tłumacz PJM, pętla indukcyjna, tekst łatwy do czytania (ETR), dostępne formaty.</li>
 <li><a href="/dostepnosc-cyfrowa">Dostępność cyfrowa</a> — zgodność ze standardem WCAG i zgłaszanie problemów z serwisem.</li>
 <li><a href="/wniosek-o-dostepnosc">Wniosek o zapewnienie dostępności i procedura odwoławcza</a> — co zrobić, gdy nie zapewniamy pełnej dostępności.</li>
@@ -172,18 +188,20 @@ class AccessibilitySubpagesSeeder extends Seeder
 <h2>Szybki kontakt</h2>
 <ul>
 <li><strong>Telefon:</strong> [numer telefonu]</li>
-<li><strong>E-mail:</strong> [adres e-mail]</li>
-<li><strong>Adres:</strong> [adres siedziby]</li>
+<li><strong>E-mail:</strong> <a href="mailto:{$email}">{$email}</a></li>
+<li><strong>Adres:</strong> {$addr}</li>
 </ul>
 HTML;
     }
 
     private function architecturalContent(): string
     {
-        return <<<'HTML'
-<p>Poniżej opisujemy, jak przygotowane są nasze budynki na przyjęcie osób ze szczególnymi potrzebami. Jeśli prowadzisz obsługę w kilku lokalizacjach, powiel sekcję „Budynek" dla każdej z nich.</p>
+        $addr = self::ADDR;
 
-<h2>Budynek: [Adres budynku / nazwa siedziby]</h2>
+        return <<<HTML
+<p>Poniżej opisujemy, jak przygotowana jest nasza siedziba na przyjęcie osób ze szczególnymi potrzebami.</p>
+
+<h2>Budynek: {$addr}</h2>
 
 <h3>Otoczenie i dojście</h3>
 <ul>
@@ -194,14 +212,13 @@ HTML;
 
 <h3>Miejsca parkingowe</h3>
 <ul>
-<li>Przed budynkiem znajduje się [liczba] wyznaczone miejsce parkingowe dla osób z niepełnosprawnością, oznaczone kopertą i znakiem.</li>
-<li>Miejsce znajduje się w odległości około [liczba] metrów od wejścia.</li>
+<li>[Przed budynkiem znajduje się [liczba] wyznaczone miejsce parkingowe dla osób z niepełnosprawnością, oznaczone kopertą i znakiem.] — LUB — [Przy budynku nie ma wydzielonego miejsca parkingowego dla osób z niepełnosprawnością.]</li>
 </ul>
 
 <h3>Wejście do budynku</h3>
 <ul>
 <li>Wejście główne znajduje się od strony [ulicy / opis].</li>
-<li>Do wejścia prowadzi [podjazd / pochylnia] o nachyleniu zgodnym z przepisami oraz schody z poręczą.</li>
+<li>Do wejścia prowadzi [podjazd / pochylnia o nachyleniu zgodnym z przepisami] — LUB — [tylko schody z poręczą].</li>
 <li>Drzwi wejściowe są [szerokie na … cm / otwierane automatycznie / wymagają pomocy — opisz].</li>
 <li>[Informacja o dzwonku przywoławczym lub domofonie przy wejściu, jeśli jest.]</li>
 </ul>
@@ -210,7 +227,7 @@ HTML;
 <ul>
 <li>Obsługa osób ze szczególnymi potrzebami odbywa się na [parterze / piętrze].</li>
 <li>[W budynku znajduje się winda: rozmiary, oznaczenia w alfabecie Braille'a, komunikaty głosowe] — LUB — [W budynku nie ma windy.]</li>
-<li>Korytarze mają szerokość umożliwiającą minięcie się dwóch wózków.</li>
+<li>Korytarze mają szerokość [umożliwiającą / nieumożliwiającą] minięcie się dwóch wózków.</li>
 <li>[Informacja o oznaczeniach kierunkowych, kontrastowych, piktogramach.]</li>
 </ul>
 
@@ -228,24 +245,27 @@ HTML;
 
     private function communicationContent(): string
     {
-        return <<<'HTML'
+        $org = self::ORG;
+        $addr = self::ADDR;
+        $email = self::EMAIL;
+
+        return <<<HTML
 <p>Oferujemy różne sposoby kontaktu, abyś mógł/mogła porozumieć się z nami w wygodnej dla siebie formie.</p>
 
 <h2>Kontakt</h2>
 <p>Możesz skontaktować się z nami:</p>
 <ul>
 <li><strong>telefonicznie:</strong> [numer telefonu],</li>
-<li><strong>e-mailem:</strong> [adres e-mail],</li>
-<li><strong>listownie:</strong> [adres do korespondencji],</li>
-<li><strong>osobiście</strong> w siedzibie: [adres],</li>
-<li><strong>przez SMS / komunikator [nazwa], jeśli dotyczy:</strong> [dane].</li>
+<li><strong>e-mailem:</strong> <a href="mailto:{$email}">{$email}</a>,</li>
+<li><strong>listownie:</strong> {$org}, {$addr},</li>
+<li><strong>osobiście</strong> w siedzibie: {$addr}.</li>
 </ul>
 
 <h2>Tłumacz polskiego języka migowego (PJM)</h2>
 <ul>
 <li>Osoby głuche lub słabosłyszące mogą skorzystać z pomocy tłumacza polskiego języka migowego (PJM).</li>
-<li><strong>Tłumacz online (na miejscu, przez wideopołączenie):</strong> dostępny [zawsze w godzinach pracy / po wcześniejszym zgłoszeniu].</li>
-<li><strong>Tłumacz stacjonarnie:</strong> chęć skorzystania zgłoś co najmniej [liczba] dni roboczych wcześniej, na adres [e-mail] lub telefonicznie [numer].</li>
+<li><strong>Tłumacz online (na miejscu, przez wideopołączenie):</strong> [dostępny zawsze w godzinach pracy / dostępny po wcześniejszym zgłoszeniu / niedostępny].</li>
+<li><strong>Tłumacz stacjonarnie:</strong> chęć skorzystania zgłoś co najmniej [liczba] dni roboczych wcześniej, na adres <a href="mailto:{$email}">{$email}</a> lub telefonicznie [numer telefonu].</li>
 <li>Możesz również skorzystać z pomocy osoby przybranej — dowolnej osoby pełnoletniej, którą sam/sama wybierzesz do pomocy w załatwieniu sprawy.</li>
 </ul>
 
@@ -256,7 +276,7 @@ HTML;
 
 <h2>Informacja w tekście łatwym do czytania (ETR)</h2>
 <ul>
-<li>Najważniejsze informacje o naszej działalności przygotowaliśmy w tekście łatwym do czytania i zrozumienia (ETR): [link].</li>
+<li>Najważniejsze informacje w tym dziale przygotowaliśmy w tekście łatwym do czytania i zrozumienia (ETR). Włączysz je przyciskiem „Włącz wersję ETR" na górze każdej strony działu.</li>
 </ul>
 
 <h2>Dokumenty w dostępnych formatach</h2>
@@ -268,15 +288,18 @@ HTML;
 
     private function digitalContent(): string
     {
-        return <<<'HTML'
+        $org = self::ORG;
+        $accessEmail = self::ACCESS_EMAIL;
+
+        return <<<HTML
 <h2>Deklaracja zgodności</h2>
-<p><strong>[Nazwa instytucji]</strong> zobowiązuje się zapewnić dostępność swojej strony internetowej zgodnie z przepisami ustawy z dnia 4 kwietnia 2019 r. o dostępności cyfrowej stron internetowych i aplikacji mobilnych podmiotów publicznych.</p>
-<p>Nasz serwis dąży do zgodności ze standardem <strong>WCAG 2.1 na poziomie AA</strong>. Pełną, aktualną informację o poziomie zgodności, dacie publikacji i przeglądu oraz o ewentualnych wyłączeniach znajdziesz w oficjalnej deklaracji dostępności.</p>
+<p><strong>{$org}</strong> zobowiązuje się zapewnić dostępność swojej strony internetowej zgodnie z przepisami ustawy z dnia 4 kwietnia 2019 r. o dostępności cyfrowej stron internetowych i aplikacji mobilnych podmiotów publicznych.</p>
+<p>Nasz serwis dąży do zgodności ze standardem <strong>WCAG 2.1 na poziomie AA</strong>. Obecnie serwis jest <strong>częściowo zgodny</strong> — trwają prace nad uzupełnieniem brakujących elementów. Pełną, aktualną informację o poziomie zgodności, dacie publikacji i przeglądu oraz o ewentualnych wyłączeniach znajdziesz w oficjalnej deklaracji dostępności.</p>
 
 <p><a href="/deklaracja-dostepnosci"><strong>Przejdź do Deklaracji dostępności</strong></a></p>
 
 <h2>Zgłaszanie problemów z dostępnością cyfrową</h2>
-<p>Jeśli napotkasz stronę, dokument lub funkcję, która jest dla Ciebie niedostępna, skorzystaj z <a href="/deklaracja-dostepnosci">formularza zgłaszania barier</a> dostępnego w Deklaracji dostępności lub napisz na adres [adres e-mail koordynatora].</p>
+<p>Jeśli napotkasz stronę, dokument lub funkcję, która jest dla Ciebie niedostępna, skorzystaj z <a href="/deklaracja-dostepnosci">formularza zgłaszania barier</a> dostępnego w Deklaracji dostępności lub napisz na adres <a href="mailto:{$accessEmail}">{$accessEmail}</a>.</p>
 <p>W zgłoszeniu podaj:</p>
 <ul>
 <li>adres strony, na której wystąpił problem,</li>
@@ -326,15 +349,19 @@ HTML;
 
     private function coordinatorContent(): string
     {
-        return <<<'HTML'
-<p>W <strong>[Nazwa instytucji]</strong> wyznaczyliśmy osobę odpowiedzialną za koordynację działań na rzecz dostępności.</p>
+        $org = self::ORG;
+        $addr = self::ADDR;
+        $accessEmail = self::ACCESS_EMAIL;
+
+        return <<<HTML
+<p>W <strong>{$org}</strong> wyznaczyliśmy osobę odpowiedzialną za koordynację działań na rzecz dostępności.</p>
 
 <ul>
-<li><strong>Imię i nazwisko:</strong> [Imię i nazwisko koordynatora]</li>
-<li><strong>Stanowisko:</strong> [np. Koordynator ds. dostępności]</li>
-<li><strong>E-mail:</strong> [adres e-mail]</li>
+<li><strong>Imię i nazwisko:</strong> [imię i nazwisko koordynatora]</li>
+<li><strong>Stanowisko:</strong> Koordynator ds. dostępności</li>
+<li><strong>E-mail:</strong> <a href="mailto:{$accessEmail}">{$accessEmail}</a></li>
 <li><strong>Telefon:</strong> [numer telefonu]</li>
-<li><strong>Adres do korespondencji:</strong> [adres]</li>
+<li><strong>Adres do korespondencji:</strong> {$org}, {$addr}</li>
 </ul>
 
 <p>Do zadań koordynatora należy m.in. wsparcie osób ze szczególnymi potrzebami w dostępie do naszych usług, przygotowanie planu działania na rzecz poprawy dostępności oraz monitorowanie dostępności naszej instytucji.</p>
@@ -350,10 +377,12 @@ HTML;
     /** @return array{title:string,summary:string,content:string} */
     private function parentEtr(): array
     {
+        $email = self::EMAIL;
+
         return [
             'title'   => 'Dostępność',
             'summary' => 'Ta strona jest napisana w prosty sposób. Mówi o tym, jak do nas trafić i jak się z nami kontaktować.',
-            'content' => <<<'TXT'
+            'content' => <<<TXT
 Chcemy, aby każdy mógł z nas korzystać. Nie ważne, czy masz niepełnosprawność, czy nie.
 
 W tym dziale są takie strony:
@@ -370,7 +399,7 @@ Koordynator do spraw dostępności – osoba, która Ci pomoże.
 
 Potrzebujesz pomocy? Zadzwoń: [numer telefonu].
 
-Możesz też napisać e-mail: [adres e-mail].
+Możesz też napisać e-mail: {$email}.
 TXT,
         ];
     }
@@ -378,15 +407,17 @@ TXT,
     /** @return array{title:string,summary:string,content:string} */
     private function architecturalEtr(): array
     {
+        $addr = self::ADDR;
+
         return [
             'title'   => 'Dostępność architektoniczna',
             'summary' => 'Tu piszemy, jak wygląda nasz budynek i jak do niego wejść.',
-            'content' => <<<'TXT'
-Nasz budynek jest pod adresem: [adres budynku].
+            'content' => <<<TXT
+Nasz budynek jest pod adresem: {$addr}.
 
-Przed budynkiem jest miejsce do parkowania dla osoby z niepełnosprawnością.
+Przed budynkiem [jest / nie ma] miejsca do parkowania dla osoby z niepełnosprawnością.
 
-Do wejścia można dojść [podjazdem / schodami z poręczą].
+Do wejścia można dojść [podjazdem / tylko schodami z poręczą].
 
 [W budynku jest winda.] — albo — [W budynku nie ma windy.]
 
@@ -402,15 +433,18 @@ TXT,
     /** @return array{title:string,summary:string,content:string} */
     private function communicationEtr(): array
     {
+        $addr = self::ADDR;
+        $email = self::EMAIL;
+
         return [
             'title'   => 'Jak się z nami porozumieć',
             'summary' => 'Tu piszemy, jak możesz się z nami skontaktować.',
-            'content' => <<<'TXT'
+            'content' => <<<TXT
 Możesz do nas zadzwonić: [numer telefonu].
 
-Możesz napisać e-mail: [adres e-mail].
+Możesz napisać e-mail: {$email}.
 
-Możesz przyjść do nas osobiście: [adres].
+Możesz przyjść do nas osobiście: {$addr}.
 
 Jesteś osobą głuchą lub słabo słyszącą? Możesz skorzystać z tłumacza języka migowego (PJM).
 
@@ -426,17 +460,19 @@ TXT,
     /** @return array{title:string,summary:string,content:string} */
     private function digitalEtr(): array
     {
+        $accessEmail = self::ACCESS_EMAIL;
+
         return [
             'title'   => 'Dostępność cyfrowa',
             'summary' => 'Tu piszemy o naszej stronie internetowej.',
-            'content' => <<<'TXT'
+            'content' => <<<TXT
 Staramy się, aby nasza strona była łatwa w obsłudze dla każdego.
 
 Nasza strona spełnia zasady dostępności. Te zasady to WCAG.
 
 Coś na stronie jest dla Ciebie trudne albo nie działa? Napisz do nas.
 
-Napisz na e-mail: [adres e-mail koordynatora].
+Napisz na e-mail: {$accessEmail}.
 
 Możesz też wypełnić formularz na stronie „Deklaracja dostępności".
 
@@ -474,19 +510,22 @@ TXT,
     /** @return array{title:string,summary:string,content:string} */
     private function coordinatorEtr(): array
     {
+        $addr = self::ADDR;
+        $accessEmail = self::ACCESS_EMAIL;
+
         return [
             'title'   => 'Koordynator do spraw dostępności',
             'summary' => 'Koordynator to osoba, która pomaga w sprawach dostępności.',
-            'content' => <<<'TXT'
+            'content' => <<<TXT
 Ta osoba pomoże Ci, gdy coś jest dla Ciebie trudne.
 
 Imię i nazwisko: [imię i nazwisko koordynatora].
 
 Telefon: [numer telefonu].
 
-E-mail: [adres e-mail].
+E-mail: {$accessEmail}.
 
-Adres: [adres].
+Adres: {$addr}.
 
 Możesz do niej zadzwonić albo napisać.
 TXT,
