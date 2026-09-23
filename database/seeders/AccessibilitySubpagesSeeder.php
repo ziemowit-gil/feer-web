@@ -71,9 +71,10 @@ class AccessibilitySubpagesSeeder extends Seeder
         $parent = Page::create([
             'title'            => 'Dostępność',
             'slug'             => self::PARENT_SLUG,
-            'type'             => 'standard',
+            'type'             => 'links_hub', // hub „metro": hero + kafelki z opisami
             'content'          => $this->parentContent(),
-            'tiles'            => $this->parentTiles(),
+            'hub_intro'        => 'Informacje i wsparcie dla osób ze szczególnymi potrzebami.',
+            'hub_links'        => $this->parentHubLinks(),
             'is_published'     => false,
             'show_in_menu'     => true, // nagłówek rozwijanej grupy podstron w menu głównym
             'show_side_nav'    => true,
@@ -206,21 +207,21 @@ class AccessibilitySubpagesSeeder extends Seeder
     }
 
     // ------------------------------------------------------------------
-    // Kafelki strony-rodzica (siatka linków do podstron + Deklaracji).
-    // Renderują się nad treścią huba (partials/_tiles-grid). Ikony to klasy
-    // Bootstrap Icons (partial dokleja prefiks „bi").
+    // Kafelki huba „metro" strony-rodzica (hub_links): linki do podstron +
+    // Deklaracji, każdy z opisem, ikoną (FontAwesome) i kolorem gradientu.
+    // Renderowane przez sekcję isLinksHub() w page/partials/typed-content.
     // ------------------------------------------------------------------
 
-    /** @return list<array{label:string,url:string,icon:string}> */
-    private function parentTiles(): array
+    /** @return list<array{label:string,url:string,description:string,icon:string,color:string}> */
+    private function parentHubLinks(): array
     {
         return [
-            ['label' => 'Dostępność architektoniczna', 'url' => '/dostepnosc-architektoniczna', 'icon' => 'bi-building'],
-            ['label' => 'Dostępność informacyjno-komunikacyjna', 'url' => '/dostepnosc-komunikacyjna', 'icon' => 'bi-chat-dots'],
-            ['label' => 'Dostępność cyfrowa', 'url' => '/dostepnosc-cyfrowa', 'icon' => 'bi-laptop'],
-            ['label' => 'Wniosek o zapewnienie dostępności', 'url' => '/wniosek-o-dostepnosc', 'icon' => 'bi-file-earmark-text'],
-            ['label' => 'Koordynator ds. dostępności', 'url' => '/koordynator-dostepnosci', 'icon' => 'bi-person-lines-fill'],
-            ['label' => 'Deklaracja dostępności', 'url' => '/deklaracja-dostepnosci', 'icon' => 'bi-universal-access'],
+            ['label' => 'Dostępność architektoniczna', 'url' => '/dostepnosc-architektoniczna', 'description' => 'Dojście, parking, wejście, windy i toalety w naszej siedzibie.', 'icon' => 'fa-solid fa-building', 'color' => 'blue'],
+            ['label' => 'Dostępność informacyjno-komunikacyjna', 'url' => '/dostepnosc-komunikacyjna', 'description' => 'Tłumacz PJM, pętla indukcyjna, tekst łatwy do czytania.', 'icon' => 'fa-solid fa-comments', 'color' => 'green'],
+            ['label' => 'Dostępność cyfrowa', 'url' => '/dostepnosc-cyfrowa', 'description' => 'Zgodność ze standardem WCAG i zgłaszanie problemów z serwisem.', 'icon' => 'fa-solid fa-laptop', 'color' => 'purple'],
+            ['label' => 'Wniosek o zapewnienie dostępności', 'url' => '/wniosek-o-dostepnosc', 'description' => 'Procedura i terminy, gdy nie zapewniamy pełnej dostępności.', 'icon' => 'fa-solid fa-file-lines', 'color' => 'orange'],
+            ['label' => 'Koordynator ds. dostępności', 'url' => '/koordynator-dostepnosci', 'description' => 'Osoba, która pomoże Ci w sprawach dostępności.', 'icon' => 'fa-solid fa-user-tie', 'color' => 'dark'],
+            ['label' => 'Deklaracja dostępności', 'url' => '/deklaracja-dostepnosci', 'description' => 'Oficjalna deklaracja i formularz zgłaszania barier.', 'icon' => 'fa-solid fa-universal-access', 'color' => 'red'],
         ];
     }
 
@@ -236,7 +237,7 @@ class AccessibilitySubpagesSeeder extends Seeder
 
         return <<<HTML
 <p><strong>{$org}</strong> dokłada wszelkich starań, aby nasza siedziba, strona internetowa oraz sposób obsługi były dostępne dla każdej osoby — niezależnie od jej sprawności, wieku czy sposobu komunikowania się. Chcemy, aby każdy mógł samodzielnie i na równych zasadach korzystać z naszych usług.</p>
-<p>Jeśli napotkasz barierę w kontakcie z nami — poinformuj nas. Wspólnie znajdziemy rozwiązanie. Wybierz temat z kafelków powyżej.</p>
+<p>Jeśli napotkasz barierę w kontakcie z nami — poinformuj nas. Wspólnie znajdziemy rozwiązanie. Wybierz temat poniżej.</p>
 
 <h2>Szybki kontakt</h2>
 <ul>
