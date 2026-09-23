@@ -73,6 +73,7 @@ class AccessibilitySubpagesSeeder extends Seeder
             'slug'             => self::PARENT_SLUG,
             'type'             => 'standard',
             'content'          => $this->parentContent(),
+            'tiles'            => $this->parentTiles(),
             'is_published'     => false,
             'show_in_menu'     => true, // nagłówek rozwijanej grupy podstron w menu głównym
             'show_side_nav'    => true,
@@ -205,6 +206,25 @@ class AccessibilitySubpagesSeeder extends Seeder
     }
 
     // ------------------------------------------------------------------
+    // Kafelki strony-rodzica (siatka linków do podstron + Deklaracji).
+    // Renderują się nad treścią huba (partials/_tiles-grid). Ikony to klasy
+    // Bootstrap Icons (partial dokleja prefiks „bi").
+    // ------------------------------------------------------------------
+
+    /** @return list<array{label:string,url:string,icon:string}> */
+    private function parentTiles(): array
+    {
+        return [
+            ['label' => 'Dostępność architektoniczna', 'url' => '/dostepnosc-architektoniczna', 'icon' => 'bi-building'],
+            ['label' => 'Dostępność informacyjno-komunikacyjna', 'url' => '/dostepnosc-komunikacyjna', 'icon' => 'bi-chat-dots'],
+            ['label' => 'Dostępność cyfrowa', 'url' => '/dostepnosc-cyfrowa', 'icon' => 'bi-laptop'],
+            ['label' => 'Wniosek o zapewnienie dostępności', 'url' => '/wniosek-o-dostepnosc', 'icon' => 'bi-file-earmark-text'],
+            ['label' => 'Koordynator ds. dostępności', 'url' => '/koordynator-dostepnosci', 'icon' => 'bi-person-lines-fill'],
+            ['label' => 'Deklaracja dostępności', 'url' => '/deklaracja-dostepnosci', 'icon' => 'bi-universal-access'],
+        ];
+    }
+
+    // ------------------------------------------------------------------
     // Treść pełna (HTML)
     // ------------------------------------------------------------------
 
@@ -216,16 +236,7 @@ class AccessibilitySubpagesSeeder extends Seeder
 
         return <<<HTML
 <p><strong>{$org}</strong> dokłada wszelkich starań, aby nasza siedziba, strona internetowa oraz sposób obsługi były dostępne dla każdej osoby — niezależnie od jej sprawności, wieku czy sposobu komunikowania się. Chcemy, aby każdy mógł samodzielnie i na równych zasadach korzystać z naszych usług.</p>
-<p>Jeśli napotkasz barierę w kontakcie z nami — poinformuj nas. Wspólnie znajdziemy rozwiązanie.</p>
-
-<h2>W tym dziale</h2>
-<ul>
-<li><a href="/dostepnosc-architektoniczna">Dostępność architektoniczna</a> — jak przygotowana jest nasza siedziba (dojście, parking, wejście, windy, toalety).</li>
-<li><a href="/dostepnosc-komunikacyjna">Dostępność informacyjno-komunikacyjna</a> — tłumacz PJM, pętla indukcyjna, tekst łatwy do czytania (ETR), dostępne formaty.</li>
-<li><a href="/dostepnosc-cyfrowa">Dostępność cyfrowa</a> — zgodność ze standardem WCAG i zgłaszanie problemów z serwisem.</li>
-<li><a href="/wniosek-o-dostepnosc">Wniosek o zapewnienie dostępności i procedura odwoławcza</a> — co zrobić, gdy nie zapewniamy pełnej dostępności.</li>
-<li><a href="/koordynator-dostepnosci">Koordynator do spraw dostępności</a> — z kim się skontaktować.</li>
-</ul>
+<p>Jeśli napotkasz barierę w kontakcie z nami — poinformuj nas. Wspólnie znajdziemy rozwiązanie. Wybierz temat z kafelków powyżej.</p>
 
 <h2>Szybki kontakt</h2>
 <ul>
