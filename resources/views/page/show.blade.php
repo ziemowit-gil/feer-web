@@ -52,9 +52,12 @@
                 @include('partials.inline-edit-bar')
             @endif
 
-            <section class="mx-auto max-w-5xl px-4 py-12">
+            <section class="mx-auto max-w-5xl px-4 py-12" x-data="{ etr: false }">
                 <div class="grid gap-10 {{ $showSideNav ? 'md:grid-cols-[1fr_220px]' : '' }}">
                     <div>
+                        @include('partials.etr-toggle', ['etr' => $page->etr, 'title' => $page->title])
+
+                        <div x-show="!etr" x-cloak>
                         @if ($canInlineEdit)
                             <h1 :contenteditable="editMode ? 'true' : 'false'" @blur="if (editMode) saveField('title', $el.innerText.trim())"
                                 :class="editMode ? 'outline-dashed outline-2 outline-offset-4 outline-brand rounded' : ''"
@@ -76,6 +79,7 @@
                         @include('partials.page-gallery', ['page' => $page])
 
                         @include('partials.attachments-list', ['attachments' => $page->attachments])
+                        </div>
                     </div>
 
                     @if ($showSideNav)
