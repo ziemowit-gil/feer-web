@@ -82,38 +82,8 @@
             <div id="panel-skroty" role="tabpanel" aria-labelledby="tab-skroty" tabindex="0"
                  x-show="tab === 'skroty'" class="focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand">
                 <h2 class="mb-6 text-2xl font-bold text-ink">Na skróty</h2>
-{{-- Metro kafelki (edytowalne z admina) --}}
-@if ($hubLinks->isNotEmpty())
-    <ul class="grid gap-5 {{ $hubLinks->count() === 2 ? 'sm:grid-cols-2' : ($hubLinks->count() === 3 ? 'sm:grid-cols-3' : 'sm:grid-cols-2 lg:grid-cols-4') }}" role="list">
-        @foreach ($hubLinks as $i => $link)
-            @php
-                $colorKey = $link['color'] ?? null;
-                $grad = ($colorKey && isset($gradientMap[$colorKey])) ? $gradientMap[$colorKey] : $gradientFallback[$i % count($gradientFallback)];
-                $ctaLabel = filled($link['cta_label'] ?? null) ? $link['cta_label'] : 'Dowiedz się więcej';
-            @endphp
-            <li>
-                <a href="{{ $link['url'] }}"
-                   class="group relative flex min-h-52 flex-col justify-end overflow-hidden rounded-2xl p-8 text-white shadow-md transition hover:shadow-xl focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
-                   style="background: {{ $grad }}">
-                    <span class="relative z-10">
-                        @if (filled($link['icon'] ?? null))
-                            <span class="mb-3 inline-flex h-11 w-11 items-center justify-center rounded-xl bg-white/20 backdrop-blur" aria-hidden="true">
-                                <i class="{{ $link['icon'] }} text-xl text-white"></i>
-                            </span>
-                        @endif
-                        <span class="block text-2xl font-extrabold leading-tight">{{ $link['label'] }}</span>
-                        @if (filled($link['description'] ?? null))
-                            <span class="mt-1 block text-sm text-white/80">{{ $link['description'] }}</span>
-                        @endif
-                        <span class="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-white/90 transition group-hover:gap-3">
-                            {{ $ctaLabel }} <i class="fa-solid fa-arrow-right text-xs" aria-hidden="true"></i>
-                        </span>
-                    </span>
-                </a>
-            </li>
-        @endforeach
-    </ul>
-@endif
+{{-- Kafelki „Na skróty" — wspólny komponent (styl solid, spójny z resztą systemu) --}}
+@include('partials._tiles-grid', ['tiles' => $hubLinks, 'label' => 'Na skróty'])
             </div>
         @endif
 

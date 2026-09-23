@@ -15,6 +15,16 @@
     // Awaryjny kolor, gdy kafelek nie ma własnego i marka nie zwróci hexu.
     $tilePalette = ['#1a56a4', '#166534', '#7e22ce', '#c2410c', '#991b1b', '#374151'];
 
+    // Nazwane klucze kolorów (jak w hubie/„Na skróty" hub_links) → #hex.
+    $namedColors = [
+        'blue'   => '#2563eb',
+        'dark'   => '#374151',
+        'green'  => '#16a34a',
+        'purple' => '#7e22ce',
+        'orange' => '#f97316',
+        'red'    => '#ef4444',
+    ];
+
     $colSpanFor = function (int $cols): string {
         return match ($cols) {
             2 => 'col-span-2',
@@ -39,8 +49,10 @@
                 $tCols  = $isObj ? (int) ($tile->cols ?? 1) : (int) ($tile['cols'] ?? 1);
                 $tDesc  = $isObj ? ($tile->description ?? null) : ($tile['description'] ?? null);
 
-                // Baza koloru: własny kolor kafelka → kolor marki → paleta awaryjna.
-                $base = \App\Support\Color::isValid($tColor) ? $tColor : ($siteSettings->brandColorN(($i % 4) + 1) ?? '');
+                // Baza koloru: #hex kafelka → nazwany klucz → kolor marki → paleta awaryjna.
+                $base = \App\Support\Color::isValid($tColor)
+                    ? $tColor
+                    : ($namedColors[$tColor] ?? ($siteSettings->brandColorN(($i % 4) + 1) ?? ''));
                 if (! \App\Support\Color::isValid($base)) {
                     $base = $tilePalette[$i % count($tilePalette)];
                 }
@@ -50,6 +62,12 @@
                 $txt  = $pal['text'];
                 $grad = 'linear-gradient(135deg, '.$bg.' 0%, '.\App\Support\Color::darken($bg, 0.18).' 100%)';
                 $chip = $txt === '#ffffff' ? 'rgba(255,255,255,0.20)' : 'rgba(17,24,39,0.12)';
+
+                // Ikona: pełna klasa FontAwesome („fa-…") użyta wprost; nazwa
+                // Bootstrap Icons („bi-…") dostaje prefiks „bi".
+                $iconClass = (str_contains((string) $tIcon, 'fa-') || str_starts_with((string) $tIcon, 'bi '))
+                    ? $tIcon
+                    : 'bi '.$tIcon;
 
                 $colSpan = $colSpanFor($tCols);
             @endphp
@@ -61,7 +79,7 @@
                         class="flex h-full items-center gap-4 rounded-xl px-5 py-4 shadow-sm transition hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-current"
                         style="background: {{ $grad }}; color: {{ $txt }};">
                         <span class="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full" style="background: {{ $chip }};">
-                            <i class="bi {{ $tIcon }} text-lg" aria-hidden="true"></i>
+                            <i class="{{ $iconClass }} text-lg" aria-hidden="true"></i>
                         </span>
                         <span class="text-sm font-bold leading-tight">{{ $tLabel }}</span>
                         <i class="fa-solid fa-chevron-right ml-auto text-xs opacity-70" aria-hidden="true"></i>
@@ -72,7 +90,7 @@
                         class="flex h-full min-h-36 flex-col justify-end gap-3 rounded-2xl p-6 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-current"
                         style="background: {{ $grad }}; color: {{ $txt }};">
                         <span class="inline-flex h-11 w-11 items-center justify-center rounded-xl" style="background: {{ $chip }};">
-                            <i class="bi {{ $tIcon }} text-xl" aria-hidden="true"></i>
+                            <i class="{{ $iconClass }} text-xl" aria-hidden="true"></i>
                         </span>
                         <span class="block text-lg font-bold leading-tight">{{ $tLabel }}</span>
                         @if (filled($tDesc))
