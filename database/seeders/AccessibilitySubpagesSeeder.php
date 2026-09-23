@@ -2,18 +2,26 @@
 
 namespace Database\Seeders;
 
+use App\Models\NavItem;
 use App\Models\Page;
 use Illuminate\Database\Seeder;
 
 /**
- * Zakłada dział „Informacje dla osób ze szczególnymi potrzebami" jako zestaw
- * podstron (strona-rodzic + podstrony potomne), wzorowany na strukturze
+ * Zakłada dział „Dostępność" jako jedną rozwijaną grupę podstron w menu
+ * (strona-rodzic + podstrony potomne), wzorowany na strukturze
  * https://wupkrakow.praca.gov.pl/dostepnosc.
  *
- * Strony powstają jako SZKICE (is_published = false), bo treść zawiera pola do
- * uzupełnienia w nawiasach [ ... ] (adresy, dane koordynatora, opisy budynków).
- * Po wypełnieniu placeholderów opublikuj je w panelu — dopiero wtedy pojawią się
- * w bocznej nawigacji działu i w mapie strony.
+ * Strona-rodzic „Dostępność" ma show_in_menu = true, więc po opublikowaniu
+ * pojawia się w menu głównym jako rozwijane menu z podstronami (mechanizm
+ * partials/nav-page-dropdown — top-level strona z opublikowanymi dziećmi).
+ *
+ * Każda strona dostaje też wersję ETR (tekst łatwy do czytania) — na froncie
+ * pojawia się przełącznik „Włącz wersję ETR" (partials/etr-toggle).
+ *
+ * Strony powstają jako SZKICE (is_published = false), bo treść i ETR zawierają
+ * pola do uzupełnienia w nawiasach [ ... ] (adresy, dane koordynatora, opisy
+ * budynków). Po wypełnieniu placeholderów opublikuj je w panelu — dopiero wtedy
+ * pojawią się w menu, w bocznej nawigacji działu i w mapie strony.
  *
  * Dostępność cyfrowa nie jest duplikowana — podstrona odsyła do istniejącej
  * Deklaracji dostępności (/deklaracja-dostepnosci) wraz z formularzem zgłaszania
@@ -34,18 +42,21 @@ class AccessibilitySubpagesSeeder extends Seeder
             return;
         }
 
+        // Strona-rodzic „Dostępność" — nagłówek rozwijanego menu (show_in_menu).
         $parent = Page::create([
-            'title'            => 'Informacje dla osób ze szczególnymi potrzebami',
+            'title'            => 'Dostępność',
             'slug'             => self::PARENT_SLUG,
             'type'             => 'standard',
             'content'          => $this->parentContent(),
             'is_published'     => false,
-            'show_in_menu'     => false, // włącz w panelu, jeśli chcesz link w menu głównym
+            'show_in_menu'     => true, // nagłówek rozwijanej grupy podstron w menu głównym
             'show_side_nav'    => true,
             'order'            => 0,
             'meta_title'       => 'Dostępność — informacje dla osób ze szczególnymi potrzebami',
             'meta_description' => 'Dostępność architektoniczna, informacyjno-komunikacyjna i cyfrowa. Wniosek o zapewnienie dostępności, procedura odwoławcza i kontakt do koordynatora ds. dostępności.',
         ]);
+
+        $this->attachEtr($parent, $this->parentEtr());
 
         $children = [
             [
@@ -53,52 +64,95 @@ class AccessibilitySubpagesSeeder extends Seeder
                 'slug'    => 'dostepnosc-architektoniczna',
                 'content' => $this->architecturalContent(),
                 'meta'    => 'Opis dostępności architektonicznej naszych budynków: dojście, parking, wejście, komunikacja wewnątrz, toalety, pies asystujący.',
+                'etr'     => $this->architecturalEtr(),
             ],
             [
                 'title'   => 'Dostępność informacyjno-komunikacyjna',
                 'slug'    => 'dostepnosc-komunikacyjna',
                 'content' => $this->communicationContent(),
                 'meta'    => 'Tłumacz PJM, pętla indukcyjna, tekst łatwy do czytania (ETR), dostępne formaty dokumentów i możliwe formy kontaktu.',
+                'etr'     => $this->communicationEtr(),
             ],
             [
                 'title'   => 'Dostępność cyfrowa',
                 'slug'    => 'dostepnosc-cyfrowa',
                 'content' => $this->digitalContent(),
                 'meta'    => 'Deklaracja dostępności cyfrowej zgodna z WCAG 2.1 AA oraz sposób zgłaszania problemów technicznych.',
+                'etr'     => $this->digitalEtr(),
             ],
             [
                 'title'   => 'Wniosek o zapewnienie dostępności i procedura odwoławcza',
                 'slug'    => 'wniosek-o-dostepnosc',
                 'content' => $this->requestContent(),
                 'meta'    => 'Jak złożyć wniosek o zapewnienie dostępności, ustawowe terminy, dostęp alternatywny i prawo do skargi do Prezesa PFRON.',
+                'etr'     => $this->requestEtr(),
             ],
             [
                 'title'   => 'Koordynator do spraw dostępności',
                 'slug'    => 'koordynator-dostepnosci',
                 'content' => $this->coordinatorContent(),
                 'meta'    => 'Dane kontaktowe koordynatora do spraw dostępności i zakres jego zadań.',
+                'etr'     => $this->coordinatorEtr(),
             ],
         ];
 
         foreach ($children as $i => $child) {
-            Page::create([
+            $page = Page::create([
                 'title'            => $child['title'],
                 'slug'             => $child['slug'],
                 'type'             => 'standard',
                 'parent_id'        => $parent->id,
                 'content'          => $child['content'],
                 'is_published'     => false,
-                'show_in_menu'     => false,
+                'show_in_menu'     => false, // pozycja rozwijanego menu bierze się z relacji rodzic→dzieci
                 'show_side_nav'    => true,
                 'order'            => $i + 1,
                 'meta_title'       => $child['title'],
                 'meta_description' => $child['meta'],
             ]);
+
+            $this->attachEtr($page, $child['etr']);
         }
 
-        $this->command->info('Utworzono dział „Dostępność": 1 strona-rodzic + '.count($children).' podstrony (jako szkice).');
-        $this->command->warn('Uzupełnij pola [w nawiasach], a następnie opublikuj strony w panelu: Strony → Informacje dla osób ze szczególnymi potrzebami.');
+        // Pozycja menu głównego „Dostępność" → /dostepnosc. Link do opublikowanej
+        // strony z podstronami automatycznie staje się rozwijanym menu
+        // (NavItem::linkedPage + partials/nav-link-dropdown). Tworzymy ją jako
+        // NIEAKTYWNĄ (is_active = false), bo strony są szkicami — aktywuj ją, gdy
+        // opublikujesz dział, aby menu nie prowadziło do ukrytych stron.
+        if (! NavItem::where('location', 'main')->where('url', '/'.self::PARENT_SLUG)->exists()) {
+            NavItem::create([
+                'label'     => 'Dostępność',
+                'type'      => 'link',
+                'url'       => '/'.self::PARENT_SLUG,
+                'location'  => 'main',
+                'is_active' => false,
+                'order'     => 65, // między „Kontakt" (60) a „Wesprzyj" (70)
+            ]);
+        }
+
+        $this->command->info('Utworzono rozwijaną grupę „Dostępność": 1 strona-rodzic + '.count($children).' podstrony (jako szkice), każda z wersją ETR.');
+        $this->command->info('Dodano pozycję menu „Dostępność" (nieaktywną) → /'.self::PARENT_SLUG.'.');
+        $this->command->warn('Uzupełnij pola [w nawiasach] w treści i w ETR, opublikuj strony (Strony → Dostępność) i aktywuj pozycję menu „Dostępność" (Menu → nagłówek).');
     }
+
+    /**
+     * Dołącza włączoną wersję ETR (tekst łatwy do czytania) do strony.
+     *
+     * @param  array{title:string,summary:string,content:string}  $etr
+     */
+    private function attachEtr(Page $page, array $etr): void
+    {
+        $page->etr()->create([
+            'is_enabled'  => true,
+            'etr_title'   => $etr['title'],
+            'etr_summary' => $etr['summary'],
+            'etr_content' => $etr['content'],
+        ]);
+    }
+
+    // ------------------------------------------------------------------
+    // Treść pełna (HTML)
+    // ------------------------------------------------------------------
 
     private function parentContent(): string
     {
@@ -285,5 +339,157 @@ HTML;
 
 <p>Do zadań koordynatora należy m.in. wsparcie osób ze szczególnymi potrzebami w dostępie do naszych usług, przygotowanie planu działania na rzecz poprawy dostępności oraz monitorowanie dostępności naszej instytucji.</p>
 HTML;
+    }
+
+    // ------------------------------------------------------------------
+    // Wersje ETR (tekst łatwy do czytania) — krótkie zdania, prosty język.
+    // etr_summary = wprowadzenie w ramce; etr_content = akapity (pusta linia
+    // rozdziela akapity, każdy akapit to osobna myśl).
+    // ------------------------------------------------------------------
+
+    /** @return array{title:string,summary:string,content:string} */
+    private function parentEtr(): array
+    {
+        return [
+            'title'   => 'Dostępność',
+            'summary' => 'Ta strona jest napisana w prosty sposób. Mówi o tym, jak do nas trafić i jak się z nami kontaktować.',
+            'content' => <<<'TXT'
+Chcemy, aby każdy mógł z nas korzystać. Nie ważne, czy masz niepełnosprawność, czy nie.
+
+W tym dziale są takie strony:
+
+Dostępność architektoniczna – jak wygląda nasz budynek.
+
+Dostępność informacyjno-komunikacyjna – jak możesz się z nami porozumieć.
+
+Dostępność cyfrowa – nasza strona internetowa.
+
+Wniosek o dostępność – co zrobić, gdy coś jest dla Ciebie trudne.
+
+Koordynator do spraw dostępności – osoba, która Ci pomoże.
+
+Potrzebujesz pomocy? Zadzwoń: [numer telefonu].
+
+Możesz też napisać e-mail: [adres e-mail].
+TXT,
+        ];
+    }
+
+    /** @return array{title:string,summary:string,content:string} */
+    private function architecturalEtr(): array
+    {
+        return [
+            'title'   => 'Dostępność architektoniczna',
+            'summary' => 'Tu piszemy, jak wygląda nasz budynek i jak do niego wejść.',
+            'content' => <<<'TXT'
+Nasz budynek jest pod adresem: [adres budynku].
+
+Przed budynkiem jest miejsce do parkowania dla osoby z niepełnosprawnością.
+
+Do wejścia można dojść [podjazdem / schodami z poręczą].
+
+[W budynku jest winda.] — albo — [W budynku nie ma windy.]
+
+[W budynku jest toaleta dla osoby z niepełnosprawnością.] — albo — [W budynku nie ma takiej toalety.]
+
+Możesz wejść z psem asystującym.
+
+Potrzebujesz pomocy? Zadzwoń: [numer telefonu]. Pomożemy Ci.
+TXT,
+        ];
+    }
+
+    /** @return array{title:string,summary:string,content:string} */
+    private function communicationEtr(): array
+    {
+        return [
+            'title'   => 'Jak się z nami porozumieć',
+            'summary' => 'Tu piszemy, jak możesz się z nami skontaktować.',
+            'content' => <<<'TXT'
+Możesz do nas zadzwonić: [numer telefonu].
+
+Możesz napisać e-mail: [adres e-mail].
+
+Możesz przyjść do nas osobiście: [adres].
+
+Jesteś osobą głuchą lub słabo słyszącą? Możesz skorzystać z tłumacza języka migowego (PJM).
+
+Chcesz tłumacza na miejscu? Powiedz nam o tym wcześniej, co najmniej [liczba] dni przed wizytą.
+
+Możesz przyjść z osobą, która Ci pomoże. To może być ktoś dorosły, komu ufasz.
+
+Możemy przygotować dla Ciebie informacje w łatwej formie.
+TXT,
+        ];
+    }
+
+    /** @return array{title:string,summary:string,content:string} */
+    private function digitalEtr(): array
+    {
+        return [
+            'title'   => 'Dostępność cyfrowa',
+            'summary' => 'Tu piszemy o naszej stronie internetowej.',
+            'content' => <<<'TXT'
+Staramy się, aby nasza strona była łatwa w obsłudze dla każdego.
+
+Nasza strona spełnia zasady dostępności. Te zasady to WCAG.
+
+Coś na stronie jest dla Ciebie trudne albo nie działa? Napisz do nas.
+
+Napisz na e-mail: [adres e-mail koordynatora].
+
+Możesz też wypełnić formularz na stronie „Deklaracja dostępności".
+
+Odpowiemy Ci najszybciej, jak możemy. Najpóźniej w ciągu 7 dni.
+TXT,
+        ];
+    }
+
+    /** @return array{title:string,summary:string,content:string} */
+    private function requestEtr(): array
+    {
+        return [
+            'title'   => 'Wniosek o dostępność',
+            'summary' => 'Tu piszemy, co zrobić, gdy coś jest dla Ciebie trudne albo niedostępne.',
+            'content' => <<<'TXT'
+Masz prawo poprosić nas o pomoc, gdy coś jest dla Ciebie trudne.
+
+Na przykład: nie możesz wejść do budynku albo nie rozumiesz pisma.
+
+Napisz do nas albo zadzwoń. Powiedz, co jest dla Ciebie trudne. Zostaw swój kontakt.
+
+Pomożemy Ci najszybciej, jak możemy. Najpóźniej w ciągu 14 dni.
+
+Czasem potrzebujemy więcej czasu. Wtedy Ci o tym powiemy. Poczekasz najwyżej 2 miesiące.
+
+Jeśli nie możemy czegoś zmienić, znajdziemy inny sposób, aby Ci pomóc.
+
+Nie jesteś zadowolony z naszej pomocy? Możesz napisać skargę do urzędu PFRON.
+
+PFRON to urząd, który pomaga osobom z niepełnosprawnością.
+TXT,
+        ];
+    }
+
+    /** @return array{title:string,summary:string,content:string} */
+    private function coordinatorEtr(): array
+    {
+        return [
+            'title'   => 'Koordynator do spraw dostępności',
+            'summary' => 'Koordynator to osoba, która pomaga w sprawach dostępności.',
+            'content' => <<<'TXT'
+Ta osoba pomoże Ci, gdy coś jest dla Ciebie trudne.
+
+Imię i nazwisko: [imię i nazwisko koordynatora].
+
+Telefon: [numer telefonu].
+
+E-mail: [adres e-mail].
+
+Adres: [adres].
+
+Możesz do niej zadzwonić albo napisać.
+TXT,
+        ];
     }
 }
