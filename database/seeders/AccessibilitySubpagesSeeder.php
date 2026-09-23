@@ -33,7 +33,12 @@ use Illuminate\Database\Seeder;
  * barier.
  *
  * Uruchomienie:  php artisan db:seed --class=AccessibilitySubpagesSeeder
- * (na serwerze:  php85 artisan db:seed --class=AccessibilitySubpagesSeeder)
+ * (na serwerze:  php85 artisan db:seed --class=AccessibilitySubpagesSeeder --force)
+ *
+ * Gdy dział już istnieje, seeder jest pomijany. Dodaj --force, aby go NADPISAĆ:
+ * istniejące strony, ich wersje ETR i pozycja menu zostaną usunięte, a dział
+ * wygenerowany od nowa (uwaga: kasuje ręczne edycje). Na produkcji --force jest
+ * i tak wymagane przez db:seed, więc każde uruchomienie tam nadpisuje dział.
  */
 class AccessibilitySubpagesSeeder extends Seeder
 {
@@ -47,10 +52,19 @@ class AccessibilitySubpagesSeeder extends Seeder
 
     public function run(): void
     {
-        if (Page::withTrashed()->where('slug', self::PARENT_SLUG)->exists()) {
-            $this->command->warn('Podstrona o slugu "'.self::PARENT_SLUG.'" już istnieje — seeder pominięty. Usuń ją, aby wygenerować dział od nowa.');
+        $exists = Page::withTrashed()->where('slug', self::PARENT_SLUG)->exists();
+        $force = (bool) $this->command->option('force');
+
+        if ($exists && ! $force) {
+            $this->command->warn('Podstrona o slugu "'.self::PARENT_SLUG.'" już istnieje — seeder pominięty.');
+            $this->command->warn('Dodaj --force, aby usunąć istniejący dział i wygenerować go od nowa (UWAGA: kasuje też ręczne edycje tych stron).');
 
             return;
+        }
+
+        if ($exists && $force) {
+            $this->purgeExisting();
+            $this->command->warn('--force: usunięto istniejący dział „Dostępność" (strony, wersje ETR i pozycję menu). Generuję od nowa.');
         }
 
         // Strona-rodzic „Dostępność" — nagłówek rozwijanego menu (show_in_menu).
@@ -145,6 +159,34 @@ class AccessibilitySubpagesSeeder extends Seeder
         $this->command->info('Wpisano dane FEER (nazwa, adres, e-maile). Nieuzupełnione: telefon, koordynator i fakty o budynku/PJM/pętli — pola [ ... ].');
         $this->command->info('Dodano pozycję menu „Dostępność" (nieaktywną) → /'.self::PARENT_SLUG.'.');
         $this->command->warn('Uzupełnij pozostałe pola [w nawiasach], opublikuj strony (Strony → Dostępność) i aktywuj pozycję menu „Dostępność".');
+    }
+
+    /**
+     * Usuwa istniejący dział „Dostępność" (dla trybu --force): stronę-rodzica,
+     * jej podstrony, ich wersje ETR oraz pozycję menu. Obejmuje też rekordy
+     * miękko usunięte (withTrashed) i twardo kasuje (forceDelete), aby slug
+     * został zwolniony i można było utworzyć dział od nowa.
+     */
+    private function purgeExisting(): void
+    {
+        $parentId = Page::withTrashed()->where('slug', self::PARENT_SLUG)->value('id');
+
+        $pages = Page::withTrashed()
+            ->where('id', $parentId)
+            ->orWhere('parent_id', $parentId)
+            ->get();
+
+        $ids = $pages->pluck('id')->all();
+
+        if (! empty($ids)) {
+            \App\Models\EtrContent::where('etrable_type', Page::class)
+                ->whereIn('etrable_id', $ids)
+                ->delete();
+
+            Page::withTrashed()->whereIn('id', $ids)->forceDelete();
+        }
+
+        NavItem::where('location', 'main')->where('url', '/'.self::PARENT_SLUG)->delete();
     }
 
     /**
