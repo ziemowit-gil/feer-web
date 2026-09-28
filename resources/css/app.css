@@ -532,3 +532,61 @@ html.no-animations *::after {
 .nav-on-brand-dark > li > div.border-b-2 > button.text-brand { color: rgba(0,0,0,0.5); }
 .nav-on-brand-dark > li > a.bg-brand,
 .nav-on-brand-dark > li > a.bg-brand-dark { background-color: rgba(0,0,0,0.12); color: #111; }
+
+/* ── Panel admina: menu boczne (resources/views/admin/partials/sidebar.blade.php) ──
+   Trzy tryby: szuflada (< lg), pełny sidebar (≥ lg) i zwinięta „szyna" ikon
+   (≥ lg, klasa .is-collapsed). Etykiety w trybie zwiniętym są ukrywane
+   wizualnie, ale zostają w drzewie dostępności (czytniki ekranu dalej
+   słyszą nazwy linków). */
+.admin-sidebar {
+    width: 17rem;
+    transform: translateX(-100%);
+    transition: transform 200ms ease;
+}
+.admin-sidebar.is-open {
+    transform: translateX(0);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+}
+
+@media (min-width: 1024px) {
+    .admin-sidebar {
+        transform: none;
+        transition: width 200ms ease;
+    }
+    .admin-sidebar.is-open { box-shadow: none; }
+
+    .admin-sidebar.is-collapsed { width: 4.25rem; }
+
+    /* etykiety: ukryte wizualnie, dostępne dla AT */
+    .admin-sidebar.is-collapsed .nav-label {
+        position: absolute !important;
+        width: 1px; height: 1px;
+        padding: 0; margin: -1px;
+        overflow: hidden; clip: rect(0 0 0 0);
+        white-space: nowrap; border: 0;
+    }
+    .admin-sidebar.is-collapsed .nav-brand { padding-left: 0; padding-right: 0; flex-direction: column; justify-content: center; gap: .25rem; height: auto; padding-top: .5rem; padding-bottom: .5rem; }
+    .admin-sidebar.is-collapsed .nav-brand > a { flex: none; }
+    .admin-sidebar.is-collapsed .nav-site button { justify-content: center; padding-left: 0; padding-right: 0; }
+    .admin-sidebar.is-collapsed .nav-link { justify-content: center; padding-left: .5rem; padding-right: .5rem; }
+    .admin-sidebar.is-collapsed .nav-link > a { flex: none; }
+    .admin-sidebar.is-collapsed .nav-marker { left: -.75rem; }
+    .admin-sidebar.is-collapsed .nav-children { display: none !important; }
+    .admin-sidebar.is-collapsed .nav-section-body { display: block !important; }
+    .admin-sidebar.is-collapsed .nav-section-head { display: none; }
+    .admin-sidebar.is-collapsed .nav-section-rule { display: block; height: 1px; margin: .5rem .5rem; background: #e5e7eb; }
+    .admin-sidebar.is-collapsed .nav-user button { justify-content: center; padding-left: 0; padding-right: 0; }
+
+    /* odznaka liczbowa → kropka przy ikonie */
+    .admin-sidebar.is-collapsed .nav-badge {
+        position: absolute; top: .3rem; right: .55rem;
+        min-width: .55rem; height: .55rem; padding: 0;
+        font-size: 0; line-height: 0;
+    }
+}
+.admin-sidebar .nav-section-rule { display: none; }
+
+@media (prefers-reduced-motion: reduce) {
+    .admin-sidebar,
+    .admin-sidebar * { transition: none !important; }
+}
