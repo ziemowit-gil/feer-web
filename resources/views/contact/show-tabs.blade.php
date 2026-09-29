@@ -25,7 +25,7 @@
             ['id' => 'formularz', 'label' => 'Napisz do nas'],
             ['id' => 'spotkania', 'label' => $meetingTitle,        'show' => $showMeetings],
             ['id' => 'przesylki', 'label' => 'Przesyłki',          'show' => $showShipping],
-            ['id' => 'rachunki',  'label' => 'Rachunki bankowe',   'show' => ! empty($siteSettings->contact_bank_accounts)],
+            ['id' => 'rachunki',  'label' => 'Rachunki bankowe',   'show' => ! empty($siteSettings->contact_bank_accounts) || filled($siteSettings->contact_bank_accounts_note)],
         ])->filter(fn ($tab) => $tab['show'] ?? true)->values();
 
         $tabIds = $contactTabs->pluck('id')->all();
@@ -141,7 +141,7 @@
                 </div>
             @endif
 
-            @if (! empty($siteSettings->contact_bank_accounts))
+            @if (! empty($siteSettings->contact_bank_accounts) || filled($siteSettings->contact_bank_accounts_note))
                 <div id="panel-rachunki" role="tabpanel" aria-labelledby="tab-rachunki" tabindex="0" x-cloak
                      x-show="tab === 'rachunki'" class="focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand">
                     @include('contact.partials.bank-accounts', ['sectionStyle' => 'bare'])

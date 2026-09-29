@@ -30,7 +30,7 @@
                 ['id' => 'formularz', 'label' => 'Napisz do nas'],
                 ['id' => 'spotkania', 'label' => $meetingTitle,        'show' => $showMeetings],
                 ['id' => 'przesylki', 'label' => 'Wyślij przesyłkę',   'show' => $showShipping],
-                ['id' => 'rachunki',  'label' => 'Rachunki bankowe',   'show' => ! empty($siteSettings->contact_bank_accounts)],
+                ['id' => 'rachunki',  'label' => 'Rachunki bankowe',   'show' => ! empty($siteSettings->contact_bank_accounts) || filled($siteSettings->contact_bank_accounts_note)],
             ])->filter(fn ($s) => $s['show'] ?? true)->values();
         @endphp
 

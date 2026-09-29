@@ -139,13 +139,14 @@
                 @include('contact.partials.meetings', ['sectionStyle' => 'card'])
             @endif
 
-            @if ($showShipping || ! empty($siteSettings->contact_bank_accounts))
+            @php $hasBankAccounts = ! empty($siteSettings->contact_bank_accounts) || filled($siteSettings->contact_bank_accounts_note); @endphp
+            @if ($showShipping || $hasBankAccounts)
                 <div class="grid gap-6 md:grid-cols-2">
                     @if ($showShipping)
                         @include('contact.partials.shipping', ['sectionStyle' => 'card'])
                     @endif
 
-                    @if (! empty($siteSettings->contact_bank_accounts))
+                    @if ($hasBankAccounts)
                         @include('contact.partials.bank-accounts', ['sectionStyle' => 'card'])
                     @endif
                 </div>

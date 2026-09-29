@@ -1473,6 +1473,15 @@
                     <i class="fa-solid fa-plus" aria-hidden="true"></i> Dodaj rachunek
                 </button>
                 @error('contact_bank_accounts') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+
+                <div class="border-t border-gray-200 pt-4">
+                    <label for="contact_bank_accounts_note" class="mb-1 block text-sm font-bold">Dodatkowa notatka (dowolny tekst)</label>
+                    <textarea id="contact_bank_accounts_note" name="contact_bank_accounts_note" rows="3"
+                        placeholder="np. W sprawie faktur lub większych wpłat prosimy o kontakt mailowy przed przelewem."
+                        class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">{{ old('contact_bank_accounts_note', $settings->contact_bank_accounts_note) }}</textarea>
+                    <p class="mt-1 text-xs text-muted">Pokazuje się nad listą rachunków na podstronie /kontakt. Można zostawić puste albo wpisać coś, nawet jeśli nie dodałeś żadnego rachunku powyżej.</p>
+                    @error('contact_bank_accounts_note') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                </div>
             </div>
 
             {{-- Sekcja „Spotkajmy się": online (zalecane) + harmonogram stacjonarny --}}
