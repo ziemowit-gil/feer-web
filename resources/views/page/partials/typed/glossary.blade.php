@@ -20,6 +20,24 @@
     $bySlug  = $terms->keyBy('slug');
 @endphp
 
+@push('structured_data')
+    <script type="application/ld+json">
+        {!! json_encode(array_filter([
+            '@context' => 'https://schema.org',
+            '@type' => 'DefinedTermSet',
+            'name' => $page->title,
+            'description' => $td['lead'] ?? ($page->meta_description ?: null),
+            'url' => $page->publicUrl(),
+            'hasDefinedTerm' => $terms->map(fn ($t) => array_filter([
+                '@type' => 'DefinedTerm',
+                'name' => $t['term'],
+                'description' => $t['definition'] ?: null,
+                'url' => $page->publicUrl() . '#' . $t['slug'],
+            ]))->values()->all() ?: null,
+        ]), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}
+    </script>
+@endpush
+
 <section class="mx-auto max-w-5xl px-4 py-12" x-data="{ q: '' }">
     <span class="mb-4 inline-flex items-center gap-1.5 rounded-full bg-brand-light px-3 py-1 text-sm font-bold text-brand">
         <i class="fa-solid fa-book" aria-hidden="true"></i> Słownik

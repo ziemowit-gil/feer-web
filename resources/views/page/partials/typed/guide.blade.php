@@ -9,6 +9,26 @@
     $storageKey = 'guide-progress-' . $page->id;
 @endphp
 
+@push('structured_data')
+    <script type="application/ld+json">
+        {!! json_encode(array_filter([
+            '@context' => 'https://schema.org',
+            '@type' => 'HowTo',
+            'name' => $page->title,
+            'description' => $td['lead'] ?? ($page->meta_description ?: null),
+            'totalTime' => null,
+            'supply' => $td['requirements'] ? array_map(fn ($r) => ['@type' => 'HowToSupply', 'name' => $r['text']], $td['requirements']) : null,
+            'step' => array_values(array_map(fn ($s, $i) => array_filter([
+                '@type' => 'HowToStep',
+                'position' => $i + 1,
+                'name' => $s['title'] ?? ('Krok ' . ($i + 1)),
+                'text' => $s['text'] ?? null,
+                'url' => $page->publicUrl() . '#krok-' . ($i + 1),
+            ]), $td['steps'], array_keys($td['steps']))),
+        ]), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}
+    </script>
+@endpush
+
 <section class="mx-auto max-w-5xl px-4 py-12"
          x-data="{ done: (function () { try { return JSON.parse(localStorage.getItem('{{ $storageKey }}') || '[]') } catch (e) { return [] } })(),
                    toggle(i) { this.done = this.done.includes(i) ? this.done.filter(d => d !== i) : [...this.done, i]; try { localStorage.setItem('{{ $storageKey }}', JSON.stringify(this.done)) } catch (e) {} } }">

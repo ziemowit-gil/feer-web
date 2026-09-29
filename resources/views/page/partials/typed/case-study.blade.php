@@ -12,6 +12,23 @@
     ], 'filled');
 @endphp
 
+@push('structured_data')
+    <script type="application/ld+json">
+        {!! json_encode(array_filter([
+            '@context' => 'https://schema.org',
+            '@type' => 'Article',
+            'headline' => $page->title,
+            'description' => $td['lead'] ?? ($page->meta_description ?: null),
+            'url' => $page->publicUrl(),
+            'datePublished' => optional($page->created_at)->toIso8601String(),
+            'dateModified' => optional($page->updated_at)->toIso8601String(),
+            'author' => ['@type' => 'Organization', 'name' => $siteSettings->site_name],
+            'publisher' => ['@type' => 'Organization', 'name' => $siteSettings->site_name],
+            'about' => filled($td['client'] ?? null) ? ['@type' => 'Organization', 'name' => $td['client']] : null,
+        ]), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}
+    </script>
+@endpush
+
 <section class="mx-auto max-w-5xl px-4 py-12">
     <span class="mb-4 inline-flex items-center gap-1.5 rounded-full bg-brand-light px-3 py-1 text-sm font-bold text-brand">
         <i class="fa-solid fa-chart-line" aria-hidden="true"></i> Studium przypadku

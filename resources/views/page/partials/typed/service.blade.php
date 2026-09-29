@@ -8,6 +8,20 @@
     $hasContact = filled($td['contact_name'] ?? null) || filled($td['contact_email'] ?? null) || filled($td['contact_phone'] ?? null);
 @endphp
 
+@push('structured_data')
+    <script type="application/ld+json">
+        {!! json_encode(array_filter([
+            '@context' => 'https://schema.org',
+            '@type' => 'Service',
+            'name' => $page->title,
+            'description' => $td['lead'] ?? ($page->meta_description ?: null),
+            'url' => $page->publicUrl(),
+            'provider' => ['@type' => 'Organization', 'name' => $siteSettings->site_name],
+            'audience' => $td['audience'] ? array_map(fn ($a) => ['@type' => 'Audience', 'audienceType' => $a['text']], $td['audience']) : null,
+        ]), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}
+    </script>
+@endpush
+
 <section class="mx-auto max-w-5xl px-4 py-12">
     <div class="grid gap-10 {{ ($menuSiblings ?? collect())->isNotEmpty() ? 'md:grid-cols-[1fr_220px]' : '' }}">
         <div class="min-w-0">

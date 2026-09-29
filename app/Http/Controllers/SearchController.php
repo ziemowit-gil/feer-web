@@ -43,13 +43,20 @@ class SearchController extends Controller
             if ($typ === '' && $settings->isModuleEnabled('pages')) {
                 $groups['Strony'] = Page::forCurrentSite()->where('is_published', true)->where('is_disabled', false)
                     ->whereNotIn('type', ['internal', 'internal_hub'])
-                    ->where(fn ($w) => $w->where('title', 'like', $like)->orWhere('content', 'like', $like))
+                    // type_data (oferta, poradnik, słownik, studium) i faq_items to JSON —
+                    // LIKE po surowej kolumnie wystarcza, by hasła słownika czy kroki
+                    // poradnika były wyszukiwalne bez osobnego indeksu.
+                    ->where(fn ($w) => $w->where('title', 'like', $like)->orWhere('content', 'like', $like)
+                        ->orWhere('type_data', 'like', $like)->orWhere('faq_items', 'like', $like))
                     ->orderBy('title')->limit(self::PER_GROUP)->get()
-                    ->map(fn ($p) => $this->item($p->title, route('page.show', $p), $p->content, $p->created_at));
+                    ->map(fn ($p) => $this->item($p->title, route('page.show', $p), $p->content ?: $p->meta_description, $p->created_at));
             }
 
             if (($typ === '' || $typ === 'aktualnosci') && $settings->isModuleEnabled('news')) {
-                $groups['Aktualności'] = News::published()->forCurrentSite()
+                // Bez scope'u published(): archiwalne aktualności są nadal opublikowane
+                // i mają być wyszukiwalne (patrz ArchiveTest).
+                $groups['Aktualności'] = News::forCurrentSite()
+                    ->where('is_published', true)->where('published_at', '<=', now())
                     ->where(fn ($w) => $w->where('title', 'like', $like)->orWhere('excerpt', 'like', $like)->orWhere('content', 'like', $like))
                     ->orderByDesc('published_at')->limit(self::PER_GROUP)->get()
                     ->map(fn ($n) => $this->item($n->title, route('news.show', $n), $n->excerpt ?: $n->content, $n->published_at));
