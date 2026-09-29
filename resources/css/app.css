@@ -477,11 +477,13 @@ html.no-animations *::after {
     .prose .accent-section.accent-right { float: right; width: 45%; margin: 0.5rem 0 1rem 1.5rem; }
 }
 
-/* Oznaczenie linków otwieranych w nowej karcie (poza przyciskami CTA) —
-   czytelny sygnał, że link opuszcza bieżącą stronę. */
-.prose a[target="_blank"]:not(.cta-button)::after {
+/* Oznaczenie linków otwieranych w nowej karcie (poza przyciskami CTA i linkami
+   z własną ikoną — .no-external-icon) — czytelny sygnał, że link opuszcza bieżącą
+   stronę. Czcionka musi odpowiadać wersji Font Awesome ładowanej przez stronę (7);
+   przy „6 Free” zamiast ikony rysował się pusty kwadrat. */
+.prose a[target="_blank"]:not(.cta-button):not(.no-external-icon)::after {
     content: '\f35d';
-    font-family: 'Font Awesome 6 Free';
+    font-family: 'Font Awesome 7 Free';
     font-weight: 900;
     font-size: 0.7em;
     margin-left: 0.3em;
