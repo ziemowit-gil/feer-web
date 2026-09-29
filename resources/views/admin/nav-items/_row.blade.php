@@ -160,6 +160,8 @@
                 data-button="{{ $item->is_button ? 1 : 0 }}"
                 data-color="{{ $item->button_color }}"
                 data-transparent="{{ $item->is_transparent_dropdown ? 1 : 0 }}"
+                data-mega="{{ $item->is_mega ? 1 : 0 }}"
+                data-description="{{ $item->description }}"
                 data-active="{{ $item->is_active ? 1 : 0 }}"
                 class="{{ $btn }}" title="Edytuj">
                 <i class="fa-solid fa-pen text-xs" aria-hidden="true"></i>

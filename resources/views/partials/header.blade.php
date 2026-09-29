@@ -1,5 +1,5 @@
 @php
-    $headerLayout = $siteSettings->headerLayoutValue();
+    $headerLayout  = $siteSettings->headerLayoutValue();
     $inlineOnBrand = $headerLayout === 'brand_bar_inline';
     $wideMission   = $headerLayout === 'wide_mission';
     $wmLayout      = $siteSettings->wideMissionLayoutValue();
@@ -10,230 +10,208 @@
 @include('partials.header-office')
 
 @elseif ($wideMission)
-{{-- ─── Layout: Szeroka belka (logo | misja | social) ───────────────────── --}}
-<header x-data="{ mobileOpen: false }" @keydown.escape="mobileOpen = false">
+{{-- ─── Layout: Szeroka belka (logo | misja | social + CTA) ───────────────
+     Landmark <header> jest w layouts/site.blade.php (obejmuje też pasek górny).
+
+     WCAG: hamburger ma ≥ 44 px i dynamiczną etykietę (2.5.8, 4.1.2), panel
+     mobilny dostaje fokus po otwarciu, a Escape zamyka go i oddaje fokus
+     przyciskowi (2.1.2, 2.4.3); wszystkie linki mają widoczny fokus (2.4.7);
+     placeholder wyszukiwarki na tle marki ma kontrast ≥ 4.5:1 (1.4.3).
+--}}
+@php
+    $socials   = $siteSettings->socialLinks();
+    $wmSocials = $siteSettings->headerSocialLinks([
+        'wide_mission_social_1', 'wide_mission_social_2', 'wide_mission_social_3',
+    ]);
+    $wmCtaLabel = trim($siteSettings->wide_mission_cta_label ?? '');
+    $wmCtaUrl   = trim($siteSettings->wide_mission_cta_url ?? '');
+    $wmHasCta   = $wmCtaLabel !== '' && $wmCtaUrl !== '';
+
+    $wmMission = null;
+    if ($siteSettings->wide_mission_show_mission) {
+        $pageTtl   = $siteSettings->cacheEnabled('pages') ? $siteSettings->cacheTtl('page_item', 3600) : 0;
+        $wmMission = $pageTtl > 0
+            ? \Illuminate\Support\Facades\Cache::remember('page_about_motto', $pageTtl, fn () => \App\Models\Page::where('type', 'about')->value('about_motto'))
+            : \App\Models\Page::where('type', 'about')->value('about_motto');
+    }
+    $wmMission = $wmMission ?: $siteSettings->tagline;
+
+    $wmNavCenter  = ($siteSettings->wide_mission_nav_align ?? 'left') === 'center';
+    $wmSearchNav  = (bool) ($siteSettings->wide_mission_search_in_nav ?? false);
+    $wmNavStyle   = $siteSettings->wide_mission_nav_style ?? 'brand_bar';
+    $wmIconsNav   = $wmNavStyle === 'icons_white';
+    $wmPillsNav   = $wmNavStyle === 'pills';
+    $wmDarkText   = $siteSettings->navDarkText();
+
+    $ctaClass = 'inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-brand px-5 text-sm font-bold text-white transition '
+        . 'hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2';
+@endphp
+
+<div class="site-header-wide"
+     x-data="{
+        mobileOpen: false,
+        openMenu()  { this.mobileOpen = true; setTimeout(() => this.$refs.mobilePanel?.querySelector('a, button')?.focus(), 60); },
+        closeMenu(returnFocus = true) { if (! this.mobileOpen) return; this.mobileOpen = false; if (returnFocus) this.$refs.menuToggle?.focus(); },
+     }"
+     @keydown.escape.window="closeMenu()"
+     @resize.window.debounce.150ms="if (window.innerWidth >= 1024) closeMenu(false)">
 
     {{-- Układ „bar": numer konta i „Wesprzyj" w osobnym pasku nad belką --}}
     @if ($wmLayout === 'bar')
         <div class="hidden border-b border-brand/15 bg-brand-light/50 sm:block">
-            <div class="mx-auto flex max-w-6xl justify-end px-4 py-1.5">
+            <div class="mx-auto flex max-w-6xl justify-end px-4 py-1">
                 @include('partials.wide-support-line', ['onBar' => true])
             </div>
         </div>
     @endif
 
-    {{-- Górna belka: logo · misja · social --}}
+    {{-- Belka główna: logo · misja · social + CTA · hamburger --}}
     <div class="border-b border-gray-100 bg-white">
-        <div class="mx-auto flex max-w-6xl items-center gap-6 px-4 py-4">
+        <div class="mx-auto flex max-w-6xl items-center gap-4 px-4 py-3 sm:gap-6 sm:py-4">
 
-            {{-- Logo --}}
-            <a href="{{ site_route('home') }}" class="flex flex-none items-center gap-3" aria-label="{{ $siteSettings->site_name }} — strona główna">
+            {{-- Logo + nazwa --}}
+            <a href="{{ site_route('home') }}"
+               class="flex min-w-0 flex-none items-center gap-3 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2"
+               aria-label="{{ $siteSettings->site_name }} — strona główna">
                 @if ($siteSettings->logoUrl())
                     <img src="{{ $siteSettings->logoUrl() }}" alt="{{ $siteSettings->logoAltText() }}"
-                        class="h-16 w-auto max-w-[14rem] rounded object-contain">
+                         class="h-14 w-auto max-w-[12rem] rounded object-contain sm:h-16 sm:max-w-[14rem]">
                 @else
-                    <span class="flex h-14 w-14 flex-none items-center justify-center rounded bg-brand text-xl font-bold text-white">{{ mb_substr($siteSettings->site_name, 0, 1) }}</span>
+                    <span class="flex h-12 w-12 flex-none items-center justify-center rounded-lg bg-brand text-xl font-bold text-white sm:h-14 sm:w-14" aria-hidden="true">{{ mb_substr($siteSettings->site_name, 0, 1) }}</span>
                 @endif
                 @unless ($siteSettings->showLogoOnly())
-                    <span class="hidden leading-tight sm:block">
-                        <span class="block font-bold text-ink">{{ $siteSettings->site_name }}</span>
+                    <span class="min-w-0 leading-tight">
+                        <span class="block truncate text-lg font-bold text-ink sm:text-xl">{{ $siteSettings->site_name }}</span>
+                        @if ($siteSettings->tagline && ! $siteSettings->wide_mission_show_mission)
+                            <span class="hidden text-xs font-medium text-muted sm:block">{{ $siteSettings->tagline }}</span>
+                        @endif
                     </span>
                 @endunless
             </a>
 
-            {{-- Misja — centralna część --}}
-            @php
-                $wmMission = null;
-                if ($siteSettings->wide_mission_show_mission) {
-                    $pageTtl   = $siteSettings->cacheEnabled('pages') ? $siteSettings->cacheTtl('page_item', 3600) : 0;
-                    $wmMission = $pageTtl > 0
-                        ? \Illuminate\Support\Facades\Cache::remember('page_about_motto', $pageTtl, fn () => \App\Models\Page::where('type', 'about')->value('about_motto'))
-                        : \App\Models\Page::where('type', 'about')->value('about_motto');
-                }
-                $wmMission = $wmMission ?: $siteSettings->tagline;
-            @endphp
-            @if ($wmMission)
-                <p class="hidden flex-1 text-center text-sm font-medium leading-snug text-muted md:block">
-                    {{ $wmMission }}
-                </p>
+            {{-- Misja — środek belki --}}
+            @if ($wmMission && $siteSettings->wide_mission_show_mission)
+                <p class="hidden flex-1 text-center text-sm font-medium leading-snug text-muted md:block">{{ $wmMission }}</p>
             @else
                 <span class="flex-1" aria-hidden="true"></span>
             @endif
 
-            {{-- Social media (wszystkie — na mobile) + wybrane 3 dla desktop --}}
-            @php
-                $socials = $siteSettings->socialLinks();
-                $wmSocials = $siteSettings->headerSocialLinks([
-                    'wide_mission_social_1', 'wide_mission_social_2', 'wide_mission_social_3',
-                ]);
-                $wmCtaLabel = trim($siteSettings->wide_mission_cta_label ?? '');
-                $wmCtaUrl   = trim($siteSettings->wide_mission_cta_url ?? '');
-            @endphp
-
-            {{-- Prawa kolumna: wybrane social + CTA, a w układzie „right" pod nimi
-                 numer konta i link „Wesprzyj" (w układzie „bar" stoją wyżej). --}}
-            <div class="hidden flex-none flex-col items-end gap-1.5 sm:flex {{ $wmLayout === 'bar' ? 'justify-center' : '' }}">
-
-                {{-- Wiersz 1: max 3 wybrane social media + przycisk CTA --}}
-                @if ($wmSocials || ($wmCtaLabel && $wmCtaUrl))
-                    <div class="flex items-center gap-2.5">
-                        @include('partials.social-icons', ['socialIcons' => $wmSocials])
-                        @if ($wmCtaLabel && $wmCtaUrl)
-                            <a href="{{ $wmCtaUrl }}"
-                                class="flex items-center gap-1.5 rounded-full bg-brand px-4 py-2.5 text-sm font-bold text-white transition hover:bg-brand-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
-                                {{ $wmCtaLabel }}
-                            </a>
+            {{-- Prawa kolumna (≥ md): wybrane social + CTA, a w układzie „right" pod nimi konto i „Wesprzyj" --}}
+            <div class="hidden flex-none flex-col items-end gap-1 md:flex">
+                @if ($wmSocials || $wmHasCta)
+                    <div class="flex items-center gap-2">
+                        @if ($wmSocials)
+                            <ul class="flex items-center" aria-label="Media społecznościowe">
+                                @foreach ($wmSocials as [$socialUrl, $socialIcon, $socialLabel])
+                                    <li>
+                                        <a href="{{ $socialUrl }}" target="_blank" rel="noopener"
+                                           class="flex h-11 w-11 items-center justify-center rounded-full text-xl text-muted transition hover:bg-gray-100 hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2"
+                                           aria-label="{{ $socialLabel }} — otwiera się w nowej karcie">
+                                            <i class="{{ $socialIcon }}" aria-hidden="true"></i>
+                                        </a>
+                                    </li>
+                                @endforeach
+                            </ul>
+                        @endif
+                        @if ($wmHasCta)
+                            <a href="{{ $wmCtaUrl }}" class="{{ $ctaClass }}">{{ $wmCtaLabel }}</a>
                         @endif
                     </div>
                 @endif
-
-                {{-- Wiersz 2 (tylko układ „right"): numer konta + link Wesprzyj --}}
                 @if ($wmLayout === 'right')
                     @include('partials.wide-support-line')
                 @endif
             </div>
 
-            {{-- Hamburger (mobile) --}}
-            <button type="button"
-                class="flex min-h-11 min-w-11 items-center justify-center rounded text-xl text-ink hover:text-brand lg:hidden"
-                @click="mobileOpen = !mobileOpen"
-                aria-controls="main-nav-panel"
-                :aria-expanded="mobileOpen.toString()"
-                aria-label="Otwórz/zamknij menu">
+            {{-- Hamburger (< lg) --}}
+            <button type="button" x-ref="menuToggle"
+                    @click="mobileOpen ? closeMenu(false) : openMenu()"
+                    class="ml-auto flex h-11 w-11 flex-none items-center justify-center rounded-lg border border-gray-200 text-xl text-ink transition hover:border-brand hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 lg:hidden"
+                    aria-controls="main-nav-panel"
+                    :aria-expanded="mobileOpen.toString()"
+                    :aria-label="mobileOpen ? 'Zamknij menu' : 'Otwórz menu'">
                 <i class="fa-solid" :class="mobileOpen ? 'fa-xmark' : 'fa-bars'" aria-hidden="true"></i>
             </button>
         </div>
     </div>
 
-    {{-- Pasek nawigacji --}}
-    @if (($siteSettings->wide_mission_nav_style ?? 'brand_bar') === 'icons_white')
-    {{-- Substyl: biały pasek z ikonami nad etykietami --}}
-    <nav aria-label="Menu główne" class="hidden border-t-4 border-t-brand bg-white shadow-sm lg:block">
-        <div @class(['mx-auto max-w-6xl px-4 flex items-stretch', 'justify-center' => ($siteSettings->wide_mission_nav_align ?? 'left') === 'center'])>
-            @include('partials.main-nav-items', ['onBrand' => false, 'iconsNav' => true])
-            @if ($siteSettings->wide_mission_search_in_nav ?? false)
-                <form action="{{ route('search') }}" method="GET" class="ml-auto flex shrink-0 items-center py-1" role="search">
-                    <label for="nav-search" class="sr-only">Wyszukaj w serwisie</label>
-                    <input id="nav-search" type="search" name="q" value="{{ request('q') }}" placeholder="Szukaj…" autocomplete="off"
-                        class="w-36 rounded-l border border-gray-300 px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-brand">
-                    <button type="submit" class="flex min-h-8 min-w-8 items-center justify-center rounded-r border border-l-0 border-gray-300 bg-white text-ink hover:text-brand focus-visible:outline-2 focus-visible:outline-brand" aria-label="Szukaj">
-                        <i class="fa-solid fa-magnifying-glass text-xs" aria-hidden="true"></i>
-                    </button>
-                </form>
-            @endif
-        </div>
-    </nav>
+    {{-- Pasek nawigacji (≥ lg) --}}
+    @if ($wmIconsNav || $wmPillsNav)
+        {{-- Substyle na białym pasku: ikony nad etykietami albo zakładki (pigułki) --}}
+        <nav aria-label="Menu główne" class="relative hidden border-t-4 border-t-brand bg-white shadow-sm lg:block">
+            <div @class(['mx-auto flex max-w-6xl items-stretch px-4', 'py-1.5' => $wmPillsNav, 'justify-center' => $wmNavCenter])>
+                @include('partials.main-nav-items', ['onBrand' => false, 'navStyle' => $wmPillsNav ? 'pills' : 'icons'])
+                @if ($wmSearchNav)
+                    <form action="{{ route('search') }}" method="GET" role="search" aria-label="Wyszukiwarka serwisu" class="ml-auto flex shrink-0 items-center py-1.5">
+                        <label for="nav-search" class="sr-only">Wyszukaj w serwisie</label>
+                        <input id="nav-search" type="search" name="q" value="{{ request('q') }}" placeholder="Szukaj…" autocomplete="off"
+                               class="min-h-10 w-40 rounded-l-md border border-gray-300 px-3 text-sm placeholder:text-gray-600 focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand">
+                        <button type="submit" class="flex h-10 w-10 items-center justify-center rounded-r-md border border-l-0 border-gray-300 bg-white text-ink hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand" aria-label="Szukaj">
+                            <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+                        </button>
+                    </form>
+                @endif
+            </div>
+        </nav>
     @else
-    {{-- Substyl domyślny: pasek koloru marki --}}
-    <nav aria-label="Menu główne" class="hidden border-b border-white/25 bg-brand shadow-sm lg:block">
-        <div @class(['mx-auto max-w-6xl px-4 flex items-center', 'justify-center' => ($siteSettings->wide_mission_nav_align ?? 'left') === 'center'])>
-            @include('partials.main-nav-items', ['onBrand' => true, 'navDarkText' => $siteSettings->navDarkText()])
-            @if ($siteSettings->wide_mission_search_in_nav ?? false)
-                <form action="{{ route('search') }}" method="GET" class="ml-auto flex shrink-0 items-center py-1" role="search">
-                    <label for="nav-search" class="sr-only">Wyszukaj w serwisie</label>
-                    <input id="nav-search" type="search" name="q" value="{{ request('q') }}" placeholder="Szukaj…" autocomplete="off"
-                        class="w-36 rounded-l border-0 bg-white/15 px-3 py-1.5 text-sm text-white placeholder:text-white/60 focus:bg-white/25 focus:outline-none focus:ring-1 focus:ring-white/50">
-                    <button type="submit" class="flex min-h-8 min-w-8 items-center justify-center rounded-r bg-white/15 text-white hover:bg-white/25 focus-visible:outline-2 focus-visible:outline-white" aria-label="Szukaj">
-                        <i class="fa-solid fa-magnifying-glass text-xs" aria-hidden="true"></i>
-                    </button>
-                </form>
-            @endif
-        </div>
-    </nav>
+        {{-- Substyl domyślny: pasek w kolorze marki --}}
+        <nav aria-label="Menu główne" class="relative hidden bg-brand shadow-sm lg:block">
+            <div @class(['mx-auto flex max-w-6xl items-center px-4', 'justify-center' => $wmNavCenter])>
+                @include('partials.main-nav-items', ['onBrand' => true, 'navDarkText' => $wmDarkText])
+                @if ($wmSearchNav)
+                    <form action="{{ route('search') }}" method="GET" role="search" aria-label="Wyszukiwarka serwisu" class="ml-auto flex shrink-0 items-center py-1.5">
+                        <label for="nav-search" class="sr-only">Wyszukaj w serwisie</label>
+                        <input id="nav-search" type="search" name="q" value="{{ request('q') }}" placeholder="Szukaj…" autocomplete="off"
+                               class="min-h-10 w-40 rounded-l-md border-0 bg-white/15 px-3 text-sm {{ $wmDarkText ? 'text-gray-900 placeholder:text-gray-800' : 'text-white placeholder:text-white/85' }} focus:bg-white/25 focus:outline-none focus:ring-2 focus:ring-white">
+                        <button type="submit" class="flex h-10 w-10 items-center justify-center rounded-r-md bg-white/15 {{ $wmDarkText ? 'text-gray-900' : 'text-white' }} hover:bg-white/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-white" aria-label="Szukaj">
+                            <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+                        </button>
+                    </form>
+                @endif
+            </div>
+        </nav>
     @endif
 
-    {{-- Mobile: misja + social + menu --}}
-    <nav x-show="mobileOpen" x-cloak id="main-nav-panel" aria-label="Menu mobilne" class="border-t border-gray-200 bg-white lg:hidden">
-        @if ($siteSettings->tagline)
-            <p class="border-b border-gray-100 px-4 py-3 text-sm text-muted">{{ $siteSettings->tagline }}</p>
-        @endif
-        <div class="flex flex-wrap items-center gap-4 border-b border-gray-100 px-4 py-3">
-            @if ($socials)
-                <nav aria-label="Media społecznościowe" class="flex flex-wrap gap-2">
-                    @foreach ($socials as [$url, $icon, $label])
-                        <a href="{{ $url }}" target="_blank" rel="noopener"
-                            class="flex min-h-10 min-w-10 items-center justify-center rounded-full border border-gray-200 text-lg text-muted hover:border-brand hover:text-brand"
-                            aria-label="{{ $label }}">
-                            <i class="{{ $icon }}" aria-hidden="true"></i>
-                        </a>
-                    @endforeach
-                </nav>
-            @endif
-
-            <div role="group" aria-label="Ustawienia dostępności" class="flex items-center gap-2">
-                <div role="group" aria-label="Rozmiar czcionki" class="flex items-center">
-                    <button type="button" data-a11y-font="down"
-                        class="flex min-h-9 min-w-9 items-center justify-center rounded-l border border-gray-200 text-sm text-muted hover:border-brand hover:text-brand"
-                        aria-label="Zmniejsz czcionkę">A-</button>
-                    <button type="button" data-a11y-font="reset"
-                        class="flex min-h-9 min-w-9 items-center justify-center border-y border-gray-200 text-sm text-muted hover:border-brand hover:text-brand"
-                        aria-label="Domyślny rozmiar czcionki">A</button>
-                    <button type="button" data-a11y-font="up"
-                        class="flex min-h-9 min-w-9 items-center justify-center rounded-r border border-gray-200 text-sm text-muted hover:border-brand hover:text-brand"
-                        aria-label="Zwiększ czcionkę">A+</button>
-                </div>
-                <button type="button" data-a11y-contrast="contrast"
-                    class="flex min-h-9 min-w-9 items-center justify-center rounded border border-gray-200 text-muted hover:border-brand hover:text-brand aria-pressed:border-brand aria-pressed:text-brand"
-                    aria-pressed="false" aria-label="Kontrast klasyczny">
-                    <i class="fa-solid fa-circle-half-stroke" aria-hidden="true"></i>
-                </button>
-                <button type="button" data-a11y-contrast="contrast-bw"
-                    class="flex min-h-9 min-w-9 items-center justify-center rounded border border-gray-200 text-muted hover:border-brand hover:text-brand aria-pressed:border-brand aria-pressed:text-brand"
-                    aria-pressed="false" aria-label="Kontrast czarno-żółty">
-                    <span class="text-xs font-black leading-none" aria-hidden="true" style="background:#000;color:#ff0;padding:1px 3px;border-radius:2px">A</span>
-                </button>
-                <button type="button" data-a11y-contrast="contrast-gray"
-                    class="flex min-h-9 min-w-9 items-center justify-center rounded border border-gray-200 text-muted hover:border-brand hover:text-brand aria-pressed:border-brand aria-pressed:text-brand"
-                    aria-pressed="false" aria-label="Tryb szary">
-                    <span class="text-xs font-black leading-none" aria-hidden="true" style="background:#888;color:#fff;padding:1px 3px;border-radius:2px">A</span>
-                </button>
-                <button type="button" data-a11y-animations
-                    class="flex min-h-9 min-w-9 items-center justify-center rounded border border-gray-200 text-muted hover:border-brand hover:text-brand"
-                    aria-pressed="false" aria-label="Wyłącz animacje">
-                    <i class="fa-solid fa-film" aria-hidden="true"></i>
-                </button>
-                <button type="button" data-a11y-ls
-                    class="flex min-h-9 min-w-9 items-center justify-center rounded border border-gray-200 text-muted hover:border-brand hover:text-brand aria-pressed:border-brand aria-pressed:text-brand"
-                    aria-pressed="false" aria-label="Zwiększ odstęp liter">
-                    <i class="fa-solid fa-text-width" aria-hidden="true"></i>
-                </button>
-                <button type="button" data-a11y-sans
-                    class="flex min-h-9 min-w-9 items-center justify-center rounded border border-gray-200 text-muted hover:border-brand hover:text-brand aria-pressed:border-brand aria-pressed:text-brand"
-                    aria-pressed="false" aria-label="Czcionka bezszeryfowa">
-                    <i class="fa-solid fa-font" aria-hidden="true"></i>
-                </button>
-            </div>
-        </div>
-
-        {{-- Numer konta + Wesprzyj (mobile) --}}
-        @if ($siteSettings->bank_account_number || \Illuminate\Support\Facades\Route::has('support.show'))
-            <div class="flex flex-wrap items-center gap-4 border-b border-gray-100 px-4 py-3 text-sm">
-                @if ($siteSettings->bank_account_number)
-                    <span class="text-muted">
-                        <span class="font-medium text-ink">Nr konta:</span>
-                        <span class="font-mono">{{ $siteSettings->bank_account_number }}</span>
-                    </span>
-                @endif
-                @if (\Illuminate\Support\Facades\Route::has('support.show'))
-                    <a href="{{ route('support.show') }}"
-                        class="flex items-center gap-1.5 font-bold text-brand hover:text-brand-dark">
-                        <i class="fa-solid fa-heart text-xs" aria-hidden="true"></i>
-                        Wesprzyj naszą działalność
-                    </a>
-                @endif
-            </div>
-        @endif
-
+    {{-- Panel mobilny (< lg): menu + wsparcie + CTA + social --}}
+    <nav id="main-nav-panel" x-ref="mobilePanel" x-show="mobileOpen" x-cloak
+         aria-label="Menu główne"
+         @click.outside="if (! $refs.menuToggle.contains($event.target)) closeMenu(false)"
+         class="border-t border-gray-200 bg-white shadow-lg lg:hidden">
         <div class="px-4 pb-4">
             @include('partials.main-nav-items', ['mobile' => true])
         </div>
+
+        @if ($wmHasCta || filled($siteSettings->bank_account_number) || \Illuminate\Support\Facades\Route::has('support.show'))
+            <div class="flex flex-col gap-3 border-t border-gray-100 px-4 py-4">
+                @if ($wmHasCta)
+                    <a href="{{ $wmCtaUrl }}" class="{{ $ctaClass }} w-full">{{ $wmCtaLabel }}</a>
+                @endif
+                @include('partials.wide-support-line')
+            </div>
+        @endif
+
+        @if ($socials)
+            <div class="border-t border-gray-100 px-4 py-3">
+                <ul class="flex flex-wrap gap-1" aria-label="Media społecznościowe">
+                    @foreach ($socials as [$socialUrl, $socialIcon, $socialLabel])
+                        <li>
+                            <a href="{{ $socialUrl }}" target="_blank" rel="noopener"
+                               class="flex h-11 w-11 items-center justify-center rounded-full border border-gray-200 text-lg text-muted transition hover:border-brand hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2"
+                               aria-label="{{ $socialLabel }} — otwiera się w nowej karcie">
+                                <i class="{{ $socialIcon }}" aria-hidden="true"></i>
+                            </a>
+                        </li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
     </nav>
-</header>
+</div>
 
 @else
 {{-- ─── Dotychczasowe layouty (classic / brand_bar / brand_bar_inline) ──── --}}
-<header class="{{ $inlineOnBrand ? 'bg-brand border-transparent' : 'bg-white' }}" x-data="{ mobileOpen: false }" @keydown.escape="mobileOpen = false">
-    <div class="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-4">
+<div class="{{ $inlineOnBrand ? 'bg-brand border-transparent' : 'bg-white' }}" x-data="{ mobileOpen: false }" @keydown.escape="mobileOpen = false">
+    <div class="relative mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-4">
         <a href="{{ site_route('home') }}" class="flex items-center gap-3" aria-label="{{ $siteSettings->site_name }} — strona główna">
             @if ($siteSettings->logoUrl())
                 <img src="{{ $siteSettings->logoUrl() }}" alt="{{ $siteSettings->logoAltText() }}" class="h-12 w-auto max-w-[16rem] flex-none rounded object-contain {{ $inlineOnBrand ? 'bg-white p-1' : '' }}">
@@ -263,7 +241,7 @@
     </div>
 
     @if ($headerLayout === 'brand_bar')
-        <nav aria-label="Menu główne" class="hidden bg-brand lg:block">
+        <nav aria-label="Menu główne" class="relative hidden bg-brand lg:block">
             <div class="mx-auto flex max-w-6xl justify-center px-4">
                 @include('partials.main-nav-items', ['onBrand' => true, 'navDarkText' => $siteSettings->navDarkText()])
             </div>
@@ -274,5 +252,5 @@
         class="border-t border-gray-200 px-4 pb-4 lg:hidden">
         @include('partials.main-nav-items', ['mobile' => true])
     </nav>
-</header>
+</div>
 @endif

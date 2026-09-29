@@ -92,6 +92,20 @@ class Page extends Model
         'legacy' => 'Prezentacja tego, co było',
         'brand_assets'  => 'Marka — identyfikacja wizualna (pliki do pobrania)',
         'about_person'  => 'O organizacji — osoba',
+        'service'       => 'Oferta / usługa (korzyści, dla kogo, jak działamy, CTA)',
+        'guide'         => 'Poradnik krok po kroku (numerowane kroki, wymagania, podsumowanie)',
+        'glossary'      => 'Słownik pojęć (hasła z definicjami i indeksem liter)',
+        'case_study'    => 'Studium przypadku (wyzwanie, rozwiązanie, efekty, cytat)',
+    ];
+
+    /** Typy, których dane trzymamy we wspólnej kolumnie JSON `type_data`. */
+    public const TYPE_DATA_TYPES = ['service', 'guide', 'glossary', 'case_study'];
+
+    /** Poziomy trudności poradnika. */
+    public const GUIDE_LEVELS = [
+        'basic'    => 'Podstawowy',
+        'medium'   => 'Średni',
+        'advanced' => 'Zaawansowany',
     ];
 
     /** Tryby dostępu do strony wewnętrznej. */
@@ -190,7 +204,7 @@ class Page extends Model
     public const DEFAULT_WIP_NOTICE_MESSAGE = 'Wprowadzamy zmiany na tej stronie — nie wszystkie elementy mogą jeszcze działać poprawnie.';
 
     protected $fillable = [
-        'site_id', 'parent_id', 'project_id', 'project_display', 'title', 'slug', 'content', 'is_published', 'publish_at', 'is_featured', 'is_archived', 'show_in_menu', 'show_side_nav', 'is_system', 'is_locked', 'order',
+        'site_id', 'parent_id', 'project_id', 'project_display', 'title', 'slug', 'content', 'is_published', 'publish_at', 'is_featured', 'is_archived', 'show_in_menu', 'show_side_nav', 'side_nav_style', 'is_system', 'is_locked', 'order',
         'meta_title', 'meta_description', 'pending_approval', 'submitted_by_id',
         'is_disabled', 'disabled_message', 'wip_mode', 'wip_message',
         'type', 'event_mode', 'event_when', 'event_location', 'event_how_to_join', 'event_registration_url',
@@ -205,7 +219,7 @@ class Page extends Model
         'brand_brandbook_url', 'brand_sections',
         'person_phone', 'person_role', 'person_bio', 'person_email', 'person_social', 'person_member_label', 'person_name_genitive', 'person_department',
         'page_template',
-        'cooperation_data',
+        'cooperation_data', 'type_data',
     ];
 
     protected $casts = [
@@ -237,6 +251,7 @@ class Page extends Model
         'person_social'      => 'array',
         'person_department'  => 'array',
         'cooperation_data'   => 'array',
+        'type_data'          => 'array',
     ];
 
     public function resolveRouteBindingQuery($query, $value, $field = null)
@@ -349,13 +364,51 @@ class Page extends Model
         return $this->type === 'about_person';
     }
 
+    public function isService(): bool
+    {
+        return $this->type === 'service';
+    }
+
+    public function isGuide(): bool
+    {
+        return $this->type === 'guide';
+    }
+
+    public function isGlossary(): bool
+    {
+        return $this->type === 'glossary';
+    }
+
+    public function isCaseStudy(): bool
+    {
+        return $this->type === 'case_study';
+    }
+
+    /**
+     * Dane typu (kolumna `type_data`) z domyślnymi pustymi listami, żeby widoki
+     * i formularz nie musiały sprawdzać istnienia każdego klucza.
+     */
+    public function typeData(): array
+    {
+        $data = is_array($this->type_data) ? $this->type_data : [];
+
+        foreach (['benefits', 'audience', 'steps', 'requirements', 'terms', 'results'] as $list) {
+            $data[$list] = array_values(array_filter(
+                is_array($data[$list] ?? null) ? $data[$list] : [],
+                fn ($row) => is_array($row) && array_filter($row, fn ($v) => is_string($v) && trim($v) !== ''),
+            ));
+        }
+
+        return $data;
+    }
+
     /** Czy strona używa standardowej sekcji treści (a nie własnego układu typowego). */
     public function usesStandardLayout(): bool
     {
         return ! in_array($this->type, [
             'event', 'schedule', 'about', 'faq', 'bip_move',
             'internal_hub', 'links_hub', 'wspolpraca', 'training_institution', 'brand_assets',
-            'legacy', 'about_person',
+            'legacy', 'about_person', 'service', 'guide', 'glossary', 'case_study',
         ], true);
     }
 
@@ -520,6 +573,18 @@ class Page extends Model
      * the same parent, the published pages of the project it is attached to,
      * or (for a top-level page) its own published children.
      */
+    /**
+     * Sposób prezentacji podstron działu ('sidebar' | 'tabs'). O stylu decyduje
+     * strona nadrzędna działu, żeby wszystkie podstrony wyglądały tak samo;
+     * strona bez rodzica używa własnego ustawienia.
+     */
+    public function sideNavStyle(): string
+    {
+        $style = $this->parent_id ? $this->parent?->side_nav_style : $this->side_nav_style;
+
+        return $style === 'tabs' ? 'tabs' : 'sidebar';
+    }
+
     public function menuSiblings()
     {
         if ($this->parent_id) {

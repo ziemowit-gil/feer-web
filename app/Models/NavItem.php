@@ -33,13 +33,14 @@ class NavItem extends Model
     ];
 
     protected $fillable = [
-        'site_id', 'parent_id', 'label', 'icon', 'url', 'type', 'module', 'location',
-        'is_button', 'is_transparent_dropdown', 'is_active', 'order', 'button_color',
+        'site_id', 'parent_id', 'label', 'icon', 'description', 'url', 'type', 'module', 'location',
+        'is_button', 'is_transparent_dropdown', 'is_mega', 'is_active', 'order', 'button_color',
     ];
 
     protected $casts = [
         'is_button' => 'boolean',
         'is_transparent_dropdown' => 'boolean',
+        'is_mega' => 'boolean',
         'is_active' => 'boolean',
     ];
 
@@ -64,6 +65,30 @@ class NavItem extends Model
     public function isDropdown(): bool
     {
         return in_array($this->type, ['dropdown', 'projects', 'pages'], true);
+    }
+
+    /**
+     * Czy pozycja otwiera mega menu (panel na całą szerokość paska): flaga
+     * `is_mega` na rozwijanym menu z podpozycjami albo na linku do strony,
+     * która ma opublikowane podstrony. Bez treści do pokazania wraca zwykłe
+     * rozwijane menu / zwykły link.
+     */
+    public function isMega(): bool
+    {
+        if (! $this->is_mega || $this->is_button || $this->parent_id) {
+            return false;
+        }
+
+        if ($this->type === 'dropdown') {
+            return $this->children->isNotEmpty();
+        }
+
+        if ($this->type === 'link') {
+            return $this->children->isNotEmpty()
+                || (($page = $this->linkedPage()) && $page->publishedChildren->isNotEmpty());
+        }
+
+        return false;
     }
 
     /**

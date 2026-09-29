@@ -590,3 +590,53 @@ html.no-animations *::after {
     .admin-sidebar,
     .admin-sidebar * { transition: none !important; }
 }
+
+/* ── Nagłówek publiczny: substyle paska menu i mega menu ─────────────────────
+   Klasy na <ul> z partials/main-nav-items: .nav-icons (ikona nad etykietą,
+   biały pasek), .nav-pills (zakładki-pigułki, aktywna wypełniona kolorem marki).
+   Nadpisują domyślne podkreślenie z partiali nav-item/nav-*-dropdown, tak samo
+   jak .nav-on-brand wyżej. */
+.nav-icons > li > a,
+.nav-icons > li > button,
+.nav-icons > li > div.border-b-2 {
+    flex-direction: column;
+    align-items: center;
+    gap: .15rem;
+    min-width: 5.5rem;
+    padding: .6rem .5rem .45rem;
+    font-size: .8rem;
+    letter-spacing: .04em;
+    text-align: center;
+    border-bottom-width: 3px;
+}
+.nav-icons > li > div.border-b-2 > a { flex-direction: column; gap: .15rem; padding-top: 0; }
+.nav-icons > li > div.border-b-2 > button { padding-top: 0; }
+.nav-icons .nav-item-icon { font-size: 1.35rem; line-height: 1; }
+
+.nav-pills > li > a,
+.nav-pills > li > button,
+.nav-pills > li > div.border-b-2 {
+    border-bottom: 0;
+    border-radius: 9999px;
+    padding: .5rem 1rem;
+    font-size: 1rem;
+    line-height: 1.25;
+    transition: background-color .15s, color .15s;
+}
+.nav-pills > li > div.border-b-2 > a,
+.nav-pills > li > div.border-b-2 > button { padding-top: 0; padding-bottom: 0; }
+.nav-pills > li > a:hover,
+.nav-pills > li > button:hover,
+.nav-pills > li > div.border-b-2:hover { background-color: var(--color-brand-light); color: var(--color-brand); text-decoration: none; }
+.nav-pills > li > a[aria-current="page"],
+.nav-pills > li > a.border-brand,
+.nav-pills > li > button.border-brand,
+.nav-pills > li > div.border-brand { background-color: var(--color-brand); color: #fff; }
+.nav-pills > li > div.border-brand > a,
+.nav-pills > li > div.border-brand > button { color: #fff; }
+.nav-pills > li > a:focus-visible,
+.nav-pills > li > button:focus-visible { outline-offset: 2px; }
+
+/* Mega menu: panel przypięty do paska (<nav class="relative">), pozycja bez własnego position. */
+.nav-mega-panel { text-transform: none; letter-spacing: 0; font-weight: 400; }
+html.no-animations .nav-mega-panel { transition: none !important; }

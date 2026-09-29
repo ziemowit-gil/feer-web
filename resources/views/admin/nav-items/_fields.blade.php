@@ -139,6 +139,22 @@
     @error('button_color') <p class="mt-1 text-sm text-red-700">{{ $message }}</p> @enderror
 </div>
 
+<div x-show="form.location === 'main' && form.parentId !== ''" x-cloak>
+    <label for="nav-description" class="mb-1 block text-sm font-bold">Krótki opis <span class="font-normal text-muted">(opcjonalnie — widoczny w mega menu)</span></label>
+    <input type="text" id="nav-description" name="description" x-model="form.description" maxlength="255" placeholder="np. Szkolenia i audyty dostępności cyfrowej"
+        class="w-full rounded border-gray-300 focus-visible:border-brand focus-visible:ring-2 focus-visible:ring-brand">
+    @error('description') <p class="mt-1 text-sm text-red-700">{{ $message }}</p> @enderror
+</div>
+
+<label class="flex items-start gap-2" x-show="form.location === 'main' && form.parentId === '' && (form.type === 'dropdown' || form.type === 'link')" x-cloak>
+    <input type="checkbox" name="is_mega" value="1" x-model="form.isMega"
+        class="mt-0.5 rounded border-gray-300 text-brand focus-visible:ring-2 focus-visible:ring-brand">
+    <span>
+        <span class="block text-sm font-bold">Mega menu (panel na całą szerokość)</span>
+        <span class="block text-xs text-muted">Podpozycje (lub podstrony powiązanej strony) układają się w kolumny z ikoną i opisem. Bez podpozycji działa jak zwykła pozycja.</span>
+    </span>
+</label>
+
 <label class="flex items-center gap-2" x-show="form.type === 'dropdown' || form.type === 'projects' || form.type === 'pages'" x-cloak>
     <input type="checkbox" name="is_transparent_dropdown" value="1" x-model="form.isTransparent"
         class="rounded border-gray-300 text-brand focus-visible:ring-2 focus-visible:ring-brand">

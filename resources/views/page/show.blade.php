@@ -39,12 +39,14 @@
         @if ($page->usesStandardLayout())
         @php
             $menuSiblings = $page->menuSiblings();
-            $showSideNav = ($page->show_side_nav ?? true) && $menuSiblings->isNotEmpty();
+            $showLocalNav = ($page->show_side_nav ?? true) && $menuSiblings->isNotEmpty();
+            $showTabsNav  = $showLocalNav && $page->sideNavStyle() === 'tabs';
+            $showSideNav  = $showLocalNav && ! $showTabsNav;
             $canInlineEdit = auth()->check() && auth()->user()->canAccessModule('pages');
             // Treść z shortcode'em (np. osadzony formularz) nie może być edytowana "na żywo" —
             // contenteditable widzi tylko wyrenderowany HTML, zapisanie go z powrotem
             // zgubiłoby oryginalny zapis [formularz:slug]/[kafelki:slug].
-            $contentHasShortcode = $page->content && preg_match('/\[(formularz|kafelki):[a-z0-9_\-]+\]/i', $page->content);
+            $contentHasShortcode = \App\Support\ShortcodeParser::has($page->content);
         @endphp
 
         <div @if ($canInlineEdit) x-data="inlineContentEditor('page', {{ $page->id }}, '{{ route('admin.inline-edit.update') }}')" @endif>
@@ -53,6 +55,9 @@
             @endif
 
             <section class="mx-auto max-w-5xl px-4 py-12" x-data="{ etr: false }">
+                @if ($showTabsNav)
+                    @include('partials.page-tabs-nav', ['menuSiblings' => $menuSiblings])
+                @endif
                 <div class="grid gap-10 {{ $showSideNav ? 'md:grid-cols-[1fr_220px]' : '' }}">
                     <div>
                         @include('partials.etr-toggle', ['etr' => $page->etr, 'title' => $page->title])

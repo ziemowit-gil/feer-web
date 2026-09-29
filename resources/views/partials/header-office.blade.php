@@ -11,7 +11,7 @@
     $officeShowBip  = $siteSettings->isModuleEnabled('bip') && ($officeBipMode ? filled($siteSettings->bip_url) : true);
 @endphp
 
-<header x-data="{ mobileOpen: false }" @keydown.escape="mobileOpen = false">
+<div x-data="{ mobileOpen: false }" @keydown.escape="mobileOpen = false">
 
     {{-- Górna belka: logo | nr konta | szukajka + BIP + social --}}
     <div class="border-b border-gray-200 bg-white">
@@ -94,7 +94,7 @@
     </div>
 
     {{-- Pasek nawigacyjny --}}
-    <nav class="bg-brand shadow-sm" aria-label="Nawigacja główna">
+    <nav class="relative bg-brand shadow-sm" aria-label="Nawigacja główna">
         <div class="mx-auto max-w-[1400px] px-4">
             <div class="flex items-center justify-between">
 
@@ -150,4 +150,4 @@
             </div>
         </div>
     </nav>
-</header>
+</div>

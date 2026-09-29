@@ -16,7 +16,8 @@
     <button type="button" x-ref="dropdownTrigger" @click="open = !open"
         :aria-expanded="open.toString()" :aria-controls="$id('dropdown')"
         class="flex w-full items-center gap-1 border-b-2 py-2 uppercase transition-colors {{ $hoverCls }} focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-current {{ $staticCls }} {{ $mobile ? 'justify-between' : 'pb-1' }}" :class="open ? '{{ $activeBdr }}' : ''">
-        {{ $item->label }} <i class="fa-solid fa-chevron-down text-[10px]" aria-hidden="true"></i>
+        @if (($iconsNav ?? false) && $item->icon)<i class="bi {{ $item->icon }} nav-item-icon" aria-hidden="true"></i>@endif
+        <span>{{ $item->label }}</span> <i class="fa-solid fa-chevron-down text-[10px]" aria-hidden="true"></i>
     </button>
 
     <ul :id="$id('dropdown')" x-show="open" x-cloak x-transition role="list"

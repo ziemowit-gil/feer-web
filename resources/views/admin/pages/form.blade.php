@@ -195,7 +195,7 @@
                                     <option value="{{ $value }}" {{ $currentType === $value ? 'selected' : '' }}>{{ $label }}</option>
                                 @endforeach
                             </select>
-                            <p class="mt-1 text-xs text-muted">„Wydarzenie" dodaje pola o terminie, miejscu i rejestracji. „Harmonogram zajęć / spotkań" dodaje tabelę terminów oraz miejsce na informację o zmianie. Każdy typ ma inny układ na stronie.</p>
+                            <p class="mt-1 text-xs text-muted">„Wydarzenie" dodaje pola o terminie, miejscu i rejestracji. „Harmonogram zajęć / spotkań" dodaje tabelę terminów oraz miejsce na informację o zmianie. „Oferta", „Poradnik", „Słownik" i „Studium przypadku" mają własne sekcje pól poniżej. Każdy typ ma inny układ na stronie.</p>
                             @error('type') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                         @endif
                     </div>
@@ -1294,6 +1294,8 @@
                 </div>
             </div>
 
+                    @include('admin.pages.partials.type-data-fields', ['currentType' => $currentType])
+
                     {{-- ======= WSPÓŁPRACA — pola edycji sekcji ======= --}}
                     @php
                         $cd = old('cooperation_data', $page->cooperation_data ?? []);
@@ -1652,9 +1654,20 @@
                             <input type="hidden" name="show_side_nav" value="0">
                             <input type="checkbox" name="show_side_nav" value="1" {{ old('show_side_nav', $page->show_side_nav ?? true) ? 'checked' : '' }}
                                 class="mt-0.5 rounded border-gray-300 text-brand focus:ring-brand">
-                            <span>
-                                <span class="block text-sm font-bold">Boczne drzewo nawigacji</span>
-                                <span class="block text-xs text-muted">Pokazuje z boku listę podstron w tym dziale. Wyłącz dla stron bez rozbudowanej struktury.</span>
+                            <span class="flex-1">
+                                <span class="block text-sm font-bold">Nawigacja po podstronach działu</span>
+                                <span class="block text-xs text-muted">Lista podstron w tym dziale. Wyłącz dla stron bez rozbudowanej struktury. Styl ustawiony na stronie nadrzędnej obowiązuje dla wszystkich jej podstron.</span>
+                                @php $sideNavStyle = old('side_nav_style', $page->side_nav_style ?? 'sidebar'); @endphp
+                                <span class="mt-2 flex flex-wrap gap-2">
+                                    <label class="flex cursor-pointer items-center gap-1.5 rounded-md border border-gray-200 bg-white px-2.5 py-1.5 text-xs font-bold has-[:checked]:border-brand has-[:checked]:bg-brand-light has-[:checked]:text-brand">
+                                        <input type="radio" name="side_nav_style" value="sidebar" {{ $sideNavStyle !== 'tabs' ? 'checked' : '' }} class="text-brand focus:ring-brand">
+                                        <i class="fa-solid fa-table-columns" aria-hidden="true"></i> Boczne drzewo
+                                    </label>
+                                    <label class="flex cursor-pointer items-center gap-1.5 rounded-md border border-gray-200 bg-white px-2.5 py-1.5 text-xs font-bold has-[:checked]:border-brand has-[:checked]:bg-brand-light has-[:checked]:text-brand">
+                                        <input type="radio" name="side_nav_style" value="tabs" {{ $sideNavStyle === 'tabs' ? 'checked' : '' }} class="text-brand focus:ring-brand">
+                                        <i class="fa-solid fa-window-maximize" aria-hidden="true"></i> Zakładki nad treścią
+                                    </label>
+                                </span>
                             </span>
                         </label>
 
@@ -1941,6 +1954,7 @@
                     if (hubFields) hubFields.classList.toggle('hidden', ! ['internal_hub', 'links_hub'].includes(typeSelect.value));
                     if (legacyFields) legacyFields.classList.toggle('hidden', typeSelect.value !== 'legacy');
                     if (trainingFields) trainingFields.classList.toggle('hidden', typeSelect.value !== 'training_institution');
+                    document.querySelectorAll('[data-type-fields]').forEach((el) => el.classList.toggle('hidden', el.dataset.typeFields !== typeSelect.value));
                     if (brandFields) brandFields.classList.toggle('hidden', typeSelect.value !== 'brand_assets');
                     if (aboutPersonFields) aboutPersonFields.classList.toggle('hidden', typeSelect.value !== 'about_person');
                     if (cooperationFields) cooperationFields.classList.toggle('hidden', typeSelect.value !== 'wspolpraca');

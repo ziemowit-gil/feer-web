@@ -277,7 +277,7 @@
                         ['wide_mission_search_in_nav',     'boolean','bool', 'Pole wyszukiwania w nav WM'],
                         ['wide_mission_sidebar',           'boolean','bool', 'Boczny pasek w szablonie WM'],
                         ['wide_mission_sidebar_style',     'text','string?', 'Styl sidebara: colored | cards'],
-                        ['wide_mission_nav_style',         'text','string?', 'Styl nav: brand_bar | icons_white'],
+                        ['wide_mission_nav_style',         'text','string?', 'Styl nav: brand_bar | icons_white | pills'],
                     ];
                     @endphp
                     @foreach ($columns as $col)

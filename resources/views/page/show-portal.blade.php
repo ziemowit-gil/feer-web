@@ -26,12 +26,13 @@
 
     @php
         $menuSiblings = $page->menuSiblings();
-        $hasSidebar = $menuSiblings->isNotEmpty();
+        $portalTabs = $menuSiblings->isNotEmpty() && $page->sideNavStyle() === 'tabs';
+        $hasSidebar = $menuSiblings->isNotEmpty() && ! $portalTabs;
         $galleryImages = ($page->show_gallery ?? false)
             ? $page->images->filter(fn ($i) => $i->image_url)->values()
             : collect();
         $canInlineEdit = auth()->check() && auth()->user()->canAccessModule('pages');
-        $contentHasShortcode = $page->content && preg_match('/\[(formularz|kafelki):[a-z0-9_\-]+\]/i', $page->content);
+        $contentHasShortcode = \App\Support\ShortcodeParser::has($page->content);
     @endphp
 
     <div @if ($canInlineEdit) x-data="inlineContentEditor('page', {{ $page->id }}, '{{ route('admin.inline-edit.update') }}')" @endif>
@@ -63,6 +64,9 @@
 
         {{-- ===== TREŚĆ GŁÓWNA + SIDEBAR ===== --}}
         <div class="mx-auto max-w-6xl px-4 py-12">
+            @if ($portalTabs)
+                @include('partials.page-tabs-nav', ['menuSiblings' => $menuSiblings])
+            @endif
             <div class="grid gap-10 {{ $hasSidebar ? 'lg:grid-cols-[1fr_280px]' : '' }}">
 
                 {{-- Lewa: główna treść --}}

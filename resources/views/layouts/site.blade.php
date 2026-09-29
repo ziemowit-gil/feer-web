@@ -92,8 +92,11 @@
         @include('templates.wrzos.partials.topbar')
         @include('templates.wrzos.partials.header')
     @else
-        @include($siteSettings->headerLayoutValue() === 'office_bar' ? 'partials.topbar-info' : 'partials.topbar')
-        @include('partials.header')
+        {{-- Jeden landmark „banner": pasek górny (ułatwienia, szukajka, BIP, social) + belka z logo i menu. --}}
+        <header class="site-header relative z-30">
+            @include($siteSettings->headerLayoutValue() === 'office_bar' ? 'partials.topbar-info' : 'partials.topbar')
+            @include('partials.header')
+        </header>
     @endif
 
     <main id="main-content" class="flex-1">

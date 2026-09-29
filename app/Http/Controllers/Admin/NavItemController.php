@@ -336,6 +336,7 @@ class NavItemController extends Controller
         $data = $request->validate([
             'label' => ['required', 'string', 'max:255'],
             'icon' => ['nullable', 'string', 'max:100'],
+            'description' => ['nullable', 'string', 'max:255'],
             'url' => ['nullable', 'string', 'max:255'],
             'type' => ['required', Rule::in(array_keys(NavItem::TYPES))],
             'location' => ['required', Rule::in(array_keys(NavItem::LOCATIONS))],
@@ -397,6 +398,10 @@ class NavItemController extends Controller
         }
 
         $data['is_transparent_dropdown'] = $request->boolean('is_transparent_dropdown');
+        // Mega menu ma sens tylko dla pozycji głównych typu rozwijane menu lub link.
+        $data['is_mega'] = ! ($data['parent_id'] ?? null) && in_array($data['type'], ['dropdown', 'link'], true)
+            ? $request->boolean('is_mega')
+            : false;
         $data['is_active'] = $request->boolean('is_active');
         $data['order'] = $data['order'] ?? 0;
 

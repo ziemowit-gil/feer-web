@@ -24,6 +24,8 @@
                 'buttonColor' => old('button_color') ?: '#2563eb',
                 'buttonColorEnabled' => (bool) old('button_color'),
                 'isTransparent' => (bool) old('is_transparent_dropdown'),
+                'isMega' => (bool) old('is_mega'),
+                'description' => old('description', ''),
                 'isActive' => (bool) old('is_active'),
             ];
         }
@@ -192,10 +194,10 @@
                 open: false,
                 trigger: null,
                 form: {
-                    editingId: '', action: storeUrl, label: '', icon: '', url: '', type: 'link',
+                    editingId: '', action: storeUrl, label: '', icon: '', description: '', url: '', type: 'link',
                     location: 'main', parentId: '', module: '', isButton: false,
                     buttonColor: '#2563eb', buttonColorEnabled: false,
-                    isTransparent: false, isActive: true,
+                    isTransparent: false, isMega: false, isActive: true,
                 },
 
                 init() {
@@ -208,10 +210,10 @@
 
                 blankForm(overrides = {}) {
                     return {
-                        editingId: '', action: storeUrl, label: '', url: '', type: 'link',
+                        editingId: '', action: storeUrl, label: '', icon: '', description: '', url: '', type: 'link',
                         location: 'main', parentId: '', module: '', isButton: false,
                         buttonColor: '#2563eb', buttonColorEnabled: false,
-                        isTransparent: false, isActive: true, ...overrides,
+                        isTransparent: false, isMega: false, isActive: true, ...overrides,
                     };
                 },
 
@@ -246,6 +248,8 @@
                         buttonColor: d.color || '#2563eb',
                         buttonColorEnabled: !!d.color,
                         isTransparent: d.transparent === '1',
+                        isMega: d.mega === '1',
+                        description: d.description || '',
                         isActive: d.active === '1',
                     };
                     this.reveal();

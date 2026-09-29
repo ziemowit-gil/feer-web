@@ -598,6 +598,42 @@ class PageController extends Controller
             'person_name_genitive' => ['nullable', 'string', 'max:80'],
             'person_department' => ['nullable', 'array'],
             'person_department.*' => ['string', 'max:120'],
+            'type_data' => ['nullable', 'array'],
+            'type_data.lead' => ['nullable', 'string', 'max:1000'],
+            'type_data.cta_label' => ['nullable', 'string', 'max:80'],
+            'type_data.cta_url' => ['nullable', 'string', 'max:500'],
+            'type_data.contact_name' => ['nullable', 'string', 'max:120'],
+            'type_data.contact_email' => ['nullable', 'email', 'max:190'],
+            'type_data.contact_phone' => ['nullable', 'string', 'max:40'],
+            'type_data.audience' => ['nullable', 'array'],
+            'type_data.audience.*.text' => ['nullable', 'string', 'max:200'],
+            'type_data.benefits' => ['nullable', 'array'],
+            'type_data.benefits.*.icon' => ['nullable', 'string', 'max:100'],
+            'type_data.benefits.*.title' => ['nullable', 'string', 'max:120'],
+            'type_data.benefits.*.text' => ['nullable', 'string', 'max:500'],
+            'type_data.steps' => ['nullable', 'array'],
+            'type_data.steps.*.title' => ['nullable', 'string', 'max:160'],
+            'type_data.steps.*.text' => ['nullable', 'string', 'max:5000'],
+            'type_data.steps.*.tip' => ['nullable', 'string', 'max:500'],
+            'type_data.time_estimate' => ['nullable', 'string', 'max:60'],
+            'type_data.level' => ['nullable', Rule::in(array_keys(Page::GUIDE_LEVELS))],
+            'type_data.requirements' => ['nullable', 'array'],
+            'type_data.requirements.*.text' => ['nullable', 'string', 'max:200'],
+            'type_data.summary' => ['nullable', 'string', 'max:2000'],
+            'type_data.terms' => ['nullable', 'array'],
+            'type_data.terms.*.term' => ['nullable', 'string', 'max:120'],
+            'type_data.terms.*.definition' => ['nullable', 'string', 'max:3000'],
+            'type_data.terms.*.related' => ['nullable', 'string', 'max:255'],
+            'type_data.client' => ['nullable', 'string', 'max:160'],
+            'type_data.sector' => ['nullable', 'string', 'max:120'],
+            'type_data.period' => ['nullable', 'string', 'max:80'],
+            'type_data.challenge' => ['nullable', 'string', 'max:5000'],
+            'type_data.solution' => ['nullable', 'string', 'max:5000'],
+            'type_data.results' => ['nullable', 'array'],
+            'type_data.results.*.value' => ['nullable', 'string', 'max:40'],
+            'type_data.results.*.label' => ['nullable', 'string', 'max:120'],
+            'type_data.quote' => ['nullable', 'string', 'max:1000'],
+            'type_data.quote_author' => ['nullable', 'string', 'max:160'],
             'cooperation_data' => ['nullable', 'array'],
             'cooperation_data.hero_badge' => ['nullable', 'string', 'max:100'],
             'cooperation_data.hero_subtitle' => ['nullable', 'string', 'max:600'],
@@ -644,8 +680,16 @@ class PageController extends Controller
         $data['is_archived'] = $request->boolean('is_archived');
         $data['show_in_menu'] = $request->boolean('show_in_menu');
         $data['show_side_nav'] = $request->boolean('show_side_nav');
+        $data['side_nav_style'] = in_array($request->input('side_nav_style'), ['sidebar', 'tabs'], true)
+            ? $request->input('side_nav_style')
+            : 'sidebar';
         $data['is_system'] = $request->boolean('is_system');
         $data['show_gallery'] = $request->boolean('show_gallery');
+        // Dane typu (oferta, poradnik, słownik, studium) tylko dla tych typów —
+        // po zmianie typu na inny nie zostawiamy osieroconego JSON-a.
+        $data['type_data'] = in_array($data['type'] ?? null, Page::TYPE_DATA_TYPES, true)
+            ? ($data['type_data'] ?? [])
+            : null;
         // Flagę „zablokuj do edycji” może ustawiać/zdejmować wyłącznie administrator.
         // Dla pozostałych nie dotykamy jej (przy tworzeniu = false, przy edycji zachowana).
         if ($request->user()->isAdmin()) {

@@ -407,7 +407,7 @@
                 <div>
                     <label class="mb-1 block text-sm font-bold">Substyl paska nawigacji</label>
                     <div class="flex flex-wrap gap-3">
-                        @foreach (['brand_bar' => 'Pasek koloru marki (domyślny)', 'icons_white' => 'Biały pasek — ikony + etykiety'] as $nv => $nl)
+                        @foreach (['brand_bar' => 'Pasek koloru marki (domyślny)', 'icons_white' => 'Biały pasek — ikony + etykiety', 'pills' => 'Biały pasek — zakładki (pigułki)'] as $nv => $nl)
                             <label class="flex cursor-pointer items-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2.5 has-[:checked]:border-brand has-[:checked]:bg-brand-light">
                                 <input type="radio" name="wide_mission_nav_style" value="{{ $nv }}"
                                     {{ old('wide_mission_nav_style', $settings->wide_mission_nav_style ?? 'brand_bar') === $nv ? 'checked' : '' }}

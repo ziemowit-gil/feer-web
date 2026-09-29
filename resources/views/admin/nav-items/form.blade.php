@@ -21,6 +21,9 @@
             buttonColor: {{ Js::from(old('button_color', $navItem->button_color) ?: '#2563eb') }},
             buttonColorEnabled: {{ Js::from((bool) old('button_color', $navItem->button_color)) }},
             isTransparent: {{ Js::from((bool) old('is_transparent_dropdown', $navItem->is_transparent_dropdown ?? false)) }},
+            isMega: {{ Js::from((bool) old('is_mega', $navItem->is_mega ?? false)) }},
+            icon: {{ Js::from(old('icon', $navItem->icon ?? '')) }},
+            description: {{ Js::from(old('description', $navItem->description ?? '')) }},
             isActive: {{ Js::from((bool) old('is_active', $navItem->is_active ?? true)) }}
         } }"
         class="max-w-xl space-y-5 rounded-lg border border-gray-200 bg-white p-6">

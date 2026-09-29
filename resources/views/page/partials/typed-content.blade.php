@@ -99,8 +99,14 @@
         };
     @endphp
 
+    @php
+        $scheduleTabs = $menuSiblings->isNotEmpty() && $page->sideNavStyle() === 'tabs';
+    @endphp
     <section class="mx-auto max-w-5xl px-4 py-12">
-        <div class="grid gap-10 {{ $menuSiblings->isNotEmpty() ? 'md:grid-cols-[1fr_220px]' : '' }}">
+        @if ($scheduleTabs)
+            @include('partials.page-tabs-nav', ['menuSiblings' => $menuSiblings])
+        @endif
+        <div class="grid gap-10 {{ $menuSiblings->isNotEmpty() && ! $scheduleTabs ? 'md:grid-cols-[1fr_220px]' : '' }}">
             <div class="min-w-0">
                 <div class="mb-5">
                     <span class="inline-flex items-center gap-1.5 rounded-full bg-brand-light px-3 py-1 text-sm font-bold text-brand">
@@ -123,7 +129,7 @@
         @include('partials.attachments-list', ['attachments' => $page->attachments])
             </div>
 
-            @if ($menuSiblings->isNotEmpty())
+            @if ($menuSiblings->isNotEmpty() && ! $scheduleTabs)
                 @include('partials.page-local-nav', ['menuSiblings' => $menuSiblings])
             @endif
         </div>
@@ -827,6 +833,14 @@
             <p class="text-center text-muted">Brak dodanych kafelków. Dodaj je w panelu (edycja strony → Typ i układ → Kafelki).</p>
         @endif
     </section>
+    @elseif ($page->isService())
+    @include('page.partials.typed.service')
+    @elseif ($page->isGuide())
+    @include('page.partials.typed.guide')
+    @elseif ($page->isGlossary())
+    @include('page.partials.typed.glossary')
+    @elseif ($page->isCaseStudy())
+    @include('page.partials.typed.case-study')
     @elseif ($page->isCooperation())
     @php
         $cd      = $page->cooperation_data ?? [];

@@ -272,7 +272,7 @@ class SiteSettingController extends Controller
             'quick_actions_panel_negative' => ['sometimes', 'boolean'],
             'wide_mission_sidebar' => ['sometimes', 'boolean'],
             'wide_mission_sidebar_style' => ['nullable', 'in:mission,colored,cards'],
-            'wide_mission_nav_style' => ['nullable', 'in:brand_bar,icons_white'],
+            'wide_mission_nav_style' => ['nullable', 'in:brand_bar,icons_white,pills'],
             'volunteer_layout' => ['nullable', 'in:grid,list'],
             'news_default_image' => ['nullable', 'image', 'max:4096'],
             'remove_news_default_image' => ['sometimes', 'boolean'],
