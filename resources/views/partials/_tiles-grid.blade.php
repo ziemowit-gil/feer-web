@@ -60,7 +60,6 @@
                 $pal  = \App\Support\Color::button($base); // {bg, text, hover} — kontrast AA
                 $bg   = $pal['bg'];
                 $txt  = $pal['text'];
-                $grad = 'linear-gradient(135deg, '.$bg.' 0%, '.\App\Support\Color::darken($bg, 0.18).' 100%)';
                 $chip = $txt === '#ffffff' ? 'rgba(255,255,255,0.20)' : 'rgba(17,24,39,0.12)';
 
                 // Ikona: pełna klasa FontAwesome („fa-…") użyta wprost; nazwa
@@ -77,7 +76,7 @@
                     {{-- PASEK (poziomy) --}}
                     <a href="{{ $tUrl }}"
                         class="flex h-full items-center gap-4 rounded-xl px-5 py-4 shadow-sm transition hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-current"
-                        style="background: {{ $grad }}; color: {{ $txt }};">
+                        style="background-color: {{ $bg }}; color: {{ $txt }};">
                         <span class="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full" style="background: {{ $chip }};">
                             <i class="{{ $iconClass }} text-lg" aria-hidden="true"></i>
                         </span>
@@ -88,7 +87,7 @@
                     {{-- KARTA (pionowa) --}}
                     <a href="{{ $tUrl }}"
                         class="flex h-full min-h-36 flex-col justify-end gap-3 rounded-2xl p-6 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-current"
-                        style="background: {{ $grad }}; color: {{ $txt }};">
+                        style="background-color: {{ $bg }}; color: {{ $txt }};">
                         <span class="inline-flex h-11 w-11 items-center justify-center rounded-xl" style="background: {{ $chip }};">
                             <i class="{{ $iconClass }} text-xl" aria-hidden="true"></i>
                         </span>

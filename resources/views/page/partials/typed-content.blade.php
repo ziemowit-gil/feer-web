@@ -753,15 +753,16 @@
     @elseif ($page->isLinksHub())
     @php
         $hubLinks = collect($page->hub_links ?? [])->filter(fn ($l) => filled($l['label'] ?? null) && filled($l['url'] ?? null))->values();
-        $metroGradientMap = [
-            'blue'   => 'linear-gradient(135deg, #1a56a4 0%, #2563eb 100%)',
-            'dark'   => 'linear-gradient(135deg, #1f2937 0%, #374151 100%)',
-            'green'  => 'linear-gradient(135deg, #166534 0%, #16a34a 100%)',
-            'purple' => 'linear-gradient(135deg, #581c87 0%, #7e22ce 100%)',
-            'orange' => 'linear-gradient(135deg, #c2410c 0%, #f97316 100%)',
-            'red'    => 'linear-gradient(135deg, #991b1b 0%, #ef4444 100%)',
+        // Płaskie, jednolite kolory kafelków (bez gradientów) — nazwany klucz → #hex.
+        $metroColorMap = [
+            'blue'   => '#2563eb',
+            'dark'   => '#374151',
+            'green'  => '#16a34a',
+            'purple' => '#7e22ce',
+            'orange' => '#f97316',
+            'red'    => '#ef4444',
         ];
-        $metroGradientFallback = array_values($metroGradientMap);
+        $metroColorFallback = array_values($metroColorMap);
     @endphp
 
     {{-- Hero --}}
@@ -787,16 +788,15 @@
                 @foreach ($hubLinks as $i => $link)
                     @php
                         $colorKey = $link['color'] ?? null;
-                        $grad = isset($colorKey) && isset($metroGradientMap[$colorKey])
-                            ? $metroGradientMap[$colorKey]
-                            : $metroGradientFallback[$i % count($metroGradientFallback)];
-                        $flatColor = $siteSettings->brandColorN(($i % 4) + 1);
+                        $bg = ($colorKey && isset($metroColorMap[$colorKey]))
+                            ? $metroColorMap[$colorKey]
+                            : ($siteSettings->brandColorN(($i % 4) + 1) ?: $metroColorFallback[$i % count($metroColorFallback)]);
                         $ctaLabel = filled($link['cta_label'] ?? null) ? $link['cta_label'] : 'Dowiedz się więcej';
                     @endphp
                     <li>
                         <a href="{{ $link['url'] }}"
                            class="group relative flex min-h-52 flex-col justify-end overflow-hidden p-8 text-white shadow-sm transition hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand {{ $isFederationTemplate ? 'rounded-lg' : 'rounded-2xl' }}"
-                           style="background: {{ $isFederationTemplate ? $flatColor : $grad }}">
+                           style="background-color: {{ $bg }}">
                             <span class="relative z-10">
                                 @if (filled($link['icon'] ?? null))
                                     <span class="mb-3 inline-flex h-11 w-11 items-center justify-center rounded-xl bg-white/20 backdrop-blur" aria-hidden="true">

@@ -14,16 +14,6 @@
     $title    = $page->title   ?? 'Dołącz do nas';
     $intro    = $page->hub_intro ?? null;
     $hubLinks = collect($page->hub_links ?? [])->filter(fn ($l) => filled($l['label'] ?? null) && filled($l['url'] ?? null))->values();
-
-    $gradientMap = [
-        'blue'   => 'linear-gradient(135deg, #1a56a4 0%, #2563eb 100%)',
-        'dark'   => 'linear-gradient(135deg, #1f2937 0%, #374151 100%)',
-        'green'  => 'linear-gradient(135deg, #166534 0%, #16a34a 100%)',
-        'purple' => 'linear-gradient(135deg, #581c87 0%, #7e22ce 100%)',
-        'orange' => 'linear-gradient(135deg, #c2410c 0%, #f97316 100%)',
-        'red'    => 'linear-gradient(135deg, #991b1b 0%, #ef4444 100%)',
-    ];
-    $gradientFallback = array_values($gradientMap);
 @endphp
 
 @php
