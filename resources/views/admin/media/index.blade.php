@@ -135,7 +135,7 @@
                         <a href="{{ route('admin.multimedia.index', array_filter(['folder' => $folder?->id, 'archived' => $showArchived ? null : 1, 'q' => $currentSearch, 'tag' => $currentTag])) }}"
                             class="flex items-center gap-1.5 rounded-lg border px-3 py-2 text-xs font-bold {{ $showArchived ? 'border-brand bg-brand-light text-brand' : 'border-gray-300 text-muted hover:bg-gray-100' }}">
                             <i class="fa-solid fa-box-archive" aria-hidden="true"></i>
-                            {{ $showArchived ? 'Aktywne pliki' : 'Archiwum' }}
+                            {{ $showArchived ? 'Pokaż aktywne pliki' : 'Pokaż archiwum' }}
                         </a>
 
                         {{-- Alt audit --}}

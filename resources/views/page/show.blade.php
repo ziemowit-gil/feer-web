@@ -42,7 +42,7 @@
             $showLocalNav = ($page->show_side_nav ?? true) && $menuSiblings->isNotEmpty();
             $showTabsNav  = $showLocalNav && $page->sideNavStyle() === 'tabs';
             $showSideNav  = $showLocalNav && ! $showTabsNav;
-            $canInlineEdit = auth()->check() && auth()->user()->canAccessModule('pages');
+            $canInlineEdit = auth('web')->check() && auth('web')->user()->canAccessModule('pages');
             // Treść z shortcode'em (np. osadzony formularz) nie może być edytowana "na żywo" —
             // contenteditable widzi tylko wyrenderowany HTML, zapisanie go z powrotem
             // zgubiłoby oryginalny zapis [formularz:slug]/[kafelki:slug].

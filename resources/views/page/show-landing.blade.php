@@ -19,7 +19,7 @@
     @endif
 
     @php
-        $canInlineEdit = auth()->check() && auth()->user()->canAccessModule('pages');
+        $canInlineEdit = auth('web')->check() && auth('web')->user()->canAccessModule('pages');
         $contentHasShortcode = \App\Support\ShortcodeParser::has($page->content);
     @endphp
 

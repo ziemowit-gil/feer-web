@@ -21,7 +21,7 @@
 
         @if ($page->usesStandardLayout())
         @php
-            $canInlineEdit = auth()->check() && auth()->user()->canAccessModule('pages');
+            $canInlineEdit = auth('web')->check() && auth('web')->user()->canAccessModule('pages');
             $contentHasShortcode = \App\Support\ShortcodeParser::has($page->content);
         @endphp
         <div @if ($canInlineEdit) x-data="inlineContentEditor('page', {{ $page->id }}, '{{ route('admin.inline-edit.update') }}', { engine: '{{ $siteSettings->contentEditorValue() }}', uploadUrl: '{{ route('admin.multimedia.upload-ajax') }}' })" @endif>

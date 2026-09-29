@@ -56,6 +56,9 @@ class EventRequest extends FormRequest
             'faqs' => ['nullable', 'array'],
             'faqs.*.question' => ['nullable', 'string', 'max:255'],
             'faqs.*.answer' => ['nullable', 'string', 'max:2000'],
+            // Pytania z globalnego FAQ dopinane relacją (event_global_faq), bez kopiowania treści.
+            'global_faqs' => ['nullable', 'array'],
+            'global_faqs.*' => ['integer', 'exists:faqs,id'],
             'recurrence_type' => ['nullable', Rule::in(array_keys(Event::RECURRENCE_TYPES))],
             'recurrence_ends_at' => ['nullable', 'date', 'after:starts_at'],
             'delete_series' => ['sometimes', 'boolean'],

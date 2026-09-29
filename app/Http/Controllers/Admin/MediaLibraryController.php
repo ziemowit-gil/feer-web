@@ -727,10 +727,26 @@ class MediaLibraryController extends Controller
 
             try {
                 $folderId = $this->resolveImportFolder(dirname($entryName), $baseFolderId, $folderCache);
+                $lastMediaId = (int) Media::max('id');
 
-                $media = $library->addMedia($tmp)
-                    ->usingFileName($baseName)
-                    ->toMediaCollection('files');
+                try {
+                    $media = $library->addMedia($tmp)
+                        ->usingFileName($baseName)
+                        ->toMediaCollection('files');
+                } catch (\Throwable $e) {
+                    // Rekord w bibliotece mógł już powstać, a padły dopiero konwersje
+                    // (np. uszkodzony lub nietypowy obraz). Plik jest zapisany — nie
+                    // gubimy go i nadal przypisujemy do folderu z archiwum.
+                    $media = Media::where('id', '>', $lastMediaId)
+                        ->where('model_type', MediaLibrary::class)
+                        ->where('file_name', $baseName)
+                        ->latest('id')
+                        ->first();
+
+                    if (! $media) {
+                        throw $e;
+                    }
+                }
 
                 $media->update(array_filter([
                     'uploaded_by_user_id' => $userId,

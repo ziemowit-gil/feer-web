@@ -29,7 +29,18 @@ class NavRenderTest extends TestCase
             ->assertSee('Oś czasu (historia)')
             ->assertSee('Zgłoszenia (spotkania)')
             ->assertSee('Wolontariat')
-            ->assertSee('Komentarze (blog)');
+            ->assertSee('Multimedia')
+            ->assertSee('Użytkownicy')
+            ->assertSee('Ustawienia strony');
+    }
+
+    public function test_editor_does_not_see_admin_only_sections(): void
+    {
+        $editor = User::factory()->create(['role' => User::ROLE_CONTENT_EDITOR]);
+        $this->actingAs($editor)->get(route('admin.dashboard'))
+            ->assertOk()
+            ->assertDontSee('Ustawienia strony')
+            ->assertDontSee('Witryny sieci');
     }
 
     public function test_editor_sidebar_renders_without_error(): void

@@ -410,7 +410,7 @@ class EventController extends Controller
         $data['registration_cta_label'] = trim((string) ($data['registration_cta_label'] ?? '')) ?: 'Zapisz się';
 
         // Pliki, FAQ i pomocnicze pola obsługujemy osobno.
-        unset($data['facilitator_photo'], $data['remove_facilitator_photo'], $data['faqs'], $data['delete_series']);
+        unset($data['facilitator_photo'], $data['remove_facilitator_photo'], $data['faqs'], $data['global_faqs'], $data['delete_series']);
 
         return $data;
     }
@@ -431,6 +431,9 @@ class EventController extends Controller
             ->filter(fn ($row) => $row['question'] !== '' && $row['answer'] !== '')
             ->values()
             ->each(fn ($row, $i) => $event->faqs()->create($row + ['order' => $i]));
+
+        // Globalne FAQ dopięte relacją — na stronie wydarzenia wyświetlane razem z własnymi.
+        $event->globalFaqs()->sync(array_map('intval', array_filter((array) $request->input('global_faqs', []))));
     }
 
     /** Wgraj/usuń/skopiuj zdjęcie prowadzącej (kolekcja jednoplikowa). */

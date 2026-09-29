@@ -1,5 +1,5 @@
-@auth
-@if (auth()->user()->isAdmin() || auth()->user()->user_group_id)
+@auth('web')
+@if (auth('web')->user()->isAdmin() || auth('web')->user()->user_group_id)
 @php
     $abl = 'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-white/80 transition hover:bg-white/10 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40';
 @endphp
@@ -62,7 +62,7 @@
         {{-- Linki --}}
         <div class="flex-1 overflow-y-auto px-3 py-3 space-y-0.5">
 
-            @if ($siteSettings->isModuleEnabled('news') && (auth()->user()->canAccessModule('news')))
+            @if ($siteSettings->isModuleEnabled('news') && (auth('web')->user()->canAccessModule('news')))
                 <a href="{{ route('admin.newsy.index') }}" class="{{ $abl }}">
                     <i class="fa-solid fa-newspaper w-5 text-center text-white/40" aria-hidden="true"></i>
                     Aktualności
@@ -88,28 +88,28 @@
                 Multimedia
             </a>
 
-            @if ($siteSettings->isModuleEnabled('events') && auth()->user()->canAccessModule('events'))
+            @if ($siteSettings->isModuleEnabled('events') && auth('web')->user()->canAccessModule('events'))
                 <a href="{{ route('admin.wydarzenia.index') }}" class="{{ $abl }}">
                     <i class="fa-solid fa-calendar-days w-5 text-center text-white/40" aria-hidden="true"></i>
                     Szkolenia i wydarzenia
                 </a>
             @endif
 
-            @if ($siteSettings->isModuleEnabled('news') && auth()->user()->canAccessModule('news'))
+            @if ($siteSettings->isModuleEnabled('news') && auth('web')->user()->canAccessModule('news'))
                 <a href="{{ route('admin.kalendarz.index') }}" class="{{ $abl }}">
                     <i class="fa-solid fa-calendar-check w-5 text-center text-white/40" aria-hidden="true"></i>
                     Kalendarz redakcyjny
                 </a>
             @endif
 
-            @if (auth()->user()->canApproveContent())
+            @if (auth('web')->user()->canApproveContent())
                 <a href="{{ route('admin.zatwierdzanie.index') }}" class="{{ $abl }}">
                     <i class="fa-solid fa-clipboard-check w-5 text-center text-white/40" aria-hidden="true"></i>
                     Do zatwierdzenia
                 </a>
             @endif
 
-            @if (auth()->user()->isAdmin())
+            @if (auth('web')->user()->isAdmin())
                 <div class="my-2 border-t border-white/10"></div>
                 <a href="{{ route('admin.podstrony.index') }}" class="{{ $abl }}">
                     <i class="fa-solid fa-file-lines w-5 text-center text-white/40" aria-hidden="true"></i>
@@ -125,7 +125,7 @@
 
         {{-- Stopka: użytkownik + wyloguj --}}
         <div class="border-t border-white/10 px-4 py-3">
-            <div class="mb-2 truncate text-xs text-white/40">{{ auth()->user()->name }} &lt;{{ auth()->user()->email }}&gt;</div>
+            <div class="mb-2 truncate text-xs text-white/40">{{ auth('web')->user()->name }} &lt;{{ auth('web')->user()->email }}&gt;</div>
             <form method="POST" action="{{ route('logout') }}">
                 @csrf
                 <button type="submit" class="{{ $abl }} w-full">

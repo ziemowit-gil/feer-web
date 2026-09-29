@@ -19,7 +19,8 @@
 @endphp
 
 <div x-data="{ open: (function () { try { return localStorage.getItem('a11y-panel-open') === '1' } catch (e) { return false } })() }"
-     x-effect="(() => { try { localStorage.setItem('a11y-panel-open', open ? '1' : '0') } catch (e) {} })()">
+     x-effect="(() => { try { localStorage.setItem('a11y-panel-open', open ? '1' : '0') } catch (e) {} })()"
+     role="region" aria-label="Pasek informacyjny i dostępność">
 
     <div class="bg-brand text-white text-xs">
         <div class="mx-auto max-w-[1400px] flex flex-wrap items-center gap-x-4 gap-y-1 px-4 py-1.5">
