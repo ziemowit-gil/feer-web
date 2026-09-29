@@ -109,4 +109,5 @@
     @endif
 
     @include('partials.attachments-list', ['attachments' => $page->attachments])
+    @include('partials.page-section-nav', ['page' => $page])
 </section>

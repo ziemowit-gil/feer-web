@@ -27,7 +27,8 @@
     @php
         $menuSiblings = $page->menuSiblings();
         $portalTabs = $menuSiblings->isNotEmpty() && $page->sideNavStyle() === 'tabs';
-        $hasSidebar = $menuSiblings->isNotEmpty() && ! $portalTabs;
+        [$portalContentHtml, $portalToc] = \App\Support\TableOfContents::inject(\App\Support\ShortcodeParser::render($page->content));
+        $hasSidebar = ($menuSiblings->isNotEmpty() && ! $portalTabs) || $portalToc !== [];
         $galleryImages = ($page->show_gallery ?? false)
             ? $page->images->filter(fn ($i) => $i->image_url)->values()
             : collect();
@@ -70,22 +71,33 @@
             <div class="grid gap-10 {{ $hasSidebar ? 'lg:grid-cols-[1fr_280px]' : '' }}">
 
                 {{-- Lewa: główna treść --}}
-                <main>
+                <main class="min-w-0">
+                    @if ($portalToc)
+                        @include('partials.page-toc', ['toc' => $portalToc, 'variant' => 'mobile'])
+                    @endif
+
                     @if ($canInlineEdit && ! $contentHasShortcode)
                         <div data-inline-field="content" data-inline-kind="rich"
                             :class="editMode ? 'outline-dashed outline-2 outline-offset-4 outline-brand rounded' : ''"
-                            class="prose max-w-none text-ink">@shortcodes($page->content)</div>
+                            class="prose max-w-none text-ink">{!! $portalContentHtml !!}</div>
                     @elseif ($page->content)
-                        <div class="prose max-w-none text-ink">@shortcodes($page->content)</div>
+                        <div class="prose max-w-none text-ink">{!! $portalContentHtml !!}</div>
                     @endif
 
                     @include('partials.page-gallery', ['page' => $page])
                     @include('partials.attachments-list', ['attachments' => $page->attachments])
+                    @include('partials.page-section-nav', ['page' => $page])
                 </main>
 
-                {{-- Prawa: sidebar z podstronami sekcji --}}
+                {{-- Prawa: spis treści + podstrony sekcji --}}
                 @if ($hasSidebar)
-                    <aside class="space-y-6">
+                    <aside class="space-y-6 lg:sticky lg:top-24 lg:self-start">
+                        @if ($portalToc)
+                            <div class="rounded-xl border border-gray-200 bg-white p-5">
+                                @include('partials.page-toc', ['toc' => $portalToc, 'variant' => 'desktop'])
+                            </div>
+                        @endif
+                        @if ($menuSiblings->isNotEmpty() && ! $portalTabs)
                         <div class="rounded-xl border border-gray-200 bg-gray-50 p-5">
                             <p class="mb-3 text-xs font-bold uppercase tracking-wide text-muted">
                                 <i class="fa-solid fa-sitemap mr-1.5 text-brand" aria-hidden="true"></i>
@@ -93,6 +105,7 @@
                             </p>
                             @include('partials.page-local-nav', ['menuSiblings' => $menuSiblings])
                         </div>
+                        @endif
                     </aside>
                 @endif
 

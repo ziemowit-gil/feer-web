@@ -112,6 +112,7 @@
 
             @include('partials.page-gallery', ['page' => $page])
             @include('partials.attachments-list', ['attachments' => $page->attachments])
+    @include('partials.page-section-nav', ['page' => $page])
         </div>
 
         @if ($td['steps'])

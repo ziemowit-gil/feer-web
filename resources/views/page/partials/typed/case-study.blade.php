@@ -94,6 +94,7 @@
 
     @include('partials.page-gallery', ['page' => $page])
     @include('partials.attachments-list', ['attachments' => $page->attachments])
+    @include('partials.page-section-nav', ['page' => $page])
 
     @if ($hasCta)
         <div class="mt-12 text-center">

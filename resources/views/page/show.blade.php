@@ -47,6 +47,9 @@
             // contenteditable widzi tylko wyrenderowany HTML, zapisanie go z powrotem
             // zgubiłoby oryginalny zapis [formularz:slug]/[kafelki:slug].
             $contentHasShortcode = \App\Support\ShortcodeParser::has($page->content);
+            // Spis treści z H2/H3 (nagłówki dostają id); kolumna boczna, gdy jest spis lub drzewo podstron.
+            [$contentHtml, $toc] = \App\Support\TableOfContents::inject(\App\Support\ShortcodeParser::render($page->content));
+            $hasAside = $showSideNav || $toc !== [];
         @endphp
 
         <div @if ($canInlineEdit) x-data="inlineContentEditor('page', {{ $page->id }}, '{{ route('admin.inline-edit.update') }}', { engine: '{{ $siteSettings->contentEditorValue() }}', uploadUrl: '{{ route('admin.multimedia.upload-ajax') }}' })" @endif>
@@ -58,8 +61,8 @@
                 @if ($showTabsNav)
                     @include('partials.page-tabs-nav', ['menuSiblings' => $menuSiblings])
                 @endif
-                <div class="grid gap-10 {{ $showSideNav ? 'md:grid-cols-[1fr_220px]' : '' }}">
-                    <div>
+                <div class="grid gap-10 {{ $hasAside ? 'md:grid-cols-[1fr_220px]' : '' }}">
+                    <div class="min-w-0">
                         @include('partials.etr-toggle', ['etr' => $page->etr, 'title' => $page->title])
 
                         <div x-show="!etr" x-cloak>
@@ -73,22 +76,35 @@
 
                         @include('partials.page-content-image')
 
+                        @if ($toc)
+                            @include('partials.page-toc', ['toc' => $toc, 'variant' => 'mobile'])
+                        @endif
+
                         @if ($canInlineEdit && ! $contentHasShortcode)
                             <div data-inline-field="content" data-inline-kind="rich"
                                 :class="editMode ? 'outline-dashed outline-2 outline-offset-4 outline-brand rounded' : ''"
-                                class="prose max-w-none text-ink">@shortcodes($page->content)</div>
+                                class="prose max-w-none text-ink">{!! $contentHtml !!}</div>
                         @else
-                            <div class="prose max-w-none text-ink">@shortcodes($page->content)</div>
+                            <div class="prose max-w-none text-ink">{!! $contentHtml !!}</div>
                         @endif
 
                         @include('partials.page-gallery', ['page' => $page])
 
                         @include('partials.attachments-list', ['attachments' => $page->attachments])
+
+                        @include('partials.page-section-nav', ['page' => $page])
                         </div>
                     </div>
 
-                    @if ($showSideNav)
-                        @include('partials.page-local-nav', ['menuSiblings' => $menuSiblings])
+                    @if ($hasAside)
+                        <div class="space-y-8 md:sticky md:top-24 md:self-start">
+                            @if ($toc)
+                                @include('partials.page-toc', ['toc' => $toc, 'variant' => 'desktop'])
+                            @endif
+                            @if ($showSideNav)
+                                @include('partials.page-local-nav', ['menuSiblings' => $menuSiblings])
+                            @endif
+                        </div>
                     @endif
                 </div>
             </section>
