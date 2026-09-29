@@ -201,6 +201,42 @@ class SzoClient
             ->asJson();
     }
 
+    /**
+     * Opublikowane klauzule RODO z SZO (GET /klauzule.json).
+     *
+     * Wymaga tylko SZO_URL — to publiczne dane (te same co /klauzula/{slug}),
+     * więc bez tokenu i niezależnie od SZO_ENABLED (który dotyczy wysyłki
+     * formularzy). Import działa w tle, stąd dłuższy limit czasu niż dla
+     * formularzy. Rzuca RuntimeException z czytelnym powodem — panel pokazuje
+     * go administratorowi.
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    public function gdprClauses(): array
+    {
+        $base = (string) config('szo.url');
+        if ($base === '') {
+            throw new \RuntimeException('Brak adresu SZO (SZO_URL w .env) — nie wiadomo, skąd pobrać klauzule.');
+        }
+
+        try {
+            $res = Http::timeout(max(15, (int) config('szo.timeout', 5)))
+                ->acceptJson()
+                ->get($base . '/klauzule.json');
+        } catch (Throwable $e) {
+            throw new \RuntimeException('Nie udało się połączyć z SZO: ' . $e->getMessage(), 0, $e);
+        }
+
+        if (! $res->successful()) {
+            throw new \RuntimeException("SZO odpowiedziało HTTP {$res->status()} dla /klauzule.json.");
+        }
+        if (! $res->json('ok') || ! is_array($res->json('clauses'))) {
+            throw new \RuntimeException('SZO zwróciło nieoczekiwaną odpowiedź zamiast listy klauzul.');
+        }
+
+        return $res->json('clauses');
+    }
+
     protected function endpoint(): string
     {
         return config('szo.url') . '/api/v1/forms.php';

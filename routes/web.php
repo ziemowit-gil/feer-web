@@ -42,6 +42,7 @@ use App\Http\Controllers\Admin\PollController as AdminPollController;
 use App\Http\Controllers\Admin\ProjectController as AdminProjectController;
 use App\Http\Controllers\Admin\QuickActionController as AdminQuickActionController;
 use App\Http\Controllers\Admin\RedirectController as AdminRedirectController;
+use App\Http\Controllers\Admin\GdprClauseController as AdminGdprClauseController;
 use App\Http\Controllers\Admin\AccessibilityReportController as AdminAccessibilityReportController;
 use App\Http\Controllers\Admin\SiteSettingController;
 use App\Http\Controllers\Admin\TimelineController as AdminTimelineController;
@@ -603,6 +604,11 @@ Route::middleware(['auth', 'verified', '2fa', 'admin-site'])->prefix(config('app
         Route::get('tresc', [AdminContentPortabilityController::class, 'index'])->name('tresc.index');
         Route::get('tresc/eksport', [AdminContentPortabilityController::class, 'export'])->name('tresc.export');
         Route::post('tresc/import', [AdminContentPortabilityController::class, 'import'])->name('tresc.import');
+
+        // Klauzule RODO z SZO — import i widoczność na stronie ([klauzule-rodo]).
+        Route::get('klauzule-rodo', [AdminGdprClauseController::class, 'index'])->name('klauzule-rodo.index');
+        Route::post('klauzule-rodo/import', [AdminGdprClauseController::class, 'import'])->name('klauzule-rodo.import');
+        Route::put('klauzule-rodo', [AdminGdprClauseController::class, 'update'])->name('klauzule-rodo.update');
 
         // Przekierowania 301.
         Route::get('przekierowania', [AdminRedirectController::class, 'index'])->name('przekierowania.index');

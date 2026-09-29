@@ -3,6 +3,7 @@
 namespace App\Support;
 
 use App\Models\FormDefinition;
+use App\Models\GdprClause;
 use App\Models\Page;
 use Illuminate\Support\Facades\View;
 
@@ -12,6 +13,8 @@ use Illuminate\Support\Facades\View;
  * Obsługiwane shortcody:
  *   [formularz:slug] — osadza formularz o podanym identyfikatorze
  *   [kafelki:slug]   — osadza siatkę kafelków ze strony typu tiles_grid
+ *   [klauzule-rodo]  — lista klauzul informacyjnych RODO zaimportowanych z SZO
+ *                      ([klauzule-rodo:en] — wersje angielskie)
  */
 class ShortcodeParser
 {
@@ -34,6 +37,12 @@ class ShortcodeParser
             $content,
         );
 
+        $content = preg_replace_callback(
+            '/(?:<p>\s*)?\[klauzule-rodo(?::([a-z]{2}))?\](?:\s*<\/p>)?/i',
+            fn ($matches) => static::renderGdprClauses(strtolower($matches[1] ?? '') ?: 'pl'),
+            $content,
+        );
+
         return $content;
     }
 
@@ -43,6 +52,13 @@ class ShortcodeParser
     public static function has(?string $content): bool
     {
         return filled($content) && (bool) preg_match(self::DETECT_PATTERN, $content);
+    }
+
+    private static function renderGdprClauses(string $lang): string
+    {
+        $clauses = GdprClause::listed($lang)->get();
+
+        return View::make('partials._gdpr-clauses', ['clauses' => $clauses, 'lang' => $lang])->render();
     }
 
     private static function renderForm(string $slug): string

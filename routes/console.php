@@ -24,6 +24,10 @@ Schedule::command('approvals:notify-pending')->hourly();
 // zapisie (niedostępne SZO, timeout). Co 15 minut, żeby zaległość nie rosła.
 Schedule::command('szo:push-submissions')->everyFifteenMinutes()->withoutOverlapping();
 
+// Klauzule RODO z SZO — lokalna kopia dla shortcode [klauzule-rodo] (strona /rodo).
+// Raz dziennie wystarcza; zmianę widać od razu po „Importuj teraz” w panelu.
+Schedule::command('szo:import-clauses')->dailyAt('04:30')->withoutOverlapping();
+
 // Siatka bezpieczeństwa dla płatności Sklepu — dociąga zamówienia, do których
 // nie dotarł webhook Przelewy24 (patrz SklepOrderService::reconcile()).
 Schedule::command('sklep:verify-pending')->everyTenMinutes()->withoutOverlapping();
