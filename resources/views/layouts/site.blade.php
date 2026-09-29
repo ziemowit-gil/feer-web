@@ -32,10 +32,6 @@
         <link rel="stylesheet"
               href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;700&family=Montserrat:wght@400;700&family=Pacifico&family=Lato:wght@700&display=swap">
     </noscript>
-    @if (($siteSettings->site_template ?? 'default') === 'vm')
-        {{-- Szablon "vm": Poppins (nagłówki) + Open Sans (tekst). --}}
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&family=Poppins:wght@600;700;900&display=swap">
-    @endif
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @php $brandPalette = $siteSettings->brandPalette($brandColor ?? null); @endphp
     <style>
