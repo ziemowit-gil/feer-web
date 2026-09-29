@@ -337,6 +337,9 @@ class NavItemController extends Controller
             'label' => ['required', 'string', 'max:255'],
             'icon' => ['nullable', 'string', 'max:100'],
             'description' => ['nullable', 'string', 'max:255'],
+            'mega_image_url' => ['nullable', 'string', 'max:500'],
+            'mega_image_file' => ['nullable', 'image', 'max:4096'],
+            'mega_image_alt' => ['nullable', 'string', 'max:255'],
             'url' => ['nullable', 'string', 'max:255'],
             'type' => ['required', Rule::in(array_keys(NavItem::TYPES))],
             'location' => ['required', Rule::in(array_keys(NavItem::LOCATIONS))],
@@ -399,9 +402,23 @@ class NavItemController extends Controller
 
         $data['is_transparent_dropdown'] = $request->boolean('is_transparent_dropdown');
         // Mega menu ma sens tylko dla pozycji głównych typu rozwijane menu lub link.
-        $data['is_mega'] = ! ($data['parent_id'] ?? null) && in_array($data['type'], ['dropdown', 'link'], true)
+        $data['is_mega'] = ! ($data['parent_id'] ?? null) && in_array($data['type'], ['dropdown', 'link', 'projects'], true)
             ? $request->boolean('is_mega')
             : false;
+
+        // Grafika promocyjna mega menu: wgrany plik ma pierwszeństwo przed adresem;
+        // „usuń" czyści; bez mega menu nie trzymamy osieroconej grafiki.
+        unset($data['mega_image_url'], $data['mega_image_file']);
+        if (! $data['is_mega'] || $request->boolean('remove_mega_image')) {
+            $data['mega_image'] = null;
+            $data['mega_image_alt'] = null;
+        } elseif ($request->hasFile('mega_image_file')) {
+            $data['mega_image'] = \Illuminate\Support\Facades\Storage::disk('public')->url(
+                $request->file('mega_image_file')->store('menu', 'public')
+            );
+        } elseif ($request->filled('mega_image_url')) {
+            $data['mega_image'] = trim((string) $request->input('mega_image_url'));
+        }
         $data['is_active'] = $request->boolean('is_active');
         $data['order'] = $data['order'] ?? 0;
 

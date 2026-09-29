@@ -8,7 +8,7 @@
         Panel administracyjny normalnie edytuje pozycje w dostępnym modalu na
         liście menu; ta strona pozostaje jako pełnoprawna alternatywa.
     --}}
-    <form method="POST" action="{{ $navItem->exists ? route('admin.pozycje-menu.update', $navItem) : route('admin.pozycje-menu.store') }}"
+    <form method="POST" action="{{ $navItem->exists ? route('admin.pozycje-menu.update', $navItem) : route('admin.pozycje-menu.store') }}" enctype="multipart/form-data"
         x-data="{ form: {
             editingId: {{ Js::from((string) ($navItem->id ?? '')) }},
             label: {{ Js::from(old('label', $navItem->label)) }},
@@ -22,6 +22,8 @@
             buttonColorEnabled: {{ Js::from((bool) old('button_color', $navItem->button_color)) }},
             isTransparent: {{ Js::from((bool) old('is_transparent_dropdown', $navItem->is_transparent_dropdown ?? false)) }},
             isMega: {{ Js::from((bool) old('is_mega', $navItem->is_mega ?? false)) }},
+            megaImage: {{ Js::from(old('mega_image_url', $navItem->mega_image ?? '')) }},
+            megaImageAlt: {{ Js::from(old('mega_image_alt', $navItem->mega_image_alt ?? '')) }},
             icon: {{ Js::from(old('icon', $navItem->icon ?? '')) }},
             description: {{ Js::from(old('description', $navItem->description ?? '')) }},
             isActive: {{ Js::from((bool) old('is_active', $navItem->is_active ?? true)) }}

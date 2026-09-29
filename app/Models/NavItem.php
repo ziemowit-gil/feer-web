@@ -33,7 +33,7 @@ class NavItem extends Model
     ];
 
     protected $fillable = [
-        'site_id', 'parent_id', 'label', 'icon', 'description', 'url', 'type', 'module', 'location',
+        'site_id', 'parent_id', 'label', 'icon', 'description', 'mega_image', 'mega_image_alt', 'url', 'type', 'module', 'location',
         'is_button', 'is_transparent_dropdown', 'is_mega', 'is_active', 'order', 'button_color',
     ];
 
@@ -88,7 +88,8 @@ class NavItem extends Model
                 || (($page = $this->linkedPage()) && $page->publishedChildren->isNotEmpty());
         }
 
-        return false;
+        // Menu projektów: kolumny = kategorie z projektami (partial sprawdza, czy są kategorie).
+        return $this->type === 'projects';
     }
 
     /**

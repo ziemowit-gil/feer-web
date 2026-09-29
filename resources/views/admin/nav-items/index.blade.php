@@ -25,6 +25,8 @@
                 'buttonColorEnabled' => (bool) old('button_color'),
                 'isTransparent' => (bool) old('is_transparent_dropdown'),
                 'isMega' => (bool) old('is_mega'),
+                'megaImage' => old('mega_image_url', ''),
+                'megaImageAlt' => old('mega_image_alt', ''),
                 'description' => old('description', ''),
                 'isActive' => (bool) old('is_active'),
             ];
@@ -82,7 +84,7 @@
                     </button>
                 </div>
 
-                <form method="POST" :action="form.action" class="space-y-5 px-6 py-5">
+                <form method="POST" :action="form.action" enctype="multipart/form-data" class="space-y-5 px-6 py-5">
                     @csrf
                     <input type="hidden" name="_method" :value="form.editingId ? 'PUT' : 'POST'">
                     <input type="hidden" name="editing_id" :value="form.editingId">
@@ -197,7 +199,7 @@
                     editingId: '', action: storeUrl, label: '', icon: '', description: '', url: '', type: 'link',
                     location: 'main', parentId: '', module: '', isButton: false,
                     buttonColor: '#2563eb', buttonColorEnabled: false,
-                    isTransparent: false, isMega: false, isActive: true,
+                    isTransparent: false, isMega: false, megaImage: '', megaImageAlt: '', isActive: true,
                 },
 
                 init() {
@@ -213,7 +215,7 @@
                         editingId: '', action: storeUrl, label: '', icon: '', description: '', url: '', type: 'link',
                         location: 'main', parentId: '', module: '', isButton: false,
                         buttonColor: '#2563eb', buttonColorEnabled: false,
-                        isTransparent: false, isMega: false, isActive: true, ...overrides,
+                        isTransparent: false, isMega: false, megaImage: '', megaImageAlt: '', isActive: true, ...overrides,
                     };
                 },
 
@@ -249,6 +251,8 @@
                         buttonColorEnabled: !!d.color,
                         isTransparent: d.transparent === '1',
                         isMega: d.mega === '1',
+                        megaImage: d.megaImage || '',
+                        megaImageAlt: d.megaImageAlt || '',
                         description: d.description || '',
                         isActive: d.active === '1',
                     };

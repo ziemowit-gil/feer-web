@@ -161,6 +161,8 @@
                 data-color="{{ $item->button_color }}"
                 data-transparent="{{ $item->is_transparent_dropdown ? 1 : 0 }}"
                 data-mega="{{ $item->is_mega ? 1 : 0 }}"
+                data-mega-image="{{ $item->mega_image }}"
+                data-mega-image-alt="{{ $item->mega_image_alt }}"
                 data-description="{{ $item->description }}"
                 data-active="{{ $item->is_active ? 1 : 0 }}"
                 class="{{ $btn }}" title="Edytuj">

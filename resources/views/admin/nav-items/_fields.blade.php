@@ -144,14 +144,42 @@
     @error('description') <p class="mt-1 text-sm text-red-700">{{ $message }}</p> @enderror
 </div>
 
-<label class="flex items-start gap-2" x-show="form.location === 'main' && form.parentId === '' && (form.type === 'dropdown' || form.type === 'link')" x-cloak>
+<label class="flex items-start gap-2" x-show="form.location === 'main' && form.parentId === '' && (form.type === 'dropdown' || form.type === 'link' || form.type === 'projects')" x-cloak>
     <input type="checkbox" name="is_mega" value="1" x-model="form.isMega"
         class="mt-0.5 rounded border-gray-300 text-brand focus-visible:ring-2 focus-visible:ring-brand">
     <span>
         <span class="block text-sm font-bold">Mega menu (panel na całą szerokość)</span>
-        <span class="block text-xs text-muted">Podpozycje (lub podstrony powiązanej strony) układają się w kolumny z ikoną i opisem. Bez podpozycji działa jak zwykła pozycja.</span>
+        <span class="block text-xs text-muted">Podpozycje (podstrony powiązanej strony albo kategorie projektów z ich projektami) układają się w kolumny z ikoną i opisem. Bez podpozycji działa jak zwykła pozycja.</span>
     </span>
 </label>
+
+<div x-show="form.isMega && form.location === 'main' && form.parentId === ''" x-cloak class="space-y-3 rounded-lg border border-gray-100 bg-gray-50 p-4">
+    <p class="text-xs font-bold uppercase tracking-wide text-muted">Grafika promocyjna w mega menu <span class="font-normal normal-case">(opcjonalnie — kolumna boczna nad opisem)</span></p>
+    <template x-if="form.megaImage">
+        <img :src="form.megaImage" alt="" class="h-24 w-full rounded-md border border-gray-200 object-cover">
+    </template>
+    <div>
+        <label for="nav-mega-image-url" class="mb-1 block text-xs font-bold text-muted">Adres grafiki</label>
+        <input type="text" id="nav-mega-image-url" name="mega_image_url" x-model="form.megaImage" placeholder="/storage/… albo https://…"
+            class="w-full rounded border-gray-300 text-sm focus-visible:border-brand focus-visible:ring-2 focus-visible:ring-brand">
+        <p class="mt-1 text-xs text-muted">Skopiuj adres z biblioteki <a href="{{ route('admin.multimedia.index') }}" target="_blank" rel="noopener" class="text-brand underline">Multimedia</a> albo wgraj plik poniżej (zalecane 640×360 px).</p>
+    </div>
+    <div>
+        <label for="nav-mega-image-file" class="mb-1 block text-xs font-bold text-muted">Wgraj plik</label>
+        <input type="file" id="nav-mega-image-file" name="mega_image_file" accept="image/*"
+            class="block w-full text-sm text-muted file:mr-3 file:rounded file:border-0 file:bg-brand-light file:px-3 file:py-1.5 file:text-sm file:font-bold file:text-brand">
+        @error('mega_image_file') <p class="mt-1 text-sm text-red-700">{{ $message }}</p> @enderror
+    </div>
+    <div>
+        <label for="nav-mega-image-alt" class="mb-1 block text-xs font-bold text-muted">Tekst alternatywny grafiki</label>
+        <input type="text" id="nav-mega-image-alt" name="mega_image_alt" x-model="form.megaImageAlt" maxlength="255" placeholder="Co przedstawia grafika (puste = dekoracyjna)"
+            class="w-full rounded border-gray-300 text-sm focus-visible:border-brand focus-visible:ring-2 focus-visible:ring-brand">
+    </div>
+    <label class="flex items-center gap-2 text-sm" x-show="form.megaImage">
+        <input type="checkbox" name="remove_mega_image" value="1" class="rounded border-gray-300 text-brand focus-visible:ring-2 focus-visible:ring-brand">
+        <span>Usuń grafikę</span>
+    </label>
+</div>
 
 <label class="flex items-center gap-2" x-show="form.type === 'dropdown' || form.type === 'projects' || form.type === 'pages'" x-cloak>
     <input type="checkbox" name="is_transparent_dropdown" value="1" x-model="form.isTransparent"
