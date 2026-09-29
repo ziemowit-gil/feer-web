@@ -530,6 +530,33 @@ Alpine.data('inlineContentEditor', (model, id, saveUrl, options = {}) => {
     });
 });
 
+// Menu mobilne nagłówka publicznego — wspólne dla wszystkich układów
+// (partials/mobile-nav-toggle + partials/mobile-nav-panel). Fokus trafia do
+// panelu po otwarciu (po następnej klatce, bo x-show pokazuje element w rAF)
+// i wraca na hamburger po zamknięciu; zmiana na szeroki ekran zamyka panel.
+Alpine.data('siteMobileNav', (breakpoint = 1024) => ({
+    mobileOpen: false,
+    init() {
+        let timer = null;
+        window.addEventListener('resize', () => {
+            clearTimeout(timer);
+            timer = setTimeout(() => { if (window.innerWidth >= breakpoint) this.closeMenu(false); }, 150);
+        });
+    },
+    openMenu() {
+        this.mobileOpen = true;
+        setTimeout(() => this.$refs.mobilePanel?.querySelector('a, button, input')?.focus(), 60);
+    },
+    closeMenu(returnFocus = true) {
+        if (! this.mobileOpen) return;
+        this.mobileOpen = false;
+        if (returnFocus) this.$refs.menuToggle?.focus();
+    },
+    toggleMenu() {
+        this.mobileOpen ? this.closeMenu(false) : this.openMenu();
+    },
+}));
+
 // Odtwarzacz audio (TTS) — czyta treść artykułu przez SpeechSynthesis.
 // Używany w news/show.blade.php i page/show.blade.php.
 Alpine.data('audioPlayer', () => ({

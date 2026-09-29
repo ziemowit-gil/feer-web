@@ -47,14 +47,7 @@
         . 'hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2';
 @endphp
 
-<div class="site-header-wide"
-     x-data="{
-        mobileOpen: false,
-        openMenu()  { this.mobileOpen = true; setTimeout(() => this.$refs.mobilePanel?.querySelector('a, button')?.focus(), 60); },
-        closeMenu(returnFocus = true) { if (! this.mobileOpen) return; this.mobileOpen = false; if (returnFocus) this.$refs.menuToggle?.focus(); },
-     }"
-     @keydown.escape.window="closeMenu()"
-     @resize.window.debounce.150ms="if (window.innerWidth >= 1024) closeMenu(false)">
+<div class="site-header-wide" x-data="siteMobileNav(1024)" @keydown.escape.window="closeMenu()">
 
     {{-- Układ „bar": numer konta i „Wesprzyj" w osobnym pasku nad belką --}}
     @if ($wmLayout === 'bar')
@@ -124,14 +117,9 @@
             </div>
 
             {{-- Hamburger (< lg) --}}
-            <button type="button" x-ref="menuToggle"
-                    @click="mobileOpen ? closeMenu(false) : openMenu()"
-                    class="ml-auto flex h-11 w-11 flex-none items-center justify-center rounded-lg border border-gray-200 text-xl text-ink transition hover:border-brand hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 lg:hidden"
-                    aria-controls="main-nav-panel"
-                    :aria-expanded="mobileOpen.toString()"
-                    :aria-label="mobileOpen ? 'Zamknij menu' : 'Otwórz menu'">
-                <i class="fa-solid" :class="mobileOpen ? 'fa-xmark' : 'fa-bars'" aria-hidden="true"></i>
-            </button>
+            <span class="ml-auto lg:hidden">
+                @include('partials.mobile-nav-toggle', ['panelId' => 'main-nav-panel', 'onBrand' => false, 'hideAt' => 'lg'])
+            </span>
         </div>
     </div>
 
@@ -172,66 +160,39 @@
         </nav>
     @endif
 
-    {{-- Panel mobilny (< lg): menu + wsparcie + CTA + social --}}
-    <nav id="main-nav-panel" x-ref="mobilePanel" x-show="mobileOpen" x-cloak
-         aria-label="Menu główne"
-         @click.outside="if (! $refs.menuToggle.contains($event.target)) closeMenu(false)"
-         class="border-t border-gray-200 bg-white shadow-lg lg:hidden">
-        <div class="px-4 pb-4">
-            @include('partials.main-nav-items', ['mobile' => true])
-        </div>
-
-        @if ($wmHasCta || filled($siteSettings->bank_account_number) || \Illuminate\Support\Facades\Route::has('support.show'))
-            <div class="flex flex-col gap-3 border-t border-gray-100 px-4 py-4">
-                @if ($wmHasCta)
-                    <a href="{{ $wmCtaUrl }}" class="{{ $ctaClass }} w-full">{{ $wmCtaLabel }}</a>
-                @endif
-                @include('partials.wide-support-line')
-            </div>
-        @endif
-
-        @if ($socials)
-            <div class="border-t border-gray-100 px-4 py-3">
-                <ul class="flex flex-wrap gap-1" aria-label="Media społecznościowe">
-                    @foreach ($socials as [$socialUrl, $socialIcon, $socialLabel])
-                        <li>
-                            <a href="{{ $socialUrl }}" target="_blank" rel="noopener"
-                               class="flex h-11 w-11 items-center justify-center rounded-full border border-gray-200 text-lg text-muted transition hover:border-brand hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2"
-                               aria-label="{{ $socialLabel }} — otwiera się w nowej karcie">
-                                <i class="{{ $socialIcon }}" aria-hidden="true"></i>
-                            </a>
-                        </li>
-                    @endforeach
-                </ul>
-            </div>
-        @endif
-    </nav>
+    {{-- Panel mobilny (< lg): menu + CTA + wsparcie + social --}}
+    @include('partials.mobile-nav-panel', [
+        'panelId' => 'main-nav-panel', 'hideAt' => 'lg',
+        'cta' => $wmHasCta ? ['label' => $wmCtaLabel, 'url' => $wmCtaUrl] : null,
+        'showSupport' => true, 'socials' => $socials,
+    ])
 </div>
 
 @else
-{{-- ─── Dotychczasowe layouty (classic / brand_bar / brand_bar_inline) ──── --}}
-<div class="{{ $inlineOnBrand ? 'bg-brand border-transparent' : 'bg-white' }}" x-data="{ mobileOpen: false }" @keydown.escape="mobileOpen = false">
+{{-- ─── Układy classic / brand_bar / brand_bar_inline ─────────────────────
+     Landmark <header> jest w layouts/site.blade.php. Menu mobilne: wspólny
+     komponent siteMobileNav + partials/mobile-nav-toggle i mobile-nav-panel
+     (fokus, Escape, kliknięcie obok, etykieta Otwórz/Zamknij) — jak w wide_mission.
+--}}
+<div class="{{ $inlineOnBrand ? 'bg-brand border-transparent' : 'bg-white' }}" x-data="siteMobileNav(1024)" @keydown.escape.window="closeMenu()">
     <div class="relative mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-4">
-        <a href="{{ site_route('home') }}" class="flex items-center gap-3" aria-label="{{ $siteSettings->site_name }} — strona główna">
+        <a href="{{ site_route('home') }}" class="flex min-w-0 items-center gap-3 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 {{ $inlineOnBrand ? 'focus-visible:ring-white focus-visible:ring-offset-brand' : 'focus-visible:ring-brand' }}" aria-label="{{ $siteSettings->site_name }} — strona główna">
             @if ($siteSettings->logoUrl())
                 <img src="{{ $siteSettings->logoUrl() }}" alt="{{ $siteSettings->logoAltText() }}" class="h-12 w-auto max-w-[16rem] flex-none rounded object-contain {{ $inlineOnBrand ? 'bg-white p-1' : '' }}">
             @else
                 <span class="flex h-11 w-11 flex-none items-center justify-center rounded text-xl font-bold {{ $inlineOnBrand ? 'bg-white text-brand' : 'bg-brand text-white' }}" aria-hidden="true">{{ mb_substr($siteSettings->site_name, 0, 1) }}</span>
             @endif
             @unless ($siteSettings->showLogoOnly())
-                <span class="leading-tight">
-                    <span class="block text-lg font-bold {{ $inlineOnBrand ? 'text-white' : 'text-ink' }}">{{ $siteSettings->site_name }}</span>
+                <span class="min-w-0 leading-tight">
+                    <span class="block truncate text-lg font-bold {{ $inlineOnBrand ? 'text-white' : 'text-ink' }}">{{ $siteSettings->site_name }}</span>
                     @if ($siteSettings->tagline)
-                        <span class="block text-xs {{ $inlineOnBrand ? 'text-white/80' : 'text-muted' }}">{{ $siteSettings->tagline }}</span>
+                        <span class="block truncate text-xs {{ $inlineOnBrand ? 'text-white/90' : 'text-muted' }}">{{ $siteSettings->tagline }}</span>
                     @endif
                 </span>
             @endunless
         </a>
 
-        <button type="button" class="flex min-h-11 min-w-11 items-center justify-center rounded text-xl lg:hidden {{ $inlineOnBrand ? 'text-white hover:text-white/80' : 'text-ink hover:text-brand' }}"
-            @click="mobileOpen = !mobileOpen" aria-controls="main-nav-panel" :aria-expanded="mobileOpen.toString()" aria-label="Otwórz/zamknij menu">
-            <i class="fa-solid" :class="mobileOpen ? 'fa-xmark' : 'fa-bars'" aria-hidden="true"></i>
-        </button>
+        @include('partials.mobile-nav-toggle', ['panelId' => 'main-nav-panel', 'onBrand' => $inlineOnBrand, 'hideAt' => 'lg'])
 
         @unless ($headerLayout === 'brand_bar')
             <nav aria-label="Menu główne" class="hidden lg:block">
@@ -248,9 +209,6 @@
         </nav>
     @endif
 
-    <nav aria-label="Menu główne (mobilne)" id="main-nav-panel" x-show="mobileOpen" x-cloak
-        class="border-t border-gray-200 px-4 pb-4 lg:hidden">
-        @include('partials.main-nav-items', ['mobile' => true])
-    </nav>
+    @include('partials.mobile-nav-panel', ['panelId' => 'main-nav-panel', 'hideAt' => 'lg', 'showSupport' => true, 'socials' => $siteSettings->socialLinks()])
 </div>
 @endif

@@ -11,7 +11,7 @@
     $officeShowBip  = $siteSettings->isModuleEnabled('bip') && ($officeBipMode ? filled($siteSettings->bip_url) : true);
 @endphp
 
-<div x-data="{ mobileOpen: false }" @keydown.escape="mobileOpen = false">
+<div x-data="siteMobileNav(768)" @keydown.escape.window="closeMenu()">
 
     {{-- Górna belka: logo | nr konta | szukajka + BIP + social --}}
     <div class="border-b border-gray-200 bg-white">
@@ -102,52 +102,18 @@
                     @include('partials.main-nav-items', ['onBrand' => true, 'navDarkText' => $siteSettings->navDarkText()])
                 </div>
 
-                <button type="button" @click="mobileOpen = !mobileOpen"
-                    class="ml-auto flex h-12 w-12 items-center justify-center {{ $siteSettings->navDarkText() ? 'text-gray-900' : 'text-white' }} md:hidden"
-                    :aria-expanded="mobileOpen" aria-controls="office-mobile-menu"
-                    aria-label="Menu">
-                    <i class="fa-solid fa-bars text-xl" x-show="!mobileOpen" aria-hidden="true"></i>
-                    <i class="fa-solid fa-xmark text-xl" x-show="mobileOpen" x-cloak aria-hidden="true"></i>
-                </button>
-            </div>
-
-            {{-- Menu mobilne --}}
-            <div id="office-mobile-menu" x-show="mobileOpen" x-cloak
-                 class="border-t border-white/20 pb-3"
-                 @click.outside="mobileOpen = false">
-                <div class="mt-1">
-                    @include('partials.main-nav-items', ['mobile' => true])
-                </div>
-
-                @if ($officeAccount)
-                    <p class="mt-3 text-sm text-white">
-                        <span class="text-white/70">Nr konta:</span>
-                        <span class="font-mono font-bold">{{ $officeAccount }}</span>
-                    </p>
-                @endif
-
-                @if ($siteSettings->office_show_search)
-                    <form action="{{ route('search') }}" method="GET" role="search" class="mt-3">
-                        <label for="office-search-mobile" class="sr-only">wpisz szukaną frazę</label>
-                        <div class="flex overflow-hidden rounded border border-white/30">
-                            <input id="office-search-mobile" type="search" name="q" value="{{ request('q') }}"
-                                   placeholder="wpisz szukaną frazę"
-                                   class="flex-1 border-none bg-white/10 px-3 py-2 text-sm text-white placeholder-white/60 focus:outline-none">
-                            <button type="submit"
-                                    class="flex h-10 w-10 items-center justify-center bg-white/10 text-white hover:bg-white/20"
-                                    aria-label="Szukaj">
-                                <i class="fa-solid fa-magnifying-glass text-sm" aria-hidden="true"></i>
-                            </button>
-                        </div>
-                    </form>
-                @endif
-
-                @if ($officeSocials)
-                    <nav aria-label="Media społecznościowe" class="mt-3 flex items-center">
-                        @include('partials.social-icons', ['socialIcons' => $officeSocials])
-                    </nav>
-                @endif
+                <span class="ml-auto md:hidden">
+                    @include('partials.mobile-nav-toggle', ['panelId' => 'office-mobile-menu', 'onBrand' => ! $siteSettings->navDarkText(), 'hideAt' => 'md'])
+                </span>
             </div>
         </div>
     </nav>
+
+    {{-- Menu mobilne (< md): wyszukiwarka, menu, konto, social --}}
+    @include('partials.mobile-nav-panel', [
+        'panelId' => 'office-mobile-menu', 'hideAt' => 'md',
+        'showSearch' => (bool) $siteSettings->office_show_search,
+        'showSupport' => $officeAccount !== '',
+        'socials' => $officeSocials,
+    ])
 </div>
