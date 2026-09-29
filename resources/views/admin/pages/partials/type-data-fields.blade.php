@@ -50,7 +50,7 @@
         <div data-td-rows class="space-y-2">
             @foreach ($tdRows('benefits') as $i => $row)
                 <div data-td-row class="grid gap-2 sm:grid-cols-[10rem_1fr_2fr_auto]">
-                    <input type="text" name="type_data[benefits][{{ $i }}][icon]" value="{{ $row['icon'] ?? '' }}" placeholder="fa-solid fa-check" aria-label="Ikona" class="{{ $inp }} font-mono text-xs">
+                    <input type="text" name="type_data[benefits][{{ $i }}][icon]" value="{{ $row['icon'] ?? '' }}" placeholder="fa-solid fa-check" data-icon-picker data-icon-format="class" aria-label="Ikona" class="{{ $inp }} font-mono text-xs">
                     <input type="text" name="type_data[benefits][{{ $i }}][title]" value="{{ $row['title'] ?? '' }}" placeholder="Tytuł korzyści" aria-label="Tytuł korzyści" class="{{ $inp }}">
                     <input type="text" name="type_data[benefits][{{ $i }}][text]" value="{{ $row['text'] ?? '' }}" placeholder="Krótki opis" aria-label="Opis korzyści" class="{{ $inp }}">
                     <button type="button" data-td-remove class="{{ $rmBtn }}" aria-label="Usuń korzyść"><i class="fa-solid fa-trash" aria-hidden="true"></i></button>
@@ -60,7 +60,7 @@
         <button type="button" data-td-add class="{{ $addBtn }}"><i class="fa-solid fa-plus" aria-hidden="true"></i> Dodaj korzyść</button>
         <template data-td-template>
             <div data-td-row class="grid gap-2 sm:grid-cols-[10rem_1fr_2fr_auto]">
-                <input type="text" name="type_data[benefits][__INDEX__][icon]" placeholder="fa-solid fa-check" aria-label="Ikona" class="{{ $inp }} font-mono text-xs">
+                <input type="text" name="type_data[benefits][__INDEX__][icon]" placeholder="fa-solid fa-check" data-icon-picker data-icon-format="class" aria-label="Ikona" class="{{ $inp }} font-mono text-xs">
                 <input type="text" name="type_data[benefits][__INDEX__][title]" placeholder="Tytuł korzyści" aria-label="Tytuł korzyści" class="{{ $inp }}">
                 <input type="text" name="type_data[benefits][__INDEX__][text]" placeholder="Krótki opis" aria-label="Opis korzyści" class="{{ $inp }}">
                 <button type="button" data-td-remove class="{{ $rmBtn }}" aria-label="Usuń korzyść"><i class="fa-solid fa-trash" aria-hidden="true"></i></button>

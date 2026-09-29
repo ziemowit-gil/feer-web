@@ -28,7 +28,7 @@
 
 <div x-show="form.location === 'main'" x-cloak>
     <label for="nav-icon" class="mb-1 block text-sm font-bold">Ikona <span class="font-normal text-muted">(opcjonalnie — używana w stylu nav „Ikony + etykiety")</span></label>
-    <input type="text" id="nav-icon" name="icon" x-model="form.icon" placeholder="np. bi-house-door"
+    <input type="text" id="nav-icon" name="icon" x-model="form.icon" placeholder="np. bi-house-door" data-icon-picker data-icon-format="name"
         class="w-full rounded border-gray-300 font-mono text-sm focus-visible:border-brand focus-visible:ring-2 focus-visible:ring-brand">
     <p class="mt-1 text-xs text-muted">Klasa Bootstrap Icons bez prefiksu <code>bi</code> — np. <code>bi-people</code>, <code>bi-envelope</code>. Pełna lista: <a href="https://icons.getbootstrap.com/" target="_blank" rel="noopener" class="text-brand underline">icons.getbootstrap.com</a></p>
     @error('icon') <p class="mt-1 text-sm text-red-700">{{ $message }}</p> @enderror
@@ -125,9 +125,7 @@
     <span class="mb-1 block text-sm font-bold">Kolor przycisku <span class="font-normal text-muted">(opcjonalnie)</span></span>
     <div class="flex items-center gap-3">
         <input type="hidden" name="button_color" :value="form.buttonColorEnabled ? form.buttonColor : ''">
-        <input type="color" x-model="form.buttonColor" :disabled="!form.buttonColorEnabled" aria-label="Wybierz kolor przycisku"
-            class="h-10 w-14 flex-none cursor-pointer rounded border border-gray-300 disabled:opacity-40 focus-visible:ring-2 focus-visible:ring-brand">
-        <input type="text" x-model="form.buttonColor" :disabled="!form.buttonColorEnabled" aria-label="Kod koloru (hex)"
+        <input type="text" x-model="form.buttonColor" :disabled="!form.buttonColorEnabled" aria-label="Kod koloru (hex)" data-color-picker
             placeholder="#2563eb" pattern="#[0-9a-fA-F]{6}"
             class="w-40 rounded border-gray-300 font-mono text-sm focus-visible:border-brand focus-visible:ring-2 focus-visible:ring-brand disabled:bg-gray-100 disabled:text-muted">
         <label class="flex items-center gap-2 text-sm text-muted">

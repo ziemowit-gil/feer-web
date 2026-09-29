@@ -17,8 +17,8 @@
                         <input type="text" name="tiles[{{ $i }}][url]" value="{{ $tile['url'] ?? '' }}" placeholder="Adres (URL lub /sciezka)" aria-label="Adres linku {{ $i + 1 }}" class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
                     </div>
                     <div class="grid gap-2 sm:grid-cols-[2fr_1fr]">
-                        <input type="text" name="tiles[{{ $i }}][icon]" value="{{ $tile['icon'] ?? '' }}" placeholder="Ikona Bootstrap, np. bi-rocket-takeoff" aria-label="Ikona {{ $i + 1 }}" class="w-full rounded border-gray-300 font-mono text-xs focus:border-brand focus:ring-brand">
-                        <input type="text" name="tiles[{{ $i }}][color]" value="{{ $tile['color'] ?? '' }}" placeholder="Kolor, np. #2563eb" aria-label="Kolor {{ $i + 1 }}" class="w-full rounded border-gray-300 font-mono text-xs focus:border-brand focus:ring-brand">
+                        <input type="text" name="tiles[{{ $i }}][icon]" value="{{ $tile['icon'] ?? '' }}" placeholder="Ikona Bootstrap, np. bi-rocket-takeoff" data-icon-picker data-icon-format="name" aria-label="Ikona {{ $i + 1 }}" class="w-full rounded border-gray-300 font-mono text-xs focus:border-brand focus:ring-brand">
+                        <input type="text" name="tiles[{{ $i }}][color]" value="{{ $tile['color'] ?? '' }}" placeholder="Kolor, np. #2563eb" data-color-picker aria-label="Kolor {{ $i + 1 }}" class="w-full rounded border-gray-300 font-mono text-xs focus:border-brand focus:ring-brand">
                     </div>
                     <div class="flex flex-wrap gap-x-5 gap-y-2 text-sm">
                         <fieldset>
@@ -64,8 +64,8 @@
                     <input type="text" name="tiles[__INDEX__][url]" placeholder="Adres (URL lub /sciezka)" aria-label="Adres linku" class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
                 </div>
                 <div class="grid gap-2 sm:grid-cols-[2fr_1fr]">
-                    <input type="text" name="tiles[__INDEX__][icon]" placeholder="Ikona Bootstrap, np. bi-rocket-takeoff" aria-label="Ikona" class="w-full rounded border-gray-300 font-mono text-xs focus:border-brand focus:ring-brand">
-                    <input type="text" name="tiles[__INDEX__][color]" placeholder="Kolor, np. #2563eb" aria-label="Kolor" class="w-full rounded border-gray-300 font-mono text-xs focus:border-brand focus:ring-brand">
+                    <input type="text" name="tiles[__INDEX__][icon]" placeholder="Ikona Bootstrap, np. bi-rocket-takeoff" data-icon-picker data-icon-format="name" aria-label="Ikona" class="w-full rounded border-gray-300 font-mono text-xs focus:border-brand focus:ring-brand">
+                    <input type="text" name="tiles[__INDEX__][color]" placeholder="Kolor, np. #2563eb" data-color-picker aria-label="Kolor" class="w-full rounded border-gray-300 font-mono text-xs focus:border-brand focus:ring-brand">
                 </div>
                 <div class="flex flex-wrap gap-x-5 gap-y-2 text-sm">
                     <fieldset>

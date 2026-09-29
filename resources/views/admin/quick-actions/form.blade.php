@@ -20,7 +20,7 @@
                 <span id="icon-preview" class="flex h-10 w-10 flex-none items-center justify-center rounded-full bg-brand-light text-lg text-brand">
                     <i class="bi {{ old('icon', $quickAction->icon) ?: 'bi-lightning' }}" id="icon-preview-glyph"></i>
                 </span>
-                <input type="text" id="icon" name="icon" value="{{ old('icon', $quickAction->icon) }}" placeholder="np. bi-rocket-takeoff" required
+                <input type="text" id="icon" name="icon" value="{{ old('icon', $quickAction->icon) }}" placeholder="np. bi-rocket-takeoff" data-icon-picker data-icon-format="name" required
                     oninput="document.getElementById('icon-preview-glyph').className = 'bi ' + (this.value || 'bi-lightning')"
                     class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
             </div>

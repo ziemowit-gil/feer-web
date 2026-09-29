@@ -166,7 +166,7 @@
             <legend class="px-2 text-sm font-bold text-ink">Korzyści (bloki z ikonami)</legend>
             <template x-for="(b, i) in benefits" :key="i">
                 <div class="grid gap-2 rounded border border-gray-200 p-3 sm:grid-cols-2">
-                    <input :name="`benefits[${i}][icon]`" x-model="b.icon" placeholder="np. fa-solid fa-check" class="{{ $inp }} font-mono">
+                    <input :name="`benefits[${i}][icon]`" x-model="b.icon" placeholder="np. fa-solid fa-check" data-icon-picker data-icon-format="class" class="{{ $inp }} font-mono">
                     <input :name="`benefits[${i}][title]`" x-model="b.title" placeholder="Tytuł" class="{{ $inp }}">
                     <textarea :name="`benefits[${i}][text]`" x-model="b.text" rows="2" placeholder="Opis" class="{{ $inp }} sm:col-span-2"></textarea>
                     <button type="button" @click="benefits.splice(i, 1)" class="justify-self-start rounded text-sm text-red-600 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600 sm:col-span-2">Usuń korzyść</button>

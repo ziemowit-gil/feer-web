@@ -91,7 +91,7 @@
                         <div class="grid gap-2 sm:grid-cols-3">
                             <div>
                                 <label class="mb-0.5 block text-xs">Ikona (fa-solid fa-…)</label>
-                                <input type="text" name="cooperation_data[sectors][{{ $si }}][icon]" value="{{ $sector['icon'] ?? '' }}" placeholder="fa-solid fa-building" class="w-full rounded border-gray-300 text-xs focus:border-brand focus:ring-brand">
+                                <input type="text" name="cooperation_data[sectors][{{ $si }}][icon]" data-icon-picker data-icon-format="class" value="{{ $sector['icon'] ?? '' }}" placeholder="fa-solid fa-building" class="w-full rounded border-gray-300 text-xs focus:border-brand focus:ring-brand">
                             </div>
                             <div>
                                 <label class="mb-0.5 block text-xs">Kolor</label>
@@ -129,7 +129,7 @@
                     <div class="grid gap-2 sm:grid-cols-3">
                         <div>
                             <label class="mb-0.5 block text-xs">Ikona (fa-solid fa-…)</label>
-                            <input type="text" name="cooperation_data[sectors][__INDEX__][icon]" placeholder="fa-solid fa-building" class="w-full rounded border-gray-300 text-xs focus:border-brand focus:ring-brand">
+                            <input type="text" name="cooperation_data[sectors][__INDEX__][icon]" data-icon-picker data-icon-format="class" placeholder="fa-solid fa-building" class="w-full rounded border-gray-300 text-xs focus:border-brand focus:ring-brand">
                         </div>
                         <div>
                             <label class="mb-0.5 block text-xs">Kolor</label>
@@ -185,7 +185,7 @@
                         <div class="grid gap-2 sm:grid-cols-2">
                             <div>
                                 <label class="mb-0.5 block text-xs">Ikona (fa-solid fa-…)</label>
-                                <input type="text" name="cooperation_data[forms][{{ $fi }}][icon]" value="{{ $form['icon'] ?? '' }}" placeholder="fa-solid fa-star" class="w-full rounded border-gray-300 text-xs focus:border-brand focus:ring-brand">
+                                <input type="text" name="cooperation_data[forms][{{ $fi }}][icon]" data-icon-picker data-icon-format="class" value="{{ $form['icon'] ?? '' }}" placeholder="fa-solid fa-star" class="w-full rounded border-gray-300 text-xs focus:border-brand focus:ring-brand">
                             </div>
                             <div>
                                 <label class="mb-0.5 block text-xs">Tytuł</label>
@@ -210,7 +210,7 @@
                     <div class="grid gap-2 sm:grid-cols-2">
                         <div>
                             <label class="mb-0.5 block text-xs">Ikona (fa-solid fa-…)</label>
-                            <input type="text" name="cooperation_data[forms][__INDEX__][icon]" placeholder="fa-solid fa-star" class="w-full rounded border-gray-300 text-xs focus:border-brand focus:ring-brand">
+                            <input type="text" name="cooperation_data[forms][__INDEX__][icon]" data-icon-picker data-icon-format="class" placeholder="fa-solid fa-star" class="w-full rounded border-gray-300 text-xs focus:border-brand focus:ring-brand">
                         </div>
                         <div>
                             <label class="mb-0.5 block text-xs">Tytuł</label>

@@ -416,7 +416,7 @@
                             </label>
                         @endforeach
                     </div>
-                    <p class="mt-1 text-xs text-muted">Biały pasek wymaga ustawienia ikon w pozycjach menu (zakładka Menu → pole Ikona).</p>
+                    <p class="mt-1 text-xs text-muted">Styl „ikony + etykiety" korzysta z pola Ikona w pozycjach menu (Strony → Menu główne); „zakładki" wypełniają aktywną pozycję kolorem marki.</p>
                     <div class="mt-3 space-y-2 rounded-lg border border-gray-200 bg-gray-50 p-3 text-sm">
                         <p class="text-xs font-bold uppercase tracking-wide text-muted">Kolory pozycji — tylko pasek koloru marki</p>
                         <label class="flex items-center gap-2">
@@ -591,7 +591,7 @@
                         <div data-subbrands-row class="flex flex-wrap items-center gap-2">
                             <input type="color" value="{{ $sb['color'] ?? '#1f6feb' }}" oninput="this.nextElementSibling.value = this.value"
                                 class="h-10 w-14 flex-none rounded border-gray-300" aria-label="Kolor submarki {{ $i + 1 }}">
-                            <input type="text" name="sub_brands[{{ $i }}][color]" value="{{ $sb['color'] ?? '' }}" placeholder="#1f6feb"
+                            <input type="text" name="sub_brands[{{ $i }}][color]" value="{{ $sb['color'] ?? '' }}" data-color-picker placeholder="#1f6feb"
                                 oninput="if (/^#[0-9a-fA-F]{6}$/.test(this.value)) this.previousElementSibling.value = this.value"
                                 class="w-32 rounded border-gray-300 font-mono text-sm focus:border-brand focus:ring-brand" aria-label="Kod koloru submarki {{ $i + 1 }}">
                             <input type="text" name="sub_brands[{{ $i }}][name]" value="{{ $sb['name'] ?? '' }}" placeholder="Nazwa, np. Seniorzy"
@@ -605,7 +605,7 @@
                     <div data-subbrands-row class="flex flex-wrap items-center gap-2">
                         <input type="color" value="#1f6feb" oninput="this.nextElementSibling.value = this.value"
                             class="h-10 w-14 flex-none rounded border-gray-300" aria-label="Kolor submarki">
-                        <input type="text" name="sub_brands[__INDEX__][color]" placeholder="#1f6feb"
+                        <input type="text" name="sub_brands[__INDEX__][color]" data-color-picker placeholder="#1f6feb"
                             oninput="if (/^#[0-9a-fA-F]{6}$/.test(this.value)) this.previousElementSibling.value = this.value"
                             class="w-32 rounded border-gray-300 font-mono text-sm focus:border-brand focus:ring-brand" aria-label="Kod koloru submarki">
                         <input type="text" name="sub_brands[__INDEX__][name]" placeholder="Nazwa, np. Seniorzy"
@@ -2039,7 +2039,7 @@
                                 <input type="text" name="federation_hero_tiles[{{ $i }}][value]" value="{{ $tile['value'] ?? '' }}"
                                     placeholder="Liczba, np. 1998 (puste = ikona)"
                                     class="rounded border-gray-300 text-sm focus:border-brand focus:ring-brand sm:col-span-3">
-                                <input type="text" name="federation_hero_tiles[{{ $i }}][icon]" value="{{ $tile['icon'] ?? '' }}"
+                                <input type="text" name="federation_hero_tiles[{{ $i }}][icon]" value="{{ $tile['icon'] ?? '' }}" data-icon-picker data-icon-format="class"
                                     placeholder="Ikona Font Awesome, np. fa-solid fa-city"
                                     class="rounded border-gray-300 text-sm focus:border-brand focus:ring-brand sm:col-span-3">
                                 <input type="text" name="federation_hero_tiles[{{ $i }}][title]" value="{{ $tile['title'] ?? '' }}"
@@ -2070,7 +2070,7 @@
                         <div data-hero-tiles-row class="grid gap-2 rounded-lg border border-gray-200 bg-white p-3 sm:grid-cols-12 sm:items-center">
                             <input type="text" name="federation_hero_tiles[__INDEX__][value]" placeholder="Liczba, np. 1998 (puste = ikona)"
                                 class="rounded border-gray-300 text-sm focus:border-brand focus:ring-brand sm:col-span-3">
-                            <input type="text" name="federation_hero_tiles[__INDEX__][icon]" placeholder="Ikona Font Awesome, np. fa-solid fa-city"
+                            <input type="text" name="federation_hero_tiles[__INDEX__][icon]" data-icon-picker data-icon-format="class" placeholder="Ikona Font Awesome, np. fa-solid fa-city"
                                 class="rounded border-gray-300 text-sm focus:border-brand focus:ring-brand sm:col-span-3">
                             <input type="text" name="federation_hero_tiles[__INDEX__][title]" placeholder="Tytuł / podpis"
                                 class="min-w-0 rounded border-gray-300 text-sm focus:border-brand focus:ring-brand sm:col-span-3">
@@ -2099,7 +2099,7 @@
                     <div data-join-benefits-rows class="space-y-3">
                         @foreach ($joinBenefits as $i => $benefit)
                             <div data-join-benefits-row class="grid gap-2 rounded-lg border border-gray-200 bg-white p-3 sm:grid-cols-12 sm:items-start">
-                                <input type="text" name="federation_join_benefits[{{ $i }}][icon]" value="{{ $benefit['icon'] ?? '' }}"
+                                <input type="text" name="federation_join_benefits[{{ $i }}][icon]" value="{{ $benefit['icon'] ?? '' }}" data-icon-picker data-icon-format="class"
                                     placeholder="Ikona Font Awesome, np. fa-people-group"
                                     class="rounded border-gray-300 text-sm focus:border-brand focus:ring-brand sm:col-span-3">
                                 <input type="text" name="federation_join_benefits[{{ $i }}][title]" value="{{ $benefit['title'] ?? '' }}"
@@ -2119,7 +2119,7 @@
                     </button>
                     <template data-join-benefits-template>
                         <div data-join-benefits-row class="grid gap-2 rounded-lg border border-gray-200 bg-white p-3 sm:grid-cols-12 sm:items-start">
-                            <input type="text" name="federation_join_benefits[__INDEX__][icon]" placeholder="Ikona Font Awesome, np. fa-people-group"
+                            <input type="text" name="federation_join_benefits[__INDEX__][icon]" data-icon-picker data-icon-format="class" placeholder="Ikona Font Awesome, np. fa-people-group"
                                 class="rounded border-gray-300 text-sm focus:border-brand focus:ring-brand sm:col-span-3">
                             <input type="text" name="federation_join_benefits[__INDEX__][title]" placeholder="Tytuł"
                                 class="min-w-0 rounded border-gray-300 text-sm focus:border-brand focus:ring-brand sm:col-span-3">
@@ -2148,7 +2148,7 @@
                                 <input type="text" name="ngo_3_stats[{{ $i }}][label]" value="{{ $stat['label'] ?? '' }}"
                                     placeholder="Etykieta, np. Lat działania"
                                     class="min-w-0 rounded border-gray-300 text-sm focus:border-brand focus:ring-brand sm:col-span-6">
-                                <input type="text" name="ngo_3_stats[{{ $i }}][icon]" value="{{ $stat['icon'] ?? '' }}"
+                                <input type="text" name="ngo_3_stats[{{ $i }}][icon]" value="{{ $stat['icon'] ?? '' }}" data-icon-picker data-icon-format="class"
                                     placeholder="Ikona Font Awesome (opcjonalnie)"
                                     class="min-w-0 rounded border-gray-300 text-sm focus:border-brand focus:ring-brand sm:col-span-2">
                                 <button type="button" data-ngo3-stats-remove class="rounded p-2 text-muted hover:bg-red-50 hover:text-red-600 sm:col-span-1 sm:w-fit sm:justify-self-end" aria-label="Usuń statystykę {{ $i + 1 }}">
@@ -2166,7 +2166,7 @@
                                 class="rounded border-gray-300 text-sm focus:border-brand focus:ring-brand sm:col-span-3">
                             <input type="text" name="ngo_3_stats[__INDEX__][label]" placeholder="Etykieta, np. Lat działania"
                                 class="min-w-0 rounded border-gray-300 text-sm focus:border-brand focus:ring-brand sm:col-span-6">
-                            <input type="text" name="ngo_3_stats[__INDEX__][icon]" placeholder="Ikona Font Awesome (opcjonalnie)"
+                            <input type="text" name="ngo_3_stats[__INDEX__][icon]" data-icon-picker data-icon-format="class" placeholder="Ikona Font Awesome (opcjonalnie)"
                                 class="min-w-0 rounded border-gray-300 text-sm focus:border-brand focus:ring-brand sm:col-span-2">
                             <button type="button" data-ngo3-stats-remove class="rounded p-2 text-muted hover:bg-red-50 hover:text-red-600 sm:col-span-1 sm:w-fit sm:justify-self-end" aria-label="Usuń statystykę">
                                 <i class="fa-solid fa-trash" aria-hidden="true"></i>

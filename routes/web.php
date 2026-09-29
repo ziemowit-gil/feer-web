@@ -298,6 +298,11 @@ Route::middleware(['auth', 'verified', '2fa', 'admin-site'])->prefix(config('app
 
     // Globalna wyszukiwarka panelu (paleta poleceń).
     Route::get('szukaj', AdminSearchController::class)->name('search');
+    // Lista nazw Bootstrap Icons dla selektora ikon w formularzach (resources/data).
+    Route::get('ikony.json', fn () => response()->file(resource_path('data/bootstrap-icons.json'), [
+        'Content-Type' => 'application/json',
+        'Cache-Control' => 'public, max-age=86400',
+    ]))->name('ikony');
 
     // Centrum powiadomień — oznaczanie jako przejrzane.
     Route::post('powiadomienia/widziano', [AdminNotificationController::class, 'seen'])->name('powiadomienia.seen');

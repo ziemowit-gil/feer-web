@@ -62,7 +62,19 @@
         });
     </script>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
-    @php $brandPalette = $siteSettings->brandPalette(); @endphp
+    @php
+        $brandPalette = $siteSettings->brandPalette();
+        $pickerBrandColors = collect([
+            ['hex' => $brandPalette['color'], 'label' => 'Kolor marki'],
+            ['hex' => $brandPalette['dark'], 'label' => 'Kolor marki (ciemny)'],
+            ['hex' => $siteSettings->brand_color_2, 'label' => 'Kolor marki 2'],
+            ['hex' => $siteSettings->brand_color_3, 'label' => 'Kolor marki 3'],
+            ['hex' => $siteSettings->brand_color_4, 'label' => 'Kolor marki 4'],
+            ['hex' => $brandPalette['light'], 'label' => 'Kolor marki (jasne tło)'],
+        ])->filter(fn ($c) => \App\Support\Color::isValid($c['hex']))->unique('hex')->values();
+    @endphp
+    <meta name="admin-brand-colors" content="{{ $pickerBrandColors->toJson() }}">
+    <meta name="admin-icons-url" content="{{ route('admin.ikony') }}">
     <style>
         :root {
             --color-brand:       {{ $brandPalette['color'] }};
@@ -71,7 +83,7 @@
         }
     </style>
 </head>
-<body class="flex min-h-screen bg-gray-50 text-ink antialiased" x-data :class="{ 'overflow-hidden lg:overflow-auto': $store.adminNav.mobileOpen }">
+<body class="flex min-h-screen bg-gray-50 text-ink antialiased" data-admin-pickers x-data :class="{ 'overflow-hidden lg:overflow-auto': $store.adminNav.mobileOpen }">
 
     <a href="#main" class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-lg focus:bg-white focus:px-4 focus:py-2 focus:text-sm focus:font-bold focus:text-brand focus:shadow-xl focus:outline-none focus:ring-2 focus:ring-brand">Przejdź do treści</a>
 

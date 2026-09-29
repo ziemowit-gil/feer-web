@@ -595,6 +595,11 @@ Alpine.data('sectionTabs', (ids = [], initial = null) => ({
     },
 }));
 
+// Selektory ikon/kolorów w panelu — osobny chunk, ładowany tylko w adminie.
+if (document.body.dataset.adminPickers !== undefined) {
+    import('./admin-pickers.js');
+}
+
 Alpine.start();
 
 // Pasek dostępności: kontrast i rozmiar czcionki
