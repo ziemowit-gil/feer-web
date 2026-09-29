@@ -22,16 +22,16 @@
         @if ($page->usesStandardLayout())
         @php
             $canInlineEdit = auth()->check() && auth()->user()->canAccessModule('pages');
-            $contentHasShortcode = $page->content && preg_match('/\[(formularz|kafelki):[a-z0-9_\-]+\]/i', $page->content);
+            $contentHasShortcode = \App\Support\ShortcodeParser::has($page->content);
         @endphp
-        <div @if ($canInlineEdit) x-data="inlineContentEditor('page', {{ $page->id }}, '{{ route('admin.inline-edit.update') }}')" @endif>
+        <div @if ($canInlineEdit) x-data="inlineContentEditor('page', {{ $page->id }}, '{{ route('admin.inline-edit.update') }}', { engine: '{{ $siteSettings->contentEditorValue() }}', uploadUrl: '{{ route('admin.multimedia.upload-ajax') }}' })" @endif>
             @if ($canInlineEdit)
                 @include('partials.inline-edit-bar')
             @endif
 
             <section class="mx-auto max-w-6xl px-4 py-12">
                 @if ($canInlineEdit)
-                    <h1 :contenteditable="editMode ? 'true' : 'false'" @blur="if (editMode) saveField('title', $el.innerText.trim())"
+                    <h1 data-inline-field="title" data-inline-kind="text"
                         :class="editMode ? 'outline-dashed outline-2 outline-offset-4 outline-brand rounded' : ''"
                         class="mb-6 text-3xl font-bold text-ink">{{ $page->title }}</h1>
                 @else
@@ -41,7 +41,7 @@
                 @include('partials.page-content-image')
 
                 @if ($canInlineEdit && ! $contentHasShortcode)
-                    <div :contenteditable="editMode ? 'true' : 'false'" @blur="if (editMode) saveField('content', $el.innerHTML.trim())"
+                    <div data-inline-field="content" data-inline-kind="rich"
                         :class="editMode ? 'outline-dashed outline-2 outline-offset-4 outline-brand rounded' : ''"
                         class="prose max-w-none text-ink">@shortcodes($page->content)</div>
                 @else

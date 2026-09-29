@@ -640,3 +640,22 @@ html.no-animations *::after {
 /* Mega menu: panel przypięty do paska (<nav class="relative">), pozycja bez własnego position. */
 .nav-mega-panel { text-transform: none; letter-spacing: 0; font-weight: 400; }
 html.no-animations .nav-mega-panel { transition: none !important; }
+
+/* ── Edycja „na żywo" na stronie publicznej (partials/inline-edit-bar) ──── */
+[data-inline-field][contenteditable="true"],
+[data-inline-field][contenteditable="plaintext-only"],
+[data-inline-field].mce-content-body,
+[data-inline-field].ck-editor__editable {
+    outline: 2px dashed var(--color-brand);
+    outline-offset: 6px;
+    border-radius: .25rem;
+    min-height: 3rem;
+}
+[data-inline-field].mce-content-body.mce-edit-focus,
+[data-inline-field].ck-editor__editable.ck-focused {
+    outline-style: solid;
+    box-shadow: none;
+}
+.inline-editor-toolbar .tox-tinymce-inline { position: static !important; width: 100% !important; }
+.inline-editor-toolbar .tox .tox-editor-header { border: 0; box-shadow: none; padding: .25rem 1rem; }
+.inline-editor-toolbar:empty { display: none; }

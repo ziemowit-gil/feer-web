@@ -235,56 +235,300 @@ Alpine.data('newsInlineEditor', (initial, saveUrl) => ({
 // Wizualna edycja "na żywo" — alternatywa dla formularzy admina. Kliknij pole
 // (tytuł, treść) na realnej stronie i edytuj bezpośrednio; zapis pojedynczego
 // pola przez PUT /admin/edycja-na-zywo (patrz InlineEditController).
-Alpine.data('inlineContentEditor', (model, id, saveUrl) => ({
-    editMode: localStorage.getItem('inline-edit-mode') === '1',
+// Edycja „na żywo" bezpośrednio na stronie publicznej (alternatywa dla
+// formularza admina). Pola oznaczone `data-inline-field="<pole>"` dostają:
+//   • data-inline-kind="rich" — pełny edytor WYSIWYG (TinyMCE inline albo
+//     CKEditor 5 inline, wg ustawienia „Edytor treści" w panelu) osadzony
+//     w istniejącym elemencie, więc widać prawdziwe style strony,
+//   • data-inline-kind="text" (domyślnie) — jednoliniowa edycja tekstu.
+// Zapis jest jawny (przycisk „Zapisz" / Ctrl+S) z ochroną przed utratą
+// niezapisanych zmian. Starsze szablony (federation/wrzos) nadal używają
+// `:contenteditable="editMode"` + saveField()/saveArrayField() po blur.
+const INLINE_EDITOR_SCRIPTS = {
+    tinymce: 'https://cdn.jsdelivr.net/npm/tinymce@7/tinymce.min.js',
+    ckeditor: 'https://cdn.ckeditor.com/ckeditor5/41.4.2/inline/ckeditor.js',
+};
+
+function loadInlineEditorScript(src, isReady) {
+    if (isReady()) return Promise.resolve();
+    window.__inlineEditorLoads = window.__inlineEditorLoads || {};
+    if (!window.__inlineEditorLoads[src]) {
+        window.__inlineEditorLoads[src] = new Promise((resolve, reject) => {
+            const script = document.createElement('script');
+            script.src = src;
+            script.referrerPolicy = 'origin';
+            script.onload = resolve;
+            script.onerror = () => reject(new Error('Nie udało się pobrać edytora: ' + src));
+            document.head.appendChild(script);
+        });
+    }
+    return window.__inlineEditorLoads[src];
+}
+
+Alpine.data('inlineContentEditor', (model, id, saveUrl, options = {}) => {
+    // Pola i instancje edytorów trzymamy poza stanem Alpine: reaktywne proxy
+    // psuje wewnętrzne `this` TinyMCE/CKEditora (np. remove() nic nie robi).
+    const fields = [];
+
+    return ({
+    editMode: false,
     saving: false,
     saveSuccess: false,
     error: null,
+    dirty: false,
+    engine: options.engine === 'ckeditor' ? 'ckeditor' : 'tinymce',
+    uploadUrl: options.uploadUrl || null,
+
+    init() {
+        window.addEventListener('beforeunload', (e) => {
+            if (this.dirty) { e.preventDefault(); e.returnValue = ''; }
+        });
+        document.addEventListener('keydown', (e) => {
+            if (this.editMode && (e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
+                e.preventDefault();
+                this.saveAll();
+            }
+        });
+        // Tryb edycji zapamiętany między stronami (jak dotąd).
+        if (localStorage.getItem('inline-edit-mode') === '1') {
+            this.$nextTick(() => this.enterEdit());
+        }
+    },
+
+    get hasRichFields() {
+        return !!this.$root.querySelector('[data-inline-field][data-inline-kind="rich"]');
+    },
 
     toggleEdit() {
-        this.editMode = !this.editMode;
-        localStorage.setItem('inline-edit-mode', this.editMode ? '1' : '0');
+        this.editMode ? this.exitEdit() : this.enterEdit();
+    },
+
+    async enterEdit() {
         this.error = null;
+        this.editMode = true;
+        localStorage.setItem('inline-edit-mode', '1');
+
+        const elements = [...this.$root.querySelectorAll('[data-inline-field]')];
+        for (const el of elements) {
+            const field = { name: el.dataset.inlineField, kind: el.dataset.inlineKind || 'text', el, initial: el.innerHTML, editor: null };
+            if (field.kind === 'rich') {
+                try {
+                    field.editor = await this._createRichEditor(el);
+                } catch (e) {
+                    console.error(e);
+                    this.error = 'Nie udało się załadować edytora (brak połączenia z CDN?). Edytujesz w trybie uproszczonym.';
+                    this._attachPlainEditing(field, true);
+                }
+            } else {
+                this._attachPlainEditing(field, false);
+            }
+            fields.push(field);
+        }
+
+        this.$nextTick(() => {
+            const first = fields.find((f) => f.kind === 'rich') || fields[0];
+            if (first?.editor && this.engine === 'tinymce') first.editor.focus();
+            else if (first?.editor && this.engine === 'ckeditor') first.editor.editing.view.focus();
+            else first?.el.focus();
+        });
     },
 
-    async saveField(field, value) {
-        await this._save({ field, value });
+    exitEdit(force = false) {
+        if (this.dirty && !force && !window.confirm('Masz niezapisane zmiany. Odrzucić je?')) return;
+
+        for (const f of fields) {
+            if (f.editor) this._destroyRichEditor(f);
+            else this._detachPlainEditing(f);
+            if (this.dirty) f.el.innerHTML = f.initial;
+        }
+        fields.length = 0;
+        this.dirty = false;
+        this.editMode = false;
+        localStorage.setItem('inline-edit-mode', '0');
     },
 
-    // Zapis jednego podpola jednego elementu pola-tablicy (np. tytuł jednego
-    // kafelka hero). `index` to pozycja elementu w tablicy.
-    async saveArrayField(field, index, subfield, value) {
-        await this._save({ field, index, subfield, value });
-    },
+    async saveAll() {
+        if (!this.editMode || this.saving) return;
+        if (!this.dirty) { this.saveSuccess = true; setTimeout(() => { this.saveSuccess = false; }, 1500); return; }
 
-    async _save(payload) {
         this.saving = true;
         this.saveSuccess = false;
         this.error = null;
         try {
-            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
-            const res = await fetch(saveUrl, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': csrfToken,
-                    'Accept': 'application/json',
-                },
-                body: JSON.stringify({ model, id, ...payload }),
-            });
-            if (!res.ok) {
-                const json = await res.json().catch(() => ({}));
-                throw new Error(json.message ?? `HTTP ${res.status}`);
+            for (const f of fields) {
+                const value = f.kind === 'rich' && f.editor ? this._getRichContent(f) : (f.kind === 'rich' ? f.el.innerHTML.trim() : f.el.innerText.trim());
+                await this._request({ field: f.name, value });
+                f.initial = f.kind === 'rich' && f.editor ? value : f.el.innerHTML;
             }
+            this.dirty = false;
             this.saveSuccess = true;
-            setTimeout(() => { this.saveSuccess = false }, 2000);
+            setTimeout(() => { this.saveSuccess = false; }, 2500);
+        } catch (e) {
+            this.error = e.message || 'Nie udało się zapisać zmian. Spróbuj ponownie.';
+        } finally {
+            this.saving = false;
+        }
+    },
+
+    // ── Edycja tekstu jednoliniowego / awaryjna ────────────────────
+    _attachPlainEditing(field, multiline) {
+        const el = field.el;
+        el.contentEditable = multiline ? 'true' : 'plaintext-only';
+        if (!multiline && el.contentEditable !== 'plaintext-only') el.contentEditable = 'true';
+        el.setAttribute('role', 'textbox');
+        el.setAttribute('aria-label', 'Edytuj: ' + field.name);
+        if (multiline) el.setAttribute('aria-multiline', 'true');
+        field._onInput = () => { this.dirty = true; };
+        field._onKey = (e) => { if (!multiline && e.key === 'Enter') { e.preventDefault(); el.blur(); } };
+        el.addEventListener('input', field._onInput);
+        el.addEventListener('keydown', field._onKey);
+    },
+
+    _detachPlainEditing(field) {
+        const el = field.el;
+        el.contentEditable = 'false';
+        el.removeAttribute('role');
+        el.removeAttribute('aria-label');
+        el.removeAttribute('aria-multiline');
+        if (field._onInput) el.removeEventListener('input', field._onInput);
+        if (field._onKey) el.removeEventListener('keydown', field._onKey);
+    },
+
+    // ── Edytor WYSIWYG ─────────────────────────────────────────────
+    async _createRichEditor(el) {
+        if (this.engine === 'ckeditor') {
+            await loadInlineEditorScript(INLINE_EDITOR_SCRIPTS.ckeditor, () => !!window.InlineEditor);
+            const editor = await window.InlineEditor.create(el, {
+                toolbar: ['heading', '|', 'bold', 'italic', 'link', 'bulletedList', 'numberedList', '|', 'insertTable', 'blockQuote', '|', 'undo', 'redo'],
+                heading: {
+                    options: [
+                        { model: 'paragraph', title: 'Akapit', class: 'ck-heading_paragraph' },
+                        { model: 'heading2', view: 'h2', title: 'Nagłówek 2', class: 'ck-heading_heading2' },
+                        { model: 'heading3', view: 'h3', title: 'Nagłówek 3', class: 'ck-heading_heading3' },
+                        { model: 'heading4', view: 'h4', title: 'Nagłówek 4', class: 'ck-heading_heading4' },
+                    ],
+                },
+            });
+            editor.model.document.on('change:data', () => { this.dirty = true; });
+            return editor;
+        }
+
+        await loadInlineEditorScript(INLINE_EDITOR_SCRIPTS.tinymce, () => !!window.tinymce);
+        const csrf = document.querySelector('meta[name="csrf-token"]')?.content;
+        const uploadUrl = this.uploadUrl;
+        const [editor] = await window.tinymce.init({
+            target: el,
+            inline: true,
+            license_key: 'gpl',
+            menubar: false,
+            branding: false,
+            convert_urls: false,
+            plugins: 'lists advlist link image table autolink anchor quickbars code charmap',
+            toolbar: 'undo redo | blocks | bold italic underline strikethrough forecolor | bullist numlist outdent indent | alignleft aligncenter alignright | link image table blockquote hr | snippets | charmap removeformat | code',
+            toolbar_mode: 'wrap',
+            toolbar_persist: true,
+            fixed_toolbar_container: '#inline-editor-toolbar',
+            block_formats: 'Akapit=p; Nagłówek 2=h2; Nagłówek 3=h3; Nagłówek 4=h4',
+            // Paleta zgodna z identyfikacją (kolory o kontraście ≥ 4.5:1 na bieli).
+            color_map: ['c31432', 'Kolor marki', '8f0e24', 'Kolor marki (ciemny)', '1a1a1a', 'Tekst', '4b5563', 'Tekst pomocniczy', '0075cf', 'Niebieski', '15803d', 'Zielony'],
+            custom_colors: false,
+            quickbars_insert_toolbar: false,
+            quickbars_selection_toolbar: 'bold italic underline | h2 h3 | link blockquote',
+            // Gotowe bloki treści — te same klasy co w edytorze w panelu
+            // (style w resources/css/app.css: .cta-button, .content-box, …).
+            inline_snippets: [
+                { text: 'Przycisk CTA', html: '<p><a href="#" class="cta-button">Sprawdź więcej</a></p><p>&nbsp;</p>' },
+                { text: 'Tekst w ramce', html: '<div class="content-box"><p>Wpisz tutaj tekst w ramce…</p></div><p>&nbsp;</p>' },
+                { text: 'Notatka / ostrzeżenie', html: '<div class="content-note"><p>Wpisz tutaj treść notatki lub ostrzeżenia…</p></div><p>&nbsp;</p>' },
+                { text: 'Ważna informacja', html: '<div class="content-important"><p><strong>Ważne</strong></p><p>Wpisz tutaj treść ważnej informacji…</p></div><p>&nbsp;</p>' },
+                { text: 'Dwie kolumny', html: '<div class="content-columns"><div class="content-column"><p>Pierwsza kolumna…</p></div><div class="content-column"><p>Druga kolumna…</p></div></div><p>&nbsp;</p>' },
+                { text: 'Tabela dostępna (nagłówki + opis)', html: '<table><caption>Opis tabeli</caption><thead><tr><th scope="col">Kolumna 1</th><th scope="col">Kolumna 2</th></tr></thead><tbody><tr><th scope="row">Wiersz 1</th><td>Dane</td></tr></tbody></table><p>&nbsp;</p>' },
+            ],
+            paste_data_images: !!uploadUrl,
+            automatic_uploads: !!uploadUrl,
+            images_upload_handler: uploadUrl ? (blobInfo, progress) => new Promise((resolve, reject) => {
+                const formData = new FormData();
+                formData.append('file', blobInfo.blob(), blobInfo.filename());
+                formData.append('_token', csrf);
+                const xhr = new XMLHttpRequest();
+                xhr.open('POST', uploadUrl);
+                xhr.upload.onprogress = (e) => { if (e.lengthComputable) progress(e.loaded / e.total * 100); };
+                xhr.onload = () => {
+                    if (xhr.status >= 200 && xhr.status < 300) resolve(JSON.parse(xhr.responseText).location);
+                    else reject({ message: 'Błąd uploadu (' + xhr.status + ')', remove: true });
+                };
+                xhr.onerror = () => reject({ message: 'Błąd sieci', remove: true });
+                xhr.send(formData);
+            }) : undefined,
+            setup: (ed) => {
+                ed.options.register('inline_snippets', { processor: 'array', default: [] });
+                ed.ui.registry.addMenuButton('snippets', {
+                    text: 'Wstaw',
+                    icon: 'plus',
+                    tooltip: 'Wstaw gotowy blok treści',
+                    fetch: (callback) => callback((ed.options.get('inline_snippets') || []).map((snippet) => ({
+                        type: 'menuitem',
+                        text: snippet.text,
+                        onAction: () => ed.insertContent(snippet.html),
+                    }))),
+                });
+                ed.on('input change undo redo SetContent', (e) => {
+                    if (e.type === 'setcontent' && e.initial) return;
+                    this.dirty = true;
+                });
+            },
+        });
+        return editor;
+    },
+
+    _getRichContent(field) {
+        return this.engine === 'ckeditor' ? field.editor.getData() : field.editor.getContent();
+    },
+
+    _destroyRichEditor(field) {
+        try {
+            this.engine === 'ckeditor' ? field.editor.destroy() : field.editor.remove();
+        } catch (e) { /* edytor mógł już zniknąć */ }
+    },
+
+    // ── API zgodne wstecz (szablony federation/wrzos: zapis po blur) ──
+    async saveField(field, value) {
+        await this._legacySave({ field, value });
+    },
+
+    async saveArrayField(field, index, subfield, value) {
+        await this._legacySave({ field, index, subfield, value });
+    },
+
+    async _legacySave(payload) {
+        this.saving = true;
+        this.saveSuccess = false;
+        this.error = null;
+        try {
+            await this._request(payload);
+            this.saveSuccess = true;
+            setTimeout(() => { this.saveSuccess = false; }, 2000);
         } catch (e) {
             this.error = 'Nie udało się zapisać zmiany. Spróbuj ponownie.';
         } finally {
             this.saving = false;
         }
     },
-}));
+
+    async _request(payload) {
+        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
+        const res = await fetch(saveUrl, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' },
+            body: JSON.stringify({ model, id, ...payload }),
+        });
+        if (!res.ok) {
+            const json = await res.json().catch(() => ({}));
+            throw new Error(json.message ?? ('HTTP ' + res.status));
+        }
+    },
+    });
+});
 
 // Odtwarzacz audio (TTS) — czyta treść artykułu przez SpeechSynthesis.
 // Używany w news/show.blade.php i page/show.blade.php.
