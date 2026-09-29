@@ -1482,6 +1482,20 @@
                     <p class="mt-1 text-xs text-muted">Pokazuje się nad listą rachunków na podstronie /kontakt. Można zostawić puste albo wpisać coś, nawet jeśli nie dodałeś żadnego rachunku powyżej.</p>
                     @error('contact_bank_accounts_note') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                 </div>
+
+                <div class="border-t border-gray-200 pt-4">
+                    <p class="mb-2 text-sm font-bold">Układ listy rachunków</p>
+                    @php $bankLayout = old('contact_bank_accounts_layout', $settings->contact_bank_accounts_layout ?: 'cards'); @endphp
+                    <div class="grid gap-2 sm:grid-cols-2">
+                        @foreach (\App\Models\SiteSetting::BANK_ACCOUNTS_LAYOUTS as $blValue => $blLabel)
+                            <label class="flex cursor-pointer items-start gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2.5 has-[:checked]:border-brand has-[:checked]:bg-brand-light">
+                                <input type="radio" name="contact_bank_accounts_layout" value="{{ $blValue }}" {{ $bankLayout === $blValue ? 'checked' : '' }} class="mt-0.5 text-brand focus:ring-brand">
+                                <span class="text-sm"><span class="font-bold">{{ \Illuminate\Support\Str::before($blLabel, ' (') }}</span><span class="block text-xs text-muted">{{ \Illuminate\Support\Str::of($blLabel)->after('(')->before(')') }}</span></span>
+                            </label>
+                        @endforeach
+                    </div>
+                    @error('contact_bank_accounts_layout') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                </div>
             </div>
 
             {{-- Sekcja „Spotkajmy się": online (zalecane) + harmonogram stacjonarny --}}

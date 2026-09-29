@@ -189,6 +189,7 @@ class SiteSettingController extends Controller
             'contact_bank_accounts.*.number' => ['nullable', 'string', 'max:80'],
             'contact_bank_accounts.*.purpose' => ['nullable', 'string', 'max:500'],
             'contact_bank_accounts_note' => ['nullable', 'string', 'max:2000'],
+            'contact_bank_accounts_layout' => ['nullable', Rule::in(array_keys(SiteSetting::BANK_ACCOUNTS_LAYOUTS))],
             'contact_meeting_title' => ['nullable', 'string', 'max:255'],
             'contact_online_meeting_url' => ['nullable', 'string', 'max:255'],
             'contact_online_meeting_label' => ['nullable', 'string', 'max:100'],

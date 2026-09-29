@@ -98,4 +98,35 @@ class SiteSettingsBankAccountsTest extends TestCase
         $response->assertSee('PL61 1090 1014 0000 0712 1981 2874');
         $response->assertSee('Darowizny na cele statutowe');
     }
+
+    public function test_each_bank_accounts_layout_renders_numbers_and_copy_buttons(): void
+    {
+        foreach (array_keys(SiteSetting::BANK_ACCOUNTS_LAYOUTS) as $layout) {
+            SiteSetting::current()->forceFill([
+                'contact_bank_accounts' => [
+                    ['number' => 'PL61 1090 1014 0000 0712 1981 2874', 'purpose' => 'Darowizny na cele statutowe'],
+                    ['number' => 'PL88 1020 2906 0000 1302 0661 7932', 'purpose' => 'Działalność odpłatna'],
+                ],
+                'contact_bank_accounts_layout' => $layout,
+            ])->save();
+            \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();
+
+            $html = $this->get('/kontakt')->assertOk()
+                ->assertSee('Numery rachunków bankowych')
+                ->assertSee('PL61 1090 1014 0000 0712 1981 2874')
+                ->assertSee('PL88 1020 2906 0000 1302 0661 7932')
+                ->assertSee('Darowizny na cele statutowe')
+                ->getContent();
+
+            // Dwa przyciski „Kopiuj" (selektor w skrypcie kopiowania też zawiera ten atrybut, stąd liczymy wartości).
+            $this->assertSame(2, substr_count($html, 'data-copy-value="PL'), "Układ {$layout}: dwa przyciski kopiowania");
+            if ($layout === 'table') {
+                $this->assertStringContainsString('<caption class="sr-only">', $html);
+                $this->assertStringContainsString('scope="row"', $html);
+            }
+            if ($layout === 'highlight') {
+                $this->assertStringContainsString('Główny rachunek', $html);
+            }
+        }
+    }
 }

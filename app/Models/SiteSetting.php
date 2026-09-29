@@ -109,6 +109,14 @@ class SiteSetting extends Model implements HasMedia
      * Layouts for the main navigation bar, keyed by the value stored in
      * `header_layout`.
      */
+    /** Układy sekcji „Numery rachunków bankowych" na stronie kontaktowej. */
+    public const BANK_ACCOUNTS_LAYOUTS = [
+        'cards'     => 'Karty w siatce (ikona, przeznaczenie, numer, „Kopiuj")',
+        'list'      => 'Lista wierszy (przeznaczenie po lewej, numer po prawej)',
+        'table'     => 'Tabela (przeznaczenie | numer | kopiuj) — jak w BIP',
+        'highlight' => 'Wyróżniony główny rachunek + pozostałe jako lista',
+    ];
+
     public const HEADER_LAYOUTS = [
         'classic' => 'Klasyczny (menu na białym tle, obok logo)',
         'brand_bar' => 'Pasek w kolorze marki (menu na osobnym pasku pod logo)',
@@ -194,7 +202,7 @@ class SiteSetting extends Model implements HasMedia
         'slug', 'domain', 'parent_site_id',
         'site_name', 'site_name_genitive', 'tagline', 'brand_color', 'brand_color_2', 'brand_color_3', 'brand_color_4', 'brand_skip_contrast', 'nav_dark_text', 'ngo_skip_contrast', 'meta_description', 'allow_indexing', 'ga_measurement_id', 'disabled_modules', 'homepage_section_order', 'events_home_color', 'quick_actions_panel_negative',
         'bip_url', 'bip_intro', 'bip_editor_name', 'bip_editor_email', 'bip_gov_url', 'bip_mode', 'facebook_url', 'facebook_group_url', 'twitter_url', 'instagram_url', 'linkedin_url', 'youtube_url', 'substack_url',
-        'contact_address', 'contact_city', 'contact_email', 'contact_phone', 'contact_office_hours', 'contact_intro', 'contact_bank_accounts', 'contact_bank_accounts_note',
+        'contact_address', 'contact_city', 'contact_email', 'contact_phone', 'contact_office_hours', 'contact_intro', 'contact_bank_accounts', 'contact_bank_accounts_note', 'contact_bank_accounts_layout',
         'contact_correspondence_title', 'contact_correspondence_note',
         'contact_meeting_title', 'contact_online_meeting_url', 'contact_online_meeting_label', 'contact_online_meeting_text',
         'contact_schedule_title', 'contact_schedule', 'contact_schedule_enabled', 'contact_no_schedule_note', 'contact_remote_note', 'contact_meeting_notify_email',
