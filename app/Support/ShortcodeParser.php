@@ -37,6 +37,14 @@ class ShortcodeParser
         return $content;
     }
 
+    /** Wzorzec wszystkich shortcodów — do wykrywania (np. wyłączenie edycji inline). */
+    public const DETECT_PATTERN = '/\[(?:(?:formularz|kafelki):[a-z0-9_\-]+|klauzule-rodo(?::[a-z]{2})?)\]/i';
+
+    public static function has(?string $content): bool
+    {
+        return filled($content) && (bool) preg_match(self::DETECT_PATTERN, $content);
+    }
+
     private static function renderForm(string $slug): string
     {
         static $cache = [];
