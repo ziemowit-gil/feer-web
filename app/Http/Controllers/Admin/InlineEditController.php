@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Page;
+use App\Models\Project;
 use App\Models\SiteSetting;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -26,6 +27,17 @@ class InlineEditController extends Controller
             'module' => 'pages',
             'fields' => [
                 'title' => ['required', 'string', 'max:255'],
+                'content' => ['nullable', 'string'],
+            ],
+        ],
+        // Reguły jak w Admin\ProjectController (tytuł, lead, dla kogo, opis).
+        'project' => [
+            'model' => Project::class,
+            'module' => 'projects',
+            'fields' => [
+                'title' => ['required', 'string', 'max:255'],
+                'excerpt' => ['nullable', 'string', 'max:255'],
+                'for_whom' => ['nullable', 'string', 'max:255'],
                 'content' => ['nullable', 'string'],
             ],
         ],

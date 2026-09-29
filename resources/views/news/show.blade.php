@@ -39,7 +39,8 @@
     @if ($canQuickEdit)
         <div x-data="newsInlineEditor(
             @js(['title' => $news->title, 'excerpt' => $news->excerpt, 'is_published' => $news->is_published]),
-            '{{ route('admin.newsy.szybka-edycja', $news) }}'
+            '{{ route('admin.newsy.szybka-edycja', $news) }}',
+            @js(['engine' => $siteSettings->contentEditorValue(), 'uploadUrl' => route('admin.multimedia.upload-ajax'), 'richContent' => ! \App\Support\ShortcodeParser::has($news->content)])
         )">
             @include('partials.news-editor-bar')
     @endif
@@ -108,7 +109,7 @@
                             class="w-full rounded-lg object-cover sm:aspect-[4/3]">
                     </div>
                     <div class="min-w-0 flex-1">
-                        <div id="article-text" class="prose max-w-none text-ink">@shortcodes($news->content)</div>
+                        <div id="article-text" data-news-content class="prose max-w-none text-ink">@shortcodes($news->content)</div>
                     </div>
                 </div>
             @else
@@ -117,7 +118,7 @@
                     <img src="{{ $img }}" alt="{{ $imgAlt }}" data-lightbox
                         class="mb-6 w-full rounded-lg object-cover {{ $articleLayout === 'wide' ? 'h-96' : 'h-64' }}">
                 @endif
-                <div id="article-text" class="prose max-w-none text-ink">@shortcodes($news->content)</div>
+                <div id="article-text" data-news-content class="prose max-w-none text-ink">@shortcodes($news->content)</div>
             @endif
 
             <div class="mt-8 flex flex-wrap gap-3 print:hidden" aria-label="Opcje artykułu">

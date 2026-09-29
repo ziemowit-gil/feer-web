@@ -16,6 +16,7 @@
 
 @section('content')
     @php
+        $canInlineEdit = auth('web')->check() && auth('web')->user()->canAccessModule('projects');
         $customSections = collect($project->custom_sections ?? [])
             ->filter(fn ($s) => ! empty($s['title']) || ! empty($s['content']));
         $featuredSections = $customSections->filter(fn ($s) => ! empty($s['featured']));
@@ -35,11 +36,15 @@
             ? ($schedulePage->project_display === 'inline' ? '#harmonogram-'.$schedulePage->id : route('page.show', $schedulePage))
             : null;
     @endphp
+    <div @if ($canInlineEdit) x-data="inlineContentEditor('project', {{ $project->id }}, '{{ route('admin.inline-edit.update') }}', { engine: '{{ $siteSettings->contentEditorValue() }}', uploadUrl: '{{ route('admin.multimedia.upload-ajax') }}' })" @endif>
+    @if ($canInlineEdit)
+        @include('partials.inline-edit-bar')
+    @endif
     <section class="mx-auto max-w-4xl px-4 py-12">
         <a href="{{ route('categories.show', $project->category) }}" class="mb-2 inline-block text-sm font-bold uppercase tracking-wide text-brand hover:text-brand-dark">
             {{ $project->category->name }}
         </a>
-        <h1 class="{{ $project->is_completed ? 'mb-3' : 'mb-8' }} text-3xl font-bold text-ink">{{ $project->title }}</h1>
+        <h1 class="{{ $project->is_completed ? 'mb-3' : 'mb-8' }} text-3xl font-bold text-ink" @if ($canInlineEdit) data-inline-field="title" data-inline-kind="text" @endif>{{ $project->title }}</h1>
         @if ($project->is_completed)
             <p class="mb-8">
                 <span class="inline-flex items-center rounded-full bg-emerald-50 px-4 py-1.5 text-sm font-bold text-emerald-700 ring-1 ring-emerald-200">Projekt zrealizowany</span>
@@ -80,7 +85,7 @@
                         <dt class="mb-0.5 flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-muted">
                             <i class="fa-solid fa-users text-brand" aria-hidden="true"></i> Dla kogo
                         </dt>
-                        <dd class="font-medium text-ink">{{ $project->for_whom }}</dd>
+                        <dd class="font-medium text-ink" @if ($canInlineEdit) data-inline-field="for_whom" data-inline-kind="text" data-inline-multiline @endif>{{ $project->for_whom }}</dd>
                     </div>
                 @endif
                 @if ($project->since)
@@ -151,7 +156,7 @@
                     <h2 class="mb-3 flex items-center gap-2 text-xl font-bold text-ink">
                         <i class="fa-solid fa-circle-info text-brand" aria-hidden="true"></i> Opis projektu
                     </h2>
-                    <div class="prose mb-8 max-w-none text-ink">{!! $project->content !!}</div>
+                    <div class="prose mb-8 max-w-none text-ink" @if ($canInlineEdit) data-inline-field="content" data-inline-kind="rich" @endif>{!! $project->content !!}</div>
                 @endif
 
                 @if ($project->why)
@@ -400,4 +405,5 @@
             });
         })();
     </script>
+    </div>
 @endsection

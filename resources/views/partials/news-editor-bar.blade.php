@@ -39,7 +39,7 @@
                 <template x-if="!saveSuccess && editMode">
                     <span class="flex items-center gap-1.5 font-medium text-brand">
                         <i class="fa-solid fa-pen" aria-hidden="true"></i>
-                        Tryb edycji — zmień tytuł lub lead poniżej.
+                        Tryb edycji — zmień tytuł, lead poniżej albo kliknij w treść i edytuj ją z paskiem narzędzi.
                     </span>
                 </template>
                 <template x-if="!saveSuccess && !editMode">
@@ -114,6 +114,9 @@
                 </button>
             </div>
         </div>
+
+        {{-- Pasek narzędzi edytora treści (TinyMCE inline, przypięty) — wypełnia się po kliknięciu w treść. --}}
+        <div id="inline-editor-toolbar" x-show="editMode && hasRichFields" x-cloak class="inline-editor-toolbar border-t border-gray-100 bg-gray-50"></div>
 
         {{-- Dodatkowe pola dostępne tylko w treści strony niewidoczne domyślnie: lead + publikacja --}}
         <div x-show="editMode" x-cloak class="border-t border-gray-100 bg-gray-50 px-4 py-3">

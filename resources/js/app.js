@@ -171,7 +171,14 @@ Alpine.data('homepageEditor', (initialOrder, saveUrl) => ({
 // Komponent szybkiej edycji aktualności wprost na froncie (news/show.blade.php) —
 // tytuł, lead i status publikacji, bez wchodzenia do panelu. Analogiczny w
 // zachowaniu do homepageEditor (pasek u góry, tryb edycji, zapis przez fetch).
-Alpine.data('newsInlineEditor', (initial, saveUrl) => ({
+Alpine.data('newsInlineEditor', (initial, saveUrl, options = {}) => {
+    // Edytor treści trzymany poza reaktywnością Alpine (proxy psuje TinyMCE).
+    let contentEditor = null;
+    let contentEl = null;
+    let contentInitialHtml = '';
+    const engine = options.engine === 'ckeditor' ? 'ckeditor' : 'tinymce';
+
+    return ({
     editMode: false,
     collapsed: localStorage.getItem('admin-bar-collapsed') === '1',
     form: { ...initial },
@@ -179,6 +186,27 @@ Alpine.data('newsInlineEditor', (initial, saveUrl) => ({
     saving: false,
     saveSuccess: false,
     error: null,
+    contentDirty: false,
+    get hasRichFields() { return !! (options.richContent && document.querySelector('[data-news-content]')); },
+
+    async mountContentEditor() {
+        contentEl = options.richContent ? document.querySelector('[data-news-content]') : null;
+        if (! contentEl) return;
+        contentInitialHtml = contentEl.innerHTML;
+        try {
+            contentEditor = await createRichEditor(contentEl, { engine, uploadUrl: options.uploadUrl, onDirty: () => { this.contentDirty = true; } });
+        } catch (e) {
+            console.error(e);
+            this.error = 'Nie udało się załadować edytora treści (brak połączenia z CDN?).';
+        }
+    },
+
+    unmountContentEditor(restore) {
+        if (contentEditor) destroyRichEditor(engine, contentEditor);
+        contentEditor = null;
+        if (restore && contentEl) contentEl.innerHTML = contentInitialHtml;
+        this.contentDirty = false;
+    },
 
     toggleBar() {
         this.collapsed = !this.collapsed;
@@ -186,17 +214,23 @@ Alpine.data('newsInlineEditor', (initial, saveUrl) => ({
     },
 
     hasChanges() {
-        return JSON.stringify(this.form) !== JSON.stringify(this.initialForm);
+        return this.contentDirty || JSON.stringify(this.form) !== JSON.stringify(this.initialForm);
     },
 
     toggleEdit() {
         this.editMode = !this.editMode;
         this.error = null;
-        if (!this.editMode) this.form = { ...this.initialForm };
+        if (this.editMode) {
+            this.mountContentEditor();
+        } else {
+            this.form = { ...this.initialForm };
+            this.unmountContentEditor(true);
+        }
     },
 
     discard() {
         this.form = { ...this.initialForm };
+        this.unmountContentEditor(true);
         this.editMode = false;
         this.error = null;
     },
@@ -206,6 +240,8 @@ Alpine.data('newsInlineEditor', (initial, saveUrl) => ({
         this.error = null;
         try {
             const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
+            const payload = { ...this.form };
+            if (contentEditor) payload.content = getRichContent(engine, contentEditor);
             const res = await fetch(saveUrl, {
                 method: 'PATCH',
                 headers: {
@@ -213,13 +249,14 @@ Alpine.data('newsInlineEditor', (initial, saveUrl) => ({
                     'X-CSRF-TOKEN': csrfToken,
                     'Accept': 'application/json',
                 },
-                body: JSON.stringify(this.form),
+                body: JSON.stringify(payload),
             });
             if (!res.ok) {
                 const json = await res.json().catch(() => ({}));
                 throw new Error(json.message ?? `HTTP ${res.status}`);
             }
             this.initialForm = { ...this.form };
+            this.unmountContentEditor(false);
             this.editMode = false;
             this.saveSuccess = true;
             // Przeładuj po chwili, żeby PHP wyrenderował nowy tytuł (breadcrumb, <title> itd.).
@@ -230,7 +267,8 @@ Alpine.data('newsInlineEditor', (initial, saveUrl) => ({
             this.saving = false;
         }
     },
-}));
+    });
+});
 
 // Wizualna edycja "na żywo" — alternatywa dla formularzy admina. Kliknij pole
 // (tytuł, treść) na realnej stronie i edytuj bezpośrednio; zapis pojedynczego
@@ -263,6 +301,108 @@ function loadInlineEditorScript(src, isReady) {
         });
     }
     return window.__inlineEditorLoads[src];
+}
+
+// Osadza edytor WYSIWYG (TinyMCE inline / CKEditor 5 inline) w istniejącym
+// elemencie strony. Zwraca instancję; onDirty wywoływane przy każdej zmianie.
+async function createRichEditor(el, { engine = 'tinymce', uploadUrl = null, onDirty = () => {} } = {}) {
+const self = { engine, uploadUrl, dirty: false };
+Object.defineProperty(self, 'dirty', { set: (v) => { if (v) onDirty(); }, get: () => false });
+return (async function () {
+    if (self.engine === 'ckeditor') {
+        await loadInlineEditorScript(INLINE_EDITOR_SCRIPTS.ckeditor, () => !!window.InlineEditor);
+        const editor = await window.InlineEditor.create(el, {
+            toolbar: ['heading', '|', 'bold', 'italic', 'link', 'bulletedList', 'numberedList', '|', 'insertTable', 'blockQuote', '|', 'undo', 'redo'],
+            heading: {
+                options: [
+                    { model: 'paragraph', title: 'Akapit', class: 'ck-heading_paragraph' },
+                    { model: 'heading2', view: 'h2', title: 'Nagłówek 2', class: 'ck-heading_heading2' },
+                    { model: 'heading3', view: 'h3', title: 'Nagłówek 3', class: 'ck-heading_heading3' },
+                    { model: 'heading4', view: 'h4', title: 'Nagłówek 4', class: 'ck-heading_heading4' },
+                ],
+            },
+        });
+        editor.model.document.on('change:data', () => { self.dirty = true; });
+        return editor;
+    }
+
+    await loadInlineEditorScript(INLINE_EDITOR_SCRIPTS.tinymce, () => !!window.tinymce);
+    const csrf = document.querySelector('meta[name="csrf-token"]')?.content;
+    const uploadUrl = self.uploadUrl;
+    const [editor] = await window.tinymce.init({
+        target: el,
+        inline: true,
+        license_key: 'gpl',
+        menubar: false,
+        branding: false,
+        convert_urls: false,
+        plugins: 'lists advlist link image table autolink anchor quickbars code charmap',
+        toolbar: 'undo redo | blocks | bold italic underline strikethrough forecolor | bullist numlist outdent indent | alignleft aligncenter alignright | link image table blockquote hr | snippets | charmap removeformat | code',
+        toolbar_mode: 'wrap',
+        toolbar_persist: true,
+        fixed_toolbar_container: '#inline-editor-toolbar',
+        block_formats: 'Akapit=p; Nagłówek 2=h2; Nagłówek 3=h3; Nagłówek 4=h4',
+        // Paleta zgodna z identyfikacją (kolory o kontraście ≥ 4.5:1 na bieli).
+        color_map: ['c31432', 'Kolor marki', '8f0e24', 'Kolor marki (ciemny)', '1a1a1a', 'Tekst', '4b5563', 'Tekst pomocniczy', '0075cf', 'Niebieski', '15803d', 'Zielony'],
+        custom_colors: false,
+        quickbars_insert_toolbar: false,
+        quickbars_selection_toolbar: 'bold italic underline | h2 h3 | link blockquote',
+        // Gotowe bloki treści — te same klasy co w edytorze w panelu
+        // (style w resources/css/app.css: .cta-button, .content-box, …).
+        inline_snippets: [
+            { text: 'Przycisk CTA', html: '<p><a href="#" class="cta-button">Sprawdź więcej</a></p><p>&nbsp;</p>' },
+            { text: 'Tekst w ramce', html: '<div class="content-box"><p>Wpisz tutaj tekst w ramce…</p></div><p>&nbsp;</p>' },
+            { text: 'Notatka / ostrzeżenie', html: '<div class="content-note"><p>Wpisz tutaj treść notatki lub ostrzeżenia…</p></div><p>&nbsp;</p>' },
+            { text: 'Ważna informacja', html: '<div class="content-important"><p><strong>Ważne</strong></p><p>Wpisz tutaj treść ważnej informacji…</p></div><p>&nbsp;</p>' },
+            { text: 'Dwie kolumny', html: '<div class="content-columns"><div class="content-column"><p>Pierwsza kolumna…</p></div><div class="content-column"><p>Druga kolumna…</p></div></div><p>&nbsp;</p>' },
+            { text: 'Tabela dostępna (nagłówki + opis)', html: '<table><caption>Opis tabeli</caption><thead><tr><th scope="col">Kolumna 1</th><th scope="col">Kolumna 2</th></tr></thead><tbody><tr><th scope="row">Wiersz 1</th><td>Dane</td></tr></tbody></table><p>&nbsp;</p>' },
+        ],
+        paste_data_images: !!uploadUrl,
+        automatic_uploads: !!uploadUrl,
+        images_upload_handler: uploadUrl ? (blobInfo, progress) => new Promise((resolve, reject) => {
+            const formData = new FormData();
+            formData.append('file', blobInfo.blob(), blobInfo.filename());
+            formData.append('_token', csrf);
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', uploadUrl);
+            xhr.upload.onprogress = (e) => { if (e.lengthComputable) progress(e.loaded / e.total * 100); };
+            xhr.onload = () => {
+                if (xhr.status >= 200 && xhr.status < 300) resolve(JSON.parse(xhr.responseText).location);
+                else reject({ message: 'Błąd uploadu (' + xhr.status + ')', remove: true });
+            };
+            xhr.onerror = () => reject({ message: 'Błąd sieci', remove: true });
+            xhr.send(formData);
+        }) : undefined,
+        setup: (ed) => {
+            ed.options.register('inline_snippets', { processor: 'array', default: [] });
+            ed.ui.registry.addMenuButton('snippets', {
+                text: 'Wstaw',
+                icon: 'plus',
+                tooltip: 'Wstaw gotowy blok treści',
+                fetch: (callback) => callback((ed.options.get('inline_snippets') || []).map((snippet) => ({
+                    type: 'menuitem',
+                    text: snippet.text,
+                    onAction: () => ed.insertContent(snippet.html),
+                }))),
+            });
+            ed.on('input change undo redo SetContent', (e) => {
+                if (e.type === 'setcontent' && e.initial) return;
+                self.dirty = true;
+            });
+        },
+    });
+    return editor;
+})();
+}
+
+function getRichContent(engine, editor) {
+return engine === 'ckeditor' ? editor.getData() : editor.getContent();
+}
+
+function destroyRichEditor(engine, editor) {
+try {
+    engine === 'ckeditor' ? editor.destroy() : editor.remove();
+} catch (e) { /* edytor mógł już zniknąć */ }
 }
 
 Alpine.data('inlineContentEditor', (model, id, saveUrl, options = {}) => {
@@ -320,7 +460,7 @@ Alpine.data('inlineContentEditor', (model, id, saveUrl, options = {}) => {
                     this._attachPlainEditing(field, true);
                 }
             } else {
-                this._attachPlainEditing(field, false);
+                this._attachPlainEditing(field, el.dataset.inlineMultiline !== undefined);
             }
             fields.push(field);
         }
@@ -394,101 +534,17 @@ Alpine.data('inlineContentEditor', (model, id, saveUrl, options = {}) => {
         if (field._onKey) el.removeEventListener('keydown', field._onKey);
     },
 
-    // ── Edytor WYSIWYG ─────────────────────────────────────────────
+    // ── Edytor WYSIWYG (wspólne funkcje modułu, patrz createRichEditor) ──
     async _createRichEditor(el) {
-        if (this.engine === 'ckeditor') {
-            await loadInlineEditorScript(INLINE_EDITOR_SCRIPTS.ckeditor, () => !!window.InlineEditor);
-            const editor = await window.InlineEditor.create(el, {
-                toolbar: ['heading', '|', 'bold', 'italic', 'link', 'bulletedList', 'numberedList', '|', 'insertTable', 'blockQuote', '|', 'undo', 'redo'],
-                heading: {
-                    options: [
-                        { model: 'paragraph', title: 'Akapit', class: 'ck-heading_paragraph' },
-                        { model: 'heading2', view: 'h2', title: 'Nagłówek 2', class: 'ck-heading_heading2' },
-                        { model: 'heading3', view: 'h3', title: 'Nagłówek 3', class: 'ck-heading_heading3' },
-                        { model: 'heading4', view: 'h4', title: 'Nagłówek 4', class: 'ck-heading_heading4' },
-                    ],
-                },
-            });
-            editor.model.document.on('change:data', () => { this.dirty = true; });
-            return editor;
-        }
-
-        await loadInlineEditorScript(INLINE_EDITOR_SCRIPTS.tinymce, () => !!window.tinymce);
-        const csrf = document.querySelector('meta[name="csrf-token"]')?.content;
-        const uploadUrl = this.uploadUrl;
-        const [editor] = await window.tinymce.init({
-            target: el,
-            inline: true,
-            license_key: 'gpl',
-            menubar: false,
-            branding: false,
-            convert_urls: false,
-            plugins: 'lists advlist link image table autolink anchor quickbars code charmap',
-            toolbar: 'undo redo | blocks | bold italic underline strikethrough forecolor | bullist numlist outdent indent | alignleft aligncenter alignright | link image table blockquote hr | snippets | charmap removeformat | code',
-            toolbar_mode: 'wrap',
-            toolbar_persist: true,
-            fixed_toolbar_container: '#inline-editor-toolbar',
-            block_formats: 'Akapit=p; Nagłówek 2=h2; Nagłówek 3=h3; Nagłówek 4=h4',
-            // Paleta zgodna z identyfikacją (kolory o kontraście ≥ 4.5:1 na bieli).
-            color_map: ['c31432', 'Kolor marki', '8f0e24', 'Kolor marki (ciemny)', '1a1a1a', 'Tekst', '4b5563', 'Tekst pomocniczy', '0075cf', 'Niebieski', '15803d', 'Zielony'],
-            custom_colors: false,
-            quickbars_insert_toolbar: false,
-            quickbars_selection_toolbar: 'bold italic underline | h2 h3 | link blockquote',
-            // Gotowe bloki treści — te same klasy co w edytorze w panelu
-            // (style w resources/css/app.css: .cta-button, .content-box, …).
-            inline_snippets: [
-                { text: 'Przycisk CTA', html: '<p><a href="#" class="cta-button">Sprawdź więcej</a></p><p>&nbsp;</p>' },
-                { text: 'Tekst w ramce', html: '<div class="content-box"><p>Wpisz tutaj tekst w ramce…</p></div><p>&nbsp;</p>' },
-                { text: 'Notatka / ostrzeżenie', html: '<div class="content-note"><p>Wpisz tutaj treść notatki lub ostrzeżenia…</p></div><p>&nbsp;</p>' },
-                { text: 'Ważna informacja', html: '<div class="content-important"><p><strong>Ważne</strong></p><p>Wpisz tutaj treść ważnej informacji…</p></div><p>&nbsp;</p>' },
-                { text: 'Dwie kolumny', html: '<div class="content-columns"><div class="content-column"><p>Pierwsza kolumna…</p></div><div class="content-column"><p>Druga kolumna…</p></div></div><p>&nbsp;</p>' },
-                { text: 'Tabela dostępna (nagłówki + opis)', html: '<table><caption>Opis tabeli</caption><thead><tr><th scope="col">Kolumna 1</th><th scope="col">Kolumna 2</th></tr></thead><tbody><tr><th scope="row">Wiersz 1</th><td>Dane</td></tr></tbody></table><p>&nbsp;</p>' },
-            ],
-            paste_data_images: !!uploadUrl,
-            automatic_uploads: !!uploadUrl,
-            images_upload_handler: uploadUrl ? (blobInfo, progress) => new Promise((resolve, reject) => {
-                const formData = new FormData();
-                formData.append('file', blobInfo.blob(), blobInfo.filename());
-                formData.append('_token', csrf);
-                const xhr = new XMLHttpRequest();
-                xhr.open('POST', uploadUrl);
-                xhr.upload.onprogress = (e) => { if (e.lengthComputable) progress(e.loaded / e.total * 100); };
-                xhr.onload = () => {
-                    if (xhr.status >= 200 && xhr.status < 300) resolve(JSON.parse(xhr.responseText).location);
-                    else reject({ message: 'Błąd uploadu (' + xhr.status + ')', remove: true });
-                };
-                xhr.onerror = () => reject({ message: 'Błąd sieci', remove: true });
-                xhr.send(formData);
-            }) : undefined,
-            setup: (ed) => {
-                ed.options.register('inline_snippets', { processor: 'array', default: [] });
-                ed.ui.registry.addMenuButton('snippets', {
-                    text: 'Wstaw',
-                    icon: 'plus',
-                    tooltip: 'Wstaw gotowy blok treści',
-                    fetch: (callback) => callback((ed.options.get('inline_snippets') || []).map((snippet) => ({
-                        type: 'menuitem',
-                        text: snippet.text,
-                        onAction: () => ed.insertContent(snippet.html),
-                    }))),
-                });
-                ed.on('input change undo redo SetContent', (e) => {
-                    if (e.type === 'setcontent' && e.initial) return;
-                    this.dirty = true;
-                });
-            },
-        });
-        return editor;
+        return createRichEditor(el, { engine: this.engine, uploadUrl: this.uploadUrl, onDirty: () => { this.dirty = true; } });
     },
 
     _getRichContent(field) {
-        return this.engine === 'ckeditor' ? field.editor.getData() : field.editor.getContent();
+        return getRichContent(this.engine, field.editor);
     },
 
     _destroyRichEditor(field) {
-        try {
-            this.engine === 'ckeditor' ? field.editor.destroy() : field.editor.remove();
-        } catch (e) { /* edytor mógł już zniknąć */ }
+        destroyRichEditor(this.engine, field.editor);
     },
 
     // ── API zgodne wstecz (szablony federation/wrzos: zapis po blur) ──

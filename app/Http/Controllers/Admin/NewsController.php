@@ -175,6 +175,8 @@ class NewsController extends Controller
             'title' => ['required', 'string', 'max:255'],
             'excerpt' => ['nullable', 'string', 'max:255'],
             'is_published' => ['required', 'boolean'],
+            // Treść z edytora WYSIWYG na stronie — tylko gdy przesłana (starsze paski jej nie wysyłają).
+            'content' => ['sometimes', 'nullable', 'string'],
         ]);
 
         $news->update($data);
