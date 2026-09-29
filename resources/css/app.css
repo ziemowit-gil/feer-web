@@ -694,3 +694,41 @@ html.no-animations .nav-mega-panel { transition: none !important; }
 .picker-color-light { box-shadow: 0 0 0 1px #9ca3af; }
 .picker-custom { display: inline-flex; align-items: center; gap: .5rem; color: #1a1a1a; font-weight: 600; }
 .picker-native { width: 2.25rem; height: 2.25rem; padding: 0; border: 1px solid #d1d5db; border-radius: .375rem; background: #fff; cursor: pointer; }
+
+/* ── Szablon "vm" (wzorowany na fundacjavismaior.pl) ──────────────────────
+   Poppins w grubym kroju na nagłówkach, Open Sans na tekście. Fonty ładuje
+   layouts/site.blade.php tylko przy tym szablonie. */
+body.template-vm {
+    --font-sans: 'Open Sans', ui-sans-serif, system-ui, sans-serif;
+    --font-heading: 'Poppins', ui-sans-serif, system-ui, sans-serif;
+    font-family: var(--font-sans);
+}
+.template-vm .vm-display {
+    font-family: var(--font-heading);
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 0.01em;
+}
+/* Nagłówek sekcji z kropkowanymi liniami po bokach (sygnatura VM). */
+.template-vm .vm-section-title {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+}
+.template-vm .vm-section-title::before,
+.template-vm .vm-section-title::after {
+    content: '';
+    flex: 1 1 0;
+    height: 6px;
+    background-image: radial-gradient(circle, var(--color-brand) 2.5px, transparent 3px);
+    background-size: 10px 6px;
+    background-repeat: repeat-x;
+}
+/* Menu główne w belce VM: mniejsze wersaliki Poppins, jak w oryginale. */
+.template-vm .vm-nav > ul {
+    font-family: var(--font-heading);
+    font-size: 0.875rem;
+    font-weight: 600;
+    column-gap: 1.1rem;
+    letter-spacing: 0;
+}

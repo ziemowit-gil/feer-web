@@ -2321,6 +2321,115 @@
                 </p>
             </div>
 
+            {{-- Ustawienia szablonu VM (styl fundacjavismaior.pl) --}}
+            @php
+                $vmButtons = array_values((array) old('vm_intro_buttons', $settings->vm_intro_buttons ?: $settings->vmIntroButtons()));
+                $vmButtons = array_pad($vmButtons, 3, ['label' => '', 'url' => '']);
+                $vmPages = \App\Models\Page::forCurrentSite()->whereNull('parent_id')->orderBy('title')->get(['id', 'title']);
+            @endphp
+            <div x-show="tpl === 'vm'" x-cloak class="space-y-5 rounded-lg border border-gray-200 p-5">
+                <h3 class="text-sm font-bold text-ink">Ustawienia szablonu: VM</h3>
+                <p class="text-xs text-muted">
+                    Czarny pasek (KRS, 1,5%, czcionka, kontrast, kontakt, szukajka), belka z logo i przyciskiem „Wpłać",
+                    slider z kartą (moduł <span class="font-bold">Slider</span>), blok powitalny, aktualności, projekty,
+                    sekcja „Wiedza", współpraca (moduł <span class="font-bold">Partnerzy</span>) i newsletter (kod z zakładki
+                    <span class="font-bold">Newsletter</span>). Blok powitalny można też edytować „na żywo" na stronie głównej.
+                </p>
+
+                <div>
+                    <label for="vm_intro_heading" class="mb-1 block text-sm font-bold">Nagłówek bloku powitalnego</label>
+                    <input type="text" id="vm_intro_heading" name="vm_intro_heading" maxlength="255"
+                        value="{{ old('vm_intro_heading', $settings->vm_intro_heading) }}" placeholder="{{ $settings->site_name }}"
+                        class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                    <p class="mt-1 text-xs text-muted">Puste = nazwa organizacji.</p>
+                    @error('vm_intro_heading') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                </div>
+
+                <div>
+                    <label for="vm_intro_text" class="mb-1 block text-sm font-bold">Tekst bloku powitalnego <span class="font-normal text-muted">(HTML — akapity &lt;p&gt;)</span></label>
+                    <textarea id="vm_intro_text" name="vm_intro_text" rows="6"
+                        class="w-full rounded border-gray-300 font-mono text-sm focus:border-brand focus:ring-brand">{{ old('vm_intro_text', $settings->vm_intro_text) }}</textarea>
+                    @error('vm_intro_text') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                </div>
+
+                <fieldset>
+                    <legend class="mb-1 text-sm font-bold">Przyciski pod blokiem powitalnym</legend>
+                    <p class="mb-2 text-xs text-muted">Wiersz bez etykiety albo adresu jest pomijany. Gdy wszystkie są puste — domyślnie „Wesprzyj nas", „Wolontariat", „Kontakt" (wg włączonych modułów).</p>
+                    <div class="space-y-2">
+                        @foreach (array_slice($vmButtons, 0, 6) as $i => $button)
+                            <div class="grid gap-2 sm:grid-cols-[1fr_2fr]">
+                                <label class="sr-only" for="vm_intro_buttons_{{ $i }}_label">Przycisk {{ $i + 1 }} — etykieta</label>
+                                <input type="text" id="vm_intro_buttons_{{ $i }}_label" name="vm_intro_buttons[{{ $i }}][label]" maxlength="60"
+                                    value="{{ $button['label'] ?? '' }}" placeholder="Etykieta, np. Wesprzyj nas"
+                                    class="rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                                <label class="sr-only" for="vm_intro_buttons_{{ $i }}_url">Przycisk {{ $i + 1 }} — adres</label>
+                                <input type="text" id="vm_intro_buttons_{{ $i }}_url" name="vm_intro_buttons[{{ $i }}][url]" maxlength="255"
+                                    value="{{ $button['url'] ?? '' }}" placeholder="Adres, np. /wsparcie"
+                                    class="rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                            </div>
+                        @endforeach
+                    </div>
+                    @error('vm_intro_buttons.*.url') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                </fieldset>
+
+                <div>
+                    <label for="vm_knowledge_page_id" class="mb-1 block text-sm font-bold">Strona sekcji „Wiedza"</label>
+                    <select id="vm_knowledge_page_id" name="vm_knowledge_page_id"
+                        class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                        <option value="">— nie pokazuj sekcji —</option>
+                        @foreach ($vmPages as $vmPage)
+                            <option value="{{ $vmPage->id }}" @selected((int) old('vm_knowledge_page_id', $settings->vm_knowledge_page_id) === $vmPage->id)>{{ $vmPage->title }}</option>
+                        @endforeach
+                    </select>
+                    <p class="mt-1 text-xs text-muted">Tytuł strony staje się nagłówkiem sekcji, a jej opublikowane podstrony — listą linków.</p>
+                    @error('vm_knowledge_page_id') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                </div>
+
+                @foreach ([
+                    'vm_knowledge_image' => ['Zdjęcie sekcji „Wiedza"', $settings->vmKnowledgeImageUrl(), 'Zdjęcie dekoracyjne po lewej stronie sekcji. Maks. 4 MB.'],
+                    'vm_header_badge' => ['Logo partnera / programu w nagłówku', $settings->vmHeaderBadgeUrl(), 'Np. znak projektu lub źródła finansowania — obok logo organizacji. Maks. 2 MB.'],
+                ] as $vmField => [$vmLabel, $vmUrl, $vmHelp])
+                    <div>
+                        <label for="{{ $vmField }}" class="mb-1 block text-sm font-bold">{{ $vmLabel }}</label>
+                        @if ($vmUrl)
+                            <div class="mb-2 flex items-center gap-3">
+                                <img src="{{ $vmUrl }}" alt="Aktualny plik: {{ $vmLabel }}" class="h-16 w-auto rounded object-contain ring-1 ring-gray-200">
+                                <label class="flex items-center gap-2 text-sm text-muted">
+                                    <input type="checkbox" name="remove_{{ $vmField }}" value="1" class="rounded border-gray-300 text-brand focus:ring-brand">
+                                    Usuń
+                                </label>
+                            </div>
+                        @endif
+                        <input type="file" id="{{ $vmField }}" name="{{ $vmField }}" accept="image/*"
+                            class="block w-full cursor-pointer text-sm text-muted file:mr-3 file:cursor-pointer file:rounded file:border-0 file:bg-brand file:px-4 file:py-2 file:text-sm file:font-bold file:text-white hover:file:bg-brand-dark">
+                        <p class="mt-1 text-xs text-muted">{{ $vmHelp }}</p>
+                        @error($vmField) <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </div>
+                @endforeach
+
+                <div>
+                    <label for="vm_header_badge_alt" class="mb-1 block text-sm font-bold">Tekst alternatywny logo partnera</label>
+                    <input type="text" id="vm_header_badge_alt" name="vm_header_badge_alt" maxlength="255"
+                        value="{{ old('vm_header_badge_alt', $settings->vm_header_badge_alt) }}" placeholder="np. Unia Europejska"
+                        class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                    @error('vm_header_badge_alt') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                </div>
+
+                <div>
+                    <label for="vm_newsletter_text" class="mb-1 block text-sm font-bold">Tekst nad formularzem newslettera</label>
+                    <textarea id="vm_newsletter_text" name="vm_newsletter_text" rows="2" maxlength="500"
+                        class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">{{ old('vm_newsletter_text', $settings->vm_newsletter_text) }}</textarea>
+                    @error('vm_newsletter_text') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                </div>
+
+                <div>
+                    <label for="vm_footer_note" class="mb-1 block text-sm font-bold">Nota w stopce <span class="font-normal text-muted">(np. informacja o finansowaniu)</span></label>
+                    <textarea id="vm_footer_note" name="vm_footer_note" rows="2" maxlength="1000"
+                        class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">{{ old('vm_footer_note', $settings->vm_footer_note) }}</textarea>
+                    @error('vm_footer_note') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                </div>
+            </div>
+
             {{-- Ustawienia szablonu Gmina / urząd --}}
             <div x-show="tpl === 'municipality'" x-cloak class="rounded-lg border border-gray-200 p-5 space-y-5">
                 <h3 class="text-sm font-bold text-ink">Ustawienia szablonu: Gmina / urząd</h3>

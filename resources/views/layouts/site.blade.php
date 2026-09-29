@@ -32,6 +32,10 @@
         <link rel="stylesheet"
               href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;700&family=Montserrat:wght@400;700&family=Pacifico&family=Lato:wght@700&display=swap">
     </noscript>
+    @if (($siteSettings->site_template ?? 'default') === 'vm')
+        {{-- Szablon "vm": Poppins (nagłówki) + Open Sans (tekst). --}}
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&family=Poppins:wght@600;700;900&display=swap">
+    @endif
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @php $brandPalette = $siteSettings->brandPalette($brandColor ?? null); @endphp
     <style>
@@ -63,7 +67,7 @@
     <meta name="vapid-public-key" content="{{ config('webpush.vapid.public_key') }}">
     <link rel="apple-touch-icon" href="/img/pwa-icon-192.png">
 </head>
-<body class="flex min-h-screen flex-col bg-white text-ink antialiased">
+<body @class(['flex min-h-screen flex-col bg-white text-ink antialiased', 'template-vm' => ($siteSettings->site_template ?? 'default') === 'vm'])>
     <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-[100] focus:rounded focus:bg-brand focus:px-4 focus:py-2 focus:text-sm focus:font-bold focus:text-white">
         Przejdź do treści
     </a>
@@ -91,6 +95,12 @@
     @elseif ($siteTemplate === 'wrzos')
         @include('templates.wrzos.partials.topbar')
         @include('templates.wrzos.partials.header')
+    @elseif ($siteTemplate === 'vm')
+        {{-- Jeden landmark „banner": czarny pasek (KRS, dostępność, kontakt, szukajka) + belka z logo i menu. --}}
+        <header class="relative z-30" x-data="siteMobileNav()" @keydown.escape="closeMenu()">
+            @include('templates.vm.partials.topbar')
+            @include('templates.vm.partials.header')
+        </header>
     @else
         {{-- Jeden landmark „banner": pasek górny (ułatwienia, szukajka, BIP, social) + belka z logo i menu. --}}
         <header class="site-header relative z-30">

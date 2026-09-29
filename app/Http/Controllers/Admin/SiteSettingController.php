@@ -344,6 +344,17 @@ class SiteSettingController extends Controller
             'ngo_3_stats.*.value' => ['nullable', 'string', 'max:20'],
             'ngo_3_stats.*.label' => ['nullable', 'string', 'max:100'],
             'ngo_3_stats.*.icon' => ['nullable', 'string', 'max:60'],
+            'vm_intro_heading' => ['nullable', 'string', 'max:255'],
+            'vm_intro_text' => ['nullable', 'string'],
+            'vm_intro_buttons' => ['nullable', 'array', 'max:6'],
+            'vm_intro_buttons.*.label' => ['nullable', 'string', 'max:60'],
+            'vm_intro_buttons.*.url' => ['nullable', 'string', 'max:255', 'not_regex:/^\s*(javascript|data):/i'],
+            'vm_knowledge_page_id' => ['nullable', 'integer', Rule::exists('pages', 'id')],
+            'vm_newsletter_text' => ['nullable', 'string', 'max:500'],
+            'vm_header_badge_alt' => ['nullable', 'string', 'max:255'],
+            'vm_footer_note' => ['nullable', 'string', 'max:1000'],
+            'vm_header_badge' => ['nullable', 'image', 'max:2048'],
+            'vm_knowledge_image' => ['nullable', 'image', 'max:4096'],
         ]);
 
         $data['allow_indexing'] = $request->boolean('allow_indexing');
@@ -536,6 +547,17 @@ class SiteSettingController extends Controller
             ->values()
             ->all() ?: null;
 
+        // Przyciski bloku powitalnego (szablon "vm"): tylko wiersze z etykietą i adresem.
+        $data['vm_intro_buttons'] = collect($request->input('vm_intro_buttons', []))
+            ->map(fn ($b) => [
+                'label' => trim((string) ($b['label'] ?? '')),
+                'url' => trim((string) ($b['url'] ?? '')),
+            ])
+            ->filter(fn ($b) => $b['label'] !== '' && $b['url'] !== '')
+            ->values()
+            ->all() ?: null;
+
+        unset($data['vm_header_badge'], $data['remove_vm_header_badge'], $data['vm_knowledge_image'], $data['remove_vm_knowledge_image']);
         unset($data['logo'], $data['remove_logo'], $data['og_image'], $data['remove_og_image'], $data['support_image'], $data['remove_support_image'], $data['support_gallery'], $data['remove_support_gallery'], $data['news_default_image'], $data['remove_news_default_image'], $data['bip_logo'], $data['remove_bip_logo'], $data['office_photo'], $data['remove_office_photo'], $data['enabled_modules'], $data['section_order_json'], $data['notify_schedule_change']);
 
         $colorWasAdjusted = ! $skipContrast && $data['brand_color'] !== $request->input('brand_color');
@@ -583,6 +605,14 @@ class SiteSettingController extends Controller
             $settings->addMediaFromRequest('office_photo')->toMediaCollection('office_photo');
         } elseif ($request->boolean('remove_office_photo')) {
             $settings->clearMediaCollection('office_photo');
+        }
+
+        foreach (['vm_header_badge', 'vm_knowledge_image'] as $vmCollection) {
+            if ($request->hasFile($vmCollection)) {
+                $settings->addMediaFromRequest($vmCollection)->toMediaCollection($vmCollection);
+            } elseif ($request->boolean('remove_' . $vmCollection)) {
+                $settings->clearMediaCollection($vmCollection);
+            }
         }
 
         // Osobna galeria strony „Wesprzyj nas": najpierw usuwamy odznaczone

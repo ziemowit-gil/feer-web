@@ -11,6 +11,8 @@
     @include('templates.federation.partials.footer')
 @elseif (($siteSettings->site_template ?? 'default') === 'wrzos')
     @include('templates.wrzos.partials.footer')
+@elseif (($siteSettings->site_template ?? 'default') === 'vm')
+    @include('templates.vm.partials.footer')
 @else
 
 <footer>

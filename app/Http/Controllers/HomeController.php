@@ -107,6 +107,26 @@ class HomeController extends Controller
         return view('templates.wrzos.home', compact('newsItems', 'partners'));
     }
 
+    /** Renderuje stronę główną w szablonie "vm" (slider z kartą, blok powitalny, aktualności 4×, projekty, Wiedza, współpraca, newsletter). */
+    private function vmHome(SiteSetting $settings, Collection $slides, Collection $partners)
+    {
+        $newsItems = $settings->isModuleEnabled('news')
+            ? News::published()->forCurrentSite()->with('category')->orderByDesc('published_at')->limit(4)->get()
+            : collect();
+
+        // Tylko aktywne (nie zakończone) projekty — jak w pozostałych szablonach NGO.
+        $projects = $settings->isModuleEnabled('projects')
+            ? Project::forCurrentSite()->where('is_published', true)->where('is_completed', false)->orderBy('order')->limit(3)->get()
+            : collect();
+
+        // Sekcja „Wiedza": wybrana w panelu strona i jej opublikowane podstrony.
+        $knowledgePage = $settings->vm_knowledge_page_id
+            ? Page::forCurrentSite()->where('is_published', true)->with('publishedChildren')->find($settings->vm_knowledge_page_id)
+            : null;
+
+        return view('templates.vm.home', compact('slides', 'newsItems', 'projects', 'knowledgePage', 'partners'));
+    }
+
     /** Wyświetla stronę główną z danymi wszystkich włączonych modułów (hero, aktualności, ankieta itp.). */
     public function index()
     {
@@ -182,6 +202,9 @@ class HomeController extends Controller
         }
         if ($template === 'wrzos') {
             return $this->wrzosHome($settings, $partners);
+        }
+        if ($template === 'vm') {
+            return $this->vmHome($settings, $slides, $partners);
         }
         if ($template === 'ngo_3') {
             return $this->ngo3Home($settings, $slides, $partners, $quickLinks);

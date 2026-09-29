@@ -49,6 +49,9 @@ class InlineEditController extends Controller
             'fields' => [
                 'federation_hero_heading' => ['required', 'string', 'max:255'],
                 'federation_hero_intro' => ['nullable', 'string'],
+                // Blok powitalny szablonu "vm" — reguły jak w Admin\SiteSettingController.
+                'vm_intro_heading' => ['nullable', 'string', 'max:255'],
+                'vm_intro_text' => ['nullable', 'string'],
             ],
             // Pola-tablice (repeatery): edycja pojedynczego podpola jednego elementu.
             // "accessor" to metoda modelu zwracająca aktualną tablicę razem z domyślnymi

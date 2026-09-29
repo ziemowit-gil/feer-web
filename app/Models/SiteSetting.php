@@ -102,6 +102,7 @@ class SiteSetting extends Model implements HasMedia
         'federation'   => 'Federacja organizacji (wielobarwna, nowoczesna)',
         'wrzos'        => 'Federacja organizacji (czerwono-biała, pasek dostępności, siatka wartości)',
         'ngo_3'        => 'NGO / fundacja (rozbudowany 3 — hero, skróty, statystyki, newsletter)',
+        'vm'           => 'VM — fundacja (slider z kartą, blok powitalny, Wiedza, newsletter; styl Vis Maior)',
     ];
 
     /**
@@ -205,6 +206,8 @@ class SiteSetting extends Model implements HasMedia
         'newsletter_code', 'header_layout', 'blocked_options', 'federation_hero_tiles', 'federation_join_benefits', 'federation_hero_heading', 'federation_hero_intro', 'federation_colorful_nav', 'federation_colorful_nav_items', 'federation_show_org_spotlight', 'federation_show_members_banner', 'show_topbar_bip', 'show_topbar_social', 'content_editor',
         'wrzos_intro_heading', 'wrzos_intro_text', 'wrzos_values',
         'ngo_3_stats',
+        'vm_intro_heading', 'vm_intro_text', 'vm_intro_buttons', 'vm_knowledge_page_id',
+        'vm_newsletter_text', 'vm_header_badge_alt', 'vm_footer_note',
         'infobar_show_date', 'infobar_show_nameday', 'office_show_account', 'office_show_search',
         'contact_layout', 'contact_office_address', 'contact_office_city', 'contact_office_building',
         'contact_office_note', 'contact_office_photo_alt', 'contact_hero_photo',
@@ -322,6 +325,8 @@ class SiteSetting extends Model implements HasMedia
         'federation_show_members_banner' => 'boolean',
         'wrzos_values' => 'array',
         'ngo_3_stats' => 'array',
+        'vm_intro_buttons' => 'array',
+        'vm_knowledge_page_id' => 'integer',
         'homepage_section_order' => 'array',
         'contact_bank_accounts' => 'array',
         'contact_schedule' => 'array',
@@ -730,6 +735,66 @@ class SiteSetting extends Model implements HasMedia
     public function wrzosHeroImageUrl(): ?string
     {
         return $this->getFirstMediaUrl('wrzos_hero_image') ?: null;
+    }
+
+    /**
+     * Nagłówek bloku powitalnego szablonu "vm" (pigułka w kolorze marki) —
+     * domyślnie nazwa organizacji.
+     */
+    public function vmIntroHeading(): string
+    {
+        return filled($this->vm_intro_heading) ? $this->vm_intro_heading : (string) $this->site_name;
+    }
+
+    /** Tekst bloku powitalnego szablonu "vm" — HTML (akapity), edytowalny w panelu i inline. */
+    public function vmIntroText(): string
+    {
+        if (filled($this->vm_intro_text)) {
+            return $this->vm_intro_text;
+        }
+
+        return '<p>W ' . e($this->site_name) . ' wspieramy samodzielność i aktywność osób z niepełnosprawnościami'
+            . ' oraz budujemy dla nich przyjazne otoczenie.</p>'
+            . '<p><strong>Zapraszamy — skontaktuj się z nami. Czekamy na Twoje pytania!</strong></p>';
+    }
+
+    /**
+     * Przyciski pod blokiem powitalnym szablonu "vm". Gdy nie ustawiono ich
+     * w panelu, pokazujemy te, które mają dokąd prowadzić (włączone moduły).
+     *
+     * @return array<int, array{label: string, url: string}>
+     */
+    public function vmIntroButtons(): array
+    {
+        if (filled($this->vm_intro_buttons)) {
+            return $this->vm_intro_buttons;
+        }
+
+        return array_values(array_filter([
+            $this->isModuleEnabled('support') ? ['label' => 'Wesprzyj nas', 'url' => route('support.show', absolute: false)] : null,
+            $this->isModuleEnabled('volunteering') ? ['label' => 'Wolontariat', 'url' => route('volunteer.index', absolute: false)] : null,
+            ['label' => 'Kontakt', 'url' => route('contact.show', absolute: false)],
+        ]));
+    }
+
+    /** Tekst zachęty nad formularzem newslettera w szablonie "vm". */
+    public function vmNewsletterText(): string
+    {
+        return filled($this->vm_newsletter_text)
+            ? $this->vm_newsletter_text
+            : 'Zapisz się do newslettera, a będziesz na bieżąco z najświeższymi informacjami z życia ' . $this->site_name . '.';
+    }
+
+    /** Logo partnera / programu (np. znak finansowania) obok logo w nagłówku szablonu "vm". */
+    public function vmHeaderBadgeUrl(): ?string
+    {
+        return $this->getFirstMediaUrl('vm_header_badge') ?: null;
+    }
+
+    /** Zdjęcie sekcji „Wiedza" szablonu "vm" albo null, gdy nie wgrano. */
+    public function vmKnowledgeImageUrl(): ?string
+    {
+        return $this->getFirstMediaUrl('vm_knowledge_image') ?: null;
     }
 
     /** Edytor treści sprowadzony do jednej z obsługiwanych opcji (patrz wyżej). */
@@ -1178,6 +1243,9 @@ class SiteSetting extends Model implements HasMedia
         $this->addMediaCollection('bip_logo')->singleFile();
         $this->addMediaCollection('hero_mission_image')->singleFile();
         $this->addMediaCollection('wrzos_hero_image')->singleFile();
+        // Szablon "vm": logo partnera/programu obok logo w nagłówku i zdjęcie sekcji „Wiedza".
+        $this->addMediaCollection('vm_header_badge')->singleFile();
+        $this->addMediaCollection('vm_knowledge_image')->singleFile();
         // Zdjęcie biura / wejścia do budynku pokazywane na stronie kontaktowej.
         $this->addMediaCollection('office_photo')->singleFile();
         // Osobna galeria dla strony „Wesprzyj nas" (wiele zdjęć, niezależna od
