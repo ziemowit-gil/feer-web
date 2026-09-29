@@ -78,6 +78,7 @@ use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\ShortcutController;
 use App\Http\Controllers\SitemapController;
+use App\Http\Controllers\DonationController;
 use App\Http\Controllers\SupportController;
 use App\Http\Controllers\Bip\BipController;
 use App\Http\Controllers\Bip\BipDocumentController as AdminBipDocumentController;
@@ -236,6 +237,14 @@ Route::get('/subskrypcje/wypisz/{token}', [SubscribeController::class, 'unsubscr
 Route::delete('/subskrypcje/wypisz/{token}', [SubscribeController::class, 'doUnsubscribe'])->name('subskrypcje.do-unsubscribe');
 
 Route::get('/wsparcie', [SupportController::class, 'index'])->name('support.show')->middleware('module:support');
+
+// Darowizna jednorazowa online (Przelewy24 → rejestr darowizn SZO).
+Route::middleware('module:support')->prefix('wsparcie/darowizna')->name('donation.')->group(function () {
+    Route::get('/', [DonationController::class, 'show'])->name('show');
+    Route::post('/', [DonationController::class, 'store'])->name('store')->middleware('throttle:10,1');
+    Route::get('/druk-przelewu', [DonationController::class, 'slip'])->name('slip')->middleware('throttle:20,1');
+    Route::get('/{donation}/dziekujemy', [DonationController::class, 'thanks'])->name('thanks');
+});
 
 // Podcasty
 Route::get('/podcasty', [PodcastController::class, 'index'])->name('podcasts.index');

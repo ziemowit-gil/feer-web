@@ -50,6 +50,23 @@ class Przelewy24Client
      */
     public function register(SklepOrder $order, string $urlReturn, string $urlStatus): ?string
     {
+        return $this->registerTransaction(
+            $order->session_id,
+            $order->amount_grosze,
+            $order->currency,
+            $order->buyer_email,
+            'Zamówienie w sklepie: '.$order->items->pluck('title')->implode(', '),
+            $urlReturn,
+            $urlStatus,
+        );
+    }
+
+    /**
+     * Rejestracja transakcji niezależna od typu zamówienia (sklep, darowizna).
+     * Zwraca token albo null — szczegóły jak w register().
+     */
+    public function registerTransaction(string $sessionId, int $amount, string $currency, string $email, string $description, string $urlReturn, string $urlStatus): ?string
+    {
         if (! $this->configured()) {
             Log::warning('[Przelewy24] Integracja nieskonfigurowana — brak danych w panelu ani w PRZELEWY24_*.');
 
@@ -57,10 +74,7 @@ class Przelewy24Client
         }
 
         $config = $this->config();
-        $sessionId = $order->session_id;
         $merchantId = (int) $config['merchant_id'];
-        $amount = $order->amount_grosze;
-        $currency = $order->currency;
 
         try {
             $response = $this->request($config)->post("{$this->baseUrl()}/api/v1/transaction/register", [
@@ -69,8 +83,8 @@ class Przelewy24Client
                 'sessionId' => $sessionId,
                 'amount' => $amount,
                 'currency' => $currency,
-                'description' => 'Zamówienie w sklepie: '.$order->items->pluck('title')->implode(', '),
-                'email' => $order->buyer_email,
+                'description' => mb_substr($description, 0, 1024),
+                'email' => $email,
                 'country' => 'PL',
                 'language' => 'pl',
                 'urlReturn' => $urlReturn,
@@ -133,15 +147,18 @@ class Przelewy24Client
      */
     public function confirmTransaction(SklepOrder $order, int $p24OrderId): bool
     {
+        return $this->verifyTransaction($order->session_id, $order->amount_grosze, $order->currency, $p24OrderId);
+    }
+
+    /** transaction/verify niezależne od typu zamówienia (sklep, darowizna). */
+    public function verifyTransaction(string $sessionId, int $amount, string $currency, int $p24OrderId): bool
+    {
         if (! $this->configured()) {
             return false;
         }
 
         $config = $this->config();
-        $sessionId = $order->session_id;
         $merchantId = (int) $config['merchant_id'];
-        $amount = $order->amount_grosze;
-        $currency = $order->currency;
 
         try {
             $response = $this->request($config)->put("{$this->baseUrl()}/api/v1/transaction/verify", [

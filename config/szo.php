@@ -27,4 +27,10 @@ return [
 
     // Domyślny slug formularza w SZO, gdy pojedynczy formularz go nie ustawia.
     'default_form' => env('SZO_DEFAULT_FORM', ''),
+
+    // Darowizny ze strony (Przelewy24) → rejestr darowizn SZO. Token musi mieć
+    // dodatkowo uprawnienie donations:submit. Formularz SZO (opcjonalny) służy
+    // do zapisu zgód darczyńcy: jego zgody muszą mieć id „rodo" i „newsletter".
+    'donation_form' => env('SZO_DONATION_FORM', 'darowizna'),
+    'donation_purpose' => env('SZO_DONATION_PURPOSE', 'Darowizna na cele statutowe'),
 ];

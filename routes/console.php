@@ -31,3 +31,6 @@ Schedule::command('szo:import-clauses')->dailyAt('04:30')->withoutOverlapping();
 // Siatka bezpieczeństwa dla płatności Sklepu — dociąga zamówienia, do których
 // nie dotarł webhook Przelewy24 (patrz SklepOrderService::reconcile()).
 Schedule::command('sklep:verify-pending')->everyTenMinutes()->withoutOverlapping();
+
+// Darowizny online: uzgadnianie z Przelewy24 i dosyłanie do rejestru darowizn SZO.
+Schedule::command('donations:sync')->everyTenMinutes()->withoutOverlapping();

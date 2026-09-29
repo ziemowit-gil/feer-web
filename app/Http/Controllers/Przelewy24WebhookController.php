@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Donation;
 use App\Models\SklepOrder;
+use App\Services\DonationService;
 use App\Services\Przelewy24Client;
 use App\Services\SklepOrderService;
 use Illuminate\Http\Request;
@@ -14,6 +16,7 @@ class Przelewy24WebhookController extends Controller
     public function __construct(
         private readonly Przelewy24Client $przelewy24,
         private readonly SklepOrderService $orders,
+        private readonly DonationService $donations,
     ) {}
 
     public function handle(Request $request): Response
@@ -30,6 +33,15 @@ class Przelewy24WebhookController extends Controller
         $orderId = $payload['orderId'] ?? null;
 
         if (! $sessionId || ! $orderId) {
+            return response('', 200);
+        }
+
+        // Jeden adres powiadomień dla wszystkich płatności — sessionId jest
+        // unikalnym UUID-em, więc wystarczy sprawdzić, do którego rejestru należy.
+        $donation = Donation::where('session_id', $sessionId)->first();
+        if ($donation) {
+            $this->donations->confirm($donation, (int) $orderId, $payload);
+
             return response('', 200);
         }
 

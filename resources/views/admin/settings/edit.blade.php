@@ -1025,6 +1025,34 @@
                 @error('support_intro') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
             </div>
 
+            {{-- Strona /wsparcie/darowizna (wpłata online przez Przelewy24) --}}
+            <div class="space-y-4 rounded-lg border border-gray-200 bg-gray-50/70 p-5">
+                <div>
+                    <h3 class="text-sm font-bold text-ink">Darowizna jednorazowa online</h3>
+                    <p class="mt-1 text-xs text-muted">
+                        Strona <a href="{{ route('donation.show') }}" class="font-bold text-brand hover:underline" target="_blank" rel="noopener">/wsparcie/darowizna<span class="sr-only"> (otwiera się w nowej karcie)</span></a>.
+                        Płatność przez Przelewy24 (dane w zakładce <span class="font-bold">Logowanie i integracje</span>);
+                        opłacone wpłaty trafiają do rejestru darowizn SZO (SZO_TOKEN z uprawnieniem <code>donations:submit</code>).
+                    </p>
+                </div>
+                <div>
+                    <label for="donation_amounts" class="mb-1 block text-sm font-bold">Proponowane kwoty (zł)</label>
+                    <input type="text" id="donation_amounts" name="donation_amounts" inputmode="numeric" maxlength="100"
+                        value="{{ old('donation_amounts', $settings->donation_amounts) }}" placeholder="30, 60, 100, 250"
+                        aria-describedby="donation_amounts_help"
+                        class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                    <p id="donation_amounts_help" class="mt-1 text-xs text-muted">Oddzielone przecinkami, 5–50 000 zł, najwyżej 6. Obok zawsze jest pole „Inna kwota".</p>
+                    @error('donation_amounts') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                </div>
+                <div>
+                    <label for="donation_intro" class="mb-1 block text-sm font-bold">Tekst wstępu <span class="font-normal text-muted">(opcjonalnie)</span></label>
+                    <textarea id="donation_intro" name="donation_intro" rows="4" maxlength="2000"
+                        class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">{{ old('donation_intro', $settings->donation_intro) }}</textarea>
+                    <p class="mt-1 text-xs text-muted">Pusta linia rozpoczyna nowy akapit.</p>
+                    @error('donation_intro') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                </div>
+            </div>
+
             <div class="border-t border-gray-100 pt-5">
                 <p class="mb-3 text-sm font-bold">1. Darowizna na cele statutowe</p>
                 <div class="space-y-4">

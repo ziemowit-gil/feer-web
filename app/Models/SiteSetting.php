@@ -238,6 +238,7 @@ class SiteSetting extends Model implements HasMedia
         'accessibility_review_method', 'accessibility_contact_name', 'accessibility_contact_email',
         'accessibility_contact_phone', 'accessibility_architectural',
         'bank_account_number', 'bank_account_tax_number',
+        'donation_amounts', 'donation_intro',
         'support_intro', 'support_quick_transfer_url', 'support_buycoffee_url',
         'support_wplacam_url', 'support_method4_title', 'support_method4_text', 'support_method4_cta_label',
         'support_show_partners', 'support_testimonial_quote', 'support_testimonial_author', 'support_testimonial_role',
@@ -803,6 +804,25 @@ class SiteSetting extends Model implements HasMedia
     public function vmKnowledgeImageUrl(): ?string
     {
         return $this->getFirstMediaUrl('vm_knowledge_image') ?: null;
+    }
+
+    /**
+     * Proponowane kwoty na stronie „Darowizna jednorazowa" (w złotych),
+     * z pola „30, 60, 100, 250" w panelu. Najwyżej 6, bez duplikatów.
+     *
+     * @return array<int, int>
+     */
+    public function donationAmounts(): array
+    {
+        $amounts = collect(preg_split('/[\s,;]+/', (string) $this->donation_amounts, -1, PREG_SPLIT_NO_EMPTY))
+            ->map(fn ($v) => (int) $v)
+            ->filter(fn ($v) => $v >= 5 && $v <= 50000)
+            ->unique()
+            ->take(6)
+            ->values()
+            ->all();
+
+        return $amounts ?: [30, 60, 100, 250];
     }
 
     /** Edytor treści sprowadzony do jednej z obsługiwanych opcji (patrz wyżej). */

@@ -4,7 +4,7 @@
     z layouts/site.blade.php — hamburger i panel mobilny to wspólne partiale.
 --}}
 @php
-    $donateUrl = $siteSettings->isModuleEnabled('support') ? route('support.show') : null;
+    $donateUrl = $siteSettings->isModuleEnabled('support') ? route('donation.show') : null;
 @endphp
 <div class="border-b border-gray-100 bg-white">
     <div class="mx-auto flex max-w-[1400px] items-center gap-6 px-4 py-3">

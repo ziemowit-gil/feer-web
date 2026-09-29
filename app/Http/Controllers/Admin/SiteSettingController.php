@@ -237,6 +237,8 @@ class SiteSettingController extends Controller
             'bank_account_number' => ['nullable', 'string', 'max:50'],
             'bank_account_tax_number' => ['nullable', 'string', 'max:50'],
             'support_intro' => ['nullable', 'string', 'max:5000'],
+            'donation_amounts' => ['nullable', 'string', 'max:100', 'regex:/^[0-9\s,;]*$/'],
+            'donation_intro' => ['nullable', 'string', 'max:2000'],
             'support_quick_transfer_url' => ['nullable', 'string', 'max:255'],
             'support_buycoffee_url' => ['nullable', 'string', 'max:255'],
             'support_wplacam_url' => ['nullable', 'string', 'max:255'],

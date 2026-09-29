@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Donation;
 use App\Models\FormDefinition;
 use App\Models\FormSubmission;
 use Illuminate\Support\Facades\Http;
@@ -98,6 +99,69 @@ class SzoClient
         } catch (Throwable $e) {
             $this->fail($submission, $e->getMessage());
         }
+
+        return false;
+    }
+
+    /**
+     * Przekazuje OPŁACONĄ darowiznę do rejestru darowizn SZO
+     * (POST /api/v1/donations.php, uprawnienie donations:submit).
+     *
+     * Tak samo jak zgłoszenia: nic nie rzuca, wynik ląduje w kolumnach szo_*,
+     * a `external_id` (session_id) sprawia, że ponowienie nie zdubluje wpłaty.
+     */
+    public function pushDonation(Donation $donation): bool
+    {
+        if (! $this->enabled() || ! $donation->isPaid()) {
+            return false;
+        }
+
+        $consents = ['rodo'];
+        if ($donation->consent_newsletter) {
+            $consents[] = 'newsletter';
+        }
+
+        try {
+            $res = $this->request()->post(config('szo.url') . '/api/v1/donations.php', array_filter([
+                'external_id'   => 'p24:' . $donation->session_id,
+                'amount'        => round($donation->amount_grosze / 100, 2),
+                'currency'      => $donation->currency,
+                'donation_date' => ($donation->paid_at ?? now())->toDateString(),
+                'channel'       => 'p24',
+                'bank_ref'      => $donation->p24_order_id ? (string) $donation->p24_order_id : null,
+                'purpose'       => config('szo.donation_purpose'),
+                'is_anonymous'  => $donation->is_anonymous,
+                'donor'         => array_filter([
+                    'imie_nazwisko' => $donation->fullName(),
+                    'email'         => $donation->email,
+                    'telefon'       => $donation->phone,
+                ]),
+                'form'          => config('szo.donation_form') ?: null,
+                'consents'      => $consents,
+                'meta'          => [
+                    'ip'  => $donation->ip_address,
+                    'url' => route('donation.show'),
+                ],
+            ], fn ($v) => $v !== null));
+
+            if ($res->successful() && $res->json('ok')) {
+                $donation->forceFill([
+                    'szo_donation_id' => $res->json('donation_id'),
+                    'szo_contact_id'  => $res->json('contact_id') ?: null,
+                    'szo_synced_at'   => now(),
+                    'szo_error'       => null,
+                ])->save();
+
+                return true;
+            }
+
+            $error = $this->errorFrom($res->status(), $res->json('error') ?? $res->body());
+        } catch (Throwable $e) {
+            $error = $e->getMessage();
+        }
+
+        $donation->forceFill(['szo_error' => mb_substr($error, 0, 1000)])->save();
+        Log::warning("[SZO] Darowizna {$donation->id} nieprzekazana: {$error}");
 
         return false;
     }
@@ -246,7 +310,7 @@ class SzoClient
     protected function errorFrom(int $status, mixed $message): string
     {
         return match ($status) {
-            401, 403 => "SZO odrzuciło token (HTTP {$status}). Sprawdź SZO_TOKEN i uprawnienia forms:submit.",
+            401, 403 => "SZO odrzuciło token (HTTP {$status}). Sprawdź SZO_TOKEN i uprawnienia (forms:submit, a dla darowizn donations:submit).",
             404      => 'SZO nie zna formularza o tym slugu — sprawdź „Slug formularza w SZO".',
             422      => 'SZO odrzuciło dane zgłoszenia: ' . (is_string($message) ? $message : json_encode($message)),
             default  => "SZO odpowiedziało HTTP {$status}: " . (is_string($message) ? $message : json_encode($message)),

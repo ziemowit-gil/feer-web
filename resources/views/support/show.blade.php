@@ -23,6 +23,10 @@
             </span>
             <h1 class="max-w-2xl text-3xl font-bold leading-tight md:text-4xl">{{ $siteSettings->supportText('support_hero_title') }}</h1>
             <p class="mt-3 max-w-xl text-white/90">{{ $siteSettings->supportText('support_hero_subtitle') }}</p>
+            <a href="{{ route('donation.show') }}"
+                class="mt-6 mr-2 inline-flex min-h-11 items-center gap-2 rounded bg-white px-5 py-2.5 text-sm font-bold text-brand transition hover:bg-white/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-brand">
+                <i class="fa-solid fa-hand-holding-heart" aria-hidden="true"></i> Wpłać darowiznę online
+            </a>
             @if ($siteSettings->support_quick_transfer_url)
                 <a href="{{ $siteSettings->support_quick_transfer_url }}" target="_blank" rel="noopener"
                     class="mt-6 inline-flex items-center gap-2 rounded bg-white px-5 py-2.5 text-sm font-bold text-brand transition hover:bg-white/90">
