@@ -4,34 +4,38 @@
     Alpine: editMode, dirty, saving, saveSuccess, error, hasRichFields,
     toggleEdit(), saveAll(), exitEdit().
 
-    W trybie edycji pola `data-inline-kind="rich"` dostają edytor WYSIWYG
-    (TinyMCE inline / CKEditor 5 inline); pasek narzędzi TinyMCE trafia do
-    #inline-editor-toolbar, więc jest zawsze pod ręką, przypięty u góry.
+    Poza edycją pasek jest ledwo widoczny (jedna cienka, wyciszona linia z małym
+    linkiem „Edytuj"), żeby nie odciągał uwagi od strony. Dopiero w trybie edycji
+    staje się wyraźny i przypięty u góry — potrzebuje wtedy przycisku „Zapisz"
+    i miejsca na pasek narzędzi edytora (#inline-editor-toolbar).
 --}}
-<div class="sticky top-0 z-[9999] border-b border-gray-200 bg-white shadow-[0_4px_16px_rgba(0,0,0,.08)] print:hidden"
-    role="region" aria-label="Pasek wizualnej edycji treści">
-    <div class="mx-auto flex max-w-6xl flex-wrap items-center gap-x-4 gap-y-2 px-4 py-2">
-        <div class="flex min-w-0 flex-1 items-center gap-2 text-sm text-gray-600" aria-live="polite">
+<div role="region" aria-label="Pasek wizualnej edycji treści"
+    class="z-[9999] border-b print:hidden"
+    :class="editMode
+        ? 'sticky top-0 border-gray-200 bg-white shadow-[0_4px_16px_rgba(0,0,0,.08)]'
+        : 'border-transparent bg-gray-50/70'">
+    <div class="mx-auto flex max-w-6xl flex-wrap items-center gap-x-4 gap-y-1 px-4" :class="editMode ? 'py-2' : 'py-1'">
+        <div class="flex min-w-0 flex-1 items-center gap-2 text-xs text-gray-600" aria-live="polite">
             <template x-if="saveSuccess">
-                <span class="flex items-center gap-1.5 font-medium text-green-700">
+                <span class="flex items-center gap-1.5 text-sm font-medium text-green-700">
                     <i class="fa-solid fa-circle-check" aria-hidden="true"></i> Zapisano.
                 </span>
             </template>
             <template x-if="!saveSuccess && editMode && dirty">
-                <span class="flex items-center gap-1.5 font-medium text-amber-700">
+                <span class="flex items-center gap-1.5 text-sm font-medium text-amber-700">
                     <i class="fa-solid fa-circle-dot" aria-hidden="true"></i> Niezapisane zmiany — zapisz przyciskiem albo <kbd class="rounded border border-amber-300 bg-amber-50 px-1 text-xs">Ctrl+S</kbd>.
                 </span>
             </template>
             <template x-if="!saveSuccess && editMode && !dirty">
-                <span class="flex items-center gap-1.5 font-medium text-brand">
+                <span class="flex items-center gap-1.5 text-sm font-medium text-brand">
                     <i class="fa-solid fa-pen" aria-hidden="true"></i>
-                    Tryb edycji — kliknij tytuł albo treść i edytuj bezpośrednio na stronie, z pełnym paskiem narzędzi.
+                    Tryb edycji — kliknij tytuł albo treść i edytuj bezpośrednio na stronie.
                 </span>
             </template>
             <template x-if="!saveSuccess && !editMode">
-                <span class="flex items-center gap-1.5">
-                    <i class="fa-solid fa-wand-magic-sparkles text-brand" aria-hidden="true"></i>
-                    Tryb administratora — możesz edytować tę stronę bezpośrednio.
+                <span class="flex items-center gap-1.5 text-gray-500">
+                    <i class="fa-solid fa-pen-ruler text-[11px]" aria-hidden="true"></i>
+                    Edycja na stronie
                 </span>
             </template>
         </div>
@@ -51,10 +55,12 @@
             </template>
 
             <button type="button" @click="toggleEdit()" :aria-pressed="editMode.toString()"
-                class="inline-flex min-h-10 items-center gap-1.5 rounded-lg border px-4 text-sm font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2"
-                :class="editMode ? 'border-gray-300 bg-white text-ink hover:bg-gray-50' : 'border-brand bg-brand/10 text-brand hover:bg-brand/20'">
+                class="inline-flex items-center gap-1.5 rounded-md font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2"
+                :class="editMode
+                    ? 'min-h-10 rounded-lg border border-gray-300 bg-white px-4 text-sm text-ink hover:bg-gray-50'
+                    : 'min-h-8 px-2 text-xs text-gray-600 underline-offset-4 hover:text-brand hover:underline'">
                 <template x-if="!editMode">
-                    <span><i class="fa-solid fa-pen-to-square mr-1" aria-hidden="true"></i>Edytuj tę stronę</span>
+                    <span><i class="fa-solid fa-pen-to-square mr-1" aria-hidden="true"></i>Edytuj<span class="sr-only"> tę stronę</span></span>
                 </template>
                 <template x-if="editMode">
                     <span><i class="fa-solid fa-xmark mr-1" aria-hidden="true"></i><span x-text="dirty ? 'Odrzuć i zakończ' : 'Zakończ edycję'">Zakończ edycję</span></span>

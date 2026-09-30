@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Category;
 use App\Models\News;
 use App\Models\Page;
 use App\Models\Project;
@@ -23,6 +24,13 @@ class InlineEditTest extends TestCase
         }, null, SiteSetting::class)();
     }
 
+    private function project(array $attributes = []): Project
+    {
+        $category = Category::firstOrCreate(['slug' => 'testowa'], ['name' => 'Testowa']);
+
+        return Project::create($attributes + ['category_id' => $category->id, 'slug' => 'projekt', 'is_published' => true]);
+    }
+
     private function admin(): User
     {
         return User::factory()->create(['role' => User::ROLE_ADMIN]);
@@ -30,7 +38,7 @@ class InlineEditTest extends TestCase
 
     public function test_admin_can_edit_project_fields_on_the_page(): void
     {
-        $project = Project::create(['title' => 'Stary tytuł', 'slug' => 'projekt', 'is_published' => true, 'content' => '<p>a</p>']);
+        $project = $this->project(['title' => 'Stary tytuł', 'content' => '<p>a</p>']);
 
         $this->actingAs($this->admin())
             ->putJson(route('admin.inline-edit.update'), ['model' => 'project', 'id' => $project->id, 'field' => 'content', 'value' => '<h2>Nowy</h2><p>opis</p>'])
@@ -48,7 +56,7 @@ class InlineEditTest extends TestCase
 
     public function test_project_inline_edit_rejects_unknown_field_and_wrong_role(): void
     {
-        $project = Project::create(['title' => 'Projekt', 'slug' => 'projekt', 'is_published' => true]);
+        $project = $this->project(['title' => 'Projekt']);
 
         $this->actingAs($this->admin())
             ->putJson(route('admin.inline-edit.update'), ['model' => 'project', 'id' => $project->id, 'field' => 'slug', 'value' => 'x'])
@@ -62,7 +70,7 @@ class InlineEditTest extends TestCase
 
     public function test_project_page_exposes_inline_fields_only_to_editors(): void
     {
-        $project = Project::create(['title' => 'Projekt', 'slug' => 'projekt', 'is_published' => true, 'content' => '<p>opis</p>']);
+        $project = $this->project(['title' => 'Projekt', 'content' => '<p>opis</p>']);
 
         $this->get(route('projects.show', $project))->assertOk()->assertDontSee('data-inline-field', false);
 
@@ -70,7 +78,7 @@ class InlineEditTest extends TestCase
             ->assertOk()
             ->assertSee('data-inline-field="title"', false)
             ->assertSee('data-inline-field="content" data-inline-kind="rich"', false)
-            ->assertSee('Edytuj tę stronę');
+            ->assertSee('Edycja na stronie');
     }
 
     public function test_news_quick_update_saves_content_when_sent(): void
