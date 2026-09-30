@@ -16,7 +16,12 @@
             <i class="fa-solid fa-arrow-left" aria-hidden="true"></i> Wróć do projektów
         </a>
         <h1 class="mb-2 text-3xl font-bold text-ink">To już zrobiliśmy</h1>
-        <p class="mb-8 max-w-2xl text-muted">Projekty, które już zrealizowaliśmy.</p>
+        @if ($archiveFilter ?? null)
+            <p class="mb-2 max-w-2xl text-muted">Projekty {{ $archiveFilter }}.</p>
+            <p class="mb-8 text-sm"><a href="{{ route('projects.archive') }}" class="inline-flex min-h-9 items-center gap-1.5 rounded-md font-bold text-brand underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"><i class="fa-solid fa-filter-circle-xmark" aria-hidden="true"></i> Pokaż wszystkie zrealizowane projekty</a></p>
+        @else
+            <p class="mb-8 max-w-2xl text-muted">Projekty, które już zrealizowaliśmy.</p>
+        @endif
 
         @if ($projects->isNotEmpty())
             <div class="grid gap-6 md:grid-cols-3">
@@ -25,7 +30,7 @@
                 @endforeach
             </div>
         @else
-            <p class="text-muted">Nie mamy jeszcze zrealizowanych projektów do pokazania.</p>
+            <p class="text-muted">{{ ($archiveFilter ?? null) ? 'Brak projektów w tym okresie.' : 'Nie mamy jeszcze zrealizowanych projektów do pokazania.' }}</p>
         @endif
     </section>
 @endsection

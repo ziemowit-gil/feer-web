@@ -27,6 +27,7 @@
                 'isMega' => (bool) old('is_mega'),
                 'megaImage' => old('mega_image_url', ''),
                 'megaSize' => old('mega_size', 'md'),
+                'megaExtraTitle' => old('mega_extra_title', ''),
                 'megaImageAlt' => old('mega_image_alt', ''),
                 'description' => old('description', ''),
                 'isActive' => (bool) old('is_active'),
@@ -200,7 +201,7 @@
                     editingId: '', action: storeUrl, label: '', icon: '', description: '', url: '', type: 'link',
                     location: 'main', parentId: '', module: '', isButton: false,
                     buttonColor: '#2563eb', buttonColorEnabled: false,
-                    isTransparent: false, isMega: false, megaImage: '', megaImageAlt: '', megaSize: 'md', isActive: true,
+                    isTransparent: false, isMega: false, megaImage: '', megaImageAlt: '', megaSize: 'md', megaExtraTitle: '', isActive: true,
                 },
 
                 init() {
@@ -216,7 +217,7 @@
                         editingId: '', action: storeUrl, label: '', icon: '', description: '', url: '', type: 'link',
                         location: 'main', parentId: '', module: '', isButton: false,
                         buttonColor: '#2563eb', buttonColorEnabled: false,
-                        isTransparent: false, isMega: false, megaImage: '', megaImageAlt: '', megaSize: 'md', isActive: true, ...overrides,
+                        isTransparent: false, isMega: false, megaImage: '', megaImageAlt: '', megaSize: 'md', megaExtraTitle: '', isActive: true, ...overrides,
                     };
                 },
 
@@ -254,6 +255,7 @@
                         isMega: d.mega === '1',
                         megaImage: d.megaImage || '',
                         megaSize: d.megaSize || 'md',
+                        megaExtraTitle: d.megaExtraTitle || '',
                         megaImageAlt: d.megaImageAlt || '',
                         description: d.description || '',
                         isActive: d.active === '1',

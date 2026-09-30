@@ -9,7 +9,7 @@
     $isLast        = $position === $setsize;
     $groupId       = 'nav-group-'.$item->id;
 
-    $canHoldChildren = $level === 1 && $item->location === 'main' && ! $item->is_button && in_array($item->type, ['dropdown', 'link'], true);
+    $canHoldChildren = $level === 1 && $item->location === 'main' && ! $item->is_button && in_array($item->type, ['dropdown', 'link', 'projects'], true);
     $canIndent       = $level === 1 && ! $isFirst && $item->location === 'main' && $item->type === 'link' && ! $item->is_button && ! $hasChildren;
     $canOutdent      = $level === 2;
 
@@ -163,6 +163,7 @@
                 data-mega="{{ $item->is_mega ? 1 : 0 }}"
                 data-mega-image="{{ $item->mega_image }}"
                 data-mega-size="{{ $item->mega_size ?: 'md' }}"
+                data-mega-extra-title="{{ $item->mega_extra_title }}"
                 data-mega-image-alt="{{ $item->mega_image_alt }}"
                 data-description="{{ $item->description }}"
                 data-active="{{ $item->is_active ? 1 : 0 }}"

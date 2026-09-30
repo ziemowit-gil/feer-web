@@ -41,7 +41,7 @@ class NavItem extends Model
 
     protected $fillable = [
         'site_id', 'parent_id', 'label', 'icon', 'description', 'mega_image', 'mega_image_alt', 'url', 'type', 'module', 'location',
-        'is_button', 'is_transparent_dropdown', 'is_mega', 'mega_size', 'is_active', 'order', 'button_color',
+        'is_button', 'is_transparent_dropdown', 'is_mega', 'mega_size', 'mega_extra_title', 'is_active', 'order', 'button_color',
     ];
 
     protected $casts = [

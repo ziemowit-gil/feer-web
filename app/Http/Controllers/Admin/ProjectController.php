@@ -154,6 +154,7 @@ class ProjectController extends Controller
             'audience' => ['nullable', Rule::in(array_keys(SiteSetting::current()->audienceOptions()))],
             'accent_color' => ['nullable', 'regex:/^#[0-9a-fA-F]{6}$/'],
             'since' => ['nullable', 'string', 'max:255'],
+            'completed_at' => ['nullable', 'date'],
             'image_alt' => ['nullable', 'string', 'max:255'],
             'content' => ['nullable', 'string'],
             'why' => ['nullable', 'string'],
@@ -185,6 +186,8 @@ class ProjectController extends Controller
             : null;
         $data['is_published'] = $request->boolean('is_published');
         $data['is_completed'] = $request->boolean('is_completed');
+        // Data zakończenia ma sens tylko dla projektów zrealizowanych (filtry archiwum ?przed= / ?po=).
+        $data['completed_at'] = $data['is_completed'] ? ($data['completed_at'] ?? null) : null;
 
         // Odpłatny + cennik: pomijamy puste wiersze; gdy nieodpłatny — czyścimy.
         $data['is_paid'] = $request->boolean('is_paid');

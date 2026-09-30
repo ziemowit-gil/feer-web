@@ -33,20 +33,42 @@ class ProjectController extends Controller
     }
 
     /** Wyświetla archiwum zakończonych projektów. */
-    public function archive()
+    public function archive(\Illuminate\Http\Request $request)
     {
+        // Filtry okresu: ?przed=RRRR-MM-DD (zakończone wcześniej lub bez daty)
+        // i ?po=RRRR-MM-DD (zakończone tego dnia lub później). Zły format = brak filtra.
+        $parseDate = function (?string $value): ?\Carbon\Carbon {
+            try {
+                return filled($value) ? \Carbon\Carbon::createFromFormat('Y-m-d', $value)->startOfDay() : null;
+            } catch (\Throwable) {
+                return null;
+            }
+        };
+        $before = $parseDate($request->query('przed'));
+        $after  = $parseDate($request->query('po'));
+
         $projects = Project::forCurrentSite()->where('is_published', true)
             ->where('is_completed', true)
+            ->when($before, fn ($q) => $q->where(fn ($w) => $w->whereDate('completed_at', '<', $before)->orWhereNull('completed_at')))
+            ->when($after, fn ($q) => $q->whereDate('completed_at', '>=', $after))
             ->with('category')
+            ->orderByDesc('completed_at')
             ->orderBy('order')
             ->orderBy('title')
             ->get();
 
+        $archiveFilter = match (true) {
+            (bool) $before && (bool) $after => 'zrealizowane od ' . $after->translatedFormat('j F Y') . ' do ' . $before->translatedFormat('j F Y'),
+            (bool) $before => 'zrealizowane przed ' . $before->translatedFormat('j F Y'),
+            (bool) $after => 'zrealizowane od ' . $after->translatedFormat('j F Y'),
+            default => null,
+        };
+
         if (SiteSetting::current()->site_template === 'federation') {
-            return view('templates.federation.projects-archive', compact('projects'));
+            return view('templates.federation.projects-archive', compact('projects', 'archiveFilter'));
         }
 
-        return view('projects.archive', compact('projects'));
+        return view('projects.archive', compact('projects', 'archiveFilter'));
     }
 
     /** Wyświetla projekty należące do wybranej kategorii. */

@@ -53,7 +53,20 @@
 
         <div class="mt-1 border-t border-gray-100 pt-1">
             <a href="{{ route('projects.index') }}" class="block px-4 py-2 text-sm font-bold normal-case text-brand hover:bg-gray-50 focus-visible:bg-gray-50">Wszystkie projekty →</a>
-            @if ($navHasProjectArchive ?? false)
+            @if ($item->children->isNotEmpty())
+                {{-- Własne podpozycje (np. archiwum wg okresów) — te same co w kolumnie mega menu. --}}
+                <p class="px-4 pt-2 text-xs font-bold uppercase tracking-wide normal-case text-muted" id="{{ 'projects-done-' . $item->id }}">{{ $item->mega_extra_title ?: 'To już zrobiliśmy' }}</p>
+                <ul role="list" aria-labelledby="{{ 'projects-done-' . $item->id }}">
+                    @foreach ($item->children as $extra)
+                        <li>
+                            <a href="{{ $extra->url }}" @if ($extra->isCurrent()) aria-current="page" @endif
+                               class="block px-4 py-2 text-sm font-medium normal-case {{ $extra->isCurrent() ? 'text-brand' : 'text-ink' }} hover:bg-gray-50 hover:text-brand focus-visible:bg-gray-50">
+                                {{ $extra->label }}
+                            </a>
+                        </li>
+                    @endforeach
+                </ul>
+            @elseif ($navHasProjectArchive ?? false)
                 <a href="{{ route('projects.archive') }}" class="block px-4 py-2 text-sm font-bold normal-case text-brand hover:bg-gray-50 focus-visible:bg-gray-50">To już zrobiliśmy →</a>
             @endif
         </div>

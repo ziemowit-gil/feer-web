@@ -91,7 +91,7 @@
 </div>
 
 <div x-show="form.type === 'link' && form.location === 'main'" x-cloak>
-    <label for="nav-parent" class="mb-1 block text-sm font-bold">Podpozycja w menu (pod „Rozwijanym menu" lub linkiem)</label>
+    <label for="nav-parent" class="mb-1 block text-sm font-bold">Podpozycja w menu (pod „Rozwijanym menu", linkiem albo „Menu projektów")</label>
     <select id="nav-parent" name="parent_id" x-model="form.parentId"
         class="w-full rounded border-gray-300 focus-visible:border-brand focus-visible:ring-2 focus-visible:ring-brand">
         <option value="">— pozycja główna (na pasku menu) —</option>
@@ -100,6 +100,7 @@
             <option value="{{ $option->id }}" x-show="String(form.editingId) !== '{{ $option->id }}'">{{ $option->label }}</option>
         @endforeach
     </select>
+    <p class="mt-1 text-xs text-muted">Podpozycje pod „Menu projektów" tworzą dodatkową kolumnę (nagłówek ustawisz w polu „Nagłówek dodatkowej kolumny"). Adres wpisujesz sam, np. archiwum z filtrem: <code>/projekty/archiwum?po=2026-03-01</code>.</p>
     @error('parent_id') <p class="mt-1 text-sm text-red-700">{{ $message }}</p> @enderror
 </div>
 
@@ -152,6 +153,14 @@
         <span class="block text-xs text-muted">Podpozycje (podstrony powiązanej strony albo kategorie projektów z ich projektami) układają się w kolumny z ikoną i opisem. Bez podpozycji działa jak zwykła pozycja.</span>
     </span>
 </label>
+
+<div x-show="form.type === 'projects' && form.location === 'main' && form.parentId === ''" x-cloak>
+    <label for="nav-mega-extra-title" class="mb-1 block text-sm font-bold">Nagłówek dodatkowej kolumny <span class="font-normal text-muted">(opcjonalnie)</span></label>
+    <input type="text" id="nav-mega-extra-title" name="mega_extra_title" x-model="form.megaExtraTitle" maxlength="80" placeholder="To już zrobiliśmy"
+        class="w-full rounded border-gray-300 focus-visible:border-brand focus-visible:ring-2 focus-visible:ring-brand">
+    <p class="mt-1 text-xs text-muted">Podpozycje dodane pod tą pozycją (przycisk „Dodaj podpozycję") tworzą dodatkową kolumnę z tym nagłówkiem. Adres każdej ustawiasz sam — może prowadzić dowolną stroną, także zewnętrzną.</p>
+    @error('mega_extra_title') <p class="mt-1 text-sm text-red-700">{{ $message }}</p> @enderror
+</div>
 
 <div x-show="form.isMega && form.location === 'main' && form.parentId === ''" x-cloak>
     <label for="nav-mega-size" class="mb-1 block text-sm font-bold">Wielkość pozycji w mega menu</label>

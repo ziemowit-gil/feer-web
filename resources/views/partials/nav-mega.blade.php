@@ -70,10 +70,14 @@
 
     // Wielkość pozycji (NavItem::MEGA_SIZES): liczba kolumn i skala wpisów.
     $size = $item->megaSize();
+    // Menu projektów: ręczne podpozycje tworzą dodatkową kolumnę „To już zrobiliśmy".
+    $projectExtras = $isProjects ? $item->children : collect();
+    $extraTitle    = $item->mega_extra_title ?: 'To już zrobiliśmy';
+    $projectCols   = $groups->count() + ($projectExtras->isNotEmpty() ? 1 : 0);
     $columns = match ($size) {
-        'sm' => $isProjects ? max(3, min(5, $groups->count())) : max(3, min(5, (int) ceil(count($entries) / 3))),
+        'sm' => $isProjects ? max(3, min(5, $projectCols)) : max(3, min(5, (int) ceil(count($entries) / 3))),
         'lg' => 2,
-        default => $isProjects ? max(2, min(4, $groups->count())) : max(2, min(4, (int) ceil(count($entries) / 4))),
+        default => $isProjects ? max(2, min(4, $projectCols)) : max(2, min(4, (int) ceil(count($entries) / 4))),
     };
     $sz = match ($size) {
         'sm' => ['row' => 'min-h-9 gap-2 px-2 py-1', 'icon' => 'h-6 w-6 text-[11px]', 'title' => 'text-xs', 'desc' => null, 'proj' => 'text-xs', 'projExcerpt' => null, 'projTake' => 6, 'cat' => 'text-xs', 'gapY' => 'gap-y-0.5'],
@@ -160,6 +164,32 @@
                                     </ul>
                                 </div>
                             @endforeach
+
+                            @if ($projectExtras->isNotEmpty())
+                                {{-- Kolumna „To już zrobiliśmy": własne linki (np. archiwum wg okresów) --}}
+                                <div>
+                                    <p class="mb-2 flex items-center gap-2 px-2 py-1.5 font-bold text-ink {{ $sz['cat'] }}" id="{{ 'mega-done-' . $item->id }}">
+                                        <i class="fa-solid fa-circle-check text-emerald-600" aria-hidden="true"></i>
+                                        <span>{{ $extraTitle }}</span>
+                                    </p>
+                                    <ul role="list" aria-labelledby="{{ 'mega-done-' . $item->id }}" class="space-y-0.5 border-l border-gray-100 pl-3">
+                                        @foreach ($projectExtras as $extra)
+                                            <li>
+                                                <a href="{{ $extra->url }}" @if ($extra->isCurrent()) aria-current="page" @endif
+                                                   class="group/x flex items-start gap-2 rounded-md px-2 py-1.5 {{ $sz['proj'] }} hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand {{ $extra->isCurrent() ? 'font-semibold text-brand' : 'text-ink' }}">
+                                                    <i class="{{ $extra->icon ? 'bi ' . $extra->icon : 'fa-solid fa-box-archive' }} mt-1 flex-none text-xs text-muted group-hover/x:text-brand" aria-hidden="true"></i>
+                                                    <span class="min-w-0">
+                                                        <span class="block group-hover/x:text-brand">{{ $extra->label }}</span>
+                                                        @if ($extra->description && $sz['projExcerpt'])
+                                                            <span class="block text-muted {{ $sz['projExcerpt'] }}">{{ $extra->description }}</span>
+                                                        @endif
+                                                    </span>
+                                                </a>
+                                            </li>
+                                        @endforeach
+                                    </ul>
+                                </div>
+                            @endif
                         </div>
 
                         {{-- Stopka panelu: podsumowanie + skróty --}}

@@ -148,9 +148,21 @@
 
                         <label class="flex items-center gap-2">
                             <input type="checkbox" name="is_completed" value="1" {{ old('is_completed', $project->is_completed ?? false) ? 'checked' : '' }}
-                                class="rounded border-gray-300 text-brand focus:ring-brand">
+                                class="rounded border-gray-300 text-brand focus:ring-brand" data-completed-toggle>
                             <span class="text-sm font-bold">Projekt już zrealizowany</span>
                         </label>
+                        <div class="mt-3 {{ old('is_completed', $project->is_completed ?? false) ? '' : 'hidden' }}" data-completed-fields>
+                            <label for="completed_at" class="mb-1 block text-sm font-bold">Data zakończenia <span class="font-normal text-muted">(opcjonalnie)</span></label>
+                            <input type="date" id="completed_at" name="completed_at" value="{{ old('completed_at', optional($project->completed_at ?? null)->format('Y-m-d')) }}"
+                                class="w-full max-w-xs rounded border-gray-300 focus:border-brand focus:ring-brand">
+                            <p class="mt-1 text-xs text-muted">Pozwala filtrować archiwum „To już zrobiliśmy": <code>/projekty/archiwum?po=RRRR-MM-DD</code> pokaże projekty zakończone tego dnia lub później (analogicznie <code>?przed=</code>; projekt bez daty trafia do widoku „przed").</p>
+                            @error('completed_at') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                        </div>
+                        <script>
+                            document.querySelector('[data-completed-toggle]')?.addEventListener('change', function () {
+                                document.querySelector('[data-completed-fields]')?.classList.toggle('hidden', ! this.checked);
+                            });
+                        </script>
                     </div>
                 </div>
 

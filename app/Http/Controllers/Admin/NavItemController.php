@@ -322,7 +322,7 @@ class NavItemController extends Controller
 
         // Rodzicem podpozycji może być „Rozwijane menu" albo zwykły link
         // (np. do istniejącej strony) — ale nie przycisk CTA.
-        return NavItem::whereIn('type', ['dropdown', 'link'])
+        return NavItem::whereIn('type', ['dropdown', 'link', 'projects'])
             ->where('is_button', false)
             ->where('location', 'main')
             ->whereNull('parent_id')
@@ -341,6 +341,7 @@ class NavItemController extends Controller
             'mega_image_file' => ['nullable', 'image', 'max:4096'],
             'mega_image_alt' => ['nullable', 'string', 'max:255'],
             'mega_size' => ['nullable', Rule::in(array_keys(NavItem::MEGA_SIZES))],
+            'mega_extra_title' => ['nullable', 'string', 'max:80'],
             'url' => ['nullable', 'string', 'max:255'],
             'type' => ['required', Rule::in(array_keys(NavItem::TYPES))],
             'location' => ['required', Rule::in(array_keys(NavItem::LOCATIONS))],
@@ -349,7 +350,7 @@ class NavItemController extends Controller
                 'nullable',
                 // Uwaga: w regule exists używamy 0 zamiast false — wartość false
                 // binduje się w weryfikatorze obecności jako '' i reguła zawsze zawodzi.
-                Rule::exists('nav_items', 'id')->whereIn('type', ['dropdown', 'link'])->where('is_button', 0)->whereNull('parent_id'),
+                Rule::exists('nav_items', 'id')->whereIn('type', ['dropdown', 'link', 'projects'])->where('is_button', 0)->whereNull('parent_id'),
             ],
             'order' => ['nullable', 'integer', 'min:0'],
             'button_color' => ['nullable', 'regex:/^#[0-9a-fA-F]{6}$/'],
@@ -411,6 +412,8 @@ class NavItemController extends Controller
         // „usuń" czyści; bez mega menu nie trzymamy osieroconej grafiki.
         unset($data['mega_image_url'], $data['mega_image_file']);
         $data['mega_size'] = $data['mega_size'] ?? 'md';
+        // Nagłówek dodatkowej kolumny ma sens tylko dla menu projektów.
+        $data['mega_extra_title'] = $data['type'] === 'projects' ? (trim((string) ($data['mega_extra_title'] ?? '')) ?: null) : null;
         if (! $data['is_mega'] || $request->boolean('remove_mega_image')) {
             $data['mega_image'] = null;
             $data['mega_image_alt'] = null;
