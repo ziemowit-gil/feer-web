@@ -81,5 +81,6 @@
                 </a>
             </li>
         @endif
+        @include('partials.nav-side-links', ['item' => $item, 'asListItem' => true])
     </ul>
 </li>

@@ -164,6 +164,8 @@
                 data-mega-image="{{ $item->mega_image }}"
                 data-mega-size="{{ $item->mega_size ?: 'md' }}"
                 data-mega-extra-title="{{ $item->mega_extra_title }}"
+                data-mega-side-title="{{ $item->mega_side_title }}"
+                data-mega-side-links="{{ json_encode($item->megaSideLinks(), JSON_UNESCAPED_UNICODE) }}"
                 data-mega-image-alt="{{ $item->mega_image_alt }}"
                 data-description="{{ $item->description }}"
                 data-active="{{ $item->is_active ? 1 : 0 }}"

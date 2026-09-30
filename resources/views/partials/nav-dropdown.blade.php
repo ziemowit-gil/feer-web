@@ -33,5 +33,6 @@
         @empty
             <li class="px-4 py-2 text-sm normal-case text-muted">Brak podpozycji.</li>
         @endforelse
+        @include('partials.nav-side-links', ['item' => $item, 'asListItem' => true])
     </ul>
 </li>

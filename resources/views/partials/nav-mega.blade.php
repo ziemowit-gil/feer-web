@@ -68,6 +68,12 @@
     $targetUrl = $isProjects ? route('projects.index') : $item->url;
     $hasImage  = filled($item->mega_image);
 
+    // Karta boczna: opcjonalny tytuł + własne linki/przyciski (zastępują domyślne przyciski).
+    // Nazwa pozycji menu nie jest powtarzana jako nagłówek karty.
+    $sideLinks = $item->megaSideLinks();
+    $sideTitle = $item->mega_side_title;
+    $sideDesc  = $item->description ?: ($linkedPage->meta_description ?? null);
+
     // Wielkość pozycji (NavItem::MEGA_SIZES): liczba kolumn i skala wpisów.
     $size = $item->megaSize();
     // Menu projektów: ręczne podpozycje tworzą dodatkową kolumnę „To już zrobiliśmy".
@@ -237,17 +243,15 @@
                     </a>
                 @endif
                 <div class="flex flex-1 flex-col justify-between p-5">
-                    @if (! ($isProjects && $featuredProject && ! $hasImage))
+                    @if ($sideTitle || $sideDesc)
                         <div>
-                            <p class="text-base font-bold text-ink">{{ $item->label }}</p>
-                            @if ($item->description)
-                                <p class="mt-1 text-sm leading-snug text-muted">{{ $item->description }}</p>
-                            @elseif ($linkedPage && $linkedPage->meta_description)
-                                <p class="mt-1 text-sm leading-snug text-muted">{{ $linkedPage->meta_description }}</p>
+                            @if ($sideTitle)
+                                <p class="text-base font-bold text-ink">{{ $sideTitle }}</p>
+                            @endif
+                            @if ($sideDesc)
+                                <p class="{{ $sideTitle ? 'mt-1 ' : '' }}text-sm leading-snug text-muted">{{ $sideDesc }}</p>
                             @endif
                         </div>
-                    @elseif ($item->description)
-                        <p class="text-sm leading-snug text-muted">{{ $item->description }}</p>
                     @else
                         <span></span>
                     @endif
@@ -267,16 +271,28 @@
                     @endif
 
                     <div class="mt-4 flex flex-col items-start gap-2">
-                        @if ($hasTarget)
-                            <a href="{{ $targetUrl }}"
-                               class="inline-flex min-h-10 items-center gap-2 rounded-full bg-brand px-4 text-sm font-bold text-white transition hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
-                                {{ $isProjects ? 'Wszystkie projekty' : 'Zobacz wszystko' }} <i class="fa-solid fa-arrow-right text-xs" aria-hidden="true"></i>
-                            </a>
-                        @endif
-                        @if ($isProjects && $siteSettings->isModuleEnabled('events'))
-                            <a href="{{ site_route('events.index') }}" class="inline-flex min-h-9 items-center gap-1.5 rounded-md px-2 text-sm font-bold text-brand underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
-                                <i class="fa-solid fa-calendar-days" aria-hidden="true"></i> Wszystkie szkolenia
-                            </a>
+                        @if ($sideLinks)
+                            @foreach ($sideLinks as $sl)
+                                <a href="{{ $sl['url'] }}" @if ($sl['new_tab']) target="_blank" rel="noopener" @endif
+                                   class="{{ $sl['style'] === 'button'
+                                        ? 'inline-flex min-h-10 items-center gap-2 rounded-full bg-brand px-4 text-sm font-bold text-white transition hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2'
+                                        : 'inline-flex min-h-9 items-center gap-1.5 rounded-md px-2 text-sm font-bold text-brand underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand' }}">
+                                    <span>{{ $sl['label'] }}</span>
+                                    <i class="fa-solid {{ $sl['new_tab'] ? 'fa-arrow-up-right-from-square' : 'fa-arrow-right' }} text-xs" aria-hidden="true"></i>
+                                </a>
+                            @endforeach
+                        @else
+                            @if ($hasTarget)
+                                <a href="{{ $targetUrl }}"
+                                   class="inline-flex min-h-10 items-center gap-2 rounded-full bg-brand px-4 text-sm font-bold text-white transition hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
+                                    {{ $isProjects ? 'Wszystkie projekty' : 'Zobacz wszystko' }} <i class="fa-solid fa-arrow-right text-xs" aria-hidden="true"></i>
+                                </a>
+                            @endif
+                            @if ($isProjects && $siteSettings->isModuleEnabled('events'))
+                                <a href="{{ site_route('events.index') }}" class="inline-flex min-h-9 items-center gap-1.5 rounded-md px-2 text-sm font-bold text-brand underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                                    <i class="fa-solid fa-calendar-days" aria-hidden="true"></i> Wszystkie szkolenia
+                                </a>
+                            @endif
                         @endif
                     </div>
                 </div>

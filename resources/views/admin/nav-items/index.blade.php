@@ -28,6 +28,8 @@
                 'megaImage' => old('mega_image_url', ''),
                 'megaSize' => old('mega_size', 'md'),
                 'megaExtraTitle' => old('mega_extra_title', ''),
+                'megaSideTitle' => old('mega_side_title', ''),
+                'megaSideLinks' => array_values((array) old('mega_side_links', [])),
                 'megaImageAlt' => old('mega_image_alt', ''),
                 'description' => old('description', ''),
                 'isActive' => (bool) old('is_active'),
@@ -201,7 +203,7 @@
                     editingId: '', action: storeUrl, label: '', icon: '', description: '', url: '', type: 'link',
                     location: 'main', parentId: '', module: '', isButton: false,
                     buttonColor: '#2563eb', buttonColorEnabled: false,
-                    isTransparent: false, isMega: false, megaImage: '', megaImageAlt: '', megaSize: 'md', megaExtraTitle: '', isActive: true,
+                    isTransparent: false, isMega: false, megaImage: '', megaImageAlt: '', megaSize: 'md', megaExtraTitle: '', megaSideTitle: '', megaSideLinks: [], isActive: true,
                 },
 
                 init() {
@@ -217,7 +219,7 @@
                         editingId: '', action: storeUrl, label: '', icon: '', description: '', url: '', type: 'link',
                         location: 'main', parentId: '', module: '', isButton: false,
                         buttonColor: '#2563eb', buttonColorEnabled: false,
-                        isTransparent: false, isMega: false, megaImage: '', megaImageAlt: '', megaSize: 'md', megaExtraTitle: '', isActive: true, ...overrides,
+                        isTransparent: false, isMega: false, megaImage: '', megaImageAlt: '', megaSize: 'md', megaExtraTitle: '', megaSideTitle: '', megaSideLinks: [], isActive: true, ...overrides,
                     };
                 },
 
@@ -256,6 +258,8 @@
                         megaImage: d.megaImage || '',
                         megaSize: d.megaSize || 'md',
                         megaExtraTitle: d.megaExtraTitle || '',
+                        megaSideTitle: d.megaSideTitle || '',
+                        megaSideLinks: (() => { try { return JSON.parse(d.megaSideLinks || '[]'); } catch (e) { return []; } })(),
                         megaImageAlt: d.megaImageAlt || '',
                         description: d.description || '',
                         isActive: d.active === '1',

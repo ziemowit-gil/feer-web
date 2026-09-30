@@ -342,6 +342,13 @@ class NavItemController extends Controller
             'mega_image_alt' => ['nullable', 'string', 'max:255'],
             'mega_size' => ['nullable', Rule::in(array_keys(NavItem::MEGA_SIZES))],
             'mega_extra_title' => ['nullable', 'string', 'max:80'],
+            'mega_side_title' => ['nullable', 'string', 'max:80'],
+            'mega_side_links' => ['nullable', 'array', 'max:8'],
+            'mega_side_links.*.label' => ['nullable', 'string', 'max:80'],
+            // Bez schematów wykonywalnych (javascript:, data:, vbscript:).
+            'mega_side_links.*.url' => ['nullable', 'string', 'max:500', 'not_regex:/^\s*(javascript|data|vbscript):/i'],
+            'mega_side_links.*.style' => ['nullable', Rule::in(['button', 'link'])],
+            'mega_side_links.*.new_tab' => ['nullable', 'boolean'],
             'url' => ['nullable', 'string', 'max:255'],
             'type' => ['required', Rule::in(array_keys(NavItem::TYPES))],
             'location' => ['required', Rule::in(array_keys(NavItem::LOCATIONS))],
@@ -414,6 +421,20 @@ class NavItemController extends Controller
         $data['mega_size'] = $data['mega_size'] ?? 'md';
         // Nagłówek dodatkowej kolumny ma sens tylko dla menu projektów.
         $data['mega_extra_title'] = $data['type'] === 'projects' ? (trim((string) ($data['mega_extra_title'] ?? '')) ?: null) : null;
+        // Karta boczna (tytuł + własne linki/przyciski) istnieje tylko przy włączonym mega menu.
+        $sideLinks = collect($request->input('mega_side_links', []))
+            ->map(fn ($l) => [
+                'label' => trim((string) ($l['label'] ?? '')),
+                'url' => trim((string) ($l['url'] ?? '')),
+                'style' => ($l['style'] ?? 'link') === 'button' ? 'button' : 'link',
+                'new_tab' => filter_var($l['new_tab'] ?? false, FILTER_VALIDATE_BOOLEAN),
+            ])
+            ->filter(fn ($l) => $l['label'] !== '' && $l['url'] !== '')
+            ->values()
+            ->all();
+        $data['mega_side_links'] = $data['is_mega'] && $sideLinks ? $sideLinks : null;
+        $data['mega_side_title'] = $data['is_mega'] ? (trim((string) ($data['mega_side_title'] ?? '')) ?: null) : null;
+
         if (! $data['is_mega'] || $request->boolean('remove_mega_image')) {
             $data['mega_image'] = null;
             $data['mega_image_alt'] = null;

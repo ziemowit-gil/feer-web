@@ -41,13 +41,14 @@ class NavItem extends Model
 
     protected $fillable = [
         'site_id', 'parent_id', 'label', 'icon', 'description', 'mega_image', 'mega_image_alt', 'url', 'type', 'module', 'location',
-        'is_button', 'is_transparent_dropdown', 'is_mega', 'mega_size', 'mega_extra_title', 'is_active', 'order', 'button_color',
+        'is_button', 'is_transparent_dropdown', 'is_mega', 'mega_size', 'mega_extra_title', 'mega_side_title', 'mega_side_links', 'is_active', 'order', 'button_color',
     ];
 
     protected $casts = [
         'is_button' => 'boolean',
         'is_transparent_dropdown' => 'boolean',
         'is_mega' => 'boolean',
+        'mega_side_links' => 'array',
         'is_active' => 'boolean',
     ];
 
@@ -80,6 +81,26 @@ class NavItem extends Model
      * która ma opublikowane podstrony. Bez treści do pokazania wraca zwykłe
      * rozwijane menu / zwykły link.
      */
+    /**
+     * Własne linki i przyciski karty bocznej mega menu (bez wierszy pustych),
+     * w postaci [label, url, style: button|link, new_tab].
+     *
+     * @return array<int, array{label: string, url: string, style: string, new_tab: bool}>
+     */
+    public function megaSideLinks(): array
+    {
+        return collect($this->mega_side_links ?? [])
+            ->filter(fn ($l) => is_array($l) && filled($l['label'] ?? null) && filled($l['url'] ?? null))
+            ->map(fn ($l) => [
+                'label' => trim((string) $l['label']),
+                'url' => trim((string) $l['url']),
+                'style' => ($l['style'] ?? 'link') === 'button' ? 'button' : 'link',
+                'new_tab' => filter_var($l['new_tab'] ?? false, FILTER_VALIDATE_BOOLEAN),
+            ])
+            ->values()
+            ->all();
+    }
+
     /** Bezpieczna wartość wielkości mega menu (domyślnie 'md'). */
     public function megaSize(): string
     {

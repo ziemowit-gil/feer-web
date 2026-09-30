@@ -175,6 +175,53 @@
 </div>
 
 <div x-show="form.isMega && form.location === 'main' && form.parentId === ''" x-cloak class="space-y-3 rounded-lg border border-gray-100 bg-gray-50 p-4">
+    <p class="text-xs font-bold uppercase tracking-wide text-muted">Karta boczna mega menu — własne linki i przyciski</p>
+    <div>
+        <label for="nav-mega-side-title" class="mb-1 block text-xs font-bold text-muted">Tytuł karty <span class="font-normal">(opcjonalnie — puste = bez tytułu)</span></label>
+        <input type="text" id="nav-mega-side-title" name="mega_side_title" x-model="form.megaSideTitle" maxlength="80" placeholder="np. Działania na starej stronie"
+            class="w-full rounded border-gray-300 text-sm focus-visible:border-brand focus-visible:ring-2 focus-visible:ring-brand">
+    </div>
+    <template x-for="(link, i) in form.megaSideLinks" :key="i">
+        <div class="grid gap-2 rounded border border-gray-200 bg-white p-3 sm:grid-cols-2">
+            <div>
+                <label :for="'side-label-' + i" class="mb-0.5 block text-xs font-bold text-muted">Etykieta</label>
+                <input type="text" :id="'side-label-' + i" :name="`mega_side_links[${i}][label]`" x-model="link.label" maxlength="80" placeholder="np. Działania (stara strona)"
+                    class="w-full rounded border-gray-300 text-sm focus-visible:border-brand focus-visible:ring-2 focus-visible:ring-brand">
+            </div>
+            <div>
+                <label :for="'side-url-' + i" class="mb-0.5 block text-xs font-bold text-muted">Adres</label>
+                <input type="text" :id="'side-url-' + i" :name="`mega_side_links[${i}][url]`" x-model="link.url" maxlength="500" placeholder="https://… albo /strona"
+                    class="w-full rounded border-gray-300 text-sm focus-visible:border-brand focus-visible:ring-2 focus-visible:ring-brand">
+            </div>
+            <div>
+                <label :for="'side-style-' + i" class="mb-0.5 block text-xs font-bold text-muted">Wygląd</label>
+                <select :id="'side-style-' + i" :name="`mega_side_links[${i}][style]`" x-model="link.style"
+                    class="w-full rounded border-gray-300 text-sm focus-visible:border-brand focus-visible:ring-2 focus-visible:ring-brand">
+                    <option value="button">Przycisk</option>
+                    <option value="link">Zwykły link</option>
+                </select>
+            </div>
+            <div class="flex items-end justify-between gap-3">
+                <label class="flex items-center gap-2 pb-2 text-sm">
+                    <input type="checkbox" :name="`mega_side_links[${i}][new_tab]`" value="1" x-model="link.new_tab" class="rounded border-gray-300 text-brand focus-visible:ring-2 focus-visible:ring-brand">
+                    Nowa karta
+                </label>
+                <button type="button" @click="form.megaSideLinks.splice(i, 1)"
+                    class="rounded px-2 py-1.5 text-sm font-bold text-red-700 hover:bg-red-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500">
+                    Usuń<span class="sr-only" x-text="' link ' + (i + 1)"></span>
+                </button>
+            </div>
+        </div>
+    </template>
+    <button type="button" x-show="form.megaSideLinks.length < 8" @click="form.megaSideLinks.push({ label: '', url: '', style: 'button', new_tab: false })"
+        class="inline-flex items-center gap-2 rounded border border-dashed border-gray-300 px-3 py-1.5 text-sm font-bold text-brand hover:border-brand hover:bg-brand-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+        <i class="fa-solid fa-plus" aria-hidden="true"></i> Dodaj link lub przycisk
+    </button>
+    <p class="text-xs text-muted">Gdy dodasz choć jeden link, zastępują domyślne przyciski karty („Wszystkie projekty", „Zobacz wszystko"). Nazwa pozycji menu nie jest powtarzana w karcie. Linki widać też w menu mobilnym.</p>
+    @error('mega_side_links.*.url') <p class="text-sm text-red-700">{{ $message }}</p> @enderror
+</div>
+
+<div x-show="form.isMega && form.location === 'main' && form.parentId === ''" x-cloak class="space-y-3 rounded-lg border border-gray-100 bg-gray-50 p-4">
     <p class="text-xs font-bold uppercase tracking-wide text-muted">Grafika promocyjna w mega menu <span class="font-normal normal-case">(opcjonalnie — kolumna boczna nad opisem)</span></p>
     <template x-if="form.megaImage">
         <img :src="form.megaImage" alt="" class="h-24 w-full rounded-md border border-gray-200 object-cover">

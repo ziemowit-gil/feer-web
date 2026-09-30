@@ -70,6 +70,7 @@
                 <a href="{{ route('projects.archive') }}" class="block px-4 py-2 text-sm font-bold normal-case text-brand hover:bg-gray-50 focus-visible:bg-gray-50">To już zrobiliśmy →</a>
             @endif
         </div>
+        @include('partials.nav-side-links', ['item' => $item])
 
         @if ($siteSettings->isModuleEnabled('events'))
             {{-- Wyróżniony skrót do nadchodzących szkoleń/wydarzeń na końcu listy — przyciąga wzrok. --}}
