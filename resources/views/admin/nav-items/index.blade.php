@@ -26,6 +26,7 @@
                 'isTransparent' => (bool) old('is_transparent_dropdown'),
                 'isMega' => (bool) old('is_mega'),
                 'megaImage' => old('mega_image_url', ''),
+                'megaSize' => old('mega_size', 'md'),
                 'megaImageAlt' => old('mega_image_alt', ''),
                 'description' => old('description', ''),
                 'isActive' => (bool) old('is_active'),
@@ -199,7 +200,7 @@
                     editingId: '', action: storeUrl, label: '', icon: '', description: '', url: '', type: 'link',
                     location: 'main', parentId: '', module: '', isButton: false,
                     buttonColor: '#2563eb', buttonColorEnabled: false,
-                    isTransparent: false, isMega: false, megaImage: '', megaImageAlt: '', isActive: true,
+                    isTransparent: false, isMega: false, megaImage: '', megaImageAlt: '', megaSize: 'md', isActive: true,
                 },
 
                 init() {
@@ -215,7 +216,7 @@
                         editingId: '', action: storeUrl, label: '', icon: '', description: '', url: '', type: 'link',
                         location: 'main', parentId: '', module: '', isButton: false,
                         buttonColor: '#2563eb', buttonColorEnabled: false,
-                        isTransparent: false, isMega: false, megaImage: '', megaImageAlt: '', isActive: true, ...overrides,
+                        isTransparent: false, isMega: false, megaImage: '', megaImageAlt: '', megaSize: 'md', isActive: true, ...overrides,
                     };
                 },
 
@@ -252,6 +253,7 @@
                         isTransparent: d.transparent === '1',
                         isMega: d.mega === '1',
                         megaImage: d.megaImage || '',
+                        megaSize: d.megaSize || 'md',
                         megaImageAlt: d.megaImageAlt || '',
                         description: d.description || '',
                         isActive: d.active === '1',

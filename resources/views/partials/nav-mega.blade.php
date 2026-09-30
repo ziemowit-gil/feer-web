@@ -66,8 +66,20 @@
     $isCurrent = $item->isCurrent() || collect($entries)->contains(fn ($e) => $e[4]);
     $hasTarget = $isProjects ? true : ($item->url && $item->url !== '#');
     $targetUrl = $isProjects ? route('projects.index') : $item->url;
-    $columns   = $isProjects ? max(2, min(4, $groups->count())) : max(2, min(4, (int) ceil(count($entries) / 4)));
     $hasImage  = filled($item->mega_image);
+
+    // Wielkość pozycji (NavItem::MEGA_SIZES): liczba kolumn i skala wpisów.
+    $size = $item->megaSize();
+    $columns = match ($size) {
+        'sm' => $isProjects ? max(3, min(5, $groups->count())) : max(3, min(5, (int) ceil(count($entries) / 3))),
+        'lg' => 2,
+        default => $isProjects ? max(2, min(4, $groups->count())) : max(2, min(4, (int) ceil(count($entries) / 4))),
+    };
+    $sz = match ($size) {
+        'sm' => ['row' => 'min-h-9 gap-2 px-2 py-1', 'icon' => 'h-6 w-6 text-[11px]', 'title' => 'text-xs', 'desc' => null, 'proj' => 'text-xs', 'projExcerpt' => null, 'projTake' => 6, 'cat' => 'text-xs', 'gapY' => 'gap-y-0.5'],
+        'lg' => ['row' => 'min-h-14 gap-4 px-4 py-3', 'icon' => 'h-11 w-11 text-base', 'title' => 'text-base', 'desc' => 'text-sm', 'proj' => 'text-base', 'projExcerpt' => 'text-sm', 'projTake' => 4, 'cat' => 'text-base', 'gapY' => 'gap-y-2'],
+        default => ['row' => 'min-h-11 gap-3 px-3 py-2', 'icon' => 'h-8 w-8 text-sm', 'title' => 'text-sm', 'desc' => 'text-xs', 'proj' => 'text-sm', 'projExcerpt' => 'text-xs', 'projTake' => 5, 'cat' => 'text-sm', 'gapY' => 'gap-y-1'],
+    };
 @endphp
 
 <li class="static" x-data="{ open: false }" x-id="['mega']"
@@ -116,29 +128,29 @@
                             @foreach ($groups as $category)
                                 <div>
                                     <a href="{{ route('categories.show', $category) }}" @if ($catCurrentId === $category->id) aria-current="page" @endif
-                                       class="mb-2 flex items-center justify-between gap-2 rounded-md px-2 py-1.5 text-sm font-bold hover:bg-gray-50 hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand {{ $catCurrentId === $category->id ? 'text-brand' : 'text-ink' }}">
+                                       class="mb-2 flex items-center justify-between gap-2 rounded-md px-2 py-1.5 font-bold {{ $sz['cat'] }} hover:bg-gray-50 hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand {{ $catCurrentId === $category->id ? 'text-brand' : 'text-ink' }}">
                                         <span class="flex items-center gap-2"><i class="fa-solid fa-folder-open text-brand" aria-hidden="true"></i>{{ $category->name }}</span>
                                         <span class="rounded-full bg-gray-100 px-2 py-0.5 text-[11px] font-bold text-muted" aria-label="{{ $category->publishedProjects->count() }} projektów">{{ $category->publishedProjects->count() }}</span>
                                     </a>
                                     <ul role="list" class="space-y-0.5 border-l border-gray-100 pl-3">
-                                        @foreach ($category->publishedProjects->take(5) as $project)
+                                        @foreach ($category->publishedProjects->take($sz['projTake']) as $project)
                                             <li>
                                                 <a href="{{ route('projects.show', $project) }}" @if ($groupCurrentId === $project->id) aria-current="page" @endif
                                                    class="group/p block rounded-md px-2 py-1.5 hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
-                                                    <span class="flex items-center gap-2 text-sm {{ $groupCurrentId === $project->id ? 'font-semibold text-brand' : 'text-ink group-hover/p:text-brand' }}">
+                                                    <span class="flex items-center gap-2 {{ $sz['proj'] }} {{ $groupCurrentId === $project->id ? 'font-semibold text-brand' : 'text-ink group-hover/p:text-brand' }}">
                                                         <span class="h-2 w-2 flex-none rounded-full" style="background: {{ \App\Support\Color::isValid($project->accent_color ?? null) ? $project->accent_color : 'var(--color-brand)' }}" aria-hidden="true"></span>
                                                         <span class="truncate">{{ $project->title }}</span>
                                                         @if ($project->is_completed)
                                                             <span class="ml-auto flex-none rounded bg-emerald-50 px-1.5 text-[10px] font-bold uppercase tracking-wide text-emerald-700">zrealizowany</span>
                                                         @endif
                                                     </span>
-                                                    @if ($project->excerpt)
-                                                        <span class="mt-0.5 block truncate pl-4 text-xs text-muted">{{ $project->excerpt }}</span>
+                                                    @if ($project->excerpt && $sz['projExcerpt'])
+                                                        <span class="mt-0.5 block truncate pl-4 text-muted {{ $sz['projExcerpt'] }}">{{ $project->excerpt }}</span>
                                                     @endif
                                                 </a>
                                             </li>
                                         @endforeach
-                                        @if ($category->publishedProjects->count() > 5)
+                                        @if ($category->publishedProjects->count() > $sz['projTake'])
                                             <li>
                                                 <a href="{{ route('categories.show', $category) }}" class="block rounded-md px-2 py-1.5 text-xs font-bold text-brand hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
                                                     Wszystkie w tej kategorii ({{ $category->publishedProjects->count() }}) →
@@ -163,18 +175,18 @@
                     </div>
                 @endif
             @else
-                <ul role="list" class="grid gap-x-6 gap-y-1 sm:grid-cols-2 lg:grid-cols-{{ $columns }}">
+                <ul role="list" class="grid gap-x-6 {{ $sz['gapY'] }} sm:grid-cols-2 lg:grid-cols-{{ $columns }}">
                     @foreach ($entries as [$url, $label, $description, $icon, $current])
                         <li>
                             <a href="{{ $url }}" @if ($current) aria-current="page" @endif
-                               class="group flex min-h-11 items-start gap-3 rounded-lg px-3 py-2 transition hover:bg-gray-50 focus-visible:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand {{ $current ? 'bg-brand-light' : '' }}">
-                                <span class="mt-0.5 flex h-8 w-8 flex-none items-center justify-center rounded-md {{ $current ? 'bg-brand text-white' : 'bg-brand-light text-brand' }}" aria-hidden="true">
-                                    <i class="{{ $icon ? 'bi ' . $icon : 'fa-solid fa-arrow-right' }} text-sm"></i>
+                               class="group flex items-start rounded-lg transition hover:bg-gray-50 focus-visible:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand {{ $sz['row'] }} {{ $current ? 'bg-brand-light' : '' }}">
+                                <span class="mt-0.5 flex flex-none items-center justify-center rounded-md {{ $sz['icon'] }} {{ $current ? 'bg-brand text-white' : 'bg-brand-light text-brand' }}" aria-hidden="true">
+                                    <i class="{{ $icon ? 'bi ' . $icon : 'fa-solid fa-arrow-right' }}"></i>
                                 </span>
-                                <span class="min-w-0">
-                                    <span class="block text-sm font-bold {{ $current ? 'text-brand' : 'text-ink group-hover:text-brand' }}">{{ $label }}</span>
-                                    @if ($description)
-                                        <span class="block text-xs leading-snug text-muted">{{ $description }}</span>
+                                <span class="min-w-0 self-center">
+                                    <span class="block font-bold {{ $sz['title'] }} {{ $current ? 'text-brand' : 'text-ink group-hover:text-brand' }}">{{ $label }}</span>
+                                    @if ($description && $sz['desc'])
+                                        <span class="block leading-snug text-muted {{ $sz['desc'] }}">{{ $description }}</span>
                                     @endif
                                 </span>
                             </a>

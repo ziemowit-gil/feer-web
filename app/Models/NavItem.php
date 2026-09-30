@@ -26,6 +26,13 @@ class NavItem extends Model
      * Where the item renders: the header's main menu, or the footer's link
      * list (which only ever renders items as plain links, regardless of type).
      */
+    /** Wielkość pozycji w panelu mega menu. */
+    public const MEGA_SIZES = [
+        'sm' => 'Kompaktowe (więcej kolumn, mniejszy tekst, bez opisów)',
+        'md' => 'Standardowe (ikona, tytuł, opis)',
+        'lg' => 'Duże (dwie kolumny, większe ikony i opisy)',
+    ];
+
     public const LOCATIONS = [
         'main' => 'Menu główne (nagłówek)',
         'footer' => 'Stopka',
@@ -34,7 +41,7 @@ class NavItem extends Model
 
     protected $fillable = [
         'site_id', 'parent_id', 'label', 'icon', 'description', 'mega_image', 'mega_image_alt', 'url', 'type', 'module', 'location',
-        'is_button', 'is_transparent_dropdown', 'is_mega', 'is_active', 'order', 'button_color',
+        'is_button', 'is_transparent_dropdown', 'is_mega', 'mega_size', 'is_active', 'order', 'button_color',
     ];
 
     protected $casts = [
@@ -73,6 +80,12 @@ class NavItem extends Model
      * która ma opublikowane podstrony. Bez treści do pokazania wraca zwykłe
      * rozwijane menu / zwykły link.
      */
+    /** Bezpieczna wartość wielkości mega menu (domyślnie 'md'). */
+    public function megaSize(): string
+    {
+        return array_key_exists((string) $this->mega_size, self::MEGA_SIZES) ? $this->mega_size : 'md';
+    }
+
     public function isMega(): bool
     {
         if (! $this->is_mega || $this->is_button || $this->parent_id) {

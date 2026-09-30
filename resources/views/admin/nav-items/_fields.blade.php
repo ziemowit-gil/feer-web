@@ -153,6 +153,18 @@
     </span>
 </label>
 
+<div x-show="form.isMega && form.location === 'main' && form.parentId === ''" x-cloak>
+    <label for="nav-mega-size" class="mb-1 block text-sm font-bold">Wielkość pozycji w mega menu</label>
+    <select id="nav-mega-size" name="mega_size" x-model="form.megaSize"
+        class="w-full rounded border-gray-300 focus-visible:border-brand focus-visible:ring-2 focus-visible:ring-brand">
+        @foreach (\App\Models\NavItem::MEGA_SIZES as $msValue => $msLabel)
+            <option value="{{ $msValue }}">{{ $msLabel }}</option>
+        @endforeach
+    </select>
+    <p class="mt-1 text-xs text-muted">Kompaktowe mieści więcej pozycji w rzędzie, duże eksponuje ikony i opisy. Dotyczy też kolumn menu projektów.</p>
+    @error('mega_size') <p class="mt-1 text-sm text-red-700">{{ $message }}</p> @enderror
+</div>
+
 <div x-show="form.isMega && form.location === 'main' && form.parentId === ''" x-cloak class="space-y-3 rounded-lg border border-gray-100 bg-gray-50 p-4">
     <p class="text-xs font-bold uppercase tracking-wide text-muted">Grafika promocyjna w mega menu <span class="font-normal normal-case">(opcjonalnie — kolumna boczna nad opisem)</span></p>
     <template x-if="form.megaImage">

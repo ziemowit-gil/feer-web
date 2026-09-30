@@ -340,6 +340,7 @@ class NavItemController extends Controller
             'mega_image_url' => ['nullable', 'string', 'max:500'],
             'mega_image_file' => ['nullable', 'image', 'max:4096'],
             'mega_image_alt' => ['nullable', 'string', 'max:255'],
+            'mega_size' => ['nullable', Rule::in(array_keys(NavItem::MEGA_SIZES))],
             'url' => ['nullable', 'string', 'max:255'],
             'type' => ['required', Rule::in(array_keys(NavItem::TYPES))],
             'location' => ['required', Rule::in(array_keys(NavItem::LOCATIONS))],
@@ -409,6 +410,7 @@ class NavItemController extends Controller
         // Grafika promocyjna mega menu: wgrany plik ma pierwszeństwo przed adresem;
         // „usuń" czyści; bez mega menu nie trzymamy osieroconej grafiki.
         unset($data['mega_image_url'], $data['mega_image_file']);
+        $data['mega_size'] = $data['mega_size'] ?? 'md';
         if (! $data['is_mega'] || $request->boolean('remove_mega_image')) {
             $data['mega_image'] = null;
             $data['mega_image_alt'] = null;

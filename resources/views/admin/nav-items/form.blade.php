@@ -23,6 +23,7 @@
             isTransparent: {{ Js::from((bool) old('is_transparent_dropdown', $navItem->is_transparent_dropdown ?? false)) }},
             isMega: {{ Js::from((bool) old('is_mega', $navItem->is_mega ?? false)) }},
             megaImage: {{ Js::from(old('mega_image_url', $navItem->mega_image ?? '')) }},
+            megaSize: {{ Js::from(old('mega_size', $navItem->mega_size ?? 'md')) }},
             megaImageAlt: {{ Js::from(old('mega_image_alt', $navItem->mega_image_alt ?? '')) }},
             icon: {{ Js::from(old('icon', $navItem->icon ?? '')) }},
             description: {{ Js::from(old('description', $navItem->description ?? '')) }},
