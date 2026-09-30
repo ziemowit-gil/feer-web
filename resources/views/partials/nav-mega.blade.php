@@ -123,7 +123,7 @@
         <div class="mx-auto grid max-w-6xl gap-8 px-4 py-6 lg:grid-cols-[1fr_16rem]">
 
             @if ($isProjects)
-                {{-- Kolumny: kategorie projektów (nazwa + liczba, projekty z opisem i statusem) --}}
+                {{-- Kolumny: kategorie projektów (nazwa, projekty z opisem i statusem) --}}
                 @if ($groups->isEmpty())
                     <p class="text-sm text-muted">Brak kategorii projektów.</p>
                 @else
@@ -132,9 +132,8 @@
                             @foreach ($groups as $category)
                                 <div>
                                     <a href="{{ route('categories.show', $category) }}" @if ($catCurrentId === $category->id) aria-current="page" @endif
-                                       class="mb-2 flex items-center justify-between gap-2 rounded-md px-2 py-1.5 font-bold {{ $sz['cat'] }} hover:bg-gray-50 hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand {{ $catCurrentId === $category->id ? 'text-brand' : 'text-ink' }}">
+                                       class="mb-2 flex items-center gap-2 rounded-md px-2 py-1.5 font-bold {{ $sz['cat'] }} hover:bg-gray-50 hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand {{ $catCurrentId === $category->id ? 'text-brand' : 'text-ink' }}">
                                         <span class="flex items-center gap-2"><i class="fa-solid fa-folder-open text-brand" aria-hidden="true"></i>{{ $category->name }}</span>
-                                        <span class="rounded-full bg-gray-100 px-2 py-0.5 text-[11px] font-bold text-muted" aria-label="{{ $category->publishedProjects->count() }} projektów">{{ $category->publishedProjects->count() }}</span>
                                     </a>
                                     <ul role="list" class="space-y-0.5 border-l border-gray-100 pl-3">
                                         @foreach ($category->publishedProjects->take($sz['projTake']) as $project)
@@ -157,7 +156,7 @@
                                         @if ($category->publishedProjects->count() > $sz['projTake'])
                                             <li>
                                                 <a href="{{ route('categories.show', $category) }}" class="block rounded-md px-2 py-1.5 text-xs font-bold text-brand hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
-                                                    Wszystkie w tej kategorii ({{ $category->publishedProjects->count() }}) →
+                                                    Wszystkie w tej kategorii →
                                                 </a>
                                             </li>
                                         @endif
@@ -192,16 +191,12 @@
                             @endif
                         </div>
 
-                        {{-- Stopka panelu: podsumowanie + skróty --}}
-                        <div class="mt-5 flex flex-wrap items-center gap-x-5 gap-y-2 border-t border-gray-100 pt-3 text-xs text-muted">
-                            <span><i class="fa-solid fa-diagram-project mr-1 text-brand" aria-hidden="true"></i>{{ $allProjects->count() }} {{ trans_choice('projekt|projekty|projektów', $allProjects->count()) }} w {{ $groups->count() }} {{ trans_choice('kategorii|kategoriach|kategoriach', $groups->count()) }}</span>
-                            @if ($allProjects->where('is_completed', true)->isNotEmpty())
-                                <span><i class="fa-solid fa-circle-check mr-1 text-emerald-600" aria-hidden="true"></i>{{ $allProjects->where('is_completed', true)->count() }} zrealizowanych</span>
-                            @endif
-                            @if ($navHasProjectArchive ?? false)
-                                <a href="{{ route('projects.archive') }}" class="ml-auto font-bold text-brand underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">To już zrobiliśmy →</a>
-                            @endif
-                        </div>
+                        {{-- Stopka: skrót do archiwum, o ile nie ma własnej kolumny z linkami --}}
+                        @if (($navHasProjectArchive ?? false) && $projectExtras->isEmpty())
+                            <div class="mt-5 border-t border-gray-100 pt-3 text-xs">
+                                <a href="{{ route('projects.archive') }}" class="font-bold text-brand underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">To już zrobiliśmy →</a>
+                            </div>
+                        @endif
                     </div>
                 @endif
             @else
