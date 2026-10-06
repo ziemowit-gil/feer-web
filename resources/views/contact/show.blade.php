@@ -11,18 +11,20 @@
 
 @section('content')
     @php $isFederationTemplate = ($siteSettings->site_template ?? 'default') === 'federation'; @endphp
-    <section class="mx-auto max-w-5xl px-4 py-12">
-        @if ($isFederationTemplate)
+    {{-- Nagłówek strony: jasny pas z tytułem i krótkim wstępem --}}
+    <div class="border-b border-brand/10 bg-brand-light/40">
+        <div class="mx-auto max-w-5xl px-4 py-10 sm:py-14">
             <p class="mb-3 text-sm font-extrabold uppercase tracking-widest text-brand">Kontakt</p>
-            <h1 class="mb-6 text-3xl font-extrabold leading-tight tracking-tight text-ink sm:text-4xl">Napisz albo zadzwoń</h1>
-        @else
-            <h1 class="mb-6 text-3xl font-bold text-ink">Kontakt</h1>
-        @endif
+            <h1 class="text-3xl font-extrabold leading-tight tracking-tight text-ink sm:text-4xl">
+                {{ $isFederationTemplate ? 'Napisz albo zadzwoń' : 'Porozmawiajmy' }}
+            </h1>
+            @if ($siteSettings->contact_intro)
+                <div class="prose mt-4 max-w-2xl text-muted">{!! $siteSettings->contact_intro !!}</div>
+            @endif
+        </div>
+    </div>
 
-        @if ($siteSettings->contact_intro)
-            <div class="prose mb-8 max-w-2xl text-muted">{!! $siteSettings->contact_intro !!}</div>
-        @endif
-
+    <section class="mx-auto max-w-5xl px-4 py-10">
         @include('partials.correspondence-note')
 
         @php
@@ -46,12 +48,13 @@
         @endif
 
         {{-- Formularz kontaktowy + dane teleadresowe --}}
-        <div id="formularz" class="scroll-mt-24 grid gap-6 md:grid-cols-[1fr_300px] {{ $isFederationTemplate ? 'items-start' : 'gap-10' }}">
-            <div>
+        <div id="formularz" class="scroll-mt-24 grid items-start gap-8 md:grid-cols-[1fr_320px]">
+            <div class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm sm:p-8">
+                <h2 class="mb-5 text-xl font-bold text-ink">Napisz do nas</h2>
                 @include('contact.partials.form')
             </div>
 
-            <div>
+            <div class="rounded-2xl border border-gray-200 bg-gray-50 p-6 md:sticky md:top-24">
                 @include('contact.partials.details')
             </div>
         </div>

@@ -1371,60 +1371,50 @@
     @endphp
 
     <style>
-        .person-split { display: grid; grid-template-columns: minmax(0, 1fr) 19rem; gap: 3rem; align-items: start; }
-        .person-hero { display: flex; flex-wrap: wrap; align-items: center; gap: 2.5rem 4rem; }
+        .person-split { display: grid; grid-template-columns: minmax(0, 1fr) 19rem; gap: 4rem; align-items: start; }
+        .person-hero { display: grid; grid-template-columns: 15rem minmax(0, 1fr); gap: 3rem; align-items: center; }
         @media (max-width: 899px) { .person-split { grid-template-columns: 1fr; gap: 2rem; } .person-split > aside { order: -1; } }
+        @media (max-width: 639px) { .person-hero { grid-template-columns: 1fr; gap: 1.5rem; } }
     </style>
 
-    {{-- ══ HERO: duże zdjęcie z ozdobną ramką + tożsamość + szybkie kontakty ══ --}}
-    <section class="relative overflow-hidden" aria-label="Profil: {{ $page->title }}"
-        style="background: linear-gradient(135deg, color-mix(in srgb, var(--color-brand) 12%, #fff) 0%, #fff 62%)">
-        <span class="pointer-events-none absolute" aria-hidden="true"
-            style="right:-6rem;top:-6rem;width:22rem;height:22rem;border-radius:9999px;background:color-mix(in srgb, var(--color-brand) 10%, transparent)"></span>
-        <span class="pointer-events-none absolute" aria-hidden="true"
-            style="left:-4rem;bottom:-5rem;width:14rem;height:14rem;border-radius:9999px;background:color-mix(in srgb, var(--color-brand) 7%, transparent)"></span>
-
-        <div class="person-hero relative mx-auto max-w-6xl px-4" style="padding-top:3.5rem;padding-bottom:3.5rem">
-            <div class="relative flex-none" style="width:min(17rem,70vw)">
-                <span class="absolute" aria-hidden="true"
-                    style="inset:0;transform:translate(.9rem,.9rem) rotate(3deg);border-radius:2rem;background:color-mix(in srgb, var(--color-brand) 22%, transparent)"></span>
+    {{-- ══ HERO: zdjęcie + tożsamość + szybkie kontakty (czysty, płaski układ) ══ --}}
+    <section class="border-b border-gray-100 bg-white" aria-label="Profil: {{ $page->title }}">
+        <div class="person-hero mx-auto max-w-5xl px-4" style="padding-top:3.5rem;padding-bottom:3.5rem">
+            <div style="width:min(15rem,60vw)">
                 @if (filled($page->content_image))
                     <img src="{{ $page->content_image }}" alt="{{ $page->content_image_alt ?: $page->title }}"
-                        class="relative w-full object-cover object-top shadow-xl"
-                        style="aspect-ratio:4/5;border-radius:2rem;border:6px solid #fff">
+                        class="w-full rounded-2xl object-cover object-top ring-1 ring-gray-200"
+                        style="aspect-ratio:4/5">
                 @else
-                    <span class="relative flex w-full items-center justify-center bg-white shadow-xl" aria-hidden="true"
-                        style="aspect-ratio:4/5;border-radius:2rem;border:6px solid #fff">
-                        <span class="text-6xl font-extrabold text-brand">{{ $personInitials }}</span>
+                    <span class="flex w-full items-center justify-center rounded-2xl bg-brand-light ring-1 ring-gray-200" aria-hidden="true"
+                        style="aspect-ratio:4/5">
+                        <span class="text-6xl font-bold text-brand">{{ $personInitials }}</span>
                     </span>
                 @endif
             </div>
 
-            <div class="min-w-0 flex-1" style="min-width:min(100%,18rem)">
-                <p class="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1 text-xs font-bold uppercase tracking-widest text-brand shadow-sm">
-                    <i class="fa-solid fa-people-group" aria-hidden="true"></i>
-                    {{ $page->person_member_label ?: 'Zespół FEER' }}
-                </p>
-                <h1 class="mt-4 text-4xl font-extrabold leading-tight tracking-tight text-ink md:text-6xl">{{ $page->title }}</h1>
+            <div class="min-w-0">
+                <p class="text-xs font-bold uppercase tracking-widest text-muted">{{ $page->person_member_label ?: 'Zespół FEER' }}</p>
+                <h1 class="mt-3 text-4xl font-extrabold leading-tight tracking-tight text-ink md:text-5xl">{{ $page->title }}</h1>
                 @if (filled($page->person_role))
-                    <p class="mt-2 text-xl font-semibold text-brand md:text-2xl">{{ $page->person_role }}</p>
+                    <p class="mt-2 text-lg font-semibold text-brand md:text-xl">{{ $page->person_role }}</p>
                 @endif
                 @if (filled($page->person_bio))
-                    <p class="mt-5 max-w-2xl text-lg leading-relaxed text-ink/80">{{ $page->person_bio }}</p>
+                    <p class="mt-5 max-w-2xl text-base leading-relaxed text-ink/80 md:text-lg">{{ $page->person_bio }}</p>
                 @endif
 
                 @if (filled($page->person_email) || filled($page->person_phone))
-                    <div class="mt-7 flex flex-wrap items-center gap-3">
+                    <div class="mt-6 flex flex-wrap items-center gap-3">
                         @if (filled($page->person_email))
                             <a href="mailto:{{ $page->person_email }}"
-                                class="inline-flex min-h-11 items-center gap-2 rounded-full bg-brand px-5 text-sm font-bold text-white shadow-sm transition hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
+                                class="inline-flex min-h-11 items-center gap-2 rounded-lg bg-brand px-5 text-sm font-bold text-white transition hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
                                 <i class="fa-solid fa-envelope" aria-hidden="true"></i> Napisz wiadomość
                                 <span class="sr-only">do: {{ $page->person_email }}</span>
                             </a>
                         @endif
                         @if (filled($page->person_phone))
                             <a href="tel:{{ preg_replace('/\s+/', '', $page->person_phone) }}"
-                                class="inline-flex min-h-11 items-center gap-2 rounded-full border-2 border-brand bg-white px-5 text-sm font-bold text-brand transition hover:bg-brand-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
+                                class="inline-flex min-h-11 items-center gap-2 rounded-lg border border-gray-300 bg-white px-5 text-sm font-bold text-ink transition hover:border-brand hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
                                 <i class="fa-solid fa-phone" aria-hidden="true"></i> {{ $page->person_phone }}
                             </a>
                         @endif
@@ -1437,24 +1427,22 @@
     {{-- ══ CYTAT ══ --}}
     @if (filled($page->founder_quote))
         <section class="px-4 py-14" aria-label="Cytat">
-            <figure class="relative mx-auto max-w-3xl text-center">
-                <span class="pointer-events-none absolute left-1/2 select-none font-serif text-brand" aria-hidden="true"
-                    style="top:-2.25rem;transform:translateX(-50%);font-size:6rem;line-height:1;opacity:.18">&ldquo;</span>
-                <blockquote class="relative text-2xl font-medium leading-snug text-ink md:text-3xl">
+            <figure class="mx-auto max-w-3xl border-l-4 border-brand pl-6">
+                <blockquote class="text-xl font-medium leading-snug text-ink md:text-2xl">
                     <p>{{ $page->founder_quote }}</p>
                 </blockquote>
-                <figcaption class="mt-5 text-sm font-bold uppercase tracking-widest text-brand">— {{ $page->title }}</figcaption>
+                <figcaption class="mt-4 text-sm font-bold text-muted">— {{ $page->title }}</figcaption>
             </figure>
         </section>
     @endif
 
     {{-- ══ TREŚĆ + KARTA KONTAKTU ══ --}}
     @if ($page->content || $hasSidebar)
-        <section class="mx-auto max-w-6xl px-4 py-12" aria-label="O osobie">
+        <section class="mx-auto max-w-5xl px-4 py-12" aria-label="O osobie">
             <div class="{{ $hasSidebar && $page->content ? 'person-split' : '' }}">
                 @if ($page->content)
-                    <div class="min-w-0" style="max-width:44rem">
-                        <h2 class="mb-4 text-2xl font-bold text-ink">O mnie</h2>
+                    <div class="min-w-0" style="max-width:42rem">
+                        <h2 class="mb-4 text-xl font-bold text-ink">O mnie</h2>
                         <div class="prose prose-lg max-w-none text-ink prose-headings:font-bold prose-headings:text-ink prose-p:leading-relaxed prose-p:text-ink/85 prose-a:text-brand prose-a:no-underline hover:prose-a:underline">
                             @shortcodes($page->content)
                         </div>
@@ -1462,7 +1450,7 @@
                 @endif
 
                 @if ($hasSidebar)
-                    <aside aria-labelledby="person-contact-heading" class="rounded-2xl border border-gray-200 bg-white shadow-sm" style="padding:1.5rem;{{ $page->content ? 'position:sticky;top:1.5rem' : 'max-width:26rem' }}">
+                    <aside aria-labelledby="person-contact-heading" class="rounded-2xl border border-gray-200 bg-gray-50" style="padding:1.5rem;{{ $page->content ? 'position:sticky;top:1.5rem' : 'max-width:26rem' }}">
                         <h2 id="person-contact-heading" class="mb-3 text-sm font-bold uppercase tracking-widest text-muted">Kontakt i media</h2>
                         <ul role="list" class="space-y-1">
                             @if (filled($page->person_email))
