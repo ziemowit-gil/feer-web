@@ -683,6 +683,9 @@ Route::middleware(['auth', 'verified', '2fa', 'admin-site'])->prefix(config('app
         Route::put('szablony-maili/{mailTemplate}', [AdminMailTemplateController::class, 'update'])->name('mail-templates.update');
     });
 
+    // Strona „O weCMS” — opis systemu i autor (dostępna dla każdego zalogowanego użytkownika panelu).
+    Route::view('o-cms', 'admin.about')->name('o-cms');
+
     // Dokumentacja techniczna (tylko admin).
     Route::get('dokumentacja/{plik?}', function (string $plik = 'controllers') {
         $allowed = ['controllers', 'deployment'];

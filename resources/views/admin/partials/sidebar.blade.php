@@ -259,6 +259,9 @@
                     <span class="sr-only">(otwiera się w nowej karcie)</span>
                 </a>
             @endif
+            <a href="{{ route('admin.o-cms') }}" role="menuitem" class="flex items-center gap-3 px-3 py-2 text-ink hover:bg-gray-50 hover:text-brand">
+                <i class="fa-solid fa-circle-info w-4 text-center text-gray-400" aria-hidden="true"></i> O weCMS
+            </a>
             <a href="{{ route('home') }}" role="menuitem" class="flex items-center gap-3 border-t border-gray-100 px-3 py-2 text-ink hover:bg-gray-50 hover:text-brand">
                 <i class="fa-solid fa-arrow-left w-4 text-center text-gray-400" aria-hidden="true"></i> Wróć do strony
             </a>
@@ -269,7 +272,7 @@
                 </button>
             </form>
             <p class="border-t border-gray-100 px-3 py-2 text-[11px] text-gray-400">
-                Napędzane przez <span class="font-bold">weCMS</span> · <a href="mailto:ziemowit.gil@gmail.com" class="hover:text-ink">Ziemowit Gil</a>
+                Napędzane przez <a href="{{ route('admin.o-cms') }}" class="font-bold hover:text-ink">weCMS</a> · <a href="mailto:ziemowit.gil@gmail.com" class="hover:text-ink">Ziemowit Gil</a>
             </p>
         </div>
     </div>
