@@ -1994,7 +1994,7 @@
                     (ustawiasz je w zakładce <span class="font-bold">Nagłówek</span>) oraz rozbudowana strona główna z sekcją szkoleń.
                     Montserrat w całym serwisie, tekst <span class="font-mono">#1D1D1A</span>, płaskie powierzchnie bez gradientów i cieni.
                     Paleta jest stała i nadpisuje zakładkę <span class="font-bold">Kolory</span>:
-                    <span class="font-mono">#1E6DFF</span> (marka), <span class="font-mono">#1D1D1A</span>,
+                    <span class="font-mono">#1B66F5</span> (marka — odcień brandbooka #1E6DFF z kontrastem ≥ 4,5:1 na bieli), <span class="font-mono">#1D1D1A</span>,
                     <span class="font-mono">#CBD5E7</span>, w partnerstwie z NGO <span class="font-mono">#EA8F00</span>.
                 </p>
             </div>

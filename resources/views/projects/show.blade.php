@@ -71,9 +71,9 @@
                 @endif
                 @if ($showForWhom || $project->since)
                     <p class="mt-4 text-sm text-muted">
-                        @if ($showForWhom)<span @if ($canInlineEdit) data-inline-field="for_whom" data-inline-kind="text" data-inline-multiline @endif>Dla kogo: <span class="font-medium text-ink">{{ $project->for_whom }}</span></span>@endif
+                        @if ($showForWhom)<span @if ($canInlineEdit) data-inline-field="for_whom" data-inline-kind="text" data-inline-multiline @endif><i class="fa-solid fa-users mr-1.5 text-brand" aria-hidden="true"></i>Dla kogo: <span class="font-medium text-ink">{{ $project->for_whom }}</span></span>@endif
                         @if ($showForWhom && $project->since)<span aria-hidden="true"> · </span>@endif
-                        @if ($project->since)<span>Od kiedy: <span class="font-medium text-ink">{{ $project->since }}</span></span>@endif
+                        @if ($project->since)<span><i class="fa-solid fa-calendar-days mr-1.5 text-brand" aria-hidden="true"></i>Od kiedy: <span class="font-medium text-ink">{{ $project->since }}</span></span>@endif
                     </p>
                 @endif
             </div>
@@ -119,12 +119,13 @@
                 @if ($project->show_legacy_box)
                     <div class="mb-8 rounded-lg border-l-4 border-brand bg-brand-light p-5">
                         <div class="flex items-start gap-4">
+                            <i class="fa-solid fa-clock-rotate-left mt-1 text-xl text-brand" aria-hidden="true"></i>
                             <div>
                                 <p class="text-base font-bold text-ink">To działanie realizowaliśmy przed uruchomieniem nowej strony.</p>
                                 @if ($project->legacy_url)
                                     <a href="{{ $project->legacy_url }}" target="_blank" rel="noopener"
                                         class="mt-3 inline-flex items-center gap-2 rounded bg-brand px-4 py-2 text-sm font-bold text-white transition hover:bg-brand-dark">
-                                        Zobacz informacje o projekcie
+                                        <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i> Zobacz informacje o projekcie
                                     </a>
                                 @endif
                             </div>
@@ -134,14 +135,14 @@
 
                 @if ($project->content)
                     <h2 class="mb-3 flex items-center gap-2 text-xl font-bold text-ink">
-                        Opis projektu
+                        <i class="fa-solid fa-circle-info text-brand" aria-hidden="true"></i> Opis projektu
                     </h2>
                     <div class="prose mb-8 max-w-none text-ink" @if ($canInlineEdit) data-inline-field="content" data-inline-kind="rich" @endif>{!! $project->content !!}</div>
                 @endif
 
                 @if ($project->why)
                     <h2 class="mb-3 flex items-center gap-2 text-xl font-bold text-ink">
-                        Dlaczego to robimy
+                        <i class="fa-solid fa-lightbulb text-brand" aria-hidden="true"></i> Dlaczego to robimy
                     </h2>
                     <div class="prose max-w-none text-ink">{{ $project->why }}</div>
                 @endif
@@ -167,7 +168,7 @@
                     @endphp
                     <section @if ($anchor) id="{{ $anchor }}" @endif class="mt-8 scroll-mt-24 rounded-lg border border-gray-200 p-6">
                         <h2 class="mb-4 flex items-center gap-2 text-xl font-bold text-ink">
-                            {{ $subpage->title }}
+                            <i class="fa-solid {{ $subIcon }} text-brand" aria-hidden="true"></i> {{ $subpage->title }}
                         </h2>
                         @if ($subpage->content)
                             <div class="prose max-w-none text-ink">{!! $subpage->content !!}</div>
@@ -178,7 +179,8 @@
                             @include('partials.faq', ['page' => $subpage])
                         @endif
                         <a href="{{ route('page.show', $subpage) }}" class="mt-4 inline-flex items-center gap-2 text-sm font-bold text-brand hover:text-brand-dark">
-                            Otwórz jako osobną stronę                         </a>
+                            Otwórz jako osobną stronę <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+                        </a>
                     </section>
                 @endforeach
 
@@ -186,7 +188,7 @@
                 @if ($project->outcomes)
                     <div class="mt-8 rounded-lg border border-emerald-200 bg-emerald-50/60 p-6">
                         <h2 class="mb-3 flex items-center gap-2 text-xl font-bold text-ink">
-                            Co udało się osiągnąć
+                            <i class="fa-solid fa-award text-emerald-600" aria-hidden="true"></i> Co udało się osiągnąć
                         </h2>
                         <div class="prose max-w-none text-ink">{!! $project->outcomes !!}</div>
                     </div>
@@ -196,7 +198,7 @@
                 @if ($project->is_paid && $pricing->isNotEmpty())
                     <div class="mt-8 rounded-lg border border-gray-200 p-6">
                         <h2 class="mb-4 flex items-center gap-2 text-xl font-bold text-ink">
-                            Cennik
+                            <i class="fa-solid fa-tag text-brand" aria-hidden="true"></i> Cennik
                         </h2>
                         <ul class="divide-y divide-gray-100">
                             @foreach ($pricing as $row)
@@ -219,7 +221,7 @@
                 @if ($siteSettings->isModuleEnabled('news') && $project->publishedNews->isNotEmpty())
                     <div class="mt-10 border-t border-gray-200 pt-8">
                         <h2 class="mb-4 flex items-center gap-2 text-xl font-bold text-ink">
-                            Aktualności projektu
+                            <i class="fa-solid fa-newspaper text-brand" aria-hidden="true"></i> Aktualności projektu
                         </h2>
                         <ul class="space-y-4">
                             @foreach ($project->publishedNews as $item)
@@ -237,7 +239,7 @@
                                         <div class="min-w-0">
                                             @if ($item->is_featured)
                                                 <span class="mb-1 inline-flex items-center gap-1 rounded-md bg-amber-400/20 px-2 py-0.5 text-xs font-bold text-amber-700">
-                                                    Wyróżnione
+                                                    <i class="fa-solid fa-star" aria-hidden="true"></i> Wyróżnione
                                                 </span>
                                             @endif
                                             <p class="text-xs font-bold uppercase tracking-wide text-muted">{{ $item->published_at->format('d.m.Y') }}</p>
@@ -274,7 +276,8 @@
                                     @include('partials.faq', ['page' => $subpage])
                                 @endif
                                 <a href="{{ route('page.show', $subpage) }}" class="mt-3 inline-flex items-center gap-2 text-sm font-bold text-brand hover:text-brand-dark">
-                                    Otwórz jako osobną stronę                                 </a>
+                                    Otwórz jako osobną stronę <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+                        </a>
                 </div>
             @endforeach
             </div>
@@ -286,13 +289,14 @@
             <div class="flex flex-col gap-3 rounded-lg border border-brand/20 bg-brand-light p-5">
                 <div class="flex items-start gap-3">
                                         <div>
-                        <p class="font-bold text-ink">{{ $schedulePage->title }}</p>
+                        <p class="flex items-center gap-2 font-bold text-ink"><i class="fa-solid fa-calendar-days text-brand" aria-hidden="true"></i> {{ $schedulePage->title }}</p>
                         <p class="text-sm text-muted">Sprawdź terminy zajęć i spotkań w ramach tego projektu.</p>
                     </div>
                 </div>
                 <a href="{{ $scheduleHref }}"
                     class="inline-flex flex-none items-center justify-center gap-2 rounded-lg bg-brand px-4 py-2.5 font-bold text-white transition hover:bg-brand-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
-                    Zobacz harmonogram                 </a>
+                    Zobacz harmonogram <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+                </a>
             </div>
         @endif
 
@@ -301,18 +305,18 @@
                 @if (! $project->is_completed && $project->showsCoordinator())
                     <div class="rounded-lg border border-gray-200 bg-white p-5">
                         <h2 class="mb-3 flex items-center gap-2 text-base font-bold text-ink">
-                            Kontakt w sprawie projektu
+                            <i class="fa-solid fa-envelope text-brand" aria-hidden="true"></i> Kontakt w sprawie projektu
                         </h2>
                         <div class="space-y-1.5 text-ink">
                             @if ($project->coordinator_name)
                                 <p class="font-medium">{{ $project->coordinator_name }}</p>
                             @endif
                             <p>
-                                                                <a href="mailto:{{ $project->contactEmail() }}" class="break-all font-medium text-brand hover:text-brand-dark">{{ $project->contactEmail() }}</a>
+                                <i class="fa-solid fa-envelope mr-1.5 text-brand" aria-hidden="true"></i><a href="mailto:{{ $project->contactEmail() }}" class="break-all font-medium text-brand hover:text-brand-dark">{{ $project->contactEmail() }}</a>
                             </p>
                             @if ($project->coordinator_phone)
                                 <p>
-                                                                        <a href="tel:{{ $project->coordinator_phone }}" class="font-medium text-brand hover:text-brand-dark">{{ $project->coordinator_phone }}</a>
+                                    <i class="fa-solid fa-phone mr-1.5 text-brand" aria-hidden="true"></i><a href="tel:{{ $project->coordinator_phone }}" class="font-medium text-brand hover:text-brand-dark">{{ $project->coordinator_phone }}</a>
                                 </p>
                             @endif
                         </div>
@@ -322,7 +326,7 @@
                 @if ($linkPages->isNotEmpty())
                     <div class="rounded-lg border border-gray-200 bg-white p-5">
                         <h2 class="mb-3 flex items-center gap-2 text-base font-bold text-ink">
-                            Strony projektu
+                            <i class="fa-solid fa-file-lines text-brand" aria-hidden="true"></i> Strony projektu
                         </h2>
                         <ul class="flex flex-col gap-2 text-sm">
                             @foreach ($linkPages as $projectPage)
@@ -331,7 +335,7 @@
                                         {{-- Harmonogram wyróżnia się jako przycisk-wezwanie do działania. --}}
                                         <a href="{{ route('page.show', $projectPage) }}"
                                             class="inline-flex items-center gap-2 rounded-lg bg-brand px-4 py-2 font-bold text-white transition hover:bg-brand-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
-                                            {{ $projectPage->title }}
+                                            <i class="fa-solid fa-calendar-days" aria-hidden="true"></i> {{ $projectPage->title }}
                                         </a>
                                     @else
                                         <a href="{{ route('page.show', $projectPage) }}"

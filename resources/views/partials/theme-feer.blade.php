@@ -5,8 +5,9 @@
 <style>
     :root {
         /* Paleta Brand booka FEER 2024 (FEER jako osobny podmiot) — stała w tym szablonie. */
-        --color-brand: #1e6dff;
-        --color-brand-dark: #1457cc;
+        /* #1E6DFF z brandbooka ma na bieli 4,48:1 (poniżej AA); #1B66F5 to najbliższy odcień ≥ 4,5:1 (4,9:1). */
+        --color-brand: #1b66f5;
+        --color-brand-dark: #1456cc;
         --color-brand-light: #e8f0ff;
         --color-brand-2: #ea8f00;   /* działania w partnerstwie z NGO */
         --color-brand-3: #1d1d1a;
