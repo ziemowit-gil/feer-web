@@ -194,7 +194,7 @@ class HomeController extends Controller
         if ($template === 'ngo') {
             return $this->ngoHome($settings, $slides, $partners);
         }
-        if ($template === 'ngo_mix') {
+        if (in_array($template, ['ngo_mix', 'feer'], true)) {
             return $this->ngoHome($settings, $slides, $partners, 'templates.ngo-mix.home');
         }
         if ($template === 'federation') {

@@ -1921,6 +1921,18 @@
                 </p>
             </div>
 
+            <div x-show="tpl === 'feer'" x-cloak class="rounded-lg border border-gray-200 bg-gray-50/70 p-5">
+                <h3 class="text-sm font-bold text-ink">Ustawienia szablonu: FEER</h3>
+                <p class="mt-1 text-xs text-muted">
+                    Styl z Brand booka FEER 2024: klasyczny górny pasek, nagłówek i stopka (ustawiasz je w zakładce
+                    <span class="font-bold">Nagłówek</span>) oraz rozbudowana strona główna z sekcją szkoleń. Montserrat w całym
+                    serwisie, tekst <span class="font-mono">#1D1D1A</span>, płaskie powierzchnie bez gradientów i cieni, niewielkie
+                    zaokrąglenia. Kolory marki ustawiasz w zakładce <span class="font-bold">Kolory</span>
+                    (paleta brandbooka: <span class="font-mono">#1E6DFF</span>, <span class="font-mono">#1D1D1A</span>,
+                    <span class="font-mono">#CBD5E7</span>, w partnerstwie z NGO <span class="font-mono">#EA8F00</span>).
+                </p>
+            </div>
+
             <div x-show="tpl === 'ngo_3'" x-cloak class="rounded-lg border border-gray-200 bg-gray-50/70 p-5">
                 <h3 class="text-sm font-bold text-ink">Ustawienia szablonu: NGO / fundacja (rozbudowany 3)</h3>
                 <p class="mt-1 text-xs text-muted">

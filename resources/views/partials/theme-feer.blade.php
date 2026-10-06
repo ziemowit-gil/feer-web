@@ -1,4 +1,4 @@
-{{-- Motyw „NGO / fundacja (mieszany)" wg Brand booka FEER 2024: Montserrat w całym serwisie, tekst #1D1D1A,
+{{-- Motyw szablonu „FEER" wg Brand booka FEER 2024: Montserrat w całym serwisie, tekst #1D1D1A,
      płaskie powierzchnie (bez gradientów i cieni), ostre, niewielkie zaokrąglenia. Kolory marki zostają
      w Ustawieniach → Kolory (paleta brandbooka: #1E6DFF, #1D1D1A, #CBD5E7, partnerstwa NGO: #EA8F00).
      Dotyczy wszystkich widoków tego szablonu, także listy i strony projektu. --}}

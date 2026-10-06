@@ -345,6 +345,7 @@ tailwind.config = {
                                         'default' => 'fa-building-columns',
                                         'ngo' => 'fa-hands-holding-heart',
                                         'ngo_mix' => 'fa-hands-holding-heart',
+                                        'feer' => 'fa-handshake',
                                         'municipality' => 'fa-city',
                                         'federation' => 'fa-people-group',
                                     ];
@@ -352,6 +353,7 @@ tailwind.config = {
                                         'default' => 'Klasyczny układ dla fundacji',
                                         'ngo' => 'Rozbudowany: misja, wsparcie, projekty',
                                         'ngo_mix' => 'Klasyczna belka i stopka, rozbudowana strona główna',
+                                        'feer' => 'Styl Brand booka FEER: Montserrat, płasko, kontrastowo',
                                         'municipality' => 'Gmina: pogoda, imieniny, BIP',
                                         'federation' => 'Federacja organizacji: wielobarwna, nowoczesna',
                                     ];

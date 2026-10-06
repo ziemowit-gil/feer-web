@@ -44,8 +44,8 @@
             --color-brand-4: {{ $siteSettings->brandColorN(4) }};
         }
     </style>
-    @if (($siteSettings->site_template ?? 'default') === 'ngo_mix')
-        @include('partials.theme-ngo-mix')
+    @if (($siteSettings->site_template ?? 'default') === 'feer')
+        @include('partials.theme-feer')
     @endif
 
     {{-- Dane strukturalne: organizacja (globalnie) + slot na typ strony (Article/Event) --}}
