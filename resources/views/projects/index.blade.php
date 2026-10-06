@@ -49,9 +49,9 @@
                 <nav aria-label="Przejdź do kategorii" class="mt-8 flex flex-wrap gap-2">
                     @foreach ($filledCategories as $chip)
                         <a href="#kategoria-{{ $chip->id }}"
-                            class="rounded-md border border-brand/30 bg-white px-4 py-1.5 text-sm font-bold text-brand transition hover:bg-brand hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
+                            class="rounded-md border border-brand/30 bg-white px-4 py-1.5 text-sm font-bold text-brand-dark transition hover:bg-brand hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
                             {{ $chip->name }}
-                            <span class="ml-1 font-medium opacity-70">{{ $chip->publishedProjects->count() }}</span>
+                            <span class="ml-1 font-bold">{{ $chip->publishedProjects->count() }}</span>
                         </a>
                     @endforeach
                 </nav>

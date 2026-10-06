@@ -636,6 +636,12 @@ html.no-animations *::after {
 .nav-pills > li > div.border-brand { background-color: var(--color-brand); color: #fff; }
 .nav-pills > li > div.border-brand > a,
 .nav-pills > li > div.border-brand > button { color: #fff; }
+/* Aktywna/otwarta pozycja po najechaniu zostaje wypełniona (ciemniejszy odcień) — bez tego :hover
+   (jasne tło) wygrywa i biały napis ląduje na jasnym tle (kontrast < 4,5:1). */
+.nav-pills > li > a[aria-current="page"]:hover,
+.nav-pills > li > a.border-brand:hover,
+.nav-pills > li > button.border-brand:hover,
+.nav-pills > li > div.border-brand:hover { background-color: var(--color-brand-dark); color: #fff; }
 .nav-pills > li > a:focus-visible,
 .nav-pills > li > button:focus-visible { outline-offset: 2px; }
 
