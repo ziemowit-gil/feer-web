@@ -47,7 +47,7 @@ class FeerTemplateTest extends TestCase
         SiteSetting::current()->update(['site_template' => 'feer']);
         \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();
 
-        $this->get('/')->assertOk()->assertSee('Szybkie akcje')->assertSee('Zgłoś barierę');
+        $this->get('/')->assertOk()->assertSee('Na skróty')->assertSee('Zgłoś barierę');
 
         SiteSetting::current()->update(['homepage_sections_hidden' => ['ankieta']]);
         \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();

@@ -1,7 +1,7 @@
 {{--
-    Szablon FEER — „Szybkie akcje" (moduł quick_actions): małe, płaskie kafle w jednym rzędzie
+    Szablon FEER — „Na skróty" (moduł quick_actions; „Szybkie akcje" to tylko nazwa administracyjna): małe, płaskie kafle w jednym rzędzie
     (ikona + nazwa), z paskiem w kolorze akcji po lewej. Tekst zawsze ciemny na białym tle (kontrast AA),
-    kolor akcji (#hex lub nazwa) jest tylko akcentem. Włączana w Ustawienia → Strona główna („Ankieta i szybkie akcje").
+    kolor akcji (#hex lub nazwa) jest tylko akcentem. Włączana w Ustawienia → Strona główna („Ankieta i szybkie akcje" — nazwa administracyjna). Białe tło sekcji, a kafle jasnoszare (ten sam wzór: pasek koloru po lewej).
 --}}
 @php
     // Kolumny dopasowane do liczby akcji, żeby kafle wypełniały cały rząd (bez pustego miejsca po prawej).
@@ -14,11 +14,11 @@
     $feerNamed = ['blue' => '#1e6dff', 'dark' => '#1d1d1a', 'green' => '#16a34a', 'purple' => '#7e22ce', 'orange' => '#ea8f00', 'red' => '#dc2626'];
 @endphp
 @if (($quickLinks ?? collect())->isNotEmpty())
-    <section class="border-b border-gray-100 bg-gray-50 py-8" aria-labelledby="feer-shortcuts-heading">
+    <section class="border-b border-gray-200 bg-white py-8" aria-labelledby="feer-shortcuts-heading">
         <div class="mx-auto max-w-6xl px-4">
-            <h2 id="feer-shortcuts-heading" class="mb-4 text-2xl font-bold text-ink md:text-3xl">Szybkie akcje</h2>
+            <h2 id="feer-shortcuts-heading" class="mb-4 text-2xl font-bold text-ink md:text-3xl">Na skróty</h2>
 
-            <nav aria-label="Szybkie akcje">
+            <nav aria-label="Na skróty">
                 <ul class="grid gap-3 {{ $qaCols }}" role="list">
                     @foreach ($quickLinks as $qa)
                         @php
@@ -28,7 +28,7 @@
                         @endphp
                         <li>
                             <a href="{{ $qa->url }}" @if ($external) target="_blank" rel="noopener" @endif
-                               class="group flex min-h-14 items-center gap-3 rounded-md border border-gray-200 bg-white px-4 py-2.5 transition hover:border-gray-300 hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2"
+                               class="group flex min-h-14 items-center gap-3 rounded-md border border-gray-200 bg-gray-50 px-4 py-2.5 transition hover:border-gray-300 hover:bg-white hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2"
                                style="border-left: 4px solid {{ $accent }}">
                                 <i class="{{ $iconClass }} w-5 flex-none text-center text-base" style="color: {{ $accent }}" aria-hidden="true"></i>
                                 <span class="min-w-0 flex-1 text-sm font-bold leading-snug text-ink group-hover:text-brand">{{ $qa->label }}</span>
