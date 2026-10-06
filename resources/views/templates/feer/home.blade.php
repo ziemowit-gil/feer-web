@@ -8,7 +8,7 @@
 @section('content')
     <h1 class="sr-only">{{ $siteSettings->site_name }}</h1>
     @if ($siteSettings->isHomepageSectionEnabled('hero'))
-        @include('templates.ngo.partials.home.hero')
+        @include('templates.feer.partials.hero')
     @endif
     @if ($siteSettings->isHomepageSectionEnabled('ankieta') && $siteSettings->isModuleEnabled('quick_actions'))
         @include('templates.feer.partials.shortcuts')

@@ -131,7 +131,7 @@
     {{-- Pasek nawigacji (≥ lg) --}}
     @if ($wmIconsNav || $wmPillsNav)
         {{-- Substyle na białym pasku: ikony nad etykietami albo zakładki (pigułki) --}}
-        <nav aria-label="Menu główne" class="relative hidden bg-white lg:block {{ $feerNav ? 'border-y border-gray-200' : 'border-t-4 border-t-brand shadow-sm' }}">
+        <nav aria-label="Menu główne" class="relative hidden bg-white lg:block {{ $feerNav ? 'border-b border-gray-200' : 'border-t-4 border-t-brand shadow-sm' }}">
             <div @class(['mx-auto flex max-w-6xl items-stretch px-4', 'py-1.5' => $wmPillsNav, 'justify-center' => $wmNavCenter])>
                 @include('partials.main-nav-items', ['onBrand' => false, 'navStyle' => $wmPillsNav ? 'pills' : 'icons'])
                 @if ($wmSearchNav)

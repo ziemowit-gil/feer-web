@@ -94,7 +94,8 @@ class FeerTemplateTest extends TestCase
 
         $html = $this->get('/')->assertOk()->getContent();
         $this->assertStringContainsString('nav-pills', $html);
-        $this->assertStringContainsString('border-y border-gray-200', $html);
+        $this->assertStringContainsString('border-b border-gray-200', $html);
+        $this->assertStringNotContainsString('border-y border-gray-200', $html);
         $this->assertStringNotContainsString('relative hidden bg-brand shadow-sm', $html);
 
         SiteSetting::current()->update(['site_template' => 'ngo_mix']);
