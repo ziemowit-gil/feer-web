@@ -33,8 +33,13 @@ class NavItemController extends Controller
             ->orderBy('order')
             ->get();
 
+        // Wybrana pozycja (?pozycja=ID) — prawy panel pokazuje jej szczegóły; domyślnie pierwsza.
+        $flat = $navItems->flatMap(fn (NavItem $i) => collect([$i])->concat($i->allChildren));
+        $selected = $flat->firstWhere('id', (int) $request->query('pozycja')) ?? $navItems->first();
+
         return view('admin.nav-items.index', [
             'navItems' => $navItems,
+            'selected' => $selected,
             'location' => $location,
             // Wszystkie możliwe pozycje-rodzice dla współdzielonego modala edycji
             // (menu główne). Wykluczenie „samego siebie" odbywa się po stronie
@@ -72,9 +77,9 @@ class NavItemController extends Controller
                 ->max('order');
         }
 
-        NavItem::create($data);
+        $created = NavItem::create($data);
 
-        return redirect()->route('admin.pozycje-menu.index', ['location' => $data['location']])->with('status', 'Pozycja menu została dodana.');
+        return redirect()->route('admin.pozycje-menu.index', ['location' => $data['location'], 'pozycja' => $created->id])->with('status', 'Pozycja menu została dodana.');
     }
 
     /** Wyświetla formularz edycji pozycji menu. */
@@ -103,7 +108,7 @@ class NavItemController extends Controller
 
         $navItem->update($data);
 
-        return redirect()->route('admin.pozycje-menu.index', ['location' => $navItem->location])
+        return redirect()->route('admin.pozycje-menu.index', ['location' => $navItem->location, 'pozycja' => $navItem->id])
             ->with('status', 'Pozycja menu została zaktualizowana.')
             ->with('focus_nav', $navItem->id);
     }
@@ -125,7 +130,7 @@ class NavItemController extends Controller
             'outdent' => $this->outdent($navItem),
         };
 
-        return redirect()->route('admin.pozycje-menu.index', ['location' => $navItem->location])
+        return redirect()->route('admin.pozycje-menu.index', ['location' => $navItem->location, 'pozycja' => $navItem->id])
             ->with($status['ok'] ? 'status' : 'error', $status['message'])
             ->with('focus_nav', $navItem->id);
     }
@@ -156,13 +161,24 @@ class NavItemController extends Controller
         return response()->json(['ok' => true]);
     }
 
+    /** Przełącza widoczność pozycji w menu (ukryj / pokaż) bez otwierania formularza. */
+    public function toggleActive(NavItem $navItem)
+    {
+        $navItem->update(['is_active' => ! $navItem->is_active]);
+
+        return redirect()->route('admin.pozycje-menu.index', ['location' => $navItem->location, 'pozycja' => $navItem->id])
+            ->with('status', $navItem->is_active ? "Pozycja „{$navItem->label}” jest widoczna w menu." : "Pozycja „{$navItem->label}” została ukryta w menu.");
+    }
+
     /** Usuwa pozycję menu. */
     public function destroy(NavItem $navItem)
     {
         $location = $navItem->location;
+        $parentId = $navItem->parent_id;
         $navItem->delete();
 
-        return redirect()->route('admin.pozycje-menu.index', ['location' => $location])->with('status', 'Pozycja menu została usunięta.');
+        // Po usunięciu podpozycji wracamy do jej pozycji nadrzędnej.
+        return redirect()->route('admin.pozycje-menu.index', array_filter(['location' => $location, 'pozycja' => $parentId]))->with('status', 'Pozycja menu została usunięta.');
     }
 
     /**

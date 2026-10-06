@@ -3,8 +3,6 @@
 @section('title', 'Menu nawigacyjne')
 
 @section('content')
-    @include('admin.partials.content-nav-tabs')
-
     @php
         // Po błędach walidacji z modala odtwarzamy jego stan ze starych danych,
         // żeby użytkownik nie tracił wpisanych wartości i pozostał w kontekście.
@@ -40,37 +38,54 @@
 
     <div x-data="menuBuilder({{ Js::from($reopen) }}, {{ Js::from(route('admin.pozycje-menu.store')) }})"
         @keydown.escape.window="close()">
-        <p class="mb-4 text-sm text-muted">
-            Pozycje menu wyświetlanego w nagłówku strony. Pozycja typu „Rozwijane menu" może mieć własne podpozycje (submenu),
-            a „Menu projektów" pobiera zawartość automatycznie z kategorii projektów (<a href="{{ route('admin.kategorie.index') }}" class="rounded text-brand hover:text-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">zarządzaj kategoriami</a>).
-            Kolejność zmieniasz przeciągając <i class="fa-solid fa-grip-vertical text-gray-400" aria-hidden="true"></i> lub przyciskami strzałek (dostępność klawiatury). Zagnieżdżenie — tylko przyciskami <i class="fa-solid fa-arrow-right-long text-gray-400" aria-hidden="true"></i><i class="fa-solid fa-arrow-left-long text-gray-400" aria-hidden="true"></i>.
-        </p>
+        @push('content-tab-actions')
+            <p class="text-muted" style="font-size:.8125rem;max-width:36rem">
+                <i class="fa-solid fa-grip-vertical text-gray-400" aria-hidden="true"></i>
+                Kolejność zmieniasz przeciągając pozycje w drzewie albo przyciskami w panelu szczegółów (dostępne z klawiatury).
+            </p>
+            <button type="button" @click="openCreate($event)" data-location="{{ $location }}"
+                class="inline-flex items-center rounded bg-brand text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2"
+                style="min-height:2.25rem;padding:.375rem 1rem;gap:.375rem">
+                <i class="fa-solid fa-plus" aria-hidden="true"></i> Dodaj pozycję menu
+            </button>
+        @endpush
+
+        @include('admin.partials.content-nav-tabs')
 
         {{-- Wskaźnik zapisu po drag & drop (ukryty do czasu użycia) --}}
         <div id="nav-dnd-status" role="status" aria-live="polite" class="mb-3 hidden rounded border px-3 py-2 text-sm"></div>
 
-        <div class="mb-4 flex justify-end">
-            <button type="button" @click="openCreate($event)" data-location="{{ $location }}"
-                class="rounded bg-brand px-4 py-2 text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
-                <i class="fa-solid fa-plus" aria-hidden="true"></i> Dodaj pozycję menu
-            </button>
-        </div>
+        {{-- Układ jak w module „Strona” TYPO3: drzewo pozycji | szczegóły wybranej pozycji. --}}
+        <style>@media (max-width: 767px) { .nav-split { grid-template-columns: 1fr !important; } }</style>
+        <div class="nav-split" style="display:grid;grid-template-columns:minmax(16rem,23rem) minmax(0,1fr);gap:1rem;align-items:start">
+            <nav aria-label="Struktura menu — {{ \App\Models\NavItem::LOCATIONS[$location] ?? $location }}" class="rounded-lg border border-gray-200 bg-white" style="min-width:0">
+                <div class="border-b border-gray-100" style="padding:.75rem">
+                    <h2 class="text-sm font-bold text-ink"><i class="fa-solid fa-bars mr-1 text-brand" aria-hidden="true"></i> {{ \App\Models\NavItem::LOCATIONS[$location] ?? $location }}</h2>
+                    <p class="mt-0.5 text-xs text-muted">Pozycje wyświetlane na stronie. „Menu projektów” pobiera zawartość z <a href="{{ route('admin.kategorie.index') }}" class="text-brand hover:underline">kategorii projektów</a>.</p>
+                </div>
+                <div style="padding:.5rem">
+                    @forelse ($navItems as $index => $item)
+                        @if ($loop->first)<ul role="tree" aria-label="Struktura menu" class="space-y-1">@endif
+                            @include('admin.nav-items._tree-node', ['item' => $item, 'level' => 1, 'selected' => $selected, 'location' => $location])
+                        @if ($loop->last)</ul>@endif
+                    @empty
+                        <div class="rounded-lg border border-dashed border-gray-200 py-10 text-center text-muted">
+                            <i class="fa-solid fa-bars mb-2 text-2xl text-gray-300" aria-hidden="true"></i>
+                            <p class="text-sm">Brak pozycji. Dodaj pierwszą przyciskiem powyżej.</p>
+                        </div>
+                    @endforelse
+                </div>
+            </nav>
 
-        @forelse ($navItems as $index => $item)
-            @if ($loop->first)
-                <ul role="tree" aria-label="Struktura menu — {{ \App\Models\NavItem::LOCATIONS[$location] ?? $location }}"
-                    class="space-y-2">
-            @endif
-                @include('admin.nav-items._row', ['item' => $item, 'level' => 1, 'position' => $index + 1, 'setsize' => $navItems->count()])
-            @if ($loop->last)
-                </ul>
-            @endif
-        @empty
-            <div class="rounded-lg border border-dashed border-gray-200 py-10 text-center text-muted">
-                <i class="fa-solid fa-bars mb-2 text-2xl text-gray-300" aria-hidden="true"></i>
-                <p class="text-sm">Brak pozycji menu. Dodaj pierwszą powyżej.</p>
-            </div>
-        @endforelse
+            <section aria-labelledby="nav-pane-heading" style="min-width:0">
+                @if ($selected)
+                    @include('admin.nav-items._details', ['selected' => $selected, 'navItems' => $navItems, 'location' => $location])
+                @else
+                    <h2 id="nav-pane-heading" class="sr-only">Szczegóły pozycji</h2>
+                    <div class="rounded-lg border border-dashed border-gray-300 bg-white px-4 py-12 text-center text-sm text-muted">Wybierz pozycję w drzewie albo dodaj nową.</div>
+                @endif
+            </section>
+        </div>
 
         {{-- ============================ MODAL EDYCJI ============================ --}}
         <div x-show="open" x-cloak class="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto p-4 sm:p-6" style="display: none">
