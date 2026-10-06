@@ -16,6 +16,13 @@
     ];
 @endphp
 
+@php
+    // Modele mogą dostarczyć własne etykiety pól (np. ustawienia strony wsparcia).
+    if (method_exists($model, 'revisionFieldLabels')) {
+        $fieldLabels = array_merge($fieldLabels, $model->revisionFieldLabels());
+    }
+@endphp
+
 @section('content')
     <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
         <div>

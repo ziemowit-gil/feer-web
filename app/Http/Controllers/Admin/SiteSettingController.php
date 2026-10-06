@@ -326,6 +326,7 @@ class SiteSettingController extends Controller
             'support_method3_cta_label' => ['nullable', 'string', 'max:100'],
             'support_outro_title' => ['nullable', 'string', 'max:255'],
             'support_outro_subtitle' => ['nullable', 'string', 'max:500'],
+            'support_faq' => ['nullable', 'string', 'max:4000'],
             'enabled_modules' => ['sometimes', 'array'],
             'enabled_modules.*' => ['string', Rule::in(array_keys(SiteSetting::MODULES))],
             'section_order_json' => ['sometimes', 'nullable', 'string'],

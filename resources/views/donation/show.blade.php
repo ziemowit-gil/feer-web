@@ -28,7 +28,9 @@
     $reportsUrl = trim((string) $siteSettings->donation_reports_url);
     $reportsUrl = $reportsUrl !== '' && ! preg_match('#^(https?:)?//#i', $reportsUrl) ? url('/' . ltrim($reportsUrl, '/')) : $reportsUrl;
     $contactMail = $siteSettings->contact_email;
-    $oldAmount = old('amount', (string) ($amounts[1] ?? $amounts[0]));
+    // ?kwota=60 (np. z kafelków na stronie /wsparcie) wstępnie zaznacza kwotę z listy.
+    $presetAmount = in_array((int) request('kwota'), $amounts, true) ? (string) (int) request('kwota') : null;
+    $oldAmount = old('amount', $presetAmount ?? (string) ($amounts[1] ?? $amounts[0]));
     $fieldBase = 'block min-h-11 w-full rounded-xl border-2 border-gray-300 bg-white px-4 text-base text-ink placeholder:text-gray-600 focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/30';
     $fieldError = 'border-red-600';
     $errorFields = ['amount', 'amount_other', 'first_name', 'last_name', 'email', 'phone', 'visibility', 'consent_rodo'];

@@ -12,6 +12,9 @@ use Spatie\MediaLibrary\InteractsWithMedia;
 class SiteSetting extends Model implements HasMedia
 {
     use InteractsWithMedia;
+    // Wersjonowanie treści strony „Wesprzyj nas” (pola support_*): historia, porównanie i przywracanie
+    // w panelu (Historia zmian). Zapis ustawień, który nie dotyka tych pól, nie tworzy wersji.
+    use \App\Models\Concerns\HasRevisions;
 
     /**
      * Toggleable content modules, keyed by the identifier used in
@@ -251,7 +254,7 @@ class SiteSetting extends Model implements HasMedia
         'support_benefit1_icon', 'support_benefit1_title', 'support_benefit1_text',
         'support_benefit2_icon', 'support_benefit2_title', 'support_benefit2_text',
         'support_benefit3_icon', 'support_benefit3_title', 'support_benefit3_text',
-        'support_methods_title',
+        'support_methods_title', 'support_faq',
         'support_method1_title', 'support_method1_account_label', 'support_method1_tax_label',
         'support_transfer_title', 'support_method1_transfer_label',
         'support_method2_title', 'support_method2_text', 'support_method2_cta_label',
@@ -307,6 +310,70 @@ class SiteSetting extends Model implements HasMedia
      * The editable value of a /wsparcie text field, falling back to the built-in
      * default when the admin has left it blank.
      */
+    /** Pola strony „Wesprzyj nas” objęte historią wersji. */
+    public function revisionFields(): array
+    {
+        return array_values(array_filter($this->getFillable(), fn (string $f) => str_starts_with($f, 'support_')));
+    }
+
+    /** Etykiety pól wersjonowanych (widok porównania wersji). */
+    public function revisionFieldLabels(): array
+    {
+        return [
+            'support_intro' => 'Wstęp do sposobów wsparcia',
+            'support_hero_badge' => 'Nagłówek: plakietka',
+            'support_hero_title' => 'Nagłówek: tytuł',
+            'support_hero_subtitle' => 'Nagłówek: podtytuł',
+            'support_hero_cta_label' => 'Nagłówek: etykieta przycisku',
+            'support_benefits_title' => 'Korzyści: tytuł',
+            'support_benefits_subtitle' => 'Korzyści: podtytuł',
+            'support_methods_title' => 'Sposoby pomocy: tytuł',
+            'support_outro_title' => 'Ramka końcowa: tytuł',
+            'support_outro_subtitle' => 'Ramka końcowa: podtytuł',
+            'support_testimonial_quote' => 'Cytat: treść',
+            'support_testimonial_author' => 'Cytat: autor',
+            'support_testimonial_role' => 'Cytat: rola',
+            'support_fundraiser_title' => 'Zbiórka: tytuł',
+            'support_fundraiser_text' => 'Zbiórka: opis',
+            'support_fundraiser_goal' => 'Zbiórka: cel (zł)',
+            'support_fundraiser_raised' => 'Zbiórka: zebrano (zł)',
+            'support_faq' => 'Pytania i odpowiedzi',
+        ] + collect($this->revisionFields())->mapWithKeys(fn ($f) => [$f => $f])->all();
+    }
+
+    /** Tytuł rekordu w historii zmian. */
+    public function getTitleAttribute(): string
+    {
+        return 'Strona „Wesprzyj nas” — '.($this->site_name ?: 'serwis');
+    }
+
+    /**
+     * Pytania i odpowiedzi strony wsparcia: linie „Pytanie | Odpowiedź” z panelu
+     * albo, gdy pole jest puste, krótki zestaw domyślny.
+     *
+     * @return array<int, array{q: string, a: string}>
+     */
+    public function supportFaq(): array
+    {
+        $faq = [];
+        foreach (preg_split('/\R/', (string) $this->support_faq, -1, PREG_SPLIT_NO_EMPTY) as $line) {
+            if (! str_contains($line, '|')) {
+                continue;
+            }
+            [$q, $a] = array_map('trim', explode('|', $line, 2));
+            if ($q !== '' && $a !== '') {
+                $faq[] = ['q' => $q, 'a' => $a];
+            }
+        }
+
+        return $faq ?: [
+            ['q' => 'Czy płatność online jest bezpieczna?', 'a' => 'Płatności obsługuje Przelewy24 — możesz zapłacić BLIK-iem, szybkim przelewem lub kartą. Nie przechowujemy danych Twojej karty ani konta bankowego.'],
+            ['q' => 'Czy mogę wspierać regularnie?', 'a' => 'Tak. Najprościej ustawić w swoim banku zlecenie stałe na nasz numer konta — dane znajdziesz w sekcji „Przelew tradycyjny”. Stała pomoc pozwala nam planować działania z wyprzedzeniem.'],
+            ['q' => 'Czy mogę wpłacić anonimowo?', 'a' => 'Tak. Przy darowiźnie online wybierasz, czy Twoje imię ma pojawić się na liście ostatnich wpłat.'],
+            ['q' => 'Do kogo mogę się zwrócić z pytaniami?', 'a' => 'Napisz do nas — dane kontaktowe znajdziesz na stronie Kontakt.'],
+        ];
+    }
+
     public function supportText(string $key): string
     {
         $value = $this->{$key} ?? null;

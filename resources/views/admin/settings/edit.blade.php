@@ -817,7 +817,17 @@
 
         <div x-show="tab === 'support'" x-cloak class="space-y-5">
             @php $sd = \App\Models\SiteSetting::SUPPORT_DEFAULTS; @endphp
-            <p class="text-xs text-muted">Wyświetlane na podstronie <a href="{{ route('support.show') }}" target="_blank" rel="noopener" class="text-brand underline">/wsparcie</a>. Puste pola pokazują tekst domyślny (widoczny jako podpowiedź).</p>
+            <div class="flex flex-wrap items-center justify-between gap-3">
+                <p class="text-xs text-muted">Wyświetlane na podstronie <a href="{{ route('support.show') }}" target="_blank" rel="noopener" class="text-brand underline">/wsparcie</a>. Puste pola pokazują tekst domyślny (widoczny jako podpowiedź).</p>
+                <a href="{{ route('admin.historia.index', ['type' => 'support', 'id' => $settings->id]) }}"
+                    class="inline-flex min-h-9 items-center gap-1.5 rounded border border-gray-300 px-3 py-1.5 text-xs font-bold text-ink hover:border-brand hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                    <i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i> Historia wersji tej strony
+                </a>
+            </div>
+            <p class="rounded border border-blue-200 bg-blue-50 px-3 py-2 text-xs text-blue-800">
+                Każdy zapis zmieniający teksty tej strony tworzy wersję (autor, data). W historii porównasz zmiany obok siebie
+                i jednym kliknięciem przywrócisz starszą wersję. Przechowujemy 30 ostatnich wersji. Zdjęcia i galeria nie są wersjonowane.
+            </p>
 
             <div class="space-y-4 rounded-lg border border-gray-200 bg-gray-50 p-5">
                 <p class="text-sm font-bold text-ink">Zbiórka na cele FEER</p>
@@ -1223,6 +1233,15 @@
                         @error('support_method4_cta_label') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
                 </div>
+            </div>
+
+            <div class="border-t border-gray-100 pt-5">
+                <label for="support_faq" class="mb-1 block text-sm font-bold">Pytania i odpowiedzi <span class="font-normal text-muted">(opcjonalnie)</span></label>
+                <textarea id="support_faq" name="support_faq" rows="6" maxlength="4000" aria-describedby="support_faq_help"
+                    placeholder="Czy płatność jest bezpieczna? | Tak, obsługuje ją Przelewy24…"
+                    class="w-full rounded border-gray-300 font-mono text-sm focus:border-brand focus:ring-brand">{{ old('support_faq', $settings->support_faq) }}</textarea>
+                <p id="support_faq_help" class="mt-1 text-xs text-muted">Jedna linia = jedno pytanie: <code>Pytanie | Odpowiedź</code>. Puste pole pokazuje krótki zestaw domyślny. Nie wpisuj obietnic, których organizacja nie może potwierdzić.</p>
+                @error('support_faq') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
             </div>
 
             <div class="border-t border-gray-100 pt-5">

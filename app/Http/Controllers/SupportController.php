@@ -84,6 +84,16 @@ class SupportController extends Controller
             return view('templates.federation.support');
         }
 
-        return view('support.show', compact('stats', 'photos', 'partners', 'latestNews'));
+        // Kafelki „Co daje Twoja wpłata”: kwoty z opisem efektu (te same co na stronie darowizny),
+        // prowadzące do formularza z wstępnie wybraną kwotą.
+        $impacts = collect($settings->donationImpacts())
+            ->filter(fn ($text, $amount) => in_array($amount, $settings->donationAmounts(), true))
+            ->all();
+
+        $faq = $settings->supportFaq();
+        $volunteeringEnabled = $settings->isModuleEnabled('volunteering');
+        $cooperationPage = Page::where('type', 'wspolpraca')->where('is_published', true)->orderBy('order')->first();
+
+        return view('support.show', compact('stats', 'photos', 'partners', 'latestNews', 'impacts', 'faq', 'volunteeringEnabled', 'cooperationPage'));
     }
 }

@@ -13,7 +13,7 @@
 @endsection
 
 @section('content')
-    <section class="relative mb-14 flex min-h-[14rem] items-end overflow-hidden bg-brand bg-linear-to-br from-brand to-brand-dark text-white md:min-h-[17rem]"
+    <section id="wesprzyj-hero" class="relative mb-14 flex min-h-[14rem] items-end overflow-hidden bg-brand bg-linear-to-br from-brand to-brand-dark text-white md:min-h-[17rem]"
         @if ($siteSettings->supportImageUrl())
             style="background-image: linear-gradient(0deg, rgba(0,0,0,.7), rgba(0,0,0,.2)), url('{{ $siteSettings->supportImageUrl() }}'); background-size: cover; background-position: center;"
         @endif>
@@ -27,12 +27,16 @@
                 class="mt-6 mr-2 inline-flex min-h-11 items-center gap-2 rounded bg-white px-5 py-2.5 text-sm font-bold text-brand transition hover:bg-white/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-brand">
                 <i class="fa-solid fa-hand-holding-heart" aria-hidden="true"></i> Wpłać darowiznę online
             </a>
-            @if ($siteSettings->support_quick_transfer_url)
-                <a href="{{ $siteSettings->support_quick_transfer_url }}" target="_blank" rel="noopener"
-                    class="mt-6 inline-flex items-center gap-2 rounded bg-white px-5 py-2.5 text-sm font-bold text-brand transition hover:bg-white/90">
-                    <i class="fa-solid fa-bolt" aria-hidden="true"></i> {{ $siteSettings->supportText('support_hero_cta_label') }}
-                </a>
-            @endif
+            <a href="#sposoby" class="mt-6 inline-flex min-h-11 items-center gap-2 rounded border-2 border-white/80 px-5 py-2.5 text-sm font-bold text-white transition hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-brand">
+                Zobacz inne sposoby pomocy <i class="fa-solid fa-arrow-down text-xs" aria-hidden="true"></i>
+            </a>
+            <ul class="mt-6 flex flex-wrap gap-x-5 gap-y-2 text-sm text-white/90" role="list" aria-label="Dlaczego możesz nam zaufać">
+                <li class="inline-flex items-center gap-1.5"><i class="fa-solid fa-shield-halved" aria-hidden="true"></i> Bezpieczna płatność (Przelewy24)</li>
+                @if ($siteSettings->krs_number)
+                    <li class="inline-flex items-center gap-1.5"><i class="fa-solid fa-scale-balanced" aria-hidden="true"></i> KRS {{ $siteSettings->krs_number }}</li>
+                @endif
+                <li class="inline-flex items-center gap-1.5"><i class="fa-solid fa-user-lock" aria-hidden="true"></i> Możesz wpłacić anonimowo</li>
+            </ul>
         </div>
     </section>
 
@@ -65,6 +69,29 @@
                     </a>
                 @endif
             </div>
+        </section>
+    @endif
+
+    @if (! empty($impacts))
+        <section class="mx-auto mb-14 max-w-5xl px-4" aria-labelledby="impact-heading">
+            <div class="mx-auto mb-8 max-w-2xl text-center">
+                <h2 id="impact-heading" class="text-2xl font-bold text-ink">Co daje Twoja wpłata</h2>
+                <p class="mt-2 text-muted">Wybierz kwotę — przejdziesz do formularza z gotową wartością i dokończysz w minutę.</p>
+            </div>
+            <ul class="grid gap-4 sm:grid-cols-2 {{ match (min(4, count($impacts))) { 1, 2 => 'lg:grid-cols-2', 3 => 'lg:grid-cols-3', default => 'lg:grid-cols-4' } }}" role="list">
+                @foreach ($impacts as $amount => $text)
+                    <li>
+                        <a href="{{ route('donation.show', ['kwota' => $amount]) }}"
+                           class="group flex h-full flex-col rounded-2xl border-2 border-gray-200 bg-white p-5 transition hover:border-brand hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
+                            <span class="text-3xl font-bold text-brand">{{ number_format($amount, 0, ',', ' ') }} zł</span>
+                            <span class="mt-2 flex-1 text-sm leading-snug text-ink">{{ $text }}</span>
+                            <span class="mt-4 inline-flex items-center gap-1.5 text-sm font-bold text-brand group-hover:underline">
+                                Wpłacam {{ number_format($amount, 0, ',', ' ') }} zł <i class="fa-solid fa-arrow-right text-xs" aria-hidden="true"></i>
+                            </span>
+                        </a>
+                    </li>
+                @endforeach
+            </ul>
         </section>
     @endif
 
@@ -140,8 +167,8 @@
         </section>
     @endif
 
-    <section class="mx-auto max-w-5xl px-4 py-14">
-        <h2 class="mb-6 text-2xl font-bold text-ink">{{ $siteSettings->supportText('support_methods_title') }}</h2>
+    <section id="sposoby" class="mx-auto max-w-5xl scroll-mt-24 px-4 py-14" aria-labelledby="methods-heading">
+        <h2 id="methods-heading" class="mb-6 text-2xl font-bold text-ink">{{ $siteSettings->supportText('support_methods_title') }}</h2>
 
         @if ($siteSettings->support_intro)
             <div class="prose mb-8 max-w-none text-ink">{!! $siteSettings->support_intro !!}</div>
@@ -253,9 +280,60 @@
             @endif
         </div>
 
+        {{-- Nie tylko pieniądze: inne formy zaangażowania --}}
+        <div class="mt-12" aria-labelledby="other-ways-heading" role="group">
+            <h3 id="other-ways-heading" class="mb-4 text-xl font-bold text-ink">Nie możesz wpłacić? Pomóż inaczej</h3>
+            <ul class="grid gap-4 sm:grid-cols-3" role="list">
+                @if ($volunteeringEnabled)
+                    <li>
+                        <a href="{{ route('volunteer.index') }}" class="flex h-full flex-col rounded-lg border border-gray-200 p-5 transition hover:border-brand hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                            <i class="fa-solid fa-people-carry-box mb-2 text-2xl text-brand" aria-hidden="true"></i>
+                            <span class="font-bold text-ink">Zostań wolontariuszem</span>
+                            <span class="mt-1 text-sm text-muted">Podaruj swój czas i umiejętności.</span>
+                        </a>
+                    </li>
+                @endif
+                @if ($cooperationPage)
+                    <li>
+                        <a href="{{ $cooperationPage->publicUrl() }}" class="flex h-full flex-col rounded-lg border border-gray-200 p-5 transition hover:border-brand hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                            <i class="fa-solid fa-handshake mb-2 text-2xl text-brand" aria-hidden="true"></i>
+                            <span class="font-bold text-ink">Nawiąż współpracę</span>
+                            <span class="mt-1 text-sm text-muted">Zostań partnerem organizacji lub projektu.</span>
+                        </a>
+                    </li>
+                @endif
+                <li>
+                    <a href="{{ route('newsletter.show') }}" class="flex h-full flex-col rounded-lg border border-gray-200 p-5 transition hover:border-brand hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                        <i class="fa-solid fa-envelope-open-text mb-2 text-2xl text-brand" aria-hidden="true"></i>
+                        <span class="font-bold text-ink">Bądź na bieżąco</span>
+                        <span class="mt-1 text-sm text-muted">Zapisz się na newsletter i opowiedz o nas znajomym.</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        {{-- Najczęstsze pytania: natywne <details> — dostępne z klawiatury i czytnika bez JS --}}
+        <div class="mt-12" aria-labelledby="faq-heading" role="group">
+            <h3 id="faq-heading" class="mb-4 text-xl font-bold text-ink">Najczęstsze pytania</h3>
+            <div class="divide-y divide-gray-200 rounded-lg border border-gray-200 bg-white">
+                @foreach ($faq as $item)
+                    <details class="group">
+                        <summary class="flex min-h-12 cursor-pointer list-none items-center justify-between gap-4 px-5 py-3 font-bold text-ink hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand">
+                            <span>{{ $item['q'] }}</span>
+                            <i class="fa-solid fa-chevron-down text-xs text-muted transition-transform group-open:rotate-180" aria-hidden="true"></i>
+                        </summary>
+                        <p class="px-5 pb-4 text-sm leading-relaxed text-muted">{{ $item['a'] }}</p>
+                    </details>
+                @endforeach
+            </div>
+        </div>
+
         <div class="mt-10 rounded-lg bg-brand-light p-6 text-center">
             <p class="text-lg font-bold text-ink">{{ $siteSettings->supportText('support_outro_title') }}</p>
             <p class="mt-1 text-sm text-muted">{{ $siteSettings->supportText('support_outro_subtitle') }}</p>
+            <a href="{{ route('donation.show') }}" class="mt-4 inline-flex min-h-11 items-center gap-2 rounded bg-brand px-5 py-2.5 text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
+                <i class="fa-solid fa-hand-holding-heart" aria-hidden="true"></i> Wpłać darowiznę online
+            </a>
         </div>
     </section>
 
@@ -313,7 +391,25 @@
         </section>
     @endif
 
+    {{-- Przypięty pasek na telefonie: pojawia się po przewinięciu nagłówka. Nie zasłania treści
+         (strona dostaje dolny odstęp), a dla ruchu zredukowanego nie animuje się. --}}
+    <div id="support-sticky" hidden class="fixed inset-x-0 bottom-0 z-40 border-t border-gray-200 bg-white/95 px-4 py-3 shadow-[0_-4px_16px_rgba(0,0,0,.08)] backdrop-blur md:hidden">
+        <a href="{{ route('donation.show') }}" class="flex min-h-11 items-center justify-center gap-2 rounded bg-brand px-5 py-2.5 text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
+            <i class="fa-solid fa-hand-holding-heart" aria-hidden="true"></i> Wpłać darowiznę online
+        </a>
+    </div>
+
     <script>
+        (function () {
+            const hero = document.getElementById('wesprzyj-hero');
+            const bar = document.getElementById('support-sticky');
+            if (! hero || ! bar || ! ('IntersectionObserver' in window)) return;
+            new IntersectionObserver(function (entries) {
+                bar.hidden = entries[0].isIntersecting;
+                document.body.style.paddingBottom = entries[0].isIntersecting ? '' : '4.5rem';
+            }).observe(hero);
+        })();
+
         document.querySelectorAll('[data-copy-button]').forEach(function (button) {
             button.addEventListener('click', function () {
                 navigator.clipboard.writeText(button.dataset.copyValue).then(function () {

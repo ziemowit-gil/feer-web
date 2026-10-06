@@ -7,6 +7,7 @@ use App\Models\BipDocument;
 use App\Models\News;
 use App\Models\Page;
 use App\Models\Project;
+use App\Models\SiteSetting;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
 
@@ -26,6 +27,8 @@ class RevisionController extends Controller
         'news'         => [News::class, 'news', 'admin.newsy.edit', 'Aktualność'],
         'project'      => [Project::class, 'projects', 'admin.projekty.edit', 'Projekt'],
         'bip_document' => [BipDocument::class, 'bip', 'admin.bip-dokumenty.edit', 'Dokument BIP'],
+        // Treści strony „Wesprzyj nas” (ustawienia) — dostęp tylko dla administratora.
+        'support'      => [SiteSetting::class, 'settings', 'admin.ustawienia.edit', 'Strona wsparcia'],
     ];
 
     /** Historia zmian danego rekordu — lista wersji z różnicami względem bieżącej. */
@@ -40,7 +43,7 @@ class RevisionController extends Controller
             'model' => $model,
             'type' => $type,
             'label' => $label,
-            'editUrl' => route($editRoute, $model),
+            'editUrl' => $this->editUrl($type, $editRoute, $model),
             'revisions' => $revisions,
             'fields' => $model->revisionFields(),
         ]);
@@ -76,8 +79,14 @@ class RevisionController extends Controller
 
         [, , $editRoute] = self::TYPES[$type];
 
-        return redirect()->route($editRoute, $model)
+        return redirect($this->editUrl($type, $editRoute, $model))
             ->with('status', 'Przywrócono wcześniejszą wersję treści.');
+    }
+
+    /** Adres edycji rekordu; ustawienia serwisu nie mają parametru trasy — otwieramy zakładkę „Wesprzyj nas”. */
+    private function editUrl(string $type, string $route, Model $model): string
+    {
+        return $type === 'support' ? route($route, ['tab' => 'support']) : route($route, $model);
     }
 
     private function resolve(string $type, int $id): Model
@@ -86,6 +95,8 @@ class RevisionController extends Controller
 
         [$class, $module] = self::TYPES[$type];
         abort_unless(auth()->user()->canAccessModule($module), 403);
+        // Ustawienia serwisu może zmieniać wyłącznie administrator (także przywracać ich wersje).
+        abort_if($type === 'support' && ! auth()->user()->isAdmin(), 403);
 
         return $class::findOrFail($id);
     }
