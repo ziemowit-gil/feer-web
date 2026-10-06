@@ -13,29 +13,32 @@
 @php
     // Zakładka: podkreślenie w kolorze marki zamiast wypełnionej „pigułki” — spokojniejszy pasek,
     // w którym po prawej mieszczą się akcje strony (@push('content-tab-actions')).
-    $tab = fn (bool $active) => 'relative -mb-px inline-flex min-h-11 items-center gap-1.5 border-b-2 px-3.5 py-2.5 text-sm font-bold transition-colors '
-        . 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand '
+    // Odstępy, wysokość i grubość podkreślenia są wbudowane (inline), nie klasami: pasek wygląda
+    // poprawnie także wtedy, gdy po wdrożeniu nie przebudowano CSS (wcześniej zakładki zlewały się w jeden ciąg).
+    $tab = fn (bool $active) => 'text-sm font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand '
         . ($active ? 'border-brand text-brand' : 'border-transparent text-muted hover:border-gray-300 hover:text-ink');
+    $tabStyle = 'display:inline-flex;align-items:center;gap:.375rem;min-height:2.75rem;padding:.625rem .875rem;margin-bottom:-1px;border-bottom-width:2px;border-bottom-style:solid;white-space:nowrap';
 @endphp
 
-<nav aria-label="Sekcje stron i menu" class="mb-5 flex flex-wrap items-end justify-between gap-x-4 gap-y-1 border-b border-gray-200">
-    <div class="flex flex-wrap">
+<nav aria-label="Sekcje stron i menu" class="border-gray-200"
+     style="display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:.25rem 1rem;margin-bottom:1.25rem;border-bottom-width:1px;border-bottom-style:solid">
+    <div style="display:flex;flex-wrap:wrap;gap:.125rem">
         @if ($user->canAccessModule('pages'))
-            <a href="{{ route('admin.podstrony.index') }}" @if ($pagesTreeActive) aria-current="page" @endif class="{{ $tab($pagesTreeActive) }}">
+            <a href="{{ route('admin.podstrony.index') }}" @if ($pagesTreeActive) aria-current="page" @endif class="{{ $tab($pagesTreeActive) }}" style="{{ $tabStyle }}">
                 <i class="fa-solid fa-sitemap text-xs" aria-hidden="true"></i>Strony
             </a>
-            <a href="{{ route('admin.podstrony.index', ['widok' => 'lista']) }}" @if ($pagesListMode) aria-current="page" @endif class="{{ $tab($pagesListMode) }}">
+            <a href="{{ route('admin.podstrony.index', ['widok' => 'lista']) }}" @if ($pagesListMode) aria-current="page" @endif class="{{ $tab($pagesListMode) }}" style="{{ $tabStyle }}">
                 <i class="fa-solid fa-list text-xs" aria-hidden="true"></i>Lista stron
             </a>
-            <a href="{{ route('admin.osoby.index') }}" @if (request()->routeIs('admin.osoby.*')) aria-current="page" @endif class="{{ $tab(request()->routeIs('admin.osoby.*')) }}">Osoby</a>
+            <a href="{{ route('admin.osoby.index') }}" @if (request()->routeIs('admin.osoby.*')) aria-current="page" @endif class="{{ $tab(request()->routeIs('admin.osoby.*')) }}" style="{{ $tabStyle }}">Osoby</a>
         @endif
         @if ($user->isAdmin())
-            <a href="{{ route('admin.pozycje-menu.index', ['location' => 'main']) }}" @if ($activeLocation === 'main') aria-current="page" @endif class="{{ $tab($activeLocation === 'main') }}">Menu główne</a>
-            <a href="{{ route('admin.pozycje-menu.index', ['location' => 'footer']) }}" @if ($activeLocation === 'footer') aria-current="page" @endif class="{{ $tab($activeLocation === 'footer') }}">Stopka</a>
-            <a href="{{ route('admin.pozycje-menu.index', ['location' => 'bip']) }}" @if ($activeLocation === 'bip') aria-current="page" @endif class="{{ $tab($activeLocation === 'bip') }}">Menu BIP</a>
+            <a href="{{ route('admin.pozycje-menu.index', ['location' => 'main']) }}" @if ($activeLocation === 'main') aria-current="page" @endif class="{{ $tab($activeLocation === 'main') }}" style="{{ $tabStyle }}">Menu główne</a>
+            <a href="{{ route('admin.pozycje-menu.index', ['location' => 'footer']) }}" @if ($activeLocation === 'footer') aria-current="page" @endif class="{{ $tab($activeLocation === 'footer') }}" style="{{ $tabStyle }}">Stopka</a>
+            <a href="{{ route('admin.pozycje-menu.index', ['location' => 'bip']) }}" @if ($activeLocation === 'bip') aria-current="page" @endif class="{{ $tab($activeLocation === 'bip') }}" style="{{ $tabStyle }}">Menu BIP</a>
         @endif
     </div>
-    <div class="flex flex-wrap items-center gap-1.5 pb-1.5">
+    <div style="display:flex;flex-wrap:wrap;align-items:center;gap:.375rem;padding-bottom:.375rem">
         @stack('content-tab-actions')
     </div>
 </nav>

@@ -7,7 +7,8 @@
         $canEditSelected = $selected && (! $selected->is_locked || auth()->user()->isAdmin());
         $selectedLive = $selected && $selected->is_published && ($selected->publish_at === null || $selected->publish_at->isPast());
         $btn = 'inline-flex min-h-9 items-center gap-1.5 rounded border border-gray-200 bg-white px-3 py-1.5 text-xs font-bold text-ink hover:border-brand hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand';
-        $tool = 'inline-flex min-h-9 items-center gap-1.5 rounded px-2.5 py-1.5 text-xs font-bold text-muted hover:bg-gray-100 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand';
+        $tool = 'inline-flex items-center rounded text-xs font-bold text-muted hover:bg-gray-100 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand';
+        $toolStyle = 'min-height:2.25rem;padding:.375rem .625rem;gap:.375rem';
     @endphp
 
     {{-- Układ dwukolumnowy jest wyliczany w JS (matchMedia + style wbudowane), a nie klasami Tailwinda:
@@ -47,25 +48,29 @@
 
     @push('content-tab-actions')
         <div class="flex items-center gap-0.5" role="group" aria-label="Układ widoku">
-            <button type="button" @click="toggle()" :aria-expanded="open.toString()" aria-controls="page-tree" aria-expanded="true" class="{{ $tool }}">
+            <button type="button" @click="toggle()" :aria-expanded="open.toString()" aria-controls="page-tree" aria-expanded="true" class="{{ $tool }}" style="{{ $toolStyle }}">
                 <i class="fa-solid" :class="open ? 'fa-table-columns' : 'fa-sitemap'" aria-hidden="true"></i>
                 <span x-text="open ? 'Ukryj drzewo' : 'Pokaż drzewo'">Ukryj drzewo</span>
             </button>
             <button type="button" @click="$store.adminNav.toggleCollapsed()" :aria-pressed="$store.adminNav.collapsed.toString()" aria-pressed="false"
-                class="{{ $tool }}" title="Zwiń lub rozwiń menu boczne panelu">
+                class="{{ $tool }}" style="{{ $toolStyle }}" title="Zwiń lub rozwiń menu boczne panelu">
                 <i class="fa-solid fa-bars" aria-hidden="true"></i>
                 <span x-text="$store.adminNav.collapsed ? 'Rozwiń menu' : 'Zwiń menu'">Zwiń menu</span>
             </button>
         </div>
         <span class="mx-1 hidden h-5 w-px bg-gray-200 sm:block" aria-hidden="true"></span>
-        <a href="{{ route('admin.podstrony.index', ['widok' => 'lista', 'status' => 'trashed']) }}" class="{{ $tool }}">
+        <button type="button" onclick="openBulkDialog()" aria-haspopup="dialog" class="{{ $tool }}" style="{{ $toolStyle }}">
+            <i class="fa-solid fa-filter" aria-hidden="true"></i> Filtry i operacje
+        </button>
+        <a href="{{ route('admin.podstrony.index', ['widok' => 'lista', 'status' => 'trashed']) }}" class="{{ $tool }}" style="{{ $toolStyle }}">
             <i class="fa-solid fa-trash-can" aria-hidden="true"></i> Kosz
         </a>
-        <a href="{{ route('admin.podstrony.eksport') }}" class="{{ $tool }}">
+        <a href="{{ route('admin.podstrony.eksport') }}" class="{{ $tool }}" style="{{ $toolStyle }}">
             <i class="fa-solid fa-file-csv" aria-hidden="true"></i> CSV
         </a>
         <a href="{{ route('admin.podstrony.create', array_filter(['parent_id' => $selected?->id])) }}"
-            class="ml-1 inline-flex min-h-9 items-center gap-1.5 rounded bg-brand px-4 py-1.5 text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
+            class="inline-flex items-center rounded bg-brand text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2"
+            style="min-height:2.25rem;padding:.375rem 1rem;gap:.375rem;margin-left:.25rem">
             <i class="fa-solid fa-plus" aria-hidden="true"></i> {{ $selected ? 'Dodaj podstronę' : 'Dodaj stronę' }}
         </a>
     @endpush
@@ -293,6 +298,158 @@
             @endif
         </section>
     </div>
+
+    {{-- ═════════ Modal: filtry i operacje zbiorcze ═════════
+         Natywny <dialog> + showModal(): przeglądarka sama zamyka go klawiszem Escape, ogranicza fokus do
+         okna, oznacza tło jako nieaktywne i oddaje fokus przyciskowi, który go otworzył (WCAG 2.1.2, 2.4.3, 4.1.2). --}}
+    <style>
+        #bulk-dialog::backdrop { background: rgba(17, 24, 39, .55); }
+        #bulk-dialog { margin: auto; }
+    </style>
+    <dialog id="bulk-dialog" aria-labelledby="bulk-title" aria-describedby="bulk-desc"
+        class="rounded-xl border border-gray-200 bg-white p-0 text-ink shadow-2xl"
+        style="width: min(60rem, calc(100vw - 2rem)); max-height: calc(100vh - 2rem); overflow: hidden"
+        x-data="{
+            count: 0,
+            action: 'publish',
+            confirming: false,
+            labels: { publish: 'Opublikuj', unpublish: 'Cofnij publikację (szkic)', disable: 'Wyłącz (wraz z podstronami)', enable: 'Włącz', feature: 'Wyróżnij', unfeature: 'Cofnij wyróżnienie', trash: 'Przenieś do kosza' },
+            update() { this.count = this.$root.querySelectorAll('input[name=\'ids[]\']:checked').length; this.confirming = false; },
+            setAll(on) {
+                this.$root.querySelectorAll('[data-bulk-item]:not([hidden]) > label input[name=\'ids[]\']:not(:disabled)').forEach(c => { c.checked = on; });
+                this.update();
+            },
+            filterList(q) {
+                q = q.trim().toLowerCase();
+                this.$root.querySelectorAll('[data-bulk-item]').forEach(li => {
+                    const self = li.dataset.title.includes(q);
+                    const sub = [...li.querySelectorAll('[data-bulk-item]')].some(d => d.dataset.title.includes(q));
+                    li.hidden = q !== '' && ! (self || sub);
+                });
+            },
+            ask() { if (this.count > 0) { this.confirming = true; this.$nextTick(() => this.$refs.confirmBtn.focus()); } },
+         }"
+        @click="if ($event.target === $el) $el.close()">
+        <div style="display: flex; flex-direction: column; max-height: calc(100vh - 2rem)">
+            <div class="flex items-start justify-between gap-4 border-b border-gray-200 px-6 py-4">
+                <div>
+                    <h2 id="bulk-title" class="text-lg font-bold">Filtry i operacje zbiorcze</h2>
+                    <p id="bulk-desc" class="mt-0.5 text-sm text-muted">Przefiltruj strony w widoku listy albo zmień status wielu stron naraz. Klawisz Escape zamyka okno.</p>
+                </div>
+                <button type="button" onclick="this.closest('dialog').close()"
+                    class="inline-flex min-h-9 flex-none items-center gap-1.5 rounded border border-gray-300 px-3 py-1.5 text-sm font-bold hover:border-brand hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                    <i class="fa-solid fa-xmark" aria-hidden="true"></i> Zamknij
+                </button>
+            </div>
+
+            <div class="overflow-y-auto px-6 py-5" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(19rem, 100%), 1fr)); gap: 2rem; align-items: start; overflow-x: hidden">
+
+                {{-- Filtry: przechodzą do zakładki „Lista stron” z gotowymi parametrami --}}
+                <form method="GET" action="{{ route('admin.podstrony.index') }}" class="space-y-4" style="min-width: 0">
+                    <input type="hidden" name="widok" value="lista">
+                    <h3 class="text-sm font-bold uppercase tracking-wide text-muted">Filtry</h3>
+                    <div>
+                        <label for="bulk-q" class="mb-1 block text-sm font-bold">Szukaj w tytule lub adresie</label>
+                        <input type="search" id="bulk-q" name="q" autocomplete="off" autofocus
+                            class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                    </div>
+                    <div>
+                        <label for="bulk-status" class="mb-1 block text-sm font-bold">Status</label>
+                        <select id="bulk-status" name="status" class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                            <option value="">Wszystkie</option>
+                            <option value="published">Opublikowane</option>
+                            <option value="draft">Szkice</option>
+                            <option value="trashed">Kosz</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="bulk-sort" class="mb-1 block text-sm font-bold">Sortowanie</label>
+                        <select id="bulk-sort" name="sort" class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                            <option value="default">Domyślne (kolejność)</option>
+                            <option value="title_asc">Tytuł A–Z</option>
+                            <option value="title_desc">Tytuł Z–A</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="inline-flex min-h-10 items-center gap-2 rounded bg-brand px-4 py-2 text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
+                        <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i> Pokaż wyniki w liście
+                    </button>
+                </form>
+
+                {{-- Operacje zbiorcze: własna lista stron z polami wyboru --}}
+                <form method="POST" action="{{ route('admin.podstrony.bulk') }}" class="space-y-4" style="min-width: 0" @submit="if (! confirming) { $event.preventDefault(); ask(); }">
+                    @csrf
+                    <h3 class="text-sm font-bold uppercase tracking-wide text-muted">Operacje zbiorcze</h3>
+                    <fieldset class="space-y-2">
+                        <legend class="mb-1 text-sm font-bold">Wybierz strony</legend>
+                        <label for="bulk-list-filter" class="sr-only">Filtruj listę stron po tytule</label>
+                        <input type="search" id="bulk-list-filter" placeholder="Filtruj listę stron…" autocomplete="off" @input="filterList($event.target.value)"
+                            class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                        <div class="flex flex-wrap items-center gap-2 text-xs">
+                            <button type="button" @click="setAll(true)" class="rounded border border-gray-300 px-2.5 py-1 font-bold hover:border-brand hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">Zaznacz widoczne</button>
+                            <button type="button" @click="setAll(false)" class="rounded border border-gray-300 px-2.5 py-1 font-bold hover:border-brand hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">Odznacz</button>
+                            <span class="ml-auto font-bold" role="status" aria-live="polite">Zaznaczono: <span x-text="count">0</span></span>
+                        </div>
+                        <div class="overflow-y-auto rounded border border-gray-200 p-1" style="max-height: 18rem" tabindex="0" aria-label="Lista stron do zaznaczenia">
+                            @include('admin.pages.partials.bulk-node', ['nodes' => $byParent->get(0, collect()), 'depth' => 0])
+                        </div>
+                    </fieldset>
+
+                    <div>
+                        <label for="bulk-action" class="mb-1 block text-sm font-bold">Operacja</label>
+                        <select id="bulk-action" name="action" x-model="action" @change="confirming = false"
+                            class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                            <option value="publish">Opublikuj</option>
+                            <option value="unpublish">Cofnij publikację (szkic)</option>
+                            <option value="disable">Wyłącz (wraz z podstronami)</option>
+                            <option value="enable">Włącz (przywróć dostępność)</option>
+                            <option value="feature">Wyróżnij</option>
+                            <option value="unfeature">Cofnij wyróżnienie</option>
+                            <option value="trash">Przenieś do kosza</option>
+                        </select>
+                    </div>
+
+                    <div x-show="! confirming">
+                        <button type="submit" :disabled="count === 0" :aria-disabled="(count === 0).toString()"
+                            class="inline-flex min-h-10 items-center gap-2 rounded bg-brand px-4 py-2 text-sm font-bold text-white hover:bg-brand-dark disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
+                            <i class="fa-solid fa-play" aria-hidden="true"></i> Wykonaj
+                        </button>
+                        <p class="mt-1 text-xs text-muted" x-show="count === 0">Zaznacz co najmniej jedną stronę.</p>
+                    </div>
+
+                    {{-- Potwierdzenie w oknie (bez drugiego modala nad natywnym dialogiem) --}}
+                    <div x-show="confirming" x-cloak role="alertdialog" aria-labelledby="bulk-confirm-text" class="rounded-lg border border-amber-300 bg-amber-50 p-4">
+                        <p id="bulk-confirm-text" class="text-sm font-bold text-amber-900">
+                            Wykonać operację „<span x-text="labels[action]"></span>” na <span x-text="count"></span> zaznaczonych stronach?
+                        </p>
+                        <p class="mt-1 text-xs text-amber-900" x-show="action === 'disable'">Wyłączenie obejmuje też wszystkie podstrony zaznaczonych stron.</p>
+                        <div class="mt-3 flex flex-wrap gap-2">
+                            <button type="submit" x-ref="confirmBtn"
+                                class="inline-flex min-h-10 items-center gap-2 rounded bg-brand px-4 py-2 text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
+                                Tak, wykonaj
+                            </button>
+                            <button type="button" @click="confirming = false"
+                                class="inline-flex min-h-10 items-center rounded border border-gray-300 bg-white px-4 py-2 text-sm font-bold hover:border-brand hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                                Anuluj
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </dialog>
+
+    <script>
+        // Otwarcie modala z blokadą przewijania tła; zamknięcie (przycisk, Escape, kliknięcie tła) ją zdejmuje.
+        function openBulkDialog() {
+            const dialog = document.getElementById('bulk-dialog');
+            if (! dialog || dialog.open) return;
+            document.documentElement.style.overflow = 'hidden';
+            dialog.showModal();
+        }
+        document.getElementById('bulk-dialog')?.addEventListener('close', function () {
+            document.documentElement.style.overflow = '';
+        });
+    </script>
     </div>
 
     <script>
