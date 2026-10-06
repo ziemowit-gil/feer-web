@@ -26,11 +26,11 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="preload" as="style"
-          href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;700&family=Montserrat:wght@400;700&family=Pacifico&family=Lato:wght@700&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;700&family=Montserrat:wght@400;600;700&family=Pacifico&family=Lato:wght@700&display=swap"
           onload="this.onload=null;this.rel='stylesheet'">
     <noscript>
         <link rel="stylesheet"
-              href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;700&family=Montserrat:wght@400;700&family=Pacifico&family=Lato:wght@700&display=swap">
+              href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;700&family=Montserrat:wght@400;600;700&family=Pacifico&family=Lato:wght@700&display=swap">
     </noscript>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @php $brandPalette = $siteSettings->brandPalette($brandColor ?? null); @endphp
@@ -44,6 +44,9 @@
             --color-brand-4: {{ $siteSettings->brandColorN(4) }};
         }
     </style>
+    @if (($siteSettings->site_template ?? 'default') === 'ngo_mix')
+        @include('partials.theme-ngo-mix')
+    @endif
 
     {{-- Dane strukturalne: organizacja (globalnie) + slot na typ strony (Article/Event) --}}
     <script type="application/ld+json">
