@@ -119,14 +119,14 @@
 
                     {{-- Główny edytor treści — ukryty dla typów bez swobodnej treści
                          („O organizacji" i „Przeniesiono do BIP" mają własne pola). --}}
-                    <div data-content-field class="{{ in_array($currentType, ['about', 'bip_move', 'wspolpraca'], true) ? 'hidden' : '' }}">
+                    <div data-content-field class="{{ in_array($currentType, ['about', 'bip_move', 'wspolpraca', 'contact'], true) ? 'hidden' : '' }}">
                         <label class="mb-1 block text-sm font-bold">Treść</label>
                         @include('admin.partials.editor', ['name' => 'content', 'value' => old('content', $page->content), 'revisionable' => $page->exists ? ['type' => 'page', 'id' => $page->id] : null])
                         @error('content') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
 
                     {{-- Zdjęcie w treści --}}
-                    <div>
+                    <div data-hide-for="contact" class="{{ $currentType === 'contact' ? 'hidden' : '' }}">
                         <p class="mb-1 text-sm font-bold">Zdjęcie w treści <span class="font-normal text-muted">(opcjonalne)</span></p>
                         <p class="mb-3 text-xs text-muted">Pojawia się poniżej tytułu, przed główną treścią strony. Ustaw szerokość, by dopasować do układu.</p>
                         <div class="flex items-start gap-4">
@@ -200,7 +200,7 @@
                         @endif
                     </div>
 
-                    <div class="border-t border-gray-100 pt-5 sm:w-1/2">
+                    <div data-hide-for="contact" class="border-t border-gray-100 pt-5 sm:w-1/2 {{ $currentType === 'contact' ? 'hidden' : '' }}">
                         <label for="page_template" class="mb-1 block text-sm font-bold">Szablon wizualny</label>
                         <select id="page_template" name="page_template" class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
                             @foreach (\App\Models\Page::TEMPLATES as $value => $label)
@@ -234,6 +234,8 @@
                     @include('admin.pages.partials.types.brand')
 
                     @include('admin.pages.partials.types.about-person')
+
+                    @include('admin.pages.partials.types.contact')
                 </div>
             </div>
 
@@ -330,7 +332,7 @@
                             </span>
                         </label>
 
-                        <label class="flex items-start gap-3 rounded-lg border border-gray-200 p-3 {{ $currentType === 'about' ? 'hidden' : '' }}" data-gallery-toggle>
+                        <label class="flex items-start gap-3 rounded-lg border border-gray-200 p-3 {{ in_array($currentType, ['about', 'contact'], true) ? 'hidden' : '' }}" data-gallery-toggle>
                             <input type="hidden" name="show_gallery" value="0">
                             <input type="checkbox" name="show_gallery" value="1" {{ old('show_gallery', $page->show_gallery ?? false) ? 'checked' : '' }}
                                 class="mt-0.5 rounded border-gray-300 text-brand focus:ring-brand">
@@ -609,7 +611,10 @@
                     if (aboutPersonFields) aboutPersonFields.classList.toggle('hidden', typeSelect.value !== 'about_person');
                     if (cooperationFields) cooperationFields.classList.toggle('hidden', typeSelect.value !== 'wspolpraca');
                     // Kafelki dostępne dla każdego typu strony
-                    if (contentField) contentField.classList.toggle('hidden', ['about', 'bip_move', 'wspolpraca'].includes(typeSelect.value));
+                    if (contentField) contentField.classList.toggle('hidden', ['about', 'bip_move', 'wspolpraca', 'contact'].includes(typeSelect.value));
+                    document.querySelectorAll('[data-hide-for]').forEach((el) => el.classList.toggle('hidden', el.dataset.hideFor === typeSelect.value));
+                    const contactFields = document.querySelector('[data-contact-fields]');
+                    if (contactFields) contactFields.classList.toggle('hidden', typeSelect.value !== 'contact');
                     document.querySelectorAll('[data-wspolpraca-tab]').forEach(function (btn) {
                         const isWspolpraca = typeSelect.value === 'wspolpraca';
                         btn.classList.toggle('hidden', isWspolpraca);
@@ -619,7 +624,7 @@
                     });
                     // Galeria „O organizacji" jest osobna — ukryj generyczny przełącznik dla tego typu.
                     document.querySelectorAll('[data-gallery-toggle]').forEach(function (el) {
-                        el.classList.toggle('hidden', typeSelect.value === 'about');
+                        el.classList.toggle('hidden', ['about', 'contact'].includes(typeSelect.value));
                     });
                 });
             }

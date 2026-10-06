@@ -29,6 +29,11 @@ class PageController extends Controller
         $isLive = $page->is_published && ($page->publish_at === null || $page->publish_at->isPast());
         abort_unless($isLive || $preview, 404);
 
+        // Strona typu „Kontakt” ma stały układ i własny kontroler.
+        if ($page->type === 'contact') {
+            return redirect()->route('contact.show');
+        }
+
         // Strona wewnętrzna (także „Panel współpracownika"): sprawdź autoryzację.
         if ($page->isAccessRestricted() && ! $page->accessGranted()) {
             if ($page->isBrandAssets()) {

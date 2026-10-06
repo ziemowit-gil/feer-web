@@ -109,6 +109,7 @@ class Page extends Model
         'legacy' => 'Prezentacja tego, co było',
         'brand_assets'  => 'Marka — identyfikacja wizualna (pliki do pobrania)',
         'about_person'  => 'O organizacji — osoba',
+        'contact'       => 'Kontakt (formularz, dane teleadresowe, spotkania)',
         'service'       => 'Oferta / usługa (korzyści, dla kogo, jak działamy, CTA)',
         'guide'         => 'Poradnik krok po kroku (numerowane kroki, wymagania, podsumowanie)',
         'glossary'      => 'Słownik pojęć (hasła z definicjami i indeksem liter)',
@@ -120,7 +121,7 @@ class Page extends Model
         'service' => 'fa-briefcase', 'guide' => 'fa-list-ol', 'glossary' => 'fa-book', 'case_study' => 'fa-chart-line',
         'faq' => 'fa-circle-question', 'event' => 'fa-calendar', 'schedule' => 'fa-calendar-days', 'links_hub' => 'fa-table-cells-large',
         'tiles_grid' => 'fa-table-cells', 'internal' => 'fa-lock', 'internal_hub' => 'fa-user-lock', 'bip_move' => 'fa-landmark',
-        'about' => 'fa-building', 'wspolpraca' => 'fa-handshake', 'brand_assets' => 'fa-palette', 'legacy' => 'fa-clock-rotate-left',
+        'about' => 'fa-building', 'contact' => 'fa-envelope', 'wspolpraca' => 'fa-handshake', 'brand_assets' => 'fa-palette', 'legacy' => 'fa-clock-rotate-left',
     ];
 
     /** Typy, których dane trzymamy we wspólnej kolumnie JSON `type_data`. */
@@ -434,7 +435,7 @@ class Page extends Model
         return ! in_array($this->type, [
             'event', 'schedule', 'about', 'faq', 'bip_move',
             'internal_hub', 'links_hub', 'wspolpraca', 'training_institution', 'brand_assets',
-            'legacy', 'about_person', 'service', 'guide', 'glossary', 'case_study',
+            'legacy', 'about_person', 'contact', 'service', 'guide', 'glossary', 'case_study',
         ], true);
     }
 
