@@ -84,4 +84,17 @@ class AdminMenuGroupsTest extends TestCase
         $this->assertSame($keys->count(), $keys->unique()->count());
         $this->assertEqualsCanonicalizing(array_keys(SiteSetting::SETTINGS_TABS), $keys->all());
     }
+
+    public function test_strona_ustawien_ma_dodatkowe_boczne_menu_z_pelna_lista_sekcji(): void
+    {
+        $admin = User::factory()->create(['role' => User::ROLE_ADMIN]);
+
+        $html = $this->actingAs($admin)->get(route('admin.ustawienia.edit', ['tab' => 'mail']))->assertOk()->getContent();
+
+        $this->assertStringContainsString('aria-label="Sekcje ustawień"', $html);
+        foreach (SiteSetting::SETTINGS_TABS as $key => $label) {
+            $this->assertStringContainsString(route('admin.ustawienia.edit', ['tab' => $key]), $html, "Brak linku do sekcji {$label}.");
+        }
+        $this->assertStringContainsString(route('admin.ustawienia.env'), $html);
+    }
 }

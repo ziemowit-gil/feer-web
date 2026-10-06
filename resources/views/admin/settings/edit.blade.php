@@ -10,7 +10,41 @@
     @endphp
     <div x-data="{ tab: '{{ $initialTab }}', wm_layout: '{{ old('header_layout', $settings->headerLayoutValue()) }}', wideModal: {{ $errors->has('wide_activation_code') && old('header_layout') === 'wide_mission' ? 'true' : 'false' }}, wideCode: '', wideCodeError: false, prevLayout: '{{ old('header_layout', $settings->headerLayoutValue()) }}' }"
         x-init="$watch('tab', value => history.replaceState(null, '', '?tab=' + value))"
-        class="max-w-3xl space-y-6">
+        class="settings-split" style="display:grid;grid-template-columns:13.5rem minmax(0,1fr);gap:1.5rem;align-items:start">
+    <style>@media (max-width: 900px) { .settings-split { grid-template-columns: 1fr !important; } .settings-split > nav { position: static !important; } }</style>
+
+    {{-- Dodatkowe menu boczne: pełna, płaska lista sekcji ustawień (jak dawne duże menu w panelu).
+         Linki działają bez JS (?tab=…), a z JS przełączają zakładkę bez przeładowania strony. --}}
+    @php
+        $settingsIcons = ['general' => 'fa-sliders', 'header' => 'fa-window-maximize', 'colors' => 'fa-palette', 'maintenance' => 'fa-screwdriver-wrench',
+            'seo' => 'fa-magnifying-glass', 'contact' => 'fa-address-book', 'social' => 'fa-share-nodes', 'registry' => 'fa-file-signature',
+            'accessibility' => 'fa-universal-access', 'support' => 'fa-hand-holding-heart', 'content' => 'fa-file-lines', 'modules' => 'fa-puzzle-piece',
+            'homepage' => 'fa-house', 'template' => 'fa-clone', 'login' => 'fa-right-to-bracket', 'mail' => 'fa-envelope'];
+    @endphp
+    <nav aria-label="Sekcje ustawień" class="rounded-lg border border-gray-200 bg-white" style="position:sticky;top:1rem;padding:.5rem">
+        <p class="px-2 pb-1 pt-1 text-[11px] font-bold uppercase tracking-wider text-muted">Sekcje ustawień</p>
+        <ul role="list" class="space-y-0.5">
+            @foreach (\App\Models\SiteSetting::SETTINGS_TABS as $tabKey => $tabLabel)
+                <li>
+                    <a href="{{ route('admin.ustawienia.edit', ['tab' => $tabKey]) }}" @click.prevent="tab = @js($tabKey)"
+                        :aria-current="tab === @js($tabKey) ? 'page' : null"
+                        :class="tab === @js($tabKey) ? 'bg-brand-light font-bold text-brand' : 'text-ink hover:bg-gray-100 hover:text-brand'"
+                        class="flex items-center gap-2.5 rounded-md px-2.5 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+                        style="min-height:2.25rem">
+                        <i class="fa-solid {{ $settingsIcons[$tabKey] ?? 'fa-gear' }} w-4 flex-none text-center text-[0.8rem] text-gray-400" aria-hidden="true"></i>
+                        <span class="min-w-0 flex-1 truncate">{{ $tabLabel }}</span>
+                    </a>
+                </li>
+            @endforeach
+            <li class="mt-1 border-t border-gray-100 pt-1">
+                <a href="{{ route('admin.ustawienia.env') }}" class="flex items-center gap-2.5 rounded-md px-2.5 text-sm text-muted hover:bg-gray-100 hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand" style="min-height:2.25rem">
+                    <i class="fa-solid fa-file-code w-4 flex-none text-center text-[0.8rem] text-gray-400" aria-hidden="true"></i> Plik .env
+                </a>
+            </li>
+        </ul>
+    </nav>
+
+    <div class="max-w-3xl space-y-6" style="min-width:0">
     @if (! empty($strefaConflict))
         <div role="alert" class="rounded-lg border border-amber-300 bg-amber-50 p-4">
             <div class="flex items-start gap-3">
@@ -3383,6 +3417,7 @@
             </button>
         </div>
     </form>
+    </div>
     </div>
 
     <script>
