@@ -13,6 +13,8 @@
     @include('templates.wrzos.partials.footer')
 @elseif (($siteSettings->site_template ?? 'default') === 'vm')
     @include('templates.vm.partials.footer')
+@elseif (($siteSettings->site_template ?? 'default') === 'feer')
+    @include('templates.feer.partials.footer')
 @else
 
 <footer>

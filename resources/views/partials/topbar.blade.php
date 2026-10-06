@@ -11,6 +11,7 @@
     i landmark `search`, Escape zamyka panel i oddaje fokus przyciskowi.
 --}}
 @php
+    $feerBar = ($siteSettings->site_template ?? 'default') === 'feer';
     $bipIsExternal = ($siteSettings->bip_mode ?? 'internal') === 'external';
     $bipHref       = $bipIsExternal ? $siteSettings->bip_url : route('bip');
     $showBip       = $siteSettings->show_topbar_bip && ($bipIsExternal ? filled($siteSettings->bip_url) : true);
@@ -21,7 +22,7 @@
         . 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-1';
 @endphp
 
-<div class="site-topbar border-b border-gray-200 bg-gray-50"
+<div class="site-topbar border-b {{ $feerBar ? 'site-topbar-feer border-ink bg-ink' : 'border-gray-200 bg-gray-50' }}"
      x-data="{ open: (function () { try { return localStorage.getItem('a11y-panel-open') === '1' } catch (e) { return false } })() }"
      x-effect="(() => { try { localStorage.setItem('a11y-panel-open', open ? '1' : '0') } catch (e) {} })()"
      @keydown.escape.window="if (open) { open = false; $refs.a11yToggle.focus() }">
@@ -37,6 +38,13 @@
             <span class="hidden sm:inline">Dostępność</span>
             <span class="sr-only sm:hidden">Ułatwienia dostępu</span>
         </button>
+
+        @if ($feerBar)
+            {{-- Szablon FEER: numer konta i „Wesprzyj" w tym samym rzędzie (nie w osobnym pasku pod spodem) --}}
+            <div class="hidden min-w-0 md:block">
+                @include('partials.wide-support-line', ['onBar' => true, 'onDark' => true])
+            </div>
+        @endif
 
         <div class="ml-auto flex min-w-0 shrink-0 items-center gap-1 sm:gap-3">
 

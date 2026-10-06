@@ -24,6 +24,16 @@
     .rounded-xl, .rounded-2xl, .rounded-3xl { border-radius: .5rem !important; }
     a.rounded-full { border-radius: .375rem !important; }
 
+    /* Pasek górny (dostępność, konto, wyszukiwarka, BIP, social): jeden smukły, ciemny rząd — biały tekst na #1D1D1A (16,9:1). */
+    .site-topbar-feer > div:first-child { padding-top: .125rem; padding-bottom: .125rem; }
+    .site-topbar-feer > div:first-child a,
+    .site-topbar-feer > div:first-child > button { color: #fff !important; }
+    .site-topbar-feer > div:first-child > button { border-color: #fff !important; background: transparent !important; border-radius: .375rem !important; }
+    .site-topbar-feer > div:first-child > button:hover,
+    .site-topbar-feer > div:first-child > button[aria-expanded="true"] { background: #fff !important; color: #1d1d1a !important; }
+    .site-topbar-feer > div:first-child a:hover { text-decoration: underline; }
+    .site-topbar-feer form[role="search"] { border-color: #fff; }
+
     /* Strona główna: jedna szerokość treści (lewa krawędź wspólna dla wszystkich sekcji), jednolite odstępy
        pionowe i naprzemienne tła — bez dwóch szarych sekcji obok siebie. */
     .max-w-\[1400px\] { max-width: 72rem; }

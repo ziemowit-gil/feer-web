@@ -163,4 +163,28 @@ class FeerTemplateTest extends TestCase
         $this->assertStringContainsString('sm:grid-cols-3', $html);
         $this->assertStringContainsString('divide-y divide-gray-200', $html);
     }
+
+    public function test_pasek_gorny_feer_laczy_konto_i_wesprzyj_w_ciemnym_rzedzie(): void
+    {
+        SiteSetting::current()->update(['site_template' => 'feer', 'header_layout' => 'wide_mission', 'wide_mission_layout' => 'bar', 'bank_account_number' => '09 1020 2906 0000 1402 0659 7480']);
+        \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();
+
+        $html = $this->get('/')->assertOk()->getContent();
+        $this->assertStringContainsString('site-topbar-feer', $html);
+        // Numer konta: pasek górny i panel mobilny; osobnego paska nad belką już nie ma.
+        $this->assertSame(2, substr_count($html, 'Nr konta:'), 'pasek górny + panel mobilny');
+        $this->assertStringNotContainsString('bg-brand-light/50', $html);
+    }
+
+    public function test_stopka_feer_jest_ciemnym_pasem_z_bialym_tekstem(): void
+    {
+        SiteSetting::current()->update(['site_template' => 'feer']);
+        \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();
+
+        $html = $this->get('/')->assertOk()->getContent();
+        $footer = substr($html, strpos($html, '<footer'));
+        $this->assertStringContainsString('bg-ink text-white', $footer);
+        $this->assertStringContainsString('Deklaracja dostępności', $footer);
+        $this->assertStringNotContainsString('opacity-40', $footer);
+    }
 }

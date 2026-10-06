@@ -55,7 +55,7 @@
 <div class="site-header-wide" x-data="siteMobileNav(1024)" @keydown.escape.window="closeMenu()">
 
     {{-- Układ „bar": numer konta i „Wesprzyj" w osobnym pasku nad belką --}}
-    @if ($wmLayout === 'bar')
+    @if ($wmLayout === 'bar' && ! $feerNav)
         <div class="hidden border-b border-brand/15 bg-brand-light/50 sm:block">
             <div class="mx-auto flex max-w-6xl justify-end px-4 py-1">
                 @include('partials.wide-support-line', ['onBar' => true])
