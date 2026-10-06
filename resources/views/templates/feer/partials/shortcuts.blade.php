@@ -4,6 +4,13 @@
     kolor akcji (#hex lub nazwa) jest tylko akcentem. Włączana w Ustawienia → Strona główna („Ankieta i szybkie akcje").
 --}}
 @php
+    // Kolumny dopasowane do liczby akcji, żeby kafle wypełniały cały rząd (bez pustego miejsca po prawej).
+    $qaCols = match (min(($quickLinks ?? collect())->count(), 4)) {
+        1 => 'grid-cols-1',
+        2 => 'grid-cols-1 sm:grid-cols-2',
+        3 => 'grid-cols-1 sm:grid-cols-3',
+        default => 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4',
+    };
     $feerNamed = ['blue' => '#1e6dff', 'dark' => '#1d1d1a', 'green' => '#16a34a', 'purple' => '#7e22ce', 'orange' => '#ea8f00', 'red' => '#dc2626'];
 @endphp
 @if (($quickLinks ?? collect())->isNotEmpty())
@@ -12,7 +19,7 @@
             <h2 id="feer-shortcuts-heading" class="mb-4 text-2xl font-bold text-ink md:text-3xl">Szybkie akcje</h2>
 
             <nav aria-label="Szybkie akcje">
-                <ul class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4" role="list">
+                <ul class="grid gap-3 {{ $qaCols }}" role="list">
                     @foreach ($quickLinks as $qa)
                         @php
                             $accent = \App\Support\Color::isValid($qa->color) ? $qa->color : ($feerNamed[$qa->color] ?? 'var(--color-brand)');

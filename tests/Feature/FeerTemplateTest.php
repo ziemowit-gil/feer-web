@@ -148,4 +148,19 @@ class FeerTemplateTest extends TestCase
     {
         $this->get('/sprawozdania')->assertOk()->assertSee('Sprawozdania roczne')->assertSee('bg-gray-50', false);
     }
+
+    public function test_skroty_wypelniaja_rzad_a_projekty_na_glownej_to_lista_wierszy(): void
+    {
+        foreach (['Facebook', 'Archiwum', 'Panel'] as $i => $label) {
+            \App\Models\QuickAction::create(['label' => $label, 'url' => '/'.$i, 'icon' => 'fa-solid fa-link', 'order' => $i]);
+        }
+        $category = \App\Models\Category::create(['name' => 'Dla NGO', 'slug' => 'dla-ngo']);
+        \App\Models\Project::create(['title' => 'Wsparcie IT', 'slug' => 'wsparcie-it', 'excerpt' => 'Pomagamy', 'is_published' => true, 'category_id' => $category->id]);
+        SiteSetting::current()->update(['site_template' => 'feer']);
+        \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();
+
+        $html = $this->get('/')->assertOk()->assertSee('Wsparcie IT')->getContent();
+        $this->assertStringContainsString('sm:grid-cols-3', $html);
+        $this->assertStringContainsString('divide-y divide-gray-200', $html);
+    }
 }
