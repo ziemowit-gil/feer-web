@@ -31,54 +31,71 @@
             'total' => $projects->count(),
         ])
 
-        <div class="overflow-hidden rounded-lg border border-gray-200 bg-white">
+        <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
             <table class="w-full text-left text-sm">
-                <thead class="bg-gray-50 text-xs font-bold uppercase text-muted">
+                <thead class="border-b border-gray-200 bg-gray-50/80 text-xs font-bold uppercase tracking-wide text-muted">
                     <tr>
                         <th class="w-10 px-4 py-3">
                             <input type="checkbox" id="select-all" class="rounded border-gray-300" aria-label="Zaznacz wszystkie">
                         </th>
-                        <th class="px-4 py-3">Tytuł</th>
-                        <th class="px-4 py-3">Kategoria</th>
-                        <th class="px-4 py-3">Kolejność</th>
+                        <th class="px-4 py-3">Projekt</th>
+                        <th class="hidden px-4 py-3 md:table-cell">Kategoria</th>
                         <th class="px-4 py-3">Status</th>
-                        <th class="px-4 py-3 text-right">Akcje</th>
+                        <th class="w-28 px-4 py-3 text-right"><span class="sr-only">Akcje</span></th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100">
                     @forelse ($projects as $project)
-                        <tr>
-                            <td class="px-4 py-3">
+                        <tr class="group transition hover:bg-gray-50/70">
+                            <td class="px-4 py-3 align-middle">
                                 <input type="checkbox" name="ids[]" value="{{ $project->id }}" class="row-check rounded border-gray-300" aria-label="Zaznacz {{ $project->title }}">
                             </td>
-                            <td class="px-4 py-3 font-medium">{{ $project->title }}</td>
-                            <td class="px-4 py-3 text-muted">{{ $project->category->name }}</td>
-                            <td class="px-4 py-3 text-muted">{{ $project->order }}</td>
                             <td class="px-4 py-3">
-                                @if ($project->is_published)
-                                    <span class="rounded-full bg-green-100 px-2 py-0.5 text-xs font-bold text-green-700">Opublikowany</span>
-                                @else
-                                    <span class="rounded-full bg-gray-100 px-2 py-0.5 text-xs font-bold text-gray-500">Szkic</span>
-                                @endif
-                                @if ($project->is_completed)
-                                    <span class="rounded-full bg-blue-100 px-2 py-0.5 text-xs font-bold text-blue-700">Zrealizowany</span>
-                                @endif
+                                <div class="flex items-center gap-3">
+                                    @if ($project->image_url)
+                                        <img src="{{ $project->image_url }}" alt="" loading="lazy" class="h-12 w-16 flex-none rounded-lg object-cover ring-1 ring-gray-200">
+                                    @else
+                                        <span class="flex h-12 w-16 flex-none items-center justify-center rounded-lg bg-gray-100 text-gray-300" aria-hidden="true"><i class="fa-solid fa-diagram-project text-lg"></i></span>
+                                    @endif
+                                    <div class="min-w-0">
+                                        <a href="{{ route('admin.projekty.edit', $project) }}" class="block truncate font-bold text-ink hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">{{ $project->title }}</a>
+                                        @if ($project->excerpt)
+                                            <p class="mt-0.5 line-clamp-1 text-xs text-muted">{{ $project->excerpt }}</p>
+                                        @endif
+                                        <p class="mt-0.5 text-xs text-muted md:hidden">{{ $project->category->name }}</p>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="hidden px-4 py-3 md:table-cell">
+                                <span class="inline-flex rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-ink">{{ $project->category->name }}</span>
                             </td>
                             <td class="px-4 py-3">
-                                <div class="flex justify-end gap-3">
-                                    <a href="{{ route('projects.show', $project) }}" target="_blank" class="text-muted hover:text-brand" title="Podgląd"><i class="fa-solid fa-eye" aria-hidden="true"></i></a>
-                                    <a href="{{ route('admin.projekty.edit', $project) }}" class="text-muted hover:text-brand" title="Edytuj"><i class="fa-solid fa-pen" aria-hidden="true"></i></a>
+                                <div class="flex flex-wrap items-center gap-1.5">
+                                    @if ($project->is_published)
+                                        <span class="inline-flex items-center gap-1.5 rounded-full bg-green-50 px-2.5 py-0.5 text-xs font-bold text-green-700"><span class="h-1.5 w-1.5 rounded-full bg-green-500" aria-hidden="true"></span>Opublikowany</span>
+                                    @else
+                                        <span class="inline-flex items-center gap-1.5 rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-bold text-gray-600"><span class="h-1.5 w-1.5 rounded-full bg-gray-400" aria-hidden="true"></span>Szkic</span>
+                                    @endif
+                                    @if ($project->is_completed)
+                                        <span class="inline-flex rounded-full bg-blue-50 px-2.5 py-0.5 text-xs font-bold text-blue-700">Zrealizowany</span>
+                                    @endif
+                                </div>
+                            </td>
+                            <td class="px-4 py-3">
+                                <div class="flex justify-end gap-1">
+                                    <a href="{{ route('projects.show', $project) }}" target="_blank" rel="noopener" class="flex h-9 w-9 items-center justify-center rounded-lg text-muted hover:bg-gray-100 hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand" title="Podgląd" aria-label="Podgląd: {{ $project->title }} (nowa karta)"><i class="fa-solid fa-eye" aria-hidden="true"></i></a>
+                                    <a href="{{ route('admin.projekty.edit', $project) }}" class="flex h-9 w-9 items-center justify-center rounded-lg text-muted hover:bg-gray-100 hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand" title="Edytuj" aria-label="Edytuj: {{ $project->title }}"><i class="fa-solid fa-pen" aria-hidden="true"></i></a>
                                     <form method="POST" action="{{ route('admin.projekty.destroy', $project) }}" onsubmit="return confirm('Usunąć projekt &quot;{{ $project->title }}&quot;?');">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="text-muted hover:text-red-600" title="Usuń" aria-label="Usuń"><i class="fa-solid fa-trash" aria-hidden="true"></i></button>
+                                        <button type="submit" class="flex h-9 w-9 items-center justify-center rounded-lg text-muted hover:bg-red-50 hover:text-red-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500" title="Usuń" aria-label="Usuń: {{ $project->title }}"><i class="fa-solid fa-trash" aria-hidden="true"></i></button>
                                     </form>
                                 </div>
                             </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" class="px-4 py-6 text-center text-muted">Brak projektów. Dodaj pierwszy powyżej (wymaga co najmniej jednej kategorii).</td>
+                            <td colspan="5" class="px-4 py-10 text-center text-muted">Brak projektów. Dodaj pierwszy powyżej (wymaga co najmniej jednej kategorii).</td>
                         </tr>
                     @endforelse
                 </tbody>

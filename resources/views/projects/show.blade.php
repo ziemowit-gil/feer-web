@@ -24,8 +24,9 @@
 
         // Subpages attached to this project, grouped by how they should appear:
         // inline sections in the body, tabs, or just links in the sidebar.
-        $inlinePages = $project->publishedPages->where('project_display', 'inline')->values();
         $tabPages = $project->publishedPages->where('project_display', 'tab')->values();
+        // Jedna „zakładka” nie ma po co przełączać — pokazujemy ją jak zwykłą sekcję w treści.
+        $inlinePages = $project->publishedPages->filter(fn ($p) => $p->project_display === 'inline' || ($p->project_display === 'tab' && $tabPages->count() === 1))->values();
         $linkPages = $project->publishedPages->whereNotIn('project_display', ['inline', 'tab'])->values();
 
         // A schedule ("harmonogram") page attached to this project — surfaced as a
@@ -40,33 +41,6 @@
     @if ($canInlineEdit)
         @include('partials.inline-edit-bar')
     @endif
-    <section class="mx-auto max-w-4xl px-4 py-12">
-        <a href="{{ route('categories.show', $project->category) }}" class="mb-2 inline-block text-sm font-bold uppercase tracking-wide text-brand hover:text-brand-dark">
-            {{ $project->category->name }}
-        </a>
-        <h1 class="{{ $project->is_completed ? 'mb-3' : 'mb-8' }} text-3xl font-bold text-ink" @if ($canInlineEdit) data-inline-field="title" data-inline-kind="text" @endif>{{ $project->title }}</h1>
-        @if ($project->is_completed)
-            <p class="mb-8">
-                <span class="inline-flex items-center rounded-full bg-emerald-50 px-4 py-1.5 text-sm font-bold text-emerald-700 ring-1 ring-emerald-200">Projekt zrealizowany</span>
-            </p>
-        @endif
-
-        @if ($schedulePage)
-            <div class="mb-8 flex flex-col gap-3 rounded-xl border border-brand/20 bg-brand-light p-5 sm:flex-row sm:items-center sm:justify-between">
-                <div class="flex items-start gap-3">
-                    <i class="fa-solid fa-calendar-days mt-0.5 text-xl text-brand" aria-hidden="true"></i>
-                    <div>
-                        <p class="font-bold text-ink">{{ $schedulePage->title }}</p>
-                        <p class="text-sm text-muted">Sprawdź terminy zajęć i spotkań w ramach tego projektu.</p>
-                    </div>
-                </div>
-                <a href="{{ $scheduleHref }}"
-                    class="inline-flex flex-none items-center justify-center gap-2 rounded-lg bg-brand px-4 py-2.5 font-bold text-white transition hover:bg-brand-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
-                    Zobacz harmonogram <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
-                </a>
-            </div>
-        @endif
-
         @php
             $catName = trim($project->category->name);
             $forWhom = trim((string) $project->for_whom);
@@ -78,34 +52,49 @@
                 && mb_strtolower($forWhom) !== mb_strtolower(trim(\Illuminate\Support\Str::after($catName, 'Dla ')));
         @endphp
 
-        @if ($showForWhom || $project->since)
-            <dl class="mb-8 flex flex-wrap gap-x-10 gap-y-4 rounded-xl border border-gray-200 bg-gray-50 px-5 py-4 text-sm">
-                @if ($showForWhom)
-                    <div>
-                        <dt class="mb-0.5 flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-muted">
-                            <i class="fa-solid fa-users text-brand" aria-hidden="true"></i> Dla kogo
-                        </dt>
-                        <dd class="font-medium text-ink" @if ($canInlineEdit) data-inline-field="for_whom" data-inline-kind="text" data-inline-multiline @endif>{{ $project->for_whom }}</dd>
-                    </div>
+    {{-- ══ HERO: kategoria, tytuł, status, zajawka, kluczowe fakty i zdjęcie ══ --}}
+    <section class="border-b border-gray-100 bg-gray-50">
+        <div class="mx-auto grid max-w-6xl items-center gap-8 px-4 py-10 sm:py-14 {{ $project->image_url ? 'lg:grid-cols-[minmax(0,1fr)_26rem]' : '' }}">
+            <div class="min-w-0">
+                <a href="{{ route('categories.show', $project->category) }}" class="inline-block text-xs font-bold uppercase tracking-widest text-brand hover:text-brand-dark">
+                    {{ $project->category->name }}
+                </a>
+                <h1 class="mt-3 text-3xl font-extrabold leading-tight tracking-tight text-ink sm:text-4xl" @if ($canInlineEdit) data-inline-field="title" data-inline-kind="text" @endif>{{ $project->title }}</h1>
+                @if ($project->excerpt)
+                    <p class="mt-4 max-w-2xl text-lg leading-relaxed text-ink/80">{{ $project->excerpt }}</p>
                 @endif
-                @if ($project->since)
-                    <div>
-                        <dt class="mb-0.5 flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-muted">
-                            <i class="fa-solid fa-calendar-days text-brand" aria-hidden="true"></i> Od kiedy
-                        </dt>
-                        <dd class="font-medium text-ink">{{ $project->since }}</dd>
-                    </div>
-                @endif
-            </dl>
-        @endif
 
+                @if ($project->is_completed || $showForWhom || $project->since)
+                    <dl class="mt-6 flex flex-wrap items-center gap-x-3 gap-y-2 text-sm">
+                        @if ($project->is_completed)
+                            <div><dt class="sr-only">Status</dt><dd class="inline-flex items-center rounded-full bg-emerald-50 px-3 py-1 font-bold text-emerald-700 ring-1 ring-emerald-200">Projekt zrealizowany</dd></div>
+                        @endif
+                        @if ($showForWhom)
+                            <div><dt class="sr-only">Dla kogo</dt><dd class="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1 font-medium text-ink ring-1 ring-gray-200" @if ($canInlineEdit) data-inline-field="for_whom" data-inline-kind="text" data-inline-multiline @endif><i class="fa-solid fa-users text-brand" aria-hidden="true"></i> {{ $project->for_whom }}</dd></div>
+                        @endif
+                        @if ($project->since)
+                            <div><dt class="sr-only">Od kiedy</dt><dd class="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1 font-medium text-ink ring-1 ring-gray-200"><i class="fa-solid fa-calendar-days text-brand" aria-hidden="true"></i> Od {{ $project->since }}</dd></div>
+                        @endif
+                    </dl>
+                @endif
+            </div>
+
+            @if ($project->image_url)
+                <img src="{{ $project->image_url }}" alt="{{ $project->image_alt ?: 'Zdjęcie ilustracyjne: '.$project->title }}" data-lightbox
+                    class="aspect-[4/3] w-full rounded-2xl object-cover shadow-sm ring-1 ring-gray-200">
+            @endif
+        </div>
+    </section>
+
+    <section class="mx-auto max-w-6xl px-4 py-12">
+        <div class="grid items-start gap-10 lg:grid-cols-[minmax(0,1fr)_18rem]">
         <div class="min-w-0">
-                @if ($project->sections_as_tabs && $customSections->isNotEmpty())
+                @if ($project->sections_as_tabs && $customSections->count() > 1)
                     <div class="mb-8" data-project-tabs>
-                        <div class="mb-5 flex flex-wrap gap-1 border-b border-gray-200" role="tablist">
+                        <div class="mb-5 flex flex-wrap gap-2" role="tablist">
                             @foreach ($customSections->values() as $i => $section)
                                 <button type="button" data-project-tab-btn="{{ $i }}" role="tab" aria-selected="{{ $loop->first ? 'true' : 'false' }}"
-                                    class="-mb-px border-b-2 px-4 py-2 text-sm font-bold {{ $loop->first ? 'border-brand text-brand' : 'border-transparent text-muted hover:text-brand' }}">
+                                    class="rounded-full px-4 py-1.5 text-sm font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 {{ $loop->first ? 'bg-brand text-white' : 'bg-gray-100 text-ink hover:bg-gray-200' }}">
                                     {{ $section['title'] ?: 'Sekcja '.($i + 1) }}
                                 </button>
                             @endforeach
@@ -148,10 +137,6 @@
                     </div>
                 @endif
 
-                @if ($project->image_url)
-                    <img src="{{ $project->image_url }}" alt="{{ $project->image_alt ?: 'Zdjęcie ilustracyjne: '.$project->title }}" data-lightbox class="mb-8 h-72 w-full rounded-lg object-cover">
-                @endif
-
                 @if ($project->content)
                     <h2 class="mb-3 flex items-center gap-2 text-xl font-bold text-ink">
                         <i class="fa-solid fa-circle-info text-brand" aria-hidden="true"></i> Opis projektu
@@ -166,7 +151,7 @@
                     <div class="prose max-w-none text-ink">{{ $project->why }}</div>
                 @endif
 
-                @unless ($project->sections_as_tabs)
+                @unless ($project->sections_as_tabs && $customSections->count() > 1)
                     @foreach ($regularSections as $customSection)
                         <div class="mt-8">
                             @if (! empty($customSection['title']))
@@ -204,12 +189,12 @@
                 @endforeach
 
                 {{-- Project subpages shown as tabs --}}
-                @if ($tabPages->isNotEmpty())
+                @if ($tabPages->count() > 1)
                     <div class="mt-8" data-subpage-tabs>
-                        <div class="mb-5 flex flex-wrap gap-1 border-b border-gray-200" role="tablist">
+                        <div class="mb-5 flex flex-wrap gap-2" role="tablist">
                             @foreach ($tabPages as $i => $subpage)
                                 <button type="button" data-subtab-btn="{{ $i }}" role="tab" aria-selected="{{ $loop->first ? 'true' : 'false' }}"
-                                    class="-mb-px border-b-2 px-4 py-2 text-sm font-bold {{ $loop->first ? 'border-brand text-brand' : 'border-transparent text-muted hover:text-brand' }}">
+                                    class="rounded-full px-4 py-1.5 text-sm font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 {{ $loop->first ? 'bg-brand text-white' : 'bg-gray-100 text-ink hover:bg-gray-200' }}">
                                     {{ $subpage->title }}
                                 </button>
                             @endforeach
@@ -301,11 +286,31 @@
                         </ul>
                     </div>
                 @endif
+            </div>
+
+            {{-- ══ PANEL BOCZNY: harmonogram, kontakt, strony projektu, powrót ══ --}}
+            <aside class="space-y-5 lg:sticky lg:top-6" aria-label="Informacje o projekcie">
+        @if ($schedulePage)
+            <div class="flex flex-col gap-3 rounded-2xl border border-brand/20 bg-brand-light p-5">
+                <div class="flex items-start gap-3">
+                    <i class="fa-solid fa-calendar-days mt-0.5 text-xl text-brand" aria-hidden="true"></i>
+                    <div>
+                        <p class="font-bold text-ink">{{ $schedulePage->title }}</p>
+                        <p class="text-sm text-muted">Sprawdź terminy zajęć i spotkań w ramach tego projektu.</p>
+                    </div>
+                </div>
+                <a href="{{ $scheduleHref }}"
+                    class="inline-flex flex-none items-center justify-center gap-2 rounded-lg bg-brand px-4 py-2.5 font-bold text-white transition hover:bg-brand-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
+                    Zobacz harmonogram <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+                </a>
+            </div>
+        @endif
+
                 {{-- Kontakt w sprawie projektu — jako zwykła sekcja treści (jak „Opis
                      projektu"), w głównym nurcie i pełną szerokością, nie jako kafelek z boku. --}}
                 @if (! $project->is_completed && $project->showsCoordinator())
-                    <div class="mt-10 border-t border-gray-200 pt-8">
-                        <h2 class="mb-3 flex items-center gap-2 text-xl font-bold text-ink">
+                    <div class="rounded-2xl border border-gray-200 bg-white p-5">
+                        <h2 class="mb-3 flex items-center gap-2 text-base font-bold text-ink">
                             <i class="fa-solid fa-envelope text-brand" aria-hidden="true"></i> Kontakt w sprawie projektu
                         </h2>
                         <div class="space-y-1.5 text-ink">
@@ -327,11 +332,11 @@
                 @endif
 
                 @if ($linkPages->isNotEmpty())
-                    <div class="mt-8 rounded-xl border border-gray-200 p-6">
-                        <h2 class="mb-3 flex items-center gap-2 text-lg font-bold text-ink">
+                    <div class="rounded-2xl border border-gray-200 bg-white p-5">
+                        <h2 class="mb-3 flex items-center gap-2 text-base font-bold text-ink">
                             <i class="fa-solid fa-file-lines text-brand" aria-hidden="true"></i> Strony projektu
                         </h2>
-                        <ul class="flex flex-wrap gap-2 text-sm">
+                        <ul class="flex flex-col gap-2 text-sm">
                             @foreach ($linkPages as $projectPage)
                                 <li>
                                     @if ($projectPage->isSchedule())
@@ -352,12 +357,11 @@
                     </div>
                 @endif
 
-                <div class="mt-10 border-t border-gray-200 pt-6">
-                    <a href="{{ route('projects.index') }}" class="inline-flex items-center gap-2 text-sm font-bold text-brand hover:text-brand-dark">
-                        <i class="fa-solid fa-arrow-left" aria-hidden="true"></i> Wszystkie projekty
-                    </a>
-                </div>
-            </div>
+                <a href="{{ route('projects.index') }}" class="inline-flex items-center gap-2 text-sm font-bold text-brand hover:text-brand-dark">
+                    <i class="fa-solid fa-arrow-left" aria-hidden="true"></i> Wszystkie projekty
+                </a>
+            </aside>
+        </div>
     </section>
 
     <script>
@@ -370,10 +374,8 @@
                 btn.addEventListener('click', function () {
                     buttons.forEach(function (b) {
                         const active = b === btn;
-                        b.classList.toggle('border-brand', active);
-                        b.classList.toggle('text-brand', active);
-                        b.classList.toggle('border-transparent', !active);
-                        b.classList.toggle('text-muted', !active);
+                        ['bg-brand', 'text-white'].forEach(function (c) { b.classList.toggle(c, active); });
+                        ['bg-gray-100', 'text-ink', 'hover:bg-gray-200'].forEach(function (c) { b.classList.toggle(c, !active); });
                         b.setAttribute('aria-selected', active ? 'true' : 'false');
                     });
                     panels.forEach(function (p) {
@@ -392,10 +394,8 @@
                 btn.addEventListener('click', function () {
                     buttons.forEach(function (b) {
                         const active = b === btn;
-                        b.classList.toggle('border-brand', active);
-                        b.classList.toggle('text-brand', active);
-                        b.classList.toggle('border-transparent', !active);
-                        b.classList.toggle('text-muted', !active);
+                        ['bg-brand', 'text-white'].forEach(function (c) { b.classList.toggle(c, active); });
+                        ['bg-gray-100', 'text-ink', 'hover:bg-gray-200'].forEach(function (c) { b.classList.toggle(c, !active); });
                         b.setAttribute('aria-selected', active ? 'true' : 'false');
                     });
                     panels.forEach(function (p) {
