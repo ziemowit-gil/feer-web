@@ -53,29 +53,22 @@
         @endphp
 
     {{-- ══ HERO: kategoria, tytuł, status, zajawka, kluczowe fakty i zdjęcie ══ --}}
-    <section class="border-b border-gray-100 bg-gray-50">
-        <div class="mx-auto grid max-w-6xl items-center gap-8 px-4 py-10 sm:py-14 {{ $project->image_url ? 'lg:grid-cols-[minmax(0,1fr)_26rem]' : '' }}">
+    <section class="relative overflow-hidden border-b border-gray-100"
+        style="background: linear-gradient(135deg, color-mix(in srgb, var(--color-brand) 10%, #fff) 0%, #fff 70%)">
+        <span class="pointer-events-none absolute -right-16 -top-16 h-64 w-64 rounded-full" aria-hidden="true"
+            style="background: color-mix(in srgb, var(--color-brand) 8%, transparent)"></span>
+        <div class="relative mx-auto grid max-w-6xl items-center gap-8 px-4 py-12 sm:py-16 {{ $project->image_url ? 'lg:grid-cols-[minmax(0,1fr)_26rem]' : '' }}">
             <div class="min-w-0">
                 <a href="{{ route('categories.show', $project->category) }}" class="inline-block text-xs font-bold uppercase tracking-widest text-brand hover:text-brand-dark">
                     {{ $project->category->name }}
                 </a>
-                <h1 class="mt-3 text-3xl font-extrabold leading-tight tracking-tight text-ink sm:text-4xl" @if ($canInlineEdit) data-inline-field="title" data-inline-kind="text" @endif>{{ $project->title }}</h1>
+                <h1 class="mt-3 text-3xl font-extrabold leading-tight tracking-tight text-ink sm:text-5xl" @if ($canInlineEdit) data-inline-field="title" data-inline-kind="text" @endif>{{ $project->title }}</h1>
                 @if ($project->excerpt)
                     <p class="mt-4 max-w-2xl text-lg leading-relaxed text-ink/80">{{ $project->excerpt }}</p>
                 @endif
 
-                @if ($project->is_completed || $showForWhom || $project->since)
-                    <dl class="mt-6 flex flex-wrap items-center gap-x-3 gap-y-2 text-sm">
-                        @if ($project->is_completed)
-                            <div><dt class="sr-only">Status</dt><dd class="inline-flex items-center rounded-full bg-emerald-50 px-3 py-1 font-bold text-emerald-700 ring-1 ring-emerald-200">Projekt zrealizowany</dd></div>
-                        @endif
-                        @if ($showForWhom)
-                            <div><dt class="sr-only">Dla kogo</dt><dd class="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1 font-medium text-ink ring-1 ring-gray-200" @if ($canInlineEdit) data-inline-field="for_whom" data-inline-kind="text" data-inline-multiline @endif><i class="fa-solid fa-users text-brand" aria-hidden="true"></i> {{ $project->for_whom }}</dd></div>
-                        @endif
-                        @if ($project->since)
-                            <div><dt class="sr-only">Od kiedy</dt><dd class="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1 font-medium text-ink ring-1 ring-gray-200"><i class="fa-solid fa-calendar-days text-brand" aria-hidden="true"></i> Od {{ $project->since }}</dd></div>
-                        @endif
-                    </dl>
+                @if ($project->is_completed)
+                    <p class="mt-5"><span class="inline-flex items-center rounded-full bg-emerald-50 px-3 py-1 text-sm font-bold text-emerald-700 ring-1 ring-emerald-200">Projekt zrealizowany</span></p>
                 @endif
             </div>
 
@@ -107,7 +100,7 @@
                     </div>
                 @else
                     @foreach ($featuredSections as $section)
-                        <div class="mb-8 rounded-xl border-2 border-brand/40 bg-brand-light/40 p-6">
+                        <div class="mb-8 rounded-2xl border border-brand/20 border-l-4 border-l-brand bg-brand-light/50 p-6">
                             @if (! empty($section['title']))
                                 <h2 class="mb-3 text-xl font-bold text-ink">{{ $section['title'] }}</h2>
                             @endif
@@ -290,6 +283,37 @@
 
             {{-- ══ PANEL BOCZNY: harmonogram, kontakt, strony projektu, powrót ══ --}}
             <aside class="space-y-5 lg:sticky lg:top-6" aria-label="Informacje o projekcie">
+                {{-- Karta faktów: zawsze wypełnia panel boczny, także gdy projekt nie ma kontaktu ani harmonogramu --}}
+                <div class="rounded-2xl border border-gray-200 bg-white p-5">
+                    <h2 class="mb-3 flex items-center gap-2 text-base font-bold text-ink">
+                        <i class="fa-solid fa-circle-info text-brand" aria-hidden="true"></i> O projekcie
+                    </h2>
+                    <dl class="space-y-3 text-sm">
+                        <div>
+                            <dt class="text-xs font-bold uppercase tracking-wide text-muted">Kategoria</dt>
+                            <dd><a href="{{ route('categories.show', $project->category) }}" class="font-medium text-brand hover:text-brand-dark">{{ $project->category->name }}</a></dd>
+                        </div>
+                        @if ($project->since)
+                            <div>
+                                <dt class="text-xs font-bold uppercase tracking-wide text-muted">Od kiedy</dt>
+                                <dd class="font-medium text-ink">{{ $project->since }}</dd>
+                            </div>
+                        @endif
+                        @if ($showForWhom)
+                            <div>
+                                <dt class="text-xs font-bold uppercase tracking-wide text-muted">Dla kogo</dt>
+                                <dd class="font-medium text-ink" @if ($canInlineEdit) data-inline-field="for_whom" data-inline-kind="text" data-inline-multiline @endif>{{ $project->for_whom }}</dd>
+                            </div>
+                        @endif
+                        @if ($project->is_paid)
+                            <div>
+                                <dt class="text-xs font-bold uppercase tracking-wide text-muted">Dostęp</dt>
+                                <dd class="font-medium text-ink">Płatny</dd>
+                            </div>
+                        @endif
+                    </dl>
+                </div>
+
         @if ($schedulePage)
             <div class="flex flex-col gap-3 rounded-2xl border border-brand/20 bg-brand-light p-5">
                 <div class="flex items-start gap-3">
