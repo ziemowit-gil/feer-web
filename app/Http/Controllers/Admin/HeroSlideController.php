@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\HeroSlide;
 use App\Models\SiteSetting;
+use App\Support\UnsplashImport;
 use Illuminate\Http\Request;
 
 /**
@@ -41,14 +42,18 @@ class HeroSlideController extends Controller
             'button_url' => ['nullable', 'required_with:button_label', 'string', 'max:255'],
             'order' => ['nullable', 'integer', 'min:0'],
             'duration' => ['nullable', 'integer', 'min:1', 'max:60'],
-            'image' => ['required', 'image', 'max:4096'],
-        ]);
+            'image' => ['required_without:unsplash_full_url', 'nullable', 'image', 'max:4096'],
+        ] + UnsplashImport::rules());
 
         $data['order'] = $data['order'] ?? 0;
-        unset($data['image']);
+        unset($data['image'], $data['unsplash_full_url'], $data['unsplash_download_location'], $data['unsplash_author']);
 
         $heroSlide = HeroSlide::create($data);
-        $heroSlide->addMediaFromRequest('image')->toMediaCollection('image');
+        if ($request->hasFile('image')) {
+            $heroSlide->addMediaFromRequest('image')->toMediaCollection('image');
+        } else {
+            UnsplashImport::attach($heroSlide, $request);
+        }
 
         return redirect()->route('admin.hero.index')->with('status', 'Slajd został dodany.');
     }
@@ -70,15 +75,17 @@ class HeroSlideController extends Controller
             'order' => ['nullable', 'integer', 'min:0'],
             'duration' => ['nullable', 'integer', 'min:1', 'max:60'],
             'image' => ['nullable', 'image', 'max:4096'],
-        ]);
+        ] + UnsplashImport::rules());
 
         $data['order'] = $data['order'] ?? 0;
-        unset($data['image']);
+        unset($data['image'], $data['unsplash_full_url'], $data['unsplash_download_location'], $data['unsplash_author']);
 
         $heroSlide->update($data);
 
         if ($request->hasFile('image')) {
             $heroSlide->addMediaFromRequest('image')->toMediaCollection('image');
+        } else {
+            UnsplashImport::attach($heroSlide, $request);
         }
 
         return redirect()->route('admin.hero.index')->with('status', 'Slajd został zaktualizowany.');

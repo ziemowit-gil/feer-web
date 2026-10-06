@@ -17,10 +17,12 @@
 
         <div>
             <label for="image" class="mb-1 block text-sm font-bold">{{ $heroSlide->exists ? 'Zmień zdjęcie' : 'Zdjęcie' }}</label>
-            <input type="file" id="image" name="image" accept="image/*" {{ $heroSlide->exists ? '' : 'required' }}
+            <input type="file" id="image" name="image" accept="image/*" 
                 class="block w-full cursor-pointer text-sm text-muted file:mr-3 file:cursor-pointer file:rounded file:border-0 file:bg-brand file:px-4 file:py-2 file:text-sm file:font-bold file:text-white hover:file:bg-brand-dark">
             @error('image') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
         </div>
+
+        @include('admin.partials.unsplash-picker', ['initialQuery' => $heroSlide->title, 'titleFieldId' => 'title'])
 
         <div>
             <label for="title" class="mb-1 block text-sm font-bold">Tytuł</label>
