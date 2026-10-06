@@ -124,12 +124,69 @@
         .tm-panel { margin: .25rem 0 .5rem 1.05rem; padding-left: .75rem; border-left: 2px solid #e5e7eb; }
         .tm-sub { margin: .625rem .5rem .25rem; font-size: .6875rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: #6b7280; }
         .tm-sub:first-child { margin-top: .25rem; }
-        .admin-sidebar.is-collapsed .tm-panel { display: none !important; }
+        .admin-sidebar.is-collapsed .tm-panel, .admin-sidebar.is-collapsed .nav-search { display: none !important; }
         .admin-sidebar.is-collapsed .tm-head { justify-content: center; padding-left: .25rem; padding-right: .25rem; }
         .admin-sidebar.is-collapsed .tm-head .tm-badge { position: absolute; top: .125rem; right: .25rem; }
     </style>
 
-    <nav class="nav-scroll flex-1 overflow-y-auto overscroll-contain px-3 py-3 text-sm" aria-label="Menu panelu"
+    {{-- ── Wyszukiwarka w menu: filtruje pozycje i podpozycje wszystkich grup ──────────
+         Wpisanie frazy zastępuje akordeon płaską listą wyników (z nazwą grupy). Enter otwiera
+         pierwszy wynik, Escape czyści pole. Ukryta w zwiniętej szynie ikon. --}}
+    @php
+        $menuEntries = [];
+        foreach ($menu as $g) {
+            foreach ($g['blocks'] as $b) {
+                foreach ($b['items'] as $it) {
+                    $menuEntries[] = ['label' => $it['label'], 'url' => $it['url'], 'path' => $g['label'] . ($b['heading'] ? ' › ' . $b['heading'] : ''), 'icon' => $it['icon']];
+                    foreach ($it['children'] as $ch) {
+                        $menuEntries[] = ['label' => $ch['label'], 'url' => $ch['url'], 'path' => $g['label'] . ' › ' . $it['label'], 'icon' => $ch['icon'] ?: $it['icon']];
+                    }
+                }
+            }
+        }
+    @endphp
+    <div class="nav-search flex-none border-b border-gray-200 px-3 py-2"
+         x-data="{
+            q: '',
+            entries: @js($menuEntries),
+            norm(s) { return (s || '').toString().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/ł/g, 'l'); },
+            get results() {
+                const n = this.norm(this.q).trim();
+                if (n === '') return [];
+                return this.entries.filter(e => this.norm(e.label + ' ' + e.path).includes(n)).slice(0, 30);
+            },
+            update() { $store.adminNav.searching = this.q.trim() !== ''; },
+            clear() { this.q = ''; this.update(); },
+            go() { const r = this.results[0]; if (r) window.location.href = r.url; },
+         }">
+        <label for="admin-menu-search" class="sr-only">Szukaj w menu panelu</label>
+        <div class="relative">
+            <i class="fa-solid fa-magnifying-glass pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-xs text-gray-400" aria-hidden="true"></i>
+            <input id="admin-menu-search" type="search" x-model="q" @input="update()" @keydown.enter.prevent="go()" @keydown.escape.stop="clear()"
+                   placeholder="Szukaj w menu…" autocomplete="off" aria-controls="admin-menu-results"
+                   class="w-full rounded-lg border-gray-200 bg-gray-50 py-1.5 pl-8 pr-8 text-sm focus:border-brand focus:bg-white focus:ring-brand">
+            <button type="button" x-show="q !== ''" x-cloak @click="clear(); $refs.search?.focus()" aria-label="Wyczyść wyszukiwanie"
+                    class="absolute right-1.5 top-1/2 flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded text-gray-400 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                <i class="fa-solid fa-xmark text-xs" aria-hidden="true"></i>
+            </button>
+        </div>
+        <div id="admin-menu-results" x-show="q.trim() !== ''" x-cloak class="mt-2 max-h-[60vh] overflow-y-auto" role="region" aria-label="Wyniki wyszukiwania w menu">
+            <p class="sr-only" aria-live="polite" x-text="results.length + ' wyników'"></p>
+            <ul class="space-y-0.5" role="list">
+                <template x-for="r in results" :key="r.url + r.label + r.path">
+                    <li>
+                        <a :href="r.url" class="block rounded-lg px-2 py-1.5 hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                            <span class="block truncate text-sm font-medium text-ink" x-text="r.label"></span>
+                            <span class="block truncate text-[11px] text-muted" x-text="r.path"></span>
+                        </a>
+                    </li>
+                </template>
+            </ul>
+            <p x-show="results.length === 0" class="px-2 py-3 text-sm text-muted">Brak pozycji menu dla „<span x-text="q"></span>".</p>
+        </div>
+    </div>
+
+    <nav class="nav-scroll flex-1 overflow-y-auto overscroll-contain px-3 py-3 text-sm" aria-label="Menu panelu" x-show="! $store.adminNav.searching"
          x-data="navAccordion(@js(collect($menu)->firstWhere('active', true)['key'] ?? ''), @js($menu[0]['key'] ?? ''))">
         <ul class="space-y-1" role="list">
             @foreach ($menu as $group)

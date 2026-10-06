@@ -26,6 +26,7 @@
             Alpine.store('adminNav', {
                 collapsed: localStorage.getItem('admin-sidebar') === '1',
                 mobileOpen: false,
+                searching: false,
                 toggleCollapsed() {
                     this.collapsed = ! this.collapsed;
                     localStorage.setItem('admin-sidebar', this.collapsed ? '1' : '0');
