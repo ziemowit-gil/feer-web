@@ -100,9 +100,7 @@ class MicrosoftGraphTransport extends AbstractTransport
             return ['ok' => false, 'level' => 'error', 'message' => 'Microsoft odrzucił dane aplikacji: '.trim(strtok($detail, "\r\n"))];
         }
 
-        $parts = explode('.', (string) $response->json('access_token'));
-        $claims = count($parts) === 3 ? json_decode(base64_decode(strtr($parts[1], '-_', '+/')), true) : null;
-        $roles = is_array($claims) ? (array) ($claims['roles'] ?? []) : [];
+        $roles = self::tokenRoles((string) $response->json('access_token'));
 
         if (! in_array('Mail.Send', $roles, true)) {
             return ['ok' => false, 'level' => 'warning', 'message' => 'Dane aplikacji są poprawne, ale brakuje uprawnienia aplikacyjnego Mail.Send albo zgody administratora (Entra ID → API permissions → Grant admin consent).'];
@@ -114,22 +112,67 @@ class MicrosoftGraphTransport extends AbstractTransport
     protected function doSend(SentMessage $message): void
     {
         $email = MessageConverter::toEmail($message->getOriginalMessage());
+        $payload = [
+            'message' => $this->graphMessage($email),
+            'saveToSentItems' => $this->saveToSentItems,
+        ];
 
-        $response = Http::withToken($this->accessToken())
-            ->acceptJson()
-            ->timeout($this->timeout)
-            ->post(self::GRAPH_URL.'/users/'.rawurlencode($this->sender).'/sendMail', [
-                'message' => $this->graphMessage($email),
-                'saveToSentItems' => $this->saveToSentItems,
-            ]);
+        $token = $this->accessToken();
+        $response = $this->postSendMail($token, $payload);
+
+        // 401/403 przy buforowanym tokenie: po nadaniu uprawnienia Mail.Send lub
+        // zgody administratora stary token (ważny do godziny) dalej go nie ma.
+        // Zapominamy token i próbujemy raz z nowym, zanim zgłosimy błąd.
+        if (in_array($response->status(), [401, 403], true)) {
+            Cache::forget($this->tokenCacheKey());
+            $token = $this->accessToken();
+            $response = $this->postSendMail($token, $payload);
+        }
 
         if ($response->failed()) {
             $detail = $response->json('error.message') ?: $response->body();
+            $hint = in_array($response->status(), [401, 403], true) ? ' '.$this->accessHint($token) : '';
 
             throw new TransportException(
-                'Microsoft Graph odrzucił wiadomość (HTTP '.$response->status().'): '.$detail
+                'Microsoft Graph odrzucił wiadomość (HTTP '.$response->status().'): '.$detail.$hint
             );
         }
+    }
+
+    protected function postSendMail(string $token, array $payload): \Illuminate\Http\Client\Response
+    {
+        return Http::withToken($token)
+            ->acceptJson()
+            ->timeout($this->timeout)
+            ->post(self::GRAPH_URL.'/users/'.rawurlencode($this->sender).'/sendMail', $payload);
+    }
+
+    /** Wskazówka przy odmowie dostępu: wynika z uprawnień zapisanych w samym tokenie. */
+    protected function accessHint(string $token): string
+    {
+        if (! in_array('Mail.Send', self::tokenRoles($token), true)) {
+            return 'Przyczyna: token aplikacji nie zawiera uprawnienia aplikacyjnego Mail.Send. '
+                .'W Entra ID → API permissions dodaj Microsoft Graph → Application permissions → Mail.Send '
+                .'(uprawnienia delegowane nie wystarczą) i kliknij „Grant admin consent”.';
+        }
+
+        return 'Aplikacja ma uprawnienie Mail.Send, ale dostęp do skrzynki '.$this->sender.' jest zablokowany. '
+            .'Sprawdź, czy skrzynka istnieje w tym tenancie i czy polityka dostępu aplikacji w Exchange Online '
+            .'(New-ApplicationAccessPolicy) obejmuje tę skrzynkę.';
+    }
+
+    /** @return string[] role aplikacyjne zapisane w tokenie (claim `roles`) */
+    public static function tokenRoles(string $token): array
+    {
+        $parts = explode('.', $token);
+        $claims = count($parts) === 3 ? json_decode(base64_decode(strtr($parts[1], '-_', '+/')), true) : null;
+
+        return is_array($claims) ? array_values((array) ($claims['roles'] ?? [])) : [];
+    }
+
+    protected function tokenCacheKey(): string
+    {
+        return 'msgraph-mail-token:'.sha1($this->tenantId.'|'.$this->clientId.'|'.$this->clientSecret);
     }
 
     public function __toString(): string
@@ -140,7 +183,7 @@ class MicrosoftGraphTransport extends AbstractTransport
     /** Token aplikacji (client credentials), buforowany do minuty przed wygaśnięciem. */
     protected function accessToken(): string
     {
-        $cacheKey = 'msgraph-mail-token:'.sha1($this->tenantId.'|'.$this->clientId.'|'.$this->clientSecret);
+        $cacheKey = $this->tokenCacheKey();
 
         $cached = Cache::get($cacheKey);
         if (is_string($cached) && $cached !== '') {

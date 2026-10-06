@@ -151,4 +151,63 @@ class MsGraphMailTest extends TestCase
 
         $this->assertFalse(SiteSetting::current()->msGraphConfigured());
     }
+
+    private function jwtWithRoles(array $roles): string
+    {
+        $b64 = fn ($a) => rtrim(strtr(base64_encode(json_encode($a)), '+/', '-_'), '=');
+
+        return $b64(['alg' => 'none']).'.'.$b64(['roles' => $roles]).'.sig';
+    }
+
+    public function test_403_odswieza_token_i_ponawia_wysylke_raz(): void
+    {
+        $this->configureGraph();
+        Http::fake([
+            'login.microsoftonline.com/*' => Http::sequence()
+                ->push(['access_token' => $this->jwtWithRoles([]), 'expires_in' => 3600])
+                ->push(['access_token' => $this->jwtWithRoles(['Mail.Send']), 'expires_in' => 3600]),
+            'graph.microsoft.com/*' => Http::sequence()
+                ->push(['error' => ['message' => 'Access is denied. Check credentials and try again.']], 403)
+                ->push('', 202),
+        ]);
+
+        $this->submit($this->form())->assertRedirect()->assertSessionHas('success');
+
+        // 2 tokeny + 2 próby sendMail (pierwsza odrzucona, druga przyjęta) dla powiadomienia.
+        Http::assertSentCount(4);
+    }
+
+    public function test_403_bez_mail_send_w_tokenie_daje_czytelna_wskazowke(): void
+    {
+        $this->configureGraph();
+        Http::fake([
+            'login.microsoftonline.com/*' => Http::response(['access_token' => $this->jwtWithRoles(['User.Read.All']), 'expires_in' => 3600]),
+            'graph.microsoft.com/*' => Http::response(['error' => ['message' => 'Access is denied. Check credentials and try again.']], 403),
+        ]);
+
+        try {
+            \Illuminate\Support\Facades\Mail::mailer('msgraph')->raw('x', fn ($m) => $m->to('a@example.com')->subject('t'));
+            $this->fail('Oczekiwano wyjątku transportu.');
+        } catch (\Symfony\Component\Mailer\Exception\TransportException $e) {
+            $this->assertStringContainsString('HTTP 403', $e->getMessage());
+            $this->assertStringContainsString('nie zawiera uprawnienia aplikacyjnego Mail.Send', $e->getMessage());
+        }
+    }
+
+    public function test_403_z_mail_send_wskazuje_na_dostep_do_skrzynki(): void
+    {
+        $this->configureGraph();
+        Http::fake([
+            'login.microsoftonline.com/*' => Http::response(['access_token' => $this->jwtWithRoles(['Mail.Send']), 'expires_in' => 3600]),
+            'graph.microsoft.com/*' => Http::response(['error' => ['message' => 'Access is denied.']], 403),
+        ]);
+
+        try {
+            \Illuminate\Support\Facades\Mail::mailer('msgraph')->raw('x', fn ($m) => $m->to('a@example.com')->subject('t'));
+            $this->fail('Oczekiwano wyjątku transportu.');
+        } catch (\Symfony\Component\Mailer\Exception\TransportException $e) {
+            $this->assertStringContainsString('ApplicationAccessPolicy', $e->getMessage());
+            $this->assertStringContainsString('powiadomienia@feer.org.pl', $e->getMessage());
+        }
+    }
 }
