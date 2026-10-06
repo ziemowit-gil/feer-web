@@ -38,6 +38,9 @@ class SiteController extends Controller
         $data = $this->validated($request);
         $data['parent_site_id'] = SiteSetting::current()->id;
         $data['site_template'] = SiteSetting::current()->site_template;
+        // Kolor marki jest opcjonalny w formularzu, ale kolumna jest NOT NULL: pusta wartość oznacza
+        // „dziedzicz od witryny nadrzędnej” (a gdy i ona go nie ma — kolor domyślny), nie NULL.
+        $data['brand_color'] = $data['brand_color'] ?? (SiteSetting::current()->brand_color ?: SiteSetting::DEFAULT_BRAND_COLOR);
 
         $site = SiteSetting::create($data);
 
@@ -56,6 +59,10 @@ class SiteController extends Controller
     public function update(Request $request, SiteSetting $site)
     {
         $data = $this->validated($request, $site);
+        // Puste pole nie kasuje koloru (kolumna NOT NULL) — zostaje dotychczasowy.
+        if (blank($data['brand_color'] ?? null)) {
+            unset($data['brand_color']);
+        }
         $site->update($data);
 
         if ($request->hasFile('logo')) {

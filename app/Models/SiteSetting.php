@@ -16,6 +16,9 @@ class SiteSetting extends Model implements HasMedia
     // w panelu (Historia zmian). Zapis ustawień, który nie dotyka tych pól, nie tworzy wersji.
     use \App\Models\Concerns\HasRevisions;
 
+    /** Kolor marki używany, gdy witryna nie ma własnego ani rodzica, od którego można go odziedziczyć. */
+    public const DEFAULT_BRAND_COLOR = '#c31432';
+
     /**
      * Toggleable content modules, keyed by the identifier used in
      * `disabled_modules` and the `module:` route middleware.
@@ -79,6 +82,17 @@ class SiteSetting extends Model implements HasMedia
         'template' => 'Szablon strony',
         'login' => 'Logowanie',
         'mail' => 'Poczta',
+    ];
+
+    /**
+     * Podział zakładek ustawień na kategorie w menu bocznym panelu (zamiast jednej listy
+     * szesnastu pozycji). Każda zakładka z SETTINGS_TABS musi trafić do dokładnie jednej kategorii.
+     */
+    public const SETTINGS_TAB_GROUPS = [
+        'Wygląd' => ['general', 'header', 'colors', 'template', 'homepage'],
+        'Treści i dane' => ['content', 'contact', 'social', 'support', 'registry'],
+        'Funkcje i integracje' => ['modules', 'login', 'mail', 'maintenance'],
+        'SEO i dostępność' => ['seo', 'accessibility'],
     ];
 
     /**
