@@ -3,38 +3,123 @@
 @section('title', $news->exists ? 'Edytuj news' : 'Nowy news')
 
 @section('content')
+    @php
+        // Zakładka, w której leży błąd walidacji — kropka na zakładce i automatyczne otwarcie po nieudanym zapisie.
+        $tabFields = [
+            'ogolne' => ['title', 'slug', 'content'],
+            'obraz' => ['image', 'image_alt', 'article_layout', 'image_focal_x', 'image_focal_y', 'audience', 'accent_color'],
+            'kategorie' => ['news_category_id', 'project_id', 'excerpt', 'tags'],
+            'publikacja' => ['published_at', 'is_published', 'is_archived'],
+            'seo' => ['meta_title', 'meta_description'],
+        ];
+        $tabErrors = collect($tabFields)->map(fn ($fields) => $errors->hasAny($fields))->all();
+        $firstErrorTab = collect($tabErrors)->filter()->keys()->first();
+        $tabs = [
+            'ogolne' => ['Ogólne', 'fa-pen'],
+            'obraz' => ['Zdjęcie i wygląd', 'fa-image'],
+            'kategorie' => ['Kategoryzacja', 'fa-tags'],
+            'publikacja' => ['Publikacja', 'fa-calendar-check'],
+            'seo' => ['SEO', 'fa-magnifying-glass'],
+        ];
+        $btnSecondary = 'inline-flex items-center rounded-lg border border-gray-300 bg-white text-xs font-bold text-ink hover:border-brand hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand';
+        $btnStyle = 'min-height:2.25rem;padding:.375rem .75rem;gap:.375rem';
+    @endphp
+
     <div data-editor-tabs>
         @if ($news->exists)
             @include('admin.partials.edit-lock', ['lockType' => 'news', 'lockId' => $news->id])
-            <div class="mb-6 flex flex-wrap gap-1 border-b border-gray-200">
-                <button type="button" data-tab-btn="edit" class="-mb-px border-b-2 border-brand px-4 py-2 text-sm font-bold text-brand">
-                    <i class="fa-solid fa-pen-to-square" aria-hidden="true"></i> Treść
-                </button>
-                <button type="button" data-tab-btn="etr" class="-mb-px border-b-2 border-transparent px-4 py-2 text-sm font-bold text-muted hover:text-brand">
-                    <i class="fa-solid fa-book-open-reader" aria-hidden="true"></i> ETR
-                    @if ($news->etr?->is_enabled)
-                        <span class="ml-1 rounded-full bg-sky-100 px-1.5 py-0.5 text-xs text-sky-700">aktywna</span>
-                    @endif
-                </button>
-                <button type="button" data-tab-btn="files" class="-mb-px border-b-2 border-transparent px-4 py-2 text-sm font-bold text-muted hover:text-brand">
-                    <i class="fa-solid fa-paperclip" aria-hidden="true"></i> Pliki do pobrania
-                    @if ($news->attachments->isNotEmpty())
-                        <span class="ml-1 rounded-full bg-gray-100 px-1.5 py-0.5 text-xs">{{ $news->attachments->count() }}</span>
-                    @endif
-                </button>
-                <a href="{{ $news->previewUrl() }}" target="_blank" rel="noopener"
-                    class="-mb-px border-b-2 border-transparent px-4 py-2 text-sm font-bold text-amber-600 hover:text-amber-700"
-                    title="Podgląd aktualności przed publikacją (link ważny 14 dni)">
-                    <i class="fa-solid fa-eye" aria-hidden="true"></i> Podgląd
-                </a>
-                <a href="{{ route('admin.historia.index', ['type' => 'news', 'id' => $news->id]) }}"
-                    class="ml-auto -mb-px border-b-2 border-transparent px-4 py-2 text-sm font-bold text-muted hover:text-brand">
-                    <i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i> Historia zmian
-                </a>
-            </div>
         @endif
 
-        <div data-tab-panel="edit">
+        {{-- ═══ Pasek dokumentu (jak w TYPO3): tytuł rekordu + zapis, zamknięcie, podgląd; przypięty u góry ═══
+             Przyciski zapisu wskazują formularz atrybutem form="news-form", więc „Klonuj” i „Usuń” mogą być
+             osobnymi formularzami obok (zagnieżdżone <form> jest w HTML niedozwolone). --}}
+        <div class="border-b border-gray-200 bg-white" style="position:sticky;top:0;z-index:30;margin-bottom:1.25rem">
+            <div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:.75rem;padding:.75rem 0">
+                <div style="min-width:0">
+                    <p class="text-muted" style="font-size:.6875rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase">{{ $news->exists ? 'Edycja aktualności' : 'Nowa aktualność' }}</p>
+                    <h1 class="flex flex-wrap items-center gap-2 text-lg font-bold text-ink">
+                        <span class="truncate">{{ $news->exists ? $news->title : 'Nowa aktualność' }}</span>
+                        @if ($news->exists)
+                            @if ($news->is_published)
+                                <span class="inline-flex items-center gap-1 rounded-full bg-green-100 px-2 py-0.5 text-[11px] font-bold text-green-700"><i class="fa-solid fa-circle-check" aria-hidden="true"></i> Opublikowana</span>
+                            @else
+                                <span class="inline-flex items-center gap-1 rounded-full bg-gray-100 px-2 py-0.5 text-[11px] font-bold text-gray-600"><i class="fa-solid fa-pen-ruler" aria-hidden="true"></i> Szkic</span>
+                            @endif
+                        @endif
+                    </h1>
+                </div>
+
+                <div style="display:flex;flex-wrap:wrap;align-items:center;gap:.5rem">
+                    {{-- Zapis: „Zapisz” zostaje na rekordzie, „Zapisz i zamknij” wraca do listy --}}
+                    <div style="display:inline-flex;overflow:hidden;border-radius:.5rem">
+                        <button type="submit" form="news-form" name="after" value="stay"
+                            class="inline-flex items-center bg-brand text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2"
+                            style="min-height:2.25rem;padding:.375rem 1rem;gap:.375rem">
+                            <i class="fa-solid fa-floppy-disk" aria-hidden="true"></i> Zapisz
+                        </button>
+                        <button type="submit" form="news-form" name="after" value="close"
+                            class="inline-flex items-center bg-brand text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2"
+                            style="min-height:2.25rem;padding:.375rem .875rem;gap:.375rem;border-left:1px solid rgba(255,255,255,.35)">
+                            Zapisz i zamknij
+                        </button>
+                    </div>
+                    <a href="{{ route('admin.newsy.index') }}" class="{{ $btnSecondary }}" style="{{ $btnStyle }}"><i class="fa-solid fa-xmark" aria-hidden="true"></i> Zamknij</a>
+
+                    @if ($news->exists)
+                        <span style="width:1px;height:1.5rem;background:#d1d5db" aria-hidden="true"></span>
+                        <a href="{{ $news->previewUrl() }}" target="_blank" rel="noopener" class="{{ $btnSecondary }}" style="{{ $btnStyle }}" title="Podgląd przed publikacją (link ważny 14 dni)">
+                            <i class="fa-solid fa-eye" aria-hidden="true"></i> Podgląd<span class="sr-only"> (nowa karta)</span>
+                        </a>
+                        <a href="{{ route('admin.historia.index', ['type' => 'news', 'id' => $news->id]) }}" class="{{ $btnSecondary }}" style="{{ $btnStyle }}">
+                            <i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i> Historia
+                        </a>
+                        <form method="POST" action="{{ route('admin.newsy.klonuj', $news) }}" data-confirm="Sklonować news „{{ $news->title }}”? Kopia zostanie zapisana jako szkic.">
+                            @csrf
+                            <button type="submit" class="{{ $btnSecondary }}" style="{{ $btnStyle }}"><i class="fa-solid fa-copy" aria-hidden="true"></i> Klonuj</button>
+                        </form>
+                        <form method="POST" action="{{ route('admin.newsy.destroy', $news) }}"
+                            data-confirm="Usunąć news „{{ $news->title }}”? Operacji nie można cofnąć."
+                            @if (($clonesCount ?? 0) > 0) data-clone-count="{{ $clonesCount }}" @endif>
+                            @csrf @method('DELETE')
+                            <button type="submit" class="inline-flex items-center rounded-lg border border-red-200 bg-white text-xs font-bold text-red-700 hover:bg-red-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500" style="{{ $btnStyle }}">
+                                <i class="fa-solid fa-trash" aria-hidden="true"></i> Usuń
+                            </button>
+                        </form>
+                    @endif
+                </div>
+            </div>
+
+            {{-- Zakładki rekordu --}}
+            <div role="tablist" aria-label="Sekcje aktualności" style="display:flex;flex-wrap:wrap;gap:.125rem">
+                @foreach ($tabs as $key => [$label, $icon])
+                    <button type="button" role="tab" id="tab-{{ $key }}" data-tab-btn="{{ $key }}" aria-controls="panel-{{ $key }}"
+                        aria-selected="{{ $loop->first ? 'true' : 'false' }}" tabindex="{{ $loop->first ? '0' : '-1' }}"
+                        class="relative text-sm font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand {{ $loop->first ? 'border-brand text-brand' : 'border-transparent text-muted hover:text-brand' }}"
+                        style="display:inline-flex;align-items:center;gap:.375rem;min-height:2.5rem;padding:.5rem .875rem;margin-bottom:-1px;border-bottom-width:2px;border-bottom-style:solid">
+                        <i class="fa-solid {{ $icon }} text-xs" aria-hidden="true"></i>{{ $label }}
+                        @if ($tabErrors[$key] ?? false)
+                            <span class="inline-block h-2 w-2 rounded-full bg-red-600" aria-hidden="true"></span><span class="sr-only">(są błędy w tej zakładce)</span>
+                        @endif
+                    </button>
+                @endforeach
+                @if ($news->exists)
+                    <button type="button" role="tab" id="tab-etr" data-tab-btn="etr" aria-controls="panel-etr" aria-selected="false" tabindex="-1"
+                        class="border-transparent text-sm font-bold text-muted hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand"
+                        style="display:inline-flex;align-items:center;gap:.375rem;min-height:2.5rem;padding:.5rem .875rem;margin-bottom:-1px;border-bottom-width:2px;border-bottom-style:solid">
+                        <i class="fa-solid fa-book-open-reader text-xs" aria-hidden="true"></i>ETR
+                        @if ($news->etr?->is_enabled)<span class="rounded-full bg-sky-100 px-1.5 py-0.5 text-xs text-sky-700">aktywna</span>@endif
+                    </button>
+                    <button type="button" role="tab" id="tab-files" data-tab-btn="files" aria-controls="panel-files" aria-selected="false" tabindex="-1"
+                        class="border-transparent text-sm font-bold text-muted hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand"
+                        style="display:inline-flex;align-items:center;gap:.375rem;min-height:2.5rem;padding:.5rem .875rem;margin-bottom:-1px;border-bottom-width:2px;border-bottom-style:solid">
+                        <i class="fa-solid fa-paperclip text-xs" aria-hidden="true"></i>Pliki do pobrania
+                        @if ($news->attachments->isNotEmpty())<span class="rounded-full bg-gray-100 px-1.5 py-0.5 text-xs">{{ $news->attachments->count() }}</span>@endif
+                    </button>
+                @endif
+            </div>
+        </div>
+
+        <div>
     @include('admin.partials.template-panel', [
         'templateType'   => 'news',
         'templateFields' => ['news_category_id', 'project_id', 'audience', 'accent_color', 'excerpt', 'content', 'meta_title', 'meta_description'],
@@ -53,12 +138,13 @@
         </div>
     @endif
 
-    <form method="POST" action="{{ $news->exists ? route('admin.newsy.update', $news) : route('admin.newsy.store') }}"
+    <form id="news-form" method="POST" action="{{ $news->exists ? route('admin.newsy.update', $news) : route('admin.newsy.store') }}"
         enctype="multipart/form-data" class="mt-4 space-y-6">
-        @csrf
-        @if ($news->exists) @method('PUT') @endif
+        {{-- ═══ Zakładki rekordu (jak w TYPO3): Ogólne | Zdjęcie i wygląd | Kategoryzacja | Publikacja | SEO ═══ --}}
 
-        <div class="space-y-5 rounded-lg border border-gray-200 bg-white p-6">
+        <div data-tab-panel="ogolne" role="tabpanel" id="panel-ogolne" aria-labelledby="tab-ogolne" class="space-y-5">
+            <div class="space-y-5 rounded-lg border border-gray-200 bg-white p-6">
+                <h2 class="text-sm font-bold uppercase tracking-wide text-muted">Nagłówek i adres</h2>
             <div class="grid gap-5 sm:grid-cols-2">
                 <div x-data="{
                     dupeItems: [],
@@ -103,145 +189,20 @@
                 </div>
             </div>
 
-            @php
-                $extraOpen = $errors->has('audience') || $errors->has('accent_color')
-                    || $errors->has('excerpt') || $errors->has('tags')
-                    || filled(old('tags')) || filled(old('excerpt'))
-                    || ($news->exists && filled($news->accent_color))
-                    || ($news->exists && !in_array($news->audience ?? 'brand', ['brand', '']))
-                    || ($news->exists && filled($news->excerpt))
-                    || ($news->exists && $news->relationLoaded('tags') && $news->tags->isNotEmpty());
-            @endphp
-            <div x-data="{ extraOpen: {{ $extraOpen ? 'true' : 'false' }} }" class="-mx-6">
-                <button type="button" @click="extraOpen = !extraOpen" :aria-expanded="extraOpen"
-                    class="flex w-full items-center gap-2 border-t border-gray-100 px-6 py-3 text-sm font-bold text-muted hover:bg-gray-50 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand">
-                    <i class="fa-solid fa-sliders text-xs" aria-hidden="true"></i>
-                    Dodatkowe
-                    <i class="fa-solid fa-chevron-down ml-auto text-xs transition-transform duration-200" :class="{ 'rotate-180': extraOpen }" aria-hidden="true"></i>
-                </button>
-                <div x-show="extraOpen" x-cloak class="px-6 py-4">
-                    <div class="mb-5 grid gap-5 sm:grid-cols-2">
-                        <div>
-                            <label for="excerpt" class="mb-1 block text-sm font-bold">Krótki opis</label>
-                            <input type="text" id="excerpt" name="excerpt" value="{{ old('excerpt', $news->excerpt) }}"
-                                class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
-                            @error('excerpt') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
-                        </div>
-
-                        <div>
-                            <label for="tags" class="mb-1 block text-sm font-bold">Tagi <span class="font-normal text-muted">(opcjonalnie)</span></label>
-                            <input type="text" id="tags" name="tags"
-                                value="{{ old('tags', $news->relationLoaded('tags') ? $news->tags->pluck('name')->implode(', ') : '') }}"
-                                placeholder="np. dostępność, wcag, audyt"
-                                class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
-                            <p class="mt-1 text-xs text-muted">Oddziel tagi przecinkami. Nowe tagi zostaną utworzone automatycznie.</p>
-                        </div>
-                    </div>
-
-                    <div class="grid gap-5 sm:grid-cols-2">
-                        <div>
-                            <label for="audience" class="mb-1 block text-sm font-bold">Grupa docelowa (kolorystyka)</label>
-                            <select id="audience" name="audience" class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
-                                @foreach ($siteSettings->audienceOptions() as $value => $label)
-                                    <option value="{{ $value }}" {{ old('audience', $news->audience ?? 'brand') === $value ? 'selected' : '' }}>{{ $label }}</option>
-                                @endforeach
-                            </select>
-                            <p class="mt-1 text-xs text-muted">Zmienia kolorystykę strony aktualności na kolor wybranej submarki (Ustawienia → Kolory).</p>
-                            @error('audience') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
-                        </div>
-
-                        <div>
-                            <label for="accent_color_text" class="mb-1 block text-sm font-bold">Własny kolor akcentu <span class="font-normal text-muted">(opcjonalnie)</span></label>
-                            <div class="flex flex-wrap items-center gap-3">
-                                <input type="color" id="accent_color_picker" value="{{ old('accent_color', $news->accent_color ?: '#c31432') }}"
-                                    oninput="document.getElementById('accent_color_text').value = this.value"
-                                    class="h-10 w-16 rounded border-gray-300" aria-label="Wybierz własny kolor akcentu">
-                                <input type="text" id="accent_color_text" name="accent_color" value="{{ old('accent_color', $news->accent_color) }}"
-                                    placeholder="np. #0d7d4d — puste = jak obok"
-                                    oninput="if (/^#[0-9a-fA-F]{6}$/.test(this.value)) document.getElementById('accent_color_picker').value = this.value"
-                                    class="w-48 rounded border-gray-300 font-mono text-sm focus:border-brand focus:ring-brand">
-                            </div>
-                            <p class="mt-1 text-xs text-muted">Nadpisuje kolorystykę tej strony dowolnym kolorem (ma pierwszeństwo przed grupą docelową obok). Zbyt jasny kolor zostanie przyciemniony przy zapisie (kontrast WCAG). Puste = kolor z grupy docelowej.</p>
-                            @error('accent_color') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
-                        </div>
-                    </div>
-                </div>
             </div>
-
+            <div class="space-y-3 rounded-lg border border-gray-200 bg-white p-6">
+                <h2 class="text-sm font-bold uppercase tracking-wide text-muted">Treść</h2>
             <div>
                 <label class="mb-1 block text-sm font-bold">Treść</label>
                 @include('admin.partials.editor', ['name' => 'content', 'value' => old('content', $news->content), 'revisionable' => $news->exists ? ['type' => 'news', 'id' => $news->id] : null])
                 @error('content') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
             </div>
+            </div>
         </div>
 
-        <div class="space-y-5 rounded-lg border border-gray-200 bg-white p-6">
-            @php $categoryColor = optional($newsCategories->firstWhere('id', old('news_category_id', $news->news_category_id)))->badgeColor(); @endphp
-            <div class="grid gap-5 sm:grid-cols-3">
-                <div>
-                    <label for="news_category_id" class="mb-1 block text-sm font-bold">Kategoria</label>
-                    <div class="flex items-center gap-2">
-                        <span id="category-color-preview" @class(['h-5 w-5 flex-none rounded-full ring-1 ring-gray-900/10', 'hidden' => empty($categoryColor)])
-                            style="background-color: {{ $categoryColor }}" aria-hidden="true"></span>
-                        <select id="news_category_id" name="news_category_id" class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
-                            <option value="">— brak —</option>
-                            @foreach ($newsCategories as $category)
-                                <option value="{{ $category->id }}" data-color="{{ $category->badgeColor() }}" {{ (int) old('news_category_id', $news->news_category_id) === $category->id ? 'selected' : '' }}>
-                                    {{ $category->name }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-                    @error('news_category_id') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
-                </div>
-
-                <div>
-                    <label for="project_id" class="mb-1 block text-sm font-bold">Projekt <span class="font-normal text-muted">(opcjonalnie)</span></label>
-                    <select id="project_id" name="project_id" class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
-                        <option value="">— brak —</option>
-                        @foreach ($projects as $project)
-                            <option value="{{ $project->id }}" {{ (int) old('project_id', $news->project_id) === $project->id ? 'selected' : '' }}>
-                                {{ $project->title }}
-                            </option>
-                        @endforeach
-                    </select>
-                    <p class="mt-1 text-xs text-muted">News pojawi się jako aktualność na stronie tego projektu.</p>
-                    @error('project_id') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
-                </div>
-
-                <div>
-                    <label for="published_at" class="mb-1 block text-sm font-bold">Opublikowano od</label>
-                    <input type="datetime-local" id="published_at" name="published_at"
-                        value="{{ old('published_at', optional($news->published_at ?? now())->format('Y-m-d\TH:i')) }}" required
-                        class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
-                    @error('published_at') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
-                </div>
-            </div>
-
-            <fieldset class="rounded-lg border border-gray-200 bg-gray-50/70 p-4">
-                <legend class="px-1 text-sm font-bold text-ink">Status publikacji</legend>
-                <div class="flex flex-wrap gap-x-6 gap-y-3">
-                    <label class="flex items-center gap-2">
-                        <input type="checkbox" name="is_published" value="1" {{ old('is_published', $news->is_published ?? true) ? 'checked' : '' }}
-                            class="rounded border-gray-300 text-brand focus:ring-brand">
-                        <span class="text-sm font-bold">Opublikowany</span>
-                    </label>
-                    <label class="flex items-center gap-2">
-                        <input type="checkbox" name="is_archived" value="1" {{ old('is_archived', $news->is_archived ?? false) ? 'checked' : '' }}
-                            class="rounded border-gray-300 text-brand focus:ring-brand">
-                        <span class="flex items-center gap-1 text-sm font-bold"><i class="fa-solid fa-clock-rotate-left text-muted" aria-hidden="true"></i> Treść archiwalna</span>
-                    </label>
-                    @if ($news->exists)
-                        <label class="flex items-center gap-2">
-                            <input type="hidden" name="is_clone" value="0">
-                            <input type="checkbox" name="is_clone" value="1" {{ old('is_clone', $news->is_clone ?? false) ? 'checked' : '' }}
-                                class="rounded border-gray-300 text-amber-500 focus:ring-amber-400">
-                            <span class="flex items-center gap-1 text-sm font-bold"><i class="fa-solid fa-copy text-amber-500" aria-hidden="true"></i> Kopia</span>
-                        </label>
-                    @endif
-                </div>
-            </fieldset>
-
+        <div data-tab-panel="obraz" role="tabpanel" id="panel-obraz" aria-labelledby="tab-obraz" class="hidden space-y-5">
+            <div class="space-y-5 rounded-lg border border-gray-200 bg-white p-6">
+                <h2 class="text-sm font-bold uppercase tracking-wide text-muted">Zdjęcie</h2>
             @php $hasUnsplash = (bool) config('services.unsplash.access_key'); @endphp
             <div x-data="imagePickerModal('{{ route('admin.multimedia.unsplash.search') }}')"
                  @keydown.escape.window="open && close()">
@@ -602,39 +563,148 @@
                     </div>
                 </div>
             </div>
+            </div>
+            <div class="space-y-5 rounded-lg border border-gray-200 bg-white p-6">
+                <h2 class="text-sm font-bold uppercase tracking-wide text-muted">Kolorystyka strony</h2>
+                    <div class="grid gap-5 sm:grid-cols-2">
+                        <div>
+                            <label for="audience" class="mb-1 block text-sm font-bold">Grupa docelowa (kolorystyka)</label>
+                            <select id="audience" name="audience" class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                                @foreach ($siteSettings->audienceOptions() as $value => $label)
+                                    <option value="{{ $value }}" {{ old('audience', $news->audience ?? 'brand') === $value ? 'selected' : '' }}>{{ $label }}</option>
+                                @endforeach
+                            </select>
+                            <p class="mt-1 text-xs text-muted">Zmienia kolorystykę strony aktualności na kolor wybranej submarki (Ustawienia → Kolory).</p>
+                            @error('audience') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                        </div>
+
+                        <div>
+                            <label for="accent_color_text" class="mb-1 block text-sm font-bold">Własny kolor akcentu <span class="font-normal text-muted">(opcjonalnie)</span></label>
+                            <div class="flex flex-wrap items-center gap-3">
+                                <input type="color" id="accent_color_picker" value="{{ old('accent_color', $news->accent_color ?: '#c31432') }}"
+                                    oninput="document.getElementById('accent_color_text').value = this.value"
+                                    class="h-10 w-16 rounded border-gray-300" aria-label="Wybierz własny kolor akcentu">
+                                <input type="text" id="accent_color_text" name="accent_color" value="{{ old('accent_color', $news->accent_color) }}"
+                                    placeholder="np. #0d7d4d — puste = jak obok"
+                                    oninput="if (/^#[0-9a-fA-F]{6}$/.test(this.value)) document.getElementById('accent_color_picker').value = this.value"
+                                    class="w-48 rounded border-gray-300 font-mono text-sm focus:border-brand focus:ring-brand">
+                            </div>
+                            <p class="mt-1 text-xs text-muted">Nadpisuje kolorystykę tej strony dowolnym kolorem (ma pierwszeństwo przed grupą docelową obok). Zbyt jasny kolor zostanie przyciemniony przy zapisie (kontrast WCAG). Puste = kolor z grupy docelowej.</p>
+                            @error('accent_color') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                        </div>
+                    </div>
+            </div>
         </div>
 
+        <div data-tab-panel="kategorie" role="tabpanel" id="panel-kategorie" aria-labelledby="tab-kategorie" class="hidden space-y-5">
+            <div class="space-y-5 rounded-lg border border-gray-200 bg-white p-6">
+                <h2 class="text-sm font-bold uppercase tracking-wide text-muted">Kategoria i projekt</h2>
+            @php $categoryColor = optional($newsCategories->firstWhere('id', old('news_category_id', $news->news_category_id)))->badgeColor(); @endphp
+            <div class="grid gap-5 sm:grid-cols-2">
+                <div>
+                    <label for="news_category_id" class="mb-1 block text-sm font-bold">Kategoria</label>
+                    <div class="flex items-center gap-2">
+                        <span id="category-color-preview" @class(['h-5 w-5 flex-none rounded-full ring-1 ring-gray-900/10', 'hidden' => empty($categoryColor)])
+                            style="background-color: {{ $categoryColor }}" aria-hidden="true"></span>
+                        <select id="news_category_id" name="news_category_id" class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                            <option value="">— brak —</option>
+                            @foreach ($newsCategories as $category)
+                                <option value="{{ $category->id }}" data-color="{{ $category->badgeColor() }}" {{ (int) old('news_category_id', $news->news_category_id) === $category->id ? 'selected' : '' }}>
+                                    {{ $category->name }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+                    @error('news_category_id') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                </div>
+
+                <div>
+                    <label for="project_id" class="mb-1 block text-sm font-bold">Projekt <span class="font-normal text-muted">(opcjonalnie)</span></label>
+                    <select id="project_id" name="project_id" class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                        <option value="">— brak —</option>
+                        @foreach ($projects as $project)
+                            <option value="{{ $project->id }}" {{ (int) old('project_id', $news->project_id) === $project->id ? 'selected' : '' }}>
+                                {{ $project->title }}
+                            </option>
+                        @endforeach
+                    </select>
+                    <p class="mt-1 text-xs text-muted">News pojawi się jako aktualność na stronie tego projektu.</p>
+                    @error('project_id') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                </div>
+
+            </div>
+            </div>
+            <div class="space-y-5 rounded-lg border border-gray-200 bg-white p-6">
+                <h2 class="text-sm font-bold uppercase tracking-wide text-muted">Opis i tagi</h2>
+                    <div class="mb-5 grid gap-5 sm:grid-cols-2">
+                        <div>
+                            <label for="excerpt" class="mb-1 block text-sm font-bold">Krótki opis</label>
+                            <input type="text" id="excerpt" name="excerpt" value="{{ old('excerpt', $news->excerpt) }}"
+                                class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                            @error('excerpt') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                        </div>
+
+                        <div>
+                            <label for="tags" class="mb-1 block text-sm font-bold">Tagi <span class="font-normal text-muted">(opcjonalnie)</span></label>
+                            <input type="text" id="tags" name="tags"
+                                value="{{ old('tags', $news->relationLoaded('tags') ? $news->tags->pluck('name')->implode(', ') : '') }}"
+                                placeholder="np. dostępność, wcag, audyt"
+                                class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                            <p class="mt-1 text-xs text-muted">Oddziel tagi przecinkami. Nowe tagi zostaną utworzone automatycznie.</p>
+                        </div>
+                    </div>
+
+            </div>
+        </div>
+
+        <div data-tab-panel="publikacja" role="tabpanel" id="panel-publikacja" aria-labelledby="tab-publikacja" class="hidden space-y-5">
+            <div class="space-y-5 rounded-lg border border-gray-200 bg-white p-6">
+                <h2 class="text-sm font-bold uppercase tracking-wide text-muted">Termin i status</h2>
+                <div class="max-w-xs">
+                <div>
+                    <label for="published_at" class="mb-1 block text-sm font-bold">Opublikowano od</label>
+                    <input type="datetime-local" id="published_at" name="published_at"
+                        value="{{ old('published_at', optional($news->published_at ?? now())->format('Y-m-d\TH:i')) }}" required
+                        class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                    @error('published_at') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                </div>
+                </div>
+            <fieldset class="rounded-lg border border-gray-200 bg-gray-50/70 p-4">
+                <legend class="px-1 text-sm font-bold text-ink">Status publikacji</legend>
+                <div class="flex flex-wrap gap-x-6 gap-y-3">
+                    <label class="flex items-center gap-2">
+                        <input type="checkbox" name="is_published" value="1" {{ old('is_published', $news->is_published ?? true) ? 'checked' : '' }}
+                            class="rounded border-gray-300 text-brand focus:ring-brand">
+                        <span class="text-sm font-bold">Opublikowany</span>
+                    </label>
+                    <label class="flex items-center gap-2">
+                        <input type="checkbox" name="is_archived" value="1" {{ old('is_archived', $news->is_archived ?? false) ? 'checked' : '' }}
+                            class="rounded border-gray-300 text-brand focus:ring-brand">
+                        <span class="flex items-center gap-1 text-sm font-bold"><i class="fa-solid fa-clock-rotate-left text-muted" aria-hidden="true"></i> Treść archiwalna</span>
+                    </label>
+                    @if ($news->exists)
+                        <label class="flex items-center gap-2">
+                            <input type="hidden" name="is_clone" value="0">
+                            <input type="checkbox" name="is_clone" value="1" {{ old('is_clone', $news->is_clone ?? false) ? 'checked' : '' }}
+                                class="rounded border-gray-300 text-amber-500 focus:ring-amber-400">
+                            <span class="flex items-center gap-1 text-sm font-bold"><i class="fa-solid fa-copy text-amber-500" aria-hidden="true"></i> Kopia</span>
+                        </label>
+                    @endif
+                </div>
+            </fieldset>
+
+            </div>
+        </div>
+
+        <div data-tab-panel="seo" role="tabpanel" id="panel-seo" aria-labelledby="tab-seo" class="hidden">
         @include('admin.partials.seo-fields', ['model' => $news])
 
-        <div class="flex items-center gap-3">
-            <button type="submit"
-                class="rounded bg-brand px-5 py-2 text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
-                Zapisz
-            </button>
-            <a href="{{ route('admin.newsy.index') }}" class="text-sm text-muted hover:text-brand">Anuluj</a>
-            @if ($news->exists)
-                <form method="POST" action="{{ route('admin.newsy.klonuj', $news) }}" class="ml-auto"
-                    data-confirm="Sklonować news „{{ $news->title }}"? Kopia zostanie zapisana jako szkic.">
-                    @csrf
-                    <button type="submit" class="text-sm font-bold text-muted hover:text-brand">
-                        <i class="fa-solid fa-copy mr-1" aria-hidden="true"></i>Klonuj
-                    </button>
-                </form>
-                <form method="POST" action="{{ route('admin.newsy.destroy', $news) }}"
-                    data-confirm="Usunąć news „{{ $news->title }}"? Operacji nie można cofnąć."
-                    @if (($clonesCount ?? 0) > 0) data-clone-count="{{ $clonesCount }}" @endif>
-                    @csrf @method('DELETE')
-                    <button type="submit" class="text-sm font-bold text-red-600 hover:text-red-700">
-                        <i class="fa-solid fa-trash mr-1" aria-hidden="true"></i>Usuń news
-                    </button>
-                </form>
-            @endif
         </div>
     </form>
         </div>{{-- /tab-panel: edit --}}
 
         @if ($news->exists)
-            <div data-tab-panel="etr" class="hidden">
+            <div data-tab-panel="etr" role="tabpanel" id="panel-etr" aria-labelledby="tab-etr" class="hidden">
                 @php $etrModel = $news->etr; @endphp
                 <div class="mb-4 rounded-xl border border-sky-100 bg-sky-50 p-4 text-sm text-sky-800">
                     <strong>Wersja ETR (łatwa do czytania)</strong> — uproszczony tekst dla osób z trudnościami w czytaniu.
@@ -689,7 +759,7 @@
                 </form>
             </div>
 
-            <div data-tab-panel="files" class="hidden">
+            <div data-tab-panel="files" role="tabpanel" id="panel-files" aria-labelledby="tab-files" class="hidden">
                 @include('admin.partials.attachments', [
                     'attachments' => $news->attachments,
                     'storeRoute' => route('admin.newsy.pliki.store', $news),
@@ -702,22 +772,41 @@
         (function () {
             const tabs = document.querySelector('[data-editor-tabs]');
             if (!tabs) return;
-            const buttons = tabs.querySelectorAll('[data-tab-btn]');
+            const buttons = [...tabs.querySelectorAll('[data-tab-btn]')];
             const panels = tabs.querySelectorAll('[data-tab-panel]');
-            buttons.forEach(function (btn) {
-                btn.addEventListener('click', function () {
-                    buttons.forEach(function (b) {
-                        const active = b === btn;
-                        b.classList.toggle('border-brand', active);
-                        b.classList.toggle('text-brand', active);
-                        b.classList.toggle('border-transparent', !active);
-                        b.classList.toggle('text-muted', !active);
-                    });
-                    panels.forEach(function (panel) {
-                        panel.classList.toggle('hidden', panel.dataset.tabPanel !== btn.dataset.tabBtn);
-                    });
+
+            function activate(btn, focus) {
+                buttons.forEach(function (b) {
+                    const active = b === btn;
+                    b.classList.toggle('border-brand', active);
+                    b.classList.toggle('text-brand', active);
+                    b.classList.toggle('border-transparent', !active);
+                    b.classList.toggle('text-muted', !active);
+                    b.setAttribute('aria-selected', active ? 'true' : 'false');
+                    b.tabIndex = active ? 0 : -1;
+                });
+                panels.forEach(function (panel) {
+                    panel.classList.toggle('hidden', panel.dataset.tabPanel !== btn.dataset.tabBtn);
+                });
+                if (focus) btn.focus();
+                try { history.replaceState(null, '', '#' + btn.dataset.tabBtn); } catch (e) {}
+            }
+
+            buttons.forEach(function (btn, i) {
+                btn.addEventListener('click', function () { activate(btn, false); });
+                // Strzałki, Home, End — wzorzec WAI-ARIA dla zakładek.
+                btn.addEventListener('keydown', function (e) {
+                    const map = { ArrowRight: i + 1, ArrowLeft: i - 1, Home: 0, End: buttons.length - 1 };
+                    if (!(e.key in map)) return;
+                    e.preventDefault();
+                    activate(buttons[(map[e.key] + buttons.length) % buttons.length], true);
                 });
             });
+
+            // Po nieudanym zapisie otwieramy pierwszą zakładkę z błędem; inaczej — zakładkę z adresu (#obraz).
+            const wanted = @js($firstErrorTab) || location.hash.replace('#', '');
+            const start = buttons.find(function (b) { return b.dataset.tabBtn === wanted; });
+            if (start) activate(start, false);
         })();
 
         document.getElementById('news_category_id').addEventListener('change', function (event) {

@@ -135,7 +135,18 @@ class NewsController extends Controller
 
         $news->tags()->sync($this->resolveTagIds($request->input('tags', '')));
 
-        return redirect()->route('admin.newsy.index')->with('status', 'News został utworzony.');
+        return $this->afterSave($request, $news)->with('status', 'News został utworzony.');
+    }
+
+    /**
+     * Dokąd po zapisie — jak w TYPO3: „Zapisz” (after=stay) zostawia redaktora na edytowanym rekordzie,
+     * „Zapisz i zamknij” (after=close, a także brak parametru) wraca do listy.
+     */
+    private function afterSave(Request $request, News $news): \Illuminate\Http\RedirectResponse
+    {
+        return $request->input('after') === 'stay'
+            ? redirect()->route('admin.newsy.edit', $news)
+            : redirect()->route('admin.newsy.index');
     }
 
     /** Wyświetla formularz edycji aktualności. */
@@ -161,7 +172,7 @@ class NewsController extends Controller
 
         $news->tags()->sync($this->resolveTagIds($request->input('tags', '')));
 
-        return redirect()->route('admin.newsy.index')->with('status', 'News został zaktualizowany.');
+        return $this->afterSave($request, $news)->with('status', 'News został zaktualizowany.');
     }
 
     /**
