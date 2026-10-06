@@ -25,6 +25,27 @@ class ContactController extends Controller
     /** Wyświetla stronę kontaktową w wybranym w ustawieniach wariancie wyglądu. */
     public function index()
     {
+        // Gdy redakcja utworzyła stronę typu „Kontakt” (albo stronę o adresie „kontakt-2”),
+        // adres /kontakt kieruje na nią; sama ta strona renderuje widok przez show().
+        if ($target = $this->contactPageTarget()) {
+            return redirect()->to($target->publicUrl());
+        }
+
+        return $this->render();
+    }
+
+    /** Opublikowana strona, na którą ma kierować /kontakt (typ „contact”, a w drugiej kolejności slug „kontakt-2”). */
+    private function contactPageTarget(): ?\App\Models\Page
+    {
+        $live = fn ($q) => $q->where('is_published', true)->where(fn ($w) => $w->whereNull('publish_at')->orWhere('publish_at', '<=', now()));
+
+        return \App\Models\Page::forCurrentSite()->where($live)->where('type', 'contact')->orderBy('id')->first()
+            ?? \App\Models\Page::forCurrentSite()->where($live)->where('slug', 'kontakt-2')->first();
+    }
+
+    /** Wyświetla stronę kontaktową bez przekierowania (używane też przez stronę typu „Kontakt”). */
+    public function render()
+    {
         $settings = SiteSetting::current();
 
         // Widoczność sekcji i ich dane liczymy tu, bo korzystają z nich oba

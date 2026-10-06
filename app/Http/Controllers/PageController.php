@@ -31,7 +31,7 @@ class PageController extends Controller
 
         // Strona typu „Kontakt” ma stały układ i własny kontroler.
         if ($page->type === 'contact') {
-            return redirect()->route('contact.show');
+            return app(ContactController::class)->render();
         }
 
         // Strona wewnętrzna (także „Panel współpracownika"): sprawdź autoryzację.

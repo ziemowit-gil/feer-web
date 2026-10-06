@@ -46,17 +46,11 @@
     $groupCurrentId = request()->routeIs('projects.show') ? request()->route('project')?->id : null;
     $catCurrentId   = request()->routeIs('categories.show') ? request()->route('category')?->id : null;
 
-    // Trzecia kolumna menu projektów: do 3 kafelków pod sobą — najbliższe szkolenie (jeśli jest)
-    // i aktywne projekty ze zdjęciem. Brak kafelków = brak trzeciej kolumny.
+    // Trzecia kolumna menu projektów: do 3 kafelków pod sobą z aktywnymi projektami ze zdjęciem. Brak kafelków = brak trzeciej kolumny.
     $tiles = collect();
     if ($isProjects) {
-        if (($navNextEvent ?? null) !== null) {
-            $ev = $navNextEvent;
-            $tiles->push(['kicker' => 'Najbliższe szkolenie', 'title' => $ev->title, 'url' => site_route('events.show', $ev), 'image' => null,
-                'day' => $ev->starts_at->format('d'), 'month' => $ev->starts_at->translatedFormat('M'), 'full' => $ev->starts_at->translatedFormat('j F Y')]);
-        }
         $featured = $groups->flatMap(fn ($c) => $c->publishedProjects)->unique('id')
-            ->filter(fn ($p) => ! $p->is_completed && $p->image_url)->take(3 - $tiles->count());
+            ->filter(fn ($p) => ! $p->is_completed && $p->image_url)->take(3);
         foreach ($featured as $fp) {
             $tiles->push(['kicker' => 'Polecany projekt', 'title' => $fp->title, 'url' => route('projects.show', $fp), 'image' => $fp->image_url, 'alt' => $fp->image_alt ?: '']);
         }
@@ -272,18 +266,10 @@
                     @foreach ($tiles as $tile)
                         <li class="flex-1">
                             <a href="{{ $tile['url'] }}" class="group/t flex h-full min-h-20 overflow-hidden rounded-xl border border-gray-200 bg-white transition hover:border-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
-                                @if ($tile['image'])
-                                    <img src="{{ $tile['image'] }}" alt="{{ $tile['alt'] }}" class="w-20 flex-none object-cover" loading="lazy">
-                                @else
-                                    <span class="flex w-20 flex-none flex-col items-center justify-center bg-brand text-white" aria-hidden="true">
-                                        <span class="text-xl font-bold leading-none">{{ $tile['day'] }}</span>
-                                        <span class="text-[10px] uppercase leading-none">{{ $tile['month'] }}</span>
-                                    </span>
-                                @endif
+                                <img src="{{ $tile['image'] }}" alt="{{ $tile['alt'] }}" class="w-20 flex-none object-cover" loading="lazy">
                                 <span class="min-w-0 self-center px-3 py-2">
                                     <span class="block text-[10px] font-bold uppercase tracking-wide text-brand">{{ $tile['kicker'] }}</span>
                                     <span class="line-clamp-2 block text-sm font-bold leading-snug text-ink group-hover/t:text-brand">{{ $tile['title'] }}</span>
-                                    @if (! empty($tile['full']))<span class="sr-only">{{ $tile['full'] }}</span>@endif
                                 </span>
                             </a>
                         </li>
