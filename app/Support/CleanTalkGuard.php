@@ -71,11 +71,21 @@ class CleanTalkGuard
             }
         }
 
+        return $this->checkMessage($request, implode("\n", $parts), $email, $nick);
+    }
+
+    /**
+     * Ocenia pojedynczą wiadomość (formularz kontaktowy i inne formularze o stałych polach).
+     *
+     * @return array{allow: bool, comment: ?string, error: ?string, link: ?string}
+     */
+    public function checkMessage(Request $request, string $message, string $email = '', string $nickname = ''): array
+    {
         return $this->send([
             'method_name' => 'check_message',
             'auth_key' => (string) config('cleantalk.apikey'),
-            'message' => implode("\n", $parts),
-            'sender_nickname' => $nick,
+            'message' => $message,
+            'sender_nickname' => $nickname,
             'sender_email' => $email,
             // IP z Laravela (z uwzględnieniem zaufanych proxy), a nie z nagłówków wpisanych przez klienta.
             'sender_ip' => (string) $request->ip(),

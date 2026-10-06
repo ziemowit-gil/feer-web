@@ -7,7 +7,9 @@ use App\Models\ContactMessage;
 use App\Models\HelpPoint;
 use App\Models\Project;
 use App\Models\SiteSetting;
+use App\Support\CleanTalkGuard;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 
 /**
@@ -96,6 +98,30 @@ class ContactController extends Controller
             'subject' => 'Temat',
             'message' => 'Wiadomość',
         ]);
+
+        // CleanTalk (opcjonalnie, wg ustawień): ocena wiadomości po poprawnej walidacji.
+        // Awaria usługi, zły klucz lub wyczerpany limit = przepuszczamy (patrz CleanTalkGuard).
+        if (CleanTalkGuard::enabled()) {
+            $verdict = app(CleanTalkGuard::class)->checkMessage(
+                $request,
+                trim(($data['subject'] ?? '')."\n".$data['message']),
+                $data['email'],
+                $data['name'],
+            );
+
+            if (! $verdict['allow']) {
+                Log::warning('Zablokowano wiadomość kontaktową (CleanTalk)', [
+                    'komentarz' => $verdict['comment'],
+                    'zapytanie' => $verdict['link'],
+                    'ip'        => $request->ip(),
+                ]);
+
+                return back()
+                    ->withErrors(['message' => 'Wiadomość została uznana za spam przez zewnętrzny filtr antyspamowy. '
+                        .'Jeśli to pomyłka, zmień treść lub napisz do nas bezpośrednio na adres e-mail podany na tej stronie.'])
+                    ->withInput();
+            }
+        }
 
         // Znajdź wybranego koordynatora po e-mailu.
         $selectedCoordinator = filled($data['coordinator_email'] ?? null)

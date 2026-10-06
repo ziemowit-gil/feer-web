@@ -23,6 +23,13 @@
         <input type="text" id="website" name="website" tabindex="-1" autocomplete="off">
     </div>
 
+    {{-- CleanTalk: skrypt dopisuje do formularza token zachowania odwiedzającego (tylko przy włączonej ochronie). --}}
+    @if (\App\Support\CleanTalkGuard::enabled())
+        @once
+            @include('cleantalk::cleantalk')
+        @endonce
+    @endif
+
     @if ($errors->any())
         <div role="alert" tabindex="-1" x-data x-init="$nextTick(() => $el.focus())"
             class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800 focus:outline-none">

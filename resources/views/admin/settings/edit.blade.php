@@ -2920,13 +2920,13 @@
                 }">
                 <h2 class="text-base font-bold text-ink"><i class="fa-solid fa-shield-virus mr-1 text-brand" aria-hidden="true"></i> Ochrona antyspamowa CleanTalk</h2>
                 <p class="mt-1 text-xs text-muted">
-                    Dodatkowa warstwa ochrony formularzy (moduł Formularze) obok lokalnego zadania antyspamowego: skrypt analizuje zachowanie odwiedzającego,
+                    Dodatkowa warstwa ochrony formularzy (moduł Formularze oraz formularz kontaktowy) obok lokalnego zadania antyspamowego: skrypt analizuje zachowanie odwiedzającego,
                     a usługa <a href="https://cleantalk.org" target="_blank" rel="noopener" class="text-brand underline">CleanTalk<span class="sr-only"> (otwiera się w nowej karcie)</span></a> ocenia treść zgłoszenia.
                     Klucz dostępu (Access key) wygenerujesz w koncie CleanTalk. Gdy usługa jest niedostępna, formularz działa normalnie.
                 </p>
                 <p class="mt-3 rounded border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900" role="note">
                     <strong>Dane wysyłane do CleanTalk:</strong> treść zgłoszenia, imię i adres e-mail nadawcy, jego adres IP i strona odsyłająca. Na stronach z formularzem ładowany jest też skrypt z domeny <code>fd.cleantalk.org</code>.
-                    Uwzględnij to w polityce prywatności i zawrzyj z dostawcą umowę powierzenia przetwarzania danych. Formularz możesz wyłączyć z kontroli w jego własnych ustawieniach.
+                    Uwzględnij to w polityce prywatności i zawrzyj z dostawcą umowę powierzenia przetwarzania danych. Formularz z modułu Formularze możesz wyłączyć z kontroli w jego własnych ustawieniach.
                 </p>
 
                 <label class="mt-4 flex items-start gap-3 rounded-lg border border-gray-200 p-3">

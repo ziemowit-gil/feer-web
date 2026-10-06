@@ -159,4 +159,59 @@ class CleanTalkFormsTest extends TestCase
         $this->actingAs($admin)->get(route('admin.ustawienia.edit', ['tab' => 'login']))
             ->assertOk()->assertSee('Ochrona antyspamowa CleanTalk')->assertSee('name="cleantalk_access_key"', false);
     }
+
+    private function contactPayload(array $extra = []): array
+    {
+        return $extra + [
+            'name' => 'Anna Kowalska', 'email' => 'anna@example.com', 'subject' => 'Pytanie o szkolenie',
+            'message' => 'Dzień dobry, chciałabym zapytać o termin szkolenia.', 'rodo_consent' => '1',
+            'ct_bot_detector_event_token' => str_repeat('b', 64),
+        ];
+    }
+
+    public function test_formularz_kontaktowy_odrzuca_spam_wedlug_cleantalk(): void
+    {
+        Http::fake(['moderate.cleantalk.org/*' => Http::response(['allow' => 0, 'comment' => 'Spam', 'id' => 'x1'])]);
+
+        $this->from(route('contact.show'))->post(route('contact.store'), $this->contactPayload())
+            ->assertRedirect(route('contact.show'))
+            ->assertSessionHasErrors('message');
+
+        $this->assertSame(0, \App\Models\ContactMessage::count());
+        Http::assertSent(function ($request) {
+            $b = $request->data();
+
+            return $b['method_name'] === 'check_message'
+                && $b['sender_email'] === 'anna@example.com'
+                && $b['sender_nickname'] === 'Anna Kowalska'
+                && str_contains($b['message'], 'Pytanie o szkolenie')
+                && str_contains($b['message'], 'termin szkolenia')
+                && $b['js_on'] === 1;
+        });
+    }
+
+    public function test_formularz_kontaktowy_zapisuje_wiadomosc_gdy_cleantalk_przepuszcza_lub_zawodzi(): void
+    {
+        Http::fake(['moderate.cleantalk.org/*' => Http::sequence()
+            ->push(['allow' => 1])
+            ->push('', 503)]);
+
+        $this->post(route('contact.store'), $this->contactPayload())->assertSessionHasNoErrors();
+        $this->post(route('contact.store'), $this->contactPayload(['message' => 'Druga wiadomość testowa.']))->assertSessionHasNoErrors();
+
+        $this->assertSame(2, \App\Models\ContactMessage::count());
+    }
+
+    public function test_formularz_kontaktowy_bez_ochrony_nie_wola_cleantalk_i_nie_laduje_skryptu(): void
+    {
+        Http::fake();
+        config(['cleantalk.enabled' => false]);
+
+        $this->post(route('contact.store'), $this->contactPayload())->assertSessionHasNoErrors();
+        Http::assertNothingSent();
+        $this->get(route('contact.show'))->assertOk()->assertDontSee('fd.cleantalk.org', false);
+
+        config(['cleantalk.enabled' => true]);
+        $this->get(route('contact.show'))->assertOk()->assertSee('fd.cleantalk.org/ct-bot-detector-wrapper.js', false);
+    }
 }
