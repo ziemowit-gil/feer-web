@@ -94,6 +94,7 @@
     <section class="mx-auto max-w-6xl px-4 py-12">
         <div class="grid items-start gap-10 lg:grid-cols-[minmax(0,1fr)_18rem]">
         <div class="min-w-0">
+            <div id="panel-opis" role="tabpanel" aria-labelledby="tab-opis" x-show="tab === 'opis'">
                 @if ($sectionTabs->isNotEmpty())
                     {{-- Sekcje własne są w zakładkach (pasek pod nagłówkiem) --}}
                 @else
