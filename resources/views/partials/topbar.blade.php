@@ -21,7 +21,7 @@
         . 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-1';
 @endphp
 
-<div class="site-topbar border-b border-gray-200 bg-gray-50"
+<div class="site-topbar relative border-b border-gray-200 bg-gray-50" style="position:relative;z-index:50"
      x-data="{ open: (function () { try { return localStorage.getItem('a11y-panel-open') === '1' } catch (e) { return false } })() }"
      x-effect="(() => { try { localStorage.setItem('a11y-panel-open', open ? '1' : '0') } catch (e) {} })()"
      @keydown.escape.window="if (open) { open = false; $refs.a11yToggle.focus() }">
