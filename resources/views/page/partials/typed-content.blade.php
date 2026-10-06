@@ -1341,7 +1341,7 @@
     @auth
     @if (auth()->user()->isAdmin() || auth()->user()->user_group_id)
     <div class="border-b border-amber-300 bg-amber-50 px-4 py-3">
-        <div class="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-3">
+        <div class="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3">
             <p class="flex items-center gap-2 text-sm font-bold text-amber-800">
                 <i class="fa-solid fa-pen-to-square" aria-hidden="true"></i> Panel administracyjny
             </p>
@@ -1355,162 +1355,152 @@
     @endauth
 
     @php
-        $pSocial         = array_filter($page->person_social ?? []);
-        $personInitials  = \Illuminate\Support\Str::of($page->title)->explode(' ')->map(fn ($w) => mb_substr($w, 0, 1))->take(2)->implode('');
-        $personParent    = $page->parent;
+        $pSocial        = array_filter($page->person_social ?? []);
+        $personInitials = \Illuminate\Support\Str::of($page->title)->explode(' ')->map(fn ($w) => mb_substr($w, 0, 1))->take(2)->implode('');
+        $personParent   = $page->parent;
+        $colleagues     = \App\Models\Page::where('type', 'about_person')->where('is_published', true)
+            ->where('parent_id', $page->parent_id)->where('id', '!=', $page->id)
+            ->orderBy('order')->orderBy('title')->limit(4)->get();
+        $personNetworks = [
+            'linkedin'  => ['LinkedIn', 'fa-brands fa-linkedin', 'Profil zawodowy', '#0a66c2'],
+            'facebook'  => ['Facebook', 'fa-brands fa-facebook', 'Strona na Facebooku', '#1877f2'],
+            'instagram' => ['Instagram', 'fa-brands fa-instagram', 'Konto na Instagramie', '#e6683c'],
+            'website'   => ['Strona www', 'fa-solid fa-globe', null, null],
+        ];
+        $hasSidebar = ! empty($pSocial) || filled($page->person_email) || filled($page->person_phone);
     @endphp
 
-    @if ($page->is_featured)
+    <style>
+        .person-split { display: grid; grid-template-columns: minmax(0, 1fr) 19rem; gap: 3rem; align-items: start; }
+        .person-hero { display: flex; flex-wrap: wrap; align-items: center; gap: 2.5rem 4rem; }
+        @media (max-width: 899px) { .person-split { grid-template-columns: 1fr; gap: 2rem; } .person-split > aside { order: -1; } }
+    </style>
 
-    {{-- ══ WIZYTÓWKA FUNDATORA ══ --}}
+    {{-- ══ HERO: duże zdjęcie z ozdobną ramką + tożsamość + szybkie kontakty ══ --}}
+    <section class="relative overflow-hidden" aria-label="Profil: {{ $page->title }}"
+        style="background: linear-gradient(135deg, color-mix(in srgb, var(--color-brand) 12%, #fff) 0%, #fff 62%)">
+        <span class="pointer-events-none absolute" aria-hidden="true"
+            style="right:-6rem;top:-6rem;width:22rem;height:22rem;border-radius:9999px;background:color-mix(in srgb, var(--color-brand) 10%, transparent)"></span>
+        <span class="pointer-events-none absolute" aria-hidden="true"
+            style="left:-4rem;bottom:-5rem;width:14rem;height:14rem;border-radius:9999px;background:color-mix(in srgb, var(--color-brand) 7%, transparent)"></span>
 
-    {{-- KARTA: zdjęcie + tożsamość + hasło --}}
-    <section class="border-b border-gray-100 px-6 py-14 md:py-20" aria-label="Profil fundatora">
-        <div class="mx-auto flex max-w-5xl flex-col gap-10 md:flex-row md:items-start md:gap-16">
-
-            {{-- Zdjęcie --}}
-            <div class="shrink-0 md:w-52">
+        <div class="person-hero relative mx-auto max-w-6xl px-4" style="padding-top:3.5rem;padding-bottom:3.5rem">
+            <div class="relative flex-none" style="width:min(17rem,70vw)">
+                <span class="absolute" aria-hidden="true"
+                    style="inset:0;transform:translate(.9rem,.9rem) rotate(3deg);border-radius:2rem;background:color-mix(in srgb, var(--color-brand) 22%, transparent)"></span>
                 @if (filled($page->content_image))
-                    <div class="overflow-hidden rounded-2xl shadow-md">
-                        <img src="{{ $page->content_image }}"
-                            alt="{{ $page->content_image_alt ?: $page->title }}"
-                            class="aspect-square w-full object-cover object-top">
-                    </div>
+                    <img src="{{ $page->content_image }}" alt="{{ $page->content_image_alt ?: $page->title }}"
+                        class="relative w-full object-cover object-top shadow-xl"
+                        style="aspect-ratio:4/5;border-radius:2rem;border:6px solid #fff">
                 @else
-                    <div class="flex aspect-square w-full items-center justify-center rounded-2xl bg-brand/10">
-                        <span class="text-5xl font-bold text-brand" aria-hidden="true">{{ $personInitials }}</span>
-                    </div>
+                    <span class="relative flex w-full items-center justify-center bg-white shadow-xl" aria-hidden="true"
+                        style="aspect-ratio:4/5;border-radius:2rem;border:6px solid #fff">
+                        <span class="text-6xl font-extrabold text-brand">{{ $personInitials }}</span>
+                    </span>
                 @endif
             </div>
 
-            {{-- Tożsamość --}}
-            <div class="flex min-w-0 flex-col justify-center gap-6 md:w-3/5">
-                @if (filled($page->person_member_label))
-                    <p class="text-xs font-bold uppercase tracking-[0.2em] text-brand">{{ $page->person_member_label }}</p>
+            <div class="min-w-0 flex-1" style="min-width:min(100%,18rem)">
+                <p class="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1 text-xs font-bold uppercase tracking-widest text-brand shadow-sm">
+                    <i class="fa-solid fa-people-group" aria-hidden="true"></i>
+                    {{ $page->person_member_label ?: 'Zespół FEER' }}
+                </p>
+                <h1 class="mt-4 text-4xl font-extrabold leading-tight tracking-tight text-ink md:text-6xl">{{ $page->title }}</h1>
+                @if (filled($page->person_role))
+                    <p class="mt-2 text-xl font-semibold text-brand md:text-2xl">{{ $page->person_role }}</p>
                 @endif
-
-                <div>
-                    <h1 class="text-4xl font-bold leading-tight text-ink md:text-5xl">{{ $page->title }}</h1>
-                    @if (filled($page->person_role))
-                        <p class="mt-2 text-lg text-muted">{{ $page->person_role }}</p>
-                    @endif
-                </div>
-
-                {{-- Hasło / motto --}}
                 @if (filled($page->person_bio))
-                    <p class="border-l-4 border-brand pl-5 text-lg font-medium leading-relaxed text-ink/80 italic">{{ $page->person_bio }}</p>
+                    <p class="mt-5 max-w-2xl text-lg leading-relaxed text-ink/80">{{ $page->person_bio }}</p>
                 @endif
 
-                {{-- Kontakt --}}
                 @if (filled($page->person_email) || filled($page->person_phone))
-                    <div class="mt-2 flex flex-wrap items-center gap-x-5 gap-y-3">
+                    <div class="mt-7 flex flex-wrap items-center gap-3">
                         @if (filled($page->person_email))
                             <a href="mailto:{{ $page->person_email }}"
-                                class="inline-flex items-center gap-2 text-sm text-muted hover:text-brand focus-visible:rounded focus-visible:outline-2 focus-visible:outline-brand">
-                                <i class="fa-solid fa-envelope text-brand/60" aria-hidden="true"></i>
-                                {{ $page->person_email }}
+                                class="inline-flex min-h-11 items-center gap-2 rounded-full bg-brand px-5 text-sm font-bold text-white shadow-sm transition hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
+                                <i class="fa-solid fa-envelope" aria-hidden="true"></i> Napisz wiadomość
+                                <span class="sr-only">do: {{ $page->person_email }}</span>
                             </a>
                         @endif
                         @if (filled($page->person_phone))
                             <a href="tel:{{ preg_replace('/\s+/', '', $page->person_phone) }}"
-                                class="inline-flex items-center gap-2 text-sm text-muted hover:text-brand focus-visible:rounded focus-visible:outline-2 focus-visible:outline-brand">
-                                <i class="fa-solid fa-phone text-brand/60" aria-hidden="true"></i>
-                                {{ $page->person_phone }}
+                                class="inline-flex min-h-11 items-center gap-2 rounded-full border-2 border-brand bg-white px-5 text-sm font-bold text-brand transition hover:bg-brand-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
+                                <i class="fa-solid fa-phone" aria-hidden="true"></i> {{ $page->person_phone }}
                             </a>
                         @endif
                     </div>
                 @endif
             </div>
-
         </div>
     </section>
 
-    {{-- KAFLE SOCIAL MEDIA --}}
-    @if (! empty($pSocial))
-        <section class="border-b border-gray-100 px-6 py-10" aria-label="Social media fundatora">
-            <div class="mx-auto max-w-5xl">
-                <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                    @if (! empty($pSocial['linkedin']))
-                        <a href="{{ $pSocial['linkedin'] }}" target="_blank" rel="noopener noreferrer"
-                            class="group flex items-center gap-4 rounded-xl border border-gray-100 bg-white px-5 py-4 shadow-sm transition hover:border-[#0a66c2] hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
-                            <span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[#0a66c2]/10 text-[#0a66c2]">
-                                <i class="fa-brands fa-linkedin text-2xl" aria-hidden="true"></i>
-                            </span>
-                            <div class="min-w-0">
-                                <p class="font-bold text-ink">LinkedIn</p>
-                                <p class="text-xs text-muted">Profil zawodowy</p>
-                            </div>
-                            <i class="fa-solid fa-arrow-up-right-from-square ml-auto shrink-0 text-xs text-muted group-hover:text-[#0a66c2]" aria-hidden="true"></i>
-                        </a>
-                    @endif
-                    @if (! empty($pSocial['facebook']))
-                        <a href="{{ $pSocial['facebook'] }}" target="_blank" rel="noopener noreferrer"
-                            class="group flex items-center gap-4 rounded-xl border border-gray-100 bg-white px-5 py-4 shadow-sm transition hover:border-[#1877f2] hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
-                            <span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[#1877f2]/10 text-[#1877f2]">
-                                <i class="fa-brands fa-facebook text-2xl" aria-hidden="true"></i>
-                            </span>
-                            <div class="min-w-0">
-                                <p class="font-bold text-ink">Facebook</p>
-                                <p class="text-xs text-muted">Strona na Facebooku</p>
-                            </div>
-                            <i class="fa-solid fa-arrow-up-right-from-square ml-auto shrink-0 text-xs text-muted group-hover:text-[#1877f2]" aria-hidden="true"></i>
-                        </a>
-                    @endif
-                    @if (! empty($pSocial['instagram']))
-                        <a href="{{ $pSocial['instagram'] }}" target="_blank" rel="noopener noreferrer"
-                            class="group flex items-center gap-4 rounded-xl border border-gray-100 bg-white px-5 py-4 shadow-sm transition hover:border-[#e6683c] hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
-                            <span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#f09433]/15 to-[#bc1888]/15 text-[#e6683c]">
-                                <i class="fa-brands fa-instagram text-2xl" aria-hidden="true"></i>
-                            </span>
-                            <div class="min-w-0">
-                                <p class="font-bold text-ink">Instagram</p>
-                                <p class="text-xs text-muted">Konto na Instagramie</p>
-                            </div>
-                            <i class="fa-solid fa-arrow-up-right-from-square ml-auto shrink-0 text-xs text-muted group-hover:text-[#e6683c]" aria-hidden="true"></i>
-                        </a>
-                    @endif
-                    @if (! empty($pSocial['website']))
-                        @php $websiteHost = parse_url($pSocial['website'], PHP_URL_HOST) ?: $pSocial['website']; @endphp
-                        <a href="{{ $pSocial['website'] }}" target="_blank" rel="noopener noreferrer"
-                            class="group flex items-center gap-4 rounded-xl border border-gray-100 bg-white px-5 py-4 shadow-sm transition hover:border-brand hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
-                            <span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-brand/10 text-brand">
-                                <i class="fa-solid fa-globe text-2xl" aria-hidden="true"></i>
-                            </span>
-                            <div class="min-w-0">
-                                <p class="font-bold text-ink">Strona www</p>
-                                <p class="truncate text-xs text-muted">{{ $websiteHost }}</p>
-                            </div>
-                            <i class="fa-solid fa-arrow-up-right-from-square ml-auto shrink-0 text-xs text-muted group-hover:text-brand" aria-hidden="true"></i>
-                        </a>
-                    @endif
-                </div>
-            </div>
-        </section>
-    @endif
-
-    {{-- CYTAT --}}
+    {{-- ══ CYTAT ══ --}}
     @if (filled($page->founder_quote))
-        <section class="bg-brand/5 px-6 py-16" aria-label="Słowa fundatora">
-            <div class="mx-auto max-w-3xl">
-                <blockquote class="relative">
-                    <span class="pointer-events-none absolute -top-6 -left-2 font-serif text-[7rem] leading-none text-brand/15 select-none" aria-hidden="true">„</span>
-                    <p class="relative text-xl font-medium leading-relaxed text-ink md:text-2xl">{{ $page->founder_quote }}</p>
-                    <footer class="mt-5 text-sm font-bold uppercase tracking-widest text-brand">— {{ $page->title }}</footer>
+        <section class="px-4 py-14" aria-label="Cytat">
+            <figure class="relative mx-auto max-w-3xl text-center">
+                <span class="pointer-events-none absolute left-1/2 select-none font-serif text-brand" aria-hidden="true"
+                    style="top:-2.25rem;transform:translateX(-50%);font-size:6rem;line-height:1;opacity:.18">&ldquo;</span>
+                <blockquote class="relative text-2xl font-medium leading-snug text-ink md:text-3xl">
+                    <p>{{ $page->founder_quote }}</p>
                 </blockquote>
-            </div>
+                <figcaption class="mt-5 text-sm font-bold uppercase tracking-widest text-brand">— {{ $page->title }}</figcaption>
+            </figure>
         </section>
     @endif
 
-    {{-- PEŁNA HISTORIA --}}
-    @if ($page->content)
-        <section class="px-6 py-14" aria-label="Historia">
-            <div class="mx-auto max-w-2xl">
-                <div class="prose prose-lg max-w-none text-ink
-                    prose-headings:font-bold prose-headings:text-ink
-                    prose-p:leading-relaxed prose-p:text-ink/85
-                    prose-a:text-brand prose-a:no-underline hover:prose-a:underline">
-                    @shortcodes($page->content)
-                </div>
+    {{-- ══ TREŚĆ + KARTA KONTAKTU ══ --}}
+    @if ($page->content || $hasSidebar)
+        <section class="mx-auto max-w-6xl px-4 py-12" aria-label="O osobie">
+            <div class="{{ $hasSidebar && $page->content ? 'person-split' : '' }}">
+                @if ($page->content)
+                    <div class="min-w-0" style="max-width:44rem">
+                        <h2 class="mb-4 text-2xl font-bold text-ink">O mnie</h2>
+                        <div class="prose prose-lg max-w-none text-ink prose-headings:font-bold prose-headings:text-ink prose-p:leading-relaxed prose-p:text-ink/85 prose-a:text-brand prose-a:no-underline hover:prose-a:underline">
+                            @shortcodes($page->content)
+                        </div>
+                    </div>
+                @endif
+
+                @if ($hasSidebar)
+                    <aside aria-labelledby="person-contact-heading" class="rounded-2xl border border-gray-200 bg-white shadow-sm" style="padding:1.5rem;{{ $page->content ? 'position:sticky;top:1.5rem' : 'max-width:26rem' }}">
+                        <h2 id="person-contact-heading" class="mb-3 text-sm font-bold uppercase tracking-widest text-muted">Kontakt i media</h2>
+                        <ul role="list" class="space-y-1">
+                            @if (filled($page->person_email))
+                                <li>
+                                    <a href="mailto:{{ $page->person_email }}" class="group flex items-center gap-3 rounded-xl px-2 py-2 transition hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                                        <span class="flex h-10 w-10 flex-none items-center justify-center rounded-xl bg-brand/10 text-brand" aria-hidden="true"><i class="fa-solid fa-envelope"></i></span>
+                                        <span class="min-w-0"><span class="block text-sm font-bold text-ink">E-mail</span><span class="block break-all text-xs text-muted">{{ $page->person_email }}</span></span>
+                                    </a>
+                                </li>
+                            @endif
+                            @if (filled($page->person_phone))
+                                <li>
+                                    <a href="tel:{{ preg_replace('/\s+/', '', $page->person_phone) }}" class="group flex items-center gap-3 rounded-xl px-2 py-2 transition hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                                        <span class="flex h-10 w-10 flex-none items-center justify-center rounded-xl bg-brand/10 text-brand" aria-hidden="true"><i class="fa-solid fa-phone"></i></span>
+                                        <span class="min-w-0"><span class="block text-sm font-bold text-ink">Telefon</span><span class="block text-xs text-muted">{{ $page->person_phone }}</span></span>
+                                    </a>
+                                </li>
+                            @endif
+                            @foreach ($personNetworks as $netKey => [$netLabel, $netIcon, $netHint, $netColor])
+                                @if (! empty($pSocial[$netKey]))
+                                    @php
+                                        $netHint = $netHint ?: (parse_url($pSocial[$netKey], PHP_URL_HOST) ?: $pSocial[$netKey]);
+                                        $netColor = $netColor ?: 'var(--color-brand)';
+                                    @endphp
+                                    <li>
+                                        <a href="{{ $pSocial[$netKey] }}" target="_blank" rel="noopener noreferrer" class="group flex items-center gap-3 rounded-xl px-2 py-2 transition hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                                            <span class="flex h-10 w-10 flex-none items-center justify-center rounded-xl text-lg" aria-hidden="true"
+                                                style="color:{{ $netColor }};background:color-mix(in srgb, {{ $netColor }} 12%, transparent)"><i class="{{ $netIcon }}"></i></span>
+                                            <span class="min-w-0 flex-1"><span class="block text-sm font-bold text-ink">{{ $netLabel }}</span><span class="block truncate text-xs text-muted">{{ $netHint }}</span></span>
+                                            <i class="fa-solid fa-arrow-up-right-from-square flex-none text-xs text-muted" aria-hidden="true"></i>
+                                            <span class="sr-only">(otwiera się w nowej karcie)</span>
+                                        </a>
+                                    </li>
+                                @endif
+                            @endforeach
+                        </ul>
+                    </aside>
+                @endif
             </div>
         </section>
     @endif
@@ -1518,131 +1508,48 @@
     @include('partials.page-gallery', ['page' => $page])
     @include('partials.attachments-list', ['attachments' => $page->attachments])
 
-    {{-- POWRÓT --}}
-    @if ($personParent)
-        <div class="border-t border-gray-100 px-6 py-8">
-            <div class="mx-auto max-w-5xl">
-                <a href="{{ $personParent->publicUrl() }}"
-                    class="inline-flex items-center gap-2 text-sm font-bold text-muted hover:text-brand focus-visible:rounded focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
-                    <i class="fa-solid fa-arrow-left text-xs" aria-hidden="true"></i>
-                    {{ $personParent->title }}
+    {{-- ══ POZNAJ ZESPÓŁ ══ --}}
+    @if ($colleagues->isNotEmpty())
+        <section class="border-t border-gray-100 bg-gray-50 px-4 py-14" aria-labelledby="person-team-heading">
+            <div class="mx-auto max-w-6xl">
+                <div class="mb-6 flex flex-wrap items-end justify-between gap-3">
+                    <h2 id="person-team-heading" class="text-2xl font-bold text-ink">Poznaj zespół</h2>
+                    @if ($personParent)
+                        <a href="{{ $personParent->publicUrl() }}" class="inline-flex min-h-9 items-center gap-1.5 text-sm font-bold text-brand underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                            {{ $personParent->title }} <i class="fa-solid fa-arrow-right text-xs" aria-hidden="true"></i>
+                        </a>
+                    @endif
+                </div>
+                <ul role="list" class="grid gap-4" style="grid-template-columns:repeat(auto-fit,minmax(13rem,1fr))">
+                    @foreach ($colleagues as $mate)
+                        @php $mateInitials = \Illuminate\Support\Str::of($mate->title)->explode(' ')->map(fn ($w) => mb_substr($w, 0, 1))->take(2)->implode(''); @endphp
+                        <li>
+                            <a href="{{ $mate->publicUrl() }}" class="group flex h-full items-center gap-3 rounded-2xl border border-gray-200 bg-white p-3 transition hover:border-brand hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                                @if (filled($mate->content_image))
+                                    <img src="{{ $mate->content_image }}" alt="" loading="lazy" class="h-14 w-14 flex-none rounded-xl object-cover object-top">
+                                @else
+                                    <span class="flex h-14 w-14 flex-none items-center justify-center rounded-xl bg-brand/10 text-lg font-bold text-brand" aria-hidden="true">{{ $mateInitials }}</span>
+                                @endif
+                                <span class="min-w-0">
+                                    <span class="block font-bold text-ink group-hover:text-brand">{{ $mate->title }}</span>
+                                    @if (filled($mate->person_role))<span class="block text-xs text-muted">{{ $mate->person_role }}</span>@endif
+                                </span>
+                            </a>
+                        </li>
+                    @endforeach
+                </ul>
+            </div>
+        </section>
+    @elseif ($personParent)
+        <div class="border-t border-gray-100 px-4 py-8">
+            <div class="mx-auto max-w-6xl">
+                <a href="{{ $personParent->publicUrl() }}" class="inline-flex items-center gap-2 text-sm font-bold text-muted hover:text-brand focus-visible:rounded focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
+                    <i class="fa-solid fa-arrow-left text-xs" aria-hidden="true"></i> {{ $personParent->title }}
                 </a>
             </div>
         </div>
     @endif
 
-    @else
-
-    {{-- ══ STANDARDOWY WIDOK OSOBY ══ --}}
-    <section class="border-b border-gray-100 py-14">
-        <div class="mx-auto flex max-w-4xl flex-col items-center gap-8 px-4 sm:flex-row sm:items-start">
-            @if (filled($page->content_image))
-                <img src="{{ $page->content_image }}"
-                    alt="{{ $page->content_image_alt ?: $page->title }}"
-                    class="h-40 w-40 shrink-0 rounded-2xl object-cover shadow-sm">
-            @else
-                <span class="flex h-40 w-40 shrink-0 items-center justify-center rounded-2xl bg-brand/10 text-4xl font-bold text-brand" aria-hidden="true">{{ $personInitials }}</span>
-            @endif
-            <div class="min-w-0 text-center sm:text-left">
-                <p class="mb-2 text-xs font-bold uppercase tracking-widest text-brand">{{ $page->person_member_label ?: 'Członek zespołu FEER' }}</p>
-                <h1 class="text-3xl font-bold text-ink md:text-4xl">{{ $page->title }}</h1>
-                @if (filled($page->person_role))
-                    <p class="mt-2 text-lg text-muted">{{ $page->person_role }}</p>
-                @endif
-                @if (filled($page->person_phone) || filled($page->person_email))
-                    <div class="mt-4 flex flex-col gap-1.5 text-sm">
-                        @if (filled($page->person_phone))
-                            <a href="tel:{{ preg_replace('/\s+/', '', $page->person_phone) }}"
-                                class="inline-flex items-center gap-2 text-muted hover:text-brand focus-visible:rounded focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
-                                <i class="fa-solid fa-phone w-4 text-center" aria-hidden="true"></i>
-                                {{ $page->person_phone }}
-                            </a>
-                        @endif
-                        @if (filled($page->person_email))
-                            <a href="mailto:{{ $page->person_email }}"
-                                class="inline-flex items-center gap-2 break-all text-muted hover:text-brand focus-visible:rounded focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
-                                <i class="fa-solid fa-envelope w-4 text-center" aria-hidden="true"></i>
-                                {{ $page->person_email }}
-                            </a>
-                        @endif
-                    </div>
-                @endif
-            </div>
-        </div>
-    </section>
-
-    @if (! empty($pSocial))
-        <section class="border-b border-gray-100 px-4 py-8" aria-label="Social media">
-            <div class="mx-auto max-w-4xl grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                @if (! empty($pSocial['linkedin']))
-                    <a href="{{ $pSocial['linkedin'] }}" target="_blank" rel="noopener noreferrer"
-                        class="group flex items-center gap-4 rounded-xl border border-gray-100 bg-white px-5 py-4 shadow-sm transition hover:border-[#0a66c2] hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
-                        <span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[#0a66c2]/10 text-[#0a66c2]">
-                            <i class="fa-brands fa-linkedin text-2xl" aria-hidden="true"></i>
-                        </span>
-                        <div class="min-w-0">
-                            <p class="font-bold text-ink">LinkedIn</p>
-                            <p class="text-xs text-muted">Profil zawodowy</p>
-                        </div>
-                        <i class="fa-solid fa-arrow-up-right-from-square ml-auto shrink-0 text-xs text-muted group-hover:text-[#0a66c2]" aria-hidden="true"></i>
-                    </a>
-                @endif
-                @if (! empty($pSocial['facebook']))
-                    <a href="{{ $pSocial['facebook'] }}" target="_blank" rel="noopener noreferrer"
-                        class="group flex items-center gap-4 rounded-xl border border-gray-100 bg-white px-5 py-4 shadow-sm transition hover:border-[#1877f2] hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
-                        <span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[#1877f2]/10 text-[#1877f2]">
-                            <i class="fa-brands fa-facebook text-2xl" aria-hidden="true"></i>
-                        </span>
-                        <div class="min-w-0">
-                            <p class="font-bold text-ink">Facebook</p>
-                            <p class="text-xs text-muted">Strona na Facebooku</p>
-                        </div>
-                        <i class="fa-solid fa-arrow-up-right-from-square ml-auto shrink-0 text-xs text-muted group-hover:text-[#1877f2]" aria-hidden="true"></i>
-                    </a>
-                @endif
-                @if (! empty($pSocial['instagram']))
-                    <a href="{{ $pSocial['instagram'] }}" target="_blank" rel="noopener noreferrer"
-                        class="group flex items-center gap-4 rounded-xl border border-gray-100 bg-white px-5 py-4 shadow-sm transition hover:border-[#e6683c] hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
-                        <span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#f09433]/15 to-[#bc1888]/15 text-[#e6683c]">
-                            <i class="fa-brands fa-instagram text-2xl" aria-hidden="true"></i>
-                        </span>
-                        <div class="min-w-0">
-                            <p class="font-bold text-ink">Instagram</p>
-                            <p class="text-xs text-muted">Konto na Instagramie</p>
-                        </div>
-                        <i class="fa-solid fa-arrow-up-right-from-square ml-auto shrink-0 text-xs text-muted group-hover:text-[#e6683c]" aria-hidden="true"></i>
-                    </a>
-                @endif
-                @if (! empty($pSocial['website']))
-                    @php $websiteHost = parse_url($pSocial['website'], PHP_URL_HOST) ?: $pSocial['website']; @endphp
-                    <a href="{{ $pSocial['website'] }}" target="_blank" rel="noopener noreferrer"
-                        class="group flex items-center gap-4 rounded-xl border border-gray-100 bg-white px-5 py-4 shadow-sm transition hover:border-brand hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
-                        <span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-brand/10 text-brand">
-                            <i class="fa-solid fa-globe text-2xl" aria-hidden="true"></i>
-                        </span>
-                        <div class="min-w-0">
-                            <p class="font-bold text-ink">Strona www</p>
-                            <p class="truncate text-xs text-muted">{{ $websiteHost }}</p>
-                        </div>
-                        <i class="fa-solid fa-arrow-up-right-from-square ml-auto shrink-0 text-xs text-muted group-hover:text-brand" aria-hidden="true"></i>
-                    </a>
-                @endif
-            </div>
-        </section>
-    @endif
-
-    <section class="mx-auto max-w-4xl px-4 py-12">
-        @if (filled($page->person_bio))
-            <p class="mb-8 text-lg leading-relaxed text-ink">{{ $page->person_bio }}</p>
-        @endif
-        @if ($page->content)
-            <div class="prose max-w-none text-ink">@shortcodes($page->content)</div>
-        @endif
-        @include('partials.page-gallery', ['page' => $page])
-        @include('partials.attachments-list', ['attachments' => $page->attachments])
-    </section>
-
-    @endif
     @endif
 
     @if (!$page->isTilesGrid())
