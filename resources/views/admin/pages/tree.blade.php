@@ -3,17 +3,13 @@
 @section('title', 'Strony')
 
 @section('content')
-    @include('admin.partials.content-nav-tabs')
-
     @php
         $canEditSelected = $selected && (! $selected->is_locked || auth()->user()->isAdmin());
         $selectedLive = $selected && $selected->is_published && ($selected->publish_at === null || $selected->publish_at->isPast());
         $btn = 'inline-flex min-h-9 items-center gap-1.5 rounded border border-gray-200 bg-white px-3 py-1.5 text-xs font-bold text-ink hover:border-brand hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand';
+        $tool = 'inline-flex min-h-9 items-center gap-1.5 rounded px-2.5 py-1.5 text-xs font-bold text-muted hover:bg-gray-100 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand';
     @endphp
 
-    {{-- Układ jak w module „Strona” TYPO3: drzewo | separator | szczegóły. Drzewo można ukryć i
-         poszerzyć (separator: mysz lub strzałki), menu boczne panelu — zwinąć do ikon. Wybory
-         zapamiętuje przeglądarka. Przy pierwszej wizycie menu boczne zwija się samo, by zrobić miejsce. --}}
     {{-- Układ dwukolumnowy jest wyliczany w JS (matchMedia + style wbudowane), a nie klasami Tailwinda:
          działa nawet wtedy, gdy po wdrożeniu nie przebudowano CSS, i nigdy nie zostawia przyklejonego
          drzewa nad treścią. Uwaga: w atrybucie x-data nie wolno używać komentarzy //. --}}
@@ -49,33 +45,32 @@
          }"
          x-init="try { if (localStorage.getItem('admin-sidebar') === null) $store.adminNav.collapsed = true; } catch (e) {}">
 
-    <div class="mb-4 flex flex-wrap items-center justify-between gap-2">
-        <div class="flex flex-wrap items-center gap-2">
-            <button type="button" @click="toggle()" :aria-expanded="open.toString()" aria-controls="page-tree" aria-expanded="true"
-                class="{{ $btn }}">
+    @push('content-tab-actions')
+        <div class="flex items-center gap-0.5" role="group" aria-label="Układ widoku">
+            <button type="button" @click="toggle()" :aria-expanded="open.toString()" aria-controls="page-tree" aria-expanded="true" class="{{ $tool }}">
                 <i class="fa-solid" :class="open ? 'fa-table-columns' : 'fa-sitemap'" aria-hidden="true"></i>
                 <span x-text="open ? 'Ukryj drzewo' : 'Pokaż drzewo'">Ukryj drzewo</span>
             </button>
             <button type="button" @click="$store.adminNav.toggleCollapsed()" :aria-pressed="$store.adminNav.collapsed.toString()" aria-pressed="false"
-                class="{{ $btn }}" title="Zwiń lub rozwiń menu boczne panelu">
+                class="{{ $tool }}" title="Zwiń lub rozwiń menu boczne panelu">
                 <i class="fa-solid fa-bars" aria-hidden="true"></i>
                 <span x-text="$store.adminNav.collapsed ? 'Rozwiń menu' : 'Zwiń menu'">Zwiń menu</span>
             </button>
-            <p class="text-sm text-muted">Filtry i operacje zbiorcze: zakładka <a href="{{ route('admin.podstrony.index', ['widok' => 'lista']) }}" class="font-bold text-brand hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">Lista stron</a>.</p>
         </div>
-        <div class="flex items-center gap-2">
-            <a href="{{ route('admin.podstrony.index', ['widok' => 'lista', 'status' => 'trashed']) }}" class="{{ $btn }} font-normal text-muted">
-                <i class="fa-solid fa-trash-can text-xs" aria-hidden="true"></i> Kosz
-            </a>
-            <a href="{{ route('admin.podstrony.eksport') }}" class="{{ $btn }}">
-                <i class="fa-solid fa-file-csv" aria-hidden="true"></i> Eksportuj CSV
-            </a>
-            <a href="{{ route('admin.podstrony.create', array_filter(['parent_id' => $selected?->id])) }}"
-                class="inline-flex min-h-9 items-center gap-1.5 rounded bg-brand px-4 py-1.5 text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
-                <i class="fa-solid fa-plus" aria-hidden="true"></i> {{ $selected ? 'Dodaj podstronę' : 'Dodaj stronę' }}
-            </a>
-        </div>
-    </div>
+        <span class="mx-1 hidden h-5 w-px bg-gray-200 sm:block" aria-hidden="true"></span>
+        <a href="{{ route('admin.podstrony.index', ['widok' => 'lista', 'status' => 'trashed']) }}" class="{{ $tool }}">
+            <i class="fa-solid fa-trash-can" aria-hidden="true"></i> Kosz
+        </a>
+        <a href="{{ route('admin.podstrony.eksport') }}" class="{{ $tool }}">
+            <i class="fa-solid fa-file-csv" aria-hidden="true"></i> CSV
+        </a>
+        <a href="{{ route('admin.podstrony.create', array_filter(['parent_id' => $selected?->id])) }}"
+            class="ml-1 inline-flex min-h-9 items-center gap-1.5 rounded bg-brand px-4 py-1.5 text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
+            <i class="fa-solid fa-plus" aria-hidden="true"></i> {{ $selected ? 'Dodaj podstronę' : 'Dodaj stronę' }}
+        </a>
+    @endpush
+
+    @include('admin.partials.content-nav-tabs')
 
     <div class="grid items-start gap-4"
          :style="twoCols ? 'grid-template-columns:' + width + 'px 0.75rem minmax(0,1fr);column-gap:0' : ''">
@@ -132,7 +127,7 @@
                 @if ($byParent->get(0, collect())->isEmpty())
                     <p class="px-2 py-6 text-center text-sm text-muted">Brak stron. Dodaj pierwszą stronę przyciskiem powyżej.</p>
                 @else
-                    @include('admin.pages.partials.tree-node', ['nodes' => $byParent->get(0), 'depth' => 0, 'canDrag' => true])
+                    @include('admin.pages.partials.tree-node', ['nodes' => $byParent->get(0), 'depth' => 0, 'canDrag' => true, 'inheritedDisabled' => $inheritedDisabled])
                 @endif
                 <div data-tree-root-drop class="mt-2 hidden rounded border-2 border-dashed border-brand/50 px-3 py-3 text-center text-xs font-bold text-brand">
                     Upuść tutaj, aby przenieść na poziom główny
@@ -169,7 +164,7 @@
                         <div class="min-w-0">
                             <h2 id="pane-heading" class="text-xl font-bold text-ink">{{ $selected->title }}</h2>
                             <p class="mt-1 flex flex-wrap items-center gap-2 text-xs">
-                                @include('admin.pages.partials.status-chip', ['page' => $selected])
+                                @include('admin.pages.partials.status-chip', ['page' => $selected, 'inherited' => isset($inheritedDisabled[$selected->id])])
                                 <span class="rounded-full bg-gray-100 px-2 py-0.5 font-semibold text-gray-700">{{ \App\Models\Page::TYPES[$selected->type] ?? $selected->type }}</span>
                                 @if ($selected->isWip())<span class="rounded-full bg-orange-100 px-2 py-0.5 font-bold text-orange-700"><i class="fa-solid fa-person-digging" aria-hidden="true"></i> WIP</span>@endif
                                 @if ($selected->is_featured)<span class="rounded-full bg-amber-100 px-2 py-0.5 font-bold text-amber-700"><i class="fa-solid fa-star" aria-hidden="true"></i> Wyróżniona</span>@endif
@@ -189,6 +184,16 @@
                             </a>
                         </div>
                     </div>
+
+                    @if (isset($inheritedDisabled[$selected->id]))
+                        @php $disabledParent = $rootline->firstWhere('id', $inheritedDisabled[$selected->id]); @endphp
+                        <p class="mt-3 rounded border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-800" role="status">
+                            <i class="fa-solid fa-ban mr-1" aria-hidden="true"></i>
+                            Ta strona jest niedostępna dla odwiedzających, bo wyłączono stronę nadrzędną
+                            @if ($disabledParent)„<a href="{{ route('admin.podstrony.index', ['wybrana' => $disabledParent->id]) }}" class="font-bold underline">{{ $disabledParent->title }}</a>”@endif.
+                            Włącz ją, aby przywrócić dostęp do podstron.
+                        </p>
+                    @endif
 
                     @unless ($canEditSelected)
                         <p class="mt-3 rounded border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-700">
@@ -276,7 +281,7 @@
                             Ta strona nie ma jeszcze podstron.
                         </div>
                     @else
-                        @include('admin.pages.partials.children-table', ['children' => $children, 'selected' => $selected])
+                        @include('admin.pages.partials.children-table', ['children' => $children, 'selected' => $selected, 'inheritedDisabled' => $inheritedDisabled])
                     @endif
                 </div>
             @else
