@@ -77,20 +77,23 @@
         <div class="grid items-start gap-10 lg:grid-cols-[minmax(0,1fr)_18rem]">
         <div class="min-w-0">
                 @if ($project->sections_as_tabs && $customSections->count() > 1)
-                    <div class="mb-8" data-project-tabs>
-                        <div class="mb-5 flex flex-wrap gap-2" role="tablist">
+                    @php $sectionTabItems = $customSections->values()->map(fn ($sec, $i) => ['id' => 'sekcja-'.$i, 'label' => $sec['title'] ?: 'Sekcja '.($i + 1)])->all(); @endphp
+                    <div class="mb-8" x-data="{
+                            tabs: @js(array_column($sectionTabItems, 'id')),
+                            tab: @js($sectionTabItems[0]['id']),
+                            move(step) { const i = this.tabs.indexOf(this.tab); this.tab = this.tabs[(i + step + this.tabs.length) % this.tabs.length]; this.focusActive(); },
+                            jump(id) { this.tab = id; this.focusActive(); },
+                            focusActive() { this.$nextTick(() => document.getElementById('tab-' + this.tab)?.focus()); },
+                        }">
+                        @include('partials.tab-strip', ['tabItems' => $sectionTabItems, 'tabsLabel' => 'Sekcje projektu'])
+                        <div class="pt-6">
                             @foreach ($customSections->values() as $i => $section)
-                                <button type="button" data-project-tab-btn="{{ $i }}" role="tab" aria-selected="{{ $loop->first ? 'true' : 'false' }}"
-                                    class="rounded-md px-4 py-1.5 text-sm font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 {{ $loop->first ? 'bg-brand text-white' : 'bg-gray-100 text-ink hover:bg-gray-200' }}">
-                                    {{ $section['title'] ?: 'Sekcja '.($i + 1) }}
-                                </button>
+                                <div id="panel-sekcja-{{ $i }}" role="tabpanel" aria-labelledby="tab-sekcja-{{ $i }}" tabindex="0" @unless ($loop->first) x-cloak @endunless
+                                     x-show="tab === 'sekcja-{{ $i }}'" class="prose max-w-none text-ink focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand">
+                                    {!! $section['content'] !!}
+                                </div>
                             @endforeach
                         </div>
-                        @foreach ($customSections->values() as $i => $section)
-                            <div data-project-tab-panel="{{ $i }}" role="tabpanel" class="prose max-w-none text-ink {{ $loop->first ? '' : 'hidden' }}">
-                                {!! $section['content'] !!}
-                            </div>
-                        @endforeach
                     </div>
                 @else
                     @foreach ($featuredSections as $section)
@@ -173,17 +176,19 @@
 
                 {{-- Project subpages shown as tabs --}}
                 @if ($tabPages->count() > 1)
-                    <div class="mt-8" data-subpage-tabs>
-                        <div class="mb-5 flex flex-wrap gap-2" role="tablist">
+                    @php $subTabItems = $tabPages->map(fn ($sp, $i) => ['id' => 'podstrona-'.$i, 'label' => $sp->title])->all(); @endphp
+                    <div class="mt-8" x-data="{
+                            tabs: @js(array_column($subTabItems, 'id')),
+                            tab: @js($subTabItems[0]['id']),
+                            move(step) { const i = this.tabs.indexOf(this.tab); this.tab = this.tabs[(i + step + this.tabs.length) % this.tabs.length]; this.focusActive(); },
+                            jump(id) { this.tab = id; this.focusActive(); },
+                            focusActive() { this.$nextTick(() => document.getElementById('tab-' + this.tab)?.focus()); },
+                        }">
+                        @include('partials.tab-strip', ['tabItems' => $subTabItems, 'tabsLabel' => 'Strony projektu'])
+                        <div class="pt-6">
                             @foreach ($tabPages as $i => $subpage)
-                                <button type="button" data-subtab-btn="{{ $i }}" role="tab" aria-selected="{{ $loop->first ? 'true' : 'false' }}"
-                                    class="rounded-md px-4 py-1.5 text-sm font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 {{ $loop->first ? 'bg-brand text-white' : 'bg-gray-100 text-ink hover:bg-gray-200' }}">
-                                    {{ $subpage->title }}
-                                </button>
-                            @endforeach
-                        </div>
-                        @foreach ($tabPages as $i => $subpage)
-                            <div data-subtab-panel="{{ $i }}" role="tabpanel" class="{{ $loop->first ? '' : 'hidden' }}">
+                                <div id="panel-podstrona-{{ $i }}" role="tabpanel" aria-labelledby="tab-podstrona-{{ $i }}" tabindex="0" @unless ($loop->first) x-cloak @endunless
+                                     x-show="tab === 'podstrona-{{ $i }}'" class="focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand">
                                 @if ($subpage->content)
                                     <div class="prose max-w-none text-ink">{!! $subpage->content !!}</div>
                                 @endif
@@ -194,8 +199,9 @@
                                 @endif
                                 <a href="{{ route('page.show', $subpage) }}" class="mt-3 inline-flex items-center gap-2 text-sm font-bold text-brand hover:text-brand-dark">
                                     Otwórz jako osobną stronę                                 </a>
-                            </div>
-                        @endforeach
+                                </div>
+                            @endforeach
+                        </div>
                     </div>
                 @endif
 
@@ -373,46 +379,5 @@
         </div>
     </section>
 
-    <script>
-        (function () {
-            const wrap = document.querySelector('[data-project-tabs]');
-            if (!wrap) return;
-            const buttons = wrap.querySelectorAll('[data-project-tab-btn]');
-            const panels = wrap.querySelectorAll('[data-project-tab-panel]');
-            buttons.forEach(function (btn) {
-                btn.addEventListener('click', function () {
-                    buttons.forEach(function (b) {
-                        const active = b === btn;
-                        ['bg-brand', 'text-white'].forEach(function (c) { b.classList.toggle(c, active); });
-                        ['bg-gray-100', 'text-ink', 'hover:bg-gray-200'].forEach(function (c) { b.classList.toggle(c, !active); });
-                        b.setAttribute('aria-selected', active ? 'true' : 'false');
-                    });
-                    panels.forEach(function (p) {
-                        p.classList.toggle('hidden', p.dataset.projectTabPanel !== btn.dataset.projectTabBtn);
-                    });
-                });
-            });
-        })();
-
-        (function () {
-            const wrap = document.querySelector('[data-subpage-tabs]');
-            if (!wrap) return;
-            const buttons = wrap.querySelectorAll('[data-subtab-btn]');
-            const panels = wrap.querySelectorAll('[data-subtab-panel]');
-            buttons.forEach(function (btn) {
-                btn.addEventListener('click', function () {
-                    buttons.forEach(function (b) {
-                        const active = b === btn;
-                        ['bg-brand', 'text-white'].forEach(function (c) { b.classList.toggle(c, active); });
-                        ['bg-gray-100', 'text-ink', 'hover:bg-gray-200'].forEach(function (c) { b.classList.toggle(c, !active); });
-                        b.setAttribute('aria-selected', active ? 'true' : 'false');
-                    });
-                    panels.forEach(function (p) {
-                        p.classList.toggle('hidden', p.dataset.subtabPanel !== btn.dataset.subtabBtn);
-                    });
-                });
-            });
-        })();
-    </script>
     </div>
 @endsection

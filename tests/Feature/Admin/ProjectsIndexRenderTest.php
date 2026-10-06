@@ -53,4 +53,23 @@ class ProjectsIndexRenderTest extends TestCase
         $this->get(route('projects.index'))->assertOk()
             ->assertSee('Przejdź do kategorii')->assertSee('Projekt Audyty')->assertSee('Projekt Szkolenia');
     }
+
+    public function test_zakladki_na_stronie_projektu_maja_styl_jak_w_kontakcie(): void
+    {
+        $category = Category::create(['name' => 'Audyty', 'slug' => 'audyty']);
+        $project = Project::create([
+            'title' => 'Audyt A', 'slug' => 'audyt-a', 'is_published' => true, 'category_id' => $category->id, 'sections_as_tabs' => true,
+            'custom_sections' => [['title' => 'Harmonogram', 'content' => '<p>Terminy</p>'], ['title' => 'Cennik', 'content' => '<p>Ceny</p>']],
+        ]);
+        foreach (['Materiały', 'Nagrania'] as $i => $title) {
+            \App\Models\Page::create(['title' => $title, 'slug' => 'p'.$i, 'type' => 'standard', 'is_published' => true, 'project_id' => $project->id, 'project_display' => 'tab', 'content' => '<p>'.$title.' treść</p>']);
+        }
+
+        $html = $this->get(route('projects.show', $project))->assertOk()->getContent();
+
+        $this->assertSame(2, substr_count($html, 'role="tablist"'));
+        $this->assertStringContainsString('id="tab-sekcja-0"', $html);
+        $this->assertStringContainsString('id="tab-podstrona-1"', $html);
+        $this->assertStringContainsString('bg-brand', $html);
+    }
 }
