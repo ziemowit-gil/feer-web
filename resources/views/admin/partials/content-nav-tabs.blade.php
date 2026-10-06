@@ -21,7 +21,7 @@
 @endphp
 
 <nav aria-label="Sekcje stron i menu" class="border-gray-200"
-     style="display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:.25rem 1rem;margin-bottom:1.25rem;border-bottom-width:1px;border-bottom-style:solid">
+     style="display:flex;flex-wrap:wrap;align-items:flex-end;gap:.25rem 1rem;margin-bottom:1rem;border-bottom-width:1px;border-bottom-style:solid">
     <div style="display:flex;flex-wrap:wrap;gap:.125rem">
         @if ($user->canAccessModule('pages'))
             <a href="{{ route('admin.podstrony.index') }}" @if ($pagesTreeActive) aria-current="page" @endif class="{{ $tab($pagesTreeActive) }}" style="{{ $tabStyle }}">
@@ -38,7 +38,13 @@
             <a href="{{ route('admin.pozycje-menu.index', ['location' => 'bip']) }}" @if ($activeLocation === 'bip') aria-current="page" @endif class="{{ $tab($activeLocation === 'bip') }}" style="{{ $tabStyle }}">Menu BIP</a>
         @endif
     </div>
-    <div style="display:flex;flex-wrap:wrap;align-items:center;gap:.375rem;padding-bottom:.375rem">
+</nav>
+
+{{-- Pasek narzędzi strony: osobny rząd pod zakładkami, w dwóch grupach (widok | akcje). Widoki wypełniają go
+     przez @push('content-tab-actions'). Style wbudowane, żeby układ nie zależał od przebudowy CSS. --}}
+@hasstack('content-tab-actions')
+    <div class="border-gray-200 bg-gray-50"
+         style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:.75rem 1.5rem;margin-bottom:1.25rem;padding:.5rem .75rem;border-width:1px;border-style:solid;border-radius:.75rem">
         @stack('content-tab-actions')
     </div>
-</nav>
+@endif

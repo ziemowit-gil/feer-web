@@ -7,8 +7,10 @@
         $canEditSelected = $selected && (! $selected->is_locked || auth()->user()->isAdmin());
         $selectedLive = $selected && $selected->is_published && ($selected->publish_at === null || $selected->publish_at->isPast());
         $btn = 'inline-flex min-h-9 items-center gap-1.5 rounded border border-gray-200 bg-white px-3 py-1.5 text-xs font-bold text-ink hover:border-brand hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand';
-        $tool = 'inline-flex items-center rounded text-xs font-bold text-muted hover:bg-gray-100 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand';
-        $toolStyle = 'min-height:2.25rem;padding:.375rem .625rem;gap:.375rem';
+        $tool = 'inline-flex items-center rounded-lg border border-gray-300 bg-white text-xs font-bold text-ink hover:border-brand hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand';
+        $toolStyle = 'min-height:2.25rem;padding:.375rem .75rem;gap:.375rem';
+        $seg = 'inline-flex items-center text-xs font-bold text-ink hover:bg-gray-50 hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand';
+        $segStyle = 'min-height:2.25rem;padding:.375rem .75rem;gap:.375rem;background:transparent';
     @endphp
 
     {{-- Układ dwukolumnowy jest wyliczany w JS (matchMedia + style wbudowane), a nie klasami Tailwinda:
@@ -47,32 +49,41 @@
          x-init="try { if (localStorage.getItem('admin-sidebar') === null) $store.adminNav.collapsed = true; } catch (e) {}">
 
     @push('content-tab-actions')
-        <div class="flex items-center gap-0.5" role="group" aria-label="Układ widoku">
-            <button type="button" @click="toggle()" :aria-expanded="open.toString()" aria-controls="page-tree" aria-expanded="true" class="{{ $tool }}" style="{{ $toolStyle }}">
-                <i class="fa-solid" :class="open ? 'fa-table-columns' : 'fa-sitemap'" aria-hidden="true"></i>
-                <span x-text="open ? 'Ukryj drzewo' : 'Pokaż drzewo'">Ukryj drzewo</span>
-            </button>
-            <button type="button" @click="$store.adminNav.toggleCollapsed()" :aria-pressed="$store.adminNav.collapsed.toString()" aria-pressed="false"
-                class="{{ $tool }}" style="{{ $toolStyle }}" title="Zwiń lub rozwiń menu boczne panelu">
-                <i class="fa-solid fa-bars" aria-hidden="true"></i>
-                <span x-text="$store.adminNav.collapsed ? 'Rozwiń menu' : 'Zwiń menu'">Zwiń menu</span>
+        {{-- Grupa 1: widok (co widzę) --}}
+        <div role="group" aria-label="Widok i filtry" style="display:flex;flex-wrap:wrap;align-items:center;gap:.5rem">
+            <span class="text-muted" style="font-size:.6875rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase" aria-hidden="true">Widok</span>
+            <div style="display:inline-flex;overflow:hidden;border:1px solid #d1d5db;border-radius:.5rem;background:#fff">
+                <button type="button" @click="toggle()" :aria-expanded="open.toString()" aria-controls="page-tree" aria-expanded="true"
+                    class="{{ $seg }}" style="{{ $segStyle }}">
+                    <i class="fa-solid" :class="open ? 'fa-table-columns' : 'fa-sitemap'" aria-hidden="true"></i>
+                    <span x-text="open ? 'Ukryj drzewo' : 'Pokaż drzewo'">Ukryj drzewo</span>
+                </button>
+                <button type="button" @click="$store.adminNav.toggleCollapsed()" :aria-pressed="$store.adminNav.collapsed.toString()" aria-pressed="false"
+                    class="{{ $seg }}" style="{{ $segStyle }};border-left:1px solid #d1d5db" title="Zwiń lub rozwiń menu boczne panelu">
+                    <i class="fa-solid fa-bars" aria-hidden="true"></i>
+                    <span x-text="$store.adminNav.collapsed ? 'Rozwiń menu' : 'Zwiń menu'">Zwiń menu</span>
+                </button>
+            </div>
+            <button type="button" onclick="openBulkDialog()" aria-haspopup="dialog" class="{{ $tool }}" style="{{ $toolStyle }}">
+                <i class="fa-solid fa-filter" aria-hidden="true"></i> Filtry i operacje
             </button>
         </div>
-        <span class="mx-1 hidden h-5 w-px bg-gray-200 sm:block" aria-hidden="true"></span>
-        <button type="button" onclick="openBulkDialog()" aria-haspopup="dialog" class="{{ $tool }}" style="{{ $toolStyle }}">
-            <i class="fa-solid fa-filter" aria-hidden="true"></i> Filtry i operacje
-        </button>
-        <a href="{{ route('admin.podstrony.index', ['widok' => 'lista', 'status' => 'trashed']) }}" class="{{ $tool }}" style="{{ $toolStyle }}">
-            <i class="fa-solid fa-trash-can" aria-hidden="true"></i> Kosz
-        </a>
-        <a href="{{ route('admin.podstrony.eksport') }}" class="{{ $tool }}" style="{{ $toolStyle }}">
-            <i class="fa-solid fa-file-csv" aria-hidden="true"></i> CSV
-        </a>
-        <a href="{{ route('admin.podstrony.create', array_filter(['parent_id' => $selected?->id])) }}"
-            class="inline-flex items-center rounded bg-brand text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2"
-            style="min-height:2.25rem;padding:.375rem 1rem;gap:.375rem;margin-left:.25rem">
-            <i class="fa-solid fa-plus" aria-hidden="true"></i> {{ $selected ? 'Dodaj podstronę' : 'Dodaj stronę' }}
-        </a>
+
+        {{-- Grupa 2: akcje (co robię) --}}
+        <div role="group" aria-label="Akcje strony" style="display:flex;flex-wrap:wrap;align-items:center;gap:.5rem">
+            <a href="{{ route('admin.podstrony.index', ['widok' => 'lista', 'status' => 'trashed']) }}" class="{{ $tool }}" style="{{ $toolStyle }}">
+                <i class="fa-solid fa-trash-can" aria-hidden="true"></i> Kosz
+            </a>
+            <a href="{{ route('admin.podstrony.eksport') }}" class="{{ $tool }}" style="{{ $toolStyle }}">
+                <i class="fa-solid fa-file-csv" aria-hidden="true"></i> Eksport CSV
+            </a>
+            <span style="width:1px;height:1.5rem;background:#d1d5db" aria-hidden="true"></span>
+            <a href="{{ route('admin.podstrony.create', array_filter(['parent_id' => $selected?->id])) }}"
+                class="inline-flex items-center rounded bg-brand text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2"
+                style="min-height:2.25rem;padding:.375rem 1rem;gap:.375rem">
+                <i class="fa-solid fa-plus" aria-hidden="true"></i> {{ $selected ? 'Dodaj podstronę' : 'Dodaj stronę' }}
+            </a>
+        </div>
     @endpush
 
     @include('admin.partials.content-nav-tabs')
