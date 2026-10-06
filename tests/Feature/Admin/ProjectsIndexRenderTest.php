@@ -30,7 +30,7 @@ class ProjectsIndexRenderTest extends TestCase
             ->assertSee('Edytuj: Audyt A');
 
         $this->get(route('projects.show', $project))->assertOk()
-            ->assertSee('Audyt A')->assertSee('Projekt zrealizowany')->assertSee('Krótki opis');
+            ->assertSee('Audyt A')->assertDontSee('Projekt zrealizowany')->assertSee('Krótki opis');
     }
 
     public function test_formularz_edycji_projektu_sie_renderuje(): void

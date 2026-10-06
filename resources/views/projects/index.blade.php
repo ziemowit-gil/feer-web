@@ -77,9 +77,9 @@
                             </a>
                         </div>
 
-                        <div class="grid gap-6 md:grid-cols-3">
+                        <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                             @foreach ($category->publishedProjects as $project)
-                                @include('partials.project-card', ['project' => $project])
+                                @include('projects._tile', ['project' => $project, 'categoryName' => $category->name, 'featured' => $loop->first && $category->publishedProjects->count() % 3 === 1])
                             @endforeach
                         </div>
                     </div>
