@@ -557,6 +557,9 @@ Route::middleware(['auth', 'verified', '2fa', 'admin-site'])->prefix(config('app
         Route::get('ustawienia', [SiteSettingController::class, 'edit'])->name('ustawienia.edit');
         Route::put('ustawienia', [SiteSettingController::class, 'update'])->name('ustawienia.update');
         Route::post('ustawienia/test-poczty', [SiteSettingController::class, 'mailTest'])->name('ustawienia.mail-test');
+        Route::post('ustawienia/szo/sprawdz', [SiteSettingController::class, 'szoCheck'])->name('ustawienia.szo-check')->middleware('throttle:10,1');
+        Route::post('ustawienia/poczta/wykryj', [SiteSettingController::class, 'mailDetect'])->name('ustawienia.mail-detect')->middleware('throttle:20,1');
+        Route::post('ustawienia/poczta/sprawdz-graph', [SiteSettingController::class, 'mailGraphCheck'])->name('ustawienia.mail-graph-check')->middleware('throttle:10,1');
         Route::post('ustawienia/token-awaryjny', [SiteSettingController::class, 'regenerateEmergencyToken'])->name('ustawienia.emergency-token');
         Route::post('ustawienia/strefa-nadpisz', [SiteSettingController::class, 'overwriteStrefa'])->name('strefa.overwrite');
         Route::post('ustawienia/prefix-panelu', [SiteSettingController::class, 'updateAdminPrefix'])->name('ustawienia.prefix');

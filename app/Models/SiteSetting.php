@@ -223,7 +223,7 @@ class SiteSetting extends Model implements HasMedia
         'site_url', 'maintenance_mode', 'maintenance_message',
         'microsoft_login_enabled', 'microsoft_only_login', 'emergency_login_token', 'microsoft_client_id', 'microsoft_client_secret', 'microsoft_tenant_id',
         'google_login_enabled', 'google_client_id', 'google_client_secret',
-        'member_login_enabled', 'member_allowed_domains', 'szo_api_url', 'yubico_client_id', 'yubico_secret_key', 'two_factor_required_admins',
+        'member_login_enabled', 'member_allowed_domains', 'szo_api_url', 'szo_enabled', 'szo_token', 'szo_default_form', 'szo_donation_form', 'szo_timeout', 'yubico_client_id', 'yubico_secret_key', 'two_factor_required_admins',
         'przelewy24_sandbox', 'przelewy24_merchant_id', 'przelewy24_pos_id', 'przelewy24_crc', 'przelewy24_api_key',
         'unsplash_access_key', 'cookie_banner_enabled', 'cookie_banner_text', 'show_cms_credit',
         'mail_transport', 'mail_from_address', 'mail_from_name', 'mail_host', 'mail_port', 'mail_username', 'mail_password', 'mail_encryption',
@@ -361,6 +361,9 @@ class SiteSetting extends Model implements HasMedia
         'microsoft_login_enabled' => 'boolean',
         'microsoft_only_login' => 'boolean',
         'microsoft_client_secret' => 'encrypted',
+        'szo_enabled' => 'boolean',
+        'szo_token' => 'encrypted',
+        'szo_timeout' => 'integer',
         'google_login_enabled' => 'boolean',
         'google_client_secret' => 'encrypted',
         'member_login_enabled' => 'boolean',
@@ -1115,6 +1118,40 @@ class SiteSetting extends Model implements HasMedia
         $emailDomain = ltrim($emailDomain, '@');
 
         return in_array($emailDomain, $domains, true);
+    }
+
+    /**
+     * Konfiguracja klienta SZO (config/szo.php) z nadpisaniami z panelu.
+     * Wartości z panelu mają pierwszeństwo; puste pola dziedziczą z .env,
+     * więc obie metody konfiguracji mogą współistnieć. Zwracane są wyłącznie
+     * klucze, które administrator faktycznie ustawił w panelu.
+     *
+     * @return array<string, mixed>
+     */
+    public function szoConfigOverrides(): array
+    {
+        $overrides = [];
+
+        if (filled($this->szo_api_url)) {
+            $overrides['szo.url'] = rtrim(trim($this->szo_api_url), '/');
+        }
+        if (filled($this->szo_token)) {
+            $overrides['szo.token'] = $this->szo_token;
+        }
+        if ($this->szo_enabled !== null) {
+            $overrides['szo.enabled'] = (bool) $this->szo_enabled;
+        }
+        if (filled($this->szo_default_form)) {
+            $overrides['szo.default_form'] = trim($this->szo_default_form);
+        }
+        if (filled($this->szo_donation_form)) {
+            $overrides['szo.donation_form'] = trim($this->szo_donation_form);
+        }
+        if ($this->szo_timeout) {
+            $overrides['szo.timeout'] = (int) $this->szo_timeout;
+        }
+
+        return $overrides;
     }
 
     /** Czy skonfigurowano adres systemu SZO (integracja komunikatów strefy). */

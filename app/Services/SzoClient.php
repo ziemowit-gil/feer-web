@@ -35,6 +35,53 @@ class SzoClient
             && filled(config('szo.token'));
     }
 
+    /**
+     * Diagnostyka połączenia (panel: Ustawienia → Integracje → SZO): sprawdza
+     * adres i token zapytaniem o listę formularzy, bez zapisywania czegokolwiek.
+     *
+     * @return array{ok: bool, level: 'success'|'warning'|'error', message: string}
+     */
+    public static function diagnose(string $url, string $token): array
+    {
+        $url = rtrim(trim($url), '/');
+        if ($url === '') {
+            return ['ok' => false, 'level' => 'error', 'message' => 'Wpisz adres SZO, np. https://szo.feer.org.pl.'];
+        }
+        if (! filter_var($url, FILTER_VALIDATE_URL) || ! preg_match('#^https?://#i', $url)) {
+            return ['ok' => false, 'level' => 'error', 'message' => 'Adres SZO musi zaczynać się od https:// (lub http://).'];
+        }
+
+        try {
+            $public = Http::timeout(10)->acceptJson()->get($url . '/klauzule.json');
+        } catch (Throwable $e) {
+            return ['ok' => false, 'level' => 'error', 'message' => 'Nie udało się połączyć z SZO: ' . $e->getMessage()];
+        }
+        if (! $public->successful()) {
+            return ['ok' => false, 'level' => 'error', 'message' => "SZO odpowiedziało HTTP {$public->status()} dla /klauzule.json — sprawdź adres."];
+        }
+
+        if (trim($token) === '') {
+            return ['ok' => false, 'level' => 'warning', 'message' => 'Adres SZO działa (import klauzul RODO będzie możliwy), ale bez tokenu nie da się przekazywać zgłoszeń ani darowizn.'];
+        }
+
+        try {
+            $forms = Http::withToken($token)->timeout(10)->acceptJson()->get($url . '/api/v1/forms.php');
+        } catch (Throwable $e) {
+            return ['ok' => false, 'level' => 'error', 'message' => 'Nie udało się połączyć z API SZO: ' . $e->getMessage()];
+        }
+
+        if (in_array($forms->status(), [401, 403], true)) {
+            return ['ok' => false, 'level' => 'error', 'message' => "SZO odrzuciło token (HTTP {$forms->status()}). Sprawdź token i uprawnienia forms:read, forms:submit (dla darowizn także donations:submit)."];
+        }
+        if (! $forms->successful()) {
+            return ['ok' => false, 'level' => 'error', 'message' => "SZO odpowiedziało HTTP {$forms->status()} dla /api/v1/forms.php."];
+        }
+
+        $count = count((array) $forms->json('forms', []));
+
+        return ['ok' => true, 'level' => 'success', 'message' => "Połączenie działa. Token ma dostęp do API; dostępnych formularzy w SZO: {$count}."];
+    }
+
     /** Lista formularzy zdefiniowanych w SZO — do wyboru w panelu CMS. */
     public function forms(): array
     {
@@ -280,7 +327,7 @@ class SzoClient
     {
         $base = (string) config('szo.url');
         if ($base === '') {
-            throw new \RuntimeException('Brak adresu SZO (SZO_URL w .env) — nie wiadomo, skąd pobrać klauzule.');
+            throw new \RuntimeException('Brak adresu SZO (Ustawienia → Integracje → SZO lub SZO_URL w .env) — nie wiadomo, skąd pobrać klauzule.');
         }
 
         try {
@@ -310,7 +357,7 @@ class SzoClient
     protected function errorFrom(int $status, mixed $message): string
     {
         return match ($status) {
-            401, 403 => "SZO odrzuciło token (HTTP {$status}). Sprawdź SZO_TOKEN i uprawnienia (forms:submit, a dla darowizn donations:submit).",
+            401, 403 => "SZO odrzuciło token (HTTP {$status}). Sprawdź token (Ustawienia → Integracje → SZO) i uprawnienia (forms:submit, a dla darowizn donations:submit).",
             404      => 'SZO nie zna formularza o tym slugu — sprawdź „Slug formularza w SZO".',
             422      => 'SZO odrzuciło dane zgłoszenia: ' . (is_string($message) ? $message : json_encode($message)),
             default  => "SZO odpowiedziało HTTP {$status}: " . (is_string($message) ? $message : json_encode($message)),

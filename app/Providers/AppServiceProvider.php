@@ -77,6 +77,7 @@ class AppServiceProvider extends ServiceProvider
             $settings = SiteSetting::current();
             $this->applySiteUrl($settings);
             $this->applyMailConfig($settings);
+            config($settings->szoConfigOverrides());
         } catch (\Throwable $e) {
             // Brak zmigrowanej bazy / ustawień — zostajemy przy konfiguracji z .env.
         }

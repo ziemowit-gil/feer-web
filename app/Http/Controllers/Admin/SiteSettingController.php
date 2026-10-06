@@ -102,6 +102,11 @@ class SiteSettingController extends Controller
             'member_login_enabled' => ['sometimes', 'boolean'],
             'member_allowed_domains' => ['nullable', 'string', 'max:500'],
             'szo_api_url' => ['nullable', 'url', 'max:255'],
+            'szo_enabled' => ['sometimes', 'boolean'],
+            'szo_token' => ['nullable', 'string', 'max:1000'],
+            'szo_default_form' => ['nullable', 'string', 'max:120', 'regex:/^[a-z0-9\-_]*$/i'],
+            'szo_donation_form' => ['nullable', 'string', 'max:120', 'regex:/^[a-z0-9\-_]*$/i'],
+            'szo_timeout' => ['nullable', 'integer', 'min:1', 'max:60'],
             'yubico_client_id' => ['nullable', 'string', 'max:255'],
             'yubico_secret_key' => ['nullable', 'string', 'max:1000'],
             'two_factor_required_admins' => ['sometimes', 'boolean'],
@@ -404,6 +409,14 @@ class SiteSettingController extends Controller
             unset($data['mail_password']);
         }
         // Puste pola CRC/API key Przelewy24 = zostaw zapisane (analogicznie do sekretu Microsoft).
+        // Pusty token SZO = zostaw zapisany (jak sekret Microsoft).
+        if (blank($data['szo_token'] ?? null)) {
+            unset($data['szo_token']);
+        }
+        $data['szo_enabled'] = $request->boolean('szo_enabled');
+        if (blank($data['szo_timeout'] ?? null)) {
+            $data['szo_timeout'] = null;
+        }
         if (blank($data['przelewy24_crc'] ?? null)) {
             unset($data['przelewy24_crc']);
         }
@@ -765,6 +778,65 @@ class SiteSettingController extends Controller
 
         return redirect()->route('admin.ustawienia.edit', ['tab' => 'mail'])
             ->with('status', 'Wysłano wiadomość testową'.($viaGraph ? ' przez Microsoft Graph' : '').' na adres '.$data['test_email'].'.');
+    }
+
+    /**
+     * Sprawdza połączenie z SZO: adres, token i uprawnienie do listy formularzy
+     * (GET /api/v1/forms.php). Puste pola uzupełniane są zapisaną konfiguracją,
+     * więc można testować dane jeszcze niezapisane.
+     */
+    public function szoCheck(Request $request)
+    {
+        $data = $request->validate([
+            'url' => ['nullable', 'string', 'max:255'],
+            'token' => ['nullable', 'string', 'max:1000'],
+        ]);
+
+        return response()->json(\App\Services\SzoClient::diagnose(
+            filled($data['url'] ?? null) ? $data['url'] : (string) config('szo.url'),
+            filled($data['token'] ?? null) ? $data['token'] : (string) config('szo.token'),
+        ));
+    }
+
+    /** Autokonfigurator poczty: rozpoznaje dostawcę po adresie e-mail i zwraca podpowiedź ustawień (JSON). */
+    public function mailDetect(Request $request, \App\Services\MailProviderDetector $detector)
+    {
+        // Walidacja ręczna: odpowiedź zawsze jest JSON-em 422 (zwykłe validate()
+        // przy braku nagłówka Accept zwróciłoby przekierowanie HTML, którego
+        // skrypt kreatora nie umie odczytać).
+        $validator = \Illuminate\Support\Facades\Validator::make($request->all(), ['email' => ['required', 'email', 'max:255']], [
+            'email.required' => 'Wpisz adres e-mail skrzynki nadawczej.',
+            'email.email' => 'Wpisz poprawny adres e-mail.',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['message' => $validator->errors()->first(), 'errors' => $validator->errors()], 422);
+        }
+
+        return response()->json($detector->detect($request->input('email')));
+    }
+
+    /**
+     * Sprawdza połączenie z Microsoft Graph (token + uprawnienie Mail.Send)
+     * bez wysyłania wiadomości. Puste pola formularza uzupełniane są zapisaną
+     * konfiguracją, więc można sprawdzić dane jeszcze niezapisane.
+     */
+    public function mailGraphCheck(Request $request)
+    {
+        $data = $request->validate([
+            'tenant_id' => ['nullable', 'string', 'max:100'],
+            'client_id' => ['nullable', 'string', 'max:100'],
+            'client_secret' => ['nullable', 'string', 'max:1000'],
+            'sender' => ['nullable', 'string', 'max:255'],
+        ]);
+
+        $saved = SiteSetting::current()->msGraphConfig();
+        $config = [];
+        foreach (['tenant_id', 'client_id', 'client_secret', 'sender'] as $key) {
+            $config[$key] = filled($data[$key] ?? null) ? $data[$key] : ($saved[$key] ?? null);
+        }
+
+        return response()->json(\App\Mail\Transport\MicrosoftGraphTransport::diagnose($config));
     }
 
     /** Generuje nowy losowy token furtki awaryjnej i zapisuje w ustawieniach. */

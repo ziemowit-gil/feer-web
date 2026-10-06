@@ -2733,17 +2733,114 @@
                     @error('member_allowed_domains') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                 </div>
 
-                <div class="mt-4" x-show="memberEnabled" x-cloak>
-                    <label for="szo_api_url" class="mb-1 block text-sm font-bold">Adres systemu SZO</label>
-                    <input type="url" id="szo_api_url" name="szo_api_url" autocomplete="off" inputmode="url"
-                        value="{{ old('szo_api_url', $settings->szo_api_url) }}"
-                        placeholder="np. https://szo.feer.org.pl"
-                        class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
-                    <p class="mt-1 text-xs text-muted">
-                        Adres bazowy. Strefa współpracownika pobiera z niego komunikaty
-                        (<code class="text-ink">GET {adres}/api/komunikaty/list.php</code>). Puste = strefa nie pokazuje komunikatów.
-                    </p>
-                    @error('szo_api_url') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+            </div>
+
+            {{-- ===================== Integracja z SZO ===================== --}}
+            @php
+                $szoEffUrl = (string) config('szo.url');
+                $szoEffEnabled = (bool) config('szo.enabled');
+                $szoUrlFromEnv = blank($settings->szo_api_url) && $szoEffUrl !== '';
+                $szoTokenFromEnv = blank($settings->szo_token) && filled(config('szo.token'));
+                $szoEnabledValue = old('szo_enabled', $settings->szo_enabled ?? $szoEffEnabled);
+            @endphp
+            <div class="border-t border-gray-200 pt-6" x-data="{
+                    busy: false, res: null,
+                    async check() {
+                        this.busy = true; this.res = null;
+                        const v = id => document.getElementById(id)?.value || '';
+                        try {
+                            const r = await fetch(@js(route('admin.ustawienia.szo-check')), {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content },
+                                body: JSON.stringify({ url: v('szo_api_url'), token: v('szo_token') }),
+                            });
+                            this.res = await r.json();
+                            if (! r.ok && ! this.res.message) this.res = { level: 'error', message: 'Nie udało się sprawdzić połączenia.' };
+                        } catch (e) { this.res = { level: 'error', message: 'Brak połączenia z serwerem.' }; }
+                        finally { this.busy = false; }
+                    },
+                }">
+                <h2 class="text-base font-bold text-ink"><i class="fa-solid fa-diagram-project mr-1 text-brand" aria-hidden="true"></i> Integracja z SZO</h2>
+                <p class="mt-1 text-xs text-muted">
+                    System Zarządzania Organizacją (CRM). Z tego adresu strona pobiera komunikaty strefy współpracownika i klauzule RODO,
+                    a z tokenem przekazuje do SZO zgłoszenia z formularzy i darowizny. Wartości z panelu mają pierwszeństwo przed <code>.env</code>;
+                    puste pola dziedziczą wartości z <code>.env</code> (SZO_URL, SZO_TOKEN, SZO_ENABLED).
+                </p>
+
+                <div class="mt-4 grid gap-4 sm:grid-cols-2">
+                    <div class="sm:col-span-2">
+                        <label for="szo_api_url" class="mb-1 block text-sm font-bold">Adres systemu SZO</label>
+                        <input type="url" id="szo_api_url" name="szo_api_url" autocomplete="off" inputmode="url"
+                            value="{{ old('szo_api_url', $settings->szo_api_url) }}"
+                            placeholder="{{ $szoUrlFromEnv ? $szoEffUrl.' (z .env)' : 'np. https://szo.feer.org.pl' }}"
+                            aria-describedby="szo_api_url_help"
+                            class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                        <p id="szo_api_url_help" class="mt-1 text-xs text-muted">
+                            Adres bazowy, bez ukośnika na końcu.
+                            @if ($szoUrlFromEnv) <strong>Obecnie używany adres z <code>.env</code>: {{ $szoEffUrl }}.</strong>
+                            @elseif (blank($szoEffUrl)) <strong class="text-amber-700">Brak adresu — import klauzul RODO i komunikaty strefy nie działają.</strong> @endif
+                        </p>
+                        @error('szo_api_url') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </div>
+                    <div class="sm:col-span-2">
+                        <label for="szo_token" class="mb-1 block text-sm font-bold">Token API</label>
+                        <input type="password" id="szo_token" name="szo_token" autocomplete="new-password"
+                            placeholder="{{ $settings->szo_token ? '•••••••• (zapisany — zostaw puste, aby nie zmieniać)' : ($szoTokenFromEnv ? '•••••••• (z .env)' : '') }}"
+                            aria-describedby="szo_token_help"
+                            class="w-full rounded border-gray-300 font-mono text-sm focus:border-brand focus:ring-brand">
+                        <p id="szo_token_help" class="mt-1 text-xs text-muted">
+                            Token z Admin → API w SZO z uprawnieniami <code>forms:read</code>, <code>forms:submit</code> (dla darowizn także <code>donations:submit</code>).
+                            Przechowywany zaszyfrowany; trafia wyłącznie do połączeń serwer–serwer.
+                        </p>
+                        @error('szo_token') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </div>
+                </div>
+
+                <label class="mt-4 flex items-start gap-3 rounded-lg border border-gray-200 p-3">
+                    <input type="hidden" name="szo_enabled" value="0">
+                    <input type="checkbox" name="szo_enabled" value="1" @checked($szoEnabledValue)
+                        class="mt-0.5 rounded border-gray-300 text-brand focus:ring-brand">
+                    <span>
+                        <span class="block text-sm font-bold">Przekazuj zgłoszenia i darowizny do SZO</span>
+                        <span class="block text-xs text-muted">Wymaga adresu i tokenu. Zgłoszenie zawsze zapisuje się najpierw lokalnie — niedostępne SZO go nie gubi; nieudane próby dosyła polecenie <code>szo:push-submissions</code>.</span>
+                    </span>
+                </label>
+
+                <div class="mt-4 grid gap-4 sm:grid-cols-3">
+                    <div>
+                        <label for="szo_default_form" class="mb-1 block text-sm font-bold">Domyślny formularz w SZO</label>
+                        <input type="text" id="szo_default_form" name="szo_default_form" value="{{ old('szo_default_form', $settings->szo_default_form) }}"
+                            placeholder="{{ config('szo.default_form') ?: 'slug formularza' }}" autocomplete="off"
+                            class="w-full rounded border-gray-300 font-mono text-sm focus:border-brand focus:ring-brand">
+                        <p class="mt-1 text-xs text-muted">Używany, gdy formularz nie ma własnego.</p>
+                        @error('szo_default_form') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </div>
+                    <div>
+                        <label for="szo_donation_form" class="mb-1 block text-sm font-bold">Formularz darowizn</label>
+                        <input type="text" id="szo_donation_form" name="szo_donation_form" value="{{ old('szo_donation_form', $settings->szo_donation_form) }}"
+                            placeholder="{{ config('szo.donation_form') ?: 'darowizna' }}" autocomplete="off"
+                            class="w-full rounded border-gray-300 font-mono text-sm focus:border-brand focus:ring-brand">
+                        <p class="mt-1 text-xs text-muted">Zapis zgód darczyńcy (RODO, newsletter).</p>
+                        @error('szo_donation_form') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </div>
+                    <div>
+                        <label for="szo_timeout" class="mb-1 block text-sm font-bold">Limit czasu (s)</label>
+                        <input type="number" id="szo_timeout" name="szo_timeout" min="1" max="60" value="{{ old('szo_timeout', $settings->szo_timeout) }}"
+                            placeholder="{{ config('szo.timeout', 5) }}"
+                            class="w-full rounded border-gray-300 font-mono text-sm focus:border-brand focus:ring-brand">
+                        <p class="mt-1 text-xs text-muted">Krótki, żeby SZO nie blokowało strony.</p>
+                        @error('szo_timeout') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </div>
+                </div>
+
+                <div class="mt-4 space-y-2">
+                    <button type="button" @click="check()" :disabled="busy"
+                        class="inline-flex min-h-10 items-center gap-2 rounded border border-gray-300 px-4 py-2 text-xs font-bold text-ink hover:border-brand hover:text-brand disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                        <i class="fa-solid" :class="busy ? 'fa-spinner fa-spin' : 'fa-plug-circle-check'" aria-hidden="true"></i> Sprawdź połączenie z SZO
+                    </button>
+                    <p role="status" aria-live="polite" x-show="res" x-cloak x-text="res?.message"
+                        class="rounded border px-3 py-2 text-sm"
+                        :class="{ 'border-green-200 bg-green-50 text-green-800': res?.level === 'success', 'border-amber-200 bg-amber-50 text-amber-800': res?.level === 'warning', 'border-red-200 bg-red-50 text-red-800': res?.level === 'error' }"></p>
                 </div>
             </div>
 
@@ -2921,6 +3018,109 @@
                 </div>
             @endif
 
+            {{-- Autokonfigurator: rozpoznaje dostawcę po adresie e-mail (domena + rekordy MX) i podpowiada
+                 ustawienia. Pola bez atrybutu name — nic nie trafia do zapisu, dopóki administrator nie kliknie „Zastosuj”
+                 i nie zapisze formularza. --}}
+            <div class="space-y-4 rounded-lg border border-brand/30 bg-brand-light/40 p-4"
+                 x-data="{
+                    email: '',
+                    busy: false,
+                    error: '',
+                    result: null,
+                    applied: false,
+                    async detect() {
+                        this.error = ''; this.result = null; this.applied = false;
+                        if (! this.email.trim()) { this.error = 'Wpisz adres e-mail skrzynki nadawczej.'; return; }
+                        this.busy = true;
+                        try {
+                            const res = await fetch(@js(route('admin.ustawienia.mail-detect')), {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content },
+                                body: JSON.stringify({ email: this.email.trim() }),
+                            });
+                            const json = await res.json();
+                            if (! res.ok) { this.error = json.errors?.email?.[0] || json.message || 'Nie udało się rozpoznać dostawcy.'; return; }
+                            this.result = json;
+                        } catch (e) { this.error = 'Brak połączenia z serwerem. Spróbuj ponownie.'; }
+                        finally { this.busy = false; }
+                    },
+                    setField(id, value) {
+                        const el = document.getElementById(id);
+                        if (! el) return;
+                        el.value = value ?? '';
+                        el.dispatchEvent(new Event('input', { bubbles: true }));
+                        el.dispatchEvent(new Event('change', { bubbles: true }));
+                    },
+                    apply(mode) {
+                        const r = this.result; if (! r) return;
+                        this.setField('mail_from_address', r.email);
+                        if (mode === 'msgraph') {
+                            this.setField('mail_transport', 'msgraph');
+                            this.setField('msgraph_sender', r.email);
+                        } else {
+                            this.setField('mail_transport', 'smtp');
+                            const s = r.provider.settings;
+                            this.setField('mail_host', s.host);
+                            this.setField('mail_port', s.port);
+                            this.setField('mail_username', s.username || r.email);
+                            this.setField('mail_encryption', s.encryption === 'ssl' ? 'ssl' : (s.encryption === 'tls' ? 'tls' : ''));
+                        }
+                        this.applied = true;
+                    },
+                 }">
+                <div>
+                    <h3 class="text-sm font-bold text-ink"><i class="fa-solid fa-wand-magic-sparkles mr-1 text-brand" aria-hidden="true"></i> Autokonfigurator poczty</h3>
+                    <p class="mt-1 text-xs text-muted">Wpisz adres skrzynki, z której ma wychodzić poczta. Rozpoznamy dostawcę (Microsoft 365, Google, OVH, home.pl i inne) i uzupełnimy ustawienia. Hasła i sekrety wpisujesz samodzielnie.</p>
+                </div>
+                <div class="flex flex-wrap items-end gap-3">
+                    <div class="min-w-64 flex-1">
+                        <label for="mail_autoconfig_email" class="mb-1 block text-sm font-bold">Adres skrzynki nadawczej</label>
+                        <input type="email" id="mail_autoconfig_email" x-model="email" @keydown.enter.prevent="detect()" autocomplete="off"
+                            placeholder="np. powiadomienia@feer.org.pl" aria-describedby="mail_autoconfig_status"
+                            class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                    </div>
+                    <button type="button" @click="detect()" :disabled="busy"
+                        class="inline-flex min-h-10 items-center gap-2 rounded bg-brand px-4 py-2 text-sm font-bold text-white hover:bg-brand-dark disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
+                        <i class="fa-solid" :class="busy ? 'fa-spinner fa-spin' : 'fa-magnifying-glass'" aria-hidden="true"></i> Wykryj ustawienia
+                    </button>
+                </div>
+
+                <div id="mail_autoconfig_status" role="status" aria-live="polite">
+                    <p x-show="error" x-cloak x-text="error" class="rounded border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800"></p>
+
+                    <div x-show="result" x-cloak class="space-y-3 rounded-lg border border-gray-200 bg-white p-4 text-sm">
+                        <p>
+                            <strong x-text="result?.detected ? 'Rozpoznano: ' + result.provider.label : 'Nie rozpoznano dostawcy'"></strong>
+                            <span class="text-xs text-muted" x-show="result?.via === 'mx'"> (po rekordach MX domeny <span x-text="result.domain"></span>)</span>
+                            <span class="text-xs text-muted" x-show="result?.via === 'domain'"> (po domenie)</span>
+                        </p>
+                        <p class="text-xs text-muted" x-text="result?.provider?.note"></p>
+
+                        <dl class="grid gap-x-6 gap-y-1 text-xs sm:grid-cols-4" x-show="result?.provider?.settings?.host">
+                            <div><dt class="font-bold text-muted">Host SMTP</dt><dd class="font-mono" x-text="result?.provider?.settings?.host"></dd></div>
+                            <div><dt class="font-bold text-muted">Port</dt><dd class="font-mono" x-text="result?.provider?.settings?.port"></dd></div>
+                            <div><dt class="font-bold text-muted">Szyfrowanie</dt><dd class="font-mono" x-text="({tls: 'TLS (STARTTLS)', ssl: 'SSL'})[result?.provider?.settings?.encryption] || 'brak'"></dd></div>
+                            <div><dt class="font-bold text-muted">Login</dt><dd class="break-all font-mono" x-text="result?.provider?.settings?.username"></dd></div>
+                        </dl>
+
+                        <div class="flex flex-wrap gap-2">
+                            <button type="button" x-show="result?.provider?.graph" @click="apply('msgraph')"
+                                class="inline-flex min-h-10 items-center gap-2 rounded bg-brand px-4 py-2 text-xs font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
+                                <i class="fa-brands fa-microsoft" aria-hidden="true"></i> Zastosuj: Microsoft Graph (zalecane)
+                            </button>
+                            <button type="button" @click="apply('smtp')"
+                                class="inline-flex min-h-10 items-center gap-2 rounded border border-brand px-4 py-2 text-xs font-bold text-brand hover:bg-brand-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
+                                <i class="fa-solid fa-server" aria-hidden="true"></i> Zastosuj: SMTP
+                            </button>
+                        </div>
+                        <p x-show="applied" x-cloak class="rounded border border-green-200 bg-green-50 px-3 py-2 text-xs font-medium text-green-800">
+                            <i class="fa-solid fa-circle-check mr-1" aria-hidden="true"></i>
+                            Ustawienia wstawiono do formularza poniżej. Uzupełnij hasło lub sekret, kliknij „Zapisz”, a potem „Wyślij test”.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
             <div>
                 <label for="mail_transport" class="mb-1 block text-sm font-bold">Tryb wysyłki</label>
                 <select id="mail_transport" name="mail_transport" x-model="transport"
@@ -3084,6 +3284,33 @@
                             <span class="block text-xs text-muted">Domyślnie włączone. Pojedynczy formularz może to nadpisać w swoich ustawieniach („Sposób wysyłki”).</span>
                         </span>
                     </label>
+                </div>
+
+                <div x-data="{
+                        busy: false, res: null,
+                        async check() {
+                            this.busy = true; this.res = null;
+                            const v = id => document.getElementById(id)?.value || '';
+                            try {
+                                const r = await fetch(@js(route('admin.ustawienia.mail-graph-check')), {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content },
+                                    body: JSON.stringify({ tenant_id: v('msgraph_tenant_id'), client_id: v('msgraph_client_id'), client_secret: v('msgraph_client_secret'), sender: v('msgraph_sender') || v('mail_from_address') }),
+                                });
+                                this.res = await r.json();
+                                if (! r.ok && ! this.res.message) this.res = { level: 'error', message: 'Nie udało się sprawdzić połączenia.' };
+                            } catch (e) { this.res = { level: 'error', message: 'Brak połączenia z serwerem.' }; }
+                            finally { this.busy = false; }
+                        },
+                     }" class="space-y-2">
+                    <button type="button" @click="check()" :disabled="busy"
+                        class="inline-flex min-h-10 items-center gap-2 rounded border border-gray-300 px-4 py-2 text-xs font-bold text-ink hover:border-brand hover:text-brand disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                        <i class="fa-solid" :class="busy ? 'fa-spinner fa-spin' : 'fa-plug-circle-check'" aria-hidden="true"></i> Sprawdź połączenie z Graph
+                    </button>
+                    <p class="text-xs text-muted">Sprawdza dane aplikacji i uprawnienie Mail.Send bez wysyłania wiadomości (także dla niezapisanych jeszcze wartości).</p>
+                    <p role="status" aria-live="polite" x-show="res" x-cloak x-text="res?.message"
+                        class="rounded border px-3 py-2 text-sm"
+                        :class="{ 'border-green-200 bg-green-50 text-green-800': res?.level === 'success', 'border-amber-200 bg-amber-50 text-amber-800': res?.level === 'warning', 'border-red-200 bg-red-50 text-red-800': res?.level === 'error' }"></p>
                 </div>
 
                 <details class="rounded-lg border border-gray-200 bg-gray-50 p-3 text-xs text-muted">

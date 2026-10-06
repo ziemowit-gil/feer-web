@@ -63,6 +63,54 @@ class MicrosoftGraphTransport extends AbstractTransport
         );
     }
 
+    /**
+     * Diagnostyka bez wysyłania wiadomości: pobiera token aplikacji i sprawdza
+     * w jego treści (claim `roles`), czy aplikacja ma uprawnienie Mail.Send.
+     * Nie korzysta z pamięci podręcznej, więc odzwierciedla bieżącą konfigurację.
+     *
+     * @param  array{tenant_id: ?string, client_id: ?string, client_secret: ?string, sender: ?string}  $config
+     * @return array{ok: bool, level: 'success'|'warning'|'error', message: string}
+     */
+    public static function diagnose(array $config): array
+    {
+        foreach (['tenant_id' => 'ID tenanta', 'client_id' => 'ID aplikacji', 'client_secret' => 'sekret klienta', 'sender' => 'skrzynka nadawcza'] as $key => $label) {
+            if (blank($config[$key] ?? null)) {
+                return ['ok' => false, 'level' => 'error', 'message' => "Uzupełnij pole: {$label}."];
+            }
+        }
+        if (strtolower((string) $config['tenant_id']) === 'common') {
+            return ['ok' => false, 'level' => 'error', 'message' => 'ID tenanta nie może mieć wartości „common” — wpisz identyfikator katalogu (Directory ID) z Entra ID.'];
+        }
+
+        try {
+            $response = \Illuminate\Support\Facades\Http::asForm()->acceptJson()->timeout(15)
+                ->post(sprintf(self::TOKEN_URL, rawurlencode((string) $config['tenant_id'])), [
+                    'grant_type' => 'client_credentials',
+                    'client_id' => $config['client_id'],
+                    'client_secret' => $config['client_secret'],
+                    'scope' => self::SCOPE,
+                ]);
+        } catch (\Throwable $e) {
+            return ['ok' => false, 'level' => 'error', 'message' => 'Brak połączenia z login.microsoftonline.com: '.$e->getMessage()];
+        }
+
+        if ($response->failed()) {
+            $detail = (string) ($response->json('error_description') ?: $response->body());
+
+            return ['ok' => false, 'level' => 'error', 'message' => 'Microsoft odrzucił dane aplikacji: '.trim(strtok($detail, "\r\n"))];
+        }
+
+        $parts = explode('.', (string) $response->json('access_token'));
+        $claims = count($parts) === 3 ? json_decode(base64_decode(strtr($parts[1], '-_', '+/')), true) : null;
+        $roles = is_array($claims) ? (array) ($claims['roles'] ?? []) : [];
+
+        if (! in_array('Mail.Send', $roles, true)) {
+            return ['ok' => false, 'level' => 'warning', 'message' => 'Dane aplikacji są poprawne, ale brakuje uprawnienia aplikacyjnego Mail.Send albo zgody administratora (Entra ID → API permissions → Grant admin consent).'];
+        }
+
+        return ['ok' => true, 'level' => 'success', 'message' => 'Połączenie działa: aplikacja ma uprawnienie Mail.Send. Skrzynkę nadawczą '.$config['sender'].' sprawdzisz testową wysyłką.'];
+    }
+
     protected function doSend(SentMessage $message): void
     {
         $email = MessageConverter::toEmail($message->getOriginalMessage());
