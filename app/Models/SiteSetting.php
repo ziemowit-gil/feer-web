@@ -159,6 +159,7 @@ class SiteSetting extends Model implements HasMedia
         'classic' => 'Klasyczny (jedna kolumna: formularz + dane z boku, sekcje pod spodem)',
         'split'   => 'Kafelkowy (nagłówek z kaflami kontaktu, formularz w karcie, dane w przyklejonym panelu)',
         'card'    => 'Wizytówka (na wierzchu adres biura, telefon i e-mail, pod spodem formularz)',
+        'feer'    => 'FEER (dane po lewej, formularz w karcie po prawej — dedykowany szablonowi FEER)',
         'tabs'    => 'Instytucjonalny (ciemny pas z tytułem, pasek zakładek, dane teleadresowe zamiast mapy)',
     ];
 
@@ -633,9 +634,12 @@ class SiteSetting extends Model implements HasMedia
     /** Wariant strony kontaktowej sprowadzony do obsługiwanej wartości. */
     public function contactLayoutValue(): string
     {
-        return array_key_exists((string) $this->contact_layout, self::CONTACT_LAYOUTS)
+        $layout = array_key_exists((string) $this->contact_layout, self::CONTACT_LAYOUTS)
             ? $this->contact_layout
             : 'tabs';
+
+        // Szablon FEER ma własny układ kontaktu; „Instytucjonalny” (zakładki) zastępuje go tylko w tym szablonie.
+        return ($this->site_template ?? 'default') === 'feer' && $layout === 'tabs' ? 'feer' : $layout;
     }
 
     /**

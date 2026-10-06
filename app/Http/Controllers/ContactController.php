@@ -71,6 +71,7 @@ class ContactController extends Controller
             'split' => 'contact.show-split',
             'card'  => 'contact.show-card',
             'tabs'  => 'contact.show-tabs',
+            'feer'  => 'contact.show-feer',
             default => 'contact.show',
         };
 

@@ -188,15 +188,24 @@ class FeerTemplateTest extends TestCase
         $this->assertStringNotContainsString('opacity-40', $footer);
     }
 
-    public function test_kontakt_w_szablonie_feer_ma_jasny_naglowek_zamiast_ciemnego_pasa(): void
+    public function test_kontakt_w_szablonie_feer_ma_wlasny_uklad_dane_i_formularz_obok_siebie(): void
     {
         SiteSetting::current()->update(['site_template' => 'feer', 'contact_layout' => 'tabs']);
         \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();
 
         $html = $this->get('/kontakt')->assertOk()->getContent();
-        $this->assertStringContainsString('role="tablist"', $html);
-        $this->assertStringContainsString('bg-gray-50', $html);
+        $this->assertStringNotContainsString('role="tablist"', $html);
+        $this->assertStringContainsString('id="formularz-heading"', $html);
+        $this->assertStringContainsString('lg:grid-cols-[minmax(0,1fr)_26rem]', $html);
         $this->assertStringNotContainsString('<section class="relative bg-ink', $html);
+    }
+
+    public function test_inne_szablony_zostaja_przy_ukladzie_z_zakladkami(): void
+    {
+        SiteSetting::current()->update(['site_template' => 'ngo_mix', 'contact_layout' => 'tabs']);
+        \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();
+
+        $this->get('/kontakt')->assertOk()->assertSee('role="tablist"', false);
     }
 
     public function test_strona_glowna_feer_nie_ma_kresek_miedzy_modulami(): void
