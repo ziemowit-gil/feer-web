@@ -219,7 +219,7 @@ class SiteSetting extends Model implements HasMedia
 
     protected $fillable = [
         'slug', 'domain', 'parent_site_id',
-        'site_name', 'site_name_genitive', 'tagline', 'brand_color', 'brand_color_2', 'brand_color_3', 'brand_color_4', 'brand_skip_contrast', 'nav_dark_text', 'ngo_skip_contrast', 'meta_description', 'allow_indexing', 'ga_measurement_id', 'disabled_modules', 'homepage_section_order', 'events_home_color', 'quick_actions_panel_negative',
+        'site_name', 'site_name_genitive', 'tagline', 'brand_color', 'brand_color_2', 'brand_color_3', 'brand_color_4', 'brand_skip_contrast', 'nav_dark_text', 'ngo_skip_contrast', 'meta_description', 'allow_indexing', 'ga_measurement_id', 'disabled_modules', 'homepage_section_order', 'homepage_sections_hidden', 'events_home_color', 'quick_actions_panel_negative',
         'bip_url', 'bip_intro', 'bip_editor_name', 'bip_editor_email', 'bip_gov_url', 'bip_mode', 'facebook_url', 'facebook_group_url', 'twitter_url', 'instagram_url', 'linkedin_url', 'youtube_url', 'substack_url',
         'contact_address', 'contact_city', 'contact_email', 'contact_phone', 'contact_office_hours', 'contact_intro', 'contact_bank_accounts', 'contact_bank_accounts_note', 'contact_bank_accounts_layout',
         'contact_correspondence_title', 'contact_correspondence_note',
@@ -421,6 +421,7 @@ class SiteSetting extends Model implements HasMedia
         'vm_intro_buttons' => 'array',
         'vm_knowledge_page_id' => 'integer',
         'homepage_section_order' => 'array',
+        'homepage_sections_hidden' => 'array',
         'contact_bank_accounts' => 'array',
         'contact_schedule' => 'array',
         'contact_schedule_enabled' => 'boolean',
@@ -1650,12 +1651,19 @@ class SiteSetting extends Model implements HasMedia
      * to the default declaration order, and silently drops/ignores any saved
      * keys that no longer exist so a future code change can't break the page.
      */
-    public function orderedHomepageSections(): array
+    public function orderedHomepageSections(bool $onlyEnabled = false): array
     {
         $defined = array_keys(self::HOMEPAGE_SECTIONS);
         $saved = array_values(array_intersect($this->homepage_section_order ?? [], $defined));
+        $ordered = array_values(array_unique(array_merge($saved, $defined)));
 
-        return array_values(array_unique(array_merge($saved, $defined)));
+        return $onlyEnabled ? array_values(array_diff($ordered, $this->homepage_sections_hidden ?? [])) : $ordered;
+    }
+
+    /** Czy sekcja strony głównej jest włączona (nie została wyłączona w Ustawienia → Strona główna). */
+    public function isHomepageSectionEnabled(string $key): bool
+    {
+        return ! in_array($key, $this->homepage_sections_hidden ?? [], true);
     }
 
     public function logoUrl(): ?string

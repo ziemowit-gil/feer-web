@@ -275,6 +275,8 @@ class SiteSettingController extends Controller
             'enabled_modules' => ['sometimes', 'array'],
             'enabled_modules.*' => ['string', Rule::in(array_keys(SiteSetting::MODULES))],
             'section_order_json' => ['sometimes', 'nullable', 'string'],
+            'homepage_sections_enabled' => ['sometimes', 'array'],
+            'homepage_sections_enabled.*' => ['string'],
             'events_home_color' => ['nullable', 'regex:/^#[0-9a-fA-F]{6}$/'],
             'site_template' => [
                 'nullable',
@@ -412,6 +414,10 @@ class SiteSettingController extends Controller
         $defined = array_keys(SiteSetting::HOMEPAGE_SECTIONS);
         $valid = array_values(array_intersect($orderedKeys, $defined));
         $data['homepage_section_order'] = array_values(array_unique(array_merge($valid, $defined)));
+        // Pole kolejności jest zawsze w formularzu; brak zaznaczenia sekcji = sekcja wyłączona.
+        $data['homepage_sections_hidden'] = $request->has('section_order_json')
+            ? (array_values(array_diff($defined, (array) $request->input('homepage_sections_enabled', []))) ?: null)
+            : (SiteSetting::current()->homepage_sections_hidden ?: null);
 
         $settings = SiteSetting::current();
 
@@ -508,7 +514,7 @@ class SiteSettingController extends Controller
             ->all() ?: null;
 
         unset($data['vm_header_badge'], $data['remove_vm_header_badge'], $data['vm_knowledge_image'], $data['remove_vm_knowledge_image']);
-        unset($data['logo'], $data['remove_logo'], $data['og_image'], $data['remove_og_image'], $data['support_image'], $data['remove_support_image'], $data['support_gallery'], $data['remove_support_gallery'], $data['news_default_image'], $data['remove_news_default_image'], $data['bip_logo'], $data['remove_bip_logo'], $data['enabled_modules'], $data['section_order_json']);
+        unset($data['logo'], $data['remove_logo'], $data['og_image'], $data['remove_og_image'], $data['support_image'], $data['remove_support_image'], $data['support_gallery'], $data['remove_support_gallery'], $data['news_default_image'], $data['remove_news_default_image'], $data['bip_logo'], $data['remove_bip_logo'], $data['enabled_modules'], $data['section_order_json'], $data['homepage_sections_enabled']);
 
         $colorWasAdjusted = ! $skipContrast && $data['brand_color'] !== $request->input('brand_color');
 

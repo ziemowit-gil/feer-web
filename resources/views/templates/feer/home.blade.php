@@ -7,9 +7,18 @@
 
 @section('content')
     <h1 class="sr-only">{{ $siteSettings->site_name }}</h1>
-    @include('templates.ngo.partials.home.hero')
-    @include('templates.ngo.partials.home.news')
-    @include('templates.feer.partials.trainings')
+    @if ($siteSettings->isHomepageSectionEnabled('hero'))
+        @include('templates.ngo.partials.home.hero')
+    @endif
+    @if ($siteSettings->isHomepageSectionEnabled('ankieta') && $siteSettings->isModuleEnabled('quick_actions'))
+        @include('templates.feer.partials.shortcuts')
+    @endif
+    @if ($siteSettings->isHomepageSectionEnabled('news'))
+        @include('templates.ngo.partials.home.news')
+    @endif
+    @if ($siteSettings->isHomepageSectionEnabled('events'))
+        @include('templates.feer.partials.trainings')
+    @endif
     @include('templates.ngo.partials.home.projects')
     @include('templates.ngo.partials.home.support-cta')
 @endsection

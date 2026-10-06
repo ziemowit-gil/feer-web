@@ -51,7 +51,7 @@ class HomeController extends Controller
     }
 
     /** Renderuje stronę główną w szablonie NGO/fundacja (rozbudowanym i mieszanym). */
-    private function ngoHome(SiteSetting $settings, Collection $slides, Collection $partners, string $view = 'templates.ngo.home')
+    private function ngoHome(SiteSetting $settings, Collection $slides, Collection $partners, string $view = 'templates.ngo.home', ?Collection $quickLinks = null)
     {
         // Trzy aktualności — tyle samo co w szablonie klasycznym.
         $newsItems = $settings->isModuleEnabled('news')
@@ -68,7 +68,9 @@ class HomeController extends Controller
             ? Event::upcoming()->forCurrentSite()->limit(3)->get()
             : collect();
 
-        return view($view, compact('slides', 'newsItems', 'projects', 'events', 'partners'));
+        $quickLinks ??= collect();
+
+        return view($view, compact('slides', 'newsItems', 'projects', 'events', 'partners', 'quickLinks'));
     }
 
     /** Renderuje stronę główną w szablonie "ngo_3" (hero, skróty, statystyki, newsy, projekty, wydarzenia, newsletter). */
@@ -185,7 +187,7 @@ class HomeController extends Controller
 
         $substackPosts = $settings->substack_url ? SubstackFeed::posts($settings->substack_url) : [];
 
-        $sectionOrder = $settings->orderedHomepageSections();
+        $sectionOrder = $settings->orderedHomepageSections(true);
 
         $template = $settings->site_template ?? 'default';
         if ($template === 'municipality') {
@@ -199,7 +201,7 @@ class HomeController extends Controller
         }
 
         if ($template === 'feer') {
-            return $this->ngoHome($settings, $slides, $partners, 'templates.feer.home');
+            return $this->ngoHome($settings, $slides, $partners, 'templates.feer.home', $quickLinks);
         }
         if ($template === 'federation') {
             return $this->ngoHome($settings, $slides, $partners, 'templates.federation.home');

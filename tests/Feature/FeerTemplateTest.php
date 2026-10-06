@@ -40,4 +40,32 @@ class FeerTemplateTest extends TestCase
 
         $this->get('/')->assertOk()->assertSee('--color-brand: #1e6dff', false)->assertSee('--color-brand-4: #cbd5e7', false);
     }
+
+    public function test_szablon_feer_pokazuje_szybkie_akcje_i_pozwala_je_wylaczyc(): void
+    {
+        \App\Models\QuickAction::create(['label' => 'Zgłoś barierę', 'url' => '/zgloszenia', 'icon' => 'fa-solid fa-flag', 'order' => 1]);
+        SiteSetting::current()->update(['site_template' => 'feer']);
+        \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();
+
+        $this->get('/')->assertOk()->assertSee('Szybkie akcje')->assertSee('Zgłoś barierę');
+
+        SiteSetting::current()->update(['homepage_sections_hidden' => ['ankieta']]);
+        \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();
+
+        $this->get('/')->assertOk()->assertDontSee('Zgłoś barierę');
+    }
+
+    public function test_wylaczona_sekcja_aktualnosci_znika_ze_strony_glownej(): void
+    {
+        \App\Models\News::create(['title' => 'Ważna wiadomość', 'slug' => 'wazna', 'content' => 'x', 'excerpt' => 'x', 'is_published' => true, 'published_at' => now()->subDay()]);
+        SiteSetting::current()->update(['site_template' => 'feer']);
+        \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();
+
+        $this->get('/')->assertOk()->assertSee('id="ngo-news-heading"', false);
+
+        SiteSetting::current()->update(['homepage_sections_hidden' => ['news']]);
+        \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();
+
+        $this->get('/')->assertOk()->assertDontSee('id="ngo-news-heading"', false);
+    }
 }

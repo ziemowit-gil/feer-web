@@ -5,12 +5,18 @@
          naraz w DOM) — ukryty h1 daje czytnikom ekranu jeden, jednoznaczny
          nagłówek strony (WCAG 2.4.6). --}}
     <h1 class="sr-only">{{ $siteSettings->site_name }}</h1>
-    @include('templates.ngo.partials.home.hero')
-    @include('templates.ngo.partials.home.news')
+    @if ($siteSettings->isHomepageSectionEnabled('hero'))
+        @include('templates.ngo.partials.home.hero')
+    @endif
+    @if ($siteSettings->isHomepageSectionEnabled('news'))
+        @include('templates.ngo.partials.home.news')
+    @endif
     @include('templates.ngo_3.partials.home.stats')
     @include('templates.ngo_3.partials.home.projects')
     @include('templates.ngo_3.partials.home.shortcuts')
-    @include('templates.ngo.partials.home.events')
+    @if ($siteSettings->isHomepageSectionEnabled('events'))
+        @include('templates.ngo.partials.home.events')
+    @endif
     @include('templates.ngo_3.partials.home.newsletter')
     @include('templates.ngo.partials.home.support-cta')
     @include('templates.ngo.partials.home.carousel')

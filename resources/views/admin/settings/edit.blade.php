@@ -1585,35 +1585,73 @@
         </div>
 
         <div x-show="tab === 'homepage'" x-cloak>
-            <p class="mb-4 text-xs text-muted">Zmień kolejność, w jakiej sekcje pojawiają się na stronie głównej. Sekcja "Kontakt" zawsze zostaje na końcu.</p>
+            {{-- Układ strony głównej — jak moduł „Strona" w TYPO3: sekcje jako elementy w kolumnie,
+                 przeciągane lub przesuwane strzałkami, z przełącznikiem włączenia (ukrycia). --}}
+            @php
+                $sectionHints = [
+                    'hero' => 'Slider u góry strony głównej',
+                    'news' => 'Najnowsze aktualności',
+                    'events' => 'Najbliższe szkolenia i wydarzenia',
+                    'ankieta' => 'Ankieta i szybkie akcje',
+                    'gallery' => 'Galeria zdjęć',
+                    'substack' => 'Wpisy z Substack',
+                ];
+            @endphp
+            <div class="mb-6">
+                <div class="mb-3 flex flex-wrap items-end justify-between gap-2">
+                    <div>
+                        <h3 class="text-sm font-bold text-ink">Układ strony głównej</h3>
+                        <p class="text-xs text-muted">Przeciągnij sekcję (albo użyj strzałek), aby zmienić kolejność. Wyłączona sekcja nie jest pokazywana odwiedzającym. Sekcja „Kontakt" zawsze zostaje na końcu.</p>
+                    </div>
+                    <p class="text-xs text-muted">W szablonach z własną stroną główną działa włączanie sekcji: Slajder, Aktualności, Szkolenia; kolejność jest tam stała.</p>
+                </div>
 
-            <ul id="section-order-list" class="space-y-2">
-                @foreach ($settings->orderedHomepageSections() as $key)
-                    <li data-section="{{ $key }}" class="flex items-center justify-between rounded border border-gray-200 bg-gray-50 px-3 py-2 text-sm">
-                        <span class="font-medium">{{ \App\Models\SiteSetting::HOMEPAGE_SECTIONS[$key] ?? $key }}</span>
-                        <span class="flex items-center gap-1">
-                            <button type="button" data-move="up" class="flex h-7 w-7 items-center justify-center rounded text-muted hover:bg-gray-200 hover:text-brand" aria-label="Przenieś wyżej">
-                                <i class="fa-solid fa-arrow-up" aria-hidden="true"></i>
-                            </button>
-                            <button type="button" data-move="down" class="flex h-7 w-7 items-center justify-center rounded text-muted hover:bg-gray-200 hover:text-brand" aria-label="Przenieś niżej">
-                                <i class="fa-solid fa-arrow-down" aria-hidden="true"></i>
-                            </button>
-                        </span>
-                    </li>
-                @endforeach
-            </ul>
-            <input type="hidden" id="section-order-json" name="section_order_json">
+                <ul id="section-order-list" class="space-y-2" aria-label="Sekcje strony głównej">
+                    @foreach ($settings->orderedHomepageSections() as $key)
+                        @php $enabledSection = old('homepage_sections_enabled') !== null ? in_array($key, (array) old('homepage_sections_enabled'), true) : $settings->isHomepageSectionEnabled($key); @endphp
+                        <li data-section="{{ $key }}" draggable="true"
+                            class="flex items-center gap-3 rounded-lg border border-gray-200 bg-white px-3 py-2.5 text-sm transition">
+                            <span class="cursor-grab text-gray-300" aria-hidden="true" title="Przeciągnij"><i class="fa-solid fa-grip-vertical"></i></span>
+                            <span class="min-w-0 flex-1">
+                                <span class="block font-bold text-ink">{{ \App\Models\SiteSetting::HOMEPAGE_SECTIONS[$key] ?? $key }}</span>
+                                <span class="block truncate text-xs text-muted">{{ $sectionHints[$key] ?? '' }}</span>
+                            </span>
+                            <label class="flex flex-none cursor-pointer items-center gap-2 text-xs font-bold text-muted">
+                                <input type="checkbox" name="homepage_sections_enabled[]" value="{{ $key }}" @checked($enabledSection)
+                                    class="peer sr-only">
+                                <span class="relative h-5 w-9 rounded-full bg-gray-300 transition peer-checked:bg-brand peer-focus-visible:ring-2 peer-focus-visible:ring-brand peer-focus-visible:ring-offset-2 after:absolute after:left-0.5 after:top-0.5 after:h-4 after:w-4 after:rounded-full after:bg-white after:transition peer-checked:after:translate-x-4" aria-hidden="true"></span>
+                                <span class="w-16">Włączona</span>
+                                <span class="sr-only">sekcja {{ \App\Models\SiteSetting::HOMEPAGE_SECTIONS[$key] ?? $key }}</span>
+                            </label>
+                            <span class="flex flex-none items-center gap-1">
+                                <button type="button" data-move="up" class="flex h-7 w-7 items-center justify-center rounded text-muted hover:bg-gray-100 hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand" aria-label="Przenieś wyżej: {{ \App\Models\SiteSetting::HOMEPAGE_SECTIONS[$key] ?? $key }}">
+                                    <i class="fa-solid fa-arrow-up" aria-hidden="true"></i>
+                                </button>
+                                <button type="button" data-move="down" class="flex h-7 w-7 items-center justify-center rounded text-muted hover:bg-gray-100 hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand" aria-label="Przenieś niżej: {{ \App\Models\SiteSetting::HOMEPAGE_SECTIONS[$key] ?? $key }}">
+                                    <i class="fa-solid fa-arrow-down" aria-hidden="true"></i>
+                                </button>
+                            </span>
+                        </li>
+                    @endforeach
+                </ul>
+                <input type="hidden" id="section-order-json" name="section_order_json">
+            </div>
+
+            <h3 class="mb-3 text-sm font-bold text-ink">Właściwości sekcji</h3>
+
 
             {{-- Slider hero --}}
-            <div class="mt-6 rounded-lg border border-gray-200 bg-gray-50 p-5">
-                <p class="mb-3 text-sm font-bold text-ink">Slider hero</p>
+            <details class="mt-3 rounded-lg border border-gray-200 bg-gray-50">
+                <summary class="cursor-pointer rounded-lg px-5 py-3 text-sm font-bold text-ink hover:bg-gray-100">Slider hero</summary>
+                <div class="border-t border-gray-200 p-5">
                 <label class="flex items-center gap-2 rounded-lg border border-gray-200 bg-white p-3">
                     <input type="checkbox" name="hero_mission_slide" value="1"
                         {{ old('hero_mission_slide', $settings->hero_mission_slide ?? false) ? 'checked' : '' }}
                         class="rounded border-gray-300 text-brand focus:ring-brand">
                     <span class="text-sm font-bold">Misja jako slajd <span class="font-normal text-muted">(dodaje slajd z misją organizacji na początku slidera)</span></span>
                 </label>
-            </div>
+                </div>
+            </details>
 
             @if ($settings->site_template === 'federation')
                 {{-- Nagłówek i wstęp hero — tylko szablon "federation". Te same pola można
@@ -1787,8 +1825,9 @@
             @endif
 
             {{-- Sekcja skrótów —- styl tła --}}
-            <div class="mt-6 rounded-lg border border-gray-200 bg-gray-50 p-5">
-                <p class="mb-3 text-sm font-bold text-ink">Sekcja szybkich akcji</p>
+            <details class="mt-3 rounded-lg border border-gray-200 bg-gray-50">
+                <summary class="cursor-pointer rounded-lg px-5 py-3 text-sm font-bold text-ink hover:bg-gray-100">Ankieta i szybkie akcje</summary>
+                <div class="border-t border-gray-200 p-5">
                 <label class="flex items-center gap-2 rounded-lg border border-gray-200 bg-white p-3">
                     <input type="hidden" name="quick_actions_panel_negative" value="0">
                     <input type="checkbox" name="quick_actions_panel_negative" value="1"
@@ -1796,10 +1835,13 @@
                         class="rounded border-gray-300 text-brand focus:ring-brand">
                     <span class="text-sm font-bold">Białe tło sekcji <span class="font-normal text-muted">(domyślnie sekcja ma szare tło — zaznacz, aby zmienić na białe)</span></span>
                 </label>
-            </div>
+                </div>
+            </details>
 
             {{-- Kolor sekcji „Szkolenia i wydarzenia" na stronie głównej --}}
-            <div class="mt-6 rounded-lg border border-gray-200 bg-gray-50 p-5">
+            <details class="mt-3 rounded-lg border border-gray-200 bg-gray-50">
+                <summary class="cursor-pointer rounded-lg px-5 py-3 text-sm font-bold text-ink hover:bg-gray-100">Szkolenia i wydarzenia</summary>
+                <div class="border-t border-gray-200 p-5">
                 <label for="events_home_color_text" class="mb-1 block text-sm font-bold">Kolor sekcji „Szkolenia i wydarzenia"</label>
                 <p class="mb-2 text-xs text-muted">Akcent bloku wydarzeń na stronie głównej. Zostaw pusty, aby użyć koloru marki. Zbyt jasny kolor zostanie przyciemniony dla kontrastu (WCAG).</p>
                 <div class="flex items-center gap-2">
@@ -1812,10 +1854,13 @@
                         class="w-56 rounded border-gray-300 focus:border-brand focus:ring-brand">
                 </div>
                 @error('events_home_color') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
-            </div>
+                </div>
+            </details>
 
             {{-- Pasek informacyjny na górze strony głównej --}}
-            <div class="mt-8 space-y-4 rounded-lg border border-gray-200 bg-gray-50 p-5">
+            <details class="mt-3 rounded-lg border border-gray-200 bg-gray-50" @if ($errors->hasAny(['homepage_banner_text', 'homepage_banner_link_label', 'homepage_banner_link_url', 'homepage_banner_visible_from', 'homepage_banner_visible_until'])) open @endif>
+                <summary class="cursor-pointer rounded-lg px-5 py-3 text-sm font-bold text-ink hover:bg-gray-100">Pasek informacyjny</summary>
+                <div class="space-y-4 border-t border-gray-200 p-5">
                 <div>
                     <p class="text-sm font-bold text-ink">Pasek informacyjny na stronie głównej</p>
                     <p class="mt-0.5 text-xs text-muted">Wyróżniony pasek z tekstem i opcjonalnym linkiem, pokazywany na samej górze strony głównej — np. ważny komunikat lub zaproszenie na wydarzenie. Zostaw tekst pusty, aby ukryć pasek.</p>
@@ -1864,7 +1909,8 @@
                         @error('homepage_banner_visible_until') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
                 </div>
-            </div>
+                </div>
+            </details>
         </div>
 
         {{-- ═══ SZABLON STRONY ════════════════════════════════════════════════════════ --}}
@@ -3134,6 +3180,16 @@
                 if (orderInput) orderInput.value = JSON.stringify(keys);
             }
 
+            let dragged = null;
+            list.addEventListener('dragstart', (e) => { dragged = e.target.closest('li'); if (dragged) { e.dataTransfer.effectAllowed = 'move'; dragged.classList.add('opacity-50'); } });
+            list.addEventListener('dragend', () => { if (dragged) dragged.classList.remove('opacity-50'); dragged = null; list.querySelectorAll('li').forEach(li => li.classList.remove('border-brand')); renumber(); });
+            list.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                const target = e.target.closest('li');
+                if (!dragged || !target || target === dragged) return;
+                const rect = target.getBoundingClientRect();
+                list.insertBefore(dragged, (e.clientY - rect.top) > rect.height / 2 ? target.nextElementSibling : target);
+            });
             list.addEventListener('click', (event) => {
                 const button = event.target.closest('[data-move]');
                 if (!button) return;
