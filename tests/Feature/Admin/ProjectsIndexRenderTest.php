@@ -32,4 +32,14 @@ class ProjectsIndexRenderTest extends TestCase
         $this->get(route('projects.show', $project))->assertOk()
             ->assertSee('Audyt A')->assertSee('Projekt zrealizowany')->assertSee('Krótki opis');
     }
+
+    public function test_formularz_edycji_projektu_sie_renderuje(): void
+    {
+        $category = Category::create(['name' => 'Audyty', 'slug' => 'audyty']);
+        $project = Project::create(['title' => 'Audyt A', 'slug' => 'audyt-a', 'is_published' => true, 'category_id' => $category->id]);
+
+        $this->actingAs(User::factory()->create(['role' => User::ROLE_ADMIN]))
+            ->get(route('admin.projekty.edit', $project))->assertOk()
+            ->assertSee('data-ftab-btn="sekcje"', false)->assertSee('Anuluj');
+    }
 }

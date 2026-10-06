@@ -13,30 +13,30 @@
         @if ($project->exists) @method('PUT') @endif
 
         <div data-project-form-tabs>
-            <div class="mb-6 flex flex-wrap gap-1 border-b border-gray-200" role="tablist">
+            <div class="mb-6 flex flex-wrap items-center gap-2" role="tablist">
                 <button type="button" data-ftab-btn="podstawowe" role="tab" aria-selected="true"
-                    class="-mb-px border-b-2 border-brand px-4 py-2 text-sm font-bold text-brand">
+                    class="rounded-full px-4 py-2 text-sm font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 bg-brand text-white">
                     <i class="fa-solid fa-circle-info" aria-hidden="true"></i> Podstawowe
                 </button>
                 <button type="button" data-ftab-btn="tresc" role="tab" aria-selected="false"
-                    class="-mb-px border-b-2 border-transparent px-4 py-2 text-sm font-bold text-muted hover:text-brand">
+                    class="rounded-full px-4 py-2 text-sm font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 bg-gray-100 text-ink hover:bg-gray-200">
                     <i class="fa-solid fa-align-left" aria-hidden="true"></i> Treść
                 </button>
                 <button type="button" data-ftab-btn="sekcje" role="tab" aria-selected="false"
-                    class="-mb-px border-b-2 border-transparent px-4 py-2 text-sm font-bold text-muted hover:text-brand">
+                    class="rounded-full px-4 py-2 text-sm font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 bg-gray-100 text-ink hover:bg-gray-200">
                     <i class="fa-solid fa-layer-group" aria-hidden="true"></i> Sekcje
                 </button>
                 <button type="button" data-ftab-btn="dodatkowe" role="tab" aria-selected="false"
-                    class="-mb-px border-b-2 border-transparent px-4 py-2 text-sm font-bold text-muted hover:text-brand">
+                    class="rounded-full px-4 py-2 text-sm font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 bg-gray-100 text-ink hover:bg-gray-200">
                     <i class="fa-solid fa-address-card" aria-hidden="true"></i> Koordynator i archiwum
                 </button>
                 <button type="button" data-ftab-btn="seo" role="tab" aria-selected="false"
-                    class="-mb-px border-b-2 border-transparent px-4 py-2 text-sm font-bold text-muted hover:text-brand">
+                    class="rounded-full px-4 py-2 text-sm font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 bg-gray-100 text-ink hover:bg-gray-200">
                     <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i> SEO
                 </button>
                 @if ($project->exists)
                     <a href="{{ route('admin.historia.index', ['type' => 'project', 'id' => $project->id]) }}"
-                        class="ml-auto -mb-px border-b-2 border-transparent px-4 py-2 text-sm font-bold text-muted hover:text-brand">
+                        class="ml-auto rounded-full px-4 py-2 text-sm font-bold text-muted transition hover:bg-gray-100 hover:text-brand">
                         <i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i> Historia zmian
                     </a>
                 @endif
@@ -44,12 +44,12 @@
 
             {{-- ============================ PODSTAWOWE ============================ --}}
             <div data-ftab-panel="podstawowe" class="space-y-6">
-                <div class="space-y-5 rounded-lg border border-gray-200 bg-white p-6">
+                <div class="space-y-5 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
                     <div class="grid gap-5 sm:grid-cols-2">
                         <div>
                             <label for="title" class="mb-1 block text-sm font-bold">Tytuł</label>
                             <input type="text" id="title" name="title" value="{{ old('title', $project->title) }}" required
-                                class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                                class="w-full rounded-lg border-gray-300 focus:border-brand focus:ring-brand">
                             @error('title') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                         </div>
 
@@ -58,7 +58,7 @@
                             <div class="flex items-center gap-2">
                                 <span class="text-sm text-muted">/projekty/</span>
                                 <input type="text" id="slug" name="slug" value="{{ old('slug', $project->slug) }}" placeholder="zostanie wygenerowany z tytułu"
-                                    class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                                    class="w-full rounded-lg border-gray-300 focus:border-brand focus:ring-brand">
                             </div>
                             @error('slug') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                         </div>
@@ -67,7 +67,7 @@
                     <div>
                         <label for="excerpt" class="mb-1 block text-sm font-bold">Krótki opis</label>
                         <input type="text" id="excerpt" name="excerpt" value="{{ old('excerpt', $project->excerpt) }}"
-                            class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                            class="w-full rounded-lg border-gray-300 focus:border-brand focus:ring-brand">
                         @error('excerpt') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
 
@@ -75,14 +75,14 @@
                         <div>
                             <label for="for_whom" class="mb-1 block text-sm font-bold">Dla kogo</label>
                             <input type="text" id="for_whom" name="for_whom" value="{{ old('for_whom', $project->for_whom) }}" placeholder="np. Szkoły podstawowe i urzędy gminne"
-                                class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                                class="w-full rounded-lg border-gray-300 focus:border-brand focus:ring-brand">
                             @error('for_whom') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                         </div>
 
                         <div>
                             <label for="since" class="mb-1 block text-sm font-bold">Od kiedy</label>
                             <input type="text" id="since" name="since" value="{{ old('since', $project->since) }}" placeholder="np. Od 2023 roku"
-                                class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                                class="w-full rounded-lg border-gray-300 focus:border-brand focus:ring-brand">
                             @error('since') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                         </div>
                     </div>
@@ -90,7 +90,7 @@
                     <div class="grid gap-5 sm:grid-cols-2">
                         <div>
                             <label for="audience" class="mb-1 block text-sm font-bold">Grupa docelowa (kolorystyka)</label>
-                            <select id="audience" name="audience" class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                            <select id="audience" name="audience" class="w-full rounded-lg border-gray-300 focus:border-brand focus:ring-brand">
                                 @foreach ($siteSettings->audienceOptions() as $value => $label)
                                     <option value="{{ $value }}" {{ old('audience', $project->audience ?? 'brand') === $value ? 'selected' : '' }}>{{ $label }}</option>
                                 @endforeach
@@ -116,12 +116,12 @@
                     </div>
                 </div>
 
-                <div class="space-y-5 rounded-lg border border-gray-200 bg-white p-6">
+                <div class="space-y-5 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
                     <p class="text-sm font-bold uppercase tracking-wide text-muted">Publikacja</p>
                     <div class="grid gap-5 sm:grid-cols-2">
                         <div>
                             <label for="category_id" class="mb-1 block text-sm font-bold">Kategoria</label>
-                            <select id="category_id" name="category_id" required class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                            <select id="category_id" name="category_id" required class="w-full rounded-lg border-gray-300 focus:border-brand focus:ring-brand">
                                 <option value="" disabled {{ old('category_id', $project->category_id) ? '' : 'selected' }}>Wybierz kategorię</option>
                                 @foreach ($categories as $category)
                                     <option value="{{ $category->id }}" {{ (int) old('category_id', $project->category_id) === $category->id ? 'selected' : '' }}>
@@ -135,7 +135,7 @@
                         <div>
                             <label for="order" class="mb-1 block text-sm font-bold">Kolejność</label>
                             <input type="number" id="order" name="order" min="0" value="{{ old('order', $project->order) }}"
-                                class="w-28 rounded border-gray-300 focus:border-brand focus:ring-brand">
+                                class="w-28 rounded-lg border-gray-300 focus:border-brand focus:ring-brand">
                         </div>
                     </div>
 
@@ -154,7 +154,7 @@
                         <div class="mt-3 {{ old('is_completed', $project->is_completed ?? false) ? '' : 'hidden' }}" data-completed-fields>
                             <label for="completed_at" class="mb-1 block text-sm font-bold">Data zakończenia <span class="font-normal text-muted">(opcjonalnie)</span></label>
                             <input type="date" id="completed_at" name="completed_at" value="{{ old('completed_at', optional($project->completed_at ?? null)->format('Y-m-d')) }}"
-                                class="w-full max-w-xs rounded border-gray-300 focus:border-brand focus:ring-brand">
+                                class="w-full max-w-xs rounded-lg border-gray-300 focus:border-brand focus:ring-brand">
                             <p class="mt-1 text-xs text-muted">Pozwala filtrować archiwum „To już zrobiliśmy": <code>/projekty/archiwum?po=RRRR-MM-DD</code> pokaże projekty zakończone tego dnia lub później (analogicznie <code>?przed=</code>; projekt bez daty trafia do widoku „przed").</p>
                             @error('completed_at') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                         </div>
@@ -166,7 +166,7 @@
                     </div>
                 </div>
 
-                <div class="space-y-4 rounded-lg border border-gray-200 bg-white p-6"
+                <div class="space-y-4 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm"
                     x-data="{ paid: {{ old('is_paid', $project->is_paid ?? false) ? 'true' : 'false' }} }">
                     <label class="flex items-center gap-2">
                         <input type="hidden" name="is_paid" value="0">
@@ -221,7 +221,7 @@
                     </script>
                 </div>
 
-                <div class="space-y-5 rounded-lg border border-gray-200 bg-white p-6">
+                <div class="space-y-5 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
                     <p class="text-sm font-bold uppercase tracking-wide text-muted">Zdjęcie</p>
                     <div class="grid gap-5 sm:grid-cols-2">
                         @if ($project->exists && $project->image_url)
@@ -243,7 +243,7 @@
                                 <label for="image_alt" class="mb-1 block text-sm font-bold">Opis alternatywny zdjęcia</label>
                                 <input type="text" id="image_alt" name="image_alt" value="{{ old('image_alt', $project->image_alt) }}"
                                     placeholder="np. Zespół podczas audytu dostępności strony internetowej"
-                                    class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                                    class="w-full rounded-lg border-gray-300 focus:border-brand focus:ring-brand">
                                 <p class="mt-1 text-xs text-muted">Opisz, co przedstawia zdjęcie — czytają to osoby korzystające z czytników ekranu.</p>
                                 @error('image_alt') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                             </div>
@@ -254,7 +254,7 @@
 
             {{-- ============================ TREŚĆ ============================ --}}
             <div data-ftab-panel="tresc" class="hidden space-y-6">
-                <div class="space-y-5 rounded-lg border border-gray-200 bg-white p-6">
+                <div class="space-y-5 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
                     <div>
                         <label class="mb-1 block text-sm font-bold">Opis projektu</label>
                         @include('admin.partials.editor', ['name' => 'content', 'value' => old('content', $project->content)])
@@ -264,7 +264,7 @@
                     <div>
                         <label for="why" class="mb-1 block text-sm font-bold">Dlaczego to robimy</label>
                         <textarea id="why" name="why" rows="4" placeholder="Uzasadnienie, motywacja stojąca za projektem"
-                            class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">{{ old('why', $project->why) }}</textarea>
+                            class="w-full rounded-lg border-gray-300 focus:border-brand focus:ring-brand">{{ old('why', $project->why) }}</textarea>
                         @error('why') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
 
@@ -279,7 +279,7 @@
 
             {{-- ============================ SEKCJE ============================ --}}
             <div data-ftab-panel="sekcje" class="hidden space-y-6">
-                <div class="space-y-5 rounded-lg border border-gray-200 bg-white p-6">
+                <div class="space-y-5 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
                     <div>
                         <p class="text-sm font-bold uppercase tracking-wide text-muted">Dodatkowe sekcje</p>
                         <p class="mt-1 text-xs text-muted">Możesz dodać maksymalnie 3 własne sekcje (tytuł + treść). Wypełnione sekcje pojawią się na stronie projektu; puste są pomijane.</p>
@@ -298,7 +298,7 @@
                                 <label for="custom_section_title_{{ $i }}" class="mb-1 block text-sm font-bold">Tytuł sekcji {{ $i }}</label>
                                 <input type="text" id="custom_section_title_{{ $i }}" name="custom_section_title_{{ $i }}"
                                     value="{{ old('custom_section_title_'.$i, $customSection['title'] ?? '') }}"
-                                    class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                                    class="w-full rounded-lg border-gray-300 focus:border-brand focus:ring-brand">
                                 @error('custom_section_title_'.$i) <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                             </div>
                             <div>
@@ -318,7 +318,7 @@
 
             {{-- ==================== KOORDYNATOR I ARCHIWUM ==================== --}}
             <div data-ftab-panel="dodatkowe" class="hidden space-y-6">
-                <div class="space-y-5 rounded-lg border border-gray-200 bg-white p-6">
+                <div class="space-y-5 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
                     <p class="text-sm font-bold uppercase tracking-wide text-muted">Koordynator projektu</p>
                     <p class="-mt-3 text-xs text-muted">Widoczny jako kontakt do projektu na jego stronie. Jeśli nie podasz e-maila koordynatora, wyświetli się ogólny e-mail kontaktowy fundacji.</p>
 
@@ -326,7 +326,7 @@
                         <div>
                             <label for="coordinator_name" class="mb-1 block text-sm font-bold">Imię i nazwisko <span class="font-normal text-muted">(opcjonalnie)</span></label>
                             <input type="text" id="coordinator_name" name="coordinator_name" value="{{ old('coordinator_name', $project->coordinator_name) }}"
-                                class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                                class="w-full rounded-lg border-gray-300 focus:border-brand focus:ring-brand">
                             @error('coordinator_name') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                         </div>
 
@@ -334,14 +334,14 @@
                             <label for="coordinator_email" class="mb-1 block text-sm font-bold">E-mail <span class="font-normal text-muted">(opcjonalnie)</span></label>
                             <input type="email" id="coordinator_email" name="coordinator_email" value="{{ old('coordinator_email', $project->coordinator_email) }}"
                                 placeholder="zostanie użyty ogólny e-mail fundacji"
-                                class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                                class="w-full rounded-lg border-gray-300 focus:border-brand focus:ring-brand">
                             @error('coordinator_email') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                         </div>
 
                         <div>
                             <label for="coordinator_phone" class="mb-1 block text-sm font-bold">Telefon <span class="font-normal text-muted">(opcjonalnie)</span></label>
                             <input type="text" id="coordinator_phone" name="coordinator_phone" value="{{ old('coordinator_phone', $project->coordinator_phone) }}"
-                                class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                                class="w-full rounded-lg border-gray-300 focus:border-brand focus:ring-brand">
                             @error('coordinator_phone') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                         </div>
                     </div>
@@ -364,7 +364,7 @@
                     </label>
                 </div>
 
-                <div class="space-y-4 rounded-lg border border-gray-200 bg-white p-6">
+                <div class="space-y-4 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
                     <p class="text-sm font-bold uppercase tracking-wide text-muted">Archiwum</p>
                     <label class="flex items-start gap-2">
                         <input type="checkbox" name="show_legacy_box" value="1" {{ old('show_legacy_box', $project->show_legacy_box ?? false) ? 'checked' : '' }}
@@ -374,7 +374,7 @@
                     <div>
                         <label for="legacy_url" class="mb-1 block text-sm font-bold">Link do informacji o projekcie <span class="font-normal text-muted">(opcjonalnie)</span></label>
                         <input type="url" id="legacy_url" name="legacy_url" value="{{ old('legacy_url', $project->legacy_url) }}" placeholder="https://..."
-                            class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                            class="w-full rounded-lg border-gray-300 focus:border-brand focus:ring-brand">
                         <p class="mt-1 text-xs text-muted">Jeśli podasz link, w boxie pojawi się odnośnik „Zobacz informacje o projekcie".</p>
                         @error('legacy_url') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
@@ -387,8 +387,8 @@
             </div>
         </div>
 
-        <div class="flex items-center gap-3">
-            <button type="submit" class="rounded bg-brand px-5 py-2 text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">Zapisz</button>
+        <div class="sticky bottom-0 z-10 -mx-1 flex items-center gap-3 rounded-2xl border border-gray-200 bg-white/95 px-4 py-3 shadow-lg backdrop-blur">
+            <button type="submit" class="rounded-lg bg-brand px-5 py-2.5 text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">Zapisz</button>
             <a href="{{ route('admin.projekty.index') }}" class="text-sm text-muted hover:text-brand">Anuluj</a>
         </div>
     </form>
@@ -403,10 +403,8 @@
             function activate(key) {
                 buttons.forEach(function (b) {
                     const active = b.dataset.ftabBtn === key;
-                    b.classList.toggle('border-brand', active);
-                    b.classList.toggle('text-brand', active);
-                    b.classList.toggle('border-transparent', !active);
-                    b.classList.toggle('text-muted', !active);
+                    ['bg-brand', 'text-white'].forEach(function (c) { b.classList.toggle(c, active); });
+                    ['bg-gray-100', 'text-ink', 'hover:bg-gray-200'].forEach(function (c) { b.classList.toggle(c, !active); });
                     b.setAttribute('aria-selected', active ? 'true' : 'false');
                 });
                 panels.forEach(function (p) {
