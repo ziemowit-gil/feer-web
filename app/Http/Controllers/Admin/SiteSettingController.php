@@ -122,6 +122,12 @@ class SiteSettingController extends Controller
             'mail_username' => ['nullable', 'string', 'max:255'],
             'mail_password' => ['nullable', 'string', 'max:1000'],
             'mail_encryption' => ['nullable', Rule::in(['', 'tls', 'ssl'])],
+            'msgraph_tenant_id' => ['nullable', 'string', 'max:100'],
+            'msgraph_client_id' => ['nullable', 'string', 'max:100'],
+            'msgraph_client_secret' => ['nullable', 'string', 'max:1000'],
+            'msgraph_sender' => ['nullable', 'email', 'max:255'],
+            'msgraph_save_to_sent' => ['sometimes', 'boolean'],
+            'forms_mail_via_msgraph' => ['sometimes', 'boolean'],
             'show_coordinators' => ['sometimes', 'boolean'],
             'ngo_color'          => ['nullable', 'regex:/^#[0-9a-fA-F]{6}$/'],
             'brand_skip_contrast' => ['sometimes', 'boolean'],
@@ -239,6 +245,10 @@ class SiteSettingController extends Controller
             'support_intro' => ['nullable', 'string', 'max:5000'],
             'donation_amounts' => ['nullable', 'string', 'max:100', 'regex:/^[0-9\s,;]*$/'],
             'donation_intro' => ['nullable', 'string', 'max:2000'],
+            'donation_headline' => ['nullable', 'string', 'max:160'],
+            'donation_impacts' => ['nullable', 'string', 'max:1500'],
+            'donation_use_note' => ['nullable', 'string', 'max:1500'],
+            'donation_reports_url' => ['nullable', 'string', 'max:255'],
             'support_quick_transfer_url' => ['nullable', 'string', 'max:255'],
             'support_buycoffee_url' => ['nullable', 'string', 'max:255'],
             'support_wplacam_url' => ['nullable', 'string', 'max:255'],
@@ -404,6 +414,12 @@ class SiteSettingController extends Controller
             unset($data['unsplash_access_key']);
         }
         $data['mail_encryption'] = filled($data['mail_encryption'] ?? null) ? $data['mail_encryption'] : null;
+        // Pusty sekret Graph = zostaw zapisany (jak hasło SMTP).
+        if (blank($data['msgraph_client_secret'] ?? null)) {
+            unset($data['msgraph_client_secret']);
+        }
+        $data['msgraph_save_to_sent'] = $request->boolean('msgraph_save_to_sent');
+        $data['forms_mail_via_msgraph'] = $request->boolean('forms_mail_via_msgraph');
         $data['show_coordinators'] = $request->boolean('show_coordinators');
         $data['wide_mission_nav_hover_white'] = $request->boolean('wide_mission_nav_hover_white');
         $data['wide_mission_nav_active_white'] = $request->boolean('wide_mission_nav_active_white');
@@ -723,21 +739,32 @@ class SiteSettingController extends Controller
     {
         $data = $request->validate([
             'test_email' => ['required', 'email', 'max:255'],
+            'via' => ['nullable', Rule::in(['default', 'msgraph'])],
         ]);
 
+        $settings = SiteSetting::current();
+        $viaGraph = ($data['via'] ?? 'default') === 'msgraph';
+
+        if ($viaGraph && ! $settings->msGraphConfigured()) {
+            return redirect()->route('admin.ustawienia.edit', ['tab' => 'mail'])
+                ->with('error', 'Microsoft Graph nie jest skonfigurowany: uzupełnij ID tenanta (nie „common”), ID aplikacji, sekret i skrzynkę nadawczą, a następnie zapisz ustawienia.');
+        }
+
         try {
-            Mail::raw(
-                'To jest testowa wiadomość ze strony '.SiteSetting::current()->site_name.'. '
+            $mailer = $viaGraph ? Mail::mailer('msgraph') : Mail::mailer();
+            $mailer->raw(
+                'To jest testowa wiadomość ze strony '.$settings->site_name.' '
+                .($viaGraph ? '(wysłana przez Microsoft Graph). ' : '. ')
                 .'Jeśli ją widzisz, konfiguracja poczty działa poprawnie.',
-                fn ($message) => $message->to($data['test_email'])->subject('Test konfiguracji poczty')
+                fn ($message) => $message->to($data['test_email'])->subject('Test konfiguracji poczty'.($viaGraph ? ' (Microsoft Graph)' : ''))
             );
         } catch (\Throwable $e) {
-            return redirect()->route('admin.ustawienia.edit')
+            return redirect()->route('admin.ustawienia.edit', ['tab' => 'mail'])
                 ->with('error', 'Nie udało się wysłać wiadomości testowej: '.$e->getMessage());
         }
 
-        return redirect()->route('admin.ustawienia.edit')
-            ->with('status', 'Wysłano wiadomość testową na adres '.$data['test_email'].'.');
+        return redirect()->route('admin.ustawienia.edit', ['tab' => 'mail'])
+            ->with('status', 'Wysłano wiadomość testową'.($viaGraph ? ' przez Microsoft Graph' : '').' na adres '.$data['test_email'].'.');
     }
 
     /** Generuje nowy losowy token furtki awaryjnej i zapisuje w ustawieniach. */

@@ -70,6 +70,18 @@ return [
             'path' => env('MAIL_SENDMAIL_PATH', '/usr/sbin/sendmail -bs -i'),
         ],
 
+        // Microsoft 365 przez Graph API (App\Mail\Transport\MicrosoftGraphTransport).
+        // Wartości z panelu (Ustawienia → Poczta) nadpisują te z .env.
+        'msgraph' => [
+            'transport' => 'msgraph',
+            'tenant_id' => env('MSGRAPH_TENANT_ID'),
+            'client_id' => env('MSGRAPH_CLIENT_ID'),
+            'client_secret' => env('MSGRAPH_CLIENT_SECRET'),
+            'sender' => env('MSGRAPH_SENDER'),
+            'save_to_sent_items' => env('MSGRAPH_SAVE_TO_SENT', true),
+            'timeout' => 20,
+        ],
+
         'log' => [
             'transport' => 'log',
             'channel' => env('MAIL_LOG_CHANNEL'),

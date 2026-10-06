@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\FormSubmissionNotification;
 use App\Models\FormDefinition;
 use App\Models\FormSubmission;
 use App\Models\SiteSetting;
@@ -73,10 +74,7 @@ class FormController extends Controller
         // dosyła polecenie `php artisan szo:push-submissions`.
         app(SzoClient::class)->pushSubmission($submission);
 
-        $notificationEmail = $formularz->settings['notification_email'] ?? null;
-        if (filled($notificationEmail)) {
-            $this->sendNotification($formularz, $submission, $notificationEmail);
-        }
+        $this->sendNotifications($formularz, $submission);
 
         return back()
             ->with('success', $this->confirmationMessage($formularz))
@@ -91,21 +89,71 @@ class FormController extends Controller
             : 'Dziękujemy! Twoje zgłoszenie zostało przyjęte.';
     }
 
-    private function sendNotification(FormDefinition $formularz, FormSubmission $submission, string $to): void
+    /**
+     * Powiadomienia e-mail o zgłoszeniu: do redakcji (adres + DW z ustawień
+     * formularza, Reply-To z pola e-mail zgłaszającego) oraz opcjonalna kopia
+     * dla osoby zgłaszającej. Mailer wg ustawień formularza: dziedzicz
+     * (domyślnie Microsoft Graph, gdy skonfigurowany), wymuś Graph albo
+     * domyślny transport serwisu. Błąd wysyłki nie psuje potwierdzenia —
+     * zgłoszenie jest już w bazie; problem trafia do logu.
+     */
+    private function sendNotifications(FormDefinition $formularz, FormSubmission $submission): void
     {
-        $fields = $formularz->normalizedFields();
-        $data   = $submission->data;
+        $settings = $formularz->settings ?? [];
+        $site = SiteSetting::current();
 
-        $lines = collect($fields)->map(fn ($f) => [
-            'label' => $f['label'],
-            'value' => $data[$f['key']] ?? '—',
-        ])->all();
+        $mailerName = match ($settings['mailer'] ?? '') {
+            'msgraph' => $site->msGraphConfigured() ? 'msgraph' : null,
+            'default' => null,
+            default   => $site->formsMailer(),
+        };
+        $mailer = $mailerName ? Mail::mailer($mailerName) : Mail::mailer();
 
-        Mail::raw(
-            implode("\n", array_map(fn ($l) => $l['label'] . ': ' . $l['value'], $lines)),
-            function ($msg) use ($formularz, $to) {
-                $msg->to($to)->subject('Nowe zgłoszenie: ' . $formularz->title);
+        $submitterEmail = $this->submitterEmail($formularz, $submission);
+
+        $to = array_values(array_filter(array_map('trim', explode(',', (string) ($settings['notification_email'] ?? ''))), fn ($e) => filter_var($e, FILTER_VALIDATE_EMAIL)));
+        $cc = array_values(array_filter(array_map('trim', explode(',', (string) ($settings['notification_cc'] ?? ''))), fn ($e) => filter_var($e, FILTER_VALIDATE_EMAIL)));
+
+        if ($to !== []) {
+            try {
+                $mail = new FormSubmissionNotification($formularz, $submission);
+                if ($cc !== []) {
+                    $mail->cc($cc);
+                }
+                if ($submitterEmail && ($settings['reply_to_submitter'] ?? true)) {
+                    $mail->replyTo($submitterEmail);
+                }
+                $mailer->to($to)->send($mail);
+            } catch (\Throwable $e) {
+                Log::error('Formularz: nie udało się wysłać powiadomienia o zgłoszeniu.', [
+                    'form' => $formularz->slug, 'submission' => $submission->id, 'mailer' => $mailerName ?? 'default', 'error' => $e->getMessage(),
+                ]);
             }
-        );
+        }
+
+        if ($submitterEmail && ! empty($settings['send_copy_to_submitter'])) {
+            try {
+                $mailer->to($submitterEmail)->send(new FormSubmissionNotification($formularz, $submission, forSubmitter: true));
+            } catch (\Throwable $e) {
+                Log::error('Formularz: nie udało się wysłać kopii zgłoszenia do nadawcy.', [
+                    'form' => $formularz->slug, 'submission' => $submission->id, 'error' => $e->getMessage(),
+                ]);
+            }
+        }
+    }
+
+    /** Adres e-mail osoby zgłaszającej: wartość pierwszego pola typu „e-mail”. */
+    private function submitterEmail(FormDefinition $formularz, FormSubmission $submission): ?string
+    {
+        foreach ($formularz->normalizedFields() as $field) {
+            if (($field['type'] ?? null) !== 'email') {
+                continue;
+            }
+            $value = trim((string) ($submission->data[$field['key']] ?? ''));
+
+            return filter_var($value, FILTER_VALIDATE_EMAIL) ? $value : null;
+        }
+
+        return null;
     }
 }

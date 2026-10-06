@@ -209,18 +209,99 @@
                     class="w-full rounded border-gray-300 text-sm focus:border-brand focus-visible:ring-2 focus-visible:ring-brand">{{ old('settings.confirmation_message', $form->settings['confirmation_message'] ?? '') }}</textarea>
             </div>
 
-            <div>
-                <label for="notification_email" class="mb-1 block text-sm font-bold">
-                    E-mail do powiadomień o zgłoszeniach
-                </label>
-                <input id="notification_email" name="settings[notification_email]" type="email"
-                    value="{{ old('settings.notification_email', $form->settings['notification_email'] ?? '') }}"
-                    placeholder="np. biuro@feer.org.pl"
-                    class="w-full max-w-sm rounded border-gray-300 text-sm focus:border-brand focus-visible:ring-2 focus-visible:ring-brand">
-                @error('settings.notification_email')
-                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                @enderror
-            </div>
+            {{-- Powiadomienia e-mail o zgłoszeniach --}}
+            @php
+                $siteCfg = \App\Models\SiteSetting::current();
+                $graphReady = $siteCfg->msGraphConfigured();
+                $formMailer = old('settings.mailer', $form->settings['mailer'] ?? '');
+                $inheritedLabel = $siteCfg->formsMailer() === 'msgraph'
+                    ? 'Microsoft 365 (Graph API)'
+                    : (\App\Models\SiteSetting::MAIL_TRANSPORTS[$siteCfg->mail_transport ?? 'default'] ?? 'domyślny tryb wysyłki');
+            @endphp
+            <fieldset class="space-y-4 rounded-lg border border-gray-200 bg-gray-50 p-4">
+                <legend class="px-1 text-sm font-bold text-ink"><i class="fa-solid fa-envelope mr-1 text-brand" aria-hidden="true"></i> Powiadomienia e-mail o zgłoszeniach</legend>
+
+                <div class="grid gap-4 sm:grid-cols-2">
+                    <div>
+                        <label for="notification_email" class="mb-1 block text-sm font-bold">Odbiorcy powiadomień</label>
+                        <input id="notification_email" name="settings[notification_email]" type="text" inputmode="email" autocomplete="off"
+                            value="{{ old('settings.notification_email', $form->settings['notification_email'] ?? '') }}"
+                            placeholder="np. biuro@feer.org.pl, sekretariat@feer.org.pl"
+                            aria-describedby="notification_email_help"
+                            class="w-full rounded border-gray-300 text-sm focus:border-brand focus-visible:ring-2 focus-visible:ring-brand">
+                        <p id="notification_email_help" class="mt-1 text-xs text-muted">Kilka adresów rozdziel przecinkami. Puste = brak powiadomień.</p>
+                        @error('settings.notification_email')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+                    <div>
+                        <label for="notification_cc" class="mb-1 block text-sm font-bold">Kopia (DW)</label>
+                        <input id="notification_cc" name="settings[notification_cc]" type="text" inputmode="email" autocomplete="off"
+                            value="{{ old('settings.notification_cc', $form->settings['notification_cc'] ?? '') }}"
+                            placeholder="opcjonalnie"
+                            class="w-full rounded border-gray-300 text-sm focus:border-brand focus-visible:ring-2 focus-visible:ring-brand">
+                        @error('settings.notification_cc')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+                </div>
+
+                <div class="grid gap-4 sm:grid-cols-2">
+                    <div>
+                        <label for="notification_subject" class="mb-1 block text-sm font-bold">Temat wiadomości</label>
+                        <input id="notification_subject" name="settings[notification_subject]" type="text"
+                            value="{{ old('settings.notification_subject', $form->settings['notification_subject'] ?? '') }}"
+                            placeholder="Nowe zgłoszenie: {tytul}"
+                            aria-describedby="notification_subject_help"
+                            class="w-full rounded border-gray-300 text-sm focus:border-brand focus-visible:ring-2 focus-visible:ring-brand">
+                        <p id="notification_subject_help" class="mt-1 text-xs text-muted">Znaczniki: <code>{tytul}</code> — nazwa formularza, <code>{id}</code> — numer zgłoszenia.</p>
+                    </div>
+                    <div>
+                        <label for="form_mailer" class="mb-1 block text-sm font-bold">Sposób wysyłki</label>
+                        <select id="form_mailer" name="settings[mailer]" aria-describedby="form_mailer_help"
+                            class="w-full rounded border-gray-300 text-sm focus:border-brand focus-visible:ring-2 focus-visible:ring-brand">
+                            <option value="" @selected($formMailer === '')>Dziedzicz z ustawień ({{ $inheritedLabel }})</option>
+                            <option value="msgraph" @selected($formMailer === 'msgraph')>Microsoft 365 (Graph API){{ $graphReady ? '' : ' — nieskonfigurowany' }}</option>
+                            <option value="default" @selected($formMailer === 'default')>Domyślny tryb wysyłki serwisu</option>
+                        </select>
+                        <p id="form_mailer_help" class="mt-1 text-xs text-muted">
+                            Formularze domyślnie wysyłają przez Microsoft Graph, gdy jest skonfigurowany w
+                            <a href="{{ route('admin.ustawienia.edit', ['tab' => 'mail']) }}" class="text-brand underline-offset-2 hover:underline">Ustawienia → Poczta</a>.
+                            @unless ($graphReady) <span class="text-amber-700">Graph nie jest jeszcze skonfigurowany — do czasu uzupełnienia danych używany jest domyślny tryb.</span> @endunless
+                        </p>
+                    </div>
+                </div>
+
+                <div class="grid gap-3 sm:grid-cols-2">
+                    <label class="flex items-start gap-3 rounded-lg border border-gray-200 bg-white p-3">
+                        <input type="hidden" name="settings[reply_to_submitter]" value="0">
+                        <input type="checkbox" name="settings[reply_to_submitter]" value="1"
+                            @checked(old('settings.reply_to_submitter', $form->settings['reply_to_submitter'] ?? true))
+                            class="mt-0.5 rounded border-gray-300 text-brand focus:ring-brand">
+                        <span>
+                            <span class="block text-sm font-bold">Odpowiedz-do: adres zgłaszającego</span>
+                            <span class="block text-xs text-muted">Jeśli formularz ma pole „Adres e-mail”, odpowiedź na powiadomienie trafi wprost do tej osoby.</span>
+                        </span>
+                    </label>
+                    <label class="flex items-start gap-3 rounded-lg border border-gray-200 bg-white p-3">
+                        <input type="hidden" name="settings[send_copy_to_submitter]" value="0">
+                        <input type="checkbox" name="settings[send_copy_to_submitter]" value="1"
+                            @checked(old('settings.send_copy_to_submitter', $form->settings['send_copy_to_submitter'] ?? false))
+                            class="mt-0.5 rounded border-gray-300 text-brand focus:ring-brand">
+                        <span>
+                            <span class="block text-sm font-bold">Wyślij kopię zgłaszającemu</span>
+                            <span class="block text-xs text-muted">Potwierdzenie z kopią przesłanych danych na adres z pola „Adres e-mail”.</span>
+                        </span>
+                    </label>
+                </div>
+
+                <div>
+                    <label for="submitter_copy_message" class="mb-1 block text-sm font-bold">Treść wstępu w kopii dla zgłaszającego</label>
+                    <textarea id="submitter_copy_message" name="settings[submitter_copy_message]" rows="2"
+                        placeholder="Dziękujemy za wypełnienie formularza. Poniżej kopia przesłanych danych."
+                        class="w-full rounded border-gray-300 text-sm focus:border-brand focus-visible:ring-2 focus-visible:ring-brand">{{ old('settings.submitter_copy_message', $form->settings['submitter_copy_message'] ?? '') }}</textarea>
+                </div>
+            </fieldset>
 
             {{-- Podpięcie do CRM w SZO --}}
             <div class="mt-4 border-t border-gray-200 pt-4">

@@ -178,6 +178,7 @@ class SiteSetting extends Model implements HasMedia
         'default' => 'Dziedzicz z serwera (.env)',
         'smtp' => 'Własny serwer SMTP',
         'sendmail' => 'Wbudowana poczta PHP (sendmail)',
+        'msgraph' => 'Microsoft 365 (Graph API)',
     ];
 
     /**
@@ -226,6 +227,7 @@ class SiteSetting extends Model implements HasMedia
         'przelewy24_sandbox', 'przelewy24_merchant_id', 'przelewy24_pos_id', 'przelewy24_crc', 'przelewy24_api_key',
         'unsplash_access_key', 'cookie_banner_enabled', 'cookie_banner_text', 'show_cms_credit',
         'mail_transport', 'mail_from_address', 'mail_from_name', 'mail_host', 'mail_port', 'mail_username', 'mail_password', 'mail_encryption',
+        'msgraph_tenant_id', 'msgraph_client_id', 'msgraph_client_secret', 'msgraph_sender', 'msgraph_save_to_sent', 'forms_mail_via_msgraph',
         'show_coordinators', 'ngo_color', 'sub_brands',
         'logo_alt', 'logo_only',
         'news_layout', 'volunteer_layout',
@@ -238,7 +240,7 @@ class SiteSetting extends Model implements HasMedia
         'accessibility_review_method', 'accessibility_contact_name', 'accessibility_contact_email',
         'accessibility_contact_phone', 'accessibility_architectural',
         'bank_account_number', 'bank_account_tax_number',
-        'donation_amounts', 'donation_intro',
+        'donation_amounts', 'donation_intro', 'donation_headline', 'donation_impacts', 'donation_use_note', 'donation_reports_url',
         'support_intro', 'support_quick_transfer_url', 'support_buycoffee_url',
         'support_wplacam_url', 'support_method4_title', 'support_method4_text', 'support_method4_cta_label',
         'support_show_partners', 'support_testimonial_quote', 'support_testimonial_author', 'support_testimonial_role',
@@ -370,6 +372,9 @@ class SiteSetting extends Model implements HasMedia
         'unsplash_access_key' => 'encrypted',
         'mail_password' => 'encrypted',
         'mail_port' => 'integer',
+        'msgraph_client_secret' => 'encrypted',
+        'msgraph_save_to_sent' => 'boolean',
+        'forms_mail_via_msgraph' => 'boolean',
         'show_coordinators' => 'boolean',
         'brand_skip_contrast' => 'boolean',
         'nav_dark_text' => 'boolean',
@@ -823,6 +828,26 @@ class SiteSetting extends Model implements HasMedia
             ->all();
 
         return $amounts ?: [30, 60, 100, 250];
+    }
+
+    /**
+     * Opisy efektu poszczególnych kwot („60 | Materiały dla jednej grupy”),
+     * jedna pozycja na linię w polu z panelu. Zwraca [kwota => opis];
+     * linie bez poprawnej kwoty są pomijane.
+     *
+     * @return array<int, string>
+     */
+    public function donationImpacts(): array
+    {
+        $impacts = [];
+        foreach (preg_split('/\R/', (string) $this->donation_impacts, -1, PREG_SPLIT_NO_EMPTY) as $line) {
+            if (! preg_match('/^\s*(\d{1,5})\s*(?:zł)?\s*[|:\-–—]\s*(.+?)\s*$/u', $line, $m)) {
+                continue;
+            }
+            $impacts[(int) $m[1]] = $m[2];
+        }
+
+        return $impacts;
     }
 
     /** Edytor treści sprowadzony do jednej z obsługiwanych opcji (patrz wyżej). */
@@ -1524,6 +1549,54 @@ class SiteSetting extends Model implements HasMedia
     public function mailConfigured(): bool
     {
         return $this->mail_transport === 'smtp';
+    }
+
+    /**
+     * Konfiguracja transportu Microsoft Graph (config('mail.mailers.msgraph')).
+     * Pola z panelu mają pierwszeństwo; puste dziedziczą kolejno z .env
+     * (MSGRAPH_*) oraz — tenant i aplikacja — z konfiguracji logowania
+     * Microsoft 365 (ta sama rejestracja w Azure może mieć Mail.Send).
+     * Skrzynka nadawcza: pole panelu → adres nadawcy poczty → .env.
+     *
+     * @return array{tenant_id: ?string, client_id: ?string, client_secret: ?string, sender: ?string, save_to_sent_items: bool}
+     */
+    public function msGraphConfig(): array
+    {
+        $env = (array) config('mail.mailers.msgraph', []);
+
+        $tenant = $this->msgraph_tenant_id
+            ?: ($env['tenant_id'] ?? null)
+            ?: ($this->microsoft_tenant_id ?: config('services.microsoft.tenant'));
+
+        return [
+            'tenant_id' => filled($tenant) && $tenant !== 'common' ? $tenant : null,
+            'client_id' => $this->msgraph_client_id ?: ($env['client_id'] ?? null) ?: ($this->microsoft_client_id ?: config('services.microsoft.client_id')),
+            'client_secret' => $this->msgraph_client_secret ?: ($env['client_secret'] ?? null) ?: ($this->microsoft_client_secret ?: config('services.microsoft.client_secret')),
+            'sender' => $this->msgraph_sender ?: ($env['sender'] ?? null) ?: $this->mail_from_address ?: config('mail.from.address'),
+            'save_to_sent_items' => $this->msgraph_save_to_sent ?? true,
+        ];
+    }
+
+    /** Czy Graph ma komplet danych (tenant inny niż „common”, aplikacja, sekret, skrzynka). */
+    public function msGraphConfigured(): bool
+    {
+        $cfg = $this->msGraphConfig();
+
+        return filled($cfg['tenant_id']) && filled($cfg['client_id']) && filled($cfg['client_secret']) && filled($cfg['sender']);
+    }
+
+    /**
+     * Nazwa mailera dla powiadomień z formularzy: „msgraph”, gdy formularze
+     * mają wysyłać przez Graph (domyślnie) i Graph jest skonfigurowany;
+     * null = mailer domyślny (ustawiony w „Tryb wysyłki”).
+     */
+    public function formsMailer(): ?string
+    {
+        if (($this->forms_mail_via_msgraph ?? true) && $this->msGraphConfigured()) {
+            return 'msgraph';
+        }
+
+        return null;
     }
 
     /**

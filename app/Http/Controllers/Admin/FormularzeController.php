@@ -167,13 +167,33 @@ class FormularzeController extends Controller
             'fields.*.options'               => 'nullable|string|max:2000',
             'fields.*.help_text'             => 'nullable|string|max:500',
             'settings.confirmation_message'  => 'nullable|string|max:1000',
-            'settings.notification_email'    => 'nullable|email|max:255',
+            'settings.notification_email'    => 'nullable|string|max:500',
+            'settings.notification_cc'       => 'nullable|string|max:500',
+            'settings.notification_subject'  => 'nullable|string|max:200',
+            'settings.mailer'                => 'nullable|in:,msgraph,default',
+            'settings.reply_to_submitter'    => 'nullable|boolean',
+            'settings.send_copy_to_submitter' => 'nullable|boolean',
+            'settings.submitter_copy_message' => 'nullable|string|max:1000',
             'settings.szo_form_slug'         => 'nullable|string|max:120',
         ], [], [
             'title'       => 'nazwa formularza',
             'slug'        => 'identyfikator URL',
             'description' => 'opis',
+            'settings.notification_email' => 'e-mail do powiadomień',
+            'settings.notification_cc'    => 'kopia (DW)',
         ]);
+
+        // Listy adresów rozdzielone przecinkami: każdy musi być poprawnym e-mailem.
+        foreach (['settings.notification_email' => 'e-mail do powiadomień', 'settings.notification_cc' => 'kopia (DW)'] as $key => $label) {
+            $raw = (string) $request->input($key, '');
+            $bad = collect(explode(',', $raw))->map(fn ($e) => trim($e))->filter()
+                ->reject(fn ($e) => filter_var($e, FILTER_VALIDATE_EMAIL))->values();
+            if ($bad->isNotEmpty()) {
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    $key => 'Pole '.$label.' zawiera niepoprawny adres: '.$bad->implode(', ').'. Adresy rozdziel przecinkami.',
+                ]);
+            }
+        }
 
         $fields = collect($request->input('fields', []))
             ->filter(fn ($f) => ! empty($f['label']))
@@ -197,6 +217,15 @@ class FormularzeController extends Controller
             'settings'    => [
                 'confirmation_message' => $request->input('settings.confirmation_message'),
                 'notification_email'   => $request->input('settings.notification_email'),
+                'notification_cc'      => $request->input('settings.notification_cc'),
+                'notification_subject' => $request->input('settings.notification_subject'),
+                // Transport powiadomień: '' = dziedzicz (domyślnie Microsoft Graph,
+                // gdy skonfigurowany w Ustawienia → Poczta), 'msgraph' = wymuś Graph,
+                // 'default' = zawsze domyślny tryb wysyłki serwisu.
+                'mailer'               => in_array($request->input('settings.mailer'), ['msgraph', 'default'], true) ? $request->input('settings.mailer') : '',
+                'reply_to_submitter'   => $request->boolean('settings.reply_to_submitter'),
+                'send_copy_to_submitter' => $request->boolean('settings.send_copy_to_submitter'),
+                'submitter_copy_message' => $request->input('settings.submitter_copy_message'),
                 // Slug formularza po stronie SZO. Puste = zgłoszenia zostają
                 // wyłącznie w CMS-ie; podpięcie jest świadomą decyzją redaktora.
                 'szo_form_slug'        => $request->input('settings.szo_form_slug'),

@@ -18,6 +18,7 @@ use App\Observers\NewsObserver;
 use App\Observers\PageObserver;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
@@ -55,6 +56,19 @@ class AppServiceProvider extends ServiceProvider
         // Rejestracja providera Microsoft 365 dla Laravel Socialite.
         Event::listen(function (SocialiteWasCalled $event) {
             $event->extendSocialite('microsoft', Provider::class);
+        });
+
+        // Transport „msgraph" (Microsoft 365 przez Graph API). Dane uwierzytelniające
+        // rozwiązywane leniwie — w chwili budowy mailera — więc zmiany w panelu
+        // działają bez restartu, a testy mogą podstawić ustawienia po starcie aplikacji.
+        Mail::extend('msgraph', function (array $config) {
+            try {
+                $config = array_merge($config, array_filter(SiteSetting::current()->msGraphConfig(), fn ($v) => $v !== null));
+            } catch (\Throwable $e) {
+                // Brak bazy — zostają wartości z config/mail.php (.env).
+            }
+
+            return \App\Mail\Transport\MicrosoftGraphTransport::fromConfig($config);
         });
 
         // Konfiguracja poczty z panelu nadpisuje .env (SMTP). Owinięte w try/catch,
@@ -156,6 +170,16 @@ class AppServiceProvider extends ServiceProvider
         // bez potrzeby konfigurowania SMTP. Odpowiednik funkcji mail() na hostingu.
         if ($settings->mail_transport === 'sendmail') {
             config(['mail.default' => 'sendmail']);
+
+            return;
+        }
+
+        // Microsoft 365 przez Graph API: cała poczta serwisu idzie przez skrzynkę
+        // z panelu. Bez kompletu danych zostajemy przy .env — brak awarii wysyłki.
+        if ($settings->mail_transport === 'msgraph') {
+            if ($settings->msGraphConfigured()) {
+                config(['mail.default' => 'msgraph']);
+            }
 
             return;
         }

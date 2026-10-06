@@ -1051,6 +1051,37 @@
                     <p class="mt-1 text-xs text-muted">Pusta linia rozpoczyna nowy akapit.</p>
                     @error('donation_intro') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                 </div>
+                <div>
+                    <label for="donation_headline" class="mb-1 block text-sm font-bold">Nagłówek strony <span class="font-normal text-muted">(opcjonalnie)</span></label>
+                    <input type="text" id="donation_headline" name="donation_headline" maxlength="160"
+                        value="{{ old('donation_headline', $settings->donation_headline) }}" placeholder="Twoja wpłata zamienia się w realną pomoc"
+                        class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                    <p class="mt-1 text-xs text-muted">Hasło nad formularzem — konkretne i o efekcie wpłaty, nie o samej organizacji.</p>
+                    @error('donation_headline') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                </div>
+                <div>
+                    <label for="donation_impacts" class="mb-1 block text-sm font-bold">Co daje każda kwota <span class="font-normal text-muted">(opcjonalnie)</span></label>
+                    <textarea id="donation_impacts" name="donation_impacts" rows="4" maxlength="1500"
+                        aria-describedby="donation_impacts_help"
+                        placeholder="30 | Materiały edukacyjne dla jednej osoby&#10;60 | Godzina indywidualnego wsparcia"
+                        class="w-full rounded border-gray-300 font-mono text-sm focus:border-brand focus:ring-brand">{{ old('donation_impacts', $settings->donation_impacts) }}</textarea>
+                    <p id="donation_impacts_help" class="mt-1 text-xs text-muted">Jedna linia na kwotę: <code>kwota | opis</code>. Opis pojawia się pod wybraną kwotą. Wpisuj tylko to, co organizacja faktycznie może potwierdzić.</p>
+                    @error('donation_impacts') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                </div>
+                <div>
+                    <label for="donation_use_note" class="mb-1 block text-sm font-bold">Na co przeznaczamy wpłaty <span class="font-normal text-muted">(opcjonalnie)</span></label>
+                    <textarea id="donation_use_note" name="donation_use_note" rows="4" maxlength="1500"
+                        class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">{{ old('donation_use_note', $settings->donation_use_note) }}</textarea>
+                    <p class="mt-1 text-xs text-muted">Pusta linia rozpoczyna nowy akapit. Transparentność zwiększa zaufanie darczyńców.</p>
+                    @error('donation_use_note') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                </div>
+                <div>
+                    <label for="donation_reports_url" class="mb-1 block text-sm font-bold">Odnośnik do sprawozdań <span class="font-normal text-muted">(opcjonalnie)</span></label>
+                    <input type="text" id="donation_reports_url" name="donation_reports_url" maxlength="255"
+                        value="{{ old('donation_reports_url', $settings->donation_reports_url) }}" placeholder="/sprawozdania lub https://…"
+                        class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                    @error('donation_reports_url') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                </div>
             </div>
 
             <div class="border-t border-gray-100 pt-5">
@@ -2902,6 +2933,10 @@
                 <p class="mt-2 text-xs text-muted" x-show="transport === 'sendmail'" x-cloak>
                     Poczta wysyłana wbudowanym mechanizmem PHP (sendmail) — bez konfiguracji SMTP. Działa, jeśli serwer/hosting ma skonfigurowaną lokalną wysyłkę poczty.
                 </p>
+                <p class="mt-2 text-xs text-muted" x-show="transport === 'msgraph'" x-cloak>
+                    Cała poczta serwisu (kontakt, formularze, newsletter, powiadomienia) wychodzi przez Microsoft Graph ze skrzynki wskazanej poniżej.
+                    Bez kompletu danych Graph wysyłka wraca do ustawień z <code>.env</code>.
+                </p>
             </div>
 
             <div class="grid gap-5 sm:grid-cols-2">
@@ -2965,10 +3000,104 @@
                 </div>
             </div>
 
-            <p class="rounded border border-blue-200 bg-blue-50 px-3 py-2 text-xs text-blue-800">
-                Integracja z Microsoft 365 (Azure / Graph) zostanie dodana w kolejnym kroku. Na razie dla skrzynek Microsoft
-                użyj SMTP (o ile tenant ma włączone uwierzytelnianie SMTP AUTH).
-            </p>
+            @php
+                $graphCfg = $settings->msGraphConfig();
+                $graphReady = $settings->msGraphConfigured();
+                $graphInheritsSso = blank($settings->msgraph_client_id) && blank(config('mail.mailers.msgraph.client_id')) && filled($graphCfg['client_id']);
+            @endphp
+            <div class="space-y-5 rounded-lg border p-4 {{ $graphReady ? 'border-green-200' : 'border-gray-200' }}"
+                 :class="transport === 'msgraph' ? 'ring-2 ring-brand/30' : ''">
+                <div class="flex flex-wrap items-start justify-between gap-3">
+                    <div>
+                        <p class="text-sm font-bold text-ink">
+                            <i class="fa-brands fa-microsoft mr-1 text-brand" aria-hidden="true"></i> Microsoft 365 — Graph API
+                        </p>
+                        <p class="mt-1 text-xs text-muted">
+                            Wysyłka bez SMTP AUTH, przez uprawnienie aplikacyjne <code>Mail.Send</code>. Powiadomienia z formularzy
+                            korzystają z Graph <strong>domyślnie</strong>, gdy tylko poniższe dane są kompletne; opcja „Microsoft 365 (Graph API)”
+                            w „Trybie wysyłki” przełącza całą pocztę.
+                        </p>
+                    </div>
+                    <span class="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-bold {{ $graphReady ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600' }}">
+                        <i class="fa-solid {{ $graphReady ? 'fa-circle-check' : 'fa-circle-minus' }}" aria-hidden="true"></i>
+                        {{ $graphReady ? 'Skonfigurowany — nadawca: '.$graphCfg['sender'] : 'Nieskonfigurowany' }}
+                    </span>
+                </div>
+
+                @if ($graphInheritsSso)
+                    <p class="rounded border border-blue-200 bg-blue-50 px-3 py-2 text-xs text-blue-800">
+                        Tenant, ID aplikacji i sekret są dziedziczone z konfiguracji logowania Microsoft 365 (zakładka „Logowanie”).
+                        Tej samej rejestracji w Azure wystarczy nadać uprawnienie aplikacyjne <code>Mail.Send</code>. Wpisz poniżej własne wartości, aby użyć osobnej aplikacji.
+                    </p>
+                @endif
+
+                <div class="grid gap-5 sm:grid-cols-2">
+                    <div>
+                        <label for="msgraph_tenant_id" class="mb-1 block text-sm font-bold">ID tenanta (Directory ID)</label>
+                        <input type="text" id="msgraph_tenant_id" name="msgraph_tenant_id" value="{{ old('msgraph_tenant_id', $settings->msgraph_tenant_id) }}"
+                            placeholder="{{ $graphCfg['tenant_id'] ?: 'np. 1a2b3c4d-… (nie „common”)' }}" autocomplete="off" aria-describedby="msgraph_tenant_help"
+                            class="w-full rounded border-gray-300 font-mono text-sm focus:border-brand focus:ring-brand">
+                        <p id="msgraph_tenant_help" class="mt-1 text-xs text-muted">Uwierzytelnianie aplikacji wymaga konkretnego tenanta — wartość „common” nie zadziała.</p>
+                        @error('msgraph_tenant_id') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </div>
+                    <div>
+                        <label for="msgraph_client_id" class="mb-1 block text-sm font-bold">ID aplikacji (Client ID)</label>
+                        <input type="text" id="msgraph_client_id" name="msgraph_client_id" value="{{ old('msgraph_client_id', $settings->msgraph_client_id) }}"
+                            placeholder="{{ $graphCfg['client_id'] ?: '' }}" autocomplete="off"
+                            class="w-full rounded border-gray-300 font-mono text-sm focus:border-brand focus:ring-brand">
+                        @error('msgraph_client_id') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </div>
+                    <div>
+                        <label for="msgraph_client_secret" class="mb-1 block text-sm font-bold">Sekret klienta (Client Secret)</label>
+                        <input type="password" id="msgraph_client_secret" name="msgraph_client_secret" autocomplete="new-password"
+                            placeholder="{{ $settings->msgraph_client_secret ? '•••••••• (zapisany — zostaw puste, aby nie zmieniać)' : ($graphCfg['client_secret'] ? '•••••••• (dziedziczony)' : '') }}"
+                            class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                        <p class="mt-1 text-xs text-muted">Przechowywany w bazie w postaci zaszyfrowanej.</p>
+                        @error('msgraph_client_secret') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </div>
+                    <div>
+                        <label for="msgraph_sender" class="mb-1 block text-sm font-bold">Skrzynka nadawcza (UPN)</label>
+                        <input type="email" id="msgraph_sender" name="msgraph_sender" value="{{ old('msgraph_sender', $settings->msgraph_sender) }}"
+                            placeholder="{{ $graphCfg['sender'] ?: 'np. powiadomienia@feer.org.pl' }}" aria-describedby="msgraph_sender_help"
+                            class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                        <p id="msgraph_sender_help" class="mt-1 text-xs text-muted">Skrzynka użytkownika lub współdzielona w tenancie; to ona jest nadawcą (nagłówek From z wiadomości jest pomijany). Puste = adres nadawcy powyżej.</p>
+                        @error('msgraph_sender') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </div>
+                </div>
+
+                <div class="grid gap-3 sm:grid-cols-2">
+                    <label class="flex items-start gap-3 rounded-lg border border-gray-200 bg-white p-3">
+                        <input type="hidden" name="msgraph_save_to_sent" value="0">
+                        <input type="checkbox" name="msgraph_save_to_sent" value="1" @checked(old('msgraph_save_to_sent', $settings->msgraph_save_to_sent ?? true))
+                            class="mt-0.5 rounded border-gray-300 text-brand focus:ring-brand">
+                        <span>
+                            <span class="block text-sm font-bold">Zapisuj w „Elementach wysłanych”</span>
+                            <span class="block text-xs text-muted">Kopia każdej wiadomości zostaje w skrzynce nadawczej.</span>
+                        </span>
+                    </label>
+                    <label class="flex items-start gap-3 rounded-lg border border-gray-200 bg-white p-3">
+                        <input type="hidden" name="forms_mail_via_msgraph" value="0">
+                        <input type="checkbox" name="forms_mail_via_msgraph" value="1" @checked(old('forms_mail_via_msgraph', $settings->forms_mail_via_msgraph ?? true))
+                            class="mt-0.5 rounded border-gray-300 text-brand focus:ring-brand">
+                        <span>
+                            <span class="block text-sm font-bold">Formularze: powiadomienia przez Graph</span>
+                            <span class="block text-xs text-muted">Domyślnie włączone. Pojedynczy formularz może to nadpisać w swoich ustawieniach („Sposób wysyłki”).</span>
+                        </span>
+                    </label>
+                </div>
+
+                <details class="rounded-lg border border-gray-200 bg-gray-50 p-3 text-xs text-muted">
+                    <summary class="cursor-pointer font-bold text-ink">Jak skonfigurować aplikację w Azure (krok po kroku)</summary>
+                    <ol class="mt-2 list-decimal space-y-1 pl-5">
+                        <li>Entra ID → <em>App registrations</em> → <em>New registration</em> (lub użyj istniejącej aplikacji logowania).</li>
+                        <li><em>Certificates &amp; secrets</em> → nowy sekret klienta; skopiuj wartość (widoczna tylko raz).</li>
+                        <li><em>API permissions</em> → <em>Add a permission</em> → Microsoft Graph → <strong>Application permissions</strong> → <code>Mail.Send</code> → <em>Grant admin consent</em>.</li>
+                        <li>Zalecane: ogranicz aplikację do jednej skrzynki — Exchange Online PowerShell:
+                            <code>New-ApplicationAccessPolicy -AppId &lt;ClientID&gt; -PolicyScopeGroupId &lt;grupa ze skrzynką&gt; -AccessRight RestrictAccess</code>.</li>
+                        <li>Wpisz dane powyżej, zapisz ustawienia i użyj „Wyślij test przez Graph”.</li>
+                    </ol>
+                </details>
+            </div>
         </div>
 
         <div class="flex items-center gap-3 border-t border-gray-100 pt-5">
@@ -3001,7 +3130,11 @@
                     class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
                 @error('test_email') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
             </div>
-            <button type="submit" class="rounded border border-brand px-4 py-2 text-sm font-bold text-brand hover:bg-brand-light">Wyślij test</button>
+            <button type="submit" name="via" value="default" class="rounded border border-brand px-4 py-2 text-sm font-bold text-brand hover:bg-brand-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">Wyślij test</button>
+            <button type="submit" name="via" value="msgraph" class="inline-flex items-center gap-1.5 rounded border border-gray-300 px-4 py-2 text-sm font-bold text-ink hover:border-brand hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+                title="Wysyła testową wiadomość transportem Microsoft Graph niezależnie od wybranego trybu wysyłki">
+                <i class="fa-brands fa-microsoft" aria-hidden="true"></i> Wyślij test przez Graph
+            </button>
         </div>
     </form>
     </div>
