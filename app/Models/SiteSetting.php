@@ -240,7 +240,7 @@ class SiteSetting extends Model implements HasMedia
         'site_url', 'maintenance_mode', 'maintenance_message',
         'microsoft_login_enabled', 'microsoft_only_login', 'emergency_login_token', 'microsoft_client_id', 'microsoft_client_secret', 'microsoft_tenant_id',
         'google_login_enabled', 'google_client_id', 'google_client_secret',
-        'member_login_enabled', 'member_allowed_domains', 'szo_api_url', 'szo_enabled', 'szo_token', 'szo_default_form', 'szo_donation_form', 'szo_timeout', 'yubico_client_id', 'yubico_secret_key', 'two_factor_required_admins',
+        'member_login_enabled', 'member_allowed_domains', 'szo_api_url', 'szo_enabled', 'szo_token', 'szo_default_form', 'szo_donation_form', 'szo_timeout', 'cleantalk_enabled', 'cleantalk_access_key', 'yubico_client_id', 'yubico_secret_key', 'two_factor_required_admins',
         'przelewy24_sandbox', 'przelewy24_merchant_id', 'przelewy24_pos_id', 'przelewy24_crc', 'przelewy24_api_key',
         'unsplash_access_key', 'cookie_banner_enabled', 'cookie_banner_text', 'show_cms_credit',
         'mail_transport', 'mail_from_address', 'mail_from_name', 'mail_host', 'mail_port', 'mail_username', 'mail_password', 'mail_encryption',
@@ -442,6 +442,8 @@ class SiteSetting extends Model implements HasMedia
         'microsoft_login_enabled' => 'boolean',
         'microsoft_only_login' => 'boolean',
         'microsoft_client_secret' => 'encrypted',
+        'cleantalk_enabled' => 'boolean',
+        'cleantalk_access_key' => 'encrypted',
         'szo_enabled' => 'boolean',
         'szo_token' => 'encrypted',
         'szo_timeout' => 'integer',
@@ -1199,6 +1201,26 @@ class SiteSetting extends Model implements HasMedia
         $emailDomain = ltrim($emailDomain, '@');
 
         return in_array($emailDomain, $domains, true);
+    }
+
+    /**
+     * Nadpisania config/cleantalk.php z panelu. Wartości z panelu mają pierwszeństwo przed .env;
+     * puste pola dziedziczą. Zwracane są tylko klucze ustawione przez administratora.
+     *
+     * @return array<string, mixed>
+     */
+    public function cleantalkConfigOverrides(): array
+    {
+        $overrides = [];
+
+        if ($this->cleantalk_enabled !== null) {
+            $overrides['cleantalk.enabled'] = (bool) $this->cleantalk_enabled;
+        }
+        if (filled($this->cleantalk_access_key)) {
+            $overrides['cleantalk.apikey'] = trim($this->cleantalk_access_key);
+        }
+
+        return $overrides;
     }
 
     /**

@@ -276,7 +276,7 @@
         @endforeach
 
         @if (count($fields) > 0)
-            @include('partials.spam-protection', ['spamScope' => $fs])
+            @include('partials.spam-protection', ['spamScope' => $fs, 'cleantalk' => empty($form->settings['cleantalk_disabled'] ?? null)])
 
             <div class="pt-2">
                 <button type="submit"

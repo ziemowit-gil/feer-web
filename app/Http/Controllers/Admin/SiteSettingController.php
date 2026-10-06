@@ -102,6 +102,8 @@ class SiteSettingController extends Controller
             'member_login_enabled' => ['sometimes', 'boolean'],
             'member_allowed_domains' => ['nullable', 'string', 'max:500'],
             'szo_api_url' => ['nullable', 'url', 'max:255'],
+            'cleantalk_enabled' => ['sometimes', 'boolean'],
+            'cleantalk_access_key' => ['nullable', 'string', 'max:255'],
             'szo_enabled' => ['sometimes', 'boolean'],
             'szo_token' => ['nullable', 'string', 'max:1000'],
             'szo_default_form' => ['nullable', 'string', 'max:120', 'regex:/^[a-z0-9\-_]*$/i'],
@@ -410,6 +412,11 @@ class SiteSettingController extends Controller
             unset($data['mail_password']);
         }
         // Puste pola CRC/API key Przelewy24 = zostaw zapisane (analogicznie do sekretu Microsoft).
+        // Pusty klucz CleanTalk = zostaw zapisany (jak hasło SMTP).
+        if (blank($data['cleantalk_access_key'] ?? null)) {
+            unset($data['cleantalk_access_key']);
+        }
+        $data['cleantalk_enabled'] = $request->boolean('cleantalk_enabled');
         // Pusty token SZO = zostaw zapisany (jak sekret Microsoft).
         if (blank($data['szo_token'] ?? null)) {
             unset($data['szo_token']);
@@ -779,6 +786,15 @@ class SiteSettingController extends Controller
 
         return redirect()->route('admin.ustawienia.edit', ['tab' => 'mail'])
             ->with('status', 'Wysłano wiadomość testową'.($viaGraph ? ' przez Microsoft Graph' : '').' na adres '.$data['test_email'].'.');
+    }
+
+    /** Sprawdza klucz CleanTalk (wiadomość testowa, którą usługa zawsze ocenia jako spam). */
+    public function cleantalkCheck(Request $request)
+    {
+        $data = $request->validate(['key' => ['nullable', 'string', 'max:255']]);
+        $key = filled($data['key'] ?? null) ? $data['key'] : (string) config('cleantalk.apikey');
+
+        return response()->json(\App\Support\CleanTalkGuard::diagnose($key));
     }
 
     /**

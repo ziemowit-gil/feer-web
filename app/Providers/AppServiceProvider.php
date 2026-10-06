@@ -78,6 +78,7 @@ class AppServiceProvider extends ServiceProvider
             $this->applySiteUrl($settings);
             $this->applyMailConfig($settings);
             config($settings->szoConfigOverrides());
+            config($settings->cleantalkConfigOverrides());
         } catch (\Throwable $e) {
             // Brak zmigrowanej bazy / ustawień — zostajemy przy konfiguracji z .env.
         }

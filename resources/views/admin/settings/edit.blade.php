@@ -2897,6 +2897,68 @@
                 </div>
             </div>
 
+            {{-- ===================== Ochrona antyspamowa CleanTalk ===================== --}}
+            @php
+                $ctEnabled = old('cleantalk_enabled', $settings->cleantalk_enabled ?? (bool) config('cleantalk.enabled'));
+                $ctKeyFromEnv = blank($settings->cleantalk_access_key) && filled(config('cleantalk.apikey'));
+            @endphp
+            <div class="border-t border-gray-200 pt-6" x-data="{
+                    busy: false, res: null,
+                    async check() {
+                        this.busy = true; this.res = null;
+                        try {
+                            const r = await fetch(@js(route('admin.ustawienia.cleantalk-check')), {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content },
+                                body: JSON.stringify({ key: document.getElementById('cleantalk_access_key')?.value || '' }),
+                            });
+                            this.res = await r.json();
+                            if (! r.ok && ! this.res.message) this.res = { level: 'error', message: 'Nie udało się sprawdzić klucza.' };
+                        } catch (e) { this.res = { level: 'error', message: 'Brak połączenia z serwerem.' }; }
+                        finally { this.busy = false; }
+                    },
+                }">
+                <h2 class="text-base font-bold text-ink"><i class="fa-solid fa-shield-virus mr-1 text-brand" aria-hidden="true"></i> Ochrona antyspamowa CleanTalk</h2>
+                <p class="mt-1 text-xs text-muted">
+                    Dodatkowa warstwa ochrony formularzy (moduł Formularze) obok lokalnego zadania antyspamowego: skrypt analizuje zachowanie odwiedzającego,
+                    a usługa <a href="https://cleantalk.org" target="_blank" rel="noopener" class="text-brand underline">CleanTalk<span class="sr-only"> (otwiera się w nowej karcie)</span></a> ocenia treść zgłoszenia.
+                    Klucz dostępu (Access key) wygenerujesz w koncie CleanTalk. Gdy usługa jest niedostępna, formularz działa normalnie.
+                </p>
+                <p class="mt-3 rounded border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900" role="note">
+                    <strong>Dane wysyłane do CleanTalk:</strong> treść zgłoszenia, imię i adres e-mail nadawcy, jego adres IP i strona odsyłająca. Na stronach z formularzem ładowany jest też skrypt z domeny <code>fd.cleantalk.org</code>.
+                    Uwzględnij to w polityce prywatności i zawrzyj z dostawcą umowę powierzenia przetwarzania danych. Formularz możesz wyłączyć z kontroli w jego własnych ustawieniach.
+                </p>
+
+                <label class="mt-4 flex items-start gap-3 rounded-lg border border-gray-200 p-3">
+                    <input type="hidden" name="cleantalk_enabled" value="0">
+                    <input type="checkbox" name="cleantalk_enabled" value="1" @checked($ctEnabled)
+                        class="mt-0.5 rounded border-gray-300 text-brand focus:ring-brand">
+                    <span>
+                        <span class="block text-sm font-bold">Sprawdzaj zgłoszenia formularzy w CleanTalk</span>
+                        <span class="block text-xs text-muted">Wymaga klucza dostępu. Zgłoszenie uznane za spam nie zostaje zapisane, a osoba widzi komunikat z prośbą o zmianę treści.</span>
+                    </span>
+                </label>
+
+                <div class="mt-4">
+                    <label for="cleantalk_access_key" class="mb-1 block text-sm font-bold">Klucz dostępu (Access key)</label>
+                    <input type="password" id="cleantalk_access_key" name="cleantalk_access_key" autocomplete="new-password" maxlength="255"
+                        placeholder="{{ $settings->cleantalk_access_key ? '•••••••• (zapisany — zostaw puste, aby nie zmieniać)' : ($ctKeyFromEnv ? '•••••••• (z .env)' : '') }}"
+                        class="w-full rounded border-gray-300 font-mono text-sm focus:border-brand focus:ring-brand">
+                    <p class="mt-1 text-xs text-muted">Przechowywany zaszyfrowany. Puste pole zachowuje zapisany klucz.</p>
+                    @error('cleantalk_access_key') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                </div>
+
+                <div class="mt-4 space-y-2">
+                    <button type="button" @click="check()" :disabled="busy"
+                        class="inline-flex min-h-10 items-center gap-2 rounded border border-gray-300 px-4 py-2 text-xs font-bold text-ink hover:border-brand hover:text-brand disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                        <i class="fa-solid" :class="busy ? 'fa-spinner fa-spin' : 'fa-plug-circle-check'" aria-hidden="true"></i> Sprawdź klucz
+                    </button>
+                    <p role="status" aria-live="polite" x-show="res" x-cloak x-text="res?.message"
+                        class="rounded border px-3 py-2 text-sm"
+                        :class="{ 'border-green-200 bg-green-50 text-green-800': res?.level === 'success', 'border-amber-200 bg-amber-50 text-amber-800': res?.level === 'warning', 'border-red-200 bg-red-50 text-red-800': res?.level === 'error' }"></p>
+                </div>
+            </div>
+
             {{-- ===================== 2FA panelu + YubiKey ===================== --}}
             <div class="border-t border-gray-200 pt-6">
                 <h2 class="text-base font-bold text-ink">Uwierzytelnianie dwuetapowe (2FA) panelu</h2>

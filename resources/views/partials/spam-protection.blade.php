@@ -9,7 +9,8 @@
 
     Sprawdzane po stronie serwera przez App\Support\SpamGuard.
 
-    Parametry: $spamScope (unikalny sufiks id, gdy na stronie jest wiele formularzy).
+    Parametry: $spamScope (unikalny sufiks id, gdy na stronie jest wiele formularzy),
+    $cleantalk (true = formularz sprawdza także CleanTalk — ładujemy jego skrypt analizy zachowania).
 --}}
 @php
     $spamScope     = $spamScope ?? 'form';
@@ -60,3 +61,11 @@
         </p>
     @enderror
 </div>
+
+{{-- CleanTalk: skrypt (fd.cleantalk.org) dopisuje do formularza token zachowania odwiedzającego. Ładowany tylko
+     gdy ochrona jest włączona w ustawieniach; bez niego usługa nadal ocenia treść, tylko mniej dokładnie. --}}
+@if (($cleantalk ?? false) && \App\Support\CleanTalkGuard::enabled())
+    @once
+        @include('cleantalk::cleantalk')
+    @endonce
+@endif

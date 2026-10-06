@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "19ad01e924ff8b718a0f7e45a69f3e1d",
+    "content-hash": "f22c64a66171e304700741ae2e3068e1",
     "packages": [
         {
             "name": "bacon/bacon-qr-code",
@@ -265,6 +265,50 @@
                 }
             ],
             "time": "2024-02-09T16:56:22+00:00"
+        },
+        {
+            "name": "cleantalk/laravel-antispam",
+            "version": "3.0.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/CleanTalk/laravel-antispam.git",
+                "reference": "8b68fe209ddba289768740873a0888202840e0c9"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/CleanTalk/laravel-antispam/zipball/8b68fe209ddba289768740873a0888202840e0c9",
+                "reference": "8b68fe209ddba289768740873a0888202840e0c9",
+                "shasum": ""
+            },
+            "type": "laravel-extension",
+            "autoload": {
+                "psr-4": {
+                    "CleanTalk\\": "src/lib/",
+                    "CleanTalkLaravel\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "GPL-3.0"
+            ],
+            "authors": [
+                {
+                    "name": "CleanTalk Developers Team",
+                    "email": "plugins@cleantalk.org"
+                }
+            ],
+            "description": "Anti-spam laravel extension by CleanTalk with protection against spam bots and manual spam.",
+            "homepage": "https://cleantalk.org",
+            "keywords": [
+                "antispam",
+                "cleantalk",
+                "laravel"
+            ],
+            "support": {
+                "issues": "https://github.com/CleanTalk/laravel-antispam/issues",
+                "source": "https://github.com/CleanTalk/laravel-antispam/tree/3.0.1"
+            },
+            "time": "2025-11-12T09:10:36+00:00"
         },
         {
             "name": "clue/redis-protocol",

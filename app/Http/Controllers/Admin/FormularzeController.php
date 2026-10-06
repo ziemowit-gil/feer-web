@@ -174,6 +174,7 @@ class FormularzeController extends Controller
             'settings.reply_to_submitter'    => 'nullable|boolean',
             'settings.send_copy_to_submitter' => 'nullable|boolean',
             'settings.submitter_copy_message' => 'nullable|string|max:1000',
+            'settings.cleantalk_disabled'    => 'nullable|boolean',
             'settings.szo_form_slug'         => 'nullable|string|max:120',
         ], [], [
             'title'       => 'nazwa formularza',
@@ -229,6 +230,8 @@ class FormularzeController extends Controller
                 // Slug formularza po stronie SZO. Puste = zgłoszenia zostają
                 // wyłącznie w CMS-ie; podpięcie jest świadomą decyzją redaktora.
                 'szo_form_slug'        => $request->input('settings.szo_form_slug'),
+                // true = ten formularz nie jest sprawdzany w CleanTalk (np. formularz wewnętrzny, bez ryzyka spamu).
+                'cleantalk_disabled'   => $request->boolean('settings.cleantalk_disabled'),
             ],
         ];
     }

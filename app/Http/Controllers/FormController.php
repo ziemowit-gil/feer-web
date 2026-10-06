@@ -7,6 +7,7 @@ use App\Models\FormDefinition;
 use App\Models\FormSubmission;
 use App\Models\SiteSetting;
 use App\Services\SzoClient;
+use App\Support\CleanTalkGuard;
 use App\Support\SpamGuard;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -60,6 +61,27 @@ class FormController extends Controller
                 ->withErrors($validator)
                 ->withInput()
                 ->with('_form_slug', $formularz->slug);
+        }
+
+        // CleanTalk (opcjonalnie, wg ustawień): ocena treści i zachowania nadawcy po stronie usługi.
+        // Dopiero po poprawnej walidacji — nie wysyłamy tam niepełnych danych. Awaria usługi = przepuszczamy.
+        if (CleanTalkGuard::enabled() && empty($formularz->settings['cleantalk_disabled'])) {
+            $verdict = app(CleanTalkGuard::class)->check($request, $formularz->normalizedFields(), (array) $request->input('data', []));
+
+            if (! $verdict['allow']) {
+                Log::warning('Zablokowano zgłoszenie formularza (CleanTalk)', [
+                    'formularz' => $formularz->slug,
+                    'komentarz' => $verdict['comment'],
+                    'zapytanie' => $verdict['link'],
+                    'ip'        => $request->ip(),
+                ]);
+
+                return back()
+                    ->withErrors(['spam' => 'Zgłoszenie zostało uznane za spam przez zewnętrzny filtr antyspamowy. '
+                        .'Jeśli to pomyłka, zmień treść wiadomości lub skontaktuj się z nami inną drogą.'])
+                    ->withInput()
+                    ->with('_form_slug', $formularz->slug);
+            }
         }
 
         $submission = FormSubmission::create([

@@ -303,6 +303,20 @@
                 </div>
             </fieldset>
 
+            {{-- Ochrona CleanTalk: globalnie w Ustawienia → Logowanie i integracje; tu wyłączenie dla jednego formularza --}}
+            @if (\App\Support\CleanTalkGuard::enabled())
+                <label class="mt-4 flex items-start gap-3 rounded-lg border border-gray-200 p-3">
+                    <input type="hidden" name="settings[cleantalk_disabled]" value="0">
+                    <input type="checkbox" name="settings[cleantalk_disabled]" value="1"
+                        @checked(old('settings.cleantalk_disabled', $form->settings['cleantalk_disabled'] ?? false))
+                        class="mt-0.5 rounded border-gray-300 text-brand focus:ring-brand">
+                    <span>
+                        <span class="block text-sm font-bold">Nie sprawdzaj tego formularza w CleanTalk</span>
+                        <span class="block text-xs text-muted">Domyślnie zgłoszenia są oceniane przez CleanTalk (włączone w ustawieniach). Zaznacz, jeśli formularz jest wewnętrzny albo nie powinien wysyłać danych do zewnętrznej usługi. Lokalna ochrona antyspamowa działa nadal.</span>
+                    </span>
+                </label>
+            @endif
+
             {{-- Podpięcie do CRM w SZO --}}
             <div class="mt-4 border-t border-gray-200 pt-4">
                 <label for="szo_form_slug" class="mb-1 block text-sm font-bold">
