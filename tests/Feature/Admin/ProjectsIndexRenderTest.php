@@ -95,4 +95,17 @@ class ProjectsIndexRenderTest extends TestCase
         $this->assertStringNotContainsString('aria-label="Informacje o projekcie"', $html);
         $this->assertStringNotContainsString('Kategoria</dt>', $html);
     }
+
+    public function test_zdjecie_projektu_jest_w_naglowku_strony_projektu(): void
+    {
+        \Illuminate\Support\Facades\Storage::fake('public');
+        $category = Category::create(['name' => 'Audyty', 'slug' => 'audyty']);
+        $project = Project::create(['title' => 'Audyt A', 'slug' => 'audyt-a', 'is_published' => true, 'category_id' => $category->id, 'image_alt' => 'Opis zdjęcia']);
+        $project->addMedia(\Illuminate\Http\UploadedFile::fake()->image('p.jpg', 800, 600))->toMediaCollection('image');
+
+        $html = $this->get(route('projects.show', $project->fresh()))->assertOk()->getContent();
+
+        $this->assertStringContainsString('alt="Opis zdjęcia"', $html);
+        $this->assertStringContainsString('data-lightbox', $html);
+    }
 }
