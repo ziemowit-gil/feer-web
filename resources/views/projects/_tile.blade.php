@@ -1,4 +1,4 @@
-{{-- Duży kafel projektu (lista projektów): zdjęcie na całą kartę, nakładka, tytuł, zajawka i wezwanie do działania. --}}
+{{-- Kafel projektu (lista projektów): zdjęcie lub jednolity kolor akcentu, kategoria, tytuł, zajawka i odnośnik. --}}
 @php
     $tileAccent = \App\Support\Color::isValid($project->accent_color ?? null)
         ? $project->accent_color
@@ -6,26 +6,18 @@
     $tileAccent = $tileAccent ?: 'var(--color-brand)';
 @endphp
 <a href="{{ route('projects.show', $project) }}"
-   class="group relative flex min-h-[22rem] flex-col justify-end overflow-hidden rounded-3xl text-white shadow-md ring-1 ring-black/5 transition duration-300 hover:-translate-y-1 hover:shadow-2xl focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand focus-visible:ring-offset-2 {{ $featured ?? false ? 'md:col-span-2 lg:min-h-[26rem]' : '' }}"
-   style="background: linear-gradient(135deg, {{ $tileAccent }}, color-mix(in srgb, {{ $tileAccent }} 55%, #000))">
+   class="group flex h-full flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white transition hover:border-brand hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
     @if ($project->image_url)
-        <img src="{{ $project->image_url }}" alt="{{ $project->image_alt ?? '' }}" loading="lazy"
-             class="absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-105">
+        <img src="{{ $project->image_url }}" alt="{{ $project->image_alt ?? '' }}" loading="lazy" class="aspect-[16/9] w-full object-cover">
     @else
-        <i class="fa-solid fa-diagram-project pointer-events-none absolute -right-4 -top-4 text-[9rem] opacity-15" aria-hidden="true"></i>
+        <span class="block aspect-[16/9] w-full" style="background: color-mix(in srgb, {{ $tileAccent }} 14%, #fff); border-bottom: 4px solid {{ $tileAccent }}" aria-hidden="true"></span>
     @endif
-    <span class="absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent" aria-hidden="true"></span>
-
-    <span class="relative flex flex-col gap-3 p-6 sm:p-7">
-        <span class="inline-flex w-fit items-center rounded-full bg-white/15 px-3 py-1 text-[11px] font-bold uppercase tracking-widest backdrop-blur">
-            {{ $project->category->name ?? ($categoryName ?? 'Projekt') }}
-        </span>
-        <span class="text-2xl font-extrabold leading-tight tracking-tight sm:text-3xl">{{ $project->title }}</span>
+    <span class="flex flex-1 flex-col p-6">
+        <span class="text-xs font-bold uppercase tracking-widest text-brand">{{ $project->category->name ?? ($categoryName ?? 'Projekt') }}</span>
+        <span class="mt-2 text-xl font-bold leading-snug text-ink group-hover:text-brand">{{ $project->title }}</span>
         @if ($project->excerpt)
-            <span class="line-clamp-3 max-w-xl text-base leading-snug text-white/85">{{ $project->excerpt }}</span>
+            <span class="mt-2 line-clamp-3 text-sm leading-relaxed text-muted">{{ $project->excerpt }}</span>
         @endif
-        <span class="mt-1 inline-flex w-fit items-center gap-2 rounded-full bg-white px-5 py-2.5 text-sm font-bold text-ink transition group-hover:bg-brand group-hover:text-white">
-            Dowiedz się więcej <i class="fa-solid fa-arrow-right transition group-hover:translate-x-1" aria-hidden="true"></i>
-        </span>
+        <span class="mt-auto pt-4 text-sm font-bold text-brand">Zobacz projekt <span aria-hidden="true">→</span></span>
     </span>
 </a>
