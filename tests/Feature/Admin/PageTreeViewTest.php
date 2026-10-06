@@ -37,7 +37,7 @@ class PageTreeViewTest extends TestCase
             ->assertOk()
             ->assertSee('Drzewo stron')
             ->assertSee('Struktura serwisu')
-            ->assertSee('Wszystkie strony')
+            ->assertDontSee('Wszystkie strony')
             ->assertSee('Podstrona');
     }
 
@@ -194,5 +194,26 @@ class PageTreeViewTest extends TestCase
 
         $this->actingAs($this->admin())->get(route('admin.podstrony.index'))
             ->assertOk()->assertSee('data-draggable="1"', false)->assertSee('Upuść tutaj, aby przenieść na poziom główny');
+    }
+
+    public function test_bez_wyboru_otwiera_pierwsza_strone_a_nieznany_identyfikator_nie_psuje_widoku(): void
+    {
+        Page::query()->forceDelete();
+        $first = $this->page('Pierwsza', ['order' => 0]);
+        $this->page('Druga', ['order' => 1]);
+        $admin = $this->admin();
+
+        $this->actingAs($admin)->get(route('admin.podstrony.index'))
+            ->assertOk()->assertSee(route('admin.podstrony.edit', $first), false);
+        $this->actingAs($admin)->get(route('admin.podstrony.index', ['wybrana' => 99999]))
+            ->assertOk()->assertSee(route('admin.podstrony.edit', $first), false);
+    }
+
+    public function test_pusty_serwis_pokazuje_komunikat_zamiast_przegladu(): void
+    {
+        Page::query()->forceDelete();
+
+        $this->actingAs($this->admin())->get(route('admin.podstrony.index'))
+            ->assertOk()->assertSee('Nie ma jeszcze żadnych stron')->assertDontSee('Wszystkie strony');
     }
 }

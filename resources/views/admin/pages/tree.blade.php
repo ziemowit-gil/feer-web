@@ -146,7 +146,7 @@
             @if ($selected)
                 {{-- Ścieżka --}}
                 <nav aria-label="Ścieżka strony" class="text-xs text-muted">
-                    <a href="{{ route('admin.podstrony.index') }}" class="hover:text-brand hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"><i class="fa-solid fa-house" aria-hidden="true"></i><span class="sr-only">Wszystkie strony</span></a>
+                    <a href="{{ route('admin.podstrony.index') }}" class="hover:text-brand hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"><i class="fa-solid fa-house" aria-hidden="true"></i><span class="sr-only">Poziom główny</span></a>
                     @foreach ($rootline as $ancestor)
                         <span aria-hidden="true" class="mx-1">›</span>
                         <a href="{{ route('admin.podstrony.index', ['wybrana' => $ancestor->id]) }}" class="hover:text-brand hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">{{ $ancestor->title }}</a>
@@ -272,20 +272,11 @@
                     @endif
                 </div>
             @else
-                {{-- Nic nie wybrano: przegląd poziomu głównego --}}
-                <div class="rounded-lg border border-gray-200 bg-white p-5">
-                    <h2 id="pane-heading" class="text-xl font-bold text-ink">Wszystkie strony</h2>
-                    <p class="mt-1 text-sm text-muted">
-                        Wybierz stronę w drzewie po lewej, aby zobaczyć jej szczegóły, podstrony i szybkie akcje.
-                        Poniżej strony najwyższego poziomu. Filtry, wyszukiwanie po adresie i operacje zbiorcze znajdziesz w zakładce
-                        <a href="{{ route('admin.podstrony.index', ['widok' => 'lista']) }}" class="font-bold text-brand hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">Lista stron</a>.
-                    </p>
+                {{-- Serwis bez stron --}}
+                <h2 id="pane-heading" class="sr-only">Szczegóły strony</h2>
+                <div class="rounded-lg border border-dashed border-gray-300 bg-white px-4 py-12 text-center text-sm text-muted">
+                    Nie ma jeszcze żadnych stron. Dodaj pierwszą przyciskiem „Dodaj stronę”.
                 </div>
-                @if ($children->isEmpty())
-                    <div class="rounded-lg border border-dashed border-gray-300 bg-white px-4 py-12 text-center text-sm text-muted">Brak stron.</div>
-                @else
-                    @include('admin.pages.partials.children-table', ['children' => $children, 'selected' => null])
-                @endif
             @endif
         </section>
     </div>

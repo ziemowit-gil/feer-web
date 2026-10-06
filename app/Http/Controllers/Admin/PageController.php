@@ -75,6 +75,9 @@ class PageController extends Controller
         $byParent = $all->groupBy(fn (Page $p) => $p->parent_id && $all->contains('id', $p->parent_id) ? $p->parent_id : 0);
 
         $selected = $request->filled('wybrana') ? $all->firstWhere('id', (int) $request->query('wybrana')) : null;
+        // Bez wyboru (albo ze starym identyfikatorem) otwieramy pierwszą stronę najwyższego poziomu —
+        // prawy panel zawsze pokazuje konkretną stronę, nie zbiorczy przegląd.
+        $selected ??= $byParent->get(0, collect())->first();
 
         // Identyfikatory przodków wybranej strony — te gałęzie są rozwinięte.
         $openIds = [];
@@ -110,7 +113,7 @@ class PageController extends Controller
             'selected' => $selected,
             'openIds' => $openIds,
             'rootline' => $rootline,
-            'children' => $selected ? $byParent->get($selected->id, collect()) : $byParent->get(0, collect()),
+            'children' => $selected ? $byParent->get($selected->id, collect()) : collect(),
             'moveOptions' => $moveOptions,
             'personsCount' => $selected && $selected->isAbout()
                 ? Page::where('type', 'about_person')->where('parent_id', $selected->id)->count()
