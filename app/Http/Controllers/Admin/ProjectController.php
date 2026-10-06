@@ -8,6 +8,7 @@ use App\Models\Category;
 use App\Models\Project;
 use App\Models\SiteSetting;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
@@ -64,9 +65,7 @@ class ProjectController extends Controller
 
         $project = Project::create($data);
 
-        if ($request->hasFile('image')) {
-            $project->addMediaFromRequest('image')->toMediaCollection('image');
-        }
+        $this->handleImage($request, $project);
 
         return redirect()->route('admin.projekty.index')->with('status', 'Projekt został utworzony.');
     }
@@ -88,11 +87,48 @@ class ProjectController extends Controller
 
         $project->update($data);
 
-        if ($request->hasFile('image')) {
-            $project->addMediaFromRequest('image')->toMediaCollection('image');
-        }
+        $this->handleImage($request, $project);
 
         return redirect()->route('admin.projekty.index')->with('status', 'Projekt został zaktualizowany.');
+    }
+
+    /**
+     * Ustawia zdjęcie projektu z przesłanego pliku albo z wybranej sugestii Unsplash
+     * (pobieranej po stronie serwera, z podpisem autora). Plik ma pierwszeństwo.
+     */
+    private function handleImage(Request $request, Project $project): void
+    {
+        if ($request->hasFile('image')) {
+            $project->addMediaFromRequest('image')->toMediaCollection('image');
+
+            return;
+        }
+
+        if (! $request->filled('unsplash_full_url')) {
+            return;
+        }
+
+        $data = $request->validate([
+            'unsplash_full_url' => ['required', 'url'],
+            'unsplash_download_location' => ['nullable', 'url'],
+            'unsplash_author' => ['nullable', 'string', 'max:255'],
+            'unsplash_alt' => ['nullable', 'string', 'max:255'],
+        ]);
+
+        // Wytyczne API Unsplash: przy użyciu zdjęcia trzeba „pingnąć" download_location.
+        $accessKey = SiteSetting::current()->unsplashAccessKey();
+        if ($accessKey && ! empty($data['unsplash_download_location'])) {
+            Http::withHeaders(['Authorization' => "Client-ID {$accessKey}"])->get($data['unsplash_download_location']);
+        }
+
+        $project->addMediaFromUrl($data['unsplash_full_url'])
+            ->usingFileName(Str::random(20).'.jpg')
+            ->withCustomProperties(['unsplash_author' => $data['unsplash_author'] ?? null])
+            ->toMediaCollection('image');
+
+        if (blank($project->image_alt) && ! blank($data['unsplash_alt'] ?? null)) {
+            $project->update(['image_alt' => $data['unsplash_alt']]);
+        }
     }
 
     /** Usuwa projekt. */

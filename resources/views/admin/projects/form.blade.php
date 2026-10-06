@@ -239,6 +239,63 @@
                                 @error('image') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                             </div>
 
+                            @if (! ($project->exists && $project->image_url) && \App\Models\SiteSetting::current()->unsplashAccessKey())
+                                {{-- Brak zdjęcia: sugestie z Unsplash dobrane do tytułu i kategorii, w ciepłym, ludzkim stylu FEER. --}}
+                                <div x-data="unsplashSuggest('{{ route('admin.multimedia.unsplash.search') }}')" x-init="init()" class="rounded-lg border border-dashed border-gray-300 p-3">
+                                    <p class="text-sm font-bold">Sugestie zdjęć z Unsplash</p>
+                                    <p class="mb-2 text-xs text-muted">Brak zdjęcia — wybierz jedno z propozycji albo wgraj własny plik.</p>
+                                    <p x-show="loading" class="text-xs text-muted" role="status">Szukam zdjęć…</p>
+                                    <p x-show="error" x-cloak class="text-xs text-red-600" x-text="error" role="alert"></p>
+                                    <p x-show="chosen" x-cloak class="mb-2 text-xs font-bold text-brand" role="status">Wybrano zdjęcie (autor: <span x-text="chosen?.author_name"></span>) — zostanie zapisane razem z projektem. <button type="button" @click="clear()" class="underline">Cofnij</button></p>
+                                    <ul class="grid grid-cols-3 gap-2" role="list">
+                                        <template x-for="p in photos" :key="p.id">
+                                            <li>
+                                                <button type="button" @click="pick(p)" :aria-pressed="(chosen?.id === p.id).toString()"
+                                                    class="block w-full overflow-hidden rounded border-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+                                                    :class="chosen?.id === p.id ? 'border-brand' : 'border-transparent'">
+                                                    <img :src="p.thumb_url" :alt="p.alt" loading="lazy" class="h-20 w-full object-cover">
+                                                </button>
+                                            </li>
+                                        </template>
+                                    </ul>
+                                    <button type="button" @click="load(photos.length > 0)" class="mt-2 text-xs font-bold text-brand hover:underline" x-text="photos.length ? 'Pokaż inne' : 'Szukaj sugestii'"></button>
+                                    <input type="hidden" name="unsplash_full_url" :value="chosen?.full_url">
+                                    <input type="hidden" name="unsplash_download_location" :value="chosen?.download_location">
+                                    <input type="hidden" name="unsplash_author" :value="chosen?.author_name">
+                                    <input type="hidden" name="unsplash_alt" :value="chosen?.alt">
+                                </div>
+                                <script>
+                                    document.addEventListener('alpine:init', () => {
+                                        Alpine.data('unsplashSuggest', (url) => ({
+                                            photos: [], chosen: null, loading: false, error: '', page: 0,
+                                            // Zapytanie: tytuł + kategoria + fraza stylu (ludzie, współpraca, naturalne światło).
+                                            query() {
+                                                const t = document.getElementById('title')?.value || '';
+                                                const c = document.getElementById('category_id');
+                                                const cat = c && c.selectedIndex > 0 ? c.options[c.selectedIndex].text : '';
+                                                return (t + ' ' + cat).trim().slice(0, 60) + ' people together natural light';
+                                            },
+                                            init() { if (document.getElementById('title')?.value) this.load(false); },
+                                            async load(more) {
+                                                this.loading = true; this.error = '';
+                                                try {
+                                                    const r = await fetch(url + '?q=' + encodeURIComponent(this.query().slice(0, 100)), { headers: { Accept: 'application/json' } });
+                                                    if (! r.ok) throw new Error();
+                                                    const all = await r.json();
+                                                    const size = 6;
+                                                    this.page = more ? (this.page + 1) % Math.max(1, Math.ceil(all.length / size)) : 0;
+                                                    this.photos = all.slice(this.page * size, this.page * size + size);
+                                                    if (! this.photos.length) this.error = 'Brak propozycji — wgraj własne zdjęcie.';
+                                                } catch (e) { this.error = 'Nie udało się pobrać sugestii z Unsplash.'; }
+                                                this.loading = false;
+                                            },
+                                            pick(p) { this.chosen = p; },
+                                            clear() { this.chosen = null; },
+                                        }));
+                                    });
+                                </script>
+                            @endif
+
                             <div>
                                 <label for="image_alt" class="mb-1 block text-sm font-bold">Opis alternatywny zdjęcia</label>
                                 <input type="text" id="image_alt" name="image_alt" value="{{ old('image_alt', $project->image_alt) }}"
