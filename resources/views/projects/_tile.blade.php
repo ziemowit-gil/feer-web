@@ -6,7 +6,7 @@
     $tileAccent = $tileAccent ?: 'var(--color-brand)';
 @endphp
 <a href="{{ route('projects.show', $project) }}"
-   class="group flex h-full flex-col overflow-hidden rounded-xl border border-gray-200 bg-white transition hover:border-brand hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
+   class="group flex h-full flex-col overflow-hidden rounded-lg border border-gray-200 bg-white transition hover:border-brand hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
     @if ($project->image_url)
         <img src="{{ $project->image_url }}" alt="{{ $project->image_alt ?? '' }}" loading="lazy" class="aspect-[16/10] w-full object-cover">
     @else

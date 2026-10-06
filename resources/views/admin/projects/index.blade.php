@@ -31,7 +31,7 @@
             'total' => $projects->count(),
         ])
 
-        <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
+        <div class="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm">
             <table class="w-full text-left text-sm">
                 <thead class="border-b border-gray-200 bg-gray-50/80 text-xs font-bold uppercase tracking-wide text-muted">
                     <tr>
@@ -67,17 +67,17 @@
                                 </div>
                             </td>
                             <td class="hidden px-4 py-3 md:table-cell">
-                                <span class="inline-flex rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-ink">{{ $project->category->name }}</span>
+                                <span class="inline-flex rounded-md bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-ink">{{ $project->category->name }}</span>
                             </td>
                             <td class="px-4 py-3">
                                 <div class="flex flex-wrap items-center gap-1.5">
                                     @if ($project->is_published)
-                                        <span class="inline-flex items-center gap-1.5 rounded-full bg-green-50 px-2.5 py-0.5 text-xs font-bold text-green-700"><span class="h-1.5 w-1.5 rounded-full bg-green-500" aria-hidden="true"></span>Opublikowany</span>
+                                        <span class="inline-flex items-center gap-1.5 rounded-md bg-green-50 px-2.5 py-0.5 text-xs font-bold text-green-700"><span class="h-1.5 w-1.5 rounded-md bg-green-500" aria-hidden="true"></span>Opublikowany</span>
                                     @else
-                                        <span class="inline-flex items-center gap-1.5 rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-bold text-gray-600"><span class="h-1.5 w-1.5 rounded-full bg-gray-400" aria-hidden="true"></span>Szkic</span>
+                                        <span class="inline-flex items-center gap-1.5 rounded-md bg-gray-100 px-2.5 py-0.5 text-xs font-bold text-gray-600"><span class="h-1.5 w-1.5 rounded-md bg-gray-400" aria-hidden="true"></span>Szkic</span>
                                     @endif
                                     @if ($project->is_completed)
-                                        <span class="inline-flex rounded-full bg-blue-50 px-2.5 py-0.5 text-xs font-bold text-blue-700">Zrealizowany</span>
+                                        <span class="inline-flex rounded-md bg-blue-50 px-2.5 py-0.5 text-xs font-bold text-blue-700">Zrealizowany</span>
                                     @endif
                                 </div>
                             </td>

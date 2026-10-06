@@ -15,28 +15,28 @@
         <div data-project-form-tabs>
             <div class="mb-6 flex flex-wrap items-center gap-2" role="tablist">
                 <button type="button" data-ftab-btn="podstawowe" role="tab" aria-selected="true"
-                    class="rounded-full px-4 py-2 text-sm font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 bg-brand text-white">
+                    class="rounded-md px-4 py-2 text-sm font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 bg-brand text-white">
                     <i class="fa-solid fa-circle-info" aria-hidden="true"></i> Podstawowe
                 </button>
                 <button type="button" data-ftab-btn="tresc" role="tab" aria-selected="false"
-                    class="rounded-full px-4 py-2 text-sm font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 bg-gray-100 text-ink hover:bg-gray-200">
+                    class="rounded-md px-4 py-2 text-sm font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 bg-gray-100 text-ink hover:bg-gray-200">
                     <i class="fa-solid fa-align-left" aria-hidden="true"></i> Treść
                 </button>
                 <button type="button" data-ftab-btn="sekcje" role="tab" aria-selected="false"
-                    class="rounded-full px-4 py-2 text-sm font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 bg-gray-100 text-ink hover:bg-gray-200">
+                    class="rounded-md px-4 py-2 text-sm font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 bg-gray-100 text-ink hover:bg-gray-200">
                     <i class="fa-solid fa-layer-group" aria-hidden="true"></i> Sekcje
                 </button>
                 <button type="button" data-ftab-btn="dodatkowe" role="tab" aria-selected="false"
-                    class="rounded-full px-4 py-2 text-sm font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 bg-gray-100 text-ink hover:bg-gray-200">
+                    class="rounded-md px-4 py-2 text-sm font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 bg-gray-100 text-ink hover:bg-gray-200">
                     <i class="fa-solid fa-address-card" aria-hidden="true"></i> Koordynator i archiwum
                 </button>
                 <button type="button" data-ftab-btn="seo" role="tab" aria-selected="false"
-                    class="rounded-full px-4 py-2 text-sm font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 bg-gray-100 text-ink hover:bg-gray-200">
+                    class="rounded-md px-4 py-2 text-sm font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 bg-gray-100 text-ink hover:bg-gray-200">
                     <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i> SEO
                 </button>
                 @if ($project->exists)
                     <a href="{{ route('admin.historia.index', ['type' => 'project', 'id' => $project->id]) }}"
-                        class="ml-auto rounded-full px-4 py-2 text-sm font-bold text-muted transition hover:bg-gray-100 hover:text-brand">
+                        class="ml-auto rounded-md px-4 py-2 text-sm font-bold text-muted transition hover:bg-gray-100 hover:text-brand">
                         <i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i> Historia zmian
                     </a>
                 @endif
@@ -44,7 +44,7 @@
 
             {{-- ============================ PODSTAWOWE ============================ --}}
             <div data-ftab-panel="podstawowe" class="space-y-6">
-                <div class="space-y-5 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+                <div class="space-y-5 rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
                     <div class="grid gap-5 sm:grid-cols-2">
                         <div>
                             <label for="title" class="mb-1 block text-sm font-bold">Tytuł</label>
@@ -116,7 +116,7 @@
                     </div>
                 </div>
 
-                <div class="space-y-5 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+                <div class="space-y-5 rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
                     <p class="text-sm font-bold uppercase tracking-wide text-muted">Publikacja</p>
                     <div class="grid gap-5 sm:grid-cols-2">
                         <div>
@@ -166,7 +166,7 @@
                     </div>
                 </div>
 
-                <div class="space-y-4 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm"
+                <div class="space-y-4 rounded-lg border border-gray-200 bg-white p-6 shadow-sm"
                     x-data="{ paid: {{ old('is_paid', $project->is_paid ?? false) ? 'true' : 'false' }} }">
                     <label class="flex items-center gap-2">
                         <input type="hidden" name="is_paid" value="0">
@@ -221,7 +221,7 @@
                     </script>
                 </div>
 
-                <div class="space-y-5 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+                <div class="space-y-5 rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
                     <p class="text-sm font-bold uppercase tracking-wide text-muted">Zdjęcie</p>
                     <div class="grid gap-5 sm:grid-cols-2">
                         @if ($project->exists && $project->image_url)
@@ -254,7 +254,7 @@
 
             {{-- ============================ TREŚĆ ============================ --}}
             <div data-ftab-panel="tresc" class="hidden space-y-6">
-                <div class="space-y-5 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+                <div class="space-y-5 rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
                     <div>
                         <label class="mb-1 block text-sm font-bold">Opis projektu</label>
                         @include('admin.partials.editor', ['name' => 'content', 'value' => old('content', $project->content)])
@@ -279,7 +279,7 @@
 
             {{-- ============================ SEKCJE ============================ --}}
             <div data-ftab-panel="sekcje" class="hidden space-y-6">
-                <div class="space-y-5 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+                <div class="space-y-5 rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
                     <div>
                         <p class="text-sm font-bold uppercase tracking-wide text-muted">Dodatkowe sekcje</p>
                         <p class="mt-1 text-xs text-muted">Możesz dodać maksymalnie 3 własne sekcje (tytuł + treść). Wypełnione sekcje pojawią się na stronie projektu; puste są pomijane.</p>
@@ -318,7 +318,7 @@
 
             {{-- ==================== KOORDYNATOR I ARCHIWUM ==================== --}}
             <div data-ftab-panel="dodatkowe" class="hidden space-y-6">
-                <div class="space-y-5 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+                <div class="space-y-5 rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
                     <p class="text-sm font-bold uppercase tracking-wide text-muted">Koordynator projektu</p>
                     <p class="-mt-3 text-xs text-muted">Widoczny jako kontakt do projektu na jego stronie. Jeśli nie podasz e-maila koordynatora, wyświetli się ogólny e-mail kontaktowy fundacji.</p>
 
@@ -364,7 +364,7 @@
                     </label>
                 </div>
 
-                <div class="space-y-4 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+                <div class="space-y-4 rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
                     <p class="text-sm font-bold uppercase tracking-wide text-muted">Archiwum</p>
                     <label class="flex items-start gap-2">
                         <input type="checkbox" name="show_legacy_box" value="1" {{ old('show_legacy_box', $project->show_legacy_box ?? false) ? 'checked' : '' }}
@@ -387,7 +387,7 @@
             </div>
         </div>
 
-        <div class="sticky bottom-0 z-10 -mx-1 flex items-center gap-3 rounded-2xl border border-gray-200 bg-white/95 px-4 py-3 shadow-lg backdrop-blur">
+        <div class="sticky bottom-0 z-10 -mx-1 flex items-center gap-3 rounded-lg border border-gray-200 bg-white/95 px-4 py-3 shadow-lg backdrop-blur">
             <button type="submit" class="rounded-lg bg-brand px-5 py-2.5 text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">Zapisz</button>
             <a href="{{ route('admin.projekty.index') }}" class="text-sm text-muted hover:text-brand">Anuluj</a>
         </div>
@@ -435,7 +435,7 @@
                 if (btn && !btn.querySelector('[data-ftab-error]')) {
                     const dot = document.createElement('span');
                     dot.setAttribute('data-ftab-error', '');
-                    dot.className = 'ml-1.5 inline-block h-2 w-2 rounded-full bg-red-500 align-middle';
+                    dot.className = 'ml-1.5 inline-block h-2 w-2 rounded-md bg-red-500 align-middle';
                     btn.appendChild(dot);
                 }
                 if (!firstErrorKey) firstErrorKey = key;

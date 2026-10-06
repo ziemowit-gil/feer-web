@@ -53,10 +53,7 @@
         @endphp
 
     {{-- ══ HERO: kategoria, tytuł, status, zajawka, kluczowe fakty i zdjęcie ══ --}}
-    <section class="relative overflow-hidden border-b border-gray-100"
-        style="background: linear-gradient(135deg, color-mix(in srgb, var(--color-brand) 10%, #fff) 0%, #fff 70%)">
-        <span class="pointer-events-none absolute -right-16 -top-16 h-64 w-64 rounded-full" aria-hidden="true"
-            style="background: color-mix(in srgb, var(--color-brand) 8%, transparent)"></span>
+    <section class="border-b border-gray-100 bg-gray-50">
         <div class="relative mx-auto grid max-w-6xl items-center gap-8 px-4 py-12 sm:py-16 {{ $project->image_url ? 'lg:grid-cols-[minmax(0,1fr)_26rem]' : '' }}">
             <div class="min-w-0">
                 <a href="{{ route('categories.show', $project->category) }}" class="inline-block text-xs font-bold uppercase tracking-widest text-brand hover:text-brand-dark">
@@ -71,7 +68,7 @@
 
             @if ($project->image_url)
                 <img src="{{ $project->image_url }}" alt="{{ $project->image_alt ?: 'Zdjęcie ilustracyjne: '.$project->title }}" data-lightbox
-                    class="aspect-[4/3] w-full rounded-2xl object-cover shadow-sm ring-1 ring-gray-200">
+                    class="aspect-[4/3] w-full rounded-lg object-cover shadow-sm ring-1 ring-gray-200">
             @endif
         </div>
     </section>
@@ -84,7 +81,7 @@
                         <div class="mb-5 flex flex-wrap gap-2" role="tablist">
                             @foreach ($customSections->values() as $i => $section)
                                 <button type="button" data-project-tab-btn="{{ $i }}" role="tab" aria-selected="{{ $loop->first ? 'true' : 'false' }}"
-                                    class="rounded-full px-4 py-1.5 text-sm font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 {{ $loop->first ? 'bg-brand text-white' : 'bg-gray-100 text-ink hover:bg-gray-200' }}">
+                                    class="rounded-md px-4 py-1.5 text-sm font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 {{ $loop->first ? 'bg-brand text-white' : 'bg-gray-100 text-ink hover:bg-gray-200' }}">
                                     {{ $section['title'] ?: 'Sekcja '.($i + 1) }}
                                 </button>
                             @endforeach
@@ -97,7 +94,7 @@
                     </div>
                 @else
                     @foreach ($featuredSections as $section)
-                        <div class="mb-8 rounded-2xl border border-brand/20 border-l-4 border-l-brand bg-brand-light/50 p-6">
+                        <div class="mb-8 rounded-lg border border-brand/20 border-l-4 border-l-brand bg-brand-light/50 p-6">
                             @if (! empty($section['title']))
                                 <h2 class="mb-3 text-xl font-bold text-ink">{{ $section['title'] }}</h2>
                             @endif
@@ -109,17 +106,14 @@
                 @endif
 
                 @if ($project->show_legacy_box)
-                    <div class="mb-8 rounded-xl border-l-4 border-brand bg-brand-light p-5">
+                    <div class="mb-8 rounded-lg border-l-4 border-brand bg-brand-light p-5">
                         <div class="flex items-start gap-4">
-                            <span class="flex h-12 w-12 flex-none items-center justify-center rounded-full bg-brand text-xl text-white" aria-hidden="true">
-                                <i class="fa-solid fa-clock-rotate-left"></i>
-                            </span>
                             <div>
                                 <p class="text-base font-bold text-ink">To działanie realizowaliśmy przed uruchomieniem nowej strony.</p>
                                 @if ($project->legacy_url)
                                     <a href="{{ $project->legacy_url }}" target="_blank" rel="noopener"
                                         class="mt-3 inline-flex items-center gap-2 rounded bg-brand px-4 py-2 text-sm font-bold text-white transition hover:bg-brand-dark">
-                                        <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i> Zobacz informacje o projekcie
+                                        Zobacz informacje o projekcie
                                     </a>
                                 @endif
                             </div>
@@ -129,14 +123,14 @@
 
                 @if ($project->content)
                     <h2 class="mb-3 flex items-center gap-2 text-xl font-bold text-ink">
-                        <i class="fa-solid fa-circle-info text-brand" aria-hidden="true"></i> Opis projektu
+                        Opis projektu
                     </h2>
                     <div class="prose mb-8 max-w-none text-ink" @if ($canInlineEdit) data-inline-field="content" data-inline-kind="rich" @endif>{!! $project->content !!}</div>
                 @endif
 
                 @if ($project->why)
                     <h2 class="mb-3 flex items-center gap-2 text-xl font-bold text-ink">
-                        <i class="fa-solid fa-lightbulb text-brand" aria-hidden="true"></i> Dlaczego to robimy
+                        Dlaczego to robimy
                     </h2>
                     <div class="prose max-w-none text-ink">{{ $project->why }}</div>
                 @endif
@@ -160,9 +154,9 @@
                         $anchor = $subpage->isSchedule() ? 'harmonogram-'.$subpage->id : ($subpage->isFaq() ? 'faq-'.$subpage->id : null);
                         $subIcon = $subpage->isSchedule() ? 'fa-calendar-days' : ($subpage->isFaq() ? 'fa-circle-question' : 'fa-file-lines');
                     @endphp
-                    <section @if ($anchor) id="{{ $anchor }}" @endif class="mt-8 scroll-mt-24 rounded-2xl border border-gray-200 p-6">
+                    <section @if ($anchor) id="{{ $anchor }}" @endif class="mt-8 scroll-mt-24 rounded-lg border border-gray-200 p-6">
                         <h2 class="mb-4 flex items-center gap-2 text-xl font-bold text-ink">
-                            <i class="fa-solid {{ $subIcon }} text-brand" aria-hidden="true"></i> {{ $subpage->title }}
+                            {{ $subpage->title }}
                         </h2>
                         @if ($subpage->content)
                             <div class="prose max-w-none text-ink">{!! $subpage->content !!}</div>
@@ -173,8 +167,7 @@
                             @include('partials.faq', ['page' => $subpage])
                         @endif
                         <a href="{{ route('page.show', $subpage) }}" class="mt-4 inline-flex items-center gap-2 text-sm font-bold text-brand hover:text-brand-dark">
-                            Otwórz jako osobną stronę <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
-                        </a>
+                            Otwórz jako osobną stronę                         </a>
                     </section>
                 @endforeach
 
@@ -184,7 +177,7 @@
                         <div class="mb-5 flex flex-wrap gap-2" role="tablist">
                             @foreach ($tabPages as $i => $subpage)
                                 <button type="button" data-subtab-btn="{{ $i }}" role="tab" aria-selected="{{ $loop->first ? 'true' : 'false' }}"
-                                    class="rounded-full px-4 py-1.5 text-sm font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 {{ $loop->first ? 'bg-brand text-white' : 'bg-gray-100 text-ink hover:bg-gray-200' }}">
+                                    class="rounded-md px-4 py-1.5 text-sm font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 {{ $loop->first ? 'bg-brand text-white' : 'bg-gray-100 text-ink hover:bg-gray-200' }}">
                                     {{ $subpage->title }}
                                 </button>
                             @endforeach
@@ -200,8 +193,7 @@
                                     @include('partials.faq', ['page' => $subpage])
                                 @endif
                                 <a href="{{ route('page.show', $subpage) }}" class="mt-3 inline-flex items-center gap-2 text-sm font-bold text-brand hover:text-brand-dark">
-                                    Otwórz jako osobną stronę <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
-                                </a>
+                                    Otwórz jako osobną stronę                                 </a>
                             </div>
                         @endforeach
                     </div>
@@ -210,7 +202,7 @@
                 @if ($project->outcomes)
                     <div class="mt-8 rounded-lg border border-emerald-200 bg-emerald-50/60 p-6">
                         <h2 class="mb-3 flex items-center gap-2 text-xl font-bold text-ink">
-                            <i class="fa-solid fa-award text-emerald-600" aria-hidden="true"></i> Co udało się osiągnąć
+                            Co udało się osiągnąć
                         </h2>
                         <div class="prose max-w-none text-ink">{!! $project->outcomes !!}</div>
                     </div>
@@ -220,7 +212,7 @@
                 @if ($project->is_paid && $pricing->isNotEmpty())
                     <div class="mt-8 rounded-lg border border-gray-200 p-6">
                         <h2 class="mb-4 flex items-center gap-2 text-xl font-bold text-ink">
-                            <i class="fa-solid fa-tag text-brand" aria-hidden="true"></i> Cennik
+                            Cennik
                         </h2>
                         <ul class="divide-y divide-gray-100">
                             @foreach ($pricing as $row)
@@ -243,7 +235,7 @@
                 @if ($siteSettings->isModuleEnabled('news') && $project->publishedNews->isNotEmpty())
                     <div class="mt-10 border-t border-gray-200 pt-8">
                         <h2 class="mb-4 flex items-center gap-2 text-xl font-bold text-ink">
-                            <i class="fa-solid fa-newspaper text-brand" aria-hidden="true"></i> Aktualności projektu
+                            Aktualności projektu
                         </h2>
                         <ul class="space-y-4">
                             @foreach ($project->publishedNews as $item)
@@ -260,8 +252,8 @@
                                         @endif
                                         <div class="min-w-0">
                                             @if ($item->is_featured)
-                                                <span class="mb-1 inline-flex items-center gap-1 rounded-full bg-amber-400/20 px-2 py-0.5 text-xs font-bold text-amber-700">
-                                                    <i class="fa-solid fa-star" aria-hidden="true"></i> Wyróżnione
+                                                <span class="mb-1 inline-flex items-center gap-1 rounded-md bg-amber-400/20 px-2 py-0.5 text-xs font-bold text-amber-700">
+                                                    Wyróżnione
                                                 </span>
                                             @endif
                                             <p class="text-xs font-bold uppercase tracking-wide text-muted">{{ $item->published_at->format('d.m.Y') }}</p>
@@ -281,9 +273,9 @@
             {{-- ══ PANEL BOCZNY: harmonogram, kontakt, strony projektu, powrót ══ --}}
             <aside class="space-y-5 lg:sticky lg:top-6" aria-label="Informacje o projekcie">
                 {{-- Karta faktów: zawsze wypełnia panel boczny, także gdy projekt nie ma kontaktu ani harmonogramu --}}
-                <div class="rounded-2xl border border-gray-200 bg-white p-5">
+                <div class="rounded-lg border border-gray-200 bg-white p-5">
                     <h2 class="mb-3 flex items-center gap-2 text-base font-bold text-ink">
-                        <i class="fa-solid fa-circle-info text-brand" aria-hidden="true"></i> O projekcie
+                        O projekcie
                     </h2>
                     <dl class="space-y-3 text-sm">
                         <div>
@@ -312,40 +304,36 @@
                 </div>
 
         @if ($schedulePage)
-            <div class="flex flex-col gap-3 rounded-2xl border border-brand/20 bg-brand-light p-5">
+            <div class="flex flex-col gap-3 rounded-lg border border-brand/20 bg-brand-light p-5">
                 <div class="flex items-start gap-3">
-                    <i class="fa-solid fa-calendar-days mt-0.5 text-xl text-brand" aria-hidden="true"></i>
-                    <div>
+                                        <div>
                         <p class="font-bold text-ink">{{ $schedulePage->title }}</p>
                         <p class="text-sm text-muted">Sprawdź terminy zajęć i spotkań w ramach tego projektu.</p>
                     </div>
                 </div>
                 <a href="{{ $scheduleHref }}"
                     class="inline-flex flex-none items-center justify-center gap-2 rounded-lg bg-brand px-4 py-2.5 font-bold text-white transition hover:bg-brand-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
-                    Zobacz harmonogram <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
-                </a>
+                    Zobacz harmonogram                 </a>
             </div>
         @endif
 
                 {{-- Kontakt w sprawie projektu — jako zwykła sekcja treści (jak „Opis
                      projektu"), w głównym nurcie i pełną szerokością, nie jako kafelek z boku. --}}
                 @if (! $project->is_completed && $project->showsCoordinator())
-                    <div class="rounded-2xl border border-gray-200 bg-white p-5">
+                    <div class="rounded-lg border border-gray-200 bg-white p-5">
                         <h2 class="mb-3 flex items-center gap-2 text-base font-bold text-ink">
-                            <i class="fa-solid fa-envelope text-brand" aria-hidden="true"></i> Kontakt w sprawie projektu
+                            Kontakt w sprawie projektu
                         </h2>
                         <div class="space-y-1.5 text-ink">
                             @if ($project->coordinator_name)
                                 <p class="font-medium">{{ $project->coordinator_name }}</p>
                             @endif
                             <p>
-                                <i class="fa-solid fa-envelope mr-1.5 text-brand" aria-hidden="true"></i>
-                                <a href="mailto:{{ $project->contactEmail() }}" class="break-all font-medium text-brand hover:text-brand-dark">{{ $project->contactEmail() }}</a>
+                                                                <a href="mailto:{{ $project->contactEmail() }}" class="break-all font-medium text-brand hover:text-brand-dark">{{ $project->contactEmail() }}</a>
                             </p>
                             @if ($project->coordinator_phone)
                                 <p>
-                                    <i class="fa-solid fa-phone mr-1.5 text-brand" aria-hidden="true"></i>
-                                    <a href="tel:{{ $project->coordinator_phone }}" class="font-medium text-brand hover:text-brand-dark">{{ $project->coordinator_phone }}</a>
+                                                                        <a href="tel:{{ $project->coordinator_phone }}" class="font-medium text-brand hover:text-brand-dark">{{ $project->coordinator_phone }}</a>
                                 </p>
                             @endif
                         </div>
@@ -353,9 +341,9 @@
                 @endif
 
                 @if ($linkPages->isNotEmpty())
-                    <div class="rounded-2xl border border-gray-200 bg-white p-5">
+                    <div class="rounded-lg border border-gray-200 bg-white p-5">
                         <h2 class="mb-3 flex items-center gap-2 text-base font-bold text-ink">
-                            <i class="fa-solid fa-file-lines text-brand" aria-hidden="true"></i> Strony projektu
+                            Strony projektu
                         </h2>
                         <ul class="flex flex-col gap-2 text-sm">
                             @foreach ($linkPages as $projectPage)
@@ -364,7 +352,7 @@
                                         {{-- Harmonogram wyróżnia się jako przycisk-wezwanie do działania. --}}
                                         <a href="{{ route('page.show', $projectPage) }}"
                                             class="inline-flex items-center gap-2 rounded-lg bg-brand px-4 py-2 font-bold text-white transition hover:bg-brand-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
-                                            <i class="fa-solid fa-calendar-days" aria-hidden="true"></i> {{ $projectPage->title }}
+                                            {{ $projectPage->title }}
                                         </a>
                                     @else
                                         <a href="{{ route('page.show', $projectPage) }}"
@@ -379,7 +367,7 @@
                 @endif
 
                 <a href="{{ route('projects.index') }}" class="inline-flex items-center gap-2 text-sm font-bold text-brand hover:text-brand-dark">
-                    <i class="fa-solid fa-arrow-left" aria-hidden="true"></i> Wszystkie projekty
+                    Wszystkie projekty
                 </a>
             </aside>
         </div>
