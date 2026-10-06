@@ -33,6 +33,7 @@ class DonationController extends Controller
 
         return view('donation.show', [
             'amounts' => SiteSetting::current()->donationAmounts(),
+            'impacts' => SiteSetting::current()->donationImpacts(),
             'recent' => $recent,
             'onlineEnabled' => $przelewy24->configured(),
             'minAmount' => self::MIN_AMOUNT,

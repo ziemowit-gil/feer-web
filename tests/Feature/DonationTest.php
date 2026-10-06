@@ -206,4 +206,31 @@ class DonationTest extends TestCase
         $response = $this->get(route('donation.slip', ['kwota' => '60']))->assertOk();
         $this->assertSame('application/pdf', $response->headers->get('content-type'));
     }
+
+    public function test_impacts_use_note_and_headline_are_configurable(): void
+    {
+        SiteSetting::current()->forceFill([
+            'donation_headline' => 'Pomóż nam uczyć',
+            'donation_impacts' => "60 | Materiały dla jednej grupy\nbłędna linia\n250 zł: Warsztat dla klasy",
+            'donation_use_note' => 'Wpłaty finansują zajęcia.',
+            'donation_reports_url' => '/sprawozdania',
+        ])->save();
+        $this->resetSettingsCache();
+
+        $this->assertSame([60 => 'Materiały dla jednej grupy', 250 => 'Warsztat dla klasy'], SiteSetting::current()->donationImpacts());
+
+        $this->get(route('donation.show'))->assertOk()
+            ->assertSee('Pomóż nam uczyć')
+            ->assertSee('Materiały dla jednej grupy')
+            ->assertSee('Na co trafią Twoje pieniądze')
+            ->assertSee('Wpłaty finansują zajęcia.')
+            ->assertSee(url('/sprawozdania'), false);
+    }
+
+    public function test_page_without_optional_content_hides_use_panel(): void
+    {
+        $this->get(route('donation.show'))->assertOk()
+            ->assertSee('Twoja wpłata zamienia się w realną pomoc')
+            ->assertDontSee('Na co trafią Twoje pieniądze');
+    }
 }
