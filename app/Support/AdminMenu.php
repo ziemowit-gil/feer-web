@@ -18,8 +18,9 @@ use Illuminate\Support\Facades\Route;
 /**
  * Definicja menu bocznego panelu administracyjnego.
  *
- * Menu jest opisane danymi (sekcje → pozycje → podpozycje), a widok
- * `admin.partials.sidebar` tylko je renderuje. Dzięki temu:
+ * Układ jak w module menu TYPO3: najwyżej SZEŚĆ grup głównych (Pulpit, Strony, Treści,
+ * Komunikacja, Użytkownicy, System), a w grupie bloki z podtytułami → pozycje → podpozycje.
+ * Widok `admin.partials.sidebar` tylko to renderuje. Dzięki temu:
  *  - widoczność pozycji (moduły, role) jest rozstrzygana w jednym miejscu,
  *  - pozycje wskazujące na nieistniejącą trasę są pomijane zamiast wywalać
  *    cały panel fatalnym błędem,
@@ -27,7 +28,8 @@ use Illuminate\Support\Facades\Route;
  *
  * Struktura zwracana przez {@see build()}:
  *
- *  section: ['key' => string, 'label' => ?string, 'active' => bool, 'default_open' => bool, 'items' => item[]]
+ *  group:   ['key' => string, 'label' => string, 'icon' => string, 'active' => bool, 'badge' => ?int,
+ *            'blocks' => [['heading' => ?string, 'items' => item[]]]]
  *  item:    ['key' => string, 'label' => string, 'url' => string, 'icon' => string,
  *            'active' => bool, 'badge' => ?int, 'badge_tone' => 'brand'|'muted',
  *            'children' => child[]]
@@ -208,7 +210,56 @@ final class AdminMenu
             ]) : null,
         ];
 
-        return array_values(array_filter($sections));
+        // Sekcje robocze (poniżej) łączymy w sześć grup głównych w stylu TYPO3. Pozycje, do których
+        // użytkownik nie ma dostępu, już wypadły — pusta grupa znika w całości.
+        $byKey = collect(array_filter($sections))->keyBy('key');
+
+        return array_values(array_filter([
+            $this->group($byKey, 'start', 'Pulpit', 'fa-gauge', [[null, 'start']]),
+            $this->group($byKey, 'pages', 'Strony', 'fa-file-lines', [[null, 'pages'], ['Strona główna', 'homepage']]),
+            $this->group($byKey, 'content', 'Treści', 'fa-newspaper', [[null, 'content'], ['Biblioteka', 'library']]),
+            $this->group($byKey, 'comms', 'Komunikacja', 'fa-comments', [['Marketing', 'marketing'], ['Skrzynka', 'inbox']]),
+            $this->group($byKey, 'users', 'Użytkownicy', 'fa-users', [[null, 'users']]),
+            $this->group($byKey, 'system', 'System', 'fa-gear', [
+                ['Konfiguracja', 'system', ['settings', 'templates', 'seo']],
+                ['Narzędzia', 'system', ['activity', 'wcag', 'gdpr', 'modules', 'health', 'cache', 'sites']],
+            ]),
+        ]));
+    }
+
+    /**
+     * Grupa główna menu: scala bloki z sekcji roboczych. Blok = [podtytuł, klucz sekcji, ?klucze pozycji].
+     *
+     * @param  \Illuminate\Support\Collection<string, array<string, mixed>>  $sections
+     * @param  array<int, array{0: ?string, 1: string, 2?: array<int, string>}>  $blockSpecs
+     */
+    private function group($sections, string $key, string $label, string $icon, array $blockSpecs): ?array
+    {
+        $blocks = [];
+        foreach ($blockSpecs as $spec) {
+            $items = $sections->get($spec[1])['items'] ?? [];
+            if (isset($spec[2])) {
+                $items = array_values(array_filter($items, fn (array $i) => in_array($i['key'], $spec[2], true)));
+            }
+            if ($items !== []) {
+                $blocks[] = ['heading' => $spec[0], 'items' => $items];
+            }
+        }
+
+        if ($blocks === []) {
+            return null;
+        }
+
+        $all = collect($blocks)->flatMap(fn (array $b) => $b['items']);
+
+        return [
+            'key'    => $key,
+            'label'  => $label,
+            'icon'   => $icon,
+            'active' => $all->contains(fn (array $i) => $i['active']),
+            'badge'  => ($sum = (int) $all->sum(fn (array $i) => (int) ($i['badge'] ?? 0))) > 0 ? $sum : null,
+            'blocks' => $blocks,
+        ];
     }
 
     // ── Budowanie elementów ──────────────────────────────────────────

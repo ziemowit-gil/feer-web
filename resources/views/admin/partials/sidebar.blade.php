@@ -1,7 +1,7 @@
 {{--
     Menu boczne panelu administracyjnego.
 
-    Dane menu: App\Support\AdminMenu (sekcje → pozycje → podpozycje).
+    Dane menu: App\Support\AdminMenu (maks. 6 grup głównych → bloki → pozycje → podpozycje), układ jak moduły TYPO3.
     Stan (zwinięcie na desktopie, otwarcie szuflady na mobile) trzyma Alpine store
     `adminNav`, zdefiniowany w admin/layout.blade.php. Styl `.admin-sidebar`: resources/css/app.css.
 
@@ -110,104 +110,113 @@
         </div>
     @endif
 
-    {{-- ── Nawigacja ─────────────────────────────────────────────── --}}
-    <nav class="nav-scroll flex-1 overflow-y-auto overscroll-contain px-3 py-3 text-sm" aria-label="Menu panelu">
-        @foreach ($menu as $section)
-            @php $sectionId = 'nav-section-' . $section['key']; @endphp
+    {{-- ── Nawigacja: moduły jak w TYPO3 — najwyżej sześć grup głównych ──────────────
+         Grupy rozwijają się pojedynczo (akordeon); aktywna grupa jest otwarta od razu. W zwężonej szynie
+         widać tylko ikony grup, a lista pozycji wysuwa się po najechaniu lub fokusie. Przycisk grupy
+         w szynie rozwija całe menu — to dostęp z klawiatury i dotyku. --}}
+    <style>
+        .tm-head { display: flex; width: 100%; align-items: center; gap: .75rem; min-height: 2.75rem; padding: .375rem .625rem; border-radius: .625rem; text-align: left; font-weight: 700; font-size: .875rem; color: #1f2937; transition: background-color .15s; }
+        .tm-head:hover { background: #f3f4f6; }
+        .tm-head:focus-visible { outline: 2px solid var(--color-brand); outline-offset: 1px; }
+        .tm-icon { display: inline-flex; flex: none; align-items: center; justify-content: center; width: 2rem; height: 2rem; border-radius: .5rem; background: #f3f4f6; color: #6b7280; font-size: .9rem; transition: background-color .15s, color .15s; }
+        .tm-group.is-active > .tm-head, .tm-group.is-active .tm-head { color: var(--color-brand); }
+        .tm-group.is-active .tm-icon { background: var(--color-brand); color: #fff; }
+        .tm-panel { margin: .25rem 0 .5rem 1.05rem; padding-left: .75rem; border-left: 2px solid #e5e7eb; }
+        .tm-sub { margin: .625rem .5rem .25rem; font-size: .6875rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: #6b7280; }
+        .tm-sub:first-child { margin-top: .25rem; }
+        .admin-sidebar.is-collapsed .tm-panel { display: none !important; }
+        .admin-sidebar.is-collapsed .tm-head { justify-content: center; padding-left: .25rem; padding-right: .25rem; }
+        .admin-sidebar.is-collapsed .tm-head .tm-badge { position: absolute; top: .125rem; right: .25rem; }
+    </style>
 
-            <div class="nav-section" x-data="navSection(@js($section['key']), @js($section['default_open']), @js($section['active']))">
-                @if ($section['label'])
-                    <div class="nav-section-rule" aria-hidden="true"></div>
-                    <button type="button" @click="toggle()" :aria-expanded="open.toString()" aria-controls="{{ $sectionId }}"
-                            class="nav-section-head mt-2 flex w-full items-center justify-between rounded-md px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.12em] text-muted transition-colors hover:bg-gray-100 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
-                        <span>{{ $section['label'] }}</span>
-                        <i class="fa-solid fa-chevron-down text-[0.55rem] text-gray-400 transition-transform duration-200" :class="{ 'rotate-180': open }" aria-hidden="true"></i>
+    <nav class="nav-scroll flex-1 overflow-y-auto overscroll-contain px-3 py-3 text-sm" aria-label="Menu panelu"
+         x-data="navAccordion(@js(collect($menu)->firstWhere('active', true)['key'] ?? ''), @js($menu[0]['key'] ?? ''))">
+        <ul class="space-y-1" role="list">
+            @foreach ($menu as $group)
+                @php
+                    $gid = 'tm-panel-' . $group['key'];
+                @endphp
+                <li class="tm-group relative {{ $group['active'] ? 'is-active' : '' }}" x-data="navItem(false)"
+                    @mouseenter="flyIn($el)" @mouseleave="flyOut()" @focusin="flyIn($el)" @focusout="flyOut($event)">
+
+                    <button type="button" class="tm-head nav-link relative" @click="toggle(@js($group['key']))"
+                            :aria-expanded="($store.adminNav.collapsed ? false : openKey === @js($group['key'])).toString()" aria-controls="{{ $gid }}"
+                            title="{{ $group['label'] }}">
+                        <span class="tm-icon" aria-hidden="true"><i class="fa-solid {{ $group['icon'] }}"></i></span>
+                        <span class="nav-label min-w-0 flex-1 truncate">{{ $group['label'] }}</span>
+                        @if ($group['badge'])
+                            <span class="tm-badge nav-badge inline-flex h-5 min-w-5 flex-none items-center justify-center rounded-full bg-brand px-1.5 text-[11px] font-bold leading-none text-white"
+                                  aria-label="{{ $group['badge'] }} do obsłużenia">{{ $group['badge'] > 99 ? '99+' : $group['badge'] }}</span>
+                        @endif
+                        <i class="nav-label fa-solid fa-chevron-down text-[0.6rem] text-gray-400 transition-transform duration-200" :class="{ 'rotate-180': openKey === @js($group['key']) }" aria-hidden="true"></i>
                     </button>
-                @endif
 
-                <ul id="{{ $sectionId }}" class="nav-section-body mt-1 space-y-0.5" x-show="open" @unless ($section['active'] || $section['default_open']) style="display:none" @endunless>
-                    @foreach ($section['items'] as $item)
-                        @php
-                            $hasChildren = $item['children'] !== [];
-                            $childrenId  = 'nav-children-' . $item['key'];
-                            $linkClass   = 'nav-link group relative flex items-center gap-3 rounded-lg px-3 py-2 font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand '
-                                . ($item['active']
-                                    ? 'bg-brand-light text-brand'
-                                    : 'text-ink hover:bg-gray-100 hover:text-brand');
-                            $iconClass   = 'nav-icon fa-solid ' . $item['icon'] . ' w-5 shrink-0 text-center text-[0.95rem] '
-                                . ($item['active'] ? 'text-brand' : 'text-gray-400 group-hover:text-brand');
-                        @endphp
-
-                        <li class="nav-item relative" x-data="navItem({{ $hasChildren && $item['active'] ? 'true' : 'false' }})"
-                            @mouseenter="flyIn($el)" @mouseleave="flyOut()" @focusin="flyIn($el)" @focusout="flyOut($event)">
-
-                            <div class="{{ $linkClass }}">
-                                @if ($item['active'] && ! $hasChildren)
-                                    <span class="nav-marker absolute inset-y-1.5 -left-3 w-[3px] rounded-r bg-brand" aria-hidden="true"></span>
-                                @endif
-                                <a href="{{ $item['url'] }}" class="flex min-w-0 flex-1 items-center gap-3 focus-visible:outline-none"
-                                   @if ($item['active'] && ! $hasChildren) aria-current="page" @endif>
-                                    <i class="{{ $iconClass }}" aria-hidden="true"></i>
-                                    <span class="nav-label min-w-0 flex-1 truncate">{{ $item['label'] }}</span>
-                                </a>
-
-                                @if ($item['badge'])
-                                    <span class="nav-badge inline-flex h-5 min-w-5 flex-none items-center justify-center rounded-full px-1.5 text-[11px] font-bold leading-none {{ $item['badge_tone'] === 'muted' ? 'bg-gray-200 text-gray-700' : 'bg-brand text-white' }}"
-                                          aria-label="{{ $item['badge'] }} do obsłużenia">{{ $item['badge'] > 99 ? '99+' : $item['badge'] }}</span>
-                                @endif
-
-                                @if ($hasChildren)
-                                    <button type="button" @click.stop="open = ! open" :aria-expanded="open.toString()" aria-controls="{{ $childrenId }}"
-                                            class="nav-label -mr-1.5 flex h-6 w-6 flex-none items-center justify-center rounded text-gray-400 hover:bg-white/60 hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
-                                        <span class="sr-only">Pokaż podpozycje: {{ $item['label'] }}</span>
-                                        <i class="fa-solid fa-chevron-down text-[0.55rem] transition-transform duration-200" :class="{ 'rotate-180': open }" aria-hidden="true"></i>
-                                    </button>
-                                @endif
-                            </div>
-
-                            @if ($hasChildren)
-                                <ul id="{{ $childrenId }}" class="nav-children ml-[1.4rem] mt-0.5 space-y-0.5 border-l border-gray-200 pl-3"
-                                    x-show="open" @unless ($item['active']) style="display:none" @endunless>
-                                    @foreach ($item['children'] as $child)
-                                        <li>
-                                            <a href="{{ $child['url'] }}"
-                                               class="flex items-center gap-2 rounded-md px-2.5 py-1.5 text-[13px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand {{ $child['active'] ? 'bg-brand-light font-semibold text-brand' : 'text-muted hover:bg-gray-100 hover:text-brand' }}"
-                                               @if ($child['active']) aria-current="page" @endif>
-                                                @if ($child['icon'])
-                                                    <i class="fa-solid {{ $child['icon'] }} text-[0.7rem]" aria-hidden="true"></i>
-                                                @endif
-                                                <span class="truncate">{{ $child['label'] }}</span>
+                    {{-- Lista pozycji grupy --}}
+                    <div id="{{ $gid }}" class="tm-panel" x-show="openKey === @js($group['key'])" @if (! $group['active']) style="display:none" @endif>
+                        @foreach ($group['blocks'] as $block)
+                            @if ($block['heading'])<p class="tm-sub" id="tm-sub-{{ $group['key'] }}-{{ $loop->index }}">{{ $block['heading'] }}</p>@endif
+                            <ul class="space-y-0.5" role="list" @if ($block['heading']) aria-labelledby="tm-sub-{{ $group['key'] }}-{{ $loop->index }}" @endif>
+                                @foreach ($block['items'] as $item)
+                                    @php $hasChildren = $item['children'] !== []; $childrenId = 'nav-children-' . $item['key']; @endphp
+                                    <li x-data="{ open: {{ $hasChildren && $item['active'] ? 'true' : 'false' }} }">
+                                        <div class="relative flex items-center gap-2 rounded-lg px-2 {{ $item['active'] ? 'bg-brand-light text-brand' : 'text-ink hover:bg-gray-100 hover:text-brand' }}" style="min-height: 2.25rem">
+                                            <a href="{{ $item['url'] }}" class="flex min-w-0 flex-1 items-center gap-2.5 py-1.5 font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-1 rounded"
+                                               @if ($item['active'] && ! $hasChildren) aria-current="page" @endif>
+                                                <i class="fa-solid {{ $item['icon'] }} w-4 flex-none text-center text-[0.8rem] {{ $item['active'] ? 'text-brand' : 'text-gray-400' }}" aria-hidden="true"></i>
+                                                <span class="min-w-0 flex-1 truncate">{{ $item['label'] }}</span>
                                             </a>
-                                        </li>
-                                    @endforeach
-                                </ul>
-                            @endif
+                                            @if ($item['badge'])
+                                                <span class="inline-flex h-5 min-w-5 flex-none items-center justify-center rounded-full px-1.5 text-[11px] font-bold leading-none {{ $item['badge_tone'] === 'muted' ? 'bg-gray-200 text-gray-700' : 'bg-brand text-white' }}"
+                                                      aria-label="{{ $item['badge'] }} do obsłużenia">{{ $item['badge'] > 99 ? '99+' : $item['badge'] }}</span>
+                                            @endif
+                                            @if ($hasChildren)
+                                                <button type="button" @click.stop="open = ! open" :aria-expanded="open.toString()" aria-controls="{{ $childrenId }}"
+                                                        class="-mr-1 flex h-7 w-7 flex-none items-center justify-center rounded text-gray-400 hover:bg-white/60 hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                                                    <span class="sr-only">Pokaż podpozycje: {{ $item['label'] }}</span>
+                                                    <i class="fa-solid fa-chevron-down text-[0.55rem] transition-transform duration-200" :class="{ 'rotate-180': open }" aria-hidden="true"></i>
+                                                </button>
+                                            @endif
+                                        </div>
+                                        @if ($hasChildren)
+                                            <ul id="{{ $childrenId }}" class="ml-4 mt-0.5 space-y-0.5 border-l border-gray-200 pl-2.5" role="list" x-show="open" @unless ($item['active']) style="display:none" @endunless>
+                                                @foreach ($item['children'] as $child)
+                                                    <li>
+                                                        <a href="{{ $child['url'] }}"
+                                                           class="flex items-center gap-2 rounded-md px-2 py-1 text-[13px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand {{ $child['active'] ? 'bg-brand-light font-semibold text-brand' : 'text-muted hover:bg-gray-100 hover:text-brand' }}"
+                                                           @if ($child['active']) aria-current="page" @endif>
+                                                            @if ($child['icon'])<i class="fa-solid {{ $child['icon'] }} text-[0.7rem]" aria-hidden="true"></i>@endif
+                                                            <span class="truncate">{{ $child['label'] }}</span>
+                                                        </a>
+                                                    </li>
+                                                @endforeach
+                                            </ul>
+                                        @endif
+                                    </li>
+                                @endforeach
+                            </ul>
+                        @endforeach
+                    </div>
 
-                            {{-- Wysuwany panel dla zwiniętej szyny (desktop) --}}
-                            <div x-show="fly && $store.adminNav.collapsed" x-cloak
-                                 :style="'top:' + flyTop + 'px'"
-                                 class="nav-flyout fixed left-[4.25rem] z-50 hidden w-56 rounded-lg border border-gray-200 bg-white py-1 shadow-xl lg:block"
-                                 aria-hidden="true">
-                                <a href="{{ $item['url'] }}" tabindex="-1" class="flex items-center gap-2 px-3 py-2 text-sm font-semibold text-ink hover:bg-gray-50 hover:text-brand">
+                    {{-- Wysuwany panel grupy w zwężonej szynie (desktop): prawdziwe, osiągalne klawiaturą linki --}}
+                    <div x-show="fly && $store.adminNav.collapsed" x-cloak :style="'top:' + flyTop + 'px'"
+                         class="nav-flyout fixed z-50 hidden w-64 overflow-y-auto rounded-lg border border-gray-200 bg-white py-2 shadow-xl lg:block"
+                         style="left: 4.25rem; max-height: calc(100vh - 2rem)">
+                        <p class="px-3 pb-1 text-sm font-bold text-ink"><i class="fa-solid {{ $group['icon'] }} mr-1.5 text-brand" aria-hidden="true"></i>{{ $group['label'] }}</p>
+                        @foreach ($group['blocks'] as $block)
+                            @if ($block['heading'])<p class="px-3 pt-2 text-[10px] font-bold uppercase tracking-wider text-muted">{{ $block['heading'] }}</p>@endif
+                            @foreach ($block['items'] as $item)
+                                <a href="{{ $item['url'] }}" @if ($item['active']) aria-current="page" @endif
+                                   class="flex items-center gap-2 px-3 py-1.5 text-[13px] hover:bg-gray-50 focus-visible:bg-gray-50 focus-visible:outline-none {{ $item['active'] ? 'font-semibold text-brand' : 'text-ink hover:text-brand' }}">
+                                    <i class="fa-solid {{ $item['icon'] }} w-4 flex-none text-center text-[0.75rem] text-gray-400" aria-hidden="true"></i>
                                     <span class="truncate">{{ $item['label'] }}</span>
-                                    @if ($item['badge'])
-                                        <span class="ml-auto inline-flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-[11px] font-bold leading-none {{ $item['badge_tone'] === 'muted' ? 'bg-gray-200 text-gray-700' : 'bg-brand text-white' }}">{{ $item['badge'] > 99 ? '99+' : $item['badge'] }}</span>
-                                    @endif
+                                    @if ($item['badge'])<span class="ml-auto inline-flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-[11px] font-bold leading-none {{ $item['badge_tone'] === 'muted' ? 'bg-gray-200 text-gray-700' : 'bg-brand text-white' }}">{{ $item['badge'] > 99 ? '99+' : $item['badge'] }}</span>@endif
                                 </a>
-                                @if ($hasChildren)
-                                    <div class="border-t border-gray-100 py-1">
-                                        @foreach ($item['children'] as $child)
-                                            <a href="{{ $child['url'] }}" tabindex="-1"
-                                               class="block px-3 py-1.5 text-[13px] hover:bg-gray-50 {{ $child['active'] ? 'font-semibold text-brand' : 'text-muted hover:text-brand' }}">{{ $child['label'] }}</a>
-                                        @endforeach
-                                    </div>
-                                @endif
-                            </div>
-                        </li>
-                    @endforeach
-                </ul>
-            </div>
-        @endforeach
+                            @endforeach
+                        @endforeach
+                    </div>
+                </li>
+            @endforeach
+        </ul>
     </nav>
 
     {{-- ── Użytkownik ────────────────────────────────────────────── --}}

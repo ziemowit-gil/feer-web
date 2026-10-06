@@ -34,6 +34,25 @@
                 close() { if (this.mobileOpen) { this.mobileOpen = false; document.querySelector('[aria-controls="admin-sidebar"]')?.focus(); } },
             });
 
+            // Akordeon grup głównych menu: otwarta jest jedna grupa naraz. Grupa z aktywną pozycją otwiera się od razu;
+            // bez niej wraca ostatni wybór z localStorage. W zwężonej szynie kliknięcie grupy rozwija całe menu.
+            Alpine.data('navAccordion', (activeKey, firstKey) => ({
+                openKey: (() => {
+                    if (activeKey) return activeKey;
+                    try { return localStorage.getItem('admin-nav-open') ?? firstKey; } catch (e) { return firstKey; }
+                })(),
+                toggle(key) {
+                    const nav = Alpine.store('adminNav');
+                    if (nav.collapsed) {
+                        nav.toggleCollapsed();
+                        this.openKey = key;
+                    } else {
+                        this.openKey = this.openKey === key ? '' : key;
+                    }
+                    try { localStorage.setItem('admin-nav-open', this.openKey); } catch (e) {}
+                },
+            }));
+
             // Sekcja menu: zapamiętuje zwinięcie w localStorage; sekcja z aktywną pozycją jest zawsze otwarta.
             Alpine.data('navSection', (key, defaultOpen, active) => ({
                 open: active || (localStorage.getItem('admin-nav:' + key) ?? (defaultOpen ? '1' : '0')) === '1',
