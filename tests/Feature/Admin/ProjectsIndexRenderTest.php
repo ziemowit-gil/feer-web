@@ -76,4 +76,23 @@ class ProjectsIndexRenderTest extends TestCase
         $this->assertStringContainsString('Nagrania treść', $html);
         $this->assertStringContainsString('bg-brand', $html);
     }
+
+    public function test_tytul_projektu_jest_poza_panelami_zakladek_a_bez_kontaktu_nie_ma_panelu_bocznego(): void
+    {
+        $category = Category::create(['name' => 'Audyty', 'slug' => 'audyty']);
+        $project = Project::create([
+            'title' => 'Audyt A', 'slug' => 'audyt-a', 'is_published' => true, 'is_completed' => true, 'category_id' => $category->id,
+            'custom_sections' => [['title' => 'Cennik', 'content' => '<p>Ceny</p>']], 'sections_as_tabs' => true, 'content' => '<p>Opis</p>',
+        ]);
+
+        $html = $this->get(route('projects.show', $project))->assertOk()->getContent();
+
+        $h1 = strpos($html, '<h1');
+        $panel = strpos($html, 'id="panel-opis"');
+        $this->assertNotFalse($h1);
+        $this->assertNotFalse($panel);
+        $this->assertLessThan($panel, $h1, 'Tytuł (hero) musi być przed panelem zakładki „O projekcie”, nie wewnątrz niego.');
+        $this->assertStringNotContainsString('aria-label="Informacje o projekcie"', $html);
+        $this->assertStringNotContainsString('Kategoria</dt>', $html);
+    }
 }

@@ -62,7 +62,6 @@
     <section class="border-b border-gray-100 bg-gray-50">
         <div class="relative mx-auto grid max-w-6xl items-center gap-8 px-4 py-12 sm:py-16 {{ $project->image_url ? 'lg:grid-cols-[minmax(0,1fr)_26rem]' : '' }}">
             <div class="min-w-0">
-            <div id="panel-opis" role="tabpanel" aria-labelledby="tab-opis" @if ($hasTabs) tabindex="0" @endif x-show="tab === 'opis'">
                 <a href="{{ route('categories.show', $project->category) }}" class="inline-block text-xs font-bold uppercase tracking-widest text-brand hover:text-brand-dark">
                     {{ $project->category->name }}
                 </a>
@@ -70,7 +69,13 @@
                 @if ($project->excerpt)
                     <p class="mt-4 max-w-2xl text-lg leading-relaxed text-ink/80">{{ $project->excerpt }}</p>
                 @endif
-
+                @if ($showForWhom || $project->since)
+                    <p class="mt-4 text-sm text-muted">
+                        @if ($showForWhom)<span @if ($canInlineEdit) data-inline-field="for_whom" data-inline-kind="text" data-inline-multiline @endif>Dla kogo: <span class="font-medium text-ink">{{ $project->for_whom }}</span></span>@endif
+                        @if ($showForWhom && $project->since)<span aria-hidden="true"> · </span>@endif
+                        @if ($project->since)<span>Od kiedy: <span class="font-medium text-ink">{{ $project->since }}</span></span>@endif
+                    </p>
+                @endif
             </div>
 
             @if ($project->image_url)
@@ -92,7 +97,8 @@
     @endif
 
     <section class="mx-auto max-w-6xl px-4 py-12">
-        <div class="grid items-start gap-10 lg:grid-cols-[minmax(0,1fr)_18rem]">
+        @php $hasAside = $schedulePage || (! $project->is_completed && $project->showsCoordinator()) || $linkPages->isNotEmpty(); @endphp
+        <div class="grid items-start gap-10 {{ $hasAside ? 'lg:grid-cols-[minmax(0,1fr)_18rem]' : '' }}">
         <div class="min-w-0">
             <div id="panel-opis" role="tabpanel" aria-labelledby="tab-opis" x-show="tab === 'opis'">
                 @if ($sectionTabs->isNotEmpty())
@@ -274,38 +280,8 @@
             </div>
 
             {{-- ══ PANEL BOCZNY: harmonogram, kontakt, strony projektu, powrót ══ --}}
+            @if ($hasAside)
             <aside class="space-y-5 lg:sticky lg:top-6" aria-label="Informacje o projekcie">
-                {{-- Karta faktów: zawsze wypełnia panel boczny, także gdy projekt nie ma kontaktu ani harmonogramu --}}
-                <div class="rounded-lg border border-gray-200 bg-white p-5">
-                    <h2 class="mb-3 flex items-center gap-2 text-base font-bold text-ink">
-                        O projekcie
-                    </h2>
-                    <dl class="space-y-3 text-sm">
-                        <div>
-                            <dt class="text-xs font-bold uppercase tracking-wide text-muted">Kategoria</dt>
-                            <dd><a href="{{ route('categories.show', $project->category) }}" class="font-medium text-brand hover:text-brand-dark">{{ $project->category->name }}</a></dd>
-                        </div>
-                        @if ($project->since)
-                            <div>
-                                <dt class="text-xs font-bold uppercase tracking-wide text-muted">Od kiedy</dt>
-                                <dd class="font-medium text-ink">{{ $project->since }}</dd>
-                            </div>
-                        @endif
-                        @if ($showForWhom)
-                            <div>
-                                <dt class="text-xs font-bold uppercase tracking-wide text-muted">Dla kogo</dt>
-                                <dd class="font-medium text-ink" @if ($canInlineEdit) data-inline-field="for_whom" data-inline-kind="text" data-inline-multiline @endif>{{ $project->for_whom }}</dd>
-                            </div>
-                        @endif
-                        @if ($project->is_paid)
-                            <div>
-                                <dt class="text-xs font-bold uppercase tracking-wide text-muted">Dostęp</dt>
-                                <dd class="font-medium text-ink">Płatny</dd>
-                            </div>
-                        @endif
-                    </dl>
-                </div>
-
         @if ($schedulePage)
             <div class="flex flex-col gap-3 rounded-lg border border-brand/20 bg-brand-light p-5">
                 <div class="flex items-start gap-3">
@@ -369,10 +345,8 @@
                     </div>
                 @endif
 
-                <a href="{{ route('projects.index') }}" class="inline-flex items-center gap-2 text-sm font-bold text-brand hover:text-brand-dark">
-                    Wszystkie projekty
-                </a>
             </aside>
+            @endif
         </div>
     </section>
     </div>{{-- /x-data zakładek --}}
