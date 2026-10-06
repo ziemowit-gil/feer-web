@@ -179,7 +179,12 @@
                                         </div>
                                         @if ($hasChildren)
                                             <ul id="{{ $childrenId }}" class="ml-4 mt-0.5 space-y-0.5 border-l border-gray-200 pl-2.5" role="list" x-show="open" @unless ($item['active']) style="display:none" @endunless>
+                                                @php $prevGroup = null; @endphp
                                                 @foreach ($item['children'] as $child)
+                                                    @if (($child['group'] ?? null) && $child['group'] !== $prevGroup)
+                                                        <li class="tm-sub" role="presentation" style="margin: .5rem .5rem .125rem">{{ $child['group'] }}</li>
+                                                        @php $prevGroup = $child['group']; @endphp
+                                                    @endif
                                                     <li>
                                                         <a href="{{ $child['url'] }}"
                                                            class="flex items-center gap-2 rounded-md px-2 py-1 text-[13px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand {{ $child['active'] ? 'bg-brand-light font-semibold text-brand' : 'text-muted hover:bg-gray-100 hover:text-brand' }}"

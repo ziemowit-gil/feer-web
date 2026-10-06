@@ -33,7 +33,7 @@ use Illuminate\Support\Facades\Route;
  *  item:    ['key' => string, 'label' => string, 'url' => string, 'icon' => string,
  *            'active' => bool, 'badge' => ?int, 'badge_tone' => 'brand'|'muted',
  *            'children' => child[]]
- *  child:   ['label' => string, 'url' => string, 'active' => bool, 'icon' => ?string]
+ *  child:   ['label' => string, 'url' => string, 'active' => bool, 'icon' => ?string, 'group' => ?string]
  */
 final class AdminMenu
 {
@@ -174,19 +174,7 @@ final class AdminMenu
             $isAdmin ? $this->section('system', 'System', [
                 $this->item('settings', 'Ustawienia strony', 'admin.ustawienia.edit', 'fa-sliders',
                     active: 'admin.ustawienia.*',
-                    children: array_merge(
-                        array_map(
-                            fn (string $key, string $label) => $this->child(
-                                $label,
-                                'admin.ustawienia.edit',
-                                fn () => request()->routeIs('admin.ustawienia.edit', 'admin.ustawienia.update') && request('tab', 'general') === $key,
-                                params: ['tab' => $key],
-                            ),
-                            array_keys(SiteSetting::SETTINGS_TABS),
-                            SiteSetting::SETTINGS_TABS,
-                        ),
-                        [$this->child('Plik .env', 'admin.ustawienia.env', 'admin.ustawienia.env*', icon: 'fa-file-code')],
-                    )),
+                    children: $this->settingsChildren()),
                 $this->item('templates', 'Szablony', 'admin.szablony.manage', 'fa-clone',
                     active: ['admin.szablony.*', 'admin.mail-templates.*'],
                     children: [
@@ -262,6 +250,46 @@ final class AdminMenu
         ];
     }
 
+    /**
+     * Podpozycje „Ustawień strony” pogrupowane w kategorie (SiteSetting::SETTINGS_TAB_GROUPS), z nagłówkami
+     * grup w kluczu `group`; zakładki spoza podziału trafiają do grupy „Inne”, a plik .env do „Zaawansowane”.
+     *
+     * @return array<int, ?array<string, mixed>>
+     */
+    private function settingsChildren(): array
+    {
+        $tabs = SiteSetting::SETTINGS_TABS;
+        $children = [];
+        $placed = [];
+
+        foreach (SiteSetting::SETTINGS_TAB_GROUPS as $group => $keys) {
+            foreach ($keys as $key) {
+                if (isset($tabs[$key])) {
+                    $children[] = $this->settingsTab($key, $tabs[$key], $group);
+                    $placed[] = $key;
+                }
+            }
+        }
+        foreach (array_diff(array_keys($tabs), $placed) as $key) {
+            $children[] = $this->settingsTab($key, $tabs[$key], 'Inne');
+        }
+
+        $children[] = $this->child('Plik .env', 'admin.ustawienia.env', 'admin.ustawienia.env*', icon: 'fa-file-code', group: 'Zaawansowane');
+
+        return $children;
+    }
+
+    private function settingsTab(string $key, string $label, string $group): ?array
+    {
+        return $this->child(
+            $label,
+            'admin.ustawienia.edit',
+            fn () => request()->routeIs('admin.ustawienia.edit', 'admin.ustawienia.update') && request('tab', 'general') === $key,
+            params: ['tab' => $key],
+            group: $group,
+        );
+    }
+
     // ── Budowanie elementów ──────────────────────────────────────────
 
     /**
@@ -324,7 +352,7 @@ final class AdminMenu
      * @param  string|array<int, string>|Closure  $active
      * @param  array<string, mixed>  $params
      */
-    private function child(string $label, string $route, string|array|Closure $active, array $params = [], ?string $icon = null): ?array
+    private function child(string $label, string $route, string|array|Closure $active, array $params = [], ?string $icon = null, ?string $group = null): ?array
     {
         if (! Route::has($route)) {
             return null;
@@ -334,6 +362,7 @@ final class AdminMenu
             'label'  => $label,
             'url'    => route($route, $params),
             'icon'   => $icon,
+            'group'  => $group,
             'active' => $active instanceof Closure ? (bool) $active() : request()->routeIs($active),
         ];
     }

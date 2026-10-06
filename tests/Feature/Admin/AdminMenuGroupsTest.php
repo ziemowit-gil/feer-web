@@ -65,4 +65,23 @@ class AdminMenuGroupsTest extends TestCase
         $this->assertContains('settings', array_column($systemItems, 'key'));
         $this->assertSame(['Konfiguracja', 'Narzędzia'], array_column($groups['system']['blocks'], 'heading'));
     }
+
+    public function test_ustawienia_strony_sa_podzielone_na_kategorie_i_zawieraja_wszystkie_zakladki(): void
+    {
+        $admin = User::factory()->create(['role' => User::ROLE_ADMIN]);
+        $groups = collect(AdminMenu::for($admin))->keyBy('key');
+        $settings = collect($groups['system']['blocks'][0]['items'])->firstWhere('key', 'settings');
+
+        $tabChildren = collect($settings['children'])->filter(fn ($c) => $c['group'] !== 'Zaawansowane');
+        $this->assertCount(count(SiteSetting::SETTINGS_TABS), $tabChildren, 'Każda zakładka ustawień trafia do menu dokładnie raz.');
+        $this->assertSame(
+            ['Wygląd', 'Treści i dane', 'Funkcje i integracje', 'SEO i dostępność', 'Zaawansowane'],
+            collect($settings['children'])->pluck('group')->unique()->values()->all()
+        );
+
+        // Podział obejmuje wszystkie klucze zakładek bez powtórzeń.
+        $keys = collect(SiteSetting::SETTINGS_TAB_GROUPS)->flatten();
+        $this->assertSame($keys->count(), $keys->unique()->count());
+        $this->assertEqualsCanonicalizing(array_keys(SiteSetting::SETTINGS_TABS), $keys->all());
+    }
 }
