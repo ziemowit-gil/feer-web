@@ -211,16 +211,24 @@
     </script>
 
     <script>
+        // Jedno źródło wartości domyślnych formularza pozycji menu (nowa pozycja, pierwsze otwarcie modala).
+        // Dodając pole formularza, uzupełnij je tu, w openEdit() oraz w tablicy $reopen na górze widoku.
+        function navFormDefaults(action = '') {
+            return {
+                editingId: '', action, label: '', icon: '', description: '', url: '', type: 'link',
+                location: 'main', parentId: '', module: '', isButton: false,
+                buttonColor: '#2563eb', buttonColorEnabled: false,
+                isTransparent: false, isMega: false, isHeading: false,
+                megaImage: '', megaImageAlt: '', megaSize: 'md', megaExtraTitle: '', megaSideTitle: '', megaSideLinks: [],
+                isActive: true,
+            };
+        }
+
         document.addEventListener('alpine:init', () => {
             Alpine.data('menuBuilder', (reopen = null, storeUrl = '') => ({
                 open: false,
                 trigger: null,
-                form: {
-                    editingId: '', action: storeUrl, label: '', icon: '', description: '', url: '', type: 'link',
-                    location: 'main', parentId: '', module: '', isButton: false,
-                    buttonColor: '#2563eb', buttonColorEnabled: false,
-                    isTransparent: false, isMega: false, isHeading: false, megaImage: '', megaImageAlt: '', megaSize: 'md', megaExtraTitle: '', megaSideTitle: '', megaSideLinks: [], isActive: true,
-                },
+                form: navFormDefaults(storeUrl),
 
                 init() {
                     // Ponowne otwarcie modala po błędach walidacji (bez utraty danych).
@@ -231,12 +239,7 @@
                 },
 
                 blankForm(overrides = {}) {
-                    return {
-                        editingId: '', action: storeUrl, label: '', icon: '', description: '', url: '', type: 'link',
-                        location: 'main', parentId: '', module: '', isButton: false,
-                        buttonColor: '#2563eb', buttonColorEnabled: false,
-                        isTransparent: false, isMega: false, isHeading: false, megaImage: '', megaImageAlt: '', megaSize: 'md', megaExtraTitle: '', megaSideTitle: '', megaSideLinks: [], isActive: true, ...overrides,
-                    };
+                    return { ...navFormDefaults(storeUrl), ...overrides };
                 },
 
                 openCreate(event) {
