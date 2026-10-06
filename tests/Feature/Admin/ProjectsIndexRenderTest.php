@@ -67,9 +67,13 @@ class ProjectsIndexRenderTest extends TestCase
 
         $html = $this->get(route('projects.show', $project))->assertOk()->getContent();
 
-        $this->assertSame(2, substr_count($html, 'role="tablist"'));
-        $this->assertStringContainsString('id="tab-sekcja-0"', $html);
-        $this->assertStringContainsString('id="tab-podstrona-1"', $html);
+        // Jeden wspólny pasek zakładek (jak w kontakcie): „O projekcie”, sekcje własne i podstrony.
+        $this->assertSame(1, substr_count($html, 'role="tablist"'));
+        foreach (['tab-opis', 'tab-sekcja-0', 'tab-sekcja-1', 'tab-podstrona-0', 'tab-podstrona-1'] as $id) {
+            $this->assertStringContainsString('id="'.$id.'"', $html);
+        }
+        $this->assertStringContainsString('id="panel-podstrona-1"', $html);
+        $this->assertStringContainsString('Nagrania treść', $html);
         $this->assertStringContainsString('bg-brand', $html);
     }
 }

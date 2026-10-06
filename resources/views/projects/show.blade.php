@@ -25,8 +25,14 @@
         // Subpages attached to this project, grouped by how they should appear:
         // inline sections in the body, tabs, or just links in the sidebar.
         $tabPages = $project->publishedPages->where('project_display', 'tab')->values();
-        // Jedna „zakładka” nie ma po co przełączać — pokazujemy ją jak zwykłą sekcję w treści.
-        $inlinePages = $project->publishedPages->filter(fn ($p) => $p->project_display === 'inline' || ($p->project_display === 'tab' && $tabPages->count() === 1))->values();
+        $inlinePages = $project->publishedPages->where('project_display', 'inline')->values();
+        // Zakładki (jak w kontakcie): „O projekcie” + sekcje własne (gdy włączono zakładki) + podstrony w trybie zakładki.
+        $sectionTabs = $project->sections_as_tabs ? $customSections->values() : collect();
+        $tabItems = collect([['id' => 'opis', 'label' => 'O projekcie']])
+            ->merge($sectionTabs->map(fn ($sec, $i) => ['id' => 'sekcja-'.$i, 'label' => $sec['title'] ?: 'Sekcja '.($i + 1)]))
+            ->merge($tabPages->map(fn ($sp, $i) => ['id' => 'podstrona-'.$i, 'label' => $sp->title]))
+            ->all();
+        $hasTabs = count($tabItems) > 1;
         $linkPages = $project->publishedPages->whereNotIn('project_display', ['inline', 'tab'])->values();
 
         // A schedule ("harmonogram") page attached to this project — surfaced as a
@@ -56,6 +62,7 @@
     <section class="border-b border-gray-100 bg-gray-50">
         <div class="relative mx-auto grid max-w-6xl items-center gap-8 px-4 py-12 sm:py-16 {{ $project->image_url ? 'lg:grid-cols-[minmax(0,1fr)_26rem]' : '' }}">
             <div class="min-w-0">
+            <div id="panel-opis" role="tabpanel" aria-labelledby="tab-opis" @if ($hasTabs) tabindex="0" @endif x-show="tab === 'opis'">
                 <a href="{{ route('categories.show', $project->category) }}" class="inline-block text-xs font-bold uppercase tracking-widest text-brand hover:text-brand-dark">
                     {{ $project->category->name }}
                 </a>
@@ -73,28 +80,22 @@
         </div>
     </section>
 
+    <div x-data="{
+            tabs: @js(array_column($tabItems, 'id')),
+            tab: 'opis',
+            move(step) { const i = this.tabs.indexOf(this.tab); this.tab = this.tabs[(i + step + this.tabs.length) % this.tabs.length]; this.focusActive(); },
+            jump(id) { this.tab = id; this.focusActive(); },
+            focusActive() { this.$nextTick(() => document.getElementById('tab-' + this.tab)?.focus()); },
+        }">
+    @if ($hasTabs)
+        @include('partials.tab-strip', ['tabItems' => $tabItems, 'tabsLabel' => 'Sekcje projektu'])
+    @endif
+
     <section class="mx-auto max-w-6xl px-4 py-12">
         <div class="grid items-start gap-10 lg:grid-cols-[minmax(0,1fr)_18rem]">
         <div class="min-w-0">
-                @if ($project->sections_as_tabs && $customSections->count() > 1)
-                    @php $sectionTabItems = $customSections->values()->map(fn ($sec, $i) => ['id' => 'sekcja-'.$i, 'label' => $sec['title'] ?: 'Sekcja '.($i + 1)])->all(); @endphp
-                    <div class="mb-8" x-data="{
-                            tabs: @js(array_column($sectionTabItems, 'id')),
-                            tab: @js($sectionTabItems[0]['id']),
-                            move(step) { const i = this.tabs.indexOf(this.tab); this.tab = this.tabs[(i + step + this.tabs.length) % this.tabs.length]; this.focusActive(); },
-                            jump(id) { this.tab = id; this.focusActive(); },
-                            focusActive() { this.$nextTick(() => document.getElementById('tab-' + this.tab)?.focus()); },
-                        }">
-                        @include('partials.tab-strip', ['tabItems' => $sectionTabItems, 'tabsLabel' => 'Sekcje projektu'])
-                        <div class="pt-6">
-                            @foreach ($customSections->values() as $i => $section)
-                                <div id="panel-sekcja-{{ $i }}" role="tabpanel" aria-labelledby="tab-sekcja-{{ $i }}" tabindex="0" @unless ($loop->first) x-cloak @endunless
-                                     x-show="tab === 'sekcja-{{ $i }}'" class="prose max-w-none text-ink focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand">
-                                    {!! $section['content'] !!}
-                                </div>
-                            @endforeach
-                        </div>
-                    </div>
+                @if ($sectionTabs->isNotEmpty())
+                    {{-- Sekcje własne są w zakładkach (pasek pod nagłówkiem) --}}
                 @else
                     @foreach ($featuredSections as $section)
                         <div class="mb-8 rounded-lg border border-brand/20 border-l-4 border-l-brand bg-brand-light/50 p-6">
@@ -138,7 +139,7 @@
                     <div class="prose max-w-none text-ink">{{ $project->why }}</div>
                 @endif
 
-                @unless ($project->sections_as_tabs && $customSections->count() > 1)
+                @unless ($sectionTabs->isNotEmpty())
                     @foreach ($regularSections as $customSection)
                         <div class="mt-8">
                             @if (! empty($customSection['title']))
@@ -175,36 +176,6 @@
                 @endforeach
 
                 {{-- Project subpages shown as tabs --}}
-                @if ($tabPages->count() > 1)
-                    @php $subTabItems = $tabPages->map(fn ($sp, $i) => ['id' => 'podstrona-'.$i, 'label' => $sp->title])->all(); @endphp
-                    <div class="mt-8" x-data="{
-                            tabs: @js(array_column($subTabItems, 'id')),
-                            tab: @js($subTabItems[0]['id']),
-                            move(step) { const i = this.tabs.indexOf(this.tab); this.tab = this.tabs[(i + step + this.tabs.length) % this.tabs.length]; this.focusActive(); },
-                            jump(id) { this.tab = id; this.focusActive(); },
-                            focusActive() { this.$nextTick(() => document.getElementById('tab-' + this.tab)?.focus()); },
-                        }">
-                        @include('partials.tab-strip', ['tabItems' => $subTabItems, 'tabsLabel' => 'Strony projektu'])
-                        <div class="pt-6">
-                            @foreach ($tabPages as $i => $subpage)
-                                <div id="panel-podstrona-{{ $i }}" role="tabpanel" aria-labelledby="tab-podstrona-{{ $i }}" tabindex="0" @unless ($loop->first) x-cloak @endunless
-                                     x-show="tab === 'podstrona-{{ $i }}'" class="focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand">
-                                @if ($subpage->content)
-                                    <div class="prose max-w-none text-ink">{!! $subpage->content !!}</div>
-                                @endif
-                                @if ($subpage->isSchedule())
-                                    @include('partials.schedule', ['page' => $subpage, 'showHeading' => false])
-                                @elseif ($subpage->isFaq())
-                                    @include('partials.faq', ['page' => $subpage])
-                                @endif
-                                <a href="{{ route('page.show', $subpage) }}" class="mt-3 inline-flex items-center gap-2 text-sm font-bold text-brand hover:text-brand-dark">
-                                    Otwórz jako osobną stronę                                 </a>
-                                </div>
-                            @endforeach
-                        </div>
-                    </div>
-                @endif
-
                 @if ($project->outcomes)
                     <div class="mt-8 rounded-lg border border-emerald-200 bg-emerald-50/60 p-6">
                         <h2 class="mb-3 flex items-center gap-2 text-xl font-bold text-ink">
@@ -274,6 +245,31 @@
                         </ul>
                     </div>
                 @endif
+            </div>{{-- /panel-opis --}}
+
+            {{-- Panele pozostałych zakładek --}}
+            @foreach ($sectionTabs as $i => $section)
+                <div id="panel-sekcja-{{ $i }}" role="tabpanel" aria-labelledby="tab-sekcja-{{ $i }}" tabindex="0" x-cloak
+                     x-show="tab === 'sekcja-{{ $i }}'" class="prose max-w-none text-ink focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand">
+                    @if (! empty($section['title']))<h2 class="mb-3 text-xl font-bold text-ink">{{ $section['title'] }}</h2>@endif
+                    {!! $section['content'] ?? '' !!}
+                </div>
+            @endforeach
+            @foreach ($tabPages as $i => $subpage)
+                <div id="panel-podstrona-{{ $i }}" role="tabpanel" aria-labelledby="tab-podstrona-{{ $i }}" tabindex="0" x-cloak
+                     x-show="tab === 'podstrona-{{ $i }}'" class="focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand">
+                                @if ($subpage->content)
+                                    <div class="prose max-w-none text-ink">{!! $subpage->content !!}</div>
+                                @endif
+                                @if ($subpage->isSchedule())
+                                    @include('partials.schedule', ['page' => $subpage, 'showHeading' => false])
+                                @elseif ($subpage->isFaq())
+                                    @include('partials.faq', ['page' => $subpage])
+                                @endif
+                                <a href="{{ route('page.show', $subpage) }}" class="mt-3 inline-flex items-center gap-2 text-sm font-bold text-brand hover:text-brand-dark">
+                                    Otwórz jako osobną stronę                                 </a>
+                </div>
+            @endforeach
             </div>
 
             {{-- ══ PANEL BOCZNY: harmonogram, kontakt, strony projektu, powrót ══ --}}
@@ -378,6 +374,7 @@
             </aside>
         </div>
     </section>
+    </div>{{-- /x-data zakładek --}}
 
     </div>
 @endsection
