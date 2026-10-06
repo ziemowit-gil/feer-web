@@ -42,4 +42,15 @@ class ProjectsIndexRenderTest extends TestCase
             ->get(route('admin.projekty.edit', $project))->assertOk()
             ->assertSee('data-ftab-btn="sekcje"', false)->assertSee('Anuluj');
     }
+
+    public function test_publiczna_lista_projektow_ma_skroty_do_kategorii(): void
+    {
+        foreach (['Audyty' => 'audyty', 'Szkolenia' => 'szkolenia'] as $name => $slug) {
+            $c = Category::create(['name' => $name, 'slug' => $slug]);
+            Project::create(['title' => 'Projekt '.$name, 'slug' => 'p-'.$slug, 'is_published' => true, 'category_id' => $c->id]);
+        }
+
+        $this->get(route('projects.index'))->assertOk()
+            ->assertSee('Przejdź do kategorii')->assertSee('Projekt Audyty')->assertSee('Projekt Szkolenia');
+    }
 }

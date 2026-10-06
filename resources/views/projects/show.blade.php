@@ -67,9 +67,6 @@
                     <p class="mt-4 max-w-2xl text-lg leading-relaxed text-ink/80">{{ $project->excerpt }}</p>
                 @endif
 
-                @if ($project->is_completed)
-                    <p class="mt-5"><span class="inline-flex items-center rounded-full bg-emerald-50 px-3 py-1 text-sm font-bold text-emerald-700 ring-1 ring-emerald-200">Projekt zrealizowany</span></p>
-                @endif
             </div>
 
             @if ($project->image_url)

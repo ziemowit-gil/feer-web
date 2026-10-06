@@ -9,42 +9,69 @@
 @endsection
 
 @section('content')
-    <section class="mx-auto max-w-6xl px-4 py-12"
-        x-data="{ view: localStorage.getItem('projects-view') || 'grid' }"
+    <div x-data="{ view: localStorage.getItem('projects-view') || 'grid' }"
         x-init="$watch('view', v => localStorage.setItem('projects-view', v))">
 
-        <div class="mb-6 flex items-center justify-between gap-4">
-            <h1 class="{{ $siteSettings->projects_intro ? 'mb-0' : 'mb-0' }} text-3xl font-bold text-ink">Projekty</h1>
+    @php
+        $anyProjects = $categories->some(fn ($c) => $c->publishedProjects->isNotEmpty());
+        $filledCategories = $categories->filter(fn ($c) => $c->publishedProjects->isNotEmpty())->values();
+    @endphp
 
-            <div class="flex gap-1 rounded-lg border border-gray-200 p-1" role="group" aria-label="Przełącz widok projektów">
-                <button type="button" @click="view = 'grid'"
-                    :class="view === 'grid' ? 'bg-brand text-white shadow-sm' : 'text-muted hover:text-ink hover:bg-gray-100'"
-                    class="flex h-8 w-8 items-center justify-center rounded transition"
-                    aria-label="Widok siatki" :aria-pressed="view === 'grid'">
-                    <i class="fa-solid fa-grip text-sm" aria-hidden="true"></i>
-                </button>
-                <button type="button" @click="view = 'list'"
-                    :class="view === 'list' ? 'bg-brand text-white shadow-sm' : 'text-muted hover:text-ink hover:bg-gray-100'"
-                    class="flex h-8 w-8 items-center justify-center rounded transition"
-                    aria-label="Widok listy" :aria-pressed="view === 'list'">
-                    <i class="fa-solid fa-list text-sm" aria-hidden="true"></i>
-                </button>
+    {{-- ══ HERO: tytuł, wstęp, przełącznik widoku i skróty do kategorii ══ --}}
+    <div class="relative overflow-hidden border-b border-gray-100"
+        style="background: linear-gradient(135deg, color-mix(in srgb, var(--color-brand) 10%, #fff) 0%, #fff 70%)">
+        <span class="pointer-events-none absolute -right-16 -top-16 h-64 w-64 rounded-full" aria-hidden="true"
+            style="background: color-mix(in srgb, var(--color-brand) 8%, transparent)"></span>
+        <div class="relative mx-auto max-w-6xl px-4 py-12 sm:py-16">
+            <div class="flex flex-wrap items-end justify-between gap-6">
+                <div class="min-w-0">
+                    <p class="text-xs font-bold uppercase tracking-widest text-brand">Nasze działania</p>
+                    <h1 class="mt-3 text-3xl font-extrabold leading-tight tracking-tight text-ink sm:text-5xl">Projekty</h1>
+                    @if ($siteSettings->projects_intro)
+                        <div class="prose mt-4 max-w-2xl text-ink/80">{!! $siteSettings->projects_intro !!}</div>
+                    @endif
+                </div>
+
+                <div class="flex gap-1 rounded-xl border border-gray-200 bg-white p-1 shadow-sm" role="group" aria-label="Przełącz widok projektów">
+                    <button type="button" @click="view = 'grid'"
+                        :class="view === 'grid' ? 'bg-brand text-white shadow-sm' : 'text-muted hover:text-ink hover:bg-gray-100'"
+                        class="flex h-9 w-9 items-center justify-center rounded-lg transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+                        aria-label="Widok siatki" :aria-pressed="view === 'grid'">
+                        <i class="fa-solid fa-grip text-sm" aria-hidden="true"></i>
+                    </button>
+                    <button type="button" @click="view = 'list'"
+                        :class="view === 'list' ? 'bg-brand text-white shadow-sm' : 'text-muted hover:text-ink hover:bg-gray-100'"
+                        class="flex h-9 w-9 items-center justify-center rounded-lg transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+                        aria-label="Widok listy" :aria-pressed="view === 'list'">
+                        <i class="fa-solid fa-list text-sm" aria-hidden="true"></i>
+                    </button>
+                </div>
             </div>
+
+            @if ($filledCategories->count() > 1)
+                <nav aria-label="Przejdź do kategorii" class="mt-8 flex flex-wrap gap-2">
+                    @foreach ($filledCategories as $chip)
+                        <a href="#kategoria-{{ $chip->id }}"
+                            class="rounded-full border border-brand/30 bg-white px-4 py-1.5 text-sm font-bold text-brand transition hover:bg-brand hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
+                            {{ $chip->name }}
+                            <span class="ml-1 font-medium opacity-70">{{ $chip->publishedProjects->count() }}</span>
+                        </a>
+                    @endforeach
+                </nav>
+            @endif
         </div>
+    </div>
 
-        @if ($siteSettings->projects_intro)
-            <div class="prose mb-8 max-w-2xl text-muted">{!! $siteSettings->projects_intro !!}</div>
-        @endif
+    <section class="mx-auto max-w-6xl px-4 py-12">
 
-        @php $anyProjects = $categories->some(fn ($c) => $c->publishedProjects->isNotEmpty()); @endphp
 
         {{-- Widok siatki --}}
         <div x-show="view === 'grid'">
             @foreach ($categories as $category)
                 @if ($category->publishedProjects->isNotEmpty())
-                    <div class="mb-10">
-                        <div class="mb-4 flex items-end justify-between gap-4">
-                            <h2 class="text-xl font-bold text-ink">{{ $category->name }}</h2>
+                    <div class="mb-12 scroll-mt-24" id="kategoria-{{ $category->id }}">
+                        <div class="mb-5 flex items-end justify-between gap-4 border-b border-gray-200 pb-3">
+                            <h2 class="text-2xl font-bold text-ink">{{ $category->name }}</h2>
                             <a href="{{ route('categories.show', $category) }}" class="text-sm font-bold text-brand hover:text-brand-dark">
                                 Zobacz kategorię →
                             </a>
@@ -68,7 +95,7 @@
         <div x-show="view === 'list'" x-cloak>
             @foreach ($categories as $category)
                 @if ($category->publishedProjects->isNotEmpty())
-                    <div class="mb-8">
+                    <div class="mb-8 scroll-mt-24">
                         <div class="mb-3 flex items-center justify-between gap-4">
                             <h2 class="text-lg font-bold text-ink">{{ $category->name }}</h2>
                             <a href="{{ route('categories.show', $category) }}" class="text-sm font-bold text-brand hover:text-brand-dark">
@@ -76,7 +103,7 @@
                             </a>
                         </div>
 
-                        <ul class="divide-y divide-gray-100 rounded-lg border border-gray-200">
+                        <ul class="divide-y divide-gray-100 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
                             @foreach ($category->publishedProjects as $project)
                                 @php
                                     $accentHex = $project->accent_color
@@ -132,4 +159,5 @@
         @endif
 
     </section>
+    </div>
 @endsection
