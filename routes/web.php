@@ -362,6 +362,7 @@ Route::middleware(['auth', 'verified', '2fa', 'admin-site'])->prefix(config('app
         Route::post('podstrony/{page}/klonuj', [AdminPageController::class, 'clone'])->name('podstrony.clone');
         Route::patch('podstrony/{page}/kolejnosc', [AdminPageController::class, 'updateOrder'])->name('podstrony.kolejnosc');
         Route::patch('podstrony/{page}/przenies', [AdminPageController::class, 'move'])->name('podstrony.przenies');
+        Route::post('podstrony/uloz', [AdminPageController::class, 'reorder'])->name('podstrony.uloz');
         Route::patch('podstrony/{page}/widocznosc', [AdminPageController::class, 'toggleVisibility'])->name('podstrony.widocznosc');
         Route::patch('podstrony/{page}/wylacz', [AdminPageController::class, 'toggleDisabled'])->name('podstrony.wylacz');
         Route::patch('podstrony/{page}/wyroznienie', [AdminPageController::class, 'toggleFeatured'])->name('podstrony.wyroznienie');

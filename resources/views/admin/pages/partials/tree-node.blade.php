@@ -13,7 +13,7 @@
         'brand_assets' => 'fa-palette', 'wspolpraca' => 'fa-handshake', 'legacy' => 'fa-clock-rotate-left', 'training_institution' => 'fa-graduation-cap',
     ];
 @endphp
-<ul role="list" class="{{ $depth > 0 ? 'ml-3 border-l border-gray-200 pl-1' : '' }} space-y-0.5">
+<ul role="list" data-tree-list class="{{ $depth > 0 ? 'ml-3 border-l border-gray-200 pl-1' : '' }} space-y-0.5">
     @foreach ($nodes as $node)
         @php
             $kids = $byParent->get($node->id, collect());
@@ -21,8 +21,8 @@
             $isOpen = in_array($node->id, $openIds, true) || $isSel;
             $icon = $kids->isNotEmpty() ? ($isOpen ? 'fa-folder-open' : 'fa-folder') : ($typeIcons[$node->type] ?? 'fa-file-lines');
         @endphp
-        <li data-tree-node data-title="{{ \Illuminate\Support\Str::lower($node->title) }}" @if ($kids->isNotEmpty()) x-data="{ open: {{ $isOpen ? 'true' : 'false' }} }" @endif>
-            <div class="group flex items-stretch gap-0.5">
+        <li data-tree-node data-page-id="{{ $node->id }}" data-title="{{ \Illuminate\Support\Str::lower($node->title) }}" @if ($kids->isNotEmpty()) x-data="{ open: {{ $isOpen ? 'true' : 'false' }} }" @endif>
+            <div class="group flex items-stretch gap-0.5 rounded" data-tree-row @if ($canDrag && (! $node->is_locked || auth()->user()->isAdmin())) draggable="true" data-draggable="1" @endif>
                 @if ($kids->isNotEmpty())
                     <button type="button" @click="open = ! open" :aria-expanded="open.toString()" aria-expanded="{{ $isOpen ? 'true' : 'false' }}"
                         aria-controls="tree-branch-{{ $node->id }}"
@@ -54,7 +54,7 @@
 
             @if ($kids->isNotEmpty())
                 <div id="tree-branch-{{ $node->id }}" x-show="open" @if (! $isOpen) x-cloak @endif>
-                    @include('admin.pages.partials.tree-node', ['nodes' => $kids, 'depth' => $depth + 1])
+                    @include('admin.pages.partials.tree-node', ['nodes' => $kids, 'depth' => $depth + 1, 'canDrag' => $canDrag])
                 </div>
             @endif
         </li>

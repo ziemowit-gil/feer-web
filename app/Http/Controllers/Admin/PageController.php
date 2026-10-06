@@ -141,6 +141,67 @@ class PageController extends Controller
         return redirect()->route('admin.podstrony.index', filled($selected) ? ['wybrana' => $selected] : []);
     }
 
+    /**
+     * Przeciąganie w drzewie stron: ustawia stronę pod wskazanym rodzicem na
+     * wskazanej pozycji (0 = pierwsza) i przenumerowuje rodzeństwo kolejnymi
+     * wartościami `order`. Odpowiada zawsze JSON-em — woła je skrypt drzewa.
+     */
+    public function reorder(Request $request): \Illuminate\Http\JsonResponse
+    {
+        $validator = \Illuminate\Support\Facades\Validator::make($request->all(), [
+            'id' => ['required', 'integer'],
+            'parent_id' => ['nullable', 'integer'],
+            'position' => ['required', 'integer', 'min:0', 'max:100000'],
+        ]);
+        if ($validator->fails()) {
+            return response()->json(['ok' => false, 'message' => $validator->errors()->first()], 422);
+        }
+
+        $tree = fn () => Page::forCurrentSite()->where('type', '!=', 'about_person');
+
+        $page = $tree()->find((int) $request->input('id'));
+        if (! $page) {
+            return response()->json(['ok' => false, 'message' => 'Nie znaleziono strony.'], 404);
+        }
+        if ($page->is_locked && ! $request->user()->isAdmin()) {
+            return response()->json(['ok' => false, 'message' => "Strona „{$page->title}” jest zablokowana do edycji przez administratora."], 403);
+        }
+
+        $parentId = (int) $request->input('parent_id', 0) ?: null;
+        if ($parentId) {
+            $parent = $tree()->find($parentId);
+            if (! $parent) {
+                return response()->json(['ok' => false, 'message' => 'Wybrana strona nadrzędna nie istnieje.'], 422);
+            }
+            if ($parent->id === $page->id || $parent->ancestors()->contains('id', $page->id)) {
+                return response()->json(['ok' => false, 'message' => 'Nie można przenieść strony do niej samej ani do jej podstrony.'], 422);
+            }
+        }
+
+        \Illuminate\Support\Facades\DB::transaction(function () use ($tree, $page, $parentId, $request) {
+            $siblings = $tree()
+                ->when($parentId, fn ($q) => $q->where('parent_id', $parentId), fn ($q) => $q->whereNull('parent_id'))
+                ->where('id', '!=', $page->id)
+                ->orderBy('order')->orderBy('title')
+                ->pluck('id')->all();
+
+            array_splice($siblings, min((int) $request->input('position'), count($siblings)), 0, [$page->id]);
+
+            if ((int) $page->parent_id !== (int) $parentId) {
+                $page->update(['parent_id' => $parentId]);
+            }
+
+            foreach ($siblings as $index => $id) {
+                Page::whereKey($id)->where('order', '!=', $index)->update(['order' => $index]);
+            }
+        });
+
+        $message = "Przeniesiono stronę „{$page->title}”.";
+        session()->flash('status', $message);
+
+        return response()->json(['ok' => true, 'message' => $message]);
+    }
+
     /** Przenosi stronę w inne miejsce drzewa (zmiana strony nadrzędnej) bez zmiany adresu URL strony. */
     public function move(Request $request, Page $page)
     {

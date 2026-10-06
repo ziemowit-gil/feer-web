@@ -12,17 +12,7 @@
     @endphp
 
     <div class="mb-4 flex flex-wrap items-center justify-between gap-2">
-        {{-- Przełącznik widoku: drzewo (domyślne) / lista z filtrami i operacjami zbiorczymi --}}
-        <div class="inline-flex rounded-lg border border-gray-200 bg-white p-0.5 text-xs font-bold" role="group" aria-label="Widok stron">
-            <a href="{{ route('admin.podstrony.index', array_filter(['wybrana' => $selected?->id])) }}" aria-current="true"
-                class="inline-flex items-center gap-1.5 rounded-md bg-brand px-3 py-1.5 text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-1">
-                <i class="fa-solid fa-sitemap" aria-hidden="true"></i> Drzewo
-            </a>
-            <a href="{{ route('admin.podstrony.index', ['widok' => 'lista']) }}"
-                class="inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-muted hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
-                <i class="fa-solid fa-list" aria-hidden="true"></i> Lista
-            </a>
-        </div>
+        <p class="text-sm text-muted">Praca na drzewie stron. Filtry, wyszukiwanie i operacje zbiorcze są w zakładce <a href="{{ route('admin.podstrony.index', ['widok' => 'lista']) }}" class="font-bold text-brand hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">Lista stron</a>.</p>
         <div class="flex items-center gap-2">
             <a href="{{ route('admin.podstrony.index', ['widok' => 'lista', 'status' => 'trashed']) }}" class="{{ $btn }} font-normal text-muted">
                 <i class="fa-solid fa-trash-can text-xs" aria-hidden="true"></i> Kosz
@@ -80,12 +70,22 @@
                     </div>
                 </div>
             </div>
-            <div class="max-h-[calc(100vh-14rem)] overflow-y-auto p-2">
+            <p id="tree-dnd-help" class="border-b border-gray-100 px-3 py-2 text-xs text-muted">
+                <i class="fa-solid fa-hand" aria-hidden="true"></i>
+                Przeciągnij stronę: na górną lub dolną krawędź innej — zmienia kolejność, na środek — wkłada ją jako podstronę.
+                Z klawiatury: zaznacz stronę i użyj <kbd class="rounded border border-gray-300 bg-gray-50 px-1">Alt</kbd>+<kbd class="rounded border border-gray-300 bg-gray-50 px-1">Shift</kbd>+strzałek
+                (góra/dół — kolejność, w prawo — w głąb poprzedniej, w lewo — poziom wyżej).
+            </p>
+            <div id="tree-dnd-status" role="status" aria-live="polite" class="sr-only"></div>
+            <div class="max-h-[calc(100vh-16rem)] overflow-y-auto p-2" id="tree-scroll">
                 @if ($byParent->get(0, collect())->isEmpty())
                     <p class="px-2 py-6 text-center text-sm text-muted">Brak stron. Dodaj pierwszą stronę przyciskiem powyżej.</p>
                 @else
-                    @include('admin.pages.partials.tree-node', ['nodes' => $byParent->get(0), 'depth' => 0])
+                    @include('admin.pages.partials.tree-node', ['nodes' => $byParent->get(0), 'depth' => 0, 'canDrag' => true])
                 @endif
+                <div data-tree-root-drop class="mt-2 hidden rounded border-2 border-dashed border-brand/50 px-3 py-3 text-center text-xs font-bold text-brand">
+                    Upuść tutaj, aby przenieść na poziom główny
+                </div>
             </div>
         </nav>
 
@@ -225,8 +225,8 @@
                     <h2 id="pane-heading" class="text-xl font-bold text-ink">Wszystkie strony</h2>
                     <p class="mt-1 text-sm text-muted">
                         Wybierz stronę w drzewie po lewej, aby zobaczyć jej szczegóły, podstrony i szybkie akcje.
-                        Poniżej strony najwyższego poziomu. Filtry, wyszukiwanie po adresie i operacje zbiorcze znajdziesz w widoku
-                        <a href="{{ route('admin.podstrony.index', ['widok' => 'lista']) }}" class="font-bold text-brand hover:underline">Lista</a>.
+                        Poniżej strony najwyższego poziomu. Filtry, wyszukiwanie po adresie i operacje zbiorcze znajdziesz w zakładce
+                        <a href="{{ route('admin.podstrony.index', ['widok' => 'lista']) }}" class="font-bold text-brand hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">Lista stron</a>.
                     </p>
                 </div>
                 @if ($children->isEmpty())
@@ -237,4 +237,141 @@
             @endif
         </section>
     </div>
+
+    <script>
+        // Przeciąganie stron w drzewie. Upuszczenie na górną/dolną czwartą część wiersza
+        // ustawia stronę przed/za nią (to samo rodzeństwo), na środek — jako ostatnią podstronę.
+        // Serwer (PageController::reorder) jest źródłem prawdy: po sukcesie przeładowujemy widok.
+        (function () {
+            const tree = document.querySelector('nav[aria-label="Drzewo stron"]');
+            if (! tree) return;
+
+            const url = @js(route('admin.podstrony.uloz'));
+            const csrf = document.querySelector('meta[name="csrf-token"]').content;
+            const status = document.getElementById('tree-dnd-status');
+            const rootDrop = tree.querySelector('[data-tree-root-drop]');
+            const selectedId = @js($selected?->id);
+            let dragLi = null, hoverTimer = null;
+
+            const rowOf = el => el.closest('[data-tree-row]');
+            const liOf = el => el.closest('[data-tree-node]');
+            const idOf = li => parseInt(li.dataset.pageId, 10);
+            const parentIdOf = li => { const p = li.parentElement.closest('[data-tree-node]'); return p ? idOf(p) : 0; };
+            const siblingsOf = (li, exceptId) => [...li.parentElement.children].filter(n => n.matches('[data-tree-node]') && idOf(n) !== exceptId);
+            const clearMarks = () => tree.querySelectorAll('[data-drop]').forEach(r => {
+                r.removeAttribute('data-drop');
+                r.classList.remove('bg-brand-light', 'ring-2', 'ring-brand', 'border-t-2', 'border-b-2', 'border-brand');
+            });
+            const announce = msg => { status.textContent = ''; setTimeout(() => status.textContent = msg, 30); };
+
+            async function send(id, parentId, position) {
+                try {
+                    const res = await fetch(url, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': csrf },
+                        body: JSON.stringify({ id, parent_id: parentId || null, position }),
+                    });
+                    const json = await res.json().catch(() => ({}));
+                    if (! res.ok || ! json.ok) {
+                        announce(json.message || 'Nie udało się przenieść strony.');
+                        alert(json.message || 'Nie udało się przenieść strony.');
+                        return;
+                    }
+                    const target = new URL(location.href);
+                    target.searchParams.set('wybrana', selectedId || id);
+                    location.href = target.toString();
+                } catch (e) {
+                    announce('Brak połączenia z serwerem.');
+                    alert('Brak połączenia z serwerem. Spróbuj ponownie.');
+                }
+            }
+
+            function zoneOf(row, e) {
+                const r = row.getBoundingClientRect();
+                const y = (e.clientY - r.top) / r.height;
+                return y < 0.25 ? 'before' : (y > 0.75 ? 'after' : 'inside');
+            }
+
+            tree.addEventListener('dragstart', e => {
+                const row = e.target.closest ? rowOf(e.target) : null;
+                if (! row || ! row.dataset.draggable) { e.preventDefault(); return; }
+                dragLi = liOf(row);
+                e.dataTransfer.effectAllowed = 'move';
+                e.dataTransfer.setData('text/plain', String(idOf(dragLi)));
+                dragLi.classList.add('opacity-50');
+                rootDrop.classList.remove('hidden');
+            });
+
+            tree.addEventListener('dragend', () => {
+                if (dragLi) dragLi.classList.remove('opacity-50');
+                dragLi = null; clearTimeout(hoverTimer);
+                clearMarks(); rootDrop.classList.add('hidden');
+            });
+
+            tree.addEventListener('dragover', e => {
+                if (! dragLi) return;
+                if (e.target.closest('[data-tree-root-drop]')) { e.preventDefault(); clearMarks(); rootDrop.classList.add('bg-brand-light'); return; }
+                const row = rowOf(e.target);
+                if (! row) return;
+                const li = liOf(row);
+                if (dragLi.contains(li)) { clearMarks(); return; }          // nie na siebie ani własnego potomka
+                e.preventDefault();
+                e.dataTransfer.dropEffect = 'move';
+                const zone = zoneOf(row, e);
+                clearMarks();
+                row.dataset.drop = zone;
+                if (zone === 'inside') row.classList.add('bg-brand-light', 'ring-2', 'ring-brand');
+                else row.classList.add(zone === 'before' ? 'border-t-2' : 'border-b-2', 'border-brand');
+
+                // Zwinięta gałąź rozwija się po chwili zawisu nad jej środkiem.
+                clearTimeout(hoverTimer);
+                if (zone === 'inside' && li.hasAttribute('x-data') && ! Alpine.$data(li).open) {
+                    hoverTimer = setTimeout(() => { Alpine.$data(li).open = true; }, 700);
+                }
+            });
+
+            tree.addEventListener('dragleave', e => { if (! tree.contains(e.relatedTarget)) clearMarks(); });
+
+            tree.addEventListener('drop', e => {
+                if (! dragLi) return;
+                e.preventDefault();
+                const id = idOf(dragLi);
+                if (e.target.closest('[data-tree-root-drop]')) {
+                    const roots = siblingsOf(tree.querySelector('[data-tree-node]'), id);
+                    clearMarks(); send(id, 0, roots.length); return;
+                }
+                const row = rowOf(e.target);
+                if (! row) return;
+                const li = liOf(row);
+                if (dragLi.contains(li)) return;
+                const zone = zoneOf(row, e);
+                clearMarks();
+                if (zone === 'inside') {
+                    send(id, idOf(li), 100000);                              // na koniec podstron
+                } else {
+                    const sibs = siblingsOf(li, id);
+                    const idx = sibs.indexOf(li) + (zone === 'after' ? 1 : 0);
+                    send(id, parentIdOf(li), idx);
+                }
+            });
+
+            // Klawiatura: Alt+Shift+strzałki na linku strony w drzewie.
+            tree.addEventListener('keydown', e => {
+                if (! (e.altKey && e.shiftKey) || ! ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) return;
+                const row = e.target.closest ? rowOf(e.target) : null;
+                if (! row || ! row.dataset.draggable) return;
+                e.preventDefault();
+                const li = liOf(row), id = idOf(li), parentId = parentIdOf(li);
+                const sibs = siblingsOf(li, 0), idx = sibs.indexOf(li);
+                if (e.key === 'ArrowUp' && idx > 0) send(id, parentId, idx - 1);
+                else if (e.key === 'ArrowDown' && idx < sibs.length - 1) send(id, parentId, idx + 1);
+                else if (e.key === 'ArrowRight' && idx > 0) send(id, idOf(sibs[idx - 1]), 100000);   // w głąb poprzedniej
+                else if (e.key === 'ArrowLeft' && parentId) {                                         // poziom wyżej, tuż za rodzicem
+                    const parentLi = li.parentElement.closest('[data-tree-node]');
+                    const uncles = siblingsOf(parentLi, 0);
+                    send(id, parentIdOf(parentLi), uncles.indexOf(parentLi) + 1);
+                } else announce('Nie można przesunąć strony w tym kierunku.');
+            });
+        })();
+    </script>
 @endsection
