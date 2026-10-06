@@ -115,7 +115,7 @@ class SiteSetting extends Model implements HasMedia
         'default'      => 'Domyślny (NGO/fundacja — klasyczny)',
         'ngo'          => 'NGO / fundacja (rozbudowany)',
         'ngo_mix'      => 'NGO / fundacja (mieszany — klasyczna belka i stopka, rozbudowana strona główna)',
-        'feer'         => 'FEER (styl Brand booka — klasyczna belka i stopka, rozbudowana strona główna, Montserrat, płasko)',
+        'feer'         => 'FEER (dedykowany szablon Fundacji FEER wg Brand booka 2024 — własna paleta, Montserrat, płasko)',
         'municipality' => 'Gmina / urząd',
         'federation'   => 'Federacja organizacji (wielobarwna, nowoczesna)',
         'wrzos'        => 'Federacja organizacji (czerwono-biała, pasek dostępności, siatka wartości)',

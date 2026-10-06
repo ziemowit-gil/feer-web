@@ -1,9 +1,16 @@
 {{-- Motyw szablonu „FEER" wg Brand booka FEER 2024: Montserrat w całym serwisie, tekst #1D1D1A,
-     płaskie powierzchnie (bez gradientów i cieni), ostre, niewielkie zaokrąglenia. Kolory marki zostają
-     w Ustawieniach → Kolory (paleta brandbooka: #1E6DFF, #1D1D1A, #CBD5E7, partnerstwa NGO: #EA8F00).
+     płaskie powierzchnie (bez gradientów i cieni), ostre, niewielkie zaokrąglenia oraz paleta brandbooka
+     (#1E6DFF, #1D1D1A, #CBD5E7, partnerstwa NGO: #EA8F00) nadpisująca kolory z Ustawień → Kolory.
      Dotyczy wszystkich widoków tego szablonu, także listy i strony projektu. --}}
 <style>
     :root {
+        /* Paleta Brand booka FEER 2024 (FEER jako osobny podmiot) — stała w tym szablonie. */
+        --color-brand: #1e6dff;
+        --color-brand-dark: #1457cc;
+        --color-brand-light: #e8f0ff;
+        --color-brand-2: #ea8f00;   /* działania w partnerstwie z NGO */
+        --color-brand-3: #1d1d1a;
+        --color-brand-4: #cbd5e7;
         --font-sans: 'Montserrat', ui-sans-serif, system-ui, sans-serif;
         --color-ink: #1d1d1a;
     }
