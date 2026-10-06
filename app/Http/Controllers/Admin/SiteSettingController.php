@@ -3,8 +3,6 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Mail\ScheduleChangeMail;
-use App\Models\MeetingSignup;
 use App\Models\Page;
 use App\Models\SiteSetting;
 use Illuminate\Http\RedirectResponse;
@@ -135,7 +133,6 @@ class SiteSettingController extends Controller
             'msgraph_sender' => ['nullable', 'email', 'max:255'],
             'msgraph_save_to_sent' => ['sometimes', 'boolean'],
             'forms_mail_via_msgraph' => ['sometimes', 'boolean'],
-            'show_coordinators' => ['sometimes', 'boolean'],
             'ngo_color'          => ['nullable', 'regex:/^#[0-9a-fA-F]{6}$/'],
             'brand_skip_contrast' => ['sometimes', 'boolean'],
             'ngo_skip_contrast'  => ['nullable', 'boolean'],
@@ -171,60 +168,6 @@ class SiteSettingController extends Controller
             'infobar_show_nameday' => ['sometimes', 'boolean'],
             'office_show_account' => ['sometimes', 'boolean'],
             'office_show_search' => ['sometimes', 'boolean'],
-            'contact_layout' => [
-                'nullable',
-                Rule::in(array_keys(SiteSetting::CONTACT_LAYOUTS)),
-                Rule::notIn(array_diff(SiteSetting::current()->blocked_options['contact_layouts'] ?? [], [SiteSetting::current()->contact_layout])),
-            ],
-            'contact_office_address' => ['nullable', 'string', 'max:255'],
-            'contact_office_city' => ['nullable', 'string', 'max:255'],
-            'contact_office_building' => ['nullable', 'string', 'max:255'],
-            'contact_office_note' => ['nullable', 'string', 'max:1000'],
-            'contact_office_photo_alt' => ['nullable', 'string', 'max:255'],
-            'contact_hero_photo' => ['sometimes', 'boolean'],
-            'office_photo' => ['nullable', 'image', 'max:4096'],
-            'contact_address' => ['required', 'string', 'max:255'],
-            'contact_city' => ['required', 'string', 'max:255'],
-            'contact_email' => ['required', 'email', 'max:255'],
-            'contact_phone' => ['nullable', 'string', 'max:50'],
-            'contact_office_hours' => ['nullable', 'string', 'max:255'],
-            'contact_edelivery_address' => ['nullable', 'string', 'max:120'],
-            'contact_correspondence_title' => ['nullable', 'string', 'max:120'],
-            'contact_correspondence_note' => ['nullable', 'string', 'max:1000'],
-            'contact_shipping_note' => ['nullable', 'string', 'max:255'],
-            'contact_paczkomat_code' => ['nullable', 'string', 'max:30'],
-            'contact_paczkomat_address' => ['nullable', 'string', 'max:255'],
-            'contact_paczkomat_location' => ['nullable', 'string', 'max:255'],
-            'contact_shipping_phone' => ['nullable', 'string', 'max:50'],
-            'contact_shipping_visible' => ['sometimes', 'boolean'],
-            'contact_intro' => ['nullable', 'string', 'max:5000'],
-            'contact_bank_accounts' => ['nullable', 'array'],
-            'contact_bank_accounts.*.number' => ['nullable', 'string', 'max:80'],
-            'contact_bank_accounts.*.purpose' => ['nullable', 'string', 'max:500'],
-            'contact_bank_accounts_note' => ['nullable', 'string', 'max:2000'],
-            'contact_bank_accounts_layout' => ['nullable', Rule::in(array_keys(SiteSetting::BANK_ACCOUNTS_LAYOUTS))],
-            'contact_meeting_title' => ['nullable', 'string', 'max:255'],
-            'contact_online_meeting_url' => ['nullable', 'string', 'max:255'],
-            'contact_online_meeting_label' => ['nullable', 'string', 'max:100'],
-            'contact_online_meeting_text' => ['nullable', 'string', 'max:255'],
-            'contact_remote_note' => ['nullable', 'string', 'max:255'],
-            'contact_meeting_notify_email' => ['nullable', 'email', 'max:255'],
-            'contact_schedule_title' => ['nullable', 'string', 'max:255'],
-            'contact_schedule_enabled' => ['sometimes', 'boolean'],
-            'contact_no_schedule_note' => ['nullable', 'string', 'max:255'],
-            'contact_schedule' => ['nullable', 'array'],
-            'contact_schedule.*.type' => ['nullable', Rule::in(['date', 'weekly'])],
-            'contact_schedule.*.date' => ['nullable', 'date'],
-            'contact_schedule.*.weekday' => ['nullable', 'integer', 'between:1,7'],
-            'contact_schedule.*.time' => ['nullable', 'string', 'max:60'],
-            'contact_schedule.*.where' => ['nullable', 'string', 'max:255'],
-            'contact_schedule.*.note' => ['nullable', 'string', 'max:500'],
-            'notify_schedule_change' => ['sometimes', 'boolean'],
-            'contact_box_text' => ['nullable', 'string', 'max:1000'],
-            'contact_box_link_label' => ['nullable', 'string', 'max:100'],
-            'contact_box_link_url' => ['nullable', 'string', 'max:255'],
-            'contact_box_visible_from' => ['nullable', 'date'],
-            'contact_box_visible_until' => ['nullable', 'date', 'after_or_equal:contact_box_visible_from'],
             'homepage_banner_text' => ['nullable', 'string', 'max:1000'],
             'homepage_banner_link_label' => ['nullable', 'string', 'max:100'],
             'homepage_banner_link_url' => ['nullable', 'string', 'max:255'],
@@ -441,7 +384,6 @@ class SiteSettingController extends Controller
         }
         $data['msgraph_save_to_sent'] = $request->boolean('msgraph_save_to_sent');
         $data['forms_mail_via_msgraph'] = $request->boolean('forms_mail_via_msgraph');
-        $data['show_coordinators'] = $request->boolean('show_coordinators');
         $data['wide_mission_nav_hover_white'] = $request->boolean('wide_mission_nav_hover_white');
         $data['wide_mission_nav_active_white'] = $request->boolean('wide_mission_nav_active_white');
         $data['wide_mission_nav_icons_white'] = $request->boolean('wide_mission_nav_icons_white');
@@ -451,12 +393,9 @@ class SiteSettingController extends Controller
         $data['infobar_show_nameday'] = $request->boolean('infobar_show_nameday');
         $data['office_show_account'] = $request->boolean('office_show_account');
         $data['office_show_search'] = $request->boolean('office_show_search');
-        $data['contact_hero_photo'] = $request->boolean('contact_hero_photo');
         $data['contact_show_form'] = $request->boolean('contact_show_form');
         $data['contact_show_bank_accounts'] = $request->boolean('contact_show_bank_accounts');
         $data['contact_show_coordinators'] = $request->boolean('contact_show_coordinators');
-        $data['contact_shipping_visible'] = $request->boolean('contact_shipping_visible');
-        $data['contact_schedule_enabled'] = $request->boolean('contact_schedule_enabled');
         $data['support_show_partners'] = $request->boolean('support_show_partners');
         $data['cookie_banner_enabled'] = $request->boolean('cookie_banner_enabled');
         // Poza domeną feer.org.pl kredyt CMS w stopce nie może zostać ukryty
@@ -465,36 +404,6 @@ class SiteSettingController extends Controller
             ? $request->boolean('show_cms_credit')
             : true;
 
-        // Rachunki bankowe: przycinamy pola, odrzucamy wiersze bez numeru
-        // (pusty wiersz-zalążek z formularza) i przenumerowujemy listę.
-        $data['contact_bank_accounts'] = collect($request->input('contact_bank_accounts', []))
-            ->map(fn ($row) => [
-                'number' => trim((string) ($row['number'] ?? '')),
-                'purpose' => trim((string) ($row['purpose'] ?? '')),
-            ])
-            ->filter(fn ($row) => $row['number'] !== '')
-            ->values()
-            ->all();
-
-        // Harmonogram stacjonarny: każdy wpis to konkretna data albo cykliczny
-        // dzień tygodnia. Przycinamy pola i odrzucamy wiersze bez daty/dnia.
-        $data['contact_schedule'] = collect($request->input('contact_schedule', []))
-            ->map(function ($row) {
-                $type = ($row['type'] ?? 'date') === 'weekly' ? 'weekly' : 'date';
-
-                return [
-                    'type' => $type,
-                    'date' => $type === 'date' ? trim((string) ($row['date'] ?? '')) : '',
-                    'weekday' => $type === 'weekly' ? (int) ($row['weekday'] ?? 0) : null,
-                    'time' => trim((string) ($row['time'] ?? '')),
-                    'where' => trim((string) ($row['where'] ?? '')),
-                    'note' => trim((string) ($row['note'] ?? '')),
-                ];
-            })
-            ->filter(fn ($row) => ($row['type'] === 'date' && $row['date'] !== '')
-                || ($row['type'] === 'weekly' && $row['weekday'] >= 1 && $row['weekday'] <= 7))
-            ->values()
-            ->all();
         $data['disabled_modules'] = $request->has('enabled_modules')
             ? array_values(array_diff(array_keys(SiteSetting::MODULES), $request->input('enabled_modules')))
             : (SiteSetting::current()->disabled_modules ?? []);
@@ -599,7 +508,7 @@ class SiteSettingController extends Controller
             ->all() ?: null;
 
         unset($data['vm_header_badge'], $data['remove_vm_header_badge'], $data['vm_knowledge_image'], $data['remove_vm_knowledge_image']);
-        unset($data['logo'], $data['remove_logo'], $data['og_image'], $data['remove_og_image'], $data['support_image'], $data['remove_support_image'], $data['support_gallery'], $data['remove_support_gallery'], $data['news_default_image'], $data['remove_news_default_image'], $data['bip_logo'], $data['remove_bip_logo'], $data['office_photo'], $data['remove_office_photo'], $data['enabled_modules'], $data['section_order_json'], $data['notify_schedule_change']);
+        unset($data['logo'], $data['remove_logo'], $data['og_image'], $data['remove_og_image'], $data['support_image'], $data['remove_support_image'], $data['support_gallery'], $data['remove_support_gallery'], $data['news_default_image'], $data['remove_news_default_image'], $data['bip_logo'], $data['remove_bip_logo'], $data['enabled_modules'], $data['section_order_json']);
 
         $colorWasAdjusted = ! $skipContrast && $data['brand_color'] !== $request->input('brand_color');
 
@@ -642,12 +551,6 @@ class SiteSettingController extends Controller
             $settings->clearMediaCollection('bip_logo');
         }
 
-        if ($request->hasFile('office_photo')) {
-            $settings->addMediaFromRequest('office_photo')->toMediaCollection('office_photo');
-        } elseif ($request->boolean('remove_office_photo')) {
-            $settings->clearMediaCollection('office_photo');
-        }
-
         foreach (['vm_header_badge', 'vm_knowledge_image'] as $vmCollection) {
             if ($request->hasFile($vmCollection)) {
                 $settings->addMediaFromRequest($vmCollection)->toMediaCollection($vmCollection);
@@ -665,47 +568,9 @@ class SiteSettingController extends Controller
             $settings->addMedia($file)->toMediaCollection('support_gallery');
         }
 
-        // Opcjonalne powiadomienie o zmianie terminu: do osób zapisanych przez
-        // formularz „Daj znać, że przyjdziesz” (BCC — nie ujawniamy adresów), z
-        // kopią na adres administracyjny. Błąd wysyłki nie cofa zapisu ustawień.
-        $notifyMsg = '';
-        if ($request->boolean('notify_schedule_change')) {
-            $recipients = MeetingSignup::query()->pluck('email')->filter()->unique()->values()->all();
-            $copyTo = $settings->meetingNotifyEmail();
-
-            if ($copyTo || $recipients !== []) {
-                $items = array_map(fn ($i) => [
-                    'when_label' => $i['when_label'],
-                    'where' => $i['where'],
-                    'note' => $i['note'],
-                    'is_next' => $i['is_next'],
-                ], $settings->contactScheduleUpcoming());
-
-                $mail = new ScheduleChangeMail($items, $settings->site_name, $settings->contact_schedule_title ?: 'Kiedy i gdzie jesteśmy');
-                $to = $copyTo ?: $recipients[0];
-                $bcc = $copyTo ? $recipients : array_slice($recipients, 1);
-
-                try {
-                    $pending = Mail::to($to);
-                    if ($bcc !== []) {
-                        $pending->bcc($bcc);
-                    }
-                    $pending->send($mail);
-
-                    $notifyMsg = $recipients !== []
-                        ? ' Wysłano powiadomienie o zmianie terminu do '.count($recipients).' zapisanych osób (kopia na adres administracyjny).'
-                        : ' Powiadomienie o zmianie terminu wysłano na adres administracyjny (brak zapisanych osób).';
-                } catch (\Throwable $e) {
-                    $notifyMsg = ' Ustawienia zapisano, ale nie udało się wysłać powiadomienia o zmianie terminu: '.$e->getMessage();
-                }
-            } else {
-                $notifyMsg = ' Nie wysłano powiadomienia — brak adresu i zapisanych osób.';
-            }
-        }
-
         $status = ($colorWasAdjusted
             ? "Ustawienia zostały zapisane. Kolor przewodni był zbyt jasny dla kontrastu WCAG, więc został automatycznie przyciemniony do {$data['brand_color']}."
-            : 'Ustawienia zostały zapisane.').$notifyMsg;
+            : 'Ustawienia zostały zapisane.');
 
         $redirectTab = $request->input('_redirect_tab');
         $redirectTab = in_array($redirectTab, array_keys(SiteSetting::SETTINGS_TABS), true)

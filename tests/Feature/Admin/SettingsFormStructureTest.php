@@ -115,7 +115,7 @@ class SettingsFormStructureTest extends TestCase
             ->assertSee('data-settings-error-field="site_name"', false);
     }
 
-    public function test_pole_z_zakladki_kontakt_jest_w_formularzu_zapisu(): void
+    public function test_pola_ustawien_sa_w_formularzu_zapisu(): void
     {
         $html = $this->actingAs(User::factory()->create(['role' => User::ROLE_ADMIN]))
             ->get(route('admin.ustawienia.edit'))
@@ -134,7 +134,7 @@ class SettingsFormStructureTest extends TestCase
         $this->assertStringContainsString('>Zapisz</button>', $body,
             'Przycisk „Zapisz" jest poza formularzem ustawień — kliknięcie nic nie wyśle.');
 
-        foreach (['name="contact_email"', 'name="contact_address"', 'name="mail_transport"'] as $field) {
+        foreach (['name="site_name"', 'name="mail_transport"'] as $field) {
             $this->assertStringContainsString($field, $body,
                 "Pole {$field} znalazło się poza formularzem zapisu ustawień.");
         }

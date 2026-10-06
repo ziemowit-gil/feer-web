@@ -375,6 +375,10 @@ class PageController extends Controller
     public function create(Request $request)
     {
         $page = new Page;
+        if (array_key_exists((string) $request->query('type'), Page::TYPES)) {
+            $page->type = $request->query('type');
+            $page->title = $request->query('type') === 'contact' ? 'Kontakt' : null;
+        }
 
         return view('admin.pages.form', [
             'page' => $page,
@@ -406,7 +410,7 @@ class PageController extends Controller
             : $this->uniqueSlug($data['slug'] !== '' ? $data['slug'] : $data['title']);
 
         $page = Page::create($data);
-        $this->saveContactSettings($request, $page);
+        $notice = $this->saveContactSettings($request, $page);
 
         if ($page->isAbout() && $request->has('team')) {
             $this->syncTeamPersons($page, $request->input('team', []));
@@ -415,32 +419,14 @@ class PageController extends Controller
         $route = $page->isAboutPerson() ? 'admin.osoby.index' : 'admin.podstrony.index';
 
         return redirect()->route($route)
-            ->with('status', $page->isAboutPerson() ? 'Osoba „' . $page->title . '” została dodana.' : 'Strona „' . $page->title . '” została utworzona.')
+            ->with('status', $page->isAboutPerson() ? 'Osoba „' . $page->title . '” została dodana.' : 'Strona „' . $page->title . '” została utworzona.' . $notice)
             ->with('reload_url', $page->publicUrl());
     }
 
-    /** Strona typu „Kontakt” zapisuje swoje opcje w ustawieniach witryny (wspólnych z panelem Ustawienia → Kontakt). */
-    private function saveContactSettings(Request $request, Page $page): void
+    /** Strona typu „Kontakt” zapisuje swoje opcje w ustawieniach witryny; zwraca komunikat o powiadomieniu (jeśli było). */
+    private function saveContactSettings(Request $request, Page $page): string
     {
-        if ($page->type !== 'contact') {
-            return;
-        }
-
-        $input = $request->validate([
-            'contact_layout' => ['nullable', Rule::in(array_keys(SiteSetting::CONTACT_LAYOUTS))],
-            'contact_intro' => ['nullable', 'string', 'max:5000'],
-            'contact_address' => ['nullable', 'string', 'max:255'],
-            'contact_city' => ['nullable', 'string', 'max:255'],
-            'contact_email' => ['nullable', 'email', 'max:255'],
-            'contact_phone' => ['nullable', 'string', 'max:50'],
-            'contact_office_hours' => ['nullable', 'string', 'max:255'],
-        ]);
-
-        // Pola wymagane w ustawieniach (adres, miasto, e-mail) nie mogą zostać wyczyszczone.
-        $required = ['contact_address', 'contact_city', 'contact_email'];
-        $input = array_filter($input, fn ($value, $key) => ! in_array($key, $required, true) || filled($value), ARRAY_FILTER_USE_BOTH);
-
-        SiteSetting::current()->update($input);
+        return $page->type === 'contact' ? \App\Support\ContactSettings::save($request) : '';
     }
 
     /** Wyświetla formularz edycji podstrony (zablokowaną stronę może edytować tylko admin). */
@@ -486,7 +472,7 @@ class PageController extends Controller
         }
 
         $page->update($data);
-        $this->saveContactSettings($request, $page);
+        $notice = $this->saveContactSettings($request, $page);
 
         if ($page->isAbout() && $request->has('team')) {
             $this->syncTeamPersons($page, $request->input('team', []));
@@ -495,7 +481,7 @@ class PageController extends Controller
         $route = $page->isAboutPerson() ? 'admin.osoby.index' : 'admin.podstrony.index';
 
         return redirect()->route($route)
-            ->with('status', $page->isAboutPerson() ? 'Osoba „' . $page->title . '" została zaktualizowana.' : 'Strona została zaktualizowana.')
+            ->with('status', $page->isAboutPerson() ? 'Osoba „' . $page->title . '" została zaktualizowana.' : 'Strona została zaktualizowana.' . $notice)
             ->with('reload_url', $page->publicUrl());
     }
 

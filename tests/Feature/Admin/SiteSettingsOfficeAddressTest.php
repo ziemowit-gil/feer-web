@@ -30,11 +30,10 @@ class SiteSettingsOfficeAddressTest extends TestCase
     private function payload(array $overrides = []): array
     {
         return array_merge([
-            'site_name' => 'FEER',
-            'brand_color' => '#c31432',
-            'header_layout' => 'classic',
-            'content_editor' => 'tinymce',
-            'mail_transport' => 'default',
+            'title' => 'Kontakt',
+            'slug' => 'kontakt-2',
+            'type' => 'contact',
+            'parent_id' => '',
             'contact_address' => 'Władysława Barbackiego 28/18',
             'contact_city' => '33-300 Nowy Sącz',
             'contact_email' => 'fundacja@feer.org.pl',
@@ -46,7 +45,7 @@ class SiteSettingsOfficeAddressTest extends TestCase
         Storage::fake('public');
 
         $this->actingAs($this->admin())
-            ->put(route('admin.ustawienia.update'), $this->payload([
+            ->put(route('admin.podstrony.update', \App\Models\Page::create(['title' => 'Kontakt', 'slug' => 'kontakt-2', 'type' => 'contact', 'is_published' => false])), $this->payload([
                 'contact_office_address' => 'ul. Przykładowa 10/3',
                 'contact_office_city' => '30-001 Kraków',
                 'contact_office_building' => 'Biurowiec HEXAGON',

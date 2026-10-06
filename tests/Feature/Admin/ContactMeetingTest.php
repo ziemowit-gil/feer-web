@@ -34,11 +34,10 @@ class ContactMeetingTest extends TestCase
     private function payload(array $overrides = []): array
     {
         return array_merge([
-            'site_name' => 'FEER',
-            'brand_color' => '#c31432',
-            'header_layout' => 'classic',
-            'content_editor' => 'tinymce',
-            'mail_transport' => 'default',
+            'title' => 'Kontakt',
+            'slug' => 'kontakt-2',
+            'type' => 'contact',
+            'parent_id' => '',
             'contact_address' => 'Barbackiego 28/18',
             'contact_city' => '33-300 Nowy Sącz',
             'contact_email' => 'kontakt@feer.org.pl',
@@ -97,14 +96,14 @@ class ContactMeetingTest extends TestCase
 
     public function test_schedule_normalization_keeps_valid_rows_only(): void
     {
-        $this->actingAs($this->admin())->put(route('admin.ustawienia.update'), $this->payload([
+        $this->actingAs($this->admin())->put(route('admin.podstrony.update', \App\Models\Page::firstOrCreate(['type' => 'contact'], ['title' => 'Kontakt', 'slug' => 'kontakt-2', 'is_published' => false])), $this->payload([
             'contact_schedule' => [
                 ['type' => 'date', 'date' => '2026-08-15', 'time' => '10:00', 'where' => 'Kraków', 'note' => ''],
                 ['type' => 'weekly', 'weekday' => '3', 'time' => '', 'where' => 'Biblioteka', 'note' => ''],
                 ['type' => 'date', 'date' => '', 'where' => 'brak daty — do odrzucenia'],
                 ['type' => 'weekly', 'weekday' => '', 'where' => 'brak dnia — do odrzucenia'],
             ],
-        ]))->assertRedirect(route('admin.ustawienia.edit', ['tab' => 'general']));
+        ]))->assertRedirect();
 
         $schedule = SiteSetting::query()->first()->contact_schedule;
 
@@ -141,13 +140,13 @@ class ContactMeetingTest extends TestCase
         MeetingSignup::create(['name' => 'A', 'email' => 'a@example.com']);
         MeetingSignup::create(['name' => 'B', 'email' => 'b@example.com']);
 
-        $this->actingAs($this->admin())->put(route('admin.ustawienia.update'), $this->payload([
+        $this->actingAs($this->admin())->put(route('admin.podstrony.update', \App\Models\Page::firstOrCreate(['type' => 'contact'], ['title' => 'Kontakt', 'slug' => 'kontakt-2', 'is_published' => false])), $this->payload([
             'contact_meeting_notify_email' => 'spotkania@feer.org.pl',
             'contact_schedule' => [
                 ['type' => 'date', 'date' => now()->addDays(7)->toDateString(), 'time' => '10:00', 'where' => 'Kraków', 'note' => ''],
             ],
             'notify_schedule_change' => '1',
-        ]))->assertRedirect(route('admin.ustawienia.edit', ['tab' => 'general']));
+        ]))->assertRedirect();
 
         Mail::assertSent(ScheduleChangeMail::class, function ($mail) {
             return $mail->hasTo('spotkania@feer.org.pl')
@@ -162,11 +161,11 @@ class ContactMeetingTest extends TestCase
 
         MeetingSignup::create(['name' => 'A', 'email' => 'a@example.com']);
 
-        $this->actingAs($this->admin())->put(route('admin.ustawienia.update'), $this->payload([
+        $this->actingAs($this->admin())->put(route('admin.podstrony.update', \App\Models\Page::firstOrCreate(['type' => 'contact'], ['title' => 'Kontakt', 'slug' => 'kontakt-2', 'is_published' => false])), $this->payload([
             'contact_schedule' => [
                 ['type' => 'date', 'date' => now()->addDays(7)->toDateString(), 'where' => 'Kraków'],
             ],
-        ]))->assertRedirect(route('admin.ustawienia.edit', ['tab' => 'general']));
+        ]))->assertRedirect();
 
         Mail::assertNothingSent();
     }

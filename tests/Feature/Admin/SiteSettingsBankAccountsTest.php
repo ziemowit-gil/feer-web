@@ -33,14 +33,19 @@ class SiteSettingsBankAccountsTest extends TestCase
      * A valid full settings-form payload; individual tests override the bits
      * they care about. Mirrors the required fields in SiteSettingController.
      */
+    private function contactPage(): \App\Models\Page
+    {
+        return \App\Models\Page::create(['title' => 'Kontakt', 'slug' => 'kontakt-2', 'type' => 'contact', 'is_published' => false]);
+    }
+
+    /** Pełny formularz strony typu „Kontakt” (opcje kontaktu zapisują się w ustawieniach witryny). */
     private function payload(array $overrides = []): array
     {
         return array_merge([
-            'site_name' => 'FEER',
-            'brand_color' => '#c31432',
-            'header_layout' => 'classic',
-            'content_editor' => 'tinymce',
-            'mail_transport' => 'default',
+            'title' => 'Kontakt',
+            'slug' => 'kontakt-2',
+            'type' => 'contact',
+            'parent_id' => '',
             'contact_address' => 'Władysława Barbackiego 28/18',
             'contact_city' => '33-300 Nowy Sącz',
             'contact_email' => 'fundacja@feer.org.pl',
@@ -63,14 +68,14 @@ class SiteSettingsBankAccountsTest extends TestCase
     public function test_bank_accounts_are_saved_and_empty_rows_are_dropped(): void
     {
         $this->actingAs($this->admin())
-            ->put(route('admin.ustawienia.update'), $this->payload([
+            ->put(route('admin.podstrony.update', $this->contactPage()), $this->payload([
                 'contact_bank_accounts' => [
                     ['number' => 'PL61 1090 1014 0000 0712 1981 2874', 'purpose' => 'Darowizny statutowe'],
                     ['number' => '', 'purpose' => 'wiersz bez numeru — do odrzucenia'],
                     ['number' => '  PL27 1090 1014 0000 0712 1981 3001  ', 'purpose' => '  Projekt Wiem FEER  '],
                 ],
             ]))
-            ->assertRedirect(route('admin.ustawienia.edit', ['tab' => 'general']));
+            ->assertRedirect();
 
         $accounts = SiteSetting::query()->first()->contact_bank_accounts;
 

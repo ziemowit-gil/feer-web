@@ -80,19 +80,14 @@ class ContactCorrespondenceNoteTest extends TestCase
         $admin    = User::factory()->create(['role' => User::ROLE_ADMIN]);
         $settings = SiteSetting::current();
 
-        $this->actingAs($admin)->put(route('admin.ustawienia.update'), [
-            'site_name'                    => $settings->site_name ?: 'FEER',
-            'brand_color'                  => '#8b1538',
-            'header_layout'                => $settings->header_layout ?: 'classic',
-            'content_editor'               => $settings->content_editor ?: 'tinymce',
-            'mail_transport'               => $settings->mail_transport ?: 'default',
+        $this->actingAs($admin)->put(route('admin.podstrony.update', \App\Models\Page::firstOrCreate(['type' => 'contact'], ['title' => 'Kontakt', 'slug' => 'kontakt-2', 'is_published' => false])), [
+            'title' => 'Kontakt', 'slug' => 'kontakt-2', 'type' => 'contact', 'parent_id' => '',
             'contact_address'              => 'ul. Testowa 1',
             'contact_city'                 => '00-001 Warszawa',
             'contact_email'                => 'kontakt@example.pl',
             'contact_correspondence_title' => 'Kierowanie korespondencji',
             'contact_correspondence_note'  => 'Wyłącznie na e-Doręczenia.',
-            '_redirect_tab'                => 'contact',
-        ])->assertRedirect(route('admin.ustawienia.edit', ['tab' => 'contact']));
+        ])->assertRedirect();
 
         $settings->refresh();
 
