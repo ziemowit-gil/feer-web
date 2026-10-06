@@ -145,6 +145,16 @@
     @error('description') <p class="mt-1 text-sm text-red-700">{{ $message }}</p> @enderror
 </div>
 
+<label class="flex items-start gap-2" x-show="form.location === 'main' && form.parentId !== ''" x-cloak>
+    <input type="checkbox" name="is_column_heading" value="1" x-model="form.isHeading"
+        aria-describedby="nav-heading-help"
+        class="mt-0.5 rounded border-gray-300 text-brand focus-visible:ring-2 focus-visible:ring-brand">
+    <span>
+        <span class="block text-sm font-bold">Nagłówek kolumny w mega menu</span>
+        <span id="nav-heading-help" class="block text-xs text-muted">Ta pozycja otwiera nową kolumnę, a kolejne podpozycje (do następnego nagłówka) trafiają pod nią. Adres jest opcjonalny — bez niego nagłówek jest samym tekstem. W zwykłym i mobilnym menu wygląda jak etykieta grupy.</span>
+    </span>
+</label>
+
 <label class="flex items-start gap-2" x-show="form.location === 'main' && form.parentId === '' && (form.type === 'dropdown' || form.type === 'link' || form.type === 'projects')" x-cloak>
     <input type="checkbox" name="is_mega" value="1" x-model="form.isMega"
         class="mt-0.5 rounded border-gray-300 text-brand focus-visible:ring-2 focus-visible:ring-brand">

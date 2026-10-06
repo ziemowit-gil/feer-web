@@ -22,6 +22,7 @@
             buttonColorEnabled: {{ Js::from((bool) old('button_color', $navItem->button_color)) }},
             isTransparent: {{ Js::from((bool) old('is_transparent_dropdown', $navItem->is_transparent_dropdown ?? false)) }},
             isMega: {{ Js::from((bool) old('is_mega', $navItem->is_mega ?? false)) }},
+            isHeading: {{ Js::from((bool) old('is_column_heading', $navItem->is_column_heading ?? false)) }},
             megaImage: {{ Js::from(old('mega_image_url', $navItem->mega_image ?? '')) }},
             megaSize: {{ Js::from(old('mega_size', $navItem->mega_size ?? 'md')) }},
             megaExtraTitle: {{ Js::from(old('mega_extra_title', $navItem->mega_extra_title ?? '')) }},

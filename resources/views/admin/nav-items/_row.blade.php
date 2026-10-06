@@ -74,6 +74,9 @@
                     {{ \App\Models\NavItem::TYPES[$item->type] ?? $item->type }}
                     @if ($item->is_button) &middot; CTA @endif
                 </span>
+                @if ($item->is_column_heading)
+                    <span class="rounded-full bg-indigo-50 px-2 py-0.5 text-[11px] font-semibold text-indigo-700"><i class="fa-solid fa-table-columns" aria-hidden="true"></i> nagłówek kolumny</span>
+                @endif
                 @unless ($item->is_active)
                     <span class="rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-semibold text-amber-700">ukryta</span>
                 @endunless
@@ -160,6 +163,7 @@
                 data-button="{{ $item->is_button ? 1 : 0 }}"
                 data-color="{{ $item->button_color }}"
                 data-transparent="{{ $item->is_transparent_dropdown ? 1 : 0 }}"
+                data-heading="{{ $item->is_column_heading ? 1 : 0 }}"
                 data-mega="{{ $item->is_mega ? 1 : 0 }}"
                 data-mega-image="{{ $item->mega_image }}"
                 data-mega-size="{{ $item->mega_size ?: 'md' }}"

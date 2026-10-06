@@ -41,11 +41,12 @@ class NavItem extends Model
 
     protected $fillable = [
         'site_id', 'parent_id', 'label', 'icon', 'description', 'mega_image', 'mega_image_alt', 'url', 'type', 'module', 'location',
-        'is_button', 'is_transparent_dropdown', 'is_mega', 'mega_size', 'mega_extra_title', 'mega_side_title', 'mega_side_links', 'is_active', 'order', 'button_color',
+        'is_button', 'is_column_heading', 'is_transparent_dropdown', 'is_mega', 'mega_size', 'mega_extra_title', 'mega_side_title', 'mega_side_links', 'is_active', 'order', 'button_color',
     ];
 
     protected $casts = [
         'is_button' => 'boolean',
+        'is_column_heading' => 'boolean',
         'is_transparent_dropdown' => 'boolean',
         'is_mega' => 'boolean',
         'mega_side_links' => 'array',
@@ -160,8 +161,89 @@ class NavItem extends Model
         }
 
         return Page::where('slug', $path)->where('is_published', true)
-            ->with('publishedChildren')
+            ->with('publishedChildren.publishedChildren')
             ->first();
+    }
+
+    /**
+     * Sekcje (kolumny) panelu mega menu: [ ['heading' => ?array, 'links' => array], … ].
+     *
+     * Źródła, w tej kolejności:
+     *  1. ręczne podpozycje — pozycja z flagą „nagłówek kolumny” otwiera nową
+     *     sekcję, kolejne podpozycje trafiają pod nią (przed pierwszym nagłówkiem
+     *     powstaje sekcja bez nagłówka),
+     *  2. podstrony powiązanej strony — podstrona mająca własne opublikowane
+     *     podstrony staje się sekcją (nagłówek = ona sama, linki = jej podstrony),
+     *     pozostałe trafiają do sekcji bez nagłówka.
+     *
+     * Wpis linku to [url, etykieta, opis, ikona, czy_bieżąca]; nagłówek to tablica
+     * z kluczami url (null = sam tekst), label, description, icon, current.
+     * Gdy żadna sekcja nie ma nagłówka, panel jest płaską listą jak dotąd.
+     *
+     * @return array<int, array{heading: ?array<string, mixed>, links: array<int, array<int, mixed>>}>
+     */
+    public function megaSections(?int $currentPageId = null, Page|null|false $linkedPage = false): array
+    {
+        $sections = [];
+        $open = ['heading' => null, 'links' => []];
+
+        foreach ($this->children as $child) {
+            if ($child->is_column_heading) {
+                if ($open['heading'] !== null || $open['links'] !== []) {
+                    $sections[] = $open;
+                }
+                $open = ['heading' => [
+                    'url' => filled($child->url) && $child->url !== '#' ? $child->url : null,
+                    'label' => $child->label,
+                    'description' => $child->description,
+                    'icon' => $child->icon,
+                    'current' => $child->isCurrent(),
+                ], 'links' => []];
+
+                continue;
+            }
+
+            $open['links'][] = [$child->url, $child->label, $child->description, $child->icon, $child->isCurrent()];
+        }
+        if ($open['heading'] !== null || $open['links'] !== []) {
+            $sections[] = $open;
+        }
+
+        // Strona powiązana można przekazać z zewnątrz (partial już ją pobrał) — bez drugiego zapytania.
+        $page = $linkedPage === false ? ($this->type === 'link' ? $this->linkedPage() : null) : $linkedPage;
+        if ($page) {
+            $loose = [];
+            $groups = [];
+            foreach ($page->publishedChildren as $child) {
+                $grandchildren = $child->publishedChildren;
+                if ($grandchildren->isNotEmpty()) {
+                    $groups[] = [
+                        'heading' => ['url' => $child->publicUrl(), 'label' => $child->title, 'description' => null, 'icon' => null, 'current' => $currentPageId === $child->id],
+                        'links' => $grandchildren->map(fn (Page $g) => [$g->publicUrl(), $g->title, null, null, $currentPageId === $g->id])->all(),
+                    ];
+                } else {
+                    $loose[] = [$child->publicUrl(), $child->title, null, null, $currentPageId === $child->id];
+                }
+            }
+
+            if ($loose !== []) {
+                $index = collect($sections)->search(fn ($s) => $s['heading'] === null);
+                if ($index === false) {
+                    array_unshift($sections, ['heading' => null, 'links' => $loose]);
+                } else {
+                    $sections[$index]['links'] = array_merge($sections[$index]['links'], $loose);
+                }
+            }
+            array_push($sections, ...$groups);
+        }
+
+        return $sections;
+    }
+
+    /** Czy panel ma kolumny z nagłówkami (zamiast jednej płaskiej listy). */
+    public static function sectionsAreGrouped(array $sections): bool
+    {
+        return collect($sections)->contains(fn ($s) => $s['heading'] !== null);
     }
 
     /**

@@ -340,6 +340,7 @@ class NavItemController extends Controller
             'mega_image_url' => ['nullable', 'string', 'max:500'],
             'mega_image_file' => ['nullable', 'image', 'max:4096'],
             'mega_image_alt' => ['nullable', 'string', 'max:255'],
+            'is_column_heading' => ['nullable', 'boolean'],
             'mega_size' => ['nullable', Rule::in(array_keys(NavItem::MEGA_SIZES))],
             'mega_extra_title' => ['nullable', 'string', 'max:80'],
             'mega_side_title' => ['nullable', 'string', 'max:80'],
@@ -408,6 +409,11 @@ class NavItemController extends Controller
         if (! $data['is_button']) {
             $data['button_color'] = null;
         }
+
+        // Nagłówek kolumny mega menu ma sens tylko dla podpozycji (menu głównego).
+        $data['is_column_heading'] = ($data['parent_id'] ?? null) && $data['location'] === 'main'
+            ? $request->boolean('is_column_heading')
+            : false;
 
         $data['is_transparent_dropdown'] = $request->boolean('is_transparent_dropdown');
         // Mega menu ma sens tylko dla pozycji głównych typu rozwijane menu lub link.

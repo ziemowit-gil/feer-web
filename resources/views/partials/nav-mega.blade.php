@@ -29,18 +29,17 @@
     $routePage     = request()->route('page');
     $currentPageId = request()->routeIs('page.show') && is_object($routePage) ? $routePage->id : null;
 
-    // Płaskie wpisy (dropdown / link): [url, label, description, icon, current]
-    $entries = [];
+    // Sekcje panelu (dropdown / link): ręczne podpozycje z nagłówkami kolumn oraz podstrony
+    // powiązanej strony (podstrona z własnymi podstronami = osobna kolumna). Bez nagłówków
+    // panel jest płaską listą $entries: [url, label, description, icon, current].
+    $sections = [];
     $linkedPage = null;
     if (! $isProjects) {
-        $linkedPage   = $item->type === 'link' ? $item->linkedPage() : null;
-        foreach ($item->children as $child) {
-            $entries[] = [$child->url, $child->label, $child->description, $child->icon, $child->isCurrent()];
-        }
-        foreach ($linkedPage ? $linkedPage->publishedChildren : [] as $child) {
-            $entries[] = [$child->publicUrl(), $child->title, null, null, $currentPageId === $child->id];
-        }
+        $linkedPage = $item->type === 'link' ? $item->linkedPage() : null;
+        $sections   = $item->megaSections($currentPageId, $linkedPage);
     }
+    $grouped = \App\Models\NavItem::sectionsAreGrouped($sections);
+    $entries = collect($sections)->flatMap(fn ($s) => $s['links'])->all();
 
     // Grupy (projekty): kategoria → projekty; do tego projekt wyróżniony w kolumnie
     // bocznej (najnowszy aktywny ze zdjęciem, gdy nie ustawiono grafiki promocyjnej)
@@ -63,7 +62,8 @@
         }
     }
 
-    $isCurrent = $item->isCurrent() || collect($entries)->contains(fn ($e) => $e[4]);
+    $isCurrent = $item->isCurrent() || collect($entries)->contains(fn ($e) => $e[4])
+        || collect($sections)->contains(fn ($s) => $s['heading']['current'] ?? false);
     $hasTarget = $isProjects ? true : ($item->url && $item->url !== '#');
     $targetUrl = $isProjects ? route('projects.index') : $item->url;
     $hasImage  = filled($item->mega_image);
@@ -80,10 +80,16 @@
     $projectExtras = $isProjects ? $item->children : collect();
     $extraTitle    = $item->mega_extra_title ?: 'To już zrobiliśmy';
     $projectCols   = $groups->count() + ($projectExtras->isNotEmpty() ? 1 : 0);
-    $columns = match ($size) {
-        'sm' => $isProjects ? max(3, min(5, $projectCols)) : max(3, min(5, (int) ceil(count($entries) / 3))),
-        'lg' => 2,
+    $columns = match (true) {
+        // Kolumny z nagłówkami: jedna kolumna na sekcję, w granicach wielkości pozycji.
+        $grouped => min(match ($size) { 'sm' => 5, 'lg' => 2, default => 4 }, max(2, count($sections))),
+        $size === 'sm' => $isProjects ? max(3, min(5, $projectCols)) : max(3, min(5, (int) ceil(count($entries) / 3))),
+        $size === 'lg' => 2,
         default => $isProjects ? max(2, min(4, $projectCols)) : max(2, min(4, (int) ceil(count($entries) / 4))),
+    };
+    // Klasy podane literalnie, żeby Tailwind je wygenerował (interpolacja `lg:grid-cols-{n}` nie jest skanowana).
+    $colClass = match ($columns) {
+        2 => 'lg:grid-cols-2', 3 => 'lg:grid-cols-3', 4 => 'lg:grid-cols-4', default => 'lg:grid-cols-5',
     };
     $sz = match ($size) {
         'sm' => ['row' => 'min-h-9 gap-2 px-2 py-1', 'icon' => 'h-6 w-6 text-[11px]', 'title' => 'text-xs', 'desc' => null, 'proj' => 'text-xs', 'projExcerpt' => null, 'projTake' => 6, 'cat' => 'text-xs', 'gapY' => 'gap-y-0.5'],
@@ -108,7 +114,7 @@
                 <span>{{ $item->label }}</span>
             </a>
             <button type="button" @click="open = ! open"
-                    :aria-expanded="open.toString()" :aria-controls="$id('mega')" aria-label="Rozwiń mega menu: {{ $item->label }}"
+                    :aria-expanded="open.toString()" :aria-controls="$id('mega')" aria-label="Podmenu: {{ $item->label }}"
                     class="flex min-h-8 min-w-8 items-center justify-center rounded px-1 pt-2 {{ $iconCls }} focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-current">
                 <i class="fa-solid fa-chevron-down text-[10px] transition-transform" :class="open ? 'rotate-180' : ''" aria-hidden="true"></i>
             </button>
@@ -124,8 +130,7 @@
     </div>
 
     <div :id="$id('mega')" x-show="open" x-cloak x-transition.opacity.duration.150ms
-         class="nav-mega-panel absolute inset-x-0 top-full z-50 border-t border-gray-200 bg-white normal-case tracking-normal shadow-xl"
-         role="region" aria-label="{{ $item->label }} — podmenu">
+         class="nav-mega-panel absolute inset-x-0 top-full z-50 border-t border-gray-200 bg-white normal-case tracking-normal shadow-xl">
         <div class="mx-auto grid max-w-6xl gap-8 px-4 py-6 lg:grid-cols-[1fr_16rem]">
 
             @if ($isProjects)
@@ -134,7 +139,7 @@
                     <p class="text-sm text-muted">Brak kategorii projektów.</p>
                 @else
                     <div>
-                        <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-{{ $columns }}">
+                        <div class="grid gap-6 sm:grid-cols-2 {{ $colClass }}">
                             @foreach ($groups as $category)
                                 <div>
                                     <a href="{{ route('categories.show', $category) }}" @if ($catCurrentId === $category->id) aria-current="page" @endif
@@ -205,8 +210,57 @@
                         @endif
                     </div>
                 @endif
+            @elseif ($grouped)
+                {{-- Kolumny z nagłówkami (nagłówek kolumny lub podstrona z własnymi podstronami).
+                     Każda lista jest opisana swoim nagłówkiem (aria-labelledby), więc czytnik
+                     ekranu zapowiada grupę, a nie tylko kolejne linki (1.3.1). --}}
+                <div class="grid gap-6 sm:grid-cols-2 {{ $colClass }}">
+                    @foreach ($sections as $si => $section)
+                        @php
+                            $h = $section['heading'];
+                            $hid = 'mega-sec-' . $item->id . '-' . $si;
+                        @endphp
+                        <div>
+                            @if ($h)
+                                @if ($h['url'])
+                                    <a id="{{ $hid }}" href="{{ $h['url'] }}" @if ($h['current']) aria-current="page" @endif
+                                       class="mb-2 flex items-center gap-2 rounded-md px-2 py-1.5 font-bold {{ $sz['cat'] }} hover:bg-gray-50 hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand {{ $h['current'] ? 'text-brand' : 'text-ink' }}">
+                                        <i class="{{ $h['icon'] ? 'bi ' . $h['icon'] : 'fa-solid fa-folder-open' }} text-brand" aria-hidden="true"></i>
+                                        <span>{{ $h['label'] }}</span>
+                                    </a>
+                                @else
+                                    <p id="{{ $hid }}" class="mb-2 flex items-center gap-2 px-2 py-1.5 font-bold text-ink {{ $sz['cat'] }}">
+                                        <i class="{{ $h['icon'] ? 'bi ' . $h['icon'] : 'fa-solid fa-folder-open' }} text-brand" aria-hidden="true"></i>
+                                        <span>{{ $h['label'] }}</span>
+                                    </p>
+                                @endif
+                                @if ($h['description'] && $sz['desc'])
+                                    <p class="-mt-1 mb-2 px-2 text-muted {{ $sz['desc'] }}">{{ $h['description'] }}</p>
+                                @endif
+                            @endif
+                            @if ($section['links'])
+                                <ul role="list" @if ($h) aria-labelledby="{{ $hid }}" @endif class="space-y-0.5 {{ $h ? 'border-l border-gray-100 pl-3' : '' }}">
+                                    @foreach ($section['links'] as [$url, $label, $description, $icon, $current])
+                                        <li>
+                                            <a href="{{ $url }}" @if ($current) aria-current="page" @endif
+                                               class="group/l flex items-start gap-2 rounded-md px-2 py-1.5 {{ $sz['proj'] }} hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand {{ $current ? 'font-semibold text-brand' : 'text-ink' }}">
+                                                @if ($icon)<i class="bi {{ $icon }} mt-0.5 flex-none text-xs text-brand" aria-hidden="true"></i>@endif
+                                                <span class="min-w-0">
+                                                    <span class="block group-hover/l:text-brand">{{ $label }}</span>
+                                                    @if ($description && $sz['desc'])
+                                                        <span class="block text-muted {{ $sz['desc'] }}">{{ $description }}</span>
+                                                    @endif
+                                                </span>
+                                            </a>
+                                        </li>
+                                    @endforeach
+                                </ul>
+                            @endif
+                        </div>
+                    @endforeach
+                </div>
             @else
-                <ul role="list" class="grid gap-x-6 {{ $sz['gapY'] }} sm:grid-cols-2 lg:grid-cols-{{ $columns }}">
+                <ul role="list" class="grid gap-x-6 {{ $sz['gapY'] }} sm:grid-cols-2 {{ $colClass }}">
                     @foreach ($entries as [$url, $label, $description, $icon, $current])
                         <li>
                             <a href="{{ $url }}" @if ($current) aria-current="page" @endif

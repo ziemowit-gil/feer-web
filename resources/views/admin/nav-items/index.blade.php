@@ -25,6 +25,7 @@
                 'buttonColorEnabled' => (bool) old('button_color'),
                 'isTransparent' => (bool) old('is_transparent_dropdown'),
                 'isMega' => (bool) old('is_mega'),
+                'isHeading' => (bool) old('is_column_heading'),
                 'megaImage' => old('mega_image_url', ''),
                 'megaSize' => old('mega_size', 'md'),
                 'megaExtraTitle' => old('mega_extra_title', ''),
@@ -203,7 +204,7 @@
                     editingId: '', action: storeUrl, label: '', icon: '', description: '', url: '', type: 'link',
                     location: 'main', parentId: '', module: '', isButton: false,
                     buttonColor: '#2563eb', buttonColorEnabled: false,
-                    isTransparent: false, isMega: false, megaImage: '', megaImageAlt: '', megaSize: 'md', megaExtraTitle: '', megaSideTitle: '', megaSideLinks: [], isActive: true,
+                    isTransparent: false, isMega: false, isHeading: false, megaImage: '', megaImageAlt: '', megaSize: 'md', megaExtraTitle: '', megaSideTitle: '', megaSideLinks: [], isActive: true,
                 },
 
                 init() {
@@ -219,7 +220,7 @@
                         editingId: '', action: storeUrl, label: '', icon: '', description: '', url: '', type: 'link',
                         location: 'main', parentId: '', module: '', isButton: false,
                         buttonColor: '#2563eb', buttonColorEnabled: false,
-                        isTransparent: false, isMega: false, megaImage: '', megaImageAlt: '', megaSize: 'md', megaExtraTitle: '', megaSideTitle: '', megaSideLinks: [], isActive: true, ...overrides,
+                        isTransparent: false, isMega: false, isHeading: false, megaImage: '', megaImageAlt: '', megaSize: 'md', megaExtraTitle: '', megaSideTitle: '', megaSideLinks: [], isActive: true, ...overrides,
                     };
                 },
 
@@ -255,6 +256,7 @@
                         buttonColorEnabled: !!d.color,
                         isTransparent: d.transparent === '1',
                         isMega: d.mega === '1',
+                        isHeading: d.heading === '1',
                         megaImage: d.megaImage || '',
                         megaSize: d.megaSize || 'md',
                         megaExtraTitle: d.megaExtraTitle || '',
