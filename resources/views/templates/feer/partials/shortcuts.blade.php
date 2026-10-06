@@ -9,7 +9,7 @@
 @if (($quickLinks ?? collect())->isNotEmpty())
     <section class="border-b border-gray-100 bg-gray-50 py-8" aria-labelledby="feer-shortcuts-heading">
         <div class="mx-auto max-w-6xl px-4">
-            <h2 id="feer-shortcuts-heading" class="mb-4 text-lg font-bold uppercase tracking-wide text-ink">Szybkie akcje</h2>
+            <h2 id="feer-shortcuts-heading" class="mb-4 text-2xl font-bold text-ink md:text-3xl">Szybkie akcje</h2>
 
             <nav aria-label="Szybkie akcje">
                 <ul class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4" role="list">
