@@ -102,4 +102,30 @@ class FeerTemplateTest extends TestCase
         \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();
         $this->get('/')->assertOk()->assertSee('relative hidden bg-brand shadow-sm', false);
     }
+
+    private function hubPage(): void
+    {
+        \App\Models\Page::create([
+            'title' => 'Dołącz', 'slug' => 'dolacz-hub-test', 'type' => 'links_hub', 'is_published' => true, 'hub_intro' => 'Zostań z nami',
+            'hub_links' => [['label' => 'Wolontariat', 'url' => '/wolontariat', 'icon' => 'fa-solid fa-hand', 'color' => 'green', 'description' => 'Pomagaj']],
+        ]);
+    }
+
+    public function test_strona_hub_w_szablonie_feer_ma_plaskie_karty_bez_kolorowych_naglowkow(): void
+    {
+        $this->hubPage();
+        SiteSetting::current()->update(['site_template' => 'feer']);
+        \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();
+
+        $html = $this->get('/dolacz-hub-test')->assertOk()->assertSee('Wolontariat')->assertSee('Zostań z nami')->getContent();
+        $this->assertStringContainsString('border-top: 4px solid #16a34a', $html);
+        $this->assertStringNotContainsString('<section class="bg-brand text-white"', $html);
+    }
+
+    public function test_strona_hub_w_innych_szablonach_zostaje_bez_zmian(): void
+    {
+        $this->hubPage();
+
+        $this->get('/dolacz-hub-test')->assertOk()->assertSee('<section class="bg-brand text-white"', false);
+    }
 }

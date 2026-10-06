@@ -14,11 +14,11 @@
         @include('templates.feer.partials.shortcuts')
     @endif
     @if ($siteSettings->isHomepageSectionEnabled('news'))
-        @include('templates.ngo.partials.home.news')
+        @include('templates.feer.partials.news')
     @endif
     @if ($siteSettings->isHomepageSectionEnabled('events'))
         @include('templates.feer.partials.trainings')
     @endif
-    @include('templates.ngo.partials.home.projects')
-    @include('templates.ngo.partials.home.support-cta')
+    @include('templates.feer.partials.projects')
+    @include('templates.feer.partials.support-cta')
 @endsection

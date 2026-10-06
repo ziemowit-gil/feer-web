@@ -766,7 +766,18 @@
         $metroColorFallback = array_values($metroColorMap);
     @endphp
 
-    {{-- Hero --}}
+    @php $feerHub = ($siteSettings->site_template ?? 'default') === 'feer'; @endphp
+    @if ($feerHub)
+        {{-- Szablon FEER: jasny, płaski nagłówek (tekst ink na szarym tle — kontrast 16:1) --}}
+        <section class="border-b border-gray-100 bg-gray-50">
+            <div class="mx-auto max-w-6xl px-4 py-12 md:py-16">
+                <h1 class="text-3xl font-extrabold leading-tight tracking-tight text-ink md:text-5xl">{{ $page->title }}</h1>
+                @if (filled($page->hub_intro))
+                    <p class="mt-4 max-w-2xl text-lg leading-relaxed text-ink">{{ $page->hub_intro }}</p>
+                @endif
+            </div>
+        </section>
+    @else
     <section class="bg-brand text-white"
         @if ($page->hub_hero) style="background-image: linear-gradient(0deg, rgba(0,0,0,.55), rgba(0,0,0,.35)), url('{{ $page->hub_hero }}'); background-size: cover; background-position: center;" @endif>
         <div class="mx-auto max-w-5xl px-4 py-20 text-center md:py-28">
@@ -776,6 +787,7 @@
             @endif
         </div>
     </section>
+    @endif
 
     {{-- Metro kafelki --}}
     <section class="mx-auto max-w-5xl px-4 py-14" aria-label="{{ $page->title }}">
@@ -784,7 +796,34 @@
         @endif
 
         @php $isFederationTemplate = ($siteSettings->site_template ?? 'default') === 'federation'; @endphp
-        @if ($hubLinks->isNotEmpty())
+        @if ($hubLinks->isNotEmpty() && $feerHub)
+            {{-- Szablon FEER: płaskie białe karty z paskiem koloru u góry; tekst zawsze ciemny na białym. --}}
+            <ul class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3" role="list">
+                @foreach ($hubLinks as $i => $link)
+                    @php
+                        $colorKey = $link['color'] ?? null;
+                        $bg = ($colorKey && isset($metroColorMap[$colorKey]))
+                            ? $metroColorMap[$colorKey]
+                            : ($siteSettings->brandColorN(($i % 4) + 1) ?: $metroColorFallback[$i % count($metroColorFallback)]);
+                        $ctaLabel = filled($link['cta_label'] ?? null) ? $link['cta_label'] : 'Dowiedz się więcej';
+                    @endphp
+                    <li class="h-full">
+                        <a href="{{ $link['url'] }}"
+                           class="group flex h-full flex-col rounded-lg border border-gray-200 bg-white p-6 transition hover:border-gray-300 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2"
+                           style="border-top: 4px solid {{ $bg }}">
+                            <i class="{{ filled($link['icon'] ?? null) ? $link['icon'] : 'fa-solid fa-file-lines' }} mb-4 text-2xl" style="color: {{ $bg }}" aria-hidden="true"></i>
+                            <span class="text-xl font-bold leading-snug text-ink group-hover:text-brand-dark" lang="pl" style="overflow-wrap: break-word; hyphens: auto">{{ $link['label'] }}</span>
+                            @if (filled($link['description'] ?? null))
+                                <span class="mt-2 line-clamp-4 text-sm leading-relaxed text-muted">{{ $link['description'] }}</span>
+                            @endif
+                            <span class="mt-auto inline-flex items-center gap-1.5 pt-5 text-sm font-bold text-brand-dark transition group-hover:gap-3">
+                                {{ $ctaLabel }} <i class="fa-solid fa-arrow-right text-xs" aria-hidden="true"></i>
+                            </span>
+                        </a>
+                    </li>
+                @endforeach
+            </ul>
+        @elseif ($hubLinks->isNotEmpty())
             {{-- Karty działu: równa wysokość w rzędzie (siatka rozciąga elementy, odnośnik ma h-full),
                  kolorowy nagłówek z ikoną, tytuł i opis w ciemnym tekście na bieli (kontrast WCAG),
                  przycisk zawsze na dole karty. Długie słowa łamią się i dzielą wyrazy, nie wychodzą poza kartę. --}}

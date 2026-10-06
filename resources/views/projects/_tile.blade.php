@@ -16,12 +16,12 @@
     @else
         <span class="block aspect-[4/3] w-full" style="background: color-mix(in srgb, {{ $tileAccent }} 12%, #fff)" aria-hidden="true"></span>
     @endif
-    <span class="flex flex-1 flex-col p-5">
-        <span class="text-[11px] font-bold uppercase tracking-widest text-muted">{{ $project->category->name ?? ($categoryName ?? 'Projekt') }}</span>
-        <span class="mt-2 text-lg font-bold leading-snug text-ink group-hover:text-brand">{{ $project->title }}</span>
+    <span class="flex flex-1 flex-col p-6">
+        <span class="text-xs font-bold uppercase tracking-widest text-muted">{{ $project->category->name ?? ($categoryName ?? 'Projekt') }}</span>
+        <span class="mt-2 text-xl font-bold leading-snug text-ink group-hover:text-brand-dark">{{ $project->title }}</span>
         @if ($project->excerpt)
             <span class="mt-2 line-clamp-3 text-sm leading-relaxed text-muted">{{ $project->excerpt }}</span>
         @endif
-        <span class="mt-auto pt-4 text-sm font-bold text-brand">Zobacz projekt <span aria-hidden="true" class="inline-block transition group-hover:translate-x-1">→</span></span>
+        <span class="mt-auto pt-4 text-sm font-bold text-brand-dark">Zobacz projekt <span aria-hidden="true" class="inline-block transition group-hover:translate-x-1">→</span></span>
     </span>
 </a>
