@@ -1,4 +1,4 @@
-{{-- Kafel projektu (lista projektów): duże zdjęcie 4:3, pasek koloru akcentu, kategoria, tytuł, zajawka i odnośnik. Bez ikon i gradientów. --}}
+{{-- Kafel projektu (lista projektów): zdjęcie 4:3 (gdy jest — bez zdjęcia sam pasek koloru akcentu, bez pustego bloku), kategoria, tytuł, zajawka i odnośnik. Bez ikon i gradientów. --}}
 @php
     $tileAccent = \App\Support\Color::isValid($project->accent_color ?? null)
         ? $project->accent_color
@@ -13,10 +13,8 @@
             <img src="{{ $project->image_url }}" alt="{{ $project->image_alt ?? '' }}" loading="lazy"
                  class="aspect-[4/3] w-full object-cover transition duration-500 group-hover:scale-[1.03]">
         </span>
-    @else
-        <span class="block aspect-[4/3] w-full" style="background: color-mix(in srgb, {{ $tileAccent }} 12%, #fff)" aria-hidden="true"></span>
     @endif
-    <span class="flex flex-1 flex-col p-6">
+    <span class="flex flex-1 flex-col p-6 {{ $project->image_url ? '' : 'pt-7' }}">
         <span class="text-xs font-bold uppercase tracking-widest text-muted">{{ $project->category->name ?? ($categoryName ?? 'Projekt') }}</span>
         <span class="mt-2 text-xl font-bold leading-snug text-ink group-hover:text-brand-dark">{{ $project->title }}</span>
         @if ($project->excerpt)
