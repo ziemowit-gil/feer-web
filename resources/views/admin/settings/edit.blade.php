@@ -230,8 +230,9 @@
         </div>
 
         <div x-show="tab === 'header'" x-cloak class="space-y-6">
-            <div>
-                <p class="mb-3 text-sm font-bold">Układ nagłówka strony</p>
+            <details open class="rounded-lg border border-gray-200 bg-white">
+                <summary class="cursor-pointer rounded-lg px-5 py-3 text-sm font-bold text-ink hover:bg-gray-100">Układ nagłówka strony</summary>
+                <div class="border-t border-gray-200 p-5">
                 @php $isFeer = str_contains(request()->getHost(), 'feer.org.pl') || in_array(request()->getHost(), ['localhost', '127.0.0.1'], true); @endphp
                 <div class="grid gap-3 sm:grid-cols-2">
                     @foreach (\App\Models\SiteSetting::HEADER_LAYOUTS as $layoutValue => $layoutLabel)
@@ -267,7 +268,8 @@
                 </p>
                 @enderror
                 @error('header_layout') <p class="mt-2 text-sm text-red-600">{{ $message }}</p> @enderror
-            </div>
+                </div>
+            </details>
 
             @if ($settings->site_template === 'federation')
                 {{-- Kolorowe menu — tylko szablon "federation" --}}
@@ -275,7 +277,10 @@
                     $navLabels = ['O nas', 'Organizacje', 'Projekty zrealizowane', 'Kontakt'];
                     $colorfulItems = old('federation_colorful_nav_items', $settings->federation_colorful_nav_items ?? [0, 1, 2, 3]);
                 @endphp
-                <div class="rounded-lg border border-gray-200 bg-gray-50 p-5" x-data="{ colorfulNav: {{ old('federation_colorful_nav', $settings->federation_colorful_nav ?? true) ? 'true' : 'false' }} }">
+                <details open class="rounded-lg border border-gray-200 bg-gray-50">
+                <summary class="cursor-pointer rounded-lg px-5 py-3 text-sm font-bold text-ink hover:bg-gray-100">Menu i strona główna (szablon federacja)</summary>
+                <div class="space-y-4 border-t border-gray-200 p-5">
+                <div class="rounded-lg border border-gray-200 bg-white p-4" x-data="{ colorfulNav: {{ old('federation_colorful_nav', $settings->federation_colorful_nav ?? true) ? 'true' : 'false' }} }">
                     <label class="flex items-center gap-2">
                         <input type="hidden" name="federation_colorful_nav" value="0">
                         <input type="checkbox" name="federation_colorful_nav" value="1" x-model="colorfulNav"
@@ -297,7 +302,7 @@
                 </div>
 
                 {{-- Sekcje na stronie głównej — możliwe do wyłączenia --}}
-                <div class="mt-4 space-y-3 rounded-lg border border-gray-200 bg-gray-50 p-5">
+                <div class="space-y-3 rounded-lg border border-gray-200 bg-white p-4">
                     <label class="flex items-center gap-2">
                         <input type="hidden" name="federation_show_org_spotlight" value="0">
                         <input type="checkbox" name="federation_show_org_spotlight" value="1"
@@ -313,6 +318,8 @@
                         <span class="text-sm font-bold">Skrót do Strefy członkowskiej na stronie głównej</span>
                     </label>
                 </div>
+                </div>
+                </details>
             @endif
 
             {{-- Modal: sekretny kod do aktywacji stylu Wide --}}
@@ -345,9 +352,10 @@
 
             {{-- Substyl „Urzędowy" + wspólny pasek informacyjny (także szablon gminny) --}}
             @php $officeVisible = $settings->site_template === 'municipality' ? 'true' : 'false'; @endphp
-            <div x-show="wm_layout === 'office_bar' || {{ $officeVisible }}" x-cloak
-                class="rounded-xl border border-brand-light bg-brand-light/30 p-5 space-y-4">
-                <p class="text-sm font-bold text-brand">Pasek informacyjny i belka urzędowa</p>
+            <details open x-show="wm_layout === 'office_bar' || {{ $officeVisible }}" x-cloak
+                class="rounded-lg border border-gray-200 bg-gray-50">
+                <summary class="cursor-pointer rounded-lg px-5 py-3 text-sm font-bold text-ink hover:bg-gray-100">Pasek informacyjny i belka urzędowa</summary>
+                <div class="space-y-4 border-t border-gray-200 p-5">
                 <p class="text-xs text-muted">
                     Pasek informacyjny (data, imieniny, pogoda, narzędzia dostępności) pojawia się w substylu
                     „Urzędowym" oraz w szablonie „Gmina / urząd". Pogodę włącza podanie współrzędnych
@@ -385,11 +393,13 @@
                             <span class="font-normal text-muted">— obok BIP i ikon social</span></span>
                     </label>
                 </div>
-            </div>
+                </div>
+            </details>
 
-            <div x-show="wm_layout === 'wide_mission'" x-cloak
-                class="rounded-xl border border-brand-light bg-brand-light/30 p-5 space-y-5">
-                <p class="text-sm font-bold text-brand">Ustawienia nagłówka WOŚP</p>
+            <details open x-show="wm_layout === 'wide_mission'" x-cloak
+                class="rounded-lg border border-gray-200 bg-gray-50">
+                <summary class="cursor-pointer rounded-lg px-5 py-3 text-sm font-bold text-ink hover:bg-gray-100">Ustawienia nagłówka WOŚP</summary>
+                <div class="space-y-5 border-t border-gray-200 p-5">
 
                 <label class="flex items-center gap-2 rounded-lg border border-gray-200 bg-white p-3">
                     <input type="checkbox" name="wide_mission_show_mission" value="1"
@@ -532,7 +542,8 @@
                         class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
                     <p class="mt-1 text-xs text-muted">Przycisk pojawi się obok ikon social media w górnym pasku nagłówka.</p>
                 </div>
-            </div>
+                </div>
+            </details>
         </div>
 
         <div x-show="tab === 'colors'" x-cloak class="space-y-6">
