@@ -187,4 +187,15 @@ class FeerTemplateTest extends TestCase
         $this->assertStringContainsString('Deklaracja dostępności', $footer);
         $this->assertStringNotContainsString('opacity-40', $footer);
     }
+
+    public function test_kontakt_w_szablonie_feer_ma_jasny_naglowek_zamiast_ciemnego_pasa(): void
+    {
+        SiteSetting::current()->update(['site_template' => 'feer', 'contact_layout' => 'tabs']);
+        \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();
+
+        $html = $this->get('/kontakt')->assertOk()->getContent();
+        $this->assertStringContainsString('role="tablist"', $html);
+        $this->assertStringContainsString('bg-gray-50', $html);
+        $this->assertStringNotContainsString('<section class="relative bg-ink', $html);
+    }
 }

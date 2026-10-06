@@ -60,7 +60,19 @@
              Przyciemnienie 65% czerni trzyma kontrast białego tekstu na min. 7:1
              nawet przy całkiem jasnym zdjęciu (WCAG 1.4.3), a klasa
              .contact-hero-photo chowa zdjęcie w trybach wysokiego kontrastu. --}}
-        @php $tabsHeroPhoto = $siteSettings->contactHeroPhotoUrl(); @endphp
+        @php
+            // Szablon FEER: jasny, płaski nagłówek zamiast ciemnego pasa ze zdjęciem; zdjęcie biura trafia do danych kontaktowych.
+            $feerContact = ($siteSettings->site_template ?? 'default') === 'feer';
+            $tabsHeroPhoto = $feerContact ? null : $siteSettings->contactHeroPhotoUrl();
+        @endphp
+        @if ($feerContact)
+            <section class="border-b border-gray-100 bg-gray-50">
+                <div class="mx-auto max-w-6xl px-4 py-12 md:py-16">
+                    <h1 class="text-3xl font-extrabold leading-tight tracking-tight text-ink md:text-5xl">Kontakt</h1>
+                    <p class="mt-4 max-w-2xl text-lg leading-relaxed text-ink">Napisz, zadzwoń albo odwiedź nas — odpowiadamy zwykle w ciągu jednego dnia roboczego.</p>
+                </div>
+            </section>
+        @else
         <section class="relative bg-ink {{ $tabsHeroPhoto ? 'contact-hero-photo' : '' }}"
             @if ($tabsHeroPhoto) style="background-image: url('{{ $tabsHeroPhoto }}');" @endif>
 
@@ -72,6 +84,7 @@
                 <h1 class="text-3xl font-bold uppercase tracking-wide text-white sm:text-4xl">Kontakt</h1>
             </div>
         </section>
+        @endif
 
         @include('partials.tab-strip', [
             'tabItems' => $contactTabs->all(),
