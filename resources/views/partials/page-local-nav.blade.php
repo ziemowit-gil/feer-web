@@ -1,3 +1,7 @@
+@if ($page->sideNavStyle() === 'tree')
+    {{-- Styl „drzewo działu" (TYPO3): pełne, wielopoziomowe drzewo od korzenia działu. --}}
+    @include('partials.page-tree-nav', ['menuSiblings' => $menuSiblings])
+@else
 @php
     // The heading and "up" link for a page's local sub-menu: a project it is
     // attached to takes precedence, then a parent page. $menuSiblings is passed
@@ -53,3 +57,4 @@
         @endforeach
     </ul>
 </aside>
+@endif

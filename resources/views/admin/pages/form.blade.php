@@ -287,17 +287,36 @@
                                 class="mt-0.5 rounded border-gray-300 text-brand focus:ring-brand">
                             <span class="flex-1">
                                 <span class="block text-sm font-bold">Nawigacja po podstronach działu</span>
-                                <span class="block text-xs text-muted">Lista podstron w tym dziale. Wyłącz dla stron bez rozbudowanej struktury. Styl ustawiony na stronie nadrzędnej obowiązuje dla wszystkich jej podstron.</span>
-                                @php $sideNavStyle = old('side_nav_style', $page->side_nav_style ?? 'sidebar'); @endphp
-                                <span class="mt-2 flex flex-wrap gap-2">
-                                    <label class="flex cursor-pointer items-center gap-1.5 rounded-md border border-gray-200 bg-white px-2.5 py-1.5 text-xs font-bold has-[:checked]:border-brand has-[:checked]:bg-brand-light has-[:checked]:text-brand">
-                                        <input type="radio" name="side_nav_style" value="sidebar" {{ $sideNavStyle !== 'tabs' ? 'checked' : '' }} class="text-brand focus:ring-brand">
-                                        <i class="fa-solid fa-table-columns" aria-hidden="true"></i> Boczne drzewo
-                                    </label>
-                                    <label class="flex cursor-pointer items-center gap-1.5 rounded-md border border-gray-200 bg-white px-2.5 py-1.5 text-xs font-bold has-[:checked]:border-brand has-[:checked]:bg-brand-light has-[:checked]:text-brand">
-                                        <input type="radio" name="side_nav_style" value="tabs" {{ $sideNavStyle === 'tabs' ? 'checked' : '' }} class="text-brand focus:ring-brand">
-                                        <i class="fa-solid fa-window-maximize" aria-hidden="true"></i> Zakładki nad treścią
-                                    </label>
+                                <span class="block text-xs text-muted">Lista podstron w tym dziale. Wyłącz dla stron bez rozbudowanej struktury. Styl ustawiony na stronie głównej działu obowiązuje dla wszystkich jej podstron.</span>
+                                @php
+                                    $sideNavStyle = old('side_nav_style', $page->side_nav_style ?? 'sidebar');
+                                    if (! array_key_exists($sideNavStyle, \App\Models\Page::SIDE_NAV_STYLES)) {
+                                        $sideNavStyle = 'sidebar';
+                                    }
+                                    $sideNavIcons = ['sidebar' => 'fa-table-columns', 'tabs' => 'fa-window-maximize', 'tree' => 'fa-sitemap'];
+                                    $sideNavHints = [
+                                        'sidebar' => 'Lista podstron tego poziomu w prawej kolumnie (z jedną zagnieżdżoną gałęzią).',
+                                        'tabs'    => 'Poziomy pasek zakładek nad treścią — jeden poziom podstron.',
+                                        'tree'    => 'Lewa kolumna z całym działem: ścieżka „Jesteś tu", wszystkie poziomy podstron, zwijane gałęzie z licznikiem — jak drzewo stron w TYPO3.',
+                                    ];
+                                @endphp
+                                <span class="mt-2 flex flex-wrap gap-2" role="radiogroup" aria-label="Styl nawigacji po podstronach">
+                                    @foreach (\App\Models\Page::SIDE_NAV_STYLES as $styleKey => $styleLabel)
+                                        <label class="flex cursor-pointer items-center gap-1.5 rounded-md border border-gray-200 bg-white px-2.5 py-1.5 text-xs font-bold has-[:checked]:border-brand has-[:checked]:bg-brand-light has-[:checked]:text-brand"
+                                            title="{{ $sideNavHints[$styleKey] }}">
+                                            <input type="radio" name="side_nav_style" value="{{ $styleKey }}" {{ $sideNavStyle === $styleKey ? 'checked' : '' }} class="text-brand focus:ring-brand"
+                                                aria-describedby="side-nav-hint-{{ $styleKey }}">
+                                            <i class="fa-solid {{ $sideNavIcons[$styleKey] }}" aria-hidden="true"></i> {{ $styleLabel }}
+                                        </label>
+                                    @endforeach
+                                </span>
+                                @foreach (\App\Models\Page::SIDE_NAV_STYLES as $styleKey => $styleLabel)
+                                    <span id="side-nav-hint-{{ $styleKey }}" class="sr-only">{{ $sideNavHints[$styleKey] }}</span>
+                                @endforeach
+                                <span class="mt-2 block text-xs text-muted" x-data="{ s: '{{ $sideNavStyle }}' }" @change.window="if ($event.target.name === 'side_nav_style') s = $event.target.value">
+                                    <template x-for="[k, v] of Object.entries({{ \Illuminate\Support\Js::from($sideNavHints) }})" :key="k">
+                                        <span x-show="s === k" x-text="v"></span>
+                                    </template>
                                 </span>
                             </span>
                         </label>

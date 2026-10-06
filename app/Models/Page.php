@@ -75,6 +75,21 @@ class Page extends Model
         'minimal' => 'Minimalna (bez nagłówka i stopki serwisu)',
     ];
 
+    /**
+     * Sposób prezentacji podstron działu (pole `side_nav_style`, ustawiane na
+     * stronie nadrzędnej działu): boczna lista rodzeństwa, poziome zakładki
+     * nad treścią albo pełne, wielopoziomowe drzewo działu w lewej kolumnie
+     * (układ znany z serwisów TYPO3: ścieżka strony + rozwijane gałęzie).
+     */
+    public const SIDE_NAV_STYLES = [
+        'sidebar' => 'Boczne drzewo',
+        'tabs'    => 'Zakładki nad treścią',
+        'tree'    => 'Drzewo działu (styl TYPO3)',
+    ];
+
+    /** Maksymalna głębokość drzewa działu renderowanego w nawigacji „tree". */
+    public const TREE_NAV_MAX_DEPTH = 5;
+
     /** Page types: a plain content page, an event (webinar / on-site), a schedule listing, or an "about the organisation" page — each with its own layout. */
     public const TYPES = [
         'standard' => 'Standardowa',
@@ -580,9 +595,34 @@ class Page extends Model
      */
     public function sideNavStyle(): string
     {
-        $style = $this->parent_id ? $this->parent?->side_nav_style : $this->side_nav_style;
+        $style = $this->parent_id ? $this->sectionRoot()->side_nav_style : $this->side_nav_style;
 
-        return $style === 'tabs' ? 'tabs' : 'sidebar';
+        return array_key_exists((string) $style, self::SIDE_NAV_STYLES) ? $style : 'sidebar';
+    }
+
+    /**
+     * Strony nadrzędne od korzenia działu do bezpośredniego rodzica (rootline
+     * w nomenklaturze TYPO3). Pusta kolekcja dla strony najwyższego poziomu.
+     * Zabezpieczenie przed pętlą w `parent_id`: maksymalnie 10 poziomów.
+     */
+    public function ancestors(): \Illuminate\Support\Collection
+    {
+        $chain = collect();
+        $node = $this;
+        $seen = [$this->id];
+
+        while ($node->parent_id && ($node = $node->parent) && ! in_array($node->id, $seen, true) && $chain->count() < 10) {
+            $chain->prepend($node);
+            $seen[] = $node->id;
+        }
+
+        return $chain;
+    }
+
+    /** Strona najwyższego poziomu w dziale, do którego należy ta strona (lub ona sama). */
+    public function sectionRoot(): self
+    {
+        return $this->ancestors()->first() ?? $this;
     }
 
     public function menuSiblings()

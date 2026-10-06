@@ -680,7 +680,7 @@ class PageController extends Controller
         $data['is_archived'] = $request->boolean('is_archived');
         $data['show_in_menu'] = $request->boolean('show_in_menu');
         $data['show_side_nav'] = $request->boolean('show_side_nav');
-        $data['side_nav_style'] = in_array($request->input('side_nav_style'), ['sidebar', 'tabs'], true)
+        $data['side_nav_style'] = array_key_exists((string) $request->input('side_nav_style'), Page::SIDE_NAV_STYLES)
             ? $request->input('side_nav_style')
             : 'sidebar';
         $data['is_system'] = $request->boolean('is_system');

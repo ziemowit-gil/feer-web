@@ -7,8 +7,9 @@
     @include('partials.breadcrumbs', ['items' => array_filter([
         $page->project ? ['label' => 'Projekty', 'url' => route('projects.index')] : null,
         $page->project && $page->project->category ? ['label' => $page->project->category->name, 'url' => route('categories.show', $page->project->category)] : null,
-        $page->project ? ['label' => $page->project->title, 'url' => route('projects.show', $page->project)]
-            : ($page->parent ? ['label' => $page->parent->title, 'url' => route('page.show', $page->parent)] : null),
+        $page->project ? ['label' => $page->project->title, 'url' => route('projects.show', $page->project)] : null,
+        // Pełna ścieżka działu (rootline): wszystkie strony nadrzędne, nie tylko bezpośredni rodzic.
+        ...$page->ancestors()->map(fn ($a) => ['label' => $a->title, 'url' => $a->publicUrl()])->all(),
         ['label' => $page->title, 'url' => null],
     ])])
 @endsection
@@ -42,6 +43,8 @@
             $showLocalNav = ($page->show_side_nav ?? true) && $menuSiblings->isNotEmpty();
             $showTabsNav  = $showLocalNav && $page->sideNavStyle() === 'tabs';
             $showSideNav  = $showLocalNav && ! $showTabsNav;
+            // Drzewo działu (TYPO3): szersza kolumna nawigacji po lewej stronie treści.
+            $showTreeNav  = $showSideNav && $page->sideNavStyle() === 'tree';
             $canInlineEdit = auth('web')->check() && auth('web')->user()->canAccessModule('pages');
             // Treść z shortcode'em (np. osadzony formularz) nie może być edytowana "na żywo" —
             // contenteditable widzi tylko wyrenderowany HTML, zapisanie go z powrotem
@@ -61,7 +64,7 @@
                 @if ($showTabsNav)
                     @include('partials.page-tabs-nav', ['menuSiblings' => $menuSiblings])
                 @endif
-                <div class="grid gap-10 {{ $hasAside ? 'md:grid-cols-[1fr_220px]' : '' }}">
+                <div class="grid gap-10 {{ $hasAside ? ($showTreeNav ? 'md:grid-cols-[260px_1fr]' : 'md:grid-cols-[1fr_220px]') : '' }}">
                     <div class="min-w-0">
                         @include('partials.etr-toggle', ['etr' => $page->etr, 'title' => $page->title])
 
@@ -97,7 +100,7 @@
                     </div>
 
                     @if ($hasAside)
-                        <div class="space-y-8 md:sticky md:top-24 md:self-start">
+                        <div class="space-y-8 md:sticky md:top-24 md:self-start {{ $showTreeNav ? 'md:order-first' : '' }}">
                             @if ($toc)
                                 @include('partials.page-toc', ['toc' => $toc, 'variant' => 'desktop'])
                             @endif
