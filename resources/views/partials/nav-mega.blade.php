@@ -4,7 +4,7 @@
     Renderowane przez partials/main-nav-items dla pozycji z flagą `is_mega`:
       • „Rozwijane menu": kolumny = ręcznie dodane podpozycje (ikona + opis),
       • link do strony: kolumny = podpozycje + opublikowane podstrony tej strony,
-      • „Menu projektów": kolumny = kategorie projektów z listą projektów.
+      • „Menu projektów": kolumna = kategoria, pod nią jej projekty (bez karty bocznej).
     Kolumna boczna: grafika promocyjna (mega_image), opis i „Zobacz wszystko".
     Na mobile pozycja wraca do zwykłego rozwijanego menu (main-nav-items).
 
@@ -41,21 +41,25 @@
     $grouped = \App\Models\NavItem::sectionsAreGrouped($sections);
     $entries = collect($sections)->flatMap(fn ($s) => $s['links'])->all();
 
-    // Grupy (projekty): kategoria → projekty; do tego projekt wyróżniony w kolumnie
-    // bocznej (najnowszy aktywny ze zdjęciem, gdy nie ustawiono grafiki promocyjnej)
-    // i najbliższe szkolenie z modułu wydarzeń.
+    // Grupy (projekty): prosta zasada kategoria → jej projekty.
     $groups = $isProjects ? collect($navCategories ?? [])->filter(fn ($c) => $c->publishedProjects->isNotEmpty())->values() : collect();
     $groupCurrentId = request()->routeIs('projects.show') ? request()->route('project')?->id : null;
     $catCurrentId   = request()->routeIs('categories.show') ? request()->route('category')?->id : null;
-    $allProjects    = $groups->flatMap(fn ($c) => $c->publishedProjects);
-    $featuredProject = null;
-    $nextEvent = null;
+
+    // Trzecia kolumna menu projektów: do 3 kafelków pod sobą — najbliższe szkolenie (jeśli jest)
+    // i aktywne projekty ze zdjęciem. Brak kafelków = brak trzeciej kolumny.
+    $tiles = collect();
     if ($isProjects) {
-        $featuredProject = $allProjects->first(fn ($p) => ! $p->is_completed && $p->image_url)
-            ?? $allProjects->first(fn ($p) => $p->image_url);
-        // Najbliższe szkolenie dostarcza kompozytor widoku nagłówka (z pamięcią podręczną na kilka minut),
-        // żeby zapytanie nie wykonywało się przy każdym renderze menu.
-        $nextEvent = $navNextEvent ?? null;
+        if (($navNextEvent ?? null) !== null) {
+            $ev = $navNextEvent;
+            $tiles->push(['kicker' => 'Najbliższe szkolenie', 'title' => $ev->title, 'url' => site_route('events.show', $ev), 'image' => null,
+                'day' => $ev->starts_at->format('d'), 'month' => $ev->starts_at->translatedFormat('M'), 'full' => $ev->starts_at->translatedFormat('j F Y')]);
+        }
+        $featured = $groups->flatMap(fn ($c) => $c->publishedProjects)->unique('id')
+            ->filter(fn ($p) => ! $p->is_completed && $p->image_url)->take(3 - $tiles->count());
+        foreach ($featured as $fp) {
+            $tiles->push(['kicker' => 'Polecany projekt', 'title' => $fp->title, 'url' => route('projects.show', $fp), 'image' => $fp->image_url, 'alt' => $fp->image_alt ?: '']);
+        }
     }
 
     $isCurrent = $item->isCurrent() || collect($entries)->contains(fn ($e) => $e[4])
@@ -73,6 +77,7 @@
     // Wielkość pozycji (NavItem::MEGA_SIZES): liczba kolumn i skala wpisów.
     $size = $item->megaSize();
     // Menu projektów: ręczne podpozycje tworzą dodatkową kolumnę „To już zrobiliśmy".
+    // Menu projektów: ręczne podpozycje tworzą dodatkową kolumnę „To już zrobiliśmy”.
     $projectExtras = $isProjects ? $item->children : collect();
     $extraTitle    = $item->mega_extra_title ?: 'To już zrobiliśmy';
     $projectCols   = $groups->count() + ($projectExtras->isNotEmpty() ? 1 : 0);
@@ -140,70 +145,42 @@
         <span aria-hidden="true" style="position:absolute;left:0;right:0;top:-1.25rem;height:1.25rem"></span>
         {{-- Na niskich ekranach panel przewija się wewnątrz, zamiast wychodzić poza okno przeglądarki. --}}
         <div style="max-height:min(80vh, calc(100vh - 8rem));overflow-y:auto;overscroll-behavior:contain">
-        <div class="mx-auto grid max-w-6xl gap-8 px-4 py-6 lg:grid-cols-[1fr_16rem]">
+        <div class="mx-auto grid max-w-6xl gap-8 px-4 py-6 {{ ! $isProjects || $tiles->isNotEmpty() ? 'lg:grid-cols-[1fr_16rem]' : '' }}">
 
             @if ($isProjects)
-                {{-- Kolumny: kategorie projektów (nazwa, projekty z opisem i statusem) --}}
+                {{-- Prosta zasada: kolumna = kategoria (link), pod nią lista jej projektów. --}}
                 @if ($groups->isEmpty())
                     <p class="text-sm text-muted">Brak kategorii projektów.</p>
                 @else
                     <div>
-                        <div class="grid gap-6 sm:grid-cols-2 {{ $colClass }}">
+                        <div class="grid gap-x-8 gap-y-6 sm:grid-cols-2 {{ $colClass }}">
                             @foreach ($groups as $category)
                                 <div>
                                     <a href="{{ route('categories.show', $category) }}" @if ($catCurrentId === $category->id) aria-current="page" @endif
-                                       class="mb-2 flex items-center gap-2 rounded-md px-2 py-1.5 font-bold {{ $sz['cat'] }} hover:bg-gray-50 hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand {{ $catCurrentId === $category->id ? 'text-brand' : 'text-ink' }}">
-                                        <span class="flex items-center gap-2"><i class="fa-solid fa-folder-open text-brand" aria-hidden="true"></i>{{ $category->name }}</span>
+                                       class="mb-2 block rounded-md border-b-2 border-brand/30 px-2 py-1.5 font-bold {{ $sz['cat'] }} hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand {{ $catCurrentId === $category->id ? 'text-brand' : 'text-ink' }}">
+                                        {{ $category->name }}
                                     </a>
-                                    <ul role="list" class="space-y-0.5 border-l border-gray-100 pl-3">
-                                        @foreach ($category->publishedProjects->take($sz['projTake']) as $project)
+                                    <ul role="list" class="space-y-0.5">
+                                        @foreach ($category->publishedProjects as $project)
                                             <li>
                                                 <a href="{{ route('projects.show', $project) }}" @if ($groupCurrentId === $project->id) aria-current="page" @endif
-                                                   class="group/p block rounded-md px-2 py-1.5 hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
-                                                    <span class="flex items-center gap-2 {{ $sz['proj'] }} {{ $groupCurrentId === $project->id ? 'font-semibold text-brand' : 'text-ink group-hover/p:text-brand' }}">
-                                                        <span class="h-2 w-2 flex-none rounded-full" style="background: {{ \App\Support\Color::isValid($project->accent_color ?? null) ? $project->accent_color : 'var(--color-brand)' }}" aria-hidden="true"></span>
-                                                        <span class="truncate">{{ $project->title }}</span>
-                                                        @if ($project->is_completed)
-                                                            <span class="ml-auto flex-none rounded bg-emerald-50 px-1.5 text-[10px] font-bold uppercase tracking-wide text-emerald-700">zrealizowany</span>
-                                                        @endif
-                                                    </span>
-                                                    @if ($project->excerpt && $sz['projExcerpt'])
-                                                        <span class="mt-0.5 block truncate pl-4 text-muted {{ $sz['projExcerpt'] }}">{{ $project->excerpt }}</span>
-                                                    @endif
+                                                   class="block rounded-md px-2 py-1.5 {{ $sz['proj'] }} hover:bg-gray-50 hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand {{ $groupCurrentId === $project->id ? 'font-semibold text-brand' : 'text-ink' }}">
+                                                    {{ $project->title }}
                                                 </a>
                                             </li>
                                         @endforeach
-                                        @if ($category->publishedProjects->count() > $sz['projTake'])
-                                            <li>
-                                                <a href="{{ route('categories.show', $category) }}" class="block rounded-md px-2 py-1.5 text-xs font-bold text-brand hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
-                                                    Wszystkie w tej kategorii →
-                                                </a>
-                                            </li>
-                                        @endif
                                     </ul>
                                 </div>
                             @endforeach
 
                             @if ($projectExtras->isNotEmpty())
-                                {{-- Kolumna „To już zrobiliśmy": własne linki (np. archiwum wg okresów) --}}
                                 <div>
-                                    <p class="mb-2 flex items-center gap-2 px-2 py-1.5 font-bold text-ink {{ $sz['cat'] }}" id="{{ 'mega-done-' . $item->id }}">
-                                        <i class="fa-solid fa-circle-check text-emerald-600" aria-hidden="true"></i>
-                                        <span>{{ $extraTitle }}</span>
-                                    </p>
-                                    <ul role="list" aria-labelledby="{{ 'mega-done-' . $item->id }}" class="space-y-0.5 border-l border-gray-100 pl-3">
+                                    <p id="mega-done-{{ $item->id }}" class="mb-2 block border-b-2 border-brand/30 px-2 py-1.5 font-bold text-ink {{ $sz['cat'] }}">{{ $extraTitle }}</p>
+                                    <ul role="list" aria-labelledby="mega-done-{{ $item->id }}" class="space-y-0.5">
                                         @foreach ($projectExtras as $extra)
                                             <li>
                                                 <a href="{{ $extra->url }}" @if ($extra->isCurrent()) aria-current="page" @endif
-                                                   class="group/x flex items-start gap-2 rounded-md px-2 py-1.5 {{ $sz['proj'] }} hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand {{ $extra->isCurrent() ? 'font-semibold text-brand' : 'text-ink' }}">
-                                                    <i class="{{ $extra->icon ? 'bi ' . $extra->icon : 'fa-solid fa-box-archive' }} mt-1 flex-none text-xs text-muted group-hover/x:text-brand" aria-hidden="true"></i>
-                                                    <span class="min-w-0">
-                                                        <span class="block group-hover/x:text-brand">{{ $extra->label }}</span>
-                                                        @if ($extra->description && $sz['projExcerpt'])
-                                                            <span class="block text-muted {{ $sz['projExcerpt'] }}">{{ $extra->description }}</span>
-                                                        @endif
-                                                    </span>
-                                                </a>
+                                                   class="block rounded-md px-2 py-1.5 {{ $sz['proj'] }} hover:bg-gray-50 hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand {{ $extra->isCurrent() ? 'font-semibold text-brand' : 'text-ink' }}">{{ $extra->label }}</a>
                                             </li>
                                         @endforeach
                                     </ul>
@@ -211,12 +188,12 @@
                             @endif
                         </div>
 
-                        {{-- Stopka: skrót do archiwum, o ile nie ma własnej kolumny z linkami --}}
-                        @if (($navHasProjectArchive ?? false) && $projectExtras->isEmpty())
-                            <div class="mt-5 border-t border-gray-100 pt-3 text-xs">
+                        <div class="mt-5 flex flex-wrap items-center gap-x-6 gap-y-2 border-t border-gray-100 pt-3 text-sm">
+                            <a href="{{ $targetUrl }}" class="font-bold text-brand underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">Wszystkie projekty →</a>
+                            @if (($navHasProjectArchive ?? false) && $projectExtras->isEmpty())
                                 <a href="{{ route('projects.archive') }}" class="font-bold text-brand underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">To już zrobiliśmy →</a>
-                            </div>
-                        @endif
+                            @endif
+                        </div>
                     </div>
                 @endif
             @elseif ($grouped)
@@ -290,20 +267,34 @@
             @endif
 
             {{-- Kolumna boczna: grafika promocyjna (lub wyróżniony projekt), opis, najbliższe szkolenie, CTA --}}
+            @if ($isProjects && $tiles->isNotEmpty())
+                <ul role="list" aria-label="Polecane" class="hidden flex-col gap-3 lg:flex">
+                    @foreach ($tiles as $tile)
+                        <li class="flex-1">
+                            <a href="{{ $tile['url'] }}" class="group/t flex h-full min-h-20 overflow-hidden rounded-xl border border-gray-200 bg-white transition hover:border-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                                @if ($tile['image'])
+                                    <img src="{{ $tile['image'] }}" alt="{{ $tile['alt'] }}" class="w-20 flex-none object-cover" loading="lazy">
+                                @else
+                                    <span class="flex w-20 flex-none flex-col items-center justify-center bg-brand text-white" aria-hidden="true">
+                                        <span class="text-xl font-bold leading-none">{{ $tile['day'] }}</span>
+                                        <span class="text-[10px] uppercase leading-none">{{ $tile['month'] }}</span>
+                                    </span>
+                                @endif
+                                <span class="min-w-0 self-center px-3 py-2">
+                                    <span class="block text-[10px] font-bold uppercase tracking-wide text-brand">{{ $tile['kicker'] }}</span>
+                                    <span class="line-clamp-2 block text-sm font-bold leading-snug text-ink group-hover/t:text-brand">{{ $tile['title'] }}</span>
+                                    @if (! empty($tile['full']))<span class="sr-only">{{ $tile['full'] }}</span>@endif
+                                </span>
+                            </a>
+                        </li>
+                    @endforeach
+                </ul>
+            @endif
+
+            @unless ($isProjects)
             <div class="hidden flex-col overflow-hidden rounded-xl bg-gray-50 lg:flex">
                 @if ($hasImage)
                     <img src="{{ $item->mega_image }}" alt="{{ $item->mega_image_alt ?? '' }}" class="aspect-video w-full object-cover" loading="lazy">
-                @elseif ($isProjects && $featuredProject)
-                    <a href="{{ route('projects.show', $featuredProject) }}" class="group/f block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand">
-                        <img src="{{ $featuredProject->image_url }}" alt="{{ $featuredProject->image_alt ?: '' }}" class="aspect-video w-full object-cover" loading="lazy">
-                        <span class="block px-5 pt-4">
-                            <span class="block text-[10px] font-bold uppercase tracking-wide text-brand">Polecany projekt</span>
-                            <span class="block text-base font-bold text-ink group-hover/f:text-brand">{{ $featuredProject->title }}</span>
-                            @if ($featuredProject->excerpt)
-                                <span class="mt-1 line-clamp-2 block text-xs leading-snug text-muted">{{ $featuredProject->excerpt }}</span>
-                            @endif
-                        </span>
-                    </a>
                 @endif
                 <div class="flex flex-1 flex-col justify-between p-5">
                     @if ($sideTitle || $sideDesc)
@@ -317,20 +308,6 @@
                         </div>
                     @else
                         <span></span>
-                    @endif
-
-                    @if ($isProjects && $nextEvent)
-                        <a href="{{ site_route('events.show', $nextEvent) }}" class="mt-4 flex items-start gap-3 rounded-lg border border-gray-200 bg-white p-3 text-sm transition hover:border-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
-                            <span class="flex h-11 w-11 flex-none flex-col items-center justify-center rounded-md bg-brand text-white" aria-hidden="true">
-                                <span class="text-base font-bold leading-none">{{ $nextEvent->starts_at->format('d') }}</span>
-                                <span class="text-[10px] uppercase leading-none">{{ $nextEvent->starts_at->translatedFormat('M') }}</span>
-                            </span>
-                            <span class="min-w-0">
-                                <span class="block text-[10px] font-bold uppercase tracking-wide text-muted">Najbliższe szkolenie</span>
-                                <span class="line-clamp-2 block font-semibold leading-snug text-ink">{{ $nextEvent->title }}</span>
-                                <span class="sr-only">{{ $nextEvent->starts_at->translatedFormat('j F Y') }}</span>
-                            </span>
-                        </a>
                     @endif
 
                     <div class="mt-4 flex flex-col items-start gap-2">
@@ -348,18 +325,14 @@
                             @if ($hasTarget)
                                 <a href="{{ $targetUrl }}"
                                    class="inline-flex min-h-10 items-center gap-2 rounded-full bg-brand px-4 text-sm font-bold text-white transition hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
-                                    {{ $isProjects ? 'Wszystkie projekty' : 'Zobacz wszystko' }} <i class="fa-solid fa-arrow-right text-xs" aria-hidden="true"></i>
-                                </a>
-                            @endif
-                            @if ($isProjects && $siteSettings->isModuleEnabled('events'))
-                                <a href="{{ site_route('events.index') }}" class="inline-flex min-h-9 items-center gap-1.5 rounded-md px-2 text-sm font-bold text-brand underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
-                                    <i class="fa-solid fa-calendar-days" aria-hidden="true"></i> Wszystkie szkolenia
+                                    Zobacz wszystko <i class="fa-solid fa-arrow-right text-xs" aria-hidden="true"></i>
                                 </a>
                             @endif
                         @endif
                     </div>
                 </div>
             </div>
+            @endunless
         </div>
         </div>
     </div>
