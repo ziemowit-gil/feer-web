@@ -785,7 +785,10 @@
 
         @php $isFederationTemplate = ($siteSettings->site_template ?? 'default') === 'federation'; @endphp
         @if ($hubLinks->isNotEmpty())
-            <ul class="grid gap-5 {{ $hubLinks->count() === 2 ? 'sm:grid-cols-2' : ($hubLinks->count() === 3 ? 'sm:grid-cols-3' : 'sm:grid-cols-2 lg:grid-cols-4') }}" role="list">
+            {{-- Karty działu: równa wysokość w rzędzie (siatka rozciąga elementy, odnośnik ma h-full),
+                 kolorowy nagłówek z ikoną, tytuł i opis w ciemnym tekście na bieli (kontrast WCAG),
+                 przycisk zawsze na dole karty. Długie słowa łamią się i dzielą wyrazy, nie wychodzą poza kartę. --}}
+            <ul class="grid gap-6 {{ $hubLinks->count() === 2 ? 'sm:grid-cols-2' : 'sm:grid-cols-2 lg:grid-cols-3' }}" role="list">
                 @foreach ($hubLinks as $i => $link)
                     @php
                         $colorKey = $link['color'] ?? null;
@@ -794,21 +797,20 @@
                             : ($siteSettings->brandColorN(($i % 4) + 1) ?: $metroColorFallback[$i % count($metroColorFallback)]);
                         $ctaLabel = filled($link['cta_label'] ?? null) ? $link['cta_label'] : 'Dowiedz się więcej';
                     @endphp
-                    <li>
+                    <li class="h-full">
                         <a href="{{ $link['url'] }}"
-                           class="group relative flex min-h-52 flex-col justify-end overflow-hidden p-8 text-white shadow-sm transition hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand {{ $isFederationTemplate ? 'rounded-lg' : 'rounded-2xl' }}"
-                           style="background-color: {{ $bg }}">
-                            <span class="relative z-10">
-                                @if (filled($link['icon'] ?? null))
-                                    <span class="mb-3 inline-flex h-11 w-11 items-center justify-center rounded-xl bg-white/20 backdrop-blur" aria-hidden="true">
-                                        <i class="{{ $link['icon'] }} text-xl text-white"></i>
-                                    </span>
-                                @endif
-                                <span class="block text-2xl font-extrabold leading-tight">{{ $link['label'] }}</span>
+                           class="group flex h-full flex-col overflow-hidden border border-gray-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand {{ $isFederationTemplate ? 'rounded-lg' : 'rounded-2xl' }}">
+                            <span class="flex items-center px-6 py-5" style="background-color: {{ $bg }}; min-height: 5.5rem" aria-hidden="true">
+                                <span class="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-white/20 backdrop-blur">
+                                    <i class="{{ filled($link['icon'] ?? null) ? $link['icon'] : 'fa-solid fa-file-lines' }} text-2xl text-white"></i>
+                                </span>
+                            </span>
+                            <span class="flex flex-1 flex-col p-6">
+                                <span class="text-xl font-bold leading-snug text-ink group-hover:text-brand" lang="pl" style="overflow-wrap: break-word; hyphens: auto">{{ $link['label'] }}</span>
                                 @if (filled($link['description'] ?? null))
-                                    <span class="mt-1 block text-sm text-white/80">{{ $link['description'] }}</span>
+                                    <span class="mt-2 line-clamp-4 text-sm leading-relaxed text-muted">{{ $link['description'] }}</span>
                                 @endif
-                                <span class="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-white/90 transition group-hover:gap-3">
+                                <span class="mt-auto inline-flex items-center gap-1.5 pt-5 text-sm font-bold text-brand transition group-hover:gap-3">
                                     {{ $ctaLabel }} <i class="fa-solid fa-arrow-right text-xs" aria-hidden="true"></i>
                                 </span>
                             </span>

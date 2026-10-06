@@ -605,8 +605,12 @@ class Page extends Model
         $path = fn (string $url) => '/'.trim(strtolower((string) parse_url(trim($url), PHP_URL_PATH)), '/');
         $linked = $manual->map(fn ($l) => $path($l['url']))->all();
 
+        $palette = ['blue', 'green', 'purple', 'orange', 'red', 'dark'];
+        $offset = $manual->count();
+
         $auto = $this->publishedChildren->reject(fn (Page $c) => in_array($path($c->publicUrl()), $linked, true))
-            ->map(function (Page $c) {
+            ->values()
+            ->map(function (Page $c, int $i) use ($palette, $offset) {
                 $text = trim((string) $c->meta_description);
                 if ($text === '') {
                     $text = Str::limit(trim(preg_replace('/\s+/', ' ', strip_tags(str_replace('<', ' <', (string) $c->content)))), 120);
@@ -617,7 +621,7 @@ class Page extends Model
                     'url' => $c->publicUrl(),
                     'description' => $text,
                     'icon' => 'fa-solid '.(self::TYPE_ICONS[$c->type] ?? 'fa-file-lines'),
-                    'color' => null,
+                    'color' => $palette[($offset + $i) % count($palette)],
                     'cta_label' => null,
                     'auto' => true,
                 ];
