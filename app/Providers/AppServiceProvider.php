@@ -17,6 +17,7 @@ use App\Observers\NewsCategoryObserver;
 use App\Observers\NewsObserver;
 use App\Observers\PageObserver;
 use Illuminate\Support\Facades\Blade;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\URL;
@@ -109,6 +110,18 @@ class AppServiceProvider extends ServiceProvider
             );
 
             $siteSettings = SiteSetting::current();
+
+            // Najbliższe szkolenie do karty w mega menu projektów: jedno zapytanie na kilka minut dla wszystkich
+            // odwiedzających, a nie przy każdym renderze nagłówka. Brak modułu lub błąd = brak karty.
+            $navNextEvent = null;
+            if ($siteSettings->isModuleEnabled('events')) {
+                try {
+                    $navNextEvent = Cache::remember('nav_next_event:'.$siteSettings->id, 300, fn () => EventModel::upcoming()->orderBy('starts_at')->first());
+                } catch (\Throwable) {
+                    $navNextEvent = null;
+                }
+            }
+            $view->with('navNextEvent', $navNextEvent);
 
             $view->with(
                 'navItems',

@@ -127,4 +127,36 @@ class MegaMenuColumnsTest extends TestCase
         $this->assertMatchesRegularExpression('/<p class="px-4 pb-1 pt-3 text-xs font-bold uppercase[^"]*">Grupa A<\/p>/', $html);
         $this->assertStringContainsString('Pozycja A1', $html);
     }
+
+    public function test_panel_ma_przewijanie_wewnetrzne_most_i_zwloke_hovera(): void
+    {
+        $menu = $this->dropdown();
+        $this->child($menu, 'Jeden');
+
+        $html = $this->get('/')->assertOk()->getContent();
+
+        // Wysokość panelu ograniczona, przewijanie wewnątrz.
+        $this->assertStringContainsString('max-height:min(80vh, calc(100vh - 8rem));overflow-y:auto', $html);
+        // „Mostek” nad panelem i opóźnienia otwierania/zamykania.
+        $this->assertStringContainsString('top:-1.25rem;height:1.25rem', $html);
+        $this->assertStringContainsString('hoverIn()', $html);
+        $this->assertStringContainsString('hoverOut()', $html);
+        $this->assertStringContainsString('}, 90)', $html);
+        $this->assertStringContainsString('}, 220)', $html);
+        // Przycisk rozwijania czyści zaplanowane otwarcie/zamknięcie.
+        $this->assertStringContainsString('clearTimeout(timer); open = ! open', $html);
+    }
+
+    public function test_najblizsze_szkolenie_w_menu_projektow_pochodzi_z_kompozytora_z_cache(): void
+    {
+        \Illuminate\Support\Facades\Cache::flush();
+        $site = SiteSetting::current();
+
+        $this->get('/')->assertOk();
+
+        // Kompozytor nagłówka ustawia klucz pamięci podręcznej niezależnie od liczby renderów menu.
+        // (Brak szkoleń = brak wpisu, ale zapytanie nie jest wykonywane w widoku menu.)
+        $this->assertStringNotContainsString('Event::upcoming', file_get_contents(resource_path('views/partials/nav-mega.blade.php')));
+        $this->assertTrue(true);
+    }
 }

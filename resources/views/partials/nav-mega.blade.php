@@ -53,13 +53,9 @@
     if ($isProjects) {
         $featuredProject = $allProjects->first(fn ($p) => ! $p->is_completed && $p->image_url)
             ?? $allProjects->first(fn ($p) => $p->image_url);
-        if ($siteSettings->isModuleEnabled('events') && class_exists(\App\Models\Event::class)) {
-            try {
-                $nextEvent = \App\Models\Event::upcoming()->orderBy('starts_at')->first();
-            } catch (\Throwable) {
-                $nextEvent = null;
-            }
-        }
+        // Najbliższe szkolenie dostarcza kompozytor widoku nagłówka (z pamięcią podręczną na kilka minut),
+        // żeby zapytanie nie wykonywało się przy każdym renderze menu.
+        $nextEvent = $navNextEvent ?? null;
     }
 
     $isCurrent = $item->isCurrent() || collect($entries)->contains(fn ($e) => $e[4])
@@ -98,8 +94,17 @@
     };
 @endphp
 
-<li class="static" x-data="{ open: false }" x-id="['mega']"
-    @mouseenter="if (!{{ $mobile ? 'true' : 'false' }}) open = true" @mouseleave="if (!{{ $mobile ? 'true' : 'false' }}) open = false"
+{{-- Otwieranie po najechaniu z krótką zwłoką (zamiar użytkownika, nie przypadkowe przejechanie myszą po pasku)
+     i zamykanie z opóźnieniem, które wybacza drobne odstępy między przyciskiem a panelem (WCAG 1.4.13:
+     panel można zasłonić Escape, najechać na niego i jest trwały). W x-data nie wolno używać komentarzy //. --}}
+<li class="static" x-id="['mega']"
+    x-data="{
+        open: false,
+        timer: null,
+        hoverIn() { clearTimeout(this.timer); if (this.open) return; this.timer = setTimeout(() => { this.open = true }, 90); },
+        hoverOut() { clearTimeout(this.timer); this.timer = setTimeout(() => { this.open = false }, 220); },
+    }"
+    @mouseenter="hoverIn()" @mouseleave="hoverOut()"
     @focusout="if (! $el.contains($event.relatedTarget)) open = false"
     @keydown.escape="open = false; $refs.megaTrigger.focus()"
     @click.outside="open = false">
@@ -113,13 +118,13 @@
                 @if ($navIcons && $item->icon)<i class="bi {{ $item->icon }} nav-item-icon" aria-hidden="true"></i>@endif
                 <span>{{ $item->label }}</span>
             </a>
-            <button type="button" @click="open = ! open"
+            <button type="button" @click="clearTimeout(timer); open = ! open"
                     :aria-expanded="open.toString()" :aria-controls="$id('mega')" aria-label="Podmenu: {{ $item->label }}"
                     class="flex min-h-8 min-w-8 items-center justify-center rounded px-1 pt-2 {{ $iconCls }} focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-current">
                 <i class="fa-solid fa-chevron-down text-[10px] transition-transform" :class="open ? 'rotate-180' : ''" aria-hidden="true"></i>
             </button>
         @else
-            <button type="button" x-ref="megaTrigger" @click="open = ! open"
+            <button type="button" x-ref="megaTrigger" @click="clearTimeout(timer); open = ! open"
                     :aria-expanded="open.toString()" :aria-controls="$id('mega')"
                     class="flex items-center gap-2 pt-2 uppercase transition-colors {{ $hoverTxtCls }} focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-current">
                 @if ($navIcons && $item->icon)<i class="bi {{ $item->icon }} nav-item-icon" aria-hidden="true"></i>@endif
@@ -131,6 +136,10 @@
 
     <div :id="$id('mega')" x-show="open" x-cloak x-transition.opacity.duration.150ms
          class="nav-mega-panel absolute inset-x-0 top-full z-50 border-t border-gray-200 bg-white normal-case tracking-normal shadow-xl">
+        {{-- „Mostek”: niewidoczny pas nad panelem, więc kursor schodzący z przycisku nie opuszcza elementu menu. --}}
+        <span aria-hidden="true" style="position:absolute;left:0;right:0;top:-1.25rem;height:1.25rem"></span>
+        {{-- Na niskich ekranach panel przewija się wewnątrz, zamiast wychodzić poza okno przeglądarki. --}}
+        <div style="max-height:min(80vh, calc(100vh - 8rem));overflow-y:auto;overscroll-behavior:contain">
         <div class="mx-auto grid max-w-6xl gap-8 px-4 py-6 lg:grid-cols-[1fr_16rem]">
 
             @if ($isProjects)
@@ -351,6 +360,7 @@
                     </div>
                 </div>
             </div>
+        </div>
         </div>
     </div>
 </li>
