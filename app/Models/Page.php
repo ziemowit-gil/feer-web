@@ -234,7 +234,7 @@ class Page extends Model
         'is_disabled', 'disabled_message', 'wip_mode', 'wip_message',
         'type', 'event_mode', 'event_when', 'event_location', 'event_how_to_join', 'event_registration_url',
         'schedule_items', 'schedule_change_notice', 'schedule_pending',
-        'about_motto', 'about_motto_author', 'about_intro', 'about_stats', 'about_timeline', 'about_values', 'about_team', 'about_section_order', 'about_partner_ids', 'about_documents_intro', 'about_documents_bip_url', 'about_press_intro', 'about_press', 'about_faq_visible',
+        'about_motto', 'about_motto_author', 'about_intro', 'about_stats', 'about_timeline', 'about_values', 'about_team', 'about_section_order', 'about_sections_hidden', 'about_partner_ids', 'about_documents_intro', 'about_documents_bip_url', 'about_press_intro', 'about_press', 'about_faq_visible',
         'faq_intro', 'faq_items', 'bip_move_url', 'bip_move_note', 'show_gallery',
         'training_manager_name', 'training_manager_title', 'training_ris_number', 'training_bur_number', 'training_extra_info', 'training_bur_note',
         'content_image', 'content_image_alt', 'content_image_width',
@@ -269,6 +269,7 @@ class Page extends Model
         'hub_links' => 'array',
         'tiles'     => 'array',
         'about_section_order' => 'array',
+        'about_sections_hidden' => 'array',
         'about_partner_ids' => 'array',
         'about_press' => 'array',
         'faq_items' => 'array',
@@ -483,12 +484,19 @@ class Page extends Model
      * the default order and silently dropping any saved key that no longer
      * exists (so a code change can never break the page).
      */
-    public function orderedAboutSections(): array
+    public function orderedAboutSections(bool $onlyEnabled = false): array
     {
         $defined = array_keys(self::ABOUT_SECTIONS);
         $saved = array_values(array_intersect($this->about_section_order ?? [], $defined));
+        $ordered = array_values(array_unique(array_merge($saved, $defined)));
 
-        return array_values(array_unique(array_merge($saved, $defined)));
+        return $onlyEnabled ? array_values(array_diff($ordered, $this->about_sections_hidden ?? [])) : $ordered;
+    }
+
+    /** Czy sekcja strony „O organizacji" jest włączona (nie została wyłączona w panelu). */
+    public function isAboutSectionEnabled(string $key): bool
+    {
+        return ! in_array($key, $this->about_sections_hidden ?? [], true);
     }
 
     /** Selected partners for the "about" page's "Nasi partnerzy" section, kept in the chosen order. */

@@ -742,6 +742,8 @@ class PageController extends Controller
             'team.*.is_published' => ['sometimes', 'boolean'],
             'about_section_order' => ['sometimes', 'array'],
             'about_section_order.*' => ['integer'],
+            'about_sections_enabled' => ['sometimes', 'array'],
+            'about_sections_enabled.*' => ['string'],
             'about_partner_ids' => ['nullable', 'array'],
             'about_partner_ids.*' => ['integer', 'exists:partners,id'],
             'about_faq_visible' => ['sometimes', 'boolean'],
@@ -952,6 +954,9 @@ class PageController extends Controller
                 ->values()
                 ->all();
 
+            $enabled = (array) $request->input('about_sections_enabled', []);
+            $data['about_sections_hidden'] = array_values(array_diff(array_keys(Page::ABOUT_SECTIONS), $enabled)) ?: null;
+
             $data['about_partner_ids'] = array_values(array_map('intval', (array) $request->input('about_partner_ids', []))) ?: null;
             $data['about_faq_visible'] = $request->boolean('about_faq_visible');
 
@@ -975,6 +980,7 @@ class PageController extends Controller
             $data['about_motto_author'] = null;
             $data['about_intro'] = null;
             $data['about_section_order'] = null;
+            $data['about_sections_hidden'] = null;
             $data['about_stats'] = null;
             $data['about_timeline'] = null;
             $data['about_values'] = null;

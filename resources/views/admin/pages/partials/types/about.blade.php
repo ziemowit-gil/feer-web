@@ -10,7 +10,10 @@
         <ul id="about-section-order-list" class="space-y-2 sm:max-w-md">
             @foreach ($page->orderedAboutSections() as $key)
                 <li data-section="{{ $key }}" class="flex items-center justify-between rounded border border-gray-200 bg-gray-50 px-3 py-2 text-sm">
-                    <span class="font-medium">{{ \App\Models\Page::ABOUT_SECTIONS[$key] ?? $key }}</span>
+                    <label class="flex items-center gap-2 font-medium">
+                        <input type="checkbox" name="about_sections_enabled[]" value="{{ $key }}" @checked(old('about_sections_enabled') !== null ? in_array($key, (array) old('about_sections_enabled'), true) : $page->isAboutSectionEnabled($key)) class="rounded border-gray-300 text-brand focus:ring-brand">
+                        <span>{{ \App\Models\Page::ABOUT_SECTIONS[$key] ?? $key }}</span>
+                    </label>
                     <span class="flex items-center gap-1">
                         <button type="button" data-move="up" class="flex h-7 w-7 items-center justify-center rounded text-muted hover:bg-gray-200 hover:text-brand" aria-label="Przenieś wyżej">
                             <i class="fa-solid fa-arrow-up" aria-hidden="true"></i>

@@ -149,7 +149,7 @@
         $aboutPressItems = collect($page->about_press ?? [])->filter(fn ($p) => ! empty($p['url']) || ! empty($p['title']));
         $aboutSectionLabels = ['intro' => 'O nas', 'founder' => 'Od Fundatora', 'stats' => 'W liczbach', 'values' => 'Wartości', 'timeline' => 'Historia', 'team' => 'Zespół', 'gallery' => 'Galeria', 'partners' => 'Partnerzy', 'press' => 'Media', 'documents' => 'Dokumenty', 'faq' => 'FAQ'];
         $activeAboutSections = [];
-        foreach ($page->orderedAboutSections() as $_s) {
+        foreach ($page->orderedAboutSections(true) as $_s) {
             $has = match ($_s) {
                 'intro'     => filled($page->about_intro) || $page->content || $introPhotos->isNotEmpty(),
                 'founder'   => $aboutFounder !== null,
@@ -229,7 +229,7 @@
         </script>
         @endif
 
-        @foreach ($page->orderedAboutSections() as $aboutSection)
+        @foreach ($page->orderedAboutSections(true) as $aboutSection)
         @switch($aboutSection)
 
         @case('intro')
