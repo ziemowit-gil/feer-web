@@ -26,7 +26,11 @@
     ])
 
     {{-- Przełącznik: kosz (strony usunięte) --}}
-    <div class="mb-3">
+    <div class="mb-3 flex flex-wrap items-center gap-x-5 gap-y-2">
+        <a href="{{ route('admin.podstrony.index', ['widok' => 'drzewo']) }}"
+            class="inline-flex items-center gap-1.5 text-sm font-bold text-brand hover:text-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+            <i class="fa-solid fa-sitemap text-xs" aria-hidden="true"></i> Widok drzewa
+        </a>
         @if ($status === 'trashed')
             <a href="{{ route('admin.podstrony.index') }}"
                 class="inline-flex items-center gap-1.5 text-sm font-bold text-muted hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">

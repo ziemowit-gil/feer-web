@@ -31,6 +31,15 @@ class PageController extends Controller
         $status = $request->query('status', '');
         $sort = $request->query('sort', 'default');
 
+        // Domyślnie dwupanelowy widok w stylu TYPO3 (drzewo + szczegóły). Lista
+        // tabelaryczna — na żądanie (?widok=lista) oraz zawsze, gdy użyte są
+        // filtry serwerowe: wyszukiwanie, status, sortowanie lub kosz.
+        $filtered = $search !== '' || $status !== '' || $sort !== 'default';
+        $view = $request->query('widok');
+        if ($view === 'drzewo' || ($view === null && ! $filtered)) {
+            return $this->tree($request);
+        }
+
         $pages = Page::forCurrentSite()->with('parent')
             ->when($status === 'trashed', fn ($q) => $q->onlyTrashed())
             ->when($search !== '', fn ($q) => $q->where(fn ($q) => $q->where('title', 'like', "%{$search}%")->orWhere('slug', 'like', "%{$search}%")))
@@ -48,6 +57,114 @@ class PageController extends Controller
             'status' => $status,
             'sort'   => $sort,
         ]);
+    }
+
+    /**
+     * Dwupanelowy widok stron (jak moduł „Strona” w TYPO3): po lewej drzewo całego
+     * serwisu, po prawej szczegóły wybranej strony (`?wybrana=ID`), jej podstrony,
+     * szybkie akcje i przeniesienie w inne miejsce drzewa. Osoby (about_person)
+     * mają własny moduł i nie są częścią drzewa.
+     */
+    private function tree(Request $request)
+    {
+        $all = Page::forCurrentSite()
+            ->where('type', '!=', 'about_person')
+            ->orderBy('order')->orderBy('title')
+            ->get();
+
+        $byParent = $all->groupBy(fn (Page $p) => $p->parent_id && $all->contains('id', $p->parent_id) ? $p->parent_id : 0);
+
+        $selected = $request->filled('wybrana') ? $all->firstWhere('id', (int) $request->query('wybrana')) : null;
+
+        // Identyfikatory przodków wybranej strony — te gałęzie są rozwinięte.
+        $openIds = [];
+        $rootline = collect();
+        for ($node = $selected; $node && $node->parent_id; ) {
+            $node = $all->firstWhere('id', $node->parent_id);
+            if (! $node || in_array($node->id, $openIds, true)) {
+                break;
+            }
+            $openIds[] = $node->id;
+            $rootline->prepend($node);
+        }
+
+        $moveOptions = [];
+        if ($selected) {
+            $descendantIds = $this->descendantIds($byParent, $selected->id);
+            $walk = function ($parentId, $depth) use (&$walk, &$moveOptions, $byParent, $selected, $descendantIds) {
+                foreach ($byParent->get($parentId, collect()) as $node) {
+                    $moveOptions[] = [
+                        'id' => $node->id,
+                        'label' => str_repeat('— ', $depth).$node->title,
+                        'disabled' => $node->id === $selected->id || in_array($node->id, $descendantIds, true),
+                    ];
+                    $walk($node->id, $depth + 1);
+                }
+            };
+            $walk(0, 0);
+        }
+
+        return view('admin.pages.tree', [
+            'byParent' => $byParent,
+            'total' => $all->count(),
+            'selected' => $selected,
+            'openIds' => $openIds,
+            'rootline' => $rootline,
+            'children' => $selected ? $byParent->get($selected->id, collect()) : $byParent->get(0, collect()),
+            'moveOptions' => $moveOptions,
+            'personsCount' => $selected && $selected->isAbout()
+                ? Page::where('type', 'about_person')->where('parent_id', $selected->id)->count()
+                : 0,
+        ]);
+    }
+
+    /** @return int[] identyfikatory wszystkich potomków strony (z zabezpieczeniem przed cyklem). */
+    private function descendantIds($byParent, int $id, array $seen = []): array
+    {
+        $ids = [];
+        foreach ($byParent->get($id, collect()) as $child) {
+            if (in_array($child->id, $seen, true)) {
+                continue;
+            }
+            $ids[] = $child->id;
+            $ids = array_merge($ids, $this->descendantIds($byParent, $child->id, array_merge($seen, [$id, $child->id])));
+        }
+
+        return $ids;
+    }
+
+    /** Przekierowanie po akcji z widoku drzewa — zachowuje wybraną stronę; poza drzewem zwykły indeks. */
+    private function indexRedirect(?int $fallbackSelected = null): \Illuminate\Http\RedirectResponse
+    {
+        $selected = request()->input('wybrana', $fallbackSelected);
+
+        return redirect()->route('admin.podstrony.index', filled($selected) ? ['wybrana' => $selected] : []);
+    }
+
+    /** Przenosi stronę w inne miejsce drzewa (zmiana strony nadrzędnej) bez zmiany adresu URL strony. */
+    public function move(Request $request, Page $page)
+    {
+        if ($response = $this->denyIfLocked($page)) {
+            return $response;
+        }
+
+        $data = $request->validate(['parent_id' => ['nullable', 'integer']]);
+        $parentId = $data['parent_id'] ?? null;
+
+        if ($parentId) {
+            $parent = Page::forCurrentSite()->where('type', '!=', 'about_person')->find($parentId);
+            if (! $parent) {
+                return $this->indexRedirect($page->id)->with('error', 'Wybrana strona nadrzędna nie istnieje.');
+            }
+            if ($parent->id === $page->id || $parent->ancestors()->contains('id', $page->id)) {
+                return $this->indexRedirect($page->id)->with('error', 'Nie można przenieść strony do niej samej ani do jej podstrony.');
+            }
+        }
+
+        $page->update(['parent_id' => $parentId]);
+
+        return redirect()->route('admin.podstrony.index', ['wybrana' => $page->id])
+            ->with('status', "Strona „{$page->title}” została przeniesiona.");
     }
 
     /** Eksport listy stron do CSV. */
@@ -304,11 +421,16 @@ class PageController extends Controller
 
         $title = $page->title;
         $isPerson = $page->isAboutPerson();
+        $parentId = $page->parent_id;
         $page->delete();
 
-        $redirect = $isPerson ? 'admin.osoby.index' : 'admin.podstrony.index';
+        if ($isPerson) {
+            return redirect()->route('admin.osoby.index')->with('status', 'Usunięto „' . $title . '”.');
+        }
 
-        return redirect()->route($redirect)->with('status', 'Usunięto „' . $title . '”.');
+        // Z widoku drzewa wracamy do strony nadrzędnej usuniętej strony.
+        return redirect()->route('admin.podstrony.index', (request()->filled('wybrana') && $parentId ? ['wybrana' => $parentId] : []))
+            ->with('status', 'Usunięto „' . $title . '”.');
     }
 
     /** Przełącza widoczność podstrony (publikuj / ukryj). */
@@ -324,7 +446,7 @@ class PageController extends Controller
             ? "Strona „{$page->title}” została opublikowana."
             : "Strona „{$page->title}” została ukryta.";
 
-        return redirect()->route('admin.podstrony.index')->with('status', $message);
+        return $this->indexRedirect()->with('status', $message);
     }
 
     /** Przełącza wyróżnienie podstrony. */
@@ -340,7 +462,7 @@ class PageController extends Controller
             ? "Strona „{$page->title}” została wyróżniona."
             : "Usunięto wyróżnienie strony „{$page->title}”.";
 
-        return redirect()->route('admin.podstrony.index')->with('status', $message);
+        return $this->indexRedirect()->with('status', $message);
     }
 
     /** Przełącza tryb wyłączenia podstrony (wyłącz / włącz ponownie). */
@@ -356,7 +478,7 @@ class PageController extends Controller
             ? "Strona „{$page->title}” została wyłączona."
             : "Strona „{$page->title}” została ponownie włączona.";
 
-        return redirect()->route('admin.podstrony.index')->with('status', $message);
+        return $this->indexRedirect()->with('status', $message);
     }
 
     /** Zmienia kolejność wyświetlania podstrony w menu/liście. */
@@ -372,7 +494,7 @@ class PageController extends Controller
 
         $page->update(['order' => $data['order']]);
 
-        return redirect()->route('admin.podstrony.index')->with('status', "Zmieniono kolejność strony „{$page->title}”.");
+        return $this->indexRedirect()->with('status', "Zmieniono kolejność strony „{$page->title}”.");
     }
 
     /** Wykonuje zbiorczą operację (publikuj / cofnij / kosz) na zaznaczonych podstronach. */
