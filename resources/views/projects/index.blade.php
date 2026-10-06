@@ -74,7 +74,7 @@
                             </a>
                         </div>
 
-                        <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+                        <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
                             @foreach ($category->publishedProjects as $project)
                                 @include('projects._tile', ['project' => $project, 'categoryName' => $category->name])
                             @endforeach

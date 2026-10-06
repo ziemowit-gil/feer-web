@@ -5,10 +5,10 @@
                 <p class="mb-2 text-sm font-bold">Wygląd strony kontaktowej</p>
                 <div class="grid gap-3 sm:grid-cols-2">
                     @foreach (\App\Models\SiteSetting::CONTACT_LAYOUTS as $clValue => $clLabel)
-                        @continue($settings->isOptionBlocked('contact_layouts', $clValue) && old('contact_layout', $settings->contactLayoutValue()) !== $clValue)
+                        @continue($settings->isOptionBlocked('contact_layouts', $clValue) && old('contact_layout', $layoutDefault ?? $settings->contactLayoutValue()) !== $clValue)
                         <label class="flex cursor-pointer items-start gap-3 rounded-lg border p-3 transition has-[:checked]:border-brand has-[:checked]:bg-brand-light">
                             <input type="radio" name="contact_layout" value="{{ $clValue }}"
-                                {{ old('contact_layout', $settings->contactLayoutValue()) === $clValue ? 'checked' : '' }}
+                                {{ old('contact_layout', $layoutDefault ?? $settings->contactLayoutValue()) === $clValue ? 'checked' : '' }}
                                 class="mt-0.5 border-gray-300 text-brand focus:ring-brand">
                             <span class="text-sm leading-snug">{{ $clLabel }}</span>
                         </label>

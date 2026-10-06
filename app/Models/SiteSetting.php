@@ -634,7 +634,7 @@ class SiteSetting extends Model implements HasMedia
     {
         return array_key_exists((string) $this->contact_layout, self::CONTACT_LAYOUTS)
             ? $this->contact_layout
-            : 'classic';
+            : 'tabs';
     }
 
     /**

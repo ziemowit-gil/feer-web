@@ -26,7 +26,7 @@
 
     <section class="mx-auto max-w-6xl px-4 py-12">
         @if ($projects->isNotEmpty())
-            <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+            <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
                 @foreach ($projects as $project)
                     @include('projects._tile', ['project' => $project])
                 @endforeach

@@ -6,5 +6,5 @@
         <p class="mt-2 text-xs"><a href="{{ route('admin.wiadomosci-kontaktowe.index') }}" class="inline-flex items-center gap-2 font-bold text-brand underline-offset-4 hover:underline"><i class="fa-solid fa-inbox" aria-hidden="true"></i> Wiadomości z formularza</a></p>
     </div>
 
-    @include('admin.settings.partials.contact-fields', ['settings' => $siteSettings])
+    @include('admin.settings.partials.contact-fields', ['settings' => $siteSettings, 'layoutDefault' => $page->exists ? null : 'tabs'])
 </div>
