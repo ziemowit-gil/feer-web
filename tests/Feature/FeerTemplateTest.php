@@ -128,4 +128,24 @@ class FeerTemplateTest extends TestCase
 
         $this->get('/dolacz-hub-test')->assertOk()->assertSee('<section class="bg-brand text-white"', false);
     }
+
+    public function test_strona_o_organizacji_w_szablonie_feer_ma_jasny_naglowek(): void
+    {
+        \App\Models\Page::create(['title' => 'O fundacji', 'slug' => 'o-fundacji-test', 'type' => 'about', 'is_published' => true, 'about_motto' => 'Razem bez barier']);
+
+        $this->get('/o-fundacji-test')->assertOk()->assertSee('<header class="relative overflow-hidden bg-brand', false);
+
+        SiteSetting::current()->update(['site_template' => 'feer']);
+        \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();
+        \Illuminate\Support\Facades\Cache::flush();
+
+        $html = $this->get('/o-fundacji-test')->assertOk()->assertSee('Razem bez barier')->getContent();
+        $this->assertStringNotContainsString('<header class="relative overflow-hidden bg-brand', $html);
+        $this->assertStringContainsString('border-l-4 border-brand', $html);
+    }
+
+    public function test_strona_sprawozdan_ma_jasny_naglowek(): void
+    {
+        $this->get('/sprawozdania')->assertOk()->assertSee('Sprawozdania roczne')->assertSee('bg-gray-50', false);
+    }
 }

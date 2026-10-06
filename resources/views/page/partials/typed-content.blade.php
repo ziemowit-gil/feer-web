@@ -170,6 +170,22 @@
 
     <article>
         {{-- Hero: pełnokolorowe tło marki z dekoracją, jak w sekcji "wspolpraca" (bg-brand + rozmyte koła) --}}
+        @if (($siteSettings->site_template ?? 'default') === 'feer')
+            {{-- Szablon FEER: jasny, płaski nagłówek; motto jako cytat z paskiem (kontrast ink na szarym 16:1) --}}
+            <header class="border-b border-gray-100 bg-gray-50 px-4 py-12 md:py-16">
+                <div class="mx-auto max-w-6xl">
+                    <h1 class="text-3xl font-extrabold leading-tight tracking-tight text-ink md:text-5xl">{{ $page->title }}</h1>
+                    @if ($page->about_motto)
+                        <blockquote class="mt-6 max-w-3xl border-l-4 border-brand pl-5">
+                            <p class="text-lg leading-relaxed text-ink md:text-xl">„{{ $page->about_motto }}"</p>
+                            @if ($page->about_motto_author)
+                                <cite class="mt-2 block text-sm font-bold not-italic uppercase tracking-widest text-muted">— {{ $page->about_motto_author }}</cite>
+                            @endif
+                        </blockquote>
+                    @endif
+                </div>
+            </header>
+        @else
         <header class="relative overflow-hidden bg-brand px-4 py-16 text-center text-white md:py-24">
             <span class="pointer-events-none absolute -right-24 -top-24 h-96 w-96 rounded-full bg-white/5 blur-3xl" aria-hidden="true"></span>
             <span class="pointer-events-none absolute -bottom-16 -left-16 h-64 w-64 rounded-full bg-white/5 blur-2xl" aria-hidden="true"></span>
@@ -186,6 +202,7 @@
                 @endif
             </div>
         </header>
+        @endif
 
         @if (count($activeAboutSections) > 1)
         <nav aria-label="Sekcje na stronie" class="sticky top-0 z-20 border-b border-gray-200 bg-white/95 backdrop-blur-sm">
@@ -210,7 +227,7 @@
                 links.forEach(function (a) {
                     var on = a.dataset.aboutNav === key;
                     a.classList.toggle('bg-brand/10', on);
-                    a.classList.toggle('text-brand', on);
+                    a.classList.toggle('text-brand-dark', on);
                     a.classList.toggle('text-muted', !on);
                     a.classList.toggle('hover:bg-gray-100', !on);
                     a.classList.toggle('hover:text-ink', !on);
