@@ -46,7 +46,7 @@
                 e.preventDefault();
             },
          }"
-         x-init="try { if (localStorage.getItem('admin-sidebar') === null) $store.adminNav.collapsed = true; } catch (e) {}">
+         x-init="(() => { try { if (localStorage.getItem('admin-sidebar') === null) $store.adminNav.collapsed = true; } catch (e) {} })()">
 
     @push('content-tab-actions')
         {{-- Grupa 1: widok (co widzę) --}}

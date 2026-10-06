@@ -3206,7 +3206,7 @@
                     <div x-show="result" x-cloak class="space-y-3 rounded-lg border border-gray-200 bg-white p-4 text-sm">
                         <p>
                             <strong x-text="result?.detected ? 'Rozpoznano: ' + result.provider.label : 'Nie rozpoznano dostawcy'"></strong>
-                            <span class="text-xs text-muted" x-show="result?.via === 'mx'"> (po rekordach MX domeny <span x-text="result.domain"></span>)</span>
+                            <span class="text-xs text-muted" x-show="result?.via === 'mx'"> (po rekordach MX domeny <span x-text="result?.domain"></span>)</span>
                             <span class="text-xs text-muted" x-show="result?.via === 'domain'"> (po domenie)</span>
                         </p>
                         <p class="text-xs text-muted" x-text="result?.provider?.note"></p>
