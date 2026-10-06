@@ -11,11 +11,7 @@
 --}}
 @php
     $sectionChildren = $page->publishedChildren;
-    $typeIcons = [
-        'service' => 'fa-briefcase', 'guide' => 'fa-list-ol', 'glossary' => 'fa-book', 'case_study' => 'fa-chart-line',
-        'faq' => 'fa-circle-question', 'event' => 'fa-calendar', 'schedule' => 'fa-calendar-days', 'links_hub' => 'fa-table-cells-large',
-        'tiles_grid' => 'fa-table-cells', 'internal' => 'fa-lock', 'internal_hub' => 'fa-user-lock', 'bip_move' => 'fa-landmark',
-    ];
+    $typeIcons = \App\Models\Page::TYPE_ICONS;
     $excerptOf = function (\App\Models\Page $p): string {
         $text = trim((string) $p->meta_description);
         if ($text === '') {

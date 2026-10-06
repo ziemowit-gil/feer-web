@@ -12,7 +12,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 
 class Page extends Model
 {
@@ -111,6 +113,14 @@ class Page extends Model
         'guide'         => 'Poradnik krok po kroku (numerowane kroki, wymagania, podsumowanie)',
         'glossary'      => 'Słownik pojęć (hasła z definicjami i indeksem liter)',
         'case_study'    => 'Studium przypadku (wyzwanie, rozwiązanie, efekty, cytat)',
+    ];
+
+    /** Ikony Font Awesome typów stron (karty podstron, kafelki działu). */
+    public const TYPE_ICONS = [
+        'service' => 'fa-briefcase', 'guide' => 'fa-list-ol', 'glossary' => 'fa-book', 'case_study' => 'fa-chart-line',
+        'faq' => 'fa-circle-question', 'event' => 'fa-calendar', 'schedule' => 'fa-calendar-days', 'links_hub' => 'fa-table-cells-large',
+        'tiles_grid' => 'fa-table-cells', 'internal' => 'fa-lock', 'internal_hub' => 'fa-user-lock', 'bip_move' => 'fa-landmark',
+        'about' => 'fa-building', 'wspolpraca' => 'fa-handshake', 'brand_assets' => 'fa-palette', 'legacy' => 'fa-clock-rotate-left',
     ];
 
     /** Typy, których dane trzymamy we wspólnej kolumnie JSON `type_data`. */
@@ -576,6 +586,44 @@ class Page extends Model
     public function children(): HasMany
     {
         return $this->hasMany(Page::class, 'parent_id')->orderBy('order')->orderBy('title');
+    }
+
+    /**
+     * Kafelki strony typu „kafelki — metro”: ręcznie dodane odnośniki (hub_links)
+     * oraz — automatycznie — kafle opublikowanych podstron, których jeszcze
+     * nie ma na liście ręcznej (porównanie po ścieżce adresu). Nowa podstrona
+     * działu pojawia się więc sama, bez edycji kafelków.
+     *
+     * @return \Illuminate\Support\Collection<int, array<string, mixed>>
+     */
+    public function hubTiles(): Collection
+    {
+        $manual = collect($this->hub_links ?? [])
+            ->filter(fn ($l) => is_array($l) && filled($l['label'] ?? null) && filled($l['url'] ?? null))
+            ->values();
+
+        $path = fn (string $url) => '/'.trim(strtolower((string) parse_url(trim($url), PHP_URL_PATH)), '/');
+        $linked = $manual->map(fn ($l) => $path($l['url']))->all();
+
+        $auto = $this->publishedChildren->reject(fn (Page $c) => in_array($path($c->publicUrl()), $linked, true))
+            ->map(function (Page $c) {
+                $text = trim((string) $c->meta_description);
+                if ($text === '') {
+                    $text = Str::limit(trim(preg_replace('/\s+/', ' ', strip_tags(str_replace('<', ' <', (string) $c->content)))), 120);
+                }
+
+                return [
+                    'label' => $c->title,
+                    'url' => $c->publicUrl(),
+                    'description' => $text,
+                    'icon' => 'fa-solid '.(self::TYPE_ICONS[$c->type] ?? 'fa-file-lines'),
+                    'color' => null,
+                    'cta_label' => null,
+                    'auto' => true,
+                ];
+            });
+
+        return $manual->concat($auto)->values();
     }
 
     public function publishedChildren(): HasMany

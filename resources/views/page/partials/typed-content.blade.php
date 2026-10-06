@@ -752,7 +752,8 @@
     </section>
     @elseif ($page->isLinksHub())
     @php
-        $hubLinks = collect($page->hub_links ?? [])->filter(fn ($l) => filled($l['label'] ?? null) && filled($l['url'] ?? null))->values();
+        // Ręczne kafelki + automatyczne kafle opublikowanych podstron, których nie ma jeszcze na liście.
+        $hubLinks = $page->hubTiles();
         // Płaskie, jednolite kolory kafelków (bez gradientów) — nazwany klucz → #hex.
         $metroColorMap = [
             'blue'   => '#2563eb',

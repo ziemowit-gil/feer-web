@@ -79,4 +79,40 @@ class SideNavTest extends TestCase
         $this->assertSame('sidebar', $parent->sideNavStyle());
         $this->assertSame('sidebar', $child->sideNavStyle());
     }
+
+    private function hub(array $links = []): Page
+    {
+        return Page::create(['title' => 'Dział kafelków', 'slug' => 'dzial-kafelkow', 'type' => 'links_hub', 'is_published' => true, 'hub_links' => $links]);
+    }
+
+    public function test_kafelki_dzialu_dodaja_automatycznie_brakujace_podstrony(): void
+    {
+        $hub = $this->hub([
+            ['label' => 'Ręczny kafel', 'url' => '/pierwsza', 'description' => 'opis', 'icon' => 'fa-solid fa-star', 'color' => 'blue'],
+        ]);
+        Page::create(['title' => 'Pierwsza', 'slug' => 'pierwsza', 'type' => 'standard', 'is_published' => true, 'parent_id' => $hub->id]);
+        Page::create(['title' => 'Druga', 'slug' => 'druga', 'type' => 'standard', 'is_published' => true, 'parent_id' => $hub->id, 'meta_description' => 'Opis drugiej']);
+        Page::create(['title' => 'Szkic', 'slug' => 'szkic-kafla', 'type' => 'standard', 'is_published' => false, 'parent_id' => $hub->id]);
+
+        $tiles = $hub->fresh()->hubTiles();
+
+        $this->assertSame(['Ręczny kafel', 'Druga'], $tiles->pluck('label')->all(), 'Podstrona już obecna na liście ręcznej nie dubluje się, szkic nie trafia na kafle.');
+        $this->assertTrue($tiles[1]['auto']);
+        $this->assertSame('Opis drugiej', $tiles[1]['description']);
+
+        $this->get('/dzial-kafelkow')->assertOk()->assertSee('Ręczny kafel')->assertSee('Druga')->assertDontSee('Szkic');
+    }
+
+    public function test_kafelki_dzialu_bez_recznej_listy_powstaja_z_podstron(): void
+    {
+        $hub = $this->hub();
+        Page::create(['title' => 'Alfa', 'slug' => 'alfa', 'type' => 'faq', 'is_published' => true, 'parent_id' => $hub->id, 'content' => '<p>Treść <b>alfy</b></p>']);
+
+        $tiles = $hub->fresh()->hubTiles();
+
+        $this->assertCount(1, $tiles);
+        $this->assertSame('fa-solid fa-circle-question', $tiles[0]['icon']);
+        $this->assertSame('Treść alfy', $tiles[0]['description']);
+        $this->get('/dzial-kafelkow')->assertOk()->assertSee('Alfa')->assertSee('Treść alfy');
+    }
 }
