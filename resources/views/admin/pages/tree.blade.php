@@ -14,9 +14,18 @@
     {{-- Układ jak w module „Strona” TYPO3: drzewo | separator | szczegóły. Drzewo można ukryć i
          poszerzyć (separator: mysz lub strzałki), menu boczne panelu — zwinąć do ikon. Wybory
          zapamiętuje przeglądarka. Przy pierwszej wizycie menu boczne zwija się samo, by zrobić miejsce. --}}
+    {{-- Układ dwukolumnowy jest wyliczany w JS (matchMedia + style wbudowane), a nie klasami Tailwinda:
+         działa nawet wtedy, gdy po wdrożeniu nie przebudowano CSS, i nigdy nie zostawia przyklejonego
+         drzewa nad treścią. Uwaga: w atrybucie x-data nie wolno używać komentarzy //. --}}
     <div x-data="{
             open: (() => { try { return localStorage.getItem('pages-tree-open') !== '0'; } catch (e) { return true; } })(),
             width: (() => { try { return parseInt(localStorage.getItem('pages-tree-w'), 10) || 320; } catch (e) { return 320; } })(),
+            wide: window.matchMedia('(min-width: 768px)').matches,
+            init() {
+                const mq = window.matchMedia('(min-width: 768px)');
+                mq.addEventListener('change', e => { this.wide = e.matches; });
+            },
+            get twoCols() { return this.wide && this.open; },
             persist(k, v) { try { localStorage.setItem(k, v); } catch (e) {} },
             toggle() { this.open = ! this.open; this.persist('pages-tree-open', this.open ? '1' : '0'); },
             setWidth(w) { this.width = Math.min(560, Math.max(224, Math.round(w))); this.persist('pages-tree-w', this.width); },
@@ -68,12 +77,11 @@
         </div>
     </div>
 
-    <div class="grid items-start gap-4 md:gap-0"
-         :class="open ? 'md:grid-cols-[var(--tree-w)_0.75rem_minmax(0,1fr)]' : 'md:grid-cols-1'"
-         :style="open ? '--tree-w:' + width + 'px' : ''">
+    <div class="grid items-start gap-4"
+         :style="twoCols ? 'grid-template-columns:' + width + 'px 0.75rem minmax(0,1fr);column-gap:0' : ''">
 
         {{-- ═════════ Lewy panel: drzewo stron ═════════ --}}
-        <nav aria-label="Drzewo stron" id="page-tree" x-show="open" class="rounded-lg border border-gray-200 bg-white md:sticky md:top-4"
+        <nav aria-label="Drzewo stron" id="page-tree" x-show="open" class="min-w-0 rounded-lg border border-gray-200 bg-white" :style="twoCols ? 'position:sticky;top:1rem;align-self:start' : ''"
             x-data="{
                 q: '',
                 filter() {
@@ -120,7 +128,7 @@
                 (góra/dół — kolejność, w prawo — w głąb poprzedniej, w lewo — poziom wyżej).
             </p>
             <div id="tree-dnd-status" role="status" aria-live="polite" class="sr-only"></div>
-            <div class="max-h-[calc(100vh-16rem)] overflow-y-auto p-2" id="tree-scroll">
+            <div class="overflow-y-auto p-2" style="max-height:calc(100vh - 16rem)" id="tree-scroll">
                 @if ($byParent->get(0, collect())->isEmpty())
                     <p class="px-2 py-6 text-center text-sm text-muted">Brak stron. Dodaj pierwszą stronę przyciskiem powyżej.</p>
                 @else
@@ -133,11 +141,11 @@
         </nav>
 
         {{-- Separator: przeciąganie myszą lub strzałkami zmienia szerokość drzewa (WAI-ARIA window splitter). --}}
-        <div x-show="open" x-cloak role="separator" aria-orientation="vertical" tabindex="0"
+        <div x-show="twoCols" x-cloak role="separator" aria-orientation="vertical" tabindex="0"
              aria-label="Szerokość drzewa stron" aria-controls="page-tree"
              :aria-valuenow="width" aria-valuemin="224" aria-valuemax="560"
              @pointerdown.prevent="drag($event)" @keydown="resizeKey($event)"
-             class="group hidden h-full min-h-[8rem] cursor-col-resize items-center justify-center self-stretch md:flex focus-visible:outline-none">
+             class="group flex h-full cursor-col-resize items-center justify-center self-stretch focus-visible:outline-none" style="min-height:8rem">
             <span class="h-12 w-1 rounded bg-gray-300 transition group-hover:bg-brand group-focus-visible:bg-brand group-focus-visible:ring-2 group-focus-visible:ring-brand group-focus-visible:ring-offset-1" aria-hidden="true"></span>
         </div>
 
