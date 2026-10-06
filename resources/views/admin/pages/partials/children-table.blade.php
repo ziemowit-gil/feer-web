@@ -24,7 +24,7 @@
                         @if ($subCount)<span class="text-xs text-muted">{{ $subCount }} {{ trans_choice('podstrona|podstrony|podstron', $subCount) }}</span>@endif
                     </th>
                     <td class="px-4 py-2.5">
-                        @include('admin.pages.partials.status-chip', ['page' => $child])
+                        @include('admin.pages.partials.status-chip', ['page' => $child, 'inherited' => isset($inheritedDisabled[$child->id])])
                     </td>
                     <td class="px-4 py-2.5">
                         <form method="POST" action="{{ route('admin.podstrony.kolejnosc', $child) }}" class="flex items-center gap-1">

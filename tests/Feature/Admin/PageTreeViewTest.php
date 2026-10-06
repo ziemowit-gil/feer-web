@@ -216,4 +216,62 @@ class PageTreeViewTest extends TestCase
         $this->actingAs($this->admin())->get(route('admin.podstrony.index'))
             ->assertOk()->assertSee('Nie ma jeszcze żadnych stron')->assertDontSee('Wszystkie strony');
     }
+
+    public function test_wylaczenie_strony_nadrzednej_wylacza_podstrony_w_modelu_i_na_stronie(): void
+    {
+        $root = $this->page('Dział wyłączany');
+        $child = $this->page('Podstrona działu', ['parent_id' => $root->id]);
+        $grandchild = $this->page('Wnuk', ['parent_id' => $child->id]);
+        $other = $this->page('Inny dział');
+
+        $root->update(['is_disabled' => true, 'disabled_message' => 'Dział w remoncie.']);
+
+        $this->assertTrue($child->fresh()->isDisabled());
+        $this->assertTrue($child->fresh()->isDisabledByAncestor());
+        $this->assertTrue($grandchild->fresh()->isDisabled());
+        $this->assertFalse($other->fresh()->isDisabled());
+        $this->assertSame('Dział w remoncie.', $grandchild->fresh()->disabledMessage());
+
+        $this->get('/'.$child->slug)->assertOk()->assertSee('Dział w remoncie.');
+        $this->get('/'.$other->slug)->assertOk()->assertDontSee('Dział w remoncie.');
+
+        $root->update(['is_disabled' => false]);
+        $this->assertFalse($child->fresh()->isDisabled());
+    }
+
+    public function test_mapa_odziedziczonego_wylaczenia_wskazuje_najblizszego_przodka(): void
+    {
+        $a = $this->page('A', ['is_disabled' => true]);
+        $b = $this->page('B', ['parent_id' => $a->id]);
+        $c = $this->page('C', ['parent_id' => $b->id, 'is_disabled' => true]);
+        $d = $this->page('D', ['parent_id' => $c->id]);
+
+        $map = Page::inheritedDisabledMap();
+
+        $this->assertSame($a->id, $map[$b->id]);
+        $this->assertSame($a->id, $map[$c->id]);
+        $this->assertSame($c->id, $map[$d->id], 'Najbliższy wyłączony przodek.');
+        $this->assertArrayNotHasKey($a->id, $map);
+    }
+
+    public function test_panel_pokazuje_odziedziczone_wylaczenie_a_wyszukiwarka_je_pomija(): void
+    {
+        $root = $this->page('Zamknięty dział', ['is_disabled' => true]);
+        $child = $this->page('Unikalna podstrona zamknięta', ['parent_id' => $root->id]);
+
+        $this->actingAs($this->admin())->get(route('admin.podstrony.index', ['wybrana' => $child->id]))
+            ->assertOk()->assertSee('Wyłączona (nadrzędna)')->assertSee('wyłączono stronę nadrzędną');
+
+        $this->get('/szukaj?q=Unikalna')->assertOk()->assertDontSee('Unikalna podstrona zamknięta');
+    }
+
+    public function test_przelaczenie_z_panelu_informuje_o_podstronach(): void
+    {
+        $root = $this->page('Dział');
+        $this->page('P1', ['parent_id' => $root->id]);
+        $this->page('P2', ['parent_id' => $root->id]);
+
+        $this->actingAs($this->admin())->patch(route('admin.podstrony.wylacz', $root), ['wybrana' => $root->id])
+            ->assertSessionHas('status', 'Strona „Dział” została wyłączona wraz z podstronami (2).');
+    }
 }

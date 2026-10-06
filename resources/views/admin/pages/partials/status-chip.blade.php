@@ -4,9 +4,13 @@
 --}}
 @php
     $compact ??= false;
+    // Wyłączona przez stronę nadrzędną: $inherited przekazuje widok zbiorczy (mapa z jednego zapytania),
+    // pojedyncze strony sprawdzają przodków same.
+    $inherited ??= $page->isDisabledByAncestor();
     $isLive = $page->is_published && ($page->publish_at === null || $page->publish_at->isPast());
     [$chipLabel, $chipIcon, $chipClass] = match (true) {
         (bool) $page->is_disabled => ['Wyłączona', 'fa-ban', 'bg-red-100 text-red-700'],
+        $inherited => ['Wyłączona (nadrzędna)', 'fa-ban', 'bg-red-50 text-red-700 ring-1 ring-red-200'],
         $isLive => ['Opublikowana', 'fa-circle-check', 'bg-green-100 text-green-700'],
         $page->is_published => ['Zaplanowana', 'fa-clock', 'bg-blue-100 text-blue-700'],
         default => ['Szkic', 'fa-pen-ruler', 'bg-gray-100 text-gray-600'],

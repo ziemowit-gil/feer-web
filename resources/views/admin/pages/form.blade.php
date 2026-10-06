@@ -448,7 +448,7 @@
                                 class="mt-0.5 rounded border-gray-300 text-brand focus:ring-brand" data-disable-toggle>
                             <span>
                                 <span class="block text-sm font-bold">Wyłącz stronę</span>
-                                <span class="block text-xs text-muted">Odwiedzający zamiast treści zobaczą pełnoekranowy komunikat, że strona jest tymczasowo niedostępna.</span>
+                                <span class="block text-xs text-muted">Odwiedzający zamiast treści zobaczą pełnoekranowy komunikat, że strona jest tymczasowo niedostępna. Wyłączenie obejmuje także wszystkie podstrony tej strony.</span>
                             </span>
                         </label>
                         <div class="mt-3 sm:pl-6" data-disable-message>

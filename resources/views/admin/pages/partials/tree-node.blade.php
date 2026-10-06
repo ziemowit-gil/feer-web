@@ -38,11 +38,11 @@
                     class="flex min-h-9 min-w-0 flex-1 items-center gap-2 rounded px-2 py-1.5 text-sm transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand
                         {{ $isSel ? 'bg-brand text-white font-bold' : 'text-ink hover:bg-gray-100' }}">
                     <i class="fa-solid {{ $icon }} w-4 flex-none text-center text-xs {{ $isSel ? 'text-white' : 'text-gray-400' }}" aria-hidden="true"></i>
-                    <span class="min-w-0 flex-1 truncate {{ $node->is_published && ! $node->is_disabled ? '' : 'opacity-70' }}">{{ $node->title }}</span>
+                    <span class="min-w-0 flex-1 truncate {{ $node->is_published && ! $node->is_disabled && ! isset($inheritedDisabled[$node->id]) ? '' : 'opacity-70' }}">{{ $node->title }}</span>
                     @if ($node->is_system)<i class="fa-solid fa-lock text-[10px] opacity-60" aria-hidden="true"></i><span class="sr-only">(systemowa)</span>@endif
                     @if ($node->is_featured)<i class="fa-solid fa-star text-[10px] {{ $isSel ? 'text-white' : 'text-amber-500' }}" aria-hidden="true"></i><span class="sr-only">(wyróżniona)</span>@endif
                     @unless ($isSel)
-                        @include('admin.pages.partials.status-chip', ['page' => $node, 'compact' => true])
+                        @include('admin.pages.partials.status-chip', ['page' => $node, 'compact' => true, 'inherited' => isset($inheritedDisabled[$node->id])])
                     @else
                         <span class="sr-only">Wybrana strona. </span>
                     @endunless
@@ -54,7 +54,7 @@
 
             @if ($kids->isNotEmpty())
                 <div id="tree-branch-{{ $node->id }}" x-show="open" @if (! $isOpen) x-cloak @endif>
-                    @include('admin.pages.partials.tree-node', ['nodes' => $kids, 'depth' => $depth + 1, 'canDrag' => $canDrag])
+                    @include('admin.pages.partials.tree-node', ['nodes' => $kids, 'depth' => $depth + 1, 'canDrag' => $canDrag, 'inheritedDisabled' => $inheritedDisabled])
                 </div>
             @endif
         </li>

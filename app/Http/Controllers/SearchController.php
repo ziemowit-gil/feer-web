@@ -42,6 +42,8 @@ class SearchController extends Controller
 
             if ($typ === '' && $settings->isModuleEnabled('pages')) {
                 $groups['Strony'] = Page::forCurrentSite()->where('is_published', true)->where('is_disabled', false)
+                    // Podstrony wyłączonego działu są niedostępne, więc nie pokazujemy ich w wynikach.
+                    ->whereNotIn('id', array_keys(Page::inheritedDisabledMap()))
                     ->whereNotIn('type', ['internal', 'internal_hub'])
                     // type_data (oferta, poradnik, słownik, studium) i faq_items to JSON —
                     // LIKE po surowej kolumnie wystarcza, by hasła słownika czy kroki

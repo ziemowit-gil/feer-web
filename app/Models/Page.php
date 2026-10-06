@@ -511,9 +511,53 @@ class Page extends Model
     }
 
     /** The page is turned off and should show the "unavailable" message. */
+    /**
+     * Strona jest niedostępna, gdy wyłączono ją samą albo którąkolwiek stronę
+     * nadrzędną — wyłączenie działu wyłącza wszystkie jego podstrony.
+     */
     public function isDisabled(): bool
     {
-        return (bool) $this->is_disabled;
+        return (bool) $this->is_disabled || $this->disabledAncestor() !== null;
+    }
+
+    /** Najbliższa wyłączona strona nadrzędna (null, gdy żadna przodek nie jest wyłączony). */
+    public function disabledAncestor(): ?self
+    {
+        return $this->ancestors()->reverse()->first(fn (Page $a) => (bool) $a->is_disabled);
+    }
+
+    /** Wyłączona wyłącznie dlatego, że wyłączono stronę nadrzędną (sama nie ma flagi). */
+    public function isDisabledByAncestor(): bool
+    {
+        return ! $this->is_disabled && $this->disabledAncestor() !== null;
+    }
+
+    /**
+     * Mapa stron niedostępnych przez wyłączonego przodka: [id strony => id najbliższego
+     * wyłączonego przodka]. Jedno zapytanie na całe drzewo — dla widoków zbiorczych
+     * (drzewo w panelu, wyszukiwarka), gdzie isDisabled() na każdej stronie byłoby kosztowne.
+     *
+     * @param  \Illuminate\Support\Collection<int, Page>|null  $pages  gotowa kolekcja stron (id, parent_id, is_disabled)
+     * @return array<int, int>
+     */
+    public static function inheritedDisabledMap(?Collection $pages = null): array
+    {
+        $pages ??= static::query()->get(['id', 'parent_id', 'is_disabled']);
+        $byId = $pages->keyBy('id');
+        $map = [];
+
+        foreach ($byId as $id => $page) {
+            $seen = [$id];
+            for ($node = $page; $node->parent_id && ($parent = $byId->get($node->parent_id)) && ! in_array($parent->id, $seen, true); $node = $parent) {
+                $seen[] = $parent->id;
+                if ($parent->is_disabled) {
+                    $map[$id] = $parent->id;
+                    break;
+                }
+            }
+        }
+
+        return $map;
     }
 
     /** The page is in any "under construction" mode. */
@@ -545,7 +589,10 @@ class Page extends Model
 
     public function disabledMessage(): string
     {
-        return trim((string) $this->disabled_message) ?: self::DEFAULT_DISABLED_MESSAGE;
+        // Strona wyłączona przez przodka pokazuje komunikat tej strony nadrzędnej.
+        $source = $this->is_disabled ? $this : ($this->disabledAncestor() ?? $this);
+
+        return trim((string) $source->disabled_message) ?: self::DEFAULT_DISABLED_MESSAGE;
     }
 
     public function wipMessage(): string

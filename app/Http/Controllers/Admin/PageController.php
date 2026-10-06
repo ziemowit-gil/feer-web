@@ -111,6 +111,7 @@ class PageController extends Controller
             'byParent' => $byParent,
             'total' => $all->count(),
             'selected' => $selected,
+            'inheritedDisabled' => Page::inheritedDisabledMap($all),
             'openIds' => $openIds,
             'rootline' => $rootline,
             'children' => $selected ? $byParent->get($selected->id, collect()) : collect(),
@@ -538,9 +539,12 @@ class PageController extends Controller
 
         $page->update(['is_disabled' => ! $page->is_disabled]);
 
+        // Wyłączenie dotyczy też wszystkich podstron (dziedziczone) — mówimy o tym wprost.
+        $descendants = $page->is_disabled ? count($this->descendantIds(Page::query()->get(['id', 'parent_id'])->groupBy('parent_id'), $page->id)) : 0;
+
         $message = $page->is_disabled
-            ? "Strona „{$page->title}” została wyłączona."
-            : "Strona „{$page->title}” została ponownie włączona.";
+            ? "Strona „{$page->title}” została wyłączona".($descendants > 0 ? ' wraz z podstronami (' . $descendants . ').' : '.')
+            : "Strona „{$page->title}” została ponownie włączona (podstrony wyłączone osobno pozostają wyłączone).";
 
         return $this->indexRedirect()->with('status', $message);
     }
