@@ -11,8 +11,49 @@
         $btn = 'inline-flex min-h-9 items-center gap-1.5 rounded border border-gray-200 bg-white px-3 py-1.5 text-xs font-bold text-ink hover:border-brand hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand';
     @endphp
 
+    {{-- Układ jak w module „Strona” TYPO3: drzewo | separator | szczegóły. Drzewo można ukryć i
+         poszerzyć (separator: mysz lub strzałki), menu boczne panelu — zwinąć do ikon. Wybory
+         zapamiętuje przeglądarka. Przy pierwszej wizycie menu boczne zwija się samo, by zrobić miejsce. --}}
+    <div x-data="{
+            open: (() => { try { return localStorage.getItem('pages-tree-open') !== '0'; } catch (e) { return true; } })(),
+            width: (() => { try { return parseInt(localStorage.getItem('pages-tree-w'), 10) || 320; } catch (e) { return 320; } })(),
+            persist(k, v) { try { localStorage.setItem(k, v); } catch (e) {} },
+            toggle() { this.open = ! this.open; this.persist('pages-tree-open', this.open ? '1' : '0'); },
+            setWidth(w) { this.width = Math.min(560, Math.max(224, Math.round(w))); this.persist('pages-tree-w', this.width); },
+            drag(e) {
+                const startX = e.clientX, start = this.width;
+                const move = ev => this.setWidth(start + ev.clientX - startX);
+                const up = () => { window.removeEventListener('pointermove', move); window.removeEventListener('pointerup', up); document.body.classList.remove('select-none'); };
+                document.body.classList.add('select-none');
+                window.addEventListener('pointermove', move);
+                window.addEventListener('pointerup', up);
+            },
+            resizeKey(e) {
+                const step = e.shiftKey ? 48 : 16;
+                if (e.key === 'ArrowLeft') this.setWidth(this.width - step);
+                else if (e.key === 'ArrowRight') this.setWidth(this.width + step);
+                else if (e.key === 'Home') this.setWidth(224);
+                else if (e.key === 'End') this.setWidth(560);
+                else return;
+                e.preventDefault();
+            },
+         }"
+         x-init="try { if (localStorage.getItem('admin-sidebar') === null) $store.adminNav.collapsed = true; } catch (e) {}">
+
     <div class="mb-4 flex flex-wrap items-center justify-between gap-2">
-        <p class="text-sm text-muted">Praca na drzewie stron. Filtry, wyszukiwanie i operacje zbiorcze są w zakładce <a href="{{ route('admin.podstrony.index', ['widok' => 'lista']) }}" class="font-bold text-brand hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">Lista stron</a>.</p>
+        <div class="flex flex-wrap items-center gap-2">
+            <button type="button" @click="toggle()" :aria-expanded="open.toString()" aria-controls="page-tree" aria-expanded="true"
+                class="{{ $btn }}">
+                <i class="fa-solid" :class="open ? 'fa-table-columns' : 'fa-sitemap'" aria-hidden="true"></i>
+                <span x-text="open ? 'Ukryj drzewo' : 'Pokaż drzewo'">Ukryj drzewo</span>
+            </button>
+            <button type="button" @click="$store.adminNav.toggleCollapsed()" :aria-pressed="$store.adminNav.collapsed.toString()" aria-pressed="false"
+                class="{{ $btn }}" title="Zwiń lub rozwiń menu boczne panelu">
+                <i class="fa-solid fa-bars" aria-hidden="true"></i>
+                <span x-text="$store.adminNav.collapsed ? 'Rozwiń menu' : 'Zwiń menu'">Zwiń menu</span>
+            </button>
+            <p class="text-sm text-muted">Filtry i operacje zbiorcze: zakładka <a href="{{ route('admin.podstrony.index', ['widok' => 'lista']) }}" class="font-bold text-brand hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">Lista stron</a>.</p>
+        </div>
         <div class="flex items-center gap-2">
             <a href="{{ route('admin.podstrony.index', ['widok' => 'lista', 'status' => 'trashed']) }}" class="{{ $btn }} font-normal text-muted">
                 <i class="fa-solid fa-trash-can text-xs" aria-hidden="true"></i> Kosz
@@ -27,10 +68,12 @@
         </div>
     </div>
 
-    <div class="grid items-start gap-4 lg:grid-cols-[minmax(18rem,22rem)_minmax(0,1fr)]">
+    <div class="grid items-start gap-4 md:gap-0"
+         :class="open ? 'md:grid-cols-[var(--tree-w)_0.75rem_minmax(0,1fr)]' : 'md:grid-cols-1'"
+         :style="open ? '--tree-w:' + width + 'px' : ''">
 
         {{-- ═════════ Lewy panel: drzewo stron ═════════ --}}
-        <nav aria-label="Drzewo stron" class="rounded-lg border border-gray-200 bg-white lg:sticky lg:top-4"
+        <nav aria-label="Drzewo stron" id="page-tree" x-show="open" class="rounded-lg border border-gray-200 bg-white md:sticky md:top-4"
             x-data="{
                 q: '',
                 filter() {
@@ -89,8 +132,17 @@
             </div>
         </nav>
 
+        {{-- Separator: przeciąganie myszą lub strzałkami zmienia szerokość drzewa (WAI-ARIA window splitter). --}}
+        <div x-show="open" x-cloak role="separator" aria-orientation="vertical" tabindex="0"
+             aria-label="Szerokość drzewa stron" aria-controls="page-tree"
+             :aria-valuenow="width" aria-valuemin="224" aria-valuemax="560"
+             @pointerdown.prevent="drag($event)" @keydown="resizeKey($event)"
+             class="group hidden h-full min-h-[8rem] cursor-col-resize items-center justify-center self-stretch md:flex focus-visible:outline-none">
+            <span class="h-12 w-1 rounded bg-gray-300 transition group-hover:bg-brand group-focus-visible:bg-brand group-focus-visible:ring-2 group-focus-visible:ring-brand group-focus-visible:ring-offset-1" aria-hidden="true"></span>
+        </div>
+
         {{-- ═════════ Prawy panel: szczegóły wybranej strony ═════════ --}}
-        <section class="min-w-0 space-y-4" aria-live="polite" aria-labelledby="pane-heading">
+        <section class="min-w-0 space-y-4" aria-labelledby="pane-heading">
             @if ($selected)
                 {{-- Ścieżka --}}
                 <nav aria-label="Ścieżka strony" class="text-xs text-muted">
@@ -236,6 +288,7 @@
                 @endif
             @endif
         </section>
+    </div>
     </div>
 
     <script>
