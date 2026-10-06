@@ -601,6 +601,7 @@ Route::middleware(['auth', 'verified', '2fa', 'admin-site'])->prefix(config('app
         Route::get('wiadomosci-kontaktowe', [AdminContactMessageController::class, 'index'])->name('wiadomosci-kontaktowe.index');
         Route::get('wiadomosci-kontaktowe/{contactMessage}', [AdminContactMessageController::class, 'show'])->name('wiadomosci-kontaktowe.show');
         Route::post('wiadomosci-kontaktowe/{contactMessage}/replied', [AdminContactMessageController::class, 'markReplied'])->name('wiadomosci-kontaktowe.replied');
+        Route::delete('wiadomosci-kontaktowe', [AdminContactMessageController::class, 'destroyAll'])->name('wiadomosci-kontaktowe.destroy-all');
         Route::delete('wiadomosci-kontaktowe/{contactMessage}', [AdminContactMessageController::class, 'destroy'])->name('wiadomosci-kontaktowe.destroy');
         Route::post('ustawienia/mail/test', [AdminContactMessageController::class, 'mailTest'])->name('ustawienia.mail-test');
 

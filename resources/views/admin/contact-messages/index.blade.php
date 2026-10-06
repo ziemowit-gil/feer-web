@@ -19,6 +19,18 @@
                     @endif
                 </a>
             @endforeach
+            @if ($messages->total() > 0)
+                @php $scopeLabel = ['wszystkie' => 'wszystkie wiadomości', 'nieprzeczytane' => 'wszystkie nieprzeczytane wiadomości', 'przeczytane' => 'wszystkie przeczytane wiadomości'][$filter] ?? 'wszystkie wiadomości'; @endphp
+                <form method="POST" action="{{ route('admin.wiadomosci-kontaktowe.destroy-all') }}"
+                      onsubmit="return confirm('Trwale usunąć {{ $scopeLabel }} ({{ $messages->total() }})? Tej operacji nie można cofnąć.');">
+                    @csrf
+                    @method('DELETE')
+                    <input type="hidden" name="filtr" value="{{ $filter }}">
+                    <button type="submit" class="rounded-lg border border-red-200 bg-white px-3 py-1.5 text-xs font-bold text-red-600 transition hover:bg-red-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500">
+                        Usuń wszystkie ({{ $messages->total() }})
+                    </button>
+                </form>
+            @endif
         </div>
     </div>
 

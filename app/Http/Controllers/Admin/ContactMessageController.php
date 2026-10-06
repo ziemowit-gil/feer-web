@@ -36,6 +36,27 @@ class ContactMessageController extends Controller
         return view('admin.contact-messages.show', compact('contactMessage'));
     }
 
+    /** Trwale usuwa wszystkie wiadomości z wybranego filtra (wszystkie / nieprzeczytane / przeczytane). */
+    public function destroyAll(Request $request)
+    {
+        $filter = $request->input('filtr', 'wszystkie');
+
+        $query = ContactMessage::query();
+        if ($filter === 'nieprzeczytane') {
+            $query->unread();
+        } elseif ($filter === 'przeczytane') {
+            $query->read();
+        } else {
+            $filter = 'wszystkie';
+        }
+
+        $count = $query->count();
+        $query->delete();
+
+        return redirect()->route('admin.wiadomosci-kontaktowe.index', ['filtr' => $filter])
+            ->with('status', $count > 0 ? "Usunięto wiadomości: {$count}." : 'Brak wiadomości do usunięcia.');
+    }
+
     public function destroy(ContactMessage $contactMessage)
     {
         $contactMessage->delete();

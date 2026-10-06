@@ -9,7 +9,7 @@ class ContactMessage extends Model
 {
     protected $fillable = [
         'name', 'email', 'phone', 'subject', 'message', 'ip_address',
-        'email_sent_at', 'coordinator_name', 'coordinator_email',
+        'email_sent_at', 'coordinator_name', 'coordinator_email', 'read_at', 'replied_at',
     ];
 
     protected $casts = [
