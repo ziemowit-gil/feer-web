@@ -8,7 +8,7 @@
             ? request('tab')
             : 'general';
     @endphp
-    <div x-data="{ tab: '{{ $initialTab }}', wm_layout: '{{ old('header_layout', $settings->headerLayoutValue()) }}', wideModal: {{ $errors->has('wide_activation_code') && old('header_layout') === 'wide_mission' ? 'true' : 'false' }}, wideCode: '', wideCodeError: false, prevLayout: '{{ old('header_layout', $settings->headerLayoutValue()) }}' }"
+    <div x-data="{ settingsNavCollapsed: (() => { try { return localStorage.getItem('admin-settings-nav') === '1'; } catch (e) { return false; } })(), toggleSettingsNav() { this.settingsNavCollapsed = ! this.settingsNavCollapsed; try { localStorage.setItem('admin-settings-nav', this.settingsNavCollapsed ? '1' : '0'); } catch (e) {} }, tab: '{{ $initialTab }}', wm_layout: '{{ old('header_layout', $settings->headerLayoutValue()) }}', wideModal: {{ $errors->has('wide_activation_code') && old('header_layout') === 'wide_mission' ? 'true' : 'false' }}, wideCode: '', wideCodeError: false, prevLayout: '{{ old('header_layout', $settings->headerLayoutValue()) }}' }"
         x-init="$watch('tab', value => history.replaceState(null, '', '?tab=' + value))"
         class="settings-split" style="display:grid;grid-template-columns:max-content minmax(0,1fr);gap:1.25rem;align-items:start">
     <style>@media (max-width: 900px) { .settings-split { grid-template-columns: 1fr !important; } .settings-split > nav { position: static !important; width: auto !important; } }</style>
@@ -22,7 +22,15 @@
             'homepage' => 'fa-house', 'template' => 'fa-clone', 'login' => 'fa-right-to-bracket', 'mail' => 'fa-envelope'];
     @endphp
     <nav aria-label="Sekcje ustawień" class="rounded-lg border border-gray-200 bg-white" style="position:sticky;top:1rem;padding:.375rem;width:max-content;max-width:100%">
-        <p class="whitespace-nowrap px-2 pb-1 pt-0.5 text-[10px] font-bold uppercase tracking-wider text-muted">Sekcje ustawień</p>
+        <div class="flex items-center justify-between gap-2 pb-1 pt-0.5" :class="settingsNavCollapsed ? 'justify-center' : 'pl-2'">
+            <p class="whitespace-nowrap text-[10px] font-bold uppercase tracking-wider text-muted" x-show="! settingsNavCollapsed">Sekcje ustawień</p>
+            <button type="button" @click="toggleSettingsNav()" :aria-expanded="(! settingsNavCollapsed).toString()"
+                :aria-label="settingsNavCollapsed ? 'Rozwiń menu sekcji ustawień' : 'Zwiń menu sekcji ustawień do ikon'"
+                :title="settingsNavCollapsed ? 'Rozwiń menu' : 'Zwiń do ikon'"
+                class="flex h-6 w-6 flex-none items-center justify-center rounded text-gray-500 hover:bg-gray-100 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                <i class="fa-solid text-[0.65rem]" :class="settingsNavCollapsed ? 'fa-angles-right' : 'fa-angles-left'" aria-hidden="true"></i>
+            </button>
+        </div>
         <ul role="list" class="space-y-0.5">
             @foreach (\App\Models\SiteSetting::SETTINGS_TABS as $tabKey => $tabLabel)
                 <li>
@@ -30,15 +38,16 @@
                         :aria-current="tab === @js($tabKey) ? 'page' : null"
                         :class="tab === @js($tabKey) ? 'bg-brand-light font-bold text-brand' : 'text-ink hover:bg-gray-100 hover:text-brand'"
                         class="flex items-center gap-2 whitespace-nowrap rounded-md px-2 text-[13px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+                        :class="{ 'justify-center': settingsNavCollapsed }" title="{{ $tabLabel }}"
                         style="min-height:2rem">
                         <i class="fa-solid {{ $settingsIcons[$tabKey] ?? 'fa-gear' }} w-4 flex-none text-center text-[0.75rem] text-gray-400" aria-hidden="true"></i>
-                        <span>{{ $tabLabel }}</span>
+                        <span :class="{ 'sr-only': settingsNavCollapsed }">{{ $tabLabel }}</span>
                     </a>
                 </li>
             @endforeach
             <li class="mt-1 border-t border-gray-100 pt-1">
-                <a href="{{ route('admin.ustawienia.env') }}" class="flex items-center gap-2 whitespace-nowrap rounded-md px-2 text-[13px] text-muted hover:bg-gray-100 hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand" style="min-height:2rem">
-                    <i class="fa-solid fa-file-code w-4 flex-none text-center text-[0.75rem] text-gray-400" aria-hidden="true"></i> Plik .env
+                <a href="{{ route('admin.ustawienia.env') }}" class="flex items-center gap-2 whitespace-nowrap rounded-md px-2 text-[13px] text-muted hover:bg-gray-100 hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand" style="min-height:2rem" :class="{ 'justify-center': settingsNavCollapsed }" title="Plik .env">
+                    <i class="fa-solid fa-file-code w-4 flex-none text-center text-[0.75rem] text-gray-400" aria-hidden="true"></i> <span :class="{ 'sr-only': settingsNavCollapsed }">Plik .env</span>
                 </a>
             </li>
         </ul>
