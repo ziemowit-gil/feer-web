@@ -198,4 +198,19 @@ class FeerTemplateTest extends TestCase
         $this->assertStringContainsString('bg-gray-50', $html);
         $this->assertStringNotContainsString('<section class="relative bg-ink', $html);
     }
+
+    public function test_strona_glowna_feer_nie_ma_kresek_miedzy_modulami(): void
+    {
+        \App\Models\QuickAction::create(['label' => 'Panel', 'url' => '/p', 'icon' => 'fa-solid fa-link', 'order' => 1]);
+        \App\Models\News::create(['title' => 'Wiadomość', 'slug' => 'wiadomosc', 'content' => 'x', 'excerpt' => 'x', 'is_published' => true, 'published_at' => now()->subDay()]);
+        SiteSetting::current()->update(['site_template' => 'feer']);
+        \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();
+
+        $html = $this->get('/')->assertOk()->getContent();
+        foreach (['feer-shortcuts-heading', 'ngo-news-heading'] as $id) {
+            $this->assertSame(1, preg_match('/<section class="([^"]*)"[^>]*aria-labelledby="'.$id.'"/s', $html, $m), $id);
+            $this->assertDoesNotMatchRegularExpression('/border-(t|b)\b/', $m[1], $id);
+        }
+        $this->assertStringNotContainsString('border-top: 1px solid #f3f4f6', $html);
+    }
 }

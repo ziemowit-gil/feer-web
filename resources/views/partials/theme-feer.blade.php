@@ -35,9 +35,8 @@
     .site-topbar-feer form[role="search"] { border-color: #fff; }
 
     /* Strona główna: jedna szerokość treści (lewa krawędź wspólna dla wszystkich sekcji), jednolite odstępy
-       pionowe i naprzemienne tła — bez dwóch szarych sekcji obok siebie. */
+       pionowe i naprzemienne tła — bez dwóch szarych sekcji obok siebie i bez kresek między modułami. */
     .max-w-\[1400px\] { max-width: 72rem; }
     section.py-14 { padding-top: 3rem; padding-bottom: 3rem; }
-    section[aria-labelledby="ngo-projects-heading"] { background-color: #fff; border-top: 1px solid #f3f4f6; }
-    section[aria-labelledby="ngo-news-heading"] { border-top: 1px solid #f3f4f6; }
+    section[aria-labelledby="ngo-projects-heading"] { background-color: #fff; }
 </style>

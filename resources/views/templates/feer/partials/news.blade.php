@@ -1,6 +1,6 @@
 {{-- Szablon FEER — Aktualności: trzy równe, płaskie karty (zdjęcie 16:10, kategoria, tytuł, data). Bez cieni i przezroczystości. --}}
 @if ($newsItems->isNotEmpty())
-<section class="border-t border-gray-100 py-12" aria-labelledby="ngo-news-heading">
+<section class="py-12" aria-labelledby="ngo-news-heading">
     <div class="mx-auto max-w-6xl px-4">
         <div class="mb-8 flex items-end justify-between gap-4">
             <h2 id="ngo-news-heading" class="text-2xl font-bold text-ink md:text-3xl">Aktualności</h2>

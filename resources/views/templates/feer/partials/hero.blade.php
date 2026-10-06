@@ -8,7 +8,7 @@
     Kontrast: ink #1D1D1A na bieli 16,9:1; przycisk — biały tekst na kolorze marki (≥ 4,5:1).
 --}}
 @if ($slides->isNotEmpty())
-<section class="border-b border-gray-100 bg-white"
+<section class="bg-white"
     aria-roledescription="karuzela" aria-label="Slider strony głównej"
     x-data="feerHeroSlider({{ $slides->count() }})" x-init="start()"
     @mouseenter="hover = true" @mouseleave="hover = false"
