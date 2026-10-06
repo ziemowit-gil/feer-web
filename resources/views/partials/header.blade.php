@@ -41,6 +41,11 @@
     $wmNavStyle   = $siteSettings->wide_mission_nav_style ?? 'brand_bar';
     $wmIconsNav   = $wmNavStyle === 'icons_white';
     $wmPillsNav   = $wmNavStyle === 'pills';
+    // Szablon FEER: nowocześniejsze menu — biały pasek z pigułkami (chyba że wybrano wariant z ikonami).
+    $feerNav      = ($siteSettings->site_template ?? 'default') === 'feer';
+    if ($feerNav && ! $wmIconsNav) {
+        $wmPillsNav = true;
+    }
     $wmDarkText   = $siteSettings->navDarkText();
 
     $ctaClass = 'inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-brand px-5 text-sm font-bold text-white transition '
@@ -126,7 +131,7 @@
     {{-- Pasek nawigacji (≥ lg) --}}
     @if ($wmIconsNav || $wmPillsNav)
         {{-- Substyle na białym pasku: ikony nad etykietami albo zakładki (pigułki) --}}
-        <nav aria-label="Menu główne" class="relative hidden border-t-4 border-t-brand bg-white shadow-sm lg:block">
+        <nav aria-label="Menu główne" class="relative hidden bg-white lg:block {{ $feerNav ? 'border-y border-gray-200' : 'border-t-4 border-t-brand shadow-sm' }}">
             <div @class(['mx-auto flex max-w-6xl items-stretch px-4', 'py-1.5' => $wmPillsNav, 'justify-center' => $wmNavCenter])>
                 @include('partials.main-nav-items', ['onBrand' => false, 'navStyle' => $wmPillsNav ? 'pills' : 'icons'])
                 @if ($wmSearchNav)

@@ -86,4 +86,19 @@ class FeerTemplateTest extends TestCase
             $this->assertGreaterThanOrEqual(4.5, $ratio, "{$var} {$m[1]} ma kontrast {$ratio}:1 na bieli");
         }
     }
+
+    public function test_menu_w_szablonie_feer_to_bialy_pasek_z_pigulkami(): void
+    {
+        SiteSetting::current()->update(['site_template' => 'feer', 'header_layout' => 'wide_mission']);
+        \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();
+
+        $html = $this->get('/')->assertOk()->getContent();
+        $this->assertStringContainsString('nav-pills', $html);
+        $this->assertStringContainsString('border-y border-gray-200', $html);
+        $this->assertStringNotContainsString('relative hidden bg-brand shadow-sm', $html);
+
+        SiteSetting::current()->update(['site_template' => 'ngo_mix']);
+        \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();
+        $this->get('/')->assertOk()->assertSee('relative hidden bg-brand shadow-sm', false);
+    }
 }
