@@ -240,4 +240,33 @@ class FeerTemplateTest extends TestCase
 
         $this->get('/')->assertOk()->assertSee('Zwykły slajd');
     }
+
+    public function test_strona_kontakt_2_typu_kontakt_renderuje_sie_w_szablonie_feer(): void
+    {
+        \App\Models\Page::create(['title' => 'Kontakt', 'slug' => 'kontakt-2', 'type' => 'contact', 'is_published' => true]);
+        SiteSetting::current()->update([
+            'site_template' => 'feer', 'header_layout' => 'wide_mission', 'contact_layout' => 'tabs',
+            'contact_phone' => '601 350 487', 'contact_office_hours' => 'Pon–Śr 10–12',
+            'contact_bank_accounts' => [['number' => 'PL12 3456', 'purpose' => 'Darowizny']],
+            'contact_schedule_enabled' => true, 'contact_online_meeting_url' => 'https://example.org/spotkanie',
+            'contact_paczkomat_code' => 'KRA01M', 'contact_shipping_visible' => true,
+        ]);
+        \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();
+
+        $this->get('/kontakt')->assertRedirect('/kontakt-2');
+        $this->get('/kontakt-2')->assertOk()
+            ->assertSee('id="formularz-heading"', false)->assertSee('601 350 487')->assertSee('PL12 3456')->assertSee('contact-feer', false);
+    }
+
+    public function test_dluga_uwaga_przy_rachunkach_jest_skrocona_do_pierwszego_zdania(): void
+    {
+        $long = 'Opłaty za szkolenia firm prosimy wpłacać na ogólny rachunek bankowy: 88 1020 2906 0000 1302 0661 7932. Osoby fizyczne mają indywidualny numer rachunku wirtualnego, który przesyłamy w wiadomości e-mail potwierdzającej zapis. Prosimy o upewnienie się, że wybrano właściwy numer konta.';
+        SiteSetting::current()->update(['contact_bank_accounts_note' => $long, 'contact_bank_accounts' => [['number' => 'PL12 3456', 'purpose' => 'Darowizny']]]);
+        \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();
+
+        $html = $this->get('/kontakt')->assertOk()->getContent();
+        $this->assertStringContainsString('Czytaj więcej', $html);
+        $this->assertStringContainsString('<details class="mt-2">', $html);
+        $this->assertMatchesRegularExpression('/<p class="leading-relaxed">Opłaty za szkolenia firm[^<]*7932\.<\/p>/u', $html);
+    }
 }

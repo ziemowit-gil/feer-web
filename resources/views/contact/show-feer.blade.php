@@ -1,7 +1,7 @@
 {{--
     Wariant „FEER" (dedykowany szablonowi FEER): jasny nagłówek, a pod nim dwie kolumny — po lewej dane
     kontaktowe i pozostałe sekcje (spotkania, przesyłki, rachunki), po prawej formularz w przyklejonej karcie.
-    Bez zakładek i bez linii dzielących; sekcje oddzielają odstępy. Na telefonie formularz trafia pod dane.
+    Bez zakładek, linii dzielących i ramek (karta formularza to jasnoszare tło); sekcje oddzielają odstępy. Na telefonie formularz trafia pod dane.
     Dostępność: nagłówki h1/h2 w kolejności, formularz ma landmark przez aria-labelledby, cele dotyku ≥ 44 px.
 --}}
 @extends('layouts.site')
@@ -31,7 +31,7 @@
         </div>
     </section>
 
-    <div class="mx-auto max-w-6xl px-4 py-12">
+    <div class="contact-feer mx-auto max-w-6xl px-4 py-12">
         <div class="grid gap-12 lg:grid-cols-[minmax(0,1fr)_26rem] lg:items-start">
 
             <div class="min-w-0 space-y-12">
@@ -52,7 +52,7 @@
             </div>
 
             <section id="formularz" aria-labelledby="formularz-heading"
-                     class="scroll-mt-24 rounded-lg border border-gray-200 bg-white p-6 sm:p-8 lg:sticky lg:top-6">
+                     class="scroll-mt-24 rounded-lg bg-gray-50 p-6 sm:p-8 lg:sticky lg:top-6">
                 <h2 id="formularz-heading" class="mb-1 text-2xl font-bold text-ink">Napisz do nas</h2>
                 <p class="mb-6 text-sm text-muted">Odpowiadamy zwykle w ciągu jednego dnia roboczego.</p>
                 @include('contact.partials.form')

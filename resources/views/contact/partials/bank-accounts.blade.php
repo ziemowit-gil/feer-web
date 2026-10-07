@@ -25,8 +25,24 @@
         <p class="mb-5 max-w-2xl text-sm text-muted">Przy każdym rachunku opisujemy, do czego służy i co można na niego wpłacić.</p>
 
         @if (filled($siteSettings->contact_bank_accounts_note))
-            <div class="prose prose-sm mb-5 max-w-2xl text-ink">
-                {!! nl2br(e($siteSettings->contact_bank_accounts_note)) !!}
+            @php
+                // Długą uwagę skracamy do pierwszego zdania; resztę chowamy pod „Czytaj więcej” (bez JS, dostępne z klawiatury).
+                $bankNote = trim((string) $siteSettings->contact_bank_accounts_note);
+                $noteLead = $bankNote;
+                $noteRest = '';
+                if (mb_strlen($bankNote) > 160 && preg_match('/^(.+?[.!?])(\s+|$)/us', $bankNote, $nm)) {
+                    $noteLead = $nm[1];
+                    $noteRest = trim(mb_substr($bankNote, mb_strlen($nm[0])));
+                }
+            @endphp
+            <div class="mb-5 max-w-2xl text-sm text-ink">
+                <p class="leading-relaxed">{!! nl2br(e($noteLead)) !!}</p>
+                @if ($noteRest !== '')
+                    <details class="mt-2">
+                        <summary class="inline-flex min-h-9 cursor-pointer items-center font-bold text-brand-dark underline underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">Czytaj więcej</summary>
+                        <p class="mt-2 leading-relaxed">{!! nl2br(e($noteRest)) !!}</p>
+                    </details>
+                @endif
             </div>
         @endif
 
