@@ -408,4 +408,16 @@ class FeerTemplateTest extends TestCase
         $this->assertStringContainsString('[class*="bg-linear-to"]', $html);
         $this->assertStringContainsString('[class*="bg-gradient-to"]', $html);
     }
+
+    public function test_archiwum_aktualnosci_feer_ma_przyciski_zakresu_i_plaskie_wiersze(): void
+    {
+        \App\Models\News::create(['title' => 'Stary wpis', 'slug' => 'stary', 'content' => 'x', 'excerpt' => 'Zajawka', 'is_published' => true, 'is_archived' => true, 'published_at' => now()->subYears(2)]);
+        SiteSetting::current()->update(['site_template' => 'feer']);
+        \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();
+
+        $html = $this->get('/archiwum?tab=archiwalne')->assertOk()->assertSee('Stary wpis')->getContent();
+        $this->assertStringContainsString('aria-label="Zakres archiwum"', $html);
+        $this->assertStringContainsString('bg-ink text-white', $html);
+        $this->assertStringNotContainsString('divide-y divide-gray-100', $html);
+    }
 }

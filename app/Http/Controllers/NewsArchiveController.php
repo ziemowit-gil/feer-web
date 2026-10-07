@@ -25,6 +25,9 @@ class NewsArchiveController extends Controller
             ->paginate(12, ['*'], 'leg')
             ->withQueryString();
 
-        return view('news.archiwum', compact('archived', 'legacy'));
+        // Szablon FEER ma własny układ archiwum (przyciski zakresu + płaskie wiersze).
+        $view = \App\Models\SiteSetting::current()->site_template === 'feer' ? 'news.archiwum-feer' : 'news.archiwum';
+
+        return view($view, compact('archived', 'legacy'));
     }
 }
