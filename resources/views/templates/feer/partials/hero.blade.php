@@ -86,7 +86,9 @@ function feerHeroSlider(total) {
     return {
         current: 0, total, timer: null, paused: false, hover: false, focus: false,
         start() {
-            if (total < 2 || window.matchMedia('(prefers-reduced-motion: reduce)').matches) { this.paused = total > 1; return; }
+            // Przycisk „Animacje" z paska dostępności wstrzymuje automatyczną zmianę slajdów (klasa no-animations na <html>).
+            window.addEventListener('a11y-animations-changed', (e) => { if (total > 1) { this.paused = !! (e.detail && e.detail.disabled); } });
+            if (total < 2 || window.matchMedia('(prefers-reduced-motion: reduce)').matches || document.documentElement.classList.contains('no-animations')) { this.paused = total > 1; return; }
             this.timer = setInterval(() => { if (! this.paused && ! this.hover && ! this.focus) this.current = (this.current + 1) % this.total; }, 6000);
         },
         go(i) { this.current = i; },
