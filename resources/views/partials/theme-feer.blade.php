@@ -105,9 +105,20 @@
     }
 
     /* Większe odstępy między pozycjami menu (układ z podkreśleniem) i pigułkami. */
+    /* Pozycje menu nie łamią się na dwie linijki (np. „O ORGANIZACJI"); gdy jest ich dużo, cały rząd zawija się czysto. */
     @media (min-width: 1024px) {
+        .site-header nav ul.flex { flex-wrap: wrap; row-gap: .125rem; }
+        .site-header nav ul > li > a, .site-header nav ul > li > button, .site-header nav ul > li > div > a, .site-header nav ul > li > div > button { white-space: nowrap; }
+    }
+    @media (min-width: 1024px) and (max-width: 1279px) {
         .site-header nav > ul.flex:not(.nav-pills):not(.nav-icons),
-        .site-header nav > div > ul.flex:not(.nav-pills):not(.nav-icons) { gap: 2.25rem; }
+        .site-header nav > div > ul.flex:not(.nav-pills):not(.nav-icons) { gap: 1.25rem; }
+    }
+    @media (min-width: 1280px) {
+        .site-header nav > ul.flex:not(.nav-pills):not(.nav-icons),
+        .site-header nav > div > ul.flex:not(.nav-pills):not(.nav-icons) { gap: 1.75rem; }
+    }
+    @media (min-width: 1024px) {
         .site-header nav > ul.nav-pills, .site-header nav > div > ul.nav-pills { gap: .5rem; }
     }
 
@@ -121,7 +132,7 @@
     .site-header nav > ul:not(.nav-pills) > li > a, .site-header nav > ul:not(.nav-pills) > li > button,
     .site-header nav > ul:not(.nav-pills) > li > div > a, .site-header nav > ul:not(.nav-pills) > li > div > button,
     .site-header nav > div > ul:not(.nav-pills) > li > a, .site-header nav > div > ul:not(.nav-pills) > li > button,
-    .site-header nav > div > ul:not(.nav-pills) > li > div > a, .site-header nav > div > ul:not(.nav-pills) > li > div > button { font-size: 1.3125rem; }
+    .site-header nav > div > ul:not(.nav-pills) > li > div > a, .site-header nav > div > ul:not(.nav-pills) > li > div > button { font-size: clamp(1.0625rem, 1.3vw, 1.3125rem); }
 
     /* Pasek górny (dostępność, konto, wyszukiwarka, BIP, social): jeden smukły, ciemny rząd — biały tekst na #1D1D1A (16,9:1). */
     .site-topbar-feer > div:first-child { padding-top: .125rem; padding-bottom: .125rem; }

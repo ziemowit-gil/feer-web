@@ -78,6 +78,10 @@ class ProjectController extends Controller
             return view('templates.federation.projects-archive', compact('projects', 'archiveFilter'));
         }
 
+        if (SiteSetting::current()->site_template === 'feer') {
+            return view('projects.archive-feer', compact('projects', 'archiveFilter'));
+        }
+
         return view('projects.archive', compact('projects', 'archiveFilter'));
     }
 

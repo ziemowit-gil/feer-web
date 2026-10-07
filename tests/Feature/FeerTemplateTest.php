@@ -865,4 +865,18 @@ class FeerTemplateTest extends TestCase
         $html = $this->get('/dla-kursantow-test')->assertOk()->assertSee('Panel kursanta')->getContent();
         $this->assertSame(1, substr_count($html, '<h1'), 'Tytuł strony kafelków nie powinien się dublować');
     }
+
+    public function test_archiwum_projektow_w_szablonie_feer_ma_wiersze_pogrupowane_rocznikami(): void
+    {
+        SiteSetting::current()->update(['site_template' => 'feer']);
+        \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();
+        \Illuminate\Support\Facades\Cache::flush();
+        $cat = \App\Models\Category::create(['name' => 'Dla każdego', 'slug' => 'dla-kazdego-arch', 'order' => 1]);
+        \App\Models\Project::create(['category_id' => $cat->id, 'title' => 'Zakończony A', 'slug' => 'zakonczony-a', 'content' => '<p>Opis A.</p>', 'is_published' => true, 'is_completed' => true, 'completed_at' => '2024-05-10', 'order' => 1]);
+        \App\Models\Project::create(['category_id' => $cat->id, 'title' => 'Zakończony B', 'slug' => 'zakonczony-b', 'content' => '<p>Opis B.</p>', 'is_published' => true, 'is_completed' => true, 'completed_at' => '2023-02-01', 'order' => 2]);
+
+        $html = $this->get('/projekty/archiwum')->assertOk()->assertSee('Zakończony A')->assertSee('Zakończony B')->assertSee('Lata realizacji')->getContent();
+        $this->assertStringContainsString('border-left: 4px solid', $html);
+        $this->assertStringContainsString('h-1 w-14 bg-brand', $html);
+    }
 }
