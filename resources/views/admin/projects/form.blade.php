@@ -3,12 +3,13 @@
 @section('title', $project->exists ? 'Edytuj projekt' : 'Nowy projekt')
 
 @section('content')
+    @include('admin.partials.readable-form-css')
     @if ($project->exists)
         @include('admin.partials.edit-lock', ['lockType' => 'project', 'lockId' => $project->id])
     @endif
 
     <form method="POST" action="{{ $project->exists ? route('admin.projekty.update', $project) : route('admin.projekty.store') }}"
-        enctype="multipart/form-data" class="space-y-6">
+        enctype="multipart/form-data" class="space-y-6" data-readable>
         @csrf
         @if ($project->exists) @method('PUT') @endif
 

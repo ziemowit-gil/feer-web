@@ -7,12 +7,13 @@
 @endphp
 
 @section('content')
+    @include('admin.partials.readable-form-css')
     @include('admin.partials.template-panel', [
         'templateType'   => 'event',
         'templateFields' => ['type', 'mode', 'location', 'online_url', 'audience', 'registration_cta_label', 'contact_email', 'price_info'],
     ])
 
-    <form method="POST" action="{{ $action }}" enctype="multipart/form-data" class="mt-4 max-w-3xl space-y-6"
+    <form method="POST" action="{{ $action }}" enctype="multipart/form-data" class="mt-4 max-w-3xl space-y-6" data-readable
         x-data="{ mode: @js(old('mode', $event->mode ?: 'stacjonarnie')) }">
         @csrf
         @if ($event->exists) @method('PUT') @endif
@@ -578,8 +579,8 @@
             </div>
         </div>
 
-        <div class="flex items-center gap-3">
-            <button type="submit" class="rounded bg-brand px-5 py-2 text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">Zapisz</button>
+        <div class="flex items-center gap-3" data-sticky-actions>
+            <button type="submit" class="rounded-lg bg-brand px-5 py-2.5 text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">Zapisz</button>
             <a href="{{ route('admin.wydarzenia.index') }}" class="text-sm text-muted hover:text-ink">Anuluj</a>
         </div>
     </form>

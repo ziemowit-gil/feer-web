@@ -3,6 +3,7 @@
 @section('title', $news->exists ? 'Edytuj news' : 'Nowy news')
 
 @section('content')
+    @include('admin.partials.readable-form-css')
     @php
         // Zakładka, w której leży błąd walidacji — kropka na zakładce i automatyczne otwarcie po nieudanym zapisie.
         $tabFields = [
@@ -139,7 +140,7 @@
     @endif
 
     <form id="news-form" method="POST" action="{{ $news->exists ? route('admin.newsy.update', $news) : route('admin.newsy.store') }}"
-        enctype="multipart/form-data" class="mt-4 space-y-6">
+        enctype="multipart/form-data" class="mt-4 space-y-6" data-readable>
         {{-- ═══ Zakładki rekordu (jak w TYPO3): Ogólne | Zdjęcie i wygląd | Kategoryzacja | Publikacja | SEO ═══ --}}
 
         <div data-tab-panel="ogolne" role="tabpanel" id="panel-ogolne" aria-labelledby="tab-ogolne" class="space-y-5">
