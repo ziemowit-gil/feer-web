@@ -638,4 +638,18 @@ class FeerTemplateTest extends TestCase
 
         $this->get('/projekty')->assertOk()->assertSee('Opis zajęć dla wolontariuszy.');
     }
+
+    public function test_szybkie_akcje_feer_obsluguja_negatyw_pasek_i_kolumny(): void
+    {
+        SiteSetting::current()->update(['site_template' => 'feer']);
+        \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();
+        \Illuminate\Support\Facades\Cache::flush();
+        \App\Models\QuickAction::create(['label' => 'Negatyw A', 'url' => '/a', 'icon' => 'bi-person', 'color' => '#1d1d1a', 'order' => 1, 'is_negative' => true, 'cols' => 2]);
+        \App\Models\QuickAction::create(['label' => 'Pasek B', 'url' => '/b', 'icon' => 'bi-star', 'color' => 'blue', 'order' => 2, 'strip' => true]);
+
+        $html = $this->get('/')->assertOk()->getContent();
+        $this->assertStringContainsString('sm:col-span-2', $html);
+        $this->assertStringContainsString('min-h-14', $html);
+        $this->assertStringContainsString('background-color: #1d1d1a', $html);
+    }
 }
