@@ -69,6 +69,14 @@
         [data-page-form-tabs] form input[type="text"], [data-page-form-tabs] form input[type="url"], [data-page-form-tabs] form input[type="number"],
         [data-page-form-tabs] form input[type="date"], [data-page-form-tabs] form input[type="datetime-local"], [data-page-form-tabs] form select, [data-page-form-tabs] form textarea { font-size: .95rem; padding-top: .6rem; padding-bottom: .6rem; border-radius: .5rem; }
         [data-page-form-tabs] form p.text-xs.text-muted { font-size: .8125rem; line-height: 1.45; }
+        /* Panel „Publikacja": karty nie rozciągają się do wysokości sąsiada, a pola wyboru wyglądają jak przełączniki
+           (wyłączony: szary #6B7280 — granica ≥ 3:1; włączony: kolor marki). */
+        [data-page-form-tabs] [data-ftab-panel="ustawienia"] .grid { align-items: start; }
+        [data-page-form-tabs] [data-ftab-panel="ustawienia"] label.flex > input[type="checkbox"] { appearance: none; -webkit-appearance: none; flex: none; width: 2.75rem; height: 1.5rem; border-radius: 9999px; border: 0; background-color: #6b7280; position: relative; cursor: pointer; transition: background-color .2s; margin-top: .125rem; }
+        [data-page-form-tabs] [data-ftab-panel="ustawienia"] label.flex > input[type="checkbox"]::after { content: ""; position: absolute; top: .1875rem; left: .1875rem; width: 1.125rem; height: 1.125rem; border-radius: 9999px; background: #fff; transition: transform .2s; }
+        [data-page-form-tabs] [data-ftab-panel="ustawienia"] label.flex > input[type="checkbox"]:checked { background-color: var(--color-brand); }
+        [data-page-form-tabs] [data-ftab-panel="ustawienia"] label.flex > input[type="checkbox"]:checked::after { transform: translateX(1.25rem); }
+        [data-page-form-tabs] [data-ftab-panel="ustawienia"] label.flex > input[type="checkbox"]:focus-visible { outline: 2px solid #1a1a1a; outline-offset: 2px; }
         [data-page-form-tabs] [data-main-form-actions] { position: sticky; bottom: 0; z-index: 20; margin-top: 1.5rem; padding: .85rem 1.25rem; background: rgba(255,255,255,.96); border-top: 1px solid #e5e7eb; border-radius: .75rem .75rem 0 0; }
     </style>
 
@@ -252,51 +260,42 @@
                                     ];
                                 }
                             @endphp
-                            <label for="type" class="mb-1 block text-sm font-bold">Typ strony</label>
                             <select id="type" name="type" data-page-type-select class="sr-only" tabindex="-1" aria-hidden="true">
                                 @foreach ($typeCards as $value => $card)
                                     <option value="{{ $value }}" {{ $currentType === $value ? 'selected' : '' }}>{{ $card['full'] }}</option>
                                 @endforeach
                             </select>
-                            <div x-data="{ cur: @js($currentType), q: '', set(v) { this.cur = v; const s = document.getElementById('type'); s.value = v; s.dispatchEvent(new Event('change', { bubbles: true })); }, show(name, desc) { const t = this.q.trim().toLowerCase(); return t === '' || (name + ' ' + desc).toLowerCase().includes(t); } }" class="max-w-3xl space-y-4">
-                                <div>
-                                    <label for="type-search" class="sr-only">Szukaj typu strony</label>
-                                    <input id="type-search" type="search" x-model="q" placeholder="Szukaj typu strony…" class="w-full rounded-lg border-gray-300 text-sm focus:border-brand focus:ring-brand">
-                                </div>
-                                @foreach ($typeGroups as $groupName => $keys)
-                                    <fieldset class="min-w-0" role="radiogroup" aria-label="{{ $groupName }}">
-                                        <legend class="mb-2 text-xs font-bold uppercase tracking-wide text-muted">{{ $groupName }}</legend>
-                                        <div class="grid gap-2 sm:grid-cols-2">
-                                            @foreach ($keys as $key)
-                                                @continue(! isset($typeCards[$key]))
-                                                @php $card = $typeCards[$key]; @endphp
-                                                <button type="button" role="radio" :aria-checked="(cur === '{{ $key }}').toString()" @click="set('{{ $key }}')"
-                                                    x-show="show(@js($card['name']), @js($card['desc']))"
-                                                    class="flex items-start gap-3 rounded-lg border-2 p-3 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-1"
-                                                    :class="cur === '{{ $key }}' ? 'border-brand bg-brand-light' : 'border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50'">
-                                                    <span class="flex h-9 w-9 flex-none items-center justify-center rounded-md bg-white text-brand-dark" :class="cur === '{{ $key }}' ? '' : 'bg-gray-100'" aria-hidden="true"><i class="fa-solid {{ $card['icon'] }}"></i></span>
-                                                    <span class="min-w-0">
-                                                        <span class="block text-sm font-bold text-ink">{{ $card['name'] }} <i x-show="cur === '{{ $key }}'" class="fa-solid fa-check ml-1 text-brand-dark" aria-hidden="true"></i></span>
-                                                        @if ($card['desc'] !== '')<span class="mt-0.5 block text-xs leading-snug text-muted">{{ $card['desc'] }}</span>@endif
-                                                    </span>
-                                                </button>
-                                            @endforeach
-                                        </div>
-                                    </fieldset>
-                                @endforeach
-                            </div>
+                            @include('admin.partials.modal-picker', [
+                                'pickerId' => 'type-picker', 'title' => 'Typ strony', 'options' => $typeCards, 'groups' => $typeGroups,
+                                'current' => $currentType, 'carrier' => ['select' => 'type'],
+                            ])
                             <p class="mt-1 text-xs text-muted">„Wydarzenie" dodaje pola o terminie, miejscu i rejestracji. „Harmonogram zajęć / spotkań" dodaje tabelę terminów oraz miejsce na informację o zmianie. „Oferta", „Poradnik", „Słownik" i „Studium przypadku" mają własne sekcje pól poniżej. Każdy typ ma inny układ na stronie.</p>
                             @error('type') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                         @endif
                     </div>
 
                     <div data-hide-for="contact" class="border-t border-gray-100 pt-5 sm:w-1/2 {{ $currentType === 'contact' ? 'hidden' : '' }}">
-                        <label for="page_template" class="mb-1 block text-sm font-bold">Szablon wizualny</label>
-                        <select id="page_template" name="page_template" class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                        @php
+                            $tplIcons = ['default' => 'fa-file-lines', 'wide' => 'fa-expand', 'hero' => 'fa-image', 'landing' => 'fa-bullhorn', 'portal' => 'fa-globe', 'minimal' => 'fa-minimize'];
+                            $tplCards = [];
+                            foreach (\App\Models\Page::TEMPLATES as $value => $label) {
+                                $tplCards[$value] = [
+                                    'name' => trim(\Illuminate\Support\Str::before($label, ' (')),
+                                    'desc' => \Illuminate\Support\Str::contains($label, ' (') ? rtrim(\Illuminate\Support\Str::after($label, ' ('), ')') : '',
+                                    'icon' => $tplIcons[$value] ?? 'fa-file-lines',
+                                ];
+                            }
+                            $tplCurrent = old('page_template', $page->page_template ?? 'default');
+                        @endphp
+                        <select id="page_template" name="page_template" class="sr-only" tabindex="-1" aria-hidden="true">
                             @foreach (\App\Models\Page::TEMPLATES as $value => $label)
-                                <option value="{{ $value }}" {{ old('page_template', $page->page_template ?? 'default') === $value ? 'selected' : '' }}>{{ $label }}</option>
+                                <option value="{{ $value }}" {{ $tplCurrent === $value ? 'selected' : '' }}>{{ $label }}</option>
                             @endforeach
                         </select>
+                        @include('admin.partials.modal-picker', [
+                            'pickerId' => 'template-picker', 'title' => 'Szablon wizualny', 'options' => $tplCards,
+                            'current' => $tplCurrent, 'carrier' => ['select' => 'page_template'],
+                        ])
                         <p class="mt-1 text-xs text-muted">Zmienia wygląd i układ strony publicznej. Działa dla stron typu „Standardowa", „Wewnętrzna" i „FAQ". Dla pozostałych typów układ jest stały.</p>
                         @error('page_template') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
@@ -393,15 +392,23 @@
                                         'tree'    => 'Lewa kolumna z całym działem: ścieżka „Jesteś tu", wszystkie poziomy podstron, zwijane gałęzie z licznikiem — jak drzewo stron w TYPO3.',
                                     ];
                                 @endphp
-                                <span class="mt-2 flex flex-wrap gap-2" role="radiogroup" aria-label="Styl nawigacji po podstronach">
+                                {{-- Prawdziwe pola radio zostają (ukryte) jako nośnik wartości; wybór odbywa się w oknie dialogowym. --}}
+                                <span class="sr-only">
                                     @foreach (\App\Models\Page::SIDE_NAV_STYLES as $styleKey => $styleLabel)
-                                        <label class="flex cursor-pointer items-center gap-1.5 rounded-md border border-gray-200 bg-white px-2.5 py-1.5 text-xs font-bold has-[:checked]:border-brand has-[:checked]:bg-brand-light has-[:checked]:text-brand"
-                                            title="{{ $sideNavHints[$styleKey] }}">
-                                            <input type="radio" name="side_nav_style" value="{{ $styleKey }}" {{ $sideNavStyle === $styleKey ? 'checked' : '' }} class="text-brand focus:ring-brand"
-                                                aria-describedby="side-nav-hint-{{ $styleKey }}">
-                                            <i class="fa-solid {{ $sideNavIcons[$styleKey] }}" aria-hidden="true"></i> {{ $styleLabel }}
-                                        </label>
+                                        <input type="radio" name="side_nav_style" value="{{ $styleKey }}" {{ $sideNavStyle === $styleKey ? 'checked' : '' }} tabindex="-1" aria-hidden="true">
                                     @endforeach
+                                </span>
+                                @php
+                                    $navCards = [];
+                                    foreach (\App\Models\Page::SIDE_NAV_STYLES as $styleKey => $styleLabel) {
+                                        $navCards[$styleKey] = ['name' => trim(\Illuminate\Support\Str::before($styleLabel, ' (')), 'desc' => $sideNavHints[$styleKey], 'icon' => $sideNavIcons[$styleKey]];
+                                    }
+                                @endphp
+                                <span class="mt-3 block" @click.stop.prevent>
+                                    @include('admin.partials.modal-picker', [
+                                        'pickerId' => 'nav-style-picker', 'title' => 'Styl nawigacji po podstronach', 'options' => $navCards,
+                                        'current' => $sideNavStyle, 'carrier' => ['radio' => 'side_nav_style'],
+                                    ])
                                 </span>
                                 @foreach (\App\Models\Page::SIDE_NAV_STYLES as $styleKey => $styleLabel)
                                     <span id="side-nav-hint-{{ $styleKey }}" class="sr-only">{{ $sideNavHints[$styleKey] }}</span>
