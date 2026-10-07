@@ -72,6 +72,12 @@
     nav .nav-pills > li:not([data-nav-accent]) > a:hover, nav .nav-pills > li:not([data-nav-accent]) > button:hover,
     nav .nav-pills li > ul[role="list"] a:hover { color: #1e6dff; }
 
+    /* Większe odstępy między pozycjami menu (układ z podkreśleniem) i pigułkami. */
+    @media (min-width: 1024px) {
+        nav > ul.flex:not(.nav-pills):not(.nav-icons) { gap: 2.25rem; }
+        nav > ul.nav-pills { gap: .5rem; }
+    }
+
     /* Menu główne i podmenu: większe pozycje (czytelność i cele dotyku ≥ 44 px). */
     nav .nav-pills > li > a, nav .nav-pills > li > button, nav .nav-pills > li > div.border-b-2 { font-size: 1.125rem; padding: .7rem 1.35rem; }
     nav .nav-pills > li > div.border-b-2 > a, nav .nav-pills > li > div.border-b-2 > button { font-size: 1.125rem; }

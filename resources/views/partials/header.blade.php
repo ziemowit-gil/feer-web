@@ -195,7 +195,7 @@
      (fokus, Escape, kliknięcie obok, etykieta Otwórz/Zamknij) — jak w wide_mission.
 --}}
 <div class="{{ $inlineOnBrand ? 'bg-brand border-transparent' : 'bg-white' }}" x-data="siteMobileNav(1024)" @keydown.escape.window="closeMenu()">
-    <div class="relative mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-4">
+    <div class="relative mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-4 lg:gap-12">
         <a href="{{ site_route('home') }}" class="flex min-w-0 items-center gap-3 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 {{ $inlineOnBrand ? 'focus-visible:ring-white focus-visible:ring-offset-brand' : 'focus-visible:ring-brand' }}" aria-label="{{ $siteSettings->site_name }} — strona główna">
             @if ($siteSettings->logoUrl())
                 <img src="{{ $siteSettings->logoUrl() }}" alt="{{ $siteSettings->logoAltText() }}" class="h-12 w-auto max-w-[16rem] flex-none rounded object-contain {{ $inlineOnBrand ? 'bg-white p-1' : '' }}">
@@ -216,7 +216,7 @@
 
         @php $feerMaterials = ($siteSettings->site_template ?? 'default') === 'feer' && $siteSettings->isModuleEnabled('materials'); @endphp
         @unless ($headerLayout === 'brand_bar')
-            <div class="hidden items-center gap-4 lg:flex">
+            <div class="hidden items-center gap-6 lg:flex xl:gap-8">
                 <nav aria-label="Menu główne">
                     @include('partials.main-nav-items', ['onBrand' => $inlineOnBrand, 'navDarkText' => $siteSettings->navDarkText()])
                 </nav>
