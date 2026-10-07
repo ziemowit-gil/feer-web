@@ -221,11 +221,13 @@
         @endphp
         @if ($feerTwoRows)
             @if ($feerMaterials)
-                <a href="{{ site_route('materials.index') }}"
-                   class="hidden min-h-11 flex-none items-center gap-2 rounded-md bg-ink px-5 text-sm font-bold text-white transition hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2 lg:inline-flex">
-                    <i class="fa-solid fa-book-open" aria-hidden="true"></i>
-                    Materiały edukacyjne
-                </a>
+                <div class="hidden lg:flex">
+                    <a href="{{ site_route('materials.index') }}"
+                       class="inline-flex min-h-11 flex-none items-center gap-2 rounded-md bg-ink px-5 text-sm font-bold text-white transition hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2">
+                        <i class="fa-solid fa-book-open" aria-hidden="true"></i>
+                        Materiały edukacyjne
+                    </a>
+                </div>
             @endif
         @else
         @unless ($headerLayout === 'brand_bar')

@@ -652,4 +652,13 @@ class FeerTemplateTest extends TestCase
         $this->assertStringContainsString('min-h-14', $html);
         $this->assertStringContainsString('background-color: #1d1d1a', $html);
     }
+
+    public function test_okruszki_feer_maja_wlasny_uklad_bez_szarego_paska(): void
+    {
+        SiteSetting::current()->update(['site_template' => 'feer']);
+        \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();
+        \Illuminate\Support\Facades\Cache::flush();
+
+        $this->get('/kontakt')->assertOk()->assertSee('fa-chevron-right', false)->assertDontSee('border-b border-gray-200 bg-gray-50"><nav aria-label="Ścieżka', false);
+    }
 }
