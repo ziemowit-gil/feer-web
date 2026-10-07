@@ -214,10 +214,20 @@
 
         @include('partials.mobile-nav-toggle', ['panelId' => 'main-nav-panel', 'onBrand' => $inlineOnBrand, 'hideAt' => 'lg'])
 
+        @php $feerMaterials = ($siteSettings->site_template ?? 'default') === 'feer' && $siteSettings->isModuleEnabled('materials'); @endphp
         @unless ($headerLayout === 'brand_bar')
-            <nav aria-label="Menu główne" class="hidden lg:block">
-                @include('partials.main-nav-items', ['onBrand' => $inlineOnBrand, 'navDarkText' => $siteSettings->navDarkText()])
-            </nav>
+            <div class="hidden items-center gap-4 lg:flex">
+                <nav aria-label="Menu główne">
+                    @include('partials.main-nav-items', ['onBrand' => $inlineOnBrand, 'navDarkText' => $siteSettings->navDarkText()])
+                </nav>
+                @if ($feerMaterials)
+                    <a href="{{ site_route('materials.index') }}"
+                       class="inline-flex min-h-11 flex-none items-center gap-2 rounded-md bg-ink px-5 text-sm font-bold text-white transition hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2">
+                        <i class="fa-solid fa-book-open" aria-hidden="true"></i>
+                        Materiały edukacyjne
+                    </a>
+                @endif
+            </div>
         @endunless
     </div>
 
@@ -229,6 +239,6 @@
         </nav>
     @endif
 
-    @include('partials.mobile-nav-panel', ['panelId' => 'main-nav-panel', 'hideAt' => 'lg', 'showSupport' => true, 'socials' => $siteSettings->socialLinks()])
+    @include('partials.mobile-nav-panel', ['panelId' => 'main-nav-panel', 'hideAt' => 'lg', 'showSupport' => true, 'socials' => $siteSettings->socialLinks(), 'cta' => $feerMaterials ? ['label' => 'Materiały edukacyjne', 'url' => site_route('materials.index')] : null])
 </div>
 @endif

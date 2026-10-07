@@ -615,4 +615,16 @@ class FeerTemplateTest extends TestCase
         $header = substr($html, $start, strpos($html, '<main') - $start);
         $this->assertStringContainsString('>Materiały edukacyjne</a>', $header);
     }
+
+    public function test_naglowek_feer_w_ukladzie_classic_ma_przycisk_materialow(): void
+    {
+        SiteSetting::current()->update(['site_template' => 'feer', 'header_layout' => 'classic']);
+        \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();
+        \Illuminate\Support\Facades\Cache::flush();
+
+        $html = $this->get('/')->assertOk()->getContent();
+        $start = strpos($html, '<header');
+        $header = substr($html, $start, strpos($html, '<main') - $start);
+        $this->assertStringContainsString('Materiały edukacyjne', $header);
+    }
 }
