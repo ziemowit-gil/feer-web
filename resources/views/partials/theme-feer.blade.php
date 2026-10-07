@@ -108,7 +108,10 @@
     /* Pozycje menu nie łamią się na dwie linijki (np. „O ORGANIZACJI"); gdy jest ich dużo, cały rząd zawija się czysto. */
     @media (min-width: 1024px) {
         .site-header nav ul.flex { flex-wrap: wrap; row-gap: .125rem; }
-        .site-header nav ul > li > a, .site-header nav ul > li > button, .site-header nav ul > li > div > a, .site-header nav ul > li > div > button { white-space: nowrap; }
+        .site-header nav > ul > li > a, .site-header nav > ul > li > button, .site-header nav > ul > li > div > a, .site-header nav > ul > li > div > button,
+        .site-header nav > div > ul > li > a, .site-header nav > div > ul > li > button, .site-header nav > div > ul > li > div > a, .site-header nav > div > ul > li > div > button { white-space: nowrap; }
+        /* Rozwijane podmenu i mega menu: zwykłe zawijanie tekstu, żeby długie nazwy nie nachodziły na sąsiednie kolumny. */
+        .site-header .nav-mega-panel a, .site-header nav li > ul[role="list"] a, .site-header nav li > ul[role="list"] button { white-space: normal; overflow-wrap: anywhere; }
     }
     @media (min-width: 1024px) and (max-width: 1279px) {
         .site-header nav > ul.flex:not(.nav-pills):not(.nav-icons),
@@ -127,7 +130,7 @@
     nav .nav-pills > li > div.border-b-2 > a, nav .nav-pills > li > div.border-b-2 > button { font-size: 1.3125rem; }
     nav .nav-pills li > ul[role="list"] { min-width: 19rem; padding-top: .5rem; padding-bottom: .5rem; }
     nav .nav-pills li > ul[role="list"] a, nav .nav-pills li > ul[role="list"] button { font-size: 1.25rem; line-height: 1.35; padding: .8rem 1.35rem; min-height: 3rem; display: flex; align-items: center; }
-    .nav-mega-panel a { font-size: 1.25rem; }
+    .nav-mega-panel a { font-size: 1.125rem; line-height: 1.35; }
     /* Menu w układzie z podkreśleniem (classic): pozycje główne o 3 px większe (18 → 21 px). */
     .site-header nav > ul:not(.nav-pills) > li > a, .site-header nav > ul:not(.nav-pills) > li > button,
     .site-header nav > ul:not(.nav-pills) > li > div > a, .site-header nav > ul:not(.nav-pills) > li > div > button,

@@ -4,10 +4,11 @@
 @section('meta_description', $bipDocument->summary ?: 'Dokument Biuletynu Informacji Publicznej: ' . $bipDocument->title)
 
 @section('content')
+    @php $feer = ($siteSettings->site_template ?? 'default') === 'feer'; @endphp
     @php $bipLogo = $siteSettings->bipLogoUrl() ?: asset('img/bip-logo.svg'); @endphp
 
     {{-- ── Nagłówek BIP ── --}}
-    <div class="border-b border-gray-200 bg-white">
+    <div class="{{ $feer ? '' : 'border-b border-gray-200 bg-white' }}">
         <div class="mx-auto max-w-5xl px-4 py-5">
             <div class="flex flex-wrap items-center justify-between gap-4">
                 <div class="flex items-center gap-4">
@@ -36,7 +37,7 @@
         <div class="grid gap-8 lg:grid-cols-[220px_1fr]">
 
             {{-- ── Boczne menu ── --}}
-            <aside class="lg:border-r lg:border-gray-100 lg:pr-6">
+            <aside class="{{ $feer ? '' : 'lg:border-r lg:border-gray-100 lg:pr-6' }}">
                 @include('bip._sidebar')
             </aside>
 
@@ -45,7 +46,7 @@
 
                 <header class="mb-8">
                     <div class="mb-3">
-                        <span class="rounded-full bg-blue-50 px-3 py-1 text-xs font-bold text-blue-700">
+                        <span class="px-3 py-1 text-xs font-bold {{ $feer ? 'rounded bg-gray-100 text-ink' : 'rounded-full bg-blue-50 text-blue-700' }}">
                             {{ $bipDocument->categoryLabel() }}
                         </span>
                     </div>

@@ -5,6 +5,7 @@
 
 @section('content')
     @php
+        $feer = ($siteSettings->site_template ?? 'default') === 'feer';
         $bipLogo = $siteSettings->bipLogoUrl() ?: asset('img/bip-logo.svg');
 
         $bipDefault = <<<'HTML'
@@ -23,6 +24,25 @@ HTML;
     @endphp
 
     {{-- ── Nagłówek strony BIP ── --}}
+    @if ($feer)
+        <section>
+            <div class="mx-auto max-w-5xl px-4 pb-4 pt-8">
+                <div class="flex flex-wrap items-end justify-between gap-4">
+                    <div class="flex items-center gap-4">
+                        <img src="{{ $bipLogo }}" alt="Logo Biuletynu Informacji Publicznej" class="h-12 w-auto flex-none object-contain">
+                        <div>
+                            <h1 class="text-2xl font-bold leading-tight text-ink md:text-3xl">Biuletyn Informacji Publicznej</h1>
+                            <p class="mt-0.5 text-sm text-muted">{{ $siteSettings->site_name }}</p>
+                        </div>
+                    </div>
+                    <a href="{{ route('home') }}" class="inline-flex min-h-11 items-center gap-1.5 text-sm font-bold text-brand-dark underline underline-offset-4 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                        <i class="fa-solid fa-arrow-left text-xs" aria-hidden="true"></i>Strona główna organizacji
+                    </a>
+                </div>
+                <span class="mt-4 block h-1 w-14 bg-brand" aria-hidden="true"></span>
+            </div>
+        </section>
+    @else
     <div class="border-b border-gray-200 bg-white">
         <div class="mx-auto max-w-5xl px-4 py-5">
             <div class="flex flex-wrap items-center justify-between gap-4">
@@ -43,18 +63,20 @@ HTML;
         </div>
     </div>
 
+    @endif
+
     {{-- ── Układ dwukolumnowy: boczne menu + treść ── --}}
     <div class="mx-auto max-w-5xl px-4 py-8">
         <div class="grid gap-8 lg:grid-cols-[220px_1fr]">
 
             {{-- ── Boczne menu nawigacyjne ── --}}
-            <aside class="lg:border-r lg:border-gray-100 lg:pr-6">
+            <aside class="{{ $feer ? '' : 'lg:border-r lg:border-gray-100 lg:pr-6' }}">
                 @include('bip._sidebar')
             </aside>
 
             {{-- ── Treść główna ── --}}
             <main>
-                <div class="prose max-w-none text-ink [&_h2]:text-ink [&_h3]:text-brand [&_li::marker]:font-bold [&_li::marker]:text-brand">
+                <div class="prose max-w-none text-ink [&_h2]:text-ink {{ $feer ? '[&_h3]:text-ink' : '[&_h3]:text-brand' }} [&_li::marker]:font-bold [&_li::marker]:text-brand">
                     {!! $siteSettings->bip_intro ?: $bipDefault !!}
                 </div>
 
@@ -81,15 +103,19 @@ HTML;
                         @foreach (\App\Models\BipDocument::CATEGORIES as $catKey => $catLabel)
                             @if ($documents->has($catKey))
                                 <div id="kategoria-{{ $catKey }}" class="mb-10 scroll-mt-6">
+                                    @if ($feer)
+                                        <h3 class="mb-2 text-xs font-bold uppercase tracking-widest text-muted">{{ $catLabel }}</h3>
+                                    @else
                                     <h3 class="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-brand">
                                         <span class="h-px flex-1 bg-brand/20" aria-hidden="true"></span>
                                         {{ $catLabel }}
                                         <span class="h-px flex-1 bg-brand/20" aria-hidden="true"></span>
                                     </h3>
+                                    @endif
 
                                     <ul class="space-y-2" role="list">
                                         @foreach ($documents[$catKey] as $doc)
-                                            <li class="group rounded-lg border border-gray-200 bg-white px-4 py-3 transition hover:border-brand/30 hover:shadow-sm">
+                                            <li class="group transition {{ $feer ? 'rounded-md py-3 pl-4 pr-3 hover:bg-gray-50' : 'rounded-lg border border-gray-200 bg-white px-4 py-3 hover:border-brand/30 hover:shadow-sm' }}" @if ($feer) style="border-left: 4px solid var(--color-brand)" @endif>
                                                 <div class="flex flex-wrap items-start justify-between gap-2">
                                                     <div class="min-w-0 flex-1">
                                                         <a href="{{ route('bip.document', $doc->slug) }}"
@@ -102,7 +128,7 @@ HTML;
                                                     </div>
                                                     @php $files = $doc->getMedia('files'); @endphp
                                                     @if ($files->isNotEmpty())
-                                                        <span class="flex-none rounded-full bg-brand/10 px-2.5 py-0.5 text-xs font-bold text-brand">
+                                                        <span class="flex-none px-2.5 py-0.5 text-xs font-bold {{ $feer ? 'rounded bg-gray-100 text-ink' : 'rounded-full bg-brand/10 text-brand' }}">
                                                             <i class="fa-solid fa-paperclip mr-1" aria-hidden="true"></i>
                                                             {{ $files->count() }} {{ trans_choice('plik|pliki|plików', $files->count()) }}
                                                         </span>

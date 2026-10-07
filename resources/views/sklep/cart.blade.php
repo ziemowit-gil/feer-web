@@ -10,8 +10,15 @@
 @endsection
 
 @section('content')
+    @php
+        $feer = ($siteSettings->site_template ?? 'default') === 'feer';
+        $card = $feer ? 'rounded-md bg-gray-50' : 'rounded-xl border border-gray-200 bg-white';
+        $inp = $feer ? 'w-full rounded-t-md rounded-b-none border-0 border-b-2 border-gray-500 bg-gray-100 text-base text-ink focus:border-brand focus:bg-white focus:outline-none focus:ring-0' : 'w-full rounded border-gray-300 focus:border-brand focus:ring-brand';
+        $btn = $feer ? 'rounded-md' : 'rounded';
+    @endphp
     <section class="mx-auto max-w-2xl px-4 py-12">
-        <h1 class="mb-8 text-3xl font-bold text-ink">Koszyk</h1>
+        <h1 class="{{ $feer ? 'mb-3 text-2xl md:text-3xl' : 'mb-8 text-3xl' }} font-bold text-ink">Koszyk</h1>
+        @if ($feer)<span class="mb-8 block h-1 w-14 bg-brand" aria-hidden="true"></span>@endif
 
         @if (session('status'))
             <p class="mb-6 rounded-lg bg-green-50 px-4 py-2 text-sm font-bold text-green-700">{{ session('status') }}</p>
@@ -24,10 +31,10 @@
 
         @if ($items->isEmpty())
             <p class="text-muted">Twój koszyk jest pusty.
-                <a href="{{ route('sklep.index') }}" class="font-bold text-brand hover:underline">Przejdź do sklepu</a>.
+                <a href="{{ route('sklep.index') }}" class="font-bold {{ $feer ? 'text-brand-dark underline underline-offset-4 hover:text-ink' : 'text-brand hover:underline' }}">Przejdź do sklepu</a>.
             </p>
         @else
-            <div class="overflow-hidden rounded-xl border border-gray-200 bg-white">
+            <div class="overflow-hidden {{ $card }}">
                 @foreach ($items as $material)
                     <div class="flex items-center justify-between gap-3 border-b border-gray-100 p-4 last:border-b-0">
                         <div class="min-w-0">
@@ -44,15 +51,15 @@
                 @endforeach
             </div>
 
-            <div class="mt-6 rounded-xl border border-gray-200 bg-white p-6">
+            <div class="mt-6 {{ $card }} p-6">
                 <form method="POST" action="{{ route('sklep.cart.discount') }}" class="mb-6 flex flex-wrap items-end gap-3">
                     @csrf
                     <div class="flex-1">
                         <label for="code" class="mb-1 block text-sm font-bold">Kod rabatowy</label>
                         <input type="text" id="code" name="code" placeholder="np. TEST10"
-                            class="w-full rounded border-gray-300 uppercase focus:border-brand focus:ring-brand">
+                            class="{{ $inp }} uppercase">
                     </div>
-                    <button type="submit" class="rounded border-2 border-brand px-4 py-2 text-sm font-bold text-brand hover:bg-brand-light">
+                    <button type="submit" class="min-h-11 border-2 px-4 py-2 text-sm font-bold {{ $feer ? 'rounded-md border-ink text-ink hover:bg-gray-100' : 'rounded border-brand text-brand hover:bg-brand-light' }}">
                         Zastosuj
                     </button>
                 </form>
@@ -75,14 +82,14 @@
                 </dl>
             </div>
 
-            <div class="mt-6 rounded-xl border border-gray-200 bg-white p-6">
+            <div class="mt-6 {{ $card }} p-6">
                 <form method="POST" action="{{ route('sklep.checkout') }}" class="space-y-4">
                     @csrf
                     <div>
                         <label for="buyer_email" class="mb-1 block text-sm font-bold">Adres e-mail</label>
                         <input type="email" id="buyer_email" name="buyer_email" value="{{ old('buyer_email', auth()->user()->email ?? '') }}" required
                             placeholder="twoj@email.pl" autocomplete="email"
-                            class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                            class="{{ $inp }}">
                         @error('buyer_email') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                         <p class="mt-1 text-xs text-muted">Na ten adres wyślemy link do pobrania materiałów po zaksięgowaniu wpłaty.</p>
                     </div>
@@ -90,12 +97,12 @@
                     <div>
                         <label for="buyer_name" class="mb-1 block text-sm font-bold">Imię i nazwisko <span class="font-normal text-muted">(opcjonalnie)</span></label>
                         <input type="text" id="buyer_name" name="buyer_name" value="{{ old('buyer_name', auth()->user()->name ?? '') }}"
-                            class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                            class="{{ $inp }}">
                         @error('buyer_name') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
 
                     <button type="submit"
-                        class="inline-flex items-center gap-2 rounded bg-brand px-5 py-2.5 text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-2 focus-visible:outline-brand">
+                        class="inline-flex min-h-11 items-center gap-2 {{ $btn }} bg-brand px-5 py-2.5 text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-2 focus-visible:outline-brand">
                         <i class="fa-solid fa-lock" aria-hidden="true"></i> Przejdź do płatności (Przelewy24)
                     </button>
                 </form>

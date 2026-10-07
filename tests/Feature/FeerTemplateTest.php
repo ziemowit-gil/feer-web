@@ -938,4 +938,26 @@ class FeerTemplateTest extends TestCase
         $this->assertStringContainsString('w-16 flex-none flex-col items-center', $html);
         $this->assertStringNotContainsString('rounded-xl bg-white shadow-sm', $html);
     }
+
+    public function test_nowrap_menu_dotyczy_tylko_pozycji_glownych_a_mega_menu_zawija_tekst(): void
+    {
+        $css = view('partials.theme-feer')->render();
+
+        $this->assertStringContainsString('.site-header nav > ul > li > a', $css);
+        $this->assertStringNotContainsString('.site-header nav ul > li > a, .site-header nav ul > li > button', $css);
+        $this->assertStringContainsString('.site-header .nav-mega-panel a', $css);
+    }
+
+    public function test_sprawozdania_feer_maja_nowy_hero_z_podsumowaniem_i_skokiem_do_roku(): void
+    {
+        SiteSetting::current()->update(['site_template' => 'feer']);
+        \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();
+        \Illuminate\Support\Facades\Cache::flush();
+        \App\Models\AnnualReport::create(['year' => 2025]);
+        \App\Models\AnnualReport::create(['year' => 2024]);
+
+        $html = $this->get('/sprawozdania')->assertOk()->assertSee('Przejdź do roku')->getContent();
+        $this->assertStringContainsString('lg:grid-cols-[minmax(0,1fr)_22rem]', $html);
+        $this->assertStringNotContainsString('border-b border-gray-100 bg-gray-50', $html);
+    }
 }

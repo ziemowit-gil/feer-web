@@ -1,4 +1,5 @@
 @php
+    $feerSide = (($siteSettings ?? \App\Models\SiteSetting::current())->site_template ?? 'default') === 'feer';
     $bipSettings   = $siteSettings ?? \App\Models\SiteSetting::current();
     $isExternalMode = ($bipSettings->bip_mode ?? 'internal') === 'external';
     $onBip          = request()->routeIs('bip') && ! request()->routeIs('bip.*');
@@ -16,7 +17,7 @@
         <li>
             <a href="{{ route('bip') }}"
                 @if ($onBip) aria-current="page" @endif
-                class="flex items-center gap-2 rounded px-3 py-2 font-semibold transition {{ $onBip ? 'bg-brand-light text-brand' : 'text-ink hover:bg-gray-50' }} focus-visible:outline-2 focus-visible:outline-brand">
+                class="flex min-h-11 items-center gap-2 rounded-md px-3 py-2 font-semibold transition {{ $onBip ? ($feerSide ? 'bg-brand-light font-bold text-ink' : 'bg-brand-light text-brand') : 'text-ink hover:bg-gray-50' }} focus-visible:outline-2 focus-visible:outline-brand">
                 <i class="fa-solid fa-landmark w-4 text-center text-[0.7rem]" aria-hidden="true"></i>
                 Strona główna BIP
             </a>
@@ -31,7 +32,7 @@
                 <a href="{{ $item->url }}"
                     @if ($isExtLink) target="_blank" rel="noopener" @endif
                     @if ($isCurrentItem) aria-current="page" @endif
-                    class="flex items-center gap-2 rounded px-3 py-2 transition {{ $isCurrentItem ? 'bg-brand-light font-semibold text-brand' : 'text-muted hover:bg-gray-50 hover:text-ink' }} focus-visible:outline-2 focus-visible:outline-brand">
+                    class="flex items-center gap-2 rounded px-3 py-2 transition {{ $isCurrentItem ? ($feerSide ? 'bg-brand-light font-bold text-ink' : 'bg-brand-light font-semibold text-brand') : 'text-muted hover:bg-gray-50 hover:text-ink' }} focus-visible:outline-2 focus-visible:outline-brand">
                     @if ($item->icon)
                         <i class="{{ $item->icon }} w-4 text-center text-[0.7rem]" aria-hidden="true"></i>
                     @endif
