@@ -69,12 +69,12 @@
                                            class="group flex items-center gap-4 rounded-md py-4 pl-4 pr-3 transition hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
                                            style="border-left: 4px solid {{ $accent }}">
                                             @if ($project->image_url)
-                                                <img src="{{ $project->image_url }}" alt="" loading="lazy" class="hidden h-16 w-24 flex-none rounded-md object-cover sm:block">
+                                                <img src="{{ $project->image_url }}" alt="" loading="lazy" class="h-14 w-20 flex-none rounded-md object-cover sm:h-16 sm:w-24">
                                             @endif
                                             <span class="min-w-0 flex-1">
                                                 <span class="block text-lg font-bold leading-snug text-ink group-hover:text-brand-dark">{{ $project->title }}</span>
-                                                @if ($project->excerpt)
-                                                    <span class="mt-1 line-clamp-2 block text-sm leading-relaxed text-muted">{{ $project->excerpt }}</span>
+                                                @if ($teaser = $project->teaser())
+                                                    <span class="mt-1 line-clamp-2 block text-sm leading-relaxed text-muted">{{ $teaser }}</span>
                                                 @endif
                                             </span>
                                             <span class="flex-none text-lg text-brand-dark transition group-hover:translate-x-1" aria-hidden="true">→</span>

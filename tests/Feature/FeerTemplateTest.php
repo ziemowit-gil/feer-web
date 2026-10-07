@@ -637,4 +637,15 @@ class FeerTemplateTest extends TestCase
 
         $this->get('/')->assertOk()->assertSee('min-h-32', false)->assertSee('Panel kursanta');
     }
+
+    public function test_wiersze_projektow_feer_maja_mikropis_z_tresci_gdy_brak_zajawki(): void
+    {
+        SiteSetting::current()->update(['site_template' => 'feer']);
+        \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();
+        \Illuminate\Support\Facades\Cache::flush();
+        $cat = \App\Models\Category::create(['name' => 'Dla każdego', 'slug' => 'dla-kazdego', 'order' => 1]);
+        \App\Models\Project::create(['category_id' => $cat->id, 'title' => 'Projekt X', 'slug' => 'projekt-x', 'content' => '<p>Opis zajęć dla wolontariuszy.</p>', 'is_published' => true, 'order' => 1]);
+
+        $this->get('/projekty')->assertOk()->assertSee('Opis zajęć dla wolontariuszy.');
+    }
 }

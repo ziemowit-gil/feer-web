@@ -61,6 +61,17 @@ class Project extends Model implements HasMedia
         'custom_sections' => 'array',
     ];
 
+    /** Mikropis do list projektów: zajawka, a gdy jej brak — „dla kogo”, a potem początek treści. */
+    public function teaser(int $limit = 140): ?string
+    {
+        $text = trim((string) ($this->excerpt ?: $this->for_whom));
+        if ($text === '') {
+            $text = trim(preg_replace('/\s+/u', ' ', html_entity_decode(strip_tags(str_replace(['</p>', '<br>', '<br/>', '<br />', '</li>'], ' ', (string) $this->content)), ENT_QUOTES | ENT_HTML5, 'UTF-8')));
+        }
+
+        return $text === '' ? null : \Illuminate\Support\Str::limit(strip_tags($text), $limit);
+    }
+
     public function resolveRouteBindingQuery($query, $value, $field = null)
     {
         return parent::resolveRouteBindingQuery($query, $value, $field)->forCurrentSite();
