@@ -19,6 +19,9 @@
     h1, h2, h3, h4, h5, h6 { font-weight: 700; }
     /* Płasko: bez gradientów (przesłony zdjęć zostają jako jednolite przyciemnienie) i bez cieni. */
     [class*="bg-gradient-to"] { background-image: none !important; background-color: rgb(0 0 0 / .62); }
+    /* Tailwind 4: gradienty to klasy bg-linear-to-* — też wyłączone (przesłony zdjęć zostają jednolitym przyciemnieniem). */
+    [class*="bg-linear-to"] { background-image: none !important; }
+    [class*="bg-linear-to"][class*="from-black"] { background-color: rgb(0 0 0 / .62); }
     .shadow, .shadow-sm, .shadow-md, .shadow-lg, .shadow-xl, .shadow-2xl { box-shadow: none !important; }
     /* Mniej kółek i dużych zaokrągleń: karty i przyciski-linki. */
     .rounded-xl, .rounded-2xl, .rounded-3xl { border-radius: .5rem !important; }

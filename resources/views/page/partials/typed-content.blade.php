@@ -372,7 +372,25 @@
 
         @case('stats')
         {{-- Statystyki: kolorowe tło + białe karty (zamiast płaskiego szarego pasa), animacja liczenia --}}
-        @if ($aboutStats->isNotEmpty())
+        @if ($aboutStats->isNotEmpty() && ($siteSettings->site_template ?? 'default') === 'feer')
+            {{-- FEER: duże liczby bez kart i ramek — pasek koloru marki nad każdą liczbą, liczba ink 5xl, podpis muted (kontrast ≥ 4,5:1); animacja liczenia zachowana. --}}
+            <section id="sekcja-stats" class="bg-gray-50 px-4 py-16" aria-label="W liczbach" data-countup>
+                <div class="mx-auto max-w-6xl">
+                    <h2 class="mb-10 text-2xl font-bold text-ink md:text-3xl">W liczbach</h2>
+                    <dl class="grid gap-x-8 gap-y-10 sm:grid-cols-2 lg:grid-cols-4">
+                        @foreach ($aboutStats as $stat)
+                            <div class="border-t-4 border-brand pt-4">
+                                <dt class="sr-only">{{ $stat['label'] ?? '' }}</dt>
+                                <dd>
+                                    <span class="block text-4xl font-extrabold leading-none tracking-tight text-ink md:text-5xl" data-countup-value>{{ $stat['value'] ?? '' }}</span>
+                                    <span class="mt-3 block text-sm font-bold text-muted">{{ $stat['label'] ?? '' }}</span>
+                                </dd>
+                            </div>
+                        @endforeach
+                    </dl>
+                </div>
+            </section>
+        @elseif ($aboutStats->isNotEmpty())
             <section id="sekcja-stats" class="bg-linear-to-br from-brand-light to-white px-4 py-14" aria-label="W liczbach" data-countup>
                 <dl class="mx-auto flex max-w-4xl flex-wrap items-center justify-center gap-4">
                     @foreach ($aboutStats as $stat)

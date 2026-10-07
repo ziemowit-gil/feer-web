@@ -383,4 +383,29 @@ class FeerTemplateTest extends TestCase
         \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();
         $this->get('/')->assertOk()->assertSee('<section class="bg-white py-10" aria-labelledby="feer-shortcuts-heading"', false);
     }
+
+    public function test_sekcja_w_liczbach_feer_to_duze_liczby_bez_kart(): void
+    {
+        \App\Models\Page::create(['title' => 'O fundacji', 'slug' => 'o-fundacji-stat', 'type' => 'about', 'is_published' => true, 'about_stats' => [['value' => '120', 'label' => 'szkoleń'], ['value' => '35', 'label' => 'organizacji']]]);
+
+        $this->get('/o-fundacji-stat')->assertOk()->assertSee('rounded-2xl bg-white px-6 py-6', false);
+
+        SiteSetting::current()->update(['site_template' => 'feer']);
+        \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();
+        \Illuminate\Support\Facades\Cache::flush();
+
+        $html = $this->get('/o-fundacji-stat')->assertOk()->assertSee('szkoleń')->assertSee('data-countup-value', false)->getContent();
+        $this->assertStringContainsString('border-t-4 border-brand pt-4', $html);
+        $this->assertStringNotContainsString('rounded-2xl bg-white px-6 py-6', $html);
+    }
+
+    public function test_motyw_feer_wylacza_gradienty_tailwind_4(): void
+    {
+        SiteSetting::current()->update(['site_template' => 'feer']);
+        \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();
+
+        $html = $this->get('/')->assertOk()->getContent();
+        $this->assertStringContainsString('[class*="bg-linear-to"]', $html);
+        $this->assertStringContainsString('[class*="bg-gradient-to"]', $html);
+    }
 }
