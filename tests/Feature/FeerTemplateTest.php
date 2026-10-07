@@ -316,6 +316,8 @@ class FeerTemplateTest extends TestCase
         $this->assertStringContainsString('feer-flat', $support);
         $this->assertStringContainsString('id="wesprzyj-hero"', $support);
         $this->assertStringNotContainsString('bg-linear-to-br', $support);
+        $this->assertStringContainsString('id="methods-heading"', $support);
+        $this->assertStringContainsString('id="support-sticky"', $support);
 
         $this->get('/wsparcie/darowizna')->assertOk()->assertSee('feer-flat', false);
 

@@ -94,6 +94,9 @@ class SupportController extends Controller
         $volunteeringEnabled = $settings->isModuleEnabled('volunteering');
         $cooperationPage = Page::where('type', 'wspolpraca')->where('is_published', true)->orderBy('order')->first();
 
-        return view('support.show', compact('stats', 'photos', 'partners', 'latestNews', 'impacts', 'faq', 'volunteeringEnabled', 'cooperationPage'));
+        // Szablon FEER ma własny układ strony wsparcia.
+        $view = $settings->site_template === 'feer' ? 'support.show-feer' : 'support.show';
+
+        return view($view, compact('stats', 'photos', 'partners', 'latestNews', 'impacts', 'faq', 'volunteeringEnabled', 'cooperationPage'));
     }
 }
