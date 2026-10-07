@@ -46,6 +46,7 @@
                         <input type="text" name="hub_links[{{ $i }}][url]" value="{{ $row['url'] ?? '' }}" placeholder="Adres (URL lub /sciezka)" aria-label="Adres linku {{ $i + 1 }}" class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
                     </div>
                     <input type="text" name="hub_links[{{ $i }}][description]" value="{{ $row['description'] ?? '' }}" placeholder="Krótki opis pod tytułem" aria-label="Opis kafelka {{ $i + 1 }}" class="w-full rounded border-gray-300 text-xs focus:border-brand focus:ring-brand">
+                    <input type="url" name="hub_links[{{ $i }}][image]" value="{{ $row['image'] ?? '' }}" placeholder="Zdjęcie w tle kafelka — adres URL (opcjonalnie; szablon FEER)" aria-label="Zdjęcie w tle kafelka {{ $i + 1 }}" class="w-full rounded border-gray-300 text-xs focus:border-brand focus:ring-brand">
                     <div class="grid gap-2 sm:grid-cols-3">
                         <input type="text" name="hub_links[{{ $i }}][icon]" value="{{ $row['icon'] ?? '' }}" placeholder="fa-solid fa-handshake" data-icon-picker data-icon-format="class" aria-label="Ikona {{ $i + 1 }}" class="w-full rounded border-gray-300 text-xs focus:border-brand focus:ring-brand">
                         <select name="hub_links[{{ $i }}][color]" aria-label="Kolor kafelka {{ $i + 1 }}" class="w-full rounded border-gray-300 text-xs focus:border-brand focus:ring-brand">
@@ -71,6 +72,7 @@
                     <input type="text" name="hub_links[__INDEX__][url]" placeholder="Adres (URL lub /sciezka)" aria-label="Adres linku" class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
                 </div>
                 <input type="text" name="hub_links[__INDEX__][description]" placeholder="Krótki opis pod tytułem" aria-label="Opis kafelka" class="w-full rounded border-gray-300 text-xs focus:border-brand focus:ring-brand">
+                <input type="url" name="hub_links[__INDEX__][image]" placeholder="Zdjęcie w tle kafelka — adres URL (opcjonalnie; szablon FEER)" aria-label="Zdjęcie w tle kafelka" class="w-full rounded border-gray-300 text-xs focus:border-brand focus:ring-brand">
                 <div class="grid gap-2 sm:grid-cols-3">
                     <input type="text" name="hub_links[__INDEX__][icon]" placeholder="fa-solid fa-handshake" data-icon-picker data-icon-format="class" aria-label="Ikona" class="w-full rounded border-gray-300 text-xs focus:border-brand focus:ring-brand">
                     <select name="hub_links[__INDEX__][color]" aria-label="Kolor kafelka" class="w-full rounded border-gray-300 text-xs focus:border-brand focus:ring-brand">

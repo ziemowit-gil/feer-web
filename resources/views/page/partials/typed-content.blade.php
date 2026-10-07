@@ -877,13 +877,19 @@
                     @endphp
                     <li class="h-full">
                         <a href="{{ $link['url'] }}"
-                           class="feer-card group flex min-h-44 h-full flex-col justify-between rounded-md p-6 transition hover:-translate-y-0.5 hover:opacity-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2"
+                           class="feer-card group relative flex min-h-44 h-full flex-col justify-between overflow-hidden rounded-md p-6 transition hover:-translate-y-0.5 hover:opacity-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2"
                            style="background-color: {{ $pal['bg'] }}; color: {{ $pal['text'] }}">
-                            <span>
+                            @if (filled($link['image'] ?? null))
+                                {{-- Zdjęcie w tle + jednolita ciemna przesłona (bez gradientu), tekst biały — kontrast ≥ 7:1 przy przesłonie 62% --}}
+                                @php $pal = ['bg' => '#1d1d1a', 'text' => '#ffffff']; @endphp
+                                <span class="pointer-events-none absolute inset-0 rounded-md bg-cover bg-center" style="background-image: url('{{ $link['image'] }}')" aria-hidden="true"></span>
+                                <span class="pointer-events-none absolute inset-0 rounded-md" style="background-color: rgba(29,29,26,.62)" aria-hidden="true"></span>
+                            @endif
+                            <span class="relative" @if (filled($link['image'] ?? null)) style="color:#fff" @endif>
                                 <i class="{{ filled($link['icon'] ?? null) ? $link['icon'] : 'fa-solid fa-file-lines' }} mb-3 block text-3xl" aria-hidden="true"></i>
                                 <span class="block text-xl font-bold leading-snug" lang="pl" style="overflow-wrap: break-word; hyphens: auto">{{ $link['label'] }}</span>
                             </span>
-                            <span class="mt-4 flex items-end justify-between gap-3">
+                            <span class="relative mt-4 flex items-end justify-between gap-3" @if (filled($link['image'] ?? null)) style="color:#fff" @endif>
                                 <span class="line-clamp-3 text-sm leading-snug">{{ filled($link['description'] ?? null) ? $link['description'] : $ctaLabel }}</span>
                                 <span class="flex-none text-2xl transition group-hover:translate-x-1" aria-hidden="true">→</span>
                             </span>

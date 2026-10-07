@@ -708,10 +708,14 @@ class PageController extends Controller
             'hub_links.*.url' => ['nullable', 'string', 'max:500'],
             'hub_links.*.description' => ['nullable', 'string', 'max:255'],
             'hub_links.*.icon' => ['nullable', 'string', 'max:100'],
+            'hub_links.*.color' => ['nullable', 'string', 'max:20'],
+            'hub_links.*.cta_label' => ['nullable', 'string', 'max:80'],
+            'hub_links.*.image' => ['nullable', 'string', 'max:1000'],
             'tiles' => ['nullable', 'array'],
             'tiles.*.label' => ['nullable', 'string', 'max:120'],
             'tiles.*.url' => ['nullable', 'string', 'max:500'],
             'tiles.*.icon' => ['nullable', 'string', 'max:100'],
+            'tiles.*.image' => ['nullable', 'string', 'max:1000'],
             'tiles.*.color' => ['nullable', 'regex:/^#[0-9a-fA-F]{6}$/'],
             'tiles.*.cols' => ['nullable', 'integer', 'in:1,2,3'],
             'tiles.*.is_negative' => ['nullable', 'boolean'],
@@ -1063,7 +1067,7 @@ class PageController extends Controller
                 $data['hub_hero'] = trim((string) ($data['hub_hero'] ?? '')) ?: null;
             }
             $data['hub_intro'] = trim((string) ($data['hub_intro'] ?? '')) ?: null;
-            $data['hub_links'] = $this->compactRows($request->input('hub_links', []), ['label', 'url', 'description', 'icon']);
+            $data['hub_links'] = $this->compactRows($request->input('hub_links', []), ['label', 'url', 'description', 'icon', 'color', 'cta_label', 'image']);
             if (\Illuminate\Support\Facades\Schema::hasColumn('pages', 'hub_tiles_enabled')) {
                 $data['hub_tiles_enabled'] = $request->boolean('hub_tiles_enabled');
             }
@@ -1085,6 +1089,7 @@ class PageController extends Controller
                     'label'       => $label,
                     'url'         => $url,
                     'icon'        => trim((string) ($row['icon'] ?? 'bi-lightning')),
+                    'image'       => filled($row['image'] ?? null) ? trim($row['image']) : null,
                     'color'       => filled($row['color'] ?? null) ? trim($row['color']) : null,
                     'is_negative' => (bool) ($row['is_negative'] ?? false),
                     'cols'        => (int) ($row['cols'] ?? 1),

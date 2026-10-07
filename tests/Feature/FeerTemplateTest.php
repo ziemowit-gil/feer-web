@@ -1040,4 +1040,21 @@ class FeerTemplateTest extends TestCase
         $this->assertStringContainsString('text-2xl md:text-3xl', $html); // długa wartość
         $this->assertStringContainsString('data-countup-value', $html);
     }
+
+    public function test_kafelki_hubow_i_siatki_w_feer_maja_zdjecie_w_tle_z_przeslona(): void
+    {
+        $this->useFeer();
+        \App\Models\Page::create(['title' => 'Hub foto', 'slug' => 'hub-foto', 'type' => 'links_hub', 'is_published' => true,
+            'hub_links' => [['label' => 'Z fotką', 'url' => '/x', 'description' => 'Opis', 'icon' => 'fa-solid fa-star', 'color' => 'blue', 'image' => 'https://example.test/t.jpg']]]);
+        \App\Models\Page::create(['title' => 'Siatka foto', 'slug' => 'siatka-foto', 'type' => 'tiles_grid', 'is_published' => true,
+            'tiles' => [['label' => 'Kafel foto', 'url' => '/y', 'icon' => 'bi-star', 'image' => 'https://example.test/s.jpg']]]);
+
+        $hub = $this->get('/hub-foto')->assertOk()->getContent();
+        $this->assertStringContainsString("url('https://example.test/t.jpg')", $hub);
+        $this->assertStringContainsString('rgba(29,29,26,.62)', $hub);
+
+        $grid = $this->get('/siatka-foto')->assertOk()->getContent();
+        $this->assertStringContainsString("url('https://example.test/s.jpg')", $grid);
+        $this->assertStringContainsString('rgba(29,29,26,.62)', $grid);
+    }
 }

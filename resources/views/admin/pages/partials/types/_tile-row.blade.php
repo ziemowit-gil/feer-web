@@ -59,6 +59,11 @@
             </div>
         </div>
 
+        <div>
+            <label class="mb-1 block text-xs font-bold text-muted">Zdjęcie w tle <span class="font-normal">(opcjonalnie, adres URL — szablon FEER przyciemnia je pod tekstem)</span></label>
+            <input type="url" name="{{ $n }}[image]" value="{{ $t['image'] ?? '' }}" placeholder="https://…/zdjecie.jpg" class="w-full rounded-lg border-gray-300 text-sm focus:border-brand focus:ring-brand">
+        </div>
+
         <div class="flex flex-wrap items-end gap-x-6 gap-y-3 border-t border-gray-100 pt-4">
             <fieldset>
                 <legend class="mb-1 text-xs font-bold text-muted">Szerokość (kolumny)</legend>

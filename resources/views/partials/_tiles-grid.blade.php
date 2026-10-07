@@ -56,6 +56,7 @@
                 $tStrip = $isObj ? (bool) $tile->strip : (bool) ($tile['strip'] ?? false);
                 $tCols  = $isObj ? (int) ($tile->cols ?? 1) : (int) ($tile['cols'] ?? 1);
                 $tDesc  = $isObj ? ($tile->description ?? null) : ($tile['description'] ?? null);
+                $tImage = ($feerTiles ?? false) ? ($isObj ? ($tile->image ?? null) : ($tile['image'] ?? null)) : null; // zdjęcie w tle (tylko FEER)
 
                 // Baza koloru: #hex kafelka → nazwany klucz → kolor marki → paleta awaryjna.
                 $base = \App\Support\Color::isValid($tColor)
@@ -95,14 +96,18 @@
                 @else
                     {{-- KARTA (pionowa) --}}
                     <a href="{{ $tUrl }}"
-                        class="flex h-full min-h-36 flex-col justify-end gap-3 rounded-2xl p-6 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-current"
-                        style="background-color: {{ $bg }}; color: {{ $txt }};">
-                        <span class="inline-flex h-11 w-11 items-center justify-center rounded-xl" style="background: {{ $chip }};">
+                        class="relative flex h-full min-h-36 flex-col justify-end gap-3 overflow-hidden rounded-2xl p-6 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-current"
+                        style="background-color: {{ $bg }}; color: {{ filled($tImage) ? '#ffffff' : $txt }};">
+                        @if (filled($tImage))
+                            <span class="pointer-events-none absolute inset-0 bg-cover bg-center" style="background-image: url('{{ $tImage }}')" aria-hidden="true"></span>
+                            <span class="pointer-events-none absolute inset-0" style="background-color: rgba(29,29,26,.62)" aria-hidden="true"></span>
+                        @endif
+                        <span class="relative inline-flex h-11 w-11 items-center justify-center rounded-xl" style="background: {{ filled($tImage) ? 'rgba(255,255,255,.2)' : $chip }};">
                             <i class="{{ $iconClass }} text-xl" aria-hidden="true"></i>
                         </span>
-                        <span class="block text-lg font-bold leading-tight">{{ $tLabel }}</span>
+                        <span class="relative block text-lg font-bold leading-tight">{{ $tLabel }}</span>
                         @if (filled($tDesc))
-                            <span class="block text-sm opacity-85">{{ $tDesc }}</span>
+                            <span class="relative block text-sm opacity-85">{{ $tDesc }}</span>
                         @endif
                     </a>
                 @endif
