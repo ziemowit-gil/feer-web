@@ -31,6 +31,9 @@
     @include('templates.feer.partials.bands-slot', ['slot' => 'after_trainings'])
     @include('templates.feer.partials.projects')
     @include('templates.feer.partials.bands-slot', ['slot' => 'after_projects'])
+    @if ($siteSettings->isHomepageSectionEnabled('gallery') && $siteSettings->isModuleEnabled('gallery'))
+        @include('templates.feer.partials.gallery')
+    @endif
     @include('templates.feer.partials.support-cta')
     @include('templates.feer.partials.bands-slot', ['slot' => 'end'])
 

@@ -204,7 +204,7 @@ class HomeController extends Controller
         }
 
         if ($template === 'feer') {
-            return $this->ngoHome($settings, $slides, $partners, 'templates.feer.home', $quickLinks);
+            return $this->ngoHome($settings, $slides, $partners, 'templates.feer.home', $quickLinks)->with('gallery', $gallery);
         }
         if ($template === 'federation') {
             return $this->ngoHome($settings, $slides, $partners, 'templates.federation.home');

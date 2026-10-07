@@ -986,4 +986,26 @@ class FeerTemplateTest extends TestCase
     {
         $this->assertStringNotContainsString('border-0 border-b-2 border-gray-500', $this->get('/subskrypcje')->assertOk()->getContent());
     }
+
+    public function test_strona_glowna_feer_ma_mozaike_zdjec_z_galerii(): void
+    {
+        $this->useFeer();
+        $img = \App\Models\GalleryImage::create(['caption' => 'Warsztaty w terenie', 'order' => 1]);
+        $img->addMedia(\Illuminate\Http\UploadedFile::fake()->image('a.jpg', 800, 600))->toMediaCollection('image');
+
+        $html = $this->get('/')->assertOk()->getContent();
+        $this->assertStringContainsString('W obiektywie', $html);
+        $this->assertStringContainsString('Warsztaty w terenie', $html);
+        $this->assertStringContainsString('data-lightbox', $html);
+    }
+
+    public function test_zdjecie_strony_w_feer_to_szeroki_baner(): void
+    {
+        \App\Models\Page::create(['title' => 'Ze zdjęciem', 'slug' => 'ze-zdjeciem', 'type' => 'standard', 'is_published' => true, 'content' => '<p>Treść.</p>', 'content_image' => 'https://example.test/foto.jpg', 'content_image_alt' => 'Opis fotki']);
+        $this->useFeer();
+
+        $html = $this->get('/ze-zdjeciem')->assertOk()->getContent();
+        $this->assertStringContainsString('aspect-[21/9]', $html);
+        $this->assertStringContainsString('alt="Opis fotki"', $html);
+    }
 }
