@@ -3,6 +3,7 @@
     filtr tekstowy (Alpine, bez przeładowania), definicje jako <dl>.
     Hasła powiązane linkują do własnych kotwic, jeśli istnieją w słowniku.
 --}}
+@php $feer = ($siteSettings->site_template ?? 'default') === 'feer'; @endphp
 @php
     $td = $page->typeData();
     $terms = collect($td['terms'])
@@ -39,10 +40,11 @@
 @endpush
 
 <section class="mx-auto max-w-5xl px-4 py-12" x-data="{ q: '' }">
-    <span class="mb-4 inline-flex items-center gap-1.5 rounded-full bg-brand-light px-3 py-1 text-sm font-bold text-brand">
+    <span class="mb-4 inline-flex items-center gap-1.5 {{ $feer ? 'rounded bg-gray-100 text-ink' : 'rounded-full bg-brand-light text-brand' }} px-3 py-1 text-sm font-bold">
         <i class="fa-solid fa-book" aria-hidden="true"></i> Słownik
     </span>
     <h1 class="mb-4 text-3xl font-bold text-ink md:text-4xl">{{ $page->title }}</h1>
+    @if ($feer)<span class="mb-5 block h-1 w-14 bg-brand" aria-hidden="true"></span>@endif
     @if (filled($td['lead'] ?? null))
         <p class="mb-6 max-w-3xl text-lg leading-relaxed text-muted">{{ $td['lead'] }}</p>
     @endif

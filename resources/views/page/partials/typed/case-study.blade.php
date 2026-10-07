@@ -2,6 +2,7 @@
     Typ „Studium przypadku": metryka (klient, sektor, okres) → wyzwanie/rozwiązanie
     → efekty w liczbach → cytat → treść rozwijająca → CTA.
 --}}
+@php $feer = ($siteSettings->site_template ?? 'default') === 'feer'; @endphp
 @php
     $td = $page->typeData();
     $hasCta = filled($td['cta_label'] ?? null) && filled($td['cta_url'] ?? null);
@@ -30,16 +31,17 @@
 @endpush
 
 <section class="mx-auto max-w-5xl px-4 py-12">
-    <span class="mb-4 inline-flex items-center gap-1.5 rounded-full bg-brand-light px-3 py-1 text-sm font-bold text-brand">
+    <span class="mb-4 inline-flex items-center gap-1.5 {{ $feer ? 'rounded bg-gray-100 text-ink' : 'rounded-full bg-brand-light text-brand' }} px-3 py-1 text-sm font-bold">
         <i class="fa-solid fa-chart-line" aria-hidden="true"></i> Studium przypadku
     </span>
     <h1 class="mb-4 text-3xl font-bold text-ink md:text-4xl">{{ $page->title }}</h1>
+    @if ($feer)<span class="mb-5 block h-1 w-14 bg-brand" aria-hidden="true"></span>@endif
     @if (filled($td['lead'] ?? null))
         <p class="mb-6 max-w-3xl text-lg leading-relaxed text-muted">{{ $td['lead'] }}</p>
     @endif
 
     @if ($meta)
-        <dl class="mb-10 grid gap-4 rounded-xl border border-gray-200 bg-gray-50 px-5 py-4 text-sm sm:grid-cols-3">
+        <dl class="mb-10 grid gap-4 {{ $feer ? 'rounded-md bg-gray-50' : 'rounded-xl border border-gray-200 bg-gray-50' }} px-5 py-4 text-sm sm:grid-cols-3">
             @foreach ($meta as $label => $value)
                 <div><dt class="text-xs font-bold uppercase tracking-wide text-muted">{{ $label }}</dt><dd class="font-semibold text-ink">{{ $value }}</dd></div>
             @endforeach
@@ -51,13 +53,13 @@
     @if (filled($td['challenge'] ?? null) || filled($td['solution'] ?? null))
         <div class="grid gap-6 md:grid-cols-2">
             @if (filled($td['challenge'] ?? null))
-                <section class="rounded-2xl border border-gray-200 p-6" aria-labelledby="cs-challenge">
+                <section class="{{ $feer ? 'rounded-md bg-gray-50' : 'rounded-2xl border border-gray-200' }} p-6" aria-labelledby="cs-challenge">
                     <h2 id="cs-challenge" class="mb-3 flex items-center gap-2 text-xl font-bold text-ink"><i class="fa-solid fa-triangle-exclamation text-amber-500" aria-hidden="true"></i> Wyzwanie</h2>
                     <div class="leading-relaxed text-ink">{!! nl2br(e($td['challenge'])) !!}</div>
                 </section>
             @endif
             @if (filled($td['solution'] ?? null))
-                <section class="rounded-2xl border border-brand/30 bg-brand-light/40 p-6" aria-labelledby="cs-solution">
+                <section class="{{ $feer ? 'rounded-md bg-brand-light' : 'rounded-2xl border border-brand/30 bg-brand-light/40' }} p-6" aria-labelledby="cs-solution">
                     <h2 id="cs-solution" class="mb-3 flex items-center gap-2 text-xl font-bold text-ink"><i class="fa-solid fa-lightbulb text-brand" aria-hidden="true"></i> Rozwiązanie</h2>
                     <div class="leading-relaxed text-ink">{!! nl2br(e($td['solution'])) !!}</div>
                 </section>
@@ -98,7 +100,7 @@
 
     @if ($hasCta)
         <div class="mt-12 text-center">
-            <a href="{{ $td['cta_url'] }}" class="inline-flex min-h-12 items-center gap-2 rounded-full bg-brand px-8 text-base font-bold text-white transition hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
+            <a href="{{ $td['cta_url'] }}" class="inline-flex min-h-12 items-center gap-2 {{ $feer ? 'rounded-md' : 'rounded-full' }} bg-brand px-8 text-base font-bold text-white transition hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
                 {{ $td['cta_label'] }} <i class="fa-solid fa-arrow-right text-sm" aria-hidden="true"></i>
             </a>
         </div>

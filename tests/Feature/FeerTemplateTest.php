@@ -1016,4 +1016,15 @@ class FeerTemplateTest extends TestCase
         $this->assertStringContainsString('html.contrast-bw body :is(span, a, i', $css);
         $this->assertStringContainsString('html.contrast-bw body .site-topbar-feer > div:first-child > button[aria-expanded="true"]', $css);
     }
+
+    public function test_typy_stron_oferta_poradnik_slownik_studium_maja_akcent_feer(): void
+    {
+        $this->useFeer();
+        foreach (['service' => 'oferta-t', 'guide' => 'poradnik-t', 'glossary' => 'slownik-t', 'case_study' => 'studium-t'] as $type => $slug) {
+            \App\Models\Page::create(['title' => 'Strona '.$type, 'slug' => $slug, 'type' => $type, 'is_published' => true]);
+            $html = $this->get('/'.$slug)->assertOk()->getContent();
+            $this->assertStringContainsString('h-1 w-14 bg-brand', $html, $type);
+            $this->assertStringContainsString('rounded bg-gray-100 text-ink', $html, $type);
+        }
+    }
 }
