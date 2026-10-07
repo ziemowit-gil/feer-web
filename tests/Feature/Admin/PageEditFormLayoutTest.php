@@ -48,4 +48,18 @@ class PageEditFormLayoutTest extends TestCase
             ->get(route('admin.podstrony.edit', $page))->assertOk()
             ->assertSee('Kliknij, aby wybrać plik, albo przeciągnij go tutaj');
     }
+
+    public function test_edytor_kafelkow_ma_podglad_paleta_i_segmenty(): void
+    {
+        $page = Page::create(['title' => 'Siatka', 'slug' => 'siatka-test', 'type' => 'tiles_grid', 'is_published' => true,
+            'tiles' => [['label' => 'Panel kursanta', 'url' => '/panel', 'icon' => 'bi-person', 'color' => '#1e6dff', 'cols' => 2, 'strip' => false, 'is_negative' => true]]]);
+
+        $this->actingAs(User::factory()->create(['role' => 'admin']))
+            ->get(route('admin.podstrony.edit', $page))->assertOk()
+            ->assertSee('Podgląd kafelka')
+            ->assertSee('Kolory z brandbooka')
+            ->assertSee('tiles[0][label]', false)
+            ->assertSee('tiles[__INDEX__][label]', false)
+            ->assertSee('Negatyw');
+    }
 }
