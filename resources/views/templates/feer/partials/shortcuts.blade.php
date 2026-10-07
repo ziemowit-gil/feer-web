@@ -10,6 +10,8 @@
     // Kolory nazwane → paleta brandbooka (niebieski #1E6DFF, grafit #1D1D1A, pomarańcz #EA8F00); zielony/fioletowy/czerwony zostają dla starszych wpisów.
     $feerNamed = ['blue' => '#1e6dff', 'dark' => '#1d1d1a', 'green' => '#166534', 'purple' => '#7e22ce', 'orange' => '#ea8f00', 'red' => '#b91c1c'];
     $panelWhite = (bool) ($siteSettings->quick_actions_panel_negative ?? false);
+    // Jedna akcja → jeden duży przycisk na całą szerokość (wyższy, większy tekst i ikona).
+    $single = ($quickLinks ?? collect())->count() === 1;
     $qaCols = match (min(($quickLinks ?? collect())->count(), 4)) {
         1 => 'grid-cols-1',
         2 => 'grid-cols-1 sm:grid-cols-2',
@@ -35,16 +37,16 @@
                         @endphp
                         <li>
                             <a href="{{ $qa->url }}" @if ($external) target="_blank" rel="noopener" @endif
-                               class="feer-card group flex min-h-20 items-center gap-4 rounded-md px-5 py-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2 {{ $filled ? 'hover:opacity-90' : ($panelWhite ? 'bg-white' : 'bg-white').' hover:bg-gray-100' }}"
+                               class="feer-card group flex {{ $single ? 'min-h-32 gap-6 px-8 py-6' : 'min-h-20 gap-4 px-5 py-4' }} items-center rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2 {{ $filled ? 'hover:opacity-90' : ($panelWhite ? 'bg-white' : 'bg-white').' hover:bg-gray-100' }}"
                                @if ($filled)
                                    style="background-color: {{ $pal['bg'] }}; color: {{ $pal['text'] }}"
                                @else
                                    style="border: 2px solid {{ $safe }}; color: #1d1d1a"
                                @endif>
-                                <i class="{{ $iconClass }} w-7 flex-none text-center text-2xl" @unless ($filled) style="color: {{ $safe }}" @endunless aria-hidden="true"></i>
-                                <span class="min-w-0 flex-1 text-lg font-bold leading-snug">{{ $qa->label }}</span>
+                                <i class="{{ $iconClass }} flex-none text-center {{ $single ? 'w-12 text-5xl' : 'w-7 text-2xl' }}" @unless ($filled) style="color: {{ $safe }}" @endunless aria-hidden="true"></i>
+                                <span class="min-w-0 flex-1 font-bold leading-snug {{ $single ? 'text-2xl md:text-3xl' : 'text-lg' }}">{{ $qa->label }}</span>
                                 @if ($external)<span class="sr-only">(otwiera się w nowej karcie)</span>@endif
-                                <span class="flex-none text-xl transition group-hover:translate-x-1" aria-hidden="true">→</span>
+                                <span class="flex-none transition {{ $single ? 'text-3xl' : 'text-xl' }} group-hover:translate-x-1" aria-hidden="true">→</span>
                             </a>
                         </li>
                     @endforeach

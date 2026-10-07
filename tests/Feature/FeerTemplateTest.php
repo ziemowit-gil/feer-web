@@ -627,4 +627,14 @@ class FeerTemplateTest extends TestCase
         $header = substr($html, $start, strpos($html, '<main') - $start);
         $this->assertStringContainsString('Materiały edukacyjne', $header);
     }
+
+    public function test_pojedyncza_szybka_akcja_feer_to_duzy_przycisk(): void
+    {
+        SiteSetting::current()->update(['site_template' => 'feer']);
+        \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();
+        \Illuminate\Support\Facades\Cache::flush();
+        \App\Models\QuickAction::create(['label' => 'Panel kursanta', 'url' => '/panel', 'icon' => 'bi-person', 'color' => 'blue', 'order' => 1, 'is_active' => true]);
+
+        $this->get('/')->assertOk()->assertSee('min-h-32', false)->assertSee('Panel kursanta');
+    }
 }
