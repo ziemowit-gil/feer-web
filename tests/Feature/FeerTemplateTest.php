@@ -435,6 +435,7 @@ class FeerTemplateTest extends TestCase
         $this->assertStringContainsString('translateY(-3px)', $home);
         $this->assertStringContainsString('prefers-reduced-motion: reduce', $home);
         $this->assertStringContainsString('feer-card group relative', $home);
+        $this->assertStringContainsString('lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]', $home);
         $this->get('/aktualnosci')->assertOk()->assertSee('feer-card group', false);
     }
 
