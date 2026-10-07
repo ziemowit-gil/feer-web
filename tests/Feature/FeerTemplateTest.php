@@ -162,7 +162,6 @@ class FeerTemplateTest extends TestCase
 
         $html = $this->get('/')->assertOk()->assertSee('Wsparcie IT')->getContent();
         $this->assertStringContainsString('feer-shortcuts-heading', $html);
-        $this->assertStringContainsString('bg-ink text-white', $html);
         $this->assertStringContainsString('divide-y divide-gray-200', $html);
     }
 
@@ -361,5 +360,22 @@ class FeerTemplateTest extends TestCase
         SiteSetting::current()->update(['site_template' => 'ngo_mix']);
         \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();
         $this->get(route('news.show', $news))->assertOk()->assertDontSee('lg:grid-cols-[minmax(0,1fr)_16rem]', false);
+    }
+
+    public function test_na_skroty_maja_obramowke_albo_wypelnienie_zaleznie_od_ustawien(): void
+    {
+        \App\Models\QuickAction::create(['label' => 'Zwykła', 'url' => '/a', 'icon' => 'fa-solid fa-link', 'color' => '#1b66f5', 'is_negative' => false, 'order' => 1]);
+        \App\Models\QuickAction::create(['label' => 'Negatyw', 'url' => '/b', 'icon' => 'fa-solid fa-link', 'color' => '#1456cc', 'is_negative' => true, 'order' => 2]);
+        SiteSetting::current()->update(['site_template' => 'feer', 'quick_actions_panel_negative' => false]);
+        \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();
+
+        $html = $this->get('/')->assertOk()->getContent();
+        $this->assertStringContainsString('border: 2px solid #1b66f5', $html);          // zwykła: obramówka w kolorze akcji
+        $this->assertStringContainsString('background-color: #1456cc', $html);          // negatyw: wypełnienie
+        $this->assertMatchesRegularExpression('/<section class="bg-gray-50 py-10" aria-labelledby="feer-shortcuts-heading"/', $html);
+
+        SiteSetting::current()->update(['quick_actions_panel_negative' => true]);
+        \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();
+        $this->get('/')->assertOk()->assertSee('<section class="bg-white py-10" aria-labelledby="feer-shortcuts-heading"', false);
     }
 }
