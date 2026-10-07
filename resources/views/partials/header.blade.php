@@ -29,6 +29,12 @@
     $wmCta2Label = trim($siteSettings->wide_mission_cta2_label ?? '');
     $wmCta2Url   = trim($siteSettings->wide_mission_cta2_url ?? '');
     $wmHasCta2   = $wmCta2Label !== '' && $wmCta2Url !== '';
+    // Szablon FEER: gdy drugi przycisk nie jest ustawiony, nagłówek pokazuje wyraźny przycisk do materiałów edukacyjnych.
+    if (! $wmHasCta2 && ($siteSettings->site_template ?? 'default') === 'feer' && $siteSettings->isModuleEnabled('materials') && ! str_contains($wmCtaUrl, 'materialy')) {
+        $wmCta2Label = 'Materiały edukacyjne';
+        $wmCta2Url   = site_route('materials.index');
+        $wmHasCta2   = true;
+    }
 
     $wmMission = null;
     if ($siteSettings->wide_mission_show_mission) {

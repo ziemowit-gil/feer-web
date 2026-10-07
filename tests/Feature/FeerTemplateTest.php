@@ -603,4 +603,16 @@ class FeerTemplateTest extends TestCase
 
         $this->get('/')->assertOk()->assertSee('Materiały edukacyjne', false)->assertSee(route('materials.index'), false);
     }
+
+    public function test_naglowek_feer_ma_przycisk_materialow_edukacyjnych(): void
+    {
+        SiteSetting::current()->update(['site_template' => 'feer', 'header_layout' => 'wide_mission']);
+        \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();
+        \Illuminate\Support\Facades\Cache::flush();
+
+        $html = $this->get('/')->assertOk()->getContent();
+        $start = strpos($html, '<header');
+        $header = substr($html, $start, strpos($html, '<main') - $start);
+        $this->assertStringContainsString('>Materiały edukacyjne</a>', $header);
+    }
 }
