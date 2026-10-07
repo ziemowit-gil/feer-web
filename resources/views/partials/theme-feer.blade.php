@@ -24,6 +24,10 @@
     .rounded-xl, .rounded-2xl, .rounded-3xl { border-radius: .5rem !important; }
     a.rounded-full { border-radius: .375rem !important; }
 
+    /* Poziome rzędy przycisków-kategorii (na telefonie przewijane palcem): bez widocznego paska przewijania. */
+    .feer-pills-row { scrollbar-width: none; -ms-overflow-style: none; }
+    .feer-pills-row::-webkit-scrollbar { display: none; }
+
     /* Menu główne i podmenu: większe pozycje (czytelność i cele dotyku ≥ 44 px). */
     nav .nav-pills > li > a, nav .nav-pills > li > button, nav .nav-pills > li > div.border-b-2 { font-size: 1.125rem; padding: .7rem 1.35rem; }
     nav .nav-pills > li > div.border-b-2 > a, nav .nav-pills > li > div.border-b-2 > button { font-size: 1.125rem; }

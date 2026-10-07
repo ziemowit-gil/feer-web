@@ -48,7 +48,7 @@
                 @if ($groups->count() > 1)
                     <nav aria-label="Grupy materiałów" class="lg:sticky lg:top-6 lg:self-start">
                         <p class="mb-3 text-xs font-bold uppercase tracking-widest text-muted">Dla kogo</p>
-                        <ul class="flex gap-2 overflow-x-auto pb-2 lg:flex-col lg:gap-1 lg:overflow-visible lg:pb-0" role="list">
+                        <ul class="feer-pills-row flex gap-2 overflow-x-auto pb-2 lg:flex-col lg:gap-1 lg:overflow-visible lg:pb-0" role="list">
                             @foreach ($groups as $gKey => $items)
                                 <li class="shrink-0">
                                     <a href="#grupa-{{ $loop->index }}"

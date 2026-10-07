@@ -31,19 +31,19 @@
 
     <div class="mx-auto max-w-6xl px-4 py-10">
         <nav aria-label="Kategorie aktualności" class="mb-10">
-            <ul class="flex gap-2 overflow-x-auto pb-1" role="list">
-                <li class="shrink-0">
+            <ul class="flex flex-wrap gap-2" role="list">
+                <li>
                     <a href="{{ site_route('news.index') }}" @unless ($activeCategory) aria-current="page" @endunless
                        class="{{ $pill }} {{ $activeCategory ? 'bg-gray-100 text-ink hover:bg-gray-200' : 'bg-ink text-white' }}">Wszystkie</a>
                 </li>
                 @foreach ($categories as $category)
                     @php $isActive = $activeCategory && $activeCategory->id === $category->id; @endphp
-                    <li class="shrink-0">
+                    <li>
                         <a href="{{ site_route('news.index') }}?kategoria={{ $category->slug }}" @if ($isActive) aria-current="page" @endif
                            class="{{ $pill }} {{ $isActive ? 'bg-ink text-white' : 'bg-gray-100 text-ink hover:bg-gray-200' }}">{{ $category->name }}</a>
                     </li>
                 @endforeach
-                <li class="shrink-0"><a href="{{ route('news.archiwum') }}" class="{{ $pill }} text-brand-dark underline underline-offset-4 hover:no-underline">Archiwum →</a></li>
+                <li><a href="{{ route('news.archiwum') }}" class="{{ $pill }} text-brand-dark underline underline-offset-4 hover:no-underline">Archiwum →</a></li>
             </ul>
         </nav>
 

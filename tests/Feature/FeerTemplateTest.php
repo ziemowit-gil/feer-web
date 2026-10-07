@@ -336,6 +336,7 @@ class FeerTemplateTest extends TestCase
 
         $html = $this->get('/aktualnosci')->assertOk()->assertSee('Pierwsza wiadomość')->assertSee('Trzecia wiadomość')->getContent();
         $this->assertStringContainsString('Kategorie aktualności', $html);
+        $this->assertStringNotContainsString('overflow-x-auto pb-1', $html);
         $this->assertStringContainsString('text-2xl font-extrabold leading-tight text-ink md:text-4xl', $html);
         $this->assertStringContainsString('bg-ink text-white', $html);
 
