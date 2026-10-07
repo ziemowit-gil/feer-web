@@ -176,6 +176,7 @@ final class AdminMenu
                 $this->item('settings', 'Ustawienia strony', 'admin.ustawienia.edit', 'fa-sliders',
                     active: 'admin.ustawienia.*',
                     children: $this->settingsChildren()),
+                $this->item('colors', 'Kolory', 'admin.kolory.edit', 'fa-palette', active: 'admin.kolory.*'),
                 $this->item('templates', 'Szablony', 'admin.szablony.manage', 'fa-clone',
                     active: ['admin.szablony.*', 'admin.mail-templates.*'],
                     children: [

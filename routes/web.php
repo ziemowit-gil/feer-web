@@ -44,6 +44,7 @@ use App\Http\Controllers\Admin\QuickActionController as AdminQuickActionControll
 use App\Http\Controllers\Admin\RedirectController as AdminRedirectController;
 use App\Http\Controllers\Admin\GdprClauseController as AdminGdprClauseController;
 use App\Http\Controllers\Admin\AccessibilityReportController as AdminAccessibilityReportController;
+use App\Http\Controllers\Admin\ColorController as AdminColorController;
 use App\Http\Controllers\Admin\SiteSettingController;
 use App\Http\Controllers\Admin\TimelineController as AdminTimelineController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
@@ -559,6 +560,11 @@ Route::middleware(['auth', 'verified', '2fa', 'admin-site'])->prefix(config('app
         // Układ strony głównej (drag-and-drop z frontendu).
         Route::post('homepage/section-order', [HomepageLayoutController::class, 'updateSectionOrder'])
             ->name('homepage.section-order');
+
+        Route::get('kolory', [AdminColorController::class, 'edit'])->name('kolory.edit');
+        Route::put('kolory', [AdminColorController::class, 'update'])->name('kolory.update');
+        Route::post('kolory/brandbook-akcje', [AdminColorController::class, 'applyBrandbook'])->name('kolory.brandbook-akcje');
+        Route::post('kolory/wyczysc-menu', [AdminColorController::class, 'clearNavColors'])->name('kolory.wyczysc-menu');
 
         Route::get('ustawienia', [SiteSettingController::class, 'edit'])->name('ustawienia.edit');
         Route::put('ustawienia', [SiteSettingController::class, 'update'])->name('ustawienia.update');
