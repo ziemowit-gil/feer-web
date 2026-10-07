@@ -673,4 +673,17 @@ class FeerTemplateTest extends TestCase
         $this->assertStringContainsString('background-color: #1e6dff', $html);
         $this->assertStringNotContainsString('#7e22ce', $html);
     }
+
+    public function test_naglowek_feer_classic_ma_ikony_social_obok_przycisku(): void
+    {
+        SiteSetting::current()->update(['site_template' => 'feer', 'header_layout' => 'classic', 'facebook_url' => 'https://facebook.com/feer']);
+        \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();
+        \Illuminate\Support\Facades\Cache::flush();
+
+        $html = $this->get('/')->assertOk()->getContent();
+        $start = strpos($html, '<header');
+        $header = substr($html, $start, strpos($html, '<main') - $start);
+        $this->assertStringContainsString('rounded-md text-xl text-ink', $header);
+        $this->assertStringContainsString('Facebook — otwiera się w nowej karcie', $header);
+    }
 }

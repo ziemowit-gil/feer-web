@@ -220,13 +220,29 @@
             $feerTwoRows = ($siteSettings->site_template ?? 'default') === 'feer' && $headerLayout !== 'brand_bar';
         @endphp
         @if ($feerTwoRows)
-            @if ($feerMaterials)
-                <div class="hidden lg:flex">
-                    <a href="{{ site_route('materials.index') }}"
-                       class="inline-flex min-h-11 flex-none items-center gap-2 rounded-md bg-ink px-5 text-sm font-bold text-white transition hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2">
-                        <i class="fa-solid fa-book-open" aria-hidden="true"></i>
-                        Materiały edukacyjne
-                    </a>
+            @php $feerSocials = $siteSettings->socialLinks(5); @endphp
+            @if ($feerMaterials || $feerSocials)
+                <div class="hidden items-center gap-3 lg:flex">
+                    @if ($feerSocials)
+                        <ul class="flex items-center gap-1" role="list" aria-label="Media społecznościowe">
+                            @foreach ($feerSocials as [$socialUrl, $socialIcon, $socialLabel])
+                                <li>
+                                    <a href="{{ $socialUrl }}" target="_blank" rel="noopener"
+                                       class="flex h-11 w-11 items-center justify-center rounded-md text-xl text-ink transition hover:bg-brand-light hover:text-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2"
+                                       aria-label="{{ $socialLabel }} — otwiera się w nowej karcie">
+                                        <i class="{{ $socialIcon }}" aria-hidden="true"></i>
+                                    </a>
+                                </li>
+                            @endforeach
+                        </ul>
+                    @endif
+                    @if ($feerMaterials)
+                        <a href="{{ site_route('materials.index') }}"
+                           class="inline-flex min-h-11 flex-none items-center gap-2 rounded-md bg-ink px-5 text-sm font-bold text-white transition hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2">
+                            <i class="fa-solid fa-book-open" aria-hidden="true"></i>
+                            Materiały edukacyjne
+                        </a>
+                    @endif
                 </div>
             @endif
         @else
