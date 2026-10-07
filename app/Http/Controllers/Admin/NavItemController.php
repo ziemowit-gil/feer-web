@@ -378,6 +378,7 @@ class NavItemController extends Controller
             ],
             'order' => ['nullable', 'integer', 'min:0'],
             'button_color' => ['nullable', 'regex:/^#[0-9a-fA-F]{6}$/'],
+            'accent_color' => ['nullable', 'regex:/^#[0-9a-fA-F]{6}$/'],
         ]);
 
         $data['url'] = ($data['url'] ?? null) ?: '#';

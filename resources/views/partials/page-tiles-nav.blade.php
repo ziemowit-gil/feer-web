@@ -4,17 +4,15 @@
     Dostępność: lista linków, cały kafelek klikalny, widoczny fokus, tytuł jako tekst linku.
 --}}
 @php
-    $tilePalette = ['#1a56a4', '#166534', '#7e22ce', '#c2410c'];
+    // Paleta z brandbooka FEER 2024: niebieski, grafit, pomarańcz (działania z partnerami), jasny niebieski.
+    $tilePalette = ['#1e6dff', '#1d1d1a', '#ea8f00', '#cbd5e7'];
 @endphp
 @if ($tiles->isNotEmpty())
     <nav aria-label="Podstrony: {{ $page->title }}" class="mt-10">
         <ul class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3" role="list">
             @foreach ($tiles as $i => $tile)
                 @php
-                    $base = $siteSettings->brandColorN(($i % 4) + 1);
-                    if (! \App\Support\Color::isValid($base)) {
-                        $base = $tilePalette[$i % 4];
-                    }
+                    $base = $tilePalette[$i % 4];
                     $pal = \App\Support\Color::button($base);
                     $desc = \Illuminate\Support\Str::limit(trim(strip_tags((string) ($tile->meta_description ?? ''))), 90);
                 @endphp

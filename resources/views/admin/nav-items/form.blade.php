@@ -20,6 +20,8 @@
             isButton: {{ Js::from((bool) old('is_button', $navItem->is_button ?? false)) }},
             buttonColor: {{ Js::from(old('button_color', $navItem->button_color) ?: '#2563eb') }},
             buttonColorEnabled: {{ Js::from((bool) old('button_color', $navItem->button_color)) }},
+            accentColor: {{ Js::from(old('accent_color', $navItem->accent_color) ?: '#1e6dff') }},
+            accentEnabled: {{ Js::from((bool) old('accent_color', $navItem->accent_color)) }},
             isTransparent: {{ Js::from((bool) old('is_transparent_dropdown', $navItem->is_transparent_dropdown ?? false)) }},
             isMega: {{ Js::from((bool) old('is_mega', $navItem->is_mega ?? false)) }},
             isHeading: {{ Js::from((bool) old('is_column_heading', $navItem->is_column_heading ?? false)) }},

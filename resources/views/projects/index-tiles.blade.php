@@ -16,7 +16,7 @@
 @section('content')
     @php
         $filled = $categories->filter(fn ($c) => $c->publishedProjects->isNotEmpty())->values();
-        $fallback = ['#1a56a4', '#166534', '#7e22ce', '#c2410c'];
+        $fallback = ['#1e6dff', '#1d1d1a', '#ea8f00', '#cbd5e7']; // paleta brandbooka FEER 2024
         $n = 0;
     @endphp
 
@@ -43,10 +43,7 @@
                         <ul class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3" role="list">
                             @foreach ($category->publishedProjects as $project)
                                 @php
-                                    $base = \App\Support\Color::isValid($project->accent_color ?? null) ? $project->accent_color : $siteSettings->brandColorN(($n % 4) + 1);
-                                    if (! \App\Support\Color::isValid($base)) {
-                                        $base = $fallback[$n % 4];
-                                    }
+                                    $base = \App\Support\Color::isValid($project->accent_color ?? null) ? $project->accent_color : $fallback[$n % 4];
                                     $n++;
                                     $pal = \App\Support\Color::button($base);
                                 @endphp

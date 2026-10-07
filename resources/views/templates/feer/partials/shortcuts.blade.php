@@ -7,7 +7,8 @@
     Kolor obramówki jest przyciemniany do kontrastu ≥ 4,5:1 na bieli (WCAG 1.4.11).
 --}}
 @php
-    $feerNamed = ['blue' => '#1b66f5', 'dark' => '#1d1d1a', 'green' => '#166534', 'purple' => '#7e22ce', 'orange' => '#b45309', 'red' => '#b91c1c'];
+    // Kolory nazwane → paleta brandbooka (niebieski #1E6DFF, grafit #1D1D1A, pomarańcz #EA8F00); zielony/fioletowy/czerwony zostają dla starszych wpisów.
+    $feerNamed = ['blue' => '#1e6dff', 'dark' => '#1d1d1a', 'green' => '#166534', 'purple' => '#7e22ce', 'orange' => '#ea8f00', 'red' => '#b91c1c'];
     $panelWhite = (bool) ($siteSettings->quick_actions_panel_negative ?? false);
     $qaCols = match (min(($quickLinks ?? collect())->count(), 4)) {
         1 => 'grid-cols-1',

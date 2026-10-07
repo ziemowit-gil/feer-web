@@ -18,16 +18,24 @@
     'flex flex-col gap-1 pt-3 text-lg font-bold uppercase tracking-wide text-ink' => $mobile,
 ])>
     @foreach ($navItems as $item)
-        @if (! $mobile && $item->isMega())
-            @include('partials.nav-mega', ['item' => $item, 'mobile' => false])
-        @elseif ($item->type === 'projects')
-            @include('partials.nav-projects-dropdown', ['item' => $item, 'mobile' => $mobile])
-        @elseif ($item->type === 'pages')
-            @include('partials.nav-pages', ['item' => $item, 'mobile' => $mobile])
-        @elseif ($item->type === 'dropdown')
-            @include('partials.nav-dropdown', ['item' => $item, 'mobile' => $mobile])
-        @else
-            @include('partials.nav-item', ['item' => $item, 'mobile' => $mobile])
-        @endif
+        @php
+            $__partial = (! $mobile && $item->isMega()) ? 'partials.nav-mega'
+                : ($item->type === 'projects' ? 'partials.nav-projects-dropdown'
+                : ($item->type === 'pages' ? 'partials.nav-pages'
+                : ($item->type === 'dropdown' ? 'partials.nav-dropdown' : 'partials.nav-item')));
+            $__html = $__env->make($__partial, array_merge(
+                \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path', '__html', '__partial', '__accent', '__pal']),
+                ['item' => $item, 'mobile' => $mobile],
+            ))->render();
+
+            // Kolor pozycji (Panel → Menu → „Kolor pozycji"): wskaźnik pod pozycją, a po najechaniu i na aktywnej — wypełnienie
+            // kolorem; tło i tekst wypełnienia dobiera Color::button (kontrast ≥ 4,5:1). Style: resources/css/app.css.
+            $__accent = (! $mobile && ! $item->parent_id && ! $item->is_button && \App\Support\Color::isValid($item->accent_color)) ? $item->accent_color : null;
+            if ($__accent) {
+                $__pal = \App\Support\Color::button($__accent);
+                $__html = preg_replace('/<li\b/', '<li data-nav-accent style="--nav-accent: '.e($__accent).'; --nav-accent-bg: '.e($__pal['bg']).'; --nav-accent-text: '.e($__pal['text']).'"', $__html, 1);
+            }
+        @endphp
+        {!! $__html !!}
     @endforeach
 </ul>

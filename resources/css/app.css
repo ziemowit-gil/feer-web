@@ -645,6 +645,20 @@ html.no-animations *::after {
 .nav-pills > li > a:focus-visible,
 .nav-pills > li > button:focus-visible { outline-offset: 2px; }
 
+/* Kolor pozycji menu (NavItem.accent_color, <li data-nav-accent style="--nav-accent…">): stały wskaźnik pod pozycją,
+   a po najechaniu / na aktywnej pozycji wypełnienie kolorem (tło i tekst z kontrastem ≥ 4,5:1 wyliczone w main-nav-items). */
+li[data-nav-accent] > a,
+li[data-nav-accent] > button,
+li[data-nav-accent] > div.border-b-2 { box-shadow: inset 0 -3px 0 var(--nav-accent); transition: background-color .15s, color .15s; }
+li[data-nav-accent] > a:hover,
+li[data-nav-accent] > a[aria-current="page"],
+li[data-nav-accent] > button:hover,
+li[data-nav-accent] > div.border-b-2:hover {
+    background-color: var(--nav-accent-bg); color: var(--nav-accent-text); box-shadow: none; border-radius: .375rem; text-decoration: none;
+}
+li[data-nav-accent] > div.border-b-2:hover > a,
+li[data-nav-accent] > div.border-b-2:hover > button { color: var(--nav-accent-text); }
+
 /* Mega menu: panel przypięty do paska (<nav class="relative">), pozycja bez własnego position. */
 .nav-mega-panel { text-transform: none; letter-spacing: 0; font-weight: 400; }
 html.no-animations .nav-mega-panel { transition: none !important; }

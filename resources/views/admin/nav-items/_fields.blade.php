@@ -1,7 +1,7 @@
 {{--
     Współdzielone pola formularza pozycji menu.
     Wymaga otaczającego zakresu Alpine z obiektem `form` (label, url, type,
-    location, parentId, module, isButton, buttonColor, buttonColorEnabled,
+    location, parentId, module, isButton, buttonColor, buttonColorEnabled, accentColor, accentEnabled,
     isTransparent, isActive, editingId) oraz zmiennych PHP $parentOptions, $pages.
     Wszystkie pola sterowane są przez Alpine (x-model), dzięki czemu ten sam
     partial obsługuje modal (dynamiczne dane) i zapasową stronę formularza.
@@ -136,6 +136,31 @@
     </div>
     <p class="mt-1 text-xs text-muted">Kolor tła przycisku. Tekst automatycznie dobiera czerń lub biel dla kontrastu (WCAG). Wyłącz „Własny kolor", aby użyć koloru marki.</p>
     @error('button_color') <p class="mt-1 text-sm text-red-700">{{ $message }}</p> @enderror
+</div>
+
+<div x-show="form.location === 'main' && form.parentId === '' && !form.isButton" x-cloak>
+    <span class="mb-1 block text-sm font-bold">Kolor pozycji <span class="font-normal text-muted">(opcjonalnie)</span></span>
+    <div class="flex items-center gap-3">
+        <input type="hidden" name="accent_color" :value="form.accentEnabled ? form.accentColor : ''">
+        <input type="text" x-model="form.accentColor" :disabled="!form.accentEnabled" aria-label="Kolor pozycji menu (hex)" data-color-picker
+            placeholder="#1e6dff" pattern="#[0-9a-fA-F]{6}"
+            class="w-40 rounded border-gray-300 font-mono text-sm focus-visible:border-brand focus-visible:ring-2 focus-visible:ring-brand disabled:bg-gray-100 disabled:text-muted">
+        <label class="flex items-center gap-2 text-sm text-muted">
+            <input type="checkbox" x-model="form.accentEnabled" class="rounded border-gray-300 text-brand focus-visible:ring-2 focus-visible:ring-brand">
+            Własny kolor
+        </label>
+    </div>
+    <div class="mt-2 flex flex-wrap items-center gap-2" role="group" aria-label="Kolory z brandbooka FEER">
+        <span class="text-xs font-bold text-muted">Brandbook:</span>
+        @foreach (['#1e6dff' => 'Niebieski', '#1d1d1a' => 'Grafit', '#ea8f00' => 'Pomarańcz', '#cbd5e7' => 'Jasny niebieski'] as $bbHex => $bbName)
+            <button type="button" @click="form.accentColor = '{{ $bbHex }}'; form.accentEnabled = true"
+                class="inline-flex min-h-9 items-center gap-2 rounded-md border border-gray-300 px-2.5 text-xs font-bold text-ink hover:border-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                <span class="h-4 w-4 rounded-sm border border-gray-300" style="background: {{ $bbHex }}" aria-hidden="true"></span>{{ $bbName }}<span class="sr-only"> ({{ $bbHex }})</span>
+            </button>
+        @endforeach
+    </div>
+    <p class="mt-1 text-xs text-muted">Kolorowy wskaźnik pod pozycją w menu głównym; po najechaniu i na aktywnej pozycji pozycja wypełnia się tym kolorem (tekst dobiera czerń lub biel dla kontrastu WCAG).</p>
+    @error('accent_color') <p class="mt-1 text-sm text-red-700">{{ $message }}</p> @enderror
 </div>
 
 <div x-show="form.location === 'main' && form.parentId !== ''" x-cloak>
