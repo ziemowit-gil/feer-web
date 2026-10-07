@@ -17,19 +17,6 @@
       novalidate aria-label="Formularz kontaktowy">
     @csrf
 
-    {{-- Honeypot --}}
-    <div class="hidden" aria-hidden="true">
-        <label for="website">Zostaw to pole puste</label>
-        <input type="text" id="website" name="website" tabindex="-1" autocomplete="off">
-    </div>
-
-    {{-- CleanTalk: skrypt dopisuje do formularza token zachowania odwiedzającego (tylko przy włączonej ochronie). --}}
-    @if (\App\Support\CleanTalkGuard::enabled())
-        @once
-            @include('cleantalk::cleantalk')
-        @endonce
-    @endif
-
     @if ($errors->any())
         <div role="alert" tabindex="-1" x-data x-init="$nextTick(() => $el.focus())"
             class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800 focus:outline-none">
@@ -181,6 +168,9 @@
         Dane przetwarzamy wyłącznie w celu obsługi zapytania.
         Szczegóły w <a href="{{ route('page.show', 'polityka-prywatnosci') }}" class="font-bold text-brand hover:text-brand-dark">Polityce prywatności</a>.
     </p>
+
+    {{-- Antyspam: honeypot, żeton czasu i zadanie tekstowe (SpamGuard) + CleanTalk, gdy włączony. --}}
+    @include('partials.spam-protection', ['spamScope' => 'kontakt', 'cleantalk' => true])
 
     <button type="submit"
             class="{{ $isFederationTemplate ? 'rounded-md px-6 py-3' : 'rounded px-5 py-2.5' }} bg-brand text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">

@@ -8,6 +8,7 @@ use App\Models\HelpPoint;
 use App\Models\Project;
 use App\Models\SiteSetting;
 use App\Support\CleanTalkGuard;
+use App\Support\SpamGuard;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
@@ -120,6 +121,19 @@ class ContactController extends Controller
             'subject' => 'Temat',
             'message' => 'Wiadomość',
         ]);
+
+        // Własny filtr (honeypot, żeton czasu, zadanie tekstowe, analiza treści, duplikaty).
+        // Bot dostaje zwykłe potwierdzenie; człowiek przy fałszywym alarmie — czytelny komunikat.
+        if ($spam = SpamGuard::inspect($request, array_intersect_key($data, array_flip(['name', 'email', 'phone', 'subject', 'message'])), 'kontakt')) {
+            Log::warning('Zablokowano wiadomość kontaktową jako spam', [
+                'powód' => $spam['reason'],
+                'ip'    => $request->ip(),
+            ]);
+
+            return $spam['silent']
+                ? redirect()->route('contact.show')->with('status', 'Wiadomość została wysłana. Odpowiemy najszybciej, jak to możliwe.')
+                : back()->withErrors(['spam' => $spam['message']])->withInput();
+        }
 
         // CleanTalk (opcjonalnie, wg ustawień): ocena wiadomości po poprawnej walidacji.
         // Awaria usługi, zły klucz lub wyczerpany limit = przepuszczamy (patrz CleanTalkGuard).
