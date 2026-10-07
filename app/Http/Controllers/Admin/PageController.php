@@ -1064,6 +1064,9 @@ class PageController extends Controller
             }
             $data['hub_intro'] = trim((string) ($data['hub_intro'] ?? '')) ?: null;
             $data['hub_links'] = $this->compactRows($request->input('hub_links', []), ['label', 'url', 'description', 'icon']);
+            if (\Illuminate\Support\Facades\Schema::hasColumn('pages', 'hub_tiles_enabled')) {
+                $data['hub_tiles_enabled'] = $request->boolean('hub_tiles_enabled');
+            }
         } else {
             $data['hub_hero'] = null;
             $data['hub_intro'] = null;

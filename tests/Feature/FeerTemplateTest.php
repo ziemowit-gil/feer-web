@@ -827,4 +827,19 @@ class FeerTemplateTest extends TestCase
         $this->assertStringContainsString('background-color: #1d1d1a', $html);
         $this->assertStringNotContainsString('border-top: 4px solid', $html);
     }
+
+    public function test_kafelki_strony_hub_znikaja_gdy_wylaczono_kafelki_na_stronie(): void
+    {
+        SiteSetting::current()->update(['site_template' => 'feer']);
+        \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();
+        \Illuminate\Support\Facades\Cache::flush();
+        $parent = \App\Models\Page::create(['title' => 'Dział', 'slug' => 'dzial-wl', 'type' => 'links_hub', 'is_published' => true, 'hub_tiles_enabled' => true]);
+        \App\Models\Page::create(['parent_id' => $parent->id, 'title' => 'Kafel testowy', 'slug' => 'kafel-testowy', 'type' => 'standard', 'is_published' => true, 'order' => 1]);
+
+        $this->get('/dzial-wl')->assertOk()->assertSee('Kafel testowy');
+
+        $parent->update(['hub_tiles_enabled' => false]);
+        \Illuminate\Support\Facades\Cache::flush();
+        $this->get('/dzial-wl')->assertOk()->assertDontSee('Kafel testowy');
+    }
 }

@@ -26,7 +26,17 @@
             class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">{{ old('hub_intro', $page->hub_intro) }}</textarea>
     </div>
 
-    <div data-repeater>
+    <div x-data="{ on: @js((bool) old('hub_tiles_enabled', $page->hub_tiles_enabled ?? true)) }" class="space-y-4">
+    <label class="flex items-start gap-3 rounded-lg border border-gray-200 p-3">
+        <input type="hidden" name="hub_tiles_enabled" value="0">
+        <input type="checkbox" name="hub_tiles_enabled" value="1" x-model="on" @checked(old('hub_tiles_enabled', $page->hub_tiles_enabled ?? true)) class="mt-0.5 rounded border-gray-300 text-brand focus:ring-brand">
+        <span>
+            <span class="block text-sm font-bold">Kafelki na stronie — włącz</span>
+            <span class="block text-xs text-muted">Wyłączone: strona nie pokazuje kafelków (ani ręcznych, ani z podstron), a poniższy edytor kafelków jest ukryty.</span>
+        </span>
+    </label>
+
+    <div data-repeater x-show="on">
         <p class="mb-2 text-sm font-bold">Kafelki linków do systemów</p>
         <div data-repeater-rows class="space-y-3">
             @foreach ($hubLinks as $i => $row)
@@ -80,5 +90,6 @@
                 </div>
             </div>
         </template>
+    </div>
     </div>
 </div>
