@@ -42,6 +42,7 @@
                 <i class="fa-solid {{ $event->typeIcon() }}" aria-hidden="true"></i> {{ $event->typeLabel() }}
             </p>
             <h1 class="mt-1 text-3xl font-bold text-ink">{{ $event->title }}</h1>
+            @if (($siteSettings->site_template ?? 'default') === 'feer')<span class="mt-3 block h-1 w-14 bg-brand" aria-hidden="true"></span>@endif
             <p class="mt-3 text-lg text-gray-700">{{ $event->lead }}</p>
 
             @if ($event->isPast())

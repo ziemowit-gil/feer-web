@@ -10,6 +10,9 @@
 @endsection
 
 @section('content')
+    @if (($siteSettings->site_template ?? 'default') === 'feer')
+        @include('search._feer')
+    @else
     <section class="mx-auto max-w-3xl px-4 py-12">
         <h1 class="mb-6 text-3xl font-bold text-ink">Wyszukiwarka</h1>
 
@@ -116,4 +119,5 @@
             </div>
         @endif
     </section>
+    @endif
 @endsection

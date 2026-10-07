@@ -879,4 +879,63 @@ class FeerTemplateTest extends TestCase
         $this->assertStringContainsString('border-left: 4px solid', $html);
         $this->assertStringContainsString('h-1 w-14 bg-brand', $html);
     }
+
+    private function useFeer(): void
+    {
+        SiteSetting::current()->update(['site_template' => 'feer']);
+        \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();
+        \Illuminate\Support\Facades\Cache::flush();
+    }
+
+    public function test_wyszukiwarka_feer_ma_akcent_zakres_jako_pigulki_i_wyniki_w_wierszach(): void
+    {
+        \App\Models\Page::create(['title' => 'Strona do znalezienia xyzzy', 'slug' => 'strona-xyzzy', 'type' => 'standard', 'is_published' => true, 'content' => '<p>xyzzy treść</p>']);
+
+        $this->get('/szukaj?q=xyzzy')->assertOk()->assertDontSee('has-[:checked]:bg-brand', false);
+
+        $this->useFeer();
+        $html = $this->get('/szukaj?q=xyzzy')->assertOk()->assertSee('Strona do znalezienia xyzzy')->getContent();
+        $this->assertStringContainsString('has-[:checked]:bg-brand', $html);
+        $this->assertStringContainsString('h-1 w-14 bg-brand', $html);
+    }
+
+    public function test_faq_feer_to_plaski_akordeon_z_plusem(): void
+    {
+        \App\Models\Faq::create(['question' => 'Jak się zapisać?', 'answer' => 'Przez formularz.', 'is_published' => true, 'order' => 1]);
+        $this->useFeer();
+
+        $html = $this->get('/faq')->assertOk()->assertSee('Jak się zapisać?')->getContent();
+        $this->assertStringContainsString('divide-y divide-gray-200 border-y border-gray-200', $html);
+        $this->assertStringNotContainsString('rounded-xl border border-gray-200 bg-white', $html);
+    }
+
+    public function test_strona_404_feer_ma_wyszukiwarke_i_szybkie_linki(): void
+    {
+        $this->useFeer();
+
+        $html = $this->get('/nie-ma-takiej-strony-xyz')->assertStatus(404)->assertSee('Błąd 404')->assertSee('Zajrzyj tutaj')->getContent();
+        $this->assertStringContainsString('role="search"', $html);
+        $this->assertStringNotContainsString('text-[7rem]', $html);
+    }
+
+    public function test_kategoria_projektow_feer_ma_wiersze_zamiast_kart(): void
+    {
+        $cat = \App\Models\Category::create(['name' => 'Dla wzroku', 'slug' => 'dla-wzroku-t', 'order' => 1]);
+        \App\Models\Project::create(['category_id' => $cat->id, 'title' => 'Projekt wzroku', 'slug' => 'projekt-wzroku', 'content' => '<p>Opis.</p>', 'is_published' => true, 'order' => 1]);
+        $this->useFeer();
+
+        $html = $this->get(route('categories.show', $cat))->assertOk()->assertSee('Projekt wzroku')->getContent();
+        $this->assertStringContainsString('border-left: 4px solid', $html);
+        $this->assertStringContainsString('h-1 w-14 bg-brand', $html);
+    }
+
+    public function test_lista_wydarzen_feer_ma_blok_daty(): void
+    {
+        \App\Models\Event::create(['title' => 'Warsztat testowy', 'slug' => 'warsztat-testowy', 'lead' => 'Zajawka.', 'type' => 'warsztat', 'mode' => 'stacjonarnie', 'starts_at' => now()->addDays(10), 'is_published' => true]);
+        $this->useFeer();
+
+        $html = $this->get('/wydarzenia')->assertOk()->assertSee('Warsztat testowy')->getContent();
+        $this->assertStringContainsString('w-16 flex-none flex-col items-center', $html);
+        $this->assertStringNotContainsString('rounded-xl bg-white shadow-sm', $html);
+    }
 }

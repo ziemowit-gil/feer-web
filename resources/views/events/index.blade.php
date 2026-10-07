@@ -10,6 +10,9 @@
 @endsection
 
 @section('content')
+    @if (($siteSettings->site_template ?? 'default') === 'feer')
+        @include('events._index-feer')
+    @else
     <section class="mx-auto max-w-5xl px-4 py-12">
         <h1 class="mb-2 text-3xl font-bold text-ink">Nadchodzące szkolenia i wydarzenia</h1>
         <p class="mb-6 max-w-2xl text-muted">Sprawdź, co przygotowaliśmy. Zapisy prowadzimy do wyczerpania miejsc — kliknij wydarzenie, aby poznać szczegóły i się zapisać.</p>
@@ -86,4 +89,5 @@
             </ul>
         @endif
     </section>
+    @endif
 @endsection

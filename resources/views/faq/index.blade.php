@@ -10,6 +10,9 @@
 @endsection
 
 @section('content')
+    @if (($siteSettings->site_template ?? 'default') === 'feer')
+        @include('faq._feer')
+    @else
     <section class="mx-auto max-w-3xl px-4 py-12">
         <h1 class="mb-2 text-3xl font-bold text-ink">Najczęstsze pytania</h1>
         <p class="mb-8 text-muted">Odpowiedzi na pytania, które słyszymy najczęściej. Nie znalazłeś swojego? <a href="{{ route('contact.show') }}" class="font-bold text-brand hover:text-brand-dark">Napisz do nas</a>.</p>
@@ -37,4 +40,5 @@
             </div>
         @endforelse
     </section>
+    @endif
 @endsection
