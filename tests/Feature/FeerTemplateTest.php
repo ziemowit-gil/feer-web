@@ -340,4 +340,23 @@ class FeerTemplateTest extends TestCase
         \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();
         $this->get('/aktualnosci')->assertOk()->assertDontSee('text-2xl font-extrabold leading-tight text-ink md:text-4xl', false);
     }
+
+    public function test_pojedyncza_aktualnosc_feer_zachowuje_funkcje_i_ma_nowy_uklad(): void
+    {
+        $news = \App\Models\News::create(['title' => 'Ważna wiadomość', 'slug' => 'wazna', 'content' => '<p>Treść artykułu</p>', 'excerpt' => 'Krótka zajawka', 'is_published' => true, 'published_at' => now()->subDay()]);
+        SiteSetting::current()->update(['site_template' => 'feer']);
+        \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();
+
+        $html = $this->get(route('news.show', $news))->assertOk()
+            ->assertSee('Ważna wiadomość')->assertSee('Krótka zajawka')->assertSee('Treść artykułu')->getContent();
+        $this->assertStringContainsString('aria-label="Opcje artykułu"', $html);
+        $this->assertStringContainsString('Odsłuchaj artykuł', $html);
+        $this->assertStringContainsString('Tekst w PDF', $html);
+        $this->assertStringContainsString('id="article-text"', $html);
+        $this->assertStringContainsString('lg:grid-cols-[minmax(0,1fr)_16rem]', $html);
+
+        SiteSetting::current()->update(['site_template' => 'ngo_mix']);
+        \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();
+        $this->get(route('news.show', $news))->assertOk()->assertDontSee('lg:grid-cols-[minmax(0,1fr)_16rem]', false);
+    }
 }

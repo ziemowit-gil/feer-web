@@ -72,6 +72,11 @@ class NewsController extends Controller
         // Własny kolor akcentu ma priorytet; w przeciwnym razie preset grupy docelowej.
         $brandColor = $news->accent_color ?: SiteSetting::current()->audienceColor($news->audience);
 
+        // Szablon FEER ma własny widok wpisu (nagłówek z zajawką, narzędzia artykułu z boku).
+        if (SiteSetting::current()->site_template === 'feer') {
+            return view('news.show-feer', compact('news', 'brandColor', 'preview'));
+        }
+
         return view('news.show', compact('news', 'brandColor', 'preview'));
     }
 
