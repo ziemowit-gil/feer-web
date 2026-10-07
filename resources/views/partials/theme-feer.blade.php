@@ -47,17 +47,24 @@
     .about-feer #sekcja-stats { background-color: var(--color-brand-light); }
     section[aria-labelledby="stats-heading"], section[aria-labelledby="methods-heading"] { background-color: var(--color-brand-light); }
 
-    /* Delikatny efekt tła po bokach (szerokie ekrany): dwie bardzo miękkie, niebieskie poświaty przy lewej i prawej krawędzi.
-       Czysto dekoracyjne — leżą za treścią (z-index -1), nie przechwytują kliknięć, nie zmieniają kontrastu tekstu na
-       sekcjach z własnym tłem; wyłączone w trybie wymuszonych kolorów i przy wydruku. */
+    /* Delikatne efekty tła po bokach (szerokie ekrany): płaskie, bez poświaty i gradientów — dwa cienkie niebieskie okręgi i
+       pomarańczowa kropka przy lewej krawędzi oraz siatka kropek przy prawej, z bardzo wolnym unoszeniem (tylko bez „ogranicz ruch").
+       Czysto dekoracyjne — leżą za treścią (z-index -1), nie przechwytują kliknięć, nie zmieniają kontrastu tekstu;
+       wyłączone w trybie wymuszonych kolorów i przy wydruku. */
     @media (min-width: 1100px) {
         body::before {
             content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none;
-            background:
-                radial-gradient(34rem 34rem at -6% 18%, color-mix(in srgb, var(--color-brand) 10%, transparent), transparent 70%),
-                radial-gradient(30rem 30rem at 106% 62%, color-mix(in srgb, var(--color-brand) 8%, transparent), transparent 70%),
-                radial-gradient(24rem 24rem at -4% 92%, color-mix(in srgb, var(--color-brand) 6%, transparent), transparent 70%);
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='520' height='520' viewBox='0 0 520 520' fill='none'%3E%3Ccircle cx='140' cy='260' r='220' stroke='%231e6dff' stroke-opacity='.10' stroke-width='2'/%3E%3Ccircle cx='140' cy='260' r='150' stroke='%231e6dff' stroke-opacity='.07' stroke-width='2'/%3E%3Ccircle cx='330' cy='120' r='7' fill='%23ea8f00' fill-opacity='.35'/%3E%3C/svg%3E"), url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cdefs%3E%3Cpattern id='d' width='22' height='22' patternUnits='userSpaceOnUse'%3E%3Ccircle cx='3' cy='3' r='2' fill='%231e6dff' fill-opacity='.16'/%3E%3C/pattern%3E%3C/defs%3E%3Crect width='220' height='220' fill='url%28%23d%29'/%3E%3C/svg%3E");
+            background-repeat: no-repeat, no-repeat;
+            background-position: -240px 18%, calc(100% - 24px) 70%;
         }
+    }
+    @media (min-width: 1100px) and (prefers-reduced-motion: no-preference) {
+        @keyframes feer-bg-drift {
+            from { background-position: -240px 18%, calc(100% - 24px) 70%; }
+            to   { background-position: -240px 22%, calc(100% - 24px) 66%; }
+        }
+        body::before { animation: feer-bg-drift 18s ease-in-out infinite alternate; }
     }
     @media (forced-colors: active), print { body::before { display: none; } }
 
