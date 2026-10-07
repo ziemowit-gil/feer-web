@@ -113,7 +113,11 @@
             @yield('breadcrumbs')
         @endif
 
+        @include('partials.feer-bands-sitewide', ['where' => 'site_top'])
+
         @yield('content')
+
+        @include('partials.feer-bands-sitewide', ['where' => 'site_bottom'])
     </main>
 
     @include('partials.footer')

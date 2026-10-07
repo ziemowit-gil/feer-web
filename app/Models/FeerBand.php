@@ -27,7 +27,7 @@ class FeerBand extends Model
         'light' => 'Jasny (delikatny niebieski)',
     ];
 
-    /** Miejsca na stronie głównej szablonu FEER; „shortcode" = tylko jako [pasek:ID] w treści. */
+    /** Miejsca: strona główna szablonu FEER, wszystkie podstrony (każdy szablon); „shortcode" = tylko jako [pasek:ID] w treści. */
     public const PLACEMENTS = [
         'after_hero'      => 'Strona główna — pod slajderem',
         'after_shortcuts' => 'Strona główna — pod „Na skróty"',
@@ -35,6 +35,8 @@ class FeerBand extends Model
         'after_trainings' => 'Strona główna — po szkoleniach',
         'after_projects'  => 'Strona główna — po projektach',
         'end'             => 'Strona główna — na końcu (pod blokiem wsparcia)',
+        'site_top'        => 'Wszystkie podstrony — nad treścią',
+        'site_bottom'     => 'Wszystkie podstrony — pod treścią (nad stopką)',
         'shortcode'       => 'Tylko jako skrót [pasek:ID] w treści strony',
     ];
 

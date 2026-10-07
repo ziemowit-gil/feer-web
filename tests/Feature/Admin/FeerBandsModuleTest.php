@@ -75,4 +75,13 @@ class FeerBandsModuleTest extends TestCase
         $this->reset();
         $this->get('/strona-z-paskiem')->assertOk()->assertDontSee('Pasek w treści');
     }
+
+    public function test_pasek_site_top_i_site_bottom_pojawia_sie_na_podstronach_ale_nie_na_glownej(): void
+    {
+        \App\Models\FeerBand::create(['title' => 'Pasek u góry', 'style' => 'brand', 'placement' => 'site_top', 'is_active' => true, 'order' => 1]);
+        \App\Models\FeerBand::create(['title' => 'Pasek na dole', 'style' => 'dark', 'placement' => 'site_bottom', 'is_active' => true, 'order' => 1]);
+
+        $this->get('/kontakt')->assertOk()->assertSee('Pasek u góry')->assertSee('Pasek na dole');
+        $this->get('/')->assertOk()->assertDontSee('Pasek u góry')->assertDontSee('Pasek na dole');
+    }
 }

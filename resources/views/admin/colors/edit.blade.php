@@ -80,9 +80,10 @@
             {{-- Podgląd na żywo --}}
             <section class="rounded-xl border border-gray-200 bg-white p-5" aria-labelledby="prev-h">
                 <h2 id="prev-h" class="mb-4 text-sm font-bold text-ink">Podgląd na żywo</h2>
-                <div class="space-y-4">
-                    <button type="button" class="inline-flex min-h-11 items-center rounded-md px-5 text-sm font-bold" :style="'background:' + c.brand_color + ';color:#fff'">Przycisk główny</button>
-                    <p class="text-sm text-ink">Zwykły tekst oraz <a href="#" @click.prevent class="font-bold underline" :style="'color:' + c.brand_color">link w kolorze głównym</a>.</p>
+                {{-- Atrapy elementów — wyłączone z czytników ekranu i z nawigacji klawiaturą (inert), żeby nie udawały prawdziwych kontrolek. --}}
+                <div class="space-y-4" inert aria-hidden="true">
+                    <button type="button" tabindex="-1" class="inline-flex min-h-11 items-center rounded-md px-5 text-sm font-bold" :style="'background:' + c.brand_color + ';color:#fff'">Przycisk główny</button>
+                    <p class="text-sm text-ink">Zwykły tekst oraz <a href="#" tabindex="-1" @click.prevent class="font-bold underline" :style="'color:' + c.brand_color">link w kolorze głównym</a>.</p>
                     <div class="rounded-md px-4 py-3 text-sm font-bold" :style="'border:2px solid ' + c.brand_color + ';color:#1d1d1a'">Kafel „Na skróty” (obramówka)</div>
                     <div class="rounded-md px-4 py-3 text-sm font-bold" :style="'background:' + c.brand_color_3 + ';color:#fff'">Kafel — negatyw (grafit)</div>
                     <div class="rounded-md px-4 py-3 text-sm font-bold" :style="'background:' + c.brand_color_4 + ';color:#1d1d1a'">Jasne tło pomocnicze</div>
@@ -100,7 +101,7 @@
                         <h2 id="bands-h" class="text-sm font-bold text-ink">Paski <span class="font-normal text-muted">({{ $bandsCount }})</span></h2>
                         <a href="{{ route('admin.feer-paski.index') }}" class="text-xs font-bold text-ink underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">Zarządzaj paskami</a>
                     </div>
-                    <div class="space-y-2 text-xs font-bold">
+                    <div class="space-y-2 text-xs font-bold" inert aria-hidden="true">
                         <div class="flex items-center justify-between gap-2 rounded-md px-3 py-3" :style="'background:' + c.brand_color + ';color:#fff'">
                             <span>Styl „Marka”</span><span class="rounded bg-white px-2 py-1" style="color:#1d1d1a">Przycisk</span>
                         </div>

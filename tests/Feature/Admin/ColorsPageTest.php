@@ -59,4 +59,9 @@ class ColorsPageTest extends TestCase
     {
         $this->actingAs($this->admin())->get(route('admin.kolory.edit'))->assertOk()->assertSee('Zarządzaj paskami')->assertSee('Styl „Ciemny”');
     }
+
+    public function test_podglad_kolorow_jest_inert_dla_czytnikow_i_klawiatury(): void
+    {
+        $this->actingAs($this->admin())->get(route('admin.kolory.edit'))->assertOk()->assertSee('inert aria-hidden="true"', false);
+    }
 }
