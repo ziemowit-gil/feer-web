@@ -415,6 +415,7 @@ Route::middleware(['auth', 'verified', '2fa', 'admin-site'])->prefix(config('app
         Route::post('newsy/{news}/pliki', [AdminAttachmentController::class, 'storeForNews'])->name('newsy.pliki.store');
         Route::post('newsy/{news}/klonuj', [AdminNewsController::class, 'clone'])->name('newsy.klonuj');
         Route::post('newsy/zbiorczo', [AdminNewsController::class, 'bulk'])->name('newsy.bulk');
+        Route::post('kategorie-newsow/{newsCategory}/przesun', [AdminNewsCategoryController::class, 'move'])->name('kategorie-newsow.move');
         Route::resource('kategorie-newsow', AdminNewsCategoryController::class)->parameters(['kategorie-newsow' => 'newsCategory'])->except('show');
         Route::get('tagi', [AdminTagController::class, 'index'])->name('tagi.index');
         Route::put('tagi/{tag}', [AdminTagController::class, 'update'])->name('tagi.update');
