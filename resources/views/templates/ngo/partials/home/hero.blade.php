@@ -12,8 +12,8 @@
             aria-hidden="{{ $i === 0 ? 'false' : 'true' }}"
             :aria-hidden="current !== {{ $i }} ? 'true' : 'false'">
 
-            @if ($slide->image_url)
-                <img src="{{ $slide->image_url }}" alt="{{ $slide->image_alt ?? '' }}"
+            @if ($slide->image_url ?? null)
+                <img src="{{ $slide->image_url ?? '' }}" alt="{{ $slide->image_alt ?? '' }}"
                     class="h-full w-full object-cover absolute inset-0">
             @endif
             {{-- Przesłona pod tekstem. Wcześniej gradient gasł do przezroczystości
@@ -32,15 +32,15 @@
                             {{ $slide->mission_text }}
                         </p>
                     @endif
-                    @if ($slide->title)
+                    @if ($slide->title ?? null)
                         <h2 class="mb-3 text-3xl font-extrabold leading-tight text-white md:text-5xl">
                             {!! nl2br(e($slide->title)) !!}
                         </h2>
                     @endif
-                    @if ($slide->text)
-                        <p class="mb-6 text-base text-white md:text-lg">{{ $slide->text }}</p>
+                    @if ($slide->text ?? null)
+                        <p class="mb-6 text-base text-white md:text-lg">{{ $slide->text ?? '' }}</p>
                     @endif
-                    @if ($slide->button_url && $slide->button_label)
+                    @if (($slide->button_url ?? null) && ($slide->button_label ?? null))
                         <a href="{{ $slide->button_url }}"
                             class="inline-flex items-center gap-2 rounded-full bg-brand px-6 py-2.5 text-sm font-extrabold text-white shadow transition hover:bg-brand-dark hover:shadow-md">
                             {{ $slide->button_label }}

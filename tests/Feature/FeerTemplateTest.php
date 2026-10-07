@@ -222,4 +222,22 @@ class FeerTemplateTest extends TestCase
         }
         $this->assertStringNotContainsString('border-top: 1px solid #f3f4f6', $html);
     }
+
+    public function test_slajder_feer_nie_wywala_sie_na_slajdzie_z_misja(): void
+    {
+        \App\Models\HeroSlide::create(['title' => 'Zwykły slajd', 'order' => 1]);
+        SiteSetting::current()->update(['site_template' => 'feer', 'hero_mission_slide' => true, 'tagline' => 'Razem bez barier', 'hero_mission_order' => 2]);
+        \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();
+
+        $this->get('/')->assertOk()->assertSee('Zwykły slajd')->assertSee('Nasza misja')->assertSee('Razem bez barier');
+    }
+
+    public function test_slajder_szablonu_ngo_tez_znosi_slajd_z_misja(): void
+    {
+        \App\Models\HeroSlide::create(['title' => 'Zwykły slajd', 'order' => 1]);
+        SiteSetting::current()->update(['site_template' => 'ngo', 'hero_mission_slide' => true, 'tagline' => 'Razem bez barier', 'hero_mission_order' => 2]);
+        \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();
+
+        $this->get('/')->assertOk()->assertSee('Zwykły slajd');
+    }
 }

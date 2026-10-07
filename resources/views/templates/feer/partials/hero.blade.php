@@ -17,30 +17,41 @@
     <div class="mx-auto max-w-6xl px-4 py-10 md:py-14">
         <div class="grid">
             @foreach ($slides as $i => $slide)
-                <div class="col-start-1 row-start-1 grid items-center gap-8 transition-opacity duration-500 {{ $slide->image_url ? 'lg:grid-cols-[minmax(0,1fr)_28rem]' : '' }}"
+                @php
+                    // Slajd „misja" to obiekt bez pól zwykłego slajdu (HomeController) — czytamy je bezpiecznie.
+                    $isMission = isset($slide->mission_text) && ! isset($slide->title);
+                    $sImage    = $slide->image_url ?? $slide->mission_img_url ?? null;
+                    $sTitle    = $isMission ? $slide->mission_text : ($slide->title ?? null);
+                    $sKicker   = $isMission ? 'Nasza misja' : ($slide->mission_text ?? null);
+                    $sText     = $slide->text ?? null;
+                    $sBtnUrl   = $slide->button_url ?? null;
+                    $sBtnLabel = $slide->button_label ?? null;
+                    $sAlt      = $slide->image_alt ?? '';
+                @endphp
+                <div class="col-start-1 row-start-1 grid items-center gap-8 transition-opacity duration-500 {{ $sImage ? 'lg:grid-cols-[minmax(0,1fr)_28rem]' : '' }}"
                      :class="current === {{ $i }} ? 'opacity-100' : 'pointer-events-none opacity-0'"
                      :inert="current !== {{ $i }}"
                      role="group" aria-roledescription="slajd" aria-label="{{ $i + 1 }} z {{ $slides->count() }}">
                     <div class="min-w-0">
-                        @if (! empty($slide->mission_text))
-                            <p class="mb-3 text-xs font-bold uppercase tracking-widest text-brand-dark">{{ $slide->mission_text }}</p>
+                        @if ($sKicker)
+                            <p class="mb-3 text-xs font-bold uppercase tracking-widest text-brand-dark">{{ $sKicker }}</p>
                         @endif
-                        @if ($slide->title)
-                            <h2 class="mb-4 text-3xl font-extrabold leading-tight tracking-tight text-ink md:text-5xl">{!! nl2br(e($slide->title)) !!}</h2>
+                        @if ($sTitle)
+                            <h2 class="mb-4 text-3xl font-extrabold leading-tight tracking-tight text-ink md:text-5xl">{!! nl2br(e($sTitle)) !!}</h2>
                         @endif
-                        @if ($slide->text)
-                            <p class="mb-6 max-w-2xl text-base leading-relaxed text-ink md:text-lg">{{ $slide->text }}</p>
+                        @if ($sText)
+                            <p class="mb-6 max-w-2xl text-base leading-relaxed text-ink md:text-lg">{{ $sText }}</p>
                         @endif
-                        @if ($slide->button_url && $slide->button_label)
-                            <a href="{{ $slide->button_url }}"
+                        @if ($sBtnUrl && $sBtnLabel)
+                            <a href="{{ $sBtnUrl }}"
                                class="inline-flex min-h-11 items-center gap-2 rounded-md bg-brand px-6 text-sm font-bold text-white transition hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
-                                {{ $slide->button_label }}
+                                {{ $sBtnLabel }}
                                 <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
                             </a>
                         @endif
                     </div>
-                    @if ($slide->image_url)
-                        <img src="{{ $slide->image_url }}" alt="{{ $slide->image_alt ?? '' }}" @if ($i > 0) loading="lazy" @endif
+                    @if ($sImage)
+                        <img src="{{ $sImage }}" alt="{{ $sAlt }}" @if ($i > 0) loading="lazy" @endif
                              class="aspect-[4/3] w-full rounded-lg object-cover ring-1 ring-gray-200">
                     @endif
                 </div>
