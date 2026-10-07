@@ -11,8 +11,8 @@
 
 {{--
     Materiały edukacyjne w układzie FEER: jasny nagłówek, po lewej nawigacja po grupach docelowych, po prawej materiały
-    jako wiersze (typ, tytuł, opis, akcje) — bez ramek i bez miniatur PDF. Treści płatne zachowują logikę dostępu
-    (partials/material-card): zablokowane pokazują zachętę do zakupu lub logowania. Kontrast: ink/muted na bieli, linki brand-dark.
+    jako atrakcyjne karty z dużym podglądem (miniatura nagrania / pierwsza strona PDF) — bez ramek. Treści płatne zachowują logikę dostępu
+    (partials/material-card-feer): zablokowane pokazują zachętę do zakupu lub logowania. Kontrast: ink/muted na bieli, linki brand-dark.
 --}}
 @section('content')
     @php
@@ -68,46 +68,9 @@
                         <section id="grupa-{{ $loop->index }}" class="scroll-mt-24" aria-labelledby="grupa-h-{{ $loop->index }}">
                             <h2 id="grupa-h-{{ $loop->index }}" class="mb-4 text-2xl font-bold text-ink">{{ $groupLabel($gKey) }}</h2>
 
-                            <ul class="space-y-2" role="list">
+                            <ul class="grid gap-6 sm:grid-cols-2 xl:grid-cols-3" role="list">
                                 @foreach ($items as $material)
-                                    @php
-                                        $canAccess = ! $material->is_premium || ($userCanAccessPremium ?? false) || (auth()->user()?->hasFeature("material:{$material->id}") ?? false);
-                                    @endphp
-                                    <li class="rounded-md py-4 pl-4 pr-3 sm:flex sm:items-start sm:justify-between sm:gap-6" style="border-left: 4px solid var(--color-brand)">
-                                        <div class="min-w-0 flex-1">
-                                            <p class="text-xs font-bold uppercase tracking-widest text-muted">
-                                                {{ \App\Models\EducationalMaterial::TYPES[$material->type] ?? $material->type }}
-                                                @if ($material->category)· {{ \App\Models\EducationalMaterial::CATEGORIES[$material->category] ?? $material->category }}@endif
-                                                @if ($material->is_archival)· materiał archiwalny @elseif ($material->is_premium)· Premium @endif
-                                            </p>
-                                            <h3 class="mt-1 text-lg font-bold leading-snug text-ink">{{ $material->title }}</h3>
-                                            @if ($material->description)
-                                                <p class="mt-1 text-sm leading-relaxed text-muted">{{ $material->description }}</p>
-                                            @endif
-                                        </div>
-
-                                        <div class="mt-3 flex flex-none flex-wrap gap-2 sm:mt-0">
-                                            @if (! $canAccess)
-                                                <p class="w-full text-sm font-medium text-ink">Dostępny w subskrypcji Premium.</p>
-                                                @auth
-                                                    <a href="{{ route('podcasts.index') }}" class="{{ $actionPrimary }}">Kup dostęp</a>
-                                                @else
-                                                    <a href="{{ route('login') }}" class="{{ $actionPrimary }}">Zaloguj się</a>
-                                                @endauth
-                                            @elseif ($material->isVideo() && $material->video_url)
-                                                <a href="{{ $material->video_url }}" target="_blank" rel="noopener" class="{{ $actionPrimary }}">
-                                                    <i class="fa-solid fa-play" aria-hidden="true"></i> Obejrzyj nagranie<span class="sr-only"> (otwiera się w nowej karcie)</span>
-                                                </a>
-                                            @elseif (! $material->isVideo() && $material->fileUrl)
-                                                <a href="{{ $material->fileUrl }}" target="_blank" rel="noopener" class="{{ $actionGhost }}">
-                                                    Podgląd<span class="sr-only"> — {{ $material->title }} (otwiera się w nowej karcie)</span>
-                                                </a>
-                                                <a href="{{ $material->fileUrl }}" target="_blank" rel="noopener" download class="{{ $actionPrimary }}">
-                                                    <i class="fa-solid fa-download" aria-hidden="true"></i> Pobierz PDF<span class="sr-only"> — {{ $material->title }}</span>
-                                                </a>
-                                            @endif
-                                        </div>
-                                    </li>
+                                    <li>@include('partials.material-card-feer', ['material' => $material])</li>
                                 @endforeach
                             </ul>
                         </section>
