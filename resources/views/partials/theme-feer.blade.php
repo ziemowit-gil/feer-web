@@ -36,6 +36,17 @@
         .feer-card:hover, .feer-card:focus-within { transform: none; box-shadow: none; }
     }
 
+    /* Ciepło zamiast surowości: krótki pasek w kolorze marki pod nagłówkami sekcji i delikatny niebieski odcień tła
+       (#E8F0FF — ink na nim ma ≥ 14:1, muted ≥ 6:1) w wybranych sekcjach. */
+    #ngo-news-heading::after, #ngo-projects-heading::after, #feer-shortcuts-heading::after, #mix-trainings-heading::after,
+    #impact-heading::after, #methods-heading::after, #benefits-heading::after, #stats-heading::after, #photos-heading::after,
+    #partners-heading::after, #latest-news-heading::after, #dane-heading::after {
+        content: ""; display: block; width: 3rem; height: 4px; margin-top: .65rem; background: var(--color-brand); border-radius: 2px;
+    }
+    section[aria-labelledby="mix-trainings-heading"] { background-color: var(--color-brand-light); }
+    .about-feer #sekcja-stats { background-color: var(--color-brand-light); }
+    section[aria-labelledby="stats-heading"], section[aria-labelledby="methods-heading"] { background-color: var(--color-brand-light); }
+
     /* Poziome rzędy przycisków-kategorii (na telefonie przewijane palcem): bez widocznego paska przewijania. */
     .feer-pills-row { scrollbar-width: none; -ms-overflow-style: none; }
     .feer-pills-row::-webkit-scrollbar { display: none; }

@@ -437,4 +437,14 @@ class FeerTemplateTest extends TestCase
         $this->assertStringContainsString('feer-card group relative', $home);
         $this->get('/aktualnosci')->assertOk()->assertSee('feer-card group', false);
     }
+
+    public function test_motyw_feer_dodaje_pasek_akcentu_pod_naglowkami_i_odcien_tla(): void
+    {
+        SiteSetting::current()->update(['site_template' => 'feer']);
+        \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();
+
+        $html = $this->get('/')->assertOk()->getContent();
+        $this->assertStringContainsString('#ngo-news-heading::after', $html);
+        $this->assertStringContainsString('background-color: var(--color-brand-light)', $html);
+    }
 }
