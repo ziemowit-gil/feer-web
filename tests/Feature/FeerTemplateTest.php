@@ -852,7 +852,8 @@ class FeerTemplateTest extends TestCase
         \App\Models\HeroSlide::create(['title' => 'Drugi', 'order' => 2]);
 
         $html = $this->get('/')->assertOk()->getContent();
-        $this->assertStringContainsString('opacity-100 duration-500 delay-300', $html);
-        $this->assertStringContainsString('pointer-events-none opacity-0 duration-300', $html);
+        $this->assertStringContainsString('translate-x-0 opacity-100 duration-500 delay-300', $html);
+        $this->assertStringContainsString('pointer-events-none translate-x-4 opacity-0 duration-300', $html);
+        $this->assertStringContainsString('motion-reduce:transition-none', $html);
     }
 }
