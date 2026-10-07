@@ -511,4 +511,29 @@ class FeerTemplateTest extends TestCase
         $this->assertSame(2, substr_count($html, '>Wolontariat</a>'), 'pasek nagłówka + panel mobilny');
         $this->assertStringContainsString('!border-brand', $html);
     }
+
+    public function test_zdjecie_wpisu_feer_slucha_ustawienia_ukladu_a_ikonki_sa_na_dole(): void
+    {
+        SiteSetting::current()->update(['site_template' => 'feer']);
+        \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();
+        $make = fn (string $layout) => \App\Models\News::create(['title' => 'Wpis '.$layout, 'slug' => 'w-'.$layout, 'content' => '<p>Treść</p>', 'excerpt' => 'z', 'is_published' => true, 'published_at' => now()->subDay(), 'article_layout' => $layout]);
+        $withImg = function ($news) {
+            \Illuminate\Support\Facades\Storage::fake('public');
+            $news->addMedia(\Illuminate\Http\UploadedFile::fake()->image('a.jpg', 800, 600))->toMediaCollection('image');
+
+            return $news->fresh();
+        };
+
+        $side = $withImg($make('side'));
+        $html = $this->get(route('news.show', $side))->assertOk()->getContent();
+        $this->assertStringContainsString('md:grid-cols-[18rem_minmax(0,1fr)]', $html);
+
+        $center = $withImg($make('default'));
+        $html = $this->get(route('news.show', $center))->assertOk()->getContent();
+        $this->assertStringContainsString('mx-auto max-w-xl', $html);
+        $this->assertStringNotContainsString('md:grid-cols-[18rem_minmax(0,1fr)]', $html);
+
+        // Ikonki narzędzi stoją po treści artykułu (na dole), nie nad nią.
+        $this->assertGreaterThan(strpos($html, 'id="article-text"'), strpos($html, 'aria-label="Opcje artykułu"'));
+    }
 }

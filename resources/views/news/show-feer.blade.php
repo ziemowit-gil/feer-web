@@ -70,7 +70,9 @@
         $articleLayout = $news->article_layout ?? 'default';
         $img           = $news->imageUrlOrDefault();
         $imgAlt        = $news->image_alt ?: 'Zdjęcie ilustracyjne';
-        $tool = 'inline-flex min-h-11 w-full items-center gap-2 rounded-md bg-gray-100 px-4 text-sm font-bold text-ink transition hover:bg-gray-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2';
+        $readMin = max(1, (int) ceil(str_word_count(strip_tags((string) $news->content)) / 200));
+        $iconBtn = 'inline-flex h-12 w-12 items-center justify-center rounded-md bg-gray-100 text-lg text-ink transition hover:bg-gray-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2';
+        $unusedTool = 'inline-flex min-h-11 w-full items-center gap-2 rounded-md bg-gray-100 px-4 text-sm font-bold text-ink transition hover:bg-gray-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2';
     @endphp
 
     <section class="mx-auto max-w-6xl px-4 py-10" x-data="audioPlayer()">
@@ -89,7 +91,7 @@
                 <p class="text-xs font-bold uppercase tracking-widest text-brand-dark">
                     {{ $news->category?->name ?? 'Aktualności' }}
                     <span class="font-medium text-muted"> · <time datetime="{{ $news->published_at->toDateString() }}">{{ $news->published_at->translatedFormat('j F Y') }}</time>
-                    @if ($news->updated_at->gt($news->published_at)) · zaktualizowano {{ $news->updated_at->format('d.m.Y') }}@endif</span>
+                    @if ($news->updated_at->gt($news->published_at)) · zaktualizowano {{ $news->updated_at->format('d.m.Y') }}@endif · {{ $readMin }} min czytania</span>
                 </p>
                 <h1 class="mt-3 text-3xl font-extrabold leading-tight tracking-tight text-ink md:text-5xl">
                     @if ($canQuickEdit)
@@ -106,28 +108,24 @@
             </header>
 
             @php
-                $readMin = max(1, (int) ceil(str_word_count(strip_tags((string) $news->content)) / 200));
+                $isSide = $articleLayout === 'side' && $img;
+                $hasImg = $img && $articleLayout !== 'none';
             @endphp
-            <div class="mx-auto max-w-3xl">
-                {{-- Narzędzia artykułu jako rząd przycisków pod nagłówkiem (zamiast bocznej kolumny) --}}
-                <div class="-mt-4 mb-10 flex flex-wrap items-center gap-2 print:hidden" aria-label="Opcje artykułu" role="group">
-                    <span class="mr-2 text-sm font-bold text-muted">{{ $readMin }} min czytania</span>
-                    <button type="button" x-show="supported" x-cloak @click="play()" :aria-pressed="playing.toString()" class="{{ $tool }} !w-auto"
-                            :class="playing ? 'bg-ink text-white hover:bg-ink' : ''">
-                        <i class="fa-solid" :class="playing ? 'fa-pause' : 'fa-volume-high'" aria-hidden="true"></i>
-                        <span x-text="playing ? 'Zatrzymaj odczyt' : 'Odsłuchaj'"></span>
-                    </button>
-                    <button type="button" onclick="window.print()" class="{{ $tool }} !w-auto"><i class="fa-solid fa-print" aria-hidden="true"></i> Drukuj</button>
-                    <a href="{{ site_route('news.pdf', $news) }}" target="_blank" rel="noopener" class="{{ $tool }} !w-auto">
-                        <i class="fa-solid fa-file-pdf" aria-hidden="true"></i> PDF<span class="sr-only"> — tekst artykułu (otwiera się w nowej karcie)</span>
-                    </a>
-                </div>
-
-                @if ($img && $articleLayout !== 'none')
-                    <img src="{{ $img }}" alt="{{ $imgAlt }}" data-lightbox class="mb-8 aspect-[16/10] w-full max-w-md rounded-lg object-cover">
+            {{-- Układ zdjęcia wg ustawienia wpisu w panelu: „side" — obok tekstu, „default" — wyśrodkowane nad tekstem,
+                 „wide" — szerokie nad tekstem, „none" — bez zdjęcia. --}}
+            <div class="{{ $isSide ? 'max-w-5xl' : 'max-w-3xl' }}">
+                @if ($isSide)
+                    <div class="grid gap-8 md:grid-cols-[18rem_minmax(0,1fr)] md:items-start">
+                        <img src="{{ $img }}" alt="{{ $imgAlt }}" data-lightbox class="aspect-[4/3] w-full rounded-lg object-cover md:sticky md:top-6">
+                        <div id="article-text" data-news-content class="news-feer-body prose prose-lg max-w-none text-ink">@shortcodes($news->content)</div>
+                    </div>
+                @else
+                    @if ($hasImg)
+                        <img src="{{ $img }}" alt="{{ $imgAlt }}" data-lightbox
+                             class="mb-8 aspect-[16/10] w-full rounded-lg object-cover {{ $articleLayout === 'wide' ? 'max-w-3xl' : 'mx-auto max-w-xl' }}">
+                    @endif
+                    <div id="article-text" data-news-content class="news-feer-body prose prose-lg max-w-3xl text-ink">@shortcodes($news->content)</div>
                 @endif
-
-                <div id="article-text" data-news-content class="news-feer-body prose prose-lg max-w-3xl text-ink">@shortcodes($news->content)</div>
 
                 @if ($news->tags->isNotEmpty())
                     <ul class="mt-10 flex flex-wrap gap-2" role="list" aria-label="Tagi">
@@ -138,6 +136,21 @@
                 @endif
 
                 @include('partials.attachments-list', ['attachments' => $news->attachments])
+
+                {{-- Narzędzia artykułu jako ikonki na dole (etykiety dla czytników ekranu i podpowiedzi title) --}}
+                <div class="mt-10 flex flex-wrap items-center gap-2 print:hidden" aria-label="Opcje artykułu" role="group">
+                    <button type="button" x-show="supported" x-cloak @click="play()" :aria-pressed="playing.toString()" class="{{ $iconBtn }}"
+                            :class="playing ? 'bg-ink text-white hover:bg-ink' : ''" title="Odsłuchaj artykuł">
+                        <i class="fa-solid" :class="playing ? 'fa-pause' : 'fa-volume-high'" aria-hidden="true"></i>
+                        <span class="sr-only" x-text="playing ? 'Zatrzymaj odczyt' : 'Odsłuchaj artykuł'">Odsłuchaj artykuł</span>
+                    </button>
+                    <button type="button" onclick="window.print()" class="{{ $iconBtn }}" title="Drukuj">
+                        <i class="fa-solid fa-print" aria-hidden="true"></i><span class="sr-only">Drukuj</span>
+                    </button>
+                    <a href="{{ site_route('news.pdf', $news) }}" target="_blank" rel="noopener" class="{{ $iconBtn }}" title="Tekst w PDF">
+                        <i class="fa-solid fa-file-pdf" aria-hidden="true"></i><span class="sr-only">Tekst w PDF (otwiera się w nowej karcie)</span>
+                    </a>
+                </div>
             </div>
 
             {{-- Czytaj także --}}
