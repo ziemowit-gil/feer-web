@@ -286,4 +286,21 @@ class FeerTemplateTest extends TestCase
         \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();
         $this->get('/projekty')->assertOk()->assertDontSee('lg:grid-cols-[14rem_minmax(0,1fr)]', false);
     }
+
+    public function test_lista_materialow_feer_ma_wiersze_i_nawigacje_grup(): void
+    {
+        \App\Models\EducationalMaterial::create(['title' => 'Poradnik A', 'description' => 'Opis A', 'type' => 'pdf', 'is_published' => true, 'target_group' => array_key_first(\App\Models\EducationalMaterial::TARGET_GROUPS)]);
+        \App\Models\EducationalMaterial::create(['title' => 'Poradnik B', 'description' => 'Opis B', 'type' => 'pdf', 'is_published' => true, 'target_group' => array_keys(\App\Models\EducationalMaterial::TARGET_GROUPS)[1] ?? array_key_first(\App\Models\EducationalMaterial::TARGET_GROUPS)]);
+        SiteSetting::current()->update(['site_template' => 'feer']);
+        \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();
+
+        $html = $this->get('/materialy')->assertOk()->assertSee('Poradnik A')->assertSee('Poradnik B')->getContent();
+        $this->assertStringContainsString('lg:grid-cols-[14rem_minmax(0,1fr)]', $html);
+        $this->assertStringContainsString('Grupy materiałów', $html);
+        $this->assertStringContainsString('id="zapis"', $html);
+
+        SiteSetting::current()->update(['site_template' => 'ngo_mix']);
+        \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();
+        $this->get('/materialy')->assertOk()->assertDontSee('Grupy materiałów');
+    }
 }

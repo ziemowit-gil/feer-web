@@ -25,6 +25,11 @@ class EducationalMaterialController extends Controller
         $user = $request->user();
         $userCanAccessPremium = $user && $user->hasFeature('access-premium-materials');
 
+        // Szablon FEER ma własny układ listy materiałów (nawigacja po grupach + wiersze).
+        if (\App\Models\SiteSetting::current()->site_template === 'feer') {
+            return view('educational-materials.index-feer', compact('materials', 'userCanAccessPremium'));
+        }
+
         return view('educational-materials.index', compact('materials', 'userCanAccessPremium'));
     }
 }
