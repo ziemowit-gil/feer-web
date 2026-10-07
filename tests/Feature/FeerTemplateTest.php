@@ -797,4 +797,18 @@ class FeerTemplateTest extends TestCase
         $this->assertStringContainsString('feer-reveal', $html);
         $this->assertStringContainsString('prefers-reduced-motion: reduce', $html);
     }
+
+    public function test_strona_dostepnosc_ma_wprowadzenie_i_jeden_przycisk_aktywacji_oraz_zawsze_kafelki(): void
+    {
+        SiteSetting::current()->update(['site_template' => 'feer']);
+        \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();
+        \Illuminate\Support\Facades\Cache::flush();
+        $parent = \App\Models\Page::create(['title' => 'Dostępność', 'slug' => 'dostepnosc', 'type' => 'links_hub', 'is_published' => true, 'hub_intro' => 'Informacje i wsparcie.', 'side_nav_style' => 'sidebar']);
+        \App\Models\Page::create(['parent_id' => $parent->id, 'title' => 'Dostępność cyfrowa', 'slug' => 'dostepnosc-cyfrowa', 'type' => 'standard', 'is_published' => true, 'order' => 1]);
+
+        $this->assertSame('tiles', $parent->fresh()->sideNavStyle());
+        $html = $this->get('/dostepnosc')->assertOk()->assertSee('Informacje i wsparcie.')->getContent();
+        $this->assertSame(1, substr_count($html, 'Włącz ułatwienia dostępności'));
+        $this->assertStringContainsString('a11y-open', $html);
+    }
 }

@@ -822,6 +822,9 @@
                 @if (filled($page->hub_intro))
                     <p class="mt-4 max-w-2xl text-lg leading-relaxed text-ink">{{ $page->hub_intro }}</p>
                 @endif
+                @if ($page->slug === 'dostepnosc' && ! $page->parent_id)
+                    @include('page.partials.a11y-activate-button')
+                @endif
             </div>
         </section>
     @else
@@ -831,6 +834,9 @@
             <h1 class="text-4xl font-extrabold leading-tight tracking-tight md:text-5xl">{{ $page->title }}</h1>
             @if (filled($page->hub_intro))
                 <p class="mx-auto mt-5 max-w-2xl text-lg text-white/85">{{ $page->hub_intro }}</p>
+            @endif
+            @if ($page->slug === 'dostepnosc' && ! $page->parent_id)
+                @include('page.partials.a11y-activate-button')
             @endif
         </div>
     </section>

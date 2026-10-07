@@ -25,7 +25,8 @@
 <div class="site-topbar border-b {{ $feerBar ? 'site-topbar-feer border-ink bg-ink' : 'border-gray-200 bg-gray-50' }}"
      x-data="{ open: (function () { try { return localStorage.getItem('a11y-panel-open') === '1' } catch (e) { return false } })() }"
      x-effect="(() => { try { localStorage.setItem('a11y-panel-open', open ? '1' : '0') } catch (e) {} })()"
-     @keydown.escape.window="if (open) { open = false; $refs.a11yToggle.focus() }">
+     @keydown.escape.window="if (open) { open = false; $refs.a11yToggle.focus() }"
+     @a11y-open.window="open = true; $nextTick(() => $refs.a11yToggle.focus())">
 
     <div class="mx-auto flex max-w-6xl items-center gap-2 px-4 py-1.5 sm:gap-4">
 

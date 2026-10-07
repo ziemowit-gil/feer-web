@@ -706,6 +706,12 @@ class Page extends Model
     {
         $style = $this->parent_id ? $this->sectionRoot()->side_nav_style : $this->side_nav_style;
 
+        // Strona „Dostępność" (dział podstron o dostępności) zawsze pokazuje podstrony jako kafelki.
+        $root = $this->parent_id ? $this->sectionRoot() : $this;
+        if ($root->slug === 'dostepnosc' && ! $root->parent_id) {
+            return 'tiles';
+        }
+
         return array_key_exists((string) $style, self::SIDE_NAV_STYLES) ? $style : 'sidebar';
     }
 
