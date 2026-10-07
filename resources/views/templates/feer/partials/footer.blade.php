@@ -20,18 +20,19 @@
 
 <footer>
     @if ($partners->isNotEmpty())
-        <div class="border-t border-gray-200 bg-white" role="region" aria-label="Partnerzy i systemy powiązane">
-            <div class="mx-auto max-w-6xl px-4 py-10">
-                <h2 class="mb-6 text-lg font-bold uppercase tracking-wide text-ink">Współpracujemy</h2>
-                <ul class="flex flex-wrap items-center gap-x-10 gap-y-6" role="list">
+        <div class="bg-gray-50" role="region" aria-label="Partnerzy i systemy powiązane">
+            <div class="mx-auto max-w-6xl px-4 py-12">
+                <h2 class="mb-2 text-center text-lg font-bold uppercase tracking-wide text-ink">Współpracujemy</h2>
+                <p class="mx-auto mb-8 max-w-xl text-center text-sm text-muted">Działamy razem z organizacjami i instytucjami, które nas wspierają.</p>
+                <ul class="mx-auto flex max-w-4xl flex-wrap items-center justify-center gap-x-12 gap-y-8" role="list">
                     @foreach ($partners as $partner)
                         <li>
                             @if ($partner->url)
                                 <a href="{{ $partner->url }}" target="_blank" rel="noopener" class="block rounded-sm grayscale transition hover:grayscale-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
-                                    <img src="{{ $partner->logo_url }}" alt="{{ $partner->name }} (otwiera się w nowej karcie)" class="h-10 w-auto object-contain">
+                                    <img src="{{ $partner->logo_url }}" alt="{{ $partner->name }} (otwiera się w nowej karcie)" class="h-12 w-auto object-contain">
                                 </a>
                             @else
-                                <img src="{{ $partner->logo_url }}" alt="{{ $partner->name }}" class="h-10 w-auto object-contain grayscale">
+                                <img src="{{ $partner->logo_url }}" alt="{{ $partner->name }}" class="h-12 w-auto object-contain grayscale">
                             @endif
                         </li>
                     @endforeach

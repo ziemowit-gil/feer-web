@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\View;
  * Obsługiwane shortcody:
  *   [formularz:slug] — osadza formularz o podanym identyfikatorze
  *   [kafelki:slug]   — osadza siatkę kafelków ze strony typu tiles_grid
+ *   [pasek:ID]       — wstawia pasek z modułu „FEER Paski” (tytuł, tekst, przyciski)
  *   [klauzule-rodo]  — lista klauzul informacyjnych RODO zaimportowanych z SZO
  *                      ([klauzule-rodo:en] — wersje angielskie)
  */
@@ -38,6 +39,12 @@ class ShortcodeParser
         );
 
         $content = preg_replace_callback(
+            '/(?:<p>\s*)?\[pasek:(\d+)\](?:\s*<\/p>)?/i',
+            fn ($matches) => static::renderBand((int) $matches[1]),
+            $content,
+        );
+
+        $content = preg_replace_callback(
             '/(?:<p>\s*)?\[klauzule-rodo(?::([a-z]{2}))?\](?:\s*<\/p>)?/i',
             fn ($matches) => static::renderGdprClauses(strtolower($matches[1] ?? '') ?: 'pl'),
             $content,
@@ -47,11 +54,23 @@ class ShortcodeParser
     }
 
     /** Wzorzec wszystkich shortcodów — do wykrywania (np. wyłączenie edycji inline). */
-    public const DETECT_PATTERN = '/\[(?:(?:formularz|kafelki):[a-z0-9_\-]+|klauzule-rodo(?::[a-z]{2})?)\]/i';
+    public const DETECT_PATTERN = '/\[(?:(?:formularz|kafelki):[a-z0-9_\-]+|pasek:\d+|klauzule-rodo(?::[a-z]{2})?)\]/i';
 
     public static function has(?string $content): bool
     {
         return filled($content) && (bool) preg_match(self::DETECT_PATTERN, $content);
+    }
+
+    private static function renderBand(int $id): string
+    {
+        $site = \App\Models\SiteSetting::current();
+        if (! $site->isModuleEnabled('feer_bands')) {
+            return '';
+        }
+
+        $band = \App\Models\FeerBand::forCurrentSite()->active()->find($id);
+
+        return $band ? View::make('partials.feer-band', ['band' => $band, 'inContent' => true])->render() : '';
     }
 
     private static function renderGdprClauses(string $lang): string

@@ -32,6 +32,7 @@ class SiteSetting extends Model implements HasMedia
         'gallery' => 'Galeria',
         'projects' => 'Projekty',
         'quick_actions' => 'Szybkie akcje',
+        'feer_bands' => 'FEER Paski (paski z tekstem i przyciskami)',
         'partners' => 'Partnerzy',
         'strategy' => 'Strategia organizacji (planowanie działań)',
         'authorizations' => 'Rejestr pełnomocnictw i upoważnień',

@@ -430,6 +430,10 @@ Route::middleware(['auth', 'verified', '2fa', 'admin-site'])->prefix(config('app
         Route::post('ankiety/{poll}/reset-glosow', [AdminPollController::class, 'resetVotes'])->name('ankiety.reset-votes');
     });
 
+    Route::middleware(['module:feer_bands', 'module-access:feer_bands'])->group(function () {
+        Route::resource('feer-paski', \App\Http\Controllers\Admin\FeerBandController::class)->parameters(['feer-paski' => 'band'])->except('show');
+    });
+
     Route::middleware(['module:quick_actions', 'module-access:quick_actions'])->group(function () {
         Route::resource('szybkie-akcje', AdminQuickActionController::class)->parameters(['szybkie-akcje' => 'quickAction'])->except('show');
     });
