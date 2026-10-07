@@ -87,7 +87,7 @@
         <div x-show="!etr" x-cloak>
             <a href="{{ site_route('news.index') }}" class="mb-6 inline-flex min-h-11 items-center text-sm font-bold text-brand-dark underline underline-offset-4 hover:no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">← Wszystkie aktualności</a>
 
-            <header class="mb-10 max-w-4xl">
+            <header class="mb-10 w-full">
                 <p class="text-xs font-bold uppercase tracking-widest text-brand-dark">
                     {{ $news->category?->name ?? 'Aktualności' }}
                     <span class="font-medium text-muted"> · <time datetime="{{ $news->published_at->toDateString() }}">{{ $news->published_at->translatedFormat('j F Y') }}</time>
@@ -113,7 +113,7 @@
             @endphp
             {{-- Układ zdjęcia wg ustawienia wpisu w panelu: „side" — obok tekstu, „default" — wyśrodkowane nad tekstem,
                  „wide" — szerokie nad tekstem, „none" — bez zdjęcia. --}}
-            <div class="{{ $isSide ? 'max-w-5xl' : 'max-w-3xl' }}">
+            <div class="w-full">
                 @if ($isSide)
                     <div class="grid gap-8 md:grid-cols-[18rem_minmax(0,1fr)] md:items-start">
                         <img src="{{ $img }}" alt="{{ $imgAlt }}" data-lightbox class="aspect-[4/3] w-full rounded-lg object-cover md:sticky md:top-6">
@@ -124,7 +124,7 @@
                         <img src="{{ $img }}" alt="{{ $imgAlt }}" data-lightbox
                              class="mb-8 aspect-[16/10] w-full rounded-lg object-cover {{ $articleLayout === 'wide' ? 'max-w-3xl' : 'mx-auto max-w-xl' }}">
                     @endif
-                    <div id="article-text" data-news-content class="news-feer-body prose prose-lg max-w-3xl text-ink">@shortcodes($news->content)</div>
+                    <div id="article-text" data-news-content class="news-feer-body prose prose-lg max-w-none text-ink">@shortcodes($news->content)</div>
                 @endif
 
                 @if ($news->tags->isNotEmpty())

@@ -38,7 +38,7 @@ class FeerTemplateTest extends TestCase
         SiteSetting::current()->update(['site_template' => 'feer', 'brand_color' => '#c31432']);
         \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();
 
-        $this->get('/')->assertOk()->assertSee('--color-brand: #1b66f5', false)->assertSee('--color-brand-4: #cbd5e7', false);
+        $this->get('/')->assertOk()->assertSee('--color-brand: #1e6dff', false)->assertSee('--color-brand-4: #cbd5e7', false);
     }
 
     public function test_szablon_feer_pokazuje_szybkie_akcje_i_pozwala_je_wylaczyc(): void
@@ -80,10 +80,11 @@ class FeerTemplateTest extends TestCase
             return 0.2126 * $c[0] + 0.7152 * $c[1] + 0.0722 * $c[2];
         };
 
-        foreach (['--color-brand', '--color-brand-dark'] as $var) {
+        // Kolor główny #1E6DFF (decyzja właściciela) ma na bieli 4,48:1 — minimalnie poniżej AA; tekst i linki używają brand-dark.
+        foreach (['--color-brand' => 4.4, '--color-brand-dark' => 4.5] as $var => $min) {
             $this->assertSame(1, preg_match('/'.preg_quote($var, '/').':\s*(#[0-9a-fA-F]{6})/', $css, $m), $var);
             $ratio = 1.05 / ($lum($m[1]) + 0.05);
-            $this->assertGreaterThanOrEqual(4.5, $ratio, "{$var} {$m[1]} ma kontrast {$ratio}:1 na bieli");
+            $this->assertGreaterThanOrEqual($min, $ratio, "{$var} {$m[1]} ma kontrast {$ratio}:1 na bieli");
         }
     }
 
@@ -535,5 +536,42 @@ class FeerTemplateTest extends TestCase
 
         // Ikonki narzędzi stoją po treści artykułu (na dole), nie nad nią.
         $this->assertGreaterThan(strpos($html, 'id="article-text"'), strpos($html, 'aria-label="Opcje artykułu"'));
+    }
+
+    public function test_nawigacja_kafelkowa_pokazuje_podstrony_jako_kafelki(): void
+    {
+        $root = \App\Models\Page::create(['title' => 'Egzamin maturalny', 'slug' => 'egzamin-maturalny', 'type' => 'standard', 'is_published' => true, 'side_nav_style' => 'tiles', 'content' => '<p>Wstęp</p>']);
+        foreach (['O egzaminie', 'Informatory', 'Arkusze'] as $i => $title) {
+            \App\Models\Page::create(['title' => $title, 'slug' => 'egzamin-maturalny/'.str($title)->slug(), 'type' => 'standard', 'is_published' => true, 'parent_id' => $root->id, 'order' => $i, 'meta_description' => 'Opis '.$title]);
+        }
+
+        $html = $this->get($root->publicUrl())->assertOk()->assertSee('O egzaminie')->assertSee('Informatory')->assertSee('Arkusze')->assertSee('Opis Arkusze')->getContent();
+        $this->assertStringContainsString('aria-label="Podstrony: Egzamin maturalny"', $html);
+        $this->assertStringContainsString('min-h-36', $html);
+
+        // Zwykły styl: bez kafelków.
+        $root->update(['side_nav_style' => 'sidebar']);
+        \Illuminate\Support\Facades\Cache::flush();
+        $this->get($root->publicUrl())->assertOk()->assertDontSee('aria-label="Podstrony: Egzamin maturalny"', false);
+    }
+
+    public function test_lista_projektow_moze_byc_kafelkowa_w_dowolnym_szablonie(): void
+    {
+        $category = \App\Models\Category::create(['name' => 'Dla NGO', 'slug' => 'dla-ngo']);
+        \App\Models\Project::create(['title' => 'Wsparcie IT', 'slug' => 'wsparcie-it', 'excerpt' => 'Pomagamy', 'is_published' => true, 'category_id' => $category->id]);
+
+        foreach (['default', 'feer'] as $template) {
+            SiteSetting::current()->update(['site_template' => $template, 'projects_layout' => 'tiles']);
+            \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();
+            \Illuminate\Support\Facades\Cache::flush();
+
+            $html = $this->get('/projekty')->assertOk()->assertSee('Wsparcie IT')->getContent();
+            $this->assertStringContainsString('min-h-40', $html, $template);
+        }
+
+        SiteSetting::current()->update(['site_template' => 'feer', 'projects_layout' => 'list']);
+        \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();
+        \Illuminate\Support\Facades\Cache::flush();
+        $this->get('/projekty')->assertOk()->assertDontSee('min-h-40', false);
     }
 }
