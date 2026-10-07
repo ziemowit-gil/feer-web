@@ -850,27 +850,30 @@
 
         @php $isFederationTemplate = ($siteSettings->site_template ?? 'default') === 'federation'; @endphp
         @if ($hubLinks->isNotEmpty() && $feerHub)
-            {{-- Szablon FEER: płaskie białe karty z paskiem koloru u góry; tekst zawsze ciemny na białym. --}}
-            <ul class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3" role="list">
+            {{-- Szablon FEER: kafelki jak w serwisach typu CKE — pełne kolory z brandbooka (niebieski, grafit, pomarańcz, jasny niebieski),
+                 ikona, tytuł, opis i strzałka; kolor tekstu dobiera Color::button (kontrast ≥ 4,5:1). Cały kafelek jest linkiem. --}}
+            @php
+                $cke = ['#1e6dff', '#1d1d1a', '#ea8f00', '#cbd5e7'];
+                $ckeNamed = ['blue' => '#1e6dff', 'dark' => '#1d1d1a', 'orange' => '#ea8f00'];
+            @endphp
+            <ul class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3" role="list">
                 @foreach ($hubLinks as $i => $link)
                     @php
-                        $colorKey = $link['color'] ?? null;
-                        $bg = ($colorKey && isset($metroColorMap[$colorKey]))
-                            ? $metroColorMap[$colorKey]
-                            : ($siteSettings->brandColorN(($i % 4) + 1) ?: $metroColorFallback[$i % count($metroColorFallback)]);
-                        $ctaLabel = filled($link['cta_label'] ?? null) ? $link['cta_label'] : 'Dowiedz się więcej';
+                        $base = $ckeNamed[$link['color'] ?? ''] ?? $cke[$i % count($cke)];
+                        $pal = $base === '#1e6dff' ? ['bg' => '#1e6dff', 'text' => '#ffffff'] : \App\Support\Color::button($base);
+                        $ctaLabel = filled($link['cta_label'] ?? null) ? $link['cta_label'] : null;
                     @endphp
                     <li class="h-full">
                         <a href="{{ $link['url'] }}"
-                           class="group flex h-full flex-col rounded-lg border border-gray-200 bg-white p-6 transition hover:border-gray-300 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2"
-                           style="border-top: 4px solid {{ $bg }}">
-                            <i class="{{ filled($link['icon'] ?? null) ? $link['icon'] : 'fa-solid fa-file-lines' }} mb-4 text-2xl" style="color: {{ $bg }}" aria-hidden="true"></i>
-                            <span class="text-xl font-bold leading-snug text-ink group-hover:text-brand-dark" lang="pl" style="overflow-wrap: break-word; hyphens: auto">{{ $link['label'] }}</span>
-                            @if (filled($link['description'] ?? null))
-                                <span class="mt-2 line-clamp-4 text-sm leading-relaxed text-muted">{{ $link['description'] }}</span>
-                            @endif
-                            <span class="mt-auto inline-flex items-center gap-1.5 pt-5 text-sm font-bold text-brand-dark transition group-hover:gap-3">
-                                {{ $ctaLabel }} <i class="fa-solid fa-arrow-right text-xs" aria-hidden="true"></i>
+                           class="feer-card group flex min-h-44 h-full flex-col justify-between rounded-md p-6 transition hover:-translate-y-0.5 hover:opacity-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2"
+                           style="background-color: {{ $pal['bg'] }}; color: {{ $pal['text'] }}">
+                            <span>
+                                <i class="{{ filled($link['icon'] ?? null) ? $link['icon'] : 'fa-solid fa-file-lines' }} mb-3 block text-3xl" aria-hidden="true"></i>
+                                <span class="block text-xl font-bold leading-snug" lang="pl" style="overflow-wrap: break-word; hyphens: auto">{{ $link['label'] }}</span>
+                            </span>
+                            <span class="mt-4 flex items-end justify-between gap-3">
+                                <span class="line-clamp-3 text-sm leading-snug">{{ filled($link['description'] ?? null) ? $link['description'] : $ctaLabel }}</span>
+                                <span class="flex-none text-2xl transition group-hover:translate-x-1" aria-hidden="true">→</span>
                             </span>
                         </a>
                     </li>

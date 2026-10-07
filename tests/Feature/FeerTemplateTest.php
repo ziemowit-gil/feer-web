@@ -119,7 +119,8 @@ class FeerTemplateTest extends TestCase
         \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();
 
         $html = $this->get('/dolacz-hub-test')->assertOk()->assertSee('Wolontariat')->assertSee('Zostań z nami')->getContent();
-        $this->assertStringContainsString('border-top: 4px solid #16a34a', $html);
+        $this->assertStringContainsString('background-color: #1e6dff', $html); // pełnokolorowe kafelki z brandbooka (jak CKE)
+        $this->assertStringNotContainsString('border-top: 4px solid', $html);
         $this->assertStringNotContainsString('<section class="bg-brand text-white"', $html);
     }
 
@@ -810,5 +811,20 @@ class FeerTemplateTest extends TestCase
         $html = $this->get('/dostepnosc')->assertOk()->assertSee('Informacje i wsparcie.')->getContent();
         $this->assertSame(1, substr_count($html, 'Włącz ułatwienia dostępności'));
         $this->assertStringContainsString('a11y-open', $html);
+    }
+
+    public function test_kafelki_strony_hub_w_feer_sa_pelnokolorowe_jak_cke(): void
+    {
+        SiteSetting::current()->update(['site_template' => 'feer']);
+        \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();
+        \Illuminate\Support\Facades\Cache::flush();
+        $parent = \App\Models\Page::create(['title' => 'Dział', 'slug' => 'dzial-cke', 'type' => 'links_hub', 'is_published' => true]);
+        \App\Models\Page::create(['parent_id' => $parent->id, 'title' => 'Pierwszy kafel', 'slug' => 'pierwszy-kafel', 'type' => 'standard', 'is_published' => true, 'order' => 1]);
+        \App\Models\Page::create(['parent_id' => $parent->id, 'title' => 'Drugi kafel', 'slug' => 'drugi-kafel', 'type' => 'standard', 'is_published' => true, 'order' => 2]);
+
+        $html = $this->get('/dzial-cke')->assertOk()->assertSee('Pierwszy kafel')->getContent();
+        $this->assertStringContainsString('background-color: #1e6dff', $html);
+        $this->assertStringContainsString('background-color: #1d1d1a', $html);
+        $this->assertStringNotContainsString('border-top: 4px solid', $html);
     }
 }
