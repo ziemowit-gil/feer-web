@@ -19,7 +19,7 @@
     @php $hasBank = ! empty($siteSettings->contact_bank_accounts) || filled($siteSettings->contact_bank_accounts_note); @endphp
 
     <section class="bg-gray-50">
-        <div class="mx-auto max-w-6xl px-4 py-12 md:py-16">
+        <div class="mx-auto max-w-6xl px-4 py-8 md:py-10">
             <h1 class="text-3xl font-extrabold leading-tight tracking-tight text-ink md:text-5xl">Kontakt</h1>
             <div class="mt-4 max-w-2xl text-lg leading-relaxed text-ink">
                 @if ($siteSettings->contact_intro)
@@ -31,8 +31,8 @@
         </div>
     </section>
 
-    <div class="contact-feer mx-auto max-w-6xl px-4 py-12">
-        <div class="grid gap-12 lg:grid-cols-[minmax(0,1fr)_26rem] lg:items-start">
+    <div class="contact-feer mx-auto max-w-6xl px-4 py-8 md:py-10">
+        <div class="grid gap-10 lg:grid-cols-[minmax(0,1fr)_26rem] lg:items-start">
 
             <div class="min-w-0 space-y-12">
                 @include('partials.correspondence-note')
@@ -93,7 +93,7 @@
                                 <span class="{{ $ico }}" aria-hidden="true"><i class="fa-solid fa-clock"></i></span>
                                 <div class="min-w-0">
                                     <dt class="{{ $dt }}">Godziny pracy</dt>
-                                    <dd class="mt-1 text-lg font-bold leading-snug text-ink">{{ $siteSettings->contact_office_hours }}</dd>
+                                    <dd class="mt-1 text-lg font-bold leading-snug text-ink">{{ preg_replace('/\s+([-–])\s+/u', "\u{00A0}$1\u{00A0}", $siteSettings->contact_office_hours) }}</dd>
                                 </div>
                             </div>
                         @endif
