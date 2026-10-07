@@ -4,6 +4,10 @@
 
 @section('content')
     <div class="mb-4 flex items-center justify-end gap-2">
+        <a href="{{ route('admin.kategorie-newsow.index') }}"
+            class="inline-flex items-center gap-1.5 rounded border border-gray-300 bg-white px-3 py-2 text-sm font-bold text-ink hover:border-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
+            <i class="fa-solid fa-tags" aria-hidden="true"></i> Kategorie ({{ $categories->count() }})
+        </a>
         <a href="{{ route('admin.newsy.eksport') }}"
             class="inline-flex items-center gap-1.5 rounded border border-gray-300 bg-white px-3 py-2 text-sm font-bold text-muted hover:border-gray-400 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
             <i class="fa-solid fa-file-csv" aria-hidden="true"></i> Eksportuj CSV

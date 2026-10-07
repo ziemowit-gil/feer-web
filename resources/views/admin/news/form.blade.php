@@ -617,6 +617,10 @@
                         </select>
                     </div>
                     @error('news_category_id') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    <p class="mt-1 text-xs text-muted">
+                        @if ($newsCategories->isEmpty())Nie ma jeszcze żadnych kategorii. @endif
+                        <a href="{{ route('admin.kategorie-newsow.index') }}" target="_blank" rel="noopener" class="font-bold text-ink underline underline-offset-2 hover:text-brand-dark">Zarządzaj kategoriami aktualności<span class="sr-only"> (otwiera się w nowej karcie)</span></a>
+                    </p>
                 </div>
 
                 <div>

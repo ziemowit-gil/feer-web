@@ -74,4 +74,11 @@ class NewsCategoriesManagementTest extends TestCase
 
         $this->assertNull($n->fresh()->news_category_id);
     }
+
+    public function test_z_listy_i_formularza_aktualnosci_jest_widoczny_link_do_kategorii(): void
+    {
+        $admin = $this->admin();
+        $this->actingAs($admin)->get(route('admin.newsy.index'))->assertOk()->assertSee('Kategorie (')->assertSee(route('admin.kategorie-newsow.index'), false);
+        $this->actingAs($admin)->get(route('admin.newsy.create'))->assertOk()->assertSee('Zarządzaj kategoriami aktualności')->assertSee('Nie ma jeszcze żadnych kategorii');
+    }
 }
