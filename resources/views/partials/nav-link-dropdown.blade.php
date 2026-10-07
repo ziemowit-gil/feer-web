@@ -44,14 +44,14 @@
             'z-50 rounded-lg border border-gray-200 py-2 normal-case tracking-normal shadow-lg',
             'bg-white/90 backdrop-blur-sm' => $transparent,
             'bg-white' => ! $transparent,
-            'absolute left-0 top-full mt-1 w-60' => ! $mobile,
+            'absolute left-0 top-full mt-1 w-72' => ! $mobile,
             'static mt-1 w-full' => $mobile,
         ])>
         {{-- Ręcznie dodane podpozycje menu. --}}
         @foreach ($item->children as $child)
             <li>
                 <a href="{{ $child->url }}" @if ($child->isCurrent()) aria-current="page" @endif
-                    class="block px-4 py-2 text-sm font-medium normal-case {{ $child->isCurrent() ? 'text-brand' : 'text-ink' }} hover:bg-gray-50 hover:text-brand focus-visible:bg-gray-50">
+                    class="block px-5 py-3 text-base font-medium normal-case {{ $child->isCurrent() ? 'text-brand' : 'text-ink' }} hover:bg-gray-50 hover:text-brand focus-visible:bg-gray-50">
                     {{ $child->label }}
                 </a>
             </li>
@@ -67,7 +67,7 @@
             @endphp
             <li>
                 <a href="{{ $child->publicUrl() }}" @if ($isCurrentPage) aria-current="page" @endif
-                    class="block px-4 py-2 text-sm font-medium normal-case {{ $isCurrentPage ? 'text-brand' : 'text-ink' }} hover:bg-gray-50 hover:text-brand focus-visible:bg-gray-50">
+                    class="block px-5 py-3 text-base font-medium normal-case {{ $isCurrentPage ? 'text-brand' : 'text-ink' }} hover:bg-gray-50 hover:text-brand focus-visible:bg-gray-50">
                     {{ $child->title }}
                 </a>
             </li>
@@ -76,7 +76,7 @@
         @if ($showFaq)
             <li>
                 <a href="{{ route('faq.index') }}" @if (request()->routeIs('faq.index')) aria-current="page" @endif
-                    class="block px-4 py-2 text-sm font-medium normal-case {{ request()->routeIs('faq.index') ? 'text-brand' : 'text-ink' }} hover:bg-gray-50 hover:text-brand focus-visible:bg-gray-50">
+                    class="block px-5 py-3 text-base font-medium normal-case {{ request()->routeIs('faq.index') ? 'text-brand' : 'text-ink' }} hover:bg-gray-50 hover:text-brand focus-visible:bg-gray-50">
                     Najczęstsze pytania (FAQ)
                 </a>
             </li>
