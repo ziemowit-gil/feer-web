@@ -179,7 +179,7 @@
             {{-- ============================ TYP I UKŁAD ============================ --}}
             <div data-ftab-panel="typ" class="hidden space-y-6">
                 <div class="space-y-5 rounded-lg border border-gray-200 bg-white p-6">
-                    <div class="sm:w-1/2">
+                    <div class="{{ $isPersonForm ? 'sm:w-1/2' : '' }}">
                         @if ($isPersonForm)
                             <input type="hidden" name="type" value="about_person">
                             <label class="mb-1 block text-sm font-bold">Typ strony</label>
@@ -188,13 +188,59 @@
                                 Osoba (typ stały — zarządzaj przez moduł <a href="{{ route('admin.osoby.index') }}" class="text-brand underline">Osoby</a>)
                             </p>
                         @else
+                            @php
+                                // Wybór typu: karty z ikoną, nazwą i opisem, pogrupowane i z wyszukiwarką. Natywny <select> zostaje
+                                // (ukryty) — nadal niesie wartość formularza, a skrypt strony nasłuchuje na jego zdarzeniu „change".
+                                $typeGroups = [
+                                    'Treść' => ['standard', 'about', 'about_person', 'faq', 'glossary', 'guide', 'case_study', 'service', 'legacy'],
+                                    'Układy i kafelki' => ['links_hub', 'tiles_grid', 'wspolpraca', 'contact', 'brand_assets'],
+                                    'Wydarzenia i szkolenia' => ['event', 'schedule', 'training_institution'],
+                                    'Wewnętrzne i przekierowania' => ['internal', 'internal_hub', 'bip_move'],
+                                ];
+                                $typeCards = [];
+                                foreach (\App\Models\Page::TYPES as $value => $label) {
+                                    if ($siteSettings->isOptionBlocked('page_types', $value) && $currentType !== $value) { continue; }
+                                    $typeCards[$value] = [
+                                        'full' => $label,
+                                        'name' => trim(\Illuminate\Support\Str::before($label, ' (')),
+                                        'desc' => \Illuminate\Support\Str::contains($label, ' (') ? rtrim(\Illuminate\Support\Str::after($label, ' ('), ')') : '',
+                                        'icon' => \App\Models\Page::TYPE_ICONS[$value] ?? 'fa-file-lines',
+                                    ];
+                                }
+                            @endphp
                             <label for="type" class="mb-1 block text-sm font-bold">Typ strony</label>
-                            <select id="type" name="type" data-page-type-select class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
-                                @foreach (\App\Models\Page::TYPES as $value => $label)
-                                    @continue($siteSettings->isOptionBlocked('page_types', $value) && $currentType !== $value)
-                                    <option value="{{ $value }}" {{ $currentType === $value ? 'selected' : '' }}>{{ $label }}</option>
+                            <select id="type" name="type" data-page-type-select class="sr-only" tabindex="-1" aria-hidden="true">
+                                @foreach ($typeCards as $value => $card)
+                                    <option value="{{ $value }}" {{ $currentType === $value ? 'selected' : '' }}>{{ $card['full'] }}</option>
                                 @endforeach
                             </select>
+                            <div x-data="{ cur: @js($currentType), q: '', set(v) { this.cur = v; const s = document.getElementById('type'); s.value = v; s.dispatchEvent(new Event('change', { bubbles: true })); }, show(name, desc) { const t = this.q.trim().toLowerCase(); return t === '' || (name + ' ' + desc).toLowerCase().includes(t); } }" class="max-w-3xl space-y-4">
+                                <div>
+                                    <label for="type-search" class="sr-only">Szukaj typu strony</label>
+                                    <input id="type-search" type="search" x-model="q" placeholder="Szukaj typu strony…" class="w-full rounded-lg border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                                </div>
+                                @foreach ($typeGroups as $groupName => $keys)
+                                    <fieldset class="min-w-0" role="radiogroup" aria-label="{{ $groupName }}">
+                                        <legend class="mb-2 text-xs font-bold uppercase tracking-wide text-muted">{{ $groupName }}</legend>
+                                        <div class="grid gap-2 sm:grid-cols-2">
+                                            @foreach ($keys as $key)
+                                                @continue(! isset($typeCards[$key]))
+                                                @php $card = $typeCards[$key]; @endphp
+                                                <button type="button" role="radio" :aria-checked="(cur === '{{ $key }}').toString()" @click="set('{{ $key }}')"
+                                                    x-show="show(@js($card['name']), @js($card['desc']))"
+                                                    class="flex items-start gap-3 rounded-lg border-2 p-3 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-1"
+                                                    :class="cur === '{{ $key }}' ? 'border-brand bg-brand-light' : 'border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50'">
+                                                    <span class="flex h-9 w-9 flex-none items-center justify-center rounded-md bg-white text-brand-dark" :class="cur === '{{ $key }}' ? '' : 'bg-gray-100'" aria-hidden="true"><i class="fa-solid {{ $card['icon'] }}"></i></span>
+                                                    <span class="min-w-0">
+                                                        <span class="block text-sm font-bold text-ink">{{ $card['name'] }} <i x-show="cur === '{{ $key }}'" class="fa-solid fa-check ml-1 text-brand-dark" aria-hidden="true"></i></span>
+                                                        @if ($card['desc'] !== '')<span class="mt-0.5 block text-xs leading-snug text-muted">{{ $card['desc'] }}</span>@endif
+                                                    </span>
+                                                </button>
+                                            @endforeach
+                                        </div>
+                                    </fieldset>
+                                @endforeach
+                            </div>
                             <p class="mt-1 text-xs text-muted">„Wydarzenie" dodaje pola o terminie, miejscu i rejestracji. „Harmonogram zajęć / spotkań" dodaje tabelę terminów oraz miejsce na informację o zmianie. „Oferta", „Poradnik", „Słownik" i „Studium przypadku" mają własne sekcje pól poniżej. Każdy typ ma inny układ na stronie.</p>
                             @error('type') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                         @endif
