@@ -34,6 +34,14 @@
     .site-topbar-feer > div:first-child a:hover { text-decoration: underline; }
     .site-topbar-feer form[role="search"] { border-color: #fff; }
 
+    /* O organizacji FEER: bez ramek i cieni — karty (statystyki, wartości, zespół, dokumenty) mają jasnoszare tło,
+       ikony i znaczniki są kwadratami o małym zaokrągleniu, bez „unoszenia" po najechaniu. */
+    .about-feer [class*="ring-"] { --tw-ring-shadow: 0 0 #0000 !important; box-shadow: none !important; }
+    .about-feer [class*="border-gray"] { border-color: transparent !important; }
+    .about-feer [class*="rounded"][class*="bg-white"] { background-color: #f3f4f6; }
+    .about-feer [class*="hover:-translate-y"]:hover { transform: none !important; }
+    .about-feer .rounded-full { border-radius: .5rem; }
+
     /* Kontakt FEER: bez ramek — bloki sekcji (rachunki, spotkania, przesyłki) tracą obramowanie, zyskują jasnoszare tło. */
     .contact-feer [class*="border-gray"], .contact-feer [class*="border-2"] { border-color: transparent !important; }
     .contact-feer [class*="rounded"][class*="border"]:not(input):not(textarea):not(select):not(button) { background-color: #f9fafb; }

@@ -168,7 +168,7 @@
         }
     @endphp
 
-    <article>
+    <article class="{{ ($siteSettings->site_template ?? 'default') === 'feer' ? 'about-feer' : '' }}">
         {{-- Hero: pełnokolorowe tło marki z dekoracją, jak w sekcji "wspolpraca" (bg-brand + rozmyte koła) --}}
         @if (($siteSettings->site_template ?? 'default') === 'feer')
             {{-- Szablon FEER: jasny, płaski nagłówek; motto jako cytat z paskiem (kontrast ink na szarym 16:1) --}}

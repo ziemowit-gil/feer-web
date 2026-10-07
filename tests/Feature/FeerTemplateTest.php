@@ -142,6 +142,7 @@ class FeerTemplateTest extends TestCase
         $html = $this->get('/o-fundacji-test')->assertOk()->assertSee('Razem bez barier')->getContent();
         $this->assertStringNotContainsString('<header class="relative overflow-hidden bg-brand', $html);
         $this->assertStringContainsString('border-l-4 border-brand', $html);
+        $this->assertStringContainsString('<article class="about-feer">', $html);
     }
 
     public function test_strona_sprawozdan_ma_jasny_naglowek(): void
