@@ -8,8 +8,11 @@
     <div class="mx-auto max-w-6xl px-4">
         <div class="mb-8 flex items-end justify-between gap-4">
             <h2 id="ngo-projects-heading" class="text-2xl font-bold text-ink md:text-3xl">Nasze projekty</h2>
-            <a href="{{ route('projects.index') }}" class="shrink-0 text-sm font-bold text-brand-dark underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
-               aria-label="Wszystkie projekty">Wszystkie projekty →</a>
+            <div class="flex shrink-0 flex-wrap items-center justify-end gap-x-5 gap-y-1">
+                @include('partials.admin-manage-link', ['route' => 'admin.projekty.index', 'label' => 'Zarządzaj projektami'])
+                <a href="{{ route('projects.index') }}" class="shrink-0 text-sm font-bold text-brand-dark underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+                   aria-label="Wszystkie projekty">Wszystkie projekty →</a>
+            </div>
         </div>
 
         <ul class="space-y-2" role="list">

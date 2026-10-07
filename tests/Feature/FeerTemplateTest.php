@@ -732,4 +732,16 @@ class FeerTemplateTest extends TestCase
 
         $this->get('/')->assertOk()->assertSee('Wróć do swoich szkoleń');
     }
+
+    public function test_admin_widzi_linki_zarzadzania_projektami_i_aktualnosciami_w_szablonie_feer(): void
+    {
+        SiteSetting::current()->update(['site_template' => 'feer']);
+        \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();
+        \Illuminate\Support\Facades\Cache::flush();
+
+        $this->get('/projekty')->assertOk()->assertDontSee('Zarządzaj projektami');
+        $admin = \App\Models\User::factory()->create(['role' => 'admin']);
+        $this->actingAs($admin)->get('/projekty')->assertOk()->assertSee('Zarządzaj projektami');
+        $this->actingAs($admin)->get('/aktualnosci')->assertOk()->assertSee('Zarządzaj aktualnościami');
+    }
 }

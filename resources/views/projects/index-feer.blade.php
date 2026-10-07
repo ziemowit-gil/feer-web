@@ -18,7 +18,10 @@
 
     <section>
         <div class="mx-auto max-w-6xl px-4 pb-6 pt-8 md:pb-8 md:pt-10">
-            <h1 class="text-2xl font-bold leading-tight text-ink md:text-3xl">Projekty</h1>
+            <div class="flex flex-wrap items-end justify-between gap-4">
+                <h1 class="text-2xl font-bold leading-tight text-ink md:text-3xl">Projekty</h1>
+                @include('partials.admin-manage-link', ['route' => 'admin.projekty.index', 'label' => 'Zarządzaj projektami'])
+            </div>
             <span class="mt-3 block h-1 w-14 bg-brand" aria-hidden="true"></span>
             @if ($siteSettings->projects_intro)
                 <div class="prose mt-4 max-w-2xl text-lg text-ink">{!! $siteSettings->projects_intro !!}</div>
