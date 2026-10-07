@@ -50,13 +50,6 @@
                                     <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
                                 </a>
                             @endif
-                            @if ($siteSettings->isModuleEnabled('materials'))
-                                <a href="{{ site_route('materials.index') }}"
-                                   class="inline-flex min-h-11 items-center gap-2 rounded-md bg-ink px-6 text-sm font-bold text-white transition hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2">
-                                    <i class="fa-solid fa-book-open" aria-hidden="true"></i>
-                                    Materiały edukacyjne
-                                </a>
-                            @endif
                         </div>
                     </div>
                     @if ($sImage)

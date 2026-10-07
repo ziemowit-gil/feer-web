@@ -594,16 +594,6 @@ class FeerTemplateTest extends TestCase
         $this->assertStringContainsString('Facebook — otwiera się w nowej karcie', $footer);
     }
 
-    public function test_hero_feer_ma_wyrazny_przycisk_do_materialow_edukacyjnych(): void
-    {
-        SiteSetting::current()->update(['site_template' => 'feer']);
-        \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();
-        \Illuminate\Support\Facades\Cache::flush();
-        \App\Models\HeroSlide::create(['title' => 'Slajd', 'order' => 1]);
-
-        $this->get('/')->assertOk()->assertSee('Materiały edukacyjne', false)->assertSee(route('materials.index'), false);
-    }
-
     public function test_naglowek_feer_ma_przycisk_materialow_edukacyjnych(): void
     {
         SiteSetting::current()->update(['site_template' => 'feer', 'header_layout' => 'wide_mission']);
