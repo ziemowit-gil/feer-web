@@ -198,6 +198,7 @@ class FeerTemplateTest extends TestCase
         $html = $this->get('/kontakt')->assertOk()->getContent();
         $this->assertStringNotContainsString('role="tablist"', $html);
         $this->assertStringContainsString('id="formularz-heading"', $html);
+        $this->assertStringContainsString('id="dane-heading"', $html);
         $this->assertStringContainsString('lg:grid-cols-[minmax(0,1fr)_26rem]', $html);
         $this->assertStringNotContainsString('<section class="relative bg-ink', $html);
     }
@@ -257,7 +258,7 @@ class FeerTemplateTest extends TestCase
 
         $this->get('/kontakt')->assertRedirect('/kontakt-2');
         $this->get('/kontakt-2')->assertOk()
-            ->assertSee('id="formularz-heading"', false)->assertSee('601 350 487')->assertSee('PL12 3456')->assertSee('contact-feer', false);
+            ->assertSee('id="formularz-heading"', false)->assertSee('601 350 487')->assertSee('PL12 3456')->assertSee('contact-feer', false)->assertSee('tel:601350487', false);
     }
 
     public function test_dluga_uwaga_przy_rachunkach_jest_skrocona_do_pierwszego_zdania(): void

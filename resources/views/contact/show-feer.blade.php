@@ -37,7 +37,71 @@
             <div class="min-w-0 space-y-12">
                 @include('partials.correspondence-note')
 
-                @include('contact.partials.details', ['wideLayout' => false])
+                {{-- Dane kontaktowe: wyraźne, płaskie kafelki z dużym tekstem (kontrast ink na #F3F4F6 ≥ 14:1, linki brand-dark) --}}
+                @php
+                    $hasOffice = $siteSettings->officeDiffersFromRegistered();
+                    $tile = 'rounded-md bg-gray-50 p-5';
+                    $dt = 'text-xs font-bold uppercase tracking-widest text-muted';
+                    $link = 'font-bold text-brand-dark underline underline-offset-4 hover:no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand';
+                @endphp
+                <section aria-labelledby="dane-heading">
+                    <h2 id="dane-heading" class="mb-5 text-2xl font-bold text-ink">{{ $siteSettings->site_name }}</h2>
+                    <dl class="grid gap-4 sm:grid-cols-2">
+                        <div class="{{ $tile }}">
+                            <dt class="{{ $dt }}">{{ $hasOffice ? 'Adres rejestrowy' : 'Adres' }}</dt>
+                            <dd class="mt-2 text-lg leading-snug text-ink">
+                                <a href="https://www.google.com/maps?q={{ urlencode($siteSettings->registeredAddressLine()) }}" target="_blank" rel="noopener" class="{{ $link }}">{{ $siteSettings->contact_address }}<br>{{ $siteSettings->contact_city }}<span class="sr-only"> (otwiera mapę w nowej karcie)</span></a>
+                            </dd>
+                        </div>
+                        @if ($hasOffice)
+                            <div class="{{ $tile }}">
+                                <dt class="{{ $dt }}">Biuro / korespondencja</dt>
+                                <dd class="mt-2 text-lg leading-snug text-ink">
+                                    @if (filled($siteSettings->contact_office_building))<span class="block font-bold">{{ $siteSettings->contact_office_building }}</span>@endif
+                                    <a href="https://www.google.com/maps?q={{ urlencode($siteSettings->officeAddressLine()) }}" target="_blank" rel="noopener" class="{{ $link }}">{{ $siteSettings->contact_office_address }}<br>{{ $siteSettings->contact_office_city }}<span class="sr-only"> (otwiera mapę w nowej karcie)</span></a>
+                                    @if (filled($siteSettings->contact_office_note))<span class="mt-2 block text-sm text-muted">{!! nl2br(e($siteSettings->contact_office_note)) !!}</span>@endif
+                                </dd>
+                            </div>
+                        @endif
+                        <div class="{{ $tile }}">
+                            <dt class="{{ $dt }}">E-mail</dt>
+                            <dd class="mt-2 break-all text-lg"><a href="mailto:{{ $siteSettings->contact_email }}" class="{{ $link }}">{{ $siteSettings->contact_email }}</a></dd>
+                        </div>
+                        @if ($siteSettings->contact_phone)
+                            <div class="{{ $tile }}">
+                                <dt class="{{ $dt }}">Telefon</dt>
+                                <dd class="mt-2 text-lg"><a href="tel:{{ preg_replace('/\s+/', '', $siteSettings->contact_phone) }}" class="{{ $link }}">{{ $siteSettings->contact_phone }}</a></dd>
+                            </div>
+                        @endif
+                        @if ($siteSettings->contact_office_hours)
+                            <div class="{{ $tile }}">
+                                <dt class="{{ $dt }}">Godziny pracy</dt>
+                                <dd class="mt-2 text-lg font-bold leading-snug text-ink">{{ $siteSettings->contact_office_hours }}</dd>
+                            </div>
+                        @endif
+                        @if ($siteSettings->contact_edelivery_address)
+                            <div class="{{ $tile }}">
+                                <dt class="{{ $dt }}">Adres do e-Doręczeń</dt>
+                                <dd class="mt-2 break-all font-mono text-base font-bold text-ink">{{ $siteSettings->contact_edelivery_address }}</dd>
+                            </div>
+                        @endif
+                    </dl>
+
+                    @if ($hasOffice && ($photo = $siteSettings->officePhotoUrl()))
+                        <img src="{{ $photo }}" loading="lazy" alt="{{ $siteSettings->contact_office_photo_alt }}" class="mt-4 w-full max-w-sm rounded-md object-cover">
+                    @endif
+
+                    @if ($siteSettings->contactBoxIsVisible())
+                        <div class="mt-4 rounded-md bg-brand-dark p-5 text-white">
+                            @if ($siteSettings->contact_box_text)<p class="text-base">{{ $siteSettings->contact_box_text }}</p>@endif
+                            @if ($siteSettings->contact_box_link_url && $siteSettings->contact_box_link_label)
+                                @php $boxExternal = \Illuminate\Support\Str::startsWith($siteSettings->contact_box_link_url, ['http://', 'https://']); @endphp
+                                <a href="{{ $siteSettings->contact_box_link_url }}" @if ($boxExternal) target="_blank" rel="noopener" @endif
+                                   class="{{ $siteSettings->contact_box_text ? 'mt-3 ' : '' }}inline-flex min-h-11 items-center rounded-md bg-white px-5 text-sm font-bold text-ink hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-brand-dark">{{ $siteSettings->contact_box_link_label }}@if ($boxExternal)<span class="sr-only"> (otwiera się w nowej karcie)</span>@endif</a>
+                            @endif
+                        </div>
+                    @endif
+                </section>
                 @include('contact.partials.registry', ['wideLayout' => false, 'showAccounts' => empty($siteSettings->contact_bank_accounts)])
 
                 @if ($showMeetings)
