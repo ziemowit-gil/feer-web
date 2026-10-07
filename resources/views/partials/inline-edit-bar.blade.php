@@ -4,18 +4,18 @@
     Alpine: editMode, dirty, saving, saveSuccess, error, hasRichFields,
     toggleEdit(), saveAll(), exitEdit().
 
-    Poza edycją pasek jest ledwo widoczny (jedna cienka, wyciszona linia z małym
-    linkiem „Edytuj"), żeby nie odciągał uwagi od strony. Dopiero w trybie edycji
-    staje się wyraźny i przypięty u góry — potrzebuje wtedy przycisku „Zapisz"
+    Poza edycją jest tylko lewitujący przycisk „Edytuj" w prawym dolnym rogu (nad
+    przyciskiem dostępności), żeby nie zajmować miejsca w układzie strony. Dopiero
+    w trybie edycji pasek staje się wyraźny i przypięty u góry — potrzebuje wtedy przycisku „Zapisz"
     i miejsca na pasek narzędzi edytora (#inline-editor-toolbar).
 --}}
 <div role="region" aria-label="Pasek wizualnej edycji treści"
-    class="z-[9999] border-b print:hidden"
+    class="z-[9999] print:hidden"
     :class="editMode
-        ? 'sticky top-0 border-gray-200 bg-white shadow-[0_4px_16px_rgba(0,0,0,.08)]'
-        : 'border-transparent bg-gray-50/70'">
-    <div class="mx-auto flex max-w-6xl flex-wrap items-center gap-x-4 gap-y-1 px-4" :class="editMode ? 'py-2' : 'py-1'">
-        <div class="flex min-w-0 flex-1 items-center gap-2 text-xs text-gray-600" aria-live="polite">
+        ? 'sticky top-0 border-b border-gray-200 bg-white shadow-[0_4px_16px_rgba(0,0,0,.08)]'
+        : 'fixed bottom-24 right-4'">
+    <div :class="editMode ? 'mx-auto flex max-w-6xl flex-wrap items-center gap-x-4 gap-y-1 px-4 py-2' : 'flex items-center'">
+        <div class="min-w-0 flex-1 items-center gap-2 text-xs text-gray-600" :class="(editMode || saveSuccess) ? 'flex' : 'hidden'" aria-live="polite">
             <template x-if="saveSuccess">
                 <span class="flex items-center gap-1.5 text-sm font-medium text-green-700">
                     <i class="fa-solid fa-circle-check" aria-hidden="true"></i> Zapisano.
@@ -32,14 +32,9 @@
                     Tryb edycji — kliknij tytuł albo treść i edytuj bezpośrednio na stronie.
                 </span>
             </template>
-            <template x-if="!saveSuccess && !editMode">
-                <span class="flex items-center gap-1.5 text-gray-500">
-                    <i class="fa-solid fa-pen-ruler text-[11px]" aria-hidden="true"></i>
-                    Edycja na stronie
-                </span>
-            </template>
         </div>
 
+        <span x-show="!editMode" class="sr-only">Edycja na stronie</span>
         <p x-show="error" x-text="error" class="w-full text-sm font-medium text-red-600 sm:w-auto" role="alert"></p>
 
         <div class="flex shrink-0 items-center gap-2">
@@ -58,7 +53,7 @@
                 class="inline-flex items-center gap-1.5 rounded-md font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2"
                 :class="editMode
                     ? 'min-h-10 rounded-lg border border-gray-300 bg-white px-4 text-sm text-ink hover:bg-gray-50'
-                    : 'min-h-8 px-2 text-xs text-gray-600 underline-offset-4 hover:text-brand hover:underline'">
+                    : 'min-h-12 rounded-full bg-ink px-5 text-sm text-white shadow-[0_6px_20px_rgba(0,0,0,.28)] hover:-translate-y-0.5 hover:bg-brand'">
                 <template x-if="!editMode">
                     <span><i class="fa-solid fa-pen-to-square mr-1" aria-hidden="true"></i>Edytuj<span class="sr-only"> tę stronę</span></span>
                 </template>
