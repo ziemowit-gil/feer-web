@@ -250,7 +250,7 @@ class SiteSetting extends Model implements HasMedia
         'msgraph_tenant_id', 'msgraph_client_id', 'msgraph_client_secret', 'msgraph_sender', 'msgraph_save_to_sent', 'forms_mail_via_msgraph',
         'show_coordinators', 'ngo_color', 'sub_brands',
         'logo_alt', 'logo_only',
-        'news_layout', 'volunteer_layout',
+        'news_layout', 'projects_layout', 'volunteer_layout',
         'site_template', 'municipality_shortcuts_slug', 'municipality_carousel_title',
         'municipality_weather_lat', 'municipality_weather_lon', 'municipality_show_google_translate',
         'wide_mission_social_1', 'wide_mission_social_2', 'wide_mission_social_3', 'wide_mission_layout', 'wide_mission_cta_label', 'wide_mission_cta_url', 'wide_mission_cta2_label', 'wide_mission_cta2_url', 'wide_mission_show_mission', 'wide_mission_highlight_account', 'wide_mission_nav_align', 'wide_mission_search_in_nav', 'wide_mission_sidebar', 'wide_mission_sidebar_style', 'wide_mission_nav_style', 'wide_mission_nav_hover_white', 'wide_mission_nav_active_white', 'wide_mission_nav_icons_white', 'hero_mission_slide', 'hero_mission_bg', 'hero_mission_order',

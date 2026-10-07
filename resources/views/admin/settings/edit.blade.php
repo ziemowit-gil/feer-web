@@ -1532,6 +1532,21 @@
                 @error('projects_intro') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
             </div>
 
+            <fieldset class="border-t border-gray-100 pt-6">
+                <legend class="mb-3 text-sm font-bold">Układ listy projektów</legend>
+                @php $projectsLayout = old('projects_layout', $settings->projects_layout ?? 'list'); @endphp
+                <div class="flex flex-wrap gap-6">
+                    <label class="flex cursor-pointer items-center gap-2 text-sm">
+                        <input type="radio" name="projects_layout" value="list" {{ $projectsLayout !== 'tiles' ? 'checked' : '' }} class="text-brand focus:ring-brand">
+                        Standardowy (zależny od szablonu)
+                    </label>
+                    <label class="flex cursor-pointer items-center gap-2 text-sm">
+                        <input type="radio" name="projects_layout" value="tiles" {{ $projectsLayout === 'tiles' ? 'checked' : '' }} class="text-brand focus:ring-brand">
+                        Nawigacja kafelkowa (projekty jako duże kolorowe kafelki)
+                    </label>
+                </div>
+            </fieldset>
+
             <div class="border-t border-gray-100 pt-6">
                 <label for="editor-materials_intro" class="mb-1 block text-sm font-bold">Tekst wprowadzający na stronie materiałów <span class="font-normal text-muted">(opcjonalnie)</span></label>
                 <p class="mb-2 text-xs text-muted">Wyświetlany pod nagłówkiem na stronie <a href="{{ route('materials.index') }}" target="_blank" rel="noopener" class="text-brand underline">/materialy</a>.</p>

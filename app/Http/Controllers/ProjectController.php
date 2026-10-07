@@ -29,6 +29,11 @@ class ProjectController extends Controller
             return view('templates.federation.projects-index', compact('categories', 'hasArchive'));
         }
 
+        // Opcja „Nawigacja kafelkowa” (Ustawienia → Treści): projekty jako duże kolorowe kafelki — w każdym szablonie.
+        if (SiteSetting::current()->projects_layout === 'tiles') {
+            return view('projects.index-tiles', compact('categories', 'hasArchive'));
+        }
+
         // Szablon FEER ma własny układ listy projektów (nawigacja kategorii + wiersze).
         if (SiteSetting::current()->site_template === 'feer') {
             return view('projects.index-feer', compact('categories', 'hasArchive'));
