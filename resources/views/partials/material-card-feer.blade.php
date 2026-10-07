@@ -12,7 +12,7 @@
     $btnPrimary = 'inline-flex min-h-11 items-center gap-2 rounded-md bg-brand px-4 text-sm font-bold text-white transition hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2';
     $btnGhost = 'inline-flex min-h-11 items-center gap-2 rounded-md bg-white px-4 text-sm font-bold text-ink transition hover:bg-gray-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2';
 @endphp
-<article class="group flex h-full flex-col overflow-hidden rounded-lg bg-gray-50">
+<article class="feer-card group flex h-full flex-col overflow-hidden rounded-lg bg-gray-50 hover:bg-gray-100">
     {{-- Podgląd --}}
     <div data-thumb-wrap class="relative aspect-video overflow-hidden {{ $material->isVideo() ? 'bg-ink' : 'bg-gray-200' }}">
         @if ($material->isVideo())

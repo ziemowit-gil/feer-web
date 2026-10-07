@@ -27,6 +27,15 @@
     .rounded-xl, .rounded-2xl, .rounded-3xl { border-radius: .5rem !important; }
     a.rounded-full { border-radius: .375rem !important; }
 
+    /* Mikro-interakcje: miękkie uniesienie karty o 3 px, płynna zmiana tła i bardzo lekki cień przy najechaniu lub fokusie
+       wewnątrz karty — informacja zwrotna, że element jest klikalny, bez uciążliwych animacji. */
+    .feer-card { transition: transform .2s ease, background-color .2s ease, box-shadow .2s ease; will-change: transform; }
+    .feer-card:hover, .feer-card:focus-within { transform: translateY(-3px); box-shadow: 0 10px 22px -14px rgb(0 0 0 / .28); }
+    @media (prefers-reduced-motion: reduce) {
+        .feer-card { transition: background-color .2s ease; will-change: auto; }
+        .feer-card:hover, .feer-card:focus-within { transform: none; box-shadow: none; }
+    }
+
     /* Poziome rzędy przycisków-kategorii (na telefonie przewijane palcem): bez widocznego paska przewijania. */
     .feer-pills-row { scrollbar-width: none; -ms-overflow-style: none; }
     .feer-pills-row::-webkit-scrollbar { display: none; }

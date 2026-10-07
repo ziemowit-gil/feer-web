@@ -11,7 +11,7 @@
         <ul class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3" role="list">
             @foreach ($newsItems as $item)
                 <li>
-                    <article class="group relative flex h-full flex-col overflow-hidden rounded-lg bg-gray-50 transition hover:bg-gray-100 focus-within:ring-2 focus-within:ring-brand">
+                    <article class="feer-card group relative flex h-full flex-col overflow-hidden rounded-lg bg-gray-50 hover:bg-gray-100 focus-within:ring-2 focus-within:ring-brand">
                         @if ($item->image_url)
                             <img src="{{ $item->image_url }}" alt="{{ $item->image_alt ?? '' }}" loading="lazy" class="aspect-[16/10] w-full object-cover transition duration-500 group-hover:scale-[1.03]">
                         @endif

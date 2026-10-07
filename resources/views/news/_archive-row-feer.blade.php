@@ -1,6 +1,6 @@
 {{-- Wiersz archiwum aktualności (FEER): data po lewej, kategoria/tytuł/zajawka, cały wiersz klikalny. Bez ramek i kresek. --}}
 <li>
-    <article class="group relative flex items-start gap-5 rounded-md bg-gray-50 p-5 transition hover:bg-gray-100 focus-within:ring-2 focus-within:ring-brand">
+    <article class="feer-card group relative flex items-start gap-5 rounded-md bg-gray-50 p-5 hover:bg-gray-100 focus-within:ring-2 focus-within:ring-brand">
         <div class="hidden w-16 shrink-0 text-center sm:block" aria-hidden="true">
             <span class="block text-3xl font-extrabold leading-none text-ink">{{ $item->published_at?->format('d') }}</span>
             <span class="mt-1 block text-xs font-bold uppercase tracking-wide text-muted">{{ $item->published_at?->locale('pl')->isoFormat('MMM') }} {{ $item->published_at?->format('Y') }}</span>

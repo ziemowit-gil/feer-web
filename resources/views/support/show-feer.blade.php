@@ -294,7 +294,7 @@
             <ul class="grid gap-6 sm:grid-cols-3" role="list">
                 @foreach ($latestNews as $item)
                     <li>
-                        <a href="{{ site_route('news.show', $item) }}" class="group flex h-full flex-col overflow-hidden rounded-lg bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                        <a href="{{ site_route('news.show', $item) }}" class="feer-card group flex h-full flex-col overflow-hidden rounded-lg bg-gray-50 hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
                             @if ($item->imageUrlOrDefault())
                                 <img src="{{ $item->imageUrlOrDefault() }}" alt="{{ $item->image_alt ?: '' }}" class="aspect-[16/10] w-full object-cover" loading="lazy">
                             @endif

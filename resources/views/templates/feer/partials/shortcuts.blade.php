@@ -34,7 +34,7 @@
                         @endphp
                         <li>
                             <a href="{{ $qa->url }}" @if ($external) target="_blank" rel="noopener" @endif
-                               class="group flex min-h-20 items-center gap-4 rounded-md px-5 py-4 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2 {{ $filled ? 'hover:opacity-90' : ($panelWhite ? 'bg-white' : 'bg-white').' hover:bg-gray-100' }}"
+                               class="feer-card group flex min-h-20 items-center gap-4 rounded-md px-5 py-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2 {{ $filled ? 'hover:opacity-90' : ($panelWhite ? 'bg-white' : 'bg-white').' hover:bg-gray-100' }}"
                                @if ($filled)
                                    style="background-color: {{ $pal['bg'] }}; color: {{ $pal['text'] }}"
                                @else

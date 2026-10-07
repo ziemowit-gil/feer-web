@@ -420,4 +420,21 @@ class FeerTemplateTest extends TestCase
         $this->assertStringContainsString('bg-ink text-white', $html);
         $this->assertStringNotContainsString('divide-y divide-gray-100', $html);
     }
+
+    public function test_mikrointerakcje_kart_maja_wylaczenie_dla_ograniczonego_ruchu(): void
+    {
+        $category = \App\Models\Category::create(['name' => 'Dla NGO', 'slug' => 'dla-ngo']);
+        foreach (['Wpis', 'Drugi wpis'] as $i => $title) {
+            \App\Models\News::create(['title' => $title, 'slug' => 'wpis-'.$i, 'content' => 'x', 'excerpt' => 'z', 'is_published' => true, 'published_at' => now()->subDays($i + 1)]);
+        }
+        SiteSetting::current()->update(['site_template' => 'feer']);
+        \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();
+
+        $home = $this->get('/')->assertOk()->getContent();
+        $this->assertStringContainsString('.feer-card:hover', $home);
+        $this->assertStringContainsString('translateY(-3px)', $home);
+        $this->assertStringContainsString('prefers-reduced-motion: reduce', $home);
+        $this->assertStringContainsString('feer-card group relative', $home);
+        $this->get('/aktualnosci')->assertOk()->assertSee('feer-card group', false);
+    }
 }

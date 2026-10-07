@@ -21,7 +21,7 @@
                 @endphp
                 <li>
                     <a href="{{ route('projects.show', $project) }}"
-                       class="group flex items-center gap-4 rounded-md bg-white px-5 py-4 transition hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+                       class="feer-card group flex items-center gap-4 rounded-md bg-white px-5 py-4 hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
                        style="border-left: 4px solid {{ $rowAccent }}">
                         @if ($project->image_url)
                             <img src="{{ $project->image_url }}" alt="" loading="lazy" class="hidden h-16 w-24 flex-none rounded-md object-cover sm:block">

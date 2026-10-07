@@ -87,7 +87,7 @@
                     @foreach ($rest as $item)
                         @php $img = $item->imageUrlOrDefault(); @endphp
                         <li>
-                            <article class="group relative flex h-full flex-col overflow-hidden rounded-lg bg-gray-50 focus-within:ring-2 focus-within:ring-brand">
+                            <article class="feer-card group relative flex h-full flex-col overflow-hidden rounded-lg bg-gray-50 hover:bg-gray-100 focus-within:ring-2 focus-within:ring-brand">
                                 @if ($img)
                                     <img src="{{ $img }}" alt="" loading="lazy" class="aspect-[16/10] w-full object-cover transition duration-500 group-hover:scale-[1.03]">
                                 @endif
