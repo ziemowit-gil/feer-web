@@ -119,4 +119,16 @@ class PageEditFormLayoutTest extends TestCase
 
         $this->assertSame(['tresc', 'typ', 'ustawienia', 'seo'], $panelsSeen);
     }
+
+    public function test_zakladka_seo_ma_podglad_wyszukiwarki_i_ocene_dlugosci(): void
+    {
+        $page = Page::create(['title' => 'Szkolenia dla NGO', 'slug' => 'szkolenia-ngo', 'type' => 'standard', 'is_published' => true, 'meta_title' => 'Własny tytuł SEO']);
+
+        $this->actingAs(User::factory()->create(['role' => 'admin']))
+            ->get(route('admin.podstrony.edit', $page))->assertOk()
+            ->assertSee('Tak może wyglądać w wyszukiwarce')
+            ->assertSee('Własny tytuł SEO')
+            ->assertSee('Dobra długość')
+            ->assertSee('name="meta_description"', false);
+    }
 }
