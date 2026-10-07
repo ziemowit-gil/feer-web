@@ -38,6 +38,7 @@
 @endphp
 
 @section('content')
+<div class="{{ ($siteSettings->site_template ?? 'default') === 'feer' ? 'feer-flat' : '' }}">
 <div class="mx-auto max-w-[1200px] px-4 py-10 lg:py-14">
     {{-- ── Nagłówek: korzyść darczyńcy, krótki opis i sygnały zaufania ─────── --}}
     <header class="mb-10 grid gap-8 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:items-end">
@@ -366,4 +367,5 @@
 </div>
 
 @include('contact.partials.copy-script')
+</div>
 @endsection

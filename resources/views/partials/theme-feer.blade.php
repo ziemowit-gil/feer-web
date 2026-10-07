@@ -42,6 +42,18 @@
     .about-feer [class*="hover:-translate-y"]:hover { transform: none !important; }
     .about-feer .rounded-full { border-radius: .5rem; }
 
+    /* Wsparcie i darowizna FEER (.feer-flat): bez ramek i cieni; bloki treści jasnoszare, pola formularzy zachowują ramki,
+       pigułki i plakietki to małe zaokrąglenia, bez „unoszenia"; nagłówki w Montserrat (nie font „vm-display"). */
+    .feer-flat :is(section, div, article, form, li, aside, details, ul, header)[class*="ring-"] { box-shadow: none !important; }
+    .feer-flat :is(section, div, article, form, li, aside, details, ul, header)[class*="border-gray"] { border-color: transparent !important; }
+    .feer-flat :is(section, div, article, form, aside)[class*="rounded"][class*="bg-white"] { background-color: #f3f4f6; }
+    .feer-flat [class*="shadow"] { box-shadow: none !important; }
+    .feer-flat [class*="hover:-translate-y"]:hover { transform: none !important; }
+    .feer-flat .rounded-full:not(.h-4):not([role="progressbar"] *) { border-radius: .5rem; }
+    .feer-flat .rounded-2xl, .feer-flat .rounded-xl { border-radius: .5rem !important; }
+    .feer-flat .vm-display, .feer-flat .vm-section-title { font-family: inherit; font-weight: 800; }
+    .feer-flat .-mt-8 { margin-top: 0; }
+
     /* Kontakt FEER: bez ramek — bloki sekcji (rachunki, spotkania, przesyłki) tracą obramowanie, zyskują jasnoszare tło. */
     .contact-feer [class*="border-gray"], .contact-feer [class*="border-2"] { border-color: transparent !important; }
     .contact-feer [class*="rounded"][class*="border"]:not(input):not(textarea):not(select):not(button) { background-color: #f9fafb; }

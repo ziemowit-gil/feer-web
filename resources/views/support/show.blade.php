@@ -13,6 +13,32 @@
 @endsection
 
 @section('content')
+    @php $feer = ($siteSettings->site_template ?? 'default') === 'feer'; @endphp
+    <div class="{{ $feer ? 'feer-flat' : '' }}">
+    @if ($feer)
+        {{-- Szablon FEER: jasny, płaski nagłówek (ink na szarym 16:1), przyciski i sygnały zaufania jako zwykły tekst --}}
+        <section id="wesprzyj-hero" class="mb-14 bg-gray-50">
+            <div class="mx-auto grid max-w-6xl items-center gap-8 px-4 py-12 md:py-16 {{ $siteSettings->supportImageUrl() ? 'lg:grid-cols-[minmax(0,1fr)_26rem]' : '' }}">
+                <div class="min-w-0">
+                    <p class="mb-3 text-xs font-bold uppercase tracking-widest text-brand-dark">{{ $siteSettings->supportText('support_hero_badge') }}</p>
+                    <h1 class="max-w-2xl text-3xl font-extrabold leading-tight tracking-tight text-ink md:text-5xl">{{ $siteSettings->supportText('support_hero_title') }}</h1>
+                    <p class="mt-4 max-w-xl text-lg leading-relaxed text-ink">{{ $siteSettings->supportText('support_hero_subtitle') }}</p>
+                    <div class="mt-6 flex flex-wrap gap-3">
+                        <a href="{{ route('donation.show') }}" class="inline-flex min-h-11 items-center gap-2 rounded-md bg-brand px-5 text-sm font-bold text-white transition hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">Wpłać darowiznę online</a>
+                        <a href="#sposoby" class="inline-flex min-h-11 items-center gap-2 rounded-md bg-gray-200 px-5 text-sm font-bold text-ink transition hover:bg-gray-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">Zobacz inne sposoby pomocy</a>
+                    </div>
+                    <ul class="mt-6 flex flex-wrap gap-x-6 gap-y-2 text-sm text-ink" role="list" aria-label="Dlaczego możesz nam zaufać">
+                        <li>Bezpieczna płatność (Przelewy24)</li>
+                        @if ($siteSettings->krs_number)<li>KRS {{ $siteSettings->krs_number }}</li>@endif
+                        <li>Możesz wpłacić anonimowo</li>
+                    </ul>
+                </div>
+                @if ($siteSettings->supportImageUrl())
+                    <img src="{{ $siteSettings->supportImageUrl() }}" alt="" class="aspect-[4/3] w-full rounded-lg object-cover">
+                @endif
+            </div>
+        </section>
+    @else
     <section id="wesprzyj-hero" class="relative mb-14 flex min-h-[14rem] items-end overflow-hidden bg-brand bg-linear-to-br from-brand to-brand-dark text-white md:min-h-[17rem]"
         @if ($siteSettings->supportImageUrl())
             style="background-image: linear-gradient(0deg, rgba(0,0,0,.7), rgba(0,0,0,.2)), url('{{ $siteSettings->supportImageUrl() }}'); background-size: cover; background-position: center;"
@@ -39,6 +65,7 @@
             </ul>
         </div>
     </section>
+    @endif
 
     @if ($siteSettings->hasFundraiser())
         @php $progress = $siteSettings->fundraiserProgress(); @endphp
@@ -420,4 +447,5 @@
             });
         });
     </script>
+    </div>
 @endsection

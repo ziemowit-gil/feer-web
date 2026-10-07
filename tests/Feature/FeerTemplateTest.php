@@ -303,4 +303,21 @@ class FeerTemplateTest extends TestCase
         \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();
         $this->get('/materialy')->assertOk()->assertDontSee('Grupy materiałów');
     }
+
+    public function test_strona_wsparcia_i_darowizny_w_szablonie_feer(): void
+    {
+        SiteSetting::current()->update(['site_template' => 'feer']);
+        \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();
+
+        $support = $this->get('/wsparcie')->assertOk()->getContent();
+        $this->assertStringContainsString('feer-flat', $support);
+        $this->assertStringContainsString('id="wesprzyj-hero"', $support);
+        $this->assertStringNotContainsString('bg-linear-to-br', $support);
+
+        $this->get('/wsparcie/darowizna')->assertOk()->assertSee('feer-flat', false);
+
+        SiteSetting::current()->update(['site_template' => 'ngo_mix']);
+        \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();
+        $this->get('/wsparcie')->assertOk()->assertSee('bg-linear-to-br', false);
+    }
 }
