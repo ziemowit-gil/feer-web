@@ -30,6 +30,9 @@
        :class="{ 'is-collapsed': $store.adminNav.collapsed, 'is-open': $store.adminNav.mobileOpen }"
        @keydown.escape.window="$store.adminNav.close()"
        aria-label="Panel administracyjny">
+    {{-- Stan zwiniętej szyny ustawiany jeszcze przed pierwszym malowaniem (Alpine robi to dopiero po załadowaniu skryptów,
+         co dawało widoczne „przeładowanie" menu przy każdym wejściu na stronę). --}}
+    <script>try { if (localStorage.getItem('admin-sidebar') === '1') document.getElementById('admin-sidebar').classList.add('is-collapsed'); } catch (e) {}</script>
 
     {{-- ── Marka + przełączniki ─────────────────────────────────── --}}
     <div class="nav-brand flex h-16 flex-none items-center gap-3 border-b border-gray-200 px-4">
@@ -209,7 +212,7 @@
                     </button>
 
                     {{-- Lista pozycji grupy --}}
-                    <div id="{{ $gid }}" class="tm-panel" x-show="openKey === @js($group['key'])" @if (! $group['active']) style="display:none" @endif>
+                    <div id="{{ $gid }}" class="tm-panel" data-nav-key="{{ $group['key'] }}" x-show="openKey === @js($group['key'])" @if (! $group['active']) style="display:none" @endif>
                         @foreach ($group['blocks'] as $block)
                             @if ($block['heading'])<p class="tm-sub" id="tm-sub-{{ $group['key'] }}-{{ $loop->index }}">{{ $block['heading'] }}</p>@endif
                             <ul class="space-y-0.5" role="list" @if ($block['heading']) aria-labelledby="tm-sub-{{ $group['key'] }}-{{ $loop->index }}" @endif>
@@ -333,4 +336,15 @@
             </p>
         </div>
     </div>
+    {{-- Grupa otwarta ostatnio (gdy żadna nie jest aktywna) — otwierana od razu, bez skoku po starcie Alpine. --}}
+    <script>
+        try {
+            var nav = document.getElementById('admin-sidebar');
+            if (nav && ! nav.querySelector('.tm-group.is-active')) {
+                var k = localStorage.getItem('admin-nav-open');
+                var p = k && nav.querySelector('.tm-panel[data-nav-key="' + k + '"]');
+                if (p) { p.style.display = ''; }
+            }
+        } catch (e) {}
+    </script>
 </aside>

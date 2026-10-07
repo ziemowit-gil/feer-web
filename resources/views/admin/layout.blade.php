@@ -93,6 +93,8 @@
             ['hex' => $brandPalette['light'], 'label' => 'Kolor marki (jasne tło)'],
         ])->filter(fn ($c) => \App\Support\Color::isValid($c['hex']))->unique('hex')->values();
     @endphp
+    {{-- Bez animacji menu do pierwszego namalowania strony (klasa admin-ready dodawana na końcu <body>). --}}
+    <style>html:not(.admin-ready) .admin-sidebar, html:not(.admin-ready) .admin-sidebar * { transition: none !important; animation: none !important; }</style>
     <meta name="admin-brand-colors" content="{{ $pickerBrandColors->toJson() }}">
     <meta name="admin-icons-url" content="{{ route('admin.ikony') }}">
     <style>
@@ -430,5 +432,6 @@
     </div>
 
     @stack('scripts')
+    <script>requestAnimationFrame(function () { requestAnimationFrame(function () { document.documentElement.classList.add('admin-ready'); }); });</script>
 </body>
 </html>
