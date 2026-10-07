@@ -13,10 +13,17 @@
 @php $accent = $siteSettings->contrastSafeColor($siteSettings->audienceColor($offer->audience)); @endphp
 
 @section('content')
+@php
+    $feer = ($siteSettings->site_template ?? 'default') === 'feer';
+    $card = $feer ? 'rounded-md bg-gray-50' : 'rounded-xl border border-gray-200 bg-white';
+    $inp = $feer ? 'w-full rounded-t-md rounded-b-none border-0 border-b-2 border-gray-500 bg-gray-100 text-base text-ink focus:border-brand focus:bg-white focus:outline-none focus:ring-0' : 'w-full rounded border-gray-300 focus:border-brand focus:ring-brand';
+    $btn = $feer ? 'rounded-md' : 'rounded';
+@endphp
     <article class="mx-auto max-w-3xl px-4 py-12" style="--accent: {{ $accent }}">
         <header class="mb-8">
             <p class="text-sm font-bold uppercase tracking-wide" style="color: var(--accent)">Oferta pracy</p>
             <h1 class="mt-1 text-3xl font-bold text-ink">{{ $offer->title }}</h1>
+        @if ($feer)<span class="mb-5 mt-3 block h-1 w-14 bg-brand" aria-hidden="true"></span>@endif
             <p class="mt-3 text-lg text-gray-700">{{ $offer->lead }}</p>
 
             <dl class="mt-5 flex flex-wrap gap-2 text-sm">

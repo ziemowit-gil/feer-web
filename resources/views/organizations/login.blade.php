@@ -10,8 +10,15 @@
 @endsection
 
 @section('content')
+@php
+    $feer = ($siteSettings->site_template ?? 'default') === 'feer';
+    $card = $feer ? 'rounded-md bg-gray-50' : 'rounded-xl border border-gray-200 bg-white';
+    $inp = $feer ? 'w-full rounded-t-md rounded-b-none border-0 border-b-2 border-gray-500 bg-gray-100 text-base text-ink focus:border-brand focus:bg-white focus:outline-none focus:ring-0' : 'w-full rounded border-gray-300 focus:border-brand focus:ring-brand';
+    $btn = $feer ? 'rounded-md' : 'rounded';
+@endphp
     <section class="mx-auto max-w-md px-4 py-12 lg:py-16">
         <h1 class="mb-2 text-2xl font-extrabold leading-tight tracking-tight text-ink sm:text-3xl">Logowanie organizacji</h1>
+        @if ($feer)<span class="mb-5 mt-3 block h-1 w-14 bg-brand" aria-hidden="true"></span>@endif
         <p class="mb-8 text-sm leading-relaxed text-muted">
             Zaloguj się danymi swojej organizacji, aby edytować jej opis i dane kontaktowe widoczne w katalogu
             organizacji członkowskich.
@@ -29,13 +36,13 @@
             <div>
                 <label for="login" class="mb-1 block text-sm font-bold text-ink">Login organizacji</label>
                 <input type="text" id="login" name="login" value="{{ old('login') }}" required autofocus autocomplete="username"
-                    class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                    class="{{ $inp }}">
             </div>
 
             <div>
                 <label for="password" class="mb-1 block text-sm font-bold text-ink">Hasło</label>
                 <input type="password" id="password" name="password" required autocomplete="current-password"
-                    class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                    class="{{ $inp }}">
             </div>
 
             <button type="submit" class="w-full rounded-md bg-brand px-5 py-2.5 text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">

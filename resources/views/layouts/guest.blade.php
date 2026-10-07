@@ -29,9 +29,10 @@
 <body class="min-h-screen bg-white text-ink antialiased">
     <div class="flex min-h-screen flex-col lg:flex-row">
         {{-- ===================== Panel brandowy (lewa strona) ===================== --}}
-        <aside class="relative flex flex-col justify-between overflow-hidden bg-gradient-to-br from-brand to-brand-dark px-8 py-10 text-white lg:w-1/2 lg:px-16 lg:py-16">
+        @php $feerGuest = ($siteSettings->site_template ?? 'default') === 'feer'; @endphp
+        <aside class="relative flex flex-col justify-between overflow-hidden {{ $feerGuest ? 'bg-ink' : 'bg-gradient-to-br from-brand to-brand-dark' }} px-8 py-10 text-white lg:w-1/2 lg:px-16 lg:py-16">
             {{-- Delikatny wzór w tle (dekoracyjny) --}}
-            <div class="pointer-events-none absolute inset-0 opacity-20" aria-hidden="true">
+            <div class="pointer-events-none absolute inset-0 opacity-20 {{ $feerGuest ? 'hidden' : '' }}" aria-hidden="true">
                 <div class="absolute -left-24 -top-24 h-96 w-96 rounded-full bg-white/20 blur-3xl"></div>
                 <div class="absolute -bottom-32 -right-16 h-96 w-96 rounded-full bg-white/10 blur-3xl"></div>
                 <div class="absolute inset-0 bg-[radial-gradient(circle_at_1px_1px,rgba(255,255,255,0.35)_1px,transparent_0)] bg-[length:26px_26px]"></div>

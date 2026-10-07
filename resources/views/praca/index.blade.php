@@ -10,8 +10,15 @@
 @endsection
 
 @section('content')
+@php
+    $feer = ($siteSettings->site_template ?? 'default') === 'feer';
+    $card = $feer ? 'rounded-md bg-gray-50' : 'rounded-xl border border-gray-200 bg-white';
+    $inp = $feer ? 'w-full rounded-t-md rounded-b-none border-0 border-b-2 border-gray-500 bg-gray-100 text-base text-ink focus:border-brand focus:bg-white focus:outline-none focus:ring-0' : 'w-full rounded border-gray-300 focus:border-brand focus:ring-brand';
+    $btn = $feer ? 'rounded-md' : 'rounded';
+@endphp
     <section class="mx-auto max-w-5xl px-4 py-12">
         <h1 class="mb-2 text-3xl font-bold text-ink">Oferty pracy</h1>
+        @if ($feer)<span class="mb-5 mt-3 block h-1 w-14 bg-brand" aria-hidden="true"></span>@endif
         <p class="mb-8 max-w-2xl text-muted">Dołącz do naszego zespołu. Poniżej znajdziesz aktualne ogłoszenia o pracę — każde opisuje stanowisko, obowiązki i to, co oferujemy.</p>
 
         @if ($offers->isEmpty())

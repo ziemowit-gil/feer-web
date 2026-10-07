@@ -10,11 +10,18 @@
 @endsection
 
 @section('content')
+@php
+    $feer = ($siteSettings->site_template ?? 'default') === 'feer';
+    $card = $feer ? 'rounded-md bg-gray-50' : 'rounded-xl border border-gray-200 bg-white';
+    $inp = $feer ? 'w-full rounded-t-md rounded-b-none border-0 border-b-2 border-gray-500 bg-gray-100 text-base text-ink focus:border-brand focus:bg-white focus:outline-none focus:ring-0' : 'w-full rounded border-gray-300 focus:border-brand focus:ring-brand';
+    $btn = $feer ? 'rounded-md' : 'rounded';
+@endphp
     <section class="mx-auto max-w-2xl px-4 py-12 lg:py-16">
         <div class="mb-6 flex items-start justify-between gap-4">
             <div>
                 <p class="text-sm font-extrabold uppercase tracking-widest text-brand">Panel organizacji</p>
                 <h1 class="mt-1 text-2xl font-extrabold leading-tight tracking-tight text-ink sm:text-3xl">{{ $organization->name }}</h1>
+        @if ($feer)<span class="mb-5 mt-3 block h-1 w-14 bg-brand" aria-hidden="true"></span>@endif
             </div>
             <form method="POST" action="{{ route('organization.logout') }}">
                 @csrf
@@ -38,21 +45,21 @@
             <div>
                 <label for="description" class="mb-1 block text-sm font-bold text-ink">Krótki opis (widoczny w katalogu)</label>
                 <textarea id="description" name="description" rows="2"
-                    class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">{{ old('description', $organization->description) }}</textarea>
+                    class="{{ $inp }}">{{ old('description', $organization->description) }}</textarea>
                 @error('description') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
             </div>
 
             <div>
                 <label for="bio" class="mb-1 block text-sm font-bold text-ink">Pełny opis (widoczny na wizytówce)</label>
                 <textarea id="bio" name="bio" rows="5"
-                    class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">{{ old('bio', $organization->bio) }}</textarea>
+                    class="{{ $inp }}">{{ old('bio', $organization->bio) }}</textarea>
                 @error('bio') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
             </div>
 
             <div>
                 <label for="website_url" class="mb-1 block text-sm font-bold text-ink">Strona internetowa</label>
                 <input type="text" id="website_url" name="website_url" value="{{ old('website_url', $organization->website_url) }}" placeholder="https://…"
-                    class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                    class="{{ $inp }}">
                 @error('website_url') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
             </div>
 
@@ -60,13 +67,13 @@
                 <div>
                     <label for="facebook_url" class="mb-1 block text-sm font-bold text-ink"><i class="fa-brands fa-facebook mr-1 text-muted" aria-hidden="true"></i>Facebook</label>
                     <input type="text" id="facebook_url" name="facebook_url" value="{{ old('facebook_url', $organization->facebook_url) }}" placeholder="https://facebook.com/…"
-                        class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                        class="{{ $inp }}">
                     @error('facebook_url') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                 </div>
                 <div>
                     <label for="instagram_url" class="mb-1 block text-sm font-bold text-ink"><i class="fa-brands fa-instagram mr-1 text-muted" aria-hidden="true"></i>Instagram</label>
                     <input type="text" id="instagram_url" name="instagram_url" value="{{ old('instagram_url', $organization->instagram_url) }}" placeholder="https://instagram.com/…"
-                        class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                        class="{{ $inp }}">
                     @error('instagram_url') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                 </div>
             </div>
@@ -75,13 +82,13 @@
                 <div>
                     <label for="email" class="mb-1 block text-sm font-bold text-ink">E-mail kontaktowy</label>
                     <input type="email" id="email" name="email" value="{{ old('email', $organization->email) }}"
-                        class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                        class="{{ $inp }}">
                     @error('email') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                 </div>
                 <div>
                     <label for="phone" class="mb-1 block text-sm font-bold text-ink">Telefon kontaktowy</label>
                     <input type="text" id="phone" name="phone" value="{{ old('phone', $organization->phone) }}"
-                        class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                        class="{{ $inp }}">
                     @error('phone') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                 </div>
             </div>
