@@ -593,4 +593,14 @@ class FeerTemplateTest extends TestCase
         $this->assertStringNotContainsString('rounded-full text-muted hover:bg-gray-100', $header);
         $this->assertStringContainsString('Facebook — otwiera się w nowej karcie', $footer);
     }
+
+    public function test_hero_feer_ma_wyrazny_przycisk_do_materialow_edukacyjnych(): void
+    {
+        SiteSetting::current()->update(['site_template' => 'feer']);
+        \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();
+        \Illuminate\Support\Facades\Cache::flush();
+        \App\Models\HeroSlide::create(['title' => 'Slajd', 'order' => 1]);
+
+        $this->get('/')->assertOk()->assertSee('Materiały edukacyjne', false)->assertSee(route('materials.index'), false);
+    }
 }

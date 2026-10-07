@@ -42,13 +42,22 @@
                         @if ($sText)
                             <p class="mb-6 max-w-2xl text-base leading-relaxed text-ink md:text-lg">{{ $sText }}</p>
                         @endif
-                        @if ($sBtnUrl && $sBtnLabel)
-                            <a href="{{ $sBtnUrl }}"
-                               class="inline-flex min-h-11 items-center gap-2 rounded-md bg-brand px-6 text-sm font-bold text-white transition hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
-                                {{ $sBtnLabel }}
-                                <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
-                            </a>
-                        @endif
+                        <div class="flex flex-wrap items-center gap-3">
+                            @if ($sBtnUrl && $sBtnLabel)
+                                <a href="{{ $sBtnUrl }}"
+                                   class="inline-flex min-h-11 items-center gap-2 rounded-md bg-brand px-6 text-sm font-bold text-white transition hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
+                                    {{ $sBtnLabel }}
+                                    <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+                                </a>
+                            @endif
+                            @if ($siteSettings->isModuleEnabled('materials'))
+                                <a href="{{ site_route('materials.index') }}"
+                                   class="inline-flex min-h-11 items-center gap-2 rounded-md bg-ink px-6 text-sm font-bold text-white transition hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2">
+                                    <i class="fa-solid fa-book-open" aria-hidden="true"></i>
+                                    Materiały edukacyjne
+                                </a>
+                            @endif
+                        </div>
                     </div>
                     @if ($sImage)
                         <img src="{{ $sImage }}" alt="{{ $sAlt }}" @if ($i > 0) loading="lazy" @endif
