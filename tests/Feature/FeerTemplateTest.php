@@ -161,7 +161,8 @@ class FeerTemplateTest extends TestCase
         \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();
 
         $html = $this->get('/')->assertOk()->assertSee('Wsparcie IT')->getContent();
-        $this->assertStringContainsString('sm:grid-cols-3', $html);
+        $this->assertStringContainsString('feer-shortcuts-heading', $html);
+        $this->assertStringContainsString('bg-ink text-white', $html);
         $this->assertStringContainsString('divide-y divide-gray-200', $html);
     }
 

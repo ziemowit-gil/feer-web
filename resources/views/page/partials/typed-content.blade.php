@@ -205,12 +205,14 @@
         @endif
 
         @if (count($activeAboutSections) > 1)
-        <nav aria-label="Sekcje na stronie" class="sticky top-0 z-20 border-b border-gray-200 bg-white/95 backdrop-blur-sm">
-            <div class="mx-auto flex max-w-6xl gap-1 overflow-x-auto px-4 py-2" style="scrollbar-width:none">
+        @php $feerAboutNav = ($siteSettings->site_template ?? 'default') === 'feer'; @endphp
+        {{-- FEER: menu sekcji jako tekstowy pasek z grubym wskaźnikiem aktywnej sekcji (bez pigułek i linii); pozostałe szablony — pigułki. --}}
+        <nav aria-label="Sekcje na stronie" class="sticky top-0 z-20 {{ $feerAboutNav ? 'bg-white' : 'border-b border-gray-200 bg-white/95 backdrop-blur-sm' }}">
+            <div class="mx-auto flex max-w-6xl overflow-x-auto px-4 {{ $feerAboutNav ? 'gap-7 pt-1' : 'gap-1 py-2' }}" style="scrollbar-width:none">
                 @foreach ($activeAboutSections as $navKey => $navLabel)
                     <a href="#sekcja-{{ $navKey }}"
                        data-about-nav="{{ $navKey }}"
-                       class="shrink-0 rounded-full px-4 py-1.5 text-sm font-medium transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand text-muted hover:bg-gray-100 hover:text-ink">
+                       class="shrink-0 transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand {{ $feerAboutNav ? 'border-b-4 border-transparent py-4 text-base font-bold uppercase tracking-wide text-muted hover:text-ink' : 'rounded-full px-4 py-1.5 text-sm font-medium text-muted hover:bg-gray-100 hover:text-ink' }}">
                         {{ $navLabel }}
                     </a>
                 @endforeach
@@ -220,12 +222,20 @@
         (function () {
             var links = document.querySelectorAll('[data-about-nav]');
             if (!links.length) return;
+            var flat = {{ $feerAboutNav ? 'true' : 'false' }};
             var active = null;
             function setActive(key) {
                 if (active === key) return;
                 active = key;
                 links.forEach(function (a) {
                     var on = a.dataset.aboutNav === key;
+                    if (flat) {
+                        a.classList.toggle('border-ink', on);
+                        a.classList.toggle('text-ink', on);
+                        a.classList.toggle('border-transparent', !on);
+                        a.classList.toggle('text-muted', !on);
+                        return;
+                    }
                     a.classList.toggle('bg-brand/10', on);
                     a.classList.toggle('text-brand-dark', on);
                     a.classList.toggle('text-muted', !on);
