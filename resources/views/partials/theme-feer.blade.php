@@ -65,6 +65,13 @@
     .feer-pills-row { scrollbar-width: none; -ms-overflow-style: none; }
     .feer-pills-row::-webkit-scrollbar { display: none; }
 
+    /* Kolory linków: tylko niebieski i czarny (brandbook). Linki w treści — niebieskie z podkreśleniem, po najechaniu czarne;
+       pozycje menu — czarne, po najechaniu/aktywne niebieskie (#1E6DFF na bieli 4,48:1, #1D1D1A 16,9:1). */
+    .prose a:not([class*="bg-"]) { color: #1e6dff; text-decoration: underline; text-underline-offset: .2em; }
+    .prose a:not([class*="bg-"]):hover { color: #1d1d1a; }
+    nav .nav-pills > li:not([data-nav-accent]) > a:hover, nav .nav-pills > li:not([data-nav-accent]) > button:hover,
+    nav .nav-pills li > ul[role="list"] a:hover { color: #1e6dff; }
+
     /* Menu główne i podmenu: większe pozycje (czytelność i cele dotyku ≥ 44 px). */
     nav .nav-pills > li > a, nav .nav-pills > li > button, nav .nav-pills > li > div.border-b-2 { font-size: 1.125rem; padding: .7rem 1.35rem; }
     nav .nav-pills > li > div.border-b-2 > a, nav .nav-pills > li > div.border-b-2 > button { font-size: 1.125rem; }
