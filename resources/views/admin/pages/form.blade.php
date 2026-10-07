@@ -327,13 +327,12 @@
                     @include('admin.pages.partials.types.about-person')
 
                     @include('admin.pages.partials.types.contact')
-                </div>
-            </div>
 
                     @include('admin.pages.partials.type-data-fields', ['currentType' => $currentType])
 
                     @include('admin.pages.partials.types.cooperation')
-                    </div>
+                </div>
+            </div>
 
             {{-- ==================== PUBLIKACJA I POWIĄZANIA ==================== --}}
             <div data-ftab-panel="ustawienia" class="hidden space-y-6">

@@ -7,7 +7,7 @@
     </p>
     <div>
         <label for="legacy_name" class="mb-1 block text-sm font-bold">Nazwa poprzednika</label>
-        <input type="text" id="legacy_name" name="legacy_name" value="{{ old('legacy_name', $page->legacy_name) }}" placeholder="np. Stowarzyszenie „Dawna Nazwa""
+        <input type="text" id="legacy_name" name="legacy_name" value="{{ old('legacy_name', $page->legacy_name) }}" placeholder="np. Stowarzyszenie „Dawna Nazwa”"
             class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
         @error('legacy_name') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
     </div>
