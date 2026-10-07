@@ -373,17 +373,29 @@
         @case('stats')
         {{-- Statystyki: kolorowe tło + białe karty (zamiast płaskiego szarego pasa), animacja liczenia --}}
         @if ($aboutStats->isNotEmpty() && ($siteSettings->site_template ?? 'default') === 'feer')
-            {{-- FEER: duże liczby bez kart i ramek — pasek koloru marki nad każdą liczbą, liczba ink 5xl, podpis muted (kontrast ≥ 4,5:1); animacja liczenia zachowana. --}}
-            <section id="sekcja-stats" class="bg-gray-50 px-4 py-16" aria-label="W liczbach" data-countup>
+            {{-- FEER: „W liczbach" jako pełnokolorowe kafle z palety brandbooka (niebieski, grafit, pomarańcz, jasny niebieski), liczba skalowana do długości
+                 (krótkie = bardzo duże, „więcej jak 1000" = mniejsze, bez łamania), podpis pod spodem; kolor tekstu dobrany pod kontrast; animacja liczenia zachowana. --}}
+            @php
+                $statTiles = [['#1e6dff', '#ffffff'], ['#1d1d1a', '#ffffff'], ['#ea8f00', '#1d1d1a'], ['#cbd5e7', '#1d1d1a']];
+                $statCols = match (min($aboutStats->count(), 4)) { 1 => 'lg:grid-cols-1', 2 => 'lg:grid-cols-2', 3 => 'lg:grid-cols-3', default => 'lg:grid-cols-4' };
+            @endphp
+            <section id="sekcja-stats" class="px-4 py-14" aria-label="W liczbach" data-countup>
                 <div class="mx-auto max-w-6xl">
-                    <h2 class="mb-10 text-2xl font-bold text-ink md:text-3xl">W liczbach</h2>
-                    <dl class="grid gap-x-8 gap-y-10 sm:grid-cols-2 lg:grid-cols-4">
+                    <h2 class="text-2xl font-bold text-ink md:text-3xl">W liczbach</h2>
+                    <span class="mb-8 mt-3 block h-1 w-14 bg-brand" aria-hidden="true"></span>
+                    <dl class="grid gap-3 sm:grid-cols-2 {{ $statCols }}">
                         @foreach ($aboutStats as $stat)
-                            <div class="border-t-4 border-brand pt-4">
+                            @php
+                                [$bg, $fg] = $statTiles[$loop->index % 4];
+                                $val = (string) ($stat['value'] ?? '');
+                                $len = mb_strlen($val);
+                                $valCls = $len <= 6 ? 'text-5xl md:text-6xl' : ($len <= 12 ? 'text-3xl md:text-4xl' : 'text-2xl md:text-3xl');
+                            @endphp
+                            <div class="flex min-h-48 flex-col justify-between rounded-md p-6" style="background-color: {{ $bg }}; color: {{ $fg }}">
                                 <dt class="sr-only">{{ $stat['label'] ?? '' }}</dt>
-                                <dd>
-                                    <span class="block text-4xl font-extrabold leading-none tracking-tight text-ink md:text-5xl" data-countup-value>{{ $stat['value'] ?? '' }}</span>
-                                    <span class="mt-3 block text-sm font-bold text-muted">{{ $stat['label'] ?? '' }}</span>
+                                <dd class="flex h-full flex-col justify-between gap-6">
+                                    <span class="block {{ $valCls }} font-extrabold leading-none tracking-tight" data-countup-value>{{ $val }}</span>
+                                    <span class="block text-base font-bold leading-snug">{{ $stat['label'] ?? '' }}</span>
                                 </dd>
                             </div>
                         @endforeach

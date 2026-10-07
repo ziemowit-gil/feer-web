@@ -44,7 +44,7 @@
         content: ""; display: block; width: 3rem; height: 4px; margin-top: .65rem; background: var(--color-brand); border-radius: 2px;
     }
     section[aria-labelledby="mix-trainings-heading"] { background-color: var(--color-brand-light); }
-    .about-feer #sekcja-stats { background-color: var(--color-brand-light); }
+    .about-feer #sekcja-stats { background-color: transparent; } /* „W liczbach”: kolorowe kafle na białym tle strony */
     section[aria-labelledby="stats-heading"], section[aria-labelledby="methods-heading"] { background-color: var(--color-brand-light); }
 
     /* Delikatne efekty tła po bokach (tylko ≥ 1600 px, gdy są wolne marginesy — nie zachodzą na treść): płaskie, bez poświaty i gradientów — dwa cienkie, lekko obrócone kwadraty (niebieski i grafitowy)

@@ -388,7 +388,7 @@ class FeerTemplateTest extends TestCase
         $this->get('/')->assertOk()->assertSee('<section class="bg-white py-10" aria-labelledby="feer-shortcuts-heading"', false);
     }
 
-    public function test_sekcja_w_liczbach_feer_to_duze_liczby_bez_kart(): void
+    public function test_sekcja_w_liczbach_feer_to_kolorowe_kafle_bez_kart(): void
     {
         \App\Models\Page::create(['title' => 'O fundacji', 'slug' => 'o-fundacji-stat', 'type' => 'about', 'is_published' => true, 'about_stats' => [['value' => '120', 'label' => 'szkoleń'], ['value' => '35', 'label' => 'organizacji']]]);
 
@@ -399,7 +399,7 @@ class FeerTemplateTest extends TestCase
         \Illuminate\Support\Facades\Cache::flush();
 
         $html = $this->get('/o-fundacji-stat')->assertOk()->assertSee('szkoleń')->assertSee('data-countup-value', false)->getContent();
-        $this->assertStringContainsString('border-t-4 border-brand pt-4', $html);
+        $this->assertStringContainsString('min-h-48 flex-col justify-between rounded-md p-6', $html);
         $this->assertStringNotContainsString('rounded-2xl bg-white px-6 py-6', $html);
     }
 
@@ -1026,5 +1026,18 @@ class FeerTemplateTest extends TestCase
             $this->assertStringContainsString('h-1 w-14 bg-brand', $html, $type);
             $this->assertStringContainsString('rounded bg-gray-100 text-ink', $html, $type);
         }
+    }
+
+    public function test_w_liczbach_w_feer_to_kolorowe_kafle_ze_skalowana_liczba(): void
+    {
+        $this->useFeer();
+        \App\Models\Page::create(['title' => 'O nas', 'slug' => 'o-nas-liczby', 'type' => 'about', 'is_published' => true,
+            'about_stats' => [['value' => '6', 'label' => 'lat'], ['value' => 'więcej jak 1000', 'label' => 'dzieciaków']]]);
+
+        $html = $this->get('/o-nas-liczby')->assertOk()->getContent();
+        $this->assertStringContainsString('background-color: #1e6dff; color: #ffffff', $html);
+        $this->assertStringContainsString('text-5xl md:text-6xl', $html); // krótka liczba
+        $this->assertStringContainsString('text-2xl md:text-3xl', $html); // długa wartość
+        $this->assertStringContainsString('data-countup-value', $html);
     }
 }

@@ -30,6 +30,7 @@
     ]])
 @endsection
 
+@php $feerEv = ($siteSettings->site_template ?? 'default') === 'feer'; @endphp
 @php $accent = $siteSettings->contrastSafeColor($siteSettings->audienceColor($event->audience)); @endphp
 
 @section('content')
@@ -56,7 +57,7 @@
                 @click="sliderOpen = true"
                 :aria-expanded="sliderOpen"
                 aria-controls="event-slider"
-                class="mt-5 inline-flex items-center gap-3 rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-medium text-ink shadow-sm transition hover:border-gray-300 hover:bg-gray-50 hover:shadow focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+                class="mt-5 inline-flex items-center gap-3 {{ $feerEv ? 'rounded-md bg-gray-50' : 'rounded-xl border border-gray-200 bg-white' }} px-4 py-3 text-sm font-medium text-ink shadow-sm transition hover:border-gray-300 hover:bg-gray-50 hover:shadow focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
                 style="outline-color: var(--accent)">
                 <i class="fa-solid fa-location-dot flex-none" aria-hidden="true" style="color: var(--accent)"></i>
                 <span>
@@ -131,7 +132,7 @@
                         ? e($facilitatorFirstName).'<span class="font-normal text-gray-500"> — prowadzący/a</span>'
                         : 'Prowadzący / Prowadząca' !!}
                 </h2>
-                <div class="mt-3 flex flex-col gap-5 rounded-xl border border-gray-200 bg-gray-50 p-6 sm:flex-row sm:items-start">
+                <div class="mt-3 flex flex-col gap-5 {{ $feerEv ? 'rounded-md bg-gray-50' : 'rounded-xl border border-gray-200 bg-gray-50' }} p-6 sm:flex-row sm:items-start">
                     @if ($event->facilitatorPhotoUrl())
                         <img src="{{ $event->facilitatorPhotoUrl() }}"
                             alt="{{ $event->facilitator_name ? 'Zdjęcie: '.$event->facilitator_name : 'Zdjęcie osoby prowadzącej zajęcia' }}"
@@ -162,7 +163,7 @@
                             <div class="mt-3 flex flex-wrap items-center gap-3" aria-label="Linki do profili prowadzącego">
                                 @if ($event->facilitator_website)
                                     <a href="{{ $event->facilitator_website }}" target="_blank" rel="noopener"
-                                        class="inline-flex items-center gap-1.5 rounded-full border border-gray-200 px-3 py-1 text-sm font-bold text-gray-700 hover:border-gray-300 hover:bg-white focus-visible:outline focus-visible:outline-2"
+                                        class="inline-flex items-center gap-1.5 {{ $feerEv ? 'rounded-md bg-gray-100' : 'rounded-full border border-gray-200' }} px-3 py-1 text-sm font-bold text-gray-700 hover:border-gray-300 hover:bg-white focus-visible:outline focus-visible:outline-2"
                                         style="outline-color: var(--accent)"
                                         aria-label="Strona WWW prowadzącego/ej (otworzy się w nowej karcie)">
                                         <i class="fa-solid fa-globe" aria-hidden="true" style="color: var(--accent)"></i> Strona WWW
@@ -170,7 +171,7 @@
                                 @endif
                                 @if ($event->facilitator_linkedin)
                                     <a href="{{ $event->facilitator_linkedin }}" target="_blank" rel="noopener"
-                                        class="inline-flex items-center gap-1.5 rounded-full border border-gray-200 px-3 py-1 text-sm font-bold text-gray-700 hover:border-gray-300 hover:bg-white focus-visible:outline focus-visible:outline-2"
+                                        class="inline-flex items-center gap-1.5 {{ $feerEv ? 'rounded-md bg-gray-100' : 'rounded-full border border-gray-200' }} px-3 py-1 text-sm font-bold text-gray-700 hover:border-gray-300 hover:bg-white focus-visible:outline focus-visible:outline-2"
                                         style="outline-color: var(--accent)"
                                         aria-label="Profil LinkedIn prowadzącego/ej (otworzy się w nowej karcie)">
                                         <i class="fa-brands fa-linkedin" aria-hidden="true" style="color:#0a66c2"></i> LinkedIn
@@ -178,7 +179,7 @@
                                 @endif
                                 @if ($event->facilitator_facebook)
                                     <a href="{{ $event->facilitator_facebook }}" target="_blank" rel="noopener"
-                                        class="inline-flex items-center gap-1.5 rounded-full border border-gray-200 px-3 py-1 text-sm font-bold text-gray-700 hover:border-gray-300 hover:bg-white focus-visible:outline focus-visible:outline-2"
+                                        class="inline-flex items-center gap-1.5 {{ $feerEv ? 'rounded-md bg-gray-100' : 'rounded-full border border-gray-200' }} px-3 py-1 text-sm font-bold text-gray-700 hover:border-gray-300 hover:bg-white focus-visible:outline focus-visible:outline-2"
                                         style="outline-color: var(--accent)"
                                         aria-label="Profil Facebook prowadzącego/ej (otworzy się w nowej karcie)">
                                         <i class="fa-brands fa-facebook" aria-hidden="true" style="color:#1877f2"></i> Facebook
@@ -186,7 +187,7 @@
                                 @endif
                                 @if ($event->facilitator_instagram)
                                     <a href="{{ $event->facilitator_instagram }}" target="_blank" rel="noopener"
-                                        class="inline-flex items-center gap-1.5 rounded-full border border-gray-200 px-3 py-1 text-sm font-bold text-gray-700 hover:border-gray-300 hover:bg-white focus-visible:outline focus-visible:outline-2"
+                                        class="inline-flex items-center gap-1.5 {{ $feerEv ? 'rounded-md bg-gray-100' : 'rounded-full border border-gray-200' }} px-3 py-1 text-sm font-bold text-gray-700 hover:border-gray-300 hover:bg-white focus-visible:outline focus-visible:outline-2"
                                         style="outline-color: var(--accent)"
                                         aria-label="Profil Instagram prowadzącego/ej (otworzy się w nowej karcie)">
                                         <i class="fa-brands fa-instagram" aria-hidden="true" style="color:#e1306c"></i> Instagram
@@ -194,7 +195,7 @@
                                 @endif
                                 @if ($event->facilitator_twitter)
                                     <a href="{{ $event->facilitator_twitter }}" target="_blank" rel="noopener"
-                                        class="inline-flex items-center gap-1.5 rounded-full border border-gray-200 px-3 py-1 text-sm font-bold text-gray-700 hover:border-gray-300 hover:bg-white focus-visible:outline focus-visible:outline-2"
+                                        class="inline-flex items-center gap-1.5 {{ $feerEv ? 'rounded-md bg-gray-100' : 'rounded-full border border-gray-200' }} px-3 py-1 text-sm font-bold text-gray-700 hover:border-gray-300 hover:bg-white focus-visible:outline focus-visible:outline-2"
                                         style="outline-color: var(--accent)"
                                         aria-label="Profil X/Twitter prowadzącego/ej (otworzy się w nowej karcie)">
                                         <i class="fa-brands fa-x-twitter" aria-hidden="true"></i> X / Twitter
@@ -229,7 +230,7 @@
                 </h2>
                 <div class="mt-3 space-y-2">
                     @foreach ($eventFaqs as $faq)
-                        <details class="group rounded-xl border border-gray-200 bg-white [&[open]]:border-gray-300">
+                        <details class="group {{ $feerEv ? 'rounded-md bg-gray-50' : 'rounded-xl border border-gray-200 bg-white' }} [&[open]]:border-gray-300">
                             <summary class="flex cursor-pointer list-none items-center justify-between gap-3 px-5 py-4 font-bold text-ink [&::-webkit-details-marker]:hidden">
                                 <span>{{ $faq->question }}</span>
                                 <i class="fa-solid fa-chevron-down flex-none text-sm text-muted transition-transform group-open:rotate-180" aria-hidden="true"></i>

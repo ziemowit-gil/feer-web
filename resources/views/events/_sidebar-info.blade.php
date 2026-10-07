@@ -1,4 +1,5 @@
-<div class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
+@php $feerEv = ($siteSettings->site_template ?? 'default') === 'feer'; @endphp
+<div class="overflow-hidden {{ $feerEv ? 'rounded-md bg-gray-50' : 'rounded-2xl border border-gray-200 bg-white shadow-sm' }}">
     <div class="h-1.5 w-full" style="background: var(--accent)" aria-hidden="true"></div>
 
     <dl class="divide-y divide-gray-100">
