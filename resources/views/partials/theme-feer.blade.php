@@ -76,7 +76,7 @@
        białe tło i mniejsze odstępy. Jedna reguła dla wszystkich podstron FEER (okruszki płynnie przechodzą w tytuł). */
     h1[class*="md:text-5xl"][class*="text-ink"] { font-size: 1.875rem; line-height: 1.2; font-weight: 700; letter-spacing: 0; }
     h1[class*="md:text-5xl"][class*="text-ink"]::after { content: ""; display: block; width: 3.5rem; height: 4px; margin-top: .75rem; background: var(--color-brand); }
-    :is(section, header).bg-gray-50:has(h1[class*="md:text-5xl"][class*="text-ink"]) { background-color: #fff; border-bottom-width: 0; }
+    :is(section, header).bg-gray-50:has(h1[class*="md:text-5xl"][class*="text-ink"]), :is(section, header).bg-white:has(h1[class*="md:text-5xl"][class*="text-ink"]) { background-color: transparent; border-bottom-width: 0; }
     div:has(> h1[class*="md:text-5xl"][class*="text-ink"]) { padding-top: 2rem; padding-bottom: 1.5rem; }
 
     /* Delikatne animacje (≤ 0,5 s, bez przesuwania układu): płynne pojawienie się treści, wydłużanie niebieskiego akcentu

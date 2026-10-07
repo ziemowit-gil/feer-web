@@ -172,7 +172,7 @@
         {{-- Hero: pełnokolorowe tło marki z dekoracją, jak w sekcji "wspolpraca" (bg-brand + rozmyte koła) --}}
         @if (($siteSettings->site_template ?? 'default') === 'feer')
             {{-- Szablon FEER: jasny, płaski nagłówek; motto jako cytat z paskiem (kontrast ink na szarym 16:1) --}}
-            <header class="bg-white">
+            <header>
                 <div class="mx-auto max-w-6xl px-4">
                     <h1 class="text-3xl font-extrabold leading-tight tracking-tight text-ink md:text-5xl">{{ $page->title }}</h1>
                     @if ($page->about_motto)

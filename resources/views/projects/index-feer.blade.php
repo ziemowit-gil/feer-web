@@ -16,7 +16,7 @@
 @section('content')
     @php $filled = $categories->filter(fn ($c) => $c->publishedProjects->isNotEmpty())->values(); @endphp
 
-    <section class="bg-white">
+    <section>
         <div class="mx-auto max-w-6xl px-4 pb-6 pt-8 md:pb-8 md:pt-10">
             <h1 class="text-2xl font-bold leading-tight text-ink md:text-3xl">Projekty</h1>
             <span class="mt-3 block h-1 w-14 bg-brand" aria-hidden="true"></span>
