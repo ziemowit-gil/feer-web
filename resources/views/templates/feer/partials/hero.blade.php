@@ -63,7 +63,7 @@
                 <div class="flex items-center gap-2" role="tablist" aria-label="Wybór slajdu">
                     @foreach ($slides as $i => $slide)
                         <button type="button" role="tab" :aria-selected="current === {{ $i }}"
-                                :class="current === {{ $i }} ? 'w-8 bg-brand-dark' : 'w-3 bg-gray-400 hover:bg-gray-500'"
+                                :class="current === {{ $i }} ? 'w-8 bg-brand' : 'w-3 bg-gray-400 hover:bg-gray-500'"
                                 class="h-3 rounded-sm transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2"
                                 @click="go({{ $i }})" aria-label="Slajd {{ $i + 1 }}"></button>
                     @endforeach

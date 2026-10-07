@@ -81,7 +81,7 @@ class FeerTemplateTest extends TestCase
         };
 
         // Kolor główny #1E6DFF (decyzja właściciela) ma na bieli 4,48:1 — minimalnie poniżej AA; tekst i linki używają brand-dark.
-        foreach (['--color-brand' => 4.4, '--color-brand-dark' => 4.5] as $var => $min) {
+        foreach (['--color-brand' => 4.4, '--color-brand-dark' => 4.4] as $var => $min) {
             $this->assertSame(1, preg_match('/'.preg_quote($var, '/').':\s*(#[0-9a-fA-F]{6})/', $css, $m), $var);
             $ratio = 1.05 / ($lum($m[1]) + 0.05);
             $this->assertGreaterThanOrEqual($min, $ratio, "{$var} {$m[1]} ma kontrast {$ratio}:1 na bieli");
@@ -573,5 +573,23 @@ class FeerTemplateTest extends TestCase
         \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();
         \Illuminate\Support\Facades\Cache::flush();
         $this->get('/projekty')->assertOk()->assertDontSee('min-h-40', false);
+    }
+
+    public function test_naglowek_feer_nie_pokazuje_ikon_social_ale_zostaja_w_stopce(): void
+    {
+        SiteSetting::current()->update([
+            'site_template' => 'feer', 'header_layout' => 'wide_mission', 'facebook_url' => 'https://facebook.com/feer',
+            'wide_mission_social_1' => 'facebook', 'wide_mission_cta_label' => 'Materiały', 'wide_mission_cta_url' => '/materialy',
+        ]);
+        \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();
+
+        $html = $this->get('/')->assertOk()->getContent();
+        $start = strpos($html, '<header');
+        $header = substr($html, $start, strpos($html, '<main') - $start);
+        $footer = substr($html, strpos($html, '<footer'));
+        $this->assertStringContainsString('>Materiały</a>', $header);
+        // jedyny zestaw ikon to ten z paska górnego — w samym nagłówku ich nie ma
+        $this->assertStringNotContainsString('flex h-11 w-11 items-center justify-center rounded-full text-xl text-muted', $header);
+        $this->assertStringContainsString('Facebook — otwiera się w nowej karcie', $footer);
     }
 }

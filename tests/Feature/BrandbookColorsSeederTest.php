@@ -25,11 +25,8 @@ class BrandbookColorsSeederTest extends TestCase
         foreach (['Facebook', 'Archiwum', 'Panel', 'Czwarta'] as $i => $label) {
             QuickAction::create(['label' => $label, 'url' => '/'.$i, 'icon' => 'fa-solid fa-link', 'color' => 'red', 'order' => $i]);
         }
-        foreach (['Fundacja', 'Działania'] as $i => $label) {
-            NavItem::create(['label' => $label, 'url' => '/'.$i, 'type' => 'link', 'location' => 'main', 'is_active' => true, 'order' => $i]);
-        }
+        NavItem::create(['label' => 'Fundacja', 'url' => '/f', 'type' => 'link', 'location' => 'main', 'is_active' => true, 'order' => 1]);
         NavItem::create(['label' => 'Własny', 'url' => '/w', 'type' => 'link', 'location' => 'main', 'is_active' => true, 'order' => 5, 'accent_color' => '#123456']);
-        NavItem::create(['label' => 'Przycisk', 'url' => '/p', 'type' => 'link', 'location' => 'main', 'is_active' => true, 'order' => 6, 'is_button' => true]);
 
         $this->seed(BrandbookColorsSeeder::class);
         $this->seed(BrandbookColorsSeeder::class); // drugi raz — ten sam wynik
@@ -43,11 +40,10 @@ class BrandbookColorsSeederTest extends TestCase
 
         $this->assertSame(['#1e6dff', '#1d1d1a', '#ea8f00', '#1e6dff'], QuickAction::orderBy('order')->pluck('color')->all());
 
+        // Kolor pozycji menu jest opcjonalny — seeder go nie ustawia i nie nadpisuje.
         $nav = NavItem::orderBy('order')->get()->keyBy('label');
-        $this->assertSame('#1e6dff', $nav['Fundacja']->accent_color);
-        $this->assertSame('#ea8f00', $nav['Działania']->accent_color);
-        $this->assertSame('#123456', $nav['Własny']->accent_color, 'własny kolor pozycji zostaje');
-        $this->assertNull($nav['Przycisk']->accent_color, 'przyciski CTA bez koloru pozycji');
+        $this->assertNull($nav['Fundacja']->accent_color);
+        $this->assertSame('#123456', $nav['Własny']->accent_color);
     }
 
     public function test_kolor_pozycji_menu_jest_wstrzykiwany_do_menu_glownego(): void
@@ -58,5 +54,14 @@ class BrandbookColorsSeederTest extends TestCase
         $this->assertStringContainsString('data-nav-accent', $html);
         $this->assertStringContainsString('--nav-accent: #ea8f00', $html);
         $this->assertStringContainsString('--nav-accent-text:', $html);
+    }
+
+    public function test_seeder_czyszczacy_usuwa_kolory_pozycji_menu(): void
+    {
+        NavItem::create(['label' => 'A', 'url' => '/a', 'type' => 'link', 'location' => 'main', 'is_active' => true, 'order' => 1, 'accent_color' => '#1e6dff']);
+
+        $this->seed(\Database\Seeders\ClearNavAccentColorsSeeder::class);
+
+        $this->assertNull(NavItem::where('label', 'A')->value('accent_color'));
     }
 }

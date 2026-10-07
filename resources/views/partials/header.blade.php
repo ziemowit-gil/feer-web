@@ -99,9 +99,10 @@
 
             {{-- Prawa kolumna (≥ md): wybrane social + CTA, a w układzie „right" pod nimi konto i „Wesprzyj" --}}
             <div class="hidden flex-none flex-col items-end gap-1 md:flex">
-                @if ($wmSocials || $wmHasCta || $wmHasCta2)
+                @php $wmShowSocials = ! empty($wmSocials) && ! $feerNav; // szablon FEER: bez kółek social w nagłówku (są w pasku górnym i stopce) @endphp
+                @if ($wmShowSocials || $wmHasCta || $wmHasCta2)
                     <div class="flex items-center gap-2">
-                        @if ($wmSocials)
+                        @if ($wmShowSocials)
                             <ul class="flex items-center" aria-label="Media społecznościowe">
                                 @foreach ($wmSocials as [$socialUrl, $socialIcon, $socialLabel])
                                     <li>
