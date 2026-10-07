@@ -336,50 +336,59 @@
 
             {{-- ==================== PUBLIKACJA I POWIĄZANIA ==================== --}}
             <div data-ftab-panel="ustawienia" class="hidden space-y-6">
-                {{-- Karta: widoczność i status --}}
-                <div class="rounded-lg border border-gray-200 bg-white p-6"
-                    x-data="{ pub: {{ old('is_published', $page->is_published ?? true) ? 'true' : 'false' }} }">
-                    <div class="mb-4">
-                        <h2 class="text-base font-bold text-ink">Widoczność i status</h2>
-                        <p class="mt-0.5 text-xs text-muted">Decyduje, czy i jak strona pojawia się w serwisie.</p>
+                {{-- Karta: ustawienia strony — pogrupowane: publikacja, menu i nawigacja, dodatki, dostęp i ochrona --}}
+                @php
+                    $row = 'flex cursor-pointer items-start gap-4 py-4';
+                    $rowTitle = 'block text-[15px] font-bold text-ink';
+                    $rowHint = 'mt-0.5 block text-sm leading-snug text-muted';
+                    $groupTitle = 'text-xs font-bold uppercase tracking-widest text-muted';
+                @endphp
+                <div class="rounded-xl border border-gray-200 bg-white p-6 sm:p-8"
+                    x-data="{ pub: {{ old('is_published', $page->is_published ?? true) ? 'true' : 'false' }}, sideNav: {{ old('show_side_nav', $page->show_side_nav ?? true) ? 'true' : 'false' }} }">
+                    <div class="mb-2">
+                        <h2 class="text-lg font-bold text-ink">Ustawienia strony</h2>
+                        <p class="mt-1 text-sm text-muted">Widoczność, miejsce w menu i nawigacji oraz ochrona strony.</p>
                     </div>
 
-                    <div class="grid gap-3 sm:grid-cols-2">
-                        <label class="flex items-start gap-3 rounded-lg border border-gray-200 p-3">
-                            <input type="checkbox" name="is_published" value="1" {{ old('is_published', $page->is_published ?? true) ? 'checked' : '' }}
-                                @change="pub = $event.target.checked"
-                                class="mt-0.5 rounded border-gray-300 text-brand focus:ring-brand">
-                            <span>
-                                <span class="block text-sm font-bold">Opublikowana</span>
-                                <span class="block text-xs text-muted">Strona jest dostępna publicznie.</span>
-                            </span>
-                        </label>
+                    {{-- 1. Publikacja --}}
+                    <section aria-labelledby="grp-publikacja" class="mt-6">
+                        <h3 id="grp-publikacja" class="{{ $groupTitle }}">Publikacja</h3>
+                        <div class="mt-2 divide-y divide-gray-100">
+                            <div>
+                                <label class="{{ $row }}">
+                                    <input type="checkbox" name="is_published" value="1" {{ old('is_published', $page->is_published ?? true) ? 'checked' : '' }} @change="pub = $event.target.checked">
+                                    <span><span class="{{ $rowTitle }}">Opublikowana</span><span class="{{ $rowHint }}">Strona jest dostępna publicznie.</span></span>
+                                </label>
+                                {{-- Harmonogram: data i godzina pierwszego pokazania strony --}}
+                                <div x-show="pub" x-cloak class="mb-4 ml-[3.75rem] rounded-lg bg-gray-50 p-4">
+                                    <label for="publish_at" class="mb-1.5 block text-sm font-bold text-ink"><i class="fa-regular fa-clock mr-1 text-brand-dark" aria-hidden="true"></i>Opublikuj dopiero od <span class="font-normal text-muted">(opcjonalnie)</span></label>
+                                    <input type="datetime-local" id="publish_at" name="publish_at" value="{{ old('publish_at', $page->publish_at?->format('Y-m-d\TH:i')) }}" class="rounded-lg border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                                    @error('publish_at') <p class="mt-1 text-sm text-red-700">{{ $message }}</p> @enderror
+                                    <p class="mt-2 text-xs text-muted">Puste = widoczna natychmiast. Podaj datę, aby strona pojawiła się publicznie dopiero od tej chwili.</p>
+                                </div>
+                            </div>
+                            <label class="{{ $row }}">
+                                <input type="checkbox" name="is_archived" value="1" {{ old('is_archived', $page->is_archived ?? false) ? 'checked' : '' }}>
+                                <span><span class="{{ $rowTitle }}"><i class="fa-solid fa-clock-rotate-left mr-1 text-muted" aria-hidden="true"></i>Treść archiwalna</span><span class="{{ $rowHint }}">Pokazuje baner, że treść może być nieaktualna (pozostaje w wyszukiwarce).</span></span>
+                            </label>
+                        </div>
+                    </section>
 
-                        <label class="flex items-start gap-3 rounded-lg border border-gray-200 p-3">
-                            <input type="checkbox" name="is_archived" value="1" {{ old('is_archived', $page->is_archived ?? false) ? 'checked' : '' }}
-                                class="mt-0.5 rounded border-gray-300 text-brand focus:ring-brand">
-                            <span>
-                                <span class="flex items-center gap-1 text-sm font-bold"><i class="fa-solid fa-clock-rotate-left text-muted" aria-hidden="true"></i> Treść archiwalna</span>
-                                <span class="block text-xs text-muted">Pokazuje baner, że treść może być nieaktualna (pozostaje w wyszukiwarce).</span>
-                            </span>
-                        </label>
-
-                        <label class="flex items-start gap-3 rounded-lg border border-gray-200 p-3">
-                            <input type="checkbox" name="show_in_menu" value="1" {{ old('show_in_menu', $page->show_in_menu ?? true) ? 'checked' : '' }}
-                                class="mt-0.5 rounded border-gray-300 text-brand focus:ring-brand">
-                            <span>
-                                <span class="block text-sm font-bold">Dodaj do menu</span>
-                                <span class="block text-xs text-muted">Tylko strony główne (bez rodzica i projektu) trafiają do nawigacji.</span>
-                            </span>
-                        </label>
-
-                        <label class="flex items-start gap-3 rounded-lg border border-gray-200 p-3">
-                            <input type="hidden" name="show_side_nav" value="0">
-                            <input type="checkbox" name="show_side_nav" value="1" {{ old('show_side_nav', $page->show_side_nav ?? true) ? 'checked' : '' }}
-                                class="mt-0.5 rounded border-gray-300 text-brand focus:ring-brand">
-                            <span class="flex-1">
-                                <span class="block text-sm font-bold">Nawigacja po podstronach działu</span>
-                                <span class="block text-xs text-muted">Lista podstron w tym dziale. Wyłącz dla stron bez rozbudowanej struktury. Styl ustawiony na stronie głównej działu obowiązuje dla wszystkich jej podstron.</span>
+                    {{-- 2. Menu i nawigacja --}}
+                    <section aria-labelledby="grp-menu" class="mt-8">
+                        <h3 id="grp-menu" class="{{ $groupTitle }}">Menu i nawigacja</h3>
+                        <div class="mt-2 divide-y divide-gray-100">
+                            <label class="{{ $row }}">
+                                <input type="checkbox" name="show_in_menu" value="1" {{ old('show_in_menu', $page->show_in_menu ?? true) ? 'checked' : '' }}>
+                                <span><span class="{{ $rowTitle }}">Dodaj do menu</span><span class="{{ $rowHint }}">Tylko strony główne (bez rodzica i projektu) trafiają do nawigacji.</span></span>
+                            </label>
+                            <div>
+                                <label class="{{ $row }}">
+                                    <input type="hidden" name="show_side_nav" value="0">
+                                    <input type="checkbox" name="show_side_nav" value="1" {{ old('show_side_nav', $page->show_side_nav ?? true) ? 'checked' : '' }} @change="sideNav = $event.target.checked">
+                                    <span><span class="{{ $rowTitle }}">Nawigacja po podstronach działu</span><span class="{{ $rowHint }}">Lista podstron w tym dziale. Wyłącz dla stron bez rozbudowanej struktury. Styl ustawiony na stronie głównej działu obowiązuje dla wszystkich jej podstron.</span></span>
+                                </label>
+                                <div x-show="sideNav" x-cloak class="mb-4 ml-[3.75rem]">
                                 @php
                                     $sideNavStyle = old('side_nav_style', $page->side_nav_style ?? 'sidebar');
                                     if (! array_key_exists($sideNavStyle, \App\Models\Page::SIDE_NAV_STYLES)) {
@@ -411,71 +420,52 @@
                                         'current' => $sideNavStyle, 'carrier' => ['radio' => 'side_nav_style'],
                                     ])
                                 </span>
-                                @foreach (\App\Models\Page::SIDE_NAV_STYLES as $styleKey => $styleLabel)
-                                    <span id="side-nav-hint-{{ $styleKey }}" class="sr-only">{{ $sideNavHints[$styleKey] }}</span>
-                                @endforeach
-                                <span class="mt-2 block text-xs text-muted" x-data="{ s: '{{ $sideNavStyle }}' }" @change.window="if ($event.target.name === 'side_nav_style') s = $event.target.value">
-                                    <template x-for="[k, v] of Object.entries({{ \Illuminate\Support\Js::from($sideNavHints) }})" :key="k">
-                                        <span x-show="s === k" x-text="v"></span>
-                                    </template>
-                                </span>
-                            </span>
-                        </label>
-
-                        <label class="flex items-start gap-3 rounded-lg border border-gray-200 p-3">
-                            <input type="checkbox" name="is_system" value="1" {{ old('is_system', $page->is_system ?? false) ? 'checked' : '' }}
-                                class="mt-0.5 rounded border-gray-300 text-brand focus:ring-brand">
-                            <span>
-                                <span class="block text-sm font-bold">Strona systemowa</span>
-                                <span class="block text-xs text-muted">Wymagana strona serwisu — nie można jej usunąć.</span>
-                            </span>
-                        </label>
-
-                        <label class="flex items-start gap-3 rounded-lg border border-gray-200 p-3 {{ in_array($currentType, ['about', 'contact'], true) ? 'hidden' : '' }}" data-gallery-toggle>
-                            <input type="hidden" name="show_gallery" value="0">
-                            <input type="checkbox" name="show_gallery" value="1" {{ old('show_gallery', $page->show_gallery ?? false) ? 'checked' : '' }}
-                                class="mt-0.5 rounded border-gray-300 text-brand focus:ring-brand">
-                            <span>
-                                <span class="block text-sm font-bold">Pokaż galerię zdjęć</span>
-                                <span class="block text-xs text-muted">Wyświetla zdjęcia z zakładki „Galeria".</span>
-                            </span>
-                        </label>
-
-                        @if (auth()->user()->isAdmin())
-                            <label class="flex items-start gap-3 rounded-lg border border-gray-200 p-3">
-                                <input type="hidden" name="is_locked" value="0">
-                                <input type="checkbox" name="is_locked" value="1" {{ old('is_locked', $page->is_locked ?? false) ? 'checked' : '' }}
-                                    class="mt-0.5 rounded border-gray-300 text-brand focus:ring-brand">
-                                <span>
-                                    <span class="flex items-center gap-1 text-sm font-bold"><i class="fa-solid fa-lock text-brand" aria-hidden="true"></i> Zablokuj do edycji</span>
-                                    <span class="block text-xs text-muted">Edytować, klonować i usuwać może tylko administrator.</span>
-                                </span>
-                            </label>
-                        @elseif ($page->is_locked ?? false)
-                            <p class="flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs text-amber-800">
-                                <i class="fa-solid fa-lock mt-0.5" aria-hidden="true"></i>
-                                <span>Ta strona jest zablokowana do edycji przez administratora.</span>
-                            </p>
-                        @endif
-                    </div>
-
-                    {{-- Harmonogram: data i godzina pierwszego pokazania strony --}}
-                    <div x-show="pub" x-cloak class="mt-4 flex flex-wrap items-end gap-4 rounded-lg border border-blue-100 bg-blue-50/50 p-4">
-                        <div>
-                            <label for="publish_at" class="mb-1 block text-sm font-bold text-ink">
-                                <i class="fa-regular fa-clock mr-1 text-blue-400" aria-hidden="true"></i>
-                                Opublikuj dopiero od
-                                <span class="font-normal text-muted">(opcjonalnie)</span>
-                            </label>
-                            <input type="datetime-local" id="publish_at" name="publish_at"
-                                value="{{ old('publish_at', $page->publish_at?->format('Y-m-d\TH:i')) }}"
-                                class="rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
-                            @error('publish_at') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                                    @include('admin.partials.modal-picker', [
+                                        'pickerId' => 'nav-style-picker', 'title' => 'Styl nawigacji po podstronach', 'options' => $navCards,
+                                        'current' => $sideNavStyle, 'carrier' => ['radio' => 'side_nav_style'],
+                                    ])
+                                    @foreach (\App\Models\Page::SIDE_NAV_STYLES as $styleKey => $styleLabel)
+                                        <span id="side-nav-hint-{{ $styleKey }}" class="sr-only">{{ $sideNavHints[$styleKey] }}</span>
+                                    @endforeach
+                                </div>
+                            </div>
                         </div>
-                        <p class="text-xs text-muted">
-                            Puste = widoczna natychmiast. Podaj datę, aby strona pojawiła się publicznie dopiero od tej chwili — wcześniej niedostępna dla odwiedzających.
-                        </p>
-                    </div>
+                    </section>
+
+                    {{-- 3. Dodatki --}}
+                    <section aria-labelledby="grp-dodatki" class="mt-8 {{ in_array($currentType, ['about', 'contact'], true) ? 'hidden' : '' }}" data-gallery-toggle>
+                        <h3 id="grp-dodatki" class="{{ $groupTitle }}">Dodatki</h3>
+                        <div class="mt-2 divide-y divide-gray-100">
+                            <label class="{{ $row }}">
+                                <input type="hidden" name="show_gallery" value="0">
+                                <input type="checkbox" name="show_gallery" value="1" {{ old('show_gallery', $page->show_gallery ?? false) ? 'checked' : '' }}>
+                                <span><span class="{{ $rowTitle }}">Pokaż galerię zdjęć</span><span class="{{ $rowHint }}">Wyświetla zdjęcia z zakładki „Galeria".</span></span>
+                            </label>
+                        </div>
+                    </section>
+
+                    {{-- 4. Dostęp i ochrona --}}
+                    <section aria-labelledby="grp-ochrona" class="mt-8">
+                        <h3 id="grp-ochrona" class="{{ $groupTitle }}">Dostęp i ochrona</h3>
+                        <div class="mt-2 divide-y divide-gray-100">
+                            <label class="{{ $row }}">
+                                <input type="checkbox" name="is_system" value="1" {{ old('is_system', $page->is_system ?? false) ? 'checked' : '' }}>
+                                <span><span class="{{ $rowTitle }}">Strona systemowa</span><span class="{{ $rowHint }}">Wymagana strona serwisu — nie można jej usunąć.</span></span>
+                            </label>
+                            @if (auth()->user()->isAdmin())
+                                <label class="{{ $row }}">
+                                    <input type="hidden" name="is_locked" value="0">
+                                    <input type="checkbox" name="is_locked" value="1" {{ old('is_locked', $page->is_locked ?? false) ? 'checked' : '' }}>
+                                    <span><span class="{{ $rowTitle }}"><i class="fa-solid fa-lock mr-1 text-brand-dark" aria-hidden="true"></i>Zablokuj do edycji</span><span class="{{ $rowHint }}">Edytować, klonować i usuwać może tylko administrator.</span></span>
+                                </label>
+                            @elseif ($page->is_locked ?? false)
+                                <p class="flex items-start gap-2 py-4 text-sm text-amber-900">
+                                    <i class="fa-solid fa-lock mt-0.5" aria-hidden="true"></i>
+                                    <span>Ta strona jest zablokowana do edycji przez administratora.</span>
+                                </p>
+                            @endif
+                        </div>
+                    </section>
                 </div>
 
                 {{-- Karta: powiązania i kolejność --}}
