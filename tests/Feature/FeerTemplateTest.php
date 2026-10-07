@@ -357,6 +357,7 @@ class FeerTemplateTest extends TestCase
         $this->assertStringContainsString('Tekst w PDF', $html);
         $this->assertStringContainsString('id="article-text"', $html);
         $this->assertStringContainsString('lg:grid-cols-[minmax(0,1fr)_16rem]', $html);
+        $this->assertStringContainsString('.news-feer-body img { max-width: min(100%, 28rem)', $html);
 
         SiteSetting::current()->update(['site_template' => 'ngo_mix']);
         \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();

@@ -37,6 +37,12 @@
 @endphp
 
 @section('content')
+    <style>
+        /* Mniejsze obrazy w treści aktualności (FEER): maks. 28 rem, proporcje zachowane. */
+        .news-feer-body img { max-width: min(100%, 28rem); height: auto; border-radius: .5rem; }
+        .news-feer-body figure { max-width: min(100%, 28rem); }
+    </style>
+
     @if ($canQuickEdit)
         <div x-data="newsInlineEditor(
             @js(['title' => $news->title, 'excerpt' => $news->excerpt, 'is_published' => $news->is_published]),
@@ -102,10 +108,10 @@
             <div class="grid gap-10 lg:grid-cols-[minmax(0,1fr)_16rem] lg:gap-14">
                 <div class="min-w-0">
                     @if ($img && $articleLayout !== 'none')
-                        <img src="{{ $img }}" alt="{{ $imgAlt }}" data-lightbox class="mb-8 aspect-[16/9] w-full rounded-lg object-cover">
+                        <img src="{{ $img }}" alt="{{ $imgAlt }}" data-lightbox class="mb-8 aspect-[16/10] w-full max-w-md rounded-lg object-cover">
                     @endif
 
-                    <div id="article-text" data-news-content class="prose prose-lg max-w-3xl text-ink">@shortcodes($news->content)</div>
+                    <div id="article-text" data-news-content class="news-feer-body prose prose-lg max-w-3xl text-ink">@shortcodes($news->content)</div>
 
                     @include('partials.attachments-list', ['attachments' => $news->attachments])
                 </div>
