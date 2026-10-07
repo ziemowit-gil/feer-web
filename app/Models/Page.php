@@ -437,7 +437,7 @@ class Page extends Model
         return ! in_array($this->type, [
             'event', 'schedule', 'about', 'faq', 'bip_move',
             'internal_hub', 'links_hub', 'wspolpraca', 'training_institution', 'brand_assets',
-            'legacy', 'about_person', 'contact', 'service', 'guide', 'glossary', 'case_study',
+            'legacy', 'about_person', 'contact', 'service', 'guide', 'glossary', 'case_study', 'tiles_grid',
         ], true);
     }
 

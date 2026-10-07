@@ -856,4 +856,13 @@ class FeerTemplateTest extends TestCase
         $this->assertStringContainsString('pointer-events-none translate-x-4 opacity-0 duration-300', $html);
         $this->assertStringContainsString('motion-reduce:transition-none', $html);
     }
+
+    public function test_strona_siatki_kafelkow_pokazuje_tytul_tylko_raz(): void
+    {
+        \App\Models\Page::create(['title' => 'Dla kursantów', 'slug' => 'dla-kursantow-test', 'type' => 'tiles_grid', 'is_published' => true,
+            'tiles' => [['label' => 'Panel kursanta', 'url' => '/panel', 'icon' => 'bi-person']]]);
+
+        $html = $this->get('/dla-kursantow-test')->assertOk()->assertSee('Panel kursanta')->getContent();
+        $this->assertSame(1, substr_count($html, '<h1'), 'Tytuł strony kafelków nie powinien się dublować');
+    }
 }
