@@ -960,4 +960,30 @@ class FeerTemplateTest extends TestCase
         $this->assertStringContainsString('lg:grid-cols-[minmax(0,1fr)_22rem]', $html);
         $this->assertStringNotContainsString('border-b border-gray-100 bg-gray-50', $html);
     }
+
+    public function test_bip_sklep_newsletter_subskrypcje_i_rezerwacje_dzialaja_w_szablonie_feer(): void
+    {
+        $this->useFeer();
+
+        $bip = $this->get('/bip')->assertOk()->getContent();
+        $this->assertStringContainsString('h-1 w-14 bg-brand', $bip);
+
+        $sklep = $this->get('/sklep')->assertOk()->getContent();
+        $this->assertStringContainsString('h-1 w-14 bg-brand', $sklep);
+
+        $sub = $this->get('/subskrypcje')->assertOk()->getContent();
+        $this->assertStringContainsString('border-0 border-b-2 border-gray-500', $sub); // pole bez obwódki
+        $this->assertStringContainsString('h-1 w-14 bg-brand', $sub);
+
+        $news = $this->get('/newsletter')->assertOk()->getContent();
+        $this->assertStringContainsString('h-1 w-14 bg-brand', $news);
+
+        $book = $this->get('/rezerwuj-spotkanie-modul')->assertOk()->getContent();
+        $this->assertStringContainsString('h-1 w-14 bg-brand', $book);
+    }
+
+    public function test_te_same_strony_w_innych_szablonach_nie_maja_akcentu_feer(): void
+    {
+        $this->assertStringNotContainsString('border-0 border-b-2 border-gray-500', $this->get('/subskrypcje')->assertOk()->getContent());
+    }
 }

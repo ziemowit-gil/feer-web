@@ -10,6 +10,14 @@
 @endsection
 
 @section('content')
+@php
+    $feer = ($siteSettings->site_template ?? 'default') === 'feer';
+    $card = $feer ? 'rounded-md bg-gray-50' : 'rounded-xl border border-gray-200 bg-white';
+    $inp = $feer ? 'w-full rounded-t-md rounded-b-none border-0 border-b-2 border-gray-500 bg-gray-100 text-base text-ink focus:border-brand focus:bg-white focus:outline-none focus:ring-0' : 'w-full rounded border-gray-300 focus:border-brand focus:ring-brand';
+    $btn = $feer ? 'rounded-md' : 'rounded';
+    $ok = $feer ? 'rounded-md bg-green-50 text-green-900' : 'rounded-lg border border-green-200 bg-green-50 text-green-800';
+    $err = $feer ? 'rounded-md bg-red-50 text-red-900' : 'rounded-lg border border-red-200 bg-red-50 text-red-800';
+@endphp
     @php
         $meetingTitle   = $siteSettings->contact_meeting_title ?: 'Umów spotkanie';
         $scheduleTitle  = $siteSettings->contact_schedule_title ?: 'Kiedy i gdzie jesteśmy';
@@ -22,7 +30,8 @@
     @endphp
 
     <div class="mx-auto max-w-5xl px-4 py-10">
-        <h1 class="mb-2 text-3xl font-bold text-ink">{{ $meetingTitle }}</h1>
+        <h1 class="{{ $feer ? 'text-2xl md:text-3xl' : 'mb-2 text-3xl' }} font-bold text-ink">{{ $meetingTitle }}</h1>
+        @if ($feer)<span class="mb-5 mt-3 block h-1 w-14 bg-brand" aria-hidden="true"></span>@endif
         <p class="mb-8 max-w-2xl text-muted">Wypełnij formularz, żebyśmy wiedzieli, że przyjdziesz. Jeśli termin się zmieni, poinformujemy Cię e-mailem.</p>
 
         @if (session('booking_signed_up'))
@@ -75,7 +84,7 @@
                                 Imię i nazwisko <span class="font-bold text-red-600" aria-hidden="true">*</span>
                             </label>
                             <input type="text" id="bk-name" name="name" value="{{ old('name') }}" required autocomplete="name"
-                                class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand @error('name', 'booking') border-red-400 @enderror">
+                                class="{{ $inp }} @error('name', 'booking') border-red-400 @enderror">
                             @error('name', 'booking')
                                 <p class="mt-1 text-sm text-red-600" role="alert">{{ $message }}</p>
                             @enderror
@@ -86,7 +95,7 @@
                                 Telefon <span class="font-normal text-muted">(opcjonalnie)</span>
                             </label>
                             <input type="tel" id="bk-phone" name="phone" value="{{ old('phone') }}" autocomplete="tel"
-                                class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand @error('phone', 'booking') border-red-400 @enderror">
+                                class="{{ $inp }} @error('phone', 'booking') border-red-400 @enderror">
                             @error('phone', 'booking')
                                 <p class="mt-1 text-sm text-red-600" role="alert">{{ $message }}</p>
                             @enderror
@@ -98,7 +107,7 @@
                             E-mail <span class="font-bold text-red-600" aria-hidden="true">*</span>
                         </label>
                         <input type="email" id="bk-email" name="email" value="{{ old('email') }}" required autocomplete="email"
-                            class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand @error('email', 'booking') border-red-400 @enderror">
+                            class="{{ $inp }} @error('email', 'booking') border-red-400 @enderror">
                         @error('email', 'booking')
                             <p class="mt-1 text-sm text-red-600" role="alert">{{ $message }}</p>
                         @enderror
@@ -110,7 +119,7 @@
                                 Którego terminu dotyczy? <span class="font-normal text-muted">(opcjonalnie)</span>
                             </label>
                             <select id="bk-term" name="term"
-                                class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                                class="{{ $inp }}">
                                 <option value="">— wybierz termin —</option>
                                 @foreach ($scheduleItems as $item)
                                     @php $termLabel = trim($item['when_label'] . ($item['where'] !== '' ? ' — ' . $item['where'] : '')); @endphp
@@ -129,7 +138,7 @@
                             Wiadomość <span class="font-normal text-muted">(opcjonalnie)</span>
                         </label>
                         <textarea id="bk-message" name="message" rows="4"
-                            class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand @error('message', 'booking') border-red-400 @enderror">{{ old('message') }}</textarea>
+                            class="{{ $inp }} @error('message', 'booking') border-red-400 @enderror">{{ old('message') }}</textarea>
                         @error('message', 'booking')
                             <p class="mt-1 text-sm text-red-600" role="alert">{{ $message }}</p>
                         @enderror
@@ -157,7 +166,7 @@
                     </p>
 
                     <button type="submit"
-                        class="inline-flex items-center gap-2 rounded bg-brand px-6 py-2.5 text-sm font-bold text-white hover:bg-brand-dark focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2">
+                        class="inline-flex items-center gap-2 {{ $btn }} bg-brand px-6 py-2.5 text-sm font-bold text-white hover:bg-brand-dark focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2">
                         <i class="fa-solid fa-calendar-check" aria-hidden="true"></i> Wyślij zgłoszenie
                     </button>
                 </form>

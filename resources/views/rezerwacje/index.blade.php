@@ -10,6 +10,14 @@
 
 @section('content')
 @php
+    $feer = ($siteSettings->site_template ?? 'default') === 'feer';
+    $card = $feer ? 'rounded-md bg-gray-50' : 'rounded-xl border border-gray-200 bg-white';
+    $inp = $feer ? 'w-full rounded-t-md rounded-b-none border-0 border-b-2 border-gray-500 bg-gray-100 text-base text-ink focus:border-brand focus:bg-white focus:outline-none focus:ring-0' : 'w-full rounded border-gray-300 focus:border-brand focus:ring-brand';
+    $btn = $feer ? 'rounded-md' : 'rounded';
+    $ok = $feer ? 'rounded-md bg-green-50 text-green-900' : 'rounded-lg border border-green-200 bg-green-50 text-green-800';
+    $err = $feer ? 'rounded-md bg-red-50 text-red-900' : 'rounded-lg border border-red-200 bg-red-50 text-red-800';
+@endphp
+@php
     $member = auth('member')->user();
     $weekdays = \App\Models\SiteSetting::WEEKDAYS;
 @endphp
@@ -38,13 +46,13 @@
 
     {{-- Flash messages --}}
     @if (session('status'))
-        <div class="mb-6 flex items-start gap-3 rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800" role="alert">
+        <div class="mb-6 flex items-start gap-3 {{ $ok }} px-4 py-3 text-sm" role="alert">
             <i class="fa-solid fa-circle-check mt-0.5 flex-none" aria-hidden="true"></i>
             {{ session('status') }}
         </div>
     @endif
     @if (session('error'))
-        <div class="mb-6 flex items-start gap-3 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800" role="alert">
+        <div class="mb-6 flex items-start gap-3 {{ $err }} px-4 py-3 text-sm" role="alert">
             <i class="fa-solid fa-circle-exclamation mt-0.5 flex-none" aria-hidden="true"></i>
             {{ session('error') }}
         </div>
@@ -52,19 +60,19 @@
 
     {{-- Statystyki --}}
     <div class="mb-8 grid grid-cols-2 gap-4 sm:grid-cols-4">
-        <div class="rounded-xl border border-gray-200 bg-white px-5 py-4">
+        <div class="{{ $card }} px-5 py-4">
             <p class="text-2xl font-bold text-ink">{{ $signups->count() }}</p>
             <p class="mt-0.5 text-xs text-muted">Wszystkich zgłoszeń</p>
         </div>
-        <div class="rounded-xl border border-gray-200 bg-white px-5 py-4">
+        <div class="{{ $card }} px-5 py-4">
             <p class="text-2xl font-bold text-ink">{{ count($upcoming) }}</p>
             <p class="mt-0.5 text-xs text-muted">Nadchodzące terminy</p>
         </div>
-        <div class="rounded-xl border border-gray-200 bg-white px-5 py-4">
+        <div class="{{ $card }} px-5 py-4">
             <p class="text-2xl font-bold text-ink">{{ $byTerm->keys()->filter()->count() }}</p>
             <p class="mt-0.5 text-xs text-muted">Terminy z zapisami</p>
         </div>
-        <div class="rounded-xl border border-gray-200 bg-white px-5 py-4">
+        <div class="{{ $card }} px-5 py-4">
             @php $newest = $signups->first(); @endphp
             <p class="text-2xl font-bold text-ink">{{ $newest ? $newest->created_at->diffForHumans() : '—' }}</p>
             <p class="mt-0.5 text-xs text-muted">Ostatnie zgłoszenie</p>
@@ -115,7 +123,7 @@
                             $termLabel = $dateLabel . ($timeLabel ? ', ' . $timeLabel : '') . ($whereLabel ? ' — ' . $whereLabel : '');
                             $sigCount = $byTerm->filter(fn($g, $k) => str_contains((string)$k, $dateLabel))->flatten()->count();
                         @endphp
-                        <div class="flex items-start gap-3 rounded-xl border border-gray-200 bg-white p-4">
+                        <div class="flex items-start gap-3 {{ $card }} p-4">
                             <div class="flex h-10 w-10 flex-none items-center justify-center rounded-lg {{ $type === 'weekly' ? 'bg-purple-100 text-purple-700' : 'bg-brand-light text-brand' }}">
                                 <i class="fa-solid {{ $type === 'weekly' ? 'fa-rotate' : 'fa-calendar-day' }} text-sm" aria-hidden="true"></i>
                             </div>
@@ -146,7 +154,7 @@
             @endif
 
             {{-- Formularz dodawania terminu --}}
-            <div x-data="{ open: false, type: 'date' }" class="rounded-xl border border-gray-200 bg-white">
+            <div x-data="{ open: false, type: 'date' }" class="{{ $card }}">
                 <button type="button" @click="open = !open"
                     class="flex w-full items-center gap-2 px-5 py-4 text-left text-sm font-bold text-brand">
                     <i class="fa-solid fa-plus" aria-hidden="true"></i>
@@ -198,7 +206,7 @@
                     </div>
 
                     <div class="mt-4 flex justify-end">
-                        <button type="submit" class="rounded bg-brand px-5 py-2 text-sm font-bold text-white hover:bg-brand-dark">
+                        <button type="submit" class="{{ $btn }} bg-brand px-5 py-2 text-sm font-bold text-white hover:bg-brand-dark">
                             Zapisz termin
                         </button>
                     </div>
