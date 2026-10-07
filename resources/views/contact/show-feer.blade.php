@@ -43,47 +43,67 @@
                     $tile = 'rounded-md bg-gray-50 p-5';
                     $dt = 'text-xs font-bold uppercase tracking-widest text-muted';
                     $link = 'font-bold text-brand-dark underline underline-offset-4 hover:no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand';
+                    $ico = 'flex size-12 shrink-0 items-center justify-center rounded-full bg-gray-100 text-lg text-brand-dark';
                     $actionLink = 'inline-flex min-h-11 items-center gap-2 text-xl font-bold text-brand-dark hover:underline hover:underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand';
                 @endphp
                 <section aria-labelledby="dane-heading">
                     <h2 id="dane-heading" class="mb-5 text-2xl font-bold text-ink">{{ $siteSettings->site_name }}</h2>
-                    <dl class="grid gap-4 sm:grid-cols-2">
-                        <div class="{{ $tile }}">
-                            <dt class="{{ $dt }}">E-mail</dt>
-                            <dd class="mt-2 text-lg"><a href="mailto:{{ $siteSettings->contact_email }}" class="{{ $actionLink }}"><i class="fa-solid fa-envelope shrink-0 text-base" aria-hidden="true"></i><span class="min-w-0 break-words">{{ $siteSettings->contact_email }}</span></a></dd>
+                    {{-- Układ listy: ikona w kółku po lewej, podpis i wartość po prawej; bez szarych kafelków. --}}
+                    <dl class="divide-y divide-gray-200 border-y border-gray-200">
+                        <div class="flex items-center gap-5 py-5">
+                            <span class="{{ $ico }}" aria-hidden="true"><i class="fa-solid fa-envelope"></i></span>
+                            <div class="min-w-0">
+                                <dt class="{{ $dt }}">E-mail</dt>
+                                <dd class="mt-1"><a href="mailto:{{ $siteSettings->contact_email }}" class="{{ $actionLink }}"><span class="min-w-0 break-words">{{ $siteSettings->contact_email }}</span></a></dd>
+                            </div>
                         </div>
                         @if ($siteSettings->contact_phone)
-                            <div class="{{ $tile }}">
-                                <dt class="{{ $dt }}">Telefon</dt>
-                                <dd class="mt-2 text-lg"><a href="tel:{{ preg_replace('/\s+/', '', $siteSettings->contact_phone) }}" class="{{ $actionLink }}"><i class="fa-solid fa-phone shrink-0 text-base" aria-hidden="true"></i><span>{{ $siteSettings->contact_phone }}</span></a></dd>
+                            <div class="flex items-center gap-5 py-5">
+                                <span class="{{ $ico }}" aria-hidden="true"><i class="fa-solid fa-phone"></i></span>
+                                <div class="min-w-0">
+                                    <dt class="{{ $dt }}">Telefon</dt>
+                                    <dd class="mt-1"><a href="tel:{{ preg_replace('/\s+/', '', $siteSettings->contact_phone) }}" class="{{ $actionLink }}">{{ $siteSettings->contact_phone }}</a></dd>
+                                </div>
                             </div>
                         @endif
-                        <div class="{{ $tile }}">
-                            <dt class="{{ $dt }}">{{ $hasOffice ? 'Adres rejestrowy' : 'Adres' }}</dt>
-                            <dd class="mt-2 text-lg leading-snug text-ink">
-                                <a href="https://www.google.com/maps?q={{ urlencode($siteSettings->registeredAddressLine()) }}" target="_blank" rel="noopener" class="{{ $link }}">{{ $siteSettings->contact_address }}<br>{{ $siteSettings->contact_city }}<span class="sr-only"> (otwiera mapę w nowej karcie)</span></a>
-                            </dd>
+                        <div class="flex items-center gap-5 py-5">
+                            <span class="{{ $ico }}" aria-hidden="true"><i class="fa-solid fa-location-dot"></i></span>
+                            <div class="min-w-0">
+                                <dt class="{{ $dt }}">{{ $hasOffice ? 'Adres rejestrowy' : 'Adres' }}</dt>
+                                <dd class="mt-1 text-lg leading-snug text-ink">
+                                    <a href="https://www.google.com/maps?q={{ urlencode($siteSettings->registeredAddressLine()) }}" target="_blank" rel="noopener" class="{{ $link }}">{{ $siteSettings->contact_address }}, {{ $siteSettings->contact_city }}<span class="sr-only"> (otwiera mapę w nowej karcie)</span></a>
+                                </dd>
+                            </div>
                         </div>
                         @if ($hasOffice)
-                            <div class="{{ $tile }}">
-                                <dt class="{{ $dt }}">Biuro / korespondencja</dt>
-                                <dd class="mt-2 text-lg leading-snug text-ink">
-                                    @if (filled($siteSettings->contact_office_building))<span class="block font-bold">{{ $siteSettings->contact_office_building }}</span>@endif
-                                    <a href="https://www.google.com/maps?q={{ urlencode($siteSettings->officeAddressLine()) }}" target="_blank" rel="noopener" class="{{ $link }}">{{ $siteSettings->contact_office_address }}<br>{{ $siteSettings->contact_office_city }}<span class="sr-only"> (otwiera mapę w nowej karcie)</span></a>
-                                    @if (filled($siteSettings->contact_office_note))<span class="mt-2 block text-sm text-muted">{!! nl2br(e($siteSettings->contact_office_note)) !!}</span>@endif
-                                </dd>
+                            <div class="flex items-center gap-5 py-5">
+                                <span class="{{ $ico }}" aria-hidden="true"><i class="fa-solid fa-building"></i></span>
+                                <div class="min-w-0">
+                                    <dt class="{{ $dt }}">Biuro / korespondencja</dt>
+                                    <dd class="mt-1 text-lg leading-snug text-ink">
+                                        @if (filled($siteSettings->contact_office_building))<span class="block font-bold">{{ $siteSettings->contact_office_building }}</span>@endif
+                                        <a href="https://www.google.com/maps?q={{ urlencode($siteSettings->officeAddressLine()) }}" target="_blank" rel="noopener" class="{{ $link }}">{{ $siteSettings->contact_office_address }}, {{ $siteSettings->contact_office_city }}<span class="sr-only"> (otwiera mapę w nowej karcie)</span></a>
+                                        @if (filled($siteSettings->contact_office_note))<span class="mt-1 block text-sm text-muted">{!! nl2br(e($siteSettings->contact_office_note)) !!}</span>@endif
+                                    </dd>
+                                </div>
                             </div>
                         @endif
                         @if ($siteSettings->contact_office_hours)
-                            <div class="{{ $tile }}">
-                                <dt class="{{ $dt }}">Godziny pracy</dt>
-                                <dd class="mt-2 text-lg font-bold leading-snug text-ink">{{ $siteSettings->contact_office_hours }}</dd>
+                            <div class="flex items-center gap-5 py-5">
+                                <span class="{{ $ico }}" aria-hidden="true"><i class="fa-solid fa-clock"></i></span>
+                                <div class="min-w-0">
+                                    <dt class="{{ $dt }}">Godziny pracy</dt>
+                                    <dd class="mt-1 text-lg font-bold leading-snug text-ink">{{ $siteSettings->contact_office_hours }}</dd>
+                                </div>
                             </div>
                         @endif
                         @if ($siteSettings->contact_edelivery_address)
-                            <div class="{{ $tile }}">
-                                <dt class="{{ $dt }}">Adres do e-Doręczeń</dt>
-                                <dd class="mt-2 break-all font-mono text-base font-bold text-ink">{{ $siteSettings->contact_edelivery_address }}</dd>
+                            <div class="flex items-center gap-5 py-5">
+                                <span class="{{ $ico }}" aria-hidden="true"><i class="fa-solid fa-envelope-circle-check"></i></span>
+                                <div class="min-w-0">
+                                    <dt class="{{ $dt }}">Adres do e-Doręczeń</dt>
+                                    <dd class="mt-1 break-all font-mono text-base font-bold text-ink">{{ $siteSettings->contact_edelivery_address }}</dd>
+                                </div>
                             </div>
                         @endif
                     </dl>
