@@ -575,7 +575,7 @@ class FeerTemplateTest extends TestCase
         $this->get('/projekty')->assertOk()->assertDontSee('min-h-40', false);
     }
 
-    public function test_naglowek_feer_nie_pokazuje_ikon_social_ale_zostaja_w_stopce(): void
+    public function test_naglowek_feer_ma_plaskie_skroty_social_i_przycisk_akcji(): void
     {
         SiteSetting::current()->update([
             'site_template' => 'feer', 'header_layout' => 'wide_mission', 'facebook_url' => 'https://facebook.com/feer',
@@ -589,7 +589,8 @@ class FeerTemplateTest extends TestCase
         $footer = substr($html, strpos($html, '<footer'));
         $this->assertStringContainsString('>Materiały</a>', $header);
         // jedyny zestaw ikon to ten z paska górnego — w samym nagłówku ich nie ma
-        $this->assertStringNotContainsString('flex h-11 w-11 items-center justify-center rounded-full text-xl text-muted', $header);
+        $this->assertStringContainsString('rounded-md text-ink hover:bg-brand-light', $header);
+        $this->assertStringNotContainsString('rounded-full text-muted hover:bg-gray-100', $header);
         $this->assertStringContainsString('Facebook — otwiera się w nowej karcie', $footer);
     }
 }

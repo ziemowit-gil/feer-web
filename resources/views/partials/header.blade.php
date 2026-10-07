@@ -68,7 +68,7 @@
 
     {{-- Belka główna: logo · misja · social + CTA · hamburger --}}
     <div class="border-b border-gray-100 bg-white">
-        <div class="mx-auto flex max-w-6xl items-center gap-4 px-4 py-3 sm:gap-6 sm:py-4">
+        <div class="mx-auto flex max-w-6xl items-center gap-4 px-4 {{ $feerNav ? 'py-2 sm:py-2.5' : 'py-3 sm:py-4' }} sm:gap-6">
 
             {{-- Logo + nazwa --}}
             <a href="{{ site_route('home') }}"
@@ -76,7 +76,7 @@
                aria-label="{{ $siteSettings->site_name }} — strona główna">
                 @if ($siteSettings->logoUrl())
                     <img src="{{ $siteSettings->logoUrl() }}" alt="{{ $siteSettings->logoAltText() }}"
-                         class="h-14 w-auto max-w-[12rem] rounded object-contain sm:h-16 sm:max-w-[14rem]">
+                         class="w-auto rounded object-contain {{ $feerNav ? 'h-14 max-w-[13rem] sm:h-[4.5rem] sm:max-w-[16rem]' : 'h-14 max-w-[12rem] sm:h-16 sm:max-w-[14rem]' }}">
                 @else
                     <span class="flex h-12 w-12 flex-none items-center justify-center rounded-lg bg-brand text-xl font-bold text-white sm:h-14 sm:w-14" aria-hidden="true">{{ mb_substr($siteSettings->site_name, 0, 1) }}</span>
                 @endif
@@ -99,7 +99,7 @@
 
             {{-- Prawa kolumna (≥ md): wybrane social + CTA, a w układzie „right" pod nimi konto i „Wesprzyj" --}}
             <div class="hidden flex-none flex-col items-end gap-1 md:flex">
-                @php $wmShowSocials = ! empty($wmSocials) && ! $feerNav; // szablon FEER: bez kółek social w nagłówku (są w pasku górnym i stopce) @endphp
+                @php $wmShowSocials = ! empty($wmSocials); @endphp
                 @if ($wmShowSocials || $wmHasCta || $wmHasCta2)
                     <div class="flex items-center gap-2">
                         @if ($wmShowSocials)
@@ -107,7 +107,7 @@
                                 @foreach ($wmSocials as [$socialUrl, $socialIcon, $socialLabel])
                                     <li>
                                         <a href="{{ $socialUrl }}" target="_blank" rel="noopener"
-                                           class="flex h-11 w-11 items-center justify-center rounded-full text-xl text-muted transition hover:bg-gray-100 hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2"
+                                           class="flex h-11 w-11 items-center justify-center text-xl transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 {{ $feerNav ? 'rounded-md text-ink hover:bg-brand-light hover:text-brand-dark' : 'rounded-full text-muted hover:bg-gray-100 hover:text-brand' }}"
                                            aria-label="{{ $socialLabel }} — otwiera się w nowej karcie">
                                             <i class="{{ $socialIcon }}" aria-hidden="true"></i>
                                         </a>
