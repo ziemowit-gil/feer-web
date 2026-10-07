@@ -40,7 +40,9 @@
         @if ($page->usesStandardLayout())
         @php
             $menuSiblings = $page->menuSiblings();
-            $showLocalNav = ($page->show_side_nav ?? true) && $menuSiblings->isNotEmpty();
+            // „Nawigacja kafelkowa": podstrony jako kafelki pod treścią (lista boczna byłaby duplikatem).
+            $tilesNav     = $page->sideNavStyle() === 'tiles' && $page->publishedChildren->isNotEmpty();
+            $showLocalNav = ($page->show_side_nav ?? true) && $menuSiblings->isNotEmpty() && ! $tilesNav;
             $showTabsNav  = $showLocalNav && $page->sideNavStyle() === 'tabs';
             $showSideNav  = $showLocalNav && ! $showTabsNav;
             // Drzewo działu (TYPO3): szersza kolumna nawigacji po lewej stronie treści.
@@ -60,7 +62,7 @@
                 @include('partials.inline-edit-bar')
             @endif
 
-            <section class="mx-auto max-w-5xl px-4 py-12" x-data="{ etr: false }">
+            <section class="mx-auto {{ $tilesNav ? 'max-w-6xl' : 'max-w-5xl' }} px-4 py-12" x-data="{ etr: false }">
                 @if ($showTabsNav)
                     @include('partials.page-tabs-nav', ['menuSiblings' => $menuSiblings])
                 @endif
@@ -92,6 +94,10 @@
                         @endif
 
                         @include('partials.page-gallery', ['page' => $page])
+
+                        @if ($tilesNav)
+                            @include('partials.page-tiles-nav', ['tiles' => $page->publishedChildren()->orderBy('order')->orderBy('title')->get()])
+                        @endif
 
                         @include('partials.attachments-list', ['attachments' => $page->attachments])
 

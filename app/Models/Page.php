@@ -87,6 +87,7 @@ class Page extends Model
         'sidebar' => 'Boczne drzewo',
         'tabs'    => 'Zakładki nad treścią',
         'tree'    => 'Drzewo działu (styl TYPO3)',
+        'tiles'   => 'Nawigacja kafelkowa (podstrony jako kafelki)',
     ];
 
     /** Maksymalna głębokość drzewa działu renderowanego w nawigacji „tree". */
