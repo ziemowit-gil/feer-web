@@ -10,10 +10,12 @@
 @endsection
 
 @section('content')
+    @php $feer = ($siteSettings->site_template ?? 'default') === 'feer'; @endphp
     <section class="mx-auto max-w-5xl px-4 py-12">
         <header class="mb-10">
-            <p class="text-xs font-bold uppercase tracking-wider text-brand">Blog</p>
-            <h1 class="mt-1 text-3xl font-bold text-ink sm:text-4xl">Wiem FEER</h1>
+            <p class="text-xs font-bold uppercase tracking-wider {{ $feer ? 'text-muted' : 'text-brand' }}">Blog</p>
+            <h1 class="mt-1 font-bold text-ink {{ $feer ? 'text-2xl md:text-3xl' : 'text-3xl sm:text-4xl' }}">Wiem FEER</h1>
+            @if ($feer)<span class="mt-3 block h-1 w-14 bg-brand" aria-hidden="true"></span>@endif
             <p class="mt-2 max-w-2xl text-muted">Artykuły o dostępności cyfrowej, edukacji i empatii — miejsce, w którym dzielimy się wiedzą i doświadczeniem.</p>
         </header>
 
@@ -22,7 +24,7 @@
         @else
             {{-- ==================== HERO — NAJNOWSZY WPIS (tylko strona 1) ==================== --}}
             @if ($articles->onFirstPage())
-                <article class="group relative mb-12 overflow-hidden rounded-2xl bg-gradient-to-br from-brand to-brand-dark text-white shadow-lg">
+                <article class="group relative mb-12 overflow-hidden text-white {{ $feer ? 'rounded-md bg-ink' : 'rounded-2xl bg-gradient-to-br from-brand to-brand-dark shadow-lg' }}">
                     <div class="relative z-10 p-8 sm:p-10 lg:p-12">
                         <p class="inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-xs font-bold uppercase tracking-wider">
                             <i class="fa-solid fa-star" aria-hidden="true"></i>
@@ -46,7 +48,7 @@
                             <i class="fa-solid fa-arrow-right transition-transform duration-200 group-hover:translate-x-1" aria-hidden="true"></i>
                         </span>
                     </div>
-                    <i class="fa-solid fa-feather-pointed pointer-events-none absolute -bottom-6 -right-4 text-[9rem] text-white/10 sm:text-[12rem]" aria-hidden="true"></i>
+                    <i class="fa-solid fa-feather-pointed pointer-events-none {{ $feer ? 'hidden' : '' }} absolute -bottom-6 -right-4 text-[9rem] text-white/10 sm:text-[12rem]" aria-hidden="true"></i>
                 </article>
             @endif
 
@@ -77,7 +79,7 @@
                                 @if ($article->excerpt)
                                     <p class="mt-2 text-sm text-muted">{{ $article->excerpt }}</p>
                                 @endif
-                                <span class="mt-3 inline-flex items-center gap-2 text-sm font-bold text-brand">
+                                <span class="mt-3 inline-flex items-center gap-2 text-sm font-bold {{ $feer ? 'text-brand-dark underline underline-offset-4' : 'text-brand' }}">
                                     Czytaj dalej
                                     <i class="fa-solid fa-arrow-right transition-transform duration-200 group-hover:translate-x-1" aria-hidden="true"></i>
                                 </span>
