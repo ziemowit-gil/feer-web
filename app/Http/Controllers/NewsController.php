@@ -74,7 +74,9 @@ class NewsController extends Controller
 
         // Szablon FEER ma własny widok wpisu (nagłówek z zajawką, narzędzia artykułu z boku).
         if (SiteSetting::current()->site_template === 'feer') {
-            return view('news.show-feer', compact('news', 'brandColor', 'preview'));
+            $related = News::published()->forCurrentSite()->with('category')->where('id', '!=', $news->id)->orderByDesc('published_at')->limit(3)->get();
+
+            return view('news.show-feer', compact('news', 'brandColor', 'preview', 'related'));
         }
 
         return view('news.show', compact('news', 'brandColor', 'preview'));

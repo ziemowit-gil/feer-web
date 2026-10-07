@@ -350,21 +350,23 @@ class FeerTemplateTest extends TestCase
     public function test_pojedyncza_aktualnosc_feer_zachowuje_funkcje_i_ma_nowy_uklad(): void
     {
         $news = \App\Models\News::create(['title' => 'Ważna wiadomość', 'slug' => 'wazna', 'content' => '<p>Treść artykułu</p>', 'excerpt' => 'Krótka zajawka', 'is_published' => true, 'published_at' => now()->subDay()]);
+        \App\Models\News::create(['title' => 'Inny wpis', 'slug' => 'inny', 'content' => 'x', 'excerpt' => 'z', 'is_published' => true, 'published_at' => now()->subDays(3)]);
         SiteSetting::current()->update(['site_template' => 'feer']);
         \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();
 
         $html = $this->get(route('news.show', $news))->assertOk()
             ->assertSee('Ważna wiadomość')->assertSee('Krótka zajawka')->assertSee('Treść artykułu')->getContent();
         $this->assertStringContainsString('aria-label="Opcje artykułu"', $html);
-        $this->assertStringContainsString('Odsłuchaj artykuł', $html);
-        $this->assertStringContainsString('Tekst w PDF', $html);
+        $this->assertStringContainsString('Odsłuchaj', $html);
+        $this->assertStringContainsString('PDF', $html);
+        $this->assertStringContainsString('Czytaj także', $html);
         $this->assertStringContainsString('id="article-text"', $html);
-        $this->assertStringContainsString('lg:grid-cols-[minmax(0,1fr)_16rem]', $html);
+        $this->assertStringContainsString('min czytania', $html);
         $this->assertStringContainsString('.news-feer-body img { max-width: min(100%, 28rem)', $html);
 
         SiteSetting::current()->update(['site_template' => 'ngo_mix']);
         \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();
-        $this->get(route('news.show', $news))->assertOk()->assertDontSee('lg:grid-cols-[minmax(0,1fr)_16rem]', false);
+        $this->get(route('news.show', $news))->assertOk()->assertDontSee('min czytania');
     }
 
     public function test_na_skroty_maja_obramowke_albo_wypelnienie_zaleznie_od_ustawien(): void

@@ -105,42 +105,60 @@
                 @endif
             </header>
 
-            <div class="grid gap-10 lg:grid-cols-[minmax(0,1fr)_16rem] lg:gap-14">
-                <div class="min-w-0">
-                    @if ($img && $articleLayout !== 'none')
-                        <img src="{{ $img }}" alt="{{ $imgAlt }}" data-lightbox class="mb-8 aspect-[16/10] w-full max-w-md rounded-lg object-cover">
-                    @endif
-
-                    <div id="article-text" data-news-content class="news-feer-body prose prose-lg max-w-3xl text-ink">@shortcodes($news->content)</div>
-
-                    @include('partials.attachments-list', ['attachments' => $news->attachments])
+            @php
+                $readMin = max(1, (int) ceil(str_word_count(strip_tags((string) $news->content)) / 200));
+            @endphp
+            <div class="mx-auto max-w-3xl">
+                {{-- Narzędzia artykułu jako rząd przycisków pod nagłówkiem (zamiast bocznej kolumny) --}}
+                <div class="-mt-4 mb-10 flex flex-wrap items-center gap-2 print:hidden" aria-label="Opcje artykułu" role="group">
+                    <span class="mr-2 text-sm font-bold text-muted">{{ $readMin }} min czytania</span>
+                    <button type="button" x-show="supported" x-cloak @click="play()" :aria-pressed="playing.toString()" class="{{ $tool }} !w-auto"
+                            :class="playing ? 'bg-ink text-white hover:bg-ink' : ''">
+                        <i class="fa-solid" :class="playing ? 'fa-pause' : 'fa-volume-high'" aria-hidden="true"></i>
+                        <span x-text="playing ? 'Zatrzymaj odczyt' : 'Odsłuchaj'"></span>
+                    </button>
+                    <button type="button" onclick="window.print()" class="{{ $tool }} !w-auto"><i class="fa-solid fa-print" aria-hidden="true"></i> Drukuj</button>
+                    <a href="{{ site_route('news.pdf', $news) }}" target="_blank" rel="noopener" class="{{ $tool }} !w-auto">
+                        <i class="fa-solid fa-file-pdf" aria-hidden="true"></i> PDF<span class="sr-only"> — tekst artykułu (otwiera się w nowej karcie)</span>
+                    </a>
                 </div>
 
-                <aside class="space-y-8 print:hidden lg:sticky lg:top-6 lg:self-start" aria-label="Opcje artykułu">
-                    <div class="space-y-2">
-                        <button type="button" x-show="supported" x-cloak @click="play()" :aria-pressed="playing.toString()" class="{{ $tool }}"
-                                :class="playing ? 'bg-ink text-white hover:bg-ink' : ''">
-                            <i class="fa-solid" :class="playing ? 'fa-pause' : 'fa-volume-high'" aria-hidden="true"></i>
-                            <span x-text="playing ? 'Zatrzymaj odczyt' : 'Odsłuchaj artykuł'"></span>
-                        </button>
-                        <button type="button" onclick="window.print()" class="{{ $tool }}"><i class="fa-solid fa-print" aria-hidden="true"></i> Drukuj</button>
-                        <a href="{{ site_route('news.pdf', $news) }}" target="_blank" rel="noopener" class="{{ $tool }}">
-                            <i class="fa-solid fa-file-pdf" aria-hidden="true"></i> Tekst w PDF<span class="sr-only"> (otwiera się w nowej karcie)</span>
-                        </a>
-                    </div>
+                @if ($img && $articleLayout !== 'none')
+                    <img src="{{ $img }}" alt="{{ $imgAlt }}" data-lightbox class="mb-8 aspect-[16/10] w-full max-w-md rounded-lg object-cover">
+                @endif
 
-                    @if ($news->tags->isNotEmpty())
-                        <div>
-                            <p class="mb-2 text-xs font-bold uppercase tracking-widest text-muted">Tagi</p>
-                            <ul class="flex flex-wrap gap-2" role="list">
-                                @foreach ($news->tags as $tag)
-                                    <li class="rounded-md bg-gray-100 px-3 py-1 text-sm font-medium text-ink">{{ $tag->name }}</li>
-                                @endforeach
-                            </ul>
-                        </div>
-                    @endif
-                </aside>
+                <div id="article-text" data-news-content class="news-feer-body prose prose-lg max-w-3xl text-ink">@shortcodes($news->content)</div>
+
+                @if ($news->tags->isNotEmpty())
+                    <ul class="mt-10 flex flex-wrap gap-2" role="list" aria-label="Tagi">
+                        @foreach ($news->tags as $tag)
+                            <li class="rounded-md bg-gray-100 px-3 py-1 text-sm font-medium text-ink">{{ $tag->name }}</li>
+                        @endforeach
+                    </ul>
+                @endif
+
+                @include('partials.attachments-list', ['attachments' => $news->attachments])
             </div>
+
+            {{-- Czytaj także --}}
+            @if (($related ?? collect())->isNotEmpty())
+                <section class="mt-16 print:hidden" aria-labelledby="related-heading">
+                    <h2 id="related-heading" class="mb-6 text-2xl font-bold text-ink">Czytaj także</h2>
+                    <ul class="grid gap-6 sm:grid-cols-3" role="list">
+                        @foreach ($related as $item)
+                            <li>
+                                <article class="feer-card group relative flex h-full flex-col overflow-hidden rounded-lg bg-gray-50 hover:bg-gray-100 focus-within:ring-2 focus-within:ring-brand">
+                                    @if ($item->image_url)<img src="{{ $item->image_url }}" alt="" loading="lazy" class="aspect-[16/10] w-full object-cover">@endif
+                                    <div class="flex flex-1 flex-col p-5">
+                                        <p class="text-xs font-bold uppercase tracking-widest text-brand-dark">{{ $item->category?->name ?? 'Aktualności' }}<span class="font-medium text-muted"> · {{ $item->published_at->format('d.m.Y') }}</span></p>
+                                        <h3 class="mt-2 text-lg font-bold leading-snug text-ink group-hover:text-brand-dark"><a href="{{ site_route('news.show', $item) }}" class="stretched-link focus-visible:outline-none">{{ $item->title }}</a></h3>
+                                    </div>
+                                </article>
+                            </li>
+                        @endforeach
+                    </ul>
+                </section>
+            @endif
         </div>
     </section>
 
