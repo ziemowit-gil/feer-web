@@ -206,13 +206,13 @@
 
         @if (count($activeAboutSections) > 1)
         @php $feerAboutNav = ($siteSettings->site_template ?? 'default') === 'feer'; @endphp
-        {{-- FEER: menu sekcji jako tekstowy pasek z grubym wskaźnikiem aktywnej sekcji (bez pigułek i linii); pozostałe szablony — pigułki. --}}
-        <nav aria-label="Sekcje na stronie" class="sticky top-0 z-20 {{ $feerAboutNav ? 'bg-white' : 'border-b border-gray-200 bg-white/95 backdrop-blur-sm' }}">
-            <div class="mx-auto flex max-w-6xl overflow-x-auto px-4 {{ $feerAboutNav ? 'gap-7 pt-1' : 'gap-1 py-2' }}" style="scrollbar-width:none">
+        {{-- FEER: menu sekcji jako wyraźne kwadratowe przyciski (jasnoszare, aktywny ciemny z białym tekstem 16,9:1 — jak kategorie aktualności); pozostałe szablony — pigułki. --}}
+        <nav aria-label="Sekcje na stronie" class="sticky top-0 z-20 {{ $feerAboutNav ? 'bg-white py-3' : 'border-b border-gray-200 bg-white/95 backdrop-blur-sm' }}">
+            <div class="mx-auto flex max-w-6xl overflow-x-auto px-4 {{ $feerAboutNav ? 'gap-2' : 'gap-1 py-2' }}" style="scrollbar-width:none">
                 @foreach ($activeAboutSections as $navKey => $navLabel)
                     <a href="#sekcja-{{ $navKey }}"
                        data-about-nav="{{ $navKey }}"
-                       class="shrink-0 transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand {{ $feerAboutNav ? 'border-b-4 border-transparent py-4 text-base font-bold uppercase tracking-wide text-muted hover:text-ink' : 'rounded-full px-4 py-1.5 text-sm font-medium text-muted hover:bg-gray-100 hover:text-ink' }}">
+                       class="shrink-0 transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand {{ $feerAboutNav ? 'inline-flex min-h-11 items-center rounded-md bg-gray-100 px-4 text-base font-bold text-ink hover:bg-gray-200' : 'rounded-full px-4 py-1.5 text-sm font-medium text-muted hover:bg-gray-100 hover:text-ink' }}">
                         {{ $navLabel }}
                     </a>
                 @endforeach
@@ -230,10 +230,12 @@
                 links.forEach(function (a) {
                     var on = a.dataset.aboutNav === key;
                     if (flat) {
-                        a.classList.toggle('border-ink', on);
-                        a.classList.toggle('text-ink', on);
-                        a.classList.toggle('border-transparent', !on);
-                        a.classList.toggle('text-muted', !on);
+                        a.classList.toggle('bg-ink', on);
+                        a.classList.toggle('text-white', on);
+                        a.classList.toggle('bg-gray-100', !on);
+                        a.classList.toggle('text-ink', !on);
+                        a.classList.toggle('hover:bg-gray-200', !on);
+                        if (on) { a.setAttribute('aria-current', 'true'); } else { a.removeAttribute('aria-current'); }
                         return;
                     }
                     a.classList.toggle('bg-brand/10', on);
