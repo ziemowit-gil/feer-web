@@ -214,7 +214,20 @@
 
         @include('partials.mobile-nav-toggle', ['panelId' => 'main-nav-panel', 'onBrand' => $inlineOnBrand, 'hideAt' => 'lg'])
 
-        @php $feerMaterials = ($siteSettings->site_template ?? 'default') === 'feer' && $siteSettings->isModuleEnabled('materials'); @endphp
+        @php
+            $feerMaterials = ($siteSettings->site_template ?? 'default') === 'feer' && $siteSettings->isModuleEnabled('materials');
+            // Szablon FEER: dwa rzędy — u góry logo i przycisk, pod spodem menu na pełną szerokość (więcej miejsca na pozycje).
+            $feerTwoRows = ($siteSettings->site_template ?? 'default') === 'feer' && $headerLayout !== 'brand_bar';
+        @endphp
+        @if ($feerTwoRows)
+            @if ($feerMaterials)
+                <a href="{{ site_route('materials.index') }}"
+                   class="hidden min-h-11 flex-none items-center gap-2 rounded-md bg-ink px-5 text-sm font-bold text-white transition hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2 lg:inline-flex">
+                    <i class="fa-solid fa-book-open" aria-hidden="true"></i>
+                    Materiały edukacyjne
+                </a>
+            @endif
+        @else
         @unless ($headerLayout === 'brand_bar')
             <div class="hidden items-center gap-6 lg:flex xl:gap-8">
                 <nav aria-label="Menu główne">
@@ -229,7 +242,16 @@
                 @endif
             </div>
         @endunless
+        @endif
     </div>
+
+    @if ($feerTwoRows)
+        <nav aria-label="Menu główne" class="relative hidden border-y border-gray-200 bg-white lg:block">
+            <div class="mx-auto max-w-6xl px-4">
+                @include('partials.main-nav-items', ['onBrand' => false, 'navDarkText' => false])
+            </div>
+        </nav>
+    @endif
 
     @if ($headerLayout === 'brand_bar')
         <nav aria-label="Menu główne" class="relative hidden bg-brand lg:block">
