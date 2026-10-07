@@ -47,22 +47,22 @@
     .about-feer #sekcja-stats { background-color: var(--color-brand-light); }
     section[aria-labelledby="stats-heading"], section[aria-labelledby="methods-heading"] { background-color: var(--color-brand-light); }
 
-    /* Delikatne efekty tła po bokach (szerokie ekrany): płaskie, bez poświaty i gradientów — dwa cienkie niebieskie okręgi i
+    /* Delikatne efekty tła po bokach (tylko ≥ 1600 px, gdy są wolne marginesy — nie zachodzą na treść): płaskie, bez poświaty i gradientów — dwa cienkie niebieskie okręgi i
        pomarańczowa kropka przy lewej krawędzi oraz siatka kropek przy prawej, z bardzo wolnym unoszeniem (tylko bez „ogranicz ruch").
        Czysto dekoracyjne — leżą za treścią (z-index -1), nie przechwytują kliknięć, nie zmieniają kontrastu tekstu;
        wyłączone w trybie wymuszonych kolorów i przy wydruku. */
-    @media (min-width: 1100px) {
+    @media (min-width: 1600px) {
         body::before {
             content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none;
             background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='520' height='520' viewBox='0 0 520 520' fill='none'%3E%3Ccircle cx='140' cy='260' r='220' stroke='%231e6dff' stroke-opacity='.10' stroke-width='2'/%3E%3Ccircle cx='140' cy='260' r='150' stroke='%231e6dff' stroke-opacity='.07' stroke-width='2'/%3E%3Ccircle cx='330' cy='120' r='7' fill='%23ea8f00' fill-opacity='.35'/%3E%3C/svg%3E"), url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cdefs%3E%3Cpattern id='d' width='22' height='22' patternUnits='userSpaceOnUse'%3E%3Ccircle cx='3' cy='3' r='2' fill='%231e6dff' fill-opacity='.16'/%3E%3C/pattern%3E%3C/defs%3E%3Crect width='220' height='220' fill='url%28%23d%29'/%3E%3C/svg%3E");
             background-repeat: no-repeat, no-repeat;
-            background-position: -240px 18%, calc(100% - 24px) 70%;
+            background-position: -200px 18%, calc(100% + 20px) 70%;
         }
     }
-    @media (min-width: 1100px) and (prefers-reduced-motion: no-preference) {
+    @media (min-width: 1600px) and (prefers-reduced-motion: no-preference) {
         @keyframes feer-bg-drift {
-            from { background-position: -240px 18%, calc(100% - 24px) 70%; }
-            to   { background-position: -240px 22%, calc(100% - 24px) 66%; }
+            from { background-position: -200px 18%, calc(100% + 20px) 70%; }
+            to   { background-position: -200px 22%, calc(100% + 20px) 66%; }
         }
         body::before { animation: feer-bg-drift 18s ease-in-out infinite alternate; }
     }
@@ -81,10 +81,10 @@
 
     /* Tytuły stron (H1 „hero”): spokojniejsze, bez wielkiego szarego pasa — rozmiar jak nagłówki sekcji, niebieski akcent pod spodem,
        białe tło i mniejsze odstępy. Jedna reguła dla wszystkich podstron FEER (okruszki płynnie przechodzą w tytuł). */
-    h1[class*="md:text-5xl"][class*="text-ink"] { font-size: 1.875rem; line-height: 1.2; font-weight: 700; letter-spacing: 0; }
-    h1[class*="md:text-5xl"][class*="text-ink"]::after { content: ""; display: block; width: 3.5rem; height: 4px; margin-top: .75rem; background: var(--color-brand); }
-    :is(section, header).bg-gray-50:has(h1[class*="md:text-5xl"][class*="text-ink"]), :is(section, header).bg-white:has(h1[class*="md:text-5xl"][class*="text-ink"]) { background-color: transparent; border-bottom-width: 0; }
-    div:has(> h1[class*="md:text-5xl"][class*="text-ink"]) { padding-top: 2rem; padding-bottom: 1.5rem; }
+    h1[class*="text-5xl"][class*="text-ink"] { font-size: 1.875rem; line-height: 1.2; font-weight: 700; letter-spacing: 0; }
+    h1[class*="text-5xl"][class*="text-ink"]::after { content: ""; display: block; width: 3.5rem; height: 4px; margin-top: .75rem; background: var(--color-brand); }
+    :is(section, header).bg-gray-50:has(h1[class*="text-5xl"][class*="text-ink"]), :is(section, header).bg-white:has(h1[class*="text-5xl"][class*="text-ink"]) { background-color: transparent; border-bottom-width: 0; }
+    div:has(> h1[class*="text-5xl"][class*="text-ink"]), div:has(> div > h1[class*="text-5xl"][class*="text-ink"]) { padding-top: 2rem; padding-bottom: 1.5rem; }
 
     /* Delikatne animacje (≤ 0,5 s, bez przesuwania układu): płynne pojawienie się treści, wydłużanie niebieskiego akcentu
        pod tytułem, lekkie uniesienie przycisków i płynna zmiana koloru linków menu. Wyłączone przy „ogranicz ruch". */
@@ -93,7 +93,7 @@
         @keyframes feer-bar-grow { from { width: 0; } to { width: 3.5rem; } }
         main { animation: feer-fade-in .4s ease-out both; }
         nav[aria-label="Ścieżka nawigacyjna"] { animation: feer-fade-in .5s ease-out both; }
-        h1[class*="md:text-5xl"][class*="text-ink"]::after { animation: feer-bar-grow .6s .15s ease-out both; }
+        h1[class*="text-5xl"][class*="text-ink"]::after { animation: feer-bar-grow .6s .15s ease-out both; }
         .site-header nav a, .site-header nav button { transition: color .2s ease, background-color .2s ease; }
         a.bg-brand, a.bg-ink, button.bg-brand { transition: transform .2s ease, background-color .2s ease; }
         a.bg-brand:hover, a.bg-ink:hover, button.bg-brand:hover { transform: translateY(-1px); }
