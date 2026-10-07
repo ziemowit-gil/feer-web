@@ -409,7 +409,7 @@ class PageController extends Controller
             ? $this->personSlug($data['title'], $data['parent_id'] ?? null)
             : $this->uniqueSlug($data['slug'] !== '' ? $data['slug'] : $data['title']);
 
-        $page = Page::create($data);
+        $page = Page::create($this->withoutMissingColumns($data));
         $notice = $this->saveContactSettings($request, $page);
 
         if ($page->isAbout() && $request->has('team')) {
@@ -421,6 +421,18 @@ class PageController extends Controller
         return redirect()->route($route)
             ->with('status', $page->isAboutPerson() ? 'Osoba „' . $page->title . '” została dodana.' : 'Strona „' . $page->title . '” została utworzona.' . $notice)
             ->with('reload_url', $page->publicUrl());
+    }
+
+    /** Do czasu migracji (nowe kolumny) zapis strony nie może padać — pomijamy kolumny, których jeszcze nie ma w bazie. */
+    private function withoutMissingColumns(array $data): array
+    {
+        foreach (['about_sections_hidden'] as $column) {
+            if (array_key_exists($column, $data) && ! \Illuminate\Support\Facades\Schema::hasColumn('pages', $column)) {
+                unset($data[$column]);
+            }
+        }
+
+        return $data;
     }
 
     /** Strona typu „Kontakt” zapisuje swoje opcje w ustawieniach witryny; zwraca komunikat o powiadomieniu (jeśli było). */
@@ -471,7 +483,7 @@ class PageController extends Controller
             $data['slug'] = $this->uniqueSlug($data['slug'] !== '' ? $data['slug'] : $data['title'], $page->id);
         }
 
-        $page->update($data);
+        $page->update($this->withoutMissingColumns($data));
         $notice = $this->saveContactSettings($request, $page);
 
         if ($page->isAbout() && $request->has('team')) {

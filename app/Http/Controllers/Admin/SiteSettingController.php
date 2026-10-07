@@ -516,6 +516,11 @@ class SiteSettingController extends Controller
         unset($data['vm_header_badge'], $data['remove_vm_header_badge'], $data['vm_knowledge_image'], $data['remove_vm_knowledge_image']);
         unset($data['logo'], $data['remove_logo'], $data['og_image'], $data['remove_og_image'], $data['support_image'], $data['remove_support_image'], $data['support_gallery'], $data['remove_support_gallery'], $data['news_default_image'], $data['remove_news_default_image'], $data['bip_logo'], $data['remove_bip_logo'], $data['enabled_modules'], $data['section_order_json'], $data['homepage_sections_enabled']);
 
+        // Do czasu wykonania migracji (nowa kolumna) zapis ustawień nie może padać — pomijamy brakującą kolumnę.
+        if (! \Illuminate\Support\Facades\Schema::hasColumn('site_settings', 'homepage_sections_hidden')) {
+            unset($data['homepage_sections_hidden']);
+        }
+
         $colorWasAdjusted = ! $skipContrast && $data['brand_color'] !== $request->input('brand_color');
 
         $settings->update($data);
