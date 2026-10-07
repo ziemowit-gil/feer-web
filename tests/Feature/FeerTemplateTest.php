@@ -495,4 +495,18 @@ class FeerTemplateTest extends TestCase
         \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();
         $this->get('/')->assertOk()->assertDontSee('body::before', false);
     }
+
+    public function test_naglowek_ma_drugi_przycisk_obok_pierwszego_i_w_menu_mobilnym(): void
+    {
+        SiteSetting::current()->update([
+            'site_template' => 'feer', 'header_layout' => 'wide_mission',
+            'wide_mission_cta_label' => 'Materiały', 'wide_mission_cta_url' => '/materialy',
+            'wide_mission_cta2_label' => 'Wolontariat', 'wide_mission_cta2_url' => '/wolontariat',
+        ]);
+        \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();
+
+        $html = $this->get('/')->assertOk()->getContent();
+        $this->assertSame(2, substr_count($html, '>Wolontariat</a>'), 'pasek nagłówka + panel mobilny');
+        $this->assertStringContainsString('!border-brand', $html);
+    }
 }

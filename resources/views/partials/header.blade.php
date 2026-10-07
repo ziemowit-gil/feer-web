@@ -26,6 +26,9 @@
     $wmCtaLabel = trim($siteSettings->wide_mission_cta_label ?? '');
     $wmCtaUrl   = trim($siteSettings->wide_mission_cta_url ?? '');
     $wmHasCta   = $wmCtaLabel !== '' && $wmCtaUrl !== '';
+    $wmCta2Label = trim($siteSettings->wide_mission_cta2_label ?? '');
+    $wmCta2Url   = trim($siteSettings->wide_mission_cta2_url ?? '');
+    $wmHasCta2   = $wmCta2Label !== '' && $wmCta2Url !== '';
 
     $wmMission = null;
     if ($siteSettings->wide_mission_show_mission) {
@@ -96,7 +99,7 @@
 
             {{-- Prawa kolumna (≥ md): wybrane social + CTA, a w układzie „right" pod nimi konto i „Wesprzyj" --}}
             <div class="hidden flex-none flex-col items-end gap-1 md:flex">
-                @if ($wmSocials || $wmHasCta)
+                @if ($wmSocials || $wmHasCta || $wmHasCta2)
                     <div class="flex items-center gap-2">
                         @if ($wmSocials)
                             <ul class="flex items-center" aria-label="Media społecznościowe">
@@ -113,6 +116,10 @@
                         @endif
                         @if ($wmHasCta)
                             <a href="{{ $wmCtaUrl }}" class="{{ $ctaClass }}">{{ $wmCtaLabel }}</a>
+                        @endif
+                        @if ($wmHasCta2)
+                            {{-- Drugi przycisk: wariant drugorzędny (obrys marki, tło białe) — wyraźny, ale nie konkuruje z pierwszym. --}}
+                            <a href="{{ $wmCta2Url }}" class="{{ $ctaClass }} !border-2 !border-brand !bg-white !text-brand-dark hover:!bg-brand-light">{{ $wmCta2Label }}</a>
                         @endif
                     </div>
                 @endif
@@ -169,6 +176,7 @@
     @include('partials.mobile-nav-panel', [
         'panelId' => 'main-nav-panel', 'hideAt' => 'lg',
         'cta' => $wmHasCta ? ['label' => $wmCtaLabel, 'url' => $wmCtaUrl] : null,
+        'cta2' => $wmHasCta2 ? ['label' => $wmCta2Label, 'url' => $wmCta2Url] : null,
         'showSupport' => true, 'socials' => $socials,
     ])
 </div>

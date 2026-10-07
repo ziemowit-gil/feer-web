@@ -542,6 +542,32 @@
                         class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
                     <p class="mt-1 text-xs text-muted">Przycisk pojawi się obok ikon social media w górnym pasku nagłówka.</p>
                 </div>
+
+                <div class="grid gap-4 sm:grid-cols-2">
+                    <div>
+                        <label for="wide_mission_cta2_label" class="mb-1 block text-sm font-bold">
+                            Etykieta drugiego przycisku
+                            <span class="font-normal text-muted">(opcjonalnie)</span>
+                        </label>
+                        <input type="text" id="wide_mission_cta2_label" name="wide_mission_cta2_label"
+                            value="{{ old('wide_mission_cta2_label', $settings->wide_mission_cta2_label) }}"
+                            placeholder="np. Wolontariat" maxlength="80"
+                            class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                        @error('wide_mission_cta2_label') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </div>
+                    <div>
+                        <label for="wide_mission_cta2_url" class="mb-1 block text-sm font-bold">
+                            Link drugiego przycisku
+                            <span class="font-normal text-muted">(opcjonalnie)</span>
+                        </label>
+                        <input type="text" id="wide_mission_cta2_url" name="wide_mission_cta2_url"
+                            value="{{ old('wide_mission_cta2_url', $settings->wide_mission_cta2_url) }}"
+                            placeholder="https://… lub /wolontariat"
+                            class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                        @error('wide_mission_cta2_url') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </div>
+                    <p class="text-xs text-muted sm:col-span-2">Drugi przycisk ma wygląd drugorzędny (obrys) i stoi obok pierwszego; pojawia się też w menu na telefonie. Podaj etykietę i link razem.</p>
+                </div>
                 </div>
             </details>
         </div>

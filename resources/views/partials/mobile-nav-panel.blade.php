@@ -20,6 +20,7 @@
     $hideAt      = ($hideAt ?? 'lg') === 'md' ? 'md:hidden' : 'lg:hidden';
     $showSearch  = $showSearch ?? false;
     $cta         = $cta ?? null;
+    $cta2        = $cta2 ?? null;
     $showSupport = $showSupport ?? true;
     $socials     = $socials ?? [];
     $hasSupport  = $showSupport && (filled($siteSettings->bank_account_number) || \Illuminate\Support\Facades\Route::has('support.show'));
@@ -46,10 +47,13 @@
         @include('partials.main-nav-items', ['mobile' => true])
     </div>
 
-    @if ($cta || $hasSupport)
+    @if ($cta || $cta2 || $hasSupport)
         <div class="flex flex-col gap-3 border-t border-gray-100 px-4 py-4">
             @if ($cta)
                 <a href="{{ $cta['url'] }}" class="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full bg-brand px-5 text-sm font-bold text-white transition hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">{{ $cta['label'] }}</a>
+            @endif
+            @if ($cta2)
+                <a href="{{ $cta2['url'] }}" class="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full border-2 border-brand bg-white px-5 text-sm font-bold text-brand-dark transition hover:bg-brand-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">{{ $cta2['label'] }}</a>
             @endif
             @if ($hasSupport)
                 @include('partials.wide-support-line')
