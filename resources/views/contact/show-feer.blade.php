@@ -43,6 +43,7 @@
                     $tile = 'rounded-md bg-gray-50 p-5';
                     $dt = 'text-xs font-bold uppercase tracking-widest text-muted';
                     $link = 'font-bold text-brand-dark underline underline-offset-4 hover:no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand';
+                    $actionLink = 'inline-flex min-h-11 items-center gap-2 text-xl font-bold text-brand-dark hover:underline hover:underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand';
                 @endphp
                 <section aria-labelledby="dane-heading">
                     <h2 id="dane-heading" class="mb-5 text-2xl font-bold text-ink">{{ $siteSettings->site_name }}</h2>
@@ -65,12 +66,12 @@
                         @endif
                         <div class="{{ $tile }}">
                             <dt class="{{ $dt }}">E-mail</dt>
-                            <dd class="mt-2 break-all text-lg"><a href="mailto:{{ $siteSettings->contact_email }}" class="{{ $link }}">{{ $siteSettings->contact_email }}</a></dd>
+                            <dd class="mt-2 text-lg"><a href="mailto:{{ $siteSettings->contact_email }}" class="{{ $actionLink }}"><i class="fa-solid fa-envelope shrink-0 text-base" aria-hidden="true"></i><span class="min-w-0 break-words">{{ $siteSettings->contact_email }}</span></a></dd>
                         </div>
                         @if ($siteSettings->contact_phone)
                             <div class="{{ $tile }}">
                                 <dt class="{{ $dt }}">Telefon</dt>
-                                <dd class="mt-2 text-lg"><a href="tel:{{ preg_replace('/\s+/', '', $siteSettings->contact_phone) }}" class="{{ $link }}">{{ $siteSettings->contact_phone }}</a></dd>
+                                <dd class="mt-2 text-lg"><a href="tel:{{ preg_replace('/\s+/', '', $siteSettings->contact_phone) }}" class="{{ $actionLink }}"><i class="fa-solid fa-phone shrink-0 text-base" aria-hidden="true"></i><span>{{ $siteSettings->contact_phone }}</span></a></dd>
                             </div>
                         @endif
                         @if ($siteSettings->contact_office_hours)
