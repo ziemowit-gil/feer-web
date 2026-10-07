@@ -16,7 +16,10 @@ class VolunteerController extends Controller
     /** Wyświetla listę aktywnych ogłoszeń wolontariackich. */
     public function index()
     {
-        return view('volunteer.index', [
+        // Szablon FEER ma własny układ listy ogłoszeń.
+        $view = \App\Models\SiteSetting::current()->site_template === 'feer' ? 'volunteer.index-feer' : 'volunteer.index';
+
+        return view($view, [
             'ads' => VolunteerAd::active()->get(),
         ]);
     }
@@ -27,6 +30,8 @@ class VolunteerController extends Controller
         // Nieopublikowane/przeterminowane ogłoszenia nie są publicznie dostępne.
         abort_unless($ad->is_published && ! $ad->isClosed(), 404);
 
-        return view('volunteer.show', compact('ad'));
+        $view = \App\Models\SiteSetting::current()->site_template === 'feer' ? 'volunteer.show-feer' : 'volunteer.show';
+
+        return view($view, compact('ad'));
     }
 }

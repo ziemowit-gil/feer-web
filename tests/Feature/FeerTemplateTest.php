@@ -447,4 +447,22 @@ class FeerTemplateTest extends TestCase
         $this->assertStringContainsString('#ngo-news-heading::after', $html);
         $this->assertStringContainsString('background-color: var(--color-brand-light)', $html);
     }
+
+    public function test_wolontariat_w_szablonie_feer_ma_plaskie_karty_i_karte_zgloszenia(): void
+    {
+        $ad = \App\Models\VolunteerAd::create([
+            'title' => 'Wolontariusz w Klubie Cyfrowym', 'slug' => 'klub-cyfrowy', 'lead' => 'Pomóż osobom starszym.',
+            'q_beneficiaries' => 'Osoby 60+.', 'q_tasks' => ['Prowadzenie spotkań'], 'q_mode' => 'stacjonarnie', 'q_location' => 'Nowy Sącz',
+            'q_schedule' => 'Wtorki 16:00', 'q_time_commitment' => '4 godziny tygodniowo', 'q_benefits' => ['Zaświadczenie'],
+            'q_how_to_apply' => 'Wypełnij formularz.', 'application_url' => 'https://forms.example.com/w', 'is_published' => true,
+        ]);
+        SiteSetting::current()->update(['site_template' => 'feer']);
+        \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();
+
+        $list = $this->get('/wolontariat')->assertOk()->assertSee('Wolontariusz w Klubie Cyfrowym')->getContent();
+        $this->assertStringContainsString('feer-card group relative', $list);
+
+        $show = $this->get(route('volunteer.show', $ad))->assertOk()->assertSee('4 godziny tygodniowo')->assertSee('Jak się zgłosić?')->getContent();
+        $this->assertStringContainsString('lg:grid-cols-[minmax(0,1fr)_22rem]', $show);
+    }
 }
