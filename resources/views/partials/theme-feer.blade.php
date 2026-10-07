@@ -80,11 +80,16 @@
     }
 
     /* Menu główne i podmenu: większe pozycje (czytelność i cele dotyku ≥ 44 px). */
-    nav .nav-pills > li > a, nav .nav-pills > li > button, nav .nav-pills > li > div.border-b-2 { font-size: 1.125rem; padding: .7rem 1.35rem; }
-    nav .nav-pills > li > div.border-b-2 > a, nav .nav-pills > li > div.border-b-2 > button { font-size: 1.125rem; }
+    nav .nav-pills > li > a, nav .nav-pills > li > button, nav .nav-pills > li > div.border-b-2 { font-size: 1.3125rem; padding: .7rem 1.35rem; }
+    nav .nav-pills > li > div.border-b-2 > a, nav .nav-pills > li > div.border-b-2 > button { font-size: 1.3125rem; }
     nav .nav-pills li > ul[role="list"] { min-width: 19rem; padding-top: .5rem; padding-bottom: .5rem; }
-    nav .nav-pills li > ul[role="list"] a, nav .nav-pills li > ul[role="list"] button { font-size: 1.0625rem; line-height: 1.35; padding: .8rem 1.35rem; min-height: 3rem; display: flex; align-items: center; }
-    .nav-mega-panel a { font-size: 1.0625rem; }
+    nav .nav-pills li > ul[role="list"] a, nav .nav-pills li > ul[role="list"] button { font-size: 1.25rem; line-height: 1.35; padding: .8rem 1.35rem; min-height: 3rem; display: flex; align-items: center; }
+    .nav-mega-panel a { font-size: 1.25rem; }
+    /* Menu w układzie z podkreśleniem (classic): pozycje główne o 3 px większe (18 → 21 px). */
+    .site-header nav > ul:not(.nav-pills) > li > a, .site-header nav > ul:not(.nav-pills) > li > button,
+    .site-header nav > ul:not(.nav-pills) > li > div > a, .site-header nav > ul:not(.nav-pills) > li > div > button,
+    .site-header nav > div > ul:not(.nav-pills) > li > a, .site-header nav > div > ul:not(.nav-pills) > li > button,
+    .site-header nav > div > ul:not(.nav-pills) > li > div > a, .site-header nav > div > ul:not(.nav-pills) > li > div > button { font-size: 1.3125rem; }
 
     /* Pasek górny (dostępność, konto, wyszukiwarka, BIP, social): jeden smukły, ciemny rząd — biały tekst na #1D1D1A (16,9:1). */
     .site-topbar-feer > div:first-child { padding-top: .125rem; padding-bottom: .125rem; }
