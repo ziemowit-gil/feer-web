@@ -28,6 +28,50 @@
         $faqItems = array_values((array) old('faq_items', $page->faq_items ?? []));
     @endphp
 
+    @unless ($isPersonForm)
+        {{-- Nagłówek formularza: tytuł, status, typ i adres strony — od razu widać, co się edytuje. --}}
+        <header class="mb-5 flex flex-wrap items-start justify-between gap-4">
+            <div class="min-w-0">
+                <p class="text-xs font-bold uppercase tracking-widest text-muted">{{ $page->exists ? 'Edycja strony' : 'Nowa strona' }}</p>
+                <h1 class="mt-1 truncate text-2xl font-bold text-ink">{{ $page->exists ? $page->title : 'Nowa strona' }}</h1>
+                @if ($page->exists)
+                    <p class="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted">
+                        <span class="inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-bold {{ $page->is_published ? 'bg-green-100 text-green-800' : 'bg-amber-100 text-amber-900' }}">
+                            <i class="fa-solid {{ $page->is_published ? 'fa-circle-check' : 'fa-pen' }}" aria-hidden="true"></i>{{ $page->is_published ? 'Opublikowana' : 'Szkic' }}
+                        </span>
+                        <span><i class="fa-solid {{ \App\Models\Page::TYPE_ICONS[$page->type] ?? 'fa-file-lines' }} mr-1" aria-hidden="true"></i>{{ trim(\Illuminate\Support\Str::before(\App\Models\Page::TYPES[$page->type] ?? 'Standardowa', ' (')) }}</span>
+                        <span class="font-mono text-xs">{{ $page->publicUrl() }}</span>
+                    </p>
+                @endif
+            </div>
+            <div class="flex flex-wrap items-center gap-2">
+                @if ($page->exists && $page->is_published)
+                    <a href="{{ $page->publicUrl() }}" target="_blank" rel="noopener" class="inline-flex min-h-10 items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 text-sm font-bold text-ink hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                        <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i>Zobacz stronę<span class="sr-only"> (otwiera się w nowej karcie)</span>
+                    </a>
+                @endif
+                <button type="submit" form="page-edit-form" class="inline-flex min-h-10 items-center gap-2 rounded-lg bg-brand px-5 text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
+                    <i class="fa-solid fa-floppy-disk" aria-hidden="true"></i>Zapisz
+                </button>
+            </div>
+        </header>
+    @endunless
+
+    <style>
+        /* Czytelniejszy formularz strony: większe pola i etykiety, więcej oddechu, zakładki jako pasek z linią pod aktywną. */
+        [data-page-form-tabs] [role="tablist"] { background: transparent; padding: 0; border-bottom: 2px solid #e5e7eb; border-radius: 0; gap: .25rem; margin-bottom: 1.5rem; }
+        [data-page-form-tabs] [data-ftab-btn] { border-radius: .5rem .5rem 0 0; padding: .75rem 1.1rem; font-size: .95rem; margin-bottom: -2px; border-bottom: 3px solid transparent; box-shadow: none !important; background: transparent !important; color: #4b5563; }
+        [data-page-form-tabs] [data-ftab-btn][aria-selected="true"] { border-bottom-color: var(--color-brand); color: #1a1a1a !important; background: #fff !important; }
+        [data-page-form-tabs] [data-ftab-btn]:hover { color: #1a1a1a; background: #f9fafb !important; }
+        [data-page-form-tabs] form > [data-ftab-panel] > div.rounded-lg, [data-page-form-tabs] form > [data-ftab-panel] div.space-y-5.rounded-lg { border-radius: .75rem; padding: 1.75rem; }
+        [data-page-form-tabs] form .space-y-5 > * + * { margin-top: 1.75rem; }
+        [data-page-form-tabs] form label.block.text-sm, [data-page-form-tabs] form label.mb-1.block { font-size: .95rem; color: #1a1a1a; margin-bottom: .4rem; }
+        [data-page-form-tabs] form input[type="text"], [data-page-form-tabs] form input[type="url"], [data-page-form-tabs] form input[type="number"],
+        [data-page-form-tabs] form input[type="date"], [data-page-form-tabs] form input[type="datetime-local"], [data-page-form-tabs] form select, [data-page-form-tabs] form textarea { font-size: .95rem; padding-top: .6rem; padding-bottom: .6rem; border-radius: .5rem; }
+        [data-page-form-tabs] form p.text-xs.text-muted { font-size: .8125rem; line-height: 1.45; }
+        [data-page-form-tabs] [data-main-form-actions] { position: sticky; bottom: 0; z-index: 20; margin-top: 1.5rem; padding: .85rem 1.25rem; background: rgba(255,255,255,.96); border-top: 1px solid #e5e7eb; border-radius: .75rem .75rem 0 0; }
+    </style>
+
     <div data-page-form-tabs>
         <div class="mb-6 flex flex-wrap items-center gap-1.5 rounded-xl bg-gray-100/70 p-1.5" role="tablist">
             <button type="button" data-ftab-btn="tresc" role="tab" aria-selected="true"
@@ -86,7 +130,7 @@
             @include('admin.partials.edit-lock', ['lockType' => 'page', 'lockId' => $page->id])
         @endif
 
-        <form method="POST" action="{{ $page->exists ? route('admin.podstrony.update', $page) : route('admin.podstrony.store') }}" enctype="multipart/form-data" class="space-y-6">
+        <form id="page-edit-form" method="POST" action="{{ $page->exists ? route('admin.podstrony.update', $page) : route('admin.podstrony.store') }}" enctype="multipart/form-data" class="space-y-6">
             @csrf
             @if ($page->exists) @method('PUT') @endif
 
