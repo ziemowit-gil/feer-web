@@ -709,4 +709,17 @@ class FeerTemplateTest extends TestCase
 
         $this->get('/')->assertOk()->assertSee('id="ankieta"', false)->assertSee('Co dalej?')->assertSee('Głosuj');
     }
+
+    public function test_admin_widzi_link_zarzadzania_szybkimi_akcjami_w_szablonie_feer(): void
+    {
+        SiteSetting::current()->update(['site_template' => 'feer']);
+        \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();
+        \Illuminate\Support\Facades\Cache::flush();
+        \App\Models\QuickAction::create(['label' => 'Panel', 'url' => '/p', 'icon' => 'bi-person', 'order' => 1]);
+
+        $this->get('/')->assertOk()->assertDontSee('Zarządzaj skrótami');
+        $admin = \App\Models\User::factory()->create(['role' => 'admin']);
+        $this->actingAs($admin)->get('/')->assertOk()->assertSee('Zarządzaj skrótami');
+        $this->actingAs($admin)->get(route('admin.szybkie-akcje.create'))->assertOk()->assertSee('Niebieski FEER');
+    }
 }

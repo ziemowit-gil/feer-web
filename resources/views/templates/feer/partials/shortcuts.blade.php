@@ -33,7 +33,14 @@
         <div class="mx-auto max-w-6xl px-4 {{ ($hasLinks && $poll) ? 'grid gap-10 lg:grid-cols-[minmax(0,1fr)_22rem]' : '' }}">
           @if ($hasLinks)
           <div class="min-w-0">
-            <h2 id="feer-shortcuts-heading" class="mb-6 text-2xl font-bold text-ink md:text-3xl">Na skróty</h2>
+            <div class="mb-6 flex items-end justify-between gap-4">
+                <h2 id="feer-shortcuts-heading" class="text-2xl font-bold text-ink md:text-3xl">Na skróty</h2>
+                @if (auth()->check() && auth()->user()->isAdmin())
+                    <a href="{{ route('admin.szybkie-akcje.index') }}" class="shrink-0 inline-flex min-h-9 items-center gap-1.5 text-sm font-bold text-ink underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                        <i class="fa-solid fa-gear" aria-hidden="true"></i>Zarządzaj skrótami
+                    </a>
+                @endif
+            </div>
 
             <nav aria-label="Na skróty">
                 <ul class="grid gap-4 {{ $qaCols }}" role="list">

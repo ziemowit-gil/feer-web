@@ -40,7 +40,8 @@
         <div>
             @php $qaColor = old('color', $quickAction->color); @endphp
             <label class="mb-1 block text-sm font-bold">Kolor akcentu <span class="font-normal text-muted">(opcjonalnie)</span></label>
-            <div class="flex items-center gap-3" x-data="{ color: '{{ $qaColor ?: '#2563eb' }}', enabled: {{ $qaColor ? 'true' : 'false' }} }">
+            <div x-data="{ color: '{{ $qaColor ?: '#2563eb' }}', enabled: {{ $qaColor ? 'true' : 'false' }} }">
+            <div class="flex items-center gap-3">
                 <input type="hidden" name="color" :value="enabled ? color : ''">
                 <input type="color" x-model="color" :disabled="!enabled" aria-label="Wybierz kolor akcentu"
                     class="h-10 w-14 flex-none cursor-pointer rounded border border-gray-300 disabled:opacity-40">
@@ -51,6 +52,17 @@
                     <input type="checkbox" x-model="enabled" class="rounded border-gray-300 text-brand focus:ring-brand">
                     Własny kolor
                 </label>
+            </div>
+            {{-- Paleta brandbooka FEER — jedno kliknięcie ustawia kolor i włącza „Własny kolor". --}}
+            <div class="mt-2 flex flex-wrap items-center gap-2" role="group" aria-label="Kolory z brandbooka">
+                @foreach (['#1e6dff' => 'Niebieski FEER', '#1d1d1a' => 'Grafit', '#ea8f00' => 'Pomarańcz', '#cbd5e7' => 'Jasnoniebieski'] as $hex => $name)
+                    <button type="button" title="{{ $name }}"
+                        @click="color = '{{ $hex }}'; enabled = true"
+                        class="flex h-8 items-center gap-2 rounded border border-gray-200 bg-white px-2 text-xs font-bold text-ink hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                        <span class="h-4 w-4 rounded-sm border border-gray-300" style="background: {{ $hex }}" aria-hidden="true"></span>{{ $name }}
+                    </button>
+                @endforeach
+            </div>
             </div>
             <p class="mt-1 text-xs text-muted">Kolor ikony i obramowania kafelka. Puste = kolor marki.</p>
             @error('color') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
