@@ -59,10 +59,12 @@
 
     <style>
         /* Czytelniejszy formularz strony: większe pola i etykiety, więcej oddechu, zakładki jako pasek z linią pod aktywną. */
-        [data-page-form-tabs] [role="tablist"] { background: transparent; padding: 0; border-bottom: 2px solid #e5e7eb; border-radius: 0; gap: .25rem; margin-bottom: 1.5rem; }
-        [data-page-form-tabs] [data-ftab-btn] { border-radius: .5rem .5rem 0 0; padding: .75rem 1.1rem; font-size: .95rem; margin-bottom: -2px; border-bottom: 3px solid transparent; box-shadow: none !important; background: transparent !important; color: #4b5563; }
-        [data-page-form-tabs] [data-ftab-btn][aria-selected="true"] { border-bottom-color: var(--color-brand); color: #1a1a1a !important; background: #fff !important; }
-        [data-page-form-tabs] [data-ftab-btn]:hover { color: #1a1a1a; background: #f9fafb !important; }
+        /* Zakładki jak w formularzu projektu: pigułki — aktywna w kolorze marki z białym tekstem, pozostałe jasnoszare. */
+        [data-page-form-tabs] [role="tablist"] { background: transparent; padding: 0; border: 0; border-radius: 0; gap: .5rem; margin-bottom: 1.5rem; }
+        [data-page-form-tabs] [data-ftab-btn] { border-radius: .375rem; padding: .5rem 1rem; font-size: .875rem; font-weight: 700; margin: 0; border: 0; box-shadow: none !important; background: #f3f4f6 !important; color: #1a1a1a !important; transition: background-color .15s; }
+        [data-page-form-tabs] [data-ftab-btn]:hover { background: #e5e7eb !important; }
+        [data-page-form-tabs] [data-ftab-btn][aria-selected="true"] { background: var(--color-brand) !important; color: #fff !important; }
+        [data-page-form-tabs] [data-ftab-btn]:focus-visible { outline: 2px solid var(--color-brand); outline-offset: 2px; }
         [data-page-form-tabs] form > [data-ftab-panel] > div.rounded-lg, [data-page-form-tabs] form > [data-ftab-panel] div.space-y-5.rounded-lg { border-radius: .75rem; padding: 1.75rem; }
         [data-page-form-tabs] form .space-y-5 > * + * { margin-top: 1.75rem; }
         [data-page-form-tabs] form label.block.text-sm, [data-page-form-tabs] form label.mb-1.block { font-size: .95rem; color: #1a1a1a; margin-bottom: .4rem; }
