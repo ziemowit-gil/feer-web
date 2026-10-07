@@ -29,6 +29,11 @@ class ProjectController extends Controller
             return view('templates.federation.projects-index', compact('categories', 'hasArchive'));
         }
 
+        // Szablon FEER ma własny układ listy projektów (nawigacja kategorii + wiersze).
+        if (SiteSetting::current()->site_template === 'feer') {
+            return view('projects.index-feer', compact('categories', 'hasArchive'));
+        }
+
         return view('projects.index', compact('categories', 'hasArchive'));
     }
 

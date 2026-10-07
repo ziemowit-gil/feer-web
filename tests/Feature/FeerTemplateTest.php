@@ -269,4 +269,20 @@ class FeerTemplateTest extends TestCase
         $this->assertStringContainsString('<details class="mt-2">', $html);
         $this->assertMatchesRegularExpression('/<p class="leading-relaxed">Opłaty za szkolenia firm[^<]*7932\.<\/p>/u', $html);
     }
+
+    public function test_lista_projektow_feer_ma_nawigacje_kategorii_i_wiersze_bez_ramek(): void
+    {
+        $category = \App\Models\Category::create(['name' => 'Dla NGO', 'slug' => 'dla-ngo']);
+        \App\Models\Project::create(['title' => 'Wsparcie IT', 'slug' => 'wsparcie-it', 'excerpt' => 'Pomagamy', 'is_published' => true, 'category_id' => $category->id]);
+        SiteSetting::current()->update(['site_template' => 'feer']);
+        \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();
+
+        $html = $this->get('/projekty')->assertOk()->assertSee('Wsparcie IT')->assertSee('Kategorie projektów')->getContent();
+        $this->assertStringContainsString('lg:grid-cols-[14rem_minmax(0,1fr)]', $html);
+        $this->assertStringNotContainsString('role="tablist"', $html);
+
+        SiteSetting::current()->update(['site_template' => 'ngo_mix']);
+        \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();
+        $this->get('/projekty')->assertOk()->assertDontSee('lg:grid-cols-[14rem_minmax(0,1fr)]', false);
+    }
 }
