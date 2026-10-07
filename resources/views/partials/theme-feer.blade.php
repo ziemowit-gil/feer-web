@@ -47,14 +47,14 @@
     .about-feer #sekcja-stats { background-color: var(--color-brand-light); }
     section[aria-labelledby="stats-heading"], section[aria-labelledby="methods-heading"] { background-color: var(--color-brand-light); }
 
-    /* Delikatne efekty tła po bokach (tylko ≥ 1600 px, gdy są wolne marginesy — nie zachodzą na treść): płaskie, bez poświaty i gradientów — dwa cienkie niebieskie okręgi i
-       pomarańczowa kropka przy lewej krawędzi oraz siatka kropek przy prawej, z bardzo wolnym unoszeniem (tylko bez „ogranicz ruch").
+    /* Delikatne efekty tła po bokach (tylko ≥ 1600 px, gdy są wolne marginesy — nie zachodzą na treść): płaskie, bez poświaty i gradientów — dwa cienkie, lekko obrócone kwadraty (niebieski i grafitowy)
+       i pomarańczowy znaczek przy lewej krawędzi oraz siatka kropek przy prawej, z bardzo wolnym unoszeniem (tylko bez „ogranicz ruch").
        Czysto dekoracyjne — leżą za treścią (z-index -1), nie przechwytują kliknięć, nie zmieniają kontrastu tekstu;
        wyłączone w trybie wymuszonych kolorów i przy wydruku. */
     @media (min-width: 1600px) {
         body::before {
             content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='520' height='520' viewBox='0 0 520 520' fill='none'%3E%3Ccircle cx='140' cy='260' r='220' stroke='%231e6dff' stroke-opacity='.10' stroke-width='2'/%3E%3Ccircle cx='140' cy='260' r='150' stroke='%231e6dff' stroke-opacity='.07' stroke-width='2'/%3E%3Ccircle cx='330' cy='120' r='7' fill='%23ea8f00' fill-opacity='.35'/%3E%3C/svg%3E"), url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cdefs%3E%3Cpattern id='d' width='22' height='22' patternUnits='userSpaceOnUse'%3E%3Ccircle cx='3' cy='3' r='2' fill='%231e6dff' fill-opacity='.16'/%3E%3C/pattern%3E%3C/defs%3E%3Crect width='220' height='220' fill='url%28%23d%29'/%3E%3C/svg%3E");
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='520' height='520' viewBox='0 0 520 520' fill='none'%3E%3Crect x='60' y='140' width='150' height='150' stroke='%231e6dff' stroke-opacity='.10' stroke-width='2' transform='rotate%2818 135 215%29'/%3E%3Crect x='110' y='210' width='90' height='90' stroke='%231d1d1a' stroke-opacity='.07' stroke-width='2' transform='rotate%28-12 155 255%29'/%3E%3Crect x='230' y='90' width='14' height='14' fill='%23ea8f00' fill-opacity='.40' transform='rotate%2818 237 97%29'/%3E%3C/svg%3E"), url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cdefs%3E%3Cpattern id='d' width='22' height='22' patternUnits='userSpaceOnUse'%3E%3Ccircle cx='3' cy='3' r='2' fill='%231e6dff' fill-opacity='.16'/%3E%3C/pattern%3E%3C/defs%3E%3Crect width='220' height='220' fill='url%28%23d%29'/%3E%3C/svg%3E");
             background-repeat: no-repeat, no-repeat;
             background-position: -200px 18%, calc(100% + 20px) 70%;
         }
