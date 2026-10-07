@@ -465,4 +465,19 @@ class FeerTemplateTest extends TestCase
         $show = $this->get(route('volunteer.show', $ad))->assertOk()->assertSee('4 godziny tygodniowo')->assertSee('Jak się zgłosić?')->getContent();
         $this->assertStringContainsString('lg:grid-cols-[minmax(0,1fr)_22rem]', $show);
     }
+
+    public function test_podcasty_w_szablonie_feer_maja_wyrozniony_odcinek_i_wiersze(): void
+    {
+        foreach ([3 => 'Trzeci odcinek', 2 => 'Drugi odcinek', 1 => 'Pierwszy odcinek'] as $n => $title) {
+            \App\Models\Podcast::create(['title' => $title, 'slug' => 'odc-'.$n, 'description' => 'Opis '.$n, 'episode_number' => $n, 'is_published' => true, 'published_at' => now()->subDays(10 - $n)]);
+        }
+        SiteSetting::current()->update(['site_template' => 'feer']);
+        \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();
+
+        $list = $this->get('/podcasty')->assertOk()->assertSee('Najnowszy odcinek')->assertSee('Wcześniejsze odcinki')->assertSee('Pierwszy odcinek')->getContent();
+        $this->assertStringContainsString('feer-card group relative', $list);
+
+        $podcast = \App\Models\Podcast::where('slug', 'odc-3')->first();
+        $this->get(route('podcasts.show', $podcast))->assertOk()->assertSee('Trzeci odcinek')->assertSee('Wszystkie odcinki');
+    }
 }

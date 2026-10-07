@@ -13,7 +13,10 @@ class PodcastController extends Controller
     {
         $podcasts = Podcast::published()->latest('published_at')->paginate(12);
 
-        return view('podcasts.index', compact('podcasts'));
+        // Szablon FEER ma własny układ listy odcinków.
+        $view = \App\Models\SiteSetting::current()->site_template === 'feer' ? 'podcasts.index-feer' : 'podcasts.index';
+
+        return view($view, compact('podcasts'));
     }
 
     public function show(Podcast $podcast)
@@ -22,7 +25,9 @@ class PodcastController extends Controller
 
         $canPlay = $this->canAccess(request()->user(), $podcast);
 
-        return view('podcasts.show', compact('podcast', 'canPlay'));
+        $view = \App\Models\SiteSetting::current()->site_template === 'feer' ? 'podcasts.show-feer' : 'podcasts.show';
+
+        return view($view, compact('podcast', 'canPlay'));
     }
 
     public function stream(Request $request, Podcast $podcast): StreamedResponse
