@@ -1057,4 +1057,20 @@ class FeerTemplateTest extends TestCase
         $this->assertStringContainsString("url('https://example.test/s.jpg')", $grid);
         $this->assertStringContainsString('rgba(29,29,26,.62)', $grid);
     }
+
+    public function test_galeria_podstrony_w_feer_to_mozaika_z_podpisem_na_ciemnym_pasku(): void
+    {
+        $this->useFeer();
+        $page = \App\Models\Page::create(['title' => 'Z galerią', 'slug' => 'z-galeria', 'type' => 'standard', 'is_published' => true, 'show_gallery' => true, 'content' => '<p>Treść.</p>']);
+        foreach ([1, 2, 3] as $n) {
+            $img = \App\Models\PageImage::create(['page_id' => $page->id, 'alt' => 'Foto '.$n, 'caption' => 'Podpis '.$n, 'order' => $n]);
+            $img->addMedia(\Illuminate\Http\UploadedFile::fake()->image("f{$n}.jpg", 600, 400))->toMediaCollection('image');
+        }
+
+        $html = $this->get('/z-galeria')->assertOk()->getContent();
+        $this->assertStringContainsString('id="page-gallery-h"', $html);
+        $this->assertStringContainsString('col-span-2 row-span-2', $html);
+        $this->assertStringContainsString('rgba(29,29,26,.82)', $html);
+        $this->assertStringContainsString('Podpis 2', $html);
+    }
 }
