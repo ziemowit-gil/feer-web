@@ -785,4 +785,16 @@ class FeerTemplateTest extends TestCase
         $this->assertStringNotContainsString('bg-gray-50', $html);
         $this->assertStringContainsString('role="tablist"', $html);
     }
+
+    public function test_szablon_feer_ma_delikatne_ladowanie_obrazkow_i_wsuwanie_kart(): void
+    {
+        SiteSetting::current()->update(['site_template' => 'feer']);
+        \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();
+        \Illuminate\Support\Facades\Cache::flush();
+
+        $html = $this->get('/')->assertOk()->getContent();
+        $this->assertStringContainsString('feer-img-pending', $html);
+        $this->assertStringContainsString('feer-reveal', $html);
+        $this->assertStringContainsString('prefers-reduced-motion: reduce', $html);
+    }
 }

@@ -159,4 +159,46 @@
     .max-w-\[1400px\] { max-width: 72rem; }
     section.py-14 { padding-top: 3rem; padding-bottom: 3rem; }
     section[aria-labelledby="ngo-projects-heading"] { background-color: #fff; }
+
+    /* Delikatne ładnie-na-żądanie: obrazki ładowane z opóźnieniem pojawiają się płynnie (po załadowaniu), a karty poniżej
+       pierwszego ekranu lekko wsuwają się przy przewijaniu. Klasy dodaje skrypt poniżej tylko tam, gdzie to potrzebne —
+       bez JS albo przy „ogranicz ruch" wszystko jest widoczne od razu. */
+    @media (prefers-reduced-motion: no-preference) {
+        img.feer-img-pending { opacity: 0; }
+        img.feer-img-ready { opacity: 1; transition: opacity .45s ease; }
+        .feer-reveal { opacity: 0; transform: translateY(10px); }
+        .feer-reveal.is-in { opacity: 1; transform: none; transition: opacity .5s ease, transform .5s ease; }
+    }
 </style>
+<script>
+    (function () {
+        if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) { return; }
+        document.addEventListener('DOMContentLoaded', function () {
+            // 1) Obrazki z loading="lazy", które jeszcze się nie załadowały: ukryte do zdarzenia load/error.
+            document.querySelectorAll('img[loading="lazy"]').forEach(function (img) {
+                if (img.complete) { return; }
+                img.classList.add('feer-img-pending');
+                var done = function () { img.classList.remove('feer-img-pending'); img.classList.add('feer-img-ready'); };
+                img.addEventListener('load', done, { once: true });
+                img.addEventListener('error', done, { once: true });
+            });
+            // 2) Karty poniżej pierwszego ekranu: delikatne wsunięcie, a po animacji zdejmujemy klasy (wraca efekt unoszenia :hover).
+            if (!('IntersectionObserver' in window)) { return; }
+            var io = new IntersectionObserver(function (entries) {
+                entries.forEach(function (e) {
+                    if (!e.isIntersecting) { return; }
+                    var el = e.target;
+                    io.unobserve(el);
+                    el.classList.add('is-in');
+                    setTimeout(function () { el.classList.remove('feer-reveal', 'is-in'); }, 700);
+                });
+            }, { rootMargin: '0px 0px -8% 0px' });
+            document.querySelectorAll('main .feer-card').forEach(function (el) {
+                if (el.getBoundingClientRect().top > window.innerHeight) {
+                    el.classList.add('feer-reveal');
+                    io.observe(el);
+                }
+            });
+        });
+    })();
+</script>
