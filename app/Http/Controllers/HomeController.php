@@ -70,7 +70,10 @@ class HomeController extends Controller
 
         $quickLinks ??= collect();
 
-        return view($view, compact('slides', 'newsItems', 'projects', 'events', 'partners', 'quickLinks'));
+        // Ankieta (moduł polls) — szablon FEER pokazuje ją obok „Na skróty”.
+        $poll = $settings->isModuleEnabled('polls') ? Poll::active() : null;
+
+        return view($view, compact('slides', 'newsItems', 'projects', 'events', 'partners', 'quickLinks', 'poll'));
     }
 
     /** Renderuje stronę główną w szablonie "ngo_3" (hero, skróty, statystyki, newsy, projekty, wydarzenia, newsletter). */

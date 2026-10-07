@@ -4,7 +4,7 @@
       • akcja zwykła  → obramówka 2 px w kolorze akcji (domyślnie kolor FEER), białe tło, ciemny tekst,
       • akcja „Negatyw" (is_negative) → wypełnione tłem w kolorze akcji, tekst dobrany pod kontrast ≥ 4,5:1,
       • tło sekcji: białe, gdy włączono „Białe tło sekcji" (Ustawienia → Strona główna), w przeciwnym razie jasnoszare.
-    Obsługiwane: „Negatyw”, „Pasek” (niski kafel), „Kolumny” (szerokość 2–3 kolumn), „Białe tło sekcji”.
+    Ankieta (moduł polls) stoi obok kafli, gdy jest aktywna. Obsługiwane: „Negatyw”, „Pasek” (niski kafel), „Kolumny” (szerokość 2–3 kolumn), „Białe tło sekcji”.
     Kolor obramówki jest przyciemniany do kontrastu ≥ 4,5:1 na bieli (WCAG 1.4.11).
 --}}
 @php
@@ -27,9 +27,12 @@
         default => '',
     };
 @endphp
-@if (($quickLinks ?? collect())->isNotEmpty())
-    <section class="{{ $panelWhite ? 'bg-white' : 'bg-gray-50' }} py-10" aria-labelledby="feer-shortcuts-heading">
-        <div class="mx-auto max-w-6xl px-4">
+@php $poll ??= null; $hasLinks = ($quickLinks ?? collect())->isNotEmpty(); @endphp
+@if ($hasLinks || $poll)
+    <section class="{{ $panelWhite ? 'bg-white' : 'bg-gray-50' }} py-10" aria-labelledby="{{ $hasLinks ? 'feer-shortcuts-heading' : 'feer-poll-heading' }}">
+        <div class="mx-auto max-w-6xl px-4 {{ ($hasLinks && $poll) ? 'grid gap-10 lg:grid-cols-[minmax(0,1fr)_22rem]' : '' }}">
+          @if ($hasLinks)
+          <div class="min-w-0">
             <h2 id="feer-shortcuts-heading" class="mb-6 text-2xl font-bold text-ink md:text-3xl">Na skróty</h2>
 
             <nav aria-label="Na skróty">
@@ -63,6 +66,45 @@
                     @endforeach
                 </ul>
             </nav>
+          </div>
+          @endif
+
+          {{-- Ankieta (moduł polls): płaska karta z paskami wyników; po oddaniu głosu — procenty i podziękowanie. --}}
+          @if ($poll)
+              @php
+                  $votedOptionId = session("voted_polls.{$poll->id}");
+                  $totalVotes = $poll->totalVotes();
+              @endphp
+              <div id="ankieta" class="min-w-0">
+                  <h2 id="feer-poll-heading" class="mb-6 text-2xl font-bold text-ink md:text-3xl">Ankieta</h2>
+                  <form action="{{ route('polls.vote', $poll) }}" method="POST" class="rounded-md bg-white p-6" style="border: 2px solid #1d1d1a">
+                      @csrf
+                      <fieldset>
+                          <legend class="mb-4 text-lg font-bold leading-snug text-ink">{{ $poll->question }}</legend>
+                          <div class="space-y-3">
+                              @foreach ($poll->options as $i => $option)
+                                  <label class="block {{ $votedOptionId ? '' : 'cursor-pointer' }}">
+                                      <span class="flex items-center gap-2">
+                                          <input type="radio" name="option_id" value="{{ $option->id }}"
+                                              {{ $votedOptionId ? ($votedOptionId == $option->id ? 'checked' : 'disabled') : ($i === 0 ? 'checked' : '') }}
+                                              class="h-4 w-4 accent-brand">
+                                          <span class="text-sm font-medium text-ink">{{ $option->label }} ({{ $option->percent($totalVotes) }}%)</span>
+                                      </span>
+                                      <span class="mt-1 ml-6 block h-2 max-w-xs overflow-hidden bg-gray-200" aria-hidden="true">
+                                          <span class="block h-full bg-brand" style="width: {{ $option->percent($totalVotes) }}%"></span>
+                                      </span>
+                                  </label>
+                              @endforeach
+                          </div>
+                      </fieldset>
+                      @if ($votedOptionId)
+                          <p class="mt-4 text-sm font-bold text-ink">Dziękujemy za oddanie głosu.</p>
+                      @else
+                          <button type="submit" class="mt-5 inline-flex min-h-11 items-center rounded-md bg-brand px-6 text-sm font-bold text-white transition hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2">Głosuj</button>
+                      @endif
+                  </form>
+              </div>
+          @endif
         </div>
     </section>
 @endif

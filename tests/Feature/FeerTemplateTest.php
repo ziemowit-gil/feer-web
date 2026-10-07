@@ -686,4 +686,27 @@ class FeerTemplateTest extends TestCase
         $this->assertStringContainsString('rounded-md text-xl text-ink', $header);
         $this->assertStringContainsString('Facebook — otwiera się w nowej karcie', $header);
     }
+
+    public function test_strona_glowna_feer_ma_dla_admina_przycisk_edycji(): void
+    {
+        SiteSetting::current()->update(['site_template' => 'feer']);
+        \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();
+        \Illuminate\Support\Facades\Cache::flush();
+
+        $this->get('/')->assertOk()->assertDontSee('stronę główną</span>', false);
+
+        $admin = \App\Models\User::factory()->create(['role' => 'admin']);
+        $this->actingAs($admin)->get('/')->assertOk()->assertSee('stronę główną</span>', false);
+    }
+
+    public function test_strona_glowna_feer_pokazuje_ankiete_obok_szybkich_akcji(): void
+    {
+        SiteSetting::current()->update(['site_template' => 'feer']);
+        \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();
+        \Illuminate\Support\Facades\Cache::flush();
+        $poll = \App\Models\Poll::create(['question' => 'Co dalej?', 'is_active' => true]);
+        $poll->options()->create(['label' => 'Opcja A']);
+
+        $this->get('/')->assertOk()->assertSee('id="ankieta"', false)->assertSee('Co dalej?')->assertSee('Głosuj');
+    }
 }
