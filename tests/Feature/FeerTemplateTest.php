@@ -163,7 +163,8 @@ class FeerTemplateTest extends TestCase
 
         $html = $this->get('/')->assertOk()->assertSee('Wsparcie IT')->getContent();
         $this->assertStringContainsString('feer-shortcuts-heading', $html);
-        $this->assertStringContainsString('divide-y divide-gray-200', $html);
+        $this->assertStringNotContainsString('divide-y divide-gray-200', $html);
+        $this->assertStringNotContainsString('border border-gray-200 bg-white', $html);
     }
 
     public function test_pasek_gorny_feer_laczy_konto_i_wesprzyj_w_ciemnym_rzedzie(): void

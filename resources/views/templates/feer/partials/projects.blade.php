@@ -1,7 +1,7 @@
 {{--
     Szablon FEER — „Nasze projekty": widok listy (wiersze), inny niż karty na liście projektów.
     Każdy wiersz: kolor akcentu po lewej, kategoria, tytuł, zajawka i strzałka; miniatura zdjęcia, gdy jest.
-    Cały wiersz jest linkiem; tekst ciemny na białym (kontrast ≥ 4,5:1).
+    Cały wiersz jest linkiem; bez ramek i kresek — białe wiersze na jasnoszarym tle sekcji; tekst ciemny (kontrast ≥ 4,5:1).
 --}}
 @if ($projects->isNotEmpty())
 <section class="bg-gray-50 py-12" aria-labelledby="ngo-projects-heading">
@@ -12,7 +12,7 @@
                aria-label="Wszystkie projekty">Wszystkie projekty →</a>
         </div>
 
-        <ul class="divide-y divide-gray-200 overflow-hidden rounded-lg border border-gray-200 bg-white" role="list">
+        <ul class="space-y-2" role="list">
             @foreach ($projects as $project)
                 @php
                     $rowAccent = \App\Support\Color::isValid($project->accent_color ?? null)
@@ -21,7 +21,7 @@
                 @endphp
                 <li>
                     <a href="{{ route('projects.show', $project) }}"
-                       class="group flex items-center gap-4 px-5 py-4 transition hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand"
+                       class="group flex items-center gap-4 rounded-md bg-white px-5 py-4 transition hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
                        style="border-left: 4px solid {{ $rowAccent }}">
                         @if ($project->image_url)
                             <img src="{{ $project->image_url }}" alt="" loading="lazy" class="hidden h-16 w-24 flex-none rounded-md object-cover sm:block">
