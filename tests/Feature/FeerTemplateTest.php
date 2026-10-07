@@ -744,4 +744,24 @@ class FeerTemplateTest extends TestCase
         $this->actingAs($admin)->get('/projekty')->assertOk()->assertSee('Zarządzaj projektami');
         $this->actingAs($admin)->get('/aktualnosci')->assertOk()->assertSee('Zarządzaj aktualnościami');
     }
+
+    public function test_formularz_w_szablonie_feer_ma_pola_bez_obwodki(): void
+    {
+        \App\Models\FormDefinition::create([
+            'title' => 'Zgłoszenie', 'slug' => 'zgloszenie-test',
+            'fields' => [['label' => 'Imię', 'type' => 'text', 'required' => true], ['label' => 'Treść', 'type' => 'textarea']],
+            'is_active' => true,
+        ]);
+
+        $this->get('/formularz/zgloszenie-test')->assertOk()->assertSee('border-gray-300 bg-white', false)->assertDontSee('border-0 border-b-2', false);
+
+        SiteSetting::current()->update(['site_template' => 'feer']);
+        \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();
+        \Illuminate\Support\Facades\Cache::flush();
+
+        $html = $this->get('/formularz/zgloszenie-test')->assertOk()->getContent();
+        $this->assertStringContainsString('border-0 border-b-2', $html);
+        $this->assertStringContainsString('bg-gray-100', $html);
+        $this->assertStringNotContainsString('rounded-xl border border-gray-200 bg-white p-6 shadow-sm', $html);
+    }
 }

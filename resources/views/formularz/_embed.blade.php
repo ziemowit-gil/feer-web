@@ -5,11 +5,13 @@
     $showSuccess = $isThisForm && session('success');
     $showErrors  = $isThisForm && $errors->any();
     $errorSummaryId = 'form-errors-' . $fs;
+    // Szablon FEER: formularz bez obwódek — pola wypełnione jasnym szarym tłem z grubszą linią u dołu (kontrast krawędzi pola ≥ 3:1).
+    $feerForm    = ($siteSettings->site_template ?? 'default') === 'feer';
 @endphp
 
 <section id="formularz-{{ $fs }}"
     aria-labelledby="form-heading-{{ $fs }}"
-    class="not-prose my-8 rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+    class="not-prose my-8 {{ $feerForm ? 'rounded-md bg-gray-50 p-6 sm:p-8' : 'rounded-xl border border-gray-200 bg-white p-6 shadow-sm' }}">
 
     <h2 id="form-heading-{{ $fs }}" class="mb-1 text-xl font-bold text-ink">
         {{ $form->title }}
@@ -23,7 +25,7 @@
     {{-- ── Potwierdzenie wysłania ─────────────────────────────────────────── --}}
     @if ($showSuccess)
         <div role="status" aria-live="polite" aria-atomic="true"
-            class="flex items-start gap-3 rounded-lg border border-green-200 bg-green-50 px-5 py-4 text-sm text-green-800">
+            class="flex items-start gap-3 rounded-lg bg-green-50 px-5 py-4 text-sm text-green-800 {{ $feerForm ? '' : 'border border-green-200' }}">
             <i class="fa-solid fa-circle-check mt-0.5 shrink-0 text-green-600" aria-hidden="true"></i>
             <p>{{ session('success') }}</p>
         </div>
@@ -33,7 +35,7 @@
     @if ($showErrors)
         <div id="{{ $errorSummaryId }}" role="alert" aria-live="assertive" aria-atomic="true"
             tabindex="-1"
-            class="mb-5 rounded-lg border border-red-200 bg-red-50 px-5 py-4 text-sm text-red-800">
+            class="mb-5 rounded-lg bg-red-50 px-5 py-4 text-sm text-red-800 {{ $feerForm ? '' : 'border border-red-200' }}">
             <p class="flex items-center gap-2 font-bold">
                 <i class="fa-solid fa-triangle-exclamation shrink-0" aria-hidden="true"></i>
                 Proszę poprawić następujące błędy:
@@ -89,8 +91,11 @@
                 ]);
                 $describedByStr = implode(' ', $describedBy);
 
-                $baseInputClass = 'w-full rounded-lg border text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-1 '
-                    . ($hasError ? 'border-red-400 bg-red-50' : 'border-gray-300 bg-white');
+                $baseInputClass = $feerForm
+                    ? 'w-full rounded-t-md rounded-b-none border-0 border-b-2 text-base text-ink transition focus:outline-none focus:ring-0 focus:border-brand '
+                        . ($hasError ? 'border-red-700 bg-red-50' : 'border-gray-500 bg-gray-100 hover:bg-gray-200/70 focus:bg-white')
+                    : 'w-full rounded-lg border text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-1 '
+                        . ($hasError ? 'border-red-400 bg-red-50' : 'border-gray-300 bg-white');
             @endphp
 
             @if ($type === 'radio')
@@ -280,7 +285,7 @@
 
             <div class="pt-2">
                 <button type="submit"
-                    class="inline-flex items-center gap-2 rounded-lg bg-brand px-6 py-2.5 text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
+                    class="inline-flex items-center gap-2 bg-brand text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 {{ $feerForm ? 'min-h-12 rounded-md px-7 text-base font-bold' : 'rounded-lg px-6 py-2.5 text-sm font-bold' }}">
                     Wyślij zgłoszenie
                     <i class="fa-solid fa-paper-plane" aria-hidden="true"></i>
                 </button>
