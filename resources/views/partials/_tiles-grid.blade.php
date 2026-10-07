@@ -25,6 +25,12 @@
         'red'    => '#ef4444',
     ];
 
+    // Szablon FEER: bez fioletu — nazwany „purple” i awaryjny kolor to firmowy niebieski #1E6DFF.
+    if (($siteSettings->site_template ?? 'default') === 'feer') {
+        $namedColors['purple'] = '#1e6dff';
+        $tilePalette = array_map(fn ($c) => $c === '#7e22ce' ? '#1e6dff' : $c, $tilePalette);
+    }
+
     $colSpanFor = function (int $cols): string {
         return match ($cols) {
             2 => 'col-span-2',

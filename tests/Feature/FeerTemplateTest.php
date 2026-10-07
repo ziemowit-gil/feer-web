@@ -661,4 +661,16 @@ class FeerTemplateTest extends TestCase
 
         $this->get('/kontakt')->assertOk()->assertSee('fa-chevron-right', false)->assertDontSee('border-b border-gray-200 bg-gray-50"><nav aria-label="Ścieżka', false);
     }
+
+    public function test_szybka_akcja_feer_z_kolorem_purple_dostaje_firmowy_niebieski(): void
+    {
+        SiteSetting::current()->update(['site_template' => 'feer']);
+        \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();
+        \Illuminate\Support\Facades\Cache::flush();
+        \App\Models\QuickAction::create(['label' => 'Fiolet', 'url' => '/f', 'icon' => 'bi-star', 'color' => 'purple', 'order' => 1, 'is_negative' => true]);
+
+        $html = $this->get('/')->assertOk()->getContent();
+        $this->assertStringContainsString('background-color: #1e6dff', $html);
+        $this->assertStringNotContainsString('#7e22ce', $html);
+    }
 }
