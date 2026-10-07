@@ -322,4 +322,22 @@ class FeerTemplateTest extends TestCase
         \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();
         $this->get('/wsparcie')->assertOk()->assertSee('bg-linear-to-br', false);
     }
+
+    public function test_lista_aktualnosci_feer_ma_wyrozniony_wpis_i_karty(): void
+    {
+        foreach (['Pierwsza', 'Druga', 'Trzecia'] as $i => $title) {
+            \App\Models\News::create(['title' => $title.' wiadomość', 'slug' => 'w'.$i, 'content' => 'x', 'excerpt' => 'Zajawka '.$title, 'is_published' => true, 'published_at' => now()->subDays($i + 1)]);
+        }
+        SiteSetting::current()->update(['site_template' => 'feer']);
+        \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();
+
+        $html = $this->get('/aktualnosci')->assertOk()->assertSee('Pierwsza wiadomość')->assertSee('Trzecia wiadomość')->getContent();
+        $this->assertStringContainsString('Kategorie aktualności', $html);
+        $this->assertStringContainsString('text-2xl font-extrabold leading-tight text-ink md:text-4xl', $html);
+        $this->assertStringContainsString('bg-ink text-white', $html);
+
+        SiteSetting::current()->update(['site_template' => 'ngo_mix']);
+        \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();
+        $this->get('/aktualnosci')->assertOk()->assertDontSee('text-2xl font-extrabold leading-tight text-ink md:text-4xl', false);
+    }
 }
