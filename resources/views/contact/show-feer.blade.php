@@ -49,6 +49,16 @@
                     <h2 id="dane-heading" class="mb-5 text-2xl font-bold text-ink">{{ $siteSettings->site_name }}</h2>
                     <dl class="grid gap-4 sm:grid-cols-2">
                         <div class="{{ $tile }}">
+                            <dt class="{{ $dt }}">E-mail</dt>
+                            <dd class="mt-2 text-lg"><a href="mailto:{{ $siteSettings->contact_email }}" class="{{ $actionLink }}"><i class="fa-solid fa-envelope shrink-0 text-base" aria-hidden="true"></i><span class="min-w-0 break-words">{{ $siteSettings->contact_email }}</span></a></dd>
+                        </div>
+                        @if ($siteSettings->contact_phone)
+                            <div class="{{ $tile }}">
+                                <dt class="{{ $dt }}">Telefon</dt>
+                                <dd class="mt-2 text-lg"><a href="tel:{{ preg_replace('/\s+/', '', $siteSettings->contact_phone) }}" class="{{ $actionLink }}"><i class="fa-solid fa-phone shrink-0 text-base" aria-hidden="true"></i><span>{{ $siteSettings->contact_phone }}</span></a></dd>
+                            </div>
+                        @endif
+                        <div class="{{ $tile }}">
                             <dt class="{{ $dt }}">{{ $hasOffice ? 'Adres rejestrowy' : 'Adres' }}</dt>
                             <dd class="mt-2 text-lg leading-snug text-ink">
                                 <a href="https://www.google.com/maps?q={{ urlencode($siteSettings->registeredAddressLine()) }}" target="_blank" rel="noopener" class="{{ $link }}">{{ $siteSettings->contact_address }}<br>{{ $siteSettings->contact_city }}<span class="sr-only"> (otwiera mapę w nowej karcie)</span></a>
@@ -62,16 +72,6 @@
                                     <a href="https://www.google.com/maps?q={{ urlencode($siteSettings->officeAddressLine()) }}" target="_blank" rel="noopener" class="{{ $link }}">{{ $siteSettings->contact_office_address }}<br>{{ $siteSettings->contact_office_city }}<span class="sr-only"> (otwiera mapę w nowej karcie)</span></a>
                                     @if (filled($siteSettings->contact_office_note))<span class="mt-2 block text-sm text-muted">{!! nl2br(e($siteSettings->contact_office_note)) !!}</span>@endif
                                 </dd>
-                            </div>
-                        @endif
-                        <div class="{{ $tile }}">
-                            <dt class="{{ $dt }}">E-mail</dt>
-                            <dd class="mt-2 text-lg"><a href="mailto:{{ $siteSettings->contact_email }}" class="{{ $actionLink }}"><i class="fa-solid fa-envelope shrink-0 text-base" aria-hidden="true"></i><span class="min-w-0 break-words">{{ $siteSettings->contact_email }}</span></a></dd>
-                        </div>
-                        @if ($siteSettings->contact_phone)
-                            <div class="{{ $tile }}">
-                                <dt class="{{ $dt }}">Telefon</dt>
-                                <dd class="mt-2 text-lg"><a href="tel:{{ preg_replace('/\s+/', '', $siteSettings->contact_phone) }}" class="{{ $actionLink }}"><i class="fa-solid fa-phone shrink-0 text-base" aria-hidden="true"></i><span>{{ $siteSettings->contact_phone }}</span></a></dd>
                             </div>
                         @endif
                         @if ($siteSettings->contact_office_hours)
