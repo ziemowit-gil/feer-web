@@ -722,4 +722,14 @@ class FeerTemplateTest extends TestCase
         $this->actingAs($admin)->get('/')->assertOk()->assertSee('Zarządzaj skrótami');
         $this->actingAs($admin)->get(route('admin.szybkie-akcje.create'))->assertOk()->assertSee('Niebieski FEER');
     }
+
+    public function test_szybka_akcja_feer_pokazuje_krotki_opis(): void
+    {
+        SiteSetting::current()->update(['site_template' => 'feer']);
+        \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();
+        \Illuminate\Support\Facades\Cache::flush();
+        \App\Models\QuickAction::create(['label' => 'Panel kursanta', 'description' => 'Wróć do swoich szkoleń', 'url' => '/p', 'icon' => 'bi-person', 'order' => 1]);
+
+        $this->get('/')->assertOk()->assertSee('Wróć do swoich szkoleń');
+    }
 }

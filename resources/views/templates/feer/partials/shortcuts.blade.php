@@ -65,7 +65,12 @@
                                    style="border: 2px solid {{ $safe }}; color: #1d1d1a"
                                @endif>
                                 <i class="{{ $iconClass }} flex-none text-center {{ $single ? 'w-12 text-5xl' : ($strip ? 'w-6 text-xl' : 'w-7 text-2xl') }}" @unless ($filled) style="color: {{ $safe }}" @endunless aria-hidden="true"></i>
-                                <span class="min-w-0 flex-1 font-bold leading-snug {{ $single ? 'text-2xl md:text-3xl' : ($strip ? 'text-base' : 'text-lg') }}">{{ $qa->label }}</span>
+                                <span class="min-w-0 flex-1">
+                                    <span class="block font-bold leading-snug {{ $single ? 'text-2xl md:text-3xl' : ($strip ? 'text-base' : 'text-lg') }}">{{ $qa->label }}</span>
+                                    @if (! $strip && ($qa->description ?? null))
+                                        <span class="mt-0.5 block text-sm font-medium leading-snug {{ $filled ? '' : 'text-muted' }}" @if ($filled) style="opacity: .92" @endif>{{ $qa->description }}</span>
+                                    @endif
+                                </span>
                                 @if ($external)<span class="sr-only">(otwiera się w nowej karcie)</span>@endif
                                 <span class="flex-none transition {{ $single ? 'text-3xl' : 'text-xl' }} group-hover:translate-x-1" aria-hidden="true">→</span>
                             </a>

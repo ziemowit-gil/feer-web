@@ -8,7 +8,7 @@ class QuickAction extends Model
 {
     use \App\Models\Concerns\BelongsToSite;
 
-    protected $fillable = ['site_id', 'label', 'icon', 'url', 'order', 'color', 'is_negative', 'cols', 'strip'];
+    protected $fillable = ['site_id', 'label', 'description', 'icon', 'url', 'order', 'color', 'is_negative', 'cols', 'strip'];
 
     protected $casts = ['is_negative' => 'boolean', 'cols' => 'integer', 'strip' => 'boolean'];
 

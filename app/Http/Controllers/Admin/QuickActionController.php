@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\QuickAction;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Schema;
 
 /**
  * Panel admin: zarządzanie szybkimi akcjami (kafelki z ikonami widoczne na stronie głównej).
@@ -63,6 +64,7 @@ class QuickActionController extends Controller
     {
         $data = $request->validate([
             'label' => ['required', 'string', 'max:255'],
+            'description' => ['nullable', 'string', 'max:140'],
             'icon' => ['required', 'string', 'max:100'],
             'url' => ['required', 'string', 'max:255'],
             'order' => ['nullable', 'integer', 'min:0'],
@@ -71,6 +73,11 @@ class QuickActionController extends Controller
             'cols'        => ['nullable', 'integer', 'in:1,2,3'],
             'strip'       => ['nullable', 'boolean'],
         ]);
+
+        // Kolumna opisu pojawia się po migracji — do tego czasu zapis nie może się wywrócić.
+        if (! Schema::hasColumn('quick_actions', 'description')) {
+            unset($data['description']);
+        }
 
         $data['order']       = $data['order'] ?? 0;
         $data['is_negative'] = (bool) ($data['is_negative'] ?? false);

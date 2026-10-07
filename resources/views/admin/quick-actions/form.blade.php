@@ -15,6 +15,14 @@
         </div>
 
         <div>
+            <label for="description" class="mb-1 block text-sm font-bold">Krótki opis <span class="font-normal text-muted">(opcjonalnie, do 140 znaków)</span></label>
+            <input type="text" id="description" name="description" maxlength="140" value="{{ old('description', $quickAction->description ?? '') }}" placeholder="np. Zaloguj się i wróć do swoich szkoleń"
+                class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+            <p class="mt-1 text-xs text-muted">Mała linijka pod nazwą kafla (szablon FEER; nie pokazuje się w układzie „Pasek”).</p>
+            @error('description') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+        </div>
+
+        <div>
             <label for="icon" class="mb-1 block text-sm font-bold">Ikona (Bootstrap Icons)</label>
             <div class="flex items-center gap-3">
                 <span id="icon-preview" class="flex h-10 w-10 flex-none items-center justify-center rounded-full bg-brand-light text-lg text-brand">
