@@ -90,6 +90,18 @@
     :is(section, header).bg-gray-50:has(h1[class*="text-5xl"][class*="text-ink"]), :is(section, header).bg-white:has(h1[class*="text-5xl"][class*="text-ink"]) { background-color: transparent; border-bottom-width: 0; }
     div:has(> h1[class*="text-5xl"][class*="text-ink"]), div:has(> div > h1[class*="text-5xl"][class*="text-ink"]) { padding-top: 2rem; padding-bottom: 1.5rem; }
 
+    /* Tryb „Czarno-żółty" z paska dostępności: reguły FEER (kolorowe tła pigułek, kafli, przycisków, pasek górny z !important) nie mogą
+       zostawiać żółtego tekstu na jasnym lub niebieskim tle. Wszystko dostaje czarne tło, żółty tekst i żółte obramowania. */
+    html.contrast-bw body :is(span, a, i, summary, details, time, small, figure, figcaption, dd, dt, blockquote, table, thead, tbody, tr, td, th):not(img) { background-color: #000 !important; background-image: none !important; color: #ff0 !important; border-color: #ff0 !important; box-shadow: none !important; }
+    html.contrast-bw body .site-topbar-feer a, html.contrast-bw body .site-topbar-feer > div:first-child > button, html.contrast-bw body .site-topbar-feer > div:first-child > button[aria-expanded="true"],
+    html.contrast-bw body .site-topbar-feer > div:first-child > button:hover { background: #000 !important; color: #ff0 !important; border-color: #ff0 !important; }
+    html.contrast-bw body .site-topbar-feer form[role="search"] { border-color: #ff0; }
+    html.contrast-bw body .feer-card, html.contrast-bw body a.feer-card { border: 2px solid #ff0 !important; }
+    html.contrast-bw body a[class*="bg-"], html.contrast-bw body button[class*="bg-"] { border: 2px solid #ff0 !important; }
+    html.contrast-bw body ::placeholder { color: #ff0 !important; opacity: .85; }
+    html.contrast-bw body h1::after, html.contrast-bw body h2::after { background: #ff0 !important; }
+    html.contrast-bw body body::before, html.contrast-bw body::before { display: none !important; }
+
     /* Delikatne animacje (≤ 0,5 s, bez przesuwania układu): płynne pojawienie się treści, wydłużanie niebieskiego akcentu
        pod tytułem, lekkie uniesienie przycisków i płynna zmiana koloru linków menu. Wyłączone przy „ogranicz ruch". */
     @media (prefers-reduced-motion: no-preference) {

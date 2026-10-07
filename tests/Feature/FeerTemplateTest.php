@@ -1008,4 +1008,12 @@ class FeerTemplateTest extends TestCase
         $this->assertStringContainsString('aspect-[21/9]', $html);
         $this->assertStringContainsString('alt="Opis fotki"', $html);
     }
+
+    public function test_szablon_feer_ma_reguly_trybu_czarno_zoltego_dla_pigulek_i_paska_gornego(): void
+    {
+        $css = view('partials.theme-feer')->render();
+
+        $this->assertStringContainsString('html.contrast-bw body :is(span, a, i', $css);
+        $this->assertStringContainsString('html.contrast-bw body .site-topbar-feer > div:first-child > button[aria-expanded="true"]', $css);
+    }
 }
