@@ -76,6 +76,10 @@
        pozycje menu — czarne, po najechaniu/aktywne niebieskie (#1E6DFF na bieli 4,48:1, #1D1D1A 16,9:1). */
     .prose a:not([class*="bg-"]) { color: #1e6dff; text-decoration: underline; text-underline-offset: .2em; }
     .prose a:not([class*="bg-"]):hover { color: #1d1d1a; }
+    /* Małe niebieskie linki akcji („Wszystkie projekty →", „Zobacz …") mają podkreślenie — informacja nie opiera się tylko na kolorze
+       (niebieski #1E6DFF na jasnoszarym tle ma 4,29:1), a po najechaniu stają się czarne. */
+    main a.text-brand-dark:not([class*="bg-"]):not(.no-underline), main a.text-brand:not([class*="bg-"]):not(.no-underline) { text-decoration: underline; text-underline-offset: .2em; text-decoration-thickness: 1px; }
+    main a.text-brand-dark:not([class*="bg-"]):hover, main a.text-brand:not([class*="bg-"]):hover { color: #1d1d1a; }
     nav .nav-pills > li:not([data-nav-accent]) > a:hover, nav .nav-pills > li:not([data-nav-accent]) > button:hover,
     nav .nav-pills li > ul[role="list"] a:hover { color: #1e6dff; }
 

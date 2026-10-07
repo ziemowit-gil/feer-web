@@ -25,10 +25,12 @@
         'red'    => '#ef4444',
     ];
 
-    // Szablon FEER: bez fioletu — nazwany „purple” i awaryjny kolor to firmowy niebieski #1E6DFF.
-    if (($siteSettings->site_template ?? 'default') === 'feer') {
-        $namedColors['purple'] = '#1e6dff';
-        $tilePalette = array_map(fn ($c) => $c === '#7e22ce' ? '#1e6dff' : $c, $tilePalette);
+    // Szablon FEER: kolory z brandbooka — nazwane kolory mapują się na paletę (niebieski #1E6DFF, grafit, pomarańcz),
+    // a zielony/fioletowy/czerwony i awaryjna paleta też dają kolory marki.
+    $feerTiles = ($siteSettings->site_template ?? 'default') === 'feer';
+    if ($feerTiles) {
+        $namedColors = ['blue' => '#1e6dff', 'dark' => '#1d1d1a', 'green' => '#1e6dff', 'purple' => '#1e6dff', 'orange' => '#ea8f00', 'red' => '#1d1d1a'];
+        $tilePalette = ['#1e6dff', '#1d1d1a', '#ea8f00', '#cbd5e7'];
     }
 
     $colSpanFor = function (int $cols): string {
@@ -64,6 +66,7 @@
                 }
 
                 $pal  = \App\Support\Color::button($base); // {bg, text, hover} — kontrast AA
+                if (($feerTiles ?? false) && strtolower($base) === '#1e6dff') { $pal = ['bg' => '#1e6dff', 'text' => '#ffffff', 'hover' => '#1e6dff']; } // kolor firmowy dokładnie
                 $bg   = $pal['bg'];
                 $txt  = $pal['text'];
                 $chip = $txt === '#ffffff' ? 'rgba(255,255,255,0.20)' : 'rgba(17,24,39,0.12)';
