@@ -16,8 +16,8 @@
 @section('content')
     @php $filled = $categories->filter(fn ($c) => $c->publishedProjects->isNotEmpty())->values(); @endphp
 
-    <section class="bg-gray-50">
-        <div class="mx-auto max-w-6xl px-4 py-12 md:py-16">
+    <section class="bg-white">
+        <div class="mx-auto max-w-6xl px-4 pb-6 pt-8 md:pb-8 md:pt-10">
             <h1 class="text-3xl font-extrabold leading-tight tracking-tight text-ink md:text-5xl">Projekty</h1>
             @if ($siteSettings->projects_intro)
                 <div class="prose mt-4 max-w-2xl text-lg text-ink">{!! $siteSettings->projects_intro !!}</div>

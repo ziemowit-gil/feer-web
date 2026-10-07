@@ -74,8 +74,9 @@
 
     /* Większe odstępy między pozycjami menu (układ z podkreśleniem) i pigułkami. */
     @media (min-width: 1024px) {
-        nav > ul.flex:not(.nav-pills):not(.nav-icons) { gap: 2.25rem; }
-        nav > ul.nav-pills { gap: .5rem; }
+        .site-header nav > ul.flex:not(.nav-pills):not(.nav-icons),
+        .site-header nav > div > ul.flex:not(.nav-pills):not(.nav-icons) { gap: 2.25rem; }
+        .site-header nav > ul.nav-pills, .site-header nav > div > ul.nav-pills { gap: .5rem; }
     }
 
     /* Menu główne i podmenu: większe pozycje (czytelność i cele dotyku ≥ 44 px). */

@@ -248,7 +248,7 @@
     </div>
 
     @if ($feerTwoRows)
-        <nav aria-label="Menu główne" class="relative hidden border-y border-gray-200 bg-white lg:block">
+        <nav aria-label="Menu główne" class="relative hidden border-y border-gray-100 bg-white lg:block">
             <div class="mx-auto max-w-6xl px-4">
                 @include('partials.main-nav-items', ['onBrand' => false, 'navDarkText' => false])
             </div>
