@@ -764,4 +764,13 @@ class FeerTemplateTest extends TestCase
         $this->assertStringContainsString('bg-gray-100', $html);
         $this->assertStringNotContainsString('rounded-xl border border-gray-200 bg-white p-6 shadow-sm', $html);
     }
+
+    public function test_strona_dostepnosc_z_kafelkowym_menu_podstron_pokazuje_kafle(): void
+    {
+        $parent = \App\Models\Page::create(['title' => 'Dostępność', 'slug' => 'dostepnosc-test', 'type' => 'links_hub', 'is_published' => true, 'side_nav_style' => 'tiles', 'show_side_nav' => true]);
+        \App\Models\Page::create(['parent_id' => $parent->id, 'title' => 'Dostępność cyfrowa', 'slug' => 'dostepnosc-cyfrowa-test', 'type' => 'standard', 'is_published' => true, 'order' => 1]);
+
+        $this->get('/dostepnosc-test')->assertOk()->assertSee('Dostępność cyfrowa')->assertSee('aria-label', false);
+        $this->assertSame('tiles', $parent->fresh()->sideNavStyle());
+    }
 }
