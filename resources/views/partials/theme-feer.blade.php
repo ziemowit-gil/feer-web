@@ -47,6 +47,20 @@
     .about-feer #sekcja-stats { background-color: var(--color-brand-light); }
     section[aria-labelledby="stats-heading"], section[aria-labelledby="methods-heading"] { background-color: var(--color-brand-light); }
 
+    /* Delikatny efekt tła po bokach (szerokie ekrany): dwie bardzo miękkie, niebieskie poświaty przy lewej i prawej krawędzi.
+       Czysto dekoracyjne — leżą za treścią (z-index -1), nie przechwytują kliknięć, nie zmieniają kontrastu tekstu na
+       sekcjach z własnym tłem; wyłączone w trybie wymuszonych kolorów i przy wydruku. */
+    @media (min-width: 1100px) {
+        body::before {
+            content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none;
+            background:
+                radial-gradient(34rem 34rem at -6% 18%, color-mix(in srgb, var(--color-brand) 10%, transparent), transparent 70%),
+                radial-gradient(30rem 30rem at 106% 62%, color-mix(in srgb, var(--color-brand) 8%, transparent), transparent 70%),
+                radial-gradient(24rem 24rem at -4% 92%, color-mix(in srgb, var(--color-brand) 6%, transparent), transparent 70%);
+        }
+    }
+    @media (forced-colors: active), print { body::before { display: none; } }
+
     /* Poziome rzędy przycisków-kategorii (na telefonie przewijane palcem): bez widocznego paska przewijania. */
     .feer-pills-row { scrollbar-width: none; -ms-overflow-style: none; }
     .feer-pills-row::-webkit-scrollbar { display: none; }

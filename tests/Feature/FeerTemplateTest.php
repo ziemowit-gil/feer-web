@@ -480,4 +480,19 @@ class FeerTemplateTest extends TestCase
         $podcast = \App\Models\Podcast::where('slug', 'odc-3')->first();
         $this->get(route('podcasts.show', $podcast))->assertOk()->assertSee('Trzeci odcinek')->assertSee('Wszystkie odcinki');
     }
+
+    public function test_motyw_feer_ma_delikatne_tlo_po_bokach_wylaczone_w_trybie_kontrastu(): void
+    {
+        SiteSetting::current()->update(['site_template' => 'feer']);
+        \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();
+
+        $html = $this->get('/')->assertOk()->getContent();
+        $this->assertStringContainsString('body::before', $html);
+        $this->assertStringContainsString('pointer-events: none', $html);
+        $this->assertStringContainsString('forced-colors: active', $html);
+
+        SiteSetting::current()->update(['site_template' => 'ngo_mix']);
+        \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();
+        $this->get('/')->assertOk()->assertDontSee('body::before', false);
+    }
 }
