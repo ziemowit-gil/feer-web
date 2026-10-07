@@ -14,7 +14,32 @@
 --}}
 @php $tabItems = $tabItems ?? []; @endphp
 
-@if (count($tabItems) > 1)
+@if (count($tabItems) > 1 && ($siteSettings->site_template ?? 'default') === 'feer')
+    {{-- FEER: płaskie zakładki bez paska i ramek — tekst z grubą niebieską linią pod aktywną; nieaktywne stonowane z szarą linią po najechaniu.
+         Kontrast: ink na bieli 16,9:1, nieaktywne muted #4B5563 7,6:1. Cel dotyku ≥ 44 px. --}}
+    <div class="mx-auto max-w-6xl px-4 pt-6">
+        <div role="tablist" aria-label="{{ $tabsLabel ?? 'Sekcje strony' }}" class="flex flex-wrap gap-x-8 gap-y-1 border-b border-gray-200">
+            @foreach ($tabItems as $tabItem)
+                <button type="button" role="tab"
+                    id="tab-{{ $tabItem['id'] }}"
+                    aria-controls="panel-{{ $tabItem['id'] }}"
+                    :aria-selected="tab === '{{ $tabItem['id'] }}' ? 'true' : 'false'"
+                    :tabindex="tab === '{{ $tabItem['id'] }}' ? 0 : -1"
+                    @click="tab = '{{ $tabItem['id'] }}'"
+                    @keydown.arrow-right.prevent="move(1)"
+                    @keydown.arrow-left.prevent="move(-1)"
+                    @keydown.home.prevent="jump(tabs[0])"
+                    @keydown.end.prevent="jump(tabs[tabs.length - 1])"
+                    class="-mb-px min-h-12 border-b-4 px-1 text-base font-bold transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+                    :class="tab === '{{ $tabItem['id'] }}'
+                        ? 'border-brand text-ink'
+                        : 'border-transparent text-muted hover:border-gray-300 hover:text-ink'">
+                    {{ $tabItem['label'] }}
+                </button>
+            @endforeach
+        </div>
+    </div>
+@elseif (count($tabItems) > 1)
     <div class="border-b border-gray-200 bg-gray-50">
         <div class="mx-auto max-w-6xl px-4">
             <div role="tablist" aria-label="{{ $tabsLabel ?? 'Sekcje strony' }}" class="-mb-px flex flex-wrap gap-1 pt-3">

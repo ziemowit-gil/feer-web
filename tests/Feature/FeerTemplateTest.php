@@ -773,4 +773,16 @@ class FeerTemplateTest extends TestCase
         $this->get('/dostepnosc-test')->assertOk()->assertSee('Dostępność cyfrowa')->assertSee('aria-label', false);
         $this->assertSame('tiles', $parent->fresh()->sideNavStyle());
     }
+
+    public function test_zakladki_feer_sa_plaskie_bez_paska_i_ramek(): void
+    {
+        SiteSetting::current()->update(['site_template' => 'feer']);
+        \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();
+        \Illuminate\Support\Facades\Cache::flush();
+
+        $html = view('partials.tab-strip', ['tabItems' => [['id' => 'a', 'label' => 'Pierwsza'], ['id' => 'b', 'label' => 'Druga']]])->render();
+        $this->assertStringContainsString('border-b-4', $html);
+        $this->assertStringNotContainsString('bg-gray-50', $html);
+        $this->assertStringContainsString('role="tablist"', $html);
+    }
 }
