@@ -842,4 +842,17 @@ class FeerTemplateTest extends TestCase
         \Illuminate\Support\Facades\Cache::flush();
         $this->get('/dzial-wl')->assertOk()->assertDontSee('Kafel testowy');
     }
+
+    public function test_slider_feer_zmienia_slajdy_sekwencyjnie_i_ladowanie_obrazow_jest_natychmiastowe(): void
+    {
+        SiteSetting::current()->update(['site_template' => 'feer']);
+        \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();
+        \Illuminate\Support\Facades\Cache::flush();
+        \App\Models\HeroSlide::create(['title' => 'Pierwszy', 'order' => 1]);
+        \App\Models\HeroSlide::create(['title' => 'Drugi', 'order' => 2]);
+
+        $html = $this->get('/')->assertOk()->getContent();
+        $this->assertStringContainsString('opacity-100 duration-500 delay-300', $html);
+        $this->assertStringContainsString('pointer-events-none opacity-0 duration-300', $html);
+    }
 }

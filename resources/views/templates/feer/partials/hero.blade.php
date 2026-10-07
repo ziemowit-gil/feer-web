@@ -1,7 +1,7 @@
 {{--
     Szablon FEER — slajder na stronie głównej w jasnym, płaskim stylu: tekst po lewej na białym tle,
     zdjęcie slajdu po prawej w ramce (bez przesłony, więc kontrast tekstu nie zależy od zdjęcia).
-    Slajdy leżą jeden na drugim (siatka), zmieniają się płynnie; ukryte są wyłączone z czytania i fokusu (inert).
+    Slajdy leżą jeden na drugim (siatka); zmiana jest sekwencyjna (poprzedni znika w 0,3 s, następny pojawia się po 0,3 s opóźnienia), żeby dwa slajdy nie prześwitywały naraz — to dawało efekt „mrugania". Obrazy slajdów ładują się od razu (bez lazy), by nie migotały przy zmianie; ukryte są wyłączone z czytania i fokusu (inert).
 
     Dostępność (WCAG 2.2.2): automatyczna zmiana slajdów zatrzymuje się po najechaniu i fokusie oraz
     ma widoczny przycisk „Zatrzymaj / Wznów"; przy ustawieniu „ogranicz ruch" nie startuje wcale.
@@ -28,8 +28,8 @@
                     $sBtnLabel = $slide->button_label ?? null;
                     $sAlt      = $slide->image_alt ?? '';
                 @endphp
-                <div class="col-start-1 row-start-1 grid items-center gap-8 transition-opacity duration-500 {{ $sImage ? 'lg:grid-cols-[minmax(0,1fr)_28rem]' : '' }}"
-                     :class="current === {{ $i }} ? 'opacity-100' : 'pointer-events-none opacity-0'"
+                <div class="col-start-1 row-start-1 grid items-center gap-8 transition-opacity {{ $sImage ? 'lg:grid-cols-[minmax(0,1fr)_28rem]' : '' }}"
+                     :class="current === {{ $i }} ? 'opacity-100 duration-500 delay-300' : 'pointer-events-none opacity-0 duration-300'"
                      :inert="current !== {{ $i }}"
                      role="group" aria-roledescription="slajd" aria-label="{{ $i + 1 }} z {{ $slides->count() }}">
                     <div class="min-w-0">
@@ -53,7 +53,7 @@
                         </div>
                     </div>
                     @if ($sImage)
-                        <img src="{{ $sImage }}" alt="{{ $sAlt }}" @if ($i > 0) loading="lazy" @endif
+                        <img src="{{ $sImage }}" alt="{{ $sAlt }}" decoding="async" @if ($i === 0) fetchpriority="high" @endif
                              class="aspect-[4/3] w-full rounded-lg object-cover ring-1 ring-gray-200">
                     @endif
                 </div>
