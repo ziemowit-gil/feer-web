@@ -3,19 +3,23 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
+use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\InteractsWithMedia;
 
 /**
  * „FEER Paski": pasek z tytułem, tekstem i do dwóch przycisków. Wstawiany na stronie głównej (szablon FEER) w wybranym
  * miejscu albo w treści dowolnej strony skrótem [pasek:ID].
  */
-class FeerBand extends Model
+class FeerBand extends Model implements HasMedia
 {
+    use InteractsWithMedia;
     use \App\Models\Concerns\BelongsToSite;
 
     protected $fillable = [
         'site_id', 'title', 'text', 'button_label', 'button_url', 'button2_label', 'button2_url',
-        'style', 'placement', 'is_active', 'order',
+        'image_alt', 'style', 'placement', 'is_active', 'order',
     ];
 
     protected $casts = ['is_active' => 'boolean', 'order' => 'integer'];
@@ -39,6 +43,22 @@ class FeerBand extends Model
         'site_bottom'     => 'Wszystkie podstrony — pod treścią (nad stopką)',
         'shortcode'       => 'Tylko jako skrót [pasek:ID] w treści strony',
     ];
+
+    public function registerMediaCollections(): void
+    {
+        $this->addMediaCollection('image')->singleFile();
+    }
+
+    public function registerMediaConversions(?\Spatie\MediaLibrary\MediaCollections\Models\Media $media = null): void
+    {
+        $this->addMediaConversion('webp')->format('webp')->quality(85)->width(900)->nonQueued();
+    }
+
+    /** Zdjęcie paska (wgrane, z biblioteki, z projektu albo z Unsplash) — null, gdy brak. */
+    protected function imageUrl(): Attribute
+    {
+        return Attribute::make(get: fn () => $this->getFirstMedia('image')?->getAvailableUrl(['webp']) ?: null);
+    }
 
     public function scopeActive(Builder $query): Builder
     {

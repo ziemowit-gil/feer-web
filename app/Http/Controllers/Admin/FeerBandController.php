@@ -4,7 +4,10 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\FeerBand;
+use App\Support\UnsplashImport;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Schema;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
 use Illuminate\Validation\Rule;
 
 /**
@@ -29,6 +32,7 @@ class FeerBandController extends Controller
     public function store(Request $request)
     {
         $band = FeerBand::create($this->validated($request));
+        $this->handleImage($request, $band);
 
         return redirect()->route('admin.feer-paski.index')->with('status', 'Pasek został dodany. Skrót do treści: '.$band->shortcode());
     }
@@ -41,6 +45,7 @@ class FeerBandController extends Controller
     public function update(Request $request, FeerBand $band)
     {
         $band->update($this->validated($request));
+        $this->handleImage($request, $band);
 
         return redirect()->route('admin.feer-paski.index')->with('status', 'Pasek został zaktualizowany.');
     }
@@ -50,6 +55,35 @@ class FeerBandController extends Controller
         $band->delete();
 
         return redirect()->route('admin.feer-paski.index')->with('status', 'Pasek został usunięty.');
+    }
+
+    /**
+     * Zdjęcie paska z jednego z trzech źródeł (pierwsze wypełnione wygrywa): wgrany plik, wybór z Unsplash albo zdjęcie
+     * z biblioteki multimediów (w tym zdjęcia projektów/działań — kopiowane, oryginał zostaje). „Usuń zdjęcie" czyści kolekcję.
+     */
+    private function handleImage(Request $request, FeerBand $band): void
+    {
+        if ($request->boolean('remove_image')) {
+            $band->clearMediaCollection('image');
+        }
+
+        if ($request->hasFile('image')) {
+            $request->validate(['image' => ['image', 'max:6144']]);
+            $band->addMediaFromRequest('image')->toMediaCollection('image');
+
+            return;
+        }
+
+        if (UnsplashImport::attach($band, $request)) {
+            return;
+        }
+
+        if ($request->filled('library_media_id')) {
+            $media = Media::query()->where('mime_type', 'like', 'image/%')->find((int) $request->input('library_media_id'));
+            if ($media) {
+                $media->copy($band, 'image');
+            }
+        }
     }
 
     private function validated(Request $request): array
@@ -64,7 +98,14 @@ class FeerBandController extends Controller
             'style' => ['required', Rule::in(array_keys(FeerBand::STYLES))],
             'placement' => ['required', Rule::in(array_keys(FeerBand::PLACEMENTS))],
             'order' => ['nullable', 'integer', 'min:0'],
+            'image_alt' => ['nullable', 'string', 'max:255'],
+            'library_media_id' => ['nullable', 'integer', 'exists:media,id'],
         ]);
+
+        unset($data['library_media_id']);
+        if (! Schema::hasColumn('feer_bands', 'image_alt')) {
+            unset($data['image_alt']); // kolumna pojawia się po migracji
+        }
 
         $data['order'] = $data['order'] ?? 0;
         $data['is_active'] = $request->boolean('is_active');

@@ -84,4 +84,28 @@ class FeerBandsModuleTest extends TestCase
         $this->get('/kontakt')->assertOk()->assertSee('Pasek u góry')->assertSee('Pasek na dole');
         $this->get('/')->assertOk()->assertDontSee('Pasek u góry')->assertDontSee('Pasek na dole');
     }
+
+    public function test_pasek_przyjmuje_zdjecie_z_pliku_i_z_biblioteki_i_pokazuje_je(): void
+    {
+        \Illuminate\Support\Facades\Storage::fake('public');
+        $admin = \App\Models\User::factory()->create(['role' => 'admin']);
+
+        $this->actingAs($admin)->post(route('admin.feer-paski.store'), [
+            'title' => 'Ze zdjęciem', 'style' => 'brand', 'placement' => 'site_top', 'is_active' => 1,
+            'image' => \Illuminate\Http\UploadedFile::fake()->image('baner.jpg', 800, 600), 'image_alt' => 'Opis zdjęcia',
+        ])->assertRedirect();
+
+        $band = \App\Models\FeerBand::where('title', 'Ze zdjęciem')->firstOrFail();
+        $this->assertNotNull($band->getFirstMedia('image'));
+
+        // zdjęcie z biblioteki (np. z projektu) — kopiowane do drugiego paska
+        $media = $band->getFirstMedia('image');
+        $this->actingAs($admin)->post(route('admin.feer-paski.store'), [
+            'title' => 'Z biblioteki', 'style' => 'dark', 'placement' => 'site_top', 'is_active' => 1, 'library_media_id' => $media->id,
+        ])->assertRedirect();
+        $this->assertNotNull(\App\Models\FeerBand::where('title', 'Z biblioteki')->first()->getFirstMedia('image'));
+
+        $this->actingAs($admin)->get(route('admin.feer-paski.create'))->assertOk()->assertSee('Otwórz bibliotekę zdjęć')->assertSee('3. Albo z Unsplash');
+        $this->get('/kontakt')->assertOk()->assertSee('alt="Opis zdjęcia"', false);
+    }
 }

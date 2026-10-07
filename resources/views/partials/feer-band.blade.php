@@ -36,5 +36,8 @@
                 @endif
             </div>
         @endif
+        @if ($band->image_url)
+            <img src="{{ $band->image_url }}" alt="{{ $band->image_alt ?? '' }}" loading="lazy" class="aspect-[4/3] w-full flex-none rounded-md object-cover md:order-last md:w-72">
+        @endif
     </div>
 </section>
