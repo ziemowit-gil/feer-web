@@ -172,12 +172,12 @@
         {{-- Hero: pełnokolorowe tło marki z dekoracją, jak w sekcji "wspolpraca" (bg-brand + rozmyte koła) --}}
         @if (($siteSettings->site_template ?? 'default') === 'feer')
             {{-- Szablon FEER: jasny, płaski nagłówek; motto jako cytat z paskiem (kontrast ink na szarym 16:1) --}}
-            <header class="border-b border-gray-100 bg-gray-50 px-4 py-12 md:py-16">
-                <div class="mx-auto max-w-6xl">
+            <header class="bg-white">
+                <div class="mx-auto max-w-6xl px-4">
                     <h1 class="text-3xl font-extrabold leading-tight tracking-tight text-ink md:text-5xl">{{ $page->title }}</h1>
                     @if ($page->about_motto)
-                        <blockquote class="mt-6 max-w-3xl border-l-4 border-brand pl-5">
-                            <p class="text-lg leading-relaxed text-ink md:text-xl">„{{ $page->about_motto }}"</p>
+                        <blockquote class="mt-5 max-w-3xl pb-2">
+                            <p class="text-base italic leading-relaxed text-ink md:text-lg">„{{ $page->about_motto }}"</p>
                             @if ($page->about_motto_author)
                                 <cite class="mt-2 block text-sm font-bold not-italic uppercase tracking-widest text-muted">— {{ $page->about_motto_author }}</cite>
                             @endif

@@ -72,6 +72,27 @@
     nav .nav-pills > li:not([data-nav-accent]) > a:hover, nav .nav-pills > li:not([data-nav-accent]) > button:hover,
     nav .nav-pills li > ul[role="list"] a:hover { color: #1e6dff; }
 
+    /* Tytuły stron (H1 „hero”): spokojniejsze, bez wielkiego szarego pasa — rozmiar jak nagłówki sekcji, niebieski akcent pod spodem,
+       białe tło i mniejsze odstępy. Jedna reguła dla wszystkich podstron FEER (okruszki płynnie przechodzą w tytuł). */
+    h1[class*="md:text-5xl"][class*="text-ink"] { font-size: 1.875rem; line-height: 1.2; font-weight: 700; letter-spacing: 0; }
+    h1[class*="md:text-5xl"][class*="text-ink"]::after { content: ""; display: block; width: 3.5rem; height: 4px; margin-top: .75rem; background: var(--color-brand); }
+    :is(section, header).bg-gray-50:has(h1[class*="md:text-5xl"][class*="text-ink"]) { background-color: #fff; border-bottom-width: 0; }
+    div:has(> h1[class*="md:text-5xl"][class*="text-ink"]) { padding-top: 2rem; padding-bottom: 1.5rem; }
+
+    /* Delikatne animacje (≤ 0,5 s, bez przesuwania układu): płynne pojawienie się treści, wydłużanie niebieskiego akcentu
+       pod tytułem, lekkie uniesienie przycisków i płynna zmiana koloru linków menu. Wyłączone przy „ogranicz ruch". */
+    @media (prefers-reduced-motion: no-preference) {
+        @keyframes feer-fade-in { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes feer-bar-grow { from { width: 0; } to { width: 3.5rem; } }
+        main { animation: feer-fade-in .4s ease-out both; }
+        nav[aria-label="Ścieżka nawigacyjna"] { animation: feer-fade-in .5s ease-out both; }
+        h1[class*="md:text-5xl"][class*="text-ink"]::after { animation: feer-bar-grow .6s .15s ease-out both; }
+        .site-header nav a, .site-header nav button { transition: color .2s ease, background-color .2s ease; }
+        a.bg-brand, a.bg-ink, button.bg-brand { transition: transform .2s ease, background-color .2s ease; }
+        a.bg-brand:hover, a.bg-ink:hover, button.bg-brand:hover { transform: translateY(-1px); }
+        a.bg-brand:active, a.bg-ink:active, button.bg-brand:active { transform: none; }
+    }
+
     /* Większe odstępy między pozycjami menu (układ z podkreśleniem) i pigułkami. */
     @media (min-width: 1024px) {
         .site-header nav > ul.flex:not(.nav-pills):not(.nav-icons),

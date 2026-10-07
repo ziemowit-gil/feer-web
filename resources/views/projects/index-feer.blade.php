@@ -53,10 +53,12 @@
                 <div class="min-w-0 space-y-14">
                     @foreach ($filled as $category)
                         <section id="kategoria-{{ $category->id }}" class="scroll-mt-24" aria-labelledby="kat-h-{{ $category->id }}">
-                            <div class="mb-4 flex items-end justify-between gap-4">
-                                <h2 id="kat-h-{{ $category->id }}" class="text-2xl font-bold text-ink">{{ $category->name }}</h2>
-                                <a href="{{ route('categories.show', $category) }}" class="shrink-0 text-sm font-bold text-brand-dark underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">Zobacz kategorię →</a>
-                            </div>
+                            <h2 id="kat-h-{{ $category->id }}" class="mb-4 text-2xl font-bold text-ink">
+                                <a href="{{ route('categories.show', $category) }}" class="group inline-flex items-center gap-2 rounded-sm hover:text-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                                    {{ $category->name }}
+                                    <span class="text-lg text-brand-dark transition group-hover:translate-x-1" aria-hidden="true">→</span>
+                                </a>
+                            </h2>
 
                             <ul class="space-y-1" role="list">
                                 @foreach ($category->publishedProjects as $project)
