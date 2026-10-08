@@ -138,6 +138,8 @@
                 font-size: 1.25rem; font-weight: 800; line-height: 1;
             }
             .proj-news a { display: block; padding: .6rem 0; }
+            .proj-note { position: relative; margin: 0 0 1rem; padding: 1rem 4.5rem 1rem 1.25rem; border: 2px solid var(--color-brand); border-radius: .5rem; background: #fff; color: #1d1d1a; font-size: 1.0625rem; line-height: 1.6; font-weight: 600; }
+            .proj-note-ico { position: absolute; top: 50%; right: 1rem; transform: translateY(-50%); display: flex; align-items: center; justify-content: center; width: 2.5rem; height: 2.5rem; border: 2px solid var(--color-brand); border-radius: 9999px; background: #fff; color: var(--color-brand); font-size: 1.1rem; }
             .proj-choice { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr)); margin: 0; padding: 0; list-style: none; }
             .proj-choice > li { display: flex; }
             .proj-choice-tile { display: flex; flex: 1; flex-direction: column; gap: .5rem; padding: 1.25rem; border: 2px solid #1d1d1a; border-top-width: 6px; border-radius: .75rem; background: #fff; color: #1d1d1a; text-decoration: none; transition: transform .15s, box-shadow .15s; }
@@ -224,7 +226,7 @@
                             $hasPaid = $offered->contains('is_paid', true);
                             $hasFree = $offered->contains(fn ($x) => ! $x->is_paid);
                         @endphp
-                        <p class="mb-4 text-base leading-relaxed text-ink">
+                        <p class="proj-note mb-4">
                             @if ($cnt === 0)
                                 Obecnie nie realizujemy żadnej z poniższych wersji. Zajrzyj tu ponownie lub skontaktuj się z nami.
                             @elseif ($hasPaid && $hasFree)
@@ -234,6 +236,8 @@
                             @else
                                 Te działania realizujemy <strong>bezpłatnie</strong> — wybierz wersję, która odpowiada Twoim potrzebom.
                             @endif
+                        
+                            <span class="proj-note-ico" aria-hidden="true"><i class="fa-solid fa-coins"></i></span>
                         </p>
                         {{-- Kafle do wyboru wersji: cała karta jest linkiem; wyraźny typ (bezpłatne/odpłatne), cena, przycisk. --}}
                         <ul role="list" class="proj-choice">
