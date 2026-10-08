@@ -324,9 +324,10 @@
                                     if (! array_key_exists($sideNavStyle, \App\Models\Page::SIDE_NAV_STYLES)) {
                                         $sideNavStyle = 'sidebar';
                                     }
-                                    $sideNavIcons = ['sidebar' => 'fa-table-columns', 'tabs' => 'fa-window-maximize', 'tree' => 'fa-sitemap', 'tiles' => 'fa-table-cells-large'];
+                                    $sideNavIcons = ['sidebar' => 'fa-table-columns', 'panel' => 'fa-table-list', 'tabs' => 'fa-window-maximize', 'tree' => 'fa-sitemap', 'tiles' => 'fa-table-cells-large'];
                                     $sideNavHints = [
                                         'sidebar' => 'Lista podstron tego poziomu w prawej kolumnie (z jedną zagnieżdżoną gałęzią).',
+                                        'panel'   => 'Szare pole po prawej z kreską w kolorze marki, tytułem działu i pozycjami oddzielonymi liniami — taki sam wygląd jak menu sekcji na stronie projektu.',
                                         'tabs'    => 'Poziomy pasek zakładek nad treścią — jeden poziom podstron.',
                                         'tiles'   => 'Podstrony działu jako duże, kolorowe kafelki pod treścią strony (jak w serwisach urzędowych). Na samych podstronach działa boczna lista rodzeństwa.',
                                         'tree'    => 'Lewa kolumna z całym działem: ścieżka „Jesteś tu", wszystkie poziomy podstron, zwijane gałęzie z licznikiem — jak drzewo stron w TYPO3.',

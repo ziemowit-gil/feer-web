@@ -86,6 +86,7 @@ class Page extends Model
      */
     public const SIDE_NAV_STYLES = [
         'sidebar' => 'Boczne drzewo',
+        'panel'   => 'Panel boczny (styl projektów)',
         'tabs'    => 'Zakładki nad treścią',
         'tree'    => 'Drzewo działu (styl TYPO3)',
         'tiles'   => 'Nawigacja kafelkowa (podstrony jako kafelki)',
