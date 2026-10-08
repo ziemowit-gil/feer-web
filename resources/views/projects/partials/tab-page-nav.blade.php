@@ -4,7 +4,7 @@
     <button type="button" @click="@if (! empty($tabId)) tab = '{{ $tabId }}'; @endif node = {{ $item->id }}; @if ($kids->isNotEmpty()) openIds.includes({{ $item->id }}) ? openIds = openIds.filter(i => i !== {{ $item->id }}) : openIds.push({{ $item->id }}) @endif"
         :aria-current="node === {{ $item->id }} ? 'page' : null"
         @if ($kids->isNotEmpty()) :aria-expanded="openIds.includes({{ $item->id }}).toString()" @endif
-        class="flex w-full items-center justify-between gap-2 py-3 text-left hover:text-brand focus-visible:outline-2 focus-visible:outline-brand {{ $depth === 0 ? 'text-base font-bold' : 'text-[0.9375rem] font-semibold' }}"
+        class="flex w-full items-center justify-between gap-2 py-3 text-left hover:text-brand focus-visible:outline-2 focus-visible:outline-brand {{ $depth === 0 ? 'text-base font-normal' : 'text-[0.9375rem] font-normal' }}"
         :class="node === {{ $item->id }} ? 'text-brand' : ''" style="padding-left: {{ $depth * 0.75 }}rem">
         <span>{{ $item->title }}</span>
         @if ($kids->isNotEmpty())

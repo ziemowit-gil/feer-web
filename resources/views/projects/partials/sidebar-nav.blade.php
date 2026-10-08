@@ -8,13 +8,13 @@
     <ul role="list" class="text-ink">
         <li class="border-b border-gray-300">
             <button type="button" @click="tab = 'opis'; node = null" :aria-current="tab === 'opis' ? 'page' : null"
-                class="flex w-full items-center py-3 text-left text-base font-bold hover:text-brand focus-visible:outline-2 focus-visible:outline-brand"
+                class="flex w-full items-center py-3 text-left text-base font-normal hover:text-brand focus-visible:outline-2 focus-visible:outline-brand"
                 :class="tab === 'opis' ? 'text-brand' : ''">O projekcie</button>
         </li>
         @foreach ($sectionTabs as $i => $section)
             <li class="border-b border-gray-300">
                 <button type="button" @click="tab = 'sekcja-{{ $i }}'; node = null" :aria-current="tab === 'sekcja-{{ $i }}' ? 'page' : null"
-                    class="flex w-full items-center py-3 text-left text-base font-bold hover:text-brand focus-visible:outline-2 focus-visible:outline-brand"
+                    class="flex w-full items-center py-3 text-left text-base font-normal hover:text-brand focus-visible:outline-2 focus-visible:outline-brand"
                     :class="tab === 'sekcja-{{ $i }}' ? 'text-brand' : ''">{{ $section['title'] ?: 'Sekcja '.($i + 1) }}</button>
             </li>
         @endforeach

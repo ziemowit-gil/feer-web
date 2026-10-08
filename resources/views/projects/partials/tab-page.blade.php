@@ -25,7 +25,7 @@
             <ul role="list" class="text-ink">
                 <li class="border-b border-gray-300 last:border-0">
                     <button type="button" @click="node = {{ $root->id }}" :aria-current="node === {{ $root->id }} ? 'page' : null"
-                        class="flex w-full items-center justify-between py-3 text-left text-base font-bold hover:text-brand focus-visible:outline-2 focus-visible:outline-brand"
+                        class="flex w-full items-center justify-between py-3 text-left text-base font-normal hover:text-brand focus-visible:outline-2 focus-visible:outline-brand"
                         :class="node === {{ $root->id }} ? 'text-brand' : ''">Przegląd</button>
                 </li>
                 @foreach ($root->tree_children as $child)
