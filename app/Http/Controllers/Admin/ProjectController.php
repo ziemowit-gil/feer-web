@@ -323,6 +323,22 @@ class ProjectController extends Controller
             'partner_ids.*' => ['integer', 'exists:partners,id'],
             'paid_info_text' => ['nullable', 'string', 'max:3000'],
             'kind' => ['nullable', Rule::in(array_keys(Project::KINDS))],
+            'quick_facts.duration' => ['nullable', 'string', 'max:160'],
+            'quick_facts.place' => ['nullable', 'string', 'max:160'],
+            'quick_facts.mode' => ['nullable', Rule::in(array_keys(Project::MODES))],
+            'quick_facts.seats' => ['nullable', 'string', 'max:80'],
+            'easy_summary' => ['nullable', 'string', 'max:1200'],
+            'main_cta.label' => ['nullable', 'string', 'max:80'],
+            'main_cta.url' => ['nullable', 'string', 'max:2048', 'regex:~^(https?://|mailto:|tel:|/|#)~i'],
+            'metrics' => ['nullable', 'array', 'max:8'],
+            'metrics.*.value' => ['nullable', 'string', 'max:40'],
+            'metrics.*.label' => ['nullable', 'string', 'max:120'],
+            'testimonials' => ['nullable', 'array', 'max:10'],
+            'testimonials.*.text' => ['nullable', 'string', 'max:600'],
+            'testimonials.*.author' => ['nullable', 'string', 'max:120'],
+            'faq' => ['nullable', 'array', 'max:30'],
+            'faq.*.q' => ['nullable', 'string', 'max:300'],
+            'faq.*.a' => ['nullable', 'string', 'max:3000'],
             'terms' => ['nullable', 'array', 'max:20'],
             'terms.*.label' => ['nullable', 'string', 'max:80'],
             'terms.*.text' => ['nullable', 'string', 'max:300'],
@@ -408,6 +424,17 @@ class ProjectController extends Controller
         $data['terms'] = collect($request->input('terms', []))
             ->filter(fn ($r) => filled($r['label'] ?? null) && filled($r['text'] ?? null))
             ->map(fn ($r) => ['label' => trim($r['label']), 'text' => trim($r['text'])])->values()->all() ?: null;
+        $facts = array_filter(array_map(fn ($v) => is_string($v) ? trim($v) : $v, (array) $request->input('quick_facts', [])), fn ($v) => filled($v));
+        $data['quick_facts'] = $facts ?: null;
+        $data['easy_summary'] = trim((string) ($data['easy_summary'] ?? '')) ?: null;
+        $cta = (array) $request->input('main_cta', []);
+        $data['main_cta'] = (filled($cta['label'] ?? null) && filled($cta['url'] ?? null)) ? ['label' => trim($cta['label']), 'url' => trim($cta['url'])] : null;
+        $data['metrics'] = collect($request->input('metrics', []))->filter(fn ($r) => filled($r['value'] ?? null) && filled($r['label'] ?? null))
+            ->map(fn ($r) => ['value' => trim($r['value']), 'label' => trim($r['label'])])->values()->all() ?: null;
+        $data['testimonials'] = collect($request->input('testimonials', []))->filter(fn ($r) => filled($r['text'] ?? null))
+            ->map(fn ($r) => ['text' => trim($r['text']), 'author' => trim((string) ($r['author'] ?? ''))])->values()->all() ?: null;
+        $data['faq'] = collect($request->input('faq', []))->filter(fn ($r) => filled($r['q'] ?? null) && filled($r['a'] ?? null))
+            ->map(fn ($r) => ['q' => trim($r['q']), 'a' => trim($r['a'])])->values()->all() ?: null;
         $data['kind'] = ($data['kind'] ?? 'project') === 'paid_offer' ? 'paid_offer' : 'project';
         $data['paid_info_show'] = $request->boolean('paid_info_show');
         $data['paid_info_text'] = trim((string) ($data['paid_info_text'] ?? '')) ?: null;

@@ -1577,6 +1577,11 @@
                         <span><span class="block text-sm font-bold">Podprojekty (formy udziału)</span><span class="block text-xs text-muted">Pole „Projekt nadrzędny”, dziedziczenie pól oraz sekcja „Formy udziału” z objaśnieniem odpłatności.</span></span>
                     </label>
                     <label class="flex items-start gap-3">
+                        <input type="hidden" name="projects_extras_enabled" value="0">
+                        <input type="checkbox" name="projects_extras_enabled" value="1" {{ old('projects_extras_enabled', $settings->projects_extras_enabled ?? true) ? 'checked' : '' }} class="mt-0.5 rounded border-gray-300 text-brand focus:ring-brand">
+                        <span><span class="block text-sm font-bold">Dodatkowe informacje o projekcie</span><span class="block text-xs text-muted">W skrócie (termin, miejsce, forma, liczba miejsc), streszczenie prostym językiem, główny przycisk, wskaźniki rezultatów, opinie uczestników i pytania (FAQ).</span></span>
+                    </label>
+                    <label class="flex items-start gap-3">
                         <input type="hidden" name="projects_terms_enabled" value="0">
                         <input type="checkbox" name="projects_terms_enabled" value="1" {{ old('projects_terms_enabled', $settings->projects_terms_enabled ?? true) ? 'checked' : '' }} class="mt-0.5 rounded border-gray-300 text-brand focus:ring-brand">
                         <span><span class="block text-sm font-bold">Kto może wziąć udział</span><span class="block text-xs text-muted">Zakładka „Kto może wziąć udział” w formularzu (wiek, miejsce, sprzęt, dostępność sali) i ramka o tej nazwie na stronie projektu.</span></span>

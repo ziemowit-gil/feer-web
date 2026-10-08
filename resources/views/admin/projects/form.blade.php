@@ -23,6 +23,11 @@
                     class="rounded-md px-4 py-2 text-sm font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 bg-gray-100 text-ink hover:bg-gray-200">
                     <i class="fa-solid fa-align-left" aria-hidden="true"></i> Treść
                 </button>
+                @if ($siteSettings->projects_extras_enabled)
+                    <button type="button" data-ftab-btn="dodatki" role="tab" aria-selected="false" class="rounded-md px-4 py-2 text-sm font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 bg-gray-100 text-ink hover:bg-gray-200">
+                        <i class="fa-solid fa-circle-plus" aria-hidden="true"></i> Dodatkowe informacje
+                    </button>
+                @endif
                 @if ($siteSettings->projects_terms_enabled)<button type="button" data-ftab-btn="warunki" role="tab" aria-selected="false" class="rounded-md px-4 py-2 text-sm font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 bg-gray-100 text-ink hover:bg-gray-200">
                     <i class="fa-solid fa-user-check" aria-hidden="true"></i> Kto może wziąć udział
                 </button>@endif
@@ -446,6 +451,99 @@
                     <button type="button" @click="rows.push({ label: '', text: '' })" class="inline-flex min-h-10 items-center gap-2 rounded-lg border-2 border-dashed border-brand px-4 text-sm font-bold text-brand-dark hover:bg-brand-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"><i class="fa-solid fa-plus" aria-hidden="true"></i> Dodaj własny warunek</button>
                 </div>
             </div>
+
+            {{-- ============================ DODATKOWE INFORMACJE ============================ --}}
+            @if ($siteSettings->projects_extras_enabled)
+            @php $qf = (array) ($project->quick_facts ?? []); $mc = (array) ($project->main_cta ?? []); @endphp
+            <div data-ftab-panel="dodatki" class="hidden space-y-6"
+                x-data="{ metrics: @js(array_values((array) old('metrics', $project->metrics ?? []))), tests: @js(array_values((array) old('testimonials', $project->testimonials ?? []))), faq: @js(array_values((array) old('faq', $project->faq ?? []))),
+                    move(list, i, d) { const j = i + d; if (j < 0 || j >= list.length) return; const [x] = list.splice(i, 1); list.splice(j, 0, x); } }">
+                <div class="space-y-4 rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+                    <p class="text-sm font-bold uppercase tracking-wide text-muted">W skrócie</p>
+                    <div class="grid gap-4 sm:grid-cols-2">
+                        <div><label for="qf_duration" class="mb-1 block text-sm font-bold">Czas trwania</label><input type="text" id="qf_duration" name="quick_facts[duration]" value="{{ old('quick_facts.duration', $qf['duration'] ?? '') }}" maxlength="160" placeholder="np. 4 spotkania po 2 godziny" class="w-full rounded-lg border-gray-300 text-sm focus:border-brand focus:ring-brand"></div>
+                        <div><label for="qf_place" class="mb-1 block text-sm font-bold">Miejsce</label><input type="text" id="qf_place" name="quick_facts[place]" value="{{ old('quick_facts.place', $qf['place'] ?? '') }}" maxlength="160" placeholder="np. Kraków, ul. Zamknięta 10" class="w-full rounded-lg border-gray-300 text-sm focus:border-brand focus:ring-brand"></div>
+                        <div><label for="qf_mode" class="mb-1 block text-sm font-bold">Forma</label>
+                            <select id="qf_mode" name="quick_facts[mode]" class="w-full rounded-lg border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                                <option value="">— nie pokazuj —</option>
+                                @foreach (\App\Models\Project::MODES as $mk => $ml)<option value="{{ $mk }}" {{ old('quick_facts.mode', $qf['mode'] ?? '') === $mk ? 'selected' : '' }}>{{ $ml }}</option>@endforeach
+                            </select></div>
+                        <div><label for="qf_seats" class="mb-1 block text-sm font-bold">Liczba miejsc</label><input type="text" id="qf_seats" name="quick_facts[seats]" value="{{ old('quick_facts.seats', $qf['seats'] ?? '') }}" maxlength="80" placeholder="np. 12 osób" class="w-full rounded-lg border-gray-300 text-sm focus:border-brand focus:ring-brand"></div>
+                    </div>
+                </div>
+
+                <div class="space-y-4 rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+                    <p class="text-sm font-bold uppercase tracking-wide text-muted">Prostym językiem i główny przycisk</p>
+                    <div>
+                        <label for="easy_summary" class="mb-1 block text-sm font-bold">Streszczenie prostym językiem (ETR)</label>
+                        <textarea id="easy_summary" name="easy_summary" rows="4" maxlength="1200" placeholder="2–4 krótkie zdania: co to jest, dla kogo, co trzeba zrobić, żeby wziąć udział." class="w-full rounded-lg border-gray-300 text-sm focus:border-brand focus:ring-brand">{{ old('easy_summary', $project->easy_summary) }}</textarea>
+                        <p class="mt-1 text-xs text-muted">Pokazywane na początku strony w ramce „Prostym językiem”.</p>
+                    </div>
+                    <div class="grid gap-4 sm:grid-cols-2">
+                        <div><label for="cta_label" class="mb-1 block text-sm font-bold">Główny przycisk — etykieta</label><input type="text" id="cta_label" name="main_cta[label]" value="{{ old('main_cta.label', $mc['label'] ?? '') }}" maxlength="80" placeholder="np. Zapisz się" class="w-full rounded-lg border-gray-300 text-sm focus:border-brand focus:ring-brand"></div>
+                        <div><label for="cta_url" class="mb-1 block text-sm font-bold">Adres przycisku</label><input type="text" id="cta_url" name="main_cta[url]" value="{{ old('main_cta.url', $mc['url'] ?? '') }}" placeholder="https://… albo /strona" class="w-full rounded-lg border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                            @error('main_cta.url') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror</div>
+                    </div>
+                </div>
+
+                <div class="space-y-4 rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+                    <p class="text-sm font-bold uppercase tracking-wide text-muted">Wskaźniki rezultatów</p>
+                    <ul class="space-y-3" role="list">
+                        <template x-for="(r, i) in metrics" :key="i">
+                            <li class="grid items-end gap-3 rounded-lg border border-gray-200 bg-gray-50 p-4 sm:grid-cols-[1fr_3fr_auto]">
+                                <div><label :for="'me-v-' + i" class="mb-1 block text-xs font-bold text-muted">Liczba</label><input :id="'me-v-' + i" type="text" :name="'metrics[' + i + '][value]'" x-model="r.value" maxlength="40" placeholder="320" class="w-full rounded-lg border-gray-300 text-sm focus:border-brand focus:ring-brand"></div>
+                                <div><label :for="'me-l-' + i" class="mb-1 block text-xs font-bold text-muted">Podpis</label><input :id="'me-l-' + i" type="text" :name="'metrics[' + i + '][label]'" x-model="r.label" maxlength="120" placeholder="osób przeszkolonych" class="w-full rounded-lg border-gray-300 text-sm focus:border-brand focus:ring-brand"></div>
+                                <span class="flex gap-1">
+                                    <button type="button" @click="move(metrics, i, -1)" :disabled="i === 0" class="rounded p-2 text-muted hover:bg-gray-100 disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand" aria-label="Przesuń wyżej"><i class="fa-solid fa-arrow-up" aria-hidden="true"></i></button>
+                                    <button type="button" @click="move(metrics, i, 1)" :disabled="i === metrics.length - 1" class="rounded p-2 text-muted hover:bg-gray-100 disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand" aria-label="Przesuń niżej"><i class="fa-solid fa-arrow-down" aria-hidden="true"></i></button>
+                                    <button type="button" @click="metrics.splice(i, 1)" class="rounded p-2 text-red-700 hover:bg-red-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500" aria-label="Usuń wiersz"><i class="fa-solid fa-trash" aria-hidden="true"></i></button>
+                                </span>
+                            </li>
+                        </template>
+                    </ul>
+                    <button type="button" @click="metrics.push({ value: '', label: '' })" class="inline-flex min-h-10 items-center gap-2 rounded-lg border-2 border-dashed border-brand px-4 text-sm font-bold text-brand-dark hover:bg-brand-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"><i class="fa-solid fa-plus" aria-hidden="true"></i> Dodaj wskaźnik</button>
+                </div>
+
+                <div class="space-y-4 rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+                    <p class="text-sm font-bold uppercase tracking-wide text-muted">Opinie uczestników</p>
+                    <p class="text-xs text-muted">Dodawaj tylko opinie, na których publikację masz zgodę. Podpis może być samym imieniem lub inicjałami.</p>
+                    <ul class="space-y-3" role="list">
+                        <template x-for="(r, i) in tests" :key="i">
+                            <li class="grid items-end gap-3 rounded-lg border border-gray-200 bg-gray-50 p-4 sm:grid-cols-[3fr_1fr_auto]">
+                                <div><label :for="'te-t-' + i" class="mb-1 block text-xs font-bold text-muted">Opinia</label><input :id="'te-t-' + i" type="text" :name="'testimonials[' + i + '][text]'" x-model="r.text" maxlength="600" class="w-full rounded-lg border-gray-300 text-sm focus:border-brand focus:ring-brand"></div>
+                                <div><label :for="'te-a-' + i" class="mb-1 block text-xs font-bold text-muted">Podpis</label><input :id="'te-a-' + i" type="text" :name="'testimonials[' + i + '][author]'" x-model="r.author" maxlength="120" placeholder="np. Anna, uczestniczka" class="w-full rounded-lg border-gray-300 text-sm focus:border-brand focus:ring-brand"></div>
+                                <span class="flex gap-1">
+                                    <button type="button" @click="move(tests, i, -1)" :disabled="i === 0" class="rounded p-2 text-muted hover:bg-gray-100 disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand" aria-label="Przesuń wyżej"><i class="fa-solid fa-arrow-up" aria-hidden="true"></i></button>
+                                    <button type="button" @click="move(tests, i, 1)" :disabled="i === tests.length - 1" class="rounded p-2 text-muted hover:bg-gray-100 disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand" aria-label="Przesuń niżej"><i class="fa-solid fa-arrow-down" aria-hidden="true"></i></button>
+                                    <button type="button" @click="tests.splice(i, 1)" class="rounded p-2 text-red-700 hover:bg-red-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500" aria-label="Usuń wiersz"><i class="fa-solid fa-trash" aria-hidden="true"></i></button>
+                                </span>
+                            </li>
+                        </template>
+                    </ul>
+                    <button type="button" @click="tests.push({ text: '', author: '' })" class="inline-flex min-h-10 items-center gap-2 rounded-lg border-2 border-dashed border-brand px-4 text-sm font-bold text-brand-dark hover:bg-brand-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"><i class="fa-solid fa-plus" aria-hidden="true"></i> Dodaj opinię</button>
+                </div>
+
+                <div class="space-y-4 rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+                    <p class="text-sm font-bold uppercase tracking-wide text-muted">Pytania i odpowiedzi (FAQ)</p>
+                    <ul class="space-y-3" role="list">
+                        <template x-for="(r, i) in faq" :key="i">
+                            <li class="space-y-3 rounded-lg border border-gray-200 bg-gray-50 p-4">
+                                <div class="flex items-end gap-3">
+                                    <div class="min-w-0 flex-1"><label :for="'fq-q-' + i" class="mb-1 block text-xs font-bold text-muted">Pytanie</label><input :id="'fq-q-' + i" type="text" :name="'faq[' + i + '][q]'" x-model="r.q" maxlength="300" class="w-full rounded-lg border-gray-300 text-sm focus:border-brand focus:ring-brand"></div>
+                                    <span class="flex gap-1">
+                                    <button type="button" @click="move(faq, i, -1)" :disabled="i === 0" class="rounded p-2 text-muted hover:bg-gray-100 disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand" aria-label="Przesuń wyżej"><i class="fa-solid fa-arrow-up" aria-hidden="true"></i></button>
+                                    <button type="button" @click="move(faq, i, 1)" :disabled="i === faq.length - 1" class="rounded p-2 text-muted hover:bg-gray-100 disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand" aria-label="Przesuń niżej"><i class="fa-solid fa-arrow-down" aria-hidden="true"></i></button>
+                                    <button type="button" @click="faq.splice(i, 1)" class="rounded p-2 text-red-700 hover:bg-red-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500" aria-label="Usuń wiersz"><i class="fa-solid fa-trash" aria-hidden="true"></i></button>
+                                </span>
+                                </div>
+                                <div><label :for="'fq-a-' + i" class="mb-1 block text-xs font-bold text-muted">Odpowiedź</label><textarea :id="'fq-a-' + i" :name="'faq[' + i + '][a]'" x-model="r.a" rows="3" maxlength="3000" class="w-full rounded-lg border-gray-300 text-sm focus:border-brand focus:ring-brand"></textarea></div>
+                            </li>
+                        </template>
+                    </ul>
+                    <button type="button" @click="faq.push({ q: '', a: '' })" class="inline-flex min-h-10 items-center gap-2 rounded-lg border-2 border-dashed border-brand px-4 text-sm font-bold text-brand-dark hover:bg-brand-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"><i class="fa-solid fa-plus" aria-hidden="true"></i> Dodaj pytanie</button>
+                </div>
+            </div>
+            @endif
 
             {{-- ============================ SEKCJE ============================ --}}
             <div data-ftab-panel="sekcje" class="hidden space-y-6">
