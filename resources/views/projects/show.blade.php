@@ -28,6 +28,7 @@
         $pageRoots = $project->pageTree(true);
         $tabPages = $pageRoots->where('project_display', 'tab')->values();
         $inlinePages = $pageRoots->where('project_display', 'inline')->values();
+        $accordionPages = $pageRoots->where('project_display', 'accordion')->values();
         // Zakładki (jak w kontakcie): „O projekcie” + sekcje własne (gdy włączono zakładki) + podstrony w trybie zakładki.
         $sectionTabs = $project->sections_as_tabs ? $customSections->values() : collect();
         $tabItems = collect([['id' => 'opis', 'label' => 'O projekcie']])
@@ -39,7 +40,7 @@
         $projectContentHtml = preg_replace('~<p((?![^>]*\bclass=)[^>]*)>(\s*(?:<(?:strong|b)[^>]*>)?\s*(?:Ważne|Ważna informacja|Uwaga)\b)~iu', '<p class="proj-callout"$1>$2', (string) $project->content);
         // Tryb nawigacji: pasek zakładek albo menu boczne (ustawienie serwisu lub własny wybór projektu).
         $navSidebar = $hasTabs && $project->sectionsNavMode() === 'sidebar';
-        $linkPages = $pageRoots->whereNotIn('project_display', ['inline', 'tab'])->values();
+        $linkPages = $pageRoots->whereNotIn('project_display', ['inline', 'tab', 'accordion'])->values();
 
         // A schedule ("harmonogram") page attached to this project — surfaced as a
         // call-to-action near the top; the button jumps to the inline section when
@@ -214,6 +215,11 @@
                         </a>
                     </section>
                 @endforeach
+
+                {{-- Podstrony projektu jako rozwijane sekcje (akordeon) --}}
+                @if ($accordionPages->isNotEmpty())
+                    @include('partials.page-children-accordion', ['children' => $accordionPages, 'page' => (object) ['id' => 'p'.$project->id, 'title' => $project->title]])
+                @endif
 
                 {{-- Project subpages shown as tabs --}}
                 @if ($project->outcomes)

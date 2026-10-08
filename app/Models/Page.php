@@ -86,6 +86,7 @@ class Page extends Model
      */
     public const SIDE_NAV_STYLES = [
         'sidebar' => 'Boczne drzewo',
+        'accordion' => 'Podstrony jako akordeon (rozwijane sekcje)',
         'panel'   => 'Panel boczny (styl projektów)',
         'tabs'    => 'Zakładki nad treścią',
         'tree'    => 'Drzewo działu (styl TYPO3)',
@@ -217,6 +218,7 @@ class Page extends Model
         'link' => 'Tylko odnośnik (na liście stron projektu)',
         'tab' => 'Zakładka na stronie projektu',
         'inline' => 'Sekcja w treści strony projektu',
+        'accordion' => 'Rozwijana sekcja (akordeon) w treści projektu',
     ];
 
     /** "Under construction" modes — full-screen notice vs. an info banner over the content. */

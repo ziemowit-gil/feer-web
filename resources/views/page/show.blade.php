@@ -42,7 +42,9 @@
             $menuSiblings = $page->menuSiblings();
             // „Nawigacja kafelkowa": podstrony jako kafelki pod treścią (lista boczna byłaby duplikatem).
             $tilesNav     = $page->sideNavStyle() === 'tiles' && $page->publishedChildren->isNotEmpty();
-            $showLocalNav = ($page->show_side_nav ?? true) && $menuSiblings->isNotEmpty() && ! $tilesNav;
+            // „Akordeon": podstrony działu jako rozwijane sekcje pod treścią strony działu (lista boczna byłaby duplikatem).
+            $accordionNav = $page->sideNavStyle() === 'accordion' && $page->publishedChildren->isNotEmpty();
+            $showLocalNav = ($page->show_side_nav ?? true) && $menuSiblings->isNotEmpty() && ! $tilesNav && ! $accordionNav;
             $showTabsNav  = $showLocalNav && $page->sideNavStyle() === 'tabs';
             $showSideNav  = $showLocalNav && ! $showTabsNav;
             // Drzewo działu (TYPO3): szersza kolumna nawigacji po lewej stronie treści.
@@ -107,6 +109,10 @@
                             @if ($tilesAfter->isNotEmpty())
                                 <div class="mt-10">@include('partials._tiles-sections', ['tiles' => $tilesAfter->all(), 'label' => $page->title])</div>
                             @endif
+                        @endif
+
+                        @if ($accordionNav)
+                            @include('partials.page-children-accordion', ['children' => $page->publishedChildren()->orderBy('order')->orderBy('title')->get(), 'page' => $page])
                         @endif
 
                         @if ($tilesNav)
