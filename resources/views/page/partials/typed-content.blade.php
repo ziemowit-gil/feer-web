@@ -969,7 +969,7 @@
 
             @if ($tgSideNav)
                 <div class="md:sticky md:top-24 md:self-start {{ $tgTree ? 'md:order-first' : '' }}">
-                    @include('partials.page-local-nav', ['menuSiblings' => $tgSiblings])
+                    @include('partials.page-local-nav', ['menuSiblings' => $tgSiblings, 'variant' => 'project'])
                 </div>
             @endif
         </div>
