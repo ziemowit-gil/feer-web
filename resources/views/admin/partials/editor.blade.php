@@ -91,8 +91,12 @@
         ->get(['id', 'title', 'slug']);
     // Zestawy kafelków z kreatora w edytorze (wstawiane shortcodem [kafelki-zestaw:ID]).
     $tileSets = \App\Models\TileSet::forCurrentSite()->orderBy('name')->get(['id', 'name']);
+    // Bloki treści z kreatora (przyciski CTA, akordeon) — shortcode [blok:ID].
+    $contentBlocks = \App\Models\ContentBlock::forCurrentSite()->orderBy('name')->get(['id', 'type', 'name']);
+    $blockTypeLabels = \App\Models\ContentBlock::TYPES;
 @endphp
 @include('admin.partials.tiles-builder')
+@include('admin.partials.content-block-builder')
 
 @php $mi = 'flex w-full items-center gap-2 rounded px-3 py-2 text-left text-xs font-bold text-ink hover:bg-brand-light hover:text-brand'; @endphp
 <div id="{{ $editorId }}-toolbar" class="mb-2 flex-wrap items-center gap-2 {{ $useCkEditor ? 'flex' : 'hidden' }}">
@@ -147,6 +151,22 @@
                     @endforeach
                 </select>
             @endif
+            <hr class="my-1 border-gray-100" role="separator">
+            <p class="px-3 pb-1 pt-0.5 text-[0.65rem] font-bold uppercase tracking-wide text-muted">Bloki treści — kreator</p>
+            <button type="button" id="{{ $editorId }}-block-new-cta" @click="open = false" class="{{ $mi }}"><i class="fa-solid fa-arrow-pointer w-4 text-center" aria-hidden="true"></i> Nowe przyciski CTA…</button>
+            <button type="button" id="{{ $editorId }}-block-new-accordion" @click="open = false" class="{{ $mi }}"><i class="fa-solid fa-bars-staggered w-4 text-center" aria-hidden="true"></i> Nowy akordeon…</button>
+            <div id="{{ $editorId }}-block-wrap" class="{{ $contentBlocks->isEmpty() ? 'hidden' : '' }}">
+                <label for="{{ $editorId }}-block-pick" class="block px-3 pb-1 pt-1 text-[0.65rem] font-bold uppercase tracking-wide text-muted">Wstaw blok</label>
+                <select id="{{ $editorId }}-block-pick" @change="open = false" class="w-full rounded border-gray-300 px-2 py-1.5 text-xs font-bold text-ink focus:border-brand focus:ring-brand">
+                    <option value="">— wybierz blok —</option>
+                    @foreach ($contentBlocks as $cb)<option value="{{ $cb->id }}" data-type="{{ $cb->type }}">{{ $blockTypeLabels[$cb->type] ?? $cb->type }}: {{ $cb->name }}</option>@endforeach
+                </select>
+                <label for="{{ $editorId }}-block-edit" class="block px-3 pb-1 pt-2 text-[0.65rem] font-bold uppercase tracking-wide text-muted">Edytuj blok</label>
+                <select id="{{ $editorId }}-block-edit" @change="open = false" class="w-full rounded border-gray-300 px-2 py-1.5 text-xs font-bold text-ink focus:border-brand focus:ring-brand">
+                    <option value="">— wybierz blok —</option>
+                    @foreach ($contentBlocks as $cb)<option value="{{ $cb->id }}" data-type="{{ $cb->type }}">{{ $blockTypeLabels[$cb->type] ?? $cb->type }}: {{ $cb->name }}</option>@endforeach
+                </select>
+            </div>
             <hr class="my-1 border-gray-100" role="separator">
             <p class="px-3 pb-1 pt-0.5 text-[0.65rem] font-bold uppercase tracking-wide text-muted">Kafelki — kreator</p>
             <button type="button" id="{{ $editorId }}-tileset-new" @click="open = false" class="{{ $mi }}"><i class="fa-solid fa-table-cells w-4 text-center" aria-hidden="true"></i> Nowy zestaw kafelków…</button>
@@ -1736,6 +1756,36 @@
                     }
 
                     (function () {
+                        var wrap = document.getElementById('{{ $editorId }}-block-wrap');
+                        var pick = document.getElementById('{{ $editorId }}-block-pick');
+                        var edit = document.getElementById('{{ $editorId }}-block-edit');
+                        var newCta = document.getElementById('{{ $editorId }}-block-new-cta');
+                        var newAcc = document.getElementById('{{ $editorId }}-block-new-accordion');
+                        if (! pick || ! edit || ! newCta || ! newAcc) return;
+                        var labels = { cta: 'Przyciski CTA', accordion: 'Akordeon' };
+                        function insertShortcode(id) {
+                            var viewFragment = editor.data.processor.toView('<p>[blok:' + id + ']</p>');
+                            editor.model.insertContent(editor.data.toModel(viewFragment));
+                            editor.editing.view.focus();
+                        }
+                        function addOption(b) {
+                            [pick, edit].forEach(function (sel) {
+                                var o = sel.querySelector('option[value="' + b.id + '"]');
+                                if (! o) { o = document.createElement('option'); o.value = b.id; o.dataset.type = b.type; sel.appendChild(o); }
+                                o.textContent = (labels[b.type] || b.type) + ': ' + b.name;
+                            });
+                            wrap.classList.remove('hidden');
+                        }
+                        newCta.addEventListener('click', function () { window.BlockBuilder.open({ type: 'cta', id: null, trigger: newCta, onSave: function (b) { addOption(b); insertShortcode(b.id); } }); });
+                        newAcc.addEventListener('click', function () { window.BlockBuilder.open({ type: 'accordion', id: null, trigger: newAcc, onSave: function (b) { addOption(b); insertShortcode(b.id); } }); });
+                        pick.addEventListener('change', function () { if (this.value) { insertShortcode(this.value); } this.selectedIndex = 0; });
+                        edit.addEventListener('change', function () {
+                            var opt = this.options[this.selectedIndex]; var id = this.value, type = opt && opt.dataset.type; this.selectedIndex = 0;
+                            if (id && type) { window.BlockBuilder.open({ type: type, id: id, trigger: newCta, onSave: function (b) { addOption(b); } }); }
+                        });
+                    })();
+
+                    (function () {
                         var wrap = document.getElementById('{{ $editorId }}-tileset-wrap');
                         var pick = document.getElementById('{{ $editorId }}-tileset-pick');
                         var edit = document.getElementById('{{ $editorId }}-tileset-edit');
@@ -1852,6 +1902,8 @@
                 var activeForms = {!! json_encode($activeForms->map(fn ($f) => ['slug' => $f->slug, 'title' => $f->title])->values()) !!};
                 var activeTilesGridPages = {!! json_encode($activeTilesGridPages->map(fn ($p) => ['slug' => $p->slug, 'title' => $p->title])->values()) !!};
                 var tileSets = {!! json_encode($tileSets->map(fn ($t) => ['id' => $t->id, 'name' => $t->name])->values()) !!};
+                var contentBlocks = {!! json_encode($contentBlocks->map(fn ($b) => ['id' => $b->id, 'type' => $b->type, 'name' => $b->name])->values()) !!};
+                var blockLabels = { cta: 'Przyciski CTA', accordion: 'Akordeon' };
                 var newsLinks = {!! json_encode($newsForPicker->map(fn ($n) => ['url' => route('news.show', $n), 'title' => $n->title])->values()) !!};
                 var eventLinks = {!! json_encode($eventsForBox->map(fn ($e) => ['url' => '/wydarzenia/'.$e->slug, 'title' => $e->title])->values()) !!};
                 var personLinks = {!! json_encode($personPages->map(fn ($p) => ['url' => '/'.$p->slug, 'title' => $p->title])->values()) !!};
@@ -1976,6 +2028,25 @@
                                         return activeForms.map(function (f) {
                                             return { type: 'menuitem', text: f.title, onAction: function () { editor.insertContent('[formularz:' + f.slug + ']'); } };
                                         });
+                                    } });
+                                }
+                                items.push({ type: 'separator' });
+                                ['cta', 'accordion'].forEach(function (bt) {
+                                    items.push({ type: 'menuitem', text: bt === 'cta' ? 'Nowe przyciski CTA…' : 'Nowy akordeon…', onAction: function () {
+                                        window.BlockBuilder.open({ type: bt, id: null, trigger: document.activeElement, onSave: function (b) {
+                                            if (! contentBlocks.some(function (x) { return x.id === b.id; })) { contentBlocks.push({ id: b.id, type: b.type, name: b.name }); }
+                                            editor.insertContent('<p>[blok:' + b.id + ']</p>');
+                                        } });
+                                    } });
+                                });
+                                if (contentBlocks.length) {
+                                    items.push({ type: 'nestedmenuitem', text: 'Wstaw blok', getSubmenuItems: function () {
+                                        return contentBlocks.map(function (b) { return { type: 'menuitem', text: (blockLabels[b.type] || b.type) + ': ' + b.name, onAction: function () { editor.insertContent('<p>[blok:' + b.id + ']</p>'); } }; });
+                                    } });
+                                    items.push({ type: 'nestedmenuitem', text: 'Edytuj blok', getSubmenuItems: function () {
+                                        return contentBlocks.map(function (b) { return { type: 'menuitem', text: (blockLabels[b.type] || b.type) + ': ' + b.name, onAction: function () {
+                                            window.BlockBuilder.open({ type: b.type, id: b.id, trigger: document.activeElement, onSave: function (nb) { b.name = nb.name; } });
+                                        } }; });
                                     } });
                                 }
                                 items.push({ type: 'separator' });

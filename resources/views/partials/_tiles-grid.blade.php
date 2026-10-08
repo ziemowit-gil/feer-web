@@ -43,8 +43,9 @@
 @endphp
 
 @if ($tiles && count($tiles) > 0)
-<nav aria-label="{{ $label }}">
-    <ul class="grid grid-cols-2 gap-4 sm:grid-cols-3" role="list">
+{{-- not-prose + list-none: w treści z klasą .prose (typography) kafelki nie dostają punktorów ani marginesów listy. --}}
+<nav class="not-prose" @if (! empty($labelledby)) aria-labelledby="{{ $labelledby }}" @else aria-label="{{ $label }}" @endif>
+    <ul class="m-0 grid list-none grid-cols-2 gap-4 p-0 sm:grid-cols-3" role="list">
         @foreach ($tiles as $i => $tile)
             @php
                 // Normalizacja — obsługuje zarówno obiekty QuickAction, jak i tablice.

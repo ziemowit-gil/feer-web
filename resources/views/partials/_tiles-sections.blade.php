@@ -4,8 +4,12 @@
 --}}
 @php $groups = \App\Support\TileSections::groups(is_array($tiles ?? null) ? $tiles : collect($tiles ?? [])->all()); @endphp
 @foreach ($groups as $g)
-    @if ($g['heading'])
-        <h2 class="{{ $headingClass ?? 'mb-3 mt-10 text-2xl font-bold text-ink' }}">{{ $g['heading'] }}</h2>
-    @endif
-    @include('partials._tiles-grid', ['tiles' => collect($g['tiles']), 'label' => $g['heading'] ?: ($label ?? 'Kafelki')])
+    @php $hid = $g['heading'] ? 'tiles-h-'.\Illuminate\Support\Str::random(8) : null; @endphp
+    {{-- Grupa kafelków jest oznaczona nagłówkiem (aria-labelledby), więc czytnik ekranu zapowiada jej nazwę. --}}
+    <section @if ($hid) aria-labelledby="{{ $hid }}" @endif>
+        @if ($g['heading'])
+            <h2 id="{{ $hid }}" class="{{ $headingClass ?? 'mb-3 mt-10 text-2xl font-bold text-ink' }}">{{ $g['heading'] }}</h2>
+        @endif
+        @include('partials._tiles-grid', ['tiles' => collect($g['tiles']), 'label' => $label ?? 'Kafelki', 'labelledby' => $hid])
+    </section>
 @endforeach

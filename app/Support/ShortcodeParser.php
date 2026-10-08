@@ -39,6 +39,12 @@ class ShortcodeParser
         );
 
         $content = preg_replace_callback(
+            '/(?:<p>\s*)?\[blok:(\d+)\](?:\s*<\/p>)?/i',
+            fn ($matches) => static::renderBlock((int) $matches[1]),
+            $content,
+        );
+
+        $content = preg_replace_callback(
             '/(?:<p>\s*)?\[kafelki-zestaw:(\d+)\](?:\s*<\/p>)?/i',
             fn ($matches) => static::renderTileSet((int) $matches[1]),
             $content,
@@ -60,7 +66,7 @@ class ShortcodeParser
     }
 
     /** Wzorzec wszystkich shortcodów — do wykrywania (np. wyłączenie edycji inline). */
-    public const DETECT_PATTERN = '/\[(?:(?:formularz|kafelki):[a-z0-9_\-]+|kafelki-zestaw:\d+|pasek:\d+|klauzule-rodo(?::[a-z]{2})?)\]/i';
+    public const DETECT_PATTERN = '/\[(?:(?:formularz|kafelki):[a-z0-9_\-]+|kafelki-zestaw:\d+|blok:\d+|pasek:\d+|klauzule-rodo(?::[a-z]{2})?)\]/i';
 
     public static function has(?string $content): bool
     {
@@ -105,6 +111,17 @@ class ShortcodeParser
         return View::make('formularz._embed', ['form' => $form])->render();
     }
 
+    /** Blok treści z kreatora edytora ([blok:ID]): przyciski CTA albo akordeon. */
+    private static function renderBlock(int $id): string
+    {
+        $block = \App\Models\ContentBlock::find($id);
+        if (! $block) {
+            return '';
+        }
+
+        return View::make('partials.blocks.'.($block->type === 'accordion' ? 'accordion' : 'cta'), ['block' => $block])->render();
+    }
+
     /** Zestaw kafelków z kreatora edytora ([kafelki-zestaw:ID]). */
     private static function renderTileSet(int $id): string
     {
@@ -115,10 +132,12 @@ class ShortcodeParser
 
         $html = '';
         foreach (TileSections::groups($set->tiles) as $g) {
-            if ($g['heading']) {
-                $html .= '<h3 class="mb-3 mt-8 text-xl font-bold text-ink">'.e($g['heading']).'</h3>';
+            $hid = $g['heading'] ? 'tiles-h-'.\Illuminate\Support\Str::random(8) : null;
+            $html .= '<section'.($hid ? ' aria-labelledby="'.$hid.'"' : '').'>';
+            if ($hid) {
+                $html .= '<h3 id="'.$hid.'" class="mb-3 mt-8 text-xl font-bold text-ink">'.e($g['heading']).'</h3>';
             }
-            $html .= View::make('partials._tiles-grid', ['tiles' => collect($g['tiles']), 'label' => $g['heading'] ?: $set->name])->render();
+            $html .= View::make('partials._tiles-grid', ['tiles' => collect($g['tiles']), 'label' => $set->name, 'labelledby' => $hid])->render().'</section>';
         }
 
         return $html;

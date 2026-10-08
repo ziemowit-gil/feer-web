@@ -541,6 +541,10 @@ Route::middleware(['auth', 'verified', '2fa', 'admin-site'])->prefix(config('app
     Route::post('editor/importuj-docx', [DocxImportController::class, 'import'])->name('editor.docx.import');
     Route::post('multimedia/onedrive', [MediaLibraryController::class, 'oneDriveImport'])->name('multimedia.onedrive.import');
     Route::post('multimedia/upload-ajax', [MediaLibraryController::class, 'uploadAjax'])->name('multimedia.upload-ajax');
+    Route::get('bloki-tresci', [\App\Http\Controllers\Admin\ContentBlockController::class, 'index'])->name('bloki-tresci.index');
+    Route::post('bloki-tresci', [\App\Http\Controllers\Admin\ContentBlockController::class, 'store'])->name('bloki-tresci.store');
+    Route::get('bloki-tresci/{block}', [\App\Http\Controllers\Admin\ContentBlockController::class, 'show'])->name('bloki-tresci.show');
+    Route::put('bloki-tresci/{block}', [\App\Http\Controllers\Admin\ContentBlockController::class, 'update'])->name('bloki-tresci.update');
     Route::get('zestawy-kafelkow', [\App\Http\Controllers\Admin\TileSetController::class, 'index'])->name('zestawy-kafelkow.index');
     Route::post('zestawy-kafelkow', [\App\Http\Controllers\Admin\TileSetController::class, 'store'])->name('zestawy-kafelkow.store');
     Route::get('zestawy-kafelkow/{tileSet}', [\App\Http\Controllers\Admin\TileSetController::class, 'show'])->name('zestawy-kafelkow.show');
