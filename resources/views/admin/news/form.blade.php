@@ -582,7 +582,7 @@
                         <div>
                             <label for="accent_color_text" class="mb-1 block text-sm font-bold">Własny kolor akcentu <span class="font-normal text-muted">(opcjonalnie)</span></label>
                             <div class="flex flex-wrap items-center gap-3">
-                                <input type="color" id="accent_color_picker" value="{{ old('accent_color', $news->accent_color ?: '#c31432') }}"
+                                <input type="color" id="accent_color_picker" value="{{ old('accent_color', $news->accent_color ?: '#1e6dff') }}"
                                     oninput="document.getElementById('accent_color_text').value = this.value"
                                     class="h-10 w-16 rounded border-gray-300" aria-label="Wybierz własny kolor akcentu">
                                 <input type="text" id="accent_color_text" name="accent_color" value="{{ old('accent_color', $news->accent_color) }}"

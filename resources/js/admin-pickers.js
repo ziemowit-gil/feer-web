@@ -290,7 +290,7 @@ function enhanceColor(input) {
         if (brand.length) pop.el.appendChild(swatchGroup('Kolory marki (zalecane)', brand));
         pop.el.appendChild(swatchGroup('Neutralne', NEUTRAL_COLORS));
         const custom = el('input', { type: 'color', class: 'picker-native', 'aria-label': 'Własny kolor' });
-        custom.value = /^#[0-9a-f]{6}$/i.test(input.value) ? input.value : (brand[0]?.hex || '#c31432');
+        custom.value = /^#[0-9a-f]{6}$/i.test(input.value) ? input.value : (brand[0]?.hex || '#1e6dff');
         custom.addEventListener('input', () => setValue(input, custom.value));
         const clear = el('button', { type: 'button', class: 'picker-clear', text: 'Wyczyść' });
         clear.addEventListener('click', () => { setValue(input, ''); pop.close(true); });

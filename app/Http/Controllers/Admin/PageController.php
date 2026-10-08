@@ -30,11 +30,13 @@ class PageController extends Controller
         $search = $request->query('q', '');
         $status = $request->query('status', '');
         $sort = $request->query('sort', 'default');
+        $type = (string) $request->query('type', '');
+        if (! array_key_exists($type, Page::TYPES)) { $type = ''; }
 
         // Domyślnie dwupanelowy widok w stylu TYPO3 (drzewo + szczegóły). Lista
         // tabelaryczna — na żądanie (?widok=lista) oraz zawsze, gdy użyte są
         // filtry serwerowe: wyszukiwanie, status, sortowanie lub kosz.
-        $filtered = $search !== '' || $status !== '' || $sort !== 'default';
+        $filtered = $search !== '' || $status !== '' || $type !== '' || $sort !== 'default';
         $view = $request->query('widok');
         if ($view === 'drzewo' || ($view === null && ! $filtered)) {
             return $this->tree($request);
@@ -43,6 +45,7 @@ class PageController extends Controller
         $pages = Page::forCurrentSite()->with('parent')
             ->when($status === 'trashed', fn ($q) => $q->onlyTrashed())
             ->when($search !== '', fn ($q) => $q->where(fn ($q) => $q->where('title', 'like', "%{$search}%")->orWhere('slug', 'like', "%{$search}%")))
+            ->when($type !== '', fn ($q) => $q->where('type', $type))
             ->when($status === 'published', fn ($q) => $q->where('is_published', true))
             ->when($status === 'draft', fn ($q) => $q->where('is_published', false))
             ->when($sort === 'title_asc', fn ($q) => $q->orderBy('title'))
@@ -56,6 +59,7 @@ class PageController extends Controller
             'q'      => $search,
             'status' => $status,
             'sort'   => $sort,
+            'type'   => $type,
             'projectOptions' => Project::orderBy('title')->get(['id', 'title']),
         ]);
     }

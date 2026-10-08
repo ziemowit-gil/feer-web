@@ -14,7 +14,9 @@
     $categoryId ??= '';
     $q ??= '';
     $total ??= null;
-    $hasFilters = filled($q) || filled($status) || filled($categoryId) || (filled($sort) && $sort !== array_key_first($sortOptions));
+    $typeGroups ??= null;
+    $typeValue ??= '';
+    $hasFilters = filled($q) || filled($status) || filled($categoryId) || filled($typeValue) || (filled($sort) && $sort !== array_key_first($sortOptions));
 @endphp
 
 @once
@@ -50,6 +52,25 @@
             <option value="draft" @selected($status === 'draft')>Szkice</option>
         </select>
     </div>
+
+    @if ($typeGroups)
+        <div class="lf-field">
+            <label for="filter-type" class="lf-label">Typ strony</label>
+            <select id="filter-type" name="type" onchange="this.form.submit()"
+                class="rounded border-gray-300 py-1.5 text-sm focus:border-brand focus-visible:ring-2 focus-visible:ring-brand">
+                <option value="">Wszystkie typy</option>
+                @foreach ($typeGroups as $group => $keys)
+                    <optgroup label="{{ $group }}">
+                        @foreach ($keys as $k)
+                            @if (isset(\App\Models\Page::TYPES[$k]))
+                                <option value="{{ $k }}" @selected($typeValue === $k)>{{ trim(\Illuminate\Support\Str::before(\App\Models\Page::TYPES[$k], ' (')) }}</option>
+                            @endif
+                        @endforeach
+                    </optgroup>
+                @endforeach
+            </select>
+        </div>
+    @endif
 
     @if ($categories)
         <div class="lf-field">

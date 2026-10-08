@@ -408,38 +408,6 @@
                     </section>
                 @endif
 
-                {{-- Nawiązanie do podstron i stron projektu: jedna ramka z odnośnikami do wszystkiego, co należy do projektu. --}}
-                @php
-                    $refTabs = $tabPages->values();
-                    $refInline = $inlinePages->values();
-                    $refAcc = $accordionPages->values();
-                    $refLinks = $linkPages->values();
-                    $refSubs = $siteSettings->projects_subprojects_enabled ? $project->publishedChildren : collect();
-                    $refTotal = $refTabs->count() + $refInline->count() + $refAcc->count() + $refLinks->count();
-                @endphp
-                @if ($refTotal > 0)
-                    <section class="proj-frame proj-ref" aria-labelledby="proj-ref-h">
-                        <h2 id="proj-ref-h" class="proj-frame-h"><i class="fa-solid fa-sitemap" aria-hidden="true"></i> W tym projekcie znajdziesz</h2>
-                        <ul role="list" class="proj-ref-list">
-                            @foreach ($refTabs as $ri => $rp)
-                                <li><button type="button" class="proj-ref-link" @click="tab = 'podstrona-{{ $ri }}'; node = null; $nextTick(() => document.getElementById('tab-podstrona-{{ $ri }}')?.scrollIntoView({ block: 'center' }))">{{ $rp->title }}<span class="proj-ref-kind"> — zakładka</span></button></li>
-                            @endforeach
-                            @foreach ($refInline as $rp)
-                                <li><a class="proj-ref-link" href="#{{ ($rp->isSchedule() ? 'harmonogram-'.$rp->id : ($rp->isFaq() ? 'faq-'.$rp->id : 'podstrona-sekcja-'.$rp->id)) }}">{{ $rp->title }}<span class="proj-ref-kind"> — sekcja na tej stronie</span></a></li>
-                            @endforeach
-                            @if ($refAcc->isNotEmpty())
-                                <li><a class="proj-ref-link" href="#projekt-rozwijane">{{ $refAcc->pluck('title')->take(3)->implode(', ') }}{{ $refAcc->count() > 3 ? ' i inne' : '' }}<span class="proj-ref-kind"> — rozwijane sekcje</span></a></li>
-                            @endif
-                            @foreach ($refLinks as $rp)
-                                <li><a class="proj-ref-link" href="{{ route('page.show', $rp) }}">{{ $rp->title }}<span class="proj-ref-kind"> — osobna strona</span></a></li>
-                            @endforeach
-                            @foreach ($refSubs as $rs)
-                                <li><a class="proj-ref-link" href="{{ route('projects.show', $rs) }}">{{ $rs->title }}<span class="proj-ref-kind"> — {{ $rs->is_paid ? 'forma płatna' : 'forma bezpłatna' }}</span></a></li>
-                            @endforeach
-                        </ul>
-                    </section>
-                @endif
-
                 @php $projMetrics = $extrasOn ? collect($project->metrics ?? []) : collect(); @endphp
                 @if ($projMetrics->isNotEmpty())
                     <section class="proj-frame" aria-labelledby="proj-metrics-h">

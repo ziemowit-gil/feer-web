@@ -17,7 +17,7 @@ class SiteSetting extends Model implements HasMedia
     use \App\Models\Concerns\HasRevisions;
 
     /** Kolor marki używany, gdy witryna nie ma własnego ani rodzica, od którego można go odziedziczyć. */
-    public const DEFAULT_BRAND_COLOR = '#c31432';
+    public const DEFAULT_BRAND_COLOR = '#1e6dff';
 
     /**
      * Toggleable content modules, keyed by the identifier used in
@@ -1787,7 +1787,7 @@ class SiteSetting extends Model implements HasMedia
         // brand_color on the in-memory model even though the column has a DB
         // default — fall back so colour maths never receives null.
         if (! Color::isValid($base)) {
-            $base = '#c31432';
+            $base = '#1e6dff';
         }
 
         return [
@@ -1865,7 +1865,7 @@ class SiteSetting extends Model implements HasMedia
         // Świeże wiersze (firstOrCreate) mogą mieć null w brand_color mimo
         // domyślnej wartości kolumny — zwróć bezpieczny fallback, aby typ zwrotu
         // (string) był zawsze dotrzymany (por. brandPalette()).
-        return Color::isValid($this->brand_color) ? $this->brand_color : '#c31432';
+        return Color::isValid($this->brand_color) ? $this->brand_color : '#1e6dff';
     }
 
     /**

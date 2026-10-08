@@ -21,6 +21,8 @@
         'q'           => $q,
         'status'      => $status,
         'sort'        => $sort,
+        'typeGroups'  => \App\Models\Page::TYPE_GROUPS,
+        'typeValue'   => $type,
         'sortOptions' => ['default' => 'Domyślne (kolejność)', 'title_asc' => 'Tytuł A–Z', 'title_desc' => 'Tytuł Z–A'],
         'total'       => $pages->total(),
     ])

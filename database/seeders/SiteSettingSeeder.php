@@ -13,7 +13,7 @@ class SiteSettingSeeder extends Seeder
             // Podstawowe
             'site_name'          => 'Fundacja FEER',
             'tagline'            => 'Dostępność cyfrowa dla wszystkich',
-            'brand_color'        => '#c31432',
+            'brand_color'        => '#1e6dff',
             'brand_color_2'      => '#8b0d20',
             'meta_description'   => 'Fundacja FEER – audyty WCAG, szkolenia z dostępności cyfrowej i platforma vLAB dla szkół i organizacji.',
             'allow_indexing'     => false,

@@ -343,7 +343,7 @@ return (async function () {
         fixed_toolbar_container: '#inline-editor-toolbar',
         block_formats: 'Akapit=p; Nagłówek 2=h2; Nagłówek 3=h3; Nagłówek 4=h4',
         // Paleta zgodna z identyfikacją (kolory o kontraście ≥ 4.5:1 na bieli).
-        color_map: ['c31432', 'Kolor marki', '8f0e24', 'Kolor marki (ciemny)', '1a1a1a', 'Tekst', '4b5563', 'Tekst pomocniczy', '0075cf', 'Niebieski', '15803d', 'Zielony'],
+        color_map: ['1e6dff', 'Kolor marki', '1752bf', 'Kolor marki (ciemny)', '1a1a1a', 'Tekst', '4b5563', 'Tekst pomocniczy', '0075cf', 'Niebieski', '15803d', 'Zielony'],
         custom_colors: false,
         quickbars_insert_toolbar: false,
         quickbars_selection_toolbar: 'bold italic underline | h2 h3 | link blockquote',

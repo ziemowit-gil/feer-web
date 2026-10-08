@@ -125,6 +125,16 @@ class Page extends Model
     ];
 
     /** Ikony Font Awesome typów stron (karty podstron, kafelki działu). */
+    /** Grupy typów stron — wspólne dla wyboru typu w edycji i filtra na liście. */
+    public const TYPE_GROUPS = [
+        'Treść i informacja' => ['standard', 'faq', 'glossary', 'guide', 'documents', 'regulation'],
+        'Oferta i edukacja' => ['service', 'pricing', 'case_study', 'training_institution'],
+        'Organizacja' => ['about', 'about_person', 'team', 'wspolpraca', 'legacy', 'brand_assets'],
+        'Kafelki i nawigacja' => ['links_hub', 'tiles_grid'],
+        'Kontakt i wydarzenia' => ['contact', 'event', 'schedule'],
+        'Wewnętrzne i przekierowania' => ['internal', 'internal_hub', 'bip_move'],
+    ];
+
     public const TYPE_ICONS = [
         'pricing' => 'fa-coins', 'team' => 'fa-people-group', 'documents' => 'fa-folder-open', 'regulation' => 'fa-scale-balanced',
         'service' => 'fa-briefcase', 'guide' => 'fa-list-ol', 'glossary' => 'fa-book', 'case_study' => 'fa-chart-line',

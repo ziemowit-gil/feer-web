@@ -13,9 +13,9 @@
         'Segoe UI Symbol', 'Noto Color Emoji';
     --font-heading: 'Montserrat', ui-sans-serif, system-ui, sans-serif;
 
-    --color-brand: #c31432;
-    --color-brand-dark: #8f0e24;
-    --color-brand-light: #fdecee;
+    --color-brand: #1e6dff;
+    --color-brand-dark: #1752bf;
+    --color-brand-light: #e8f0ff;
     /* Dodatkowe kolory identyfikacji marki (2–4). Wartości nadpisywane w
        runtime z ustawień; tu domyślne, aby Tailwind wygenerował utility
        (bg-brand-2, text-brand-3, border-brand-4 itd.). */
@@ -494,7 +494,7 @@ html.no-animations *::after {
 /* WCAG 2.2 — 2.4.11/2.4.13: focus must always be clearly visible, regardless of
    any focus:outline-none utility a component happens to use. */
 :focus-visible {
-    outline: 3px solid #c31432;
+    outline: 3px solid #1e6dff;
     outline-offset: 2px;
 }
 

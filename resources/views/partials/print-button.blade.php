@@ -1,5 +1,5 @@
 {{-- Przycisk „Drukuj tę stronę" (włączany w Ustawieniach). Układ do druku: patrz <style media="print"> w layouts/site. --}}
-@if ($siteSettings->show_print_button ?? true)
+@if ($siteSettings->show_print_button ?? false)
     <button type="button" onclick="window.print()" class="print-btn no-print">
         <i class="fa-solid fa-print" aria-hidden="true"></i> Drukuj tę stronę
     </button>
