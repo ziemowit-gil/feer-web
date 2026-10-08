@@ -541,6 +541,10 @@ Route::middleware(['auth', 'verified', '2fa', 'admin-site'])->prefix(config('app
     Route::post('editor/importuj-docx', [DocxImportController::class, 'import'])->name('editor.docx.import');
     Route::post('multimedia/onedrive', [MediaLibraryController::class, 'oneDriveImport'])->name('multimedia.onedrive.import');
     Route::post('multimedia/upload-ajax', [MediaLibraryController::class, 'uploadAjax'])->name('multimedia.upload-ajax');
+    Route::get('zestawy-kafelkow', [\App\Http\Controllers\Admin\TileSetController::class, 'index'])->name('zestawy-kafelkow.index');
+    Route::post('zestawy-kafelkow', [\App\Http\Controllers\Admin\TileSetController::class, 'store'])->name('zestawy-kafelkow.store');
+    Route::get('zestawy-kafelkow/{tileSet}', [\App\Http\Controllers\Admin\TileSetController::class, 'show'])->name('zestawy-kafelkow.show');
+    Route::put('zestawy-kafelkow/{tileSet}', [\App\Http\Controllers\Admin\TileSetController::class, 'update'])->name('zestawy-kafelkow.update');
     Route::get('multimedia/eksport', [MediaLibraryController::class, 'export'])->name('multimedia.export');
     Route::post('multimedia/import', [MediaLibraryController::class, 'import'])->name('multimedia.import');
     Route::post('multimedia', [MediaLibraryController::class, 'store'])->name('multimedia.store');

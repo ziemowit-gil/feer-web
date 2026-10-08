@@ -39,6 +39,12 @@ class ShortcodeParser
         );
 
         $content = preg_replace_callback(
+            '/(?:<p>\s*)?\[kafelki-zestaw:(\d+)\](?:\s*<\/p>)?/i',
+            fn ($matches) => static::renderTileSet((int) $matches[1]),
+            $content,
+        );
+
+        $content = preg_replace_callback(
             '/(?:<p>\s*)?\[pasek:(\d+)\](?:\s*<\/p>)?/i',
             fn ($matches) => static::renderBand((int) $matches[1]),
             $content,
@@ -54,7 +60,7 @@ class ShortcodeParser
     }
 
     /** Wzorzec wszystkich shortcodów — do wykrywania (np. wyłączenie edycji inline). */
-    public const DETECT_PATTERN = '/\[(?:(?:formularz|kafelki):[a-z0-9_\-]+|pasek:\d+|klauzule-rodo(?::[a-z]{2})?)\]/i';
+    public const DETECT_PATTERN = '/\[(?:(?:formularz|kafelki):[a-z0-9_\-]+|kafelki-zestaw:\d+|pasek:\d+|klauzule-rodo(?::[a-z]{2})?)\]/i';
 
     public static function has(?string $content): bool
     {
@@ -97,6 +103,15 @@ class ShortcodeParser
         }
 
         return View::make('formularz._embed', ['form' => $form])->render();
+    }
+
+    /** Zestaw kafelków z kreatora edytora ([kafelki-zestaw:ID]). */
+    private static function renderTileSet(int $id): string
+    {
+        $set = \App\Models\TileSet::find($id);
+        $tiles = collect($set?->tiles ?? [])->filter(fn ($t) => filled($t['label'] ?? null) && filled($t['url'] ?? null))->values();
+
+        return $tiles->isEmpty() ? '' : View::make('partials._tiles-grid', ['tiles' => $tiles, 'label' => $set->name])->render();
     }
 
     private static function renderTilesGrid(string $slug): string

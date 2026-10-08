@@ -89,7 +89,10 @@
         ->where('type', 'tiles_grid')
         ->orderBy('title')
         ->get(['id', 'title', 'slug']);
+    // Zestawy kafelków z kreatora w edytorze (wstawiane shortcodem [kafelki-zestaw:ID]).
+    $tileSets = \App\Models\TileSet::forCurrentSite()->orderBy('name')->get(['id', 'name']);
 @endphp
+@include('admin.partials.tiles-builder')
 
 @php $mi = 'flex w-full items-center gap-2 rounded px-3 py-2 text-left text-xs font-bold text-ink hover:bg-brand-light hover:text-brand'; @endphp
 <div id="{{ $editorId }}-toolbar" class="mb-2 flex-wrap items-center gap-2 {{ $useCkEditor ? 'flex' : 'hidden' }}">
@@ -144,6 +147,21 @@
                     @endforeach
                 </select>
             @endif
+            <hr class="my-1 border-gray-100" role="separator">
+            <p class="px-3 pb-1 pt-0.5 text-[0.65rem] font-bold uppercase tracking-wide text-muted">Kafelki — kreator</p>
+            <button type="button" id="{{ $editorId }}-tileset-new" @click="open = false" class="{{ $mi }}"><i class="fa-solid fa-table-cells w-4 text-center" aria-hidden="true"></i> Nowy zestaw kafelków…</button>
+            <div id="{{ $editorId }}-tileset-wrap" class="{{ $tileSets->isEmpty() ? 'hidden' : '' }}">
+                <label for="{{ $editorId }}-tileset-pick" class="block px-3 pb-1 pt-1 text-[0.65rem] font-bold uppercase tracking-wide text-muted">Wstaw zestaw kafelków</label>
+                <select id="{{ $editorId }}-tileset-pick" @change="open = false" class="w-full rounded border-gray-300 px-2 py-1.5 text-xs font-bold text-ink focus:border-brand focus:ring-brand">
+                    <option value="">— wybierz zestaw —</option>
+                    @foreach ($tileSets as $ts)<option value="{{ $ts->id }}">{{ $ts->name }}</option>@endforeach
+                </select>
+                <label for="{{ $editorId }}-tileset-edit" class="block px-3 pb-1 pt-2 text-[0.65rem] font-bold uppercase tracking-wide text-muted">Edytuj zestaw kafelków</label>
+                <select id="{{ $editorId }}-tileset-edit" @change="open = false" class="w-full rounded border-gray-300 px-2 py-1.5 text-xs font-bold text-ink focus:border-brand focus:ring-brand">
+                    <option value="">— wybierz zestaw —</option>
+                    @foreach ($tileSets as $ts)<option value="{{ $ts->id }}">{{ $ts->name }}</option>@endforeach
+                </select>
+            </div>
             @if ($activeTilesGridPages->isNotEmpty())
                 <hr class="my-1 border-gray-100" role="separator">
                 <label for="{{ $editorId }}-tiles-pick" class="block px-3 pb-1 pt-0.5 text-[0.65rem] font-bold uppercase tracking-wide text-muted">Wstaw siatkę kafelków</label>
@@ -1717,6 +1735,28 @@
                         });
                     }
 
+                    (function () {
+                        var wrap = document.getElementById('{{ $editorId }}-tileset-wrap');
+                        var pick = document.getElementById('{{ $editorId }}-tileset-pick');
+                        var edit = document.getElementById('{{ $editorId }}-tileset-edit');
+                        var addBtn = document.getElementById('{{ $editorId }}-tileset-new');
+                        if (! pick || ! edit || ! addBtn) return;
+                        function insertShortcode(id) {
+                            var viewFragment = editor.data.processor.toView('<p>[kafelki-zestaw:' + id + ']</p>');
+                            editor.model.insertContent(editor.data.toModel(viewFragment));
+                            editor.editing.view.focus();
+                        }
+                        function addOption(set) {
+                            [pick, edit].forEach(function (sel) {
+                                if (! sel.querySelector('option[value="' + set.id + '"]')) { var o = document.createElement('option'); o.value = set.id; o.textContent = set.name; sel.appendChild(o); }
+                            });
+                            wrap.classList.remove('hidden');
+                        }
+                        addBtn.addEventListener('click', function () { window.TilesBuilder.open({ id: null, trigger: addBtn, onSave: function (set) { addOption(set); insertShortcode(set.id); } }); });
+                        pick.addEventListener('change', function () { if (this.value) { insertShortcode(this.value); } this.selectedIndex = 0; });
+                        edit.addEventListener('change', function () { var id = this.value; this.selectedIndex = 0; if (id) { window.TilesBuilder.open({ id: id, trigger: addBtn, onSave: function (set) { addOption(set); } }); } });
+                    })();
+
                     modal.addEventListener('media-picked', function (event) {
                         var image = event.detail;
                         var html = '<img src="' + image.url + '" alt="' + image.alt.replace(/&/g, '&amp;').replace(/"/g, '&quot;') + '">';
@@ -1811,6 +1851,7 @@
                 var eventBoxes = {!! json_encode($eventBoxOptions->map(fn ($o) => ['title' => $o['title'], 'html' => $o['html']])->values()) !!};
                 var activeForms = {!! json_encode($activeForms->map(fn ($f) => ['slug' => $f->slug, 'title' => $f->title])->values()) !!};
                 var activeTilesGridPages = {!! json_encode($activeTilesGridPages->map(fn ($p) => ['slug' => $p->slug, 'title' => $p->title])->values()) !!};
+                var tileSets = {!! json_encode($tileSets->map(fn ($t) => ['id' => $t->id, 'name' => $t->name])->values()) !!};
                 var newsLinks = {!! json_encode($newsForPicker->map(fn ($n) => ['url' => route('news.show', $n), 'title' => $n->title])->values()) !!};
                 var eventLinks = {!! json_encode($eventsForBox->map(fn ($e) => ['url' => '/wydarzenia/'.$e->slug, 'title' => $e->title])->values()) !!};
                 var personLinks = {!! json_encode($personPages->map(fn ($p) => ['url' => '/'.$p->slug, 'title' => $p->title])->values()) !!};
@@ -1935,6 +1976,23 @@
                                         return activeForms.map(function (f) {
                                             return { type: 'menuitem', text: f.title, onAction: function () { editor.insertContent('[formularz:' + f.slug + ']'); } };
                                         });
+                                    } });
+                                }
+                                items.push({ type: 'separator' });
+                                items.push({ type: 'menuitem', text: 'Nowy zestaw kafelków…', onAction: function () {
+                                    window.TilesBuilder.open({ id: null, trigger: document.activeElement, onSave: function (set) {
+                                        if (! tileSets.some(function (t) { return t.id === set.id; })) { tileSets.push({ id: set.id, name: set.name }); }
+                                        editor.insertContent('<p>[kafelki-zestaw:' + set.id + ']</p>');
+                                    } });
+                                } });
+                                if (tileSets.length) {
+                                    items.push({ type: 'nestedmenuitem', text: 'Wstaw zestaw kafelków', getSubmenuItems: function () {
+                                        return tileSets.map(function (t) { return { type: 'menuitem', text: t.name, onAction: function () { editor.insertContent('<p>[kafelki-zestaw:' + t.id + ']</p>'); } }; });
+                                    } });
+                                    items.push({ type: 'nestedmenuitem', text: 'Edytuj zestaw kafelków', getSubmenuItems: function () {
+                                        return tileSets.map(function (t) { return { type: 'menuitem', text: t.name, onAction: function () {
+                                            window.TilesBuilder.open({ id: t.id, trigger: document.activeElement, onSave: function (set) { t.name = set.name; } });
+                                        } }; });
                                     } });
                                 }
                                 if (activeTilesGridPages.length) {
