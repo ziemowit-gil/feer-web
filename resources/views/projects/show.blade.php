@@ -35,6 +35,8 @@
             ->merge($tabPages->map(fn ($sp, $i) => ['id' => 'podstrona-'.$i, 'label' => $sp->title]))
             ->all();
         $hasTabs = count($tabItems) > 1;
+        // Zdania-ostrzeżenia („Ważne:", „Uwaga:") zamieniamy na wyróżnioną ramkę (callout), niezależnie od tego, jak wyrównał je edytor.
+        $projectContentHtml = preg_replace('~<p((?![^>]*\bclass=)[^>]*)>(\s*(?:<(?:strong|b)[^>]*>)?\s*(?:Ważne|Ważna informacja|Uwaga)\b)~iu', '<p class="proj-callout"$1>$2', (string) $project->content);
         // Tryb nawigacji: pasek zakładek albo menu boczne (ustawienie serwisu lub własny wybór projektu).
         $navSidebar = $hasTabs && $project->sectionsNavMode() === 'sidebar';
         $linkPages = $pageRoots->whereNotIn('project_display', ['inline', 'tab'])->values();
@@ -101,9 +103,32 @@
     @endif
 
     <section class="mx-auto max-w-6xl px-4 py-12">
-        @php $hasAside = $schedulePage || (! $project->is_completed && $project->showsCoordinator()) || $linkPages->isNotEmpty(); @endphp
+        @php
+            $showNews = $siteSettings->isModuleEnabled('news') && $project->publishedNews->isNotEmpty();
+            $hasAside = $schedulePage || (! $project->is_completed && $project->showsCoordinator()) || $linkPages->isNotEmpty() || $showNews;
+        @endphp
         {{-- Układ kolumn w zwykłym CSS (nie zależy od zbudowanych klas Tailwinda): menu boczne zawsze po lewej od lg. --}}
         <style>
+            /* Czytelność: krótsza linia (ok. 70 znaków), ciemniejszy i grubszy tekst, spójne nagłówki, wyróżnione komunikaty. */
+            .proj-measure { max-width: 46rem; }
+            .proj-flow > * + * { margin-top: 2.5rem; }
+            .proj-prose { color: #1d1d1a; font-size: 1.0625rem; line-height: 1.75; font-weight: 500; }
+            .proj-prose p, .proj-prose li { color: #1d1d1a; }
+            .proj-prose p + p { margin-top: 1rem; }
+            .proj-prose strong { font-weight: 700; }
+            .proj-prose ul, .proj-prose ol { padding-left: 1.4rem; }
+            .proj-prose li { margin-top: .5rem; padding-left: .25rem; }
+            .proj-prose li::marker { color: var(--color-brand); font-weight: 700; }
+            .proj-prose a { color: var(--color-brand); text-decoration: underline; text-underline-offset: 3px; }
+            .proj-prose h2, .proj-prose h3 { color: #1d1d1a; font-weight: 800; line-height: 1.3; }
+            .proj-prose h2 { margin: 2.5rem 0 1rem; padding-left: .75rem; border-left: 4px solid var(--color-brand); font-size: 1.5rem; }
+            .proj-prose h3 { margin: 1.75rem 0 .5rem; font-size: 1.2rem; }
+            .proj-h2 { margin: 0 0 1rem; padding-left: .75rem; border-left: 4px solid var(--color-brand); font-size: 1.5rem; font-weight: 800; line-height: 1.3; color: #1d1d1a; }
+            .proj-callout, .proj-prose p[style*="text-align: center"], .proj-prose p[style*="text-align:center"] {
+                margin: 1.5rem 0; padding: 1rem 1.25rem; border-left: 4px solid var(--color-brand); border-radius: .5rem;
+                background: var(--color-brand-light); text-align: left !important; font-weight: 600;
+            }
+            .proj-news a { display: block; padding: .6rem 0; }
             @media (min-width: 1024px) {
                 .proj-cols { grid-template-columns: minmax(0, 1fr) 18rem; }
                 .proj-cols > .proj-main { grid-column: 1; grid-row: 1 / span 3; }
@@ -112,7 +137,7 @@
         </style>
         <div @class(['grid items-start gap-10', 'proj-cols' => $hasAside || $navSidebar])>
         <div class="min-w-0 proj-main">
-            <div id="panel-opis" role="tabpanel" aria-labelledby="tab-opis" x-show="tab === 'opis'">
+            <div id="panel-opis" role="tabpanel" aria-labelledby="tab-opis" x-show="tab === 'opis'" class="proj-measure proj-flow">
                 @if ($sectionTabs->isNotEmpty())
                     {{-- Sekcje własne są w zakładkach (pasek pod nagłówkiem) --}}
                 @else
@@ -146,17 +171,13 @@
                 @endif
 
                 @if ($project->content)
-                    <h2 class="mb-3 flex items-center gap-2 text-xl font-bold text-ink">
-                        <i class="fa-solid fa-circle-info text-brand" aria-hidden="true"></i> Opis projektu
-                    </h2>
-                    <div class="prose mb-8 max-w-none text-ink" @if ($canInlineEdit) data-inline-field="content" data-inline-kind="rich" @endif>{!! $project->content !!}</div>
+                    <h2 class="proj-h2">Opis projektu</h2>
+                    <div class="prose proj-prose max-w-none" @if ($canInlineEdit) data-inline-field="content" data-inline-kind="rich" @endif>{!! $projectContentHtml !!}</div>
                 @endif
 
                 @if ($project->why)
-                    <h2 class="mb-3 flex items-center gap-2 text-xl font-bold text-ink">
-                        <i class="fa-solid fa-lightbulb text-brand" aria-hidden="true"></i> Dlaczego to robimy
-                    </h2>
-                    <div class="prose max-w-none text-ink">{{ $project->why }}</div>
+                    <h2 class="proj-h2">Dlaczego to robimy</h2>
+                    <div class="prose proj-prose max-w-none">{{ $project->why }}</div>
                 @endif
 
                 @unless ($sectionTabs->isNotEmpty())
@@ -179,9 +200,7 @@
                         $subIcon = $subpage->isSchedule() ? 'fa-calendar-days' : ($subpage->isFaq() ? 'fa-circle-question' : 'fa-file-lines');
                     @endphp
                     <section @if ($anchor) id="{{ $anchor }}" @endif class="mt-8 scroll-mt-24 rounded-lg border border-gray-200 p-6">
-                        <h2 class="mb-4 flex items-center gap-2 text-xl font-bold text-ink">
-                            <i class="fa-solid {{ $subIcon }} text-brand" aria-hidden="true"></i> {{ $subpage->title }}
-                        </h2>
+                        <h2 class="proj-h2">{{ $subpage->title }}</h2>
                         @if ($subpage->content)
                             <div class="prose max-w-none text-ink">{!! $subpage->content !!}</div>
                         @endif
@@ -199,19 +218,15 @@
                 {{-- Project subpages shown as tabs --}}
                 @if ($project->outcomes)
                     <div class="mt-8 rounded-lg border border-emerald-200 bg-emerald-50/60 p-6">
-                        <h2 class="mb-3 flex items-center gap-2 text-xl font-bold text-ink">
-                            <i class="fa-solid fa-award text-emerald-600" aria-hidden="true"></i> Co udało się osiągnąć
-                        </h2>
-                        <div class="prose max-w-none text-ink">{!! $project->outcomes !!}</div>
+                        <h2 class="proj-h2">Co udało się osiągnąć</h2>
+                        <div class="prose proj-prose max-w-none">{!! $project->outcomes !!}</div>
                     </div>
                 @endif
 
                 @php $pricing = collect($project->pricing ?? [])->filter(fn ($p) => filled($p['item'] ?? null) || filled($p['price'] ?? null)); @endphp
                 @if ($project->is_paid && $pricing->isNotEmpty())
                     <div class="mt-8 rounded-lg border border-gray-200 p-6">
-                        <h2 class="mb-4 flex items-center gap-2 text-xl font-bold text-ink">
-                            <i class="fa-solid fa-tag text-brand" aria-hidden="true"></i> Cennik
-                        </h2>
+                        <h2 class="proj-h2">Cennik</h2>
                         <ul class="divide-y divide-gray-100">
                             @foreach ($pricing as $row)
                                 <li class="flex items-baseline justify-between gap-4 py-2.5">
@@ -230,48 +245,12 @@
                     </div>
                 @endif
 
-                @if ($siteSettings->isModuleEnabled('news') && $project->publishedNews->isNotEmpty())
-                    <div class="mt-10 border-t border-gray-200 pt-8">
-                        <h2 class="mb-4 flex items-center gap-2 text-xl font-bold text-ink">
-                            <i class="fa-solid fa-newspaper text-brand" aria-hidden="true"></i> Aktualności projektu
-                        </h2>
-                        <ul class="space-y-4">
-                            @foreach ($project->publishedNews as $item)
-                                <li>
-                                    <a href="{{ route('news.show', $item) }}"
-                                        @class([
-                                            'group flex gap-4 rounded-lg border p-4 transition hover:shadow-sm',
-                                            'border-gray-200 hover:border-brand/40' => ! $item->is_featured,
-                                            'border-2 border-amber-400 bg-amber-50/50' => $item->is_featured,
-                                        ])>
-                                        @php $itemImg = $item->imageUrlOrDefault(); @endphp
-                                        @if ($itemImg)
-                                            <img src="{{ $itemImg }}" alt="" loading="lazy" class="h-16 w-24 flex-none rounded object-cover">
-                                        @endif
-                                        <div class="min-w-0">
-                                            @if ($item->is_featured)
-                                                <span class="mb-1 inline-flex items-center gap-1 rounded-md bg-amber-400/20 px-2 py-0.5 text-xs font-bold text-amber-700">
-                                                    <i class="fa-solid fa-star" aria-hidden="true"></i> Wyróżnione
-                                                </span>
-                                            @endif
-                                            <p class="text-xs font-bold uppercase tracking-wide text-muted">{{ $item->published_at->format('d.m.Y') }}</p>
-                                            <p class="font-bold text-ink group-hover:text-brand">{{ $item->title }}</p>
-                                            @if ($item->excerpt)
-                                                <p class="mt-1 line-clamp-2 text-sm text-muted">{{ $item->excerpt }}</p>
-                                            @endif
-                                        </div>
-                                    </a>
-                                </li>
-                            @endforeach
-                        </ul>
-                    </div>
-                @endif
             </div>{{-- /panel-opis --}}
 
             {{-- Panele pozostałych zakładek --}}
             @foreach ($sectionTabs as $i => $section)
                 <div id="panel-sekcja-{{ $i }}" role="tabpanel" aria-labelledby="tab-sekcja-{{ $i }}" tabindex="0" x-cloak
-                     x-show="tab === 'sekcja-{{ $i }}'" class="prose max-w-none text-ink focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand">
+                     x-show="tab === 'sekcja-{{ $i }}'" class="prose proj-prose max-w-none focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand">
                     @if (! empty($section['title']))<h2 class="mb-3 text-xl font-bold text-ink">{{ $section['title'] }}</h2>@endif
                     {!! $section['content'] ?? '' !!}
                 </div>
@@ -354,6 +333,21 @@
                     </div>
                 @endif
 
+                @if ($showNews)
+                    <section class="rounded-lg border border-gray-200 bg-white p-5" aria-labelledby="proj-news-h">
+                        <h2 id="proj-news-h" class="proj-h2" style="font-size:1.125rem">Aktualności projektu</h2>
+                        <ul role="list" class="proj-news divide-y divide-gray-100">
+                            @foreach ($project->publishedNews as $item)
+                                <li>
+                                    <a href="{{ route('news.show', $item) }}" class="group focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
+                                        <span class="block text-xs font-bold uppercase tracking-wide text-muted">{{ $item->published_at->format('d.m.Y') }}</span>
+                                        <span class="block font-bold leading-snug text-ink group-hover:text-brand">{{ $item->title }}</span>
+                                    </a>
+                                </li>
+                            @endforeach
+                        </ul>
+                    </section>
+                @endif
             </aside>
             @endif
         </div>
