@@ -33,6 +33,9 @@ class NavItem extends Model
         'lg' => 'Duże (dwie kolumny, większe ikony i opisy)',
     ];
 
+    /** Wygląd własnych linków pod/obok menu rozwijanego. */
+    public const SIDE_LINK_STYLES = ['link', 'button', 'tile', 'tile_filled'];
+
     public const LOCATIONS = [
         'main' => 'Menu główne (nagłówek)',
         'footer' => 'Stopka',
@@ -95,7 +98,7 @@ class NavItem extends Model
             ->map(fn ($l) => [
                 'label' => trim((string) $l['label']),
                 'url' => trim((string) $l['url']),
-                'style' => ($l['style'] ?? 'link') === 'button' ? 'button' : 'link',
+                'style' => in_array($l['style'] ?? 'link', self::SIDE_LINK_STYLES, true) ? $l['style'] : 'link',
                 'new_tab' => filter_var($l['new_tab'] ?? false, FILTER_VALIDATE_BOOLEAN),
             ])
             ->values()

@@ -209,8 +209,8 @@
     @error('mega_size') <p class="mt-1 text-sm text-red-700">{{ $message }}</p> @enderror
 </div>
 
-<div x-show="form.isMega && form.location === 'main' && form.parentId === ''" x-cloak class="space-y-3 rounded-lg border border-gray-100 bg-gray-50 p-4">
-    <p class="text-xs font-bold uppercase tracking-wide text-muted">Karta boczna mega menu — własne linki i przyciski</p>
+<div x-show="(form.isMega || ['dropdown', 'projects', 'pages'].includes(form.type)) && form.location === 'main' && form.parentId === ''" x-cloak class="space-y-3 rounded-lg border border-gray-100 bg-gray-50 p-4">
+    <p class="text-xs font-bold uppercase tracking-wide text-muted">Własne linki i przyciski w menu rozwijanym (karta boczna mega menu / pod listą)</p>
     <div>
         <label for="nav-mega-side-title" class="mb-1 block text-xs font-bold text-muted">Tytuł karty <span class="font-normal">(opcjonalnie — puste = bez tytułu)</span></label>
         <input type="text" id="nav-mega-side-title" name="mega_side_title" x-model="form.megaSideTitle" maxlength="80" placeholder="np. Działania na starej stronie"
@@ -232,7 +232,9 @@
                 <label :for="'side-style-' + i" class="mb-0.5 block text-xs font-bold text-muted">Wygląd</label>
                 <select :id="'side-style-' + i" :name="`mega_side_links[${i}][style]`" x-model="link.style"
                     class="w-full rounded border-gray-300 text-sm focus-visible:border-brand focus-visible:ring-2 focus-visible:ring-brand">
-                    <option value="button">Przycisk</option>
+                    <option value="tile">Przycisk jak w „Na skróty” (obwódka)</option>
+                    <option value="tile_filled">Przycisk jak w „Na skróty” (wypełniony)</option>
+                    <option value="button">Przycisk (pigułka)</option>
                     <option value="link">Zwykły link</option>
                 </select>
             </div>
@@ -248,7 +250,7 @@
             </div>
         </div>
     </template>
-    <button type="button" x-show="form.megaSideLinks.length < 8" @click="form.megaSideLinks.push({ label: '', url: '', style: 'button', new_tab: false })"
+    <button type="button" x-show="form.megaSideLinks.length < 8" @click="form.megaSideLinks.push({ label: '', url: '', style: 'tile', new_tab: false })"
         class="inline-flex items-center gap-2 rounded border border-dashed border-gray-300 px-3 py-1.5 text-sm font-bold text-brand hover:border-brand hover:bg-brand-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
         <i class="fa-solid fa-plus" aria-hidden="true"></i> Dodaj link lub przycisk
     </button>

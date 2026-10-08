@@ -364,7 +364,7 @@ class NavItemController extends Controller
             'mega_side_links.*.label' => ['nullable', 'string', 'max:80'],
             // Bez schematów wykonywalnych (javascript:, data:, vbscript:).
             'mega_side_links.*.url' => ['nullable', 'string', 'max:500', 'not_regex:/^\s*(javascript|data|vbscript):/i'],
-            'mega_side_links.*.style' => ['nullable', Rule::in(['button', 'link'])],
+            'mega_side_links.*.style' => ['nullable', Rule::in(NavItem::SIDE_LINK_STYLES)],
             'mega_side_links.*.new_tab' => ['nullable', 'boolean'],
             'url' => ['nullable', 'string', 'max:255'],
             'type' => ['required', Rule::in(array_keys(NavItem::TYPES))],
@@ -449,14 +449,16 @@ class NavItemController extends Controller
             ->map(fn ($l) => [
                 'label' => trim((string) ($l['label'] ?? '')),
                 'url' => trim((string) ($l['url'] ?? '')),
-                'style' => ($l['style'] ?? 'link') === 'button' ? 'button' : 'link',
+                'style' => in_array($l['style'] ?? 'link', NavItem::SIDE_LINK_STYLES, true) ? $l['style'] : 'link',
                 'new_tab' => filter_var($l['new_tab'] ?? false, FILTER_VALIDATE_BOOLEAN),
             ])
             ->filter(fn ($l) => $l['label'] !== '' && $l['url'] !== '')
             ->values()
             ->all();
-        $data['mega_side_links'] = $data['is_mega'] && $sideLinks ? $sideLinks : null;
-        $data['mega_side_title'] = $data['is_mega'] ? (trim((string) ($data['mega_side_title'] ?? '')) ?: null) : null;
+        // Własne linki/przyciski dotyczą każdego rozwijanego menu głównego (mega i zwykłego).
+        $hasSideCard = $data['is_mega'] || in_array($data['type'], ['dropdown', 'projects', 'pages'], true);
+        $data['mega_side_links'] = $hasSideCard && $sideLinks ? $sideLinks : null;
+        $data['mega_side_title'] = $hasSideCard ? (trim((string) ($data['mega_side_title'] ?? '')) ?: null) : null;
 
         if (! $data['is_mega'] || $request->boolean('remove_mega_image')) {
             $data['mega_image'] = null;

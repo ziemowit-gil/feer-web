@@ -17,13 +17,7 @@
             <p class="px-2 text-xs font-bold uppercase tracking-wide text-muted">{{ $item->mega_side_title }}</p>
         @endif
         @foreach ($sideLinks as $sl)
-            <a href="{{ $sl['url'] }}" @if ($sl['new_tab']) target="_blank" rel="noopener" @endif
-               class="{{ $sl['style'] === 'button'
-                    ? 'flex min-h-10 items-center justify-center gap-2 rounded-full bg-brand px-4 text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2'
-                    : 'flex min-h-10 items-center gap-2 rounded-md px-2 text-sm font-bold text-brand hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand' }}">
-                <span>{{ $sl['label'] }}</span>
-                <i class="fa-solid {{ $sl['new_tab'] ? 'fa-arrow-up-right-from-square' : 'fa-arrow-right' }} text-xs" aria-hidden="true"></i>
-            </a>
+            @include('partials.nav-side-link', ['sl' => $sl, 'block' => true])
         @endforeach
     </{{ $tag }}>
 @endif

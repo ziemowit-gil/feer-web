@@ -299,13 +299,7 @@
                     <div class="mt-4 flex flex-col items-start gap-2">
                         @if ($sideLinks)
                             @foreach ($sideLinks as $sl)
-                                <a href="{{ $sl['url'] }}" @if ($sl['new_tab']) target="_blank" rel="noopener" @endif
-                                   class="{{ $sl['style'] === 'button'
-                                        ? 'inline-flex min-h-10 items-center gap-2 rounded-full bg-brand px-4 text-sm font-bold text-white transition hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2'
-                                        : 'inline-flex min-h-9 items-center gap-1.5 rounded-md px-2 text-sm font-bold text-brand underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand' }}">
-                                    <span>{{ $sl['label'] }}</span>
-                                    <i class="fa-solid {{ $sl['new_tab'] ? 'fa-arrow-up-right-from-square' : 'fa-arrow-right' }} text-xs" aria-hidden="true"></i>
-                                </a>
+                                @include('partials.nav-side-link', ['sl' => $sl, 'block' => false])
                             @endforeach
                         @else
                             @if ($hasTarget)
