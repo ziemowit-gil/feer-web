@@ -294,6 +294,7 @@ class ProjectController extends Controller
             'funding_notice' => ['nullable', 'string', 'max:1000'],
             'partner_ids' => ['sometimes', 'array'],
             'partner_ids.*' => ['integer', 'exists:partners,id'],
+            'paid_info_text' => ['nullable', 'string', 'max:3000'],
             'parent_id' => ['nullable', 'integer', 'exists:projects,id', Rule::notIn(array_filter([$selfId]))],
             'inherit' => ['sometimes', 'array'],
             'inherit.*' => ['string', Rule::in(array_keys(Project::INHERITABLE))],
@@ -373,6 +374,8 @@ class ProjectController extends Controller
         $data['status'] = ($data['status'] ?? null) ?: null;
         unset($data['partner_ids']);
 
+        $data['paid_info_show'] = $request->boolean('paid_info_show');
+        $data['paid_info_text'] = trim((string) ($data['paid_info_text'] ?? '')) ?: null;
         $data['is_offered'] = ! $request->has('is_offered_present') || $request->boolean('is_offered');
         $data['inherit'] = $data['parent_id'] ? array_values($data['inherit'] ?? []) : null;
         // Własny kolor akcentu pilnujemy pod kątem kontrastu WCAG (jak brand/NGO).

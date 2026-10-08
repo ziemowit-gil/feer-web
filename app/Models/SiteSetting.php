@@ -250,7 +250,7 @@ class SiteSetting extends Model implements HasMedia
         'msgraph_tenant_id', 'msgraph_client_id', 'msgraph_client_secret', 'msgraph_sender', 'msgraph_save_to_sent', 'forms_mail_via_msgraph',
         'show_coordinators', 'ngo_color', 'sub_brands',
         'logo_alt', 'logo_only',
-        'news_layout', 'projects_layout', 'project_sections_nav', 'projects_stages_enabled', 'projects_team_funding_enabled', 'volunteer_layout',
+        'news_layout', 'projects_layout', 'project_sections_nav', 'paid_activity_info', 'projects_stages_enabled', 'projects_team_funding_enabled', 'volunteer_layout',
         'site_template', 'municipality_shortcuts_slug', 'municipality_carousel_title',
         'municipality_weather_lat', 'municipality_weather_lon', 'municipality_show_google_translate',
         'wide_mission_social_1', 'wide_mission_social_2', 'wide_mission_social_3', 'wide_mission_layout', 'wide_mission_cta_label', 'wide_mission_cta_url', 'wide_mission_cta2_label', 'wide_mission_cta2_url', 'wide_mission_show_mission', 'wide_mission_highlight_account', 'wide_mission_nav_align', 'wide_mission_search_in_nav', 'wide_mission_sidebar', 'wide_mission_sidebar_style', 'wide_mission_nav_style', 'wide_mission_nav_hover_white', 'wide_mission_nav_active_white', 'wide_mission_nav_icons_white', 'hero_mission_slide', 'hero_mission_bg', 'hero_mission_order',
@@ -1347,6 +1347,18 @@ class SiteSetting extends Model implements HasMedia
     }
 
     /** Klucz Unsplash: z panelu, a gdy pusty — z konfiguracji (.env). */
+    /**
+     * Tekst domyślny: objaśnienie odpłatnej działalności pożytku publicznego (ustawa o działalności pożytku publicznego
+     * i o wolontariacie) i sposobu, w jaki działa w naszej organizacji. Akapity rozdzielone pustą linią.
+     * UWAGA: część „Jak to działa u nas" opisuje ogólną zasadę — dostosuj ją w ustawieniach do faktycznych reguł organizacji.
+     */
+    public const PAID_ACTIVITY_DEFAULT = "Organizacja pozarządowa, taka jak nasza fundacja, może prowadzić działalność pożytku publicznego w obszarach zgodnych z jej celami statutowymi — nieodpłatnie albo odpłatnie. Odpłatna działalność pożytku publicznego to usługi, za które pobieramy opłatę, ale które nadal służą misji organizacji. To nie jest zwykła działalność gospodarcza nastawiona na zysk.\n\nJak to działa u nas: wersję bezpłatną realizujemy w ramach naszych programów i projektów, a wersję odpłatną oferujemy wtedy, gdy ktoś potrzebuje innego terminu, większego zakresu albo wsparcia poza programami. Opłata pokrywa koszty przygotowania i prowadzenia działań. Cała nadwyżka z odpłatnej działalności jest przeznaczana wyłącznie na realizację celów statutowych fundacji — nie dzielimy jej między członków ani zarząd — dzięki temu możemy prowadzić więcej działań bezpłatnie.";
+
+    public function paidActivityInfo(): string
+    {
+        return filled($this->paid_activity_info) ? $this->paid_activity_info : self::PAID_ACTIVITY_DEFAULT;
+    }
+
     public function unsplashAccessKey(): ?string
     {
         return filled($this->unsplash_access_key)

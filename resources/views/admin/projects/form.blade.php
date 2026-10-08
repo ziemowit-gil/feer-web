@@ -225,6 +225,25 @@
                         <span class="text-sm font-bold">Projekt odpłatny — pokaż cennik na stronie projektu</span>
                     </label>
 
+                    {{-- Objaśnienie odpłatnej działalności pożytku publicznego (tekst z Ustawień, z możliwością nadpisania dla projektu) --}}
+                    <div x-show="paid" x-cloak class="space-y-3 rounded-lg border border-gray-100 bg-gray-50 p-4">
+                        <label class="flex items-start gap-3">
+                            <input type="hidden" name="paid_info_show" value="0">
+                            <input type="checkbox" name="paid_info_show" value="1" {{ old('paid_info_show', $project->paid_info_show ?? true) ? 'checked' : '' }} class="mt-0.5 rounded border-gray-300 text-brand focus:ring-brand">
+                            <span>
+                                <span class="block text-sm font-bold">Pokaż objaśnienie odpłatnej działalności pożytku publicznego</span>
+                                <span class="block text-xs text-muted">Rozwijane objaśnienie „Czym jest odpłatna działalność pożytku publicznego i jak to u nas działa?” przy odpłatnej wersji.</span>
+                            </span>
+                        </label>
+                        <div>
+                            <label for="paid_info_text" class="mb-1 block text-sm font-bold">Własny tekst objaśnienia <span class="font-normal text-muted">(puste = tekst z Ustawień → Treści)</span></label>
+                            <textarea id="paid_info_text" name="paid_info_text" rows="5" maxlength="3000" placeholder="{{ \Illuminate\Support\Str::limit($siteSettings->paidActivityInfo(), 140) }}"
+                                class="w-full rounded-lg border-gray-300 text-sm focus:border-brand focus:ring-brand">{{ old('paid_info_text', $project->paid_info_text) }}</textarea>
+                            <p class="mt-1 text-xs text-muted">Akapity rozdzielaj pustą linią.</p>
+                            @error('paid_info_text') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                        </div>
+                    </div>
+
                     <div x-show="paid" x-cloak data-pricing>
                         <p class="mb-2 text-sm font-bold uppercase tracking-wide text-muted">Cennik</p>
                         <p class="mb-3 text-xs text-muted">Pozycja + cena (i opcjonalnie krótki opis). Puste wiersze są pomijane.</p>

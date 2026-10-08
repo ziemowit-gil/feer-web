@@ -183,6 +183,11 @@
             .proj-ref-link { display: inline-flex; flex-wrap: wrap; align-items: baseline; gap: .15rem; padding: .15rem 0; border: 0; background: none; font: inherit; font-weight: 800; color: var(--color-brand); text-align: left; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
             .proj-ref-link:hover { color: #1d1d1a; } .proj-ref-link:focus-visible { outline: 2px solid var(--color-brand); outline-offset: 3px; border-radius: .25rem; }
             .proj-ref-kind { font-weight: 500; color: #374151; text-decoration: none; display: inline-block; }
+                        .proj-paid-info { font-weight: 500; }
+            .proj-paid-info summary { cursor: pointer; font-weight: 800; color: var(--color-brand); text-decoration: underline; text-underline-offset: 3px; }
+            .proj-paid-info summary:hover { color: #1d1d1a; } .proj-paid-info summary:focus-visible { outline: 2px solid var(--color-brand); outline-offset: 3px; border-radius: .25rem; }
+            .proj-paid-body { margin-top: .6rem; padding-left: .85rem; border-left: 3px solid var(--color-brand); font-size: .95rem; line-height: 1.6; font-weight: 500; }
+            .proj-paid-body p { margin: 0 0 .6rem; } .proj-paid-body p:last-child { margin-bottom: 0; }
             .proj-note-links { display: flex; flex-wrap: wrap; gap: .5rem 1.25rem; margin-top: .75rem; }
             .proj-note-links a { font-weight: 800; color: var(--color-brand); text-decoration: underline; text-underline-offset: 3px; }
             .proj-note-links a:hover { color: #1d1d1a; }
@@ -219,6 +224,12 @@
         <div @class(['grid items-start gap-10', 'proj-cols' => $hasAside || $navSidebar])>
         <div class="min-w-0 proj-main">
             <div id="panel-opis" role="tabpanel" aria-labelledby="tab-opis" x-show="tab === 'opis'" class="proj-measure proj-flow">
+                @if ($project->is_paid && $project->parent_id)
+                    <div class="proj-note"><span>Ta wersja działań jest <strong>odpłatna</strong>.</span>
+                        @include('projects.partials.paid-info', ['infoProject' => $project])
+                        <span class="proj-note-ico" aria-hidden="true"><i class="fa-solid fa-coins"></i></span>
+                    </div>
+                @endif
                 @php $subProjects = $project->publishedChildren; @endphp
                 @if ($subProjects->isNotEmpty())
                     <section aria-labelledby="proj-children-h">
@@ -260,6 +271,10 @@
                                 Te działania realizujemy <strong>bezpłatnie</strong> — wybierz wersję, która odpowiada Twoim potrzebom.
                             @endif
                         
+                            @php $paidChild = $subProjects->firstWhere('is_paid', true); @endphp
+                            @if ($paidChild)
+                                @include('projects.partials.paid-info', ['infoProject' => $paidChild])
+                            @endif
                             <span class="proj-note-ico" aria-hidden="true"><i class="fa-solid fa-coins"></i></span></span>
                             <span class="proj-note-links">
                                 @foreach ($subProjects as $sp)
