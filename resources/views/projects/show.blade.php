@@ -143,6 +143,9 @@
             .proj-choice-tile { display: flex; flex: 1; flex-direction: column; gap: .5rem; padding: 1.25rem; border: 2px solid #1d1d1a; border-top-width: 6px; border-radius: .75rem; background: #fff; color: #1d1d1a; text-decoration: none; transition: transform .15s, box-shadow .15s; }
             .proj-choice-tile.is-free { border-top-color: #166534; }
             .proj-choice-tile.is-paid { border-top-color: var(--color-brand); }
+            .proj-choice-tile.is-off { border-color: #6b7280; border-top-color: #6b7280; background: #f3f4f6; }
+            .proj-choice-tile.is-off .proj-choice-kind { color: #374151; }
+            .proj-choice-tile.is-off .proj-choice-cta { color: #1d1d1a; }
             .proj-choice-tile:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(0,0,0,.12); }
             .proj-choice-tile:focus-visible { outline: 3px solid #1d1d1a; outline-offset: 3px; }
             .proj-choice-kind { font-size: .75rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
@@ -212,16 +215,19 @@
                 @if ($subProjects->isNotEmpty())
                     <section aria-labelledby="proj-children-h">
                         @php
-                            $cnt = $subProjects->count();
+                            $offered = $subProjects->filter(fn ($x) => $x->is_offered)->values();
+                            $cnt = $offered->count();
                             $cntWord = [2 => 'dwóch', 3 => 'trzech', 4 => 'czterech'][$cnt] ?? (string) $cnt;
                         @endphp
-                        <h2 id="proj-children-h" class="proj-h2">{{ $cnt === 1 ? 'Dostępne w osobnej wersji' : 'Możesz skorzystać w '.$cntWord.' wersjach' }}</h2>
+                        <h2 id="proj-children-h" class="proj-h2">{{ $cnt === 0 ? 'Wersje tego działania' : ($cnt === 1 ? 'Dostępne w osobnej wersji' : 'Możesz skorzystać w '.$cntWord.' wersjach') }}</h2>
                         @php
-                            $hasPaid = $subProjects->contains('is_paid', true);
-                            $hasFree = $subProjects->contains(fn ($x) => ! $x->is_paid);
+                            $hasPaid = $offered->contains('is_paid', true);
+                            $hasFree = $offered->contains(fn ($x) => ! $x->is_paid);
                         @endphp
                         <p class="mb-4 text-base leading-relaxed text-ink">
-                            @if ($hasPaid && $hasFree)
+                            @if ($cnt === 0)
+                                Obecnie nie realizujemy żadnej z poniższych wersji. Zajrzyj tu ponownie lub skontaktuj się z nami.
+                            @elseif ($hasPaid && $hasFree)
                                 Część tych działań realizujemy <strong>bezpłatnie</strong>, a niektóre możemy też zrealizować <strong>odpłatnie</strong> — na przykład gdy potrzebujesz większego zakresu, własnego terminu lub wsparcia dla całej organizacji. Wybierz wersję, która odpowiada Twoim potrzebom.
                             @elseif ($hasPaid)
                                 Te działania możemy zrealizować <strong>odpłatnie</strong> — wybierz wersję, która odpowiada Twoim potrzebom.
@@ -236,8 +242,8 @@
                                     $spPrice = collect($sp->pricing ?? [])->first(fn ($r) => filled($r['price'] ?? null));
                                 @endphp
                                 <li>
-                                    <a href="{{ route('projects.show', $sp) }}" class="proj-choice-tile {{ $sp->is_paid ? 'is-paid' : 'is-free' }}">
-                                        <span class="proj-choice-kind">{{ $sp->is_paid ? 'Wersja odpłatna' : 'Wersja bezpłatna' }}</span>
+                                    <a href="{{ route('projects.show', $sp) }}" class="proj-choice-tile {{ $sp->is_paid ? 'is-paid' : 'is-free' }} {{ $sp->is_offered ? '' : 'is-off' }}">
+                                        <span class="proj-choice-kind">{{ $sp->is_paid ? 'Wersja odpłatna' : 'Wersja bezpłatna' }}@unless ($sp->is_offered) — obecnie niedostępna @endunless</span>
                                         <span class="proj-choice-title">{{ $sp->title }}</span>
                                         @if ($sp->excerpt)<span class="proj-choice-text">{{ \Illuminate\Support\Str::limit($sp->excerpt, 160) }}</span>@endif
                                         <span class="proj-choice-price">
@@ -247,7 +253,7 @@
                                                 Bez opłat
                                             @endif
                                         </span>
-                                        <span class="proj-choice-cta">Wybierz tę wersję <span aria-hidden="true">→</span><span class="sr-only">: {{ $sp->title }}</span></span>
+                                        <span class="proj-choice-cta">{{ $sp->is_offered ? 'Wybierz tę wersję' : 'Zobacz szczegóły' }} <span aria-hidden="true">→</span><span class="sr-only">: {{ $sp->title }}</span></span>
                                     </a>
                                 </li>
                             @endforeach

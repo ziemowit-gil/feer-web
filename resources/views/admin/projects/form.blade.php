@@ -154,6 +154,17 @@
                             @error('parent_id') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                             <p class="mt-1 text-xs text-muted">Podprojekt ma własną stronę, ale może częściowo dziedziczyć dane projektu nadrzędnego i wyświetla się na jego stronie.</p>
                         </div>
+                        <div x-show="parent" x-cloak class="rounded-lg border border-gray-200 bg-white p-3">
+                            <input type="hidden" name="is_offered_present" value="1">
+                            <input type="hidden" name="is_offered" value="0">
+                            <label class="flex items-start gap-3">
+                                <input type="checkbox" name="is_offered" value="1" {{ old('is_offered', $project->is_offered ?? true) ? 'checked' : '' }} class="mt-0.5 rounded border-gray-300 text-brand focus:ring-brand">
+                                <span>
+                                    <span class="block text-sm font-bold">Aktualnie realizujemy tę wersję</span>
+                                    <span class="block text-xs text-muted">Odznacz, jeśli ta wersja jest chwilowo niedostępna — na stronie działania nadrzędnego kafel dostanie oznaczenie „Obecnie niedostępna”.</span>
+                                </span>
+                            </label>
+                        </div>
                         <fieldset x-show="parent" x-cloak>
                             <legend class="mb-1 text-sm font-bold">Dziedzicz z projektu nadrzędnego</legend>
                             <p class="mb-2 text-xs text-muted">Zaznaczone pola są brane z projektu nadrzędnego i nie można ich zmienić na stronie podprojektu. Niezaznaczone ustawiasz tutaj osobno.</p>

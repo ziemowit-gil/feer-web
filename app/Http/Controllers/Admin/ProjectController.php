@@ -273,6 +273,7 @@ class ProjectController extends Controller
                 }
             }
         }
+        $data['is_offered'] = ! $request->has('is_offered_present') || $request->boolean('is_offered');
         $data['inherit'] = $data['parent_id'] ? array_values($data['inherit'] ?? []) : null;
         // Własny kolor akcentu pilnujemy pod kątem kontrastu WCAG (jak brand/NGO).
         $data['accent_color'] = filled($data['accent_color'] ?? null)
