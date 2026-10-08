@@ -196,10 +196,11 @@
                             @endif
                         </div>
 
-                        <div class="mt-5 flex flex-wrap items-center gap-x-6 gap-y-2 border-t border-gray-100 pt-3 text-sm">
-                            <a href="{{ $targetUrl }}" class="font-bold text-brand underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">Wszystkie projekty →</a>
+                        {{-- Przyciski w stylu kafli „Na skróty": główny (wypełniony) i dodatkowy (obwódka). --}}
+                        <div class="mt-5 flex flex-wrap items-stretch gap-3 border-t border-gray-100 pt-4">
+                            <div class="w-full sm:w-64">@include('partials.nav-side-link', ['sl' => ['label' => 'Wszystkie projekty', 'url' => $targetUrl, 'style' => 'tile_filled', 'new_tab' => false], 'block' => true])</div>
                             @if (($navHasProjectArchive ?? false) && $projectExtras->isEmpty())
-                                <a href="{{ route('projects.archive') }}" class="font-bold text-brand underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">To już zrobiliśmy →</a>
+                                <div class="w-full sm:w-64">@include('partials.nav-side-link', ['sl' => ['label' => 'To już zrobiliśmy', 'url' => route('projects.archive'), 'style' => 'tile', 'new_tab' => false], 'block' => true])</div>
                             @endif
                         </div>
                     </div>

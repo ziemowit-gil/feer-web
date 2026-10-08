@@ -52,7 +52,7 @@
         @endforelse
 
         <div class="mt-1 border-t border-gray-100 pt-1">
-            <a href="{{ route('projects.index') }}" class="block px-4 py-2 text-sm font-bold normal-case text-brand hover:bg-gray-50 focus-visible:bg-gray-50">Wszystkie projekty →</a>
+            <div class="px-2 py-1">@include('partials.nav-side-link', ['sl' => ['label' => 'Wszystkie projekty', 'url' => route('projects.index'), 'style' => 'tile_filled', 'new_tab' => false], 'block' => true])</div>
             @if ($item->children->isNotEmpty())
                 {{-- Własne podpozycje (np. archiwum wg okresów) — te same co w kolumnie mega menu. --}}
                 <p class="px-4 pt-2 text-xs font-bold uppercase tracking-wide normal-case text-muted" id="{{ 'projects-done-' . $item->id }}">{{ $item->mega_extra_title ?: 'To już zrobiliśmy' }}</p>
@@ -67,7 +67,7 @@
                     @endforeach
                 </ul>
             @elseif ($navHasProjectArchive ?? false)
-                <a href="{{ route('projects.archive') }}" class="block px-4 py-2 text-sm font-bold normal-case text-brand hover:bg-gray-50 focus-visible:bg-gray-50">To już zrobiliśmy →</a>
+                <div class="px-2 py-1">@include('partials.nav-side-link', ['sl' => ['label' => 'To już zrobiliśmy', 'url' => route('projects.archive'), 'style' => 'tile', 'new_tab' => false], 'block' => true])</div>
             @endif
         </div>
         @include('partials.nav-side-links', ['item' => $item])
