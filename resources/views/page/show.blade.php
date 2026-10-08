@@ -115,7 +115,10 @@
 
                         @include('partials.attachments-list', ['attachments' => $page->attachments])
 
-                        @include('partials.page-section-nav', ['page' => $page])
+                        {{-- Blok „W tym dziale" dubluje boczne menu, więc pokazujemy go tylko, gdy menu nie ma. --}}
+                        @unless ($showSideNav)
+                            @include('partials.page-section-nav', ['page' => $page])
+                        @endunless
                         </div>
                     </div>
 
