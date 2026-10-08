@@ -225,7 +225,7 @@
         <div class="min-w-0 proj-main">
             <div id="panel-opis" role="tabpanel" aria-labelledby="tab-opis" x-show="tab === 'opis'" class="proj-measure proj-flow">
                 @if ($project->is_paid && $project->parent_id)
-                    <div class="proj-note"><span>Ta wersja działań jest <strong>odpłatna</strong>.</span>
+                    <div class="proj-note"><span>Udział w tych działaniach jest <strong>odpłatny</strong>.</span>
                         @include('projects.partials.paid-info', ['infoProject' => $project])
                         <span class="proj-note-ico" aria-hidden="true"><i class="fa-solid fa-coins"></i></span>
                     </div>
@@ -236,18 +236,18 @@
                         @php
                             $offered = $subProjects->filter(fn ($x) => $x->is_offered)->values();
                             $cnt = $offered->count();
-                            $cntWord = [2 => 'dwóch', 3 => 'trzech', 4 => 'czterech'][$cnt] ?? (string) $cnt;
+                            $cntWord = [2 => 'dwa sposoby', 3 => 'trzy sposoby', 4 => 'cztery sposoby'][$cnt] ?? ($cnt.' sposobów');
                             $only = $subProjects->count() === 1 ? $subProjects->first() : null;
                         @endphp
                         <h2 id="proj-children-h" class="proj-h2">
                             @if ($cnt === 0)
-                                Wersje tego działania
+                                Formy udziału w tym działaniu
                             @elseif ($only)
                                 {{ $only->is_paid ? 'Możesz też skorzystać odpłatnie' : 'Możesz też skorzystać bezpłatnie' }}
                             @elseif ($cnt === 1)
-                                Dostępne w osobnej wersji
+                                Dostępne w osobnej formie
                             @else
-                                Możesz skorzystać w {{ $cntWord }} wersjach
+                                Możesz skorzystać na {{ $cntWord }}
                             @endif
                         </h2>
                         @php
@@ -259,16 +259,16 @@
                                 @if ($only->is_paid)
                                     Te działania możemy zrealizować także <strong>odpłatnie</strong> — na przykład gdy potrzebujesz własnego terminu lub większego zakresu.
                                 @else
-                                    Te działania realizujemy także <strong>bezpłatnie</strong> — sprawdź warunki udziału w osobnej wersji.
+                                    Te działania realizujemy także <strong>bezpłatnie</strong> — sprawdź warunki udziału w osobnej formie.
                                 @endif
                             @elseif ($cnt === 0)
-                                Obecnie nie realizujemy żadnej z poniższych wersji. Zajrzyj tu ponownie lub skontaktuj się z nami.
+                                Obecnie nie realizujemy żadnej z poniższych form udziału. Zajrzyj tu ponownie lub skontaktuj się z nami.
                             @elseif ($hasPaid && $hasFree)
-                                Część tych działań realizujemy <strong>bezpłatnie</strong>, a niektóre możemy też zrealizować <strong>odpłatnie</strong> — na przykład gdy potrzebujesz większego zakresu, własnego terminu lub wsparcia dla całej organizacji. Wybierz wersję, która odpowiada Twoim potrzebom.
+                                Część tych działań realizujemy <strong>bezpłatnie</strong>, a niektóre możemy też zrealizować <strong>odpłatnie</strong> — na przykład gdy potrzebujesz większego zakresu, własnego terminu lub wsparcia dla całej organizacji. Wybierz formę udziału, która odpowiada Twoim potrzebom.
                             @elseif ($hasPaid)
-                                Te działania możemy zrealizować <strong>odpłatnie</strong> — wybierz wersję, która odpowiada Twoim potrzebom.
+                                Te działania możemy zrealizować <strong>odpłatnie</strong> — wybierz formę udziału, która odpowiada Twoim potrzebom.
                             @else
-                                Te działania realizujemy <strong>bezpłatnie</strong> — wybierz wersję, która odpowiada Twoim potrzebom.
+                                Te działania realizujemy <strong>bezpłatnie</strong> — wybierz formę udziału, która odpowiada Twoim potrzebom.
                             @endif
                         
                             @php $paidChild = $subProjects->firstWhere('is_paid', true); @endphp
@@ -279,7 +279,7 @@
                             <span class="proj-note-links">
                                 @foreach ($subProjects as $sp)
                                     <a href="{{ route('projects.show', $sp) }}">
-                                        {{ $sp->is_paid ? 'Zobacz wersję odpłatną' : 'Zobacz wersję bezpłatną' }}@unless ($sp->is_offered) (obecnie niedostępna)@endunless <span aria-hidden="true">→</span><span class="sr-only">: {{ $sp->title }}</span>
+                                        {{ $sp->is_paid ? 'Zobacz zasady udziału odpłatnego' : 'Zobacz zasady udziału bezpłatnego' }}@unless ($sp->is_offered) (obecnie niedostępna)@endunless <span aria-hidden="true">→</span><span class="sr-only">: {{ $sp->title }}</span>
                                     </a>
                                 @endforeach
                             </span>
@@ -354,7 +354,7 @@
                                 <li><a class="proj-ref-link" href="{{ route('page.show', $rp) }}">{{ $rp->title }}<span class="proj-ref-kind"> — osobna strona</span></a></li>
                             @endforeach
                             @foreach ($refSubs as $rs)
-                                <li><a class="proj-ref-link" href="{{ route('projects.show', $rs) }}">{{ $rs->title }}<span class="proj-ref-kind"> — {{ $rs->is_paid ? 'wersja odpłatna' : 'wersja bezpłatna' }}</span></a></li>
+                                <li><a class="proj-ref-link" href="{{ route('projects.show', $rs) }}">{{ $rs->title }}<span class="proj-ref-kind"> — {{ $rs->is_paid ? 'udział odpłatny' : 'udział bezpłatny' }}</span></a></li>
                             @endforeach
                         </ul>
                     </section>
