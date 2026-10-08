@@ -73,9 +73,6 @@
                 <a href="{{ route('categories.show', $project->category) }}" class="inline-block text-xs font-bold uppercase tracking-widest text-brand hover:text-brand-dark">
                     {{ $project->category->name }}
                 </a>
-                @if ($project->isPaidOffer())
-                    <p class="mt-3"><span class="proj-status is-paid-offer"><i class="fa-solid fa-coins mr-1.5" aria-hidden="true"></i>Usługa odpłatna</span></p>
-                @endif
                 <h1 class="mt-3 text-3xl font-extrabold leading-tight tracking-tight text-ink sm:text-5xl" @if ($canInlineEdit) data-inline-field="title" data-inline-kind="text" @endif>{{ $project->title }}</h1>
                 @if ($siteSettings->projects_stages_enabled && ($project->status || $project->starts_on))
                     <p class="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-ink">
