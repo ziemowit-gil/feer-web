@@ -289,6 +289,16 @@ Route::post('/kontakt/przyjde', [MeetingSignupController::class, 'store'])->name
 Route::get('/rezerwuj-spotkanie-modul', [MeetingSignupController::class, 'publicShow'])->name('booking.show');
 Route::post('/rezerwuj-spotkanie-modul', [MeetingSignupController::class, 'publicStore'])->name('booking.store')->middleware('throttle:5,1');
 
+// Pułapka na boty: gdy prawdziwy panel działa pod innym adresem (ADMIN_PREFIX), pod /admin jest tylko pusta strona.
+// Wejścia są logowane (IP), a limit zapytań spowalnia skanery.
+if (config('app.admin_prefix', 'admin') !== 'admin') {
+    Route::any('/admin/{any?}', function (\Illuminate\Http\Request $request) {
+        \Illuminate\Support\Facades\Log::warning('Wejście na adres-pułapkę /admin', ['ip' => $request->ip(), 'path' => $request->path(), 'ua' => $request->userAgent()]);
+
+        return response()->view('honeypot-admin', [], 410);
+    })->where('any', '.*')->middleware('throttle:20,1')->name('honeypot.admin');
+}
+
 Route::redirect('/dashboard', '/'.config('app.admin_prefix', 'admin'))->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {

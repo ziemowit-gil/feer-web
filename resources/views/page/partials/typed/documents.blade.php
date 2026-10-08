@@ -4,16 +4,7 @@
     $docs = collect($td['docs'])->filter(fn ($d) => filled($d['title'] ?? null) && filled($d['url'] ?? null));
     $groups = $docs->groupBy(fn ($d) => trim((string) ($d['group'] ?? '')));
 @endphp
-@once
-    <style>
-        .td-list { list-style: none; margin: 0 0 1.5rem; padding: 0; display: grid; gap: .5rem; }
-        .td-item a { display: flex; align-items: center; gap: .85rem; padding: .75rem 1rem; border: 2px solid #d1d5db; border-radius: .5rem; background: #f9fafb; color: #1d1d1a; text-decoration: none; }
-        .td-item a:hover { border-color: var(--color-brand); background: #fff; } .td-item a:focus-visible { outline: 3px solid #1d1d1a; outline-offset: 2px; }
-        .td-ext { display: inline-flex; flex: none; align-items: center; justify-content: center; min-width: 3rem; height: 2.25rem; border-radius: .375rem; background: #1d1d1a; color: #fff; font-size: .7rem; font-weight: 800; letter-spacing: .04em; }
-        .td-ext.is-pdf { background: #b91c1c; } .td-ext.is-doc { background: #1d4ed8; } .td-ext.is-xls { background: #166534; } .td-ext.is-link { background: #4b5563; }
-        .td-title { font-weight: 800; } .td-note { display: block; font-size: .9rem; color: #374151; }
-    </style>
-@endonce
+@include('partials.attachments-css')
 <section class="mx-auto max-w-5xl px-4 py-8">
     @include('page.partials.typed._head')
 
@@ -21,18 +12,31 @@
         @php $gid = 'td-g-'.\Illuminate\Support\Str::random(5); @endphp
         <section @if ($gName !== '') aria-labelledby="{{ $gid }}" @endif>
             @if ($gName !== '')<h2 id="{{ $gid }}" class="mb-3 mt-8 border-l-4 border-brand pl-3 text-2xl font-bold text-ink">{{ $gName }}</h2>@endif
-            <ul role="list" class="td-list">
+            <ul role="list" class="dl-grid">
                 @foreach ($items as $d)
                     @php
                         $ext = strtolower(pathinfo(parse_url($d['url'], PHP_URL_PATH) ?: '', PATHINFO_EXTENSION));
-                        $kind = match (true) { $ext === 'pdf' => 'is-pdf', in_array($ext, ['doc', 'docx', 'odt']) => 'is-doc', in_array($ext, ['xls', 'xlsx', 'ods', 'csv']) => 'is-xls', $ext === '' => 'is-link', default => '' };
+                        [$kind, $fileIcon] = match (true) {
+                            $ext === 'pdf' => ['is-pdf', 'fa-file-pdf'],
+                            in_array($ext, ['doc', 'docx', 'odt', 'rtf']) => ['is-doc', 'fa-file-word'],
+                            in_array($ext, ['xls', 'xlsx', 'ods', 'csv']) => ['is-xls', 'fa-file-excel'],
+                            in_array($ext, ['ppt', 'pptx', 'odp']) => ['is-ppt', 'fa-file-powerpoint'],
+                            in_array($ext, ['zip', 'rar', '7z']) => ['is-zip', 'fa-file-zipper'],
+                            default => ['is-zip', 'fa-link'],
+                        };
                         $isFile = $ext !== '' && $ext !== 'html';
+                        $ext_ = \Illuminate\Support\Str::startsWith($d['url'], 'http');
                     @endphp
-                    <li class="td-item">
-                        <a href="{{ $d['url'] }}" @if ($isFile) download @endif @if (\Illuminate\Support\Str::startsWith($d['url'], 'http')) target="_blank" rel="noopener" @endif>
-                            <span class="td-ext {{ $kind }}" aria-hidden="true">{{ $ext !== '' ? strtoupper($ext) : 'LINK' }}</span>
-                            <span class="min-w-0"><span class="td-title">{{ $d['title'] }}</span>@if (filled($d['note'] ?? null))<span class="td-note">{{ $d['note'] }}</span>@endif</span>
-                            <span class="sr-only">{{ $isFile ? '(plik '.strtoupper($ext).')' : '' }}{{ \Illuminate\Support\Str::startsWith($d['url'], 'http') ? ' (otwiera się w nowej karcie)' : '' }}</span>
+                    <li class="dl-card">
+                        <div class="dl-top">
+                            <span class="dl-type {{ $kind }}" aria-hidden="true"><i class="fa-solid {{ $fileIcon }}"></i>{{ $isFile ? strtoupper(\Illuminate\Support\Str::limit($ext, 4, '')) : 'LINK' }}</span>
+                            <div>
+                                <p class="dl-name">{{ $d['title'] }}</p>
+                                @if (filled($d['note'] ?? null))<p class="dl-meta">{{ $d['note'] }}</p>@endif
+                            </div>
+                        </div>
+                        <a href="{{ $d['url'] }}" class="dl-btn" @if ($isFile) download @endif @if ($ext_) target="_blank" rel="noopener" @endif>
+                            <i class="fa-solid {{ $isFile ? 'fa-arrow-down' : 'fa-arrow-up-right-from-square' }}" aria-hidden="true"></i> {{ $isFile ? 'Pobierz' : 'Otwórz' }}<span class="sr-only"> {{ $isFile ? 'plik' : 'stronę' }}: {{ $d['title'] }}{{ $ext_ ? ' (otwiera się w nowej karcie)' : '' }}</span>
                         </a>
                     </li>
                 @endforeach
