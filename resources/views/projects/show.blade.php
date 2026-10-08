@@ -74,7 +74,12 @@
                     {{ $project->category->name }}
                 </a>
                 @if ($project->parent && $project->parent->is_published)
-                    <p class="mt-2 text-sm font-bold text-ink">Część działania: <a href="{{ route('projects.show', $project->parent) }}" class="text-brand underline underline-offset-2 hover:text-brand-dark">{{ $project->parent->title }}</a></p>
+                    {{-- Wyróżnienie: to wersja (podprojekt) działania nadrzędnego — obwiedziona plakietka z ikoną i linkiem. --}}
+                    <p class="proj-part mt-3">
+                        <span class="proj-part-ico" aria-hidden="true"><i class="fa-solid fa-code-branch"></i></span>
+                        <span>Wersja <strong>{{ $project->is_paid ? 'odpłatna' : 'bezpłatna' }}</strong> działania:
+                            <a href="{{ route('projects.show', $project->parent) }}">{{ $project->parent->title }}</a></span>
+                    </p>
                 @endif
                 <h1 class="mt-3 text-3xl font-extrabold leading-tight tracking-tight text-ink sm:text-5xl" @if ($canInlineEdit) data-inline-field="title" data-inline-kind="text" @endif>{{ $project->title }}</h1>
                 @if ($project->excerpt)
@@ -141,6 +146,10 @@
                 font-size: 1.25rem; font-weight: 800; line-height: 1;
             }
             .proj-news a { display: block; padding: .6rem 0; }
+            .proj-part { display: inline-flex; align-items: center; gap: .6rem; max-width: 100%; padding: .4rem .9rem .4rem .45rem; border: 2px solid var(--color-brand); border-radius: 9999px; background: #fff; font-size: .9rem; line-height: 1.3; color: #1d1d1a; }
+            .proj-part-ico { display: inline-flex; flex: none; align-items: center; justify-content: center; width: 1.75rem; height: 1.75rem; border-radius: 9999px; background: var(--color-brand); color: #fff; font-size: .8rem; }
+            .proj-part a { font-weight: 700; color: var(--color-brand); text-decoration: underline; text-underline-offset: 2px; }
+            .proj-part a:hover { color: #1d1d1a; }
             @media (min-width: 1024px) {
                 .proj-cols { grid-template-columns: minmax(0, 1fr) 18rem; }
                 .proj-cols > .proj-main { grid-column: 1; grid-row: 1 / span 3; }
