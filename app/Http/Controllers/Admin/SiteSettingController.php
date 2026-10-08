@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use Illuminate\Support\Facades\Schema;
 use App\Http\Controllers\Controller;
 use App\Models\Page;
 use App\Models\SiteSetting;
@@ -224,6 +225,8 @@ class SiteSettingController extends Controller
             'news_layout' => ['nullable', 'in:grid,list,cards'],
             'projects_layout' => ['nullable', 'in:list,tiles'],
             'project_sections_nav' => ['nullable', 'in:tabs,sidebar'],
+            'projects_stages_enabled' => ['sometimes', 'boolean'],
+            'projects_team_funding_enabled' => ['sometimes', 'boolean'],
             'wide_mission_social_1' => ['nullable', Rule::in(array_keys(SiteSetting::SOCIAL_KEYS))],
             'wide_mission_social_2' => ['nullable', Rule::in(array_keys(SiteSetting::SOCIAL_KEYS))],
             'wide_mission_social_3' => ['nullable', Rule::in(array_keys(SiteSetting::SOCIAL_KEYS))],
@@ -521,10 +524,15 @@ class SiteSettingController extends Controller
         unset($data['logo'], $data['remove_logo'], $data['og_image'], $data['remove_og_image'], $data['support_image'], $data['remove_support_image'], $data['support_gallery'], $data['remove_support_gallery'], $data['news_default_image'], $data['remove_news_default_image'], $data['bip_logo'], $data['remove_bip_logo'], $data['enabled_modules'], $data['section_order_json'], $data['homepage_sections_enabled']);
 
         // Do czasu wykonania migracji (nowa kolumna) zapis ustawień nie może padać — pomijamy brakującą kolumnę.
-        foreach (['homepage_sections_hidden', 'wide_mission_cta2_label', 'wide_mission_cta2_url', 'projects_layout', 'project_sections_nav'] as $newColumn) {
+        foreach (['homepage_sections_hidden', 'wide_mission_cta2_label', 'wide_mission_cta2_url', 'projects_layout', 'project_sections_nav', 'projects_stages_enabled', 'projects_team_funding_enabled'] as $newColumn) {
             if (! \Illuminate\Support\Facades\Schema::hasColumn('site_settings', $newColumn)) {
                 unset($data[$newColumn]);
             }
+        }
+
+        if (Schema::hasColumn('site_settings', 'projects_stages_enabled')) {
+            $data['projects_stages_enabled'] = $request->boolean('projects_stages_enabled');
+            $data['projects_team_funding_enabled'] = $request->boolean('projects_team_funding_enabled');
         }
 
         $colorWasAdjusted = ! $skipContrast && $data['brand_color'] !== $request->input('brand_color');

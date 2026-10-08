@@ -1548,6 +1548,23 @@
             </fieldset>
 
             <fieldset class="border-t border-gray-100 pt-6">
+                <legend class="mb-1 text-sm font-bold">Rozszerzenia modułu projektów</legend>
+                <p class="mb-3 text-xs text-muted">Włącz dodatkowe pola w formularzu projektu i ich wyświetlanie na stronie projektu. Wyłączone: zakładki znikają z formularza, a strona niczego nie pokazuje (zapisane dane zostają).</p>
+                <div class="space-y-3">
+                    <label class="flex items-start gap-3">
+                        <input type="hidden" name="projects_stages_enabled" value="0">
+                        <input type="checkbox" name="projects_stages_enabled" value="1" {{ old('projects_stages_enabled', $settings->projects_stages_enabled ?? false) ? 'checked' : '' }} class="mt-0.5 rounded border-gray-300 text-brand focus:ring-brand">
+                        <span><span class="block text-sm font-bold">Etapy, status i harmonogram</span><span class="block text-xs text-muted">Status realizacji, daty, etapy z oznaczeniem postępu.</span></span>
+                    </label>
+                    <label class="flex items-start gap-3">
+                        <input type="hidden" name="projects_team_funding_enabled" value="0">
+                        <input type="checkbox" name="projects_team_funding_enabled" value="1" {{ old('projects_team_funding_enabled', $settings->projects_team_funding_enabled ?? false) ? 'checked' : '' }} class="mt-0.5 rounded border-gray-300 text-brand focus:ring-brand">
+                        <span><span class="block text-sm font-bold">Zespół, partnerzy i finansowanie</span><span class="block text-xs text-muted">Osoby zaangażowane, partnerzy z logotypami, źródła dofinansowania, budżet i obowiązkowe oznaczenia.</span></span>
+                    </label>
+                </div>
+            </fieldset>
+
+            <fieldset class="border-t border-gray-100 pt-6">
                 <legend class="mb-1 text-sm font-bold">Nawigacja po sekcjach projektu (dla całego serwisu)</legend>
                 <p class="mb-3 text-xs text-muted">Jak pokazać sekcje i podstrony na stronie projektu. W formularzu projektu można to nadpisać dla pojedynczego projektu.</p>
                 @php $sectionsNav = old('project_sections_nav', $settings->project_sections_nav ?? 'tabs'); @endphp

@@ -51,9 +51,59 @@ class ProjectController extends Controller
         return Category::when($ids, fn ($q) => $q->whereIn('id', $ids))->orderBy('order')->orderBy('name')->get();
     }
 
+    /** Drzewo projektów (jak drzewo stron): po lewej struktura z podprojektami, po prawej szczegóły wybranego projektu. */
+    private function tree(Request $request)
+    {
+        $all = Project::forCurrentSite()->with('category')->orderBy('order')->orderBy('title')->get();
+        $byParent = $all->groupBy(fn ($p) => $all->contains('id', $p->parent_id) ? $p->parent_id : 0);
+        $selected = $request->filled('wybrana') ? $all->firstWhere('id', (int) $request->query('wybrana')) : null;
+
+        // Ścieżka od korzenia do wybranego (do rozwinięcia gałęzi) i lista dozwolonych rodziców.
+        $openIds = [];
+        for ($cur = $selected; $cur; $cur = $cur->parent_id ? $all->firstWhere('id', $cur->parent_id) : null) {
+            $openIds[] = $cur->id;
+        }
+
+        return view('admin.projects.tree', [
+            'byParent' => $byParent,
+            'total' => $all->count(),
+            'selected' => $selected,
+            'openIds' => $openIds,
+            'children' => $selected ? $byParent->get($selected->id, collect()) : collect(),
+            'parentOptions' => $this->parentOptions($selected),
+        ]);
+    }
+
+    /** Opublikuj / cofnij publikację projektu z widoku drzewa. */
+    public function toggleVisibility(Request $request, Project $project)
+    {
+        $project->update(['is_published' => ! $project->is_published]);
+
+        return redirect()->route('admin.projekty.index', ['wybrana' => $project->id])
+            ->with('status', $project->is_published ? 'Projekt opublikowany.' : 'Cofnięto publikację projektu.');
+    }
+
+    /** Przenosi projekt w drzewie (zmiana projektu nadrzędnego); bez cykli. */
+    public function move(Request $request, Project $project)
+    {
+        $data = $request->validate(['parent_id' => ['nullable', 'integer', 'exists:projects,id']]);
+        $parentId = $data['parent_id'] ?? null;
+
+        if ($parentId && ! $this->parentOptions($project)->contains('id', (int) $parentId)) {
+            return redirect()->back()->with('error', 'Projekt nie może trafić do samego siebie ani do własnego podprojektu.');
+        }
+        $project->update(['parent_id' => $parentId, 'inherit' => $parentId ? $project->inherit : null]);
+
+        return redirect()->route('admin.projekty.index', ['wybrana' => $project->id])->with('status', 'Przeniesiono projekt.');
+    }
+
     /** Wyświetla listę projektów z filtrowaniem po statusie i kategorii. */
     public function index(Request $request)
     {
+        if ($request->query('widok') !== 'lista' && ! $request->hasAny(['status', 'category', 'sort'])) {
+            return $this->tree($request);
+        }
+
         $status = $request->query('status', '');
         $category = $request->query('category', '');
         $sort = $request->query('sort', 'default');
@@ -80,8 +130,13 @@ class ProjectController extends Controller
     /** Wyświetla formularz tworzenia nowego projektu. */
     public function create()
     {
+        $newProject = new Project;
+        if (request()->filled('parent_id')) {
+            $newProject->parent_id = (int) request('parent_id');
+        }
+
         return view('admin.projects.form', [
-            'project' => new Project,
+            'project' => $newProject,
             'categories' => $this->categoriesForUser(),
             'parentOptions' => $this->parentOptions(null),
         ]);
@@ -94,6 +149,7 @@ class ProjectController extends Controller
         $data['slug'] = $this->uniqueSlug($data['slug'] !== '' ? $data['slug'] : $data['title']);
 
         $project = Project::create($data);
+        $project->partners()->sync($request->input('partner_ids', []));
 
         $this->handleImage($request, $project);
 
@@ -117,6 +173,7 @@ class ProjectController extends Controller
         $data['slug'] = $this->uniqueSlug($data['slug'] !== '' ? $data['slug'] : $data['title'], $project->id);
 
         $project->update($data);
+        $project->partners()->sync($request->input('partner_ids', []));
 
         $this->handleImage($request, $project);
 
@@ -216,6 +273,27 @@ class ProjectController extends Controller
         }
 
         $data = $request->validate([
+            'status' => ['nullable', Rule::in(array_keys(Project::STATUSES))],
+            'starts_on' => ['nullable', 'date'],
+            'ends_on' => ['nullable', 'date', 'after_or_equal:starts_on'],
+            'stages' => ['nullable', 'array', 'max:30'],
+            'stages.*.title' => ['nullable', 'string', 'max:160'],
+            'stages.*.from' => ['nullable', 'date'],
+            'stages.*.to' => ['nullable', 'date'],
+            'stages.*.state' => ['nullable', Rule::in(array_keys(Project::STAGE_STATES))],
+            'stages.*.text' => ['nullable', 'string', 'max:600'],
+            'team' => ['nullable', 'array', 'max:40'],
+            'team.*.name' => ['nullable', 'string', 'max:120'],
+            'team.*.role' => ['nullable', 'string', 'max:160'],
+            'team.*.text' => ['nullable', 'string', 'max:400'],
+            'funding.sources' => ['nullable', 'array', 'max:20'],
+            'funding.sources.*.name' => ['nullable', 'string', 'max:160'],
+            'funding.sources.*.text' => ['nullable', 'string', 'max:400'],
+            'funding.sources.*.url' => ['nullable', 'string', 'max:2048', 'regex:~^(https?://|/)~i'],
+            'funding.budget' => ['nullable', 'string', 'max:80'],
+            'funding_notice' => ['nullable', 'string', 'max:1000'],
+            'partner_ids' => ['sometimes', 'array'],
+            'partner_ids.*' => ['integer', 'exists:partners,id'],
             'parent_id' => ['nullable', 'integer', 'exists:projects,id', Rule::notIn(array_filter([$selfId]))],
             'inherit' => ['sometimes', 'array'],
             'inherit.*' => ['string', Rule::in(array_keys(Project::INHERITABLE))],
@@ -273,6 +351,31 @@ class ProjectController extends Controller
                 }
             }
         }
+        // Etapy, zespół, finansowanie: odrzucamy puste wiersze; status „zakończony" oznacza też projekt zrealizowany.
+        $data['stages'] = collect($request->input('stages', []))
+            ->filter(fn ($s) => filled($s['title'] ?? null))
+            ->map(fn ($s) => [
+                'title' => trim($s['title']), 'from' => $s['from'] ?? null, 'to' => $s['to'] ?? null,
+                'state' => in_array($s['state'] ?? '', array_keys(Project::STAGE_STATES), true) ? $s['state'] : 'upcoming',
+                'text' => trim((string) ($s['text'] ?? '')),
+            ])->values()->all() ?: null;
+        $data['team'] = collect($request->input('team', []))
+            ->filter(fn ($p) => filled($p['name'] ?? null))
+            ->map(fn ($p) => ['name' => trim($p['name']), 'role' => trim((string) ($p['role'] ?? '')), 'text' => trim((string) ($p['text'] ?? ''))])
+            ->values()->all() ?: null;
+        $sources = collect($request->input('funding.sources', []))
+            ->filter(fn ($s) => filled($s['name'] ?? null))
+            ->map(fn ($s) => ['name' => trim($s['name']), 'text' => trim((string) ($s['text'] ?? '')), 'url' => trim((string) ($s['url'] ?? ''))])
+            ->values()->all();
+        $budget = trim((string) $request->input('funding.budget', ''));
+        $data['funding'] = ($sources || $budget !== '') ? ['sources' => $sources, 'budget' => $budget, 'budget_public' => $request->boolean('funding.budget_public')] : null;
+        $data['funding_notice'] = trim((string) ($data['funding_notice'] ?? '')) ?: null;
+        $data['status'] = ($data['status'] ?? null) ?: null;
+        if ($data['status'] === 'completed') {
+            $data['is_completed'] = true;
+        }
+        unset($data['partner_ids']);
+
         $data['is_offered'] = ! $request->has('is_offered_present') || $request->boolean('is_offered');
         $data['inherit'] = $data['parent_id'] ? array_values($data['inherit'] ?? []) : null;
         // Własny kolor akcentu pilnujemy pod kątem kontrastu WCAG (jak brand/NGO).
