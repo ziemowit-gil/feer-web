@@ -45,7 +45,7 @@ class Project extends Model implements HasMedia
         'site_id', 'created_by', 'category_id', 'title', 'slug', 'excerpt', 'for_whom', 'audience', 'accent_color', 'since', 'image_alt', 'content', 'why', 'outcomes', 'is_published', 'is_completed', 'completed_at', 'is_paid', 'pricing', 'order',
         'meta_title', 'meta_description', 'pending_approval', 'submitted_by_id',
         'coordinator_name', 'coordinator_email', 'coordinator_phone', 'is_featured_contact', 'show_coordinator',
-        'custom_sections', 'sections_as_tabs', 'sections_nav', 'sidebar_buttons', 'sidebar_note', 'parent_id', 'inherit', 'is_offered', 'paid_info_show', 'paid_info_text', 'status', 'starts_on', 'ends_on', 'stages', 'team', 'funding', 'funding_notice', 'show_legacy_box', 'legacy_url',
+        'custom_sections', 'sections_as_tabs', 'sections_nav', 'sidebar_buttons', 'sidebar_note', 'parent_id', 'inherit', 'is_offered', 'paid_info_show', 'paid_info_text', 'terms', 'status', 'starts_on', 'ends_on', 'stages', 'team', 'funding', 'funding_notice', 'show_legacy_box', 'legacy_url',
     ];
 
     /**
@@ -61,6 +61,7 @@ class Project extends Model implements HasMedia
         'look'       => ['Kolorystyka (grupa docelowa i akcent)', ['audience', 'accent_color']],
         'coordinator' => ['Koordynator i kontakt', ['coordinator_name', 'coordinator_email', 'coordinator_phone', 'show_coordinator', 'is_featured_contact']],
         'pricing'    => ['Płatność i cennik', ['is_paid', 'pricing']],
+        'terms'      => ['Warunki udziału', ['terms']],
         'buttons'    => ['Przyciski i notka pod menu sekcji', ['sidebar_buttons', 'sidebar_note']],
     ];
 
@@ -80,6 +81,7 @@ class Project extends Model implements HasMedia
         'inherit' => 'array',
         'is_offered' => 'boolean',
         'paid_info_show' => 'boolean',
+        'terms' => 'array',
         'starts_on' => 'date',
         'ends_on' => 'date',
         'stages' => 'array',

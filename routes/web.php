@@ -410,6 +410,7 @@ Route::middleware(['auth', 'verified', '2fa', 'admin-site'])->prefix(config('app
         Route::resource('kategorie', AdminCategoryController::class)->parameters(['kategorie' => 'category'])->except('show');
         Route::resource('projekty', AdminProjectController::class)->parameters(['projekty' => 'project'])->except('show');
         Route::post('projekty/zbiorczo', [AdminProjectController::class, 'bulk'])->name('projekty.bulk');
+        Route::post('projekty/{project}/kopiuj', [AdminProjectController::class, 'duplicate'])->name('projekty.kopiuj');
         Route::patch('projekty/{project}/widocznosc', [AdminProjectController::class, 'toggleVisibility'])->name('projekty.widocznosc');
         Route::patch('projekty/{project}/przenies', [AdminProjectController::class, 'move'])->name('projekty.przenies');
     });

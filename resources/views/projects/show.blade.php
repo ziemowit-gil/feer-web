@@ -193,6 +193,11 @@
             .proj-price-item { font-size: 1rem; font-weight: 800; line-height: 1.3; color: #1d1d1a; }
             .proj-price-note { font-size: .9rem; line-height: 1.45; color: #1d1d1a; }
             .proj-price-amount { margin-top: auto; padding-top: .5rem; font-size: 1.5rem; font-weight: 800; line-height: 1.1; color: var(--color-brand); }
+                        .proj-terms { margin: 0; display: grid; gap: .6rem; }
+            .proj-terms-row { display: grid; gap: .15rem 1rem; grid-template-columns: minmax(8rem, 12rem) 1fr; padding-bottom: .6rem; border-bottom: 1px solid #e5e7eb; }
+            .proj-terms-row:last-child { padding-bottom: 0; border-bottom: 0; }
+            .proj-terms-row dt { font-weight: 800; color: #1d1d1a; } .proj-terms-row dd { margin: 0; line-height: 1.5; color: #1d1d1a; }
+            @media (max-width: 40rem) { .proj-terms-row { grid-template-columns: 1fr; } }
             .proj-note-links { display: flex; flex-wrap: wrap; gap: .5rem 1.25rem; margin-top: .75rem; }
             .proj-note-links a { font-weight: 800; color: var(--color-brand); text-decoration: underline; text-underline-offset: 3px; }
             .proj-note-links a:hover { color: #1d1d1a; }
@@ -330,6 +335,19 @@
                 @if ($project->why)
                     <h2 class="proj-h2">Dlaczego to robimy</h2>
                     <div class="prose proj-prose max-w-none">{{ $project->why }}</div>
+                @endif
+
+                {{-- Kto może wziąć udział — ramka z warunkami --}}
+                @php $projTerms = collect($project->terms ?? [])->filter(fn ($r) => filled($r['label'] ?? null) && filled($r['text'] ?? null)); @endphp
+                @if ($projTerms->isNotEmpty())
+                    <section class="proj-frame" aria-labelledby="proj-terms-h">
+                        <h2 id="proj-terms-h" class="proj-frame-h"><i class="fa-solid fa-user-check" aria-hidden="true"></i> Kto może wziąć udział</h2>
+                        <dl class="proj-terms">
+                            @foreach ($projTerms as $tr)
+                                <div class="proj-terms-row"><dt>{{ $tr['label'] }}</dt><dd>{{ $tr['text'] }}</dd></div>
+                            @endforeach
+                        </dl>
+                    </section>
                 @endif
 
                 {{-- Nawiązanie do podstron i stron projektu: jedna ramka z odnośnikami do wszystkiego, co należy do projektu. --}}

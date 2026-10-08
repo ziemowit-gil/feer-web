@@ -107,6 +107,9 @@
                             <button type="submit" class="pt-btn"><i class="fa-solid {{ $selected->is_published ? 'fa-eye-slash' : 'fa-eye' }}" aria-hidden="true"></i> {{ $selected->is_published ? 'Cofnij publikację' : 'Opublikuj' }}</button>
                         </form>
                         <a href="{{ route('admin.projekty.create', ['parent_id' => $selected->id]) }}" class="pt-btn"><i class="fa-solid fa-plus" aria-hidden="true"></i> Dodaj podprojekt</a>
+                        <form method="POST" action="{{ route('admin.projekty.kopiuj', $selected) }}" onsubmit="return confirm('Utworzyć kopię projektu „{{ addslashes($selected->title) }}” jako szkic? Daty i etapy zostaną wyczyszczone.')">@csrf
+                            <button type="submit" class="pt-btn"><i class="fa-solid fa-clone" aria-hidden="true"></i> Kopiuj (nowa edycja)</button>
+                        </form>
                         <form method="POST" action="{{ route('admin.projekty.destroy', $selected) }}" style="margin-left:auto" onsubmit="return confirm('Przenieść projekt „{{ addslashes($selected->title) }}” do kosza?')">@csrf @method('DELETE')
                             <button type="submit" class="pt-btn danger"><i class="fa-solid fa-trash" aria-hidden="true"></i> Usuń</button>
                         </form>

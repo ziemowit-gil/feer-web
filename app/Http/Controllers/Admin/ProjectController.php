@@ -74,6 +74,33 @@ class ProjectController extends Controller
         ]);
     }
 
+    /**
+     * Kopiuje projekt (np. kolejna edycja szkolenia): szkic z wyczyszczonymi datami, etapami i statusem realizacji;
+     * zachowuje treść, kategorię, zespół, partnerów, finansowanie, cennik i zdjęcie. Podprojektów nie kopiuje.
+     */
+    public function duplicate(Project $project)
+    {
+        $copy = $project->replicate(['slug', 'is_published', 'is_completed', 'completed_at', 'status', 'starts_on', 'ends_on', 'stages', 'pending_approval', 'submitted_by_id', 'created_by']);
+        $copy->title = Str::limit($project->title, 240, '').' (kopia)';
+        $copy->slug = $this->uniqueSlug($project->slug.'-kopia');
+        $copy->is_published = false;
+        $copy->is_completed = false;
+        $copy->completed_at = null;
+        $copy->status = null;
+        $copy->starts_on = null;
+        $copy->ends_on = null;
+        $copy->stages = null;
+        $copy->created_by = auth()->id();
+        $copy->save();
+
+        $copy->partners()->sync($project->partners()->pluck('partners.id')->all());
+        if ($image = $project->getFirstMedia('image')) {
+            $image->copy($copy, 'image');
+        }
+
+        return redirect()->route('admin.projekty.edit', $copy)->with('status', 'Utworzono kopię projektu (szkic) — ustaw terminy i etapy nowej edycji.');
+    }
+
     /** Opublikuj / cofnij publikację projektu z widoku drzewa. */
     public function toggleVisibility(Request $request, Project $project)
     {
@@ -295,6 +322,9 @@ class ProjectController extends Controller
             'partner_ids' => ['sometimes', 'array'],
             'partner_ids.*' => ['integer', 'exists:partners,id'],
             'paid_info_text' => ['nullable', 'string', 'max:3000'],
+            'terms' => ['nullable', 'array', 'max:20'],
+            'terms.*.label' => ['nullable', 'string', 'max:80'],
+            'terms.*.text' => ['nullable', 'string', 'max:300'],
             'parent_id' => ['nullable', 'integer', 'exists:projects,id', Rule::notIn(array_filter([$selfId]))],
             'inherit' => ['sometimes', 'array'],
             'inherit.*' => ['string', Rule::in(array_keys(Project::INHERITABLE))],
@@ -374,6 +404,9 @@ class ProjectController extends Controller
         $data['status'] = ($data['status'] ?? null) ?: null;
         unset($data['partner_ids']);
 
+        $data['terms'] = collect($request->input('terms', []))
+            ->filter(fn ($r) => filled($r['label'] ?? null) && filled($r['text'] ?? null))
+            ->map(fn ($r) => ['label' => trim($r['label']), 'text' => trim($r['text'])])->values()->all() ?: null;
         $data['paid_info_show'] = $request->boolean('paid_info_show');
         $data['paid_info_text'] = trim((string) ($data['paid_info_text'] ?? '')) ?: null;
         $data['is_offered'] = ! $request->has('is_offered_present') || $request->boolean('is_offered');

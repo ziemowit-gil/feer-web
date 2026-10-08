@@ -23,6 +23,9 @@
                     class="rounded-md px-4 py-2 text-sm font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 bg-gray-100 text-ink hover:bg-gray-200">
                     <i class="fa-solid fa-align-left" aria-hidden="true"></i> Treść
                 </button>
+                <button type="button" data-ftab-btn="warunki" role="tab" aria-selected="false" class="rounded-md px-4 py-2 text-sm font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 bg-gray-100 text-ink hover:bg-gray-200">
+                    <i class="fa-solid fa-user-check" aria-hidden="true"></i> Warunki udziału
+                </button>
                 <button type="button" data-ftab-btn="sekcje" role="tab" aria-selected="false"
                     class="rounded-md px-4 py-2 text-sm font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 bg-gray-100 text-ink hover:bg-gray-200">
                     <i class="fa-solid fa-layer-group" aria-hidden="true"></i> Sekcje
@@ -400,6 +403,38 @@
                         <p class="mt-1 text-xs text-muted">Rezultaty, materiały i efekty, które zostają po zakończeniu projektu (np. raporty, narzędzia, nagrania, linki). Jeśli wypełnisz, na stronie projektu pojawi się osobna sekcja „Co udało się osiągnąć".</p>
                         @error('outcomes') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
+                </div>
+            </div>
+
+            {{-- ============================ WARUNKI UDZIAŁU ============================ --}}
+            <div data-ftab-panel="warunki" class="hidden space-y-6"
+                x-data="{ rows: @js(array_values((array) old('terms', $project->terms ?? []))), presets: ['Wiek', 'Miejsce', 'Wymagany sprzęt', 'Dostępność sali', 'Termin', 'Zapisy'],
+                    move(i, d) { const j = i + d; if (j < 0 || j >= this.rows.length) return; const [x] = this.rows.splice(i, 1); this.rows.splice(j, 0, x); } }">
+                <div class="space-y-4 rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+                    <div>
+                        <p class="text-sm font-bold uppercase tracking-wide text-muted">Kto może wziąć udział</p>
+                        <p class="mt-1 text-xs text-muted">Warunki udziału wyświetlane na stronie w ramce „Kto może wziąć udział”. Pisz krótko i prostym językiem.</p>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-2" role="group" aria-label="Dodaj gotowy warunek">
+                        <span class="text-xs font-bold text-muted">Dodaj:</span>
+                        <template x-for="p in presets" :key="p">
+                            <button type="button" @click="rows.push({ label: p, text: '' })" class="rounded-full border border-gray-300 bg-white px-3 py-1 text-xs font-bold text-ink hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand" x-text="p"></button>
+                        </template>
+                    </div>
+                    <ul class="space-y-3" role="list">
+                        <template x-for="(r, i) in rows" :key="i">
+                            <li class="grid items-end gap-3 rounded-lg border border-gray-200 bg-gray-50 p-4 sm:grid-cols-[1fr_2.5fr_auto]">
+                                <div><label :for="'tm-l-' + i" class="mb-1 block text-xs font-bold text-muted">Nazwa warunku</label><input :id="'tm-l-' + i" type="text" :name="'terms[' + i + '][label]'" x-model="r.label" maxlength="80" class="w-full rounded-lg border-gray-300 text-sm focus:border-brand focus:ring-brand"></div>
+                                <div><label :for="'tm-t-' + i" class="mb-1 block text-xs font-bold text-muted">Opis</label><input :id="'tm-t-' + i" type="text" :name="'terms[' + i + '][text]'" x-model="r.text" maxlength="300" placeholder="np. od 16 lat" class="w-full rounded-lg border-gray-300 text-sm focus:border-brand focus:ring-brand"></div>
+                                <span class="flex gap-1">
+                                    <button type="button" @click="move(i, -1)" :disabled="i === 0" class="rounded p-2 text-muted hover:bg-gray-100 disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand" aria-label="Przesuń wyżej"><i class="fa-solid fa-arrow-up" aria-hidden="true"></i></button>
+                                    <button type="button" @click="move(i, 1)" :disabled="i === rows.length - 1" class="rounded p-2 text-muted hover:bg-gray-100 disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand" aria-label="Przesuń niżej"><i class="fa-solid fa-arrow-down" aria-hidden="true"></i></button>
+                                    <button type="button" @click="rows.splice(i, 1)" class="rounded p-2 text-red-700 hover:bg-red-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500" aria-label="Usuń warunek"><i class="fa-solid fa-trash" aria-hidden="true"></i></button>
+                                </span>
+                            </li>
+                        </template>
+                    </ul>
+                    <button type="button" @click="rows.push({ label: '', text: '' })" class="inline-flex min-h-10 items-center gap-2 rounded-lg border-2 border-dashed border-brand px-4 text-sm font-bold text-brand-dark hover:bg-brand-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"><i class="fa-solid fa-plus" aria-hidden="true"></i> Dodaj własny warunek</button>
                 </div>
             </div>
 
