@@ -179,6 +179,10 @@
             .proj-menu-list a:focus-visible { outline: 2px solid var(--color-brand); outline-offset: 2px; }
             .proj-menu-date { display: block; font-size: .75rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: #374151; }
             .proj-menu-item { display: block; font-size: 1rem; font-weight: 400; line-height: 1.4; }
+                        .proj-ref-list { list-style: none; margin: 0; padding: 0; display: grid; gap: .5rem; }
+            .proj-ref-link { display: inline-flex; flex-wrap: wrap; align-items: baseline; gap: .15rem; padding: .15rem 0; border: 0; background: none; font: inherit; font-weight: 800; color: var(--color-brand); text-align: left; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+            .proj-ref-link:hover { color: #1d1d1a; } .proj-ref-link:focus-visible { outline: 2px solid var(--color-brand); outline-offset: 3px; border-radius: .25rem; }
+            .proj-ref-kind { font-weight: 500; color: #374151; text-decoration: none; display: inline-block; }
             .proj-note-links { display: flex; flex-wrap: wrap; gap: .5rem 1.25rem; margin-top: .75rem; }
             .proj-note-links a { font-weight: 800; color: var(--color-brand); text-decoration: underline; text-underline-offset: 3px; }
             .proj-note-links a:hover { color: #1d1d1a; }
@@ -309,6 +313,38 @@
                     <div class="prose proj-prose max-w-none">{{ $project->why }}</div>
                 @endif
 
+                {{-- Nawiązanie do podstron i stron projektu: jedna ramka z odnośnikami do wszystkiego, co należy do projektu. --}}
+                @php
+                    $refTabs = $tabPages->values();
+                    $refInline = $inlinePages->values();
+                    $refAcc = $accordionPages->values();
+                    $refLinks = $linkPages->values();
+                    $refSubs = $project->publishedChildren;
+                    $refTotal = $refTabs->count() + $refInline->count() + $refAcc->count() + $refLinks->count();
+                @endphp
+                @if ($refTotal > 0)
+                    <section class="proj-frame proj-ref" aria-labelledby="proj-ref-h">
+                        <h2 id="proj-ref-h" class="proj-frame-h"><i class="fa-solid fa-sitemap" aria-hidden="true"></i> W tym projekcie znajdziesz</h2>
+                        <ul role="list" class="proj-ref-list">
+                            @foreach ($refTabs as $ri => $rp)
+                                <li><button type="button" class="proj-ref-link" @click="tab = 'podstrona-{{ $ri }}'; node = null; $nextTick(() => document.getElementById('tab-podstrona-{{ $ri }}')?.scrollIntoView({ block: 'center' }))">{{ $rp->title }}<span class="proj-ref-kind"> — zakładka</span></button></li>
+                            @endforeach
+                            @foreach ($refInline as $rp)
+                                <li><a class="proj-ref-link" href="#{{ ($rp->isSchedule() ? 'harmonogram-'.$rp->id : ($rp->isFaq() ? 'faq-'.$rp->id : 'podstrona-sekcja-'.$rp->id)) }}">{{ $rp->title }}<span class="proj-ref-kind"> — sekcja na tej stronie</span></a></li>
+                            @endforeach
+                            @if ($refAcc->isNotEmpty())
+                                <li><a class="proj-ref-link" href="#projekt-rozwijane">{{ $refAcc->pluck('title')->take(3)->implode(', ') }}{{ $refAcc->count() > 3 ? ' i inne' : '' }}<span class="proj-ref-kind"> — rozwijane sekcje</span></a></li>
+                            @endif
+                            @foreach ($refLinks as $rp)
+                                <li><a class="proj-ref-link" href="{{ route('page.show', $rp) }}">{{ $rp->title }}<span class="proj-ref-kind"> — osobna strona</span></a></li>
+                            @endforeach
+                            @foreach ($refSubs as $rs)
+                                <li><a class="proj-ref-link" href="{{ route('projects.show', $rs) }}">{{ $rs->title }}<span class="proj-ref-kind"> — {{ $rs->is_paid ? 'wersja odpłatna' : 'wersja bezpłatna' }}</span></a></li>
+                            @endforeach
+                        </ul>
+                    </section>
+                @endif
+
                 {{-- Etapy (harmonogram) — ramka --}}
                 @php $projStages = $siteSettings->projects_stages_enabled ? collect($project->stages ?? []) : collect(); @endphp
                 @if ($projStages->isNotEmpty())
@@ -369,7 +405,7 @@
                         $anchor = $subpage->isSchedule() ? 'harmonogram-'.$subpage->id : ($subpage->isFaq() ? 'faq-'.$subpage->id : null);
                         $subIcon = $subpage->isSchedule() ? 'fa-calendar-days' : ($subpage->isFaq() ? 'fa-circle-question' : 'fa-file-lines');
                     @endphp
-                    <section @if ($anchor) id="{{ $anchor }}" @endif class="mt-8 scroll-mt-24 rounded-lg border border-gray-200 p-6">
+                    <section id="{{ $anchor ?: 'podstrona-sekcja-'.$subpage->id }}" class="mt-8 scroll-mt-24 rounded-lg border border-gray-200 p-6">
                         <h2 class="proj-h2">{{ $subpage->title }}</h2>
                         @if ($subpage->content)
                             <div class="prose max-w-none text-ink">{!! $subpage->content !!}</div>
@@ -387,6 +423,7 @@
 
                 {{-- Podstrony projektu jako rozwijane sekcje (akordeon) --}}
                 @if ($accordionPages->isNotEmpty())
+                    <span id="projekt-rozwijane" class="scroll-mt-24"></span>
                     @include('partials.page-children-accordion', ['children' => $accordionPages, 'page' => (object) ['id' => 'p'.$project->id, 'title' => $project->title]])
                 @endif
 
