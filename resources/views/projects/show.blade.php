@@ -68,7 +68,7 @@
 
     {{-- ══ HERO: kategoria, tytuł, status, zajawka, kluczowe fakty i zdjęcie ══ --}}
     <section class="border-b border-gray-100 bg-gray-50">
-        <div class="relative mx-auto grid max-w-6xl items-center gap-8 px-4 py-12 sm:py-16 {{ $project->image_url ? 'lg:grid-cols-[minmax(0,1fr)_26rem]' : '' }}">
+        <div class="relative mx-auto grid max-w-6xl items-center gap-8 px-4 py-8 sm:py-10 {{ $project->image_url ? 'lg:grid-cols-[minmax(0,1fr)_26rem]' : '' }}">
             <div class="min-w-0">
                 <a href="{{ route('categories.show', $project->category) }}" class="inline-block text-xs font-bold uppercase tracking-widest text-brand hover:text-brand-dark">
                     {{ $project->category->name }}
@@ -117,7 +117,7 @@
         @include('partials.tab-strip', ['tabItems' => $tabItems, 'tabsLabel' => 'Sekcje projektu'])
     @endif
 
-    <section class="mx-auto max-w-6xl px-4 py-12">
+    <section class="mx-auto max-w-6xl px-4 py-8">
         @php
             $showNews = $siteSettings->isModuleEnabled('news') && $project->publishedNews->isNotEmpty();
             $showTeamFunding = $siteSettings->projects_team_funding_enabled;
@@ -546,9 +546,6 @@
                         @elseif ($subpage->isFaq())
                             @include('partials.faq', ['page' => $subpage])
                         @endif
-                        <a href="{{ route('page.show', $subpage) }}" class="mt-4 inline-flex items-center gap-2 text-sm font-bold text-brand hover:text-brand-dark">
-                            Otwórz jako osobną stronę <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
-                        </a>
                     </section>
                 @endforeach
 

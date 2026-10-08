@@ -50,7 +50,6 @@
                 @elseif ($n->isFaq())
                     @include('partials.faq', ['page' => $n])
                 @endif
-                <a href="{{ route('page.show', $n) }}" class="mt-3 inline-flex items-center gap-2 text-sm font-bold text-brand hover:text-brand-dark">Otwórz jako osobną stronę</a>
             </div>
         @endforeach
     </div>

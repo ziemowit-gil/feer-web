@@ -13,7 +13,6 @@
                 </summary>
                 <div class="pb-5 pr-8 text-base leading-relaxed text-ink">
                     <div class="prose max-w-none text-ink">{!! \App\Support\ShortcodeParser::render($child->content) !!}</div>
-                    <a href="{{ $child->publicUrl() }}" class="mt-3 inline-flex items-center gap-2 text-sm font-bold text-brand hover:text-brand-dark">Otwórz jako osobną stronę <span class="sr-only">„{{ $child->title }}”</span></a>
                 </div>
             </details>
         @endforeach
