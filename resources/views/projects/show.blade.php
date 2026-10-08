@@ -138,6 +138,21 @@
                 font-size: 1.25rem; font-weight: 800; line-height: 1;
             }
             .proj-news a { display: block; padding: .6rem 0; }
+            .proj-choice { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr)); margin: 0; padding: 0; list-style: none; }
+            .proj-choice > li { display: flex; }
+            .proj-choice-tile { display: flex; flex: 1; flex-direction: column; gap: .5rem; padding: 1.25rem; border: 2px solid #1d1d1a; border-top-width: 6px; border-radius: .75rem; background: #fff; color: #1d1d1a; text-decoration: none; transition: transform .15s, box-shadow .15s; }
+            .proj-choice-tile.is-free { border-top-color: #166534; }
+            .proj-choice-tile.is-paid { border-top-color: var(--color-brand); }
+            .proj-choice-tile:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(0,0,0,.12); }
+            .proj-choice-tile:focus-visible { outline: 3px solid #1d1d1a; outline-offset: 3px; }
+            .proj-choice-kind { font-size: .75rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+            .is-free .proj-choice-kind { color: #166534; } .is-paid .proj-choice-kind { color: #1d4ed8; }
+            .proj-choice-title { font-size: 1.15rem; font-weight: 800; line-height: 1.3; }
+            .proj-choice-text { font-size: .95rem; line-height: 1.5; }
+            .proj-choice-price { font-size: 1rem; font-weight: 700; }
+            .proj-choice-cta { margin-top: auto; padding-top: .5rem; display: inline-flex; align-items: center; gap: .5rem; font-weight: 800; color: var(--color-brand); }
+            .proj-choice-tile:hover .proj-choice-cta { text-decoration: underline; }
+            @media (prefers-reduced-motion: reduce) { .proj-choice-tile { transition: none; } .proj-choice-tile:hover { transform: none; } }
             .proj-part { display: inline-flex; align-items: center; gap: .6rem; max-width: 100%; padding: .4rem .9rem .4rem .45rem; border: 2px solid var(--color-brand); border-radius: 9999px; background: #fff; font-size: .9rem; line-height: 1.3; color: #1d1d1a; }
             .proj-part-ico { display: inline-flex; flex: none; align-items: center; justify-content: center; width: 1.75rem; height: 1.75rem; border-radius: 9999px; background: var(--color-brand); color: #fff; font-size: .8rem; }
             .proj-part a { font-weight: 700; color: var(--color-brand); text-decoration: underline; text-underline-offset: 2px; }
@@ -214,16 +229,25 @@
                                 Te działania realizujemy <strong>bezpłatnie</strong> — wybierz wersję, która odpowiada Twoim potrzebom.
                             @endif
                         </p>
-                        <ul role="list" class="grid gap-3 sm:grid-cols-2">
+                        {{-- Kafle do wyboru wersji: cała karta jest linkiem; wyraźny typ (bezpłatne/odpłatne), cena, przycisk. --}}
+                        <ul role="list" class="proj-choice">
                             @foreach ($subProjects as $sp)
+                                @php
+                                    $spPrice = collect($sp->pricing ?? [])->first(fn ($r) => filled($r['price'] ?? null));
+                                @endphp
                                 <li>
-                                    <a href="{{ route('projects.show', $sp) }}" class="group flex h-full flex-col gap-1 rounded-lg border-2 border-gray-200 bg-white p-4 transition hover:border-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
-                                        <span class="flex flex-wrap items-center gap-2">
-                                            <span class="text-lg font-bold text-ink group-hover:text-brand">{{ $sp->title }}</span>
-                                            <span class="rounded-full px-2.5 py-0.5 text-xs font-bold {{ $sp->is_paid ? 'bg-amber-100 text-amber-900' : 'bg-green-100 text-green-900' }}">{{ $sp->is_paid ? 'Płatne' : 'Bezpłatne' }}</span>
+                                    <a href="{{ route('projects.show', $sp) }}" class="proj-choice-tile {{ $sp->is_paid ? 'is-paid' : 'is-free' }}">
+                                        <span class="proj-choice-kind">{{ $sp->is_paid ? 'Wersja odpłatna' : 'Wersja bezpłatna' }}</span>
+                                        <span class="proj-choice-title">{{ $sp->title }}</span>
+                                        @if ($sp->excerpt)<span class="proj-choice-text">{{ \Illuminate\Support\Str::limit($sp->excerpt, 160) }}</span>@endif
+                                        <span class="proj-choice-price">
+                                            @if ($sp->is_paid)
+                                                {{ $spPrice ? 'Cena: '.$spPrice['price'] : 'Cena do ustalenia' }}
+                                            @else
+                                                Bez opłat
+                                            @endif
                                         </span>
-                                        @if ($sp->excerpt)<span class="text-sm leading-snug text-ink">{{ \Illuminate\Support\Str::limit($sp->excerpt, 140) }}</span>@endif
-                                        <span class="mt-auto pt-2 text-sm font-bold text-brand">Zobacz szczegóły <span aria-hidden="true">→</span></span>
+                                        <span class="proj-choice-cta">Wybierz tę wersję <span aria-hidden="true">→</span><span class="sr-only">: {{ $sp->title }}</span></span>
                                     </a>
                                 </li>
                             @endforeach
