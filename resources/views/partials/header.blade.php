@@ -57,6 +57,14 @@
     }
     $wmDarkText   = $siteSettings->navDarkText();
 
+    // Własne kolory dwóch dodatkowych przycisków (puste = kolor marki); tekst dobiera czerń/biel dla kontrastu.
+    $wmCtaColor  = \App\Support\Color::isValid($siteSettings->wide_mission_cta_color ?? null) ? strtolower($siteSettings->wide_mission_cta_color) : null;
+    $wmCta2Color = \App\Support\Color::isValid($siteSettings->wide_mission_cta2_color ?? null) ? strtolower($siteSettings->wide_mission_cta2_color) : null;
+    $wmCtaPal  = $wmCtaColor ? \App\Support\ThemePalette::button($wmCtaColor) : null;
+    $wmCta2Pal = $wmCta2Color ? \App\Support\ThemePalette::button($wmCta2Color) : null;
+    $wmCtaStyle  = $wmCtaPal ? 'background-color: '.$wmCtaPal['bg'].'; color: '.$wmCtaPal['text'].';' : null;
+    $wmCta2Style = $wmCta2Pal ? 'border-color: '.$wmCta2Pal['bg'].'; color: '.$wmCta2Pal['bg'].';' : null;
+
     $ctaClass = 'inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-brand px-5 text-sm font-bold text-white transition '
         . 'hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2';
 @endphp
@@ -122,11 +130,11 @@
                             </ul>
                         @endif
                         @if ($wmHasCta)
-                            <a href="{{ $wmCtaUrl }}" class="{{ $ctaClass }}">{{ $wmCtaLabel }}</a>
+                            <a href="{{ $wmCtaUrl }}" class="{{ $ctaClass }}" @if ($wmCtaStyle) style="{{ $wmCtaStyle }}" @endif>{{ $wmCtaLabel }}</a>
                         @endif
                         @if ($wmHasCta2)
                             {{-- Drugi przycisk: wariant drugorzędny (obrys marki, tło białe) — wyraźny, ale nie konkuruje z pierwszym. --}}
-                            <a href="{{ $wmCta2Url }}" class="{{ $ctaClass }} !border-2 !border-brand !bg-white !text-brand-dark hover:!bg-brand-light">{{ $wmCta2Label }}</a>
+                            <a href="{{ $wmCta2Url }}" class="{{ $ctaClass }} !border-2 {{ $wmCta2Style ? '!bg-white' : '!border-brand !bg-white !text-brand-dark hover:!bg-brand-light' }}" @if ($wmCta2Style) style="{{ $wmCta2Style }}" @endif>{{ $wmCta2Label }}</a>
                         @endif
                     </div>
                 @endif
@@ -182,8 +190,8 @@
     {{-- Panel mobilny (< lg): menu + CTA + wsparcie + social --}}
     @include('partials.mobile-nav-panel', [
         'panelId' => 'main-nav-panel', 'hideAt' => 'lg',
-        'cta' => $wmHasCta ? ['label' => $wmCtaLabel, 'url' => $wmCtaUrl] : null,
-        'cta2' => $wmHasCta2 ? ['label' => $wmCta2Label, 'url' => $wmCta2Url] : null,
+        'cta' => $wmHasCta ? ['label' => $wmCtaLabel, 'url' => $wmCtaUrl, 'style' => $wmCtaStyle] : null,
+        'cta2' => $wmHasCta2 ? ['label' => $wmCta2Label, 'url' => $wmCta2Url, 'style' => $wmCta2Style] : null,
         'showSupport' => true, 'socials' => $socials,
     ])
 </div>

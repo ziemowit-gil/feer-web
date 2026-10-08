@@ -239,6 +239,8 @@ class SiteSettingController extends Controller
             'wide_mission_layout' => ['nullable', Rule::in(array_keys(SiteSetting::WIDE_MISSION_LAYOUTS))],
             'wide_mission_cta_label' => ['nullable', 'string', 'max:80'],
             'wide_mission_cta_url' => ['nullable', 'string', 'max:255'],
+            'wide_mission_cta_color' => ['nullable', 'regex:/^#[0-9a-fA-F]{6}$/'],
+            'wide_mission_cta2_color' => ['nullable', 'regex:/^#[0-9a-fA-F]{6}$/'],
             'wide_mission_cta2_label' => ['nullable', 'string', 'max:80', 'required_with:wide_mission_cta2_url'],
             'wide_mission_cta2_url' => ['nullable', 'string', 'max:255', 'required_with:wide_mission_cta2_label'],
             'wide_mission_show_mission' => ['sometimes', 'boolean'],
@@ -530,7 +532,7 @@ class SiteSettingController extends Controller
         unset($data['logo'], $data['remove_logo'], $data['og_image'], $data['remove_og_image'], $data['support_image'], $data['remove_support_image'], $data['support_gallery'], $data['remove_support_gallery'], $data['news_default_image'], $data['remove_news_default_image'], $data['bip_logo'], $data['remove_bip_logo'], $data['enabled_modules'], $data['section_order_json'], $data['homepage_sections_enabled']);
 
         // Do czasu wykonania migracji (nowa kolumna) zapis ustawień nie może padać — pomijamy brakującą kolumnę.
-        foreach (['homepage_sections_hidden', 'wide_mission_cta2_label', 'wide_mission_cta2_url', 'projects_layout', 'project_sections_nav', 'projects_stages_enabled', 'projects_team_funding_enabled', 'paid_activity_info', 'paid_info_page_id', 'projects_terms_enabled', 'projects_subprojects_enabled', 'projects_extras_enabled', 'show_print_button'] as $newColumn) {
+        foreach (['homepage_sections_hidden', 'wide_mission_cta_color', 'wide_mission_cta2_color', 'wide_mission_cta2_label', 'wide_mission_cta2_url', 'projects_layout', 'project_sections_nav', 'projects_stages_enabled', 'projects_team_funding_enabled', 'paid_activity_info', 'paid_info_page_id', 'projects_terms_enabled', 'projects_subprojects_enabled', 'projects_extras_enabled', 'show_print_button'] as $newColumn) {
             if (! \Illuminate\Support\Facades\Schema::hasColumn('site_settings', $newColumn)) {
                 unset($data[$newColumn]);
             }

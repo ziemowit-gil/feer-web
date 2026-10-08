@@ -543,6 +543,19 @@
                     <p class="mt-1 text-xs text-muted">Przycisk pojawi się obok ikon social media w górnym pasku nagłówka.</p>
                 </div>
 
+                <div>
+                    <label for="wide_mission_cta_color_text" class="mb-1 block text-sm font-bold">Kolor pierwszego przycisku <span class="font-normal text-muted">(opcjonalnie)</span></label>
+                    <div class="flex items-center gap-3">
+                        <input type="color" id="wide_mission_cta_color_picker" value="{{ old('wide_mission_cta_color', $settings->wide_mission_cta_color) ?: ($settings->brand_color ?: '#1e6dff') }}"
+                            oninput="document.getElementById('wide_mission_cta_color_text').value = this.value"
+                            class="h-10 w-14 flex-none rounded border-gray-300" aria-label="Wybierz kolor: pierwszego przycisku">
+                        <input type="text" id="wide_mission_cta_color_text" name="wide_mission_cta_color" value="{{ old('wide_mission_cta_color', $settings->wide_mission_cta_color) }}" placeholder="puste = kolor marki" pattern="#[0-9a-fA-F]{6}" data-color-picker
+                            oninput="if (/^#[0-9a-fA-F]{6}$/.test(this.value)) document.getElementById('wide_mission_cta_color_picker').value = this.value"
+                            class="w-44 rounded border-gray-300 font-mono text-sm focus:border-brand focus:ring-brand">
+                    </div>
+                    @error('wide_mission_cta_color') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                </div>
+
                 <div class="grid gap-4 sm:grid-cols-2">
                     <div>
                         <label for="wide_mission_cta2_label" class="mb-1 block text-sm font-bold">
@@ -566,6 +579,19 @@
                             class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
                         @error('wide_mission_cta2_url') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
+
+                <div class="sm:col-span-2">
+                    <label for="wide_mission_cta2_color_text" class="mb-1 block text-sm font-bold">Kolor drugiego przycisku <span class="font-normal text-muted">(opcjonalnie)</span></label>
+                    <div class="flex items-center gap-3">
+                        <input type="color" id="wide_mission_cta2_color_picker" value="{{ old('wide_mission_cta2_color', $settings->wide_mission_cta2_color) ?: ($settings->brand_color ?: '#1e6dff') }}"
+                            oninput="document.getElementById('wide_mission_cta2_color_text').value = this.value"
+                            class="h-10 w-14 flex-none rounded border-gray-300" aria-label="Wybierz kolor: drugiego przycisku">
+                        <input type="text" id="wide_mission_cta2_color_text" name="wide_mission_cta2_color" value="{{ old('wide_mission_cta2_color', $settings->wide_mission_cta2_color) }}" placeholder="puste = kolor marki" pattern="#[0-9a-fA-F]{6}" data-color-picker
+                            oninput="if (/^#[0-9a-fA-F]{6}$/.test(this.value)) document.getElementById('wide_mission_cta2_color_picker').value = this.value"
+                            class="w-44 rounded border-gray-300 font-mono text-sm focus:border-brand focus:ring-brand">
+                    </div>
+                    @error('wide_mission_cta2_color') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                </div>
                     <p class="text-xs text-muted sm:col-span-2">Drugi przycisk ma wygląd drugorzędny (obrys) i stoi obok pierwszego; pojawia się też w menu na telefonie. Podaj etykietę i link razem.</p>
                 </div>
                 </div>
