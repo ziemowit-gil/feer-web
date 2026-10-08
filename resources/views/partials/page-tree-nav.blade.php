@@ -40,14 +40,14 @@
 
 <nav aria-label="Podstrony w tym dziale" class="page-tree-nav text-sm md:border-r md:border-gray-200 md:pr-6">
     <p class="mb-3 flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide text-muted">
-        <i class="fa-solid fa-sitemap text-brand" aria-hidden="true"></i> W tym dziale
+        <i class="fa-solid fa-sitemap text-brand-dark" aria-hidden="true"></i> W tym dziale
     </p>
 
     @if ($treeCrumbs->isNotEmpty())
         <p class="mb-3 rounded-lg bg-gray-50 px-3 py-2 text-xs leading-relaxed text-muted">
             <span class="font-bold">Jesteś tu:</span>
             @foreach ($treeCrumbs as $crumb)
-                <a href="{{ $crumb['url'] }}" class="rounded text-ink underline-offset-2 hover:text-brand hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">{{ $crumb['label'] }}</a>
+                <a href="{{ $crumb['url'] }}" class="rounded text-ink underline-offset-2 hover:text-brand-dark hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">{{ $crumb['label'] }}</a>
                 <span aria-hidden="true" class="mx-0.5 text-gray-400">›</span>
             @endforeach
             <span class="font-semibold text-ink" aria-current="page">{{ $page->title }}</span>
@@ -57,7 +57,7 @@
     <ul role="list" class="space-y-0.5">
         <li>
             <a href="{{ $treeRootUrl }}" @if ($treeRootCurrent) aria-current="page" @endif
-                class="flex min-h-11 items-center gap-2 rounded-lg px-3 py-2 font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand {{ $treeRootCurrent ? 'bg-brand text-white' : 'text-ink hover:bg-brand-light hover:text-brand' }}">
+                class="flex min-h-11 items-center gap-2 rounded-lg px-3 py-2 font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand {{ $treeRootCurrent ? 'bg-brand text-white' : 'text-ink hover:bg-brand-light hover:text-brand-dark' }}">
                 <i class="fa-solid {{ $treeRootIsProject ? 'fa-diagram-project' : 'fa-house' }} w-4 text-center text-xs opacity-70" aria-hidden="true"></i>
                 <span class="min-w-0 flex-1">{{ $treeRootLabel }}</span>
             </a>

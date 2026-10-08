@@ -16,7 +16,7 @@
     :root {
         /* Paleta motywu FEER (domyślnie Brand book 2024; zmieniana w Ustawienia → Kolory). */
         --color-brand: {{ $feerPal['brand'] }};
-        --color-brand-dark: {{ $feerPal['brand'] }};
+        --color-brand-dark: {{ \App\Support\ThemePalette::textColor($feerPal['brand'], $feerLight) }}; /* tekst i linki w kolorze marki: ≥ 4,5:1 na bieli i jasnym tle */
         --color-brand-light: {{ $feerLight }};
         --color-brand-2: {{ $feerPal['b2'] }};   /* działania w partnerstwie z NGO */
         --color-brand-3: {{ $feerPal['b3'] }};

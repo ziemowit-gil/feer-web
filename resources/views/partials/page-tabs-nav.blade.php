@@ -32,10 +32,10 @@
     $tabClass = $tabsPills
         ? fn (bool $current) => 'inline-flex min-h-11 items-center whitespace-nowrap rounded-full px-4 text-sm font-bold transition '
             . 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 '
-            . ($current ? 'bg-brand text-white' : 'text-ink hover:bg-brand-light hover:text-brand')
+            . ($current ? 'bg-brand text-white' : 'text-ink hover:bg-brand-light hover:text-brand-dark')
         : fn (bool $current) => 'inline-flex min-h-11 items-center whitespace-nowrap border-b-[3px] px-4 text-sm font-bold transition '
             . 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand '
-            . ($current ? 'border-brand text-brand' : 'border-transparent text-muted hover:border-gray-300 hover:text-ink');
+            . ($current ? 'border-brand text-brand-dark' : 'border-transparent text-muted hover:border-gray-300 hover:text-ink');
 @endphp
 
 <nav aria-label="Podstrony w tym dziale" class="mb-8 {{ $tabsPills ? 'rounded-2xl bg-gray-50 p-1.5' : 'border-b border-gray-200' }}">

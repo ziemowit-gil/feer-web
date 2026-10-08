@@ -81,4 +81,24 @@ class ThemePalette
 
         return Color::button($base);
     }
+
+    /**
+     * Kolor tekstu/linków w kolorze marki czytelny na bieli i na jasnym tle marki (≥ 4,6:1 — zapas ponad 4,5:1).
+     * Przy wyłączonym poprawianiu do WCAG zwraca kolor bez zmian.
+     */
+    public static function textColor(?string $hex = null, string $light = '#e8f0ff'): string
+    {
+        $hex = strtolower($hex ?? self::colors()[0]);
+        if (self::skipWcag()) {
+            return $hex;
+        }
+        for ($i = 0; $i < 20; $i++) {
+            if (Color::contrast($hex, '#ffffff') >= 4.6 && Color::contrast($hex, $light) >= 4.6) {
+                return $hex;
+            }
+            $hex = Color::darken($hex, 0.05);
+        }
+
+        return $hex;
+    }
 }

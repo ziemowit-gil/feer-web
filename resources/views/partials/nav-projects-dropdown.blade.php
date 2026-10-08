@@ -9,8 +9,8 @@
         $ob      = $onBrand ?? false;
         $hoverW  = $ob && ($siteSettings->wide_mission_nav_hover_white  ?? true);
         $activeW = $ob && ($siteSettings->wide_mission_nav_active_white ?? true);
-        $hoverCls  = $hoverW  ? 'hover:border-white hover:text-white hover:underline' : 'hover:border-brand hover:text-brand';
-        $activeBdr = $ob ? ($activeW ? 'border-white' : 'border-brand text-brand') : 'border-brand text-brand';
+        $hoverCls  = $hoverW  ? 'hover:border-white hover:text-white hover:underline' : 'hover:border-brand hover:text-brand-dark';
+        $activeBdr = $ob ? ($activeW ? 'border-white' : 'border-brand text-brand-dark') : 'border-brand text-brand-dark';
         $staticCls = $item->isCurrent() ? $activeBdr : 'border-transparent';
     @endphp
     <button type="button" x-ref="projectsTrigger" @click="open = !open"
@@ -30,7 +30,7 @@
         ])>
         @forelse (($navCategories ?? collect()) as $category)
             <div class="group/cat relative">
-                <a href="{{ route('categories.show', $category) }}" class="flex items-center justify-between px-4 py-2 text-sm font-bold text-ink hover:bg-gray-50 hover:text-brand focus-visible:bg-gray-50">
+                <a href="{{ route('categories.show', $category) }}" class="flex items-center justify-between px-4 py-2 text-sm font-bold text-ink hover:bg-gray-50 hover:text-brand-dark focus-visible:bg-gray-50">
                     {{ $category->name }}
                     @if (! $mobile && $category->publishedProjects->isNotEmpty())
                         <i class="fa-solid fa-chevron-right text-xs text-muted" aria-hidden="true"></i>
@@ -40,7 +40,7 @@
                 @if (! $mobile && $category->publishedProjects->isNotEmpty())
                     <div class="invisible absolute left-full top-0 z-50 ml-1 w-60 rounded-lg border border-gray-200 bg-white py-2 opacity-0 shadow-lg transition group-hover/cat:visible group-hover/cat:opacity-100 group-focus-within/cat:visible group-focus-within/cat:opacity-100">
                         @foreach ($category->publishedProjects as $project)
-                            <a href="{{ route('projects.show', $project) }}" class="block px-4 py-2 text-sm font-medium normal-case text-ink hover:bg-gray-50 hover:text-brand focus-visible:bg-gray-50">
+                            <a href="{{ route('projects.show', $project) }}" class="block px-4 py-2 text-sm font-medium normal-case text-ink hover:bg-gray-50 hover:text-brand-dark focus-visible:bg-gray-50">
                                 {{ $project->title }}
                             </a>
                         @endforeach
@@ -60,7 +60,7 @@
                     @foreach ($item->children as $extra)
                         <li>
                             <a href="{{ $extra->url }}" @if ($extra->isCurrent()) aria-current="page" @endif
-                               class="block px-4 py-2 text-sm font-medium normal-case {{ $extra->isCurrent() ? 'text-brand' : 'text-ink' }} hover:bg-gray-50 hover:text-brand focus-visible:bg-gray-50">
+                               class="block px-4 py-2 text-sm font-medium normal-case {{ $extra->isCurrent() ? 'text-brand-dark' : 'text-ink' }} hover:bg-gray-50 hover:text-brand-dark focus-visible:bg-gray-50">
                                 {{ $extra->label }}
                             </a>
                         </li>

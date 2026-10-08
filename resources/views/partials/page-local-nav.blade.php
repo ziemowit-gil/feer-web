@@ -27,14 +27,14 @@
         @if ($localUp)
             <li class="border-b border-gray-300">
                 <a href="{{ $localUp['url'] }}" @if (! empty($localUp['current'])) aria-current="page" @endif
-                    class="flex w-full items-center py-3 text-base font-normal hover:text-brand focus-visible:outline-2 focus-visible:outline-brand {{ ! empty($localUp['current']) ? 'text-brand' : '' }}">{{ $localUp['label'] }}</a>
+                    class="flex w-full items-center py-3 text-base font-normal hover:text-brand-dark focus-visible:outline-2 focus-visible:outline-brand {{ ! empty($localUp['current']) ? 'text-brand-dark' : '' }}">{{ $localUp['label'] }}</a>
             </li>
         @endif
         @foreach ($menuSiblings as $sibling)
             @php $kids = $sibling->publishedChildren; @endphp
             <li class="border-b border-gray-300 last:border-0">
                 <a href="{{ $sibling->publicUrl() }}" @if ($sibling->is($page)) aria-current="page" @endif
-                    class="flex w-full items-center justify-between gap-2 py-3 text-base font-normal hover:text-brand focus-visible:outline-2 focus-visible:outline-brand {{ $sibling->is($page) ? 'text-brand' : '' }}">
+                    class="flex w-full items-center justify-between gap-2 py-3 text-base font-normal hover:text-brand-dark focus-visible:outline-2 focus-visible:outline-brand {{ $sibling->is($page) ? 'text-brand-dark' : '' }}">
                     <span>{{ $sibling->title }}</span>
                     @if ($kids->isNotEmpty())<i class="fa-solid fa-chevron-right text-xs" aria-hidden="true"></i>@endif
                 </a>
@@ -43,7 +43,7 @@
                         @foreach ($kids as $child)
                             <li class="border-b border-gray-300 last:border-0">
                                 <a href="{{ $child->publicUrl() }}" @if ($child->is($page)) aria-current="page" @endif
-                                    class="flex py-2.5 pl-3 text-[0.9375rem] font-normal hover:text-brand focus-visible:outline-2 focus-visible:outline-brand {{ $child->is($page) ? 'text-brand' : '' }}">{{ $child->title }}</a>
+                                    class="flex py-2.5 pl-3 text-[0.9375rem] font-normal hover:text-brand-dark focus-visible:outline-2 focus-visible:outline-brand {{ $child->is($page) ? 'text-brand-dark' : '' }}">{{ $child->title }}</a>
                             </li>
                         @endforeach
                     </ul>
@@ -60,7 +60,7 @@
             <li>
                 <a href="{{ $localUp['url'] }}"
                     {{ ! empty($localUp['current']) ? 'aria-current=page' : '' }}
-                    class="block rounded px-2 py-1.5 {{ ! empty($localUp['current']) ? 'bg-brand-light font-bold text-brand' : 'text-ink hover:bg-gray-50' }}">
+                    class="block rounded px-2 py-1.5 {{ ! empty($localUp['current']) ? 'bg-brand-light font-bold text-brand-dark' : 'text-ink hover:bg-gray-50' }}">
                     {{ $localUp['label'] }}
                 </a>
             </li>
@@ -69,7 +69,7 @@
             <li>
                 <a href="{{ $sibling->publicUrl() }}"
                     {{ $sibling->is($page) ? 'aria-current=page' : '' }}
-                    class="block rounded px-2 py-1.5 {{ $sibling->is($page) ? 'bg-brand-light font-bold text-brand' : 'text-ink hover:bg-gray-50' }}">
+                    class="block rounded px-2 py-1.5 {{ $sibling->is($page) ? 'bg-brand-light font-bold text-brand-dark' : 'text-ink hover:bg-gray-50' }}">
                     {{ $sibling->title }}
                 </a>
 
@@ -81,7 +81,7 @@
                             <li>
                                 <a href="{{ $child->publicUrl() }}"
                                     {{ $child->is($page) ? 'aria-current=page' : '' }}
-                                    class="block rounded px-2 py-1 text-[0.8rem] {{ $child->is($page) ? 'bg-brand-light font-bold text-brand' : 'text-muted hover:bg-gray-50 hover:text-ink' }}">
+                                    class="block rounded px-2 py-1 text-[0.8rem] {{ $child->is($page) ? 'bg-brand-light font-bold text-brand-dark' : 'text-muted hover:bg-gray-50 hover:text-ink' }}">
                                     {{ $child->title }}
                                 </a>
                             </li>

@@ -9,8 +9,8 @@
         $ob      = $onBrand ?? false;
         $hoverW  = $ob && ($siteSettings->wide_mission_nav_hover_white  ?? true);
         $activeW = $ob && ($siteSettings->wide_mission_nav_active_white ?? true);
-        $hoverCls  = $hoverW  ? 'hover:border-white hover:text-white hover:underline' : 'hover:border-brand hover:text-brand';
-        $activeBdr = $ob ? ($activeW ? 'border-white' : 'border-brand text-brand') : 'border-brand text-brand';
+        $hoverCls  = $hoverW  ? 'hover:border-white hover:text-white hover:underline' : 'hover:border-brand hover:text-brand-dark';
+        $activeBdr = $ob ? ($activeW ? 'border-white' : 'border-brand text-brand-dark') : 'border-brand text-brand-dark';
         $staticCls = $item->isCurrent() ? $activeBdr : 'border-transparent';
     @endphp
     <button type="button" x-ref="dropdownTrigger" @click="open = !open"

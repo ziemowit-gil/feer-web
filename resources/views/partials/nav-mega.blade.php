@@ -20,9 +20,9 @@
     $hoverW  = $ob && ($siteSettings->wide_mission_nav_hover_white  ?? true);
     $activeW = $ob && ($siteSettings->wide_mission_nav_active_white ?? true);
     $iconsW  = $ob && ($siteSettings->wide_mission_nav_icons_white  ?? false);
-    $hoverTxtCls = $hoverW ? 'hover:text-white hover:underline' : 'hover:text-brand';
-    $activeBdr   = $ob ? ($activeW ? 'border-white' : 'border-brand text-brand') : 'border-brand text-brand';
-    $iconCls     = $iconsW ? 'text-white hover:text-white/80' : 'text-brand hover:text-brand';
+    $hoverTxtCls = $hoverW ? 'hover:text-white hover:underline' : 'hover:text-brand-dark';
+    $activeBdr   = $ob ? ($activeW ? 'border-white' : 'border-brand text-brand-dark') : 'border-brand text-brand-dark';
+    $iconCls     = $iconsW ? 'text-white hover:text-white/80' : 'text-brand-dark hover:text-brand-dark';
     $navIcons    = $iconsNav ?? false;
     $isProjects  = $item->type === 'projects';
 
@@ -151,14 +151,14 @@
                             @foreach ($groups as $category)
                                 <div>
                                     <a href="{{ route('categories.show', $category) }}" @if ($catCurrentId === $category->id) aria-current="page" @endif
-                                       class="mb-2 block rounded-md border-b-2 border-brand/30 px-2 py-1.5 font-bold {{ $sz['cat'] }} hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand {{ $catCurrentId === $category->id ? 'text-brand' : 'text-ink' }}">
+                                       class="mb-2 block rounded-md border-b-2 border-brand/30 px-2 py-1.5 font-bold {{ $sz['cat'] }} hover:text-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand {{ $catCurrentId === $category->id ? 'text-brand-dark' : 'text-ink' }}">
                                         {{ $category->name }}
                                     </a>
                                     <ul role="list" class="space-y-0.5">
                                         @foreach ($category->publishedProjects as $project)
                                             <li>
                                                 <a href="{{ route('projects.show', $project) }}" @if ($groupCurrentId === $project->id) aria-current="page" @endif
-                                                   class="block rounded-md px-2 py-1.5 {{ $sz['proj'] }} hover:bg-gray-50 hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand {{ $groupCurrentId === $project->id ? 'font-semibold text-brand' : 'text-ink' }}">
+                                                   class="block rounded-md px-2 py-1.5 {{ $sz['proj'] }} hover:bg-gray-50 hover:text-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand {{ $groupCurrentId === $project->id ? 'font-semibold text-brand-dark' : 'text-ink' }}">
                                                     {{ $project->title }}
                                                 </a>
                                             </li>
@@ -174,7 +174,7 @@
                                         @foreach ($projectExtras as $extra)
                                             <li>
                                                 <a href="{{ $extra->url }}" @if ($extra->isCurrent()) aria-current="page" @endif
-                                                   class="block rounded-md px-2 py-1.5 {{ $sz['proj'] }} hover:bg-gray-50 hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand {{ $extra->isCurrent() ? 'font-semibold text-brand' : 'text-ink' }}">{{ $extra->label }}</a>
+                                                   class="block rounded-md px-2 py-1.5 {{ $sz['proj'] }} hover:bg-gray-50 hover:text-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand {{ $extra->isCurrent() ? 'font-semibold text-brand-dark' : 'text-ink' }}">{{ $extra->label }}</a>
                                             </li>
                                         @endforeach
                                     </ul>
@@ -215,13 +215,13 @@
                             @if ($h)
                                 @if ($h['url'])
                                     <a id="{{ $hid }}" href="{{ $h['url'] }}" @if ($h['current']) aria-current="page" @endif
-                                       class="mb-2 flex items-center gap-2 rounded-md px-2 py-1.5 font-bold {{ $sz['cat'] }} hover:bg-gray-50 hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand {{ $h['current'] ? 'text-brand' : 'text-ink' }}">
-                                        {!! icon_html($h['icon'], 'text-brand', '', 'fa-solid fa-folder-open') !!}
+                                       class="mb-2 flex items-center gap-2 rounded-md px-2 py-1.5 font-bold {{ $sz['cat'] }} hover:bg-gray-50 hover:text-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand {{ $h['current'] ? 'text-brand-dark' : 'text-ink' }}">
+                                        {!! icon_html($h['icon'], 'text-brand-dark', '', 'fa-solid fa-folder-open') !!}
                                         <span>{{ $h['label'] }}</span>
                                     </a>
                                 @else
                                     <p id="{{ $hid }}" class="mb-2 flex items-center gap-2 px-2 py-1.5 font-bold text-ink {{ $sz['cat'] }}">
-                                        {!! icon_html($h['icon'], 'text-brand', '', 'fa-solid fa-folder-open') !!}
+                                        {!! icon_html($h['icon'], 'text-brand-dark', '', 'fa-solid fa-folder-open') !!}
                                         <span>{{ $h['label'] }}</span>
                                     </p>
                                 @endif
@@ -234,10 +234,10 @@
                                     @foreach ($section['links'] as [$url, $label, $description, $icon, $current])
                                         <li>
                                             <a href="{{ $url }}" @if ($current) aria-current="page" @endif
-                                               class="group/l flex items-start gap-2 rounded-md px-2 py-1.5 {{ $sz['proj'] }} hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand {{ $current ? 'font-semibold text-brand' : 'text-ink' }}">
-                                                @if ($icon){!! icon_html($icon, 'mt-0.5 flex-none text-xs text-brand') !!}@endif
+                                               class="group/l flex items-start gap-2 rounded-md px-2 py-1.5 {{ $sz['proj'] }} hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand {{ $current ? 'font-semibold text-brand-dark' : 'text-ink' }}">
+                                                @if ($icon){!! icon_html($icon, 'mt-0.5 flex-none text-xs text-brand-dark') !!}@endif
                                                 <span class="min-w-0">
-                                                    <span class="block group-hover/l:text-brand">{{ $label }}</span>
+                                                    <span class="block group-hover/l:text-brand-dark">{{ $label }}</span>
                                                     @if ($description && $sz['desc'])
                                                         <span class="block text-muted {{ $sz['desc'] }}">{{ $description }}</span>
                                                     @endif
@@ -256,11 +256,11 @@
                         <li>
                             <a href="{{ $url }}" @if ($current) aria-current="page" @endif
                                class="group flex items-start rounded-lg transition hover:bg-gray-50 focus-visible:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand {{ $sz['row'] }} {{ $current ? 'bg-brand-light' : '' }}">
-                                <span class="mt-0.5 flex flex-none items-center justify-center rounded-md {{ $sz['icon'] }} {{ $current ? 'bg-brand text-white' : 'bg-brand-light text-brand' }}" aria-hidden="true">
+                                <span class="mt-0.5 flex flex-none items-center justify-center rounded-md {{ $sz['icon'] }} {{ $current ? 'bg-brand text-white' : 'bg-brand-light text-brand-dark' }}" aria-hidden="true">
                                     {!! icon_html($icon, '', '', 'fa-solid fa-arrow-right') !!}
                                 </span>
                                 <span class="min-w-0 self-center">
-                                    <span class="block font-bold {{ $sz['title'] }} {{ $current ? 'text-brand' : 'text-ink group-hover:text-brand' }}">{{ $label }}</span>
+                                    <span class="block font-bold {{ $sz['title'] }} {{ $current ? 'text-brand-dark' : 'text-ink group-hover:text-brand-dark' }}">{{ $label }}</span>
                                     @if ($description && $sz['desc'])
                                         <span class="block leading-snug text-muted {{ $sz['desc'] }}">{{ $description }}</span>
                                     @endif
@@ -279,8 +279,8 @@
                             <a href="{{ $tile['url'] }}" class="group/t flex h-full min-h-20 overflow-hidden rounded-xl border border-gray-200 bg-white transition hover:border-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
                                 <img src="{{ $tile['image'] }}" alt="{{ $tile['alt'] }}" class="w-20 flex-none object-cover" loading="lazy">
                                 <span class="min-w-0 self-center px-3 py-2">
-                                    <span class="block text-[10px] font-bold uppercase tracking-wide text-brand">{{ $tile['kicker'] }}</span>
-                                    <span class="line-clamp-2 block text-sm font-bold leading-snug text-ink group-hover/t:text-brand">{{ $tile['title'] }}</span>
+                                    <span class="block text-[10px] font-bold uppercase tracking-wide text-brand-dark">{{ $tile['kicker'] }}</span>
+                                    <span class="line-clamp-2 block text-sm font-bold leading-snug text-ink group-hover/t:text-brand-dark">{{ $tile['title'] }}</span>
                                 </span>
                             </a>
                         </li>

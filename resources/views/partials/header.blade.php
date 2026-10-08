@@ -63,7 +63,7 @@
     $wmCtaPal  = $wmCtaColor ? \App\Support\ThemePalette::button($wmCtaColor) : null;
     $wmCta2Pal = $wmCta2Color ? \App\Support\ThemePalette::button($wmCta2Color) : null;
     $wmCtaStyle  = $wmCtaPal ? 'background-color: '.$wmCtaPal['bg'].'; color: '.$wmCtaPal['text'].';' : null;
-    $wmCta2Style = $wmCta2Pal ? 'border-color: '.$wmCta2Pal['bg'].'; color: '.$wmCta2Pal['bg'].';' : null;
+    $wmCta2Style = $wmCta2Pal ? 'border-color: '.$wmCta2Pal['bg'].'; color: '.$siteSettings->contrastSafeColor($wmCta2Pal['bg']).';' : null;
 
     $ctaClass = 'inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-brand px-5 text-sm font-bold text-white transition '
         . 'hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2';

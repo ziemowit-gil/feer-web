@@ -18,9 +18,9 @@
         $hoverW  = $ob && ($siteSettings->wide_mission_nav_hover_white  ?? true);
         $activeW = $ob && ($siteSettings->wide_mission_nav_active_white ?? true);
         $iconsW  = $ob && ($siteSettings->wide_mission_nav_icons_white  ?? false);
-        $hoverTxtCls = $hoverW  ? 'hover:text-white hover:underline'           : 'hover:text-brand';
-        $activeBdr   = $ob ? ($activeW ? 'border-white' : 'border-brand text-brand') : 'border-brand text-brand';
-        $iconCls     = $iconsW ? 'text-white hover:text-white/80' : 'text-brand hover:text-brand';
+        $hoverTxtCls = $hoverW  ? 'hover:text-white hover:underline'           : 'hover:text-brand-dark';
+        $activeBdr   = $ob ? ($activeW ? 'border-white' : 'border-brand text-brand-dark') : 'border-brand text-brand-dark';
+        $iconCls     = $iconsW ? 'text-white hover:text-white/80' : 'text-brand-dark hover:text-brand-dark';
     @endphp
     <div class="flex items-center gap-1 border-b-2 transition-colors {{ $isCurrent ? $activeBdr : 'border-transparent' }} {{ $mobile ? 'w-full justify-between' : 'pb-1' }}"
         :class="open ? '{{ $activeBdr }}' : ''">
@@ -51,7 +51,7 @@
         @foreach ($item->children as $child)
             <li>
                 <a href="{{ $child->url }}" @if ($child->isCurrent()) aria-current="page" @endif
-                    class="block px-5 py-3 text-base font-medium normal-case {{ $child->isCurrent() ? 'text-brand' : 'text-ink' }} hover:bg-gray-50 hover:text-brand focus-visible:bg-gray-50">
+                    class="block px-5 py-3 text-base font-medium normal-case {{ $child->isCurrent() ? 'text-brand-dark' : 'text-ink' }} hover:bg-gray-50 hover:text-brand-dark focus-visible:bg-gray-50">
                     {{ $child->label }}
                 </a>
             </li>
@@ -67,7 +67,7 @@
             @endphp
             <li>
                 <a href="{{ $child->publicUrl() }}" @if ($isCurrentPage) aria-current="page" @endif
-                    class="block px-5 py-3 text-base font-medium normal-case {{ $isCurrentPage ? 'text-brand' : 'text-ink' }} hover:bg-gray-50 hover:text-brand focus-visible:bg-gray-50">
+                    class="block px-5 py-3 text-base font-medium normal-case {{ $isCurrentPage ? 'text-brand-dark' : 'text-ink' }} hover:bg-gray-50 hover:text-brand-dark focus-visible:bg-gray-50">
                     {{ $child->title }}
                 </a>
             </li>
@@ -76,7 +76,7 @@
         @if ($showFaq)
             <li>
                 <a href="{{ route('faq.index') }}" @if (request()->routeIs('faq.index')) aria-current="page" @endif
-                    class="block px-5 py-3 text-base font-medium normal-case {{ request()->routeIs('faq.index') ? 'text-brand' : 'text-ink' }} hover:bg-gray-50 hover:text-brand focus-visible:bg-gray-50">
+                    class="block px-5 py-3 text-base font-medium normal-case {{ request()->routeIs('faq.index') ? 'text-brand-dark' : 'text-ink' }} hover:bg-gray-50 hover:text-brand-dark focus-visible:bg-gray-50">
                     Najczęstsze pytania (FAQ)
                 </a>
             </li>
