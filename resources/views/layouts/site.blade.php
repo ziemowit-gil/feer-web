@@ -65,6 +65,26 @@
     <meta name="theme-color" content="{{ $brandPalette['color'] }}">
     <meta name="vapid-public-key" content="{{ config('webpush.vapid.public_key') }}">
     <link rel="apple-touch-icon" href="/img/pwa-icon-192.png">
+    <style media="print">
+        /* Wydruk: sama treść. Bez nagłówka, menu, stopki, paneli bocznych i przycisków; czarny tekst na białym tle; adresy linków w nawiasach. */
+        @page { margin: 1.5cm; }
+        header, footer, nav, aside, .no-print, .site-header, #page-tree, [x-data*="inlineContentEditor"] > .inline-edit-bar, .proj-nav, .proj-aside, .proj-menu-box, .proj-cta, .skip-link, button, video, iframe { display: none !important; }
+        body { background: #fff !important; color: #000 !important; font-size: 12pt; }
+        main, .proj-measure { max-width: none !important; }
+        main a[href^="http"]:not(.no-url)::after { content: " (" attr(href) ")"; font-size: .85em; font-weight: 400; word-break: break-all; }
+        main a { color: #000 !important; text-decoration: underline; }
+        h1, h2, h3 { break-after: avoid; } li, blockquote, tr, details { break-inside: avoid; }
+        details > *:not(summary) { display: block !important; }
+        .proj-note, .proj-callout, .cx-frame, .dl-card, .proj-price-card, .proj-metrics li { border: 1px solid #000 !important; background: #fff !important; color: #000 !important; }
+    </style>
+    <script>
+        /* Przed drukiem rozwijamy wszystkie sekcje <details> (akordeony), po druku przywracamy poprzedni stan. */
+        (function () {
+            var opened = [];
+            window.addEventListener('beforeprint', function () { opened = []; document.querySelectorAll('details:not([open])').forEach(function (d) { d.open = true; opened.push(d); }); });
+            window.addEventListener('afterprint', function () { opened.forEach(function (d) { d.open = false; }); opened = []; });
+        })();
+    </script>
 </head>
 <body @class(['flex min-h-screen flex-col bg-white text-ink antialiased', 'template-vm' => ($siteSettings->site_template ?? 'default') === 'vm'])>
     <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-[100] focus:rounded focus:bg-brand focus:px-4 focus:py-2 focus:text-sm focus:font-bold focus:text-white">

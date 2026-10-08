@@ -87,6 +87,7 @@
                 @if ($project->excerpt)
                     <p class="mt-4 max-w-2xl text-lg leading-relaxed text-ink/80">{{ $project->excerpt }}</p>
                 @endif
+                <p class="mt-4 no-print">@include('partials.print-button')</p>
                 @if (! empty($mainCta['label']) && ! empty($mainCta['url']))
                     <p class="mt-5"><a href="{{ $mainCta['url'] }}" class="proj-cta">{{ $mainCta['label'] }} <span aria-hidden="true">→</span></a></p>
                 @endif

@@ -81,6 +81,8 @@
                             <h1 class="mb-6 text-3xl font-bold text-ink">{{ $page->title }}</h1>
                         @endif
 
+                        <p class="mb-4 no-print">@include('partials.print-button')</p>
+
                         @include('partials.page-content-image')
 
                         @if (! $page->isTilesGrid() && $page->showsTiles() && $page->tiles_content_position === 'below')

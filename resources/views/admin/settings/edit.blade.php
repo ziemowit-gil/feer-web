@@ -1568,6 +1568,15 @@
             </div>
 
             <fieldset class="border-t border-gray-100 pt-6">
+                <legend class="mb-1 text-sm font-bold">Drukowanie</legend>
+                <label class="flex items-start gap-3">
+                    <input type="hidden" name="show_print_button" value="0">
+                    <input type="checkbox" name="show_print_button" value="1" {{ old('show_print_button', $settings->show_print_button ?? true) ? 'checked' : '' }} class="mt-0.5 rounded border-gray-300 text-brand focus:ring-brand">
+                    <span><span class="block text-sm font-bold">Przycisk „Drukuj tę stronę”</span><span class="block text-xs text-muted">Pokazuje przycisk na stronach i w projektach. Wydruk zawiera samą treść: bez nagłówka, menu i stopki, z rozwiniętymi sekcjami i adresami linków.</span></span>
+                </label>
+            </fieldset>
+
+            <fieldset class="border-t border-gray-100 pt-6">
                 <legend class="mb-1 text-sm font-bold">Rozszerzenia modułu projektów</legend>
                 <p class="mb-3 text-xs text-muted">Włącz dodatkowe pola w formularzu projektu i ich wyświetlanie na stronie projektu. Wyłączone: zakładki znikają z formularza, a strona niczego nie pokazuje (zapisane dane zostają).</p>
                 <div class="space-y-3">
