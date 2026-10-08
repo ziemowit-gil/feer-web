@@ -3,7 +3,7 @@
     z zagnieżdżonymi gałęziami. Stan: tab, node, openIds we wspólnym x-data strony projektu.
 --}}
 <nav aria-label="Sekcje projektu" class="relative bg-gray-100 p-6 lg:sticky lg:top-6">
-    <span class="absolute -left-2 -top-2 h-6 w-6 bg-brand" aria-hidden="true"></span>
+    <span class="absolute h-6 w-6 bg-brand" style="left:-.5rem;top:-.5rem" aria-hidden="true"></span>
     <p class="mb-4 border-b border-gray-900 pb-3 text-lg font-bold text-ink">{{ $project->title }}</p>
     <ul role="list" class="text-ink">
         <li class="border-b border-gray-300">

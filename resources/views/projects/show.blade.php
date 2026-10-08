@@ -102,10 +102,18 @@
 
     <section class="mx-auto max-w-6xl px-4 py-12">
         @php $hasAside = $schedulePage || (! $project->is_completed && $project->showsCoordinator()) || $linkPages->isNotEmpty(); @endphp
+        {{-- Układ kolumn w zwykłym CSS (nie zależy od zbudowanych klas Tailwinda): menu boczne zawsze po lewej od lg. --}}
+        <style>
+            @media (min-width: 1024px) {
+                .proj-cols-aside { grid-template-columns: minmax(0, 1fr) 18rem; }
+                .proj-cols-nav { grid-template-columns: 16rem minmax(0, 1fr); }
+                .proj-cols-nav-aside { grid-template-columns: 16rem minmax(0, 1fr) 18rem; }
+            }
+        </style>
         <div @class(['grid items-start gap-10',
-            'lg:grid-cols-[minmax(0,1fr)_18rem]' => $hasAside && ! $navSidebar,
-            'lg:grid-cols-[16rem_minmax(0,1fr)]' => ! $hasAside && $navSidebar,
-            'lg:grid-cols-[16rem_minmax(0,1fr)_18rem]' => $hasAside && $navSidebar])>
+            'proj-cols-aside' => $hasAside && ! $navSidebar,
+            'proj-cols-nav' => ! $hasAside && $navSidebar,
+            'proj-cols-nav-aside' => $hasAside && $navSidebar])>
         @if ($navSidebar)
             @include('projects.partials.sidebar-nav', ['sectionTabs' => $sectionTabs, 'tabPages' => $tabPages])
         @endif
