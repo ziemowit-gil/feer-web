@@ -55,7 +55,7 @@ HTML;
                 </div>
 
                 <a href="{{ route('home') }}"
-                    class="inline-flex items-center gap-1.5 rounded-full border border-gray-300 bg-white px-3 py-1.5 text-xs font-bold text-muted transition hover:border-brand hover:text-brand focus-visible:outline-2 focus-visible:outline-brand">
+                    class="inline-flex items-center gap-1.5 rounded-full border border-gray-300 bg-white px-3 py-1.5 text-xs font-bold text-muted transition hover:border-brand hover:text-brand-dark focus-visible:outline-2 focus-visible:outline-brand">
                     <i class="fa-solid fa-arrow-left text-[0.65rem]" aria-hidden="true"></i>
                     Strona główna organizacji
                 </a>
@@ -76,9 +76,33 @@ HTML;
 
             {{-- ── Treść główna ── --}}
             <main>
-                <div class="prose max-w-none text-ink [&_h2]:text-ink {{ $feer ? '[&_h3]:text-ink' : '[&_h3]:text-brand' }} [&_li::marker]:font-bold [&_li::marker]:text-brand">
+                {{-- Wyszukiwarka BIP (tryb wbudowany) --}}
+                @unless ($isExternal)
+                    <form method="GET" action="{{ route('bip') }}" role="search" aria-label="Szukaj w BIP" class="mb-8 flex flex-wrap items-end gap-2">
+                        <div class="min-w-0 flex-1" style="min-width: 14rem">
+                            <label for="bip-q" class="mb-1 block text-sm font-bold text-ink">Szukaj w BIP</label>
+                            <input type="search" id="bip-q" name="q" value="{{ $q }}" placeholder="np. statut, sprawozdanie 2025"
+                                class="min-h-11 w-full rounded-md border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                        </div>
+                        <button type="submit" class="inline-flex min-h-11 items-center gap-2 rounded-md bg-brand px-5 text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2"><i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>Szukaj</button>
+                        @if ($q !== '')<a href="{{ route('bip') }}" class="inline-flex min-h-11 items-center px-2 text-sm font-bold text-brand-dark underline hover:text-ink">Wyczyść</a>@endif
+                    </form>
+                    @if ($q !== '')
+                        <p class="mb-6 text-sm text-ink" role="status">
+                            @php $found = $documents->flatten()->count(); @endphp
+                            Wyniki wyszukiwania „{{ $q }}”: {{ $found }} {{ trans_choice('dokument|dokumenty|dokumentów', $found) }}.
+                        </p>
+                    @endif
+                    @if ($lastUpdate && $q === '')
+                        <p class="-mt-4 mb-6 text-xs text-muted">Ostatnia aktualizacja BIP: <time datetime="{{ $lastUpdate->toIso8601String() }}">{{ $lastUpdate->locale('pl')->isoFormat('D MMMM YYYY') }}</time></p>
+                    @endif
+                @endunless
+
+                @if ($q === '')
+                <div class="prose max-w-none text-ink [&_h2]:text-ink {{ $feer ? '[&_h3]:text-ink' : '[&_h3]:text-brand-dark' }} [&_li::marker]:font-bold [&_li::marker]:text-brand-dark">
                     {!! $siteSettings->bip_intro ?: $bipDefault !!}
                 </div>
+                @endif
 
                 @if ($isExternal)
                     {{-- Tryb zewnętrzny: przycisk do zewnętrznego BIP --}}
@@ -89,13 +113,17 @@ HTML;
                                 Przejdź do pełnego BIP <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i>
                             </a>
                         @else
-                            <p class="text-sm text-muted">Adres BIP nie został jeszcze skonfigurowany w ustawieniach serwisu.</p>
+                            @auth
+                                <p class="text-sm text-muted">Adres zewnętrznego BIP nie został jeszcze ustawiony (Ustawienia → Media i BIP).</p>
+                            @endauth
                         @endif
                     </div>
+                @elseif ($documents->isEmpty() && $q !== '')
+                    <p class="mt-4 text-ink">Nie znaleziono dokumentów pasujących do wyszukiwanej frazy. Spróbuj innych słów lub <a href="{{ route('bip.instructions') }}" class="font-bold text-brand-dark underline">zajrzyj do instrukcji korzystania z BIP</a>.</p>
                 @elseif ($documents->isNotEmpty())
                     {{-- Tryb wbudowany: lista dokumentów --}}
                     <div class="mt-10">
-                        <h2 class="mb-1 text-xl font-extrabold text-ink">Dokumenty publiczne</h2>
+                        <h2 class="mb-1 text-xl font-extrabold text-ink">{{ $q !== '' ? 'Znalezione dokumenty' : 'Dokumenty publiczne' }}</h2>
                         <p class="mb-8 text-sm text-muted">
                             Kliknij tytuł dokumentu, aby zobaczyć pełną treść lub pobrać pliki.
                         </p>
@@ -106,7 +134,7 @@ HTML;
                                     @if ($feer)
                                         <h3 class="mb-2 text-xs font-bold uppercase tracking-widest text-muted">{{ $catLabel }}</h3>
                                     @else
-                                    <h3 class="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-brand">
+                                    <h3 class="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-brand-dark">
                                         <span class="h-px flex-1 bg-brand/20" aria-hidden="true"></span>
                                         {{ $catLabel }}
                                         <span class="h-px flex-1 bg-brand/20" aria-hidden="true"></span>
@@ -119,7 +147,7 @@ HTML;
                                                 <div class="flex flex-wrap items-start justify-between gap-2">
                                                     <div class="min-w-0 flex-1">
                                                         <a href="{{ route('bip.document', $doc->slug) }}"
-                                                            class="font-semibold text-ink group-hover:text-brand hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
+                                                            class="font-semibold text-ink group-hover:text-brand-dark hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
                                                             {{ $doc->title }}
                                                         </a>
                                                         @if ($doc->summary)
@@ -128,7 +156,7 @@ HTML;
                                                     </div>
                                                     @php $files = $doc->getMedia('files'); @endphp
                                                     @if ($files->isNotEmpty())
-                                                        <span class="flex-none px-2.5 py-0.5 text-xs font-bold {{ $feer ? 'rounded bg-gray-100 text-ink' : 'rounded-full bg-brand/10 text-brand' }}">
+                                                        <span class="flex-none px-2.5 py-0.5 text-xs font-bold {{ $feer ? 'rounded bg-gray-100 text-ink' : 'rounded-full bg-brand/10 text-brand-dark' }}">
                                                             <i class="fa-solid fa-paperclip mr-1" aria-hidden="true"></i>
                                                             {{ $files->count() }} {{ trans_choice('plik|pliki|plików', $files->count()) }}
                                                         </span>
@@ -175,7 +203,7 @@ HTML;
                 @if ($recentChanges->isNotEmpty())
                     <section class="mt-12" aria-labelledby="recent-changes-heading">
                         <h2 id="recent-changes-heading" class="mb-4 flex items-center gap-2 text-base font-bold text-ink">
-                            <i class="fa-solid fa-clock-rotate-left text-brand text-sm" aria-hidden="true"></i>
+                            <i class="fa-solid fa-clock-rotate-left text-brand-dark text-sm" aria-hidden="true"></i>
                             Ostatnie zmiany w BIP
                         </h2>
                         <div class="overflow-x-auto rounded-lg border border-gray-200 bg-white">
@@ -219,7 +247,7 @@ HTML;
                                             <td class="px-4 py-2.5 font-medium">
                                                 @if ($docSlugs[$entry->subject_id] ?? null)
                                                     <a href="{{ route('bip.document', $docSlugs[$entry->subject_id]) }}"
-                                                        class="text-brand hover:text-brand-dark hover:underline focus-visible:outline-2 focus-visible:outline-brand">
+                                                        class="text-brand-dark hover:text-brand-dark hover:underline focus-visible:outline-2 focus-visible:outline-brand">
                                                         {{ $entry->subject_label }}
                                                     </a>
                                                 @else
@@ -240,7 +268,7 @@ HTML;
                         </div>
                         <div class="mt-3 text-right">
                             <a href="{{ route('bip.changelog') }}"
-                                class="text-xs font-bold text-brand hover:text-brand-dark hover:underline focus-visible:outline-2 focus-visible:outline-brand">
+                                class="text-xs font-bold text-brand-dark hover:text-brand-dark hover:underline focus-visible:outline-2 focus-visible:outline-brand">
                                 Pełny rejestr zmian →
                             </a>
                         </div>

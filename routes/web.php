@@ -262,6 +262,7 @@ Route::post('/przelewy24/webhook', [Przelewy24WebhookController::class, 'handle'
 Route::middleware('module:bip')->group(function () {
     Route::get('/bip', [BipController::class, 'index'])->name('bip');
     Route::get('/bip/rejestr-zmian', [BipController::class, 'changeLog'])->name('bip.changelog');
+    Route::get('/bip/instrukcja', [BipController::class, 'instructions'])->name('bip.instructions');
     Route::get('/bip/{bipDocument:slug}', [BipController::class, 'show'])->name('bip.document');
 });
 Route::get('/instagram', [ShortcutController::class, 'instagram'])->name('shortcut.instagram');

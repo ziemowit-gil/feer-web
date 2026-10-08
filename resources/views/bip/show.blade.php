@@ -15,7 +15,7 @@
                     <img src="{{ $bipLogo }}" alt="Logo Biuletynu Informacji Publicznej" class="h-12 w-auto flex-none object-contain">
                     <div>
                         <p class="text-xs text-muted">
-                            <a href="{{ route('bip') }}" class="hover:text-brand hover:underline focus-visible:outline-2 focus-visible:outline-brand">
+                            <a href="{{ route('bip') }}" class="hover:text-brand-dark hover:underline focus-visible:outline-2 focus-visible:outline-brand">
                                 Biuletyn Informacji Publicznej
                             </a>
                             <span class="mx-1 text-muted" aria-hidden="true">›</span>
@@ -24,7 +24,7 @@
                     </div>
                 </div>
                 <a href="{{ route('home') }}"
-                    class="inline-flex items-center gap-1.5 rounded-full border border-gray-300 bg-white px-3 py-1.5 text-xs font-bold text-muted transition hover:border-brand hover:text-brand focus-visible:outline-2 focus-visible:outline-brand">
+                    class="inline-flex items-center gap-1.5 rounded-full border border-gray-300 bg-white px-3 py-1.5 text-xs font-bold text-muted transition hover:border-brand hover:text-brand-dark focus-visible:outline-2 focus-visible:outline-brand">
                     <i class="fa-solid fa-arrow-left text-[0.65rem]" aria-hidden="true"></i>
                     Strona główna organizacji
                 </a>
@@ -63,12 +63,21 @@
                     <dl class="mt-5 flex flex-wrap gap-x-6 gap-y-2 text-xs text-muted border-t border-gray-100 pt-4">
                         <div class="flex items-center gap-1.5">
                             <i class="fa-solid fa-user text-[0.65rem]" aria-hidden="true"></i>
-                            <dt class="font-semibold">Wprowadził/-a:</dt>
+                            <dt class="font-semibold">Wytworzył/-a i udostępnił/-a:</dt>
                             <dd>{{ $bipDocument->creator?->name ?? 'redakcja' }}</dd>
                         </div>
                         <div class="flex items-center gap-1.5">
+                            <i class="fa-solid fa-calendar-check text-[0.65rem]" aria-hidden="true"></i>
+                            <dt class="font-semibold">Data udostępnienia:</dt>
+                            <dd>
+                                <time datetime="{{ ($bipDocument->published_at ?? $bipDocument->created_at)->toIso8601String() }}">
+                                    {{ ($bipDocument->published_at ?? $bipDocument->created_at)->locale('pl')->isoFormat('D MMMM YYYY') }}
+                                </time>
+                            </dd>
+                        </div>
+                        <div class="flex items-center gap-1.5">
                             <i class="fa-solid fa-calendar-plus text-[0.65rem]" aria-hidden="true"></i>
-                            <dt class="font-semibold">Data dodania:</dt>
+                            <dt class="font-semibold">Data wytworzenia (wprowadzenia):</dt>
                             <dd>
                                 <time datetime="{{ $bipDocument->created_at->toIso8601String() }}">
                                     {{ $bipDocument->created_at->locale('pl')->isoFormat('D MMMM YYYY') }}
@@ -94,7 +103,7 @@
 
                 {{-- Treść dokumentu --}}
                 @if ($bipDocument->content)
-                    <div class="prose max-w-none text-ink [&_h2]:text-ink [&_h3]:text-brand [&_li::marker]:font-bold [&_li::marker]:text-brand [&_a]:text-brand [&_a:hover]:text-brand-dark">
+                    <div class="prose max-w-none text-ink [&_h2]:text-ink [&_h3]:text-brand-dark [&_li::marker]:font-bold [&_li::marker]:text-brand-dark [&_a]:text-brand-dark [&_a:hover]:text-ink">
                         {!! $bipDocument->content !!}
                     </div>
                 @endif
@@ -103,22 +112,22 @@
                 @if ($bipDocument->attachedFiles()->isNotEmpty())
                     <section class="mt-10" aria-labelledby="files-heading">
                         <h2 id="files-heading" class="mb-4 text-lg font-bold text-ink">
-                            <i class="fa-solid fa-paperclip mr-1 text-brand" aria-hidden="true"></i>
+                            <i class="fa-solid fa-paperclip mr-1 text-brand-dark" aria-hidden="true"></i>
                             Pliki do pobrania
                         </h2>
                         <ul class="space-y-2" role="list">
                             @foreach ($bipDocument->attachedFiles() as $media)
                                 <li class="flex items-center gap-3 rounded-lg border border-gray-200 bg-gray-50 px-4 py-3">
-                                    <i class="fa-solid {{ $bipDocument->fileIcon($media) }} flex-none text-xl text-brand" aria-hidden="true"></i>
+                                    <i class="fa-solid {{ $bipDocument->fileIcon($media) }} flex-none text-xl text-brand-dark" aria-hidden="true"></i>
                                     <div class="min-w-0 flex-1">
                                         <a href="{{ $media->getUrl() }}" target="_blank" rel="noopener"
-                                            class="break-all font-semibold text-brand hover:text-brand-dark hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
+                                            class="break-all font-semibold text-brand-dark hover:text-brand-dark hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
                                             {{ $media->file_name }}
                                         </a>
                                         <span class="ml-2 text-xs text-muted">({{ $media->human_readable_size }})</span>
                                     </div>
                                     <a href="{{ $media->getUrl() }}" download
-                                        class="flex-none rounded-full bg-brand/10 px-3 py-1 text-xs font-bold text-brand transition hover:bg-brand hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+                                        class="flex-none rounded-full bg-brand/10 px-3 py-1 text-xs font-bold text-brand-dark transition hover:bg-brand hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
                                         aria-label="Pobierz {{ $media->file_name }}">
                                         <i class="fa-solid fa-download mr-1" aria-hidden="true"></i> Pobierz
                                     </a>
@@ -132,7 +141,7 @@
                 @if ($history->isNotEmpty())
                     <section class="mt-10" aria-labelledby="history-heading">
                         <h2 id="history-heading" class="mb-4 flex items-center gap-2 text-base font-bold text-ink">
-                            <i class="fa-solid fa-clock-rotate-left text-brand text-sm" aria-hidden="true"></i>
+                            <i class="fa-solid fa-clock-rotate-left text-brand-dark text-sm" aria-hidden="true"></i>
                             Historia edycji
                         </h2>
                         <div class="overflow-x-auto rounded-lg border border-gray-200 bg-white">

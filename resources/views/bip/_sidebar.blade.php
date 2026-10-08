@@ -17,7 +17,7 @@
         <li>
             <a href="{{ route('bip') }}"
                 @if ($onBip) aria-current="page" @endif
-                class="flex min-h-11 items-center gap-2 rounded-md px-3 py-2 font-semibold transition {{ $onBip ? ($feerSide ? 'bg-brand-light font-bold text-ink' : 'bg-brand-light text-brand') : 'text-ink hover:bg-gray-50' }} focus-visible:outline-2 focus-visible:outline-brand">
+                class="flex min-h-11 items-center gap-2 rounded-md px-3 py-2 font-semibold transition {{ $onBip ? ($feerSide ? 'bg-brand-light font-bold text-ink' : 'bg-brand-light text-brand-dark') : 'text-ink hover:bg-gray-50' }} focus-visible:outline-2 focus-visible:outline-brand">
                 <i class="fa-solid fa-landmark w-4 text-center text-[0.7rem]" aria-hidden="true"></i>
                 Strona główna BIP
             </a>
@@ -32,7 +32,7 @@
                 <a href="{{ $item->url }}"
                     @if ($isExtLink) target="_blank" rel="noopener" @endif
                     @if ($isCurrentItem) aria-current="page" @endif
-                    class="flex items-center gap-2 rounded px-3 py-2 transition {{ $isCurrentItem ? ($feerSide ? 'bg-brand-light font-bold text-ink' : 'bg-brand-light font-semibold text-brand') : 'text-muted hover:bg-gray-50 hover:text-ink' }} focus-visible:outline-2 focus-visible:outline-brand">
+                    class="flex items-center gap-2 rounded px-3 py-2 transition {{ $isCurrentItem ? ($feerSide ? 'bg-brand-light font-bold text-ink' : 'bg-brand-light font-semibold text-brand-dark') : 'text-muted hover:bg-gray-50 hover:text-ink' }} focus-visible:outline-2 focus-visible:outline-brand">
                     @if ($item->icon)
                         <i class="{{ $item->icon }} w-4 text-center text-[0.7rem]" aria-hidden="true"></i>
                     @endif
@@ -43,6 +43,25 @@
                 </a>
             </li>
         @endforeach
+        @unless ($isExternalMode)
+            <li>
+                <a href="{{ route('bip.changelog') }}" @if ($onChangelog) aria-current="page" @endif
+                    class="flex min-h-11 items-center gap-2 rounded-md px-3 py-2 font-semibold transition {{ $onChangelog ? 'bg-brand-light font-bold text-ink' : 'text-ink hover:bg-gray-100' }}">
+                    <i class="fa-solid fa-clock-rotate-left w-4 text-center text-[0.7rem]" aria-hidden="true"></i>Rejestr zmian
+                </a>
+            </li>
+        @endunless
+        <li>
+            <a href="{{ route('bip.instructions') }}" @if (request()->routeIs('bip.instructions')) aria-current="page" @endif
+                class="flex min-h-11 items-center gap-2 rounded-md px-3 py-2 font-semibold transition {{ request()->routeIs('bip.instructions') ? 'bg-brand-light font-bold text-ink' : 'text-ink hover:bg-gray-100' }}">
+                <i class="fa-solid fa-circle-info w-4 text-center text-[0.7rem]" aria-hidden="true"></i>Instrukcja korzystania z BIP
+            </a>
+        </li>
+        <li>
+            <a href="{{ route('accessibility.show') }}" class="flex min-h-11 items-center gap-2 rounded-md px-3 py-2 font-semibold text-ink transition hover:bg-gray-100">
+                <i class="fa-solid fa-universal-access w-4 text-center text-[0.7rem]" aria-hidden="true"></i>Deklaracja dostępności
+            </a>
+        </li>
     </ul>
 </nav>
 
@@ -74,7 +93,7 @@
                 @if ($bipSettings->contact_email)
                     <p>
                         <a href="mailto:{{ $bipSettings->contact_email }}"
-                            class="text-brand hover:underline focus-visible:outline-2 focus-visible:outline-brand">
+                            class="text-brand-dark hover:underline focus-visible:outline-2 focus-visible:outline-brand">
                             {{ $bipSettings->contact_email }}
                         </a>
                     </p>
@@ -108,7 +127,7 @@
                 @if ($bipSettings->bip_editor_email)
                     <p>
                         <a href="mailto:{{ $bipSettings->bip_editor_email }}"
-                            class="text-brand hover:underline focus-visible:outline-2 focus-visible:outline-brand">
+                            class="text-brand-dark hover:underline focus-visible:outline-2 focus-visible:outline-brand">
                             {{ $bipSettings->bip_editor_email }}
                         </a>
                     </p>
@@ -116,14 +135,12 @@
             </div>
         @endif
 
-        @if ($bipSettings->bip_gov_url)
-            <div class="mt-3 border-t border-gray-100 pt-3">
-                <a href="{{ $bipSettings->bip_gov_url }}" target="_blank" rel="noopener"
-                    class="inline-flex items-center gap-1.5 text-xs text-muted hover:text-brand focus-visible:outline-2 focus-visible:outline-brand">
-                    <i class="fa-solid fa-arrow-up-right-from-square text-[0.55rem]" aria-hidden="true"></i>
-                    Podmiot na gov.pl/bip
-                </a>
-            </div>
-        @endif
+        <div class="mt-3 border-t border-gray-100 pt-3">
+            <a href="{{ $bipSettings->bip_gov_url ?: 'https://www.gov.pl/web/bip' }}" target="_blank" rel="noopener"
+                class="inline-flex min-h-9 items-center gap-1.5 text-xs font-semibold text-brand-dark underline hover:text-ink focus-visible:outline-2 focus-visible:outline-brand">
+                <i class="fa-solid fa-arrow-up-right-from-square text-[0.55rem]" aria-hidden="true"></i>
+                {{ $bipSettings->bip_gov_url ? 'Podmiot na gov.pl/bip' : 'Główna strona BIP (gov.pl/bip)' }}<span class="sr-only"> (otwiera się w nowej karcie)</span>
+            </a>
+        </div>
     </div>
 @endif

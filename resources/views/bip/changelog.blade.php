@@ -15,7 +15,7 @@
                     <img src="{{ $bipLogo }}" alt="Logo Biuletynu Informacji Publicznej" class="h-12 w-auto flex-none object-contain">
                     <div>
                         <p class="text-xs text-muted">
-                            <a href="{{ route('bip') }}" class="hover:text-brand hover:underline focus-visible:outline-2 focus-visible:outline-brand">
+                            <a href="{{ route('bip') }}" class="hover:text-brand-dark hover:underline focus-visible:outline-2 focus-visible:outline-brand">
                                 Biuletyn Informacji Publicznej
                             </a>
                             <span class="mx-1" aria-hidden="true">›</span>
@@ -24,7 +24,7 @@
                     </div>
                 </div>
                 <a href="{{ route('home') }}"
-                    class="inline-flex items-center gap-1.5 rounded-full border border-gray-300 bg-white px-3 py-1.5 text-xs font-bold text-muted transition hover:border-brand hover:text-brand focus-visible:outline-2 focus-visible:outline-brand">
+                    class="inline-flex items-center gap-1.5 rounded-full border border-gray-300 bg-white px-3 py-1.5 text-xs font-bold text-muted transition hover:border-brand hover:text-brand-dark focus-visible:outline-2 focus-visible:outline-brand">
                     <i class="fa-solid fa-arrow-left text-[0.65rem]" aria-hidden="true"></i>
                     Strona główna organizacji
                 </a>
@@ -92,7 +92,7 @@
                                         <td class="px-4 py-3 font-medium text-ink">
                                             @if ($documentMap[$entry->subject_id] ?? null)
                                                 <a href="{{ route('bip.document', $documentMap[$entry->subject_id]) }}"
-                                                    class="text-brand hover:text-brand-dark hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
+                                                    class="text-brand-dark hover:text-brand-dark hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
                                                     {{ $entry->subject_label }}
                                                 </a>
                                             @else

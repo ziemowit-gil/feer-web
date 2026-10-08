@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Activity;
 use App\Models\BipDocument;
 use App\Models\SiteSetting;
+use Illuminate\Http\Request;
 
 /**
  * Publiczne widoki BIP: lista dokumentów, szczegół dokumentu i rejestr zmian.
@@ -18,16 +19,25 @@ class BipController extends Controller
      * Strona /bip. Tryb wbudowany: lista dokumentów + ostatnie zmiany.
      * Tryb zewnętrzny: intro + przycisk do zewnętrznego BIP.
      */
-    public function index()
+    public function index(Request $request)
     {
         $settings = SiteSetting::current();
         $isExternal = ($settings->bip_mode ?? 'internal') === 'external';
 
         $documents = collect();
         $recentChanges = collect();
+        $q = trim((string) $request->query('q', ''));
+        $lastUpdate = null;
 
         if (! $isExternal) {
+            $lastUpdate = BipDocument::published()->max('updated_at');
+
+            // Wyszukiwarka BIP (wymóg rozporządzenia): tytuł, streszczenie i treść dokumentów.
             $documents = BipDocument::published()
+                ->when($q !== '', function ($query) use ($q) {
+                    $like = '%'.addcslashes($q, '%_\\').'%';
+                    $query->where(fn ($w) => $w->where('title', 'like', $like)->orWhere('summary', 'like', $like)->orWhere('content', 'like', $like));
+                })
                 ->orderBy('category')
                 ->orderBy('order')
                 ->orderBy('title')
@@ -45,7 +55,15 @@ class BipController extends Controller
                 ->get();
         }
 
-        return view('bip', compact('documents', 'isExternal', 'recentChanges'));
+        $lastUpdate = $lastUpdate ? \Illuminate\Support\Carbon::parse($lastUpdate) : null;
+
+        return view('bip', compact('documents', 'isExternal', 'recentChanges', 'q', 'lastUpdate'));
+    }
+
+    /** Instrukcja korzystania z BIP (wymóg rozporządzenia w sprawie BIP). */
+    public function instructions()
+    {
+        return view('bip.instructions', ['isExternal' => (SiteSetting::current()->bip_mode ?? 'internal') === 'external']);
     }
 
     /** Wyświetla treść pojedynczego dokumentu BIP z historią edycji. */
