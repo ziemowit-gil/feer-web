@@ -74,7 +74,7 @@
     // Menu projektów: ręczne podpozycje tworzą dodatkową kolumnę „To już zrobiliśmy”.
     $projectExtras = $isProjects ? $item->children : collect();
     $extraTitle    = $item->mega_extra_title ?: 'To już zrobiliśmy';
-    $projectCols   = $groups->count() + ($projectExtras->isNotEmpty() ? 1 : 0) + ($sideLinks ? 1 : 0);
+    $projectCols   = $groups->count() + ($projectExtras->isNotEmpty() ? 1 : 0) + 1;
     $columns = match (true) {
         // Kolumny z nagłówkami: jedna kolumna na sekcję, w granicach wielkości pozycji.
         $grouped => min(match ($size) { 'sm' => 5, 'lg' => 2, default => 4 }, max(2, count($sections))),
@@ -181,27 +181,21 @@
                                 </div>
                             @endif
 
-                            {{-- Dodatkowa kolumna: własne przyciski i linki (ustawiane przy pozycji menu). --}}
-                            @if ($sideLinks)
-                                <div>
-                                    @if ($sideTitle)
-                                        <p id="mega-side-{{ $item->id }}" class="mb-2 block border-b-2 border-brand/30 px-2 py-1.5 font-bold text-ink {{ $sz['cat'] }}">{{ $sideTitle }}</p>
+                            {{-- Kolumna z przyciskami: „Wszystkie projekty", „To już zrobiliśmy" i własne przyciski/linki (ustawiane przy pozycji menu). --}}
+                            <div>
+                                @if ($sideTitle)
+                                    <p id="mega-side-{{ $item->id }}" class="mb-2 block border-b-2 border-brand/30 px-2 py-1.5 font-bold text-ink {{ $sz['cat'] }}">{{ $sideTitle }}</p>
+                                @endif
+                                <ul role="list" @if ($sideTitle) aria-labelledby="mega-side-{{ $item->id }}" @endif class="space-y-2 {{ $sideTitle ? '' : 'pt-1' }}">
+                                    <li>@include('partials.nav-side-link', ['sl' => ['label' => 'Wszystkie projekty', 'url' => $targetUrl, 'style' => 'tile_filled', 'new_tab' => false], 'block' => true])</li>
+                                    @if (($navHasProjectArchive ?? false) && $projectExtras->isEmpty())
+                                        <li>@include('partials.nav-side-link', ['sl' => ['label' => 'To już zrobiliśmy', 'url' => route('projects.archive'), 'style' => 'tile', 'new_tab' => false], 'block' => true])</li>
                                     @endif
-                                    <ul role="list" @if ($sideTitle) aria-labelledby="mega-side-{{ $item->id }}" @endif class="space-y-2 {{ $sideTitle ? '' : 'pt-1' }}">
-                                        @foreach ($sideLinks as $sl)
-                                            <li>@include('partials.nav-side-link', ['sl' => $sl, 'block' => true])</li>
-                                        @endforeach
-                                    </ul>
-                                </div>
-                            @endif
-                        </div>
-
-                        {{-- Przyciski w stylu kafli „Na skróty": główny (wypełniony) i dodatkowy (obwódka). --}}
-                        <div class="mt-5 flex flex-wrap items-stretch gap-3 border-t border-gray-100 pt-4">
-                            <div class="w-full sm:w-64">@include('partials.nav-side-link', ['sl' => ['label' => 'Wszystkie projekty', 'url' => $targetUrl, 'style' => 'tile_filled', 'new_tab' => false], 'block' => true])</div>
-                            @if (($navHasProjectArchive ?? false) && $projectExtras->isEmpty())
-                                <div class="w-full sm:w-64">@include('partials.nav-side-link', ['sl' => ['label' => 'To już zrobiliśmy', 'url' => route('projects.archive'), 'style' => 'tile', 'new_tab' => false], 'block' => true])</div>
-                            @endif
+                                    @foreach ($sideLinks as $sl)
+                                        <li>@include('partials.nav-side-link', ['sl' => $sl, 'block' => true])</li>
+                                    @endforeach
+                                </ul>
+                            </div>
                         </div>
                     </div>
                 @endif
