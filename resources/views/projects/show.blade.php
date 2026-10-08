@@ -264,13 +264,19 @@
                     {{-- Usługa wyłącznie odpłatna: wyraźna informacja, objaśnienie i przycisk kontaktu. --}}
                     <div class="proj-note">
                         <span>Z tej usługi skorzystasz <strong>za opłatą</strong>. Cenę i zasady znajdziesz poniżej. Jeśli masz pytania, napisz do nas.</span>
-                        <span class="proj-note-links"><a href="{{ route('contact.show') }}">Napisz do nas, żeby ustalić termin <span aria-hidden="true">→</span></a></span>
+                        <span class="proj-note-links"><a href="{{ route('contact.show') }}">Napisz do nas, żeby ustalić termin <span aria-hidden="true">→</span></a>
+                            @if ($rulesPage = $siteSettings->paidInfoPage())
+                                    <a href="{{ route('page.show', $rulesPage) }}">Zasady odpłatnej działalności <span aria-hidden="true">→</span><span class="sr-only">: {{ $rulesPage->title }}</span></a>
+                                @endif</span>
                         @include('projects.partials.paid-info', ['infoProject' => $project])
                         <span class="proj-note-ico" aria-hidden="true"><i class="fa-solid fa-coins"></i></span>
                     </div>
                 @endif
                 @if ($siteSettings->projects_subprojects_enabled && $project->is_paid && $project->parent_id)
                     <div class="proj-note"><span>Ta forma jest <strong>płatna</strong>.</span>
+                        @if ($rulesPage = $siteSettings->paidInfoPage())
+                            <span class="proj-note-links"><a href="{{ route('page.show', $rulesPage) }}">Zasady odpłatnej działalności <span aria-hidden="true">→</span><span class="sr-only">: {{ $rulesPage->title }}</span></a></span>
+                        @endif
                         @include('projects.partials.paid-info', ['infoProject' => $project])
                         <span class="proj-note-ico" aria-hidden="true"><i class="fa-solid fa-coins"></i></span>
                     </div>
@@ -321,6 +327,9 @@
                                         {{ $sp->is_paid ? 'Zobacz, jak działa forma płatna' : 'Zobacz, jak działa forma bezpłatna' }}@unless ($sp->is_offered) (teraz niedostępna)@endunless <span aria-hidden="true">→</span><span class="sr-only">: {{ $sp->title }}</span>
                                     </a>
                                 @endforeach
+                                @if ($rulesPage = $siteSettings->paidInfoPage())
+                                    <a href="{{ route('page.show', $rulesPage) }}">Zasady odpłatnej działalności <span aria-hidden="true">→</span><span class="sr-only">: {{ $rulesPage->title }}</span></a>
+                                @endif
                             </span>
                             @php $paidChild = $subProjects->firstWhere('is_paid', true); @endphp
                             @if ($paidChild)
