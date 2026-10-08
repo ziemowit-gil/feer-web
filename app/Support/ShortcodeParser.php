@@ -136,7 +136,7 @@ class ShortcodeParser
             return '';
         }
 
-        return View::make('partials.blocks.'.($block->type === 'accordion' ? 'accordion' : 'cta'), ['block' => $block])->render();
+        return View::make('partials.blocks.'.(in_array($block->type, ['accordion', 'callout'], true) ? $block->type : 'cta'), ['block' => $block])->render();
     }
 
     /** Zestaw kafelków z kreatora edytora ([kafelki-zestaw:ID]). */

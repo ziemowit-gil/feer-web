@@ -50,7 +50,22 @@ class ContentBlockController extends Controller
 
         $request->validate(['name' => ['required', 'string', 'max:120']]);
 
-        if ($type === 'cta') {
+        if ($type === 'callout') {
+            $d = $request->validate([
+                'data.title' => ['nullable', 'string', 'max:160'],
+                'data.text' => ['required', 'string', 'max:1500'],
+                'data.variant' => ['required', 'in:'.implode(',', array_keys(ContentBlock::CALLOUT_VARIANTS))],
+                'data.negative' => ['nullable', 'boolean'],
+                'data.icon' => ['required', 'in:'.implode(',', array_keys(ContentBlock::CALLOUT_ICONS))],
+            ])['data'];
+            $data = [
+                'title' => trim((string) ($d['title'] ?? '')),
+                'text' => trim($d['text']),
+                'variant' => $d['variant'],
+                'negative' => (bool) ($d['negative'] ?? false),
+                'icon' => $d['icon'],
+            ];
+        } elseif ($type === 'cta') {
             $d = $request->validate([
                 'data.align' => ['nullable', 'in:left,center,right'],
                 'data.buttons' => ['required', 'array', 'min:1', 'max:6'],
