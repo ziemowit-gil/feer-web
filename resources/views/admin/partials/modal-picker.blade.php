@@ -53,8 +53,21 @@
                             <input id="{{ $pickerId }}-q" type="search" x-ref="search" x-model="q" placeholder="Szukaj…" class="w-full rounded-lg border-gray-300 text-sm focus:border-brand focus:ring-brand">
                         </div>
                     @endif
+                    @if (count($groups) > 2 && array_key_first($groups) !== '')
+                        {{-- Filtr grup: jedna grupa albo wszystkie --}}
+                        <div class="flex flex-wrap gap-1.5" role="group" aria-label="Filtr grup">
+                            <button type="button" @click="g = ''" :aria-pressed="(g === '').toString()"
+                                class="rounded-full border px-3 py-1 text-xs font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-1"
+                                :class="g === '' ? 'border-ink bg-ink text-white' : 'border-gray-300 bg-white text-ink hover:bg-gray-50'">Wszystkie</button>
+                            @foreach ($groups as $groupName => $keys)
+                                <button type="button" @click="g = @js($groupName)" :aria-pressed="(g === @js($groupName)).toString()"
+                                    class="rounded-full border px-3 py-1 text-xs font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-1"
+                                    :class="g === @js($groupName) ? 'border-ink bg-ink text-white' : 'border-gray-300 bg-white text-ink hover:bg-gray-50'">{{ $groupName }} <span class="font-normal">({{ count(array_filter($keys, fn ($k) => isset($options[$k]))) }})</span></button>
+                            @endforeach
+                        </div>
+                    @endif
                     @foreach ($groups as $groupName => $keys)
-                        <fieldset class="min-w-0" role="radiogroup" aria-label="{{ $groupName ?: $title }}">
+                        <fieldset class="min-w-0" role="radiogroup" aria-label="{{ $groupName ?: $title }}" x-show="g === '' || g === @js($groupName)">
                             @if ($groupName !== '')<legend class="mb-2 text-xs font-bold uppercase tracking-wide text-muted">{{ $groupName }}</legend>@endif
                             <div class="grid gap-2 sm:grid-cols-2">
                                 @foreach ($keys as $key)
@@ -84,7 +97,7 @@
     <script>
         function modalPicker(cfg) {
             return {
-                open: false, q: '', cur: cfg.current,
+                open: false, q: '', g: '', cur: cfg.current,
                 show() { this.open = true; this.$nextTick(() => { (this.$refs.search || this.$refs.panel.querySelector('[aria-checked="true"]') || this.$refs.panel.querySelector('button')).focus(); }); },
                 close() { this.open = false; this.q = ''; this.$nextTick(() => this.$refs.opener.focus()); },
                 match(text) { const t = this.q.trim().toLowerCase(); return t === '' || text.toLowerCase().includes(t); },

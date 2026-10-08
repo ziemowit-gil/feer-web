@@ -1678,7 +1678,7 @@
 
     @endif
 
-    @if (!$page->isTilesGrid())
+    @if (!$page->isTilesGrid() && ! $page->usesStandardLayout())
         @php $extraTiles = collect($page->tiles ?? [])->filter(fn ($t) => filled($t['label'] ?? null) && filled($t['url'] ?? null))->values(); @endphp
         @if ($extraTiles->isNotEmpty())
             <section class="mx-auto max-w-5xl px-4 pb-14" aria-label="Kafelki — {{ $page->title }}">

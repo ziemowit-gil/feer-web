@@ -81,6 +81,13 @@
 
                         @include('partials.page-content-image')
 
+                        @if (! $page->isTilesGrid() && $page->tiles_content_position === 'below')
+                            @php $tilesFirst = collect($page->tiles ?? [])->filter(fn ($t) => filled($t['label'] ?? null) && filled($t['url'] ?? null))->values(); @endphp
+                            @if ($tilesFirst->isNotEmpty())
+                                <div class="mb-8">@include('partials._tiles-grid', ['tiles' => $tilesFirst, 'label' => $page->title])</div>
+                            @endif
+                        @endif
+
                         @if ($toc)
                             @include('partials.page-toc', ['toc' => $toc, 'variant' => 'mobile'])
                         @endif
@@ -94,6 +101,13 @@
                         @endif
 
                         @include('partials.page-gallery', ['page' => $page])
+
+                        @if (! $page->isTilesGrid() && $page->tiles_content_position !== 'below')
+                            @php $tilesAfter = collect($page->tiles ?? [])->filter(fn ($t) => filled($t['label'] ?? null) && filled($t['url'] ?? null))->values(); @endphp
+                            @if ($tilesAfter->isNotEmpty())
+                                <div class="mt-10">@include('partials._tiles-grid', ['tiles' => $tilesAfter, 'label' => $page->title])</div>
+                            @endif
+                        @endif
 
                         @if ($tilesNav)
                             @include('partials.page-tiles-nav', ['tiles' => $page->publishedChildren()->orderBy('order')->orderBy('title')->get()])

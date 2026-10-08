@@ -246,9 +246,11 @@
                                 // Wybór typu: karty z ikoną, nazwą i opisem, pogrupowane i z wyszukiwarką. Natywny <select> zostaje
                                 // (ukryty) — nadal niesie wartość formularza, a skrypt strony nasłuchuje na jego zdarzeniu „change".
                                 $typeGroups = [
-                                    'Treść' => ['standard', 'about', 'about_person', 'faq', 'glossary', 'guide', 'case_study', 'service', 'legacy'],
-                                    'Układy i kafelki' => ['links_hub', 'tiles_grid', 'wspolpraca', 'contact', 'brand_assets'],
-                                    'Wydarzenia i szkolenia' => ['event', 'schedule', 'training_institution'],
+                                    'Treść i informacja' => ['standard', 'faq', 'glossary', 'guide'],
+                                    'Oferta i edukacja' => ['service', 'case_study', 'training_institution'],
+                                    'Organizacja' => ['about', 'about_person', 'wspolpraca', 'legacy', 'brand_assets'],
+                                    'Kafelki i nawigacja' => ['links_hub', 'tiles_grid'],
+                                    'Kontakt i wydarzenia' => ['contact', 'event', 'schedule'],
                                     'Wewnętrzne i przekierowania' => ['internal', 'internal_hub', 'bip_move'],
                                 ];
                                 $typeCards = [];
@@ -699,7 +701,6 @@
                     if (bipMoveFields) bipMoveFields.classList.toggle('hidden', typeSelect.value !== 'bip_move');
                     if (internalFields) internalFields.classList.toggle('hidden', ! ['internal', 'internal_hub'].includes(typeSelect.value));
                     if (hubFields) hubFields.classList.toggle('hidden', ! ['internal_hub', 'links_hub'].includes(typeSelect.value));
-                    document.querySelectorAll('[data-tiles-position]').forEach((el) => el.classList.toggle('hidden', typeSelect.value !== 'tiles_grid'));
                     if (legacyFields) legacyFields.classList.toggle('hidden', typeSelect.value !== 'legacy');
                     if (trainingFields) trainingFields.classList.toggle('hidden', typeSelect.value !== 'training_institution');
                     document.querySelectorAll('[data-type-fields]').forEach((el) => el.classList.toggle('hidden', el.dataset.typeFields !== typeSelect.value));
