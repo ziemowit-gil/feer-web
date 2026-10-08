@@ -188,6 +188,11 @@
             .proj-paid-info summary:hover { color: #1d1d1a; } .proj-paid-info summary:focus-visible { outline: 2px solid var(--color-brand); outline-offset: 3px; border-radius: .25rem; }
             .proj-paid-body { margin-top: .6rem; padding-left: .85rem; border-left: 3px solid var(--color-brand); font-size: .95rem; line-height: 1.6; font-weight: 500; }
             .proj-paid-body p { margin: 0 0 .6rem; } .proj-paid-body p:last-child { margin-bottom: 0; }
+                        .proj-price-grid { list-style: none; margin: 0; padding: 0; display: grid; gap: .75rem; grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr)); }
+            .proj-price-card { display: flex; flex-direction: column; gap: .35rem; min-height: 8rem; padding: 1rem 1.1rem; border: 2px solid #d1d5db; border-radius: .5rem; background: #f9fafb; }
+            .proj-price-item { font-size: 1rem; font-weight: 800; line-height: 1.3; color: #1d1d1a; }
+            .proj-price-note { font-size: .9rem; line-height: 1.45; color: #1d1d1a; }
+            .proj-price-amount { margin-top: auto; padding-top: .5rem; font-size: 1.5rem; font-weight: 800; line-height: 1.1; color: var(--color-brand); }
             .proj-note-links { display: flex; flex-wrap: wrap; gap: .5rem 1.25rem; margin-top: .75rem; }
             .proj-note-links a { font-weight: 800; color: var(--color-brand); text-decoration: underline; text-underline-offset: 3px; }
             .proj-note-links a:hover { color: #1d1d1a; }
@@ -451,24 +456,21 @@
 
                 @php $pricing = collect($project->pricing ?? [])->filter(fn ($p) => filled($p['item'] ?? null) || filled($p['price'] ?? null)); @endphp
                 @if ($project->is_paid && $pricing->isNotEmpty())
-                    <div class="mt-8 rounded-lg border border-gray-200 p-6">
-                        <h2 class="proj-h2">Cennik</h2>
-                        <ul class="divide-y divide-gray-100">
+                    {{-- Cennik jako karty cen w ramce: nazwa, opis i duża cena na dole. --}}
+                    <section class="proj-frame proj-price" aria-labelledby="proj-price-h">
+                        <h2 id="proj-price-h" class="proj-frame-h"><i class="fa-solid fa-coins" aria-hidden="true"></i> Cennik</h2>
+                        <ul role="list" class="proj-price-grid">
                             @foreach ($pricing as $row)
-                                <li class="flex items-baseline justify-between gap-4 py-2.5">
-                                    <span class="min-w-0">
-                                        <span class="font-medium text-ink">{{ $row['item'] }}</span>
-                                        @if (filled($row['note'] ?? null))
-                                            <span class="block text-sm text-muted">{{ $row['note'] }}</span>
-                                        @endif
-                                    </span>
+                                <li class="proj-price-card">
+                                    <span class="proj-price-item">{{ $row['item'] }}</span>
+                                    @if (filled($row['note'] ?? null))<span class="proj-price-note">{{ $row['note'] }}</span>@endif
                                     @if (filled($row['price'] ?? null))
-                                        <span class="shrink-0 font-bold text-brand">{{ $row['price'] }}</span>
+                                        <span class="proj-price-amount"><span class="sr-only">Cena: </span>{{ $row['price'] }}</span>
                                     @endif
                                 </li>
                             @endforeach
                         </ul>
-                    </div>
+                    </section>
                 @endif
 
             </div>{{-- /panel-opis --}}
