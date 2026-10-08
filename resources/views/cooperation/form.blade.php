@@ -185,7 +185,7 @@
                            class="mt-0.5 rounded border-gray-300 text-brand focus:ring-brand @error('privacy') border-red-400 @enderror"
                            aria-required="true">
                     <span class="text-sm text-muted">
-                        Wyrażam zgodę na przetwarzanie podanych danych osobowych przez {{ $siteSettings->site_name }}
+                        Wyrażam zgodę na przetwarzanie podanych danych osobowych przez {{ $siteSettings->siteNameAccusative() }}
                         w celu odpowiedzi na zgłoszenie. Dane nie będą przekazywane osobom trzecim.
                         <span class="text-red-500" aria-hidden="true">*</span>
                     </span>

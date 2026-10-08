@@ -1,7 +1,7 @@
 @extends('layouts.site')
 
 @section('title', 'Wesprzyj nas — ' . $siteSettings->site_name)
-@section('meta_description', 'Wesprzyj ' . $siteSettings->site_name . '.')
+@section('meta_description', 'Wesprzyj działania ' . $siteSettings->siteNameGenitive() . '.')
 @if ($siteSettings->supportImageUrl())
     @section('og_image', $siteSettings->supportImageUrl())
 @endif

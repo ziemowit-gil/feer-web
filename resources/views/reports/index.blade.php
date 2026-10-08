@@ -1,7 +1,7 @@
 @extends('layouts.site')
 
 @section('title', 'Sprawozdania roczne — ' . $siteSettings->site_name)
-@section('meta_description', 'Roczne sprawozdania merytoryczne i finansowe ' . $siteSettings->site_name . ' — do pobrania w formacie PDF.')
+@section('meta_description', 'Roczne sprawozdania merytoryczne i finansowe ' . $siteSettings->siteNameGenitive() . ' — do pobrania w formacie PDF.')
 
 @section('breadcrumbs')
     @include('partials.breadcrumbs', ['items' => [

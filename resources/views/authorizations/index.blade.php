@@ -13,7 +13,7 @@
 <section class="mx-auto max-w-6xl px-4 py-12">
     <h1 class="mb-2 text-3xl font-bold text-ink">Rejestr pełnomocnictw i upoważnień</h1>
     <p class="mb-8 max-w-3xl text-muted">
-        Publiczny wykaz pełnomocnictw i upoważnień udzielonych przez {{ $siteSettings->site_name }}.
+        Publiczny wykaz pełnomocnictw i upoważnień udzielonych przez {{ $siteSettings->siteNameAccusative() }}.
         Aby zweryfikować dokument, wpisz jego numer lub nazwisko osoby umocowanej.
         Rejestr prowadzony jest w odrębnym systemie — ta strona prezentuje jego aktualny stan.
     </p>

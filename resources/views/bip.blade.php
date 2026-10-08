@@ -1,7 +1,7 @@
 @extends('layouts.site')
 
 @section('title', 'Biuletyn Informacji Publicznej — ' . $siteSettings->site_name)
-@section('meta_description', 'Biuletyn Informacji Publicznej ' . $siteSettings->site_name . ' — dokumenty publiczne, informacje o organizacji i rejestr zmian.')
+@section('meta_description', 'Biuletyn Informacji Publicznej ' . $siteSettings->siteNameGenitive() . ' — dokumenty publiczne, informacje o organizacji i rejestr zmian.')
 
 @section('content')
     @php

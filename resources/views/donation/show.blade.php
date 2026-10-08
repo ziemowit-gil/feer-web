@@ -236,7 +236,7 @@
                             <label class="flex cursor-pointer items-start gap-3 text-sm text-ink">
                                 <input type="checkbox" name="consent_newsletter" value="1" @checked(old('consent_newsletter'))
                                        class="mt-0.5 h-5 w-5 flex-none rounded border-gray-400 text-brand focus:ring-brand">
-                                <span>Chcę otrzymywać newsletter {{ $siteSettings->site_name }} (opcjonalnie; zgodę można w każdej chwili wycofać).</span>
+                                <span>Chcę otrzymywać newsletter {{ $siteSettings->siteNameGenitive() }} (opcjonalnie; zgodę można w każdej chwili wycofać).</span>
                             </label>
                         </div>
                     </fieldset>

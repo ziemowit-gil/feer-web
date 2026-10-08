@@ -157,7 +157,7 @@
         </span>
         <div class="min-w-0 flex-1">
             <p class="mb-3 text-sm font-medium text-gray-800">
-                Chcesz dostawać powiadomienia o szkoleniach i aktualnościach {{ $siteSettings->site_name }}?
+                Chcesz dostawać powiadomienia o szkoleniach i aktualnościach {{ $siteSettings->siteNameGenitive() }}?
             </p>
             <div class="flex gap-2">
                 <button id="push-subscribe-btn"

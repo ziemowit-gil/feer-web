@@ -1644,9 +1644,34 @@ class SiteSetting extends Model implements HasMedia
      * jeśli admin ją podał — w przeciwnym razie zwraca nazwę w mianowniku
      * (odmiana polskich nazw własnych nie da się wygenerować niezawodnie automatycznie).
      */
+    /** Nazwa organizacji w bierniku („przez Fundację …") — bezpieczna odmiana typowych form prawnych, inaczej mianownik. */
+    public function siteNameAccusative(): string
+    {
+        $name = (string) $this->site_name;
+        foreach (['Fundacja ' => 'Fundację ', 'Federacja ' => 'Federację ', 'Spółdzielnia ' => 'Spółdzielnię '] as $nominative => $accusative) {
+            if (str_starts_with($name, $nominative)) {
+                return $accusative.substr($name, strlen($nominative));
+            }
+        }
+
+        return $name;
+    }
+
     public function siteNameGenitive(): string
     {
-        return filled($this->site_name_genitive) ? $this->site_name_genitive : $this->site_name;
+        if (filled($this->site_name_genitive)) {
+            return $this->site_name_genitive;
+        }
+
+        // Bezpieczna odmiana typowych form prawnych na początku nazwy (reszta nazwy bez zmian).
+        $forms = ['Fundacja ' => 'Fundacji ', 'Stowarzyszenie ' => 'Stowarzyszenia ', 'Towarzystwo ' => 'Towarzystwa ', 'Federacja ' => 'Federacji ', 'Związek ' => 'Związku '];
+        foreach ($forms as $nominative => $genitive) {
+            if (str_starts_with((string) $this->site_name, $nominative)) {
+                return $genitive.substr((string) $this->site_name, strlen($nominative));
+            }
+        }
+
+        return $this->site_name;
     }
 
     /** Wszystkie ustawione kolory identyfikacji (główny + 2–4), do paska/akcentów. */

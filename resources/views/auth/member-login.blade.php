@@ -8,7 +8,7 @@
             <i class="fa-solid fa-user-shield" aria-hidden="true"></i>
         </span>
         <h1 class="text-xl font-bold text-ink">Strefa wewnętrzna</h1>
-        <p class="mt-1 text-sm text-muted">Dostęp dla współpracowników {{ $siteSettings->site_name }}</p>
+        <p class="mt-1 text-sm text-muted">Dostęp dla współpracowników {{ $siteSettings->siteNameGenitive() }}</p>
     </div>
 
     @if (session('error'))

@@ -1,7 +1,7 @@
 @extends('layouts.site')
 
 @section('title', 'Instrukcja korzystania z BIP — ' . $siteSettings->site_name)
-@section('meta_description', 'Jak korzystać z Biuletynu Informacji Publicznej ' . $siteSettings->site_name . ': nawigacja, wyszukiwarka, rejestr zmian i kontakt z redakcją.')
+@section('meta_description', 'Jak korzystać z Biuletynu Informacji Publicznej ' . $siteSettings->siteNameGenitive() . ': nawigacja, wyszukiwarka, rejestr zmian i kontakt z redakcją.')
 
 @section('content')
     @php $feer = ($siteSettings->site_template ?? 'default') === 'feer'; @endphp
@@ -10,7 +10,7 @@
             <aside class="{{ $feer ? '' : 'lg:border-r lg:border-gray-100 lg:pr-6' }}">@include('bip._sidebar')</aside>
             <article aria-labelledby="bip-instr-h" class="prose max-w-none text-ink [&_h2]:text-ink [&_a]:text-brand-dark [&_a:hover]:text-ink">
                 <h1 id="bip-instr-h" class="!mb-2 text-2xl font-extrabold text-ink sm:text-3xl">Instrukcja korzystania z BIP</h1>
-                <p class="lead">Biuletyn Informacji Publicznej to strona, na której publikujemy dokumenty i informacje o działalności {{ $siteSettings->site_name }}. Poniżej wyjaśniamy prostym językiem, jak z niej korzystać.</p>
+                <p class="lead">Biuletyn Informacji Publicznej to strona, na której publikujemy dokumenty i informacje o działalności {{ $siteSettings->siteNameGenitive() }}. Poniżej wyjaśniamy prostym językiem, jak z niej korzystać.</p>
 
                 <h2>Jak się poruszać po BIP</h2>
                 <ul>
