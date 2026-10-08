@@ -743,6 +743,17 @@
                         rows.appendChild(wrapper.firstElementChild);
                     });
                 }
+                const sectionTemplate = rep.querySelector('[data-repeater-section-template]');
+                const addSectionBtn = rep.querySelector('[data-repeater-add-section]');
+                if (addSectionBtn && sectionTemplate) {
+                    addSectionBtn.addEventListener('click', function () {
+                        const wrapper = document.createElement('div');
+                        wrapper.innerHTML = sectionTemplate.innerHTML.replace(/__INDEX__/g, String(nextIndex++)).trim();
+                        const row = wrapper.firstElementChild;
+                        rows.appendChild(row);
+                        const input = row.querySelector('input'); if (input) input.focus();
+                    });
+                }
                 // Przelicz indeksy nazw pól wg kolejności w DOM, aby zapisana
                 // kolejność odpowiadała tej na ekranie (po przenoszeniu wierszy).
                 const reindex = function () {

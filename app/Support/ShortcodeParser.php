@@ -113,21 +113,8 @@ class ShortcodeParser
             return '';
         }
 
-        // Podział na sekcje: wiersz z `heading` otwiera nową sekcję (nagłówek + siatka jej kafelków).
-        $groups = [['heading' => null, 'tiles' => []]];
-        foreach ((array) $set->tiles as $t) {
-            if (filled($t['heading'] ?? null)) {
-                $groups[] = ['heading' => $t['heading'], 'tiles' => []];
-            } elseif (filled($t['label'] ?? null) && filled($t['url'] ?? null)) {
-                $groups[array_key_last($groups)]['tiles'][] = $t;
-            }
-        }
-
         $html = '';
-        foreach ($groups as $g) {
-            if ($g['tiles'] === []) {
-                continue;
-            }
+        foreach (TileSections::groups($set->tiles) as $g) {
             if ($g['heading']) {
                 $html .= '<h3 class="mb-3 mt-8 text-xl font-bold text-ink">'.e($g['heading']).'</h3>';
             }

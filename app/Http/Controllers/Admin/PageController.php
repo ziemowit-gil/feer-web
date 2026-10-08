@@ -1167,10 +1167,16 @@ class PageController extends Controller
 
         // Siatka kafelków (tiles_grid): zapisz kafelki z pełnymi polami stylu.
         $data['tiles_content_position'] = $request->input('tiles_content_position') === 'below' ? 'below' : null;
-        if ($data['type'] === 'tiles_grid') {
+        $data['tiles_enabled'] = $request->boolean('tiles_enabled') || $data['type'] === 'tiles_grid';
+        {
             $rawTiles = $request->input('tiles', []);
             $tiles = [];
             foreach ((array) $rawTiles as $row) {
+                // Wiersz-nagłówek sekcji kafelków.
+                if (filled($row['heading'] ?? null)) {
+                    $tiles[] = ['heading' => trim((string) $row['heading'])];
+                    continue;
+                }
                 $label = trim((string) ($row['label'] ?? ''));
                 $url   = trim((string) ($row['url'] ?? ''));
                 if ($label === '' && $url === '') continue;
@@ -1186,8 +1192,6 @@ class PageController extends Controller
                 ];
             }
             $data['tiles'] = $tiles ?: null;
-        } else {
-            $data['tiles'] = null;
         }
 
         unset($data['hub_hero_file']);

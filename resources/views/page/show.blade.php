@@ -81,10 +81,10 @@
 
                         @include('partials.page-content-image')
 
-                        @if (! $page->isTilesGrid() && $page->tiles_content_position === 'below')
-                            @php $tilesFirst = collect($page->tiles ?? [])->filter(fn ($t) => filled($t['label'] ?? null) && filled($t['url'] ?? null))->values(); @endphp
+                        @if (! $page->isTilesGrid() && $page->showsTiles() && $page->tiles_content_position === 'below')
+                            @php $tilesFirst = collect($page->tiles ?? [])->filter(fn ($t) => filled($t['heading'] ?? null) || (filled($t['label'] ?? null) && filled($t['url'] ?? null)))->values(); @endphp
                             @if ($tilesFirst->isNotEmpty())
-                                <div class="mb-8">@include('partials._tiles-grid', ['tiles' => $tilesFirst, 'label' => $page->title])</div>
+                                <div class="mb-8">@include('partials._tiles-sections', ['tiles' => $tilesFirst->all(), 'label' => $page->title])</div>
                             @endif
                         @endif
 
@@ -102,10 +102,10 @@
 
                         @include('partials.page-gallery', ['page' => $page])
 
-                        @if (! $page->isTilesGrid() && $page->tiles_content_position !== 'below')
-                            @php $tilesAfter = collect($page->tiles ?? [])->filter(fn ($t) => filled($t['label'] ?? null) && filled($t['url'] ?? null))->values(); @endphp
+                        @if (! $page->isTilesGrid() && $page->showsTiles() && $page->tiles_content_position !== 'below')
+                            @php $tilesAfter = collect($page->tiles ?? [])->filter(fn ($t) => filled($t['heading'] ?? null) || (filled($t['label'] ?? null) && filled($t['url'] ?? null)))->values(); @endphp
                             @if ($tilesAfter->isNotEmpty())
-                                <div class="mt-10">@include('partials._tiles-grid', ['tiles' => $tilesAfter, 'label' => $page->title])</div>
+                                <div class="mt-10">@include('partials._tiles-sections', ['tiles' => $tilesAfter->all(), 'label' => $page->title])</div>
                             @endif
                         @endif
 

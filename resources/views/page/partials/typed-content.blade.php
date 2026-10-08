@@ -935,7 +935,7 @@
     </section>
     @elseif ($page->isTilesGrid())
     @php
-        $pageTiles = collect($page->tiles ?? [])->filter(fn ($t) => filled($t['label'] ?? null) && filled($t['url'] ?? null))->values();
+        $pageTiles = collect($page->tiles ?? [])->filter(fn ($t) => filled($t['heading'] ?? null) || (filled($t['label'] ?? null) && filled($t['url'] ?? null)))->values();
         $tilesBelow = $page->tiles_content_position === 'below';
         // Boczne menu (lista rodzeństwa albo drzewo działu) — jak na stronach standardowych.
         $tgSiblings = $page->menuSiblings();
@@ -957,7 +957,7 @@
                 @endif
 
                 @if ($pageTiles->isNotEmpty())
-                    @include('partials._tiles-grid', ['tiles' => $pageTiles, 'label' => $page->title])
+                    @include('partials._tiles-sections', ['tiles' => $pageTiles->all(), 'label' => $page->title])
                 @else
                     <p class="text-center text-muted">Brak dodanych kafelków. Dodaj je w panelu (edycja strony → Typ i układ → Kafelki).</p>
                 @endif
@@ -1678,11 +1678,11 @@
 
     @endif
 
-    @if (!$page->isTilesGrid() && ! $page->usesStandardLayout())
-        @php $extraTiles = collect($page->tiles ?? [])->filter(fn ($t) => filled($t['label'] ?? null) && filled($t['url'] ?? null))->values(); @endphp
+    @if (!$page->isTilesGrid() && $page->showsTiles() && ! $page->usesStandardLayout())
+        @php $extraTiles = collect($page->tiles ?? [])->filter(fn ($t) => filled($t['heading'] ?? null) || (filled($t['label'] ?? null) && filled($t['url'] ?? null)))->values(); @endphp
         @if ($extraTiles->isNotEmpty())
             <section class="mx-auto max-w-5xl px-4 pb-14" aria-label="Kafelki — {{ $page->title }}">
-                @include('partials._tiles-grid', ['tiles' => $extraTiles, 'label' => $page->title])
+                @include('partials._tiles-sections', ['tiles' => $extraTiles->all(), 'label' => $page->title])
             </section>
         @endif
     @endif
