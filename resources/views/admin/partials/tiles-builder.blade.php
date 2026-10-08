@@ -6,7 +6,7 @@
     Dostępność: role="dialog" + aria-modal, fokus w oknie (pętla Tab), Esc zamyka i oddaje fokus, etykiety pól, komunikaty role="alert".
 --}}
 @once
-    <div id="tb-root" class="fixed inset-0 z-[10000] hidden items-start justify-center overflow-y-auto bg-black/50 p-4 sm:p-8">
+    <div id="tb-root" class="fixed inset-0 hidden items-start justify-center overflow-y-auto bg-black/50 p-4 sm:p-8" style="z-index:2147483000">
         <div id="tb-dialog" role="dialog" aria-modal="true" aria-labelledby="tb-title" class="w-full max-w-3xl rounded-2xl bg-white shadow-2xl">
             <div class="flex items-center justify-between gap-4 border-b border-gray-200 px-6 py-4">
                 <h2 id="tb-title" class="text-lg font-bold text-ink">Zestaw kafelków</h2>
@@ -108,6 +108,8 @@
 
             function init() {
                 root = $('tb-root'); dlg = $('tb-dialog'); rows = $('tb-rows'); nameEl = $('tb-name'); errEl = $('tb-error');
+                // Okno przenosimy do <body>, aby żaden pasek narzędzi edytora (sticky, własny z-index) nie wchodził na wierzch.
+                document.body.appendChild(root);
                 $('tb-close').addEventListener('click', function () { close(); });
                 $('tb-cancel').addEventListener('click', function () { close(); });
                 $('tb-add-section').addEventListener('click', function () {
