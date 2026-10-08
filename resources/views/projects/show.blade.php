@@ -215,6 +215,58 @@
         <div @class(['grid items-start gap-10', 'proj-cols' => $hasAside || $navSidebar])>
         <div class="min-w-0 proj-main">
             <div id="panel-opis" role="tabpanel" aria-labelledby="tab-opis" x-show="tab === 'opis'" class="proj-measure proj-flow">
+                @php $subProjects = $project->publishedChildren; @endphp
+                @if ($subProjects->isNotEmpty())
+                    <section aria-labelledby="proj-children-h">
+                        @php
+                            $offered = $subProjects->filter(fn ($x) => $x->is_offered)->values();
+                            $cnt = $offered->count();
+                            $cntWord = [2 => 'dwóch', 3 => 'trzech', 4 => 'czterech'][$cnt] ?? (string) $cnt;
+                            $only = $subProjects->count() === 1 ? $subProjects->first() : null;
+                        @endphp
+                        <h2 id="proj-children-h" class="proj-h2">
+                            @if ($cnt === 0)
+                                Wersje tego działania
+                            @elseif ($only)
+                                {{ $only->is_paid ? 'Możesz też skorzystać odpłatnie' : 'Możesz też skorzystać bezpłatnie' }}
+                            @elseif ($cnt === 1)
+                                Dostępne w osobnej wersji
+                            @else
+                                Możesz skorzystać w {{ $cntWord }} wersjach
+                            @endif
+                        </h2>
+                        @php
+                            $hasPaid = $offered->contains('is_paid', true);
+                            $hasFree = $offered->contains(fn ($x) => ! $x->is_paid);
+                        @endphp
+                        <div class="proj-note mb-4"><span>
+                            @if ($only && $only->is_offered)
+                                @if ($only->is_paid)
+                                    Te działania możemy zrealizować także <strong>odpłatnie</strong> — na przykład gdy potrzebujesz własnego terminu lub większego zakresu.
+                                @else
+                                    Te działania realizujemy także <strong>bezpłatnie</strong> — sprawdź warunki udziału w osobnej wersji.
+                                @endif
+                            @elseif ($cnt === 0)
+                                Obecnie nie realizujemy żadnej z poniższych wersji. Zajrzyj tu ponownie lub skontaktuj się z nami.
+                            @elseif ($hasPaid && $hasFree)
+                                Część tych działań realizujemy <strong>bezpłatnie</strong>, a niektóre możemy też zrealizować <strong>odpłatnie</strong> — na przykład gdy potrzebujesz większego zakresu, własnego terminu lub wsparcia dla całej organizacji. Wybierz wersję, która odpowiada Twoim potrzebom.
+                            @elseif ($hasPaid)
+                                Te działania możemy zrealizować <strong>odpłatnie</strong> — wybierz wersję, która odpowiada Twoim potrzebom.
+                            @else
+                                Te działania realizujemy <strong>bezpłatnie</strong> — wybierz wersję, która odpowiada Twoim potrzebom.
+                            @endif
+                        
+                            <span class="proj-note-ico" aria-hidden="true"><i class="fa-solid fa-coins"></i></span></span>
+                            <span class="proj-note-links">
+                                @foreach ($subProjects as $sp)
+                                    <a href="{{ route('projects.show', $sp) }}">
+                                        {{ $sp->is_paid ? 'Zobacz wersję odpłatną' : 'Zobacz wersję bezpłatną' }}@unless ($sp->is_offered) (obecnie niedostępna)@endunless <span aria-hidden="true">→</span><span class="sr-only">: {{ $sp->title }}</span>
+                                    </a>
+                                @endforeach
+                            </span>
+                        </div>
+                    </section>
+                @endif
                 @if ($sectionTabs->isNotEmpty())
                     {{-- Sekcje własne są w zakładkach (pasek pod nagłówkiem) --}}
                 @else
@@ -297,41 +349,6 @@
                     </section>
                 @endif
 
-                @php $subProjects = $project->publishedChildren; @endphp
-                @if ($subProjects->isNotEmpty())
-                    <section aria-labelledby="proj-children-h">
-                        @php
-                            $offered = $subProjects->filter(fn ($x) => $x->is_offered)->values();
-                            $cnt = $offered->count();
-                            $cntWord = [2 => 'dwóch', 3 => 'trzech', 4 => 'czterech'][$cnt] ?? (string) $cnt;
-                        @endphp
-                        <h2 id="proj-children-h" class="proj-h2">{{ $cnt === 0 ? 'Wersje tego działania' : ($cnt === 1 ? 'Dostępne w osobnej wersji' : 'Możesz skorzystać w '.$cntWord.' wersjach') }}</h2>
-                        @php
-                            $hasPaid = $offered->contains('is_paid', true);
-                            $hasFree = $offered->contains(fn ($x) => ! $x->is_paid);
-                        @endphp
-                        <div class="proj-note mb-4"><span>
-                            @if ($cnt === 0)
-                                Obecnie nie realizujemy żadnej z poniższych wersji. Zajrzyj tu ponownie lub skontaktuj się z nami.
-                            @elseif ($hasPaid && $hasFree)
-                                Część tych działań realizujemy <strong>bezpłatnie</strong>, a niektóre możemy też zrealizować <strong>odpłatnie</strong> — na przykład gdy potrzebujesz większego zakresu, własnego terminu lub wsparcia dla całej organizacji. Wybierz wersję, która odpowiada Twoim potrzebom.
-                            @elseif ($hasPaid)
-                                Te działania możemy zrealizować <strong>odpłatnie</strong> — wybierz wersję, która odpowiada Twoim potrzebom.
-                            @else
-                                Te działania realizujemy <strong>bezpłatnie</strong> — wybierz wersję, która odpowiada Twoim potrzebom.
-                            @endif
-                        
-                            <span class="proj-note-ico" aria-hidden="true"><i class="fa-solid fa-coins"></i></span></span>
-                            <span class="proj-note-links">
-                                @foreach ($subProjects as $sp)
-                                    <a href="{{ route('projects.show', $sp) }}">
-                                        {{ $sp->is_paid ? 'Zobacz wersję odpłatną' : 'Zobacz wersję bezpłatną' }}@unless ($sp->is_offered) (obecnie niedostępna)@endunless <span aria-hidden="true">→</span><span class="sr-only">: {{ $sp->title }}</span>
-                                    </a>
-                                @endforeach
-                            </span>
-                        </div>
-                    </section>
-                @endif
 
                 @unless ($sectionTabs->isNotEmpty())
                     @foreach ($regularSections as $customSection)
