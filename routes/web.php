@@ -437,6 +437,7 @@ Route::middleware(['auth', 'verified', '2fa', 'admin-site'])->prefix(config('app
     });
 
     Route::middleware(['module:quick_actions', 'module-access:quick_actions'])->group(function () {
+        Route::post('szybkie-akcje/uklad', [AdminQuickActionController::class, 'layout'])->name('szybkie-akcje.uklad');
         Route::resource('szybkie-akcje', AdminQuickActionController::class)->parameters(['szybkie-akcje' => 'quickAction'])->except('show');
     });
 

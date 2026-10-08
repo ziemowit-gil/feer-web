@@ -52,6 +52,34 @@ class QuickActionController extends Controller
         return redirect()->route('admin.szybkie-akcje.index')->with('status', 'Szybka akcja została zaktualizowana.');
     }
 
+    /**
+     * Zapisuje układ z wizualnego edytora siatki: kolejność, szerokość (kolumny), tryb „pasek" i „negatyw".
+     * Przyjmuje tylko akcje bieżącej witryny.
+     */
+    public function layout(Request $request)
+    {
+        $data = $request->validate([
+            'items' => ['required', 'array', 'max:60'],
+            'items.*.id' => ['required', 'integer'],
+            'items.*.cols' => ['required', 'integer', 'in:1,2,3'],
+            'items.*.strip' => ['required', 'boolean'],
+            'items.*.is_negative' => ['required', 'boolean'],
+        ]);
+
+        $actions = QuickAction::forCurrentSite()->whereIn('id', collect($data['items'])->pluck('id'))->get()->keyBy('id');
+
+        foreach (array_values($data['items']) as $position => $item) {
+            $actions->get($item['id'])?->update([
+                'order' => $position,
+                'cols' => (int) $item['cols'],
+                'strip' => (bool) $item['strip'],
+                'is_negative' => (bool) $item['is_negative'],
+            ]);
+        }
+
+        return response()->json(['ok' => true]);
+    }
+
     /** Usuwa szybką akcję. */
     public function destroy(QuickAction $quickAction)
     {
