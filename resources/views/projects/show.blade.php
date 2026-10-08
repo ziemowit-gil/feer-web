@@ -74,7 +74,7 @@
                     {{ $project->category->name }}
                 </a>
                 @if ($project->parent && $project->parent->is_published)
-                    <p class="mt-2 text-sm font-bold text-ink">Część projektu: <a href="{{ route('projects.show', $project->parent) }}" class="text-brand underline underline-offset-2 hover:text-brand-dark">{{ $project->parent->title }}</a></p>
+                    <p class="mt-2 text-sm font-bold text-ink">Część działania: <a href="{{ route('projects.show', $project->parent) }}" class="text-brand underline underline-offset-2 hover:text-brand-dark">{{ $project->parent->title }}</a></p>
                 @endif
                 <h1 class="mt-3 text-3xl font-extrabold leading-tight tracking-tight text-ink sm:text-5xl" @if ($canInlineEdit) data-inline-field="title" data-inline-kind="text" @endif>{{ $project->title }}</h1>
                 @if ($project->excerpt)
@@ -200,6 +200,19 @@
                             $cntWord = [2 => 'dwóch', 3 => 'trzech', 4 => 'czterech'][$cnt] ?? (string) $cnt;
                         @endphp
                         <h2 id="proj-children-h" class="proj-h2">{{ $cnt === 1 ? 'Dostępne w osobnej wersji' : 'Możesz skorzystać w '.$cntWord.' wersjach' }}</h2>
+                        @php
+                            $hasPaid = $subProjects->contains('is_paid', true);
+                            $hasFree = $subProjects->contains(fn ($x) => ! $x->is_paid);
+                        @endphp
+                        <p class="mb-4 text-base leading-relaxed text-ink">
+                            @if ($hasPaid && $hasFree)
+                                Część tych działań realizujemy <strong>bezpłatnie</strong>, a niektóre możemy też zrealizować <strong>odpłatnie</strong> — na przykład gdy potrzebujesz większego zakresu, własnego terminu lub wsparcia dla całej organizacji. Wybierz wersję, która odpowiada Twoim potrzebom.
+                            @elseif ($hasPaid)
+                                Te działania możemy zrealizować <strong>odpłatnie</strong> — wybierz wersję, która odpowiada Twoim potrzebom.
+                            @else
+                                Te działania realizujemy <strong>bezpłatnie</strong> — wybierz wersję, która odpowiada Twoim potrzebom.
+                            @endif
+                        </p>
                         <ul role="list" class="grid gap-3 sm:grid-cols-2">
                             @foreach ($subProjects as $sp)
                                 <li>
