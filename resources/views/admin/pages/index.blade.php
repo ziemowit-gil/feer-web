@@ -61,9 +61,24 @@
                     <option value="enable">Włącz (przywróć dostępność)</option>
                     <option value="feature">Wyróżnij</option>
                     <option value="unfeature">Cofnij wyróżnienie</option>
+                    <option value="move_to_project">Przenieś do projektu…</option>
                     <option value="trash">Przenieś do kosza</option>
                 @endif
             </select>
+            <span id="bulk-project-fields" class="hidden flex-wrap items-center gap-2">
+                <select name="project_id" aria-label="Projekt docelowy" class="rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                    <option value="">— wybierz projekt —</option>
+                    @foreach ($projectOptions as $po)
+                        <option value="{{ $po->id }}">{{ $po->title }}</option>
+                    @endforeach
+                </select>
+                <select name="project_display" aria-label="Sposób wyświetlenia w projekcie" class="rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                    @foreach (\App\Models\Page::PROJECT_DISPLAYS as $v => $l)
+                        <option value="{{ $v }}">{{ \Illuminate\Support\Str::before($l, ' (') }}</option>
+                    @endforeach
+                </select>
+                <label class="flex items-center gap-1.5 text-xs text-blue-900"><input type="checkbox" name="hide_from_menu" value="1" checked class="rounded border-gray-300 text-brand focus:ring-brand"> Usuń z menu</label>
+            </span>
             <button type="button"
                 @click="Alpine.store('confirm').ask('Wykonać tę operację na zaznaczonych stronach?').then(ok => { if (ok) $el.closest('form').submit() })"
                 class="rounded bg-brand px-3 py-1.5 text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
@@ -395,6 +410,14 @@
                 bar.classList.toggle('flex', checked.length > 0);
                 countEl.textContent = 'Zaznaczono: ' + checked.length;
             }
+
+            const actionSel = bar.querySelector('select[name=action]');
+            const projFields = document.getElementById('bulk-project-fields');
+            actionSel.addEventListener('change', function () {
+                const on = actionSel.value === 'move_to_project';
+                projFields.classList.toggle('hidden', ! on);
+                projFields.classList.toggle('flex', on);
+            });
 
             selectAll.addEventListener('change', function () {
                 document.querySelectorAll('.page-row-check').forEach(function (cb) {

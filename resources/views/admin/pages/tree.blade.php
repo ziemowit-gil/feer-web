@@ -283,6 +283,36 @@
                             <button type="submit" class="{{ $btn }}"><i class="fa-solid fa-arrows-up-down-left-right" aria-hidden="true"></i> Przenieś</button>
                             <p class="basis-full text-xs text-muted">Adres URL strony nie zmienia się. Strona nie może trafić do samej siebie ani do własnej podstrony.</p>
                         </form>
+
+                        {{-- Przeniesienie do projektu --}}
+                        @if ($projectOptions->isNotEmpty() && ! $selected->is_system)
+                            <form method="POST" action="{{ route('admin.podstrony.do-projektu', $selected) }}" class="mt-3 flex flex-wrap items-end gap-2 rounded-lg bg-gray-50 p-3">
+                                @csrf
+                                <div class="min-w-48 flex-1">
+                                    <label for="to-project" class="mb-1 block text-xs font-bold text-ink">Przenieś do projektu</label>
+                                    <select id="to-project" name="project_id" required class="w-full rounded border-gray-300 py-1.5 text-sm focus:border-brand focus:ring-brand">
+                                        <option value="" disabled @selected(! $selected->project_id)>— wybierz projekt —</option>
+                                        @foreach ($projectOptions as $po)
+                                            <option value="{{ $po->id }}" @selected($selected->project_id === $po->id)>{{ $po->title }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <div>
+                                    <label for="to-project-display" class="mb-1 block text-xs font-bold text-ink">Jako</label>
+                                    <select id="to-project-display" name="project_display" class="rounded border-gray-300 py-1.5 text-sm focus:border-brand focus:ring-brand">
+                                        @foreach (\App\Models\Page::PROJECT_DISPLAYS as $v => $l)
+                                            <option value="{{ $v }}" @selected(($selected->project_display ?? 'tab') === $v || ($v === 'tab' && ! $selected->project_id))>{{ \Illuminate\Support\Str::before($l, ' (') }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <button type="submit" class="{{ $btn }}"><i class="fa-solid fa-diagram-project" aria-hidden="true"></i> Przenieś</button>
+                                <label class="flex basis-full items-center gap-2 text-xs text-ink">
+                                    <input type="checkbox" name="hide_from_menu" value="1" checked class="rounded border-gray-300 text-brand focus:ring-brand">
+                                    Usuń z menu głównego (ukryj stronę i pozycje menu, które do niej prowadzą)
+                                </label>
+                                <p class="basis-full text-xs text-muted">Strona (z podstronami) pojawi się w drzewie podstron projektu. Adres URL nie zmienia się.</p>
+                            </form>
+                        @endif
                     @endif
                 </div>
 

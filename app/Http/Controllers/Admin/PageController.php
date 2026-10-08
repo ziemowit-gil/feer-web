@@ -56,6 +56,7 @@ class PageController extends Controller
             'q'      => $search,
             'status' => $status,
             'sort'   => $sort,
+            'projectOptions' => Project::orderBy('title')->get(['id', 'title']),
         ]);
     }
 
@@ -116,10 +117,79 @@ class PageController extends Controller
             'rootline' => $rootline,
             'children' => $selected ? $byParent->get($selected->id, collect()) : collect(),
             'moveOptions' => $moveOptions,
+            'projectOptions' => Project::orderBy('title')->get(['id', 'title']),
             'personsCount' => $selected && $selected->isAbout()
                 ? Page::where('type', 'about_person')->where('parent_id', $selected->id)->count()
                 : 0,
         ]);
+    }
+
+    /**
+     * Przenosi stronę (razem z jej podstronami) do projektu: strona zostaje powiązana z projektem
+     * i pojawia się w jego drzewie podstron (zakładka / sekcja / odnośnik). Adres URL strony się nie zmienia.
+     */
+    public function moveToProject(Request $request, Page $page): \Illuminate\Http\RedirectResponse
+    {
+        $data = $request->validate([
+            'project_id' => ['required', 'integer', 'exists:projects,id'],
+            'project_display' => ['required', Rule::in(array_keys(Page::PROJECT_DISPLAYS))],
+            'parent_page_id' => ['nullable', 'integer', 'exists:pages,id'],
+            'hide_from_menu' => ['sometimes', 'boolean'],
+        ]);
+
+        $project = Project::findOrFail($data['project_id']);
+        $moved = $this->attachPagesToProject(collect([$page]), $project, $data['project_display'], $data['parent_page_id'] ?? null, $request->boolean('hide_from_menu'));
+
+        if ($moved === 0) {
+            return redirect()->back()->with('error', 'Tej strony nie można przenieść do projektu (strona systemowa albo wskazano niewłaściwą stronę nadrzędną).');
+        }
+
+        return redirect()->route('admin.podstrony.index', ['wybrana' => $page->id])
+            ->with('status', "Przeniesiono stronę „{$page->title}” do projektu „{$project->title}”.");
+    }
+
+    /**
+     * Wspólna logika przenoszenia stron do projektu (pojedyncza i zbiorcza).
+     *
+     * @return int liczba przeniesionych stron
+     */
+    private function attachPagesToProject($pages, Project $project, string $display, ?int $parentPageId, bool $hideFromMenu): int
+    {
+        $parent = $parentPageId ? Page::find($parentPageId) : null;
+        $moved = 0;
+
+        foreach ($pages as $page) {
+            if ($page->is_system || $page->is_locked) {
+                continue;
+            }
+            // Strona nadrzędna musi należeć do projektu i nie może być samą stroną ani jej potomkiem.
+            if ($parent && ($parent->id === $page->id || $parent->project_id !== $project->id || in_array($parent->id, $this->descendantIds(Page::all()->groupBy('parent_id'), $page->id), true))) {
+                continue;
+            }
+
+            // Bez wskazanej strony nadrzędnej: zostaje dotychczasowa, o ile już leży w tym projekcie (nie rozrywamy drzewa).
+            $keepParent = ! $parent && $page->parent_id && Page::whereKey($page->parent_id)->where('project_id', $project->id)->exists();
+
+            $page->forceFill([
+                'project_id' => $project->id,
+                'project_display' => $display,
+                'parent_id' => $parent ? $parent->id : ($keepParent ? $page->parent_id : null),
+            ]);
+            if ($hideFromMenu) {
+                $page->show_in_menu = false;
+            }
+            $page->save();
+
+            if ($hideFromMenu) {
+                // Pozycje menu głównego prowadzące do tej strony zostają ukryte (można je przywrócić w Menu).
+                \App\Models\NavItem::where('location', 'main')
+                    ->whereIn('url', ['/'.$page->slug, $page->publicUrl()])
+                    ->update(['is_active' => false]);
+            }
+            $moved++;
+        }
+
+        return $moved;
     }
 
     /** @return int[] identyfikatory wszystkich potomków strony (z zabezpieczeniem przed cyklem). */
@@ -598,7 +668,10 @@ class PageController extends Controller
     public function bulk(Request $request): \Illuminate\Http\RedirectResponse
     {
         $data = $request->validate([
-            'action' => ['required', 'in:publish,unpublish,disable,enable,feature,unfeature,trash,restore'],
+            'action' => ['required', 'in:publish,unpublish,disable,enable,feature,unfeature,trash,restore,move_to_project'],
+            'project_id' => ['required_if:action,move_to_project', 'nullable', 'integer', 'exists:projects,id'],
+            'project_display' => ['nullable', Rule::in(array_keys(Page::PROJECT_DISPLAYS))],
+            'hide_from_menu' => ['sometimes', 'boolean'],
             'ids'    => ['required', 'array', 'min:1'],
             'ids.*'  => ['integer'],
         ]);
@@ -617,6 +690,15 @@ class PageController extends Controller
 
         $count = $pages->count();
         $ids = $pages->pluck('id');
+
+        if ($data['action'] === 'move_to_project') {
+            $project = Project::findOrFail($data['project_id']);
+            $moved = $this->attachPagesToProject($pages, $project, $data['project_display'] ?? 'tab', null, $request->boolean('hide_from_menu'));
+
+            return redirect()->back()->with($moved ? 'status' : 'error', $moved
+                ? "Przeniesiono do projektu „{$project->title}” stron: {$moved}."
+                : 'Nie przeniesiono żadnej strony (strony systemowe są pomijane).');
+        }
 
         match ($data['action']) {
             'publish'   => Page::whereIn('id', $ids)->update(['is_published' => true]),
@@ -638,6 +720,7 @@ class PageController extends Controller
             'unfeature' => "Cofnięto wyróżnienie stron: {$count}.",
             'trash'     => "Przeniesiono do kosza stron: {$count}.",
             'restore'   => "Przywrócono z kosza stron: {$count}.",
+            default     => '',
         };
 
         return redirect()->back()->with('status', $message);
