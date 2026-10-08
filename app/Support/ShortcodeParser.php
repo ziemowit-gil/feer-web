@@ -152,7 +152,7 @@ class ShortcodeParser
             $hid = $g['heading'] ? 'tiles-h-'.\Illuminate\Support\Str::random(8) : null;
             $html .= '<section'.($hid ? ' aria-labelledby="'.$hid.'"' : '').'>';
             if ($hid) {
-                $html .= '<h3 id="'.$hid.'" class="mb-3 mt-8 text-xl font-bold text-ink">'.e($g['heading']).'</h3>';
+                $html .= '<h2 id="'.$hid.'" class="mb-3 mt-8 text-2xl font-bold text-ink">'.e($g['heading']).'</h2>';
             }
             $html .= View::make('partials._tiles-grid', ['tiles' => collect($g['tiles']), 'label' => $set->name, 'labelledby' => $hid])->render().'</section>';
         }

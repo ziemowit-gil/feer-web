@@ -12,7 +12,7 @@
             <details class="group" @if ($group) name="{{ $group }}" @endif @if ($i === 0 && ! empty($d['first_open'])) open @endif>
                 <summary class="flex min-h-12 cursor-pointer list-none items-center justify-between gap-4 py-3 text-lg font-bold text-ink hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 [&::-webkit-details-marker]:hidden">
                     <span>{{ $item['q'] }}</span>
-                    <i class="fa-solid fa-chevron-down flex-none text-sm transition-transform group-open:rotate-180" aria-hidden="true"></i>
+                    <i class="fa-solid fa-chevron-down flex-none text-sm transition-transform motion-reduce:transition-none group-open:rotate-180" aria-hidden="true"></i>
                 </summary>
                 <div class="pb-5 pr-8 text-base leading-relaxed text-ink">{!! nl2br(e($item['a'])) !!}</div>
             </details>

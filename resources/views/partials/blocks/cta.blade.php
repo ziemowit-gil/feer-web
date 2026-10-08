@@ -15,7 +15,7 @@
            style="{{ $filled ? 'background-color: '.$accent.'; color: '.$textColor : 'background-color: #fff; border: 2px solid '.$accent.'; color: #1d1d1a' }}">
             <span>{{ $b['label'] }}</span>
             @if (! empty($b['new_tab']))<span class="sr-only">(otwiera się w nowej karcie)</span>@endif
-            <span class="transition group-hover:translate-x-1" aria-hidden="true">→</span>
+            <span class="transition group-hover:translate-x-1 motion-reduce:transition-none motion-reduce:transform-none" aria-hidden="true">→</span>
         </a>
     @endforeach
 </div>

@@ -1437,13 +1437,18 @@
             if (t === '') problems.push('Link bez tekstu (czytnik ekranu przeczyta sam adres).');
             else if (generic.indexOf(t) !== -1) problems.push('Nieopisowy tekst linku: „' + a.textContent.trim() + '".');
         });
+        // Bloki z shortcodów ([blok:…], [kafelki-zestaw:…], [kafelki:…], [formularz:…]) renderują się dopiero na stronie.
+        var blocks = (html.match(/\[(?:blok|kafelki-zestaw|kafelki|formularz):[a-z0-9_\-]+\]/gi) || []).length;
+        var blocksNote = blocks
+            ? '<p style="margin-top:.6rem;font-size:.85em">ℹ Wstawione bloki: ' + blocks + '. Mają wbudowaną dostępność (nagłówki sekcji bloków to H2, grupy są opisane nagłówkiem, przyciski i akordeon obsługują klawiaturę), ale ich zawartość nie jest tu sprawdzana — wskazówki dla etykiet pokazuje kreator bloku.</p>'
+            : '';
         if (!problems.length) {
-            return '<p style="color:#15803d;font-weight:700">✓ Nie wykryto problemów z dostępnością treści.</p>';
+            return '<p style="color:#15803d;font-weight:700">✓ Nie wykryto problemów z dostępnością treści.</p>' + blocksNote;
         }
         var seen = {}, list = '';
         problems.forEach(function (p) { if (!seen[p]) { seen[p] = 1; list += '<li>' + p + '</li>'; } });
         return '<p style="font-weight:700;margin-bottom:.5rem">Wykryto potencjalne problemy z dostępnością:</p>'
-            + '<ul style="margin-left:1.25rem;list-style:disc">' + list + '</ul>';
+            + '<ul style="margin-left:1.25rem;list-style:disc">' + list + '</ul>' + blocksNote;
     };
 
     var a11yBtn     = document.getElementById('{{ $editorId }}-a11y-btn');

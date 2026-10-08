@@ -23,6 +23,7 @@
                 <div id="bb-opts"></div>
                 <ol id="bb-rows" class="space-y-2" role="list"></ol>
                 <button type="button" id="bb-add" class="inline-flex min-h-10 items-center gap-2 rounded-lg bg-brand px-4 text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2"></button>
+ <div id="bb-hints" class="hidden rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-900" role="status" aria-live="polite"></div>
                 <p id="bb-error" role="alert" class="hidden rounded border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800"></p>
             </div>
             <div class="flex flex-wrap items-center justify-between gap-3 border-t border-gray-200 px-6 py-4">
@@ -90,7 +91,18 @@
                     + '<span style="display:flex">' + ibtn('up', 'fa-arrow-up', 'Przesuń wyżej', i === 0) + ibtn('down', 'fa-arrow-down', 'Przesuń niżej', i === list.length - 1) + ibtn('del', 'fa-trash', 'Usuń sekcję', list.length === 1) + '</span></div>'
                     + '<div><label class="tb-label" for="bb-a-' + i + '">Odpowiedź / treść</label><textarea id="bb-a-' + i + '" class="tb-input" data-f="a" rows="3" maxlength="5000">' + esc(t.a) + '</textarea></div></li>';
             }
-            function renderRows() { rowsEl.innerHTML = d[listKey()].map(rowHtml).join(''); }
+            function updateHints() {
+                var el = $('bb-hints'), list = d[listKey()], hints = [];
+                if (! window.__a11yHints || ! window.__renderA11yHints) { return; }
+                if (state.type === 'cta') {
+                    hints = window.__a11yHints(list.map(function (b) { return b.label; }), list.map(function (b) { return b.url; }));
+                } else {
+                    list.forEach(function (s, i) { if ((s.q || '').trim().length > 140) { hints.push('Sekcja ' + (i + 1) + ': tytuł jest bardzo długi — w akordeonie tytuł powinien być krótką frazą (to on jest przyciskiem).'); } });
+                    if (list.length > 20) { hints.push('Akordeon ma ponad 20 sekcji — rozważ podział na kilka grup z nagłówkami.'); }
+                }
+                window.__renderA11yHints(el, hints);
+            }
+            function renderRows() { rowsEl.innerHTML = d[listKey()].map(rowHtml).join(''); updateHints(); }
             function showError(msg) { errEl.textContent = msg; errEl.classList.toggle('hidden', ! msg); }
 
             function close(restore) {
@@ -112,7 +124,7 @@
                 optsEl.addEventListener('change', function (e) { var f = e.target.dataset.opt; if (f && e.target.type === 'checkbox') { d[f] = e.target.checked; } });
                 optsEl.addEventListener('click', function (e) { var s = e.target.closest('[data-seg]'); if (s) { d[s.dataset.seg] = s.dataset.val; renderOpts(); var again = optsEl.querySelector('[data-seg="' + s.dataset.seg + '"][data-val="' + s.dataset.val + '"]'); if (again) { again.focus(); } } });
 
-                rowsEl.addEventListener('input', function (e) { var f = e.target.dataset.f; if (! f || e.target.type === 'checkbox') { return; } var i = parseInt(e.target.closest('li').dataset.i, 10); d[listKey()][i][f] = e.target.value; });
+                rowsEl.addEventListener('input', function (e) { var f = e.target.dataset.f; if (! f || e.target.type === 'checkbox') { return; } var i = parseInt(e.target.closest('li').dataset.i, 10); d[listKey()][i][f] = e.target.value; updateHints(); });
                 rowsEl.addEventListener('change', function (e) { var f = e.target.dataset.f; if (f && e.target.type === 'checkbox') { var i = parseInt(e.target.closest('li').dataset.i, 10); d[listKey()][i][f] = e.target.checked; } });
                 rowsEl.addEventListener('click', function (e) {
                     var li = e.target.closest('li[data-i]'); if (! li) { return; }

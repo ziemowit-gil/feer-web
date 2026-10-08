@@ -36,6 +36,7 @@
                             <i class="fa-solid fa-heading" aria-hidden="true"></i> Dodaj sekcję (nagłówek)
                         </button>
                     </div>
+ <div id="tb-hints" class="hidden rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-900" role="status" aria-live="polite"></div>
                     <p id="tb-error" role="alert" class="hidden rounded border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800"></p>
                 </div>
 
@@ -114,8 +115,32 @@
                 return L > .4 ? '#1d1d1a' : '#ffffff';
             }
 
+            /* ── Wskazówki dostępności (WCAG): nieblokujące, aktualizowane na bieżąco ── */
+            var vague = ['kliknij tutaj', 'tutaj', 'klik', 'czytaj więcej', 'więcej', 'link', 'zobacz', 'kliknij', 'dalej', 'wejdź'];
+            window.__a11yHints = function (labels, urls) {
+                var out = [], seen = {};
+                labels.forEach(function (l, i) {
+                    var t = (l || '').trim().toLowerCase(); if (! t) { return; }
+                    if (vague.indexOf(t) !== -1) { out.push('Etykieta „' + l.trim() + '” nie mówi, dokąd prowadzi — nazwij cel, np. „Zapisz się na szkolenie”.'); }
+                    if (seen[t] !== undefined && (urls[seen[t]] || '') !== (urls[i] || '')) { out.push('Dwie pozycje „' + l.trim() + '” prowadzą w różne miejsca — nadaj im różne etykiety.'); }
+                    seen[t] = seen[t] === undefined ? i : seen[t];
+                    if (t.length > 60) { out.push('Etykieta „' + l.trim().slice(0, 30) + '…” jest długa — krótsza jest czytelniejsza dla czytnika ekranu.'); }
+                });
+                urls.forEach(function (u) { if ((u || '').trim() === '#') { out.push('Adres „#” nie prowadzi donikąd — wpisz docelowy adres.'); } });
+                return out.filter(function (x, i) { return out.indexOf(x) === i; });
+            };
+            window.__renderA11yHints = function (el, hints) {
+                el.classList.toggle('hidden', ! hints.length);
+                el.innerHTML = hints.length ? '<strong>Wskazówki dostępności:</strong><ul style="margin:.25rem 0 0 1.1rem;list-style:disc">' + hints.map(function (h) { return '<li>' + esc(h) + '</li>'; }).join('') + '</ul>' : '';
+            };
+            function updateHints() {
+                var tiles = items.filter(function (t) { return ! isSection(t); });
+                window.__renderA11yHints($('tb-hints'), window.__a11yHints(tiles.map(function (t) { return t.label; }), tiles.map(function (t) { return t.url; })));
+            }
+
             /* ── Podgląd ── */
             function renderPreview() {
+                updateHints();
                 var html = '', grid = '';
                 var flush = function () { if (grid) { html += '<div class="tb-pv-grid">' + grid + '</div>'; grid = ''; } };
                 items.forEach(function (t) {

@@ -22,9 +22,9 @@
                 @csrf
                 <div>
                     <label for="access_password" class="mb-1 block text-sm font-bold">Hasło</label>
-                    <input type="password" id="access_password" name="access_password" required autofocus autocomplete="off"
+                    <input type="password" id="access_password" name="access_password" required autofocus autocomplete="off" @error('access_password') aria-invalid="true" aria-describedby="access_password-error" @enderror
                         class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
-                    @error('access_password') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    @error('access_password') <p id="access_password-error" class="mt-1 text-sm text-red-700" role="alert">{{ $message }}</p> @enderror
                 </div>
                 <button type="submit" class="w-full rounded-lg bg-brand px-5 py-2.5 font-bold text-white hover:bg-brand-dark focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
                     Odblokuj
