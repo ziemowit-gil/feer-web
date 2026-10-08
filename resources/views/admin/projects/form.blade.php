@@ -401,7 +401,7 @@
                                 <div class="flex flex-wrap items-center gap-4 sm:col-span-3">
                                     <label class="flex items-center gap-2 text-sm"><span class="font-bold">Styl</span>
                                         <select :name="'sidebar_buttons[' + i + '][style]'" x-model="row.style" class="rounded-lg border-gray-300 text-sm focus:border-brand focus:ring-brand">
-                                            <option value="primary">Pełny</option><option value="outline">Z obwódką</option>
+                                            <option value="outline">Z obwódką (jak „Na skróty”)</option><option value="primary">Wypełniony (negatyw)</option>
                                         </select>
                                     </label>
                                     <label class="flex items-center gap-2 text-sm">
@@ -410,7 +410,7 @@
                                 </div>
                             </div>
                         </template>
-                        <button type="button" x-show="rows.length < 6" @click="rows.push({ label: '', url: '', style: 'primary', new_tab: false })"
+                        <button type="button" x-show="rows.length < 6" @click="rows.push({ label: '', url: '', style: 'outline', new_tab: false })"
                             class="inline-flex items-center gap-2 rounded border border-gray-300 px-3 py-1.5 text-sm font-bold text-ink hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
                             <i class="fa-solid fa-plus" aria-hidden="true"></i> Dodaj przycisk
                         </button>

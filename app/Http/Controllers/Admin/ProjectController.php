@@ -257,7 +257,7 @@ class ProjectController extends Controller
             ->map(fn ($b) => [
                 'label' => trim((string) ($b['label'] ?? '')),
                 'url' => trim((string) ($b['url'] ?? '')),
-                'style' => ($b['style'] ?? 'primary') === 'outline' ? 'outline' : 'primary',
+                'style' => ($b['style'] ?? 'outline') === 'primary' ? 'primary' : 'outline',
                 'new_tab' => ! empty($b['new_tab']),
             ])
             ->filter(fn ($b) => $b['label'] !== '' && preg_match('~^(https?://|mailto:|tel:|/|#)~i', $b['url']))
