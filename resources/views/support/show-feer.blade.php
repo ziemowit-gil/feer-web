@@ -32,9 +32,18 @@
         ]));
     @endphp
 
-    {{-- ══ Nagłówek: zachęta + zbiórka lub zdjęcie ══ --}}
+    {{-- ══ Nagłówek: zachęta + miejsce na zdjęcie (z prawej); zbiórka pod tekstem ══ --}}
+    @php $heroPhoto = $siteSettings->supportImageUrl(); $isAdminView = auth()->check() && auth()->user()->isAdmin(); @endphp
+    <style>
+        .sp-hero { display: grid; gap: 2.5rem; align-items: center; max-width: 72rem; margin: 0 auto; padding: 3rem 1rem; }
+        @media (min-width: 1024px) { .sp-hero.has-photo { grid-template-columns: minmax(0, 1fr) 26rem; } }
+        .sp-photo { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: .5rem; border: 3px solid #1d1d1a; }
+        .sp-photo-empty { display: flex; aspect-ratio: 4 / 3; flex-direction: column; align-items: center; justify-content: center; gap: .5rem; padding: 1.5rem; border: 3px dashed #4b5563; border-radius: .5rem; color: #1d1d1a; text-align: center; font-size: .9rem; }
+        .sp-photo-empty i { font-size: 2rem; color: var(--color-brand-dark); }
+        .sp-fund { margin-top: 2rem; padding: 1.5rem; border: 2px solid #1d1d1a; border-radius: .5rem; background: #fff; }
+    </style>
     <section id="wesprzyj-hero" class="bg-gray-50">
-        <div class="mx-auto grid max-w-6xl items-center gap-10 px-4 py-12 md:py-16 {{ ($hasFundraiser || $siteSettings->supportImageUrl()) ? 'lg:grid-cols-[minmax(0,1fr)_26rem]' : '' }}">
+        <div class="sp-hero {{ ($heroPhoto || $isAdminView) ? 'has-photo' : '' }}">
             <div class="min-w-0">
                 <p class="mb-3 text-xs font-bold uppercase tracking-widest text-brand-dark">{{ $siteSettings->supportText('support_hero_badge') }}</p>
                 <h1 class="max-w-2xl text-3xl font-extrabold leading-tight tracking-tight text-ink md:text-5xl">{{ $siteSettings->supportText('support_hero_title') }}</h1>
@@ -48,30 +57,39 @@
                     @if ($siteSettings->krs_number)<li>KRS {{ $siteSettings->krs_number }}</li>@endif
                     <li>Możesz wpłacić anonimowo</li>
                 </ul>
+
+                @if ($hasFundraiser)
+                    <div class="sp-fund">
+                        <h2 class="text-xl font-bold text-ink">{{ $siteSettings->support_fundraiser_title }}</h2>
+                        @if ($siteSettings->support_fundraiser_text)<p class="mt-2 text-sm leading-relaxed text-muted">{{ $siteSettings->support_fundraiser_text }}</p>@endif
+                        <div class="mt-5">
+                            <div class="mb-1 flex items-end justify-between gap-2 text-sm">
+                                <span class="text-lg font-extrabold text-ink">{{ number_format((int) $siteSettings->support_fundraiser_raised, 0, ',', ' ') }} zł</span>
+                                <span class="text-muted">z {{ number_format((int) $siteSettings->support_fundraiser_goal, 0, ',', ' ') }} zł</span>
+                            </div>
+                            <div class="h-3 w-full overflow-hidden rounded-sm bg-gray-200" role="progressbar" aria-valuenow="{{ $progress }}" aria-valuemin="0" aria-valuemax="100" aria-label="Postęp zbiórki: {{ $progress }}%">
+                                <div class="h-full bg-brand-dark" style="width: {{ $progress }}%"></div>
+                            </div>
+                            <p class="mt-1 text-right text-xs font-bold text-ink">{{ $progress }}%</p>
+                        </div>
+                        @if ($siteSettings->support_fundraiser_url)
+                            <a href="{{ $siteSettings->support_fundraiser_url }}" target="_blank" rel="noopener" class="{{ $btnPrimary }} mt-5">
+                                {{ $siteSettings->support_fundraiser_cta_label ?: 'Wesprzyj zbiórkę' }}<span class="sr-only"> (otwiera się w nowej karcie)</span>
+                            </a>
+                        @endif
+                    </div>
+                @endif
             </div>
 
-            @if ($hasFundraiser)
-                <div class="rounded-lg bg-white p-6">
-                    <h2 class="text-xl font-bold text-ink">{{ $siteSettings->support_fundraiser_title }}</h2>
-                    @if ($siteSettings->support_fundraiser_text)<p class="mt-2 text-sm leading-relaxed text-muted">{{ $siteSettings->support_fundraiser_text }}</p>@endif
-                    <div class="mt-5">
-                        <div class="mb-1 flex items-end justify-between gap-2 text-sm">
-                            <span class="text-lg font-extrabold text-ink">{{ number_format((int) $siteSettings->support_fundraiser_raised, 0, ',', ' ') }} zł</span>
-                            <span class="text-muted">z {{ number_format((int) $siteSettings->support_fundraiser_goal, 0, ',', ' ') }} zł</span>
-                        </div>
-                        <div class="h-3 w-full overflow-hidden rounded-sm bg-gray-200" role="progressbar" aria-valuenow="{{ $progress }}" aria-valuemin="0" aria-valuemax="100" aria-label="Postęp zbiórki: {{ $progress }}%">
-                            <div class="h-full bg-brand-dark" style="width: {{ $progress }}%"></div>
-                        </div>
-                        <p class="mt-1 text-right text-xs font-bold text-ink">{{ $progress }}%</p>
-                    </div>
-                    @if ($siteSettings->support_fundraiser_url)
-                        <a href="{{ $siteSettings->support_fundraiser_url }}" target="_blank" rel="noopener" class="{{ $btnPrimary }} mt-5">
-                            {{ $siteSettings->support_fundraiser_cta_label ?: 'Wesprzyj zbiórkę' }}<span class="sr-only"> (otwiera się w nowej karcie)</span>
-                        </a>
-                    @endif
-                </div>
-            @elseif ($siteSettings->supportImageUrl())
-                <img src="{{ $siteSettings->supportImageUrl() }}" alt="" class="aspect-[4/3] w-full rounded-lg object-cover">
+            @if ($heroPhoto)
+                <img src="{{ $heroPhoto }}" alt="" class="sp-photo">
+            @elseif ($isAdminView)
+                {{-- Tylko dla administratora: puste miejsce na zdjęcie z odnośnikiem do ustawień. --}}
+                <a href="{{ route('admin.ustawienia.edit', ['tab' => 'support']) }}" class="sp-photo-empty focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2">
+                    <i class="fa-regular fa-image" aria-hidden="true"></i>
+                    <span class="font-bold">Miejsce na zdjęcie</span>
+                    <span>Dodaj zdjęcie w Ustawienia → Wsparcie („Zdjęcie nagłówka”). Widzisz to pole tylko jako administrator.</span>
+                </a>
             @endif
         </div>
     </section>
