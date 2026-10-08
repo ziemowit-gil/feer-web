@@ -264,10 +264,7 @@
                     {{-- Usługa wyłącznie odpłatna: wyraźna informacja, objaśnienie i przycisk kontaktu. --}}
                     <div class="proj-note">
                         <span>Z tej usługi skorzystasz <strong>za opłatą</strong>. Cenę i zasady znajdziesz poniżej. Jeśli masz pytania, napisz do nas.</span>
-                        <span class="proj-note-links"><a href="{{ route('contact.show') }}">Napisz do nas, żeby ustalić termin <span aria-hidden="true">→</span></a>
-                            @if ($rulesPage = $siteSettings->paidInfoPage())
-                                    <a href="{{ route('page.show', $rulesPage) }}">Zasady odpłatnej działalności <span aria-hidden="true">→</span><span class="sr-only">: {{ $rulesPage->title }}</span></a>
-                                @endif</span>
+                        <span class="proj-note-links"><a href="{{ route('contact.show') }}">Napisz do nas, żeby ustalić termin <span aria-hidden="true">→</span></a></span>
                         @include('projects.partials.paid-info', ['infoProject' => $project])
                         <span class="proj-note-ico" aria-hidden="true"><i class="fa-solid fa-coins"></i></span>
                     </div>
