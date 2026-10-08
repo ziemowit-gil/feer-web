@@ -1486,6 +1486,13 @@
                         @error('bip_logo') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
 
+                    {{-- Sprawozdania w BIP (opcja) --}}
+                    <div class="flex items-start gap-3 rounded-lg border border-gray-200 bg-gray-50 p-3">
+                        <input type="hidden" name="bip_show_reports" value="0">
+                        <input type="checkbox" id="bip_show_reports" name="bip_show_reports" value="1" @checked(old('bip_show_reports', $settings->bip_show_reports ?? true)) class="mt-0.5 rounded border-gray-300 text-brand focus:ring-brand">
+                        <label for="bip_show_reports" class="text-sm leading-snug"><span class="font-bold">Pokaż w BIP sprawozdania roczne</span><span class="block text-xs text-muted">Łączy moduł „Sprawozdania” z BIP: sprawozdania merytoryczne i finansowe z plikami do pobrania pojawiają się na stronie BIP i są przeszukiwane wyszukiwarką.</span></label>
+                    </div>
+
                     {{-- Redaktor BIP — wymóg rozporządzenia MSWiA --}}
                     <div>
                         <label for="bip_editor_name" class="mb-1 block text-sm font-bold">Redaktor BIP — imię i nazwisko</label>

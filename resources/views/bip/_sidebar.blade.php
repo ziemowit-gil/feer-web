@@ -43,6 +43,13 @@
                 </a>
             </li>
         @endforeach
+        @if (! $isExternalMode && ($bipSettings->bip_show_reports ?? true) && $bipSettings->isModuleEnabled('reports'))
+            <li>
+                <a href="{{ route('bip') }}#sprawozdania" class="flex min-h-11 items-center gap-2 rounded-md px-3 py-2 font-semibold text-ink transition hover:bg-gray-100">
+                    <i class="fa-solid fa-file-invoice w-4 text-center text-[0.7rem]" aria-hidden="true"></i>Sprawozdania roczne
+                </a>
+            </li>
+        @endif
         @unless ($isExternalMode)
             <li>
                 <a href="{{ route('bip.changelog') }}" @if ($onChangelog) aria-current="page" @endif

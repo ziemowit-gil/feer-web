@@ -128,7 +128,7 @@ HTML;
                             @endauth
                         @endif
                     </div>
-                @elseif ($documents->isEmpty() && $q !== '')
+                @elseif ($documents->isEmpty() && $reports->isEmpty() && $q !== '')
                     <p class="mt-4 text-ink">Nie znaleziono dokumentów pasujących do wyszukiwanej frazy. Spróbuj innych słów lub <a href="{{ route('bip.instructions') }}" class="font-bold text-brand-dark underline">zajrzyj do instrukcji korzystania z BIP</a>.</p>
                 @elseif ($documents->isNotEmpty())
                     {{-- Tryb wbudowany: lista dokumentów --}}
@@ -207,6 +207,40 @@ HTML;
                             @endif
                         @endforeach
                     </div>
+                @endif
+
+                {{-- ── Sprawozdania roczne z modułu „Sprawozdania" (opcja w ustawieniach BIP) ── --}}
+                @if (! $isExternal && $reports->isNotEmpty())
+                    <section id="sprawozdania" class="mt-12 scroll-mt-6" aria-labelledby="bip-reports-heading">
+                        <h2 id="bip-reports-heading" class="mb-1 text-xl font-extrabold text-ink">Sprawozdania roczne</h2>
+                        <p class="mb-4 text-sm text-muted">Sprawozdania merytoryczne i finansowe Fundacji. <a href="{{ route('reports.index') }}" class="font-bold text-brand-dark underline hover:text-ink">Zobacz pełną stronę sprawozdań →</a></p>
+                        <div class="overflow-x-auto rounded-lg border border-gray-200 bg-white">
+                            <table class="w-full text-left text-sm">
+                                <caption class="sr-only">Sprawozdania roczne według lat</caption>
+                                <thead class="bg-gray-50 text-xs font-bold uppercase text-muted">
+                                    <tr><th scope="col" class="px-4 py-2.5">Rok</th><th scope="col" class="px-4 py-2.5">Sprawozdanie merytoryczne</th><th scope="col" class="px-4 py-2.5">Sprawozdanie finansowe</th></tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-100">
+                                    @foreach ($reports as $report)
+                                        <tr>
+                                            <th scope="row" class="px-4 py-3 font-bold text-ink">{{ $report->year }}</th>
+                                            @foreach (\App\Models\AnnualReport::TYPES as $typeKey => $typeLabel)
+                                                <td class="px-4 py-3">
+                                                    @if ($report->fileUrlFor($typeKey))
+                                                        <a href="{{ $report->fileUrlFor($typeKey) }}" download class="inline-flex min-h-9 items-center gap-1.5 font-bold text-brand-dark underline underline-offset-2 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                                                            <i class="fa-solid fa-file-pdf" aria-hidden="true"></i>Pobierz<span class="sr-only"> {{ mb_strtolower($typeLabel) }} {{ $report->year }} (PDF)</span>
+                                                        </a>
+                                                    @else
+                                                        <span class="text-muted">{{ $report->messageFor($typeKey) ?? '—' }}</span>
+                                                    @endif
+                                                </td>
+                                            @endforeach
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    </section>
                 @endif
 
                 {{-- ── Ostatnie zmiany w BIP (tryb wbudowany) ── --}}

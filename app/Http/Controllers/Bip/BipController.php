@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Bip;
 
 use App\Http\Controllers\Controller;
 use App\Models\Activity;
+use App\Models\AnnualReport;
 use App\Models\BipDocument;
 use App\Models\SiteSetting;
 use Illuminate\Http\Request;
@@ -26,11 +27,23 @@ class BipController extends Controller
 
         $documents = collect();
         $recentChanges = collect();
+        $reports = collect();
         $q = trim((string) $request->query('q', ''));
         $lastUpdate = null;
 
         if (! $isExternal) {
             $lastUpdate = BipDocument::published()->max('updated_at');
+
+            // Opcja: sprawozdania roczne z modułu „Sprawozdania" w BIP (wyszukiwane po roku i słowach „sprawozdanie", „finansowe", „merytoryczne").
+            if (($settings->bip_show_reports ?? true) && $settings->isModuleEnabled('reports')) {
+                $reports = AnnualReport::published()->with('media')->get();
+                if ($q !== '') {
+                    $needle = mb_strtolower($q);
+                    $reports = $reports->filter(fn ($r) => str_contains((string) $r->year, $needle)
+                        || str_contains('sprawozdanie roczne merytoryczne finansowe', $needle)
+                        || str_contains($needle, 'sprawozd'))->values();
+                }
+            }
 
             // Wyszukiwarka BIP (wymóg rozporządzenia): tytuł, streszczenie i treść dokumentów.
             $documents = BipDocument::published()
@@ -57,7 +70,7 @@ class BipController extends Controller
 
         $lastUpdate = $lastUpdate ? \Illuminate\Support\Carbon::parse($lastUpdate) : null;
 
-        return view('bip', compact('documents', 'isExternal', 'recentChanges', 'q', 'lastUpdate'));
+        return view('bip', compact('documents', 'isExternal', 'recentChanges', 'q', 'lastUpdate', 'reports'));
     }
 
     /** Instrukcja korzystania z BIP (wymóg rozporządzenia w sprawie BIP). */

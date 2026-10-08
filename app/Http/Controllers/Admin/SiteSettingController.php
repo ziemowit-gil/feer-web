@@ -228,6 +228,7 @@ class SiteSettingController extends Controller
             'paid_activity_info' => ['nullable', 'string', 'max:3000'],
             'paid_info_page_id' => ['nullable', 'integer', 'exists:pages,id'],
             'show_print_button' => ['sometimes', 'boolean'],
+            'bip_show_reports' => ['sometimes', 'boolean'],
             'projects_terms_enabled' => ['sometimes', 'boolean'],
             'projects_extras_enabled' => ['sometimes', 'boolean'],
             'projects_subprojects_enabled' => ['sometimes', 'boolean'],
@@ -536,6 +537,12 @@ class SiteSettingController extends Controller
             if (! \Illuminate\Support\Facades\Schema::hasColumn('site_settings', $newColumn)) {
                 unset($data[$newColumn]);
             }
+        }
+
+        if (Schema::hasColumn('site_settings', 'bip_show_reports')) {
+            $data['bip_show_reports'] = $request->boolean('bip_show_reports');
+        } else {
+            unset($data['bip_show_reports']);
         }
 
         if (Schema::hasColumn('site_settings', 'show_print_button')) {
