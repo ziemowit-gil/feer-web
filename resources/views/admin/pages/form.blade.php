@@ -302,6 +302,59 @@
                         @error('page_template') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
 
+                    {{-- Układ: nawigacja po podstronach działu (lista podstron obok treści) --}}
+                    @php
+                        $row = 'flex cursor-pointer items-start gap-4 py-4';
+                        $rowTitle = 'block text-[15px] font-bold text-ink';
+                        $rowHint = 'mt-0.5 block text-sm leading-snug text-muted';
+                    @endphp
+                    <div class="space-y-1 border-t border-gray-100 pt-5" x-data="{ sideNav: {{ old('show_side_nav', $page->show_side_nav ?? true) ? 'true' : 'false' }} }">
+                        <h3 class="text-xs font-bold uppercase tracking-widest text-muted">Nawigacja po podstronach</h3>
+                            <div>
+                                <label class="{{ $row }}">
+                                    <input type="hidden" name="show_side_nav" value="0">
+                                    <input type="checkbox" name="show_side_nav" value="1" {{ old('show_side_nav', $page->show_side_nav ?? true) ? 'checked' : '' }} @change="sideNav = $event.target.checked">
+                                    <span><span class="{{ $rowTitle }}">Nawigacja po podstronach działu</span><span class="{{ $rowHint }}">Lista podstron w tym dziale. Wyłącz dla stron bez rozbudowanej struktury. Styl ustawiony na stronie głównej działu obowiązuje dla wszystkich jej podstron.</span></span>
+                                </label>
+                                <div x-show="sideNav" x-cloak class="mb-4 ml-[3.75rem]">
+                                @php
+                                    $sideNavStyle = old('side_nav_style', $page->side_nav_style ?? 'sidebar');
+                                    if (! array_key_exists($sideNavStyle, \App\Models\Page::SIDE_NAV_STYLES)) {
+                                        $sideNavStyle = 'sidebar';
+                                    }
+                                    $sideNavIcons = ['sidebar' => 'fa-table-columns', 'tabs' => 'fa-window-maximize', 'tree' => 'fa-sitemap', 'tiles' => 'fa-table-cells-large'];
+                                    $sideNavHints = [
+                                        'sidebar' => 'Lista podstron tego poziomu w prawej kolumnie (z jedną zagnieżdżoną gałęzią).',
+                                        'tabs'    => 'Poziomy pasek zakładek nad treścią — jeden poziom podstron.',
+                                        'tiles'   => 'Podstrony działu jako duże, kolorowe kafelki pod treścią strony (jak w serwisach urzędowych). Na samych podstronach działa boczna lista rodzeństwa.',
+                                        'tree'    => 'Lewa kolumna z całym działem: ścieżka „Jesteś tu", wszystkie poziomy podstron, zwijane gałęzie z licznikiem — jak drzewo stron w TYPO3.',
+                                    ];
+                                @endphp
+                                {{-- Prawdziwe pola radio zostają (ukryte) jako nośnik wartości; wybór odbywa się w oknie dialogowym. --}}
+                                <span class="sr-only">
+                                    @foreach (\App\Models\Page::SIDE_NAV_STYLES as $styleKey => $styleLabel)
+                                        <input type="radio" name="side_nav_style" value="{{ $styleKey }}" {{ $sideNavStyle === $styleKey ? 'checked' : '' }} tabindex="-1" aria-hidden="true">
+                                    @endforeach
+                                </span>
+                                @php
+                                    $navCards = [];
+                                    foreach (\App\Models\Page::SIDE_NAV_STYLES as $styleKey => $styleLabel) {
+                                        $navCards[$styleKey] = ['name' => trim(\Illuminate\Support\Str::before($styleLabel, ' (')), 'desc' => $sideNavHints[$styleKey], 'icon' => $sideNavIcons[$styleKey]];
+                                    }
+                                @endphp
+                                <span class="mt-3 block" @click.stop.prevent>
+                                    @include('admin.partials.modal-picker', [
+                                        'pickerId' => 'nav-style-picker', 'title' => 'Styl nawigacji po podstronach', 'options' => $navCards,
+                                        'current' => $sideNavStyle, 'carrier' => ['radio' => 'side_nav_style'],
+                                    ])
+                                </span>
+                                    @foreach (\App\Models\Page::SIDE_NAV_STYLES as $styleKey => $styleLabel)
+                                        <span id="side-nav-hint-{{ $styleKey }}" class="sr-only">{{ $sideNavHints[$styleKey] }}</span>
+                                    @endforeach
+                                </div>
+                            </div>
+                    </div>
+
                     @include('admin.pages.partials.types.event')
 
                     @include('admin.pages.partials.types.schedule')
@@ -382,53 +435,6 @@
                                 <input type="checkbox" name="show_in_menu" value="1" {{ old('show_in_menu', $page->show_in_menu ?? true) ? 'checked' : '' }}>
                                 <span><span class="{{ $rowTitle }}">Dodaj do menu</span><span class="{{ $rowHint }}">Tylko strony główne (bez rodzica i projektu) trafiają do nawigacji.</span></span>
                             </label>
-                            <div>
-                                <label class="{{ $row }}">
-                                    <input type="hidden" name="show_side_nav" value="0">
-                                    <input type="checkbox" name="show_side_nav" value="1" {{ old('show_side_nav', $page->show_side_nav ?? true) ? 'checked' : '' }} @change="sideNav = $event.target.checked">
-                                    <span><span class="{{ $rowTitle }}">Nawigacja po podstronach działu</span><span class="{{ $rowHint }}">Lista podstron w tym dziale. Wyłącz dla stron bez rozbudowanej struktury. Styl ustawiony na stronie głównej działu obowiązuje dla wszystkich jej podstron.</span></span>
-                                </label>
-                                <div x-show="sideNav" x-cloak class="mb-4 ml-[3.75rem]">
-                                @php
-                                    $sideNavStyle = old('side_nav_style', $page->side_nav_style ?? 'sidebar');
-                                    if (! array_key_exists($sideNavStyle, \App\Models\Page::SIDE_NAV_STYLES)) {
-                                        $sideNavStyle = 'sidebar';
-                                    }
-                                    $sideNavIcons = ['sidebar' => 'fa-table-columns', 'tabs' => 'fa-window-maximize', 'tree' => 'fa-sitemap', 'tiles' => 'fa-table-cells-large'];
-                                    $sideNavHints = [
-                                        'sidebar' => 'Lista podstron tego poziomu w prawej kolumnie (z jedną zagnieżdżoną gałęzią).',
-                                        'tabs'    => 'Poziomy pasek zakładek nad treścią — jeden poziom podstron.',
-                                        'tiles'   => 'Podstrony działu jako duże, kolorowe kafelki pod treścią strony (jak w serwisach urzędowych). Na samych podstronach działa boczna lista rodzeństwa.',
-                                        'tree'    => 'Lewa kolumna z całym działem: ścieżka „Jesteś tu", wszystkie poziomy podstron, zwijane gałęzie z licznikiem — jak drzewo stron w TYPO3.',
-                                    ];
-                                @endphp
-                                {{-- Prawdziwe pola radio zostają (ukryte) jako nośnik wartości; wybór odbywa się w oknie dialogowym. --}}
-                                <span class="sr-only">
-                                    @foreach (\App\Models\Page::SIDE_NAV_STYLES as $styleKey => $styleLabel)
-                                        <input type="radio" name="side_nav_style" value="{{ $styleKey }}" {{ $sideNavStyle === $styleKey ? 'checked' : '' }} tabindex="-1" aria-hidden="true">
-                                    @endforeach
-                                </span>
-                                @php
-                                    $navCards = [];
-                                    foreach (\App\Models\Page::SIDE_NAV_STYLES as $styleKey => $styleLabel) {
-                                        $navCards[$styleKey] = ['name' => trim(\Illuminate\Support\Str::before($styleLabel, ' (')), 'desc' => $sideNavHints[$styleKey], 'icon' => $sideNavIcons[$styleKey]];
-                                    }
-                                @endphp
-                                <span class="mt-3 block" @click.stop.prevent>
-                                    @include('admin.partials.modal-picker', [
-                                        'pickerId' => 'nav-style-picker', 'title' => 'Styl nawigacji po podstronach', 'options' => $navCards,
-                                        'current' => $sideNavStyle, 'carrier' => ['radio' => 'side_nav_style'],
-                                    ])
-                                </span>
-                                    @include('admin.partials.modal-picker', [
-                                        'pickerId' => 'nav-style-picker', 'title' => 'Styl nawigacji po podstronach', 'options' => $navCards,
-                                        'current' => $sideNavStyle, 'carrier' => ['radio' => 'side_nav_style'],
-                                    ])
-                                    @foreach (\App\Models\Page::SIDE_NAV_STYLES as $styleKey => $styleLabel)
-                                        <span id="side-nav-hint-{{ $styleKey }}" class="sr-only">{{ $sideNavHints[$styleKey] }}</span>
-                                    @endforeach
-                                </div>
-                            </div>
                         </div>
                     </section>
 
