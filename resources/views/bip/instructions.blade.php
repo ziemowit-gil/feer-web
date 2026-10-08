@@ -5,11 +5,11 @@
 
 @section('content')
     @php $feer = ($siteSettings->site_template ?? 'default') === 'feer'; @endphp
-    <div class="mx-auto max-w-5xl px-4 py-8">
-        <div class="grid gap-8 lg:grid-cols-[220px_1fr]">
+    @include('bip._head', ['bipTitle' => 'Instrukcja korzystania z BIP', 'bipSub' => null])
+    <div class="bip-wrap">
             <aside class="{{ $feer ? '' : 'lg:border-r lg:border-gray-100 lg:pr-6' }}">@include('bip._sidebar')</aside>
             <article aria-labelledby="bip-instr-h" class="prose max-w-none text-ink [&_h2]:text-ink [&_a]:text-brand-dark [&_a:hover]:text-ink">
-                <h1 id="bip-instr-h" class="!mb-2 text-2xl font-extrabold text-ink sm:text-3xl">Instrukcja korzystania z BIP</h1>
+                <h1 id="bip-instr-h" class="!mb-2 text-2xl font-extrabold text-ink sm:text-3xl">Jak korzystać z BIP</h1>
                 <p class="lead">Biuletyn Informacji Publicznej to strona, na której publikujemy dokumenty i informacje o działalności {{ $siteSettings->siteNameGenitive() }}. Poniżej wyjaśniamy prostym językiem, jak z niej korzystać.</p>
 
                 <h2>Jak się poruszać po BIP</h2>
@@ -43,6 +43,5 @@
                 <h2>Główna strona BIP</h2>
                 <p>Ogólnopolski portal Biuletynu Informacji Publicznej: <a href="{{ $siteSettings->bip_gov_url ?: 'https://www.gov.pl/web/bip' }}" target="_blank" rel="noopener">gov.pl/bip<span class="sr-only"> (otwiera się w nowej karcie)</span></a>.</p>
             </article>
-        </div>
     </div>
 @endsection

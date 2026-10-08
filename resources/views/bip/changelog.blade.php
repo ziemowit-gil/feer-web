@@ -7,34 +7,10 @@
     @php $feer = ($siteSettings->site_template ?? 'default') === 'feer'; @endphp
     @php $bipLogo = $siteSettings->bipLogoUrl() ?: asset('img/bip-logo.svg'); @endphp
 
-    {{-- ── Nagłówek BIP ── --}}
-    <div class="{{ $feer ? '' : 'border-b border-gray-200 bg-white' }}">
-        <div class="mx-auto max-w-5xl px-4 py-5">
-            <div class="flex flex-wrap items-center justify-between gap-4">
-                <div class="flex items-center gap-4">
-                    <img src="{{ $bipLogo }}" alt="Logo Biuletynu Informacji Publicznej" class="h-12 w-auto flex-none object-contain">
-                    <div>
-                        <p class="text-xs text-muted">
-                            <a href="{{ route('bip') }}" class="hover:text-brand-dark hover:underline focus-visible:outline-2 focus-visible:outline-brand">
-                                Biuletyn Informacji Publicznej
-                            </a>
-                            <span class="mx-1" aria-hidden="true">›</span>
-                        </p>
-                        <p class="mt-0.5 font-semibold text-ink">Rejestr zmian</p>
-                    </div>
-                </div>
-                <a href="{{ route('home') }}"
-                    class="inline-flex items-center gap-1.5 rounded-full border border-gray-300 bg-white px-3 py-1.5 text-xs font-bold text-muted transition hover:border-brand hover:text-brand-dark focus-visible:outline-2 focus-visible:outline-brand">
-                    <i class="fa-solid fa-arrow-left text-[0.65rem]" aria-hidden="true"></i>
-                    Strona główna organizacji
-                </a>
-            </div>
-        </div>
-    </div>
+    @include('bip._head', ['bipTitle' => 'Rejestr zmian', 'bipSub' => 'Historia wszystkich zmian dokumentów'])
 
     {{-- ── Układ: boczne menu + treść ── --}}
-    <div class="mx-auto max-w-5xl px-4 py-8">
-        <div class="grid gap-8 lg:grid-cols-[220px_1fr]">
+    <div class="bip-wrap">
 
             {{-- ── Boczne menu ── --}}
             <aside class="{{ $feer ? '' : 'lg:border-r lg:border-gray-100 lg:pr-6' }}">
@@ -123,6 +99,5 @@
                 </div>
             </div>
 
-        </div>
     </div>
 @endsection
