@@ -73,14 +73,6 @@
                 <a href="{{ route('categories.show', $project->category) }}" class="inline-block text-xs font-bold uppercase tracking-widest text-brand hover:text-brand-dark">
                     {{ $project->category->name }}
                 </a>
-                @if ($project->parent && $project->parent->is_published)
-                    {{-- Wyróżnienie: to wersja (podprojekt) działania nadrzędnego — obwiedziona plakietka z ikoną i linkiem. --}}
-                    <p class="proj-part mt-3">
-                        <span class="proj-part-ico" aria-hidden="true"><i class="fa-solid fa-code-branch"></i></span>
-                        <span>Wersja <strong>{{ $project->is_paid ? 'odpłatna' : 'bezpłatna' }}</strong> działania:
-                            <a href="{{ route('projects.show', $project->parent) }}">{{ $project->parent->title }}</a></span>
-                    </p>
-                @endif
                 <h1 class="mt-3 text-3xl font-extrabold leading-tight tracking-tight text-ink sm:text-5xl" @if ($canInlineEdit) data-inline-field="title" data-inline-kind="text" @endif>{{ $project->title }}</h1>
                 @if ($project->excerpt)
                     <p class="mt-4 max-w-2xl text-lg leading-relaxed text-ink/80">{{ $project->excerpt }}</p>
