@@ -64,7 +64,7 @@
                                @else
                                    style="border: 2px solid {{ $safe }}; color: #1d1d1a"
                                @endif>
-                                <i class="{{ $iconClass }} flex-none text-center {{ $single ? 'w-12 text-5xl' : ($strip ? 'w-6 text-xl' : 'w-7 text-2xl') }}" @unless ($filled) style="color: {{ $safe }}" @endunless aria-hidden="true"></i>
+                                {!! icon_html($qa->icon, 'flex-none text-center '.($single ? 'w-12 text-5xl' : ($strip ? 'w-6 text-xl' : 'w-7 text-2xl')), $filled ? '' : 'color: '.$safe) !!}
                                 <span class="min-w-0 flex-1">
                                     <span class="block font-bold leading-snug {{ $single ? 'text-2xl md:text-3xl' : ($strip ? 'text-base' : 'text-lg') }}">{{ $qa->label }}</span>
                                     @if (! $strip && ($qa->description ?? null))

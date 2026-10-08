@@ -11,6 +11,7 @@
 // 'class' → "bi bi-house" (pola, które wstawiają całą klasę <i class="…">).
 
 const ICONS_URL = document.querySelector('meta[name="admin-icons-url"]')?.content || '';
+const MATERIAL_URL = document.querySelector('meta[name="admin-material-icons-url"]')?.content || '';
 
 let iconsPromise = null;
 function loadIcons() {
@@ -20,6 +21,16 @@ function loadIcons() {
             .catch((e) => { iconsPromise = null; throw e; });
     }
     return iconsPromise;
+}
+
+let materialPromise = null;
+function loadMaterial() {
+    if (! materialPromise) {
+        materialPromise = fetch(MATERIAL_URL, { headers: { Accept: 'application/json' } })
+            .then((r) => (r.ok ? r.json() : Promise.reject(new Error('HTTP ' + r.status))))
+            .catch((e) => { materialPromise = null; throw e; });
+    }
+    return materialPromise;
 }
 
 function brandColors() {
@@ -43,6 +54,7 @@ function iconClassFor(value) {
     const v = (value || '').trim();
     if (! v) return '';
     if (/(^|\s)fa[srlb]?(-|\s)/.test(v) || v.includes('fa-solid') || v.includes('fa-regular') || v.includes('fa-brands')) return v;
+    if (/^mi-[a-z0-9_]+$/.test(v)) return v;
     if (v.startsWith('bi ')) return v;
     if (v.startsWith('bi-')) return 'bi ' + v;
     return 'bi bi-' + v;
@@ -137,21 +149,25 @@ function enhanceIcon(input) {
 
     const refresh = () => {
         const cls = iconClassFor(input.value);
-        preview.innerHTML = cls ? '<i class="' + cls.replace(/"/g, '') + '"></i>' : '<i class="bi bi-image-alt picker-preview-empty"></i>';
+        preview.innerHTML = cls.startsWith('mi-')
+            ? '<span class="material-symbols-outlined mi-glyph">' + cls.slice(3) + '</span>'
+            : (cls ? '<i class="' + cls.replace(/"/g, '') + '"></i>' : '<i class="bi bi-image-alt picker-preview-empty"></i>');
     };
     input.addEventListener('input', refresh);
     refresh();
 
-    let pop = null, search = null, grid = null, hint = null, icons = [];
+    let pop = null, search = null, grid = null, hint = null, icons = [], source = 'bi', tabs = {};
 
     const render = () => {
-        const q = search.value.trim().toLowerCase().replace(/^bi[ -]/, '');
+        const q = search.value.trim().toLowerCase().replace(/^(bi|mi)[ -]/, '');
         const found = q ? icons.filter((n) => n.includes(q)) : icons;
         const shown = found.slice(0, 160);
         grid.innerHTML = '';
         for (const name of shown) {
-            const b = el('button', { type: 'button', class: 'picker-icon', 'aria-label': name, title: name },
-                [el('i', { class: 'bi bi-' + name, 'aria-hidden': 'true' })]);
+            const glyph = source === 'mi'
+                ? el('span', { class: 'material-symbols-outlined mi-glyph', 'aria-hidden': 'true', text: name })
+                : el('i', { class: 'bi bi-' + name, 'aria-hidden': 'true' });
+            const b = el('button', { type: 'button', class: 'picker-icon', 'aria-label': name.replace(/_/g, ' '), title: name }, [glyph]);
             b.addEventListener('click', () => choose(name));
             grid.appendChild(b);
         }
@@ -161,8 +177,21 @@ function enhanceIcon(input) {
     };
 
     const choose = (name) => {
-        setValue(input, format === 'class' ? 'bi bi-' + name : 'bi-' + name);
+        setValue(input, source === 'mi' ? 'mi-' + name : (format === 'class' ? 'bi bi-' + name : 'bi-' + name));
         pop.close(true);
+    };
+
+    const switchSource = async (key) => {
+        source = key;
+        for (const [k, t] of Object.entries(tabs)) t.setAttribute('aria-pressed', k === key ? 'true' : 'false');
+        hint.textContent = 'Ładowanie listy ikon…';
+        try {
+            icons = key === 'mi' ? await loadMaterial() : await loadIcons();
+            render();
+        } catch (e) {
+            hint.textContent = 'Nie udało się pobrać listy ikon. Wpisz nazwę ręcznie (np. ' + (key === 'mi' ? 'mi-home' : 'bi-house') + ').';
+        }
+        search.focus();
     };
 
     const build = () => {
@@ -176,7 +205,14 @@ function enhanceIcon(input) {
             clear,
             el('a', { href: 'https://icons.getbootstrap.com/', target: '_blank', rel: 'noopener', class: 'picker-link', text: 'Pełna lista Bootstrap Icons' }),
         ]);
-        pop.el.append(search, hint, grid, foot);
+        const tabBar = el('div', { class: 'picker-tabs', role: 'group', 'aria-label': 'Źródło ikon' });
+        for (const [key, label] of [['bi', 'Bootstrap Icons'], ['mi', 'Material Symbols']]) {
+            const t = el('button', { type: 'button', class: 'picker-tab', 'aria-pressed': key === source ? 'true' : 'false', text: label });
+            t.addEventListener('click', () => switchSource(key));
+            tabs[key] = t;
+            tabBar.appendChild(t);
+        }
+        pop.el.append(tabBar, search, hint, grid, foot);
         search.addEventListener('input', render);
         search.addEventListener('keydown', (e) => {
             if (e.key === 'Enter') { e.preventDefault(); grid.querySelector('.picker-icon')?.click(); }
@@ -199,8 +235,11 @@ function enhanceIcon(input) {
         hint.textContent = 'Ładowanie listy ikon…';
         search.focus();
         try {
-            icons = await loadIcons();
-            const current = iconClassFor(input.value).replace(/^bi bi-/, '');
+            const isMi = iconClassFor(input.value).startsWith('mi-');
+            source = isMi ? 'mi' : 'bi';
+            for (const [k, t] of Object.entries(tabs)) t.setAttribute('aria-pressed', k === source ? 'true' : 'false');
+            icons = isMi ? await loadMaterial() : await loadIcons();
+            const current = iconClassFor(input.value).replace(/^bi bi-/, '').replace(/^mi-/, '');
             search.value = current && ! current.startsWith('fa') ? current : '';
             render();
         } catch (e) {

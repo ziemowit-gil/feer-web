@@ -28,7 +28,7 @@
         <a href="{{ $item->url }}" x-ref="linkTrigger"
             @if ($item->isCurrent()) aria-current="page" @endif
             class="flex items-center gap-2 uppercase transition-colors {{ $hoverTxtCls }} focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-current {{ $mobile ? 'py-2' : 'pt-2' }}">
-            @if (($iconsNav ?? false) && $item->icon)<i class="bi {{ $item->icon }} nav-item-icon" aria-hidden="true"></i>@endif
+            @if (($iconsNav ?? false) && $item->icon){!! icon_html($item->icon, 'nav-item-icon') !!}@endif
             <span>{{ $item->label }}</span>
         </a>
         {{-- Strzałka rozwija/zamyka podmenu (działa też na mobile). --}}

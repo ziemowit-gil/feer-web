@@ -23,17 +23,17 @@
         </div>
 
         <div>
-            <label for="icon" class="mb-1 block text-sm font-bold">Ikona (Bootstrap Icons)</label>
+            <label for="icon" class="mb-1 block text-sm font-bold">Ikona (Bootstrap Icons lub Material Symbols)</label>
             <div class="flex items-center gap-3">
                 <span id="icon-preview" class="flex h-10 w-10 flex-none items-center justify-center rounded-full bg-brand-light text-lg text-brand">
-                    <i class="bi {{ old('icon', $quickAction->icon) ?: 'bi-lightning' }}" id="icon-preview-glyph"></i>
+                    <span id="icon-preview-glyph">{!! icon_html(old('icon', $quickAction->icon), '', '', 'bi-lightning') !!}</span>
                 </span>
                 <input type="text" id="icon" name="icon" value="{{ old('icon', $quickAction->icon) }}" placeholder="np. bi-rocket-takeoff" data-icon-picker data-icon-format="name" required
-                    oninput="document.getElementById('icon-preview-glyph').className = 'bi ' + (this.value || 'bi-lightning')"
+                    oninput="(function (v, box) { v = (v || '').trim() || 'bi-lightning'; box.innerHTML = /^mi-[a-z0-9_]+$/.test(v) ? '<span class=&quot;material-symbols-outlined mi-glyph&quot;>' + v.slice(3) + '</span>' : '<i class=&quot;' + (/(^|\s)fa[srlb]?(-|\s)/.test(v) || v.startsWith('bi ') ? v : 'bi ' + v) + '&quot;></i>'; })(this.value, document.getElementById('icon-preview-glyph'))"
                     class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
             </div>
             <p class="mt-1 text-xs text-muted">
-                Nazwę ikony znajdziesz na <a href="https://icons.getbootstrap.com" target="_blank" rel="noopener" class="text-brand hover:text-brand-dark">icons.getbootstrap.com</a> (np. „bi-heart").
+                Nazwę ikony znajdziesz na <a href="https://icons.getbootstrap.com" target="_blank" rel="noopener" class="text-brand hover:text-brand-dark">icons.getbootstrap.com</a> (np. „bi-heart") albo w zakładce „Material Symbols" selektora (np. „mi-home").
             </p>
             @error('icon') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
         </div>

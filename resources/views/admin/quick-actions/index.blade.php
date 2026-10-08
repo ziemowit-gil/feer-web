@@ -39,7 +39,7 @@
                     <div class="flex cursor-grab items-center gap-3 rounded-t-md px-4"
                         :class="t.strip ? 'min-h-14 py-2' : 'min-h-20 py-4'"
                         :style="t.neg ? ('background:' + hex(t) + ';color:#fff') : ('border:2px solid ' + hex(t) + ';border-bottom:0;background:#fff;color:#1d1d1a')">
-                        <i :class="iconClass(t)" class="w-6 flex-none text-center text-xl" aria-hidden="true"></i>
+                        <span x-html="iconHtml(t)" class="w-6 flex-none text-center text-xl" aria-hidden="true"></span>
                         <span class="min-w-0 flex-1 font-bold leading-snug" x-text="t.label"></span>
                         <span aria-hidden="true">→</span>
                     </div>
@@ -72,7 +72,7 @@
                 tiles: initial, dragFrom: null, dragOver: null, dirty: false, saving: false, status: '', message: '',
                 named: { blue: '#1e6dff', dark: '#1d1d1a', green: '#166534', purple: '#1e6dff', orange: '#ea8f00', red: '#b91c1c' },
                 hex(t) { return /^#[0-9a-f]{6}$/i.test(t.color || '') ? t.color : (this.named[t.color] || '#1e6dff'); },
-                iconClass(t) { return (t.icon || '').includes('fa-') || (t.icon || '').startsWith('bi ') ? t.icon : 'bi ' + (t.icon || 'bi-lightning'); },
+                iconHtml(t) { const v = (t.icon || '').trim() || 'bi-lightning'; if (/^mi-[a-z0-9_]+$/.test(v)) return '<span class="material-symbols-outlined mi-glyph">' + v.slice(3) + '</span>'; const c = (/(^|\s)fa[srlb]?(-|\s)/.test(v) || v.startsWith('bi ')) ? v : 'bi ' + v; return '<i class="' + c.replace(/"/g, '') + '"></i>'; },
                 touch() { this.dirty = true; this.message = 'Niezapisane zmiany'; this.status = ''; },
                 move(i, d) { const j = i + d; if (j < 0 || j >= this.tiles.length) return; const [x] = this.tiles.splice(i, 1); this.tiles.splice(j, 0, x); this.touch(); },
                 drop(i) { if (this.dragFrom === null || this.dragFrom === i) return; const [x] = this.tiles.splice(this.dragFrom, 1); this.tiles.splice(i, 0, x); this.dragFrom = null; this.dragOver = null; this.touch(); },
@@ -113,7 +113,7 @@
                     <tr>
                         <td class="px-4 py-3">
                             <span class="flex h-8 w-8 items-center justify-center rounded-full bg-brand-light text-brand">
-                                <i class="bi {{ $action->icon }}"></i>
+                                {!! icon_html($action->icon, '') !!}
                             </span>
                         </td>
                         <td class="px-4 py-3 font-medium">{{ $action->label }}</td>

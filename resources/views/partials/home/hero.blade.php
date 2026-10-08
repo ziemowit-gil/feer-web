@@ -124,7 +124,7 @@
                 @if ($link->icon)
                     <span class="flex h-12 w-12 flex-none items-center justify-center rounded-full text-2xl"
                         style="background-color: {{ $tileHex }}; color: {{ $qa['text'] }};">
-                        <i class="bi {{ $link->icon }}" aria-hidden="true"></i>
+                        {!! icon_html($link->icon, '') !!}
                     </span>
                 @endif
                 <span class="text-[11px] font-bold uppercase leading-snug tracking-wide">{{ $link->label }}</span>
@@ -144,7 +144,7 @@
             class="flex flex-1 flex-col items-center justify-center gap-2 px-3 py-3 text-center transition-[filter] duration-150 hover:brightness-110 focus-visible:outline-2 focus-visible:outline-offset-[-2px]"
             style="background-color: {{ $tileHex }}; color: {{ $qa['text'] }}; outline-color: {{ $qa['text'] }};">
             @if ($link->icon)
-                <i class="bi {{ $link->icon }} text-xl" aria-hidden="true"></i>
+                {!! icon_html($link->icon, 'text-xl') !!}
             @endif
             <span class="text-xs font-bold uppercase leading-snug tracking-wide">{{ $link->label }}</span>
         </a>

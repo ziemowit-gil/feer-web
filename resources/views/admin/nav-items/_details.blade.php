@@ -66,7 +66,7 @@
             <dd class="mt-0.5">@if ($parent)<a href="{{ route('admin.pozycje-menu.index', ['location' => $location, 'pozycja' => $parent->id]) }}" class="text-brand hover:underline">{{ $parent->label }}</a>@else<span class="text-muted">— pasek menu</span>@endif</dd></div>
         <div><dt class="text-xs font-bold uppercase tracking-wide text-muted">Kolejność</dt><dd class="mt-0.5">{{ $pos !== false ? $pos + 1 : '—' }} z {{ $siblings->count() }}</dd></div>
         @if ($item->module)<div><dt class="text-xs font-bold uppercase tracking-wide text-muted">Widoczna gdy moduł włączony</dt><dd class="mt-0.5">{{ \App\Models\SiteSetting::MODULES[$item->module] ?? $item->module }}</dd></div>@endif
-        @if ($item->icon)<div><dt class="text-xs font-bold uppercase tracking-wide text-muted">Ikona</dt><dd class="mt-0.5"><i class="bi {{ $item->icon }}" aria-hidden="true"></i> <span class="font-mono text-xs">{{ $item->icon }}</span></dd></div>@endif
+        @if ($item->icon)<div><dt class="text-xs font-bold uppercase tracking-wide text-muted">Ikona</dt><dd class="mt-0.5">{!! icon_html($item->icon, '') !!} <span class="font-mono text-xs">{{ $item->icon }}</span></dd></div>@endif
         @if ($item->description)<div style="grid-column: 1 / -1"><dt class="text-xs font-bold uppercase tracking-wide text-muted">Opis w mega menu</dt><dd class="mt-0.5">{{ $item->description }}</dd></div>@endif
         @if ($item->is_mega && ! $parent)<div><dt class="text-xs font-bold uppercase tracking-wide text-muted">Wielkość pozycji</dt><dd class="mt-0.5">{{ \App\Models\NavItem::MEGA_SIZES[$item->megaSize()] ?? $item->megaSize() }}</dd></div>@endif
     </dl>

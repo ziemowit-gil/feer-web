@@ -88,7 +88,7 @@
                         class="flex h-full items-center gap-4 rounded-xl px-5 py-4 shadow-sm transition hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-current"
                         style="background-color: {{ $bg }}; color: {{ $txt }};">
                         <span class="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full" style="background: {{ $chip }};">
-                            <i class="{{ $iconClass }} text-lg" aria-hidden="true"></i>
+                            {!! icon_html($tIcon, 'text-lg') !!}
                         </span>
                         <span class="text-sm font-bold leading-tight">{{ $tLabel }}</span>
                         <i class="fa-solid fa-chevron-right ml-auto text-xs opacity-70" aria-hidden="true"></i>
@@ -103,7 +103,7 @@
                             <span class="pointer-events-none absolute inset-0" style="background-color: rgba(29,29,26,.62)" aria-hidden="true"></span>
                         @endif
                         <span class="relative inline-flex h-11 w-11 items-center justify-center rounded-xl" style="background: {{ filled($tImage) ? 'rgba(255,255,255,.2)' : $chip }};">
-                            <i class="{{ $iconClass }} text-xl" aria-hidden="true"></i>
+                            {!! icon_html($tIcon, 'text-xl') !!}
                         </span>
                         <span class="relative block text-lg font-bold leading-tight">{{ $tLabel }}</span>
                         @if (filled($tDesc))

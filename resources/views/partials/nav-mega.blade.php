@@ -114,7 +114,7 @@
             <a href="{{ $targetUrl }}" x-ref="megaTrigger"
                @if ($item->isCurrent() && ! $isProjects) aria-current="page" @endif
                class="flex items-center gap-2 pt-2 uppercase transition-colors {{ $hoverTxtCls }} focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-current">
-                @if ($navIcons && $item->icon)<i class="bi {{ $item->icon }} nav-item-icon" aria-hidden="true"></i>@endif
+                @if ($navIcons && $item->icon){!! icon_html($item->icon, 'nav-item-icon') !!}@endif
                 <span>{{ $item->label }}</span>
             </a>
             <button type="button" @click="clearTimeout(timer); open = ! open"
@@ -126,7 +126,7 @@
             <button type="button" x-ref="megaTrigger" @click="clearTimeout(timer); open = ! open"
                     :aria-expanded="open.toString()" :aria-controls="$id('mega')"
                     class="flex items-center gap-2 pt-2 uppercase transition-colors {{ $hoverTxtCls }} focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-current">
-                @if ($navIcons && $item->icon)<i class="bi {{ $item->icon }} nav-item-icon" aria-hidden="true"></i>@endif
+                @if ($navIcons && $item->icon){!! icon_html($item->icon, 'nav-item-icon') !!}@endif
                 <span>{{ $item->label }}</span>
                 <i class="fa-solid fa-chevron-down text-[10px] transition-transform" :class="open ? 'rotate-180' : ''" aria-hidden="true"></i>
             </button>
@@ -216,12 +216,12 @@
                                 @if ($h['url'])
                                     <a id="{{ $hid }}" href="{{ $h['url'] }}" @if ($h['current']) aria-current="page" @endif
                                        class="mb-2 flex items-center gap-2 rounded-md px-2 py-1.5 font-bold {{ $sz['cat'] }} hover:bg-gray-50 hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand {{ $h['current'] ? 'text-brand' : 'text-ink' }}">
-                                        <i class="{{ $h['icon'] ? 'bi ' . $h['icon'] : 'fa-solid fa-folder-open' }} text-brand" aria-hidden="true"></i>
+                                        {!! icon_html($h['icon'], 'text-brand', '', 'fa-solid fa-folder-open') !!}
                                         <span>{{ $h['label'] }}</span>
                                     </a>
                                 @else
                                     <p id="{{ $hid }}" class="mb-2 flex items-center gap-2 px-2 py-1.5 font-bold text-ink {{ $sz['cat'] }}">
-                                        <i class="{{ $h['icon'] ? 'bi ' . $h['icon'] : 'fa-solid fa-folder-open' }} text-brand" aria-hidden="true"></i>
+                                        {!! icon_html($h['icon'], 'text-brand', '', 'fa-solid fa-folder-open') !!}
                                         <span>{{ $h['label'] }}</span>
                                     </p>
                                 @endif
@@ -235,7 +235,7 @@
                                         <li>
                                             <a href="{{ $url }}" @if ($current) aria-current="page" @endif
                                                class="group/l flex items-start gap-2 rounded-md px-2 py-1.5 {{ $sz['proj'] }} hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand {{ $current ? 'font-semibold text-brand' : 'text-ink' }}">
-                                                @if ($icon)<i class="bi {{ $icon }} mt-0.5 flex-none text-xs text-brand" aria-hidden="true"></i>@endif
+                                                @if ($icon){!! icon_html($icon, 'mt-0.5 flex-none text-xs text-brand') !!}@endif
                                                 <span class="min-w-0">
                                                     <span class="block group-hover/l:text-brand">{{ $label }}</span>
                                                     @if ($description && $sz['desc'])
@@ -257,7 +257,7 @@
                             <a href="{{ $url }}" @if ($current) aria-current="page" @endif
                                class="group flex items-start rounded-lg transition hover:bg-gray-50 focus-visible:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand {{ $sz['row'] }} {{ $current ? 'bg-brand-light' : '' }}">
                                 <span class="mt-0.5 flex flex-none items-center justify-center rounded-md {{ $sz['icon'] }} {{ $current ? 'bg-brand text-white' : 'bg-brand-light text-brand' }}" aria-hidden="true">
-                                    <i class="{{ $icon ? 'bi ' . $icon : 'fa-solid fa-arrow-right' }}"></i>
+                                    {!! icon_html($icon, '', '', 'fa-solid fa-arrow-right') !!}
                                 </span>
                                 <span class="min-w-0 self-center">
                                     <span class="block font-bold {{ $sz['title'] }} {{ $current ? 'text-brand' : 'text-ink group-hover:text-brand' }}">{{ $label }}</span>

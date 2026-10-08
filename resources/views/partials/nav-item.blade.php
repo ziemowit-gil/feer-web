@@ -49,7 +49,7 @@
             <a href="{{ $item->url }}"
                 @if ($item->isCurrent()) aria-current="page" @endif
                 class="flex items-center gap-2 border-b-2 py-2 transition-colors {{ $hoverCls }} focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-current {{ $activeCls }} {{ $mobile ? '' : 'pb-1' }}">
-                @if (($iconsNav ?? false) && $item->icon)<i class="bi {{ $item->icon }} nav-item-icon" aria-hidden="true"></i>@endif
+                @if (($iconsNav ?? false) && $item->icon){!! icon_html($item->icon, 'nav-item-icon') !!}@endif
                 <span>{{ $item->label }}</span>
             </a>
         @endif
