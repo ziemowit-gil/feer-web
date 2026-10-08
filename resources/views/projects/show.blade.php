@@ -169,6 +169,16 @@
             .proj-fund-budget { margin: 0 0 .5rem; font-size: .95rem; } .proj-fund-notice { margin: 0; padding-top: .6rem; border-top: 1px solid #e5e7eb; font-size: .85rem; line-height: 1.5; color: #1d1d1a; }
             .proj-status { display: inline-flex; align-items: center; border-radius: 9999px; padding: .15rem .75rem; font-size: .8rem; font-weight: 800; border: 2px solid #1d1d1a; background: #fff; color: #1d1d1a; }
             .proj-status.is-active { border-color: var(--color-brand); color: var(--color-brand); } .proj-status.is-completed { border-color: #166534; color: #166534; } .proj-status.is-planned { border-color: #92400e; color: #92400e; }
+                        .proj-menu-box { position: relative; padding: 1.5rem; background: #f3f4f6; }
+            .proj-menu-line { position: absolute; top: 0; left: 0; display: block; width: 4rem; height: .25rem; background: var(--color-brand); }
+            .proj-menu-title { margin: 0 0 1rem; padding-bottom: .75rem; border-bottom: 1px solid #111827; font-size: 1.125rem; font-weight: 700; color: #1d1d1a; }
+            .proj-menu-list { list-style: none; margin: 0; padding: 0; }
+            .proj-menu-list li { border-bottom: 1px solid #d1d5db; } .proj-menu-list li:last-child { border-bottom: 0; }
+            .proj-menu-list a { display: block; padding: .75rem 0; color: #1d1d1a; text-decoration: none; }
+            .proj-menu-list a:hover .proj-menu-item { color: var(--color-brand); }
+            .proj-menu-list a:focus-visible { outline: 2px solid var(--color-brand); outline-offset: 2px; }
+            .proj-menu-date { display: block; font-size: .75rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: #374151; }
+            .proj-menu-item { display: block; font-size: 1rem; font-weight: 400; line-height: 1.4; }
             .proj-note-links { display: flex; flex-wrap: wrap; gap: .5rem 1.25rem; margin-top: .75rem; }
             .proj-note-links a { font-weight: 800; color: var(--color-brand); text-decoration: underline; text-underline-offset: 3px; }
             .proj-note-links a:hover { color: #1d1d1a; }
@@ -519,19 +529,21 @@
                 @endif
 
                 @if ($showNews)
-                    <section class="rounded-lg border border-gray-200 bg-white p-5" aria-labelledby="proj-news-h">
-                        <h2 id="proj-news-h" class="proj-h2" style="font-size:1.125rem">Aktualności projektu</h2>
-                        <ul role="list" class="proj-news divide-y divide-gray-100">
+                    {{-- Aktualności projektu w stylu menu sekcji: szare pole, kreska marki, tytuł i pozycje oddzielone liniami. --}}
+                    <nav class="proj-menu-box" aria-labelledby="proj-news-h">
+                        <span class="proj-menu-line" aria-hidden="true"></span>
+                        <p id="proj-news-h" class="proj-menu-title">Aktualności projektu</p>
+                        <ul role="list" class="proj-menu-list">
                             @foreach ($project->publishedNews as $item)
                                 <li>
-                                    <a href="{{ route('news.show', $item) }}" class="group focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
-                                        <span class="block text-xs font-bold uppercase tracking-wide text-muted">{{ $item->published_at->format('d.m.Y') }}</span>
-                                        <span class="block font-bold leading-snug text-ink group-hover:text-brand">{{ $item->title }}</span>
+                                    <a href="{{ route('news.show', $item) }}">
+                                        <span class="proj-menu-date">{{ $item->published_at->format('d.m.Y') }}</span>
+                                        <span class="proj-menu-item">{{ $item->title }}</span>
                                     </a>
                                 </li>
                             @endforeach
                         </ul>
-                    </section>
+                    </nav>
                 @endif
             </aside>
             @endif
