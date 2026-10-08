@@ -59,6 +59,5 @@
                 @endif
             </div>
         </div>
-        <a href="{{ route('home') }}" class="bip-back"><i class="fa-solid fa-arrow-left" aria-hidden="true"></i>Strona główna organizacji</a>
     </div>
 </header>

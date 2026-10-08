@@ -3,6 +3,8 @@
 @section('title', $bipDocument->title . ' — BIP — ' . $siteSettings->site_name)
 @section('meta_description', $bipDocument->summary ?: 'Dokument Biuletynu Informacji Publicznej: ' . $bipDocument->title)
 
+@section('minimal_header', '1')
+
 @section('content')
     @php $feer = ($siteSettings->site_template ?? 'default') === 'feer'; @endphp
     @php $bipLogo = $siteSettings->bipLogoUrl() ?: asset('img/bip-logo.svg'); @endphp

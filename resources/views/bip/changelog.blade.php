@@ -3,6 +3,8 @@
 @section('title', 'Rejestr zmian BIP — ' . $siteSettings->site_name)
 @section('meta_description', 'Publiczny rejestr wszystkich zmian dokumentów Biuletynu Informacji Publicznej.')
 
+@section('minimal_header', '1')
+
 @section('content')
     @php $feer = ($siteSettings->site_template ?? 'default') === 'feer'; @endphp
     @php $bipLogo = $siteSettings->bipLogoUrl() ?: asset('img/bip-logo.svg'); @endphp

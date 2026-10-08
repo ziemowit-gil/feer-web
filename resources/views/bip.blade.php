@@ -3,6 +3,8 @@
 @section('title', 'Biuletyn Informacji Publicznej — ' . $siteSettings->site_name)
 @section('meta_description', 'Biuletyn Informacji Publicznej ' . $siteSettings->siteNameGenitive() . ' — dokumenty publiczne, informacje o organizacji i rejestr zmian.')
 
+@section('minimal_header', '1')
+
 @section('content')
     @php
         $feer = ($siteSettings->site_template ?? 'default') === 'feer';

@@ -96,7 +96,10 @@
     @endif
 
     @php $siteTemplate = $siteSettings->site_template ?? 'default'; @endphp
-    @if ($siteTemplate === 'municipality')
+    @hasSection('minimal_header')
+        {{-- Uproszczony nagłówek (np. BIP): samo logo organizacji, bez górnego menu i paska. --}}
+        @include('partials.header-minimal')
+    @elseif ($siteTemplate === 'municipality')
         @include('templates.municipality.partials.topbar')
         @include('templates.municipality.partials.header')
     @elseif (in_array($siteTemplate, ['ngo', 'federacja', 'ngo_3']))

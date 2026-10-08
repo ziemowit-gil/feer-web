@@ -3,6 +3,8 @@
 @section('title', 'Instrukcja korzystania z BIP — ' . $siteSettings->site_name)
 @section('meta_description', 'Jak korzystać z Biuletynu Informacji Publicznej ' . $siteSettings->siteNameGenitive() . ': nawigacja, wyszukiwarka, rejestr zmian i kontakt z redakcją.')
 
+@section('minimal_header', '1')
+
 @section('content')
     @php $feer = ($siteSettings->site_template ?? 'default') === 'feer'; @endphp
     @include('bip._head', ['bipTitle' => 'Instrukcja korzystania z BIP', 'bipSub' => null])
