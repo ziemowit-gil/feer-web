@@ -105,19 +105,13 @@
         {{-- Układ kolumn w zwykłym CSS (nie zależy od zbudowanych klas Tailwinda): menu boczne zawsze po lewej od lg. --}}
         <style>
             @media (min-width: 1024px) {
-                .proj-cols-aside { grid-template-columns: minmax(0, 1fr) 18rem; }
-                .proj-cols-nav { grid-template-columns: 16rem minmax(0, 1fr); }
-                .proj-cols-nav-aside { grid-template-columns: 16rem minmax(0, 1fr) 18rem; }
+                .proj-cols { grid-template-columns: minmax(0, 1fr) 18rem; }
+                .proj-cols > .proj-main { grid-column: 1; grid-row: 1 / span 3; }
+                .proj-cols > .proj-nav, .proj-cols > .proj-aside { grid-column: 2; }
             }
         </style>
-        <div @class(['grid items-start gap-10',
-            'proj-cols-aside' => $hasAside && ! $navSidebar,
-            'proj-cols-nav' => ! $hasAside && $navSidebar,
-            'proj-cols-nav-aside' => $hasAside && $navSidebar])>
-        @if ($navSidebar)
-            @include('projects.partials.sidebar-nav', ['sectionTabs' => $sectionTabs, 'tabPages' => $tabPages])
-        @endif
-        <div class="min-w-0">
+        <div @class(['grid items-start gap-10', 'proj-cols' => $hasAside || $navSidebar])>
+        <div class="min-w-0 proj-main">
             <div id="panel-opis" role="tabpanel" aria-labelledby="tab-opis" x-show="tab === 'opis'">
                 @if ($sectionTabs->isNotEmpty())
                     {{-- Sekcje własne są w zakładkach (pasek pod nagłówkiem) --}}
@@ -291,8 +285,11 @@
             </div>
 
             {{-- ══ PANEL BOCZNY: harmonogram, kontakt, strony projektu, powrót ══ --}}
+            @if ($navSidebar)
+                @include('projects.partials.sidebar-nav', ['sectionTabs' => $sectionTabs, 'tabPages' => $tabPages])
+            @endif
             @if ($hasAside)
-            <aside class="space-y-5 lg:sticky lg:top-6" aria-label="Informacje o projekcie">
+            <aside class="proj-aside space-y-5 lg:sticky lg:top-6" aria-label="Informacje o projekcie">
         @if ($schedulePage)
             <div class="flex flex-col gap-3 rounded-lg border border-brand/20 bg-brand-light p-5">
                 <div class="flex items-start gap-3">

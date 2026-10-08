@@ -2,8 +2,8 @@
     Menu boczne strony projektu (zamiast paska zakładek): „O projekcie", własne sekcje i podstrony-zakładki
     z zagnieżdżonymi gałęziami. Stan: tab, node, openIds we wspólnym x-data strony projektu.
 --}}
-<nav aria-label="Sekcje projektu" class="relative bg-gray-100 p-6 lg:sticky lg:top-6">
-    <span class="absolute h-6 w-6 bg-brand" style="left:-.5rem;top:-.5rem" aria-hidden="true"></span>
+<nav aria-label="Sekcje projektu" class="proj-nav relative bg-gray-100 p-6">
+    <span class="absolute block bg-brand" style="left:0;top:0;height:.25rem;width:4rem" aria-hidden="true"></span>
     <p class="mb-4 border-b border-gray-900 pb-3 text-lg font-bold text-ink">{{ $project->title }}</p>
     <ul role="list" class="text-ink">
         <li class="border-b border-gray-300">

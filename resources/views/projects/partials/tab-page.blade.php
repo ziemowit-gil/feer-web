@@ -3,7 +3,7 @@
     (szare pole, tytuł zakładki, pozycje z kreską i strzałką) — dowolna głębokość; każda pozycja otwiera
     treść swojej podstrony. Zmienna: $root (Page z relacją tree_children).
 --}}
-<style>@media (min-width: 1024px) { .proj-tab-cols { grid-template-columns: 16rem minmax(0, 1fr); } }</style>
+<style>@media (min-width: 1024px) { .proj-tab-cols { grid-template-columns: minmax(0, 1fr) 16rem; } .proj-tab-cols > nav { grid-column: 2; grid-row: 1; } }</style>
 @php
     $nodes = [];
     $collect = function ($n) use (&$collect, &$nodes) { $nodes[] = $n; foreach ($n->tree_children as $c) { $collect($c); } };
@@ -16,7 +16,7 @@
 <div @unless ($sidebarMode) x-data="{ node: {{ $root->id }}, openIds: [] }" @endunless @class(['grid items-start gap-8', 'proj-tab-cols' => $localMenu])>
     @if ($localMenu)
         <nav aria-label="Menu: {{ $root->title }}" class="relative bg-gray-100 p-6 lg:sticky lg:top-6">
-            <span class="absolute h-6 w-6 bg-brand" style="left:-.5rem;top:-.5rem" aria-hidden="true"></span>
+            <span class="absolute block bg-brand" style="left:0;top:0;height:.25rem;width:4rem" aria-hidden="true"></span>
             <p class="mb-4 border-b border-gray-900 pb-3 text-lg font-bold text-ink">{{ $root->title }}</p>
             <ul role="list" class="text-ink">
                 <li class="border-b border-gray-300 last:border-0">
