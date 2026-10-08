@@ -83,8 +83,12 @@
                         @if ($project->starts_on)<span><i class="fa-solid fa-calendar-days mr-1.5 text-brand" aria-hidden="true"></i>{{ $project->starts_on->locale('pl')->isoFormat('D MMMM YYYY') }}@if ($project->ends_on) – {{ $project->ends_on->locale('pl')->isoFormat('D MMMM YYYY') }}@endif</span>@endif
                     </p>
                 @endif
+                @php $extrasOn = $siteSettings->projects_extras_enabled; $mainCta = $extrasOn ? (array) ($project->main_cta ?? []) : []; @endphp
                 @if ($project->excerpt)
                     <p class="mt-4 max-w-2xl text-lg leading-relaxed text-ink/80">{{ $project->excerpt }}</p>
+                @endif
+                @if (! empty($mainCta['label']) && ! empty($mainCta['url']))
+                    <p class="mt-5"><a href="{{ $mainCta['url'] }}" class="proj-cta">{{ $mainCta['label'] }} <span aria-hidden="true">→</span></a></p>
                 @endif
                 @if ($showForWhom || $project->since)
                     <p class="mt-4 text-sm text-muted">
@@ -152,10 +156,12 @@
             }
             .proj-news a { display: block; padding: .6rem 0; }
             .proj-note { position: relative; margin: 0 0 1rem; padding: 1rem 4.5rem 1rem 1.25rem; border: 2px solid var(--color-brand); border-radius: .5rem; background: #fff; color: #1d1d1a; font-size: 1.0625rem; line-height: 1.6; font-weight: 600; }
-                                    .proj-frame { margin-top: 2.5rem; padding: 1.25rem 1.5rem; border: 2px solid var(--color-brand); border-radius: .5rem; background: #fff; }
-            .proj-frame-side { margin-top: 0; padding: 1rem 1.1rem; }
-            .proj-frame-h { display: flex; align-items: center; gap: .6rem; margin: 0 0 .9rem; font-size: 1.15rem; font-weight: 800; color: #1d1d1a; }
-            .proj-frame-h i { display: inline-flex; width: 2rem; height: 2rem; align-items: center; justify-content: center; border: 2px solid var(--color-brand); border-radius: 9999px; color: var(--color-brand); font-size: .85rem; }
+                                    /* Sekcje informacyjne bez ramek: zwykły nagłówek z paskiem marki (jak „Opis projektu"); ramki zostają tylko dla komunikatów (.proj-note, .proj-callout). */
+            .proj-frame { margin-top: 2.5rem; padding: 0; border: 0; background: transparent; }
+            .proj-frame-side { margin-top: 0; margin-bottom: 1.5rem; }
+            .proj-frame-side .proj-frame-h { font-size: 1.125rem; }
+            .proj-frame-h { display: block; margin: 0 0 1rem; padding-left: .75rem; border-left: 4px solid var(--color-brand); font-size: 1.5rem; font-weight: 800; line-height: 1.3; color: #1d1d1a; }
+            .proj-frame-h i { display: none; }
             .proj-stages { list-style: none; margin: 0; padding: 0; display: grid; gap: .9rem; }
             .proj-stage { display: flex; gap: .85rem; }
             .proj-stage-dot { display: inline-flex; flex: none; width: 1.75rem; height: 1.75rem; align-items: center; justify-content: center; border-radius: 9999px; border: 2px solid #6b7280; background: #fff; color: #4b5563; font-size: .7rem; }
@@ -204,6 +210,20 @@
             .proj-terms-row:last-child { padding-bottom: 0; border-bottom: 0; }
             .proj-terms-row dt { font-weight: 800; color: #1d1d1a; } .proj-terms-row dd { margin: 0; line-height: 1.5; color: #1d1d1a; }
             @media (max-width: 40rem) { .proj-terms-row { grid-template-columns: 1fr; } }
+                        .proj-cta { display: inline-flex; align-items: center; gap: .6rem; min-height: 3rem; padding: .6rem 1.4rem; border: 2px solid var(--color-brand); border-radius: .375rem; background: var(--color-brand); color: #fff; font-size: 1.05rem; font-weight: 800; text-decoration: none; }
+            .proj-cta:hover { background: #1d1d1a; border-color: #1d1d1a; } .proj-cta:focus-visible { outline: 3px solid #1d1d1a; outline-offset: 3px; }
+            .proj-easy-text { margin: 0; font-size: 1.15rem; line-height: 1.7; font-weight: 600; color: #1d1d1a; }
+            .proj-metrics { list-style: none; margin: 0; padding: 0; display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr)); }
+            .proj-metrics li { display: grid; gap: .15rem; text-align: center; padding: .75rem .5rem; border: 2px solid #d1d5db; border-radius: .5rem; background: #f9fafb; }
+            .proj-metric-value { font-size: 2rem; font-weight: 800; line-height: 1.1; color: var(--color-brand); } .proj-metric-label { font-size: .9rem; line-height: 1.35; color: #1d1d1a; }
+            .proj-tests { list-style: none; margin: 0; padding: 0; display: grid; gap: 1rem; }
+            .proj-tests blockquote { margin: 0; padding: .25rem 0 .25rem 1rem; border-left: 4px solid var(--color-brand); } .proj-tests blockquote p { margin: 0; font-size: 1.05rem; line-height: 1.6; font-style: italic; color: #1d1d1a; } .proj-tests footer { margin-top: .35rem; font-size: .9rem; font-weight: 700; color: #374151; }
+            .proj-faq details { border-bottom: 1px solid #d1d5db; } .proj-faq details:last-child { border-bottom: 0; }
+            .proj-faq summary { display: flex; align-items: center; justify-content: space-between; gap: 1rem; min-height: 3rem; padding: .5rem 0; cursor: pointer; list-style: none; font-weight: 800; color: #1d1d1a; } .proj-faq summary::-webkit-details-marker { display: none; }
+            .proj-faq summary:hover { color: var(--color-brand); } .proj-faq summary:focus-visible { outline: 2px solid var(--color-brand); outline-offset: 2px; border-radius: .25rem; }
+            .proj-faq details[open] summary i { transform: rotate(180deg); } .proj-faq summary i { flex: none; font-size: .8rem; transition: transform .15s; }
+            .proj-faq-a { padding: 0 2rem .9rem 0; line-height: 1.6; color: #1d1d1a; }
+            @media (prefers-reduced-motion: reduce) { .proj-faq summary i { transition: none; } }
             .proj-note-links { display: flex; flex-wrap: wrap; gap: .5rem 1.25rem; margin-top: .75rem; }
             .proj-note-links a { font-weight: 800; color: var(--color-brand); text-decoration: underline; text-underline-offset: 3px; }
             .proj-note-links a:hover { color: #1d1d1a; }
@@ -239,7 +259,7 @@
         </style>
         <div @class(['grid items-start gap-10', 'proj-cols' => $hasAside || $navSidebar])>
         <div class="min-w-0 proj-main">
-            <div id="panel-opis" role="tabpanel" aria-labelledby="tab-opis" x-show="tab === 'opis'" class="proj-measure proj-flow">
+            <div id="panel-opis" @if ($hasTabs && ! $navSidebar) role="tabpanel" aria-labelledby="tab-opis" @endif x-show="tab === 'opis'" class="proj-measure proj-flow">
                 @if ($project->isPaidOffer())
                     {{-- Usługa wyłącznie odpłatna: wyraźna informacja, objaśnienie i przycisk kontaktu. --}}
                     <div class="proj-note">
@@ -352,6 +372,26 @@
                     <div class="prose proj-prose max-w-none">{{ $project->why }}</div>
                 @endif
 
+                @if ($extrasOn && filled($project->easy_summary))
+                    <section class="proj-frame proj-easy" aria-labelledby="proj-easy-h">
+                        <h2 id="proj-easy-h" class="proj-frame-h"><i class="fa-solid fa-comment-dots" aria-hidden="true"></i> Prostym językiem</h2>
+                        <p class="proj-easy-text">{!! nl2br(e($project->easy_summary)) !!}</p>
+                    </section>
+                @endif
+
+                @php $qfacts = $extrasOn ? (array) ($project->quick_facts ?? []) : []; @endphp
+                @if (! empty(array_filter($qfacts)))
+                    <section class="proj-frame" aria-labelledby="proj-facts-h">
+                        <h2 id="proj-facts-h" class="proj-frame-h"><i class="fa-solid fa-list-check" aria-hidden="true"></i> W skrócie</h2>
+                        <dl class="proj-terms">
+                            @if (! empty($qfacts['duration']))<div class="proj-terms-row"><dt>Czas trwania</dt><dd>{{ $qfacts['duration'] }}</dd></div>@endif
+                            @if (! empty($qfacts['place']))<div class="proj-terms-row"><dt>Miejsce</dt><dd>{{ $qfacts['place'] }}</dd></div>@endif
+                            @if (! empty($qfacts['mode']))<div class="proj-terms-row"><dt>Forma</dt><dd>{{ \App\Models\Project::MODES[$qfacts['mode']] ?? '' }}</dd></div>@endif
+                            @if (! empty($qfacts['seats']))<div class="proj-terms-row"><dt>Liczba miejsc</dt><dd>{{ $qfacts['seats'] }}</dd></div>@endif
+                        </dl>
+                    </section>
+                @endif
+
                 {{-- Kto może wziąć udział — ramka z warunkami --}}
                 @php $projTerms = $siteSettings->projects_terms_enabled ? collect($project->terms ?? [])->filter(fn ($r) => filled($r['label'] ?? null) && filled($r['text'] ?? null)) : collect(); @endphp
                 @if ($projTerms->isNotEmpty())
@@ -394,6 +434,45 @@
                                 <li><a class="proj-ref-link" href="{{ route('projects.show', $rs) }}">{{ $rs->title }}<span class="proj-ref-kind"> — {{ $rs->is_paid ? 'forma płatna' : 'forma bezpłatna' }}</span></a></li>
                             @endforeach
                         </ul>
+                    </section>
+                @endif
+
+                @php $projMetrics = $extrasOn ? collect($project->metrics ?? []) : collect(); @endphp
+                @if ($projMetrics->isNotEmpty())
+                    <section class="proj-frame" aria-labelledby="proj-metrics-h">
+                        <h2 id="proj-metrics-h" class="proj-frame-h"><i class="fa-solid fa-chart-simple" aria-hidden="true"></i> Efekty w liczbach</h2>
+                        <ul role="list" class="proj-metrics">
+                            @foreach ($projMetrics as $mt)
+                                <li><span class="proj-metric-value">{{ $mt['value'] }}</span><span class="proj-metric-label">{{ $mt['label'] }}</span></li>
+                            @endforeach
+                        </ul>
+                    </section>
+                @endif
+
+                @php $projTests = $extrasOn ? collect($project->testimonials ?? []) : collect(); @endphp
+                @if ($projTests->isNotEmpty())
+                    <section class="proj-frame" aria-labelledby="proj-tests-h">
+                        <h2 id="proj-tests-h" class="proj-frame-h"><i class="fa-solid fa-comments" aria-hidden="true"></i> Co mówią uczestnicy</h2>
+                        <ul role="list" class="proj-tests">
+                            @foreach ($projTests as $ts)
+                                <li><blockquote><p>„{{ $ts['text'] }}”</p>@if (! empty($ts['author']))<footer>— {{ $ts['author'] }}</footer>@endif</blockquote></li>
+                            @endforeach
+                        </ul>
+                    </section>
+                @endif
+
+                @php $projFaq = $extrasOn ? collect($project->faq ?? []) : collect(); @endphp
+                @if ($projFaq->isNotEmpty())
+                    <section class="proj-frame" aria-labelledby="proj-faq-h">
+                        <h2 id="proj-faq-h" class="proj-frame-h"><i class="fa-solid fa-circle-question" aria-hidden="true"></i> Pytania i odpowiedzi</h2>
+                        <div class="proj-faq">
+                            @foreach ($projFaq as $fi => $fq)
+                                <details class="group" name="proj-faq-{{ $project->id }}" @if ($fi === 0) open @endif>
+                                    <summary>{{ $fq['q'] }}<i class="fa-solid fa-chevron-down" aria-hidden="true"></i></summary>
+                                    <div class="proj-faq-a">{!! nl2br(e($fq['a'])) !!}</div>
+                                </details>
+                            @endforeach
+                        </div>
                     </section>
                 @endif
 

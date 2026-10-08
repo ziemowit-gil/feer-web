@@ -15,7 +15,7 @@
             <p>{!! nl2br(e($para)) !!}</p>
         @endforeach
         @if ($infoPage = $siteSettings->paidInfoPage())
-            <p><a href="{{ route('page.show', $infoPage) }}" class="proj-paid-link">Przeczytaj więcej na osobnej stronie <span aria-hidden="true">→</span><span class="sr-only">: {{ $infoPage->title }}</span></a></p>
+            <p><a href="{{ route('page.show', $infoPage) }}" class="proj-paid-link">Więcej informacji o odpłatnej działalności <span aria-hidden="true">→</span><span class="sr-only">: {{ $infoPage->title }}</span></a></p>
         @endif
     </div>
 </details>
