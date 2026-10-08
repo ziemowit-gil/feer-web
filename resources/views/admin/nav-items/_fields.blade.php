@@ -244,6 +244,19 @@
     @error('mega_extra_title') <p class="mt-1 text-sm text-red-700">{{ $message }}</p> @enderror
 </div>
 
+<fieldset x-show="form.type === 'projects' && form.location === 'main' && form.parentId === ''" x-cloak class="space-y-2 rounded-lg border border-gray-100 bg-gray-50 p-4">
+    <legend class="px-1 text-xs font-bold uppercase tracking-wide text-muted">Domyślne przyciski menu projektów</legend>
+    <p class="text-xs text-muted">Domyślnie widoczne w kolumnie z przyciskami. Zaznacz, aby ukryć.</p>
+    <label class="flex items-center gap-2 text-sm">
+        <input type="checkbox" name="hide_all_projects_btn" value="1" x-model="form.hideAllBtn" class="rounded border-gray-300 text-brand focus-visible:ring-2 focus-visible:ring-brand">
+        <span>Ukryj przycisk „Wszystkie projekty”</span>
+    </label>
+    <label class="flex items-center gap-2 text-sm">
+        <input type="checkbox" name="hide_archive_btn" value="1" x-model="form.hideArchiveBtn" class="rounded border-gray-300 text-brand focus-visible:ring-2 focus-visible:ring-brand">
+        <span>Ukryj przycisk „To już zrobiliśmy”</span>
+    </label>
+</fieldset>
+
 <div x-show="form.isMega && form.location === 'main' && form.parentId === ''" x-cloak>
     <label for="nav-mega-size" class="mb-1 block text-sm font-bold">Wielkość pozycji w mega menu</label>
     <select id="nav-mega-size" name="mega_size" x-model="form.megaSize"

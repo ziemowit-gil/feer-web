@@ -29,6 +29,8 @@
                 'megaImage' => old('mega_image_url', ''),
                 'megaSize' => old('mega_size', 'md'),
                 'megaExtraTitle' => old('mega_extra_title', ''),
+                'hideAllBtn' => (bool) old('hide_all_projects_btn'),
+                'hideArchiveBtn' => (bool) old('hide_archive_btn'),
                 'megaSideTitle' => old('mega_side_title', ''),
                 'megaSideLinks' => array_values((array) old('mega_side_links', [])),
                 'megaImageAlt' => old('mega_image_alt', ''),
@@ -221,7 +223,7 @@
                 location: 'main', parentId: '', module: '', isButton: false,
                 buttonColor: '#2563eb', buttonColorEnabled: false, accentColor: '#1e6dff', accentEnabled: false,
                 isTransparent: false, isMega: false, isHeading: false,
-                megaImage: '', megaImageAlt: '', megaSize: 'md', megaExtraTitle: '', megaSideTitle: '', megaSideLinks: [],
+                megaImage: '', megaImageAlt: '', megaSize: 'md', megaExtraTitle: '', hideAllBtn: false, hideArchiveBtn: false, megaSideTitle: '', megaSideLinks: [],
                 isActive: true,
             };
         }
@@ -282,6 +284,8 @@
                         megaImage: d.megaImage || '',
                         megaSize: d.megaSize || 'md',
                         megaExtraTitle: d.megaExtraTitle || '',
+                        hideAllBtn: d.hideAllBtn === '1',
+                        hideArchiveBtn: d.hideArchiveBtn === '1',
                         megaSideTitle: d.megaSideTitle || '',
                         megaSideLinks: (() => { try { return JSON.parse(d.megaSideLinks || '[]'); } catch (e) { return []; } })(),
                         megaImageAlt: d.megaImageAlt || '',

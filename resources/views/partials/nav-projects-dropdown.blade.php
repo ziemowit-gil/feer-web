@@ -52,7 +52,7 @@
         @endforelse
 
         <div class="mt-1 border-t border-gray-100 pt-1">
-            <div class="px-2 py-1">@include('partials.nav-side-link', ['sl' => ['label' => 'Wszystkie projekty', 'url' => route('projects.index'), 'style' => 'tile_filled', 'new_tab' => false], 'block' => true])</div>
+            @unless ($item->hide_all_projects_btn)<div class="px-2 py-1">@include('partials.nav-side-link', ['sl' => ['label' => 'Wszystkie projekty', 'url' => route('projects.index'), 'style' => 'tile_filled', 'new_tab' => false], 'block' => true])</div>@endunless
             @if ($item->children->isNotEmpty())
                 {{-- Własne podpozycje (np. archiwum wg okresów) — te same co w kolumnie mega menu. --}}
                 <p class="px-4 pt-2 text-xs font-bold uppercase tracking-wide normal-case text-muted" id="{{ 'projects-done-' . $item->id }}">{{ $item->mega_extra_title ?: 'To już zrobiliśmy' }}</p>
@@ -66,7 +66,7 @@
                         </li>
                     @endforeach
                 </ul>
-            @elseif ($navHasProjectArchive ?? false)
+            @elseif (($navHasProjectArchive ?? false) && ! $item->hide_archive_btn)
                 <div class="px-2 py-1">@include('partials.nav-side-link', ['sl' => ['label' => 'To już zrobiliśmy', 'url' => route('projects.archive'), 'style' => 'tile', 'new_tab' => false], 'block' => true])</div>
             @endif
         </div>

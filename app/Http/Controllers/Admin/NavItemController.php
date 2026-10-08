@@ -433,6 +433,9 @@ class NavItemController extends Controller
             : false;
 
         $data['is_transparent_dropdown'] = $request->boolean('is_transparent_dropdown');
+        // Domyślne przyciski menu projektów można wyłączyć (tylko dla typu „Menu projektów").
+        $data['hide_all_projects_btn'] = $data['type'] === 'projects' && $request->boolean('hide_all_projects_btn');
+        $data['hide_archive_btn'] = $data['type'] === 'projects' && $request->boolean('hide_archive_btn');
         // Mega menu ma sens tylko dla pozycji głównych typu rozwijane menu lub link.
         $data['is_mega'] = ! ($data['parent_id'] ?? null) && in_array($data['type'], ['dropdown', 'link', 'projects'], true)
             ? $request->boolean('is_mega')
