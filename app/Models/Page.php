@@ -242,7 +242,7 @@ class Page extends Model
         'training_manager_name', 'training_manager_title', 'training_ris_number', 'training_bur_number', 'training_extra_info', 'training_bur_note',
         'content_image', 'content_image_alt', 'content_image_width',
         'founder_image', 'founder_image_alt', 'founder_quote',
-        'access_mode', 'access_password', 'hub_hero', 'hub_intro', 'hub_links', 'hub_tiles_enabled', 'tiles',
+        'access_mode', 'access_password', 'hub_hero', 'hub_intro', 'hub_links', 'hub_tiles_enabled', 'tiles', 'tiles_content_position',
         'legacy_name', 'legacy_intro',
         'brand_brandbook_url', 'brand_sections',
         'person_phone', 'person_role', 'person_bio', 'person_email', 'person_social', 'person_member_label', 'person_name_genitive', 'person_department',

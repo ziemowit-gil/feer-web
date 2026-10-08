@@ -1166,6 +1166,7 @@ class PageController extends Controller
         }
 
         // Siatka kafelków (tiles_grid): zapisz kafelki z pełnymi polami stylu.
+        $data['tiles_content_position'] = $data['type'] === 'tiles_grid' && $request->input('tiles_content_position') === 'below' ? 'below' : null;
         if ($data['type'] === 'tiles_grid') {
             $rawTiles = $request->input('tiles', []);
             $tiles = [];

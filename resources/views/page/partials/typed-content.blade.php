@@ -934,20 +934,45 @@
         @endif
     </section>
     @elseif ($page->isTilesGrid())
-    @php $pageTiles = collect($page->tiles ?? [])->filter(fn ($t) => filled($t['label'] ?? null) && filled($t['url'] ?? null))->values(); @endphp
+    @php
+        $pageTiles = collect($page->tiles ?? [])->filter(fn ($t) => filled($t['label'] ?? null) && filled($t['url'] ?? null))->values();
+        $tilesBelow = $page->tiles_content_position === 'below';
+        // Boczne menu (lista rodzeństwa albo drzewo działu) — jak na stronach standardowych.
+        $tgSiblings = $page->menuSiblings();
+        $tgSideNav = ($page->show_side_nav ?? true) && $tgSiblings->isNotEmpty() && $page->sideNavStyle() !== 'tiles' && $page->sideNavStyle() !== 'tabs';
+        $tgTabs = ($page->show_side_nav ?? true) && $tgSiblings->isNotEmpty() && $page->sideNavStyle() === 'tabs';
+        $tgTree = $tgSideNav && $page->sideNavStyle() === 'tree';
+    @endphp
 
-    <section class="mx-auto max-w-5xl px-4 py-12">
-        <h1 class="mb-6 text-3xl font-bold text-ink">{{ $page->title }}</h1>
-
-        @if ($page->content)
-            <div class="prose mb-8 max-w-none text-ink">@shortcodes($page->content)</div>
+    <section class="mx-auto {{ $tgSideNav ? 'max-w-6xl' : 'max-w-5xl' }} px-4 py-12">
+        @if ($tgTabs)
+            @include('partials.page-tabs-nav', ['menuSiblings' => $tgSiblings])
         @endif
+        <div class="grid gap-10 {{ $tgSideNav ? ($tgTree ? 'md:grid-cols-[260px_1fr]' : 'md:grid-cols-[1fr_220px]') : '' }}">
+            <div class="min-w-0">
+                <h1 class="mb-6 text-3xl font-bold text-ink">{{ $page->title }}</h1>
 
-        @if ($pageTiles->isNotEmpty())
-            @include('partials._tiles-grid', ['tiles' => $pageTiles, 'label' => $page->title])
-        @else
-            <p class="text-center text-muted">Brak dodanych kafelków. Dodaj je w panelu (edycja strony → Typ i układ → Kafelki).</p>
-        @endif
+                @if ($page->content && ! $tilesBelow)
+                    <div class="prose mb-8 max-w-none text-ink">@shortcodes($page->content)</div>
+                @endif
+
+                @if ($pageTiles->isNotEmpty())
+                    @include('partials._tiles-grid', ['tiles' => $pageTiles, 'label' => $page->title])
+                @else
+                    <p class="text-center text-muted">Brak dodanych kafelków. Dodaj je w panelu (edycja strony → Typ i układ → Kafelki).</p>
+                @endif
+
+                @if ($page->content && $tilesBelow)
+                    <div class="prose mt-10 max-w-none text-ink">@shortcodes($page->content)</div>
+                @endif
+            </div>
+
+            @if ($tgSideNav)
+                <div class="md:sticky md:top-24 md:self-start {{ $tgTree ? 'md:order-first' : '' }}">
+                    @include('partials.page-local-nav', ['menuSiblings' => $tgSiblings])
+                </div>
+            @endif
+        </div>
     </section>
     @elseif ($page->isService())
     @include('page.partials.typed.service')

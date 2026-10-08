@@ -8,6 +8,20 @@
         Dla typu <strong>Siatka kafelków</strong> kafelki stanowią główną treść strony; dla innych typów wyświetlają się jako dodatkowa sekcja pod treścią.
     </p>
 
+    <fieldset class="space-y-2" data-tiles-position>
+        <legend class="text-sm font-bold">Treść strony względem kafelków <span class="font-normal text-muted">(typ „Siatka kafelków”)</span></legend>
+        @php $tilesPos = old('tiles_content_position', $page->tiles_content_position ?: 'above'); @endphp
+        <div class="flex flex-wrap gap-3">
+            <label class="flex cursor-pointer items-center gap-2 rounded-lg border border-gray-300 px-3 py-2 text-sm has-[:checked]:border-brand has-[:checked]:bg-brand-light has-[:checked]:font-bold">
+                <input type="radio" name="tiles_content_position" value="above" {{ $tilesPos !== 'below' ? 'checked' : '' }} class="text-brand focus:ring-brand"> Treść nad kafelkami
+            </label>
+            <label class="flex cursor-pointer items-center gap-2 rounded-lg border border-gray-300 px-3 py-2 text-sm has-[:checked]:border-brand has-[:checked]:bg-brand-light has-[:checked]:font-bold">
+                <input type="radio" name="tiles_content_position" value="below" {{ $tilesPos === 'below' ? 'checked' : '' }} class="text-brand focus:ring-brand"> Treść pod kafelkami
+            </label>
+        </div>
+        <p class="text-xs text-muted">Boczne menu włączasz w sekcji „Nawigacja po podstronach działu” (po prawej stronie treści, albo drzewo działu po lewej).</p>
+    </fieldset>
+
     <div data-repeater>
         <div data-repeater-rows class="space-y-4">
             @foreach ($tilesRows as $i => $tile)
