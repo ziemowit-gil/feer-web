@@ -126,8 +126,8 @@
             .proj-prose h3 { margin: 1.75rem 0 .5rem; font-size: 1.2rem; }
             .proj-h2 { margin: 0 0 1rem; padding-left: .75rem; border-left: 4px solid var(--color-brand); font-size: 1.5rem; font-weight: 800; line-height: 1.3; color: #1d1d1a; }
             .proj-callout, .proj-prose p[style*="text-align: center"], .proj-prose p[style*="text-align:center"] {
-                margin: 1.5rem 0; padding: 1rem 1.25rem; border-left: 4px solid var(--color-brand); border-radius: .5rem;
-                background: var(--color-brand-light); text-align: left !important; font-weight: 600;
+                margin: 1.5rem 0; padding: 1rem 1.25rem; border: 2px solid var(--color-brand); border-radius: .5rem;
+                background: #fff; text-align: left !important; font-weight: 600;
             }
             .proj-news a { display: block; padding: .6rem 0; }
             @media (min-width: 1024px) {
