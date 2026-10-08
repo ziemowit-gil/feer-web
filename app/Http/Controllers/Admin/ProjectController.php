@@ -23,6 +23,14 @@ class ProjectController extends Controller
 {
     use HandlesContentApproval;
 
+    /** Kategorie dostępne dla użytkownika — edytor z grupy ograniczonej do kategorii widzi tylko swoje. */
+    private function categoriesForUser()
+    {
+        $ids = auth()->user()?->allowedProjectCategoryIds();
+
+        return Category::when($ids, fn ($q) => $q->whereIn('id', $ids))->orderBy('order')->orderBy('name')->get();
+    }
+
     /** Wyświetla listę projektów z filtrowaniem po statusie i kategorii. */
     public function index(Request $request)
     {
@@ -41,7 +49,7 @@ class ProjectController extends Controller
 
         return view('admin.projects.index', [
             'projects' => $projects,
-            'categories' => Category::orderBy('order')->orderBy('name')->get(),
+            'categories' => $this->categoriesForUser(),
             'status' => $status,
             'category' => $category,
             'sort' => $sort,
@@ -53,7 +61,7 @@ class ProjectController extends Controller
     {
         return view('admin.projects.form', [
             'project' => new Project,
-            'categories' => Category::orderBy('order')->orderBy('name')->get(),
+            'categories' => $this->categoriesForUser(),
         ]);
     }
 
@@ -75,7 +83,7 @@ class ProjectController extends Controller
     {
         return view('admin.projects.form', [
             'project' => $project,
-            'categories' => Category::orderBy('order')->orderBy('name')->get(),
+            'categories' => $this->categoriesForUser(),
         ]);
     }
 
@@ -180,7 +188,7 @@ class ProjectController extends Controller
     private function validated(Request $request): array
     {
         $data = $request->validate([
-            'category_id' => ['required', 'exists:categories,id'],
+            'category_id' => array_filter(['required', 'exists:categories,id', ($ids = auth()->user()?->allowedProjectCategoryIds()) !== null ? Rule::in($ids) : null]),
             'title' => ['required', 'string', 'max:255'],
             'slug' => ['nullable', 'string', 'max:255'],
             'meta_title' => ['nullable', 'string', 'max:255'],

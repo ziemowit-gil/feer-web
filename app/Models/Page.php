@@ -20,6 +20,7 @@ class Page extends Model
 {
     use Approvable;
     use BelongsToSite;
+    use \App\Models\Concerns\ScopedByEditor;
     use \App\Models\Concerns\HasEtr;
     use \App\Models\Concerns\HasPreviewLink;
     use \App\Models\Concerns\HasRevisions;
@@ -231,7 +232,7 @@ class Page extends Model
     public const DEFAULT_WIP_NOTICE_MESSAGE = 'Wprowadzamy zmiany na tej stronie — nie wszystkie elementy mogą jeszcze działać poprawnie.';
 
     protected $fillable = [
-        'site_id', 'parent_id', 'project_id', 'project_display', 'title', 'slug', 'content', 'is_published', 'publish_at', 'is_featured', 'is_archived', 'show_in_menu', 'show_side_nav', 'side_nav_style', 'is_system', 'is_locked', 'order',
+        'site_id', 'created_by', 'parent_id', 'project_id', 'project_display', 'title', 'slug', 'content', 'is_published', 'publish_at', 'is_featured', 'is_archived', 'show_in_menu', 'show_side_nav', 'side_nav_style', 'is_system', 'is_locked', 'order',
         'meta_title', 'meta_description', 'pending_approval', 'submitted_by_id',
         'is_disabled', 'disabled_message', 'wip_mode', 'wip_message',
         'type', 'event_mode', 'event_when', 'event_location', 'event_how_to_join', 'event_registration_url',

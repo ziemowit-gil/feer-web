@@ -28,7 +28,7 @@ class UserGroupController extends Controller
     /** Wyświetla formularz tworzenia nowej grupy użytkowników. */
     public function create()
     {
-        return view('admin.user-groups.form', ['group' => new UserGroup]);
+        return view('admin.user-groups.form', ['group' => new UserGroup, 'categories' => \App\Models\Category::orderBy('order')->orderBy('name')->get()]);
     }
 
     /** Tworzy nową grupę użytkowników z wybranymi uprawnieniami do modułów. */
@@ -42,7 +42,7 @@ class UserGroupController extends Controller
     /** Wyświetla formularz edycji grupy użytkowników. */
     public function edit(UserGroup $group)
     {
-        return view('admin.user-groups.form', compact('group'));
+        return view('admin.user-groups.form', ['group' => $group, 'categories' => \App\Models\Category::orderBy('order')->orderBy('name')->get()]);
     }
 
     /** Aktualizuje uprawnienia do modułów i flagę zatwierdzania treści grupy. */
@@ -69,10 +69,15 @@ class UserGroupController extends Controller
             'modules' => ['sometimes', 'array'],
             'modules.*' => ['string', Rule::in(array_keys(SiteSetting::MODULES))],
             'can_approve' => ['sometimes', 'boolean'],
+            'own_content_only' => ['sometimes', 'boolean'],
+            'project_category_ids' => ['sometimes', 'array'],
+            'project_category_ids.*' => ['integer', 'exists:categories,id'],
         ]);
 
         $data['modules'] = $data['modules'] ?? [];
         $data['can_approve'] = $request->boolean('can_approve');
+        $data['own_content_only'] = $request->boolean('own_content_only');
+        $data['project_category_ids'] = array_values(array_map('intval', $data['project_category_ids'] ?? [])) ?: null;
 
         return $data;
     }

@@ -19,6 +19,7 @@ class News extends Model implements HasMedia
 {
     use \App\Models\Concerns\Approvable;
     use \App\Models\Concerns\BelongsToSite;
+    use \App\Models\Concerns\ScopedByEditor;
     use \App\Models\Concerns\HasEtr;
     use \App\Models\Concerns\HasPreviewLink;
     use \App\Models\Concerns\HasRevisions;
@@ -59,7 +60,7 @@ class News extends Model implements HasMedia
     }
 
     protected $fillable = [
-        'site_id', 'news_category_id', 'project_id', 'title', 'slug', 'excerpt', 'audience', 'accent_color', 'image_alt', 'image_focal_x', 'image_focal_y', 'article_layout', 'content', 'published_at', 'is_published', 'is_archived', 'is_legacy', 'is_clone', 'cloned_from_id',
+        'site_id', 'created_by', 'news_category_id', 'project_id', 'title', 'slug', 'excerpt', 'audience', 'accent_color', 'image_alt', 'image_focal_x', 'image_focal_y', 'article_layout', 'content', 'published_at', 'is_published', 'is_archived', 'is_legacy', 'is_clone', 'cloned_from_id',
         'meta_title', 'meta_description', 'pending_approval', 'submitted_by_id',
     ];
 

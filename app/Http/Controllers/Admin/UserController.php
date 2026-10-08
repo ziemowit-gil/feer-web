@@ -19,6 +19,19 @@ use Illuminate\Validation\Rule;
  */
 class UserController extends Controller
 {
+    /** Macierz uprawnień: kto ma dostęp do których modułów panelu oraz jaki zakres treści. */
+    public function permissions()
+    {
+        $users = User::with('group')->orderBy('name')->get();
+        $categories = \App\Models\Category::pluck('name', 'id');
+
+        return view('admin.users.permissions', [
+            'users' => $users,
+            'modules' => \App\Models\SiteSetting::MODULES,
+            'categories' => $categories,
+        ]);
+    }
+
     /** Wyświetla listę użytkowników panelu z informacją o grupie. */
     public function index()
     {

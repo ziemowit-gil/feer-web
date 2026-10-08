@@ -14,6 +14,7 @@ class Project extends Model implements HasMedia
 {
     use \App\Models\Concerns\Approvable;
     use \App\Models\Concerns\BelongsToSite;
+    use \App\Models\Concerns\ScopedByEditor;
     use \App\Models\Concerns\HasRevisions;
     use \App\Models\Concerns\LogsActivity;
     use \Illuminate\Database\Eloquent\SoftDeletes;
@@ -41,7 +42,7 @@ class Project extends Model implements HasMedia
     }
 
     protected $fillable = [
-        'site_id', 'category_id', 'title', 'slug', 'excerpt', 'for_whom', 'audience', 'accent_color', 'since', 'image_alt', 'content', 'why', 'outcomes', 'is_published', 'is_completed', 'completed_at', 'is_paid', 'pricing', 'order',
+        'site_id', 'created_by', 'category_id', 'title', 'slug', 'excerpt', 'for_whom', 'audience', 'accent_color', 'since', 'image_alt', 'content', 'why', 'outcomes', 'is_published', 'is_completed', 'completed_at', 'is_paid', 'pricing', 'order',
         'meta_title', 'meta_description', 'pending_approval', 'submitted_by_id',
         'coordinator_name', 'coordinator_email', 'coordinator_phone', 'is_featured_contact', 'show_coordinator',
         'custom_sections', 'sections_as_tabs', 'sections_nav', 'sidebar_buttons', 'sidebar_note', 'show_legacy_box', 'legacy_url',
@@ -71,6 +72,14 @@ class Project extends Model implements HasMedia
         }
 
         return $text === '' ? null : \Illuminate\Support\Str::limit(strip_tags($text), $limit);
+    }
+
+    /** Zakres edytora: projekty tylko z kategorii wskazanych w grupie użytkownika. */
+    public function constrainForEditor($query, User $user): void
+    {
+        if (($ids = $user->allowedProjectCategoryIds()) !== null) {
+            $query->whereIn($this->getTable().'.category_id', $ids);
+        }
     }
 
     public function resolveRouteBindingQuery($query, $value, $field = null)

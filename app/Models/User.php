@@ -125,6 +125,27 @@ class User extends Authenticatable implements Subscribable
         return $this->role === self::ROLE_CONTENT_EDITOR;
     }
 
+    /** Czy edytor z grupy ma ograniczony zakres treści (tylko własne wpisy i/lub wybrane kategorie projektów). */
+    public function hasContentScope(): bool
+    {
+        if ($this->isAdmin() || $this->role !== self::ROLE_EDITOR || ! $this->group) {
+            return false;
+        }
+
+        return $this->group->own_content_only || ! empty($this->group->project_category_ids);
+    }
+
+    /** Dozwolone kategorie projektów edytora (null = bez ograniczenia). */
+    public function allowedProjectCategoryIds(): ?array
+    {
+        if ($this->isAdmin() || $this->role !== self::ROLE_EDITOR) {
+            return null;
+        }
+        $ids = array_map('intval', (array) ($this->group?->project_category_ids ?? []));
+
+        return $ids === [] ? null : $ids;
+    }
+
     public function canAccessModule(string $module): bool
     {
         if ($this->isAdmin()) {

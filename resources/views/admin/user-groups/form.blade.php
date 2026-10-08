@@ -32,6 +32,32 @@
             @error('modules') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
         </div>
 
+        <fieldset class="space-y-4 border-t border-gray-100 pt-5">
+            <legend class="text-sm font-bold">Zakres treści <span class="font-normal text-muted">(ogranicza także moduły zaznaczone wyżej)</span></legend>
+            <label class="flex items-start gap-2">
+                <input type="checkbox" name="own_content_only" value="1" {{ old('own_content_only', $group->own_content_only ?? false) ? 'checked' : '' }}
+                    class="mt-0.5 rounded border-gray-300 text-brand focus:ring-brand">
+                <span class="text-sm font-bold">Tylko własne wpisy
+                    <span class="block font-normal text-muted">Edytor widzi i edytuje tylko aktualności, strony, wydarzenia i projekty, które sam utworzył. Treści dodane wcześniej (bez autora) są dla niego niewidoczne.</span>
+                </span>
+            </label>
+            <div>
+                <p class="mb-1 text-sm font-bold">Projekty tylko z kategorii</p>
+                <p class="mb-2 text-xs text-muted">Zaznacz kategorie, do których ma dostęp ta grupa. Bez zaznaczenia — wszystkie kategorie.</p>
+                @php $selCats = array_map('intval', (array) old('project_category_ids', $group->project_category_ids ?? [])); @endphp
+                <div class="grid gap-2 sm:grid-cols-2">
+                    @foreach ($categories as $cat)
+                        <label class="flex items-center gap-2 text-sm">
+                            <input type="checkbox" name="project_category_ids[]" value="{{ $cat->id }}" {{ in_array($cat->id, $selCats, true) ? 'checked' : '' }}
+                                class="rounded border-gray-300 text-brand focus:ring-brand">
+                            {{ $cat->name }}
+                        </label>
+                    @endforeach
+                </div>
+                @error('project_category_ids.*') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+            </div>
+        </fieldset>
+
         <div class="border-t border-gray-100 pt-5">
             <label class="flex items-start gap-2">
                 <input type="checkbox" name="can_approve" value="1" {{ old('can_approve', $group->can_approve ?? false) ? 'checked' : '' }}

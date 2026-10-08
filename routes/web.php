@@ -673,6 +673,7 @@ Route::middleware(['auth', 'verified', '2fa', 'admin-site'])->prefix(config('app
     });
 
     Route::middleware('admin')->group(function () {
+        Route::get('uzytkownicy/uprawnienia', [AdminUserController::class, 'permissions'])->name('uzytkownicy.uprawnienia');
         Route::resource('uzytkownicy', AdminUserController::class)->parameters(['uzytkownicy' => 'user'])->except('show');
         Route::delete('uzytkownicy/{user}/microsoft', [AdminUserController::class, 'unlinkMicrosoft'])->name('uzytkownicy.microsoft.unlink');
 
