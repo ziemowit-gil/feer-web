@@ -226,6 +226,9 @@ class SiteSettingController extends Controller
             'projects_layout' => ['nullable', 'in:list,tiles'],
             'project_sections_nav' => ['nullable', 'in:tabs,sidebar'],
             'paid_activity_info' => ['nullable', 'string', 'max:3000'],
+            'paid_info_page_id' => ['nullable', 'integer', 'exists:pages,id'],
+            'projects_terms_enabled' => ['sometimes', 'boolean'],
+            'projects_subprojects_enabled' => ['sometimes', 'boolean'],
             'projects_stages_enabled' => ['sometimes', 'boolean'],
             'projects_team_funding_enabled' => ['sometimes', 'boolean'],
             'wide_mission_social_1' => ['nullable', Rule::in(array_keys(SiteSetting::SOCIAL_KEYS))],
@@ -525,10 +528,16 @@ class SiteSettingController extends Controller
         unset($data['logo'], $data['remove_logo'], $data['og_image'], $data['remove_og_image'], $data['support_image'], $data['remove_support_image'], $data['support_gallery'], $data['remove_support_gallery'], $data['news_default_image'], $data['remove_news_default_image'], $data['bip_logo'], $data['remove_bip_logo'], $data['enabled_modules'], $data['section_order_json'], $data['homepage_sections_enabled']);
 
         // Do czasu wykonania migracji (nowa kolumna) zapis ustawień nie może padać — pomijamy brakującą kolumnę.
-        foreach (['homepage_sections_hidden', 'wide_mission_cta2_label', 'wide_mission_cta2_url', 'projects_layout', 'project_sections_nav', 'projects_stages_enabled', 'projects_team_funding_enabled', 'paid_activity_info'] as $newColumn) {
+        foreach (['homepage_sections_hidden', 'wide_mission_cta2_label', 'wide_mission_cta2_url', 'projects_layout', 'project_sections_nav', 'projects_stages_enabled', 'projects_team_funding_enabled', 'paid_activity_info', 'paid_info_page_id', 'projects_terms_enabled', 'projects_subprojects_enabled'] as $newColumn) {
             if (! \Illuminate\Support\Facades\Schema::hasColumn('site_settings', $newColumn)) {
                 unset($data[$newColumn]);
             }
+        }
+
+        if (Schema::hasColumn('site_settings', 'projects_terms_enabled')) {
+            $data['projects_terms_enabled'] = $request->boolean('projects_terms_enabled');
+            $data['projects_subprojects_enabled'] = $request->boolean('projects_subprojects_enabled');
+            $data['paid_info_page_id'] = $data['paid_info_page_id'] ?? null;
         }
 
         if (Schema::hasColumn('site_settings', 'projects_stages_enabled')) {

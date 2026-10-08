@@ -186,6 +186,8 @@
                         .proj-paid-info { font-weight: 500; }
             .proj-paid-info summary { cursor: pointer; font-weight: 800; color: var(--color-brand); text-decoration: underline; text-underline-offset: 3px; }
             .proj-paid-info summary:hover { color: #1d1d1a; } .proj-paid-info summary:focus-visible { outline: 2px solid var(--color-brand); outline-offset: 3px; border-radius: .25rem; }
+            .proj-paid-link { font-weight: 800; color: var(--color-brand); text-decoration: underline; text-underline-offset: 3px; }
+            .proj-paid-link:hover { color: #1d1d1a; } .proj-paid-link:focus-visible { outline: 2px solid var(--color-brand); outline-offset: 3px; border-radius: .25rem; }
             .proj-paid-body { margin-top: .6rem; padding-left: .85rem; border-left: 3px solid var(--color-brand); font-size: .95rem; line-height: 1.6; font-weight: 500; }
             .proj-paid-body p { margin: 0 0 .6rem; } .proj-paid-body p:last-child { margin-bottom: 0; }
                         .proj-price-grid { list-style: none; margin: 0; padding: 0; display: grid; gap: .75rem; grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr)); }
@@ -234,13 +236,13 @@
         <div @class(['grid items-start gap-10', 'proj-cols' => $hasAside || $navSidebar])>
         <div class="min-w-0 proj-main">
             <div id="panel-opis" role="tabpanel" aria-labelledby="tab-opis" x-show="tab === 'opis'" class="proj-measure proj-flow">
-                @if ($project->is_paid && $project->parent_id)
+                @if ($siteSettings->projects_subprojects_enabled && $project->is_paid && $project->parent_id)
                     <div class="proj-note"><span>Ta forma jest <strong>płatna</strong>.</span>
                         @include('projects.partials.paid-info', ['infoProject' => $project])
                         <span class="proj-note-ico" aria-hidden="true"><i class="fa-solid fa-coins"></i></span>
                     </div>
                 @endif
-                @php $subProjects = $project->publishedChildren; @endphp
+                @php $subProjects = $siteSettings->projects_subprojects_enabled ? $project->publishedChildren : collect(); @endphp
                 @if ($subProjects->isNotEmpty())
                     <section aria-labelledby="proj-children-h">
                         @php
@@ -338,7 +340,7 @@
                 @endif
 
                 {{-- Kto może wziąć udział — ramka z warunkami --}}
-                @php $projTerms = collect($project->terms ?? [])->filter(fn ($r) => filled($r['label'] ?? null) && filled($r['text'] ?? null)); @endphp
+                @php $projTerms = $siteSettings->projects_terms_enabled ? collect($project->terms ?? [])->filter(fn ($r) => filled($r['label'] ?? null) && filled($r['text'] ?? null)) : collect(); @endphp
                 @if ($projTerms->isNotEmpty())
                     <section class="proj-frame" aria-labelledby="proj-terms-h">
                         <h2 id="proj-terms-h" class="proj-frame-h"><i class="fa-solid fa-user-check" aria-hidden="true"></i> Kto może wziąć udział</h2>
@@ -356,7 +358,7 @@
                     $refInline = $inlinePages->values();
                     $refAcc = $accordionPages->values();
                     $refLinks = $linkPages->values();
-                    $refSubs = $project->publishedChildren;
+                    $refSubs = $siteSettings->projects_subprojects_enabled ? $project->publishedChildren : collect();
                     $refTotal = $refTabs->count() + $refInline->count() + $refAcc->count() + $refLinks->count();
                 @endphp
                 @if ($refTotal > 0)

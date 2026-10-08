@@ -23,9 +23,9 @@
                     class="rounded-md px-4 py-2 text-sm font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 bg-gray-100 text-ink hover:bg-gray-200">
                     <i class="fa-solid fa-align-left" aria-hidden="true"></i> Treść
                 </button>
-                <button type="button" data-ftab-btn="warunki" role="tab" aria-selected="false" class="rounded-md px-4 py-2 text-sm font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 bg-gray-100 text-ink hover:bg-gray-200">
-                    <i class="fa-solid fa-user-check" aria-hidden="true"></i> Warunki udziału
-                </button>
+                @if ($siteSettings->projects_terms_enabled)<button type="button" data-ftab-btn="warunki" role="tab" aria-selected="false" class="rounded-md px-4 py-2 text-sm font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 bg-gray-100 text-ink hover:bg-gray-200">
+                    <i class="fa-solid fa-user-check" aria-hidden="true"></i> Kto może wziąć udział
+                </button>@endif
                 <button type="button" data-ftab-btn="sekcje" role="tab" aria-selected="false"
                     class="rounded-md px-4 py-2 text-sm font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 bg-gray-100 text-ink hover:bg-gray-200">
                     <i class="fa-solid fa-layer-group" aria-hidden="true"></i> Sekcje
@@ -155,7 +155,7 @@
                     </div>
 
                     {{-- Podprojekt: np. „Szkolenia z obsługi komputera — płatne" i „— bezpłatne" pod jednym projektem nadrzędnym. --}}
-                    <div class="space-y-3 rounded-lg border border-gray-100 bg-gray-50 p-4">
+                    <div class="space-y-3 rounded-lg border border-gray-100 bg-gray-50 p-4" @unless ($siteSettings->projects_subprojects_enabled || $project->parent_id) hidden @endunless>
                         <div>
                             <label for="parent_id" class="mb-1 block text-sm font-bold">Projekt nadrzędny <span class="font-normal text-muted">(opcjonalnie — tworzy podprojekt)</span></label>
                             <select id="parent_id" name="parent_id" x-model="parent" class="w-full rounded-lg border-gray-300 focus:border-brand focus:ring-brand sm:w-2/3">
@@ -413,7 +413,7 @@
                 <div class="space-y-4 rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
                     <div>
                         <p class="text-sm font-bold uppercase tracking-wide text-muted">Kto może wziąć udział</p>
-                        <p class="mt-1 text-xs text-muted">Warunki udziału wyświetlane na stronie w ramce „Kto może wziąć udział”. Pisz krótko i prostym językiem.</p>
+                        <p class="mt-1 text-xs text-muted">Informacje wyświetlane na stronie w ramce „Kto może wziąć udział”. Pisz krótko i prostym językiem.</p>
                     </div>
                     <div class="flex flex-wrap items-center gap-2" role="group" aria-label="Dodaj gotowy warunek">
                         <span class="text-xs font-bold text-muted">Dodaj:</span>

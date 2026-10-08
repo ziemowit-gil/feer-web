@@ -1554,12 +1554,33 @@
                     class="w-full rounded-lg border-gray-300 text-sm focus:border-brand focus:ring-brand">{{ old('paid_activity_info', $settings->paid_activity_info) }}</textarea>
                 <button type="button" class="mt-1 text-xs font-bold text-brand underline" onclick="document.getElementById('paid_activity_info').value = @js(\App\Models\SiteSetting::PAID_ACTIVITY_DEFAULT)">Wstaw tekst domyślny do edycji</button>
                 @error('paid_activity_info') <p class="mt-1 text-sm text-red-700">{{ $message }}</p> @enderror
+
+                <div class="mt-4">
+                    <label for="paid_info_page_id" class="mb-1 block text-sm font-bold">Strona z pełnym objaśnieniem (link „Przeczytaj więcej”)</label>
+                    <select id="paid_info_page_id" name="paid_info_page_id" class="w-full rounded-lg border-gray-300 text-sm focus:border-brand focus:ring-brand sm:w-2/3">
+                        <option value="">— automatycznie: strona „odplatna-dzialalnosc-pozytku-publicznego” —</option>
+                        @foreach (\App\Models\Page::orderBy('title')->get(['id', 'title', 'is_published']) as $pgOpt)
+                            <option value="{{ $pgOpt->id }}" {{ (int) old('paid_info_page_id', $settings->paid_info_page_id) === $pgOpt->id ? 'selected' : '' }}>{{ $pgOpt->title }}{{ $pgOpt->is_published ? '' : ' (szkic)' }}</option>
+                        @endforeach
+                    </select>
+                    <p class="mt-1 text-xs text-muted">Link pojawia się w objaśnieniu dopiero, gdy ta strona jest opublikowana.</p>
+                </div>
             </div>
 
             <fieldset class="border-t border-gray-100 pt-6">
                 <legend class="mb-1 text-sm font-bold">Rozszerzenia modułu projektów</legend>
                 <p class="mb-3 text-xs text-muted">Włącz dodatkowe pola w formularzu projektu i ich wyświetlanie na stronie projektu. Wyłączone: zakładki znikają z formularza, a strona niczego nie pokazuje (zapisane dane zostają).</p>
                 <div class="space-y-3">
+                    <label class="flex items-start gap-3">
+                        <input type="hidden" name="projects_subprojects_enabled" value="0">
+                        <input type="checkbox" name="projects_subprojects_enabled" value="1" {{ old('projects_subprojects_enabled', $settings->projects_subprojects_enabled ?? true) ? 'checked' : '' }} class="mt-0.5 rounded border-gray-300 text-brand focus:ring-brand">
+                        <span><span class="block text-sm font-bold">Podprojekty (formy udziału)</span><span class="block text-xs text-muted">Pole „Projekt nadrzędny”, dziedziczenie pól oraz sekcja „Formy udziału” z objaśnieniem odpłatności.</span></span>
+                    </label>
+                    <label class="flex items-start gap-3">
+                        <input type="hidden" name="projects_terms_enabled" value="0">
+                        <input type="checkbox" name="projects_terms_enabled" value="1" {{ old('projects_terms_enabled', $settings->projects_terms_enabled ?? true) ? 'checked' : '' }} class="mt-0.5 rounded border-gray-300 text-brand focus:ring-brand">
+                        <span><span class="block text-sm font-bold">Kto może wziąć udział</span><span class="block text-xs text-muted">Zakładka „Kto może wziąć udział” w formularzu (wiek, miejsce, sprzęt, dostępność sali) i ramka o tej nazwie na stronie projektu.</span></span>
+                    </label>
                     <label class="flex items-start gap-3">
                         <input type="hidden" name="projects_stages_enabled" value="0">
                         <input type="checkbox" name="projects_stages_enabled" value="1" {{ old('projects_stages_enabled', $settings->projects_stages_enabled ?? false) ? 'checked' : '' }} class="mt-0.5 rounded border-gray-300 text-brand focus:ring-brand">

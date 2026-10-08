@@ -61,7 +61,7 @@ class Project extends Model implements HasMedia
         'look'       => ['Kolorystyka (grupa docelowa i akcent)', ['audience', 'accent_color']],
         'coordinator' => ['Koordynator i kontakt', ['coordinator_name', 'coordinator_email', 'coordinator_phone', 'show_coordinator', 'is_featured_contact']],
         'pricing'    => ['Płatność i cennik', ['is_paid', 'pricing']],
-        'terms'      => ['Warunki udziału', ['terms']],
+        'terms'      => ['Kto może wziąć udział', ['terms']],
         'buttons'    => ['Przyciski i notka pod menu sekcji', ['sidebar_buttons', 'sidebar_note']],
     ];
 
