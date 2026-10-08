@@ -11,65 +11,82 @@
         ->get();
 @endphp
 
-<nav aria-label="Nawigacja BIP">
-    <ul class="space-y-0.5 text-sm">
-        {{-- Strona główna BIP — stała pierwsza pozycja --}}
-        <li>
-            <a href="{{ route('bip') }}"
-                @if ($onBip) aria-current="page" @endif
-                class="flex min-h-11 items-center gap-2 rounded-md px-3 py-2 font-semibold transition {{ $onBip ? ($feerSide ? 'bg-brand-light font-bold text-ink' : 'bg-brand-light text-brand-dark') : 'text-ink hover:bg-gray-50' }} focus-visible:outline-2 focus-visible:outline-brand">
-                <i class="fa-solid fa-landmark w-4 text-center text-[0.7rem]" aria-hidden="true"></i>
-                Strona główna BIP
-            </a>
-        </li>
+@php
+    $bmLink = function (string $url, string $label, string $icon, bool $current = false, bool $external = false) {
+        return compact('url', 'label', 'icon', 'current', 'external');
+    };
+    $groups = [];
+    $main = [$bmLink(route('bip'), 'Strona główna BIP', 'fa-solid fa-landmark', $onBip)];
+    foreach ($bipNavItems as $item) {
+        $main[] = $bmLink(
+            (string) $item->url,
+            (string) $item->label,
+            $item->icon ?: 'fa-solid fa-file-lines',
+            ltrim(parse_url($item->url, PHP_URL_PATH) ?? '', '/') === ltrim(request()->path(), '/'),
+            str_starts_with($item->url ?? '', 'http'),
+        );
+    }
+    $groups['Dokumenty i informacje'] = $main;
 
-        @foreach ($bipNavItems as $item)
-            @php
-                $isCurrentItem = ltrim(parse_url($item->url, PHP_URL_PATH) ?? '', '/') === ltrim(request()->path(), '/');
-                $isExtLink = str_starts_with($item->url ?? '', 'http');
-            @endphp
-            <li>
-                <a href="{{ $item->url }}"
-                    @if ($isExtLink) target="_blank" rel="noopener" @endif
-                    @if ($isCurrentItem) aria-current="page" @endif
-                    class="flex items-center gap-2 rounded px-3 py-2 transition {{ $isCurrentItem ? ($feerSide ? 'bg-brand-light font-bold text-ink' : 'bg-brand-light font-semibold text-brand-dark') : 'text-muted hover:bg-gray-50 hover:text-ink' }} focus-visible:outline-2 focus-visible:outline-brand">
-                    @if ($item->icon)
-                        <i class="{{ $item->icon }} w-4 text-center text-[0.7rem]" aria-hidden="true"></i>
-                    @endif
-                    {{ $item->label }}
-                    @if ($isExtLink)
-                        <i class="fa-solid fa-arrow-up-right-from-square ml-auto text-[0.55rem] text-muted" aria-hidden="true"></i>
-                    @endif
-                </a>
-            </li>
-        @endforeach
-        @if (! $isExternalMode && ($bipSettings->bip_show_reports ?? true) && $bipSettings->isModuleEnabled('reports'))
-            <li>
-                <a href="{{ route('bip') }}#sprawozdania" class="flex min-h-11 items-center gap-2 rounded-md px-3 py-2 font-semibold text-ink transition hover:bg-gray-100">
-                    <i class="fa-solid fa-file-invoice w-4 text-center text-[0.7rem]" aria-hidden="true"></i>Sprawozdania roczne
-                </a>
-            </li>
-        @endif
-        @unless ($isExternalMode)
-            <li>
-                <a href="{{ route('bip.changelog') }}" @if ($onChangelog) aria-current="page" @endif
-                    class="flex min-h-11 items-center gap-2 rounded-md px-3 py-2 font-semibold transition {{ $onChangelog ? 'bg-brand-light font-bold text-ink' : 'text-ink hover:bg-gray-100' }}">
-                    <i class="fa-solid fa-clock-rotate-left w-4 text-center text-[0.7rem]" aria-hidden="true"></i>Rejestr zmian
-                </a>
-            </li>
-        @endunless
-        <li>
-            <a href="{{ route('bip.instructions') }}" @if (request()->routeIs('bip.instructions')) aria-current="page" @endif
-                class="flex min-h-11 items-center gap-2 rounded-md px-3 py-2 font-semibold transition {{ request()->routeIs('bip.instructions') ? 'bg-brand-light font-bold text-ink' : 'text-ink hover:bg-gray-100' }}">
-                <i class="fa-solid fa-circle-info w-4 text-center text-[0.7rem]" aria-hidden="true"></i>Instrukcja korzystania z BIP
-            </a>
-        </li>
-        <li>
-            <a href="{{ route('accessibility.show') }}" class="flex min-h-11 items-center gap-2 rounded-md px-3 py-2 font-semibold text-ink transition hover:bg-gray-100">
-                <i class="fa-solid fa-universal-access w-4 text-center text-[0.7rem]" aria-hidden="true"></i>Deklaracja dostępności
-            </a>
-        </li>
-    </ul>
+    $reg = [];
+    if (! $isExternalMode && ($bipSettings->bip_show_reports ?? true) && $bipSettings->isModuleEnabled('reports')) {
+        $reg[] = $bmLink(route('bip').'#sprawozdania', 'Sprawozdania roczne', 'fa-solid fa-file-invoice');
+    }
+    if (! $isExternalMode) {
+        $reg[] = $bmLink(route('bip.changelog'), 'Rejestr zmian', 'fa-solid fa-clock-rotate-left', $onChangelog);
+    }
+    if ($reg) { $groups['Rejestry i sprawozdania'] = $reg; }
+
+    $groups['Pomoc'] = [
+        $bmLink(route('bip.instructions'), 'Instrukcja korzystania z BIP', 'fa-solid fa-circle-info', request()->routeIs('bip.instructions')),
+        $bmLink(route('accessibility.show'), 'Deklaracja dostępności', 'fa-solid fa-universal-access'),
+    ];
+@endphp
+
+<style>
+    .bm-nav { border-radius: .5rem; background: #f9fafb; }
+    .bm-toggle { display: flex; width: 100%; min-height: 3rem; align-items: center; justify-content: space-between; gap: .5rem; padding: .5rem 1rem; list-style: none; cursor: pointer; font-weight: 800; color: #1d1d1a; }
+    .bm-toggle::-webkit-details-marker { display: none; }
+    .bm-toggle:focus-visible { outline: 3px solid #1d1d1a; outline-offset: -3px; border-radius: .5rem; }
+    .bm-body { padding: 0 .5rem .75rem; }
+    .bm-group-h { margin: .75rem .5rem .25rem; font-size: .7rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: #4b5563; }
+    .bm-list { list-style: none; margin: 0; padding: 0; }
+    .bm-link { display: flex; min-height: 2.75rem; align-items: center; gap: .65rem; padding: .5rem .75rem; border-left: 4px solid transparent; border-radius: 0 .375rem .375rem 0; font-size: .9rem; font-weight: 600; color: #1d1d1a; text-decoration: none; }
+    .bm-link i { width: 1.1rem; flex: none; text-align: center; font-size: .8rem; color: var(--color-brand-dark); }
+    .bm-link:hover { background: #e5e7eb; }
+    .bm-link:focus-visible { outline: 3px solid #1d1d1a; outline-offset: -3px; }
+    .bm-link[aria-current="page"] { border-left-color: var(--color-brand-dark); background: var(--color-brand-light); font-weight: 800; }
+    @media (min-width: 1024px) { .bm-toggle { display: none; } .bm-nav { position: sticky; top: 1rem; } .bm-body { padding-top: .5rem; } }
+</style>
+<nav aria-label="Nawigacja BIP" class="bm-nav">
+    <details id="bm-details" open>
+        <summary class="bm-toggle"><span><i class="fa-solid fa-bars mr-2" aria-hidden="true"></i>Menu BIP</span><i class="fa-solid fa-chevron-down text-xs" aria-hidden="true"></i></summary>
+        <div class="bm-body">
+            @foreach ($groups as $gTitle => $links)
+                <p class="bm-group-h" id="bm-g-{{ $loop->index }}">{{ $gTitle }}</p>
+                <ul class="bm-list" aria-labelledby="bm-g-{{ $loop->index }}">
+                    @foreach ($links as $l)
+                        <li>
+                            <a href="{{ $l['url'] }}" class="bm-link" @if ($l['current']) aria-current="page" @endif @if ($l['external']) target="_blank" rel="noopener" @endif>
+                                <i class="{{ $l['icon'] }}" aria-hidden="true"></i><span class="min-w-0 flex-1">{{ $l['label'] }}@if ($l['external'])<span class="sr-only"> (otwiera się w nowej karcie)</span>@endif</span>
+                                @if ($l['external'])<i class="fa-solid fa-arrow-up-right-from-square" style="font-size:.6rem" aria-hidden="true"></i>@endif
+                            </a>
+                        </li>
+                    @endforeach
+                </ul>
+            @endforeach
+        </div>
+    </details>
+    <script>
+        (function () {
+            var d = document.getElementById('bm-details');
+            if (! d || ! window.matchMedia) return;
+            var mq = window.matchMedia('(min-width: 1024px)');
+            function sync() { d.open = mq.matches; }
+            sync();
+            (mq.addEventListener ? mq.addEventListener('change', sync) : mq.addListener(sync));
+        })();
+    </script>
 </nav>
 
 {{-- Dane identyfikacyjne podmiotu — wymóg § 10 MSWiA --}}
