@@ -990,6 +990,8 @@
     @include('page.partials.typed.documents')
     @elseif ($page->isRegulation())
     @include('page.partials.typed.regulation')
+    @elseif ($page->isRedirect())
+    @include('page.partials.typed.redirect')
     @elseif ($page->isCooperation())
     @php
         $cd      = $page->cooperation_data ?? [];

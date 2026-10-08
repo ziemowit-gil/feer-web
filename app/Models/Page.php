@@ -122,6 +122,7 @@ class Page extends Model
         'team'          => 'Zespół (osoby z rolą i krótkim opisem)',
         'documents'     => 'Dokumenty (grupy odnośników do plików i stron)',
         'regulation'    => 'Regulamin lub dokument (data obowiązywania, spis treści)',
+        'redirect'      => 'Przekierowanie (strona przenosi na inny adres)',
     ];
 
     /** Ikony Font Awesome typów stron (karty podstron, kafelki działu). */
@@ -132,11 +133,11 @@ class Page extends Model
         'Organizacja' => ['about', 'about_person', 'team', 'wspolpraca', 'legacy', 'brand_assets'],
         'Kafelki i nawigacja' => ['links_hub', 'tiles_grid'],
         'Kontakt i wydarzenia' => ['contact', 'event', 'schedule'],
-        'Wewnętrzne i przekierowania' => ['internal', 'internal_hub', 'bip_move'],
+        'Wewnętrzne i przekierowania' => ['internal', 'internal_hub', 'bip_move', 'redirect'],
     ];
 
     public const TYPE_ICONS = [
-        'pricing' => 'fa-coins', 'team' => 'fa-people-group', 'documents' => 'fa-folder-open', 'regulation' => 'fa-scale-balanced',
+        'pricing' => 'fa-coins', 'team' => 'fa-people-group', 'documents' => 'fa-folder-open', 'regulation' => 'fa-scale-balanced', 'redirect' => 'fa-share',
         'service' => 'fa-briefcase', 'guide' => 'fa-list-ol', 'glossary' => 'fa-book', 'case_study' => 'fa-chart-line',
         'faq' => 'fa-circle-question', 'event' => 'fa-calendar', 'schedule' => 'fa-calendar-days', 'links_hub' => 'fa-table-cells-large',
         'tiles_grid' => 'fa-table-cells', 'internal' => 'fa-lock', 'internal_hub' => 'fa-user-lock', 'bip_move' => 'fa-landmark',
@@ -144,7 +145,7 @@ class Page extends Model
     ];
 
     /** Typy, których dane trzymamy we wspólnej kolumnie JSON `type_data`. */
-    public const TYPE_DATA_TYPES = ['service', 'guide', 'glossary', 'case_study', 'pricing', 'team', 'documents', 'regulation'];
+    public const TYPE_DATA_TYPES = ['service', 'guide', 'glossary', 'case_study', 'pricing', 'team', 'documents', 'regulation', 'redirect'];
 
     /** Poziomy trudności poradnika. */
     public const GUIDE_LEVELS = [
@@ -460,6 +461,19 @@ class Page extends Model
         return $this->type === 'documents';
     }
 
+    public function isRedirect(): bool
+    {
+        return $this->type === 'redirect';
+    }
+
+    /** Adres docelowy strony typu „Przekierowanie" (ścieżka lub http/https) albo null, gdy niepoprawny. */
+    public function redirectTarget(): ?string
+    {
+        $url = trim((string) ($this->typeData()['target_url'] ?? ''));
+
+        return preg_match('~^(https?://|/(?!/))~i', $url) ? $url : null;
+    }
+
     public function isRegulation(): bool
     {
         return $this->type === 'regulation';
@@ -494,7 +508,7 @@ class Page extends Model
         return ! in_array($this->type, [
             'event', 'schedule', 'about', 'faq', 'bip_move',
             'internal_hub', 'links_hub', 'wspolpraca', 'training_institution', 'brand_assets',
-            'legacy', 'about_person', 'contact', 'service', 'guide', 'glossary', 'case_study', 'tiles_grid', 'pricing', 'team', 'documents', 'regulation',
+            'legacy', 'about_person', 'contact', 'service', 'guide', 'glossary', 'case_study', 'tiles_grid', 'pricing', 'team', 'documents', 'regulation', 'redirect',
         ], true);
     }
 

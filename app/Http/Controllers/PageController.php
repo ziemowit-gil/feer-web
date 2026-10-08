@@ -29,6 +29,11 @@ class PageController extends Controller
         $isLive = $page->is_published && ($page->publish_at === null || $page->publish_at->isPast());
         abort_unless($isLive || $preview, 404);
 
+        // Strona typu „Przekierowanie” w trybie automatycznym kieruje od razu (podgląd z panelu pokazuje stronę z informacją).
+        if ($page->isRedirect() && ! $preview && ($page->typeData()['redirect_mode'] ?? 'notice') === 'auto' && ($target = $page->redirectTarget())) {
+            return redirect()->away($target, 301);
+        }
+
         // Strona typu „Kontakt” ma stały układ i własny kontroler.
         if ($page->type === 'contact') {
             return app(ContactController::class)->render();
