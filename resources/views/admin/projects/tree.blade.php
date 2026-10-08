@@ -89,7 +89,7 @@
                         <span class="pt-badge {{ $selected->is_published ? 'ok' : 'warn' }}"><i class="fa-solid {{ $selected->is_published ? 'fa-circle-check' : 'fa-pen' }}" aria-hidden="true"></i>{{ $selected->is_published ? 'Opublikowany' : 'Szkic' }}</span>
                         @if ($selected->is_completed)<span class="pt-badge">Zrealizowany</span>@endif
                         <span class="pt-badge {{ $selected->is_paid ? 'warn' : 'ok' }}"><i class="fa-solid fa-coins" aria-hidden="true"></i>{{ $selected->is_paid ? 'Odpłatny' : 'Bezpłatny' }}</span>
-                        @if ($selected->parent_id)<span class="pt-badge info"><i class="fa-solid fa-code-branch" aria-hidden="true"></i>Podprojekt{{ $selected->is_offered ? '' : ' — obecnie niedostępny' }}</span>@endif
+                        @if ($selected->parent_id)<span class="pt-badge info"><i class="fa-solid fa-code-branch" aria-hidden="true"></i>Podprojekt (forma udziału){{ $selected->is_offered ? '' : ' — obecnie niedostępna' }}</span>@endif
                         @if ($selected->category)<span class="pt-badge">{{ $selected->category->name }}</span>@endif
                     </div>
 
@@ -131,7 +131,7 @@
                 <div class="pt-card pt-body" style="margin-top:1rem">
                     <h3 style="margin:0 0 .75rem;font-size:1rem;font-weight:800">Podprojekty <span style="font-weight:400;color:#4b5563">({{ $children->count() }})</span></h3>
                     @if ($children->isEmpty())
-                        <p class="pt-empty">Ten projekt nie ma jeszcze podprojektów (wersji).</p>
+                        <p class="pt-empty">Ten projekt nie ma jeszcze podprojektów (form udziału).</p>
                     @else
                         <ul role="list" style="list-style:none;margin:0;padding:0;display:grid;gap:.5rem">
                             @foreach ($children as $ch)

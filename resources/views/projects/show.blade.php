@@ -225,7 +225,7 @@
         <div class="min-w-0 proj-main">
             <div id="panel-opis" role="tabpanel" aria-labelledby="tab-opis" x-show="tab === 'opis'" class="proj-measure proj-flow">
                 @if ($project->is_paid && $project->parent_id)
-                    <div class="proj-note"><span>Udział w tych działaniach jest <strong>odpłatny</strong>.</span>
+                    <div class="proj-note"><span>Ta forma udziału jest <strong>odpłatna</strong>.</span>
                         @include('projects.partials.paid-info', ['infoProject' => $project])
                         <span class="proj-note-ico" aria-hidden="true"><i class="fa-solid fa-coins"></i></span>
                     </div>
@@ -236,53 +236,52 @@
                         @php
                             $offered = $subProjects->filter(fn ($x) => $x->is_offered)->values();
                             $cnt = $offered->count();
-                            $cntWord = [2 => 'dwa sposoby', 3 => 'trzy sposoby', 4 => 'cztery sposoby'][$cnt] ?? ($cnt.' sposobów');
+                            $cntWord = [2 => 'Dwie', 3 => 'Trzy', 4 => 'Cztery'][$cnt] ?? (string) $cnt;
                             $only = $subProjects->count() === 1 ? $subProjects->first() : null;
+                            $hasPaid = $offered->contains('is_paid', true);
+                            $hasFree = $offered->contains(fn ($x) => ! $x->is_paid);
                         @endphp
                         <h2 id="proj-children-h" class="proj-h2">
                             @if ($cnt === 0)
                                 Formy udziału w tym działaniu
                             @elseif ($only)
-                                {{ $only->is_paid ? 'Możesz też skorzystać odpłatnie' : 'Możesz też skorzystać bezpłatnie' }}
+                                {{ $only->is_paid ? 'Możesz też skorzystać z formy odpłatnej' : 'Możesz też skorzystać z formy bezpłatnej' }}
                             @elseif ($cnt === 1)
-                                Dostępne w osobnej formie
+                                Dostępna jedna forma udziału
                             @else
-                                Możesz skorzystać na {{ $cntWord }}
+                                {{ $cntWord }} {{ $cnt >= 5 ? 'form' : 'formy' }} udziału — wybierz swoją
                             @endif
                         </h2>
-                        @php
-                            $hasPaid = $offered->contains('is_paid', true);
-                            $hasFree = $offered->contains(fn ($x) => ! $x->is_paid);
-                        @endphp
+                        {{-- Objaśnienie w ramce z monetami: ton zaproszenia, bez żargonu. --}}
                         <div class="proj-note mb-4"><span>
                             @if ($only && $only->is_offered)
                                 @if ($only->is_paid)
-                                    Te działania możemy zrealizować także <strong>odpłatnie</strong> — na przykład gdy potrzebujesz własnego terminu lub większego zakresu.
+                                    Oprócz udziału bezpłatnego możemy zrealizować te działania także <strong>odpłatnie</strong> — na przykład gdy potrzebujesz własnego terminu, większego zakresu albo wsparcia dla całej organizacji.
                                 @else
-                                    Te działania realizujemy także <strong>bezpłatnie</strong> — sprawdź warunki udziału w osobnej formie.
+                                    Te działania realizujemy także <strong>bezpłatnie</strong> — sprawdź, na jakich zasadach możesz wziąć w nich udział.
                                 @endif
                             @elseif ($cnt === 0)
-                                Obecnie nie realizujemy żadnej z poniższych form udziału. Zajrzyj tu ponownie lub skontaktuj się z nami.
+                                Obecnie nie realizujemy żadnej z form udziału. Zajrzyj tu ponownie albo napisz do nas — chętnie podpowiemy, co możemy dla Ciebie zrobić.
                             @elseif ($hasPaid && $hasFree)
-                                Część tych działań realizujemy <strong>bezpłatnie</strong>, a niektóre możemy też zrealizować <strong>odpłatnie</strong> — na przykład gdy potrzebujesz większego zakresu, własnego terminu lub wsparcia dla całej organizacji. Wybierz formę udziału, która odpowiada Twoim potrzebom.
+                                To samo działanie, dwie drogi do niego. Część realizujemy <strong>bezpłatnie</strong> w ramach naszych programów, a niektóre możemy też zrealizować <strong>odpłatnie</strong> — gdy potrzebujesz własnego terminu, szerszego zakresu albo wsparcia dla całej organizacji. Wybierz formę, która najlepiej odpowiada Twoim potrzebom.
                             @elseif ($hasPaid)
-                                Te działania możemy zrealizować <strong>odpłatnie</strong> — wybierz formę udziału, która odpowiada Twoim potrzebom.
+                                Te działania możemy dla Ciebie zrealizować <strong>odpłatnie</strong> — na Twoich zasadach: w dogodnym terminie i w zakresie dopasowanym do potrzeb. Wybierz formę, która Ci odpowiada.
                             @else
-                                Te działania realizujemy <strong>bezpłatnie</strong> — wybierz formę udziału, która odpowiada Twoim potrzebom.
+                                Te działania realizujemy <strong>bezpłatnie</strong> w ramach naszych programów — dla każdego, kto spełnia warunki udziału. Wybierz formę, która Ci odpowiada.
                             @endif
-                        
+                            </span>
+                            <span class="proj-note-links">
+                                @foreach ($subProjects as $sp)
+                                    <a href="{{ route('projects.show', $sp) }}">
+                                        {{ $sp->is_paid ? 'Poznaj zasady formy odpłatnej' : 'Poznaj zasady formy bezpłatnej' }}@unless ($sp->is_offered) (obecnie niedostępna)@endunless <span aria-hidden="true">→</span><span class="sr-only">: {{ $sp->title }}</span>
+                                    </a>
+                                @endforeach
+                            </span>
                             @php $paidChild = $subProjects->firstWhere('is_paid', true); @endphp
                             @if ($paidChild)
                                 @include('projects.partials.paid-info', ['infoProject' => $paidChild])
                             @endif
-                            <span class="proj-note-ico" aria-hidden="true"><i class="fa-solid fa-coins"></i></span></span>
-                            <span class="proj-note-links">
-                                @foreach ($subProjects as $sp)
-                                    <a href="{{ route('projects.show', $sp) }}">
-                                        {{ $sp->is_paid ? 'Zobacz zasady udziału odpłatnego' : 'Zobacz zasady udziału bezpłatnego' }}@unless ($sp->is_offered) (obecnie niedostępna)@endunless <span aria-hidden="true">→</span><span class="sr-only">: {{ $sp->title }}</span>
-                                    </a>
-                                @endforeach
-                            </span>
+                            <span class="proj-note-ico" aria-hidden="true"><i class="fa-solid fa-coins"></i></span>
                         </div>
                     </section>
                 @endif
@@ -354,7 +353,7 @@
                                 <li><a class="proj-ref-link" href="{{ route('page.show', $rp) }}">{{ $rp->title }}<span class="proj-ref-kind"> — osobna strona</span></a></li>
                             @endforeach
                             @foreach ($refSubs as $rs)
-                                <li><a class="proj-ref-link" href="{{ route('projects.show', $rs) }}">{{ $rs->title }}<span class="proj-ref-kind"> — {{ $rs->is_paid ? 'udział odpłatny' : 'udział bezpłatny' }}</span></a></li>
+                                <li><a class="proj-ref-link" href="{{ route('projects.show', $rs) }}">{{ $rs->title }}<span class="proj-ref-kind"> — {{ $rs->is_paid ? 'forma odpłatna' : 'forma bezpłatna' }}</span></a></li>
                             @endforeach
                         </ul>
                     </section>

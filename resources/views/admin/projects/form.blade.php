@@ -170,8 +170,8 @@
                             <label class="flex items-start gap-3">
                                 <input type="checkbox" name="is_offered" value="1" {{ old('is_offered', $project->is_offered ?? true) ? 'checked' : '' }} class="mt-0.5 rounded border-gray-300 text-brand focus:ring-brand">
                                 <span>
-                                    <span class="block text-sm font-bold">Aktualnie realizujemy tę wersję</span>
-                                    <span class="block text-xs text-muted">Odznacz, jeśli ta wersja jest chwilowo niedostępna — na stronie działania nadrzędnego kafel dostanie oznaczenie „Obecnie niedostępna”.</span>
+                                    <span class="block text-sm font-bold">Aktualnie realizujemy tę formę udziału</span>
+                                    <span class="block text-xs text-muted">Odznacz, jeśli ta forma udziału jest chwilowo niedostępna — na stronie działania nadrzędnego link dostanie oznaczenie „obecnie niedostępna”.</span>
                                 </span>
                             </label>
                         </div>
