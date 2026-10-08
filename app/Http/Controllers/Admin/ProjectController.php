@@ -371,9 +371,6 @@ class ProjectController extends Controller
         $data['funding'] = ($sources || $budget !== '') ? ['sources' => $sources, 'budget' => $budget, 'budget_public' => $request->boolean('funding.budget_public')] : null;
         $data['funding_notice'] = trim((string) ($data['funding_notice'] ?? '')) ?: null;
         $data['status'] = ($data['status'] ?? null) ?: null;
-        if ($data['status'] === 'completed') {
-            $data['is_completed'] = true;
-        }
         unset($data['partner_ids']);
 
         $data['is_offered'] = ! $request->has('is_offered_present') || $request->boolean('is_offered');
@@ -383,7 +380,8 @@ class ProjectController extends Controller
             ? SiteSetting::current()->contrastSafeColor($data['accent_color'])
             : null;
         $data['is_published'] = $request->boolean('is_published');
-        $data['is_completed'] = $request->boolean('is_completed');
+        // Status „Zakończony" oznacza też projekt zrealizowany (archiwum).
+        $data['is_completed'] = $request->boolean('is_completed') || ($data['status'] ?? null) === 'completed';
         // Data zakończenia ma sens tylko dla projektów zrealizowanych (filtry archiwum ?przed= / ?po=).
         $data['completed_at'] = $data['is_completed'] ? ($data['completed_at'] ?? null) : null;
 

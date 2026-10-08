@@ -74,6 +74,12 @@
                     {{ $project->category->name }}
                 </a>
                 <h1 class="mt-3 text-3xl font-extrabold leading-tight tracking-tight text-ink sm:text-5xl" @if ($canInlineEdit) data-inline-field="title" data-inline-kind="text" @endif>{{ $project->title }}</h1>
+                @if ($siteSettings->projects_stages_enabled && ($project->status || $project->starts_on))
+                    <p class="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-ink">
+                        @if ($project->status)<span class="proj-status is-{{ $project->status }}">{{ \App\Models\Project::STATUSES[$project->status] ?? '' }}</span>@endif
+                        @if ($project->starts_on)<span><i class="fa-solid fa-calendar-days mr-1.5 text-brand" aria-hidden="true"></i>{{ $project->starts_on->locale('pl')->isoFormat('D MMMM YYYY') }}@if ($project->ends_on) – {{ $project->ends_on->locale('pl')->isoFormat('D MMMM YYYY') }}@endif</span>@endif
+                    </p>
+                @endif
                 @if ($project->excerpt)
                     <p class="mt-4 max-w-2xl text-lg leading-relaxed text-ink/80">{{ $project->excerpt }}</p>
                 @endif
@@ -107,7 +113,11 @@
     <section class="mx-auto max-w-6xl px-4 py-12">
         @php
             $showNews = $siteSettings->isModuleEnabled('news') && $project->publishedNews->isNotEmpty();
-            $hasAside = $schedulePage || (! $project->is_completed && $project->showsCoordinator()) || $linkPages->isNotEmpty() || $showNews;
+            $showTeamFunding = $siteSettings->projects_team_funding_enabled;
+            $projPartners = $showTeamFunding ? $project->partners()->orderBy('order')->orderBy('name')->get() : collect();
+            $projFunding = $showTeamFunding ? (array) ($project->funding ?? []) : [];
+            $hasFunding = $showTeamFunding && (! empty($projFunding['sources']) || (! empty($projFunding['budget']) && ! empty($projFunding['budget_public'])) || filled($project->funding_notice));
+            $hasAside = $schedulePage || (! $project->is_completed && $project->showsCoordinator()) || $linkPages->isNotEmpty() || $showNews || $projPartners->isNotEmpty() || $hasFunding;
         @endphp
         {{-- Układ kolumn w zwykłym CSS (nie zależy od zbudowanych klas Tailwinda): menu boczne zawsze po lewej od lg. --}}
         <style>
@@ -139,7 +149,27 @@
             }
             .proj-news a { display: block; padding: .6rem 0; }
             .proj-note { position: relative; margin: 0 0 1rem; padding: 1rem 4.5rem 1rem 1.25rem; border: 2px solid var(--color-brand); border-radius: .5rem; background: #fff; color: #1d1d1a; font-size: 1.0625rem; line-height: 1.6; font-weight: 600; }
-                        .proj-note-links { display: flex; flex-wrap: wrap; gap: .5rem 1.25rem; margin-top: .75rem; }
+                                    .proj-frame { margin-top: 2.5rem; padding: 1.25rem 1.5rem; border: 2px solid var(--color-brand); border-radius: .5rem; background: #fff; }
+            .proj-frame-side { margin-top: 0; padding: 1rem 1.1rem; }
+            .proj-frame-h { display: flex; align-items: center; gap: .6rem; margin: 0 0 .9rem; font-size: 1.15rem; font-weight: 800; color: #1d1d1a; }
+            .proj-frame-h i { display: inline-flex; width: 2rem; height: 2rem; align-items: center; justify-content: center; border: 2px solid var(--color-brand); border-radius: 9999px; color: var(--color-brand); font-size: .85rem; }
+            .proj-stages { list-style: none; margin: 0; padding: 0; display: grid; gap: .9rem; }
+            .proj-stage { display: flex; gap: .85rem; }
+            .proj-stage-dot { display: inline-flex; flex: none; width: 1.75rem; height: 1.75rem; align-items: center; justify-content: center; border-radius: 9999px; border: 2px solid #6b7280; background: #fff; color: #4b5563; font-size: .7rem; }
+            .proj-stage.is-done .proj-stage-dot { background: #166534; border-color: #166534; color: #fff; }
+            .proj-stage.is-current .proj-stage-dot { background: var(--color-brand); border-color: var(--color-brand); color: #fff; }
+            .proj-stage-body { display: grid; gap: .1rem; }
+            .proj-stage-title { font-weight: 800; color: #1d1d1a; } .proj-stage-state { font-weight: 600; color: #4b5563; font-size: .85em; }
+            .proj-stage-date { font-size: .85rem; color: #374151; } .proj-stage-text { font-size: .95rem; line-height: 1.5; color: #1d1d1a; }
+            .proj-team { list-style: none; margin: 0; padding: 0; display: grid; gap: .9rem 1.5rem; grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr)); }
+            .proj-team li { display: grid; gap: .1rem; } .proj-team-name { font-weight: 800; } .proj-team-role { font-size: .9rem; font-weight: 700; color: var(--color-brand); } .proj-team-text { font-size: .9rem; line-height: 1.45; }
+            .proj-partners { list-style: none; margin: 0; padding: 0; display: grid; gap: .75rem; grid-template-columns: repeat(auto-fit, minmax(7rem, 1fr)); align-items: center; }
+            .proj-partners img { display: block; max-height: 3.5rem; max-width: 100%; object-fit: contain; } .proj-partners a { display: block; } .proj-partners span { font-weight: 700; font-size: .9rem; }
+            .proj-fund { list-style: none; margin: 0 0 .75rem; padding: 0; display: grid; gap: .6rem; } .proj-fund-name { display: block; font-weight: 800; } .proj-fund-name a { color: var(--color-brand); text-decoration: underline; text-underline-offset: 2px; } .proj-fund-text { display: block; font-size: .9rem; line-height: 1.45; }
+            .proj-fund-budget { margin: 0 0 .5rem; font-size: .95rem; } .proj-fund-notice { margin: 0; padding-top: .6rem; border-top: 1px solid #e5e7eb; font-size: .85rem; line-height: 1.5; color: #1d1d1a; }
+            .proj-status { display: inline-flex; align-items: center; border-radius: 9999px; padding: .15rem .75rem; font-size: .8rem; font-weight: 800; border: 2px solid #1d1d1a; background: #fff; color: #1d1d1a; }
+            .proj-status.is-active { border-color: var(--color-brand); color: var(--color-brand); } .proj-status.is-completed { border-color: #166534; color: #166534; } .proj-status.is-planned { border-color: #92400e; color: #92400e; }
+            .proj-note-links { display: flex; flex-wrap: wrap; gap: .5rem 1.25rem; margin-top: .75rem; }
             .proj-note-links a { font-weight: 800; color: var(--color-brand); text-decoration: underline; text-underline-offset: 3px; }
             .proj-note-links a:hover { color: #1d1d1a; }
             .proj-note-links a:focus-visible { outline: 2px solid var(--color-brand); outline-offset: 3px; border-radius: .25rem; }
@@ -215,6 +245,46 @@
                 @if ($project->why)
                     <h2 class="proj-h2">Dlaczego to robimy</h2>
                     <div class="prose proj-prose max-w-none">{{ $project->why }}</div>
+                @endif
+
+                {{-- Etapy (harmonogram) — ramka --}}
+                @php $projStages = $siteSettings->projects_stages_enabled ? collect($project->stages ?? []) : collect(); @endphp
+                @if ($projStages->isNotEmpty())
+                    <section class="proj-frame" aria-labelledby="proj-stages-h">
+                        <h2 id="proj-stages-h" class="proj-frame-h"><i class="fa-solid fa-timeline" aria-hidden="true"></i> Etapy projektu</h2>
+                        <ol class="proj-stages" role="list">
+                            @foreach ($projStages as $st)
+                                @php $state = $st['state'] ?? 'upcoming'; @endphp
+                                <li class="proj-stage is-{{ $state }}" @if ($state === 'current') aria-current="step" @endif>
+                                    <span class="proj-stage-dot" aria-hidden="true"><i class="fa-solid {{ $state === 'done' ? 'fa-check' : ($state === 'current' ? 'fa-play' : 'fa-circle') }}"></i></span>
+                                    <span class="proj-stage-body">
+                                        <span class="proj-stage-title">{{ $st['title'] }} <span class="proj-stage-state">— {{ \App\Models\Project::STAGE_STATES[$state] ?? '' }}</span></span>
+                                        @if (! empty($st['from']) || ! empty($st['to']))
+                                            <span class="proj-stage-date">{{ ! empty($st['from']) ? \Illuminate\Support\Carbon::parse($st['from'])->locale('pl')->isoFormat('D MMM YYYY') : '' }}@if (! empty($st['to'])) – {{ \Illuminate\Support\Carbon::parse($st['to'])->locale('pl')->isoFormat('D MMM YYYY') }}@endif</span>
+                                        @endif
+                                        @if (! empty($st['text']))<span class="proj-stage-text">{{ $st['text'] }}</span>@endif
+                                    </span>
+                                </li>
+                            @endforeach
+                        </ol>
+                    </section>
+                @endif
+
+                {{-- Zespół — ramka --}}
+                @php $projTeam = $showTeamFunding ? collect($project->team ?? []) : collect(); @endphp
+                @if ($projTeam->isNotEmpty())
+                    <section class="proj-frame" aria-labelledby="proj-team-h">
+                        <h2 id="proj-team-h" class="proj-frame-h"><i class="fa-solid fa-people-group" aria-hidden="true"></i> Zespół projektu</h2>
+                        <ul role="list" class="proj-team">
+                            @foreach ($projTeam as $tm)
+                                <li>
+                                    <span class="proj-team-name">{{ $tm['name'] }}</span>
+                                    @if (! empty($tm['role']))<span class="proj-team-role">{{ $tm['role'] }}</span>@endif
+                                    @if (! empty($tm['text']))<span class="proj-team-text">{{ $tm['text'] }}</span>@endif
+                                </li>
+                            @endforeach
+                        </ul>
+                    </section>
                 @endif
 
                 @php $subProjects = $project->publishedChildren; @endphp
@@ -409,6 +479,43 @@
                             @endforeach
                         </ul>
                     </div>
+                @endif
+
+                @if ($projPartners->isNotEmpty())
+                    <section class="proj-frame proj-frame-side" aria-labelledby="proj-partners-h">
+                        <h2 id="proj-partners-h" class="proj-frame-h"><i class="fa-solid fa-handshake" aria-hidden="true"></i> Partnerzy</h2>
+                        <ul role="list" class="proj-partners">
+                            @foreach ($projPartners as $pt)
+                                <li>
+                                    @if ($pt->url)<a href="{{ $pt->url }}" target="_blank" rel="noopener">@endif
+                                        @if ($pt->logo_url)<img src="{{ $pt->logo_url }}" alt="{{ $pt->name }}" loading="lazy">@else<span>{{ $pt->name }}</span>@endif
+                                        @if ($pt->url)<span class="sr-only"> (otwiera się w nowej karcie)</span></a>@endif
+                                </li>
+                            @endforeach
+                        </ul>
+                    </section>
+                @endif
+
+                @if ($hasFunding)
+                    <section class="proj-frame proj-frame-side" aria-labelledby="proj-fund-h">
+                        <h2 id="proj-fund-h" class="proj-frame-h"><i class="fa-solid fa-hand-holding-dollar" aria-hidden="true"></i> Finansowanie</h2>
+                        @if (! empty($projFunding['sources']))
+                            <ul role="list" class="proj-fund">
+                                @foreach ($projFunding['sources'] as $fs)
+                                    <li>
+                                        <span class="proj-fund-name">@if (! empty($fs['url']))<a href="{{ $fs['url'] }}" target="_blank" rel="noopener">{{ $fs['name'] }}<span class="sr-only"> (nowa karta)</span></a>@else{{ $fs['name'] }}@endif</span>
+                                        @if (! empty($fs['text']))<span class="proj-fund-text">{{ $fs['text'] }}</span>@endif
+                                    </li>
+                                @endforeach
+                            </ul>
+                        @endif
+                        @if (! empty($projFunding['budget']) && ! empty($projFunding['budget_public']))
+                            <p class="proj-fund-budget">Budżet projektu: <strong>{{ $projFunding['budget'] }}</strong></p>
+                        @endif
+                        @if (filled($project->funding_notice))
+                            <p class="proj-fund-notice">{{ $project->funding_notice }}</p>
+                        @endif
+                    </section>
                 @endif
 
                 @if ($showNews)
