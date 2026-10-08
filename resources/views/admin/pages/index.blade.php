@@ -148,6 +148,7 @@
                                 'training_institution' => 'bg-teal-50 text-teal-700',
                                 'bip_move'             => 'bg-slate-100 text-slate-600',
                                 'redirect'             => 'bg-slate-100 text-slate-600',
+                                'reports'              => 'bg-emerald-50 text-emerald-700',
                                 'internal'             => 'bg-slate-100 text-slate-600',
                                 'internal_hub'         => 'bg-purple-50 text-purple-700',
                                 'links_hub'            => 'bg-violet-50 text-violet-700',
