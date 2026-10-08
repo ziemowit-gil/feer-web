@@ -17,7 +17,7 @@
         @include('templates.feer.partials.hero')
     @endif
     @include('templates.feer.partials.bands-slot', ['slot' => 'after_hero'])
-    @if ($siteSettings->home_search_enabled ?? true)
+    @if ($siteSettings->home_search_enabled ?? false)
         @include('templates.feer.partials.search')
     @endif
     @if ($siteSettings->isHomepageSectionEnabled('ankieta'))
