@@ -3,196 +3,226 @@
 @section('title', 'Pulpit')
 
 @section('content')
-    {{-- ── Baner powitalny ─────────────────────────────────────────── --}}
-    <div class="mb-6 overflow-hidden rounded-2xl bg-linear-to-br from-brand to-brand-dark px-6 py-5 text-white shadow-sm">
-        <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-                <p class="text-xs font-bold uppercase tracking-widest text-white/60">
-                    {{ now()->locale('pl')->isoFormat('dddd, D MMMM YYYY') }}
-                </p>
-                <h1 class="mt-0.5 text-2xl font-bold">
-                    Dzień dobry, {{ auth()->user()->name }}
-                </h1>
-                <p class="mt-1 text-sm text-white/75">{{ $siteSettings->site_name }}</p>
-                <div class="mt-3 flex flex-wrap gap-x-4 gap-y-1">
-                    @foreach ($stats->take(5) as $stat)
-                        <a href="{{ $stat['route'] }}" class="flex items-center gap-1.5 text-sm text-white/80 hover:text-white">
-                            <span class="text-base font-bold text-white">{{ $stat['count'] }}</span>
-                            <span>{{ $stat['label'] }}</span>
+    @php
+        $user = auth()->user();
+        $can = fn (string $module) => $siteSettings->isModuleEnabled($module) && $user->canAccessModule($module);
+        $hour = (int) now()->format('G');
+        $greeting = $hour < 5 || $hour >= 18 ? 'Dobry wieczór' : ($hour < 12 ? 'Dzień dobry' : 'Miłego dnia');
+        $firstName = \Illuminate\Support\Str::before(trim($user->name), ' ');
+        $tones = [
+            'blue'   => 'bg-blue-50 text-blue-800',
+            'purple' => 'bg-purple-50 text-purple-800',
+            'green'  => 'bg-green-50 text-green-800',
+            'amber'  => 'bg-amber-50 text-amber-900',
+        ];
+        $shortcuts = [];
+        if ($can('news'))     $shortcuts[] = ['route' => route('admin.newsy.create'),        'label' => 'Aktualność',     'icon' => 'fa-newspaper'];
+        if ($can('pages'))    $shortcuts[] = ['route' => route('admin.podstrony.create'),    'label' => 'Strona',         'icon' => 'fa-file-lines'];
+        if ($can('projects')) $shortcuts[] = ['route' => route('admin.projekty.create'),     'label' => 'Projekt',        'icon' => 'fa-diagram-project'];
+        if ($can('events'))   $shortcuts[] = ['route' => route('admin.wydarzenia.create'),   'label' => 'Wydarzenie',     'icon' => 'fa-calendar-days'];
+        if ($can('landing'))  $shortcuts[] = ['route' => route('admin.lp.create'),           'label' => 'Landing page',   'icon' => 'fa-bullhorn'];
+        if ($can('reports'))  $shortcuts[] = ['route' => route('admin.sprawozdania.create'), 'label' => 'Sprawozdanie',   'icon' => 'fa-file-invoice'];
+        if (app(\App\Modules\ModuleManager::class)->isActive('blog') && $user->canAccessModule('blog'))
+                              $shortcuts[] = ['route' => route('admin.wiem-feer.create'),    'label' => 'Wpis bloga',     'icon' => 'fa-feather-pointed'];
+        $attentionTotal = $attention->sum('count');
+    @endphp
+
+    {{-- ── Nagłówek ───────────────────────────────────────────────── --}}
+    <header class="mb-6 flex flex-wrap items-end justify-between gap-4">
+        <div>
+            <p class="text-xs font-bold uppercase tracking-widest text-muted">{{ now()->locale('pl')->isoFormat('dddd, D MMMM YYYY') }}</p>
+            <h1 class="mt-1 text-2xl font-extrabold text-ink sm:text-3xl">{{ $greeting }}, {{ $firstName }}</h1>
+            <p class="mt-1 text-sm text-muted">{{ $siteSettings->site_name }}</p>
+        </div>
+        <div class="flex flex-wrap items-center gap-2">
+            <a href="{{ route('home') }}" target="_blank" rel="noopener"
+                class="inline-flex min-h-10 items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 text-sm font-bold text-ink hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
+                <i class="fa-solid fa-arrow-up-right-from-square text-xs" aria-hidden="true"></i> Podgląd strony<span class="sr-only"> (nowa karta)</span>
+            </a>
+            @if ($user->isAdmin())
+                <a href="{{ route('admin.ustawienia.edit') }}"
+                    class="inline-flex min-h-10 items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 text-sm font-bold text-ink hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
+                    <i class="fa-solid fa-gear text-xs" aria-hidden="true"></i> Ustawienia
+                </a>
+            @endif
+        </div>
+    </header>
+
+    {{-- ── Wymaga uwagi ───────────────────────────────────────────── --}}
+    <section aria-labelledby="dash-attention" class="mb-8">
+        <h2 id="dash-attention" class="mb-3 text-sm font-bold uppercase tracking-wide text-muted">Wymaga uwagi</h2>
+        @if ($attention->isEmpty() && empty($draftCounts))
+            <p class="flex items-center gap-3 rounded-xl border border-green-200 bg-green-50 px-5 py-4 text-sm font-medium text-green-900">
+                <i class="fa-solid fa-circle-check text-lg" aria-hidden="true"></i> Wszystko załatwione — nic nie czeka na Twoją decyzję.
+            </p>
+        @else
+            <ul role="list" class="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                @foreach ($attention as $item)
+                    <li>
+                        <a href="{{ $item['url'] }}" class="group flex h-full items-center gap-4 rounded-xl border-2 border-brand bg-white p-4 transition hover:bg-brand-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
+                            <span class="flex h-12 w-12 flex-none items-center justify-center rounded-lg bg-brand text-lg text-white" aria-hidden="true"><i class="fa-solid {{ $item['icon'] }}"></i></span>
+                            <span class="min-w-0">
+                                <span class="block text-2xl font-extrabold leading-none text-ink">{{ $item['count'] }}</span>
+                                <span class="mt-1 block text-sm font-bold text-ink">{{ $item['label'] }}</span>
+                            </span>
                         </a>
+                    </li>
+                @endforeach
+                @if (! empty($draftCounts))
+                    <li class="rounded-xl border border-gray-200 bg-white p-4">
+                        <p class="text-sm font-bold text-ink"><i class="fa-solid fa-pen-ruler mr-1.5 text-gray-500" aria-hidden="true"></i>Szkice do dokończenia</p>
+                        <ul role="list" class="mt-2 space-y-1 text-sm text-ink">
+                            @foreach ($draftCounts as $d)
+                                <li class="flex justify-between gap-2"><span>{{ $d['label'] }}</span><span class="font-bold">{{ $d['count'] }}</span></li>
+                            @endforeach
+                        </ul>
+                    </li>
+                @endif
+            </ul>
+        @endif
+    </section>
+
+    {{-- ── Liczniki modułów ───────────────────────────────────────── --}}
+    <section aria-labelledby="dash-stats" class="mb-8">
+        <h2 id="dash-stats" class="mb-3 text-sm font-bold uppercase tracking-wide text-muted">Zawartość serwisu</h2>
+        <ul role="list" class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            @foreach ($stats as $stat)
+                <li>
+                    <a href="{{ $stat['route'] }}" class="flex h-full items-center gap-4 rounded-xl border border-gray-200 bg-white p-4 shadow-sm transition hover:border-brand hover:shadow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
+                        <span class="flex h-11 w-11 flex-none items-center justify-center rounded-lg bg-gray-100 text-base text-gray-700" aria-hidden="true"><i class="fa-solid {{ $stat['icon'] }}"></i></span>
+                        <span class="min-w-0">
+                            <span class="block text-2xl font-extrabold leading-none text-ink">{{ $stat['count'] }}</span>
+                            <span class="mt-1 block truncate text-sm font-bold text-ink">{{ $stat['label'] }}</span>
+                            @if ($stat['sub'])<span class="block truncate text-xs text-muted">{{ $stat['sub'] }}</span>@endif
+                        </span>
+                    </a>
+                </li>
+            @endforeach
+        </ul>
+    </section>
+
+    {{-- ── Główna siatka: aktywność + panel boczny ────────────────── --}}
+    <div class="grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_22rem]">
+
+        {{-- Aktywność ---------------------------------------------------------- --}}
+        <section aria-labelledby="dash-activity" class="rounded-xl border border-gray-200 bg-white shadow-sm"
+            x-data="{ f: 'all' }">
+            <div class="flex flex-wrap items-center justify-between gap-3 border-b border-gray-100 px-5 py-4">
+                <h2 id="dash-activity" class="text-base font-bold text-ink">Ostatnia aktywność</h2>
+                <div class="flex flex-wrap gap-1.5" role="group" aria-label="Filtr aktywności">
+                    @php $filters = ['all' => 'Wszystko', 'news' => 'Aktualności', 'pages' => 'Strony', 'projects' => 'Projekty', 'events' => 'Wydarzenia']; @endphp
+                    @foreach ($filters as $key => $label)
+                        @if ($key === 'all' || $activity->contains('type', $key))
+                            <button type="button" @click="f = '{{ $key }}'" :aria-pressed="(f === '{{ $key }}').toString()"
+                                class="rounded-full border px-3 py-1 text-xs font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2"
+                                :class="f === '{{ $key }}' ? 'border-ink bg-ink text-white' : 'border-gray-300 bg-white text-ink hover:bg-gray-50'">{{ $label }}</button>
+                        @endif
                     @endforeach
-                    @if ($stats->count() > 5)
-                        <span class="text-sm text-white/50">+{{ $stats->count() - 5 }} więcej</span>
-                    @endif
                 </div>
             </div>
-            <div class="flex flex-wrap items-center gap-2">
-                <a href="{{ route('home') }}" target="_blank" rel="noopener"
-                    class="inline-flex items-center gap-1.5 rounded-lg bg-white/15 px-3 py-1.5 text-xs font-bold text-white transition hover:bg-white/25">
-                    <i class="fa-solid fa-arrow-up-right-from-square text-[10px]" aria-hidden="true"></i>
-                    Podgląd strony
-                </a>
-                <a href="{{ route('admin.ustawienia.edit') }}"
-                    class="inline-flex items-center gap-1.5 rounded-lg bg-white/15 px-3 py-1.5 text-xs font-bold text-white transition hover:bg-white/25">
-                    <i class="fa-solid fa-gear text-[10px]" aria-hidden="true"></i>
-                    Ustawienia
-                </a>
-            </div>
-        </div>
-    </div>
 
-    {{-- ── Główna siatka ────────────────────────────────────────────── --}}
-    <div class="grid gap-6 lg:grid-cols-[1fr_300px]">
+            @if ($activity->isEmpty())
+                <p class="px-5 py-8 text-center text-sm text-muted">Brak treści do pokazania.</p>
+            @else
+                <ol class="divide-y divide-gray-100" role="list">
+                    @foreach ($activity as $a)
+                        <li x-show="f === 'all' || f === '{{ $a['type'] }}'">
+                            <a href="{{ $a['url'] }}" class="flex items-center gap-4 px-5 py-3.5 transition hover:bg-gray-50 focus-visible:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand">
+                                <span class="flex h-9 w-9 flex-none items-center justify-center rounded-lg text-sm {{ $tones[$a['tone']] ?? $tones['blue'] }}" aria-hidden="true"><i class="fa-solid {{ $a['icon'] }}"></i></span>
+                                <span class="min-w-0 flex-1">
+                                    <span class="block truncate text-sm font-bold text-ink">{{ $a['title'] }}</span>
+                                    <span class="block truncate text-xs text-muted">
+                                        {{ $a['label'] }} · {{ $a['at']->diffForHumans() }}@if ($a['author']) · {{ $a['author'] }}@endif
+                                    </span>
+                                </span>
+                                @if ($a['published'])
+                                    <span class="flex-none rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-bold text-green-900">Opublikowane</span>
+                                @else
+                                    <span class="flex-none rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-bold text-amber-900">Szkic</span>
+                                @endif
+                            </a>
+                        </li>
+                    @endforeach
+                </ol>
+                <div class="flex flex-wrap gap-4 border-t border-gray-100 px-5 py-3 text-sm">
+                    @if ($can('news'))<a href="{{ route('admin.newsy.index') }}" class="font-bold text-brand hover:text-brand-dark">Wszystkie aktualności →</a>@endif
+                    @if ($can('pages'))<a href="{{ route('admin.podstrony.index') }}" class="font-bold text-brand hover:text-brand-dark">Wszystkie strony →</a>@endif
+                </div>
+            @endif
+        </section>
 
-        {{-- Lewa kolumna: ostatnia aktywność ──────────────────────── --}}
-        <div class="space-y-5">
+        {{-- Panel boczny ------------------------------------------------------- --}}
+        <div class="space-y-6">
 
-            @php
-                $can = fn (string $module) => $siteSettings->isModuleEnabled($module) && auth()->user()->canAccessModule($module);
-            @endphp
-
-            @if ($recentNews->isNotEmpty() || $recentPages->isNotEmpty())
-                <div class="rounded-xl border border-gray-200 bg-white shadow-sm">
-                    <div class="flex items-center justify-between border-b border-gray-100 px-5 py-3.5">
-                        <h2 class="text-sm font-bold text-ink">Ostatnio edytowane</h2>
-                    </div>
-                    <ul class="divide-y divide-gray-50">
-                        @foreach ($recentNews->take(4) as $item)
+            @if ($shortcuts)
+                <section aria-labelledby="dash-create" class="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+                    <h2 id="dash-create" class="mb-3 text-base font-bold text-ink">Utwórz nowe</h2>
+                    <ul role="list" class="grid grid-cols-2 gap-2">
+                        @foreach ($shortcuts as $s)
                             <li>
-                                <a href="{{ route('admin.newsy.edit', $item) }}"
-                                    class="flex items-center gap-3 px-5 py-3 transition hover:bg-gray-50">
-                                    <span class="flex h-7 w-7 flex-none items-center justify-center rounded-md bg-blue-50 text-blue-500">
-                                        <i class="fa-solid fa-newspaper text-[11px]" aria-hidden="true"></i>
-                                    </span>
-                                    <span class="min-w-0 flex-1">
-                                        <span class="block truncate text-sm font-medium text-ink">{{ $item->title }}</span>
-                                        <span class="text-xs text-muted">Aktualność · {{ $item->created_at->diffForHumans() }}</span>
-                                    </span>
-                                    @if ($item->is_published)
-                                        <span class="flex-none rounded-full bg-green-100 px-2 py-0.5 text-[11px] font-bold text-green-700">live</span>
-                                    @else
-                                        <span class="flex-none rounded-full bg-gray-100 px-2 py-0.5 text-[11px] font-bold text-gray-400">szkic</span>
-                                    @endif
-                                </a>
-                            </li>
-                        @endforeach
-
-                        @foreach ($recentPages->take(4) as $item)
-                            <li>
-                                <a href="{{ route('admin.podstrony.edit', $item) }}"
-                                    class="flex items-center gap-3 px-5 py-3 transition hover:bg-gray-50">
-                                    <span class="flex h-7 w-7 flex-none items-center justify-center rounded-md bg-purple-50 text-purple-500">
-                                        <i class="fa-solid fa-file-lines text-[11px]" aria-hidden="true"></i>
-                                    </span>
-                                    <span class="min-w-0 flex-1">
-                                        <span class="block truncate text-sm font-medium text-ink">{{ $item->title }}</span>
-                                        <span class="text-xs text-muted">Strona · {{ $item->created_at->diffForHumans() }}</span>
-                                    </span>
-                                    @if ($item->is_published)
-                                        <span class="flex-none rounded-full bg-green-100 px-2 py-0.5 text-[11px] font-bold text-green-700">live</span>
-                                    @else
-                                        <span class="flex-none rounded-full bg-gray-100 px-2 py-0.5 text-[11px] font-bold text-gray-400">szkic</span>
-                                    @endif
+                                <a href="{{ $s['route'] }}" class="flex min-h-12 items-center gap-2.5 rounded-lg border-2 border-gray-200 bg-white px-3 text-sm font-bold text-ink transition hover:border-brand hover:bg-brand-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
+                                    <i class="fa-solid {{ $s['icon'] }} w-4 flex-none text-center text-brand" aria-hidden="true"></i>{{ $s['label'] }}
                                 </a>
                             </li>
                         @endforeach
                     </ul>
-                    <div class="flex gap-3 border-t border-gray-100 px-5 py-3">
-                        @if ($can('news'))
-                            <a href="{{ route('admin.newsy.index') }}" class="text-xs font-bold text-brand hover:text-brand-dark">Wszystkie aktualności →</a>
-                        @endif
-                        @if ($can('pages'))
-                            <a href="{{ route('admin.podstrony.index') }}" class="text-xs font-bold text-brand hover:text-brand-dark">Wszystkie strony →</a>
-                        @endif
-                    </div>
-                </div>
+                </section>
             @endif
 
-            {{-- Aktywna ankieta ──────────────────────────────────── --}}
+            @if ($upcoming->isNotEmpty())
+                <section aria-labelledby="dash-events" class="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+                    <h2 id="dash-events" class="mb-3 text-base font-bold text-ink">Najbliższe wydarzenia</h2>
+                    <ul role="list" class="space-y-3">
+                        @foreach ($upcoming as $ev)
+                            <li>
+                                <a href="{{ route('admin.wydarzenia.edit', $ev) }}" class="group flex gap-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
+                                    <span class="flex h-12 w-12 flex-none flex-col items-center justify-center rounded-lg bg-brand-light text-brand">
+                                        <span class="text-lg font-extrabold leading-none">{{ $ev->starts_at->format('j') }}</span>
+                                        <span class="text-[10px] font-bold uppercase">{{ $ev->starts_at->locale('pl')->isoFormat('MMM') }}</span>
+                                    </span>
+                                    <span class="min-w-0">
+                                        <span class="block text-sm font-bold leading-snug text-ink group-hover:text-brand">{{ $ev->title }}</span>
+                                        <span class="block text-xs text-muted">{{ $ev->starts_at->format('H:i') }}@if ($ev->location) · {{ $ev->location }}@endif</span>
+                                    </span>
+                                </a>
+                            </li>
+                        @endforeach
+                    </ul>
+                    <a href="{{ route('admin.wydarzenia.index') }}" class="mt-3 inline-block text-sm font-bold text-brand hover:text-brand-dark">Wszystkie wydarzenia →</a>
+                </section>
+            @endif
+
             @if ($activePoll && $can('polls'))
-                <div class="rounded-xl border border-brand/30 bg-brand-light/30 p-5 shadow-sm">
-                    <div class="mb-3 flex items-center justify-between">
-                        <span class="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-brand">
-                            <span class="relative flex h-2 w-2">
-                                <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-brand opacity-60"></span>
-                                <span class="relative inline-flex h-2 w-2 rounded-full bg-brand"></span>
-                            </span>
-                            Aktywna ankieta
-                        </span>
-                        <a href="{{ route('admin.ankiety.edit', $activePoll) }}"
-                            class="text-xs font-bold text-brand hover:text-brand-dark">Edytuj</a>
+                <section aria-labelledby="dash-poll" class="rounded-xl border border-brand/30 bg-brand-light/40 p-5 shadow-sm">
+                    <div class="mb-2 flex items-center justify-between gap-2">
+                        <h2 id="dash-poll" class="text-xs font-bold uppercase tracking-wider text-brand">Aktywna ankieta</h2>
+                        <a href="{{ route('admin.ankiety.edit', $activePoll) }}" class="text-xs font-bold text-brand hover:text-brand-dark">Edytuj</a>
                     </div>
-                    <p class="mb-4 text-sm font-bold text-ink">{{ $activePoll->question }}</p>
+                    <p class="mb-3 text-sm font-bold text-ink">{{ $activePoll->question }}</p>
                     @php $total = $activePoll->totalVotes(); @endphp
-                    <div class="space-y-2.5">
+                    <ul role="list" class="space-y-2.5">
                         @foreach ($activePoll->options as $opt)
-                            <div>
-                                <div class="mb-1 flex justify-between text-xs">
-                                    <span class="font-medium text-ink">{{ $opt->label }}</span>
-                                    <span class="text-muted">{{ $opt->votes }} ({{ $opt->percent($total) }}%)</span>
-                                </div>
-                                <div class="h-1.5 overflow-hidden rounded-full bg-white/70">
-                                    <div class="h-full rounded-full bg-brand transition-all" style="width: {{ $opt->percent($total) }}%"></div>
-                                </div>
-                            </div>
+                            <li>
+                                <div class="mb-1 flex justify-between gap-2 text-xs"><span class="font-medium text-ink">{{ $opt->label }}</span><span class="text-ink">{{ $opt->votes }} ({{ $opt->percent($total) }}%)</span></div>
+                                <div class="h-2 overflow-hidden rounded-full bg-white" aria-hidden="true"><div class="h-full rounded-full bg-brand" style="width: {{ $opt->percent($total) }}%"></div></div>
+                            </li>
                         @endforeach
-                    </div>
+                    </ul>
                     <p class="mt-3 text-xs text-muted">Łącznie głosów: {{ $total }}</p>
-                </div>
-            @endif
-        </div>
-
-        {{-- Prawa kolumna: szybkie akcje + info ───────────────────── --}}
-        <div class="space-y-5">
-
-            {{-- Szybkie akcje --}}
-            @php
-                $shortcutColors = [
-                    'blue'   => 'bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100 focus-visible:ring-blue-500',
-                    'green'  => 'bg-green-50 text-green-700 border-green-200 hover:bg-green-100 focus-visible:ring-green-500',
-                    'purple' => 'bg-purple-50 text-purple-700 border-purple-200 hover:bg-purple-100 focus-visible:ring-purple-500',
-                    'orange' => 'bg-orange-50 text-orange-700 border-orange-200 hover:bg-orange-100 focus-visible:ring-orange-500',
-                    'slate'  => 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100 focus-visible:ring-slate-500',
-                    'rose'   => 'bg-rose-50 text-rose-700 border-rose-200 hover:bg-rose-100 focus-visible:ring-rose-500',
-                ];
-                $shortcuts = [];
-                if ($can('news'))       $shortcuts[] = ['route' => route('admin.newsy.create'),              'label' => 'Nowy news',           'icon' => 'fa-newspaper',      'color' => 'blue'];
-                if ($can('events'))     $shortcuts[] = ['route' => route('admin.wydarzenia.create'),         'label' => 'Nowe wydarzenie',     'icon' => 'fa-calendar-days',  'color' => 'green'];
-                if ($can('pages'))      $shortcuts[] = ['route' => route('admin.podstrony.create'),          'label' => 'Nowa strona',         'icon' => 'fa-file-lines',     'color' => 'purple'];
-                if ($can('landing'))    $shortcuts[] = ['route' => route('admin.lp.create'),                 'label' => 'Nowy landing page',   'icon' => 'fa-bullhorn',       'color' => 'orange'];
-                if ($can('reports'))    $shortcuts[] = ['route' => route('admin.sprawozdania.create'),       'label' => 'Nowe sprawozdanie',   'icon' => 'fa-file-invoice',   'color' => 'slate'];
-                if (app(\App\Modules\ModuleManager::class)->isActive('blog'))
-                                        $shortcuts[] = ['route' => route('admin.wiem-feer.create'),          'label' => 'Nowy wpis bloga',     'icon' => 'fa-feather-pointed','color' => 'rose'];
-            @endphp
-
-            @if ($shortcuts)
-                <div class="rounded-xl border border-gray-200 bg-white shadow-sm">
-                    <div class="border-b border-gray-100 px-5 py-3.5">
-                        <h2 class="text-sm font-bold text-ink">Utwórz nowe</h2>
-                    </div>
-                    <div class="grid grid-cols-2 gap-2 p-3">
-                        @foreach ($shortcuts as $s)
-                            @php $cls = $shortcutColors[$s['color']] ?? $shortcutColors['blue']; @endphp
-                            <a href="{{ $s['route'] }}"
-                                class="flex flex-col items-center gap-1.5 rounded-lg border px-2 py-3 text-center text-xs font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 {{ $cls }}">
-                                <i class="fa-solid {{ $s['icon'] }} text-base" aria-hidden="true"></i>
-                                {{ $s['label'] }}
-                            </a>
-                        @endforeach
-                    </div>
-                </div>
+                </section>
             @endif
 
-            {{-- Zalecane wymiary grafik ──────────────────────────── --}}
-            <div class="rounded-xl border border-gray-200 bg-white shadow-sm" x-data="{ open: false }">
-                <button type="button" @click="open = !open"
-                    class="flex w-full items-center justify-between px-5 py-3.5 text-left">
-                    <h2 class="text-sm font-bold text-ink">Zalecane wymiary grafik</h2>
-                    <i class="fa-solid fa-chevron-down text-[10px] text-muted transition-transform" :class="open ? 'rotate-180' : ''" aria-hidden="true"></i>
-                </button>
-                <div x-show="open" x-cloak class="border-t border-gray-100 px-5 pb-4 pt-3">
+            <section class="rounded-xl border border-gray-200 bg-white shadow-sm" x-data="{ open: false }">
+                <h2>
+                    <button type="button" @click="open = ! open" :aria-expanded="open.toString()" aria-controls="dash-dims"
+                        class="flex w-full items-center justify-between px-5 py-4 text-left text-base font-bold text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand">
+                        Zalecane wymiary grafik
+                        <i class="fa-solid fa-chevron-down text-xs text-muted transition-transform" :class="open ? 'rotate-180' : ''" aria-hidden="true"></i>
+                    </button>
+                </h2>
+                <div id="dash-dims" x-show="open" x-cloak class="border-t border-gray-100 px-5 pb-4 pt-3">
                     <p class="mb-3 text-xs text-muted">Zdjęcia są przycinane, więc inne proporcje też zadziałają — poniższe dają najostrzejszy wygląd.</p>
-                    <ul class="space-y-2 text-xs">
+                    <ul role="list" class="space-y-2 text-sm">
                         <li class="flex justify-between gap-2"><span class="font-medium text-ink">Logo</span><span class="text-right text-muted">400×400 px, PNG/SVG</span></li>
                         <li class="flex justify-between gap-2"><span class="font-medium text-ink">Slajder hero</span><span class="text-right text-muted">1600×600 px</span></li>
                         <li class="flex justify-between gap-2"><span class="font-medium text-ink">OG / udostępnianie</span><span class="text-right text-muted">1200×630 px</span></li>
@@ -202,8 +232,7 @@
                         <li class="flex justify-between gap-2"><span class="font-medium text-ink">Logo partnera</span><span class="text-right text-muted">do 300 px, PNG</span></li>
                     </ul>
                 </div>
-            </div>
-
+            </section>
         </div>
     </div>
 @endsection

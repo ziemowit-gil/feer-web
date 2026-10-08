@@ -20,6 +20,7 @@ use App\Models\QuickAction;
 use App\Models\SiteSetting;
 use App\Models\User;
 use App\Models\VolunteerAd;
+use App\Support\AdminNotifications;
 
 /**
  * Panel admin: główny pulpit z licznikami treści, ostatnimi wpisami i statusem modułów.
@@ -165,6 +166,46 @@ class DashboardController extends Controller
         $recentPages = $can('pages') ? Page::orderByDesc('created_at')->limit(5)->get() : collect();
         $activePoll  = $can('polls') ? Poll::active() : null;
 
-        return view('admin.dashboard', compact('stats', 'recentNews', 'recentPages', 'activePoll'));
+        // „Wymaga uwagi": zatwierdzanie, zadania, komentarze, zgłoszenia — z uwzględnieniem uprawnień użytkownika.
+        $attention = collect(AdminNotifications::items($user));
+
+        // Aktywność: ostatnio zmieniane treści z kilku modułów w jednej osi czasu (zakres edytora stosuje model).
+        $sources = [
+            ['module' => 'news',     'label' => 'Aktualność', 'icon' => 'fa-newspaper',      'tone' => 'blue',   'model' => News::class,    'edit' => 'admin.newsy.edit'],
+            ['module' => 'pages',    'label' => 'Strona',     'icon' => 'fa-file-lines',     'tone' => 'purple', 'model' => Page::class,    'edit' => 'admin.podstrony.edit'],
+            ['module' => 'projects', 'label' => 'Projekt',    'icon' => 'fa-diagram-project','tone' => 'green',  'model' => Project::class, 'edit' => 'admin.projekty.edit'],
+            ['module' => 'events',   'label' => 'Wydarzenie', 'icon' => 'fa-calendar-days',  'tone' => 'amber',  'model' => Event::class,   'edit' => 'admin.wydarzenia.edit'],
+        ];
+        $activity = collect();
+        $draftCounts = [];
+        foreach ($sources as $src) {
+            if (! $can($src['module'])) {
+                continue;
+            }
+            $model = $src['model'];
+            $drafts = $model::where('is_published', false)->count();
+            if ($drafts > 0) {
+                $draftCounts[] = ['label' => $src['label'], 'count' => $drafts];
+            }
+            foreach ($model::orderByDesc('updated_at')->limit(8)->get() as $row) {
+                $activity->push([
+                    'type' => $src['module'], 'label' => $src['label'], 'icon' => $src['icon'], 'tone' => $src['tone'],
+                    'title' => $row->title, 'url' => route($src['edit'], $row), 'at' => $row->updated_at,
+                    'published' => (bool) $row->is_published, 'author_id' => $row->created_by ?? null,
+                ]);
+            }
+        }
+        $authors = User::whereIn('id', $activity->pluck('author_id')->filter()->unique())->pluck('name', 'id');
+        $activity = $activity->sortByDesc('at')->take(14)->values()->map(function ($a) use ($authors) {
+            $a['author'] = $a['author_id'] ? $authors->get($a['author_id']) : null;
+
+            return $a;
+        });
+
+        $upcoming = $can('events')
+            ? Event::where('is_published', true)->where('starts_at', '>=', now())->orderBy('starts_at')->limit(4)->get()
+            : collect();
+
+        return view('admin.dashboard', compact('stats', 'recentNews', 'recentPages', 'activePoll', 'attention', 'activity', 'draftCounts', 'upcoming'));
     }
 }
