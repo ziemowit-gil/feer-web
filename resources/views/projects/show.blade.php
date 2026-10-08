@@ -195,7 +195,11 @@
                 @php $subProjects = $project->publishedChildren; @endphp
                 @if ($subProjects->isNotEmpty())
                     <section aria-labelledby="proj-children-h">
-                        <h2 id="proj-children-h" class="proj-h2">Warianty i podprojekty</h2>
+                        @php
+                            $cnt = $subProjects->count();
+                            $cntWord = [2 => 'dwóch', 3 => 'trzech', 4 => 'czterech'][$cnt] ?? (string) $cnt;
+                        @endphp
+                        <h2 id="proj-children-h" class="proj-h2">{{ $cnt === 1 ? 'Dostępne w osobnej wersji' : 'Możesz skorzystać w '.$cntWord.' wersjach' }}</h2>
                         <ul role="list" class="grid gap-3 sm:grid-cols-2">
                             @foreach ($subProjects as $sp)
                                 <li>
