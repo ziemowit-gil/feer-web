@@ -78,14 +78,24 @@ HTML;
             <main>
                 {{-- Wyszukiwarka BIP (tryb wbudowany) --}}
                 @unless ($isExternal)
-                    <form method="GET" action="{{ route('bip') }}" role="search" aria-label="Szukaj w BIP" class="mb-8 flex flex-wrap items-end gap-2">
-                        <div class="min-w-0 flex-1" style="min-width: 14rem">
-                            <label for="bip-q" class="mb-1 block text-sm font-bold text-ink">Szukaj w BIP</label>
-                            <input type="search" id="bip-q" name="q" value="{{ $q }}" placeholder="np. statut, sprawozdanie 2025"
-                                class="min-h-11 w-full rounded-md border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                    <style>
+                        .bip-search { margin-bottom: 1.5rem; padding: 1.5rem; border-radius: .5rem; background: var(--color-brand-light); }
+                        .bip-search-label { display: block; margin-bottom: .6rem; font-size: 1.25rem; font-weight: 800; color: #1d1d1a; }
+                        .bip-search-row { display: flex; flex-wrap: wrap; gap: .75rem; }
+                        .bip-search-input { flex: 1 1 16rem; min-width: 0; min-height: 3.5rem; padding: .5rem 1rem; border: 2px solid #1d1d1a; border-radius: .5rem; background: #fff; font-size: 1.125rem; color: #1d1d1a; }
+                        .bip-search-input:focus-visible { outline: 3px solid #1d1d1a; outline-offset: 2px; }
+                        .bip-search-btn { display: inline-flex; min-height: 3.5rem; align-items: center; justify-content: center; gap: .6rem; padding: .5rem 2rem; border: 2px solid var(--color-brand-dark); border-radius: .5rem; background: var(--color-brand-dark); color: #fff; font-size: 1.125rem; font-weight: 800; cursor: pointer; }
+                        .bip-search-btn:hover { background: #1d1d1a; border-color: #1d1d1a; }
+                        .bip-search-btn:focus-visible { outline: 3px solid #1d1d1a; outline-offset: 2px; }
+                        .bip-search-hint { margin: .6rem 0 0; font-size: .9rem; color: #374151; }
+                    </style>
+                    <form method="GET" action="{{ route('bip') }}" role="search" aria-label="Szukaj w BIP" class="bip-search">
+                        <label for="bip-q" class="bip-search-label">Szukaj w BIP</label>
+                        <div class="bip-search-row">
+                            <input type="search" id="bip-q" name="q" value="{{ $q }}" placeholder="np. statut, sprawozdanie 2025, KRS" class="bip-search-input" autocomplete="off">
+                            <button type="submit" class="bip-search-btn"><i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>Szukaj</button>
                         </div>
-                        <button type="submit" class="inline-flex min-h-11 items-center gap-2 rounded-md bg-brand px-5 text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2"><i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>Szukaj</button>
-                        @if ($q !== '')<a href="{{ route('bip') }}" class="inline-flex min-h-11 items-center px-2 text-sm font-bold text-brand-dark underline hover:text-ink">Wyczyść</a>@endif
+                        <p class="bip-search-hint">Wyszukiwarka sprawdza tytuły, streszczenia i treść dokumentów.@if ($q !== '') <a href="{{ route('bip') }}" class="font-bold text-brand-dark underline hover:text-ink">Wyczyść wyszukiwanie</a>@endif</p>
                     </form>
                     @if ($q !== '')
                         <p class="mb-6 text-sm text-ink" role="status">
