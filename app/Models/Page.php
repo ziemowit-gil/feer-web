@@ -106,7 +106,7 @@ class Page extends Model
         'internal' => 'Wewnętrzna (dostęp ograniczony)',
         'internal_hub' => 'Strefa współpracownika (wewnętrzny panel: komunikaty i odnośniki)',
         'links_hub' => 'Strona z kafelkami — metro (publiczne linki do działów)',
-        'tiles_grid' => 'Siatka kafelków (ikony + linki, dowolny układ)',
+        'tiles_grid' => 'Siatka kafelków + treść (kafelki z ikonami, treść nad lub pod nimi, boczne menu)',
         'wspolpraca' => 'Współpraca z FEER (partnerstwo, sektory, formy, CTA)',
         'legacy' => 'Prezentacja tego, co było',
         'brand_assets'  => 'Marka — identyfikacja wizualna (pliki do pobrania)',

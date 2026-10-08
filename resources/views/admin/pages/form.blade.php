@@ -693,6 +693,7 @@
                     if (bipMoveFields) bipMoveFields.classList.toggle('hidden', typeSelect.value !== 'bip_move');
                     if (internalFields) internalFields.classList.toggle('hidden', ! ['internal', 'internal_hub'].includes(typeSelect.value));
                     if (hubFields) hubFields.classList.toggle('hidden', ! ['internal_hub', 'links_hub'].includes(typeSelect.value));
+                    document.querySelectorAll('[data-tiles-position]').forEach((el) => el.classList.toggle('hidden', typeSelect.value !== 'tiles_grid'));
                     if (legacyFields) legacyFields.classList.toggle('hidden', typeSelect.value !== 'legacy');
                     if (trainingFields) trainingFields.classList.toggle('hidden', typeSelect.value !== 'training_institution');
                     document.querySelectorAll('[data-type-fields]').forEach((el) => el.classList.toggle('hidden', el.dataset.typeFields !== typeSelect.value));

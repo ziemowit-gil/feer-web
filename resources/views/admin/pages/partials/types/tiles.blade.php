@@ -8,7 +8,7 @@
         Dla typu <strong>Siatka kafelków</strong> kafelki stanowią główną treść strony; dla innych typów wyświetlają się jako dodatkowa sekcja pod treścią.
     </p>
 
-    <fieldset class="space-y-2" data-tiles-position>
+    <fieldset class="space-y-2 {{ ($currentType ?? 'standard') === 'tiles_grid' ? '' : 'hidden' }}" data-tiles-position>
         <legend class="text-sm font-bold">Treść strony względem kafelków <span class="font-normal text-muted">(typ „Siatka kafelków”)</span></legend>
         @php $tilesPos = old('tiles_content_position', $page->tiles_content_position ?: 'above'); @endphp
         <div class="flex flex-wrap gap-3">
