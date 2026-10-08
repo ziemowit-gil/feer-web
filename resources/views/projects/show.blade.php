@@ -73,6 +73,9 @@
                 <a href="{{ route('categories.show', $project->category) }}" class="inline-block text-xs font-bold uppercase tracking-widest text-brand hover:text-brand-dark">
                     {{ $project->category->name }}
                 </a>
+                @if ($project->isPaidOffer())
+                    <p class="mt-3"><span class="proj-status is-paid-offer"><i class="fa-solid fa-coins mr-1.5" aria-hidden="true"></i>Usługa odpłatna</span></p>
+                @endif
                 <h1 class="mt-3 text-3xl font-extrabold leading-tight tracking-tight text-ink sm:text-5xl" @if ($canInlineEdit) data-inline-field="title" data-inline-kind="text" @endif>{{ $project->title }}</h1>
                 @if ($siteSettings->projects_stages_enabled && ($project->status || $project->starts_on))
                     <p class="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-ink">
@@ -168,6 +171,7 @@
             .proj-fund { list-style: none; margin: 0 0 .75rem; padding: 0; display: grid; gap: .6rem; } .proj-fund-name { display: block; font-weight: 800; } .proj-fund-name a { color: var(--color-brand); text-decoration: underline; text-underline-offset: 2px; } .proj-fund-text { display: block; font-size: .9rem; line-height: 1.45; }
             .proj-fund-budget { margin: 0 0 .5rem; font-size: .95rem; } .proj-fund-notice { margin: 0; padding-top: .6rem; border-top: 1px solid #e5e7eb; font-size: .85rem; line-height: 1.5; color: #1d1d1a; }
             .proj-status { display: inline-flex; align-items: center; border-radius: 9999px; padding: .15rem .75rem; font-size: .8rem; font-weight: 800; border: 2px solid #1d1d1a; background: #fff; color: #1d1d1a; }
+            .proj-status.is-paid-offer { border-color: #92400e; color: #92400e; }
             .proj-status.is-active { border-color: var(--color-brand); color: var(--color-brand); } .proj-status.is-completed { border-color: #166534; color: #166534; } .proj-status.is-planned { border-color: #92400e; color: #92400e; }
                         .proj-menu-box { position: relative; padding: 1.5rem; background: #f3f4f6; }
             .proj-menu-line { position: absolute; top: 0; left: 0; display: block; width: 4rem; height: .25rem; background: var(--color-brand); }
@@ -236,6 +240,15 @@
         <div @class(['grid items-start gap-10', 'proj-cols' => $hasAside || $navSidebar])>
         <div class="min-w-0 proj-main">
             <div id="panel-opis" role="tabpanel" aria-labelledby="tab-opis" x-show="tab === 'opis'" class="proj-measure proj-flow">
+                @if ($project->isPaidOffer())
+                    {{-- Usługa wyłącznie odpłatna: wyraźna informacja, objaśnienie i przycisk kontaktu. --}}
+                    <div class="proj-note">
+                        <span>Z tej usługi skorzystasz <strong>za opłatą</strong>. Cenę i zasady znajdziesz poniżej. Jeśli masz pytania, napisz do nas.</span>
+                        <span class="proj-note-links"><a href="{{ route('contact.show') }}">Napisz do nas, żeby ustalić termin <span aria-hidden="true">→</span></a></span>
+                        @include('projects.partials.paid-info', ['infoProject' => $project])
+                        <span class="proj-note-ico" aria-hidden="true"><i class="fa-solid fa-coins"></i></span>
+                    </div>
+                @endif
                 @if ($siteSettings->projects_subprojects_enabled && $project->is_paid && $project->parent_id)
                     <div class="proj-note"><span>Ta forma jest <strong>płatna</strong>.</span>
                         @include('projects.partials.paid-info', ['infoProject' => $project])

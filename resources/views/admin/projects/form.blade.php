@@ -133,6 +133,15 @@
                 <div class="space-y-5 rounded-lg border border-gray-200 bg-white p-6 shadow-sm"
                     x-data="{ parent: '{{ old('parent_id', $project->parent_id) }}', inh: @js(array_values((array) old('inherit', $project->inherit ?? []))) }">
                     <p class="text-sm font-bold uppercase tracking-wide text-muted">Publikacja</p>
+                    <div>
+                        <label for="kind" class="mb-1 block text-sm font-bold">Rodzaj</label>
+                        <select id="kind" name="kind" class="w-full rounded-lg border-gray-300 focus:border-brand focus:ring-brand sm:w-2/3">
+                            @foreach (\App\Models\Project::KINDS as $kk => $kl)
+                                <option value="{{ $kk }}" {{ old('kind', $project->kind ?? 'project') === $kk ? 'selected' : '' }}>{{ $kl }}</option>
+                            @endforeach
+                        </select>
+                        <p class="mt-1 text-xs text-muted">„Usługa wyłącznie odpłatna” zawsze jest odpłatna: pokazuje cennik, objaśnienie odpłatności i przycisk kontaktu zamiast opisu darmowego udziału.</p>
+                    </div>
                     <div class="grid gap-5 sm:grid-cols-2">
                         <div>
                             <label for="category_id" class="mb-1 block text-sm font-bold">Kategoria</label>
@@ -220,7 +229,7 @@
                 </div>
 
                 <div class="space-y-4 rounded-lg border border-gray-200 bg-white p-6 shadow-sm"
-                    x-data="{ paid: {{ old('is_paid', $project->is_paid ?? false) ? 'true' : 'false' }} }">
+                    x-data="{ paid: {{ old('is_paid', $project->is_paid ?? false) || old('kind', $project->kind ?? 'project') === 'paid_offer' ? 'true' : 'false' }} }" @change.window="if ($event.target && $event.target.id === 'kind' && $event.target.value === 'paid_offer') paid = true">
                     <label class="flex items-center gap-2">
                         <input type="hidden" name="is_paid" value="0">
                         <input type="checkbox" name="is_paid" value="1" x-model="paid"

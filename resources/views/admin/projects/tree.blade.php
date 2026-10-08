@@ -89,6 +89,7 @@
                         <span class="pt-badge {{ $selected->is_published ? 'ok' : 'warn' }}"><i class="fa-solid {{ $selected->is_published ? 'fa-circle-check' : 'fa-pen' }}" aria-hidden="true"></i>{{ $selected->is_published ? 'Opublikowany' : 'Szkic' }}</span>
                         @if ($selected->is_completed)<span class="pt-badge">Zrealizowany</span>@endif
                         <span class="pt-badge {{ $selected->is_paid ? 'warn' : 'ok' }}"><i class="fa-solid fa-coins" aria-hidden="true"></i>{{ $selected->is_paid ? 'Odpłatny' : 'Bezpłatny' }}</span>
+                        @if ($selected->isPaidOffer())<span class="pt-badge warn"><i class="fa-solid fa-coins" aria-hidden="true"></i>Usługa odpłatna</span>@endif
                         @if ($selected->parent_id)<span class="pt-badge info"><i class="fa-solid fa-code-branch" aria-hidden="true"></i>Podprojekt (forma udziału){{ $selected->is_offered ? '' : ' — obecnie niedostępna' }}</span>@endif
                         @if ($selected->category)<span class="pt-badge">{{ $selected->category->name }}</span>@endif
                     </div>
