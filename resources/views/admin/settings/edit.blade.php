@@ -1547,6 +1547,22 @@
                 </div>
             </fieldset>
 
+            <fieldset class="border-t border-gray-100 pt-6">
+                <legend class="mb-1 text-sm font-bold">Nawigacja po sekcjach projektu (dla całego serwisu)</legend>
+                <p class="mb-3 text-xs text-muted">Jak pokazać sekcje i podstrony na stronie projektu. W formularzu projektu można to nadpisać dla pojedynczego projektu.</p>
+                @php $sectionsNav = old('project_sections_nav', $settings->project_sections_nav ?? 'tabs'); @endphp
+                <div class="flex flex-wrap gap-6">
+                    <label class="flex cursor-pointer items-center gap-2 text-sm">
+                        <input type="radio" name="project_sections_nav" value="tabs" {{ $sectionsNav !== 'sidebar' ? 'checked' : '' }} class="text-brand focus:ring-brand">
+                        Zakładki (pasek pod nagłówkiem)
+                    </label>
+                    <label class="flex cursor-pointer items-center gap-2 text-sm">
+                        <input type="radio" name="project_sections_nav" value="sidebar" {{ $sectionsNav === 'sidebar' ? 'checked' : '' }} class="text-brand focus:ring-brand">
+                        Menu boczne (po lewej, z zagnieżdżonymi podstronami)
+                    </label>
+                </div>
+            </fieldset>
+
             <div class="border-t border-gray-100 pt-6">
                 <label for="editor-materials_intro" class="mb-1 block text-sm font-bold">Tekst wprowadzający na stronie materiałów <span class="font-normal text-muted">(opcjonalnie)</span></label>
                 <p class="mb-2 text-xs text-muted">Wyświetlany pod nagłówkiem na stronie <a href="{{ route('materials.index') }}" target="_blank" rel="noopener" class="text-brand underline">/materialy</a>.</p>

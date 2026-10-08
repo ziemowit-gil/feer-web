@@ -7,10 +7,13 @@
     $nodes = [];
     $collect = function ($n) use (&$collect, &$nodes) { $nodes[] = $n; foreach ($n->tree_children as $c) { $collect($c); } };
     $collect($root);
+    $sidebarMode = $sidebarMode ?? false;
     $hasKids = $root->tree_children->isNotEmpty();
+    $localMenu = $hasKids && ! $sidebarMode;
 @endphp
-<div x-data="{ node: {{ $root->id }}, openIds: [] }" @class(['grid items-start gap-8', 'lg:grid-cols-[16rem_minmax(0,1fr)]' => $hasKids])>
-    @if ($hasKids)
+{{-- W trybie menu bocznego strony stan (node) trzyma wspólny x-data projektu, menu jest poza panelem. --}}
+<div @unless ($sidebarMode) x-data="{ node: {{ $root->id }}, openIds: [] }" @endunless @class(['grid items-start gap-8', 'lg:grid-cols-[16rem_minmax(0,1fr)]' => $localMenu])>
+    @if ($localMenu)
         <nav aria-label="Menu: {{ $root->title }}" class="relative bg-gray-100 p-6 lg:sticky lg:top-6">
             <span class="absolute -left-2 -top-2 h-6 w-6 bg-brand" aria-hidden="true"></span>
             <p class="mb-4 border-b border-gray-900 pb-3 text-lg font-bold text-ink">{{ $root->title }}</p>
@@ -29,7 +32,7 @@
 
     <div class="min-w-0">
         @foreach ($nodes as $n)
-            <div x-show="node === {{ $n->id }}" @unless ($loop->first) x-cloak @endunless>
+            <div @if ($sidebarMode && $loop->first) x-show="node === null || node === {{ $n->id }}" @else x-show="node === {{ $n->id }}" @endif @unless ($loop->first) x-cloak @endunless>
                 @if (! $loop->first || $hasKids)
                     <h2 class="mb-3 text-xl font-bold text-ink">{{ $n->title }}</h2>
                 @endif

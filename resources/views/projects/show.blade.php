@@ -35,6 +35,8 @@
             ->merge($tabPages->map(fn ($sp, $i) => ['id' => 'podstrona-'.$i, 'label' => $sp->title]))
             ->all();
         $hasTabs = count($tabItems) > 1;
+        // Tryb nawigacji: pasek zakładek albo menu boczne (ustawienie serwisu lub własny wybór projektu).
+        $navSidebar = $hasTabs && $project->sectionsNavMode() === 'sidebar';
         $linkPages = $pageRoots->whereNotIn('project_display', ['inline', 'tab'])->values();
 
         // A schedule ("harmonogram") page attached to this project — surfaced as a
@@ -89,18 +91,24 @@
 
     <div x-data="{
             tabs: @js(array_column($tabItems, 'id')),
-            tab: 'opis',
+            tab: 'opis', node: null, openIds: [],
             move(step) { const i = this.tabs.indexOf(this.tab); this.tab = this.tabs[(i + step + this.tabs.length) % this.tabs.length]; this.focusActive(); },
             jump(id) { this.tab = id; this.focusActive(); },
             focusActive() { this.$nextTick(() => document.getElementById('tab-' + this.tab)?.focus()); },
         }">
-    @if ($hasTabs)
+    @if ($hasTabs && ! $navSidebar)
         @include('partials.tab-strip', ['tabItems' => $tabItems, 'tabsLabel' => 'Sekcje projektu'])
     @endif
 
     <section class="mx-auto max-w-6xl px-4 py-12">
         @php $hasAside = $schedulePage || (! $project->is_completed && $project->showsCoordinator()) || $linkPages->isNotEmpty(); @endphp
-        <div class="grid items-start gap-10 {{ $hasAside ? 'lg:grid-cols-[minmax(0,1fr)_18rem]' : '' }}">
+        <div @class(['grid items-start gap-10',
+            'lg:grid-cols-[minmax(0,1fr)_18rem]' => $hasAside && ! $navSidebar,
+            'lg:grid-cols-[16rem_minmax(0,1fr)]' => ! $hasAside && $navSidebar,
+            'lg:grid-cols-[16rem_minmax(0,1fr)_18rem]' => $hasAside && $navSidebar])>
+        @if ($navSidebar)
+            @include('projects.partials.sidebar-nav', ['sectionTabs' => $sectionTabs, 'tabPages' => $tabPages])
+        @endif
         <div class="min-w-0">
             <div id="panel-opis" role="tabpanel" aria-labelledby="tab-opis" x-show="tab === 'opis'">
                 @if ($sectionTabs->isNotEmpty())
@@ -269,7 +277,7 @@
             @foreach ($tabPages as $i => $subpage)
                 <div id="panel-podstrona-{{ $i }}" role="tabpanel" aria-labelledby="tab-podstrona-{{ $i }}" tabindex="0" x-cloak
                      x-show="tab === 'podstrona-{{ $i }}'" class="focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand">
-                    @include('projects.partials.tab-page', ['root' => $subpage])
+                    @include('projects.partials.tab-page', ['root' => $subpage, 'sidebarMode' => $navSidebar])
                 </div>
             @endforeach
             </div>

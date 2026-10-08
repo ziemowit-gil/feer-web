@@ -351,6 +351,15 @@
                             </a>
                         @endif
                     </div>
+                    <div>
+                        <label for="sections_nav" class="mb-1 block text-sm font-bold">Nawigacja po sekcjach</label>
+                        <select id="sections_nav" name="sections_nav" class="w-full rounded-lg border-gray-300 focus:border-brand focus:ring-brand sm:w-2/3">
+                            @php $secNav = old('sections_nav', $project->sections_nav); @endphp
+                            <option value="" {{ $secNav ? '' : 'selected' }}>Jak w ustawieniach serwisu ({{ \App\Models\SiteSetting::current()->project_sections_nav === 'sidebar' ? 'menu boczne' : 'zakładki' }})</option>
+                            <option value="tabs" {{ $secNav === 'tabs' ? 'selected' : '' }}>Zakładki</option>
+                            <option value="sidebar" {{ $secNav === 'sidebar' ? 'selected' : '' }}>Menu boczne</option>
+                        </select>
+                    </div>
                     @if (! $project->exists)
                         <p class="text-sm text-muted">Zapisz projekt, aby dodawać podstrony.</p>
                     @else
@@ -366,42 +375,6 @@
                             </ul>
                         @endif
                     @endif
-                </div>
-
-                <div class="space-y-5 rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-                    <div>
-                        <p class="text-sm font-bold uppercase tracking-wide text-muted">Dodatkowe sekcje</p>
-                        <p class="mt-1 text-xs text-muted">Możesz dodać maksymalnie 3 własne sekcje (tytuł + treść). Wypełnione sekcje pojawią się na stronie projektu; puste są pomijane.</p>
-                    </div>
-
-                    <label class="flex items-center gap-2">
-                        <input type="checkbox" name="sections_as_tabs" value="1" {{ old('sections_as_tabs', $project->sections_as_tabs ?? false) ? 'checked' : '' }}
-                            class="rounded border-gray-300 text-brand focus:ring-brand">
-                        <span class="text-sm font-bold">Wyświetl te sekcje jako zakładki <span class="font-normal text-muted">(przełącznik u góry strony projektu)</span></span>
-                    </label>
-
-                    @for ($i = 1; $i <= 3; $i++)
-                        @php $customSection = data_get($project->custom_sections, $i - 1, []); @endphp
-                        <div class="space-y-3 border-t border-gray-100 pt-5">
-                            <div>
-                                <label for="custom_section_title_{{ $i }}" class="mb-1 block text-sm font-bold">Tytuł sekcji {{ $i }}</label>
-                                <input type="text" id="custom_section_title_{{ $i }}" name="custom_section_title_{{ $i }}"
-                                    value="{{ old('custom_section_title_'.$i, $customSection['title'] ?? '') }}"
-                                    class="w-full rounded-lg border-gray-300 focus:border-brand focus:ring-brand">
-                                @error('custom_section_title_'.$i) <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
-                            </div>
-                            <div>
-                                <label class="mb-1 block text-sm font-bold">Treść sekcji {{ $i }}</label>
-                                @include('admin.partials.editor', ['name' => 'custom_section_content_'.$i, 'value' => old('custom_section_content_'.$i, $customSection['content'] ?? '')])
-                                @error('custom_section_content_'.$i) <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
-                            </div>
-                            <label class="flex items-center gap-2">
-                                <input type="checkbox" name="custom_section_featured_{{ $i }}" value="1" {{ old('custom_section_featured_'.$i, $customSection['featured'] ?? false) ? 'checked' : '' }}
-                                    class="rounded border-gray-300 text-brand focus:ring-brand">
-                                <span class="text-sm font-bold">Wyróżnij tę sekcję <span class="font-normal text-muted">(ramka, na samej górze strony projektu)</span></span>
-                            </label>
-                        </div>
-                    @endfor
                 </div>
             </div>
 

@@ -201,6 +201,7 @@ class ProjectController extends Controller
             'coordinator_email' => ['nullable', 'email', 'max:255'],
             'coordinator_phone' => ['nullable', 'string', 'max:50'],
             'legacy_url' => ['nullable', 'url', 'max:255'],
+            'sections_nav' => ['nullable', 'in:tabs,sidebar'],
             'custom_section_title_1' => ['nullable', 'string', 'max:255'],
             'custom_section_content_1' => ['nullable', 'string'],
             'custom_section_title_2' => ['nullable', 'string', 'max:255'],
