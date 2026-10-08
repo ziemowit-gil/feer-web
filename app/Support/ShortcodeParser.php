@@ -26,6 +26,8 @@ class ShortcodeParser
             return '';
         }
 
+        $content = static::unwrapBlockShortcodes($content);
+
         $content = preg_replace_callback(
             '/\[formularz:([a-z0-9_\-]+)\]/i',
             fn ($matches) => static::renderForm(trim($matches[1])),
@@ -63,6 +65,21 @@ class ShortcodeParser
         );
 
         return $content;
+    }
+
+    /**
+     * Shortcody bloków (kafelki, zestawy, bloki CTA/akordeon, formularze) wstawione przez pomyłkę do ramki
+     * („Ważne", notatka, ramka tekstowa, cytat) dziedziczyłyby jej tło i obramowanie — takie ramki rozpakowujemy.
+     */
+    private static function unwrapBlockShortcodes(string $content): string
+    {
+        $blocks = '(?:kafelki-zestaw|kafelki|blok|formularz):[a-z0-9_\-]+';
+
+        return preg_replace_callback(
+            '~<(blockquote|div class="content-(?:box|note|important)")[^>]*>((?:(?!</?(?:blockquote|div)\b).)*?)</(?:blockquote|div)>~is',
+            fn ($m) => preg_match('/\['.$blocks.'\]/i', $m[2]) ? $m[2] : $m[0],
+            $content,
+        ) ?? $content;
     }
 
     /** Wzorzec wszystkich shortcodów — do wykrywania (np. wyłączenie edycji inline). */
