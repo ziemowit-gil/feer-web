@@ -24,8 +24,10 @@
 
         // Subpages attached to this project, grouped by how they should appear:
         // inline sections in the body, tabs, or just links in the sidebar.
-        $tabPages = $project->publishedPages->where('project_display', 'tab')->values();
-        $inlinePages = $project->publishedPages->where('project_display', 'inline')->values();
+        // Drzewo podstron (dowolna głębokość): na poziomie projektu liczą się tylko korzenie; potomków pokazuje menu boczne w zakładce.
+        $pageRoots = $project->pageTree(true);
+        $tabPages = $pageRoots->where('project_display', 'tab')->values();
+        $inlinePages = $pageRoots->where('project_display', 'inline')->values();
         // Zakładki (jak w kontakcie): „O projekcie” + sekcje własne (gdy włączono zakładki) + podstrony w trybie zakładki.
         $sectionTabs = $project->sections_as_tabs ? $customSections->values() : collect();
         $tabItems = collect([['id' => 'opis', 'label' => 'O projekcie']])
@@ -33,7 +35,7 @@
             ->merge($tabPages->map(fn ($sp, $i) => ['id' => 'podstrona-'.$i, 'label' => $sp->title]))
             ->all();
         $hasTabs = count($tabItems) > 1;
-        $linkPages = $project->publishedPages->whereNotIn('project_display', ['inline', 'tab'])->values();
+        $linkPages = $pageRoots->whereNotIn('project_display', ['inline', 'tab'])->values();
 
         // A schedule ("harmonogram") page attached to this project — surfaced as a
         // call-to-action near the top; the button jumps to the inline section when
@@ -267,17 +269,7 @@
             @foreach ($tabPages as $i => $subpage)
                 <div id="panel-podstrona-{{ $i }}" role="tabpanel" aria-labelledby="tab-podstrona-{{ $i }}" tabindex="0" x-cloak
                      x-show="tab === 'podstrona-{{ $i }}'" class="focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand">
-                                @if ($subpage->content)
-                                    <div class="prose max-w-none text-ink">{!! $subpage->content !!}</div>
-                                @endif
-                                @if ($subpage->isSchedule())
-                                    @include('partials.schedule', ['page' => $subpage, 'showHeading' => false])
-                                @elseif ($subpage->isFaq())
-                                    @include('partials.faq', ['page' => $subpage])
-                                @endif
-                                <a href="{{ route('page.show', $subpage) }}" class="mt-3 inline-flex items-center gap-2 text-sm font-bold text-brand hover:text-brand-dark">
-                                    Otwórz jako osobną stronę <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
-                        </a>
+                    @include('projects.partials.tab-page', ['root' => $subpage])
                 </div>
             @endforeach
             </div>

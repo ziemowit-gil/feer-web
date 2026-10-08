@@ -375,6 +375,11 @@ class PageController extends Controller
     public function create(Request $request)
     {
         $page = new Page;
+        if ($request->filled('project_id') && Project::whereKey($request->query('project_id'))->exists()) {
+            $page->project_id = (int) $request->query('project_id');
+            $page->project_display = array_key_exists((string) $request->query('project_display'), Page::PROJECT_DISPLAYS)
+                ? $request->query('project_display') : 'tab';
+        }
         if (array_key_exists((string) $request->query('type'), Page::TYPES)) {
             $page->type = $request->query('type');
             $page->title = $request->query('type') === 'contact' ? 'Kontakt' : null;

@@ -101,6 +101,30 @@ class Project extends Model implements HasMedia
     }
 
     /**
+     * Drzewo podstron projektu (dowolna głębokość): korzenie to strony powiązane z projektem,
+     * które nie leżą pod inną stroną projektu; potomków dobieramy po parent_id.
+     * Każdy węzeł dostaje relację `tree_children`. Dla widoku publicznego tylko opublikowane.
+     */
+    public function pageTree(bool $publishedOnly = false): \Illuminate\Support\Collection
+    {
+        $scope = fn ($q) => $publishedOnly ? $q->where('is_published', true) : $q;
+
+        $all = $scope(Page::query())->where('project_id', $this->id)->get()->keyBy('id');
+        $frontier = $all->keys()->all();
+        for ($guard = 0; $frontier !== [] && $guard < 20; $guard++) {
+            $found = $scope(Page::query())->whereIn('parent_id', $frontier)->whereNotIn('id', $all->keys())
+                ->where('type', '!=', 'about_person')->get();
+            $found->each(fn ($pg) => $all->put($pg->id, $pg));
+            $frontier = $found->pluck('id')->all();
+        }
+
+        $byParent = $all->sortBy([['order', 'asc'], ['title', 'asc']])->groupBy(fn ($pg) => $all->has($pg->parent_id) ? $pg->parent_id : 0);
+        $all->each(fn ($pg) => $pg->setRelation('tree_children', $byParent->get($pg->id, collect())->values()));
+
+        return $byParent->get(0, collect())->values();
+    }
+
+    /**
      * Published news pinned to this project, newest first — shown as the
      * "Aktualności" section on the project page.
      */

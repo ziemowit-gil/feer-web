@@ -337,6 +337,37 @@
 
             {{-- ============================ SEKCJE ============================ --}}
             <div data-ftab-panel="sekcje" class="hidden space-y-6">
+                {{-- Struktura podstron projektu: drzewo jak w Stronach, dowolna głębokość. Każda podstrona to pełnoprawna strona (typ, treść, SEO). --}}
+                <div class="space-y-3 rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+                    <div class="flex flex-wrap items-start justify-between gap-3">
+                        <div>
+                            <p class="text-sm font-bold uppercase tracking-wide text-muted">Struktura podstron</p>
+                            <p class="mt-1 text-xs text-muted">Podstrony projektu w drzewie — dowolnie zagnieżdżone. Na stronie projektu tworzą menu boczne; podstrony najwyższego poziomu mają tryb wyświetlania (zakładka, sekcja, odnośnik).</p>
+                        </div>
+                        @if ($project->exists)
+                            <a href="{{ route('admin.podstrony.create', ['project_id' => $project->id, 'project_display' => 'tab']) }}"
+                               class="inline-flex items-center gap-2 rounded-lg bg-brand px-3 py-2 text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
+                                <i class="fa-solid fa-plus" aria-hidden="true"></i> Dodaj podstronę
+                            </a>
+                        @endif
+                    </div>
+                    @if (! $project->exists)
+                        <p class="text-sm text-muted">Zapisz projekt, aby dodawać podstrony.</p>
+                    @else
+                        @php $pageTree = $project->pageTree(); @endphp
+                        @if ($pageTree->isEmpty())
+                            <p class="text-sm text-muted">Projekt nie ma jeszcze podstron.</p>
+                        @else
+                            <p class="text-xs text-muted">Kliknięcie tytułu otwiera edycję podstrony — zapisz najpierw zmiany w projekcie.</p>
+                            <ul class="space-y-1.5" role="list">
+                                @foreach ($pageTree as $node)
+                                    @include('admin.projects.partials.page-tree-node', ['node' => $node, 'project' => $project, 'depth' => 0])
+                                @endforeach
+                            </ul>
+                        @endif
+                    @endif
+                </div>
+
                 <div class="space-y-5 rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
                     <div>
                         <p class="text-sm font-bold uppercase tracking-wide text-muted">Dodatkowe sekcje</p>
