@@ -261,18 +261,18 @@
                         <div class="proj-note mb-4"><span>
                             @if ($only && $only->is_offered)
                                 @if ($only->is_paid)
-                                    Te działania możesz mieć także <strong>za opłatą</strong>. Wtedy możesz sam ustalić termin i zakres.
+                                    Z tego działania możesz skorzystać także <strong>za opłatą</strong>. Wtedy sam ustalasz termin i zakres.
                                 @else
-                                    Te działania są także <strong>bezpłatne</strong>. Sprawdź, kto może wziąć udział.
+                                    Z tego działania możesz skorzystać także <strong>bezpłatnie</strong>. Sprawdź, kto może wziąć udział.
                                 @endif
                             @elseif ($cnt === 0)
-                                Teraz nie prowadzimy tych działań. Zajrzyj tu później albo napisz do nas.
+                                Teraz nie prowadzimy tego działania. Zajrzyj tu później albo napisz do nas.
                             @elseif ($hasPaid && $hasFree)
                                 To samo działanie możesz wybrać na dwa sposoby. Jeden jest <strong>bezpłatny</strong>. Drugi jest <strong>płatny</strong>. Wybierz ten, który jest dla Ciebie lepszy.
                             @elseif ($hasPaid)
-                                Te działania są <strong>płatne</strong>. Dzięki temu możesz ustalić termin i zakres, które Ci pasują.
+                                Z tego działania skorzystasz <strong>za opłatą</strong>. Możesz sam ustalić termin i zakres, które Ci pasują.
                             @else
-                                Te działania są <strong>bezpłatne</strong>. Wybierz formę, która Ci odpowiada.
+                                Z tego działania skorzystasz <strong>bezpłatnie</strong>. Wybierz formę, która Ci odpowiada.
                             @endif
                             </span>
                             <span class="proj-note-links">

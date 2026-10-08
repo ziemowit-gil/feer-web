@@ -50,7 +50,19 @@ class ContentBlockController extends Controller
 
         $request->validate(['name' => ['required', 'string', 'max:120']]);
 
-        if ($type === 'callout') {
+        if ($type === 'pricing') {
+            $d = $request->validate([
+                'data.title' => ['nullable', 'string', 'max:160'],
+                'data.rows' => ['required', 'array', 'min:1', 'max:40'],
+                'data.rows.*.item' => ['required', 'string', 'max:200'],
+                'data.rows.*.price' => ['nullable', 'string', 'max:80'],
+                'data.rows.*.note' => ['nullable', 'string', 'max:300'],
+            ])['data'];
+            $data = [
+                'title' => trim((string) ($d['title'] ?? '')) ?: 'Cennik',
+                'rows' => collect($d['rows'])->map(fn ($r) => ['item' => trim($r['item']), 'price' => trim((string) ($r['price'] ?? '')), 'note' => trim((string) ($r['note'] ?? ''))])->values()->all(),
+            ];
+        } elseif ($type === 'callout') {
             $d = $request->validate([
                 'data.title' => ['nullable', 'string', 'max:160'],
                 'data.text' => ['required', 'string', 'max:1500'],

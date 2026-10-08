@@ -47,14 +47,16 @@
 
             function $(id) { return document.getElementById(id); }
             function esc(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
-            function listKey() { return state.type === 'cta' ? 'buttons' : 'items'; }
+            function listKey() { return state.type === 'cta' ? 'buttons' : (state.type === 'pricing' ? 'rows' : 'items'); }
             var variants = [['blue', 'Niebieska', '#1e6dff'], ['gold', 'Złota', '#f2b705'], ['red', 'Czerwona', '#b91c1c'], ['green', 'Zielona', '#166534']];
             var icons = [['exclamation', 'fa-exclamation', 'Wykrzyknik'], ['info', 'fa-info', 'Informacja'], ['coins', 'fa-coins', 'Monety'], ['warning', 'fa-triangle-exclamation', 'Ostrzeżenie'], ['check', 'fa-check', 'Potwierdzenie']];
             function blank() {
+                if (state.type === 'pricing') { return { item: '', price: '', note: '' }; }
                 return state.type === 'cta' ? { label: '', url: '', color: '#1e6dff', filled: true, new_tab: false } : { q: '', a: '' };
             }
             function defaults() {
                 if (state.type === 'callout') { return { title: '', text: '', variant: 'blue', negative: false, icon: 'exclamation' }; }
+                if (state.type === 'pricing') { return { title: 'Cennik', rows: [blank()] }; }
                 return state.type === 'cta' ? { align: 'left', buttons: [blank()] } : { title: '', exclusive: false, first_open: false, items: [blank()] };
             }
             function seg(field, opts, cur) {
@@ -80,6 +82,10 @@
                     renderCalloutPreview();
                     return;
                 }
+                if (state.type === 'pricing') {
+                    optsEl.innerHTML = '<div><label class="tb-label" for="bb-pr-title">Tytuł cennika</label><input id="bb-pr-title" class="tb-input" data-opt="title" maxlength="160" value="' + esc(d.title) + '"></div>';
+                    return;
+                }
                 if (state.type === 'cta') {
                     optsEl.innerHTML = '<span class="tb-label">Wyrównanie przycisków</span>' + seg('align', [['left', 'Do lewej'], ['center', 'Wyśrodkowane'], ['right', 'Do prawej']], d.align);
                 } else {
@@ -103,6 +109,14 @@
                         + '<div><span class="tb-label">Wygląd</span>' + seg('filled', [[0, 'Obwódka'], [1, 'Wypełniony']], t.filled ? 1 : 0) + '</div>'
                         + '<label style="display:flex;align-items:center;gap:.5rem;font-size:.875rem"><input type="checkbox" data-f="new_tab"' + (t.new_tab ? ' checked' : '') + ' class="rounded border-gray-300 text-brand focus:ring-brand"> Nowa karta</label></div></li>';
                 }
+                if (state.type === 'pricing') {
+                    return '<li class="tb-card" data-i="' + i + '" style="padding:.75rem;display:grid;gap:.5rem">'
+                        + '<div style="display:grid;gap:.5rem;grid-template-columns:minmax(0,3fr) minmax(0,1.2fr) auto;align-items:end">'
+                        + '<div><label class="tb-label" for="bb-p-i-' + i + '">Pozycja / usługa</label><input id="bb-p-i-' + i + '" class="tb-input" data-f="item" maxlength="200" value="' + esc(t.item) + '"></div>'
+                        + '<div><label class="tb-label" for="bb-p-p-' + i + '">Cena (np. 85 zł)</label><input id="bb-p-p-' + i + '" class="tb-input" data-f="price" maxlength="80" value="' + esc(t.price) + '"></div>'
+                        + '<span style="display:flex">' + ibtn('up', 'fa-arrow-up', 'Przesuń wyżej', i === 0) + ibtn('down', 'fa-arrow-down', 'Przesuń niżej', i === list.length - 1) + ibtn('del', 'fa-trash', 'Usuń pozycję', list.length === 1) + '</span></div>'
+                        + '<div><label class="tb-label" for="bb-p-n-' + i + '">Krótki opis (opcjonalnie)</label><input id="bb-p-n-' + i + '" class="tb-input" data-f="note" maxlength="300" value="' + esc(t.note) + '"></div></li>';
+                }
                 return '<li class="tb-card" data-i="' + i + '" style="padding:.75rem;display:grid;gap:.5rem">'
                     + '<div style="display:flex;align-items:flex-end;gap:.5rem"><div style="flex:1;min-width:0"><label class="tb-label" for="bb-q-' + i + '">Pytanie / tytuł sekcji ' + (i + 1) + '</label><input id="bb-q-' + i + '" class="tb-input" data-f="q" maxlength="300" value="' + esc(t.q) + '"></div>'
                     + '<span style="display:flex">' + ibtn('up', 'fa-arrow-up', 'Przesuń wyżej', i === 0) + ibtn('down', 'fa-arrow-down', 'Przesuń niżej', i === list.length - 1) + ibtn('del', 'fa-trash', 'Usuń sekcję', list.length === 1) + '</span></div>'
@@ -110,7 +124,7 @@
             }
             function updateHints() {
                 var el = $('bb-hints'), list = d[listKey()], hints = [];
-                if (state.type === 'callout' || ! window.__a11yHints || ! window.__renderA11yHints) { return; }
+                if (state.type === 'callout' || state.type === 'pricing' || ! window.__a11yHints || ! window.__renderA11yHints) { return; }
                 if (state.type === 'cta') {
                     hints = window.__a11yHints(list.map(function (b) { return b.label; }), list.map(function (b) { return b.url; }));
                 } else {
@@ -185,10 +199,13 @@
             }
 
             function save() {
-                var name = nameEl.value.trim() || ({ cta: 'Przyciski CTA', accordion: 'Akordeon', callout: 'Ramka informacyjna' }[state.type]);
+                var name = nameEl.value.trim() || ({ cta: 'Przyciski CTA', accordion: 'Akordeon', callout: 'Ramka informacyjna', pricing: 'Cennik' }[state.type]);
                 var list = d[listKey()] || [];
                 var payload;
-                if (state.type === 'callout') {
+                if (state.type === 'pricing') {
+                    for (var pi = 0; pi < list.length; pi++) { if (! (list[pi].item || '').trim()) { showError('Pozycja ' + (pi + 1) + ': wpisz nazwę.'); return; } }
+                    payload = { title: (d.title || '').trim() || 'Cennik', rows: list.map(function (r) { return { item: r.item.trim(), price: (r.price || '').trim(), note: (r.note || '').trim() }; }) };
+                } else if (state.type === 'callout') {
                     if (! (d.text || '').trim()) { showError('Wpisz treść ramki.'); return; }
                     payload = { title: (d.title || '').trim(), text: d.text.trim(), variant: d.variant || 'blue', negative: !! d.negative, icon: d.icon || 'exclamation' };
                 } else if (state.type === 'cta') {
@@ -218,9 +235,9 @@
                     state = { type: opts.type, id: opts.id || null, onSave: opts.onSave, trigger: opts.trigger || document.activeElement };
                     showError(''); nameEl.value = '';
                     root.classList.remove('hidden'); root.classList.add('flex'); document.body.style.overflow = 'hidden';
-                    var label = { cta: 'przyciski CTA', accordion: 'akordeon', callout: 'ramka informacyjna' }[state.type];
+                    var label = { cta: 'przyciski CTA', accordion: 'akordeon', callout: 'ramka informacyjna', pricing: 'cennik' }[state.type];
                     $('bb-title').textContent = (state.id ? 'Edytuj: ' : 'Nowy blok: ') + label;
-                    addBtn.innerHTML = '<i class="fa-solid fa-plus" aria-hidden="true"></i> ' + (state.type === 'cta' ? 'Dodaj przycisk' : 'Dodaj sekcję');
+                    addBtn.innerHTML = '<i class="fa-solid fa-plus" aria-hidden="true"></i> ' + ({ cta: 'Dodaj przycisk', pricing: 'Dodaj pozycję' }[state.type] || 'Dodaj sekcję');
                     $('bb-hints').classList.add('hidden');
                     d = defaults(); renderOpts(); renderRows();
                     if (state.type === 'callout') { $('bb-hints').classList.add('hidden'); }
