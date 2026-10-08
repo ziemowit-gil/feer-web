@@ -1793,6 +1793,12 @@
                 ];
             @endphp
             <div class="mb-6">
+                <div class="mb-4 flex items-start gap-3 rounded-lg border border-gray-200 bg-gray-50 p-3">
+                    <input type="hidden" name="home_search_enabled" value="0">
+                    <input type="checkbox" id="home_search_enabled" name="home_search_enabled" value="1" @checked(old('home_search_enabled', $settings->home_search_enabled ?? true)) class="mt-0.5 rounded border-gray-300 text-brand focus:ring-brand">
+                    <label for="home_search_enabled" class="text-sm leading-snug"><span class="font-bold">Duża wyszukiwarka na stronie głównej</span><span class="block text-xs text-muted">Pole wyszukiwania pod slajderem (szablon FEER). Szuka w aktualnościach i materiałach.</span></label>
+                </div>
+
                 <div class="mb-3 flex flex-wrap items-end justify-between gap-2">
                     <div>
                         <h3 class="text-sm font-bold text-ink">Układ strony głównej</h3>
