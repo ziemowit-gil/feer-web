@@ -54,7 +54,7 @@
                         @keydown.arrow-left.prevent="move(-1)"
                         @keydown.home.prevent="jump(tabs[0])"
                         @keydown.end.prevent="jump(tabs[tabs.length - 1])"
-                        class="rounded-t-lg border border-b-0 px-5 py-3 text-sm font-bold uppercase tracking-wide transition focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-brand"
+                        class="rounded-t-lg border border-b-0 px-5 py-3 text-base font-bold uppercase tracking-wide transition focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-brand"
                         :class="tab === '{{ $tabItem['id'] }}'
                             ? 'border-gray-200 border-t-4 border-t-brand bg-white text-brand-dark'
                             : 'border-transparent text-muted hover:bg-white/70 hover:text-ink'">

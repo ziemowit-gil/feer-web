@@ -202,6 +202,11 @@ class ProjectController extends Controller
             'coordinator_phone' => ['nullable', 'string', 'max:50'],
             'legacy_url' => ['nullable', 'url', 'max:255'],
             'sections_nav' => ['nullable', 'in:tabs,sidebar'],
+            'sidebar_note' => ['nullable', 'string', 'max:1000'],
+            'sidebar_buttons' => ['nullable', 'array', 'max:6'],
+            'sidebar_buttons.*.label' => ['nullable', 'string', 'max:80'],
+            'sidebar_buttons.*.url' => ['nullable', 'string', 'max:2048'],
+            'sidebar_buttons.*.style' => ['nullable', 'in:primary,outline'],
             'custom_section_title_1' => ['nullable', 'string', 'max:255'],
             'custom_section_content_1' => ['nullable', 'string'],
             'custom_section_title_2' => ['nullable', 'string', 'max:255'],
@@ -246,6 +251,18 @@ class ProjectController extends Controller
         $data['show_coordinator'] = $request->boolean('show_coordinator');
         $data['show_legacy_box'] = $request->boolean('show_legacy_box');
         $data['sections_as_tabs'] = $request->boolean('sections_as_tabs');
+
+        // Przyciski pod menu sekcji: pomijamy puste wiersze i adresy spoza http(s)/mailto/tel/ścieżek względnych.
+        $data['sidebar_buttons'] = collect((array) $request->input('sidebar_buttons', []))
+            ->map(fn ($b) => [
+                'label' => trim((string) ($b['label'] ?? '')),
+                'url' => trim((string) ($b['url'] ?? '')),
+                'style' => ($b['style'] ?? 'primary') === 'outline' ? 'outline' : 'primary',
+                'new_tab' => ! empty($b['new_tab']),
+            ])
+            ->filter(fn ($b) => $b['label'] !== '' && preg_match('~^(https?://|mailto:|tel:|/|#)~i', $b['url']))
+            ->values()->all() ?: null;
+        $data['sidebar_note'] = trim((string) ($data['sidebar_note'] ?? '')) ?: null;
 
         // Build up to 3 custom sections from the paired title/content fields,
         // skipping any where both are empty.

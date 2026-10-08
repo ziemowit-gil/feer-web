@@ -375,6 +375,46 @@
                             </ul>
                         @endif
                     @endif
+                    <div class="space-y-3 border-t border-gray-100 pt-4"
+                         x-data="{ rows: @js(array_values((array) old('sidebar_buttons', $project->sidebar_buttons ?? []))) }">
+                        <div>
+                            <p class="text-sm font-bold">Elementy pod menu sekcji</p>
+                            <p class="text-xs text-muted">Wyświetlane pod menu sekcji na stronie projektu (do 6 przycisków i krótka notka).</p>
+                        </div>
+                        <div>
+                            <label for="sidebar_note" class="mb-1 block text-sm font-bold">Krótka notka <span class="font-normal text-muted">(opcjonalnie)</span></label>
+                            <textarea id="sidebar_note" name="sidebar_note" rows="2" maxlength="1000" class="w-full rounded-lg border-gray-300 focus:border-brand focus:ring-brand">{{ old('sidebar_note', $project->sidebar_note) }}</textarea>
+                        </div>
+                        <template x-for="(row, i) in rows" :key="i">
+                            <div class="grid items-end gap-2 rounded-lg border border-gray-200 p-3 sm:grid-cols-[1fr_1.4fr_auto]">
+                                <div>
+                                    <label :for="'sb_label_' + i" class="mb-1 block text-xs font-bold">Etykieta</label>
+                                    <input type="text" :id="'sb_label_' + i" :name="'sidebar_buttons[' + i + '][label]'" x-model="row.label" maxlength="80" class="w-full rounded-lg border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                                </div>
+                                <div>
+                                    <label :for="'sb_url_' + i" class="mb-1 block text-xs font-bold">Adres (https://…, mailto:, tel:, /ścieżka)</label>
+                                    <input type="text" :id="'sb_url_' + i" :name="'sidebar_buttons[' + i + '][url]'" x-model="row.url" class="w-full rounded-lg border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                                </div>
+                                <button type="button" @click="rows.splice(i, 1)" class="rounded border border-gray-300 px-2 py-2 text-xs font-bold text-red-700 hover:bg-red-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                                    <i class="fa-solid fa-trash" aria-hidden="true"></i><span class="sr-only">Usuń przycisk</span>
+                                </button>
+                                <div class="flex flex-wrap items-center gap-4 sm:col-span-3">
+                                    <label class="flex items-center gap-2 text-sm"><span class="font-bold">Styl</span>
+                                        <select :name="'sidebar_buttons[' + i + '][style]'" x-model="row.style" class="rounded-lg border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                                            <option value="primary">Pełny</option><option value="outline">Z obwódką</option>
+                                        </select>
+                                    </label>
+                                    <label class="flex items-center gap-2 text-sm">
+                                        <input type="checkbox" :name="'sidebar_buttons[' + i + '][new_tab]'" value="1" x-model="row.new_tab" class="rounded border-gray-300 text-brand focus:ring-brand"> Otwórz w nowej karcie
+                                    </label>
+                                </div>
+                            </div>
+                        </template>
+                        <button type="button" x-show="rows.length < 6" @click="rows.push({ label: '', url: '', style: 'primary', new_tab: false })"
+                            class="inline-flex items-center gap-2 rounded border border-gray-300 px-3 py-1.5 text-sm font-bold text-ink hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                            <i class="fa-solid fa-plus" aria-hidden="true"></i> Dodaj przycisk
+                        </button>
+                    </div>
                 </div>
             </div>
 
