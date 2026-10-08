@@ -118,10 +118,15 @@ class Page extends Model
         'guide'         => 'Poradnik krok po kroku (numerowane kroki, wymagania, podsumowanie)',
         'glossary'      => 'Słownik pojęć (hasła z definicjami i indeksem liter)',
         'case_study'    => 'Studium przypadku (wyzwanie, rozwiązanie, efekty, cytat)',
+        'pricing'       => 'Cennik i opłaty (karty cen, zasady płatności)',
+        'team'          => 'Zespół (osoby z rolą i krótkim opisem)',
+        'documents'     => 'Dokumenty (grupy odnośników do plików i stron)',
+        'regulation'    => 'Regulamin lub dokument (data obowiązywania, spis treści)',
     ];
 
     /** Ikony Font Awesome typów stron (karty podstron, kafelki działu). */
     public const TYPE_ICONS = [
+        'pricing' => 'fa-coins', 'team' => 'fa-people-group', 'documents' => 'fa-folder-open', 'regulation' => 'fa-scale-balanced',
         'service' => 'fa-briefcase', 'guide' => 'fa-list-ol', 'glossary' => 'fa-book', 'case_study' => 'fa-chart-line',
         'faq' => 'fa-circle-question', 'event' => 'fa-calendar', 'schedule' => 'fa-calendar-days', 'links_hub' => 'fa-table-cells-large',
         'tiles_grid' => 'fa-table-cells', 'internal' => 'fa-lock', 'internal_hub' => 'fa-user-lock', 'bip_move' => 'fa-landmark',
@@ -129,7 +134,7 @@ class Page extends Model
     ];
 
     /** Typy, których dane trzymamy we wspólnej kolumnie JSON `type_data`. */
-    public const TYPE_DATA_TYPES = ['service', 'guide', 'glossary', 'case_study'];
+    public const TYPE_DATA_TYPES = ['service', 'guide', 'glossary', 'case_study', 'pricing', 'team', 'documents', 'regulation'];
 
     /** Poziomy trudności poradnika. */
     public const GUIDE_LEVELS = [
@@ -430,6 +435,26 @@ class Page extends Model
         return $this->type === 'glossary';
     }
 
+    public function isPricing(): bool
+    {
+        return $this->type === 'pricing';
+    }
+
+    public function isTeam(): bool
+    {
+        return $this->type === 'team';
+    }
+
+    public function isDocuments(): bool
+    {
+        return $this->type === 'documents';
+    }
+
+    public function isRegulation(): bool
+    {
+        return $this->type === 'regulation';
+    }
+
     public function isCaseStudy(): bool
     {
         return $this->type === 'case_study';
@@ -443,7 +468,7 @@ class Page extends Model
     {
         $data = is_array($this->type_data) ? $this->type_data : [];
 
-        foreach (['benefits', 'audience', 'steps', 'requirements', 'terms', 'results'] as $list) {
+        foreach (['benefits', 'audience', 'steps', 'requirements', 'terms', 'results', 'price_rows', 'members', 'docs', 'versions'] as $list) {
             $data[$list] = array_values(array_filter(
                 is_array($data[$list] ?? null) ? $data[$list] : [],
                 fn ($row) => is_array($row) && array_filter($row, fn ($v) => is_string($v) && trim($v) !== ''),
@@ -459,7 +484,7 @@ class Page extends Model
         return ! in_array($this->type, [
             'event', 'schedule', 'about', 'faq', 'bip_move',
             'internal_hub', 'links_hub', 'wspolpraca', 'training_institution', 'brand_assets',
-            'legacy', 'about_person', 'contact', 'service', 'guide', 'glossary', 'case_study', 'tiles_grid',
+            'legacy', 'about_person', 'contact', 'service', 'guide', 'glossary', 'case_study', 'tiles_grid', 'pricing', 'team', 'documents', 'regulation',
         ], true);
     }
 

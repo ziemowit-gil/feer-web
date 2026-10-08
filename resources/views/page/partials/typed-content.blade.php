@@ -982,6 +982,14 @@
     @include('page.partials.typed.glossary')
     @elseif ($page->isCaseStudy())
     @include('page.partials.typed.case-study')
+    @elseif ($page->isPricing())
+    @include('page.partials.typed.pricing')
+    @elseif ($page->isTeam())
+    @include('page.partials.typed.team')
+    @elseif ($page->isDocuments())
+    @include('page.partials.typed.documents')
+    @elseif ($page->isRegulation())
+    @include('page.partials.typed.regulation')
     @elseif ($page->isCooperation())
     @php
         $cd      = $page->cooperation_data ?? [];

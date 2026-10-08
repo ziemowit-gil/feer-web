@@ -246,9 +246,9 @@
                                 // Wybór typu: karty z ikoną, nazwą i opisem, pogrupowane i z wyszukiwarką. Natywny <select> zostaje
                                 // (ukryty) — nadal niesie wartość formularza, a skrypt strony nasłuchuje na jego zdarzeniu „change".
                                 $typeGroups = [
-                                    'Treść i informacja' => ['standard', 'faq', 'glossary', 'guide'],
-                                    'Oferta i edukacja' => ['service', 'case_study', 'training_institution'],
-                                    'Organizacja' => ['about', 'about_person', 'wspolpraca', 'legacy', 'brand_assets'],
+                                    'Treść i informacja' => ['standard', 'faq', 'glossary', 'guide', 'documents', 'regulation'],
+                                    'Oferta i edukacja' => ['service', 'pricing', 'case_study', 'training_institution'],
+                                    'Organizacja' => ['about', 'about_person', 'team', 'wspolpraca', 'legacy', 'brand_assets'],
                                     'Kafelki i nawigacja' => ['links_hub', 'tiles_grid'],
                                     'Kontakt i wydarzenia' => ['contact', 'event', 'schedule'],
                                     'Wewnętrzne i przekierowania' => ['internal', 'internal_hub', 'bip_move'],
