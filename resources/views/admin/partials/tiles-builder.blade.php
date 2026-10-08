@@ -100,7 +100,7 @@
             function $(id) { return document.getElementById(id); }
             function esc(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
             function isSection(t) { return t.heading !== undefined; }
-            function blankTile() { return { label: '', url: '', icon: 'bi-lightning', color: '#1e6dff', cols: 1, is_negative: false, strip: false }; }
+            function blankTile() { return { label: '', url: '', icon: 'bi-lightning', color: '{{ \App\Support\ThemePalette::colors()[0] }}', cols: 1, is_negative: false, strip: false }; }
 
             function iconHtml(v) {
                 v = (v || '').trim() || 'bi-lightning';
@@ -109,7 +109,7 @@
                 return '<i class="' + esc(cls) + '"></i>';
             }
             function textOn(hex) {
-                var c = (hex || '#1e6dff').replace('#', ''); var r = parseInt(c.substr(0, 2), 16) / 255, g = parseInt(c.substr(2, 2), 16) / 255, b = parseInt(c.substr(4, 2), 16) / 255;
+                var c = (hex || '{{ \App\Support\ThemePalette::colors()[0] }}').replace('#', ''); var r = parseInt(c.substr(0, 2), 16) / 255, g = parseInt(c.substr(2, 2), 16) / 255, b = parseInt(c.substr(4, 2), 16) / 255;
                 var f = function (x) { return x <= .03928 ? x / 12.92 : Math.pow((x + .055) / 1.055, 2.4); };
                 var L = .2126 * f(r) + .7152 * f(g) + .0722 * f(b);
                 return L > .4 ? '#1d1d1a' : '#ffffff';
@@ -145,7 +145,7 @@
                 var flush = function () { if (grid) { html += '<div class="tb-pv-grid">' + grid + '</div>'; grid = ''; } };
                 items.forEach(function (t) {
                     if (isSection(t)) { flush(); html += '<div class="tb-pv-h">' + esc(t.heading || 'Nagłówek sekcji') + '</div>'; return; }
-                    var col = t.color || '#1e6dff';
+                    var col = t.color || '{{ \App\Support\ThemePalette::colors()[0] }}';
                     var style = t.is_negative ? 'background:' + col + ';color:' + textOn(col) : 'background:#fff;color:#1d1d1a;border:2px solid ' + col;
                     grid += '<div class="tb-pv-tile' + (t.strip ? ' is-strip' : '') + '" style="grid-column: span ' + Math.min(t.cols || 1, 3) + ';' + style + '">'
                         + '<span style="flex:none;' + (t.is_negative ? '' : 'color:' + col) + '">' + iconHtml(t.icon) + '</span><span style="min-width:0;flex:1">' + esc(t.label || 'Kafelek') + '</span><span aria-hidden="true">→</span></div>';
@@ -167,7 +167,7 @@
                         + '<div style="min-width:0;flex:1"><label class="tb-label" for="tb-s-' + i + '">Sekcja — nagłówek</label><input id="tb-s-' + i + '" class="tb-input" style="font-weight:700" data-f="heading" maxlength="160" value="' + esc(t.heading) + '" placeholder="np. Dla uczestników"></div>'
                         + '<span style="display:flex">' + actions(i, 'section') + '</span></li>';
                 }
-                var open = openIdx === i, col = t.color || '#1e6dff';
+                var open = openIdx === i, col = t.color || '{{ \App\Support\ThemePalette::colors()[0] }}';
                 var chipStyle = t.is_negative ? 'background:' + col + ';color:' + textOn(col) : 'background:#fff;color:' + col + ';border:2px solid ' + col;
                 var sw = palette.map(function (p) { return '<button type="button" class="tb-sw" data-color="' + p[0] + '" aria-pressed="' + (col.toLowerCase() === p[0] ? 'true' : 'false') + '" aria-label="Kolor: ' + p[1] + '" title="' + p[1] + '" style="background:' + p[0] + '"></button>'; }).join('');
                 var seg = function (field, opts, cur) { return '<span class="tb-seg" role="group">' + opts.map(function (o) { return '<button type="button" data-seg="' + field + '" data-val="' + o[0] + '" aria-pressed="' + (String(cur) === String(o[0]) ? 'true' : 'false') + '">' + o[1] + '</button>'; }).join('') + '</span>'; };
@@ -259,7 +259,7 @@
             function save() {
                 var tiles = items.filter(function (t) { return isSection(t) ? (t.heading || '').trim() !== '' : (t.label || t.url); }).map(function (t) {
                     if (isSection(t)) { return { heading: t.heading.trim() }; }
-                    return { label: (t.label || '').trim(), url: (t.url || '').trim(), icon: (t.icon || '').trim(), color: t.color || '#1e6dff', cols: t.cols || 1, is_negative: !! t.is_negative, strip: !! t.strip };
+                    return { label: (t.label || '').trim(), url: (t.url || '').trim(), icon: (t.icon || '').trim(), color: t.color || '{{ \App\Support\ThemePalette::colors()[0] }}', cols: t.cols || 1, is_negative: !! t.is_negative, strip: !! t.strip };
                 });
                 var name = nameEl.value.trim() || 'Zestaw kafelków';
                 if (! tiles.some(function (t) { return ! isSection(t); })) { showError('Dodaj przynajmniej jeden kafelek (etykieta i adres).'); return; }

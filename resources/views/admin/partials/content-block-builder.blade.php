@@ -48,11 +48,11 @@
             function $(id) { return document.getElementById(id); }
             function esc(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
             function listKey() { return state.type === 'cta' ? 'buttons' : (state.type === 'pricing' ? 'rows' : 'items'); }
-            var variants = [['blue', 'Niebieska', '#1e6dff'], ['gold', 'Złota', '#f2b705'], ['red', 'Czerwona', '#b91c1c'], ['green', 'Zielona', '#166534']];
+            var variants = [['blue', 'Niebieska', '{{ \App\Support\ThemePalette::colors()[0] }}'], ['gold', 'Złota', '#f2b705'], ['red', 'Czerwona', '#b91c1c'], ['green', 'Zielona', '#166534']];
             var icons = [['exclamation', 'fa-exclamation', 'Wykrzyknik'], ['info', 'fa-info', 'Informacja'], ['coins', 'fa-coins', 'Monety'], ['warning', 'fa-triangle-exclamation', 'Ostrzeżenie'], ['check', 'fa-check', 'Potwierdzenie']];
             function blank() {
                 if (state.type === 'pricing') { return { item: '', price: '', note: '' }; }
-                return state.type === 'cta' ? { label: '', url: '', color: '#1e6dff', filled: true, new_tab: false } : { q: '', a: '' };
+                return state.type === 'cta' ? { label: '', url: '', color: '{{ \App\Support\ThemePalette::colors()[0] }}', filled: true, new_tab: false } : { q: '', a: '' };
             }
             function defaults() {
                 if (state.type === 'callout') { return { title: '', text: '', variant: 'blue', negative: false, icon: 'exclamation' }; }
@@ -97,7 +97,7 @@
             function rowHtml(t, i) {
                 var list = d[listKey()], head, body;
                 if (state.type === 'cta') {
-                    var col = t.color || '#1e6dff';
+                    var col = t.color || '{{ \App\Support\ThemePalette::colors()[0] }}';
                     var sw = palette.map(function (p) { return '<button type="button" class="tb-sw" data-color="' + p[0] + '" aria-pressed="' + (col.toLowerCase() === p[0] ? 'true' : 'false') + '" aria-label="Kolor: ' + p[1] + '" title="' + p[1] + '" style="background:' + p[0] + '"></button>'; }).join('');
                     return '<li class="tb-card" data-i="' + i + '" style="padding:.75rem;display:grid;gap:.75rem">'
                         + '<div style="display:grid;gap:.5rem;grid-template-columns:minmax(0,2fr) minmax(0,3fr) auto;align-items:end">'
@@ -135,7 +135,7 @@
             }
             function renderCalloutPreview() {
                 var el = $('bb-co-prev'); if (! el) { return; }
-                var col = { blue: ['#1e6dff', '#1e6dff', '#fff'], gold: ['#a16207', '#f2b705', '#1d1d1a'], red: ['#b91c1c', '#b91c1c', '#fff'], green: ['#166534', '#166534', '#fff'] }[d.variant] || ['#1e6dff', '#1e6dff', '#fff'];
+                var col = { blue: ['{{ \App\Support\ThemePalette::colors()[0] }}', '{{ \App\Support\ThemePalette::colors()[0] }}', '#fff'], gold: ['#a16207', '#f2b705', '#1d1d1a'], red: ['#b91c1c', '#b91c1c', '#fff'], green: ['#166534', '#166534', '#fff'] }[d.variant] || ['{{ \App\Support\ThemePalette::colors()[0] }}', '{{ \App\Support\ThemePalette::colors()[0] }}', '#fff'];
                 var neg = !! d.negative, ico = icons.filter(function (i) { return i[0] === d.icon; })[0] || icons[0];
                 el.innerHTML = '<span class="tb-label">Podgląd</span><div style="position:relative;padding:.9rem 4.5rem .9rem 1rem;border:2px solid ' + (neg ? col[1] : col[0]) + ';border-radius:.5rem;background:' + (neg ? col[1] : '#fff') + ';color:' + (neg ? col[2] : '#1d1d1a') + ';font-weight:600">'
                     + (d.title ? '<div style="font-weight:800">' + esc(d.title) + '</div>' : '') + esc(d.text || 'Treść ramki…')
@@ -213,7 +213,7 @@
                         if (! list[i].label.trim() || ! list[i].url.trim()) { showError('Przycisk ' + (i + 1) + ': uzupełnij etykietę i adres.'); return; }
                         if (! /^(https?:\/\/|mailto:|tel:|\/|#)/i.test(list[i].url.trim())) { showError('Przycisk ' + (i + 1) + ': adres musi zaczynać się od https://, /, #, mailto: lub tel:.'); return; }
                     }
-                    payload = { align: d.align || 'left', buttons: list.map(function (b) { return { label: b.label.trim(), url: b.url.trim(), color: b.color || '#1e6dff', filled: !! b.filled, new_tab: !! b.new_tab }; }) };
+                    payload = { align: d.align || 'left', buttons: list.map(function (b) { return { label: b.label.trim(), url: b.url.trim(), color: b.color || '{{ \App\Support\ThemePalette::colors()[0] }}', filled: !! b.filled, new_tab: !! b.new_tab }; }) };
                 } else {
                     for (var j = 0; j < list.length; j++) { if (! list[j].q.trim() || ! list[j].a.trim()) { showError('Sekcja ' + (j + 1) + ': uzupełnij tytuł i treść.'); return; } }
                     payload = { title: (d.title || '').trim(), exclusive: !! d.exclusive, first_open: !! d.first_open, items: list.map(function (s) { return { q: s.q.trim(), a: s.a.trim() }; }) };

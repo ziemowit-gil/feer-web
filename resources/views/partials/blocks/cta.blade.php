@@ -6,7 +6,7 @@
 <div class="not-prose my-6 flex flex-wrap items-stretch gap-3 {{ $justify }}" role="group" aria-label="{{ $block->name }}">
     @foreach ($d['buttons'] ?? [] as $b)
         @php
-            $accent = $siteSettings->contrastSafeColor($b['color'] ?? '#1e6dff');
+            $accent = $siteSettings->contrastSafeColor($b['color'] ?? \App\Support\ThemePalette::colors()[0]);
             $filled = (bool) ($b['filled'] ?? true);
             $textColor = $filled ? \App\Support\Color::button($accent)['text'] : '#1d1d1a';
         @endphp

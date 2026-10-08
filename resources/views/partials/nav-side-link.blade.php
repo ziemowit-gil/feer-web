@@ -6,7 +6,7 @@
     $style = $sl['style'];
     $block = $block ?? false;
     $isTile = in_array($style, ['tile', 'tile_filled'], true);
-    $accent = $siteSettings->contrastSafeColor($siteSettings->brand_color ?: '#1e6dff'); // ≥ 4,5:1 na bieli (chyba że wyłączono poprawianie do WCAG)
+    $accent = $siteSettings->contrastSafeColor($siteSettings->brand_color ?: \App\Support\ThemePalette::colors()[0]); // ≥ 4,5:1 na bieli (chyba że wyłączono poprawianie do WCAG)
     $cls = match ($style) {
         'button' => ($block ? 'flex justify-center' : 'inline-flex').' min-h-10 items-center gap-2 rounded-full bg-brand px-4 text-sm font-bold text-white transition hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2',
         'tile' => 'group flex min-h-12 w-full items-center gap-3 rounded-md bg-white px-4 py-2 text-base font-bold normal-case transition hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2',

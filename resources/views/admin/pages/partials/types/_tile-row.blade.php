@@ -11,7 +11,7 @@
 @endphp
 <div data-repeater-row class="rounded-xl border border-gray-200 bg-white"
     x-data="{ label: @js($t['label'] ?? ''), color: @js($t['color'] ?? ''), neg: @js((bool) ($t['is_negative'] ?? false)), strip: @js((bool) ($t['strip'] ?? false)), cols: @js((int) ($t['cols'] ?? 1)),
-              bg() { return /^#[0-9a-fA-F]{6}$/.test(this.color) ? this.color : '#1e6dff'; },
+              bg() { return /^#[0-9a-fA-F]{6}$/.test(this.color) ? this.color : '{{ \App\Support\ThemePalette::colors()[0] }}'; },
               fg() { const h = this.bg(); const v = [1,3,5].map(k => parseInt(h.slice(k,k+2),16)/255).map(x => x <= .03928 ? x/12.92 : Math.pow((x+.055)/1.055,2.4)); const L = .2126*v[0]+.7152*v[1]+.0722*v[2]; return L > .5 ? '#1d1d1a' : '#ffffff'; } }">
 
     {{-- Podgląd kafla --}}

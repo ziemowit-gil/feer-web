@@ -6,7 +6,7 @@
             <p class="text-base text-ink">{!! nl2br(e($project->sidebar_note)) !!}</p>
         @endif
         {{-- Przyciski w stylu kafli „Na skróty": obwódka 2 px w kolorze marki (domyślnie) albo wypełnienie („negatyw"), strzałka po prawej. --}}
-        @php $accent = $siteSettings->contrastSafeColor($siteSettings->brand_color ?: '#1e6dff'); @endphp
+        @php $accent = $siteSettings->contrastSafeColor($siteSettings->brand_color ?: \App\Support\ThemePalette::colors()[0]); @endphp
         @foreach ($extraButtons as $btn)
             @php $filled = ($btn['style'] ?? 'outline') === 'primary'; @endphp
             <a href="{{ $btn['url'] }}" @if (! empty($btn['new_tab'])) target="_blank" rel="noopener" @endif
