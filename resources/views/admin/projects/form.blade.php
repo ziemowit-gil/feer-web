@@ -117,12 +117,13 @@
                     </div>
                 </div>
 
-                <div class="space-y-5 rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+                <div class="space-y-5 rounded-lg border border-gray-200 bg-white p-6 shadow-sm"
+                    x-data="{ parent: '{{ old('parent_id', $project->parent_id) }}', inh: @js(array_values((array) old('inherit', $project->inherit ?? []))) }">
                     <p class="text-sm font-bold uppercase tracking-wide text-muted">Publikacja</p>
                     <div class="grid gap-5 sm:grid-cols-2">
                         <div>
                             <label for="category_id" class="mb-1 block text-sm font-bold">Kategoria</label>
-                            <select id="category_id" name="category_id" required class="w-full rounded-lg border-gray-300 focus:border-brand focus:ring-brand">
+                            <select id="category_id" name="category_id" :required="! (parent && inh.includes('category'))" required class="w-full rounded-lg border-gray-300 focus:border-brand focus:ring-brand">
                                 <option value="" disabled {{ old('category_id', $project->category_id) ? '' : 'selected' }}>Wybierz kategorię</option>
                                 @foreach ($categories as $category)
                                     <option value="{{ $category->id }}" {{ (int) old('category_id', $project->category_id) === $category->id ? 'selected' : '' }}>
@@ -138,6 +139,33 @@
                             <input type="number" id="order" name="order" min="0" value="{{ old('order', $project->order) }}"
                                 class="w-28 rounded-lg border-gray-300 focus:border-brand focus:ring-brand">
                         </div>
+                    </div>
+
+                    {{-- Podprojekt: np. „Szkolenia z obsługi komputera — płatne" i „— bezpłatne" pod jednym projektem nadrzędnym. --}}
+                    <div class="space-y-3 rounded-lg border border-gray-100 bg-gray-50 p-4">
+                        <div>
+                            <label for="parent_id" class="mb-1 block text-sm font-bold">Projekt nadrzędny <span class="font-normal text-muted">(opcjonalnie — tworzy podprojekt)</span></label>
+                            <select id="parent_id" name="parent_id" x-model="parent" class="w-full rounded-lg border-gray-300 focus:border-brand focus:ring-brand sm:w-2/3">
+                                <option value="">— to jest zwykły projekt —</option>
+                                @foreach ($parentOptions as $po)
+                                    <option value="{{ $po->id }}">{{ $po->title }}</option>
+                                @endforeach
+                            </select>
+                            @error('parent_id') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                            <p class="mt-1 text-xs text-muted">Podprojekt ma własną stronę, ale może częściowo dziedziczyć dane projektu nadrzędnego i wyświetla się na jego stronie.</p>
+                        </div>
+                        <fieldset x-show="parent" x-cloak>
+                            <legend class="mb-1 text-sm font-bold">Dziedzicz z projektu nadrzędnego</legend>
+                            <p class="mb-2 text-xs text-muted">Zaznaczone pola są brane z projektu nadrzędnego i nie można ich zmienić na stronie podprojektu. Niezaznaczone ustawiasz tutaj osobno.</p>
+                            <div class="grid gap-2 sm:grid-cols-2">
+                                @foreach (\App\Models\Project::INHERITABLE as $ik => [$ilabel])
+                                    <label class="flex items-center gap-2 text-sm">
+                                        <input type="checkbox" name="inherit[]" value="{{ $ik }}" x-model="inh" class="rounded border-gray-300 text-brand focus:ring-brand">
+                                        {{ $ilabel }}
+                                    </label>
+                                @endforeach
+                            </div>
+                        </fieldset>
                     </div>
 
                     <div class="flex flex-wrap gap-x-6 gap-y-3 border-t border-gray-100 pt-4">

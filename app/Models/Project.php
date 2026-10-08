@@ -45,7 +45,23 @@ class Project extends Model implements HasMedia
         'site_id', 'created_by', 'category_id', 'title', 'slug', 'excerpt', 'for_whom', 'audience', 'accent_color', 'since', 'image_alt', 'content', 'why', 'outcomes', 'is_published', 'is_completed', 'completed_at', 'is_paid', 'pricing', 'order',
         'meta_title', 'meta_description', 'pending_approval', 'submitted_by_id',
         'coordinator_name', 'coordinator_email', 'coordinator_phone', 'is_featured_contact', 'show_coordinator',
-        'custom_sections', 'sections_as_tabs', 'sections_nav', 'sidebar_buttons', 'sidebar_note', 'show_legacy_box', 'legacy_url',
+        'custom_sections', 'sections_as_tabs', 'sections_nav', 'sidebar_buttons', 'sidebar_note', 'parent_id', 'inherit', 'show_legacy_box', 'legacy_url',
+    ];
+
+    /**
+     * Grupy pól, które podprojekt może dziedziczyć z projektu nadrzędnego (klucz => [etykieta, pola kolumn]).
+     * Obraz dziedziczy się osobno (media), dlatego klucz „image" nie ma kolumn poza opisem alternatywnym.
+     */
+    public const INHERITABLE = [
+        'category'    => ['Kategoria', ['category_id']],
+        'excerpt'    => ['Krótki opis (zajawka)', ['excerpt']],
+        'content'    => ['Opis, uzasadnienie i efekty', ['content', 'why', 'outcomes']],
+        'for_whom'   => ['Dla kogo i od kiedy', ['for_whom', 'since']],
+        'image'      => ['Zdjęcie', ['image_alt']],
+        'look'       => ['Kolorystyka (grupa docelowa i akcent)', ['audience', 'accent_color']],
+        'coordinator' => ['Koordynator i kontakt', ['coordinator_name', 'coordinator_email', 'coordinator_phone', 'show_coordinator', 'is_featured_contact']],
+        'pricing'    => ['Płatność i cennik', ['is_paid', 'pricing']],
+        'buttons'    => ['Przyciski i notka pod menu sekcji', ['sidebar_buttons', 'sidebar_note']],
     ];
 
     protected $casts = [
@@ -61,6 +77,7 @@ class Project extends Model implements HasMedia
         'sections_as_tabs' => 'boolean',
         'custom_sections' => 'array',
         'sidebar_buttons' => 'array',
+        'inherit' => 'array',
     ];
 
     /** Mikropis do list projektów: zajawka, a gdy jej brak — „dla kogo”, a potem początek treści. */
@@ -85,6 +102,54 @@ class Project extends Model implements HasMedia
     public function resolveRouteBindingQuery($query, $value, $field = null)
     {
         return parent::resolveRouteBindingQuery($query, $value, $field)->forCurrentSite();
+    }
+
+    public function parent(): BelongsTo
+    {
+        return $this->belongsTo(Project::class, 'parent_id')->withoutGlobalScopes();
+    }
+
+    public function children(): HasMany
+    {
+        return $this->hasMany(Project::class, 'parent_id')->orderBy('order')->orderBy('title');
+    }
+
+    public function publishedChildren(): HasMany
+    {
+        return $this->children()->where('is_published', true);
+    }
+
+    /** Czy pole/grupa jest dziedziczona z projektu nadrzędnego. */
+    public function inherits(string $group): bool
+    {
+        return $this->parent_id && in_array($group, (array) $this->inherit, true);
+    }
+
+    /**
+     * Nakłada wartości projektu nadrzędnego na dziedziczone pola — tylko w odczycie publicznym (nie w panelu,
+     * aby zapis formularza nie utrwalał cudzych wartości). Obraz dziedziczy accessor `image_url`.
+     */
+    protected static function booted(): void
+    {
+        static::retrieved(function (Project $project) {
+            if (! $project->parent_id || empty($project->inherit) || (app()->bound('request') && request()->routeIs('admin.*'))) {
+                return;
+            }
+            $parent = Project::withoutGlobalScopes()->find($project->parent_id);
+            if (! $parent || $parent->id === $project->id) {
+                return;
+            }
+            $raw = $project->getAttributes();
+            $parentRaw = $parent->getAttributes();
+            foreach ((array) $project->inherit as $group) {
+                foreach (self::INHERITABLE[$group][1] ?? [] as $field) {
+                    if (array_key_exists($field, $parentRaw)) {
+                        $raw[$field] = $parentRaw[$field];
+                    }
+                }
+            }
+            $project->setRawAttributes($raw, true);
+        });
     }
 
     public function category(): BelongsTo
@@ -167,7 +232,8 @@ class Project extends Model implements HasMedia
     protected function imageUrl(): Attribute
     {
         return Attribute::make(
-            get: fn () => $this->getFirstMedia('image')?->getAvailableUrl(['webp']) ?: null,
+            get: fn () => $this->getFirstMedia('image')?->getAvailableUrl(['webp'])
+                ?: ($this->inherits('image') ? $this->parent?->image_url : null),
         );
     }
 

@@ -7,11 +7,12 @@
 @endif
 
 @section('breadcrumbs')
-    @include('partials.breadcrumbs', ['items' => [
+    @include('partials.breadcrumbs', ['items' => array_values(array_filter([
         ['label' => 'Projekty', 'url' => route('projects.index')],
         ['label' => $project->category->name, 'url' => route('categories.show', $project->category)],
+        $project->parent && $project->parent->is_published ? ['label' => $project->parent->title, 'url' => route('projects.show', $project->parent)] : null,
         ['label' => $project->title, 'url' => null],
-    ]])
+    ]))])
 @endsection
 
 @section('content')
@@ -72,6 +73,9 @@
                 <a href="{{ route('categories.show', $project->category) }}" class="inline-block text-xs font-bold uppercase tracking-widest text-brand hover:text-brand-dark">
                     {{ $project->category->name }}
                 </a>
+                @if ($project->parent && $project->parent->is_published)
+                    <p class="mt-2 text-sm font-bold text-ink">Część projektu: <a href="{{ route('projects.show', $project->parent) }}" class="text-brand underline underline-offset-2 hover:text-brand-dark">{{ $project->parent->title }}</a></p>
+                @endif
                 <h1 class="mt-3 text-3xl font-extrabold leading-tight tracking-tight text-ink sm:text-5xl" @if ($canInlineEdit) data-inline-field="title" data-inline-kind="text" @endif>{{ $project->title }}</h1>
                 @if ($project->excerpt)
                     <p class="mt-4 max-w-2xl text-lg leading-relaxed text-ink/80">{{ $project->excerpt }}</p>
@@ -186,6 +190,27 @@
                 @if ($project->why)
                     <h2 class="proj-h2">Dlaczego to robimy</h2>
                     <div class="prose proj-prose max-w-none">{{ $project->why }}</div>
+                @endif
+
+                @php $subProjects = $project->publishedChildren; @endphp
+                @if ($subProjects->isNotEmpty())
+                    <section aria-labelledby="proj-children-h">
+                        <h2 id="proj-children-h" class="proj-h2">Warianty i podprojekty</h2>
+                        <ul role="list" class="grid gap-3 sm:grid-cols-2">
+                            @foreach ($subProjects as $sp)
+                                <li>
+                                    <a href="{{ route('projects.show', $sp) }}" class="group flex h-full flex-col gap-1 rounded-lg border-2 border-gray-200 bg-white p-4 transition hover:border-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
+                                        <span class="flex flex-wrap items-center gap-2">
+                                            <span class="text-lg font-bold text-ink group-hover:text-brand">{{ $sp->title }}</span>
+                                            <span class="rounded-full px-2.5 py-0.5 text-xs font-bold {{ $sp->is_paid ? 'bg-amber-100 text-amber-900' : 'bg-green-100 text-green-900' }}">{{ $sp->is_paid ? 'Płatne' : 'Bezpłatne' }}</span>
+                                        </span>
+                                        @if ($sp->excerpt)<span class="text-sm leading-snug text-ink">{{ \Illuminate\Support\Str::limit($sp->excerpt, 140) }}</span>@endif
+                                        <span class="mt-auto pt-2 text-sm font-bold text-brand">Zobacz szczegóły <span aria-hidden="true">→</span></span>
+                                    </a>
+                                </li>
+                            @endforeach
+                        </ul>
+                    </section>
                 @endif
 
                 @unless ($sectionTabs->isNotEmpty())

@@ -16,6 +16,6 @@ class Category extends Model
 
     public function publishedProjects(): HasMany
     {
-        return $this->projects()->where('is_published', true)->forCurrentSite()->orderBy('order');
+        return $this->projects()->where('is_published', true)->whereNull('parent_id')->forCurrentSite()->orderBy('order');
     }
 }

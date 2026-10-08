@@ -23,6 +23,26 @@ class ProjectController extends Controller
 {
     use HandlesContentApproval;
 
+    /** Projekty, które można wskazać jako nadrzędne (bez samego projektu i jego potomków). */
+    private function parentOptions(?Project $self)
+    {
+        $all = Project::forCurrentSite()->orderBy('title')->get(['id', 'title', 'parent_id']);
+        if (! $self || ! $self->exists) {
+            return $all;
+        }
+        $exclude = [$self->id];
+        do {
+            $before = count($exclude);
+            foreach ($all as $p) {
+                if ($p->parent_id && in_array($p->parent_id, $exclude, true) && ! in_array($p->id, $exclude, true)) {
+                    $exclude[] = $p->id;
+                }
+            }
+        } while (count($exclude) > $before);
+
+        return $all->reject(fn ($p) => in_array($p->id, $exclude, true))->values();
+    }
+
     /** Kategorie dostępne dla użytkownika — edytor z grupy ograniczonej do kategorii widzi tylko swoje. */
     private function categoriesForUser()
     {
@@ -50,6 +70,7 @@ class ProjectController extends Controller
         return view('admin.projects.index', [
             'projects' => $projects,
             'categories' => $this->categoriesForUser(),
+            'parentOptions' => $this->parentOptions($project ?? null),
             'status' => $status,
             'category' => $category,
             'sort' => $sort,
@@ -62,6 +83,7 @@ class ProjectController extends Controller
         return view('admin.projects.form', [
             'project' => new Project,
             'categories' => $this->categoriesForUser(),
+            'parentOptions' => $this->parentOptions(null),
         ]);
     }
 
@@ -84,13 +106,14 @@ class ProjectController extends Controller
         return view('admin.projects.form', [
             'project' => $project,
             'categories' => $this->categoriesForUser(),
+            'parentOptions' => $this->parentOptions($project ?? null),
         ]);
     }
 
     /** Aktualizuje projekt z opcjonalnym zdjęciem. */
     public function update(Request $request, Project $project)
     {
-        $data = $this->validated($request);
+        $data = $this->validated($request, $project->id);
         $data['slug'] = $this->uniqueSlug($data['slug'] !== '' ? $data['slug'] : $data['title'], $project->id);
 
         $project->update($data);
@@ -185,9 +208,17 @@ class ProjectController extends Controller
         return back()->with('status', $message);
     }
 
-    private function validated(Request $request): array
+    private function validated(Request $request, ?int $selfId = null): array
     {
+        // Podprojekt dziedziczący kategorię: uzupełniamy ją z projektu nadrzędnego, zanim zadziała walidacja.
+        if ($request->filled('parent_id') && in_array('category', (array) $request->input('inherit', []), true) && ! $request->filled('category_id')) {
+            $request->merge(['category_id' => Project::withoutGlobalScopes()->whereKey($request->input('parent_id'))->value('category_id')]);
+        }
+
         $data = $request->validate([
+            'parent_id' => ['nullable', 'integer', 'exists:projects,id', Rule::notIn(array_filter([$selfId]))],
+            'inherit' => ['sometimes', 'array'],
+            'inherit.*' => ['string', Rule::in(array_keys(Project::INHERITABLE))],
             'category_id' => array_filter(['required', 'exists:categories,id', ($ids = auth()->user()?->allowedProjectCategoryIds()) !== null ? Rule::in($ids) : null]),
             'title' => ['required', 'string', 'max:255'],
             'slug' => ['nullable', 'string', 'max:255'],
@@ -230,6 +261,19 @@ class ProjectController extends Controller
         $data['slug'] = trim($data['slug'] ?? '');
         $data['order'] = $data['order'] ?? 0;
         $data['audience'] = $data['audience'] ?? 'brand';
+
+        // Podprojekt: pola dziedziczone tylko przy wskazanym projekcie nadrzędnym; brak cykli (nadrzędny nie może być potomkiem).
+        $data['parent_id'] = $data['parent_id'] ?? null;
+        if ($data['parent_id'] && $selfId) {
+            $cursor = Project::withoutGlobalScopes()->find($data['parent_id']);
+            for ($i = 0; $cursor && $i < 20; $i++, $cursor = $cursor->parent_id ? Project::withoutGlobalScopes()->find($cursor->parent_id) : null) {
+                if ($cursor->id === $selfId) {
+                    $data['parent_id'] = null;
+                    break;
+                }
+            }
+        }
+        $data['inherit'] = $data['parent_id'] ? array_values($data['inherit'] ?? []) : null;
         // Własny kolor akcentu pilnujemy pod kątem kontrastu WCAG (jak brand/NGO).
         $data['accent_color'] = filled($data['accent_color'] ?? null)
             ? SiteSetting::current()->contrastSafeColor($data['accent_color'])
