@@ -74,7 +74,7 @@
     // Menu projektów: ręczne podpozycje tworzą dodatkową kolumnę „To już zrobiliśmy”.
     $projectExtras = $isProjects ? $item->children : collect();
     $extraTitle    = $item->mega_extra_title ?: 'To już zrobiliśmy';
-    $projectCols   = $groups->count() + ($projectExtras->isNotEmpty() ? 1 : 0);
+    $projectCols   = $groups->count() + ($projectExtras->isNotEmpty() ? 1 : 0) + ($sideLinks ? 1 : 0);
     $columns = match (true) {
         // Kolumny z nagłówkami: jedna kolumna na sekcję, w granicach wielkości pozycji.
         $grouped => min(match ($size) { 'sm' => 5, 'lg' => 2, default => 4 }, max(2, count($sections))),
@@ -180,6 +180,20 @@
                                     </ul>
                                 </div>
                             @endif
+
+                            {{-- Dodatkowa kolumna: własne przyciski i linki (ustawiane przy pozycji menu). --}}
+                            @if ($sideLinks)
+                                <div>
+                                    @if ($sideTitle)
+                                        <p id="mega-side-{{ $item->id }}" class="mb-2 block border-b-2 border-brand/30 px-2 py-1.5 font-bold text-ink {{ $sz['cat'] }}">{{ $sideTitle }}</p>
+                                    @endif
+                                    <ul role="list" @if ($sideTitle) aria-labelledby="mega-side-{{ $item->id }}" @endif class="space-y-2 {{ $sideTitle ? '' : 'pt-1' }}">
+                                        @foreach ($sideLinks as $sl)
+                                            <li>@include('partials.nav-side-link', ['sl' => $sl, 'block' => true])</li>
+                                        @endforeach
+                                    </ul>
+                                </div>
+                            @endif
                         </div>
 
                         <div class="mt-5 flex flex-wrap items-center gap-x-6 gap-y-2 border-t border-gray-100 pt-3 text-sm">
@@ -275,20 +289,6 @@
                         </li>
                     @endforeach
                 </ul>
-            @endif
-
-            {{-- Menu projektów nie ma karty bocznej, więc własne linki i przyciski idą w dolny rząd na całą szerokość panelu. --}}
-            @if ($isProjects && $sideLinks)
-                <div class="border-t border-gray-100 pt-5 lg:col-span-full">
-                    @if ($sideTitle)
-                        <p class="mb-3 text-xs font-bold uppercase tracking-wide text-muted">{{ $sideTitle }}</p>
-                    @endif
-                    <ul role="list" class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-                        @foreach ($sideLinks as $sl)
-                            <li>@include('partials.nav-side-link', ['sl' => $sl, 'block' => true])</li>
-                        @endforeach
-                    </ul>
-                </div>
             @endif
 
             @unless ($isProjects)
