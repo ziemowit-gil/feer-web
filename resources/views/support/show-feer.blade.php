@@ -171,6 +171,30 @@
         </div>
     </section>
 
+    {{-- ══ Działania, które wspierasz (kategorie projektów) ══ --}}
+    @if ($programs->isNotEmpty())
+        <section class="mx-auto max-w-6xl px-4 py-14" aria-labelledby="programs-heading">
+            <h2 id="programs-heading" class="text-2xl font-bold text-ink md:text-3xl">Działania, które wspierasz</h2>
+            <p class="mt-2 max-w-2xl text-muted">Wybierz obszar, który jest Ci najbliższy — zobacz, co w nim robimy.</p>
+            <ul class="mt-8 grid gap-4 sm:grid-cols-2 {{ $programs->count() >= 3 ? 'lg:grid-cols-3' : '' }}" role="list">
+                @foreach ($programs as $program)
+                    <li class="flex flex-col rounded-lg bg-gray-50 p-6">
+                        <h3 class="text-lg font-bold text-ink">{{ $program->name }}</h3>
+                        <ul class="mt-3 flex-1 space-y-1.5 text-sm" role="list">
+                            @foreach ($program->publishedProjects->take(4) as $project)
+                                <li><a href="{{ route('projects.show', $project) }}" class="font-semibold text-brand-dark underline underline-offset-2 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">{{ $project->title }}</a></li>
+                            @endforeach
+                        </ul>
+                        <a href="{{ site_route('categories.show', $program) }}" class="mt-4 text-sm font-bold text-brand-dark hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">Zobacz wszystkie w tym obszarze →</a>
+                    </li>
+                @endforeach
+            </ul>
+            @if ($paidInfoPage)
+                <p class="mt-6 max-w-3xl text-sm leading-relaxed text-ink">Część zajęć jest bezpłatna, a przy części prosimy o dołożenie się do kosztów. <a href="{{ $paidInfoPage->publicUrl() }}" class="font-bold text-brand-dark underline underline-offset-2 hover:text-ink">Przeczytaj, jak to działa →</a></p>
+            @endif
+        </section>
+    @endif
+
     {{-- ══ Liczby ══ --}}
     @if ($stats->isNotEmpty())
         <section class="bg-gray-50" aria-labelledby="stats-heading">

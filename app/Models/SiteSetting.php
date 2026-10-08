@@ -287,21 +287,21 @@ class SiteSetting extends Model implements HasMedia
      */
     public const SUPPORT_DEFAULTS = [
         'support_hero_badge' => 'Wesprzyj nas',
-        'support_hero_title' => 'Twoje wsparcie tworzy świat bez barier cyfrowych',
-        'support_hero_subtitle' => 'Dzięki Tobie więcej osób zyska dostęp do wiedzy i niezależności. Każda forma wsparcia realnie napędza nasze działania.',
+        'support_hero_title' => 'Razem uczymy empatii i dostępności',
+        'support_hero_subtitle' => 'Prowadzimy szkolenia dla osób z dysfunkcją wzroku, zajęcia o niepełnosprawności dla dzieci i młodzieży oraz wspieramy technologicznie organizacje pozarządowe. Twoja darowizna pozwala nam robić to dalej.',
         'support_hero_cta_label' => 'Wpłać teraz',
 
-        'support_benefits_title' => 'Dlaczego warto nas wspierać',
-        'support_benefits_subtitle' => 'Działamy na rzecz dostępności cyfrowej i edukacji. Oto, co umożliwia Twoje wsparcie.',
+        'support_benefits_title' => 'Na co przeznaczamy darowizny',
+        'support_benefits_subtitle' => 'Część naszych działań jest bezpłatna. Przy części prosimy uczestników o dołożenie się do kosztów — darowizny pozwalają te koszty obniżać i docierać tam, gdzie środków brakuje.',
         'support_benefit1_icon' => 'fa-solid fa-universal-access',
-        'support_benefit1_title' => 'Dostępność dla każdego',
-        'support_benefit1_text' => 'Usuwamy bariery cyfrowe, aby z internetu mogły swobodnie korzystać osoby z niepełnosprawnościami.',
-        'support_benefit2_icon' => 'fa-solid fa-graduation-cap',
-        'support_benefit2_title' => 'Edukacja i narzędzia',
-        'support_benefit2_text' => 'Finansujemy szkolenia, audyty WCAG oraz otwarte narzędzia dostępne bezpłatnie dla wszystkich.',
-        'support_benefit3_icon' => 'fa-solid fa-hand-holding-heart',
-        'support_benefit3_title' => 'Niezależność działań',
-        'support_benefit3_text' => 'Darowizny pozwalają nam działać niezależnie i reagować tam, gdzie wsparcie jest najbardziej potrzebne.',
+        'support_benefit1_title' => 'Szkolenia dla osób z dysfunkcją wzroku',
+        'support_benefit1_text' => 'Uczymy obsługi komputera i sprzętu wspomagającego, aby więcej osób mogło samodzielnie korzystać z technologii.',
+        'support_benefit2_icon' => 'fa-solid fa-children',
+        'support_benefit2_title' => 'Empatia i wiedza o niepełnosprawności',
+        'support_benefit2_text' => 'Tworzymy materiały i prowadzimy zajęcia, dzięki którym dzieci i młodzież poznają niepełnosprawność bez lęku i uprzedzeń.',
+        'support_benefit3_icon' => 'fa-solid fa-laptop-code',
+        'support_benefit3_title' => 'Technologie dla organizacji',
+        'support_benefit3_text' => 'Pomagamy organizacjom pozarządowym w sprawach technologicznych, żeby mogły skupić się na swojej misji.',
 
         'support_methods_title' => 'Jak możesz pomóc',
         'support_method1_title' => 'Darowizna na cele statutowe',
@@ -319,8 +319,8 @@ class SiteSetting extends Model implements HasMedia
         'support_method4_text' => 'Bezpieczna wpłata online przez zaufany portal dla organizacji pozarządowych.',
         'support_method4_cta_label' => 'Wpłać przez wpłacam.ngo.pl',
 
-        'support_outro_title' => 'Każda złotówka przybliża nas do świata bez barier.',
-        'support_outro_subtitle' => 'Dziękujemy, że jesteś częścią tej zmiany.',
+        'support_outro_title' => 'Dzięki Tobie uczymy się razem — bez barier.',
+        'support_outro_subtitle' => 'Dziękujemy, że jesteś z nami.',
     ];
 
     /**
@@ -384,6 +384,8 @@ class SiteSetting extends Model implements HasMedia
         }
 
         return $faq ?: [
+            ['q' => 'Na co zostanie przeznaczona moja darowizna?', 'a' => 'Na cele statutowe Fundacji: szkolenia dla osób z dysfunkcją wzroku, zajęcia i materiały o niepełnosprawności dla dzieci i młodzieży oraz wsparcie technologiczne dla organizacji pozarządowych. Rozliczenia publikujemy w zakładce Sprawozdania.'],
+            ['q' => 'Dlaczego część zajęć jest płatna?', 'a' => 'Niektóre działania prowadzimy bezpłatnie. Przy tych, na które nie mamy środków lub są one ograniczone, prosimy uczestników o dołożenie się do kosztów. Darowizny pozwalają nam obniżać te kwoty.'],
             ['q' => 'Czy płatność online jest bezpieczna?', 'a' => 'Płatności obsługuje Przelewy24 — możesz zapłacić BLIK-iem, szybkim przelewem lub kartą. Nie przechowujemy danych Twojej karty ani konta bankowego.'],
             ['q' => 'Czy mogę wspierać regularnie?', 'a' => 'Tak. Najprościej ustawić w swoim banku zlecenie stałe na nasz numer konta — dane znajdziesz w sekcji „Przelew tradycyjny”. Stała pomoc pozwala nam planować działania z wyprzedzeniem.'],
             ['q' => 'Czy mogę wpłacić anonimowo?', 'a' => 'Tak. Przy darowiźnie online wybierasz, czy Twoje imię ma pojawić się na liście ostatnich wpłat.'],

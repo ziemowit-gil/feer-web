@@ -90,6 +90,18 @@ class SupportController extends Controller
             ->filter(fn ($text, $amount) => in_array($amount, $settings->donationAmounts(), true))
             ->all();
 
+        // „Działania, które wspierasz": kategorie projektów z opublikowanymi, niezakończonymi projektami (do 4).
+        $programs = \App\Models\Category::query()->orderBy('order')->get()
+            ->map(function ($category) {
+                $category->setRelation('publishedProjects', $category->publishedProjects()->where('is_completed', false)->get());
+
+                return $category;
+            })
+            ->filter(fn ($category) => $category->publishedProjects->isNotEmpty())
+            ->take(4)
+            ->values();
+        $paidInfoPage = $settings->paidInfoPage();
+
         $faq = $settings->supportFaq();
         $volunteeringEnabled = $settings->isModuleEnabled('volunteering');
         $cooperationPage = Page::where('type', 'wspolpraca')->where('is_published', true)->orderBy('order')->first();
@@ -97,6 +109,6 @@ class SupportController extends Controller
         // Szablon FEER ma własny układ strony wsparcia.
         $view = $settings->site_template === 'feer' ? 'support.show-feer' : 'support.show';
 
-        return view($view, compact('stats', 'photos', 'partners', 'latestNews', 'impacts', 'faq', 'volunteeringEnabled', 'cooperationPage'));
+        return view($view, compact('stats', 'photos', 'partners', 'latestNews', 'impacts', 'faq', 'volunteeringEnabled', 'cooperationPage', 'programs', 'paidInfoPage'));
     }
 }
