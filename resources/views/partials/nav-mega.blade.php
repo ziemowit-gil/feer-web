@@ -277,6 +277,20 @@
                 </ul>
             @endif
 
+            {{-- Menu projektów nie ma karty bocznej, więc własne linki i przyciski idą w dolny rząd na całą szerokość panelu. --}}
+            @if ($isProjects && $sideLinks)
+                <div class="border-t border-gray-100 pt-5 lg:col-span-full">
+                    @if ($sideTitle)
+                        <p class="mb-3 text-xs font-bold uppercase tracking-wide text-muted">{{ $sideTitle }}</p>
+                    @endif
+                    <ul role="list" class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                        @foreach ($sideLinks as $sl)
+                            <li>@include('partials.nav-side-link', ['sl' => $sl, 'block' => true])</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
+
             @unless ($isProjects)
             <div class="hidden flex-col overflow-hidden rounded-xl bg-gray-50 lg:flex">
                 @if ($hasImage)
