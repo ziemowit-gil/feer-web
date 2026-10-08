@@ -139,6 +139,10 @@
             }
             .proj-news a { display: block; padding: .6rem 0; }
             .proj-note { position: relative; margin: 0 0 1rem; padding: 1rem 4.5rem 1rem 1.25rem; border: 2px solid var(--color-brand); border-radius: .5rem; background: #fff; color: #1d1d1a; font-size: 1.0625rem; line-height: 1.6; font-weight: 600; }
+                        .proj-note-links { display: flex; flex-wrap: wrap; gap: .5rem 1.25rem; margin-top: .75rem; }
+            .proj-note-links a { font-weight: 800; color: var(--color-brand); text-decoration: underline; text-underline-offset: 3px; }
+            .proj-note-links a:hover { color: #1d1d1a; }
+            .proj-note-links a:focus-visible { outline: 2px solid var(--color-brand); outline-offset: 3px; border-radius: .25rem; }
             .proj-note-ico { position: absolute; top: 50%; right: 1rem; transform: translateY(-50%); display: flex; align-items: center; justify-content: center; width: 2.5rem; height: 2.5rem; border: 2px solid var(--color-brand); border-radius: 9999px; background: #fff; color: var(--color-brand); font-size: 1.1rem; }
             .proj-choice { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr)); margin: 0; padding: 0; list-style: none; }
             .proj-choice > li { display: flex; }
@@ -226,7 +230,7 @@
                             $hasPaid = $offered->contains('is_paid', true);
                             $hasFree = $offered->contains(fn ($x) => ! $x->is_paid);
                         @endphp
-                        <p class="proj-note mb-4">
+                        <div class="proj-note mb-4"><span>
                             @if ($cnt === 0)
                                 Obecnie nie realizujemy żadnej z poniższych wersji. Zajrzyj tu ponownie lub skontaktuj się z nami.
                             @elseif ($hasPaid && $hasFree)
@@ -237,31 +241,15 @@
                                 Te działania realizujemy <strong>bezpłatnie</strong> — wybierz wersję, która odpowiada Twoim potrzebom.
                             @endif
                         
-                            <span class="proj-note-ico" aria-hidden="true"><i class="fa-solid fa-coins"></i></span>
-                        </p>
-                        {{-- Kafle do wyboru wersji: cała karta jest linkiem; wyraźny typ (bezpłatne/odpłatne), cena, przycisk. --}}
-                        <ul role="list" class="proj-choice">
-                            @foreach ($subProjects as $sp)
-                                @php
-                                    $spPrice = collect($sp->pricing ?? [])->first(fn ($r) => filled($r['price'] ?? null));
-                                @endphp
-                                <li>
-                                    <a href="{{ route('projects.show', $sp) }}" class="proj-choice-tile {{ $sp->is_paid ? 'is-paid' : 'is-free' }} {{ $sp->is_offered ? '' : 'is-off' }}">
-                                        <span class="proj-choice-kind">{{ $sp->is_paid ? 'Wersja odpłatna' : 'Wersja bezpłatna' }}@unless ($sp->is_offered) — obecnie niedostępna @endunless</span>
-                                        <span class="proj-choice-title">{{ $sp->title }}</span>
-                                        @if ($sp->excerpt)<span class="proj-choice-text">{{ \Illuminate\Support\Str::limit($sp->excerpt, 160) }}</span>@endif
-                                        <span class="proj-choice-price">
-                                            @if ($sp->is_paid)
-                                                {{ $spPrice ? 'Cena: '.$spPrice['price'] : 'Cena do ustalenia' }}
-                                            @else
-                                                Bez opłat
-                                            @endif
-                                        </span>
-                                        <span class="proj-choice-cta">{{ $sp->is_offered ? 'Wybierz tę wersję' : 'Zobacz szczegóły' }} <span aria-hidden="true">→</span><span class="sr-only">: {{ $sp->title }}</span></span>
+                            <span class="proj-note-ico" aria-hidden="true"><i class="fa-solid fa-coins"></i></span></span>
+                            <span class="proj-note-links">
+                                @foreach ($subProjects as $sp)
+                                    <a href="{{ route('projects.show', $sp) }}">
+                                        {{ $sp->is_paid ? 'Zobacz wersję odpłatną' : 'Zobacz wersję bezpłatną' }}@unless ($sp->is_offered) (obecnie niedostępna)@endunless <span aria-hidden="true">→</span><span class="sr-only">: {{ $sp->title }}</span>
                                     </a>
-                                </li>
-                            @endforeach
-                        </ul>
+                                @endforeach
+                            </span>
+                        </div>
                     </section>
                 @endif
 

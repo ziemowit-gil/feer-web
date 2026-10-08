@@ -27,6 +27,16 @@
                     class="rounded-md px-4 py-2 text-sm font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 bg-gray-100 text-ink hover:bg-gray-200">
                     <i class="fa-solid fa-layer-group" aria-hidden="true"></i> Sekcje
                 </button>
+                @if ($siteSettings->projects_stages_enabled)
+                    <button type="button" data-ftab-btn="etapy" role="tab" aria-selected="false" class="rounded-md px-4 py-2 text-sm font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 bg-gray-100 text-ink hover:bg-gray-200">
+                        <i class="fa-solid fa-timeline" aria-hidden="true"></i> Etapy i harmonogram
+                    </button>
+                @endif
+                @if ($siteSettings->projects_team_funding_enabled)
+                    <button type="button" data-ftab-btn="zespol" role="tab" aria-selected="false" class="rounded-md px-4 py-2 text-sm font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 bg-gray-100 text-ink hover:bg-gray-200">
+                        <i class="fa-solid fa-people-group" aria-hidden="true"></i> Zespół i finansowanie
+                    </button>
+                @endif
                 <button type="button" data-ftab-btn="dodatkowe" role="tab" aria-selected="false"
                     class="rounded-md px-4 py-2 text-sm font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 bg-gray-100 text-ink hover:bg-gray-200">
                     <i class="fa-solid fa-address-card" aria-hidden="true"></i> Koordynator i archiwum
@@ -456,6 +466,133 @@
                     </div>
                 </div>
             </div>
+
+            {{-- ==================== ETAPY I HARMONOGRAM ==================== --}}
+            @if ($siteSettings->projects_stages_enabled)
+            <div data-ftab-panel="etapy" class="hidden space-y-6"
+                x-data="{ rows: @js(array_values((array) old('stages', $project->stages ?? []))), move(list, i, d) { const j = i + d; if (j < 0 || j >= list.length) return; const [x] = list.splice(i, 1); list.splice(j, 0, x); } }">
+                <div class="space-y-4 rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+                    <p class="text-sm font-bold uppercase tracking-wide text-muted">Status i terminy</p>
+                    <div class="grid gap-4 sm:grid-cols-3">
+                        <div>
+                            <label for="status" class="mb-1 block text-sm font-bold">Status realizacji</label>
+                            <select id="status" name="status" class="w-full rounded-lg border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                                <option value="">— nie pokazuj —</option>
+                                @foreach (\App\Models\Project::STATUSES as $sk => $sl)
+                                    <option value="{{ $sk }}" {{ old('status', $project->status) === $sk ? 'selected' : '' }}>{{ $sl }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div>
+                            <label for="starts_on" class="mb-1 block text-sm font-bold">Początek</label>
+                            <input type="date" id="starts_on" name="starts_on" value="{{ old('starts_on', $project->starts_on?->format('Y-m-d')) }}" class="w-full rounded-lg border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                        </div>
+                        <div>
+                            <label for="ends_on" class="mb-1 block text-sm font-bold">Koniec</label>
+                            <input type="date" id="ends_on" name="ends_on" value="{{ old('ends_on', $project->ends_on?->format('Y-m-d')) }}" class="w-full rounded-lg border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                            @error('ends_on') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                        </div>
+                    </div>
+                    <p class="text-xs text-muted">Status „Zakończony” oznacza też projekt jako zrealizowany (trafia do archiwum).</p>
+                </div>
+                <div class="space-y-4 rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+                    <p class="text-sm font-bold uppercase tracking-wide text-muted">Etapy (harmonogram)</p>
+                    <ol class="space-y-3" role="list">
+                        <template x-for="(r, i) in rows" :key="i">
+                            <li class="space-y-3 rounded-lg border border-gray-200 bg-gray-50 p-4">
+                                <div class="grid items-end gap-3 sm:grid-cols-[2fr_1fr_1fr_1fr_auto]">
+                                    <div><label :for="'st-t-' + i" class="mb-1 block text-xs font-bold text-muted">Nazwa etapu</label><input :id="'st-t-' + i" type="text" :name="'stages[' + i + '][title]'" x-model="r.title" maxlength="160" class="w-full rounded-lg border-gray-300 text-sm focus:border-brand focus:ring-brand"></div>
+                                    <div><label :for="'st-f-' + i" class="mb-1 block text-xs font-bold text-muted">Od</label><input :id="'st-f-' + i" type="date" :name="'stages[' + i + '][from]'" x-model="r.from" class="w-full rounded-lg border-gray-300 text-sm focus:border-brand focus:ring-brand"></div>
+                                    <div><label :for="'st-e-' + i" class="mb-1 block text-xs font-bold text-muted">Do</label><input :id="'st-e-' + i" type="date" :name="'stages[' + i + '][to]'" x-model="r.to" class="w-full rounded-lg border-gray-300 text-sm focus:border-brand focus:ring-brand"></div>
+                                    <div><label :for="'st-s-' + i" class="mb-1 block text-xs font-bold text-muted">Stan</label>
+                                        <select :id="'st-s-' + i" :name="'stages[' + i + '][state]'" x-model="r.state" class="w-full rounded-lg border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                                            @foreach (\App\Models\Project::STAGE_STATES as $sk => $sl)<option value="{{ $sk }}">{{ $sl }}</option>@endforeach
+                                        </select></div>
+                                    <span class="flex gap-1">
+                                        <button type="button" @click="move(rows, i, -1)" :disabled="i === 0" class="rounded p-2 text-muted hover:bg-gray-100 disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand" aria-label="Przesuń wyżej"><i class="fa-solid fa-arrow-up" aria-hidden="true"></i></button>
+                                        <button type="button" @click="move(rows, i, 1)" :disabled="i === rows.length - 1" class="rounded p-2 text-muted hover:bg-gray-100 disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand" aria-label="Przesuń niżej"><i class="fa-solid fa-arrow-down" aria-hidden="true"></i></button>
+                                        <button type="button" @click="rows.splice(i, 1)" class="rounded p-2 text-red-700 hover:bg-red-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500" aria-label="Usuń wiersz"><i class="fa-solid fa-trash" aria-hidden="true"></i></button>
+                                    </span>
+                                </div>
+                                <div><label :for="'st-x-' + i" class="mb-1 block text-xs font-bold text-muted">Opis etapu (opcjonalnie)</label><input :id="'st-x-' + i" type="text" :name="'stages[' + i + '][text]'" x-model="r.text" maxlength="600" class="w-full rounded-lg border-gray-300 text-sm focus:border-brand focus:ring-brand"></div>
+                            </li>
+                        </template>
+                    </ol>
+                    <button type="button" @click="rows.push({ title: '', from: '', to: '', state: 'upcoming', text: '' })" class="inline-flex min-h-10 items-center gap-2 rounded-lg border-2 border-dashed border-brand px-4 text-sm font-bold text-brand-dark hover:bg-brand-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"><i class="fa-solid fa-plus" aria-hidden="true"></i> Dodaj etap</button>
+                </div>
+            </div>
+            @endif
+
+            {{-- ==================== ZESPÓŁ, PARTNERZY, FINANSOWANIE ==================== --}}
+            @if ($siteSettings->projects_team_funding_enabled)
+            @php $allPartners = \App\Models\Partner::orderBy('order')->orderBy('name')->get(); $selPartners = array_map('intval', (array) old('partner_ids', $project->exists ? $project->partners->pluck('id')->all() : [])); $fund = (array) ($project->funding ?? []); @endphp
+            <div data-ftab-panel="zespol" class="hidden space-y-6"
+                x-data="{ rows: @js(array_values((array) old('team', $project->team ?? []))), srcs: @js(array_values((array) old('funding.sources', $fund['sources'] ?? []))), move(list, i, d) { const j = i + d; if (j < 0 || j >= list.length) return; const [x] = list.splice(i, 1); list.splice(j, 0, x); } }">
+                <div class="space-y-4 rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+                    <p class="text-sm font-bold uppercase tracking-wide text-muted">Zespół projektu</p>
+                    <ul class="space-y-3" role="list">
+                        <template x-for="(r, i) in rows" :key="i">
+                            <li class="grid items-end gap-3 rounded-lg border border-gray-200 bg-gray-50 p-4 sm:grid-cols-[1fr_1fr_2fr_auto]">
+                                <div><label :for="'tm-n-' + i" class="mb-1 block text-xs font-bold text-muted">Imię i nazwisko</label><input :id="'tm-n-' + i" type="text" :name="'team[' + i + '][name]'" x-model="r.name" maxlength="120" class="w-full rounded-lg border-gray-300 text-sm focus:border-brand focus:ring-brand"></div>
+                                <div><label :for="'tm-r-' + i" class="mb-1 block text-xs font-bold text-muted">Rola</label><input :id="'tm-r-' + i" type="text" :name="'team[' + i + '][role]'" x-model="r.role" maxlength="160" class="w-full rounded-lg border-gray-300 text-sm focus:border-brand focus:ring-brand"></div>
+                                <div><label :for="'tm-x-' + i" class="mb-1 block text-xs font-bold text-muted">Krótki opis (opcjonalnie)</label><input :id="'tm-x-' + i" type="text" :name="'team[' + i + '][text]'" x-model="r.text" maxlength="400" class="w-full rounded-lg border-gray-300 text-sm focus:border-brand focus:ring-brand"></div>
+                                <span class="flex gap-1">
+                                        <button type="button" @click="move(rows, i, -1)" :disabled="i === 0" class="rounded p-2 text-muted hover:bg-gray-100 disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand" aria-label="Przesuń wyżej"><i class="fa-solid fa-arrow-up" aria-hidden="true"></i></button>
+                                        <button type="button" @click="move(rows, i, 1)" :disabled="i === rows.length - 1" class="rounded p-2 text-muted hover:bg-gray-100 disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand" aria-label="Przesuń niżej"><i class="fa-solid fa-arrow-down" aria-hidden="true"></i></button>
+                                        <button type="button" @click="rows.splice(i, 1)" class="rounded p-2 text-red-700 hover:bg-red-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500" aria-label="Usuń wiersz"><i class="fa-solid fa-trash" aria-hidden="true"></i></button>
+                                    </span>
+                            </li>
+                        </template>
+                    </ul>
+                    <button type="button" @click="rows.push({ name: '', role: '', text: '' })" class="inline-flex min-h-10 items-center gap-2 rounded-lg border-2 border-dashed border-brand px-4 text-sm font-bold text-brand-dark hover:bg-brand-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"><i class="fa-solid fa-plus" aria-hidden="true"></i> Dodaj osobę</button>
+                </div>
+
+                <div class="space-y-4 rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+                    <p class="text-sm font-bold uppercase tracking-wide text-muted">Partnerzy</p>
+                    @if ($allPartners->isEmpty())
+                        <p class="text-sm text-muted">Brak partnerów — dodaj ich w module Partnerzy.</p>
+                    @else
+                        <div class="flex flex-wrap gap-2">
+                            @foreach ($allPartners as $pt)
+                                <label class="cursor-pointer">
+                                    <input type="checkbox" name="partner_ids[]" value="{{ $pt->id }}" {{ in_array($pt->id, $selPartners, true) ? 'checked' : '' }} class="peer sr-only">
+                                    <span class="inline-flex min-h-9 items-center rounded-full border border-gray-300 bg-white px-3 text-sm font-medium text-ink peer-checked:border-brand peer-checked:bg-brand peer-checked:text-white peer-focus-visible:ring-2 peer-focus-visible:ring-brand peer-focus-visible:ring-offset-2">{{ $pt->name }}</span>
+                                </label>
+                            @endforeach
+                        </div>
+                    @endif
+                </div>
+
+                <div class="space-y-4 rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+                    <p class="text-sm font-bold uppercase tracking-wide text-muted">Finansowanie</p>
+                    <ul class="space-y-3" role="list">
+                        <template x-for="(r, i) in srcs" :key="i">
+                            <li class="grid items-end gap-3 rounded-lg border border-gray-200 bg-gray-50 p-4 sm:grid-cols-[1.2fr_2fr_1.2fr_auto]">
+                                <div><label :for="'fu-n-' + i" class="mb-1 block text-xs font-bold text-muted">Źródło / grantodawca</label><input :id="'fu-n-' + i" type="text" :name="'funding[sources][' + i + '][name]'" x-model="r.name" maxlength="160" class="w-full rounded-lg border-gray-300 text-sm focus:border-brand focus:ring-brand"></div>
+                                <div><label :for="'fu-x-' + i" class="mb-1 block text-xs font-bold text-muted">Opis (np. program, kwota)</label><input :id="'fu-x-' + i" type="text" :name="'funding[sources][' + i + '][text]'" x-model="r.text" maxlength="400" class="w-full rounded-lg border-gray-300 text-sm focus:border-brand focus:ring-brand"></div>
+                                <div><label :for="'fu-u-' + i" class="mb-1 block text-xs font-bold text-muted">Adres (opcjonalnie)</label><input :id="'fu-u-' + i" type="text" :name="'funding[sources][' + i + '][url]'" x-model="r.url" placeholder="https://…" class="w-full rounded-lg border-gray-300 text-sm focus:border-brand focus:ring-brand"></div>
+                                <span class="flex gap-1"><button type="button" @click="move(srcs, i, -1)" :disabled="i === 0" class="rounded p-2 text-muted hover:bg-gray-100 disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand" aria-label="Przesuń wyżej"><i class="fa-solid fa-arrow-up" aria-hidden="true"></i></button><button type="button" @click="srcs.splice(i, 1)" class="rounded p-2 text-red-700 hover:bg-red-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500" aria-label="Usuń źródło"><i class="fa-solid fa-trash" aria-hidden="true"></i></button></span>
+                            </li>
+                        </template>
+                    </ul>
+                    <button type="button" @click="srcs.push({ name: '', text: '', url: '' })" class="inline-flex min-h-10 items-center gap-2 rounded-lg border-2 border-dashed border-brand px-4 text-sm font-bold text-brand-dark hover:bg-brand-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"><i class="fa-solid fa-plus" aria-hidden="true"></i> Dodaj źródło finansowania</button>
+                    <div class="grid gap-4 sm:grid-cols-2">
+                        <div>
+                            <label for="funding_budget" class="mb-1 block text-sm font-bold">Budżet projektu</label>
+                            <input type="text" id="funding_budget" name="funding[budget]" value="{{ old('funding.budget', $fund['budget'] ?? '') }}" maxlength="80" placeholder="np. 120 000 zł" class="w-full rounded-lg border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                        </div>
+                        <label class="flex items-center gap-2 self-end pb-2 text-sm">
+                            <input type="hidden" name="funding[budget_public]" value="0">
+                            <input type="checkbox" name="funding[budget_public]" value="1" {{ old('funding.budget_public', $fund['budget_public'] ?? false) ? 'checked' : '' }} class="rounded border-gray-300 text-brand focus:ring-brand"> Pokaż budżet publicznie
+                        </label>
+                    </div>
+                    <div>
+                        <label for="funding_notice" class="mb-1 block text-sm font-bold">Oznaczenie dofinansowania <span class="font-normal text-muted">(obowiązkowa klauzula grantodawcy, opcjonalnie)</span></label>
+                        <textarea id="funding_notice" name="funding_notice" rows="3" maxlength="1000" class="w-full rounded-lg border-gray-300 text-sm focus:border-brand focus:ring-brand">{{ old('funding_notice', $project->funding_notice) }}</textarea>
+                    </div>
+                </div>
+            </div>
+            @endif
 
             {{-- ==================== KOORDYNATOR I ARCHIWUM ==================== --}}
             <div data-ftab-panel="dodatkowe" class="hidden space-y-6">
