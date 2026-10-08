@@ -96,7 +96,7 @@
 
             <div x-ref="panel" role="dialog" aria-modal="true" :aria-label="form.editingId ? 'Edytuj pozycję menu' : 'Nowa pozycja menu'"
                 @keydown.tab="trapTab($event)"
-                class="relative z-10 my-4 w-full max-w-xl rounded-lg border border-gray-200 bg-white shadow-xl">
+                class="relative z-10 my-4 w-full max-w-2xl rounded-lg border border-gray-200 bg-white shadow-xl">
                 <div class="flex items-center justify-between border-b border-gray-100 px-6 py-4">
                     <h2 class="text-lg font-bold" x-text="form.editingId ? 'Edytuj pozycję menu' : 'Nowa pozycja menu'"></h2>
                     <button type="button" @click="close()"

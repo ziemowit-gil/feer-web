@@ -7,6 +7,39 @@
     partial obsługuje modal (dynamiczne dane) i zapasową stronę formularza.
 --}}
 
+{{-- Formularz podzielony na zakładki: Podstawowe · Wygląd · Menu rozwijane i przyciski. Pola ukrytych zakładek nadal są w formularzu (x-show), więc zapis obejmuje wszystko. --}}
+<div x-data="{ tab: 'basic' }"
+     x-effect="if ((tab === 'look' && ! (form.location === 'main')) || (tab === 'media' && ! (form.location === 'main' && form.parentId === '' && form.isMega)) || (tab === 'drop' && ! (form.location === 'main' && form.parentId === '' && (form.isMega || ['dropdown', 'projects', 'pages', 'link'].includes(form.type))))) tab = 'basic'"
+     class="space-y-5">
+    <div role="tablist" aria-label="Sekcje formularza pozycji menu" class="flex flex-wrap gap-1 border-b border-gray-200"
+         @keydown.arrow-right.prevent="$event.target.nextElementSibling?.focus()" @keydown.arrow-left.prevent="$event.target.previousElementSibling?.focus()">
+        <button type="button" role="tab" id="nav-tab-basic" aria-controls="nav-panel-basic" x-show="true" x-cloak
+            @click="tab = 'basic'" :aria-selected="(tab === 'basic').toString()" :tabindex="tab === 'basic' ? 0 : -1"
+            class="-mb-px inline-flex items-center gap-2 border-b-2 px-3 py-2 text-sm font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+            :class="tab === 'basic' ? 'border-brand text-brand' : 'border-transparent text-muted hover:text-ink'">
+            <i class="fa-solid fa-pen" aria-hidden="true"></i> Podstawowe
+        </button>
+        <button type="button" role="tab" id="nav-tab-look" aria-controls="nav-panel-look" x-show="form.location === 'main'" x-cloak
+            @click="tab = 'look'" :aria-selected="(tab === 'look').toString()" :tabindex="tab === 'look' ? 0 : -1"
+            class="-mb-px inline-flex items-center gap-2 border-b-2 px-3 py-2 text-sm font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+            :class="tab === 'look' ? 'border-brand text-brand' : 'border-transparent text-muted hover:text-ink'">
+            <i class="fa-solid fa-palette" aria-hidden="true"></i> Wygląd
+        </button>
+        <button type="button" role="tab" id="nav-tab-drop" aria-controls="nav-panel-drop" x-show="form.location === 'main' && form.parentId === '' && (form.isMega || ['dropdown', 'projects', 'pages', 'link'].includes(form.type))" x-cloak
+            @click="tab = 'drop'" :aria-selected="(tab === 'drop').toString()" :tabindex="tab === 'drop' ? 0 : -1"
+            class="-mb-px inline-flex items-center gap-2 border-b-2 px-3 py-2 text-sm font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+            :class="tab === 'drop' ? 'border-brand text-brand' : 'border-transparent text-muted hover:text-ink'">
+            <i class="fa-solid fa-square-caret-down" aria-hidden="true"></i> Menu rozwijane i przyciski
+        </button>
+        <button type="button" role="tab" id="nav-tab-media" aria-controls="nav-panel-media" x-show="form.location === 'main' && form.parentId === '' && form.isMega" x-cloak
+            @click="tab = 'media'" :aria-selected="(tab === 'media').toString()" :tabindex="tab === 'media' ? 0 : -1"
+            class="-mb-px inline-flex items-center gap-2 border-b-2 px-3 py-2 text-sm font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+            :class="tab === 'media' ? 'border-brand text-brand' : 'border-transparent text-muted hover:text-ink'">
+            <i class="fa-solid fa-image" aria-hidden="true"></i> Grafika
+        </button>
+    </div>
+
+    <div id="nav-panel-basic" role="tabpanel" aria-labelledby="nav-tab-basic" x-show="tab === 'basic'" class="space-y-5">
 <div>
     <label for="nav-location" class="mb-1 block text-sm font-bold">Lokalizacja</label>
     <select id="nav-location" name="location" x-model="form.location"
@@ -104,6 +137,7 @@
     @error('parent_id') <p class="mt-1 text-sm text-red-700">{{ $message }}</p> @enderror
 </div>
 
+
 <div>
     <label for="nav-module" class="mb-1 block text-sm font-bold">Widoczna tylko gdy moduł włączony</label>
     <select id="nav-module" name="module" x-model="form.module"
@@ -116,6 +150,16 @@
     @error('module') <p class="mt-1 text-sm text-red-700">{{ $message }}</p> @enderror
 </div>
 
+
+<label class="flex items-center gap-2">
+    <input type="checkbox" name="is_active" value="1" x-model="form.isActive"
+        class="rounded border-gray-300 text-brand focus-visible:ring-2 focus-visible:ring-brand">
+    <span class="text-sm font-bold">Widoczna w menu</span>
+</label>
+
+    </div>
+
+    <div id="nav-panel-look" role="tabpanel" aria-labelledby="nav-tab-look" x-show="tab === 'look'" x-cloak class="space-y-5">
 <label class="flex items-center gap-2" x-show="(form.type === 'link' || form.type === 'volunteering') && form.parentId === ''" x-cloak>
     <input type="checkbox" name="is_button" value="1" x-model="form.isButton"
         class="rounded border-gray-300 text-brand focus-visible:ring-2 focus-visible:ring-brand">
@@ -180,6 +224,9 @@
     </span>
 </label>
 
+    </div>
+
+    <div id="nav-panel-drop" role="tabpanel" aria-labelledby="nav-tab-drop" x-show="tab === 'drop'" x-cloak class="space-y-5">
 <label class="flex items-start gap-2" x-show="form.location === 'main' && form.parentId === '' && (form.type === 'dropdown' || form.type === 'link' || form.type === 'projects')" x-cloak>
     <input type="checkbox" name="is_mega" value="1" x-model="form.isMega"
         class="mt-0.5 rounded border-gray-300 text-brand focus-visible:ring-2 focus-visible:ring-brand">
@@ -258,6 +305,16 @@
     @error('mega_side_links.*.url') <p class="text-sm text-red-700">{{ $message }}</p> @enderror
 </div>
 
+<label class="flex items-center gap-2" x-show="form.type === 'dropdown' || form.type === 'projects' || form.type === 'pages'" x-cloak>
+    <input type="checkbox" name="is_transparent_dropdown" value="1" x-model="form.isTransparent"
+        class="rounded border-gray-300 text-brand focus-visible:ring-2 focus-visible:ring-brand">
+    <span class="text-sm font-bold">Przezroczyste tło rozwijanego panelu</span>
+</label>
+
+    </div>
+
+    <div id="nav-panel-media" role="tabpanel" aria-labelledby="nav-tab-media" x-show="tab === 'media'" x-cloak class="space-y-5">
+        <p class="text-sm text-muted" x-show="! form.isMega">Grafika promocyjna jest dostępna po włączeniu mega menu (zakładka „Menu rozwijane i przyciski”).</p>
 <div x-show="form.isMega && form.location === 'main' && form.parentId === ''" x-cloak class="space-y-3 rounded-lg border border-gray-100 bg-gray-50 p-4">
     <p class="text-xs font-bold uppercase tracking-wide text-muted">Grafika promocyjna w mega menu <span class="font-normal normal-case">(opcjonalnie — kolumna boczna nad opisem)</span></p>
     <template x-if="form.megaImage">
@@ -286,14 +343,5 @@
     </label>
 </div>
 
-<label class="flex items-center gap-2" x-show="form.type === 'dropdown' || form.type === 'projects' || form.type === 'pages'" x-cloak>
-    <input type="checkbox" name="is_transparent_dropdown" value="1" x-model="form.isTransparent"
-        class="rounded border-gray-300 text-brand focus-visible:ring-2 focus-visible:ring-brand">
-    <span class="text-sm font-bold">Przezroczyste tło rozwijanego panelu</span>
-</label>
-
-<label class="flex items-center gap-2">
-    <input type="checkbox" name="is_active" value="1" x-model="form.isActive"
-        class="rounded border-gray-300 text-brand focus-visible:ring-2 focus-visible:ring-brand">
-    <span class="text-sm font-bold">Widoczna w menu</span>
-</label>
+    </div>
+</div>
