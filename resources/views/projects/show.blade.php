@@ -130,7 +130,7 @@
         <style>
             /* Czytelność: krótsza linia (ok. 70 znaków), ciemniejszy i grubszy tekst, spójne nagłówki, wyróżnione komunikaty. */
             .proj-measure { max-width: 46rem; }
-            .proj-flow > * + * { margin-top: 2.5rem; }
+            .proj-measure.proj-flow > * + * { margin-top: 2.5rem; } /* wyższa swoistość: nagłówki .proj-h2 mają własny margines i nie mogą go zerować */
             .proj-prose { color: #1d1d1a; font-size: 1.0625rem; line-height: 1.75; font-weight: 500; }
             .proj-prose p, .proj-prose li { color: #1d1d1a; }
             .proj-prose p + p { margin-top: 1rem; }
@@ -192,7 +192,7 @@
                         .proj-ref-list { list-style: none; margin: 0; padding: 0; display: grid; gap: .5rem; }
             .proj-ref-link { display: inline-flex; flex-wrap: wrap; align-items: baseline; gap: .15rem; padding: .15rem 0; border: 0; background: none; font: inherit; font-weight: 800; color: var(--color-brand); text-align: left; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
             .proj-ref-link:hover { color: #1d1d1a; } .proj-ref-link:focus-visible { outline: 2px solid var(--color-brand); outline-offset: 3px; border-radius: .25rem; }
-            .proj-ref-kind { font-weight: 500; color: #374151; text-decoration: none; display: inline-block; }
+            .proj-ref-kind { font-weight: 500; color: #374151; text-decoration: none; display: inline-block; margin-left: .35rem; }
                         .proj-paid-info { font-weight: 500; }
             .proj-paid-info summary { cursor: pointer; font-weight: 800; color: var(--color-brand); text-decoration: underline; text-underline-offset: 3px; }
             .proj-paid-info summary:hover { color: #1d1d1a; } .proj-paid-info summary:focus-visible { outline: 2px solid var(--color-brand); outline-offset: 3px; border-radius: .25rem; }
