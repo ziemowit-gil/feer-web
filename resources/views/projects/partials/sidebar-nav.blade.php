@@ -4,17 +4,17 @@
 --}}
 <nav aria-label="Sekcje projektu" class="proj-nav relative bg-gray-100 p-6">
     <span class="absolute block bg-brand" style="left:0;top:0;height:.25rem;width:4rem" aria-hidden="true"></span>
-    <p class="mb-4 border-b border-gray-900 pb-3 text-xl font-bold text-ink">{{ $project->title }}</p>
+    <p class="mb-4 border-b border-gray-900 pb-3 text-lg font-bold text-ink">{{ $project->title }}</p>
     <ul role="list" class="text-ink">
         <li class="border-b border-gray-300">
             <button type="button" @click="tab = 'opis'; node = null" :aria-current="tab === 'opis' ? 'page' : null"
-                class="flex w-full items-center py-3.5 text-left text-lg font-bold hover:text-brand focus-visible:outline-2 focus-visible:outline-brand"
+                class="flex w-full items-center py-3 text-left text-base font-bold hover:text-brand focus-visible:outline-2 focus-visible:outline-brand"
                 :class="tab === 'opis' ? 'text-brand' : ''">O projekcie</button>
         </li>
         @foreach ($sectionTabs as $i => $section)
             <li class="border-b border-gray-300">
                 <button type="button" @click="tab = 'sekcja-{{ $i }}'; node = null" :aria-current="tab === 'sekcja-{{ $i }}' ? 'page' : null"
-                    class="flex w-full items-center py-3.5 text-left text-lg font-bold hover:text-brand focus-visible:outline-2 focus-visible:outline-brand"
+                    class="flex w-full items-center py-3 text-left text-base font-bold hover:text-brand focus-visible:outline-2 focus-visible:outline-brand"
                     :class="tab === 'sekcja-{{ $i }}' ? 'text-brand' : ''">{{ $section['title'] ?: 'Sekcja '.($i + 1) }}</button>
             </li>
         @endforeach
