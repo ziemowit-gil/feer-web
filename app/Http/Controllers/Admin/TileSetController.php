@@ -46,8 +46,9 @@ class TileSetController extends Controller
         $data = $request->validate([
             'name' => ['required', 'string', 'max:120'],
             'tiles' => ['required', 'array', 'min:1', 'max:40'],
-            'tiles.*.label' => ['required', 'string', 'max:120'],
-            'tiles.*.url' => ['required', 'string', 'max:2048', 'regex:~^(https?://|mailto:|tel:|/|#)~i'],
+            'tiles.*.heading' => ['nullable', 'string', 'max:160'],
+            'tiles.*.label' => ['required_without:tiles.*.heading', 'nullable', 'string', 'max:120'],
+            'tiles.*.url' => ['required_without:tiles.*.heading', 'nullable', 'string', 'max:2048', 'regex:~^(https?://|mailto:|tel:|/|#)~i'],
             'tiles.*.icon' => ['nullable', 'string', 'max:100'],
             'tiles.*.color' => ['nullable', 'regex:/^#[0-9a-fA-F]{6}$/'],
             'tiles.*.cols' => ['nullable', 'integer', 'in:1,2,3'],
@@ -55,9 +56,10 @@ class TileSetController extends Controller
             'tiles.*.is_negative' => ['nullable', 'boolean'],
         ]);
 
-        $data['tiles'] = collect($data['tiles'])->map(fn ($t) => [
-            'label' => trim($t['label']),
-            'url' => trim($t['url']),
+        // Wiersz z `heading` to nagłówek sekcji (grupuje kolejne kafelki), pozostałe to kafelki.
+        $data['tiles'] = collect($data['tiles'])->map(fn ($t) => filled($t['heading'] ?? null) ? ['heading' => trim($t['heading'])] : [
+            'label' => trim((string) $t['label']),
+            'url' => trim((string) $t['url']),
             'icon' => trim((string) ($t['icon'] ?? '')) ?: 'bi-lightning',
             'image' => null,
             'color' => $t['color'] ?? null,

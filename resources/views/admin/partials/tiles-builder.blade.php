@@ -20,9 +20,14 @@
                     <input type="text" id="tb-name" maxlength="120" placeholder="np. Kafelki działu Szkolenia" class="w-full rounded-lg border-gray-300 text-sm focus:border-brand focus:ring-brand">
                 </div>
                 <div id="tb-rows" class="space-y-3"></div>
-                <button type="button" id="tb-add" class="inline-flex min-h-10 items-center gap-2 rounded-lg border-2 border-dashed border-brand px-4 text-sm font-bold text-brand-dark hover:bg-brand-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
-                    <i class="fa-solid fa-plus" aria-hidden="true"></i> Dodaj kafelek
-                </button>
+                <div class="flex flex-wrap gap-2">
+                    <button type="button" id="tb-add" class="inline-flex min-h-10 items-center gap-2 rounded-lg border-2 border-dashed border-brand px-4 text-sm font-bold text-brand-dark hover:bg-brand-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                        <i class="fa-solid fa-plus" aria-hidden="true"></i> Dodaj kafelek
+                    </button>
+                    <button type="button" id="tb-add-section" class="inline-flex min-h-10 items-center gap-2 rounded-lg border-2 border-dashed border-gray-400 px-4 text-sm font-bold text-ink hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                        <i class="fa-solid fa-heading" aria-hidden="true"></i> Dodaj sekcję (nagłówek)
+                    </button>
+                </div>
                 <p id="tb-error" role="alert" class="hidden rounded border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800"></p>
             </div>
             <div class="flex items-center justify-between gap-3 border-t border-gray-200 px-6 py-4">
@@ -47,6 +52,16 @@
             function esc(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;'); }
 
             function rowHtml(t, i) {
+                if (t.heading !== undefined) {
+                    return '<div class="tb-row rounded-xl border-2 border-brand bg-brand-light p-4" data-i="' + i + '" data-section="1">'
+                        + '<div class="flex flex-wrap items-end gap-3"><div class="min-w-0 flex-1"><label class="mb-1 block text-xs font-bold text-ink" for="tb-s-' + i + '">Sekcja — nagłówek</label>'
+                        + '<input id="tb-s-' + i + '" data-f="heading" type="text" maxlength="160" value="' + esc(t.heading) + '" placeholder="np. Dla uczestników" class="w-full rounded-lg border-gray-300 text-sm font-bold focus:border-brand focus:ring-brand"></div>'
+                        + '<span class="flex gap-1">'
+                        + '<button type="button" data-act="up" class="rounded p-2 text-muted hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand" aria-label="Przesuń sekcję wyżej"><i class="fa-solid fa-arrow-up" aria-hidden="true"></i></button>'
+                        + '<button type="button" data-act="down" class="rounded p-2 text-muted hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand" aria-label="Przesuń sekcję niżej"><i class="fa-solid fa-arrow-down" aria-hidden="true"></i></button>'
+                        + '<button type="button" data-act="del" class="rounded p-2 text-xs font-bold text-red-700 hover:bg-red-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500" aria-label="Usuń nagłówek sekcji"><i class="fa-solid fa-trash" aria-hidden="true"></i></button>'
+                        + '</span></div><p class="mt-1 text-xs text-ink">Kolejne kafelki należą do tej sekcji — aż do następnego nagłówka.</p></div>';
+                }
                 var colorOpts = colors.map(function (c) { return '<option value="' + c[0] + '"' + ((t.color || '#1e6dff') === c[0] ? ' selected' : '') + '>' + c[1] + '</option>'; }).join('');
                 var colsOpts = [1, 2, 3].map(function (n) { return '<option value="' + n + '"' + ((t.cols || 1) === n ? ' selected' : '') + '>' + n + (n === 1 ? ' kolumna' : ' kolumny') + '</option>'; }).join('');
                 return '<div class="tb-row rounded-xl border border-gray-200 bg-gray-50 p-4" data-i="' + i + '">'
@@ -71,6 +86,7 @@
 
             function collect() {
                 return Array.prototype.map.call(rows.querySelectorAll('.tb-row'), function (r) {
+                    if (r.dataset.section) { return { heading: r.querySelector('[data-f="heading"]').value.trim() }; }
                     var g = function (f) { return r.querySelector('[data-f="' + f + '"]'); };
                     return { label: g('label').value.trim(), url: g('url').value.trim(), icon: g('icon').value.trim(), color: g('color').value,
                         cols: parseInt(g('cols').value, 10) || 1, is_negative: g('is_negative').checked, strip: g('strip').checked };
@@ -94,6 +110,10 @@
                 root = $('tb-root'); dlg = $('tb-dialog'); rows = $('tb-rows'); nameEl = $('tb-name'); errEl = $('tb-error');
                 $('tb-close').addEventListener('click', function () { close(); });
                 $('tb-cancel').addEventListener('click', function () { close(); });
+                $('tb-add-section').addEventListener('click', function () {
+                    var t = collect(); t.push({ heading: '' }); render(t);
+                    var last = rows.querySelector('.tb-row:last-child [data-f="heading"]'); if (last) { last.focus(); }
+                });
                 $('tb-add').addEventListener('click', function () {
                     var t = collect(); t.push({ label: '', url: '', icon: 'bi-lightning', color: '#1e6dff', cols: 1 }); render(t);
                     var last = rows.querySelector('.tb-row:last-child [data-f="label"]'); if (last) { last.focus(); }
@@ -120,10 +140,12 @@
             }
 
             function save() {
-                var tiles = collect().filter(function (t) { return t.label || t.url; });
+                var tiles = collect().filter(function (t) { return t.heading !== undefined ? t.heading !== '' : (t.label || t.url); });
                 var name = nameEl.value.trim() || 'Zestaw kafelków';
                 if (! tiles.length) { showError('Dodaj przynajmniej jeden kafelek (etykieta i adres).'); return; }
+                if (! tiles.some(function (t) { return t.heading === undefined; })) { showError('Dodaj przynajmniej jeden kafelek (etykieta i adres).'); return; }
                 for (var i = 0; i < tiles.length; i++) {
+                    if (tiles[i].heading !== undefined) { continue; }
                     if (! tiles[i].label || ! tiles[i].url) { showError('Kafelek ' + (i + 1) + ': uzupełnij etykietę i adres.'); return; }
                     if (! /^(https?:\/\/|mailto:|tel:|\/|#)/i.test(tiles[i].url)) { showError('Kafelek ' + (i + 1) + ': adres musi zaczynać się od https://, /, #, mailto: lub tel:.'); return; }
                 }

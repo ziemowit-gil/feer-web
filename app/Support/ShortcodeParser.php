@@ -109,9 +109,32 @@ class ShortcodeParser
     private static function renderTileSet(int $id): string
     {
         $set = \App\Models\TileSet::find($id);
-        $tiles = collect($set?->tiles ?? [])->filter(fn ($t) => filled($t['label'] ?? null) && filled($t['url'] ?? null))->values();
+        if (! $set) {
+            return '';
+        }
 
-        return $tiles->isEmpty() ? '' : View::make('partials._tiles-grid', ['tiles' => $tiles, 'label' => $set->name])->render();
+        // Podział na sekcje: wiersz z `heading` otwiera nową sekcję (nagłówek + siatka jej kafelków).
+        $groups = [['heading' => null, 'tiles' => []]];
+        foreach ((array) $set->tiles as $t) {
+            if (filled($t['heading'] ?? null)) {
+                $groups[] = ['heading' => $t['heading'], 'tiles' => []];
+            } elseif (filled($t['label'] ?? null) && filled($t['url'] ?? null)) {
+                $groups[array_key_last($groups)]['tiles'][] = $t;
+            }
+        }
+
+        $html = '';
+        foreach ($groups as $g) {
+            if ($g['tiles'] === []) {
+                continue;
+            }
+            if ($g['heading']) {
+                $html .= '<h3 class="mb-3 mt-8 text-xl font-bold text-ink">'.e($g['heading']).'</h3>';
+            }
+            $html .= View::make('partials._tiles-grid', ['tiles' => collect($g['tiles']), 'label' => $g['heading'] ?: $set->name])->render();
+        }
+
+        return $html;
     }
 
     private static function renderTilesGrid(string $slug): string
