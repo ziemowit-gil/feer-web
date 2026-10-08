@@ -2,16 +2,25 @@
      płaskie powierzchnie (bez gradientów i cieni), ostre, niewielkie zaokrąglenia oraz paleta brandbooka
      (#1E6DFF, #1D1D1A, #CBD5E7, partnerstwa NGO: #EA8F00) nadpisująca kolory z Ustawień → Kolory.
      Dotyczy wszystkich widoków tego szablonu, także listy i strony projektu. --}}
+@php
+    // Paleta motywu FEER: domyślnie Brand book 2024, ale można ją zmienić w Ustawienia → Kolory (kolory marki 1–4).
+    $feerPal = [
+        'brand' => \App\Support\Color::isValid($siteSettings->brand_color) ? strtolower($siteSettings->brand_color) : '#1e6dff',
+        'b2' => \App\Support\Color::isValid($siteSettings->brand_color_2) ? strtolower($siteSettings->brand_color_2) : '#ea8f00',
+        'b3' => \App\Support\Color::isValid($siteSettings->brand_color_3) ? strtolower($siteSettings->brand_color_3) : '#1d1d1a',
+        'b4' => \App\Support\Color::isValid($siteSettings->brand_color_4) ? strtolower($siteSettings->brand_color_4) : '#cbd5e7',
+    ];
+    $feerLight = $feerPal['brand'] === '#1e6dff' ? '#e8f0ff' : $siteSettings->brandPalette()['light'];
+@endphp
 <style>
     :root {
-        /* Paleta Brand booka FEER 2024 (FEER jako osobny podmiot) — stała w tym szablonie. */
-        /* Kolor główny #1E6DFF (decyzja właściciela; brandbook). Biały na nim ma 4,48:1 — o włos poniżej AA 4,5:1, dlatego tekst i linki na jasnym tle używają ciemniejszego wariantu brand-dark (6,5:1). */
-        --color-brand: #1e6dff;
-        --color-brand-dark: #1e6dff;
-        --color-brand-light: #e8f0ff;
-        --color-brand-2: #ea8f00;   /* działania w partnerstwie z NGO */
-        --color-brand-3: #1d1d1a;
-        --color-brand-4: #cbd5e7;
+        /* Paleta motywu FEER (domyślnie Brand book 2024; zmieniana w Ustawienia → Kolory). */
+        --color-brand: {{ $feerPal['brand'] }};
+        --color-brand-dark: {{ $feerPal['brand'] }};
+        --color-brand-light: {{ $feerLight }};
+        --color-brand-2: {{ $feerPal['b2'] }};   /* działania w partnerstwie z NGO */
+        --color-brand-3: {{ $feerPal['b3'] }};
+        --color-brand-4: {{ $feerPal['b4'] }};
         --font-sans: 'Montserrat', ui-sans-serif, system-ui, sans-serif;
         --color-ink: #1d1d1a;
     }

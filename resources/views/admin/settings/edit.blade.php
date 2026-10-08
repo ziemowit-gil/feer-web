@@ -576,6 +576,30 @@
             @php $subBrands = array_values((array) old('sub_brands', $settings->sub_brands ?? [])); @endphp
             <p class="text-xs text-muted">Kolor przewodni strony oraz nazwane kolory submarek dla różnych treści (projektów i aktualności). Każdy kolor jest przy zapisie przyciemniany do kontrastu WCAG AA wobec bieli.</p>
 
+            @if (($settings->site_template ?? 'default') === 'feer')
+                @php
+                    $feerSwatches = [
+                        ['Kolor główny', 'brand_color', $settings->brand_color ?: '#1e6dff', 'Przyciski, linki, akcenty'],
+                        ['Kolor 2', 'brand_color_2', $settings->brand_color_2 ?: '#ea8f00', 'Partnerstwo z NGO, wyróżnienia'],
+                        ['Kolor 3', 'brand_color_3', $settings->brand_color_3 ?: '#1d1d1a', 'Grafit — tekst na jasnym tle'],
+                        ['Kolor 4', 'brand_color_4', $settings->brand_color_4 ?: '#cbd5e7', 'Jasne tło pomocnicze'],
+                    ];
+                @endphp
+                <section class="rounded-lg border border-gray-200 bg-white p-4" aria-labelledby="feer-theme-colors-h">
+                    <h3 id="feer-theme-colors-h" class="text-sm font-bold text-ink">Kolory motywu FEER</h3>
+                    <p class="mb-3 mt-1 text-xs text-muted">Wszystkie kolory używane przez motyw FEER w jednym miejscu. Zmieniasz je w polach niżej (kolor przewodni oraz kolory 2–4) albo w pełnym panelu kolorów.</p>
+                    <ul role="list" class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                        @foreach ($feerSwatches as [$fLabel, $fKey, $fHex, $fNote])
+                            <li class="flex items-center gap-3 rounded border border-gray-200 p-2">
+                                <span class="h-10 w-10 flex-none rounded border border-gray-300" style="background: {{ $fHex }}" aria-hidden="true"></span>
+                                <span class="min-w-0 text-xs"><span class="block font-bold text-ink">{{ $fLabel }}</span><span class="font-mono text-muted">{{ strtoupper($fHex) }}</span><span class="block text-muted">{{ $fNote }}</span></span>
+                            </li>
+                        @endforeach
+                    </ul>
+                    <p class="mt-3 text-xs"><a href="{{ route('admin.kolory.edit') }}" class="font-bold text-brand underline hover:text-ink">Otwórz pełny panel kolorów (podgląd, kontrast, gotowe palety)</a></p>
+                </section>
+            @endif
+
             <div class="flex items-start gap-3 rounded-lg border border-amber-200 bg-amber-50 p-3 dark:border-amber-700 dark:bg-amber-950">
                 <input type="hidden" name="brand_skip_contrast" value="0">
                 <input type="checkbox" id="brand_skip_contrast" name="brand_skip_contrast" value="1"
@@ -2111,9 +2135,8 @@
                     Szablon dedykowany Fundacji FEER, zgodny z Brand bookiem 2024: klasyczny górny pasek, nagłówek i stopka
                     (ustawiasz je w zakładce <span class="font-bold">Nagłówek</span>) oraz rozbudowana strona główna z sekcją szkoleń.
                     Montserrat w całym serwisie, tekst <span class="font-mono">#1D1D1A</span>, płaskie powierzchnie bez gradientów i cieni.
-                    Paleta jest stała i nadpisuje zakładkę <span class="font-bold">Kolory</span>:
-                    <span class="font-mono">#1B66F5</span> (marka — odcień brandbooka #1E6DFF z kontrastem ≥ 4,5:1 na bieli), <span class="font-mono">#1D1D1A</span>,
-                    <span class="font-mono">#CBD5E7</span>, w partnerstwie z NGO <span class="font-mono">#EA8F00</span>.
+                    Kolory motywu (domyślnie z Brand booka: <span class="font-mono">#1E6DFF</span>, <span class="font-mono">#EA8F00</span>,
+                    <span class="font-mono">#1D1D1A</span>, <span class="font-mono">#CBD5E7</span>) zmieniasz w zakładce <span class="font-bold">Kolory</span>.
                 </p>
             </div>
 
