@@ -9,7 +9,7 @@
 @endphp
 @if ($infoProject->paid_info_show ?? true)
 <details class="proj-paid-info mt-3">
-    <summary>Czym jest odpłatna działalność pożytku publicznego i jak to u nas działa?</summary>
+    <summary>Co to znaczy, że działanie jest płatne? Jak to u nas działa?</summary>
     <div class="proj-paid-body">
         @foreach ($paidParagraphs as $para)
             <p>{!! nl2br(e($para)) !!}</p>

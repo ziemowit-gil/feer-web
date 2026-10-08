@@ -1549,7 +1549,7 @@
 
             <div class="border-t border-gray-100 pt-6">
                 <label for="paid_activity_info" class="mb-1 block text-sm font-bold">Objaśnienie odpłatnej działalności pożytku publicznego (dla całego serwisu)</label>
-                <p class="mb-2 text-xs text-muted">Pokazywane przy odpłatnych wersjach projektów w rozwijanym objaśnieniu. Puste pole = tekst domyślny. Akapity rozdzielaj pustą linią. W formularzu projektu można to zmienić dla pojedynczego projektu. Upewnij się, że opis „jak to działa u nas” zgadza się z faktycznymi zasadami organizacji i statutem.</p>
+                <p class="mb-2 text-xs text-muted">Pokazywane przy płatnych formach udziału w rozwijanym objaśnieniu. Pisz prostym językiem: krótkie zdania, bez trudnych słów. Puste pole = tekst domyślny. Akapity rozdzielaj pustą linią. W formularzu projektu można to zmienić dla pojedynczego projektu. Upewnij się, że opis „jak to działa u nas” zgadza się z faktycznymi zasadami organizacji i statutem.</p>
                 <textarea id="paid_activity_info" name="paid_activity_info" rows="8" maxlength="3000" placeholder="{{ \Illuminate\Support\Str::limit(\App\Models\SiteSetting::PAID_ACTIVITY_DEFAULT, 160) }}"
                     class="w-full rounded-lg border-gray-300 text-sm focus:border-brand focus:ring-brand">{{ old('paid_activity_info', $settings->paid_activity_info) }}</textarea>
                 <button type="button" class="mt-1 text-xs font-bold text-brand underline" onclick="document.getElementById('paid_activity_info').value = @js(\App\Models\SiteSetting::PAID_ACTIVITY_DEFAULT)">Wstaw tekst domyślny do edycji</button>
