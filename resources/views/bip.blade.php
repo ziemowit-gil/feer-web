@@ -75,6 +75,60 @@ HTML;
                 </div>
                 @endif
 
+                {{-- ── Kafle: działy BIP (z liczbą dokumentów) + szybkie przejścia ── --}}
+                @unless ($isExternal)
+                    @php
+                        $catIcons = ['subject_status' => 'fa-scale-balanced', 'subject_scope' => 'fa-bullseye', 'subject_persons' => 'fa-user-tie', 'subject_structure' => 'fa-sitemap', 'property' => 'fa-building', 'public_projects' => 'fa-diagram-project', 'operations' => 'fa-list-check', 'registers' => 'fa-book', 'official_docs' => 'fa-file-signature', 'procurement' => 'fa-file-contract', 'finance' => 'fa-coins', 'other' => 'fa-folder-open'];
+                        $catTiles = collect(\App\Models\BipDocument::CATEGORIES)->filter(fn ($l, $k) => $documents->has($k));
+                        $quick = array_values(array_filter([
+                            ($siteSettings->bip_show_reports ?? true) && $siteSettings->isModuleEnabled('reports') && $reports->isNotEmpty() ? ['Sprawozdania roczne', 'Merytoryczne i finansowe, do pobrania', route('bip').'#sprawozdania', 'fa-file-invoice'] : null,
+                            ['Rejestr zmian', 'Co i kiedy zmieniliśmy w BIP', route('bip.changelog'), 'fa-clock-rotate-left'],
+                            ['Instrukcja korzystania', 'Jak poruszać się po BIP', route('bip.instructions'), 'fa-circle-info'],
+                            ['Deklaracja dostępności', 'Dostępność serwisu', route('accessibility.show'), 'fa-universal-access'],
+                        ]));
+                        $pal = \App\Support\ThemePalette::tiles();
+                    @endphp
+                    <style>
+                        .bip-tiles { list-style: none; margin: 0; padding: 0; display: grid; gap: .75rem; grid-template-columns: repeat(auto-fill, minmax(13rem, 1fr)); }
+                        .bip-tile { display: flex; min-height: 7rem; flex-direction: column; justify-content: space-between; gap: .75rem; padding: 1rem; border: 2px solid #1d1d1a; border-radius: .5rem; background: #fff; color: #1d1d1a; text-decoration: none; }
+                        .bip-tile:hover { background: #1d1d1a; color: #fff; } .bip-tile:hover .bip-tile-i { color: #fff; }
+                        .bip-tile:focus-visible { outline: 3px solid var(--color-brand-dark); outline-offset: 3px; }
+                        .bip-tile-i { font-size: 1.35rem; color: var(--color-brand-dark); }
+                        .bip-tile-t { display: block; font-size: 1rem; font-weight: 800; line-height: 1.25; }
+                        .bip-tile-n { display: block; margin-top: .2rem; font-size: .8rem; font-weight: 600; opacity: 1; }
+                        .bip-tile-f { border-color: transparent; }
+                        .bip-tile-f:hover { filter: brightness(.9); }
+                    </style>
+                    @if ($q === '' && $catTiles->isNotEmpty())
+                        <section class="mt-8" aria-labelledby="bip-tiles-h">
+                            <h2 id="bip-tiles-h" class="bip-h2" style="margin-top:0">Działy BIP</h2>
+                            <p class="mb-3 text-sm text-muted">Wybierz dział, aby przejść do dokumentów.</p>
+                            <ul class="bip-tiles" role="list">
+                                @foreach ($catTiles as $ck => $cl)
+                                    @php $cnt = $documents[$ck]->count(); @endphp
+                                    <li><a href="#kategoria-{{ $ck }}" class="bip-tile">
+                                        <i class="fa-solid {{ $catIcons[$ck] ?? 'fa-folder' }} bip-tile-i" aria-hidden="true"></i>
+                                        <span><span class="bip-tile-t">{{ $cl }}</span><span class="bip-tile-n">{{ $cnt }} {{ trans_choice('dokument|dokumenty|dokumentów', $cnt) }}</span></span>
+                                    </a></li>
+                                @endforeach
+                            </ul>
+                        </section>
+                    @endif
+                    @if ($q === '')
+                        <section class="mt-8" aria-label="Szybkie przejścia">
+                            <ul class="bip-tiles" role="list">
+                                @foreach ($quick as $i => [$qt, $qd, $qu, $qi])
+                                    @php $bg = $pal[$i % 4]; $fg = \App\Support\ThemePalette::button($bg)['text']; @endphp
+                                    <li><a href="{{ $qu }}" class="bip-tile bip-tile-f" style="background: {{ $bg }}; color: {{ $fg }}">
+                                        <i class="fa-solid {{ $qi }} bip-tile-i" style="color: {{ $fg }}" aria-hidden="true"></i>
+                                        <span><span class="bip-tile-t">{{ $qt }}</span><span class="bip-tile-n">{{ $qd }}</span></span>
+                                    </a></li>
+                                @endforeach
+                            </ul>
+                        </section>
+                    @endif
+                @endunless
+
                 @if ($isExternal)
                     {{-- Tryb zewnętrzny: przycisk do zewnętrznego BIP --}}
                     <div class="mt-8">
