@@ -67,10 +67,13 @@ class ColorController extends Controller
         foreach (['brand_color_2', 'brand_color_3', 'brand_color_4', 'ngo_color'] as $key) {
             $rules[$key] = ['nullable', 'regex:/^#[0-9a-fA-F]{6}$/'];
         }
+        $rules['brand_skip_contrast'] = ['sometimes', 'boolean'];
         $data = $request->validate($rules);
+        $skip = $request->boolean('brand_skip_contrast');
+        unset($data['brand_skip_contrast']);
 
         $settings = SiteSetting::current();
-        $settings->forceFill(array_map(fn ($v) => $v ? strtolower($v) : null, $data) + ['brand_skip_contrast' => true, 'ngo_skip_contrast' => true])->save();
+        $settings->forceFill(array_map(fn ($v) => $v ? strtolower($v) : null, $data) + ['brand_skip_contrast' => $skip, 'ngo_skip_contrast' => $skip])->save();
 
         return redirect()->route('admin.kolory.edit')->with('status', 'Kolory zostały zapisane.');
     }

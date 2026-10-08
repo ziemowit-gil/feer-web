@@ -6,7 +6,7 @@
 @if (! request()->attributes->get('cx_css'))
     @php request()->attributes->set('cx_css', true); @endphp
     <style>
-        .cx-frame { --cx: #1e6dff; --cx-text: #1d1d1a; --cx-neg: #1e6dff; --cx-neg-text: #fff; position: relative; margin: 1.5rem 0; padding: 1rem 4.75rem 1rem 1.25rem; border: 2px solid var(--cx); border-radius: .5rem; background: #fff; color: var(--cx-text); line-height: 1.6; }
+        .cx-frame { --cx: var(--color-brand); --cx-text: var(--color-ink, #1d1d1a); --cx-neg: var(--color-brand); --cx-neg-text: #fff; position: relative; margin: 1.5rem 0; padding: 1rem 4.75rem 1rem 1.25rem; border: 2px solid var(--cx); border-radius: .5rem; background: #fff; color: var(--cx-text); line-height: 1.6; }
         .cx-frame.cx-gold { --cx: #a16207; --cx-neg: #f2b705; --cx-neg-text: #1d1d1a; }
         .cx-frame.cx-red { --cx: #b91c1c; --cx-neg: #b91c1c; --cx-neg-text: #fff; }
         .cx-frame.cx-green { --cx: #166534; --cx-neg: #166534; --cx-neg-text: #fff; }

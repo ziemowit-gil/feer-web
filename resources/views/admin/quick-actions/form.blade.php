@@ -62,8 +62,8 @@
                 </label>
             </div>
             {{-- Paleta brandbooka FEER — jedno kliknięcie ustawia kolor i włącza „Własny kolor". --}}
-            <div class="mt-2 flex flex-wrap items-center gap-2" role="group" aria-label="Kolory z brandbooka">
-                @foreach (['#1e6dff' => 'Niebieski FEER', '#1d1d1a' => 'Grafit', '#ea8f00' => 'Pomarańcz', '#cbd5e7' => 'Jasnoniebieski'] as $hex => $name)
+            <div class="mt-2 flex flex-wrap items-center gap-2" role="group" aria-label="Kolory motywu">
+                @foreach (\App\Support\ThemePalette::swatches() as $hex => $name)
                     <button type="button" title="{{ $name }}"
                         @click="color = '{{ $hex }}'; enabled = true"
                         class="flex h-8 items-center gap-2 rounded border border-gray-200 bg-white px-2 text-xs font-bold text-ink hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">

@@ -34,7 +34,7 @@
     @else
         <ul class="mt-10 space-y-3" role="list">
             @foreach ($events as $event)
-                @php $accent = $event->is_featured ? '#ea8f00' : 'var(--color-brand)'; @endphp
+                @php $accent = $event->is_featured ? 'var(--color-brand-2)' : 'var(--color-brand)'; @endphp
                 <li>
                     <a href="{{ site_route('events.show', $event) }}" class="feer-card group flex items-stretch gap-5 rounded-md bg-white py-4 pl-4 pr-3 transition hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand" style="border-left: 4px solid {{ $accent }}">
                         <time datetime="{{ $event->starts_at->toIso8601String() }}" class="flex w-16 flex-none flex-col items-center justify-center rounded-md bg-gray-100 py-2 text-center" aria-label="{{ $event->shortDateLabel() }}">

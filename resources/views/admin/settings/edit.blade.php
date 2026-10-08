@@ -606,8 +606,8 @@
                     {{ old('brand_skip_contrast', $settings->brand_skip_contrast) ? 'checked' : '' }}
                     class="mt-0.5 rounded border-gray-300 text-brand focus:ring-brand">
                 <label for="brand_skip_contrast" class="text-sm leading-snug">
-                    <span class="font-bold">Wyłącz automatyczne korygowanie kontrastu</span>
-                    <span class="block text-xs text-muted">Kolory nie będą przyciemniane przy zapisie. Użyj tylko gdy identyfikacja wizualna organizacji wymaga konkretnego koloru niespełniającego WCAG AA.</span>
+                    <span class="font-bold">Nie poprawiaj kolorów do WCAG</span>
+                    <span class="block text-xs text-muted">Kolory nie będą przyciemniane ani korygowane (przy zapisie i na stronie). Użyj tylko gdy identyfikacja wizualna organizacji wymaga konkretnego koloru niespełniającego WCAG AA.</span>
                 </label>
             </div>
 

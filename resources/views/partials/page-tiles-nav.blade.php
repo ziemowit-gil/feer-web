@@ -5,7 +5,7 @@
 --}}
 @php
     // Paleta z brandbooka FEER 2024: niebieski, grafit, pomarańcz (działania z partnerami), jasny niebieski.
-    $tilePalette = ['#1e6dff', '#1d1d1a', '#ea8f00', '#cbd5e7'];
+    $tilePalette = \App\Support\ThemePalette::tiles();
 @endphp
 @if ($tiles->isNotEmpty())
     <nav aria-label="Podstrony: {{ $page->title }}" class="mt-10">
@@ -13,7 +13,7 @@
             @foreach ($tiles as $i => $tile)
                 @php
                     $base = $tilePalette[$i % 4];
-                    $pal = \App\Support\Color::button($base);
+                    $pal = \App\Support\ThemePalette::button($base);
                     $desc = \Illuminate\Support\Str::limit(trim(strip_tags((string) ($tile->meta_description ?? ''))), 90);
                 @endphp
                 <li>

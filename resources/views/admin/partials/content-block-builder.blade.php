@@ -41,7 +41,7 @@
             var storeUrl = @js(route('admin.bloki-tresci.store'));
             var baseUrl = @js(url('admin/bloki-tresci'));
             var csrf = @js(csrf_token());
-            var palette = [['#1e6dff', 'Niebieski'], ['#1d1d1a', 'Grafit'], ['#ea8f00', 'Pomarańcz'], ['#cbd5e7', 'Jasnoniebieski']];
+            var palette = @js(collect(\App\Support\ThemePalette::swatches())->map(fn ($n, $h) => [$h, $n])->values()->all());
             var root, dlg, rowsEl, optsEl, nameEl, errEl, addBtn;
             var state = null, d = null; // d: dane bloku
 

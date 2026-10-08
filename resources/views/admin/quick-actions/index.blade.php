@@ -70,8 +70,8 @@
         document.addEventListener('alpine:init', () => {
             Alpine.data('quickGrid', (initial, url, csrf) => ({
                 tiles: initial, dragFrom: null, dragOver: null, dirty: false, saving: false, status: '', message: '',
-                named: { blue: '#1e6dff', dark: '#1d1d1a', green: '#166534', purple: '#1e6dff', orange: '#ea8f00', red: '#b91c1c' },
-                hex(t) { return /^#[0-9a-f]{6}$/i.test(t.color || '') ? t.color : (this.named[t.color] || '#1e6dff'); },
+                named: @js(\App\Support\ThemePalette::named()),
+                hex(t) { return /^#[0-9a-f]{6}$/i.test(t.color || '') ? t.color : (this.named[t.color] || @js(\App\Support\ThemePalette::colors()[0])); },
                 iconHtml(t) { const v = (t.icon || '').trim() || 'bi-lightning'; if (/^mi-[a-z0-9_]+$/.test(v)) return '<span class="material-symbols-outlined mi-glyph">' + v.slice(3) + '</span>'; const c = (/(^|\s)fa[srlb]?(-|\s)/.test(v) || v.startsWith('bi ')) ? v : 'bi ' + v; return '<i class="' + c.replace(/"/g, '') + '"></i>'; },
                 touch() { this.dirty = true; this.message = 'Niezapisane zmiany'; this.status = ''; },
                 move(i, d) { const j = i + d; if (j < 0 || j >= this.tiles.length) return; const [x] = this.tiles.splice(i, 1); this.tiles.splice(j, 0, x); this.touch(); },

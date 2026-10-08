@@ -9,7 +9,7 @@
 --}}
 @php
     // Kolory nazwane → paleta brandbooka (niebieski #1E6DFF, grafit #1D1D1A, pomarańcz #EA8F00); fioletowy zastąpiony firmowym niebieskim; zielony/czerwony zostają dla starszych wpisów.
-    $feerNamed = ['blue' => '#1e6dff', 'dark' => '#1d1d1a', 'green' => '#166534', 'purple' => '#1e6dff', 'orange' => '#ea8f00', 'red' => '#b91c1c'];
+    $feerNamed = \App\Support\ThemePalette::named();
     $panelWhite = (bool) ($siteSettings->quick_actions_panel_negative ?? false);
     // Jedna akcja → jeden duży przycisk na całą szerokość (wyższy, większy tekst i ikona).
     $single = ($quickLinks ?? collect())->count() === 1;
@@ -50,9 +50,7 @@
                             $safe = $siteSettings->contrastSafeColor($base);
                             $filled = (bool) $qa->is_negative;
                             $strip = (bool) $qa->strip && ! $single; // „Pasek”: niski kafel, ikona obok tekstu
-                            $pal = $filled ? \App\Support\Color::button($base) : null;
-                            // Kolor firmowy #1E6DFF zostaje dokładnie taki (biały tekst: 4,48:1 — zaakceptowane przez właściciela marki).
-                            if ($filled && strtolower($base) === '#1e6dff') { $pal = ['bg' => '#1e6dff', 'text' => '#ffffff', 'hover' => '#1e6dff']; }
+                            $pal = $filled ? \App\Support\ThemePalette::button($base) : null;
                             $iconClass = (str_contains((string) $qa->icon, 'fa-') || str_starts_with((string) $qa->icon, 'bi ')) ? $qa->icon : 'bi '.($qa->icon ?: 'bi-lightning');
                             $external = \Illuminate\Support\Str::startsWith($qa->url, ['http://', 'https://']) && ! \Illuminate\Support\Str::contains($qa->url, request()->getHost());
                         @endphp

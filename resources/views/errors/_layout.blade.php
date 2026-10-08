@@ -41,7 +41,7 @@
                 <p class="mb-3 text-xs font-bold uppercase tracking-widest text-muted">Zajrzyj tutaj</p>
                 <ul class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4" role="list">
                     @foreach ($quick as $i => [$label, $icon, $url])
-                        @php $bg = ['#1e6dff', '#1d1d1a', '#ea8f00', '#cbd5e7'][$i % 4]; $fg = $bg === '#ea8f00' || $bg === '#cbd5e7' ? '#1d1d1a' : '#ffffff'; @endphp
+                        @php $bg = \App\Support\ThemePalette::tiles()[$i % 4]; $fg = \App\Support\ThemePalette::button($bg)['text']; @endphp
                         <li>
                             <a href="{{ $url }}" class="feer-card group flex min-h-24 flex-col justify-between rounded-md p-4 transition hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2" style="background-color: {{ $bg }}; color: {{ $fg }}">
                                 <i class="fa-solid {{ $icon }} text-xl" aria-hidden="true"></i>

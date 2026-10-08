@@ -16,7 +16,7 @@
 @section('content')
     @php
         $filled = $categories->filter(fn ($c) => $c->publishedProjects->isNotEmpty())->values();
-        $fallback = ['#1e6dff', '#1d1d1a', '#ea8f00', '#cbd5e7']; // paleta brandbooka FEER 2024
+        $fallback = \App\Support\ThemePalette::tiles(); // paleta motywu (Ustawienia → Kolory)
         $n = 0;
     @endphp
 
@@ -45,7 +45,7 @@
                                 @php
                                     $base = \App\Support\Color::isValid($project->accent_color ?? null) ? $project->accent_color : $fallback[$n % 4];
                                     $n++;
-                                    $pal = \App\Support\Color::button($base);
+                                    $pal = \App\Support\ThemePalette::button($base);
                                 @endphp
                                 <li>
                                     <a href="{{ route('projects.show', $project) }}"

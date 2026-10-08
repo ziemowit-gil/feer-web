@@ -6,7 +6,7 @@
 @php
     $t = $tile ?? [];
     $seg = 'flex cursor-pointer items-center justify-center rounded-md border px-3 py-1.5 text-xs font-bold transition focus-within:ring-2 focus-within:ring-brand has-[:checked]:border-brand has-[:checked]:bg-brand has-[:checked]:text-white border-gray-300 bg-white text-ink hover:bg-gray-50';
-    $swatches = ['#1e6dff' => 'Niebieski', '#1d1d1a' => 'Grafit', '#ea8f00' => 'Pomarańcz', '#cbd5e7' => 'Jasnoniebieski'];
+    $swatches = \App\Support\ThemePalette::swatches();
     $n = "tiles[{$i}]";
 @endphp
 <div data-repeater-row class="rounded-xl border border-gray-200 bg-white"

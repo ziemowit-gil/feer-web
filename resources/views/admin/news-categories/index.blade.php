@@ -2,7 +2,7 @@
 
 @section('title', 'Kategorie aktualności')
 
-@php $swatches = ['#1e6dff' => 'Niebieski FEER', '#1d1d1a' => 'Grafit', '#ea8f00' => 'Pomarańcz', '#cbd5e7' => 'Jasnoniebieski']; @endphp
+@php $swatches = \App\Support\ThemePalette::swatches(); @endphp
 
 @section('content')
     <div class="mb-6">

@@ -29,8 +29,8 @@
     // a zielony/fioletowy/czerwony i awaryjna paleta też dają kolory marki.
     $feerTiles = ($siteSettings->site_template ?? 'default') === 'feer';
     if ($feerTiles) {
-        $namedColors = ['blue' => '#1e6dff', 'dark' => '#1d1d1a', 'green' => '#1e6dff', 'purple' => '#1e6dff', 'orange' => '#ea8f00', 'red' => '#1d1d1a'];
-        $tilePalette = ['#1e6dff', '#1d1d1a', '#ea8f00', '#cbd5e7'];
+        $namedColors = \App\Support\ThemePalette::named();
+        $tilePalette = \App\Support\ThemePalette::tiles();
     }
 
     $colSpanFor = function (int $cols): string {
@@ -67,8 +67,8 @@
                     $base = $tilePalette[$i % count($tilePalette)];
                 }
 
-                $pal  = \App\Support\Color::button($base); // {bg, text, hover} — kontrast AA
-                if (($feerTiles ?? false) && strtolower($base) === '#1e6dff') { $pal = ['bg' => '#1e6dff', 'text' => '#ffffff', 'hover' => '#1e6dff']; } // kolor firmowy dokładnie
+                // {bg, text, hover} — kontrast AA (chyba że wyłączono poprawianie do WCAG); kolor główny motywu bez zmian
+                $pal  = ($feerTiles ?? false) ? \App\Support\ThemePalette::button($base) : \App\Support\Color::button($base);
                 $bg   = $pal['bg'];
                 $txt  = $pal['text'];
                 $chip = $txt === '#ffffff' ? 'rgba(255,255,255,0.20)' : 'rgba(17,24,39,0.12)';

@@ -68,6 +68,15 @@
                 @endforeach
             </section>
 
+            <div class="flex items-start gap-3 rounded-lg border border-amber-200 bg-amber-50 p-3">
+                <input type="hidden" name="brand_skip_contrast" value="0">
+                <input type="checkbox" id="brand_skip_contrast" name="brand_skip_contrast" value="1" @checked(old('brand_skip_contrast', $settings->brand_skip_contrast)) class="mt-0.5 rounded border-gray-300 text-brand focus:ring-brand">
+                <label for="brand_skip_contrast" class="text-sm leading-snug">
+                    <span class="font-bold">Nie poprawiaj kolorów do WCAG</span>
+                    <span class="block text-xs text-muted">Kolory zostaną użyte dokładnie takie, jak ustawione — bez przyciemniania. Użyj, gdy identyfikacja wizualna wymaga konkretnych kolorów; część zestawień może wtedy mieć kontrast poniżej 4,5:1.</span>
+                </label>
+            </div>
+
             <div class="flex items-center gap-3">
                 <button type="submit" class="inline-flex min-h-11 items-center gap-2 rounded-lg bg-brand px-6 text-sm font-bold text-white transition hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
                     <i class="fa-solid fa-floppy-disk" aria-hidden="true"></i>Zapisz kolory

@@ -22,7 +22,7 @@
         --color-brand-3: {{ $feerPal['b3'] }};
         --color-brand-4: {{ $feerPal['b4'] }};
         --font-sans: 'Montserrat', ui-sans-serif, system-ui, sans-serif;
-        --color-ink: #1d1d1a;
+        --color-ink: {{ $feerPal['b3'] }};
     }
     body { font-family: var(--font-sans); color: var(--color-ink); }
     h1, h2, h3, h4, h5, h6 { font-weight: 700; }
@@ -82,15 +82,15 @@
     .feer-pills-row::-webkit-scrollbar { display: none; }
 
     /* Kolory linków: tylko niebieski i czarny (brandbook). Linki w treści — niebieskie z podkreśleniem, po najechaniu czarne;
-       pozycje menu — czarne, po najechaniu/aktywne niebieskie (#1E6DFF na bieli 4,48:1, #1D1D1A 16,9:1). */
-    .prose a:not([class*="bg-"]) { color: #1e6dff; text-decoration: underline; text-underline-offset: .2em; }
-    .prose a:not([class*="bg-"]):hover { color: #1d1d1a; }
+       pozycje menu — czarne, po najechaniu/aktywne niebieskie (#1E6DFF na bieli 4,48:1, var(--color-brand-3) 16,9:1). */
+    .prose a:not([class*="bg-"]) { color: var(--color-brand); text-decoration: underline; text-underline-offset: .2em; }
+    .prose a:not([class*="bg-"]):hover { color: var(--color-brand-3); }
     /* Małe niebieskie linki akcji („Wszystkie projekty →", „Zobacz …") mają podkreślenie — informacja nie opiera się tylko na kolorze
        (niebieski #1E6DFF na jasnoszarym tle ma 4,29:1), a po najechaniu stają się czarne. */
     main a.text-brand-dark:not([class*="bg-"]):not(.no-underline), main a.text-brand:not([class*="bg-"]):not(.no-underline) { text-decoration: underline; text-underline-offset: .2em; text-decoration-thickness: 1px; }
-    main a.text-brand-dark:not([class*="bg-"]):hover, main a.text-brand:not([class*="bg-"]):hover { color: #1d1d1a; }
+    main a.text-brand-dark:not([class*="bg-"]):hover, main a.text-brand:not([class*="bg-"]):hover { color: var(--color-brand-3); }
     nav .nav-pills > li:not([data-nav-accent]) > a:hover, nav .nav-pills > li:not([data-nav-accent]) > button:hover,
-    nav .nav-pills li > ul[role="list"] a:hover { color: #1e6dff; }
+    nav .nav-pills li > ul[role="list"] a:hover { color: var(--color-brand); }
 
     /* Tytuły stron (H1 „hero”): spokojniejsze, bez wielkiego szarego pasa — rozmiar jak nagłówki sekcji, niebieski akcent pod spodem,
        białe tło i mniejsze odstępy. Jedna reguła dla wszystkich podstron FEER (okruszki płynnie przechodzą w tytuł). */
@@ -164,7 +164,7 @@
     .site-topbar-feer > div:first-child > button { color: #fff !important; }
     .site-topbar-feer > div:first-child > button { border-color: #fff !important; background: transparent !important; border-radius: .375rem !important; }
     .site-topbar-feer > div:first-child > button:hover,
-    .site-topbar-feer > div:first-child > button[aria-expanded="true"] { background: #fff !important; color: #1d1d1a !important; }
+    .site-topbar-feer > div:first-child > button[aria-expanded="true"] { background: #fff !important; color: var(--color-brand-3) !important; }
     .site-topbar-feer > div:first-child a:hover { text-decoration: underline; }
     .site-topbar-feer form[role="search"] { border-color: #fff; }
 

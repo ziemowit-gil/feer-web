@@ -376,7 +376,7 @@
             {{-- FEER: „W liczbach" jako pełnokolorowe kafle z palety brandbooka (niebieski, grafit, pomarańcz, jasny niebieski), liczba skalowana do długości
                  (krótkie = bardzo duże, „więcej jak 1000" = mniejsze, bez łamania), podpis pod spodem; kolor tekstu dobrany pod kontrast; animacja liczenia zachowana. --}}
             @php
-                $statTiles = [['#1e6dff', '#ffffff'], ['#1d1d1a', '#ffffff'], ['#ea8f00', '#1d1d1a'], ['#cbd5e7', '#1d1d1a']];
+                $statTiles = array_map(fn ($c) => [$c, \App\Support\ThemePalette::button($c)['text']], \App\Support\ThemePalette::tiles());
                 $statCols = match (min($aboutStats->count(), 4)) { 1 => 'lg:grid-cols-1', 2 => 'lg:grid-cols-2', 3 => 'lg:grid-cols-3', default => 'lg:grid-cols-4' };
             @endphp
             <section id="sekcja-stats" class="px-4 py-14" aria-label="W liczbach" data-countup>
@@ -865,14 +865,14 @@
             {{-- Szablon FEER: kafelki jak w serwisach typu CKE — pełne kolory z brandbooka (niebieski, grafit, pomarańcz, jasny niebieski),
                  ikona, tytuł, opis i strzałka; kolor tekstu dobiera Color::button (kontrast ≥ 4,5:1). Cały kafelek jest linkiem. --}}
             @php
-                $cke = ['#1e6dff', '#1d1d1a', '#ea8f00', '#cbd5e7'];
-                $ckeNamed = ['blue' => '#1e6dff', 'dark' => '#1d1d1a', 'orange' => '#ea8f00'];
+                $cke = \App\Support\ThemePalette::tiles();
+                $ckeNamed = \App\Support\ThemePalette::named();
             @endphp
             <ul class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3" role="list">
                 @foreach ($hubLinks as $i => $link)
                     @php
                         $base = $ckeNamed[$link['color'] ?? ''] ?? $cke[$i % count($cke)];
-                        $pal = $base === '#1e6dff' ? ['bg' => '#1e6dff', 'text' => '#ffffff'] : \App\Support\Color::button($base);
+                        $pal = \App\Support\ThemePalette::button($base);
                         $ctaLabel = filled($link['cta_label'] ?? null) ? $link['cta_label'] : null;
                     @endphp
                     <li class="h-full">

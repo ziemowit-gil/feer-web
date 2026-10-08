@@ -1900,6 +1900,11 @@ class SiteSetting extends Model implements HasMedia
      */
     public function contrastSafeColor(string $hex): string
     {
+        // „Nie poprawiaj kolorów do WCAG" — kolor zostaje dokładnie taki, jak ustawiony.
+        if ($this->brand_skip_contrast) {
+            return $hex;
+        }
+
         for ($step = 0; $step <= 20; $step++) {
             $candidate = $step === 0 ? $hex : $this->shade($hex, -0.05 * $step);
 

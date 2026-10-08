@@ -93,7 +93,7 @@
             var storeUrl = @js(route('admin.zestawy-kafelkow.store'));
             var baseUrl = @js(url('admin/zestawy-kafelkow'));
             var csrf = @js(csrf_token());
-            var palette = [['#1e6dff', 'Niebieski'], ['#1d1d1a', 'Grafit'], ['#ea8f00', 'Pomarańcz'], ['#cbd5e7', 'Jasnoniebieski']];
+            var palette = @js(collect(\App\Support\ThemePalette::swatches())->map(fn ($n, $h) => [$h, $n])->values()->all());
             var root, dlg, rowsEl, previewEl, nameEl, errEl;
             var state = null, items = [], openIdx = 0;
 

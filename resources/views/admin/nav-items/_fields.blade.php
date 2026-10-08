@@ -195,8 +195,8 @@
         </label>
     </div>
     <div class="mt-2 flex flex-wrap items-center gap-2" role="group" aria-label="Kolory z brandbooka FEER">
-        <span class="text-xs font-bold text-muted">Brandbook:</span>
-        @foreach (['#1e6dff' => 'Niebieski', '#1d1d1a' => 'Grafit', '#ea8f00' => 'Pomarańcz', '#cbd5e7' => 'Jasny niebieski'] as $bbHex => $bbName)
+        <span class="text-xs font-bold text-muted">Kolory motywu:</span>
+        @foreach (\App\Support\ThemePalette::swatches() as $bbHex => $bbName)
             <button type="button" @click="form.accentColor = '{{ $bbHex }}'; form.accentEnabled = true"
                 class="inline-flex min-h-9 items-center gap-2 rounded-md border border-gray-300 px-2.5 text-xs font-bold text-ink hover:border-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
                 <span class="h-4 w-4 rounded-sm border border-gray-300" style="background: {{ $bbHex }}" aria-hidden="true"></span>{{ $bbName }}<span class="sr-only"> ({{ $bbHex }})</span>
