@@ -461,6 +461,33 @@ class Page extends Model
         return $this->type === 'documents';
     }
 
+    /**
+     * Ścieżka okruszków z menu: gdy strona nie ma stron nadrzędnych w drzewie, ale w menu głównym jest podpięta pod
+     * grupę (np. „Fundacja" → „O nas"), zwraca nazwy grup nadrzędnych (od najwyższej), żeby okruszki odzwierciedlały strukturę menu.
+     *
+     * @return array<int, array{label: string, url: ?string}>
+     */
+    public function menuTrail(): array
+    {
+        $path = fn (?string $u) => trim((string) parse_url((string) $u, PHP_URL_PATH), '/');
+        $mine = $path($this->publicUrl());
+
+        $item = NavItem::where('location', 'main')->where('is_active', true)->whereNotNull('parent_id')->get()
+            ->first(fn ($n) => $path($n->url) === $mine && $mine !== '');
+        if (! $item) {
+            return [];
+        }
+
+        $trail = [];
+        $guard = 0;
+        for ($parent = $item->parent; $parent && $guard < 5; $parent = $parent->parent, $guard++) {
+            $url = trim((string) $parent->url);
+            array_unshift($trail, ['label' => $parent->label, 'url' => ($url === '' || $url === '#') ? null : $url]);
+        }
+
+        return $trail;
+    }
+
     public function isRedirect(): bool
     {
         return $this->type === 'redirect';

@@ -9,6 +9,7 @@
         $page->project && $page->project->category ? ['label' => $page->project->category->name, 'url' => route('categories.show', $page->project->category)] : null,
         $page->project ? ['label' => $page->project->title, 'url' => route('projects.show', $page->project)]
             : ($page->parent ? ['label' => $page->parent->title, 'url' => route('page.show', $page->parent)] : null),
+        ...($page->parent || $page->project ? [] : $page->menuTrail()),
         ['label' => $page->title, 'url' => null],
     ])])
 @endsection

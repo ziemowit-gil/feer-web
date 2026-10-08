@@ -9,6 +9,7 @@
         $page->project && $page->project->category ? ['label' => $page->project->category->name, 'url' => route('categories.show', $page->project->category)] : null,
         $page->project ? ['label' => $page->project->title, 'url' => route('projects.show', $page->project)] : null,
         // Pełna ścieżka działu (rootline): wszystkie strony nadrzędne, nie tylko bezpośredni rodzic.
+        ...($page->ancestors()->isNotEmpty() ? [] : $page->menuTrail()),
         ...$page->ancestors()->map(fn ($a) => ['label' => $a->title, 'url' => $a->publicUrl()])->all(),
         ['label' => $page->title, 'url' => null],
     ])])
