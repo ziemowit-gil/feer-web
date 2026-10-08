@@ -788,6 +788,10 @@ class PageController extends Controller
             'page_template' => ['nullable', Rule::in(array_keys(Page::TEMPLATES))],
             'access_mode' => ['nullable', Rule::in(array_keys(Page::ACCESS_MODES))],
             'access_password' => ['nullable', 'string', 'max:255'],
+            'access_level' => ['nullable', Rule::in(array_keys(Page::ACCESS_LEVELS))],
+            'access_password_level' => ['nullable', 'string', 'max:255'],
+            'access_group_ids' => ['sometimes', 'array'],
+            'access_group_ids.*' => ['integer', 'exists:user_groups,id'],
             'hub_hero' => ['nullable', 'string', 'max:1000'],
             'hub_hero_file' => ['nullable', 'image', 'max:4096'],
             'hub_intro' => ['nullable', 'string', 'max:2000'],
@@ -1143,6 +1147,36 @@ class PageController extends Controller
             $data['access_mode'] = null;
             $data['access_password'] = null;
         }
+
+        // Poziom dostępu strony (poza typami wewnętrznymi, które mają własny tryb powyżej).
+        if (! in_array($data['type'], ['internal', 'internal_hub', 'brand_assets'], true)) {
+            $level = $data['access_level'] ?? null;
+            $data['access_level'] = ($level && $level !== 'inherit') ? $level : null;
+            $levelPassword = trim((string) ($data['access_password_level'] ?? ''));
+            if ($data['access_level'] === 'password') {
+                if ($levelPassword !== '') {
+                    $data['access_password'] = \Illuminate\Support\Facades\Hash::make($levelPassword);
+                } elseif ($existing = $request->route('page')) {
+                    // Puste pole przy edycji = hasło bez zmian (o ile było ustawione).
+                    if (filled($existing->access_password)) {
+                        unset($data['access_password']);
+                    } else {
+                        $data['access_level'] = null; // brak hasła = brak blokady (nie zamykamy przez pomyłkę)
+                    }
+                } else {
+                    $data['access_level'] = null;
+                }
+            } else {
+                $data['access_password'] = null;
+            }
+            $data['access_group_ids'] = $data['access_level'] === 'groups'
+                ? (array_values(array_map('intval', $data['access_group_ids'] ?? [])) ?: null)
+                : null;
+        } else {
+            $data['access_level'] = null;
+            $data['access_group_ids'] = null;
+        }
+        unset($data['access_password_level']);
 
         // Panel współpracownika: hero (wgrany plik ma pierwszeństwo nad URL),
         // wstęp i kafelki linków. Poza tym subtypem czyścimy pola.

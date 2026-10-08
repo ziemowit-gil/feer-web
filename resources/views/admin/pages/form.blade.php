@@ -431,6 +431,50 @@
                         </div>
                     </section>
 
+                    {{-- Dostęp do strony: poziomy widoczności (nie dotyczy typów wewnętrznych — te mają własny tryb w „Typ i układ") --}}
+                    <section aria-labelledby="grp-dostep" class="mt-8 {{ in_array($currentType, ['internal', 'internal_hub', 'brand_assets'], true) ? 'hidden' : '' }}" data-access-level-section
+                        x-data="{ level: '{{ old('access_level', $page->access_level ?: 'inherit') }}' }">
+                        <h3 id="grp-dostep" class="{{ $groupTitle }}">Dostęp do strony</h3>
+                        <div class="mt-3 space-y-4">
+                            <div>
+                                <label for="access_level" class="mb-1 block text-sm font-bold text-ink">Kto może zobaczyć stronę</label>
+                                <select id="access_level" name="access_level" x-model="level" class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                                    @foreach (\App\Models\Page::ACCESS_LEVELS as $lv => $lvLabel)
+                                        <option value="{{ $lv }}">{{ $lvLabel }}</option>
+                                    @endforeach
+                                </select>
+                                <p class="mt-1 text-xs text-muted">
+                                    @if ($page->exists && $page->parent_id)
+                                        Obecnie obowiązuje: <strong>{{ \App\Models\Page::ACCESS_LEVELS[$page->effectiveAccessLevel()] ?? $page->effectiveAccessLevel() }}</strong>.
+                                    @endif
+                                    Poziom dotyczy tej strony i jej podstron, o ile same nie mają własnego. Administratorzy mają dostęp zawsze.
+                                </p>
+                                @error('access_level') <p class="mt-1 text-sm text-red-700">{{ $message }}</p> @enderror
+                            </div>
+                            <div x-show="level === 'password'" x-cloak>
+                                <label for="access_password_lvl" class="mb-1 block text-sm font-bold text-ink">Hasło dostępu</label>
+                                <input type="text" id="access_password_lvl" name="access_password_level" autocomplete="off"
+                                    placeholder="{{ $page->exists && $page->access_level === 'password' && filled($page->access_password) ? 'Ustawione — wpisz nowe, aby zmienić' : 'Wpisz hasło' }}"
+                                    class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                                @error('access_password_level') <p class="mt-1 text-sm text-red-700">{{ $message }}</p> @enderror
+                            </div>
+                            <fieldset x-show="level === 'groups'" x-cloak>
+                                <legend class="mb-1 text-sm font-bold text-ink">Dozwolone grupy użytkowników</legend>
+                                @php $selGroups = array_map('intval', (array) old('access_group_ids', $page->access_group_ids ?? [])); @endphp
+                                <div class="flex flex-wrap gap-2">
+                                    @forelse (\App\Models\UserGroup::orderBy('name')->get() as $ug)
+                                        <label class="cursor-pointer">
+                                            <input type="checkbox" name="access_group_ids[]" value="{{ $ug->id }}" {{ in_array($ug->id, $selGroups, true) ? 'checked' : '' }} class="peer sr-only">
+                                            <span class="inline-flex min-h-9 items-center rounded-full border border-gray-300 bg-white px-3 text-sm font-medium text-ink peer-checked:border-brand peer-checked:bg-brand peer-checked:text-white peer-focus-visible:ring-2 peer-focus-visible:ring-brand peer-focus-visible:ring-offset-2">{{ $ug->name }}</span>
+                                        </label>
+                                    @empty
+                                        <p class="text-sm text-muted">Brak grup — utwórz je w Użytkownicy → Grupy.</p>
+                                    @endforelse
+                                </div>
+                            </fieldset>
+                        </div>
+                    </section>
+
                     {{-- 2. Menu i nawigacja --}}
                     <section aria-labelledby="grp-menu" class="mt-8">
                         <h3 id="grp-menu" class="{{ $groupTitle }}">Menu i nawigacja</h3>

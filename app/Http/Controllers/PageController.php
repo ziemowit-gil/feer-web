@@ -34,8 +34,27 @@ class PageController extends Controller
             return app(ContactController::class)->render();
         }
 
-        // Strona wewnętrzna (także „Panel współpracownika"): sprawdź autoryzację.
-        if ($page->isAccessRestricted() && ! $page->accessGranted()) {
+        // Strona z ograniczonym dostępem (typ wewnętrzny albo poziom dostępu ustawiony na stronie lub jej przodku).
+        if ($page->requiresAccess() && ! $page->accessGranted()) {
+            if (! $page->isAccessRestricted()) {
+                $level = $page->effectiveAccessLevel();
+                if ($level === 'member') {
+                    session(['url.intended' => url()->current()]);
+
+                    return redirect()->route('member.login');
+                }
+                if (in_array($level, ['panel', 'groups'], true) && ! auth('web')->check()) {
+                    session(['url.intended' => url()->current()]);
+
+                    return redirect()->route('login');
+                }
+                if ($level === 'password') {
+                    return response()->view('page.locked', compact('page'), 403);
+                }
+
+                return response()->view('page.locked-role', compact('page'), 403);
+            }
+
             if ($page->isBrandAssets()) {
                 return redirect()->route('page.brand-login', $page);
             }
@@ -140,16 +159,17 @@ class PageController extends Controller
     /** Odblokowanie strony wewnętrznej hasłem (zapis w sesji). */
     public function unlock(Request $request, Page $page)
     {
-        abort_unless($page->isAccessRestricted() && $page->access_mode === 'password', 404);
+        $source = $page->isAccessRestricted() ? ($page->access_mode === 'password' ? $page : null) : $page->accessSource();
+        abort_unless($source && ($page->isAccessRestricted() || $source->access_level === 'password'), 404);
 
         $request->validate(['access_password' => ['required', 'string']]);
 
-        if (! Hash::check($request->input('access_password'), (string) $page->access_password)) {
+        if (! Hash::check($request->input('access_password'), (string) $source->access_password)) {
             return back()->withErrors(['access_password' => 'Nieprawidłowe hasło.']);
         }
 
         $unlocked = session('unlocked_pages', []);
-        $unlocked[] = $page->id;
+        $unlocked[] = $source->id;
         session(['unlocked_pages' => array_values(array_unique($unlocked))]);
 
         return redirect()->route('page.show', $page);

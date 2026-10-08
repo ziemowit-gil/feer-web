@@ -144,6 +144,16 @@ class Page extends Model
         'microsoft' => 'Zalogowanie do strefy wewnętrznej (Microsoft 365)',
     ];
 
+    /** Poziomy dostępu strony publicznej (poza typami wewnętrznymi, które mają własny tryb). */
+    public const ACCESS_LEVELS = [
+        'inherit'  => 'Jak strona nadrzędna (domyślnie)',
+        'public'   => 'Publiczna — widoczna dla każdego',
+        'password' => 'Chroniona hasłem',
+        'member'   => 'Zalogowani — strefa współpracownika (Microsoft 365)',
+        'panel'    => 'Zalogowani użytkownicy panelu (dowolna rola)',
+        'groups'   => 'Wybrane grupy użytkowników panelu',
+    ];
+
     /** Slug automatycznie zakładanej strony „Strefa współpracownika" (/strefa-wspolpracownika-feer). */
     public const STREFA_SLUG = 'strefa-wspolpracownika-feer';
 
@@ -245,7 +255,7 @@ class Page extends Model
         'training_manager_name', 'training_manager_title', 'training_ris_number', 'training_bur_number', 'training_extra_info', 'training_bur_note',
         'content_image', 'content_image_alt', 'content_image_width',
         'founder_image', 'founder_image_alt', 'founder_quote',
-        'access_mode', 'access_password', 'hub_hero', 'hub_intro', 'hub_links', 'hub_tiles_enabled', 'tiles', 'tiles_content_position', 'tiles_enabled',
+        'access_mode', 'access_password', 'access_level', 'access_group_ids', 'hub_hero', 'hub_intro', 'hub_links', 'hub_tiles_enabled', 'tiles', 'tiles_content_position', 'tiles_enabled',
         'legacy_name', 'legacy_intro',
         'brand_brandbook_url', 'brand_sections',
         'person_phone', 'person_role', 'person_bio', 'person_email', 'person_social', 'person_member_label', 'person_name_genitive', 'person_department',
@@ -276,6 +286,7 @@ class Page extends Model
         'hub_tiles_enabled' => 'boolean',
         'tiles'     => 'array',
         'tiles_enabled' => 'boolean',
+        'access_group_ids' => 'array',
         'about_section_order' => 'array',
         'about_sections_hidden' => 'array',
         'about_partner_ids' => 'array',
@@ -460,6 +471,57 @@ class Page extends Model
             : route('page.show', $this);
     }
 
+    /**
+     * Strona, od której pochodzi poziom dostępu: ta lub najbliższy przodek z poziomem innym niż „jak nadrzędna".
+     * Zwraca null, gdy cały łańcuch jest publiczny.
+     */
+    public function accessSource(): ?Page
+    {
+        $node = $this;
+        for ($i = 0; $node && $i < 20; $i++, $node = $node->parent) {
+            $level = $node->access_level;
+            if ($level && $level !== 'inherit') {
+                return $level === 'public' ? null : $node;
+            }
+        }
+
+        return null;
+    }
+
+    /** Efektywny poziom dostępu: public | password | member | panel | groups. */
+    public function effectiveAccessLevel(): string
+    {
+        return $this->accessSource()?->access_level ?? 'public';
+    }
+
+    /** Czy odwiedzający musi przejść kontrolę dostępu (typ wewnętrzny albo poziom inny niż publiczny). */
+    public function requiresAccess(): bool
+    {
+        return $this->isAccessRestricted() || $this->effectiveAccessLevel() !== 'public';
+    }
+
+    /** Poziom dostępu oparty na ustawieniu „Dostęp do strony" (nie dotyczy typów wewnętrznych). */
+    private function levelAccessGranted(): bool
+    {
+        $source = $this->accessSource();
+        if (! $source) {
+            return true;
+        }
+
+        $user = auth('web')->user();
+        if ($user?->isAdmin()) {
+            return true;
+        }
+
+        return match ($source->access_level) {
+            'password' => blank($source->access_password) || in_array($source->id, session('unlocked_pages', []), true),
+            'member' => auth('member')->check() || (bool) $user,
+            'panel' => (bool) $user,
+            'groups' => $user && $user->user_group_id && in_array((int) $user->user_group_id, array_map('intval', (array) $source->access_group_ids), true),
+            default => true,
+        };
+    }
+
     /** Czy strona jest chroniona dostępem (zwykła wewnętrzna, panel współpracownika lub marka). */
     public function isAccessRestricted(): bool
     {
@@ -473,7 +535,7 @@ class Page extends Model
     public function accessGranted(): bool
     {
         if (! $this->isAccessRestricted()) {
-            return true;
+            return $this->levelAccessGranted();
         }
 
         // Indywidualny login+hasło dla strony z zasobami marki.
