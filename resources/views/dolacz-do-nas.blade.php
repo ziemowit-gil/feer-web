@@ -1,7 +1,7 @@
 @extends('layouts.site')
 
 @section('title', ($page->title ?? 'Dołącz do nas') . ' — ' . $siteSettings->site_name)
-@section('meta_description', $page?->hub_intro ?? 'Oferty pracy i wolontariatu w ' . $siteSettings->site_name . '. Znajdź sposób na działanie razem z nami.')
+@section('meta_description', $page?->hub_intro ?? 'Wolontariat, praca i współpraca z ' . $siteSettings->site_name . '. Wybierz, jak chcesz się zaangażować.')
 
 @section('breadcrumbs')
     @include('partials.breadcrumbs', ['items' => [
@@ -9,226 +9,164 @@
     ]])
 @endsection
 
+{{--
+    Strona „Dołącz do nas": jeden widok bez zakładek — nagłówek, kafle ścieżek (wolontariat, praca, współpraca,
+    wsparcie, newsletter — zależnie od włączonych modułów), aktualne ogłoszenia wolontariatu i oferty pracy,
+    „Jak to działa" w trzech krokach oraz ramka kontaktu. Płasko, zwykły CSS, kontrast ≥ 4,5:1.
+--}}
 @section('content')
 @php
-    $title    = $page->title   ?? 'Dołącz do nas';
-    $intro    = $page->hub_intro ?? null;
+    $title = $page->title ?? 'Dołącz do nas';
+    $intro = $page->hub_intro ?? 'Wybierz, jak chcesz się zaangażować — każda forma jest cenna.';
     $hubLinks = collect($page->hub_links ?? [])->filter(fn ($l) => filled($l['label'] ?? null) && filled($l['url'] ?? null))->values();
+    $pal = \App\Support\ThemePalette::tiles();
+
+    $paths = array_values(array_filter([
+        $volunteeringActive ? ['Wolontariat', 'Działaj z nami — podaruj czas i umiejętności.', route('volunteer.index'), 'fa-handshake-angle', $adsCount, trans_choice('ogłoszenie|ogłoszenia|ogłoszeń', $adsCount)] : null,
+        $jobsActive ? ['Praca', 'Dołącz do zespołu — sprawdź aktualne oferty.', route('praca.index'), 'fa-briefcase', $offersCount, trans_choice('oferta|oferty|ofert', $offersCount)] : null,
+        $cooperationPage ? ['Współpraca', 'Zostań partnerem — biznes, samorząd, nauka lub NGO.', $cooperationPage->publicUrl(), 'fa-handshake', null, null] : null,
+        $supportActive ? ['Wsparcie', 'Wesprzyj nasze działania darowizną.', route('support.show'), 'fa-heart', null, null] : null,
+        $newsletterActive ? ['Newsletter', 'Bądź na bieżąco — zapisz się i opowiedz o nas innym.', route('newsletter.show'), 'fa-envelope-open-text', null, null] : null,
+    ]));
 @endphp
+<style>
+    .jn-head { max-width: 72rem; margin: 0 auto; padding: 2.5rem 1rem 1rem; }
+    .jn-h1 { margin: 0; font-size: 2.25rem; line-height: 1.15; font-weight: 800; color: #1d1d1a; }
+    .jn-bar { display: block; width: 3.5rem; height: 4px; margin: .9rem 0 1.25rem; background: var(--color-brand-dark); }
+    .jn-lead { max-width: 44rem; margin: 0; font-size: 1.2rem; line-height: 1.6; color: #1d1d1a; }
+    .jn-wrap { max-width: 72rem; margin: 0 auto; padding: 1rem 1rem 3rem; }
+    .jn-paths { list-style: none; margin: 0; padding: 0; display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr)); }
+    .jn-path { display: flex; min-height: 14rem; flex-direction: column; justify-content: space-between; gap: 1.25rem; padding: 1.5rem; border-radius: .5rem; text-decoration: none; }
+    .jn-path:focus-visible { outline: 3px solid #1d1d1a; outline-offset: 3px; }
+    .jn-path-i { font-size: 2rem; }
+    .jn-path-t { display: block; font-size: 1.5rem; font-weight: 800; line-height: 1.2; }
+    .jn-path-d { display: block; margin-top: .5rem; font-size: 1rem; line-height: 1.5; }
+    .jn-path-f { display: flex; align-items: center; justify-content: space-between; gap: 1rem; font-weight: 800; }
+    .jn-path-n { display: inline-flex; align-items: center; gap: .4rem; padding: .15rem .6rem; border: 2px solid currentColor; border-radius: .25rem; font-size: .8rem; text-transform: uppercase; letter-spacing: .04em; }
+    .jn-path:hover .jn-path-arrow { transform: translateX(4px); } .jn-path-arrow { transition: transform .2s; }
+    @media (prefers-reduced-motion: reduce) { .jn-path-arrow { transition: none; } }
+    .jn-sec { margin-top: 3.5rem; }
+    .jn-sec-h { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: .75rem 1.5rem; margin-bottom: 1.25rem; }
+    .jn-h2 { margin: 0; padding-left: .75rem; border-left: 4px solid var(--color-brand-dark); font-size: 1.6rem; font-weight: 800; color: #1d1d1a; }
+    .jn-h2 small { display: block; margin-top: .25rem; font-size: .95rem; font-weight: 500; color: #374151; }
+    .jn-more { font-weight: 800; color: var(--color-brand-dark); text-decoration: underline; text-underline-offset: 3px; } .jn-more:hover { color: #1d1d1a; }
+    .jn-cards { list-style: none; margin: 0; padding: 0; display: grid; gap: 1rem; grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr)); }
+    .jn-card { display: flex; flex-direction: column; gap: .6rem; padding: 1.25rem; border: 2px solid #d1d5db; border-radius: .5rem; background: #fff; }
+    .jn-card:hover, .jn-card:focus-within { border-color: var(--color-brand-dark); }
+    .jn-meta { display: flex; flex-wrap: wrap; gap: .35rem .9rem; margin: 0; font-size: .85rem; color: #374151; } .jn-meta i { margin-right: .3rem; color: var(--color-brand-dark); }
+    .jn-card h3 { margin: 0; font-size: 1.15rem; line-height: 1.3; font-weight: 800; }
+    .jn-card h3 a { color: #1d1d1a; text-decoration: underline; text-underline-offset: 3px; text-decoration-thickness: 1px; } .jn-card h3 a:hover { color: var(--color-brand-dark); }
+    .jn-card h3 a:focus-visible { outline: 3px solid #1d1d1a; outline-offset: 2px; border-radius: .25rem; }
+    .jn-card p { margin: 0; color: #374151; }
+    .jn-card .jn-cta { margin-top: auto; padding-top: .5rem; font-weight: 800; color: var(--color-brand-dark); }
+    .jn-empty { padding: 1.5rem; border: 2px dashed #9ca3af; border-radius: .5rem; color: #1d1d1a; }
+    .jn-steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr)); counter-reset: step; }
+    .jn-step { position: relative; padding: 1.25rem 1.25rem 1.25rem 4rem; border-radius: .5rem; background: #f3f4f6; }
+    .jn-step::before { counter-increment: step; content: counter(step); position: absolute; left: 1.25rem; top: 1.25rem; display: flex; width: 2rem; height: 2rem; align-items: center; justify-content: center; border-radius: 9999px; background: #1d1d1a; color: #fff; font-weight: 800; }
+    .jn-step strong { display: block; margin-bottom: .25rem; color: #1d1d1a; } .jn-step span { color: #374151; }
+    .jn-contact { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem; margin-top: 3.5rem; padding: 1.5rem; border-radius: .5rem; background: var(--color-brand-light); }
+    .jn-contact p { margin: 0; max-width: 40rem; font-size: 1.1rem; font-weight: 700; color: #1d1d1a; }
+    .jn-btn { display: inline-flex; min-height: 3rem; align-items: center; gap: .5rem; padding: 0 1.5rem; border-radius: .375rem; background: var(--color-brand-dark); color: #fff; font-weight: 800; text-decoration: none; }
+    .jn-btn:hover { background: #1d1d1a; } .jn-btn:focus-visible { outline: 3px solid #1d1d1a; outline-offset: 3px; }
+</style>
 
-@php
-    $joinTabs = collect([
-        ['id' => 'skroty',      'label' => 'Na skróty',    'show' => $hubLinks->isNotEmpty()],
-        ['id' => 'praca',       'label' => 'Oferty pracy', 'show' => $jobsActive],
-        ['id' => 'wolontariat', 'label' => 'Wolontariat',  'show' => $volunteeringActive],
-    ])->filter(fn ($tab) => $tab['show'])->values();
+<header class="jn-head">
+    <h1 class="jn-h1">{{ $title }}</h1>
+    <span class="jn-bar" aria-hidden="true"></span>
+    <p class="jn-lead">{{ $intro }}</p>
+</header>
 
-    $joinTabIds = $joinTabs->pluck('id')->all();
-@endphp
+<div class="jn-wrap">
+    {{-- ── Ścieżki zaangażowania ── --}}
+    @if ($paths)
+        <nav aria-label="Sposoby zaangażowania">
+            <ul class="jn-paths" role="list">
+                @foreach ($paths as $i => [$pt, $pd, $pu, $pi, $pn, $pnl])
+                    @php $bg = $pal[$i % 4]; $fg = \App\Support\ThemePalette::button($bg)['text']; @endphp
+                    <li>
+                        <a href="{{ $pu }}" class="jn-path" style="background: {{ $bg }}; color: {{ $fg }}">
+                            <span><i class="fa-solid {{ $pi }} jn-path-i" aria-hidden="true"></i><span class="jn-path-t" style="margin-top:1rem">{{ $pt }}</span><span class="jn-path-d">{{ $pd }}</span></span>
+                            <span class="jn-path-f">
+                                @if ($pn !== null)<span class="jn-path-n">{{ $pn }} {{ $pnl }}</span>@else<span></span>@endif
+                                <i class="fa-solid fa-arrow-right jn-path-arrow" aria-hidden="true"></i>
+                            </span>
+                        </a>
+                    </li>
+                @endforeach
+            </ul>
+        </nav>
+    @endif
 
-<noscript>
-    {{-- Bez JS panele nie przełączają się — pokazujemy je wszystkie. --}}
-    <style>[x-cloak] { display: block !important; }</style>
-</noscript>
+    {{-- ── Własne kafelki „Na skróty" z edycji strony (jeśli dodane) ── --}}
+    @if ($hubLinks->isNotEmpty())
+        <section class="jn-sec" aria-labelledby="jn-hub-h">
+            <div class="jn-sec-h"><h2 id="jn-hub-h" class="jn-h2">Na skróty</h2></div>
+            @include('partials._tiles-grid', ['tiles' => $hubLinks, 'label' => 'Na skróty'])
+        </section>
+    @endif
 
-{{--
-    x-data w linii (zamiast globalnego komponentu Alpine.data('sectionTabs', ...)
-    z resources/js/app.js) celowo — ta strona nie może zależeć od tego, czy
-    zbudowany bundle JS na serwerze jest aktualny względem źródeł. Zachowanie
-    identyczne jak sectionTabs(): tabs/tab/move()/jump()/focusActive(),
-    wymagane przez partials.tab-strip.
---}}
-<div x-data="{
-        tabs: @js($joinTabIds),
-        tab: @js($joinTabIds[0] ?? null),
-        move(step) {
-            if (!this.tabs.length) return;
-            const index = this.tabs.indexOf(this.tab);
-            this.tab = this.tabs[(index + step + this.tabs.length) % this.tabs.length];
-            this.focusActive();
-        },
-        jump(id) { this.tab = id; this.focusActive(); },
-        focusActive() { this.$nextTick(() => document.getElementById('tab-' + this.tab)?.focus()); },
-    }">
-
-    {{-- Ciemny pas z tytułem --}}
-    <section class="bg-ink">
-        <div class="mx-auto max-w-6xl px-4 py-10">
-            <h1 class="text-3xl font-bold uppercase tracking-wide text-white sm:text-4xl">{{ $title }}</h1>
-            @if ($intro)
-                <p class="mt-3 max-w-3xl text-white/90">{{ $intro }}</p>
+    {{-- ── Wolontariat ── --}}
+    @if ($volunteeringActive)
+        <section class="jn-sec" aria-labelledby="jn-vol-h">
+            <div class="jn-sec-h">
+                <h2 id="jn-vol-h" class="jn-h2">Aktualne ogłoszenia wolontariatu<small>Dołącz do konkretnego działania — każde ogłoszenie mówi, na czym polega pomoc.</small></h2>
+                <a href="{{ route('volunteer.index') }}" class="jn-more">Wszystkie ogłoszenia →</a>
+            </div>
+            @if ($ads->isEmpty())
+                <p class="jn-empty">Obecnie nie prowadzimy naboru wolontariuszy. Zajrzyj wkrótce albo <a href="{{ route('contact.show') }}" class="jn-more">napisz do nas</a> — chętnie porozmawiamy o Twoich pomysłach.</p>
+            @else
+                <ul class="jn-cards" role="list">
+                    @foreach ($ads as $ad)
+                        <li class="jn-card">
+                            <p class="jn-meta"><span><i class="fa-solid fa-location-dot" aria-hidden="true"></i>{{ $ad->modeLabel() }}@if ($ad->q_location) · {{ $ad->q_location }}@endif</span>@if ($ad->closes_at)<span><i class="fa-solid fa-calendar-day" aria-hidden="true"></i>Zgłoszenia do {{ $ad->closes_at->locale('pl')->isoFormat('D MMM YYYY') }}</span>@endif</p>
+                            <h3><a href="{{ route('volunteer.show', $ad) }}">{{ $ad->title }}</a></h3>
+                            @if ($ad->lead)<p>{{ $ad->lead }}</p>@endif
+                            <span class="jn-cta" aria-hidden="true">Zobacz ogłoszenie →</span>
+                        </li>
+                    @endforeach
+                </ul>
             @endif
-        </div>
+        </section>
+    @endif
+
+    {{-- ── Praca ── --}}
+    @if ($jobsActive)
+        <section class="jn-sec" aria-labelledby="jn-job-h">
+            <div class="jn-sec-h">
+                <h2 id="jn-job-h" class="jn-h2">Oferty pracy<small>Dołącz do zespołu {{ $siteSettings->siteNameGenitive() }}.</small></h2>
+                <a href="{{ route('praca.index') }}" class="jn-more">Wszystkie oferty →</a>
+            </div>
+            @if ($offers->isEmpty())
+                <p class="jn-empty">Obecnie nie prowadzimy rekrutacji. Jeśli chcesz z nami pracować w przyszłości, <a href="{{ route('contact.show') }}" class="jn-more">napisz do nas</a>.</p>
+            @else
+                <ul class="jn-cards" role="list">
+                    @foreach ($offers as $offer)
+                        <li class="jn-card">
+                            <p class="jn-meta"><span><i class="fa-solid fa-briefcase" aria-hidden="true"></i>{{ $offer->jobTypeLabel() }}</span><span><i class="fa-solid fa-location-dot" aria-hidden="true"></i>{{ $offer->modeLabel() }}@if ($offer->location) · {{ $offer->location }}@endif</span>@if ($offer->closes_at)<span><i class="fa-solid fa-calendar-day" aria-hidden="true"></i>Aplikuj do {{ $offer->closes_at->locale('pl')->isoFormat('D MMM YYYY') }}</span>@endif</p>
+                            <h3><a href="{{ route('praca.show', $offer) }}">{{ $offer->title }}</a></h3>
+                            @if ($offer->lead)<p>{{ $offer->lead }}</p>@endif
+                            <span class="jn-cta" aria-hidden="true">Zobacz ofertę →</span>
+                        </li>
+                    @endforeach
+                </ul>
+            @endif
+        </section>
+    @endif
+
+    {{-- ── Jak to działa ── --}}
+    <section class="jn-sec" aria-labelledby="jn-how-h">
+        <div class="jn-sec-h"><h2 id="jn-how-h" class="jn-h2">Jak to działa</h2></div>
+        <ol class="jn-steps">
+            <li class="jn-step"><strong>Wybierz formę</strong><span>Wolontariat, praca, współpraca albo wsparcie — każda jest ważna.</span></li>
+            <li class="jn-step"><strong>Zgłoś się</strong><span>Wypełnij krótki formularz przy ogłoszeniu albo napisz do nas.</span></li>
+            <li class="jn-step"><strong>Działamy razem</strong><span>Odezwiemy się, ustalimy szczegóły i zaczniemy wspólnie.</span></li>
+        </ol>
     </section>
 
-    @include('partials.tab-strip', [
-        'tabItems' => $joinTabs->all(),
-        'tabsLabel' => 'Sekcje strony „Dołącz do nas"',
-    ])
-
-    <div class="mx-auto max-w-6xl px-4 py-10">
-
-        @if ($hubLinks->isNotEmpty())
-            <div id="panel-skroty" role="tabpanel" aria-labelledby="tab-skroty" tabindex="0"
-                 x-show="tab === 'skroty'" class="focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand">
-                <h2 class="mb-6 text-2xl font-bold text-ink">Na skróty</h2>
-{{-- Kafelki „Na skróty" — wspólny komponent (styl solid, spójny z resztą systemu) --}}
-@include('partials._tiles-grid', ['tiles' => $hubLinks, 'label' => 'Na skróty'])
-            </div>
-        @endif
-
-        @if ($jobsActive)
-            <div id="panel-praca" role="tabpanel" aria-labelledby="tab-praca" tabindex="0" x-cloak
-                 x-show="tab === 'praca'" class="focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand">
-{{-- ── Sekcja: Praca ── --}}
-@if ($jobsActive)
-    <section aria-labelledby="section-praca">
-        <div class="mb-6 flex items-end justify-between gap-4">
-            <div>
-                <h2 id="section-praca" class="text-2xl font-bold text-ink">Oferty pracy</h2>
-                <p class="mt-1 text-sm text-muted">Dołącz do naszego zespołu.</p>
-            </div>
-            <a href="{{ route('praca.index') }}"
-               class="shrink-0 text-sm font-bold text-brand hover:text-brand-dark focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
-                Wszystkie oferty <i class="fa-solid fa-arrow-right text-xs" aria-hidden="true"></i>
-            </a>
-        </div>
-
-        @if ($offers->isEmpty())
-            <div class="rounded-xl border border-gray-200 bg-gray-50 p-8 text-center text-sm text-muted">
-                Obecnie nie prowadzimy rekrutacji — zajrzyj wkrótce.
-            </div>
-        @else
-            <ul class="flex flex-col divide-y divide-gray-100" role="list">
-                @foreach ($offers as $offer)
-                    @php $accent = $siteSettings->contrastSafeColor($siteSettings->audienceColor($offer->audience)); @endphp
-                    <li class="py-5 first:pt-0 last:pb-0" style="--accent: {{ $accent }}">
-                        <article>
-                            <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:gap-5">
-                                <div class="hidden w-1 flex-none self-stretch rounded-full sm:block" style="background-color: var(--accent); min-height: 3.5rem" aria-hidden="true"></div>
-                                <div class="flex-1 min-w-0">
-                                    <div class="mb-1.5 flex flex-wrap gap-2 text-xs text-muted">
-                                        <span class="inline-flex items-center gap-1 rounded-full bg-gray-100 px-2.5 py-1">
-                                            <i class="fa-solid fa-briefcase text-[10px]" aria-hidden="true" style="color: var(--accent)"></i>
-                                            {{ $offer->jobTypeLabel() }}
-                                        </span>
-                                        <span class="inline-flex items-center gap-1 rounded-full bg-gray-100 px-2.5 py-1">
-                                            <i class="fa-solid fa-location-dot text-[10px]" aria-hidden="true" style="color: var(--accent)"></i>
-                                            {{ $offer->modeLabel() }}@if ($offer->location) · {{ $offer->location }}@endif
-                                        </span>
-                                        @if ($offer->closes_at)
-                                            <span class="inline-flex items-center gap-1">
-                                                <i class="fa-solid fa-calendar-day text-[10px]" aria-hidden="true" style="color: var(--accent)"></i>
-                                                Aplikuj do {{ $offer->closes_at->locale('pl')->isoFormat('D MMM YYYY') }}
-                                            </span>
-                                        @endif
-                                    </div>
-                                    <h3 class="text-base font-bold text-ink">
-                                        <a href="{{ route('praca.show', $offer) }}"
-                                           class="hover:underline focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-current"
-                                           style="text-decoration-color: var(--accent)">
-                                            {{ $offer->title }}
-                                        </a>
-                                    </h3>
-                                    @if ($offer->lead)
-                                        <p class="mt-1 text-sm text-muted">{{ $offer->lead }}</p>
-                                    @endif
-                                </div>
-                                <a href="{{ route('praca.show', $offer) }}"
-                                   class="shrink-0 self-start rounded-lg border px-3 py-1.5 text-sm font-bold transition sm:self-center focus-visible:outline-2 focus-visible:outline-offset-2"
-                                   style="border-color: var(--accent); color: var(--accent)"
-                                   aria-label="Zobacz ofertę: {{ $offer->title }}">
-                                    Szczegóły <i class="fa-solid fa-arrow-right text-xs" aria-hidden="true"></i>
-                                </a>
-                            </div>
-                        </article>
-                    </li>
-                @endforeach
-            </ul>
-        @endif
-    </section>
-@endif
-            </div>
-        @endif
-
-        @if ($volunteeringActive)
-            <div id="panel-wolontariat" role="tabpanel" aria-labelledby="tab-wolontariat" tabindex="0" x-cloak
-                 x-show="tab === 'wolontariat'" class="focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand">
-{{-- ── Sekcja: Wolontariat ── --}}
-@if ($volunteeringActive)
-    <section aria-labelledby="section-wolontariat">
-        <div class="mb-6 flex items-end justify-between gap-4">
-            <div>
-                <h2 id="section-wolontariat" class="text-2xl font-bold text-ink">Wolontariat</h2>
-                <p class="mt-1 text-sm text-muted">Dołącz do konkretnego działania.</p>
-            </div>
-            <a href="{{ route('volunteer.index') }}"
-               class="shrink-0 text-sm font-bold text-brand hover:text-brand-dark focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
-                Wszystkie ogłoszenia <i class="fa-solid fa-arrow-right text-xs" aria-hidden="true"></i>
-            </a>
-        </div>
-
-        @if ($ads->isEmpty())
-            <div class="rounded-xl border border-gray-200 bg-gray-50 p-8 text-center text-sm text-muted">
-                Obecnie nie prowadzimy naboru wolontariuszy — zajrzyj wkrótce.
-            </div>
-        @else
-            <ul class="flex flex-col divide-y divide-gray-100" role="list">
-                @foreach ($ads as $ad)
-                    @php $accent = $siteSettings->contrastSafeColor($siteSettings->audienceColor($ad->audience)); @endphp
-                    <li class="py-5 first:pt-0 last:pb-0" style="--accent: {{ $accent }}">
-                        <article>
-                            <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:gap-5">
-                                <div class="hidden w-1 flex-none self-stretch rounded-full sm:block" style="background-color: var(--accent); min-height: 3.5rem" aria-hidden="true"></div>
-                                <div class="flex-1 min-w-0">
-                                    <div class="mb-1.5 flex flex-wrap gap-2 text-xs text-muted">
-                                        <span class="inline-flex items-center gap-1">
-                                            <i class="fa-solid fa-location-dot text-[10px]" aria-hidden="true" style="color: var(--accent)"></i>
-                                            {{ $ad->modeLabel() }}@if ($ad->q_location) · {{ $ad->q_location }}@endif
-                                        </span>
-                                        @if ($ad->closes_at)
-                                            <span class="inline-flex items-center gap-1">
-                                                <i class="fa-solid fa-calendar-day text-[10px]" aria-hidden="true" style="color: var(--accent)"></i>
-                                                Zgłoszenia do {{ $ad->closes_at->locale('pl')->isoFormat('D MMM YYYY') }}
-                                            </span>
-                                        @endif
-                                    </div>
-                                    <h3 class="text-base font-bold text-ink">
-                                        <a href="{{ route('volunteer.show', $ad) }}"
-                                           class="hover:underline focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-current"
-                                           style="text-decoration-color: var(--accent)">
-                                            {{ $ad->title }}
-                                        </a>
-                                    </h3>
-                                    @if ($ad->lead)
-                                        <p class="mt-1 text-sm text-muted">{{ $ad->lead }}</p>
-                                    @endif
-                                </div>
-                                <a href="{{ route('volunteer.show', $ad) }}"
-                                   class="shrink-0 self-start rounded-lg border px-3 py-1.5 text-sm font-bold transition sm:self-center focus-visible:outline-2 focus-visible:outline-offset-2"
-                                   style="border-color: var(--accent); color: var(--accent)"
-                                   aria-label="Zobacz ogłoszenie: {{ $ad->title }}">
-                                    Szczegóły <i class="fa-solid fa-arrow-right text-xs" aria-hidden="true"></i>
-                                </a>
-                            </div>
-                        </article>
-                    </li>
-                @endforeach
-            </ul>
-        @endif
-    </section>
-@endif
-            </div>
-        @endif
-
-        @if (! $jobsActive && ! $volunteeringActive)
-            <div class="rounded-xl border border-gray-200 bg-gray-50 p-10 text-center">
-                <p class="mb-4 text-muted">Aktualnie nie prowadzimy naboru.</p>
-                <a href="{{ route('contact.show') }}" class="font-bold text-brand hover:text-brand-dark">
-                    Skontaktuj się z nami
-                </a>
-            </div>
-        @endif
+    {{-- ── Kontakt ── --}}
+    <div class="jn-contact">
+        <p>Nie wiesz, która forma jest dla Ciebie? Napisz — doradzimy i podpowiemy, gdzie Twoja pomoc przyda się najbardziej.</p>
+        <a href="{{ route('contact.show') }}" class="jn-btn">Skontaktuj się z nami<i class="fa-solid fa-arrow-right" aria-hidden="true"></i></a>
     </div>
 </div>
 @endsection
