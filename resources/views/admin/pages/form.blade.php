@@ -44,20 +44,33 @@
                     </p>
                 @endif
             </div>
-            <div class="flex flex-wrap items-center gap-2">
-                @if ($page->exists && $page->is_published)
-                    <a href="{{ $page->publicUrl() }}" target="_blank" rel="noopener" class="inline-flex min-h-10 items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 text-sm font-bold text-ink hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
-                        <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i>Zobacz stronę<span class="sr-only"> (otwiera się w nowej karcie)</span>
-                    </a>
+            <div class="pe-actions" role="group" aria-label="Akcje strony">
+                @if ($page->exists)
+                    @if ($page->is_published)
+                        <a href="{{ $page->publicUrl() }}" target="_blank" rel="noopener" class="pe-btn"><i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i>Zobacz stronę<span class="sr-only"> (otwiera się w nowej karcie)</span></a>
+                    @endif
+                    <a href="{{ $page->previewUrl() }}" target="_blank" rel="noopener" class="pe-btn" title="Podgląd strony przed publikacją (link ważny 14 dni)"><i class="fa-solid fa-eye" aria-hidden="true"></i>Podgląd<span class="sr-only"> (otwiera się w nowej karcie)</span></a>
+                    <a href="{{ route('admin.historia.index', ['type' => 'page', 'id' => $page->id]) }}" class="pe-btn"><i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i>Historia</a>
                 @endif
-                <button type="submit" form="page-edit-form" class="inline-flex min-h-10 items-center gap-2 rounded-lg bg-brand px-5 text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
-                    <i class="fa-solid fa-floppy-disk" aria-hidden="true"></i>Zapisz
-                </button>
+                <button type="submit" form="page-edit-form" @if ($page->exists) name="stay" value="1" @endif class="pe-btn pe-btn-primary"><i class="fa-solid fa-floppy-disk" aria-hidden="true"></i>Zapisz</button>
             </div>
         </header>
     @endunless
 
     <style>
+        /* Przyciski edytora: jeden styl dla akcji w nagłówku i na dolnym pasku — obrysowane drugorzędne, wypełniony główny. */
+        .pe-actions { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; }
+        .pe-btn { display: inline-flex; min-height: 2.75rem; align-items: center; gap: .5rem; padding: 0 1rem; border: 2px solid #d1d5db; border-radius: .5rem; background: #fff; font-size: .875rem; font-weight: 700; color: #1d1d1a; text-decoration: none; cursor: pointer; white-space: nowrap; }
+        .pe-btn:hover { border-color: #1d1d1a; background: #f9fafb; }
+        .pe-btn:focus-visible { outline: 3px solid #1d1d1a; outline-offset: 2px; }
+        .pe-btn-primary { border-color: var(--color-brand); background: var(--color-brand); color: #fff; padding: 0 1.5rem; }
+        .pe-btn-primary:hover { border-color: #1d1d1a; background: #1d1d1a; color: #fff; }
+        .pe-btn-ghost { border-color: transparent; background: transparent; text-decoration: underline; text-underline-offset: 3px; }
+        .pe-btn-ghost:hover { background: #f3f4f6; border-color: transparent; }
+        .pe-btn-danger { color: #991b1b; } .pe-btn-danger:hover { border-color: #991b1b; background: #fef2f2; }
+        .pe-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .75rem; }
+        .pe-bar-left, .pe-bar-right { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; }
+        .pe-bar-hint { font-size: .8rem; color: #4b5563; }
         /* Czytelniejszy formularz strony: większe pola i etykiety, więcej oddechu, zakładki jako pasek z linią pod aktywną. */
         /* Zakładki jak w formularzu działania: pigułki — aktywna w kolorze marki z białym tekstem, pozostałe jasnoszare. */
         [data-page-form-tabs] [role="tablist"] { background: transparent; padding: 0; border: 0; border-radius: 0; gap: .5rem; margin-bottom: 1.5rem; }
@@ -124,15 +137,6 @@
                     @endif
                 </button>
                 @endif
-                <a href="{{ $page->previewUrl() }}" target="_blank" rel="noopener"
-                    class="rounded-lg px-4 py-2 text-sm font-semibold text-amber-600 transition-all hover:text-amber-700"
-                    title="Podgląd strony przed publikacją (link ważny 14 dni)">
-                    <i class="fa-solid fa-eye" aria-hidden="true"></i> Podgląd
-                </a>
-                <a href="{{ route('admin.historia.index', ['type' => 'page', 'id' => $page->id]) }}"
-                    class="ml-auto rounded-lg px-4 py-2 text-sm font-semibold text-gray-400 transition-all hover:text-ink">
-                    <i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i> Historia
-                </a>
             @endif
         </div>
 
@@ -635,15 +639,27 @@
                 @include('admin.partials.seo-fields', ['model' => $page])
             </div>
 
-            <div class="flex items-center gap-3" data-main-form-actions>
-                <button type="submit" class="rounded bg-brand px-5 py-2 text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">Zapisz</button>
-                @if ($isPersonForm)
-                    <a href="{{ route('admin.osoby.index') }}" class="text-sm text-muted hover:text-brand">Anuluj</a>
-                @else
-                    <a href="{{ route('admin.podstrony.index') }}" class="text-sm text-muted hover:text-brand">Anuluj</a>
-                @endif
+            <div class="pe-bar" data-main-form-actions>
+                <div class="pe-bar-left">
+                    <a href="{{ $isPersonForm ? route('admin.osoby.index') : route('admin.podstrony.index') }}" class="pe-btn pe-btn-ghost"><i class="fa-solid fa-arrow-left" aria-hidden="true"></i>Anuluj</a>
+                    @if ($page->exists && ! $page->is_system && ! $page->is_locked)
+                        <button type="submit" form="page-delete-form" class="pe-btn pe-btn-ghost pe-btn-danger" onclick="return confirm('Przenieść stronę „{{ $page->title }}” do kosza?');"><i class="fa-solid fa-trash-can" aria-hidden="true"></i>Do kosza</button>
+                    @endif
+                </div>
+                <div class="pe-bar-right">
+                    <span class="pe-bar-hint">{{ $page->exists ? 'Zapis zostaje w edytorze; „Zapisz i zamknij” wraca do listy.' : 'Po zapisie wrócisz do listy stron.' }}</span>
+                    @if ($page->exists)
+                        <button type="submit" name="stay" value="1" class="pe-btn"><i class="fa-solid fa-floppy-disk" aria-hidden="true"></i>Zapisz</button>
+                        <button type="submit" class="pe-btn pe-btn-primary"><i class="fa-solid fa-check" aria-hidden="true"></i>Zapisz i zamknij</button>
+                    @else
+                        <button type="submit" class="pe-btn pe-btn-primary"><i class="fa-solid fa-floppy-disk" aria-hidden="true"></i>Zapisz</button>
+                    @endif
+                </div>
             </div>
         </form>
+        @if ($page->exists && ! $page->is_system && ! $page->is_locked)
+            <form id="page-delete-form" method="POST" action="{{ route('admin.podstrony.destroy', $page) }}" class="hidden">@csrf @method('DELETE')</form>
+        @endif
 
         @if ($page->exists)
             <div data-ftab-panel="pliki" class="hidden">

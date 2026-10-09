@@ -575,8 +575,10 @@ class PageController extends Controller
         }
 
         $route = $page->isAboutPerson() ? 'admin.osoby.index' : 'admin.podstrony.index';
+        // „Zapisz” (stay=1) zostaje w edytorze; „Zapisz i zamknij” wraca do listy.
+        $target = $request->boolean('stay') ? redirect()->route($page->isAboutPerson() ? 'admin.podstrony.edit' : 'admin.podstrony.edit', $page) : redirect()->route($route);
 
-        return redirect()->route($route)
+        return $target
             ->with('status', $page->isAboutPerson() ? 'Osoba „' . $page->title . '" została zaktualizowana.' : 'Strona została zaktualizowana.' . $notice)
             ->with('reload_url', $page->publicUrl());
     }
