@@ -227,6 +227,47 @@ class Page extends Model
     ];
 
     /** Reorderable sections of an "about the organisation" page (the hero always comes first). */
+    /** Nagłówki i napisy strony „O organizacji" (klucz => [etykieta w panelu, wartość domyślna]) — każdy do zmiany w edycji strony. */
+    public const ABOUT_LABELS = [
+        'nav_intro' => ['Menu sekcji: wstęp', 'O nas'],
+        'nav_founder' => ['Menu sekcji: słowo od Fundatora', 'Od Fundatora'],
+        'nav_stats' => ['Menu sekcji: statystyki', 'W liczbach'],
+        'nav_values' => ['Menu sekcji: wartości', 'Wartości'],
+        'nav_timeline' => ['Menu sekcji: historia', 'Historia'],
+        'nav_team' => ['Menu sekcji: zespół', 'Zespół'],
+        'nav_gallery' => ['Menu sekcji: galeria', 'Galeria'],
+        'nav_partners' => ['Menu sekcji: partnerzy', 'Partnerzy'],
+        'nav_press' => ['Menu sekcji: media', 'Media'],
+        'nav_documents' => ['Menu sekcji: dokumenty', 'Dokumenty'],
+        'nav_faq' => ['Menu sekcji: FAQ', 'FAQ'],
+        'founder_kicker' => ['Słowo od Fundatora — napis nad imieniem', 'Słowo od Fundatora'],
+        'stats_title' => ['Statystyki — nagłówek', 'W liczbach'],
+        'gallery_title' => ['Galeria — nagłówek', 'Galeria'],
+        'values_title' => ['Wartości — nagłówek', 'Nasze wartości'],
+        'timeline_title' => ['Historia — nagłówek', 'Nasza historia'],
+        'timeline_more' => ['Historia — napis linku bez etykiety', 'Zobacz więcej'],
+        'team_title' => ['Zespół — nagłówek', 'Nasz zespół'],
+        'partners_title' => ['Partnerzy — nagłówek', 'Nasi partnerzy — wspierają nas'],
+        'partners_text' => ['Partnerzy — zdanie pod nagłówkiem', 'Dziękujemy organizacjom i instytucjom, które nas wspierają.'],
+        'documents_title' => ['Dokumenty — nagłówek', 'Dokumenty i sprawozdania'],
+        'documents_bip' => ['Dokumenty — zdanie przed linkiem do BIP', 'Pozostałe dokumenty publikujemy w'],
+        'documents_download' => ['Dokumenty — napis przycisku pobierania', 'Pobierz'],
+        'documents_more' => ['Dokumenty — napis „Zobacz wszystkie”', 'Zobacz wszystkie'],
+        'press_title' => ['Media — nagłówek', 'My w mediach'],
+        'press_read' => ['Media — napis „Czytaj”', 'Czytaj'],
+        'faq_title' => ['FAQ — nagłówek', 'Masz pytania?'],
+        'faq_text' => ['FAQ — zdanie pod nagłówkiem', 'Odpowiedzi na najczęstsze pytania zebraliśmy w jednym miejscu.'],
+        'faq_button' => ['FAQ — napis przycisku', 'Najczęściej zadawane pytania'],
+    ];
+
+    /** Nagłówek lub napis sekcji „O organizacji": własny (jeśli wpisany) albo domyślny. */
+    public function aboutLabel(string $key): string
+    {
+        $own = is_array($this->about_labels) ? ($this->about_labels[$key] ?? null) : null;
+
+        return is_string($own) && trim($own) !== '' ? $own : (self::ABOUT_LABELS[$key][1] ?? '');
+    }
+
     public const ABOUT_SECTIONS = [
         'intro'     => 'Wstęp i zdjęcia',
         'founder'   => 'Słowo od Fundatora',
@@ -268,7 +309,7 @@ class Page extends Model
         'is_disabled', 'disabled_message', 'wip_mode', 'wip_message',
         'type', 'event_mode', 'event_when', 'event_location', 'event_how_to_join', 'event_registration_url',
         'schedule_items', 'schedule_change_notice', 'schedule_pending',
-        'about_motto', 'about_motto_author', 'about_intro', 'about_stats', 'about_timeline', 'about_values', 'about_team', 'about_section_order', 'about_sections_hidden', 'about_partner_ids', 'about_documents_intro', 'about_documents_bip_url', 'about_press_intro', 'about_press', 'about_faq_visible',
+        'about_motto', 'about_motto_author', 'about_intro', 'about_stats', 'about_timeline', 'about_values', 'about_team', 'about_section_order', 'about_sections_hidden', 'about_partner_ids', 'about_documents_intro', 'about_documents_bip_url', 'about_press_intro', 'about_press', 'about_faq_visible', 'about_labels',
         'faq_intro', 'faq_items', 'bip_move_url', 'bip_move_note', 'show_gallery',
         'training_manager_name', 'training_manager_title', 'training_ris_number', 'training_bur_number', 'training_extra_info', 'training_bur_note',
         'content_image', 'content_image_alt', 'content_image_width',
@@ -309,6 +350,7 @@ class Page extends Model
         'about_sections_hidden' => 'array',
         'about_partner_ids' => 'array',
         'about_press' => 'array',
+        'about_labels' => 'array',
         'faq_items' => 'array',
         'brand_sections' => 'array',
         'person_social'      => 'array',

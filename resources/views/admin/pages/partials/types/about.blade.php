@@ -294,4 +294,22 @@
             </div>
         </div>
     </details>
+
+    <details class="rounded-lg border border-gray-200">
+        <summary class="cursor-pointer rounded-lg px-4 py-3 text-sm font-bold text-ink hover:bg-gray-50">Nagłówki i napisy sekcji</summary>
+        <div class="border-t border-gray-100 px-4 py-4">
+            <p class="mb-3 text-xs text-muted">Każdy nagłówek, podpis i napis przycisku na stronie „O organizacji” możesz zmienić. Puste pole = tekst domyślny (pokazany jako podpowiedź).</p>
+            @php $aboutLabelsOld = (array) old('about_labels', $page->about_labels ?? []); @endphp
+            <div class="grid gap-3 sm:grid-cols-2">
+                @foreach (\App\Models\Page::ABOUT_LABELS as $lk => [$llabel, $ldefault])
+                    <div>
+                        <label for="about_labels_{{ $lk }}" class="mb-1 block text-xs font-bold text-muted">{{ $llabel }}</label>
+                        <input type="text" id="about_labels_{{ $lk }}" name="about_labels[{{ $lk }}]" value="{{ $aboutLabelsOld[$lk] ?? '' }}" placeholder="{{ $ldefault }}" maxlength="200"
+                            class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                    </div>
+                @endforeach
+            </div>
+            @error('about_labels.*') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+        </div>
+    </details>
 </div>

@@ -147,7 +147,7 @@
         $galleryPhotos = $aboutImages->slice(3)->values();
 
         $aboutPressItems = collect($page->about_press ?? [])->filter(fn ($p) => ! empty($p['url']) || ! empty($p['title']));
-        $aboutSectionLabels = ['intro' => 'O nas', 'founder' => 'Od Fundatora', 'stats' => 'W liczbach', 'values' => 'Wartości', 'timeline' => 'Historia', 'team' => 'Zespół', 'gallery' => 'Galeria', 'partners' => 'Partnerzy', 'press' => 'Media', 'documents' => 'Dokumenty', 'faq' => 'FAQ'];
+        $aboutSectionLabels = collect(['intro', 'founder', 'stats', 'values', 'timeline', 'team', 'gallery', 'partners', 'press', 'documents', 'faq'])->mapWithKeys(fn ($k) => [$k => $page->aboutLabel('nav_'.$k)])->all();
         $activeAboutSections = [];
         foreach ($page->orderedAboutSections(true) as $_s) {
             $has = match ($_s) {
@@ -317,7 +317,7 @@
                 </div>
 
                 <div>
-                    <p class="mb-4 text-xs font-bold uppercase tracking-widest text-brand">Słowo od Fundatora</p>
+                    <p class="mb-4 text-xs font-bold uppercase tracking-widest text-brand">{{ $page->aboutLabel('founder_kicker') }}</p>
                     <h2 class="mb-1 text-2xl font-extrabold text-ink md:text-3xl">{{ $aboutFounder->title }}</h2>
                     @if (filled($aboutFounder->person_role))
                         <p class="mb-6 text-sm font-medium text-muted">{{ $aboutFounder->person_role }}</p>
@@ -343,7 +343,7 @@
         <section id="sekcja-founder" class="bg-gray-50 px-4 py-16">
             <div class="mx-auto max-w-3xl text-center">
 
-                <p class="mb-6 text-xs font-bold uppercase tracking-widest text-brand">Słowo od Fundatora</p>
+                <p class="mb-6 text-xs font-bold uppercase tracking-widest text-brand">{{ $page->aboutLabel('founder_kicker') }}</p>
 
                 @if ($founderQuote)
                     <i class="fa-solid fa-quote-left mb-4 block text-5xl leading-none text-brand/15" aria-hidden="true"></i>
@@ -379,9 +379,9 @@
                 $statTiles = array_map(fn ($c) => [$c, \App\Support\ThemePalette::button($c)['text']], \App\Support\ThemePalette::tiles());
                 $statCols = match (min($aboutStats->count(), 4)) { 1 => 'lg:grid-cols-1', 2 => 'lg:grid-cols-2', 3 => 'lg:grid-cols-3', default => 'lg:grid-cols-4' };
             @endphp
-            <section id="sekcja-stats" class="px-4 py-14" aria-label="W liczbach" data-countup>
+            <section id="sekcja-stats" class="px-4 py-14" aria-label="{{ $page->aboutLabel('stats_title') }}" data-countup>
                 <div class="mx-auto max-w-6xl">
-                    <h2 class="text-2xl font-bold text-ink md:text-3xl">W liczbach</h2>
+                    <h2 class="text-2xl font-bold text-ink md:text-3xl">{{ $page->aboutLabel('stats_title') }}</h2>
                     <span class="mb-8 mt-3 block h-1 w-14 bg-brand" aria-hidden="true"></span>
                     <dl class="grid gap-3 sm:grid-cols-2 {{ $statCols }}">
                         @foreach ($aboutStats as $stat)
@@ -403,7 +403,7 @@
                 </div>
             </section>
         @elseif ($aboutStats->isNotEmpty())
-            <section id="sekcja-stats" class="bg-linear-to-br from-brand-light to-white px-4 py-14" aria-label="W liczbach" data-countup>
+            <section id="sekcja-stats" class="bg-linear-to-br from-brand-light to-white px-4 py-14" aria-label="{{ $page->aboutLabel('stats_title') }}" data-countup>
                 <dl class="mx-auto flex max-w-4xl flex-wrap items-center justify-center gap-4">
                     @foreach ($aboutStats as $stat)
                         <div class="flex min-w-[160px] flex-1 flex-col items-center rounded-2xl bg-white px-6 py-6 text-center shadow-sm ring-1 ring-gray-100">
@@ -423,7 +423,7 @@
         {{-- Galeria: pozostałe zdjęcia w układzie bento (pierwsze duże) --}}
         @if ($galleryPhotos->isNotEmpty())
             <section id="sekcja-gallery" class="mx-auto max-w-6xl px-4 py-16">
-                <h2 class="mb-8 text-center text-2xl font-extrabold text-ink md:text-3xl">Galeria</h2>
+                <h2 class="mb-8 text-center text-2xl font-extrabold text-ink md:text-3xl">{{ $page->aboutLabel('gallery_title') }}</h2>
                 <div class="grid auto-rows-[160px] grid-cols-2 gap-3 md:auto-rows-[220px] md:grid-cols-4" data-lightbox>
                     @foreach ($galleryPhotos as $image)
                         <figure class="group relative overflow-hidden rounded-2xl {{ $loop->first ? 'col-span-2 row-span-2' : '' }}">
@@ -444,9 +444,9 @@
         @case('values')
         {{-- Wartości: karty zamiast płaskich wierszy — więcej życia, ta sama treść --}}
         @if ($aboutValues->isNotEmpty())
-            <section id="sekcja-values" class="bg-gray-50 px-4 py-16" aria-label="Nasze wartości">
+            <section id="sekcja-values" class="bg-gray-50 px-4 py-16" aria-label="{{ $page->aboutLabel('values_title') }}">
                 <div class="mx-auto max-w-5xl">
-                    <h2 class="mb-10 text-center text-2xl font-extrabold text-ink md:text-3xl">Nasze wartości</h2>
+                    <h2 class="mb-10 text-center text-2xl font-extrabold text-ink md:text-3xl">{{ $page->aboutLabel('values_title') }}</h2>
                     <div class="grid gap-6 sm:grid-cols-2">
                         @foreach ($aboutValues as $value)
                             <div class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-100 transition hover:-translate-y-0.5 hover:shadow-md">
@@ -472,8 +472,8 @@
         @case('timeline')
         {{-- Oś czasu --}}
         @if ($aboutTimeline->isNotEmpty())
-            <section id="sekcja-timeline" class="mx-auto max-w-3xl px-4 py-16" aria-label="Nasza historia">
-                <h2 class="mb-10 text-center text-2xl font-extrabold text-ink md:text-3xl">Nasza historia</h2>
+            <section id="sekcja-timeline" class="mx-auto max-w-3xl px-4 py-16" aria-label="{{ $page->aboutLabel('timeline_title') }}">
+                <h2 class="mb-10 text-center text-2xl font-extrabold text-ink md:text-3xl">{{ $page->aboutLabel('timeline_title') }}</h2>
                 <ol class="relative ml-3 space-y-8 border-l-2 border-brand/30 pl-8">
                     @foreach ($aboutTimeline as $entry)
                         @php
@@ -501,7 +501,7 @@
                                         <a href="{{ $link['url'] }}" target="_blank" rel="noopener"
                                             class="inline-flex items-center gap-1.5 text-sm font-bold text-brand hover:text-brand-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
                                             <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i>
-                                            {{ $link['label'] ?: 'Zobacz więcej' }}
+                                            {{ $link['label'] ?: $page->aboutLabel('timeline_more') }}
                                         </a>
                                     @endforeach
                                 </div>
@@ -516,9 +516,9 @@
         @case('team')
         {{-- Zespół — kolorowe karty --}}
         @if ($aboutTeam->isNotEmpty())
-            <section id="sekcja-team" class="bg-gray-50 px-4 py-16" aria-label="Nasz zespół">
+            <section id="sekcja-team" class="bg-gray-50 px-4 py-16" aria-label="{{ $page->aboutLabel('team_title') }}">
                 <div class="mx-auto max-w-5xl">
-                    <h2 class="mb-10 text-center text-2xl font-extrabold text-ink md:text-3xl">Nasz zespół</h2>
+                    <h2 class="mb-10 text-center text-2xl font-extrabold text-ink md:text-3xl">{{ $page->aboutLabel('team_title') }}</h2>
                     @include('partials.team', ['members' => $aboutTeam])
                 </div>
             </section>
@@ -529,10 +529,10 @@
         {{-- Nasi partnerzy — wybrane logotypy --}}
         @php $aboutPartners = $page->aboutPartners(); @endphp
         @if ($aboutPartners->isNotEmpty())
-            <section id="sekcja-partners" class="bg-gray-50 px-4 py-16" aria-label="Nasi partnerzy">
+            <section id="sekcja-partners" class="bg-gray-50 px-4 py-16" aria-label="{{ $page->aboutLabel('partners_title') }}">
                 <div class="mx-auto max-w-5xl text-center">
-                    <h2 class="mb-2 text-2xl font-extrabold text-ink md:text-3xl">Nasi partnerzy — wspierają nas</h2>
-                    <p class="mb-10 text-muted">Dziękujemy organizacjom i instytucjom, które nas wspierają.</p>
+                    <h2 class="mb-2 text-2xl font-extrabold text-ink md:text-3xl">{{ $page->aboutLabel('partners_title') }}</h2>
+                    <p class="mb-10 text-muted">{{ $page->aboutLabel('partners_text') }}</p>
                     <ul class="flex flex-wrap items-center justify-center gap-x-12 gap-y-8">
                         @foreach ($aboutPartners as $partner)
                             <li>
@@ -559,14 +559,14 @@
         @case('documents')
         {{-- Dokumenty i sprawozdania: wybrane pliki + odnośnik do BIP po resztę --}}
         @if ($page->attachments->isNotEmpty() || filled($page->about_documents_intro))
-            <section id="sekcja-documents" class="mx-auto max-w-6xl px-4 py-16" aria-label="Dokumenty i sprawozdania">
-                <h2 class="mb-10 text-center text-2xl font-extrabold text-ink md:text-3xl">Dokumenty i sprawozdania</h2>
+            <section id="sekcja-documents" class="mx-auto max-w-6xl px-4 py-16" aria-label="{{ $page->aboutLabel('documents_title') }}">
+                <h2 class="mb-10 text-center text-2xl font-extrabold text-ink md:text-3xl">{{ $page->aboutLabel('documents_title') }}</h2>
                 <div class="grid gap-10 lg:grid-cols-2">
                     <div class="prose max-w-none text-ink">
                         @if (filled($page->about_documents_intro))
                             {!! nl2br(e($page->about_documents_intro)) !!}
                         @endif
-                        <p class="mt-4 text-sm text-muted">Pozostałe dokumenty publikujemy w <a href="{{ route('bip') }}" class="font-bold text-brand hover:text-brand-dark">Biuletynie Informacji Publicznej</a>.</p>
+                        <p class="mt-4 text-sm text-muted">{{ $page->aboutLabel('documents_bip') }} <a href="{{ route('bip') }}" class="font-bold text-brand hover:text-brand-dark">Biuletynie Informacji Publicznej</a>.</p>
                     </div>
                     <div>
                         @if ($page->attachments->isNotEmpty())
@@ -576,7 +576,7 @@
                                         <span class="min-w-0 font-medium text-ink">{{ $doc->label }}</span>
                                         <a href="{{ $doc->file_url }}" download aria-label="Pobierz: {{ $doc->label }}"
                                             class="inline-flex flex-none items-center gap-2 font-bold text-brand hover:text-brand-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
-                                            Pobierz <i class="fa-solid fa-download" aria-hidden="true"></i>
+                                            {{ $page->aboutLabel('documents_download') }} <i class="fa-solid fa-download" aria-hidden="true"></i>
                                         </a>
                                     </li>
                                 @endforeach
@@ -586,7 +586,7 @@
                         @endif
                         <a href="{{ route('bip') }}"
                             class="mt-6 flex items-center justify-center gap-2 rounded-full border-2 border-ink px-6 py-3 font-bold text-ink transition hover:border-brand hover:text-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
-                            Zobacz wszystkie <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+                            {{ $page->aboutLabel('documents_more') }} <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
                         </a>
                     </div>
                 </div>
@@ -598,9 +598,9 @@
         {{-- Piszą o nas — wzmianki prasowe z obrazkiem (og:image) --}}
         @php $aboutPress = collect($page->about_press ?? [])->filter(fn ($p) => ! empty($p['url']) || ! empty($p['title'])); @endphp
         @if ($aboutPress->isNotEmpty() || filled($page->about_press_intro))
-            <section id="sekcja-press" class="bg-gray-50 px-4 py-16" aria-label="My w mediach">
+            <section id="sekcja-press" class="bg-gray-50 px-4 py-16" aria-label="{{ $page->aboutLabel('press_title') }}">
                 <div class="mx-auto max-w-5xl">
-                    <h2 class="mb-3 text-center text-2xl font-extrabold text-ink md:text-3xl">My w mediach</h2>
+                    <h2 class="mb-3 text-center text-2xl font-extrabold text-ink md:text-3xl">{{ $page->aboutLabel('press_title') }}</h2>
                     @if (filled($page->about_press_intro))
                         <p class="mx-auto mb-10 max-w-2xl text-center text-muted">{{ $page->about_press_intro }}</p>
                     @endif
@@ -619,7 +619,7 @@
                                             <span class="mb-1 text-xs font-bold uppercase tracking-widest text-brand">{{ $item['source'] }}</span>
                                         @endif
                                         <span class="font-bold text-ink group-hover:text-brand">{{ $item['title'] ?: $item['url'] }}</span>
-                                        <span class="mt-3 inline-flex items-center gap-1.5 text-sm font-bold text-brand">Czytaj <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i></span>
+                                        <span class="mt-3 inline-flex items-center gap-1.5 text-sm font-bold text-brand">{{ $page->aboutLabel('press_read') }} <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i></span>
                                     </div>
                                 </a>
                             @endforeach
@@ -637,13 +637,13 @@
                 <div class="flex flex-col items-center gap-4 rounded-2xl bg-brand-light p-8 text-center sm:flex-row sm:justify-between sm:text-left">
                     <div>
                         <h2 class="flex items-center gap-2 text-xl font-bold text-ink">
-                            <i class="fa-solid fa-circle-question text-brand" aria-hidden="true"></i> Masz pytania?
+                            <i class="fa-solid fa-circle-question text-brand" aria-hidden="true"></i> {{ $page->aboutLabel('faq_title') }}
                         </h2>
-                        <p class="mt-1 text-muted">Odpowiedzi na najczęstsze pytania zebraliśmy w jednym miejscu.</p>
+                        <p class="mt-1 text-muted">{{ $page->aboutLabel('faq_text') }}</p>
                     </div>
                     <a href="{{ url('/faq') }}"
                         class="inline-flex shrink-0 items-center gap-2 rounded-lg bg-brand px-6 py-3 font-bold text-white hover:bg-brand-dark focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
-                        Najczęściej zadawane pytania <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+                        {{ $page->aboutLabel('faq_button') }} <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
                     </a>
                 </div>
             </section>

@@ -881,6 +881,8 @@ class PageController extends Controller
             'about_documents_intro' => ['nullable', 'string', 'max:5000'],
             'about_documents_bip_url' => ['nullable', 'string', 'max:255'],
             'about_press_intro' => ['nullable', 'string', 'max:5000'],
+            'about_labels' => ['nullable', 'array'],
+            'about_labels.*' => ['nullable', 'string', 'max:200'],
             'about_press' => ['nullable', 'array'],
             'about_press.*.url' => ['nullable', 'string', 'max:500'],
             'about_press.*.title' => ['nullable', 'string', 'max:255'],
@@ -1146,6 +1148,9 @@ class PageController extends Controller
                 }
             }
             $data['about_press'] = $press;
+            // Własne nagłówki i napisy sekcji: tylko znane klucze, puste pominięte.
+            $labels = array_filter(array_intersect_key((array) ($data['about_labels'] ?? []), Page::ABOUT_LABELS), fn ($v) => is_string($v) && trim($v) !== '');
+            $data['about_labels'] = $labels ?: null;
         } else {
             $data['about_motto'] = null;
             $data['about_motto_author'] = null;
@@ -1160,6 +1165,7 @@ class PageController extends Controller
             $data['about_documents_intro'] = null;
             $data['about_documents_bip_url'] = null;
             $data['about_press_intro'] = null;
+            $data['about_labels'] = null;
             $data['about_press'] = null;
         }
 
