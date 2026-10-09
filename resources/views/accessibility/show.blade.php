@@ -16,10 +16,15 @@
 @endphp
 
 @section('content')
-    <section class="mx-auto max-w-3xl px-4 py-12">
-        <h1 class="mb-6 text-3xl font-bold text-ink">Deklaracja dostępności</h1>
+@include('partials.flat-page-styles')
+@php $disabledCount = \App\Models\Page::forCurrentSite()->where('is_disabled', true)->count(); @endphp
+<div class="fp-head">
+    <h1 class="fp-h1">Deklaracja dostępności</h1>
+    <span class="fp-bar" aria-hidden="true"></span>
+</div>
+    <section class="fp-wrap">
 
-        <div class="space-y-4 text-ink">
+        <div class="fp-p">
             <p>{{ $settings->accessibilityEntityName() }} zobowiązuje się zapewnić dostępność swojej strony internetowej zgodnie z ustawą z dnia 4 kwietnia 2019 r. o dostępności cyfrowej stron internetowych i aplikacji mobilnych podmiotów publicznych.</p>
 
             <dl class="grid gap-x-6 gap-y-2 sm:grid-cols-[auto_1fr]">
@@ -35,8 +40,8 @@
         </div>
 
         {{-- Status zgodności --}}
-        <h2 class="mt-10 mb-3 text-xl font-bold text-ink">Status pod względem zgodności z ustawą</h2>
-        <p class="text-ink">
+        <h2 class="fp-h2">Status pod względem zgodności z ustawą</h2>
+        <p class="fp-p">
             Strona internetowa jest <strong>{{ mb_strtolower($settings->accessibilityStatusLabel()) }}</strong>
             z ustawą o dostępności cyfrowej stron internetowych i aplikacji mobilnych podmiotów publicznych.
         </p>
@@ -45,8 +50,8 @@
         @endif
 
         {{-- Sporządzenie deklaracji --}}
-        <h2 class="mt-10 mb-3 text-xl font-bold text-ink">Przygotowanie deklaracji dostępności</h2>
-        <ul class="list-inside list-disc space-y-1 text-ink">
+        <h2 class="fp-h2">Przygotowanie deklaracji dostępności</h2>
+        <ul class="fp-p" style="padding-left:1.25rem;list-style:disc">
             @if ($fmt($settings->accessibility_declaration_date))
                 <li>Deklarację sporządzono dnia: <strong>{{ $fmt($settings->accessibility_declaration_date) }}</strong>.</li>
             @endif
@@ -54,12 +59,12 @@
         </ul>
 
         {{-- Skróty klawiaturowe --}}
-        <h2 class="mt-10 mb-3 text-xl font-bold text-ink">Skróty klawiaturowe</h2>
-        <p class="text-ink">Na stronie internetowej można korzystać ze standardowych skrótów klawiaturowych przeglądarki.</p>
+        <h2 class="fp-h2">Skróty klawiaturowe</h2>
+        <p class="fp-p">Na stronie internetowej można korzystać ze standardowych skrótów klawiaturowych przeglądarki.</p>
 
         {{-- Informacje zwrotne i dane kontaktowe --}}
-        <h2 class="mt-10 mb-3 text-xl font-bold text-ink">Informacje zwrotne i dane kontaktowe</h2>
-        <p class="text-ink">
+        <h2 class="fp-h2">Informacje zwrotne i dane kontaktowe</h2>
+        <p class="fp-p">
             W przypadku problemów z dostępnością strony internetowej prosimy o kontakt.
             @if ($settings->accessibility_contact_name)
                 Osoba odpowiedzialna: <strong>{{ $settings->accessibility_contact_name }}</strong>.
@@ -71,8 +76,8 @@
                 Telefon: <a href="tel:{{ preg_replace('/\s+/', '', $phone) }}" class="font-bold text-brand hover:text-brand-dark">{{ $phone }}</a>.
             @endif
         </p>
-        <p class="mt-3 text-ink">Tą samą drogą — lub przez formularz poniżej — można składać wnioski o udostępnienie informacji niedostępnej oraz żądania zapewnienia dostępności.</p>
-        <p class="mt-3 text-muted">
+        <p class="fp-p">Tą samą drogą — lub przez formularz poniżej — można składać wnioski o udostępnienie informacji niedostępnej oraz żądania zapewnienia dostępności.</p>
+        <p class="fp-p">
             Każdy ma prawo wystąpić z żądaniem zapewnienia dostępności cyfrowej strony internetowej, aplikacji mobilnej lub ich elementu.
             Żądanie powinno zawierać dane osoby zgłaszającej, wskazanie, o którą stronę lub element chodzi, oraz sposób kontaktu.
             Podmiot publiczny zrealizuje żądanie bez zbędnej zwłoki, nie później niż w ciągu 7 dni od dnia wystąpienia z żądaniem.
@@ -80,27 +85,33 @@
         </p>
 
         {{-- Procedura odwoławcza --}}
-        <h2 class="mt-10 mb-3 text-xl font-bold text-ink">Postępowanie odwoławcze</h2>
-        <p class="text-ink">
+        <h2 class="fp-h2">Postępowanie odwoławcze</h2>
+        <p class="fp-p">
             W przypadku odmowy zapewnienia dostępności można złożyć skargę na sposób rozpatrzenia zgłoszenia. Po wyczerpaniu tej procedury
             można również złożyć wniosek do <a href="https://www.rpo.gov.pl" target="_blank" rel="noopener" class="font-bold text-brand hover:text-brand-dark">Rzecznika Praw Obywatelskich</a>.
         </p>
 
         {{-- Dostępność architektoniczna --}}
         @if (filled($settings->accessibility_architectural))
-            <h2 class="mt-10 mb-3 text-xl font-bold text-ink">Dostępność architektoniczna</h2>
+            <h2 class="fp-h2">Dostępność architektoniczna</h2>
             <div class="prose mt-1 max-w-none text-muted">{!! nl2br(e($settings->accessibility_architectural)) !!}</div>
         @endif
 
+        {{-- Wyłączenia treści: lista stron tymczasowo niedostępnych --}}
+        <h2 class="fp-h2" id="wylaczenia"><i class="fa-solid fa-circle-pause" aria-hidden="true"></i>Wyłączenia treści</h2>
+        <div class="fp-box fp-box-note">
+            <p class="fp-p" style="margin:0">{{ $disabledCount === 0 ? 'Obecnie żadna treść nie jest tymczasowo wyłączona.' : 'Obecnie tymczasowo wyłączonych treści: '.$disabledCount.'.' }} Pełna lista z powodami znajduje się na stronie <a href="{{ route('exclusions.index') }}" class="fp-link">Wyłączenia treści</a>.</p>
+        </div>
+
         {{-- Formularz zgłaszania barier --}}
-        <div id="zglos-bariere" class="mt-12 rounded-xl border-2 border-brand-light bg-brand-light/40 p-6 sm:p-8">
-            <h2 class="flex items-center gap-2 text-xl font-bold text-ink">
+        <div id="zglos-bariere" class="fp-box fp-box-note" style="margin-top:2.5rem;padding:1.75rem">
+            <h2 class="fp-h2" style="margin-top:0">
                 <i class="fa-solid fa-universal-access text-brand" aria-hidden="true"></i> Zgłoś problem z dostępnością
             </h2>
-            <p class="mt-2 text-sm text-muted">Napotkałeś barierę — element, którego nie da się odczytać, obsłużyć klawiaturą albo zrozumieć? Daj nam znać, a naprawimy to bez zbędnej zwłoki.</p>
+            <p class="fp-p" style="font-size:.95rem">Napotkałeś barierę — element, którego nie da się odczytać, obsłużyć klawiaturą albo zrozumieć? Daj nam znać, a naprawimy to bez zbędnej zwłoki.</p>
 
             @if (session('accessibility_reported'))
-                <div class="mt-5 rounded border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700" role="status">
+                <div class="fp-box" style="margin-top:1.25rem;font-weight:700" role="status">
                     Dziękujemy za zgłoszenie. Odpowiemy najpóźniej w ciągu 7 dni.
                 </div>
             @endif
@@ -155,7 +166,7 @@
                     @error('rodo_consent') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                 </div>
 
-                <button type="submit" class="rounded-lg bg-brand px-6 py-3 font-bold text-white hover:bg-brand-dark focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
+                <button type="submit" class="fp-btn" style="min-height:3rem;padding:0 1.5rem">
                     Wyślij zgłoszenie
                 </button>
             </form>
