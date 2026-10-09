@@ -17,16 +17,17 @@
 @section('content')
 @php
     $title = $page->title ?? 'Dołącz do nas';
-    $intro = $page->hub_intro ?? 'Wybierz, jak chcesz się zaangażować — każda forma jest cenna.';
+    $intro = filled($page->hub_intro ?? null) ? $page->hub_intro : $siteSettings->joinText('intro');
+    $jt = fn (string $k) => $siteSettings->joinText($k);
     $hubLinks = collect($page->hub_links ?? [])->filter(fn ($l) => filled($l['label'] ?? null) && filled($l['url'] ?? null))->values();
     $pal = \App\Support\ThemePalette::tiles();
 
     $paths = array_values(array_filter([
-        $volunteeringActive ? ['Wolontariat', 'Działaj z nami — podaruj czas i umiejętności.', route('volunteer.index'), 'fa-handshake-angle', $adsCount, trans_choice('ogłoszenie|ogłoszenia|ogłoszeń', $adsCount)] : null,
-        $jobsActive ? ['Praca', 'Dołącz do zespołu — sprawdź aktualne oferty.', route('praca.index'), 'fa-briefcase', $offersCount, trans_choice('oferta|oferty|ofert', $offersCount)] : null,
-        $cooperationPage ? ['Współpraca', 'Zostań partnerem — biznes, samorząd, nauka lub NGO.', $cooperationPage->publicUrl(), 'fa-handshake', null, null] : null,
-        $supportActive ? ['Wsparcie', 'Wesprzyj nasze działania darowizną.', route('support.show'), 'fa-heart', null, null] : null,
-        $newsletterActive ? ['Newsletter', 'Bądź na bieżąco — zapisz się i opowiedz o nas innym.', route('newsletter.show'), 'fa-envelope-open-text', null, null] : null,
+        $volunteeringActive ? [$jt('vol_title'), $jt('vol_text'), route('volunteer.index'), 'fa-handshake-angle', $adsCount, trans_choice('ogłoszenie|ogłoszenia|ogłoszeń', $adsCount)] : null,
+        $jobsActive ? [$jt('job_title'), $jt('job_text'), route('praca.index'), 'fa-briefcase', $offersCount, trans_choice('oferta|oferty|ofert', $offersCount)] : null,
+        $cooperationPage ? [$jt('coop_title'), $jt('coop_text'), $cooperationPage->publicUrl(), 'fa-handshake', null, null] : null,
+        $supportActive ? [$jt('support_title'), $jt('support_text'), route('support.show'), 'fa-heart', null, null] : null,
+        $newsletterActive ? [$jt('news_title'), $jt('news_text'), route('newsletter.show'), 'fa-envelope-open-text', null, null] : null,
     ]));
 @endphp
 <style>
@@ -79,7 +80,7 @@
 <div class="jn-wrap">
     {{-- ── Ścieżki zaangażowania ── --}}
     @if ($paths)
-        <nav aria-label="Sposoby zaangażowania">
+        <nav aria-label="{{ $siteSettings->joinText('paths_label') }}">
             <ul class="jn-paths" role="list">
                 @foreach ($paths as $i => [$pt, $pd, $pu, $pi, $pn, $pnl])
                     @php $bg = $pal[$i % 4]; $fg = \App\Support\ThemePalette::button($bg)['text']; @endphp
@@ -100,8 +101,8 @@
     {{-- ── Własne kafelki „Na skróty" z edycji strony (jeśli dodane) ── --}}
     @if ($hubLinks->isNotEmpty())
         <section class="jn-sec" aria-labelledby="jn-hub-h">
-            <div class="jn-sec-h"><h2 id="jn-hub-h" class="jn-h2">Na skróty</h2></div>
-            @include('partials._tiles-grid', ['tiles' => $hubLinks, 'label' => 'Na skróty'])
+            <div class="jn-sec-h"><h2 id="jn-hub-h" class="jn-h2">{{ $siteSettings->joinText('hub_title') }}</h2></div>
+            @include('partials._tiles-grid', ['tiles' => $hubLinks, 'label' => $jt('hub_title')])
         </section>
     @endif
 
@@ -109,11 +110,11 @@
     @if ($volunteeringActive)
         <section class="jn-sec" aria-labelledby="jn-vol-h">
             <div class="jn-sec-h">
-                <h2 id="jn-vol-h" class="jn-h2">Ogłoszenia wolontariatu<small>Dołącz do konkretnego działania — każde ogłoszenie mówi, na czym polega pomoc.</small></h2>
-                <a href="{{ route('volunteer.index') }}" class="jn-more">Wszystkie ogłoszenia →</a>
+                <h2 id="jn-vol-h" class="jn-h2">{{ $siteSettings->joinText('vol_h') }}<small>{{ $siteSettings->joinText('vol_sub') }}</small></h2>
+                <a href="{{ route('volunteer.index') }}" class="jn-more">{{ $siteSettings->joinText('vol_more') }} →</a>
             </div>
             @if ($ads->isEmpty())
-                <p class="jn-empty">Obecnie nie prowadzimy naboru wolontariuszy. Zajrzyj wkrótce albo <a href="{{ route('contact.show') }}" class="jn-more">napisz do nas</a> — chętnie porozmawiamy o Twoich pomysłach.</p>
+                <p class="jn-empty">{{ $siteSettings->joinText('vol_empty') }} <a href="{{ route('contact.show') }}" class="jn-more">Kontakt →</a></p>
             @else
                 <ul class="jn-cards" role="list">
                     @foreach ($ads as $ad)
@@ -121,7 +122,7 @@
                             <p class="jn-meta"><span><i class="fa-solid fa-location-dot" aria-hidden="true"></i>{{ $ad->modeLabel() }}@if ($ad->q_location) · {{ $ad->q_location }}@endif</span>@if ($ad->closes_at)<span><i class="fa-solid fa-calendar-day" aria-hidden="true"></i>Zgłoszenia do {{ $ad->closes_at->locale('pl')->isoFormat('D MMM YYYY') }}</span>@endif</p>
                             <h3><a href="{{ route('volunteer.show', $ad) }}">{{ $ad->title }}</a></h3>
                             @if ($ad->lead)<p>{{ $ad->lead }}</p>@endif
-                            <span class="jn-cta" aria-hidden="true">Zobacz ogłoszenie →</span>
+                            <span class="jn-cta" aria-hidden="true">{{ $siteSettings->joinText('vol_cta') }} →</span>
                         </li>
                     @endforeach
                 </ul>
@@ -133,11 +134,11 @@
     @if ($jobsActive)
         <section class="jn-sec" aria-labelledby="jn-job-h">
             <div class="jn-sec-h">
-                <h2 id="jn-job-h" class="jn-h2">Oferty pracy<small>Dołącz do zespołu {{ $siteSettings->siteNameGenitive() }}.</small></h2>
-                <a href="{{ route('praca.index') }}" class="jn-more">Wszystkie oferty →</a>
+                <h2 id="jn-job-h" class="jn-h2">{{ $siteSettings->joinText('job_h') }}<small>{{ $jt('job_sub') !== '' ? $jt('job_sub') : 'Dołącz do zespołu '.$siteSettings->siteNameGenitive().'.' }}</small></h2>
+                <a href="{{ route('praca.index') }}" class="jn-more">{{ $siteSettings->joinText('job_more') }} →</a>
             </div>
             @if ($offers->isEmpty())
-                <p class="jn-empty">Obecnie nie prowadzimy rekrutacji. Jeśli chcesz z nami pracować w przyszłości, <a href="{{ route('contact.show') }}" class="jn-more">napisz do nas</a>.</p>
+                <p class="jn-empty">{{ $siteSettings->joinText('job_empty') }} <a href="{{ route('contact.show') }}" class="jn-more">Kontakt →</a></p>
             @else
                 <ul class="jn-cards" role="list">
                     @foreach ($offers as $offer)
@@ -145,7 +146,7 @@
                             <p class="jn-meta"><span><i class="fa-solid fa-briefcase" aria-hidden="true"></i>{{ $offer->jobTypeLabel() }}</span><span><i class="fa-solid fa-location-dot" aria-hidden="true"></i>{{ $offer->modeLabel() }}@if ($offer->location) · {{ $offer->location }}@endif</span>@if ($offer->closes_at)<span><i class="fa-solid fa-calendar-day" aria-hidden="true"></i>Aplikuj do {{ $offer->closes_at->locale('pl')->isoFormat('D MMM YYYY') }}</span>@endif</p>
                             <h3><a href="{{ route('praca.show', $offer) }}">{{ $offer->title }}</a></h3>
                             @if ($offer->lead)<p>{{ $offer->lead }}</p>@endif
-                            <span class="jn-cta" aria-hidden="true">Zobacz ofertę →</span>
+                            <span class="jn-cta" aria-hidden="true">{{ $siteSettings->joinText('job_cta') }} →</span>
                         </li>
                     @endforeach
                 </ul>
@@ -155,18 +156,18 @@
 
     {{-- ── Jak to działa ── --}}
     <section class="jn-sec" aria-labelledby="jn-how-h">
-        <div class="jn-sec-h"><h2 id="jn-how-h" class="jn-h2">Jak to działa</h2></div>
+        <div class="jn-sec-h"><h2 id="jn-how-h" class="jn-h2">{{ $siteSettings->joinText('how_h') }}</h2></div>
         <ol class="jn-steps">
-            <li class="jn-step"><strong>Wybierz formę</strong><span>Wolontariat, praca, współpraca albo wsparcie — każda jest ważna.</span></li>
-            <li class="jn-step"><strong>Zgłoś się</strong><span>Wypełnij krótki formularz przy ogłoszeniu albo napisz do nas.</span></li>
-            <li class="jn-step"><strong>Działamy razem</strong><span>Odezwiemy się, ustalimy szczegóły i zaczniemy wspólnie.</span></li>
+            <li class="jn-step"><strong>{{ $siteSettings->joinText('how_1_t') }}</strong><span>{{ $siteSettings->joinText('how_1') }}</span></li>
+            <li class="jn-step"><strong>{{ $siteSettings->joinText('how_2_t') }}</strong><span>{{ $siteSettings->joinText('how_2') }}</span></li>
+            <li class="jn-step"><strong>{{ $siteSettings->joinText('how_3_t') }}</strong><span>{{ $siteSettings->joinText('how_3') }}</span></li>
         </ol>
     </section>
 
     {{-- ── Kontakt ── --}}
     <div class="jn-contact">
-        <p>Nie wiesz, która forma jest dla Ciebie? Napisz — doradzimy i podpowiemy, gdzie Twoja pomoc przyda się najbardziej.</p>
-        <a href="{{ route('contact.show') }}" class="jn-btn">Skontaktuj się z nami<i class="fa-solid fa-arrow-right" aria-hidden="true"></i></a>
+        <p>{{ $siteSettings->joinText('contact_text') }}</p>
+        <a href="{{ route('contact.show') }}" class="jn-btn">{{ $siteSettings->joinText('contact_btn') }}<i class="fa-solid fa-arrow-right" aria-hidden="true"></i></a>
     </div>
 </div>
 @endsection

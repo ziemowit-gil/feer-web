@@ -229,6 +229,8 @@ class SiteSettingController extends Controller
             'paid_info_page_id' => ['nullable', 'integer', 'exists:pages,id'],
             'show_print_button' => ['sometimes', 'boolean'],
             'bip_show_reports' => ['sometimes', 'boolean'],
+            'join_us_texts' => ['nullable', 'array'],
+            'join_us_texts.*' => ['nullable', 'string', 'max:600'],
             'home_search_enabled' => ['sometimes', 'boolean'],
             'projects_terms_enabled' => ['sometimes', 'boolean'],
             'projects_extras_enabled' => ['sometimes', 'boolean'],
@@ -538,6 +540,17 @@ class SiteSettingController extends Controller
             if (! \Illuminate\Support\Facades\Schema::hasColumn('site_settings', $newColumn)) {
                 unset($data[$newColumn]);
             }
+        }
+
+        if (Schema::hasColumn('site_settings', 'join_us_texts')) {
+            if ($request->has('join_us_texts')) {
+                $joinTexts = array_filter(array_intersect_key((array) $request->input('join_us_texts', []), SiteSetting::JOIN_US_TEXTS), fn ($v) => is_string($v) && trim($v) !== '');
+                $data['join_us_texts'] = $joinTexts ?: null;
+            } else {
+                unset($data['join_us_texts']);
+            }
+        } else {
+            unset($data['join_us_texts']);
         }
 
         if (Schema::hasColumn('site_settings', 'home_search_enabled')) {

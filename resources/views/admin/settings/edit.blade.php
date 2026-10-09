@@ -18,7 +18,7 @@
     @php
         $settingsIcons = ['general' => 'fa-sliders', 'header' => 'fa-window-maximize', 'colors' => 'fa-palette', 'maintenance' => 'fa-screwdriver-wrench',
             'seo' => 'fa-magnifying-glass', 'contact' => 'fa-address-book', 'social' => 'fa-share-nodes', 'registry' => 'fa-file-signature',
-            'accessibility' => 'fa-universal-access', 'support' => 'fa-hand-holding-heart', 'content' => 'fa-file-lines', 'modules' => 'fa-puzzle-piece',
+            'accessibility' => 'fa-universal-access', 'support' => 'fa-hand-holding-heart', 'join' => 'fa-people-group', 'content' => 'fa-file-lines', 'modules' => 'fa-puzzle-piece',
             'homepage' => 'fa-house', 'template' => 'fa-clone', 'login' => 'fa-right-to-bracket', 'mail' => 'fa-envelope'];
     @endphp
     <nav aria-label="Sekcje ustawień" class="rounded-lg border border-gray-200 bg-white" style="position:sticky;top:1rem;padding:.375rem;width:max-content;max-width:100%">
@@ -1410,6 +1410,24 @@
                     @endif
                 </p>
             </div>
+        </div>
+
+        <div x-show="tab === 'join'" x-cloak class="space-y-4">
+            <p class="text-xs text-muted">Teksty strony <code>/dolacz-do-nas</code>: kafle ścieżek, nagłówki sekcji, „Jak to działa” i ramka kontaktu. Puste pole = tekst domyślny (widoczny jako podpowiedź). Tytuł strony, własny wstęp i kafelki „Na skróty” ustawiasz w edycji strony „Dołącz do nas” (Strony).</p>
+            @php $joinOld = (array) old('join_us_texts', $settings->join_us_texts ?? []); @endphp
+            <div class="grid gap-3 sm:grid-cols-2">
+                @foreach (\App\Models\SiteSetting::JOIN_US_TEXTS as $jk => [$jlabel, $jdefault])
+                    <div class="{{ mb_strlen($jdefault) > 70 ? 'sm:col-span-2' : '' }}">
+                        <label for="join_us_texts_{{ $jk }}" class="mb-1 block text-xs font-bold text-muted">{{ $jlabel }}</label>
+                        @if (mb_strlen($jdefault) > 70)
+                            <textarea id="join_us_texts_{{ $jk }}" name="join_us_texts[{{ $jk }}]" rows="2" placeholder="{{ $jdefault }}" maxlength="600" class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">{{ $joinOld[$jk] ?? '' }}</textarea>
+                        @else
+                            <input type="text" id="join_us_texts_{{ $jk }}" name="join_us_texts[{{ $jk }}]" value="{{ $joinOld[$jk] ?? '' }}" placeholder="{{ $jdefault }}" maxlength="600" class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                        @endif
+                    </div>
+                @endforeach
+            </div>
+            @error('join_us_texts.*') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
         </div>
 
         <div x-show="tab === 'social'" x-cloak>

@@ -83,15 +83,60 @@ class SiteSetting extends Model implements HasMedia
         'template' => 'Szablon strony',
         'login' => 'Logowanie',
         'mail' => 'Poczta',
+        'join' => 'Dołącz do nas',
     ];
 
     /**
      * Podział zakładek ustawień na kategorie w menu bocznym panelu (zamiast jednej listy
      * szesnastu pozycji). Każda zakładka z SETTINGS_TABS musi trafić do dokładnie jednej kategorii.
      */
+    /** Teksty strony „Dołącz do nas" (klucz => [etykieta w panelu, wartość domyślna]). */
+    public const JOIN_US_TEXTS = [
+        'intro' => ['Zdanie pod tytułem (gdy strona „Dołącz do nas” nie ma własnego wstępu)', 'Wybierz, jak chcesz się zaangażować — każda forma jest cenna.'],
+        'paths_label' => ['Kafle — nazwa dla czytników ekranu', 'Sposoby zaangażowania'],
+        'vol_title' => ['Kafel Wolontariat — tytuł', 'Wolontariat'],
+        'vol_text' => ['Kafel Wolontariat — opis', 'Działaj z nami — podaruj czas i umiejętności.'],
+        'job_title' => ['Kafel Praca — tytuł', 'Praca'],
+        'job_text' => ['Kafel Praca — opis', 'Dołącz do zespołu — sprawdź aktualne oferty.'],
+        'coop_title' => ['Kafel Współpraca — tytuł', 'Współpraca'],
+        'coop_text' => ['Kafel Współpraca — opis', 'Zostań partnerem — biznes, samorząd, nauka lub NGO.'],
+        'support_title' => ['Kafel Wsparcie — tytuł', 'Wsparcie'],
+        'support_text' => ['Kafel Wsparcie — opis', 'Wesprzyj nasze działania darowizną.'],
+        'news_title' => ['Kafel Newsletter — tytuł', 'Newsletter'],
+        'news_text' => ['Kafel Newsletter — opis', 'Bądź na bieżąco — zapisz się i opowiedz o nas innym.'],
+        'hub_title' => ['Własne kafelki ze strony — nagłówek', 'Na skróty'],
+        'vol_h' => ['Sekcja wolontariatu — nagłówek', 'Ogłoszenia wolontariatu'],
+        'vol_sub' => ['Sekcja wolontariatu — zdanie pod nagłówkiem', 'Dołącz do konkretnego działania — każde ogłoszenie mówi, na czym polega pomoc.'],
+        'vol_more' => ['Sekcja wolontariatu — link „Wszystkie”', 'Wszystkie ogłoszenia'],
+        'vol_empty' => ['Sekcja wolontariatu — tekst, gdy brak ogłoszeń', 'Obecnie nie prowadzimy naboru wolontariuszy. Zajrzyj wkrótce albo napisz do nas — chętnie porozmawiamy o Twoich pomysłach.'],
+        'vol_cta' => ['Karta ogłoszenia — napis', 'Zobacz ogłoszenie'],
+        'job_h' => ['Sekcja pracy — nagłówek', 'Oferty pracy'],
+        'job_sub' => ['Sekcja pracy — zdanie pod nagłówkiem (puste = „Dołącz do zespołu [nazwa organizacji]”)', ''],
+        'job_more' => ['Sekcja pracy — link „Wszystkie”', 'Wszystkie oferty'],
+        'job_empty' => ['Sekcja pracy — tekst, gdy brak ofert', 'Obecnie nie prowadzimy rekrutacji. Jeśli chcesz z nami pracować w przyszłości, napisz do nas.'],
+        'job_cta' => ['Karta oferty — napis', 'Zobacz ofertę'],
+        'how_h' => ['„Jak to działa” — nagłówek', 'Jak to działa'],
+        'how_1_t' => ['Krok 1 — tytuł', 'Wybierz formę'],
+        'how_1' => ['Krok 1 — opis', 'Wolontariat, praca, współpraca albo wsparcie — każda jest ważna.'],
+        'how_2_t' => ['Krok 2 — tytuł', 'Zgłoś się'],
+        'how_2' => ['Krok 2 — opis', 'Wypełnij krótki formularz przy ogłoszeniu albo napisz do nas.'],
+        'how_3_t' => ['Krok 3 — tytuł', 'Działamy razem'],
+        'how_3' => ['Krok 3 — opis', 'Odezwiemy się, ustalimy szczegóły i zaczniemy wspólnie.'],
+        'contact_text' => ['Ramka kontaktu — tekst', 'Nie wiesz, która forma jest dla Ciebie? Napisz — doradzimy i podpowiemy, gdzie Twoja pomoc przyda się najbardziej.'],
+        'contact_btn' => ['Ramka kontaktu — napis przycisku', 'Skontaktuj się z nami'],
+    ];
+
+    /** Tekst strony „Dołącz do nas": własny (jeśli wpisany) albo domyślny. */
+    public function joinText(string $key): string
+    {
+        $own = is_array($this->join_us_texts) ? ($this->join_us_texts[$key] ?? null) : null;
+
+        return is_string($own) && trim($own) !== '' ? $own : (self::JOIN_US_TEXTS[$key][1] ?? '');
+    }
+
     public const SETTINGS_TAB_GROUPS = [
         'Wygląd' => ['general', 'header', 'colors', 'template', 'homepage'],
-        'Treści i dane' => ['content', 'contact', 'social', 'support', 'registry'],
+        'Treści i dane' => ['content', 'contact', 'social', 'support', 'join', 'registry'],
         'Funkcje i integracje' => ['modules', 'login', 'mail', 'maintenance'],
         'SEO i dostępność' => ['seo', 'accessibility'],
     ];
@@ -222,7 +267,7 @@ class SiteSetting extends Model implements HasMedia
     protected $fillable = [
         'slug', 'domain', 'parent_site_id',
         'site_name', 'site_name_genitive', 'tagline', 'brand_color', 'brand_color_2', 'brand_color_3', 'brand_color_4', 'brand_skip_contrast', 'nav_dark_text', 'ngo_skip_contrast', 'meta_description', 'allow_indexing', 'ga_measurement_id', 'disabled_modules', 'homepage_section_order', 'homepage_sections_hidden', 'events_home_color', 'quick_actions_panel_negative',
-        'bip_url', 'bip_intro', 'bip_editor_name', 'bip_editor_email', 'bip_gov_url', 'bip_mode', 'bip_show_reports', 'home_search_enabled', 'facebook_url', 'facebook_group_url', 'twitter_url', 'instagram_url', 'linkedin_url', 'youtube_url', 'substack_url',
+        'bip_url', 'bip_intro', 'bip_editor_name', 'bip_editor_email', 'bip_gov_url', 'bip_mode', 'bip_show_reports', 'home_search_enabled', 'join_us_texts', 'facebook_url', 'facebook_group_url', 'twitter_url', 'instagram_url', 'linkedin_url', 'youtube_url', 'substack_url',
         'contact_address', 'contact_city', 'contact_email', 'contact_phone', 'contact_office_hours', 'contact_intro', 'contact_bank_accounts', 'contact_bank_accounts_note', 'contact_bank_accounts_layout',
         'contact_correspondence_title', 'contact_correspondence_note',
         'contact_meeting_title', 'contact_online_meeting_url', 'contact_online_meeting_label', 'contact_online_meeting_text',
@@ -414,6 +459,7 @@ class SiteSetting extends Model implements HasMedia
         'quick_actions_panel_negative' => 'boolean',
         'bip_show_reports' => 'boolean',
         'home_search_enabled' => 'boolean',
+        'join_us_texts' => 'array',
         'disabled_modules' => 'array',
         'blocked_options' => 'array',
         'federation_hero_tiles' => 'array',
