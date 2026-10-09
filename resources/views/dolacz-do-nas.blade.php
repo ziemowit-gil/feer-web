@@ -109,7 +109,7 @@
     @if ($volunteeringActive)
         <section class="jn-sec" aria-labelledby="jn-vol-h">
             <div class="jn-sec-h">
-                <h2 id="jn-vol-h" class="jn-h2">Aktualne ogłoszenia wolontariatu<small>Dołącz do konkretnego działania — każde ogłoszenie mówi, na czym polega pomoc.</small></h2>
+                <h2 id="jn-vol-h" class="jn-h2">Ogłoszenia wolontariatu<small>Dołącz do konkretnego działania — każde ogłoszenie mówi, na czym polega pomoc.</small></h2>
                 <a href="{{ route('volunteer.index') }}" class="jn-more">Wszystkie ogłoszenia →</a>
             </div>
             @if ($ads->isEmpty())
