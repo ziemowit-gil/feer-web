@@ -994,6 +994,8 @@
     @include('page.partials.typed.redirect')
     @elseif ($page->isReports())
     @include('page.partials.typed.reports')
+    @elseif ($page->isPartners())
+    @include('page.partials.typed.partners')
     @elseif ($page->isCooperation())
     @php
         $cd      = $page->cooperation_data ?? [];
