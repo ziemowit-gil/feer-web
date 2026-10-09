@@ -158,8 +158,17 @@ final class AdminMenu
                     children: [
                         $this->child('Strefy bannerów', 'admin.strefy-bannerow.index', 'admin.strefy-bannerow.*'),
                     ]),
-                $this->item('newsletter', 'Newsletter', 'admin.newsletter.edit', 'fa-envelope', active: 'admin.newsletter.*'),
-                $this->item('subscribers', 'Subskrybenci', 'admin.subskrybenci.index', 'fa-bell', active: 'admin.subskrybenci.*'),
+                $this->can('newsletter') ? $this->item('newsletter', 'Newsletter', 'admin.newsletter.dashboard', 'fa-envelope', active: 'admin.newsletter.*',
+                    children: [
+                        $this->child('Pulpit', 'admin.newsletter.dashboard', 'admin.newsletter.dashboard'),
+                        $this->child('Kampanie', 'admin.newsletter.kampanie.index', 'admin.newsletter.kampanie.*'),
+                        $this->child('Subskrybenci', 'admin.newsletter.subskrybenci.index', 'admin.newsletter.subskrybenci.*'),
+                        $this->child('Listy', 'admin.newsletter.listy.index', 'admin.newsletter.listy.*'),
+                        $this->child('Segmenty', 'admin.newsletter.segmenty.index', 'admin.newsletter.segmenty.*'),
+                        $this->child('Szablony', 'admin.newsletter.szablony.index', 'admin.newsletter.szablony.*'),
+                        $this->child('Formularze zapisu', 'admin.newsletter.formularze.index', 'admin.newsletter.formularze.*'),
+                        $this->child('Ustawienia', 'admin.newsletter.ustawienia.edit', 'admin.newsletter.ustawienia.*'),
+                    ]) : null,
                 $this->item('campaigns', 'Kampanie zbiórkowe', 'admin.kampanie.index', 'fa-hand-holding-heart', active: 'admin.kampanie.*'),
             ]) : null,
 

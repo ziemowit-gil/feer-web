@@ -66,6 +66,8 @@ final class ModuleManager
     {
         try {
             if (! Schema::hasTable('plugins')) {
+                $this->activateBuiltInsInMemory();
+
                 return;
             }
 
@@ -91,7 +93,19 @@ final class ModuleManager
                 }
             }
         } catch (\Throwable) {
-            // Baza niedostępna (np. faza instalacji). Traktujemy wszystko jako inactive.
+            // Baza niedostępna (np. faza instalacji, testy przed migracją): moduły
+            // wbudowane traktujemy jako aktywne (tylko w pamięci), reszta inactive.
+            $this->activateBuiltInsInMemory();
+        }
+    }
+
+    /** Wbudowane moduły są aktywne domyślnie — także zanim istnieje tabela `plugins`. */
+    private function activateBuiltInsInMemory(): void
+    {
+        foreach ($this->discovered->filter(fn ($m) => $m->isBuiltIn) as $manifest) {
+            if (! $this->statuses->has($manifest->identifier)) {
+                $this->statuses->put($manifest->identifier, 'active');
+            }
         }
     }
 

@@ -1,0 +1,14 @@
+@extends('admin.layout')
+@section('title', $template->exists ? 'Szablon: ' . $template->name : 'Nowy szablon')
+@section('content')
+    @include('newsletter::admin.partials.flash')
+    <form method="POST" action="{{ $template->exists ? route('admin.newsletter.szablony.update', $template) : route('admin.newsletter.szablony.store') }}" class="max-w-3xl space-y-4 rounded-lg border border-gray-200 bg-white p-6" x-data="{ kind: '{{ old('kind', $template->kind) }}' }">
+        @csrf @if ($template->exists) @method('PUT') @endif
+        <div><label for="name" class="mb-1 block text-sm font-bold">Nazwa</label><input id="name" name="name" required value="{{ old('name', $template->name) }}" class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand"></div>
+        <div><label for="kind" class="mb-1 block text-sm font-bold">Rodzaj</label><select id="kind" name="kind" x-model="kind" class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">@foreach (\Modules\Newsletter\Models\NewsletterTemplate::KINDS as $k => $l)<option value="{{ $k }}">{{ $l }}</option>@endforeach</select></div>
+        <div x-show="kind === 'mosaico'"><label for="mosaico_template" class="mb-1 block text-sm font-bold">Szablon bazowy Mosaico</label><input id="mosaico_template" name="mosaico_template" value="{{ old('mosaico_template', $template->mosaico_template ?: 'feer-1') }}" class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand"><p class="mt-1 text-xs text-muted">Katalog w <code>public/vendor/mosaico/templates/</code>. „feer-1” = kolory i Montserrat z brandbooku, blok „Najnowsze aktualności”.</p></div>
+        <div x-show="kind === 'html'"><label for="html_body" class="mb-1 block text-sm font-bold">HTML wiadomości</label><textarea id="html_body" name="html_body" rows="14" class="w-full rounded border-gray-300 font-mono text-xs focus:border-brand focus:ring-brand">{{ old('html_body', $template->html_body) }}</textarea><p class="mt-1 text-xs text-muted">Użyj tagów <code>@{{first_name}}</code>, <code>@{{unsubscribe_url}}</code> (wymagany), <code>@{{webversion_url}}</code>, <code>@{{preferences_url}}</code>.</p></div>
+        <label class="flex items-center gap-2 text-sm"><input type="hidden" name="is_default" value="0"><input type="checkbox" name="is_default" value="1" class="rounded border-gray-300 text-brand focus:ring-brand" @checked(old('is_default', $template->is_default))> Domyślny dla nowych kampanii</label>
+        <div class="flex gap-2 border-t border-gray-200 pt-4"><button type="submit" class="rounded bg-brand px-5 py-2 text-sm font-bold text-white hover:bg-brand-dark">{{ $template->exists ? 'Zapisz' : 'Utwórz i otwórz edytor' }}</button><a href="{{ route('admin.newsletter.szablony.index') }}" class="rounded border border-gray-300 bg-white px-5 py-2 text-sm font-bold text-gray-700 hover:bg-gray-50">Anuluj</a></div>
+    </form>
+@endsection

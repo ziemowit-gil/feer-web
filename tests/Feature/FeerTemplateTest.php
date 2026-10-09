@@ -971,12 +971,13 @@ class FeerTemplateTest extends TestCase
         $sklep = $this->get('/sklep')->assertOk()->getContent();
         $this->assertStringContainsString('h-1 w-14 bg-brand', $sklep);
 
-        $sub = $this->get('/subskrypcje')->assertOk()->getContent();
-        $this->assertStringContainsString('border-0 border-b-2 border-gray-500', $sub); // pole bez obwódki
-        $this->assertStringContainsString('h-1 w-14 bg-brand', $sub);
+        // Stary adres zapisów przekierowuje na stronę systemową modułu Newsletter.
+        $this->get('/subskrypcje')->assertRedirect('/newsletter');
 
+        // Strona /newsletter renderuje dedykowany formularz modułu (widget w kolorach marki).
         $news = $this->get('/newsletter')->assertOk()->getContent();
-        $this->assertStringContainsString('h-1 w-14 bg-brand', $news);
+        $this->assertStringContainsString('class="nlw nlw--band"', $news);
+        $this->assertStringContainsString('name="email"', $news);
 
         $book = $this->get('/rezerwuj-spotkanie-modul')->assertOk()->getContent();
         $this->assertStringContainsString('h-1 w-14 bg-brand', $book);
@@ -984,7 +985,7 @@ class FeerTemplateTest extends TestCase
 
     public function test_te_same_strony_w_innych_szablonach_nie_maja_akcentu_feer(): void
     {
-        $this->assertStringNotContainsString('border-0 border-b-2 border-gray-500', $this->get('/subskrypcje')->assertOk()->getContent());
+        $this->assertStringNotContainsString('h-1 w-14 bg-brand', $this->get('/newsletter')->assertOk()->getContent());
     }
 
     public function test_strona_glowna_feer_ma_mozaike_zdjec_z_galerii(): void

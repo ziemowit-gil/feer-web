@@ -1,0 +1,12 @@
+{
+    "identifier":   "newsletter",
+    "name":         "Newsletter (kampanie e-mail, push, SMS)",
+    "version":      "1.0.0",
+    "description":  "Subskrybenci z double opt-in i rejestrem zgód, listy i segmenty, kampanie w edytorze Mosaico, kolejkowana wysyłka wielokanałowa, śledzenie otwarć i kliknięć, synchronizacja z SZO/CRM.",
+    "author":       "FEER",
+    "provider":     "Modules\\Newsletter\\Providers\\NewsletterServiceProvider",
+    "migrations":   false,
+    "assets":       false,
+    "built_in":     true,
+    "requires":     []
+}
