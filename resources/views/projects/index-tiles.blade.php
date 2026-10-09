@@ -52,6 +52,7 @@
                                        class="feer-card group flex h-full min-h-40 flex-col justify-between rounded-md p-6 transition hover:-translate-y-0.5 hover:opacity-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2"
                                        style="background-color: {{ $pal['bg'] }}; color: {{ $pal['text'] }}">
                                         <span class="text-xl font-bold leading-snug">{{ $project->title }}</span>
+                                        <span class="block">@include('projects.partials.form-badge', ['project' => $project])</span>
                                         <span class="mt-4 flex items-end justify-between gap-3">
                                             <span class="text-sm leading-snug">{{ \Illuminate\Support\Str::limit((string) $project->excerpt, 90) }}</span>
                                             <span class="flex-none text-2xl transition group-hover:translate-x-1" aria-hidden="true">→</span>

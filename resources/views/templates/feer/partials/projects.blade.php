@@ -32,6 +32,7 @@
                         <span class="min-w-0 flex-1">
                             <span class="block text-xs font-bold uppercase tracking-widest text-muted">{{ $project->category->name ?? 'Projekt' }}</span>
                             <span class="mt-0.5 block text-lg font-bold leading-snug text-ink group-hover:text-brand-dark">{{ $project->title }}</span>
+                            <span class="block">@include('projects.partials.form-badge', ['project' => $project])</span>
                             @if ($teaser = $project->teaser())
                                 <span class="mt-1 line-clamp-2 block text-sm leading-relaxed text-muted">{{ $teaser }}</span>
                             @endif

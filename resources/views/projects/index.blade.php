@@ -128,6 +128,7 @@
 
                                         <div class="min-w-0 flex-1">
                                             <p class="font-bold text-ink group-hover:text-brand truncate">{{ $project->title }}</p>
+                                            <span class="block">@include('projects.partials.form-badge', ['project' => $project])</span>
                                             @if ($project->excerpt)
                                                 <p class="mt-0.5 line-clamp-1 text-sm text-muted">{{ $project->excerpt }}</p>
                                             @endif

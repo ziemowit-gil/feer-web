@@ -17,6 +17,7 @@
     <span class="flex flex-1 flex-col p-6 {{ $project->image_url ? '' : 'pt-7' }}">
         <span class="text-xs font-bold uppercase tracking-widest text-muted">{{ $project->category->name ?? ($categoryName ?? 'Projekt') }}</span>
         <span class="mt-2 text-xl font-bold leading-snug text-ink group-hover:text-brand-dark">{{ $project->title }}</span>
+        <span class="block">@include('projects.partials.form-badge', ['project' => $project])</span>
         @if ($project->excerpt)
             <span class="mt-2 line-clamp-3 text-sm leading-relaxed text-muted">{{ $project->excerpt }}</span>
         @endif
