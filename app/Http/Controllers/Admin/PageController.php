@@ -484,6 +484,11 @@ class PageController extends Controller
     public function store(Request $request)
     {
         $data = $this->validated($request);
+
+        // Redaktor z zakresem stron może dodawać nowe strony tylko wewnątrz swoich działów.
+        if (($allowedPages = $request->user()->allowedPageIds()) !== null && ! in_array((int) ($data['parent_id'] ?? 0), $allowedPages, true)) {
+            abort(403, 'Możesz dodawać strony tylko w działach przypisanych do Twojej grupy — wybierz stronę nadrzędną z Twojego działu.');
+        }
         $data['slug'] = $data['type'] === 'about_person'
             ? $this->personSlug($data['title'], $data['parent_id'] ?? null)
             : $this->uniqueSlug($data['slug'] !== '' ? $data['slug'] : $data['title']);

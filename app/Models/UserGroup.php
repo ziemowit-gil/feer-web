@@ -9,13 +9,14 @@ class UserGroup extends Model
 {
     use \App\Models\Concerns\LogsActivity;
 
-    protected $fillable = ['name', 'modules', 'can_approve', 'own_content_only', 'project_category_ids'];
+    protected $fillable = ['name', 'modules', 'can_approve', 'own_content_only', 'project_category_ids', 'page_ids'];
 
     protected $casts = [
         'modules' => 'array',
         'can_approve' => 'boolean',
         'own_content_only' => 'boolean',
         'project_category_ids' => 'array',
+        'page_ids' => 'array',
     ];
 
     public function users(): HasMany

@@ -19,6 +19,23 @@
 
         $selectedModules = array_values(old('modules', $group->modules ?? []));
         $selCats = array_map('intval', (array) old('project_category_ids', $group->project_category_ids ?? []));
+        $selPages = array_map('intval', (array) old('page_ids', $group->page_ids ?? []));
+        // Drzewo stron do wyboru działów (bez stron osób, które mają własny moduł).
+        $pagesAll = \App\Models\Page::forCurrentSite()->where('type', '!=', 'about_person')->orderBy('order')->orderBy('title')->get(['id', 'title', 'parent_id']);
+        $pagesByParent = $pagesAll->groupBy(fn ($p) => $p->parent_id && $pagesAll->contains('id', $p->parent_id) ? $p->parent_id : 0);
+        $renderPages = function ($parentId, $depth) use (&$renderPages, $pagesByParent) {
+            $html = '';
+            foreach ($pagesByParent->get($parentId, collect()) as $p) {
+                $html .= '<li><label class="flex min-h-9 items-center gap-2 rounded px-1 text-sm hover:bg-gray-50" style="padding-left:'.(0.25 + $depth * 1.25).'rem">'
+                    .'<input type="checkbox" name="page_ids[]" value="'.$p->id.'" x-model.number="pages" class="rounded border-gray-300 text-brand focus:ring-brand">'
+                    .'<span>'.e($p->title).'</span>'
+                    .($pagesByParent->has($p->id) ? '<span class="text-xs text-muted">(+ '.$pagesByParent->get($p->id)->count().' podstron)</span>' : '')
+                    .'</label></li>';
+                $html .= $renderPages($p->id, $depth + 1);
+            }
+
+            return $html;
+        };
         // Gotowe zestawy — przyspieszają konfigurację typowych ról.
         $presets = [
             'Redaktor treści' => ['pages', 'news', 'faq', 'gallery', 'polls'],
@@ -34,6 +51,8 @@
             modules: @js($selectedModules),
             own: @js((bool) old('own_content_only', $group->own_content_only ?? false)),
             cats: @js($selCats),
+            pages: @js($selPages),
+            pageNames: @js($pagesAll->pluck('title', 'id')->all()),
             approve: @js((bool) old('can_approve', $group->can_approve ?? false)),
             labels: @js($allModules),
             total: {{ count($allModules) }},
@@ -130,6 +149,20 @@
                     </div>
                     @error('project_category_ids.*') <p class="mt-1 text-sm text-red-700">{{ $message }}</p> @enderror
                 </div>
+
+                <div class="mt-6 border-t border-gray-100 pt-5">
+                    <p class="mb-1 text-sm font-bold">Strony tylko z działów</p>
+                    <p class="mb-2 text-xs text-muted">Zaznacz strony (działy). Redaktor widzi i edytuje w module Strony tylko zaznaczone strony i wszystkie ich podstrony; nowe strony może dodawać tylko wewnątrz tych działów. Bez zaznaczenia — wszystkie strony.</p>
+                    @if ($pagesAll->isEmpty())
+                        <p class="text-xs text-muted">Brak stron w serwisie.</p>
+                    @else
+                        <div class="max-h-80 overflow-y-auto rounded border border-gray-200 p-2">
+                            <ul role="list">{!! $renderPages(0, 0) !!}</ul>
+                        </div>
+                        <p class="mt-2 text-xs"><button type="button" @click="pages = []" class="font-bold text-brand underline hover:text-ink">Wyczyść wybór</button></p>
+                    @endif
+                    @error('page_ids.*') <p class="mt-1 text-sm text-red-700">{{ $message }}</p> @enderror
+                </div>
             </section>
 
             {{-- ── Zatwierdzanie ── --}}
@@ -165,6 +198,7 @@
                         <dt class="font-bold text-ink">Zakres</dt>
                         <dd class="text-muted" x-text="own ? 'Tylko własne wpisy' : 'Wszystkie wpisy w modułach'"></dd>
                         <dd class="text-muted" x-text="cats.length ? 'Projekty z kategorii: ' + cats.map(i => catNames[i] || '?').join(', ') : 'Projekty ze wszystkich kategorii'"></dd>
+                        <dd class="text-muted" x-text="pages.length ? 'Strony z działów: ' + pages.map(i => pageNames[i] || '?').join(', ') : 'Wszystkie strony'"></dd>
                     </div>
                     <div>
                         <dt class="font-bold text-ink">Publikowanie</dt>

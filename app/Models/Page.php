@@ -881,6 +881,14 @@ class Page extends Model
      * w nomenklaturze TYPO3). Pusta kolekcja dla strony najwyższego poziomu.
      * Zabezpieczenie przed pętlą w `parent_id`: maksymalnie 10 poziomów.
      */
+    /** Zakres redaktora: tylko strony (i podstrony) wskazane w jego grupie. */
+    public function constrainForEditor($query, User $user): void
+    {
+        if (($ids = $user->allowedPageIds()) !== null) {
+            $query->whereIn($this->getTable().'.id', $ids);
+        }
+    }
+
     public function ancestors(): \Illuminate\Support\Collection
     {
         $chain = collect();

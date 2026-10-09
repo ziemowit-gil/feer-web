@@ -72,12 +72,15 @@ class UserGroupController extends Controller
             'own_content_only' => ['sometimes', 'boolean'],
             'project_category_ids' => ['sometimes', 'array'],
             'project_category_ids.*' => ['integer', 'exists:categories,id'],
+            'page_ids' => ['sometimes', 'array'],
+            'page_ids.*' => ['integer', 'exists:pages,id'],
         ]);
 
         $data['modules'] = $data['modules'] ?? [];
         $data['can_approve'] = $request->boolean('can_approve');
         $data['own_content_only'] = $request->boolean('own_content_only');
         $data['project_category_ids'] = array_values(array_map('intval', $data['project_category_ids'] ?? [])) ?: null;
+        $data['page_ids'] = array_values(array_map('intval', $data['page_ids'] ?? [])) ?: null;
 
         return $data;
     }

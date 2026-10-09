@@ -132,10 +132,54 @@ class User extends Authenticatable implements Subscribable
             return false;
         }
 
-        return $this->group->own_content_only || ! empty($this->group->project_category_ids);
+        return $this->group->own_content_only || ! empty($this->group->project_category_ids) || ! empty($this->group->page_ids);
     }
 
     /** Dozwolone kategorie projektów edytora (null = bez ograniczenia). */
+    /** Zapamiętany zbiór stron dozwolonych dla redaktora (na czas żądania). */
+    private ?array $allowedPageIdsCache = null;
+
+    /**
+     * Strony, które redaktor może edytować: wybrane w grupie strony (działy) wraz ze wszystkimi podstronami.
+     * null = bez ograniczeń (administrator albo grupa bez wskazanych stron).
+     *
+     * @return array<int>|null
+     */
+    public function allowedPageIds(): ?array
+    {
+        if ($this->isAdmin() || $this->role !== self::ROLE_EDITOR) {
+            return null;
+        }
+        $roots = array_values(array_filter(array_map('intval', (array) ($this->group?->page_ids ?? []))));
+        if ($roots === []) {
+            return null;
+        }
+        if ($this->allowedPageIdsCache !== null) {
+            return $this->allowedPageIdsCache;
+        }
+
+        // Bez zakresu redaktora — inaczej zapytanie wywołałoby ten sam zakres (rekurencja).
+        $pairs = \App\Models\Page::withoutGlobalScope('editor_scope')->forCurrentSite()->pluck('parent_id', 'id');
+        $children = [];
+        foreach ($pairs as $id => $parentId) {
+            $children[(int) $parentId][] = (int) $id;
+        }
+        $allowed = [];
+        $stack = $roots;
+        while ($stack) {
+            $id = array_pop($stack);
+            if (isset($allowed[$id])) {
+                continue;
+            }
+            $allowed[$id] = true;
+            foreach ($children[$id] ?? [] as $child) {
+                $stack[] = $child;
+            }
+        }
+
+        return $this->allowedPageIdsCache = array_map('intval', array_keys($allowed));
+    }
+
     public function allowedProjectCategoryIds(): ?array
     {
         if ($this->isAdmin() || $this->role !== self::ROLE_EDITOR) {
