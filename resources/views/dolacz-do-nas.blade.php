@@ -37,20 +37,22 @@
     .jn-lead { max-width: 44rem; margin: 0; font-size: 1.2rem; line-height: 1.6; color: #1d1d1a; }
     .jn-wrap { max-width: 72rem; margin: 0 auto; padding: 1rem 1rem 3rem; }
     .jn-cols { display: grid; gap: 2.5rem; }
-    @media (min-width: 1024px) { .jn-cols { grid-template-columns: minmax(0, 1fr) minmax(0, 1.6fr); align-items: start; } .jn-side { position: sticky; top: 1.5rem; } }
+    @media (min-width: 1024px) { .jn-cols { grid-template-columns: minmax(0, 1fr) minmax(0, 1.6fr); align-items: stretch; } .jn-side { position: sticky; top: 1.5rem; align-self: start; } }
     .jn-side .jn-paths { grid-template-columns: 1fr; }
     /* Wyrównanie: wszystkie kafle ścieżek jednakowej wysokości, treść od góry, a kolumny zaczynają się na tej samej linii. */
-    .jn-cols { align-items: start; }
+    .jn-cols { align-items: stretch; }
+    .jn-main { display: flex; flex-direction: column; }
+    .jn-main > section:last-child, .jn-main > div:last-child { flex: 1 1 auto; }
     .jn-side .jn-paths { align-items: stretch; }
-    .jn-side .jn-path { min-height: 6.5rem; height: 100%; padding: 1rem 1.1rem; gap: .5rem; justify-content: flex-start; }
+    .jn-side .jn-path { min-height: 4.75rem; height: 100%; padding: .75rem .9rem; gap: .25rem; justify-content: flex-start; }
     .jn-side .jn-path > span:first-child { display: block; }
     .jn-side .jn-path-i, .jn-side .jn-path-t, .jn-side .jn-path-d { text-align: left; }
     .jn-main .jn-cards { align-items: stretch; }
     .jn-main .jn-card { min-height: 0; }
     .jn-main .jn-card h3 { margin: 0; }
-    .jn-side .jn-path-i { font-size: 1.25rem; }
-    .jn-side .jn-path-t { font-size: 1.1rem; margin-top: .4rem !important; }
-    .jn-side .jn-path-d { font-size: .9rem; margin-top: .25rem; }
+    .jn-side .jn-path-i { font-size: 1rem; }
+    .jn-side .jn-path-t { font-size: 1rem; margin-top: .25rem !important; }
+    .jn-side .jn-path-d { font-size: .85rem; margin-top: .15rem; }
     .jn-side .jn-path-f { display: none; }
     .jn-main .jn-cards { grid-template-columns: 1fr; gap: .6rem; }
     .jn-main .jn-card { flex-direction: row; flex-wrap: wrap; align-items: center; gap: .25rem 1rem; padding: .9rem 1rem; }
