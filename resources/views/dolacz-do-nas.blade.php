@@ -39,9 +39,17 @@
     .jn-cols { display: grid; gap: 2.5rem; }
     @media (min-width: 1024px) { .jn-cols { grid-template-columns: minmax(0, 1fr) minmax(0, 1.6fr); align-items: start; } .jn-side { position: sticky; top: 1.5rem; } }
     .jn-side .jn-paths { grid-template-columns: 1fr; }
-    .jn-side .jn-path { min-height: 0; padding: 1rem 1.1rem; gap: .5rem; }
+    /* Wyrównanie: wszystkie kafle ścieżek jednakowej wysokości, treść od góry, a kolumny zaczynają się na tej samej linii. */
+    .jn-cols { align-items: start; }
+    .jn-side .jn-paths { align-items: stretch; }
+    .jn-side .jn-path { min-height: 6.5rem; height: 100%; padding: 1rem 1.1rem; gap: .5rem; justify-content: flex-start; }
+    .jn-side .jn-path > span:first-child { display: block; }
+    .jn-side .jn-path-i, .jn-side .jn-path-t, .jn-side .jn-path-d { text-align: left; }
+    .jn-main .jn-cards { align-items: stretch; }
+    .jn-main .jn-card { min-height: 0; }
+    .jn-main .jn-card h3 { margin: 0; }
     .jn-side .jn-path-i { font-size: 1.25rem; }
-    .jn-side .jn-path-t { font-size: 1.1rem; margin-top: .5rem !important; }
+    .jn-side .jn-path-t { font-size: 1.1rem; margin-top: .4rem !important; }
     .jn-side .jn-path-d { font-size: .9rem; margin-top: .25rem; }
     .jn-side .jn-path-f { display: none; }
     .jn-main .jn-cards { grid-template-columns: 1fr; gap: .6rem; }
