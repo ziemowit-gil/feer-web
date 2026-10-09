@@ -209,6 +209,8 @@ Route::middleware('module:jobs')->group(function () {
 });
 
 Route::get('/dolacz-do-nas', [JoinUsController::class, 'index'])->name('join-us.index');
+// Dawna strona kafelków „/dolacz" → nowa strona „Dołącz do nas" (przed trasą stron, żeby wygrać z /{page:slug}).
+Route::get('/dolacz', fn () => redirect()->to(url('/dolacz-do-nas'), 301));
 
 Route::middleware('module:events')->group(function () {
     Route::get('/wydarzenia', [EventController::class, 'index'])->name('events.index');
