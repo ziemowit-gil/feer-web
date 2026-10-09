@@ -36,6 +36,10 @@
     .jn-bar { display: block; width: 3.5rem; height: 4px; margin: .9rem 0 1.25rem; background: var(--color-brand-dark); }
     .jn-lead { max-width: 44rem; margin: 0; font-size: 1.2rem; line-height: 1.6; color: #1d1d1a; }
     .jn-wrap { max-width: 72rem; margin: 0 auto; padding: 1rem 1rem 3rem; }
+    .jn-cols { display: grid; gap: 2.5rem; }
+    @media (min-width: 1024px) { .jn-cols { grid-template-columns: minmax(0, 1fr) minmax(0, 1.6fr); align-items: start; } .jn-side { position: sticky; top: 1.5rem; } }
+    .jn-side .jn-paths { grid-template-columns: 1fr; }
+    .jn-side .jn-path { min-height: 9rem; }
     .jn-paths { list-style: none; margin: 0; padding: 0; display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr)); }
     .jn-path { display: flex; min-height: 14rem; flex-direction: column; justify-content: space-between; gap: 1.25rem; padding: 1.5rem; border-radius: .5rem; text-decoration: none; }
     .jn-path:focus-visible { outline: 3px solid #1d1d1a; outline-offset: 3px; }
@@ -78,6 +82,8 @@
 </header>
 
 <div class="jn-wrap">
+  <div class="jn-cols">
+    <div class="jn-side">
     {{-- ── Ścieżki zaangażowania ── --}}
     @if ($paths)
         <nav aria-label="{{ $siteSettings->joinText('paths_label') }}">
@@ -98,6 +104,8 @@
         </nav>
     @endif
 
+    </div>
+    <div class="jn-main">
     {{-- ── Własne kafelki „Na skróty" z edycji strony (jeśli dodane) ── --}}
     @if ($hubLinks->isNotEmpty())
         <section class="jn-sec" aria-labelledby="jn-hub-h">
@@ -153,6 +161,9 @@
             @endif
         </section>
     @endif
+
+    </div>
+  </div>
 
     {{-- ── Jak to działa ── --}}
     <section class="jn-sec" aria-labelledby="jn-how-h">
