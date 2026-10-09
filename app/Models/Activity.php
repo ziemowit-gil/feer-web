@@ -31,7 +31,7 @@ class Activity extends \Spatie\Activitylog\Models\Activity
     public const SUBJECTS = [
         'App\\Models\\News'                 => 'Aktualność',
         'App\\Models\\Page'                 => 'Strona',
-        'App\\Models\\Project'              => 'Projekt',
+        'App\\Models\\Project'              => 'Działanie',
         'App\\Models\\LandingPage'          => 'Landing page',
         'App\\Models\\AnnualReport'         => 'Sprawozdanie',
         'App\\Models\\BipDocument'          => 'Dokument BIP',

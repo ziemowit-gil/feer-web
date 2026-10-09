@@ -1,4 +1,4 @@
-{{-- Węzeł drzewa podstron projektu (rekurencyjny, dowolna głębokość). Zmienne: $node (Page), $project, $depth. --}}
+{{-- Węzeł drzewa podstron działania (rekurencyjny, dowolna głębokość). Zmienne: $node (Page), $project, $depth. --}}
 @php $kids = $node->tree_children ?? collect(); @endphp
 <li>
     <div class="flex flex-wrap items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2">

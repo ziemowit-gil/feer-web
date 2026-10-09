@@ -261,15 +261,15 @@
                             @if ($projectOptions->isNotEmpty() && ! $selected->is_system)
                                 <div class="relative" x-data="{ open: false }" @keydown.escape="open = false" @click.outside="open = false">
                                     <button type="button" class="{{ $btn }}" @click="open = ! open" :aria-expanded="open.toString()" aria-controls="to-project-panel">
-                                        <i class="fa-solid fa-diagram-project" aria-hidden="true"></i> Przenieś do projektu
+                                        <i class="fa-solid fa-diagram-project" aria-hidden="true"></i> Przenieś do działania
                                     </button>
                                     <form id="to-project-panel" x-show="open" x-cloak method="POST" action="{{ route('admin.podstrony.do-projektu', $selected) }}"
                                         class="absolute left-0 top-full z-30 mt-2 w-80 space-y-3 rounded-lg border border-gray-200 bg-white p-4 shadow-xl">
                                         @csrf
                                         <div>
-                                            <label for="to-project" class="mb-1 block text-xs font-bold text-ink">Projekt</label>
+                                            <label for="to-project" class="mb-1 block text-xs font-bold text-ink">Działanie</label>
                                             <select id="to-project" name="project_id" required class="w-full rounded border-gray-300 py-1.5 text-sm focus:border-brand focus:ring-brand">
-                                                <option value="" disabled @selected(! $selected->project_id)>— wybierz projekt —</option>
+                                                <option value="" disabled @selected(! $selected->project_id)>— wybierz działanie —</option>
                                                 @foreach ($projectOptions as $po)
                                                     <option value="{{ $po->id }}" @selected($selected->project_id === $po->id)>{{ $po->title }}</option>
                                                 @endforeach

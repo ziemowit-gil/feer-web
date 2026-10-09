@@ -189,7 +189,7 @@
         </div>
     </section>
 
-    {{-- ══ Działania, które wspierasz (kategorie projektów) ══ --}}
+    {{-- ══ Działania, które wspierasz (kategorie działań) ══ --}}
     @if ($programs->isNotEmpty())
         <section class="mx-auto max-w-6xl px-4 py-14" aria-labelledby="programs-heading">
             <h2 id="programs-heading" class="text-2xl font-bold text-ink md:text-3xl">Działania, które wspierasz</h2>

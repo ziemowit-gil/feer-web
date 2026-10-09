@@ -15,7 +15,7 @@ class NavItem extends Model
     public const TYPES = [
         'link' => 'Zwykły link',
         'dropdown' => 'Rozwijane menu (własne podpozycje)',
-        'projects' => 'Menu projektów (automatyczne z kategorii)',
+        'projects' => 'Menu działań (automatyczne z kategorii)',
         'pages' => 'Menu podstron (automatyczne z podstron)',
         'volunteering' => 'Ogłoszenia o wolontariacie',
         'events' => 'Szkolenia i wydarzenia',
@@ -128,7 +128,7 @@ class NavItem extends Model
                 || (($page = $this->linkedPage()) && $page->publishedChildren->isNotEmpty());
         }
 
-        // Menu projektów: kolumny = kategorie z projektami (partial sprawdza, czy są kategorie).
+        // Menu działań: kolumny = kategorie z działaniami (partial sprawdza, czy są kategorie).
         return $this->type === 'projects';
     }
 

@@ -35,7 +35,7 @@
 
     <div class="mt-10">
         @if (! $searched)
-            <p class="text-muted">Wpisz frazę (co najmniej 2 znaki), aby przeszukać strony, aktualności, projekty, materiały i blog.</p>
+            <p class="text-muted">Wpisz frazę (co najmniej 2 znaki), aby przeszukać strony, aktualności, działania, materiały i blog.</p>
         @elseif ($total === 0)
             <div class="rounded-md bg-gray-50 p-8 text-center">
                 <i class="fa-solid fa-magnifying-glass mb-3 block text-3xl text-gray-400" aria-hidden="true"></i>

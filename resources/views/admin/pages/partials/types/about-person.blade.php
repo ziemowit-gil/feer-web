@@ -92,7 +92,7 @@
         <label for="person_role" class="mb-1 block text-sm font-bold">Co robi w FEER / stanowisko <span class="font-normal text-muted">(opcjonalnie)</span></label>
         <input type="text" id="person_role" name="person_role"
             value="{{ old('person_role', $page->person_role) }}"
-            placeholder="np. Koordynatorka projektów, wolontariusz…"
+            placeholder="np. Koordynatorka działań, wolontariusz…"
             class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
         @error('person_role') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
     </div>

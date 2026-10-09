@@ -13,7 +13,7 @@ use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
 /**
- * Panel admin: zarządzanie projektami z cennikiem, sekcjami własnymi i trybem koordynatora.
+ * Panel admin: zarządzanie działaniami z cennikiem, sekcjami własnymi i trybem koordynatora.
  *
  * Metody: index(), create(), store(), edit(), update(), destroy().
  *
@@ -23,7 +23,7 @@ class ProjectController extends Controller
 {
     use HandlesContentApproval;
 
-    /** Projekty, które można wskazać jako nadrzędne (bez samego projektu i jego potomków). */
+    /** Działania, które można wskazać jako nadrzędne (bez samego działania i jego potomków). */
     private function parentOptions(?Project $self)
     {
         $all = Project::forCurrentSite()->orderBy('title')->get(['id', 'title', 'parent_id']);
@@ -51,7 +51,7 @@ class ProjectController extends Controller
         return Category::when($ids, fn ($q) => $q->whereIn('id', $ids))->orderBy('order')->orderBy('name')->get();
     }
 
-    /** Drzewo projektów (jak drzewo stron): po lewej struktura z podprojektami, po prawej szczegóły wybranego projektu. */
+    /** Drzewo działań (jak drzewo stron): po lewej struktura z poddziałaniami, po prawej szczegóły wybranego projektu. */
     private function tree(Request $request)
     {
         $all = Project::forCurrentSite()->with('category')->orderBy('order')->orderBy('title')->get();
@@ -75,8 +75,8 @@ class ProjectController extends Controller
     }
 
     /**
-     * Kopiuje projekt (np. kolejna edycja szkolenia): szkic z wyczyszczonymi datami, etapami i statusem realizacji;
-     * zachowuje treść, kategorię, zespół, partnerów, finansowanie, cennik i zdjęcie. Podprojektów nie kopiuje.
+     * Kopiuje działanie (np. kolejna edycja szkolenia): szkic z wyczyszczonymi datami, etapami i statusem realizacji;
+     * zachowuje treść, kategorię, zespół, partnerów, finansowanie, cennik i zdjęcie. Poddziałań nie kopiuje.
      */
     public function duplicate(Project $project)
     {
@@ -98,33 +98,33 @@ class ProjectController extends Controller
             $image->copy($copy, 'image');
         }
 
-        return redirect()->route('admin.projekty.edit', $copy)->with('status', 'Utworzono kopię projektu (szkic) — ustaw terminy i etapy nowej edycji.');
+        return redirect()->route('admin.projekty.edit', $copy)->with('status', 'Utworzono kopię działania (szkic) — ustaw terminy i etapy nowej edycji.');
     }
 
-    /** Opublikuj / cofnij publikację projektu z widoku drzewa. */
+    /** Opublikuj / cofnij publikację działania z widoku drzewa. */
     public function toggleVisibility(Request $request, Project $project)
     {
         $project->update(['is_published' => ! $project->is_published]);
 
         return redirect()->route('admin.projekty.index', ['wybrana' => $project->id])
-            ->with('status', $project->is_published ? 'Projekt opublikowany.' : 'Cofnięto publikację projektu.');
+            ->with('status', $project->is_published ? 'Działanie opublikowane.' : 'Cofnięto publikację projektu.');
     }
 
-    /** Przenosi projekt w drzewie (zmiana projektu nadrzędnego); bez cykli. */
+    /** Przenosi działanie w drzewie (zmiana działania nadrzędnego); bez cykli. */
     public function move(Request $request, Project $project)
     {
         $data = $request->validate(['parent_id' => ['nullable', 'integer', 'exists:projects,id']]);
         $parentId = $data['parent_id'] ?? null;
 
         if ($parentId && ! $this->parentOptions($project)->contains('id', (int) $parentId)) {
-            return redirect()->back()->with('error', 'Projekt nie może trafić do samego siebie ani do własnego podprojektu.');
+            return redirect()->back()->with('error', 'Działanie nie może trafić do samego siebie ani do własnego poddziałania.');
         }
         $project->update(['parent_id' => $parentId, 'inherit' => $parentId ? $project->inherit : null]);
 
         return redirect()->route('admin.projekty.index', ['wybrana' => $project->id])->with('status', 'Przeniesiono projekt.');
     }
 
-    /** Wyświetla listę projektów z filtrowaniem po statusie i kategorii. */
+    /** Wyświetla listę działań z filtrowaniem po statusie i kategorii. */
     public function index(Request $request)
     {
         if ($request->query('widok') !== 'lista' && ! $request->hasAny(['status', 'category', 'sort'])) {
@@ -169,7 +169,7 @@ class ProjectController extends Controller
         ]);
     }
 
-    /** Zapisuje nowy projekt z opcjonalnym zdjęciem. */
+    /** Zapisuje nowe działanie z opcjonalnym zdjęciem. */
     public function store(Request $request)
     {
         $data = $this->validated($request);
@@ -180,7 +180,7 @@ class ProjectController extends Controller
 
         $this->handleImage($request, $project);
 
-        return redirect()->route('admin.projekty.index')->with('status', 'Projekt został utworzony.');
+        return redirect()->route('admin.projekty.index')->with('status', 'Działanie zostało utworzony.');
     }
 
     /** Wyświetla formularz edycji projektu. */
@@ -193,7 +193,7 @@ class ProjectController extends Controller
         ]);
     }
 
-    /** Aktualizuje projekt z opcjonalnym zdjęciem. */
+    /** Aktualizuje działanie z opcjonalnym zdjęciem. */
     public function update(Request $request, Project $project)
     {
         $data = $this->validated($request, $project->id);
@@ -204,11 +204,11 @@ class ProjectController extends Controller
 
         $this->handleImage($request, $project);
 
-        return redirect()->route('admin.projekty.index')->with('status', 'Projekt został zaktualizowany.');
+        return redirect()->route('admin.projekty.index')->with('status', 'Działanie zostało zaktualizowany.');
     }
 
     /**
-     * Ustawia zdjęcie projektu z przesłanego pliku albo z wybranej sugestii Unsplash
+     * Ustawia zdjęcie działania z przesłanego pliku albo z wybranej sugestii Unsplash
      * (pobieranej po stronie serwera, z podpisem autora). Plik ma pierwszeństwo.
      */
     private function handleImage(Request $request, Project $project): void
@@ -251,7 +251,7 @@ class ProjectController extends Controller
     {
         $project->delete();
 
-        return redirect()->route('admin.projekty.index')->with('status', 'Projekt został usunięty.');
+        return redirect()->route('admin.projekty.index')->with('status', 'Działanie zostało usunięty.');
     }
 
     /** Akcje zbiorcze: publish, unpublish, trash. */
@@ -278,9 +278,9 @@ class ProjectController extends Controller
         };
 
         $message = match ($data['action']) {
-            'trash'     => "Przeniesiono do kosza projektów: {$count}.",
-            'publish'   => "Opublikowano projektów: {$count}.",
-            'unpublish' => "Cofnięto publikację projektów: {$count}.",
+            'trash'     => "Przeniesiono do kosza działań: {$count}.",
+            'publish'   => "Opublikowano działań: {$count}.",
+            'unpublish' => "Cofnięto publikację działań: {$count}.",
         };
 
         activity('cms')
@@ -294,7 +294,7 @@ class ProjectController extends Controller
 
     private function validated(Request $request, ?int $selfId = null): array
     {
-        // Podprojekt dziedziczący kategorię: uzupełniamy ją z projektu nadrzędnego, zanim zadziała walidacja.
+        // Poddziałanie dziedziczące kategorię: uzupełniamy ją z działania nadrzędnego, zanim zadziała walidacja.
         if ($request->filled('parent_id') && in_array('category', (array) $request->input('inherit', []), true) && ! $request->filled('category_id')) {
             $request->merge(['category_id' => Project::withoutGlobalScopes()->whereKey($request->input('parent_id'))->value('category_id')]);
         }
@@ -388,7 +388,7 @@ class ProjectController extends Controller
         $data['order'] = $data['order'] ?? 0;
         $data['audience'] = $data['audience'] ?? 'brand';
 
-        // Podprojekt: pola dziedziczone tylko przy wskazanym projekcie nadrzędnym; brak cykli (nadrzędny nie może być potomkiem).
+        // Poddziałanie: pola dziedziczone tylko przy wskazanym projekcie nadrzędnym; brak cykli (nadrzędny nie może być potomkiem).
         $data['parent_id'] = $data['parent_id'] ?? null;
         if ($data['parent_id'] && $selfId) {
             $cursor = Project::withoutGlobalScopes()->find($data['parent_id']);
@@ -399,7 +399,7 @@ class ProjectController extends Controller
                 }
             }
         }
-        // Etapy, zespół, finansowanie: odrzucamy puste wiersze; status „zakończony" oznacza też projekt zrealizowany.
+        // Etapy, zespół, finansowanie: odrzucamy puste wiersze; status „zakończony" oznacza też działanie zrealizowane.
         $data['stages'] = collect($request->input('stages', []))
             ->filter(fn ($s) => filled($s['title'] ?? null))
             ->map(fn ($s) => [
@@ -445,9 +445,9 @@ class ProjectController extends Controller
             ? SiteSetting::current()->contrastSafeColor($data['accent_color'])
             : null;
         $data['is_published'] = $request->boolean('is_published');
-        // Status „Zakończony" oznacza też projekt zrealizowany (archiwum).
+        // Status „Zakończony" oznacza też działanie zrealizowane (archiwum).
         $data['is_completed'] = $request->boolean('is_completed') || ($data['status'] ?? null) === 'completed';
-        // Data zakończenia ma sens tylko dla projektów zrealizowanych (filtry archiwum ?przed= / ?po=).
+        // Data zakończenia ma sens tylko dla działań zrealizowanych (filtry archiwum ?przed= / ?po=).
         $data['completed_at'] = $data['is_completed'] ? ($data['completed_at'] ?? null) : null;
 
         // Odpłatny + cennik: pomijamy puste wiersze; gdy nieodpłatny — czyścimy.
@@ -507,7 +507,7 @@ class ProjectController extends Controller
 
     private function uniqueSlug(string $source, ?int $ignoreId = null): string
     {
-        $base = Str::slug($source) ?: 'projekt';
+        $base = Str::slug($source) ?: 'dzialanie';
         $slug = $base;
         $suffix = 2;
 

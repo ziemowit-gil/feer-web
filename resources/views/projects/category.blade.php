@@ -4,7 +4,7 @@
 
 @section('breadcrumbs')
     @include('partials.breadcrumbs', ['items' => [
-        ['label' => 'Projekty', 'url' => route('projects.index')],
+        ['label' => 'Działania', 'url' => route('projects.index')],
         ['label' => $category->name, 'url' => null],
     ]])
 @endsection
@@ -45,10 +45,10 @@
                     @endforeach
                 </ul>
             @else
-                <p class="mt-8 text-muted">Brak aktualnych projektów w tej kategorii.</p>
+                <p class="mt-8 text-muted">Brak aktualnych działań w tej kategorii.</p>
             @endif
 
-            <p class="mt-10 border-t border-gray-200 pt-6"><a href="{{ route('projects.index') }}" class="inline-flex min-h-11 items-center text-sm font-bold text-brand-dark underline underline-offset-4 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">← Wszystkie projekty</a></p>
+            <p class="mt-10 border-t border-gray-200 pt-6"><a href="{{ route('projects.index') }}" class="inline-flex min-h-11 items-center text-sm font-bold text-brand-dark underline underline-offset-4 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">← Wszystkie działania</a></p>
         </section>
     @else
     <section class="mx-auto max-w-6xl px-4 py-12">
@@ -66,7 +66,7 @@
                 @endforeach
             </div>
         @else
-            <p class="text-muted">Brak aktualnych projektów w tej kategorii.</p>
+            <p class="text-muted">Brak aktualnych działań w tej kategorii.</p>
         @endif
     </section>
     @endif

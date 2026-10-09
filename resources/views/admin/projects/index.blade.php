@@ -1,6 +1,6 @@
 @extends('admin.layout')
 
-@section('title', 'Projekty')
+@section('title', 'Działania')
 
 @section('content')
     <form id="bulk-form" method="POST" action="{{ route('admin.projekty.bulk') }}">
@@ -16,7 +16,7 @@
             </div>
             <div class="ml-auto">
                 <a href="{{ route('admin.projekty.create') }}" class="rounded bg-brand px-4 py-2 text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
-                    <i class="fa-solid fa-plus" aria-hidden="true"></i> Dodaj projekt
+                    <i class="fa-solid fa-plus" aria-hidden="true"></i> Dodaj działanie
                 </a>
             </div>
         </div>
@@ -38,7 +38,7 @@
                         <th class="w-10 px-4 py-3">
                             <input type="checkbox" id="select-all" class="rounded border-gray-300" aria-label="Zaznacz wszystkie">
                         </th>
-                        <th class="px-4 py-3">Projekt</th>
+                        <th class="px-4 py-3">Działanie</th>
                         <th class="hidden px-4 py-3 md:table-cell">Kategoria</th>
                         <th class="px-4 py-3">Status</th>
                         <th class="w-28 px-4 py-3 text-right"><span class="sr-only">Akcje</span></th>
@@ -85,7 +85,7 @@
                                 <div class="flex justify-end gap-1">
                                     <a href="{{ route('projects.show', $project) }}" target="_blank" rel="noopener" class="flex h-9 w-9 items-center justify-center rounded-lg text-muted hover:bg-gray-100 hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand" title="Podgląd" aria-label="Podgląd: {{ $project->title }} (nowa karta)"><i class="fa-solid fa-eye" aria-hidden="true"></i></a>
                                     <a href="{{ route('admin.projekty.edit', $project) }}" class="flex h-9 w-9 items-center justify-center rounded-lg text-muted hover:bg-gray-100 hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand" title="Edytuj" aria-label="Edytuj: {{ $project->title }}"><i class="fa-solid fa-pen" aria-hidden="true"></i></a>
-                                    <form method="POST" action="{{ route('admin.projekty.destroy', $project) }}" onsubmit="return confirm('Usunąć projekt &quot;{{ $project->title }}&quot;?');">
+                                    <form method="POST" action="{{ route('admin.projekty.destroy', $project) }}" onsubmit="return confirm('Usunąć działanie &quot;{{ $project->title }}&quot;?');">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="flex h-9 w-9 items-center justify-center rounded-lg text-muted hover:bg-red-50 hover:text-red-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500" title="Usuń" aria-label="Usuń: {{ $project->title }}"><i class="fa-solid fa-trash" aria-hidden="true"></i></button>

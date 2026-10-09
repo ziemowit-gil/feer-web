@@ -10,7 +10,7 @@
     @php
         $errTitle = match ((string) $code) { '403' => 'Brak dostępu', '500' => 'Coś poszło nie tak', default => 'Nie znaleziono strony' };
         $quick = array_filter([
-            ['Projekty', 'fa-diagram-project', \Illuminate\Support\Facades\Route::has('projects.index') ? route('projects.index') : null],
+            ['Działania', 'fa-diagram-project', \Illuminate\Support\Facades\Route::has('projects.index') ? route('projects.index') : null],
             ['Aktualności', 'fa-newspaper', \Illuminate\Support\Facades\Route::has('news.index') ? route('news.index') : null],
             ['Materiały edukacyjne', 'fa-book-open', \Illuminate\Support\Facades\Route::has('materials.index') ? route('materials.index') : null],
             ['Kontakt', 'fa-envelope', \Illuminate\Support\Facades\Route::has('contact.show') ? route('contact.show') : null],

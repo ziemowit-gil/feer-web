@@ -124,7 +124,7 @@
 </div>
 
 <div x-show="form.type === 'link' && form.location === 'main'" x-cloak>
-    <label for="nav-parent" class="mb-1 block text-sm font-bold">Podpozycja w menu (pod „Rozwijanym menu", linkiem albo „Menu projektów")</label>
+    <label for="nav-parent" class="mb-1 block text-sm font-bold">Podpozycja w menu (pod „Rozwijanym menu", linkiem albo „Menu działań")</label>
     <select id="nav-parent" name="parent_id" x-model="form.parentId"
         class="w-full rounded border-gray-300 focus-visible:border-brand focus-visible:ring-2 focus-visible:ring-brand">
         <option value="">— pozycja główna (na pasku menu) —</option>
@@ -133,7 +133,7 @@
             <option value="{{ $option->id }}" x-show="String(form.editingId) !== '{{ $option->id }}'">{{ $option->label }}</option>
         @endforeach
     </select>
-    <p class="mt-1 text-xs text-muted">Podpozycje pod „Menu projektów" tworzą dodatkową kolumnę (nagłówek ustawisz w polu „Nagłówek dodatkowej kolumny"). Adres wpisujesz sam, np. archiwum z filtrem: <code>/projekty/archiwum?po=2026-03-01</code>.</p>
+    <p class="mt-1 text-xs text-muted">Podpozycje pod „Menu działań" tworzą dodatkową kolumnę (nagłówek ustawisz w polu „Nagłówek dodatkowej kolumny"). Adres wpisujesz sam, np. archiwum z filtrem: <code>/projekty/archiwum?po=2026-03-01</code>.</p>
     @error('parent_id') <p class="mt-1 text-sm text-red-700">{{ $message }}</p> @enderror
 </div>
 
@@ -232,7 +232,7 @@
         class="mt-0.5 rounded border-gray-300 text-brand focus-visible:ring-2 focus-visible:ring-brand">
     <span>
         <span class="block text-sm font-bold">Mega menu (panel na całą szerokość)</span>
-        <span class="block text-xs text-muted">Podpozycje (podstrony powiązanej strony albo kategorie projektów z ich projektami) układają się w kolumny z ikoną i opisem. Bez podpozycji działa jak zwykła pozycja.</span>
+        <span class="block text-xs text-muted">Podpozycje (podstrony powiązanej strony albo kategorie działań z ich działaniami) układają się w kolumny z ikoną i opisem. Bez podpozycji działa jak zwykła pozycja.</span>
     </span>
 </label>
 
@@ -245,11 +245,11 @@
 </div>
 
 <fieldset x-show="form.type === 'projects' && form.location === 'main' && form.parentId === ''" x-cloak class="space-y-2 rounded-lg border border-gray-100 bg-gray-50 p-4">
-    <legend class="px-1 text-xs font-bold uppercase tracking-wide text-muted">Domyślne przyciski menu projektów</legend>
+    <legend class="px-1 text-xs font-bold uppercase tracking-wide text-muted">Domyślne przyciski menu działań</legend>
     <p class="text-xs text-muted">Domyślnie widoczne w kolumnie z przyciskami. Zaznacz, aby ukryć.</p>
     <label class="flex items-center gap-2 text-sm">
         <input type="checkbox" name="hide_all_projects_btn" value="1" x-model="form.hideAllBtn" class="rounded border-gray-300 text-brand focus-visible:ring-2 focus-visible:ring-brand">
-        <span>Ukryj przycisk „Wszystkie projekty”</span>
+        <span>Ukryj przycisk „Wszystkie działania”</span>
     </label>
     <label class="flex items-center gap-2 text-sm">
         <input type="checkbox" name="hide_archive_btn" value="1" x-model="form.hideArchiveBtn" class="rounded border-gray-300 text-brand focus-visible:ring-2 focus-visible:ring-brand">
@@ -314,7 +314,7 @@
         class="inline-flex items-center gap-2 rounded border border-dashed border-gray-300 px-3 py-1.5 text-sm font-bold text-brand hover:border-brand hover:bg-brand-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
         <i class="fa-solid fa-plus" aria-hidden="true"></i> Dodaj link lub przycisk
     </button>
-    <p class="text-xs text-muted">Gdy dodasz choć jeden link, zastępują domyślne przyciski karty („Wszystkie projekty", „Zobacz wszystko"). Nazwa pozycji menu nie jest powtarzana w karcie. Linki widać też w menu mobilnym.</p>
+    <p class="text-xs text-muted">Gdy dodasz choć jeden link, zastępują domyślne przyciski karty („Wszystkie działania", „Zobacz wszystko"). Nazwa pozycji menu nie jest powtarzana w karcie. Linki widać też w menu mobilnym.</p>
     @error('mega_side_links.*.url') <p class="text-sm text-red-700">{{ $message }}</p> @enderror
 </div>
 

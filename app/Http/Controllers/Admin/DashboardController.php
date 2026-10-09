@@ -60,7 +60,7 @@ class DashboardController extends Controller
                 'route' => route('admin.wydarzenia.index'),
             ],
             'projects' => [
-                'label' => 'Projekty',
+                'label' => 'Działania',
                 'count' => Project::count(),
                 'sub'   => Project::where('is_published', true)->count().' opublikowanych',
                 'icon'  => 'fa-diagram-project',
@@ -173,7 +173,7 @@ class DashboardController extends Controller
         $sources = [
             ['module' => 'news',     'label' => 'Aktualność', 'icon' => 'fa-newspaper',      'tone' => 'blue',   'model' => News::class,    'edit' => 'admin.newsy.edit'],
             ['module' => 'pages',    'label' => 'Strona',     'icon' => 'fa-file-lines',     'tone' => 'purple', 'model' => Page::class,    'edit' => 'admin.podstrony.edit'],
-            ['module' => 'projects', 'label' => 'Projekt',    'icon' => 'fa-diagram-project','tone' => 'green',  'model' => Project::class, 'edit' => 'admin.projekty.edit'],
+            ['module' => 'projects', 'label' => 'Działanie',    'icon' => 'fa-diagram-project','tone' => 'green',  'model' => Project::class, 'edit' => 'admin.projekty.edit'],
             ['module' => 'events',   'label' => 'Wydarzenie', 'icon' => 'fa-calendar-days',  'tone' => 'amber',  'model' => Event::class,   'edit' => 'admin.wydarzenia.edit'],
         ];
         $activity = collect();

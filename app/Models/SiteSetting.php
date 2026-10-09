@@ -30,7 +30,7 @@ class SiteSetting extends Model implements HasMedia
         'forms' => 'Kreator formularzy',
         'hero' => 'Slajder (hero)',
         'gallery' => 'Galeria',
-        'projects' => 'Projekty',
+        'projects' => 'Działania',
         'quick_actions' => 'Szybkie akcje',
         'feer_bands' => 'FEER Paski (paski z tekstem i przyciskami)',
         'partners' => 'Partnerzy',
@@ -836,7 +836,7 @@ class SiteSetting extends Model implements HasMedia
 
         return [
             ['value' => '10+', 'label' => 'Lat działania', 'icon' => 'fa-solid fa-calendar-days'],
-            ['value' => '50+', 'label' => 'Zrealizowanych projektów', 'icon' => 'fa-solid fa-diagram-project'],
+            ['value' => '50+', 'label' => 'Zrealizowanych działań', 'icon' => 'fa-solid fa-diagram-project'],
             ['value' => '100+', 'label' => 'Wolontariuszy', 'icon' => 'fa-solid fa-people-group'],
             ['value' => '1000+', 'label' => 'Osób, którym pomogliśmy', 'icon' => 'fa-solid fa-hand-holding-heart'],
         ];

@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
 
 /**
- * Panel admin: historia wersji treści (podstrony, aktualności, projekty)
+ * Panel admin: historia wersji treści (podstrony, aktualności, działania)
  * z podglądem JSON i możliwością przywrócenia wybranej wersji.
  *
  * Metody: index(), json(), restore().
@@ -25,7 +25,7 @@ class RevisionController extends Controller
     private const TYPES = [
         'page'         => [Page::class, 'pages', 'admin.podstrony.edit', 'Strona'],
         'news'         => [News::class, 'news', 'admin.newsy.edit', 'Aktualność'],
-        'project'      => [Project::class, 'projects', 'admin.projekty.edit', 'Projekt'],
+        'project'      => [Project::class, 'projects', 'admin.projekty.edit', 'Działanie'],
         'bip_document' => [BipDocument::class, 'bip', 'admin.bip-dokumenty.edit', 'Dokument BIP'],
         // Treści strony „Wesprzyj nas” (ustawienia) — dostęp tylko dla administratora.
         'support'      => [SiteSetting::class, 'settings', 'admin.ustawienia.edit', 'Strona wsparcia'],

@@ -59,7 +59,7 @@
 
     <style>
         /* Czytelniejszy formularz strony: większe pola i etykiety, więcej oddechu, zakładki jako pasek z linią pod aktywną. */
-        /* Zakładki jak w formularzu projektu: pigułki — aktywna w kolorze marki z białym tekstem, pozostałe jasnoszare. */
+        /* Zakładki jak w formularzu działania: pigułki — aktywna w kolorze marki z białym tekstem, pozostałe jasnoszare. */
         [data-page-form-tabs] [role="tablist"] { background: transparent; padding: 0; border: 0; border-radius: 0; gap: .5rem; margin-bottom: 1.5rem; }
         [data-page-form-tabs] [data-ftab-btn] { border-radius: .375rem; padding: .5rem 1rem; font-size: .875rem; font-weight: 700; margin: 0; border: 0; box-shadow: none !important; background: #f3f4f6 !important; color: #1a1a1a !important; transition: background-color .15s; }
         [data-page-form-tabs] [data-ftab-btn]:hover { background: #e5e7eb !important; }
@@ -474,7 +474,7 @@
                         <div class="mt-2 divide-y divide-gray-100">
                             <label class="{{ $row }}">
                                 <input type="checkbox" name="show_in_menu" value="1" {{ old('show_in_menu', $page->show_in_menu ?? true) ? 'checked' : '' }}>
-                                <span><span class="{{ $rowTitle }}">Dodaj do menu</span><span class="{{ $rowHint }}">Tylko strony główne (bez rodzica i projektu) trafiają do nawigacji.</span></span>
+                                <span><span class="{{ $rowTitle }}">Dodaj do menu</span><span class="{{ $rowHint }}">Tylko strony główne (bez rodzica i działania) trafiają do nawigacji.</span></span>
                             </label>
                         </div>
                     </section>
@@ -538,7 +538,7 @@
                         </div>
 
                         <div>
-                            <label for="project_id" class="mb-1 block text-sm font-bold">Powiąż z projektem</label>
+                            <label for="project_id" class="mb-1 block text-sm font-bold">Powiąż z działaniem</label>
                             <select id="project_id" name="project_id" data-project-select class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
                                 <option value="">— brak —</option>
                                 @foreach ($projectOptions as $option)
@@ -552,7 +552,7 @@
                         </div>
 
                         <div class="sm:col-span-2 {{ $hasProject ? '' : 'hidden' }}" data-project-display-wrap>
-                            <label for="project_display" class="mb-1 block text-sm font-bold">Jak pokazać na stronie projektu</label>
+                            <label for="project_display" class="mb-1 block text-sm font-bold">Jak pokazać na stronie działania</label>
                             <select id="project_display" name="project_display" class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand sm:w-2/3">
                                 @foreach (\App\Models\Page::PROJECT_DISPLAYS as $value => $label)
                                     <option value="{{ $value }}" {{ old('project_display', $page->project_display ?? 'link') === $value ? 'selected' : '' }}>{{ $label }}</option>

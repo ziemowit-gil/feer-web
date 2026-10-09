@@ -54,7 +54,7 @@
                             &middot;
                             <span class="opacity-40 transition-opacity duration-200 hover:opacity-100 focus-within:opacity-100">
                                 Napędzane przez <span class="font-bold">weCMS</span>
-                                &middot; Projekt i wykonanie <a href="mailto:ziemowit.gil@gmail.com" class="hover:text-brand">Ziemowit Gil</a>
+                                &middot; Działanie i wykonanie <a href="mailto:ziemowit.gil@gmail.com" class="hover:text-brand">Ziemowit Gil</a>
                             </span>
                         @endif
                     </span>

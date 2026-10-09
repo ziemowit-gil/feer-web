@@ -49,7 +49,7 @@ class Project extends Model implements HasMedia
     ];
 
     /**
-     * Grupy pól, które podprojekt może dziedziczyć z projektu nadrzędnego (klucz => [etykieta, pola kolumn]).
+     * Grupy pól, które poddziałanie może dziedziczyć z działania nadrzędnego (klucz => [etykieta, pola kolumn]).
      * Obraz dziedziczy się osobno (media), dlatego klucz „image" nie ma kolumn poza opisem alternatywnym.
      */
     public const INHERITABLE = [
@@ -95,7 +95,7 @@ class Project extends Model implements HasMedia
         'funding' => 'array',
     ];
 
-    /** Mikropis do list projektów: zajawka, a gdy jej brak — „dla kogo”, a potem początek treści. */
+    /** Mikropis do list działań: zajawka, a gdy jej brak — „dla kogo”, a potem początek treści. */
     public function teaser(int $limit = 140): ?string
     {
         $text = trim((string) ($this->excerpt ?: $this->for_whom));
@@ -106,7 +106,7 @@ class Project extends Model implements HasMedia
         return $text === '' ? null : \Illuminate\Support\Str::limit(strip_tags($text), $limit);
     }
 
-    /** Zakres edytora: projekty tylko z kategorii wskazanych w grupie użytkownika. */
+    /** Zakres edytora: działania tylko z kategorii wskazanych w grupie użytkownika. */
     public function constrainForEditor($query, User $user): void
     {
         if (($ids = $user->allowedProjectCategoryIds()) !== null) {
@@ -119,8 +119,8 @@ class Project extends Model implements HasMedia
         return parent::resolveRouteBindingQuery($query, $value, $field)->forCurrentSite();
     }
 
-    /** Rodzaje projektu: zwykły projekt albo usługa wyłącznie odpłatna. */
-    public const KINDS = ['project' => 'Projekt (bezpłatny lub z formami udziału)', 'paid_offer' => 'Usługa wyłącznie odpłatna'];
+    /** Rodzaje działania: zwykłe działanie albo usługa wyłącznie odpłatna. */
+    public const KINDS = ['project' => 'Działanie (bezpłatny lub z formami udziału)', 'paid_offer' => 'Usługa wyłącznie odpłatna'];
 
     /** Forma realizacji w „W skrócie". */
     public const MODES = ['onsite' => 'Stacjonarnie', 'online' => 'Online', 'hybrid' => 'Stacjonarnie i online'];
@@ -156,14 +156,14 @@ class Project extends Model implements HasMedia
         return $this->children()->where('is_published', true);
     }
 
-    /** Czy pole/grupa jest dziedziczona z projektu nadrzędnego. */
+    /** Czy pole/grupa jest dziedziczona z działania nadrzędnego. */
     public function inherits(string $group): bool
     {
         return $this->parent_id && in_array($group, (array) $this->inherit, true);
     }
 
     /**
-     * Nakłada wartości projektu nadrzędnego na dziedziczone pola — tylko w odczycie publicznym (nie w panelu,
+     * Nakłada wartości działania nadrzędnego na dziedziczone pola — tylko w odczycie publicznym (nie w panelu,
      * aby zapis formularza nie utrwalał cudzych wartości). Obraz dziedziczy accessor `image_url`.
      */
     protected static function booted(): void
@@ -212,7 +212,7 @@ class Project extends Model implements HasMedia
         return $this->pages()->where('is_published', true)->orderBy('order')->orderBy('title');
     }
 
-    /** Tryb nawigacji sekcji na stronie projektu: własny wybór projektu, inaczej ustawienie serwisu ('tabs' | 'sidebar'). */
+    /** Tryb nawigacji sekcji na stronie działania: własny wybór działania, inaczej ustawienie serwisu ('tabs' | 'sidebar'). */
     public function sectionsNavMode(): string
     {
         $mode = $this->sections_nav ?: SiteSetting::current()->project_sections_nav;
@@ -221,8 +221,8 @@ class Project extends Model implements HasMedia
     }
 
     /**
-     * Drzewo podstron projektu (dowolna głębokość): korzenie to strony powiązane z projektem,
-     * które nie leżą pod inną stroną projektu; potomków dobieramy po parent_id.
+     * Drzewo podstron działania (dowolna głębokość): korzenie to strony powiązane z działaniem,
+     * które nie leżą pod inną stroną działania; potomków dobieramy po parent_id.
      * Każdy węzeł dostaje relację `tree_children`. Dla widoku publicznego tylko opublikowane.
      */
     public function pageTree(bool $publishedOnly = false): \Illuminate\Support\Collection

@@ -16,7 +16,7 @@ use Illuminate\Support\Str;
  */
 class CategoryController extends Controller
 {
-    /** Wyświetla listę kategorii projektów z liczbą przypisanych projektów. */
+    /** Wyświetla listę kategorii działań z liczbą przypisanych projektów. */
     public function index()
     {
         $categories = Category::withCount('projects')->orderBy('order')->orderBy('name')->get();

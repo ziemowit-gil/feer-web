@@ -8,7 +8,7 @@
 
 @section('breadcrumbs')
     @include('partials.breadcrumbs', ['items' => array_values(array_filter([
-        ['label' => 'Projekty', 'url' => route('projects.index')],
+        ['label' => 'Działania', 'url' => route('projects.index')],
         ['label' => $project->category->name, 'url' => route('categories.show', $project->category)],
         $project->parent && $project->parent->is_published ? ['label' => $project->parent->title, 'url' => route('projects.show', $project->parent)] : null,
         ['label' => $project->title, 'url' => null],
@@ -25,7 +25,7 @@
 
         // Subpages attached to this project, grouped by how they should appear:
         // inline sections in the body, tabs, or just links in the sidebar.
-        // Drzewo podstron (dowolna głębokość): na poziomie projektu liczą się tylko korzenie; potomków pokazuje menu boczne w zakładce.
+        // Drzewo podstron (dowolna głębokość): na poziomie działania liczą się tylko korzenie; potomków pokazuje menu boczne w zakładce.
         $pageRoots = $project->pageTree(true);
         $tabPages = $pageRoots->where('project_display', 'tab')->values();
         $inlinePages = $pageRoots->where('project_display', 'inline')->values();
@@ -39,7 +39,7 @@
         $hasTabs = count($tabItems) > 1;
         // Zdania-ostrzeżenia („Ważne:", „Uwaga:") zamieniamy na wyróżnioną ramkę (callout), niezależnie od tego, jak wyrównał je edytor.
         $projectContentHtml = preg_replace('~<p((?![^>]*\bclass=)[^>]*)>(\s*(?:<(?:strong|b)[^>]*>)?\s*(?:Ważne|Ważna informacja|Uwaga)\b)~iu', '<p class="proj-callout"$1>$2', (string) $project->content);
-        // Tryb nawigacji: pasek zakładek albo menu boczne (ustawienie serwisu lub własny wybór projektu).
+        // Tryb nawigacji: pasek zakładek albo menu boczne (ustawienie serwisu lub własny wybór działania).
         $navSidebar = $hasTabs && $project->sectionsNavMode() === 'sidebar';
         $linkPages = $pageRoots->whereNotIn('project_display', ['inline', 'tab', 'accordion'])->values();
 
@@ -58,7 +58,7 @@
         @php
             $catName = trim($project->category->name);
             $forWhom = trim((string) $project->for_whom);
-            // „Dla kogo" bywa tym samym, co kategoria (taksonomia projektów jest wg
+            // „Dla kogo" bywa tym samym, co kategoria (taksonomia działań jest wg
             // odbiorcy, np. „Dla NGO"), więc pokazujemy je tylko, gdy wnosi coś ponad
             // nazwę kategorii — inaczej grupa docelowa dublowałaby się z plakietką.
             $showForWhom = $forWhom !== ''
@@ -112,7 +112,7 @@
             focusActive() { this.$nextTick(() => document.getElementById('tab-' + this.tab)?.focus()); },
         }">
     @if ($hasTabs && ! $navSidebar)
-        @include('partials.tab-strip', ['tabItems' => $tabItems, 'tabsLabel' => 'Sekcje projektu'])
+        @include('partials.tab-strip', ['tabItems' => $tabItems, 'tabsLabel' => 'Sekcje działania'])
     @endif
 
     <section class="mx-auto max-w-6xl px-4 py-8">
@@ -154,7 +154,7 @@
             }
             .proj-news a { display: block; padding: .6rem 0; }
             .proj-note { position: relative; margin: 0 0 1rem; padding: 1rem 4.5rem 1rem 1.25rem; border: 2px solid var(--color-brand); border-radius: .5rem; background: #fff; color: #1d1d1a; font-size: 1.0625rem; line-height: 1.6; font-weight: 600; }
-                                    /* Sekcje informacyjne bez ramek: zwykły nagłówek z paskiem marki (jak „Opis projektu"); ramki zostają tylko dla komunikatów (.proj-note, .proj-callout). */
+                                    /* Sekcje informacyjne bez ramek: zwykły nagłówek z paskiem marki (jak „Opis działania"); ramki zostają tylko dla komunikatów (.proj-note, .proj-callout). */
             .proj-frame { margin-top: 2.5rem; padding: 0; border: 0; background: transparent; }
             .proj-frame-side { margin-top: 0; margin-bottom: 1.5rem; }
             .proj-frame-side .proj-frame-h { font-size: 1.125rem; }
@@ -363,7 +363,7 @@
                 @endif
 
                 @if ($project->content)
-                    <h2 class="proj-h2">Opis projektu</h2>
+                    <h2 class="proj-h2">Opis działania</h2>
                     <div class="prose proj-prose max-w-none" @if ($canInlineEdit) data-inline-field="content" data-inline-kind="rich" @endif>{!! $projectContentHtml !!}</div>
                 @endif
 
@@ -448,7 +448,7 @@
                 @php $projStages = $siteSettings->projects_stages_enabled ? collect($project->stages ?? []) : collect(); @endphp
                 @if ($projStages->isNotEmpty())
                     <section class="proj-frame" aria-labelledby="proj-stages-h">
-                        <h2 id="proj-stages-h" class="proj-frame-h"><i class="fa-solid fa-timeline" aria-hidden="true"></i> Etapy projektu</h2>
+                        <h2 id="proj-stages-h" class="proj-frame-h"><i class="fa-solid fa-timeline" aria-hidden="true"></i> Etapy działania</h2>
                         <ol class="proj-stages" role="list">
                             @foreach ($projStages as $st)
                                 @php $state = $st['state'] ?? 'upcoming'; @endphp
@@ -471,7 +471,7 @@
                 @php $projTeam = $showTeamFunding ? collect($project->team ?? []) : collect(); @endphp
                 @if ($projTeam->isNotEmpty())
                     <section class="proj-frame" aria-labelledby="proj-team-h">
-                        <h2 id="proj-team-h" class="proj-frame-h"><i class="fa-solid fa-people-group" aria-hidden="true"></i> Zespół projektu</h2>
+                        <h2 id="proj-team-h" class="proj-frame-h"><i class="fa-solid fa-people-group" aria-hidden="true"></i> Zespół działania</h2>
                         <ul role="list" class="proj-team">
                             @foreach ($projTeam as $tm)
                                 <li>
@@ -517,7 +517,7 @@
                     </section>
                 @endforeach
 
-                {{-- Podstrony projektu jako rozwijane sekcje (akordeon) --}}
+                {{-- Podstrony działania jako rozwijane sekcje (akordeon) --}}
                 @if ($accordionPages->isNotEmpty())
                     <span id="projekt-rozwijane" class="scroll-mt-24"></span>
                     @include('partials.page-children-accordion', ['children' => $accordionPages, 'page' => (object) ['id' => 'p'.$project->id, 'title' => $project->title]])
@@ -568,7 +568,7 @@
             @endforeach
             </div>
 
-            {{-- ══ PANEL BOCZNY: harmonogram, kontakt, strony projektu, powrót ══ --}}
+            {{-- ══ PANEL BOCZNY: harmonogram, kontakt, strony działania, powrót ══ --}}
             @if ($navSidebar)
                 @include('projects.partials.sidebar-nav', ['sectionTabs' => $sectionTabs, 'tabPages' => $tabPages])
             @endif
@@ -589,12 +589,12 @@
             </div>
         @endif
 
-                {{-- Kontakt w sprawie projektu — jako zwykła sekcja treści (jak „Opis
-                     projektu"), w głównym nurcie i pełną szerokością, nie jako kafelek z boku. --}}
+                {{-- Kontakt w sprawie działania — jako zwykła sekcja treści (jak „Opis
+                     działania"), w głównym nurcie i pełną szerokością, nie jako kafelek z boku. --}}
                 @if (! $project->is_completed && $project->showsCoordinator())
                     <div class="rounded-lg border border-gray-200 bg-white p-5">
                         <h2 class="mb-3 flex items-center gap-2 text-base font-bold text-ink">
-                            <i class="fa-solid fa-envelope text-brand" aria-hidden="true"></i> Kontakt w sprawie projektu
+                            <i class="fa-solid fa-envelope text-brand" aria-hidden="true"></i> Kontakt w sprawie działania
                         </h2>
                         <div class="space-y-1.5 text-ink">
                             @if ($project->coordinator_name)
@@ -615,7 +615,7 @@
                 @if ($linkPages->isNotEmpty())
                     <div class="rounded-lg border border-gray-200 bg-white p-5">
                         <h2 class="mb-3 flex items-center gap-2 text-base font-bold text-ink">
-                            <i class="fa-solid fa-file-lines text-brand" aria-hidden="true"></i> Strony projektu
+                            <i class="fa-solid fa-file-lines text-brand" aria-hidden="true"></i> Strony działania
                         </h2>
                         <ul class="flex flex-col gap-2 text-sm">
                             @foreach ($linkPages as $projectPage)
@@ -667,7 +667,7 @@
                             </ul>
                         @endif
                         @if (! empty($projFunding['budget']) && ! empty($projFunding['budget_public']))
-                            <p class="proj-fund-budget">Budżet projektu: <strong>{{ $projFunding['budget'] }}</strong></p>
+                            <p class="proj-fund-budget">Budżet działania: <strong>{{ $projFunding['budget'] }}</strong></p>
                         @endif
                         @if (filled($project->funding_notice))
                             <p class="proj-fund-notice">{{ $project->funding_notice }}</p>
@@ -676,10 +676,10 @@
                 @endif
 
                 @if ($showNews)
-                    {{-- Aktualności projektu w stylu menu sekcji: szare pole, kreska marki, tytuł i pozycje oddzielone liniami. --}}
+                    {{-- Aktualności działania w stylu menu sekcji: szare pole, kreska marki, tytuł i pozycje oddzielone liniami. --}}
                     <nav class="proj-menu-box" aria-labelledby="proj-news-h">
                         <span class="proj-menu-line" aria-hidden="true"></span>
-                        <p id="proj-news-h" class="proj-menu-title">Aktualności projektu</p>
+                        <p id="proj-news-h" class="proj-menu-title">Aktualności działania</p>
                         <ul role="list" class="proj-menu-list">
                             @foreach ($project->publishedNews as $item)
                                 <li>

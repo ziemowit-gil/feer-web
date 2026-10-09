@@ -34,7 +34,7 @@ class SearchController extends Controller
         ['pages', Page::class, 'title', 'admin.podstrony.edit', 'Strona', 'fa-file-lines', ['type', '!=', 'about_person']],
         ['pages', Page::class, 'title', 'admin.podstrony.edit', 'Osoba', 'fa-user', ['type', '=', 'about_person']],
         ['news', News::class, 'title', 'admin.newsy.edit', 'Aktualność', 'fa-newspaper', null],
-        ['projects', Project::class, 'title', 'admin.projekty.edit', 'Projekt', 'fa-diagram-project', null],
+        ['projects', Project::class, 'title', 'admin.projekty.edit', 'Działanie', 'fa-diagram-project', null],
         ['events', Event::class, 'title', 'admin.wydarzenia.edit', 'Wydarzenie', 'fa-calendar-days', null],
         ['partners', Partner::class, 'name', 'admin.partnerzy.edit', 'Partner', 'fa-handshake', null],
         ['faq', Faq::class, 'question', 'admin.faq.edit', 'FAQ', 'fa-circle-question', null],
@@ -113,7 +113,7 @@ class SearchController extends Controller
             $add('Aktualności', 'admin.newsy.index');
         }
         if ($user->canAccessModule('projects')) {
-            $add('Projekty', 'admin.projekty.index');
+            $add('Działania', 'admin.projekty.index');
         }
         if ($user->canAccessModule('events')) {
             $add('Szkolenia i wydarzenia', 'admin.wydarzenia.index');

@@ -19,7 +19,7 @@
 @endphp
 
 @if (($variant ?? null) === 'project' || $page->sideNavStyle() === 'panel')
-{{-- Wygląd menu jak na stronie projektu: szare pole, kreska w kolorze marki, tytuł i pozycje oddzielone cienkimi liniami. --}}
+{{-- Wygląd menu jak na stronie działania: szare pole, kreska w kolorze marki, tytuł i pozycje oddzielone cienkimi liniami. --}}
 <nav aria-label="Podstrony w tym dziale" class="relative bg-gray-100 p-6">
     <span class="absolute block bg-brand" style="left:0;top:0;height:.25rem;width:4rem" aria-hidden="true"></span>
     <p class="mb-4 border-b border-gray-900 pb-3 text-lg font-bold text-ink">{{ $localHeading }}</p>

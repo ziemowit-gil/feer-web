@@ -145,7 +145,7 @@
         </div>
 
         <div>
-            <label for="content_editor" class="mb-1 block text-sm font-bold">Edytor treści (strony, aktualności, projekty)</label>
+            <label for="content_editor" class="mb-1 block text-sm font-bold">Edytor treści (strony, aktualności, działania)</label>
             <select id="content_editor" name="content_editor" class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
                 @foreach (\App\Models\SiteSetting::EDITORS as $value => $label)
                     <option value="{{ $value }}" {{ old('content_editor', $settings->contentEditorValue()) === $value ? 'selected' : '' }}>{{ $label }}</option>
@@ -274,7 +274,7 @@
             @if ($settings->site_template === 'federation')
                 {{-- Kolorowe menu — tylko szablon "federation" --}}
                 @php
-                    $navLabels = ['O nas', 'Organizacje', 'Projekty zrealizowane', 'Kontakt'];
+                    $navLabels = ['O nas', 'Organizacje', 'Działania zrealizowane', 'Kontakt'];
                     $colorfulItems = old('federation_colorful_nav_items', $settings->federation_colorful_nav_items ?? [0, 1, 2, 3]);
                 @endphp
                 <details open class="rounded-lg border border-gray-200 bg-gray-50">
@@ -600,7 +600,7 @@
 
         <div x-show="tab === 'colors'" x-cloak class="space-y-6">
             @php $subBrands = array_values((array) old('sub_brands', $settings->sub_brands ?? [])); @endphp
-            <p class="text-xs text-muted">Kolor przewodni strony oraz nazwane kolory submarek dla różnych treści (projektów i aktualności). Każdy kolor jest przy zapisie przyciemniany do kontrastu WCAG AA wobec bieli.</p>
+            <p class="text-xs text-muted">Kolor przewodni strony oraz nazwane kolory submarek dla różnych treści (działań i aktualności). Każdy kolor jest przy zapisie przyciemniany do kontrastu WCAG AA wobec bieli.</p>
 
             @if (($settings->site_template ?? 'default') === 'feer')
                 @php
@@ -700,7 +700,7 @@
                         oninput="if (/^#[0-9a-fA-F]{6}$/.test(this.value)) document.getElementById('ngo_color_picker').value = this.value"
                         class="w-48 rounded border-gray-300 font-mono text-sm focus:border-brand focus:ring-brand">
                 </div>
-                <p class="mt-1 text-xs text-muted">Wbudowana submarka „NGO", wybierana przy projektach i aktualnościach. Zostaw puste, aby używać koloru przewodniego.</p>
+                <p class="mt-1 text-xs text-muted">Wbudowana submarka „NGO", wybierana przy działaniach i aktualnościach. Zostaw puste, aby używać koloru przewodniego.</p>
                 @error('ngo_color') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                 <div class="mt-3 flex items-start gap-2">
                     <input type="hidden" name="ngo_skip_contrast" value="0">
@@ -715,7 +715,7 @@
 
             <div class="border-t border-gray-100 pt-5" data-subbrands>
                 <p class="mb-1 text-sm font-bold">Kolory submarek</p>
-                <p class="mb-3 text-xs text-muted">Zdefiniuj nazwane kolory dla różnych rodzajów treści (np. „Seniorzy", „Szkoły", „Wolontariat"). Pojawią się do wyboru w polu „Grupa docelowa (kolorystyka)" przy projektach i aktualnościach. Puste wiersze są pomijane.</p>
+                <p class="mb-3 text-xs text-muted">Zdefiniuj nazwane kolory dla różnych rodzajów treści (np. „Seniorzy", „Szkoły", „Wolontariat"). Pojawią się do wyboru w polu „Grupa docelowa (kolorystyka)" przy działaniach i aktualnościach. Puste wiersze są pomijane.</p>
                 <div data-subbrands-rows class="space-y-2">
                     @foreach ($subBrands as $i => $sb)
                         <div data-subbrands-row class="flex flex-wrap items-center gap-2">
@@ -1583,14 +1583,14 @@
 
         <div x-show="tab === 'content'" x-cloak class="space-y-6">
             <div>
-                <label for="editor-projects_intro" class="mb-1 block text-sm font-bold">Tekst wprowadzający na stronie projektów <span class="font-normal text-muted">(opcjonalnie)</span></label>
+                <label for="editor-projects_intro" class="mb-1 block text-sm font-bold">Tekst wprowadzający na stronie działań <span class="font-normal text-muted">(opcjonalnie)</span></label>
                 <p class="mb-2 text-xs text-muted">Wyświetlany pod nagłówkiem na stronie <a href="{{ route('projects.index') }}" target="_blank" rel="noopener" class="text-brand underline">/projekty</a> i na stronach kategorii.</p>
                 @include('admin.partials.editor', ['name' => 'projects_intro', 'value' => old('projects_intro', $settings->projects_intro)])
                 @error('projects_intro') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
             </div>
 
             <fieldset class="border-t border-gray-100 pt-6">
-                <legend class="mb-3 text-sm font-bold">Układ listy projektów</legend>
+                <legend class="mb-3 text-sm font-bold">Układ listy działań</legend>
                 @php $projectsLayout = old('projects_layout', $settings->projects_layout ?? 'list'); @endphp
                 <div class="flex flex-wrap gap-6">
                     <label class="flex cursor-pointer items-center gap-2 text-sm">
@@ -1599,14 +1599,14 @@
                     </label>
                     <label class="flex cursor-pointer items-center gap-2 text-sm">
                         <input type="radio" name="projects_layout" value="tiles" {{ $projectsLayout === 'tiles' ? 'checked' : '' }} class="text-brand focus:ring-brand">
-                        Nawigacja kafelkowa (projekty jako duże kolorowe kafelki)
+                        Nawigacja kafelkowa (działania jako duże kolorowe kafelki)
                     </label>
                 </div>
             </fieldset>
 
             <div class="border-t border-gray-100 pt-6">
                 <label for="paid_activity_info" class="mb-1 block text-sm font-bold">Objaśnienie odpłatnej działalności pożytku publicznego (dla całego serwisu)</label>
-                <p class="mb-2 text-xs text-muted">Pokazywane przy płatnych formach udziału w rozwijanym objaśnieniu. Pisz prostym językiem: krótkie zdania, bez trudnych słów. Puste pole = tekst domyślny. Akapity rozdzielaj pustą linią. W formularzu projektu można to zmienić dla pojedynczego projektu. Upewnij się, że opis „jak to działa u nas” zgadza się z faktycznymi zasadami organizacji i statutem.</p>
+                <p class="mb-2 text-xs text-muted">Pokazywane przy płatnych formach udziału w rozwijanym objaśnieniu. Pisz prostym językiem: krótkie zdania, bez trudnych słów. Puste pole = tekst domyślny. Akapity rozdzielaj pustą linią. W formularzu działania można to zmienić dla pojedynczego projektu. Upewnij się, że opis „jak to działa u nas” zgadza się z faktycznymi zasadami organizacji i statutem.</p>
                 <textarea id="paid_activity_info" name="paid_activity_info" rows="8" maxlength="3000" placeholder="{{ \Illuminate\Support\Str::limit(\App\Models\SiteSetting::PAID_ACTIVITY_DEFAULT, 160) }}"
                     class="w-full rounded-lg border-gray-300 text-sm focus:border-brand focus:ring-brand">{{ old('paid_activity_info', $settings->paid_activity_info) }}</textarea>
                 <button type="button" class="mt-1 text-xs font-bold text-brand underline" onclick="document.getElementById('paid_activity_info').value = @js(\App\Models\SiteSetting::PAID_ACTIVITY_DEFAULT)">Wstaw tekst domyślny do edycji</button>
@@ -1634,13 +1634,13 @@
             </fieldset>
 
             <fieldset class="border-t border-gray-100 pt-6">
-                <legend class="mb-1 text-sm font-bold">Rozszerzenia modułu projektów</legend>
-                <p class="mb-3 text-xs text-muted">Włącz dodatkowe pola w formularzu projektu i ich wyświetlanie na stronie projektu. Wyłączone: zakładki znikają z formularza, a strona niczego nie pokazuje (zapisane dane zostają).</p>
+                <legend class="mb-1 text-sm font-bold">Rozszerzenia modułu działań</legend>
+                <p class="mb-3 text-xs text-muted">Włącz dodatkowe pola w formularzu działania i ich wyświetlanie na stronie projektu. Wyłączone: zakładki znikają z formularza, a strona niczego nie pokazuje (zapisane dane zostają).</p>
                 <div class="space-y-3">
                     <label class="flex items-start gap-3">
                         <input type="hidden" name="projects_subprojects_enabled" value="0">
                         <input type="checkbox" name="projects_subprojects_enabled" value="1" {{ old('projects_subprojects_enabled', $settings->projects_subprojects_enabled ?? true) ? 'checked' : '' }} class="mt-0.5 rounded border-gray-300 text-brand focus:ring-brand">
-                        <span><span class="block text-sm font-bold">Podprojekty (formy udziału)</span><span class="block text-xs text-muted">Pole „Projekt nadrzędny”, dziedziczenie pól oraz sekcja „Formy udziału” z objaśnieniem odpłatności.</span></span>
+                        <span><span class="block text-sm font-bold">Poddziałania (formy udziału)</span><span class="block text-xs text-muted">Pole „Działanie nadrzędne”, dziedziczenie pól oraz sekcja „Formy udziału” z objaśnieniem odpłatności.</span></span>
                     </label>
                     <label class="flex items-start gap-3">
                         <input type="hidden" name="projects_extras_enabled" value="0">
@@ -1666,8 +1666,8 @@
             </fieldset>
 
             <fieldset class="border-t border-gray-100 pt-6">
-                <legend class="mb-1 text-sm font-bold">Nawigacja po sekcjach projektu (dla całego serwisu)</legend>
-                <p class="mb-3 text-xs text-muted">Jak pokazać sekcje i podstrony na stronie projektu. W formularzu projektu można to nadpisać dla pojedynczego projektu.</p>
+                <legend class="mb-1 text-sm font-bold">Nawigacja po sekcjach działania (dla całego serwisu)</legend>
+                <p class="mb-3 text-xs text-muted">Jak pokazać sekcje i podstrony na stronie projektu. W formularzu działania można to nadpisać dla pojedynczego projektu.</p>
                 @php $sectionsNav = old('project_sections_nav', $settings->project_sections_nav ?? 'tabs'); @endphp
                 <div class="flex flex-wrap gap-6">
                     <label class="flex cursor-pointer items-center gap-2 text-sm">
@@ -1700,7 +1700,7 @@
                     </div>
                 @endif
                 <input type="file" name="news_default_image" accept="image/*" class="block w-full cursor-pointer text-sm text-muted file:mr-3 file:cursor-pointer file:rounded file:border-0 file:bg-brand file:px-4 file:py-2 file:text-sm file:font-bold file:text-white hover:file:bg-brand-dark">
-                <p class="mt-1 text-xs text-muted">Używane dla newsów bez własnego zdjęcia (lista aktualności, strona główna, sekcja na stronie projektu).</p>
+                <p class="mt-1 text-xs text-muted">Używane dla newsów bez własnego zdjęcia (lista aktualności, strona główna, sekcja na stronie działania).</p>
                 @error('news_default_image') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
             </div>
 
@@ -1987,7 +1987,7 @@
                 @php $ngo3Stats = array_values((array) old('ngo_3_stats', $settings->ngo3Stats())); @endphp
                 <div class="mt-6 rounded-lg border border-gray-200 bg-gray-50 p-5" data-ngo3-stats>
                     <p class="mb-1 text-sm font-bold text-ink">Pasek statystyk (strona główna)</p>
-                    <p class="mb-3 text-xs text-muted">Liczby, którymi organizacja się chwali — np. lata działania, liczba projektów, wolontariuszy.</p>
+                    <p class="mb-3 text-xs text-muted">Liczby, którymi organizacja się chwali — np. lata działania, liczba działań, wolontariuszy.</p>
                     <div data-ngo3-stats-rows class="space-y-3">
                         @foreach ($ngo3Stats as $i => $stat)
                             <div data-ngo3-stats-row class="grid gap-2 rounded-lg border border-gray-200 bg-white p-3 sm:grid-cols-12 sm:items-center">
@@ -2153,7 +2153,7 @@
             <div x-show="tpl === 'ngo'" x-cloak class="rounded-lg border border-gray-200 bg-gray-50/70 p-5">
                 <h3 class="text-sm font-bold text-ink">Ustawienia szablonu: NGO / fundacja (rozbudowany)</h3>
                 <p class="mt-1 text-xs text-muted">
-                    Szablon ma własny nagłówek, stopkę i stronę główną (hero, trzy aktualności, projekty,
+                    Szablon ma własny nagłówek, stopkę i stronę główną (hero, trzy aktualności, działania,
                     wezwanie do wsparcia, wydarzenia, karuzela). Treść sekcji bierze się z modułów —
                     włączasz je w zakładce <span class="font-bold">Moduły</span>.
                 </p>
@@ -2184,7 +2184,7 @@
                 <p class="mt-1 text-xs text-muted">
                     Nagłówek i stopka jak w szablonie „NGO / fundacja (rozbudowany)". Strona główna: hero,
                     siatka „Na skróty" (moduł <span class="font-bold">Szybkie akcje</span>), aktualności, pasek
-                    statystyk, projekty, wydarzenia, zapis na newsletter, wezwanie do wsparcia. Statystyki
+                    statystyk, działania, wydarzenia, zapis na newsletter, wezwanie do wsparcia. Statystyki
                     edytujesz w zakładce <span class="font-bold">Strona główna</span> poniżej.
                 </p>
             </div>
@@ -2199,7 +2199,7 @@
                 <h3 class="text-sm font-bold text-ink">Ustawienia szablonu: VM</h3>
                 <p class="text-xs text-muted">
                     Czarny pasek (KRS, 1,5%, czcionka, kontrast, kontakt, szukajka), belka z logo i przyciskiem „Wpłać",
-                    slider z kartą (moduł <span class="font-bold">Slider</span>), blok powitalny, aktualności, projekty,
+                    slider z kartą (moduł <span class="font-bold">Slider</span>), blok powitalny, aktualności, działania,
                     sekcja „Wiedza", współpraca (moduł <span class="font-bold">Partnerzy</span>) i newsletter (kod z zakładki
                     <span class="font-bold">Newsletter</span>). Blok powitalny można też edytować „na żywo" na stronie głównej.
                 </p>
@@ -2255,7 +2255,7 @@
 
                 @foreach ([
                     'vm_knowledge_image' => ['Zdjęcie sekcji „Wiedza"', $settings->vmKnowledgeImageUrl(), 'Zdjęcie dekoracyjne po lewej stronie sekcji. Maks. 4 MB.'],
-                    'vm_header_badge' => ['Logo partnera / programu w nagłówku', $settings->vmHeaderBadgeUrl(), 'Np. znak projektu lub źródła finansowania — obok logo organizacji. Maks. 2 MB.'],
+                    'vm_header_badge' => ['Logo partnera / programu w nagłówku', $settings->vmHeaderBadgeUrl(), 'Np. znak działania lub źródła finansowania — obok logo organizacji. Maks. 2 MB.'],
                 ] as $vmField => [$vmLabel, $vmUrl, $vmHelp])
                     <div>
                         <label for="{{ $vmField }}" class="mb-1 block text-sm font-bold">{{ $vmLabel }}</label>

@@ -2,7 +2,7 @@
     Zakładki podstron działu — poziomy odpowiednik bocznego drzewa
     (partials/page-local-nav), włączany na stronie polem `side_nav_style = tabs`.
 
-    Pierwsza zakładka to strona nadrzędna (lub projekt), kolejne to podstrony
+    Pierwsza zakładka to strona nadrzędna (lub działanie), kolejne to podstrony
     tego samego poziomu. Podstrony rodzeństwa nie są tu rozwijane — zakładki
     pokazują jeden poziom, żeby pasek pozostał czytelny.
 

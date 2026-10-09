@@ -9,7 +9,7 @@ use Illuminate\Notifications\Notification;
 /**
  * Do akceptujących: edytor zgłosił treść do zatwierdzenia.
  *
- * Wysyłana synchronicznie (bez ShouldQueue) — kolejka projektu to `database`,
+ * Wysyłana synchronicznie (bez ShouldQueue) — kolejka działania to `database`,
  * a bez uruchomionego workera powiadomienie by nie dotarło.
  */
 class ContentSubmittedForApproval extends Notification

@@ -125,7 +125,7 @@ class User extends Authenticatable implements Subscribable
         return $this->role === self::ROLE_CONTENT_EDITOR;
     }
 
-    /** Czy edytor z grupy ma ograniczony zakres treści (tylko własne wpisy i/lub wybrane kategorie projektów). */
+    /** Czy edytor z grupy ma ograniczony zakres treści (tylko własne wpisy i/lub wybrane kategorie działań). */
     public function hasContentScope(): bool
     {
         if ($this->isAdmin() || $this->role !== self::ROLE_EDITOR || ! $this->group) {
@@ -135,7 +135,7 @@ class User extends Authenticatable implements Subscribable
         return $this->group->own_content_only || ! empty($this->group->project_category_ids) || ! empty($this->group->page_ids);
     }
 
-    /** Dozwolone kategorie projektów edytora (null = bez ograniczenia). */
+    /** Dozwolone kategorie działań edytora (null = bez ograniczenia). */
     /** Zapamiętany zbiór stron dozwolonych dla redaktora (na czas żądania). */
     private ?array $allowedPageIdsCache = null;
 

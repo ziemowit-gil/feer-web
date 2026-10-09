@@ -19,7 +19,7 @@
                 <ul class="space-y-2 text-sm">
                     <li><a href="{{ route('home') }}" class="text-brand hover:text-brand-dark hover:underline">Strona główna</a></li>
                     @if ($projects->isNotEmpty() || \App\Models\SiteSetting::current()->isModuleEnabled('projects'))
-                        <li><a href="{{ route('projects.index') }}" class="text-brand hover:text-brand-dark hover:underline">Projekty</a></li>
+                        <li><a href="{{ route('projects.index') }}" class="text-brand hover:text-brand-dark hover:underline">Działania</a></li>
                     @endif
                     @if ($news->isNotEmpty() || \App\Models\SiteSetting::current()->isModuleEnabled('news'))
                         <li><a href="{{ route('news.index') }}" class="text-brand hover:text-brand-dark hover:underline">Aktualności</a></li>
@@ -48,7 +48,7 @@
 
             @if ($projects->isNotEmpty())
                 <div>
-                    <h2 class="mb-3 text-lg font-bold text-ink">Projekty</h2>
+                    <h2 class="mb-3 text-lg font-bold text-ink">Działania</h2>
                     <ul class="space-y-2 text-sm">
                         @foreach ($projects as $project)
                             <li><a href="{{ route('projects.show', $project) }}" class="text-brand hover:text-brand-dark hover:underline">{{ $project->title }}</a></li>

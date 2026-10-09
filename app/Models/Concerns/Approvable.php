@@ -61,7 +61,7 @@ trait Approvable
         return match (static::class) {
             News::class => 'Aktualność',
             Page::class => 'Strona',
-            Project::class => 'Projekt',
+            Project::class => 'Działanie',
             default => 'Treść',
         };
     }

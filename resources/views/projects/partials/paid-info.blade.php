@@ -1,5 +1,5 @@
 {{--
-    Rozwijane objaśnienie odpłatnej działalności pożytku publicznego. Tekst: własny tekst projektu ($infoProject->paid_info_text),
+    Rozwijane objaśnienie odpłatnej działalności pożytku publicznego. Tekst: własny tekst działania ($infoProject->paid_info_text),
     inaczej z Ustawień serwisu (SiteSetting::paidActivityInfo()). Natywne <details> — dostępne z klawiatury.
     Zmienne: $infoProject (Project, którego dotyczy objaśnienie).
 --}}

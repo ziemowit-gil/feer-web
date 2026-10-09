@@ -24,7 +24,7 @@
                         $scope = [];
                         if ($user->hasContentScope()) {
                             if ($user->group->own_content_only) { $scope[] = 'tylko własne wpisy'; }
-                            if ($ids = $user->allowedProjectCategoryIds()) { $scope[] = 'projekty: '.collect($ids)->map(fn ($i) => $categories[$i] ?? '?')->implode(', '); }
+                            if ($ids = $user->allowedProjectCategoryIds()) { $scope[] = 'działania: '.collect($ids)->map(fn ($i) => $categories[$i] ?? '?')->implode(', '); }
                         }
                     @endphp
                     <tr>

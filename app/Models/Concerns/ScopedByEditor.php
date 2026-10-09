@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Builder;
 /**
  * Zakres treści dla edytorów z grup: zapisuje autora (created_by) i — tylko w panelu administracyjnym —
  * zawęża zapytania do własnych wpisów (UserGroup::own_content_only). Model może dodatkowo zawęzić zakres
- * w metodzie `constrainForEditor()` (np. projekty do wskazanych kategorii).
+ * w metodzie `constrainForEditor()` (np. działania do wskazanych kategorii).
  *
  * Zakres nie dotyczy strony publicznej (zalogowany edytor widzi tam całą treść) ani administratorów.
  */

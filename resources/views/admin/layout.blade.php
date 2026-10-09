@@ -328,7 +328,7 @@
                 <input x-ref="input" x-model="q" @input="onInput()" type="text"
                     @keydown.arrow-down.prevent="move(1)" @keydown.arrow-up.prevent="move(-1)"
                     @keydown.enter.prevent="go(results[active])" @keydown.escape.prevent="close()"
-                    placeholder="Szukaj stron, newsów, projektów, sekcji…"
+                    placeholder="Szukaj stron, newsów, działań, sekcji…"
                     aria-label="Szukaj w panelu" autocomplete="off"
                     class="w-full border-0 py-3 text-sm focus:ring-0">
                 <span x-show="loading" class="text-xs text-muted">…</span>

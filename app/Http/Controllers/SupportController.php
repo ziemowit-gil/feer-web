@@ -90,7 +90,7 @@ class SupportController extends Controller
             ->filter(fn ($text, $amount) => in_array($amount, $settings->donationAmounts(), true))
             ->all();
 
-        // „Działania, które wspierasz": kategorie projektów z opublikowanymi, niezakończonymi projektami (do 4).
+        // „Działania, które wspierasz": kategorie działań z opublikowanymi, niezakończonymi działaniami (do 4).
         $programs = \App\Models\Category::query()->orderBy('order')->get()
             ->map(function ($category) {
                 $category->setRelation('publishedProjects', $category->publishedProjects()->where('is_completed', false)->get());

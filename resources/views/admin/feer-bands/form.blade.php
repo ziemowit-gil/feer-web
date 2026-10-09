@@ -57,7 +57,7 @@
             </div>
 
             <div>
-                <p class="mb-1 text-sm font-bold">2. Wybierz z biblioteki <span class="font-normal text-muted">(także zdjęcia z projektów i działań)</span></p>
+                <p class="mb-1 text-sm font-bold">2. Wybierz z biblioteki <span class="font-normal text-muted">(także zdjęcia z działań i działań)</span></p>
                 <button type="button" @click="load()" :aria-expanded="open.toString()" class="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-bold text-ink hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
                     <i class="fa-solid fa-images mr-1.5" aria-hidden="true"></i><span x-text="open ? 'Zwiń bibliotekę' : 'Otwórz bibliotekę zdjęć'"></span>
                 </button>

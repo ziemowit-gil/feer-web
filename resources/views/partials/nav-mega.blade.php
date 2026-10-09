@@ -4,7 +4,7 @@
     Renderowane przez partials/main-nav-items dla pozycji z flagą `is_mega`:
       • „Rozwijane menu": kolumny = ręcznie dodane podpozycje (ikona + opis),
       • link do strony: kolumny = podpozycje + opublikowane podstrony tej strony,
-      • „Menu projektów": kolumna = kategoria, pod nią jej projekty (bez karty bocznej).
+      • „Menu działań": kolumna = kategoria, pod nią jej działania (bez karty bocznej).
     Kolumna boczna: grafika promocyjna (mega_image), opis i „Zobacz wszystko".
     Na mobile pozycja wraca do zwykłego rozwijanego menu (main-nav-items).
 
@@ -41,18 +41,18 @@
     $grouped = \App\Models\NavItem::sectionsAreGrouped($sections);
     $entries = collect($sections)->flatMap(fn ($s) => $s['links'])->all();
 
-    // Grupy (projekty): prosta zasada kategoria → jej projekty.
+    // Grupy (działania): prosta zasada kategoria → jej projekty.
     $groups = $isProjects ? collect($navCategories ?? [])->filter(fn ($c) => $c->publishedProjects->isNotEmpty())->values() : collect();
     $groupCurrentId = request()->routeIs('projects.show') ? request()->route('project')?->id : null;
     $catCurrentId   = request()->routeIs('categories.show') ? request()->route('category')?->id : null;
 
-    // Trzecia kolumna menu projektów: do 3 kafelków pod sobą z aktywnymi projektami ze zdjęciem. Brak kafelków = brak trzeciej kolumny.
+    // Trzecia kolumna menu działań: do 3 kafelków pod sobą z aktywnymi działaniami ze zdjęciem. Brak kafelków = brak trzeciej kolumny.
     $tiles = collect();
     if ($isProjects) {
         $featured = $groups->flatMap(fn ($c) => $c->publishedProjects)->unique('id')
             ->filter(fn ($p) => ! $p->is_completed && $p->image_url)->take(3);
         foreach ($featured as $fp) {
-            $tiles->push(['kicker' => 'Polecany projekt', 'title' => $fp->title, 'url' => route('projects.show', $fp), 'image' => $fp->image_url, 'alt' => $fp->image_alt ?: '']);
+            $tiles->push(['kicker' => 'Polecane działanie', 'title' => $fp->title, 'url' => route('projects.show', $fp), 'image' => $fp->image_url, 'alt' => $fp->image_alt ?: '']);
         }
     }
 
@@ -70,8 +70,8 @@
 
     // Wielkość pozycji (NavItem::MEGA_SIZES): liczba kolumn i skala wpisów.
     $size = $item->megaSize();
-    // Menu projektów: ręczne podpozycje tworzą dodatkową kolumnę „To już zrobiliśmy".
-    // Menu projektów: ręczne podpozycje tworzą dodatkową kolumnę „To już zrobiliśmy”.
+    // Menu działań: ręczne podpozycje tworzą dodatkową kolumnę „To już zrobiliśmy".
+    // Menu działań: ręczne podpozycje tworzą dodatkową kolumnę „To już zrobiliśmy”.
     $projectExtras = $isProjects ? $item->children : collect();
     $extraTitle    = $item->mega_extra_title ?: 'To już zrobiliśmy';
     $projectCols   = $groups->count() + ($projectExtras->isNotEmpty() ? 1 : 0) + (($item->hide_all_projects_btn && $item->hide_archive_btn && ! $sideLinks) ? 0 : 1);
@@ -181,14 +181,14 @@
                                 </div>
                             @endif
 
-                            {{-- Kolumna z przyciskami: „Wszystkie projekty", „To już zrobiliśmy" i własne przyciski/linki (ustawiane przy pozycji menu). --}}
+                            {{-- Kolumna z przyciskami: „Wszystkie działania", „To już zrobiliśmy" i własne przyciski/linki (ustawiane przy pozycji menu). --}}
                             <div>
                                 @if ($sideTitle)
                                     <p id="mega-side-{{ $item->id }}" class="mb-2 block border-b-2 border-brand/30 px-2 py-1.5 font-bold text-ink {{ $sz['cat'] }}">{{ $sideTitle }}</p>
                                 @endif
                                 <ul role="list" @if ($sideTitle) aria-labelledby="mega-side-{{ $item->id }}" @endif class="space-y-2 {{ $sideTitle ? '' : 'pt-1' }}">
                                     @unless ($item->hide_all_projects_btn)
-                                        <li>@include('partials.nav-side-link', ['sl' => ['label' => 'Wszystkie projekty', 'url' => $targetUrl, 'style' => 'tile_filled', 'new_tab' => false], 'block' => true])</li>
+                                        <li>@include('partials.nav-side-link', ['sl' => ['label' => 'Wszystkie działania', 'url' => $targetUrl, 'style' => 'tile_filled', 'new_tab' => false], 'block' => true])</li>
                                     @endunless
                                     @if (($navHasProjectArchive ?? false) && $projectExtras->isEmpty() && ! $item->hide_archive_btn)
                                         <li>@include('partials.nav-side-link', ['sl' => ['label' => 'To już zrobiliśmy', 'url' => route('projects.archive'), 'style' => 'tile', 'new_tab' => false], 'block' => true])</li>
@@ -271,7 +271,7 @@
                 </ul>
             @endif
 
-            {{-- Kolumna boczna: grafika promocyjna (lub wyróżniony projekt), opis, najbliższe szkolenie, CTA --}}
+            {{-- Kolumna boczna: grafika promocyjna (lub wyróżnione działanie), opis, najbliższe szkolenie, CTA --}}
             @if ($isProjects && $tiles->isNotEmpty())
                 <ul role="list" aria-label="Polecane" class="hidden flex-col gap-3 lg:flex">
                     @foreach ($tiles as $tile)

@@ -9,7 +9,7 @@
     są rozwinięte, pozostałe zwinięte za przyciskiem +/−. Nad drzewem widnieje
     ścieżka „Jesteś tu" — odpowiednik rootline TYPO3.
 
-    Strona podpięta pod projekt (bez rodzica): korzeniem jest projekt, a
+    Strona podpięta pod działanie (bez rodzica): korzeniem jest działanie, a
     pierwszym poziomem jego opublikowane strony.
 
     Zmienne: $page, $menuSiblings (App\Models\Page::menuSiblings()).

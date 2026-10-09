@@ -58,7 +58,7 @@ class HomeController extends Controller
             ? News::published()->forCurrentSite()->with('category')->orderByDesc('published_at')->limit(3)->get()
             : collect();
 
-        // Tylko aktywne (nie zakończone) projekty — teaser na stronie głównej ma
+        // Tylko aktywne (nie zakończone) działania — teaser na stronie głównej ma
         // pokazywać bieżącą działalność, nie zamknięte/zarchiwizowane projekty.
         $projects = $settings->isModuleEnabled('projects')
             ? Project::forCurrentSite()->where('is_published', true)->where('is_completed', false)->orderBy('order')->limit(3)->get()
@@ -76,14 +76,14 @@ class HomeController extends Controller
         return view($view, compact('slides', 'newsItems', 'projects', 'events', 'partners', 'quickLinks', 'poll'));
     }
 
-    /** Renderuje stronę główną w szablonie "ngo_3" (hero, skróty, statystyki, newsy, projekty, wydarzenia, newsletter). */
+    /** Renderuje stronę główną w szablonie "ngo_3" (hero, skróty, statystyki, newsy, działania, wydarzenia, newsletter). */
     private function ngo3Home(SiteSetting $settings, Collection $slides, Collection $partners, Collection $quickLinks)
     {
         $newsItems = $settings->isModuleEnabled('news')
             ? News::published()->forCurrentSite()->with('category')->orderByDesc('published_at')->limit(3)->get()
             : collect();
 
-        // Tylko aktywne (nie zakończone) projekty — ngo_3 pokazuje bieżącą działalność, nie archiwum.
+        // Tylko aktywne (nie zakończone) działania — ngo_3 pokazuje bieżącą działalność, nie archiwum.
         $projects = $settings->isModuleEnabled('projects')
             ? Project::forCurrentSite()->with('category')->where('is_published', true)->where('is_completed', false)->orderBy('order')->limit(3)->get()
             : collect();
@@ -112,14 +112,14 @@ class HomeController extends Controller
         return view('templates.wrzos.home', compact('newsItems', 'partners'));
     }
 
-    /** Renderuje stronę główną w szablonie "vm" (slider z kartą, blok powitalny, aktualności 4×, projekty, Wiedza, współpraca, newsletter). */
+    /** Renderuje stronę główną w szablonie "vm" (slider z kartą, blok powitalny, aktualności 4×, działania, Wiedza, współpraca, newsletter). */
     private function vmHome(SiteSetting $settings, Collection $slides, Collection $partners)
     {
         $newsItems = $settings->isModuleEnabled('news')
             ? News::published()->forCurrentSite()->with('category')->orderByDesc('published_at')->limit(4)->get()
             : collect();
 
-        // Tylko aktywne (nie zakończone) projekty — jak w pozostałych szablonach NGO.
+        // Tylko aktywne (nie zakończone) działania — jak w pozostałych szablonach NGO.
         $projects = $settings->isModuleEnabled('projects')
             ? Project::forCurrentSite()->where('is_published', true)->where('is_completed', false)->orderBy('order')->limit(3)->get()
             : collect();

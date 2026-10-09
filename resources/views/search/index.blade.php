@@ -61,7 +61,7 @@
         </form>
 
         @if (! $searched)
-            <p class="text-muted">Wpisz frazę (co najmniej 2 znaki), aby przeszukać strony, aktualności, projekty, materiały i blog.</p>
+            <p class="text-muted">Wpisz frazę (co najmniej 2 znaki), aby przeszukać strony, aktualności, działania, materiały i blog.</p>
         @elseif ($total === 0)
             <p class="text-muted">Brak wyników dla „<strong class="text-ink">{{ $q }}</strong>". Spróbuj innej frazy.</p>
         @else

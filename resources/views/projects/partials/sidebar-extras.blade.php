@@ -1,4 +1,4 @@
-{{-- Elementy pod menu sekcji projektu: krótka notka i przyciski (ustawiane w formularzu projektu). --}}
+{{-- Elementy pod menu sekcji działania: krótka notka i przyciski (ustawiane w formularzu działania). --}}
 @php $extraButtons = collect($project->sidebar_buttons ?? []); @endphp
 @if ($extraButtons->isNotEmpty() || filled($project->sidebar_note))
     <div class="mt-5 space-y-3">

@@ -433,7 +433,7 @@ class NavItemController extends Controller
             : false;
 
         $data['is_transparent_dropdown'] = $request->boolean('is_transparent_dropdown');
-        // Domyślne przyciski menu projektów można wyłączyć (tylko dla typu „Menu projektów").
+        // Domyślne przyciski menu działań można wyłączyć (tylko dla typu „Menu działań").
         $data['hide_all_projects_btn'] = $data['type'] === 'projects' && $request->boolean('hide_all_projects_btn');
         $data['hide_archive_btn'] = $data['type'] === 'projects' && $request->boolean('hide_archive_btn');
         // Mega menu ma sens tylko dla pozycji głównych typu rozwijane menu lub link.

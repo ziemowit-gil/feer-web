@@ -12,7 +12,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
 /**
- * Publiczna wyszukiwarka serwisu — przeszukuje strony, aktualności, projekty,
+ * Publiczna wyszukiwarka serwisu — przeszukuje strony, aktualności, działania,
  * materiały edukacyjne i artykuły bloga z paginacją i podświetlaniem trafień.
  *
  * Metody: index().
@@ -65,7 +65,7 @@ class SearchController extends Controller
             }
 
             if ($typ === '' && $settings->isModuleEnabled('projects')) {
-                $groups['Projekty'] = Project::forCurrentSite()->where('is_published', true)
+                $groups['Działania'] = Project::forCurrentSite()->where('is_published', true)
                     ->where(fn ($w) => $w->where('title', 'like', $like)->orWhere('excerpt', 'like', $like)->orWhere('content', 'like', $like)->orWhere('for_whom', 'like', $like))
                     ->orderBy('title')->limit(self::PER_GROUP)->get()
                     ->map(fn ($p) => $this->item($p->title, route('projects.show', $p), $p->excerpt ?: $p->content, $p->created_at));

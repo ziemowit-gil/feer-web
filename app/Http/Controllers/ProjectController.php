@@ -7,7 +7,7 @@ use App\Models\Project;
 use App\Models\SiteSetting;
 
 /**
- * Publiczne listy projektów (bieżące, archiwalne, wg kategorii) i widok szczegółów projektu.
+ * Publiczne listy działań (bieżące, archiwalne, wg kategorii) i widok szczegółów projektu.
  *
  * Metody: index(), archive(), category(), show().
  *
@@ -15,7 +15,7 @@ use App\Models\SiteSetting;
  */
 class ProjectController extends Controller
 {
-    /** Wyświetla listę aktywnych projektów pogrupowanych wg kategorii. */
+    /** Wyświetla listę aktywnych działań pogrupowanych wg kategorii. */
     public function index()
     {
         $categories = Category::with(['publishedProjects' => fn ($query) => $query->where('is_completed', false)])
@@ -29,12 +29,12 @@ class ProjectController extends Controller
             return view('templates.federation.projects-index', compact('categories', 'hasArchive'));
         }
 
-        // Opcja „Nawigacja kafelkowa” (Ustawienia → Treści): projekty jako duże kolorowe kafelki — w każdym szablonie.
+        // Opcja „Nawigacja kafelkowa” (Ustawienia → Treści): działania jako duże kolorowe kafelki — w każdym szablonie.
         if (SiteSetting::current()->projects_layout === 'tiles') {
             return view('projects.index-tiles', compact('categories', 'hasArchive'));
         }
 
-        // Szablon FEER ma własny układ listy projektów (nawigacja kategorii + wiersze).
+        // Szablon FEER ma własny układ listy działań (nawigacja kategorii + wiersze).
         if (SiteSetting::current()->site_template === 'feer') {
             return view('projects.index-feer', compact('categories', 'hasArchive'));
         }
@@ -85,7 +85,7 @@ class ProjectController extends Controller
         return view('projects.archive', compact('projects', 'archiveFilter'));
     }
 
-    /** Wyświetla projekty należące do wybranej kategorii. */
+    /** Wyświetla działania należące do wybranej kategorii. */
     public function category(Category $category)
     {
         $category->load(['publishedProjects' => fn ($query) => $query->where('is_completed', false)]);
@@ -97,7 +97,7 @@ class ProjectController extends Controller
         return view('projects.category', compact('category'));
     }
 
-    /** Wyświetla stronę szczegółów opublikowanego projektu z kolorem akcentu dla grupy docelowej. */
+    /** Wyświetla stronę szczegółów opublikowanego działania z kolorem akcentu dla grupy docelowej. */
     public function show(Project $project)
     {
         abort_unless($project->is_published, 404);

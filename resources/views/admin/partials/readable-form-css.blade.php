@@ -1,5 +1,5 @@
 {{--
-    Czytelniejsze formularze panelu (projekty, aktualności, wydarzenia): większe etykiety i pola, więcej oddechu, karty
+    Czytelniejsze formularze panelu (działania, aktualności, wydarzenia): większe etykiety i pola, więcej oddechu, karty
     z zaokrągleniem. Działa na elementach z atrybutem data-readable — nie rusza struktury ani skryptów formularza.
 --}}
 <style>

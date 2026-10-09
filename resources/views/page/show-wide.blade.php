@@ -5,7 +5,7 @@
 
 @section('breadcrumbs')
     @include('partials.breadcrumbs', ['items' => array_filter([
-        $page->project ? ['label' => 'Projekty', 'url' => route('projects.index')] : null,
+        $page->project ? ['label' => 'Działania', 'url' => route('projects.index')] : null,
         $page->project && $page->project->category ? ['label' => $page->project->category->name, 'url' => route('categories.show', $page->project->category)] : null,
         $page->project ? ['label' => $page->project->title, 'url' => route('projects.show', $page->project)]
             : ($page->parent ? ['label' => $page->parent->title, 'url' => route('page.show', $page->parent)] : null),

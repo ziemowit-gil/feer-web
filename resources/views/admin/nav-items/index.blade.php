@@ -65,7 +65,7 @@
             <nav aria-label="Struktura menu — {{ \App\Models\NavItem::LOCATIONS[$location] ?? $location }}" class="rounded-lg border border-gray-200 bg-white" style="min-width:0">
                 <div class="border-b border-gray-100" style="padding:.75rem">
                     <h2 class="text-sm font-bold text-ink"><i class="fa-solid fa-bars mr-1 text-brand" aria-hidden="true"></i> {{ \App\Models\NavItem::LOCATIONS[$location] ?? $location }}</h2>
-                    <p class="mt-0.5 text-xs text-muted">Pozycje wyświetlane na stronie. „Menu projektów” pobiera zawartość z <a href="{{ route('admin.kategorie.index') }}" class="text-brand hover:underline">kategorii projektów</a>.</p>
+                    <p class="mt-0.5 text-xs text-muted">Pozycje wyświetlane na stronie. „Menu działań” pobiera zawartość z <a href="{{ route('admin.kategorie.index') }}" class="text-brand hover:underline">kategorii działań</a>.</p>
                 </div>
                 <div style="padding:.5rem">
                     @forelse ($navItems as $index => $item)

@@ -34,7 +34,7 @@
             {{-- Podpowiedzi per rola --}}
             <p x-show="role === 'content_editor'" x-cloak class="mt-1.5 rounded border border-green-200 bg-green-50 px-3 py-2 text-xs text-green-800">
                 <i class="fa-solid fa-circle-info mr-1" aria-hidden="true"></i>
-                Edytor treści ma dostęp do wszystkich aktywnych modułów z treścią (aktualności, blog, wydarzenia, materiały, projekty itp.), bez ustawień i systemu.
+                Edytor treści ma dostęp do wszystkich aktywnych modułów z treścią (aktualności, blog, wydarzenia, materiały, działania itp.), bez ustawień i systemu.
             </p>
             <p x-show="role === 'coordinator'" x-cloak class="mt-1.5 rounded border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
                 <i class="fa-solid fa-circle-info mr-1" aria-hidden="true"></i>
@@ -42,7 +42,7 @@
             </p>
             <p x-show="role === 'pr_editor'" x-cloak class="mt-1.5 rounded border border-purple-200 bg-purple-50 px-3 py-2 text-xs text-purple-800">
                 <i class="fa-solid fa-circle-info mr-1" aria-hidden="true"></i>
-                Redaktor PR ma dostęp do: aktualności, blog Wiem FEER, landing pages, projekty, ankiety.
+                Redaktor PR ma dostęp do: aktualności, blog Wiem FEER, landing pages, działania, ankiety.
             </p>
             <p x-show="role === 'bip_editor_plus'" x-cloak class="mt-1.5 rounded border border-blue-200 bg-blue-50 px-3 py-2 text-xs text-blue-800">
                 <i class="fa-solid fa-circle-info mr-1" aria-hidden="true"></i>

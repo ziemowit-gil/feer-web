@@ -5,7 +5,7 @@
 
 @section('breadcrumbs')
     @include('partials.breadcrumbs', ['items' => array_filter([
-        $page->project ? ['label' => 'Projekty', 'url' => route('projects.index')] : null,
+        $page->project ? ['label' => 'Działania', 'url' => route('projects.index')] : null,
         $page->project && $page->project->category ? ['label' => $page->project->category->name, 'url' => route('categories.show', $page->project->category)] : null,
         $page->project ? ['label' => $page->project->title, 'url' => route('projects.show', $page->project)] : null,
         // Pełna ścieżka działu (rootline): wszystkie strony nadrzędne, nie tylko bezpośredni rodzic.

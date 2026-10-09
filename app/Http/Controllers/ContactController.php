@@ -191,7 +191,7 @@ class ContactController extends Controller
             ->with('status', 'Wiadomość została wysłana. Odpowiemy najszybciej, jak to możliwe.');
     }
 
-    /** Zwraca kolekcję koordynatorów z aktywnych projektów jako tablice [name, email, project]. */
+    /** Zwraca kolekcję koordynatorów z aktywnych działań jako tablice [name, email, project]. */
     private function loadCoordinators(): \Illuminate\Support\Collection
     {
         $settings = SiteSetting::current();

@@ -26,7 +26,7 @@ class NotifyPendingApproval extends Command
         foreach ([
             News::class    => ['label' => 'Aktualność', 'route' => 'admin.newsy.edit'],
             Page::class    => ['label' => 'Strona',     'route' => 'admin.podstrony.edit'],
-            Project::class => ['label' => 'Projekt',    'route' => 'admin.projekty.edit'],
+            Project::class => ['label' => 'Działanie',    'route' => 'admin.projekty.edit'],
         ] as $class => ['label' => $label, 'route' => $route]) {
             $class::with('submittedBy')
                 ->where('pending_approval', true)

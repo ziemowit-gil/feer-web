@@ -1,4 +1,4 @@
-{{-- Węzeł drzewa projektów (rekurencyjny). Zmienne: $node (Project), $byParent, $selected, $openIds. --}}
+{{-- Węzeł drzewa działań (rekurencyjny). Zmienne: $node (Project), $byParent, $selected, $openIds. --}}
 @php
     $kids = $byParent->get($node->id, collect());
     $isSel = $selected && $selected->id === $node->id;
@@ -19,7 +19,7 @@
             <span class="pt-title {{ $node->is_published ? '' : 'is-off' }}">{{ $node->title }}</span>
             @if ($node->is_paid)<i class="fa-solid fa-coins pt-mini" title="Płatny" aria-hidden="true"></i><span class="sr-only">(płatny)</span>@endif
             @if (! $node->is_published)<span class="pt-chip">szkic</span>@endif
-            @if ($kids->isNotEmpty())<span class="pt-count" aria-label="{{ $kids->count() }} podprojektów">{{ $kids->count() }}</span>@endif
+            @if ($kids->isNotEmpty())<span class="pt-count" aria-label="{{ $kids->count() }} poddziałań">{{ $kids->count() }}</span>@endif
         </a>
     </div>
     @if ($kids->isNotEmpty())

@@ -1,4 +1,4 @@
-{{-- Zespół — siatka kart, w stylu sekcji "Nasze projekty" / "Nasza sieć"
+{{-- Zespół — siatka kart, w stylu sekcji "Nasze działania" / "Nasza sieć"
      z szablonów ngo/federacja (rounded-2xl, ring, stretched-link).
      $members – kolekcja Page (about_person, opublikowane, posortowane)
 --}}

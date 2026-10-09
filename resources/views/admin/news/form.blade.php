@@ -599,7 +599,7 @@
 
         <div data-tab-panel="kategorie" role="tabpanel" id="panel-kategorie" aria-labelledby="tab-kategorie" class="hidden space-y-5">
             <div class="space-y-5 rounded-lg border border-gray-200 bg-white p-6">
-                <h2 class="text-sm font-bold uppercase tracking-wide text-muted">Kategoria i projekt</h2>
+                <h2 class="text-sm font-bold uppercase tracking-wide text-muted">Kategoria i działanie</h2>
             @php $categoryColor = optional($newsCategories->firstWhere('id', old('news_category_id', $news->news_category_id)))->badgeColor(); @endphp
             <div class="grid gap-5 sm:grid-cols-2">
                 <div>
@@ -624,7 +624,7 @@
                 </div>
 
                 <div>
-                    <label for="project_id" class="mb-1 block text-sm font-bold">Projekt <span class="font-normal text-muted">(opcjonalnie)</span></label>
+                    <label for="project_id" class="mb-1 block text-sm font-bold">Działanie <span class="font-normal text-muted">(opcjonalnie)</span></label>
                     <select id="project_id" name="project_id" class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
                         <option value="">— brak —</option>
                         @foreach ($projects as $project)

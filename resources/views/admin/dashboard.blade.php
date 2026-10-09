@@ -18,7 +18,7 @@
         $shortcuts = [];
         if ($can('news'))     $shortcuts[] = ['route' => route('admin.newsy.create'),        'label' => 'Aktualność',     'icon' => 'fa-newspaper'];
         if ($can('pages'))    $shortcuts[] = ['route' => route('admin.podstrony.create'),    'label' => 'Strona',         'icon' => 'fa-file-lines'];
-        if ($can('projects')) $shortcuts[] = ['route' => route('admin.projekty.create'),     'label' => 'Projekt',        'icon' => 'fa-diagram-project'];
+        if ($can('projects')) $shortcuts[] = ['route' => route('admin.projekty.create'),     'label' => 'Działanie',        'icon' => 'fa-diagram-project'];
         if ($can('events'))   $shortcuts[] = ['route' => route('admin.wydarzenia.create'),   'label' => 'Wydarzenie',     'icon' => 'fa-calendar-days'];
         if ($can('landing'))  $shortcuts[] = ['route' => route('admin.lp.create'),           'label' => 'Landing page',   'icon' => 'fa-bullhorn'];
         if ($can('reports'))  $shortcuts[] = ['route' => route('admin.sprawozdania.create'), 'label' => 'Sprawozdanie',   'icon' => 'fa-file-invoice'];
@@ -110,7 +110,7 @@
             <div class="flex flex-wrap items-center justify-between gap-3 border-b border-gray-100 px-5 py-4">
                 <h2 id="dash-activity" class="text-base font-bold text-ink">Ostatnia aktywność</h2>
                 <div class="flex flex-wrap gap-1.5" role="group" aria-label="Filtr aktywności">
-                    @php $filters = ['all' => 'Wszystko', 'news' => 'Aktualności', 'pages' => 'Strony', 'projects' => 'Projekty', 'events' => 'Wydarzenia']; @endphp
+                    @php $filters = ['all' => 'Wszystko', 'news' => 'Aktualności', 'pages' => 'Strony', 'projects' => 'Działania', 'events' => 'Wydarzenia']; @endphp
                     @foreach ($filters as $key => $label)
                         @if ($key === 'all' || $activity->contains('type', $key))
                             <button type="button" @click="f = '{{ $key }}'" :aria-pressed="(f === '{{ $key }}').toString()"
@@ -227,7 +227,7 @@
                         <li class="flex justify-between gap-2"><span class="font-medium text-ink">Slajder hero</span><span class="text-right text-muted">1600×600 px</span></li>
                         <li class="flex justify-between gap-2"><span class="font-medium text-ink">OG / udostępnianie</span><span class="text-right text-muted">1200×630 px</span></li>
                         <li class="flex justify-between gap-2"><span class="font-medium text-ink">Miniatury</span><span class="text-right text-muted">800×600 px</span></li>
-                        <li class="flex justify-between gap-2"><span class="font-medium text-ink">Zdjęcie projektu</span><span class="text-right text-muted">1200×500 px</span></li>
+                        <li class="flex justify-between gap-2"><span class="font-medium text-ink">Zdjęcie działania</span><span class="text-right text-muted">1200×500 px</span></li>
                         <li class="flex justify-between gap-2"><span class="font-medium text-ink">Galeria</span><span class="text-right text-muted">min. 600×450 px</span></li>
                         <li class="flex justify-between gap-2"><span class="font-medium text-ink">Logo partnera</span><span class="text-right text-muted">do 300 px, PNG</span></li>
                     </ul>

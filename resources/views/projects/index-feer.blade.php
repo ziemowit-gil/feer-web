@@ -1,16 +1,16 @@
 @extends('layouts.site')
 
-@section('title', 'Projekty — ' . $siteSettings->site_name)
+@section('title', 'Działania — ' . $siteSettings->site_name)
 
 @section('breadcrumbs')
     @include('partials.breadcrumbs', ['items' => [
-        ['label' => 'Projekty', 'url' => null],
+        ['label' => 'Działania', 'url' => null],
     ]])
 @endsection
 
 {{--
-    Lista projektów w układzie FEER: jasny nagłówek, po lewej przyklejona nawigacja po kategoriach (z licznikami),
-    po prawej projekty jako lekkie wiersze — bez ramek, kolor projektu jako pasek po lewej. Na telefonie nawigacja
+    Lista działań w układzie FEER: jasny nagłówek, po lewej przyklejona nawigacja po kategoriach (z licznikami),
+    po prawej działania jako lekkie wiersze — bez ramek, kolor działania jako pasek po lewej. Na telefonie nawigacja
     kategorii jest poziomym paskiem nad listą. Kontrast: tekst ink/muted na bieli (≥ 4,5:1), linki brand-dark.
 --}}
 @section('content')
@@ -19,8 +19,8 @@
     <section>
         <div class="mx-auto max-w-6xl px-4 pb-6 pt-8 md:pb-8 md:pt-10">
             <div class="flex flex-wrap items-end justify-between gap-4">
-                <h1 class="text-2xl font-bold leading-tight text-ink md:text-3xl">Projekty</h1>
-                @include('partials.admin-manage-link', ['route' => 'admin.projekty.index', 'label' => 'Zarządzaj projektami'])
+                <h1 class="text-2xl font-bold leading-tight text-ink md:text-3xl">Działania</h1>
+                @include('partials.admin-manage-link', ['route' => 'admin.projekty.index', 'label' => 'Zarządzaj działaniami'])
             </div>
             <span class="mt-3 block h-1 w-14 bg-brand" aria-hidden="true"></span>
             @if ($siteSettings->projects_intro)
@@ -35,7 +35,7 @@
         @else
             <div class="grid gap-10 lg:grid-cols-[14rem_minmax(0,1fr)] lg:gap-14">
 
-                <nav aria-label="Kategorie projektów" class="lg:sticky lg:top-6 lg:self-start">
+                <nav aria-label="Kategorie działań" class="lg:sticky lg:top-6 lg:self-start">
                     <p class="mb-3 text-xs font-bold uppercase tracking-widest text-muted">Kategorie</p>
                     <ul class="feer-pills-row flex gap-2 overflow-x-auto pb-2 lg:flex-col lg:gap-1 lg:overflow-visible lg:pb-0" role="list">
                         @foreach ($filled as $cat)

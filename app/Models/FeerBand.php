@@ -37,7 +37,7 @@ class FeerBand extends Model implements HasMedia
         'after_shortcuts' => 'Strona główna — pod „Na skróty"',
         'after_news'      => 'Strona główna — po aktualnościach',
         'after_trainings' => 'Strona główna — po szkoleniach',
-        'after_projects'  => 'Strona główna — po projektach',
+        'after_projects'  => 'Strona główna — po działaniach',
         'end'             => 'Strona główna — na końcu (pod blokiem wsparcia)',
         'site_top'        => 'Wszystkie podstrony — nad treścią',
         'site_bottom'     => 'Wszystkie podstrony — pod treścią (nad stopką)',
@@ -54,7 +54,7 @@ class FeerBand extends Model implements HasMedia
         $this->addMediaConversion('webp')->format('webp')->quality(85)->width(900)->nonQueued();
     }
 
-    /** Zdjęcie paska (wgrane, z biblioteki, z projektu albo z Unsplash) — null, gdy brak. */
+    /** Zdjęcie paska (wgrane, z biblioteki, z działania albo z Unsplash) — null, gdy brak. */
     protected function imageUrl(): Attribute
     {
         return Attribute::make(get: fn () => $this->getFirstMedia('image')?->getAvailableUrl(['webp']) ?: null);

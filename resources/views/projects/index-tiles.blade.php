@@ -1,16 +1,16 @@
 @extends('layouts.site')
 
-@section('title', 'Projekty — ' . $siteSettings->site_name)
+@section('title', 'Działania — ' . $siteSettings->site_name)
 
 @section('breadcrumbs')
     @include('partials.breadcrumbs', ['items' => [
-        ['label' => 'Projekty', 'url' => null],
+        ['label' => 'Działania', 'url' => null],
     ]])
 @endsection
 
 {{--
-    Lista projektów w układzie kafelkowym (opcja „Nawigacja kafelkowa" w Ustawienia → Treści): projekty jako duże,
-    kolorowe kafelki pogrupowane w kategorie. Kolor kafelka: własny kolor akcentu projektu albo kolejne kolory marki;
+    Lista działań w układzie kafelkowym (opcja „Nawigacja kafelkowa" w Ustawienia → Treści): działania jako duże,
+    kolorowe kafelki pogrupowane w kategorie. Kolor kafelka: własny kolor akcentu działania albo kolejne kolory marki;
     kolor tekstu dobiera Color::button (kontrast ≥ 4,5:1). Działa w każdym szablonie.
 --}}
 @section('content')
@@ -22,7 +22,7 @@
 
     <section class="bg-gray-50">
         <div class="mx-auto max-w-6xl px-4 py-12 md:py-16">
-            <h1 class="text-3xl font-extrabold leading-tight tracking-tight text-ink md:text-5xl">Projekty</h1>
+            <h1 class="text-3xl font-extrabold leading-tight tracking-tight text-ink md:text-5xl">Działania</h1>
             @if ($siteSettings->projects_intro)
                 <div class="prose mt-4 max-w-2xl text-lg text-ink">{!! $siteSettings->projects_intro !!}</div>
             @endif
@@ -67,7 +67,7 @@
         @endif
 
         @if ($hasArchive)
-            <p class="mt-14"><a href="{{ route('projects.archive') }}" class="text-sm font-bold text-brand-dark underline underline-offset-4 hover:no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">To już zrobiliśmy — zrealizowane projekty →</a></p>
+            <p class="mt-14"><a href="{{ route('projects.archive') }}" class="text-sm font-bold text-brand-dark underline underline-offset-4 hover:no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">To już zrobiliśmy — zrealizowane działania →</a></p>
         @endif
     </div>
 @endsection

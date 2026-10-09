@@ -11,7 +11,7 @@ use App\Notifications\ContentRejected;
 use Illuminate\Http\Request;
 
 /**
- * Panel admin: kolejka treści oczekujących na zatwierdzenie (aktualności, strony, projekty)
+ * Panel admin: kolejka treści oczekujących na zatwierdzenie (aktualności, strony, działania)
  * wraz z akcjami zatwierdzenia, odrzucenia i licznikiem dla badge'a w menu.
  *
  * Metody: index(), approve(), reject(), pendingCount().
@@ -24,7 +24,7 @@ class ApprovalController extends Controller
     private const TYPES = [
         'news' => [News::class, 'admin.newsy.edit', 'Aktualność'],
         'page' => [Page::class, 'admin.podstrony.edit', 'Strona'],
-        'project' => [Project::class, 'admin.projekty.edit', 'Projekt'],
+        'project' => [Project::class, 'admin.projekty.edit', 'Działanie'],
     ];
 
     /** Wyświetla listę treści oczekujących na zatwierdzenie. */

@@ -1,17 +1,17 @@
 @extends('layouts.site')
 
 @section('title', 'To już zrobiliśmy — ' . $siteSettings->site_name)
-@section('meta_description', 'Projekty, które już zrealizowaliśmy.')
+@section('meta_description', 'Działania, które już zrealizowaliśmy.')
 
 @section('breadcrumbs')
     @include('partials.breadcrumbs', ['items' => [
-        ['label' => 'Projekty', 'url' => route('projects.index')],
+        ['label' => 'Działania', 'url' => route('projects.index')],
         ['label' => 'To już zrobiliśmy', 'url' => null],
     ]])
 @endsection
 
 {{--
-    Archiwum projektów w układzie FEER: spokojny tytuł z niebieskim akcentem, projekty pogrupowane rocznikami jako lekkie wiersze
+    Archiwum działań w układzie FEER: spokojny tytuł z niebieskim akcentem, działania pogrupowane rocznikami jako lekkie wiersze
     (pasek koloru po lewej, miniatura, mikropis, data zakończenia, strzałka) — jak lista projektów. Kontrast: ink/muted na bieli.
 --}}
 @section('content')
@@ -23,17 +23,17 @@
             <h1 class="mt-1 text-2xl font-bold leading-tight text-ink md:text-3xl">To już zrobiliśmy</h1>
             <span class="mt-3 block h-1 w-14 bg-brand" aria-hidden="true"></span>
             @if ($archiveFilter ?? null)
-                <p class="mt-4 max-w-2xl text-lg text-ink">Projekty {{ $archiveFilter }}.</p>
-                <p class="mt-2"><a href="{{ route('projects.archive') }}" class="inline-flex min-h-9 items-center text-sm font-bold text-brand-dark underline underline-offset-4 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">Pokaż wszystkie zrealizowane projekty</a></p>
+                <p class="mt-4 max-w-2xl text-lg text-ink">Działania {{ $archiveFilter }}.</p>
+                <p class="mt-2"><a href="{{ route('projects.archive') }}" class="inline-flex min-h-9 items-center text-sm font-bold text-brand-dark underline underline-offset-4 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">Pokaż wszystkie zrealizowane działania</a></p>
             @else
-                <p class="mt-4 max-w-2xl text-lg text-ink">Projekty, które już zrealizowaliśmy.</p>
+                <p class="mt-4 max-w-2xl text-lg text-ink">Działania, które już zrealizowaliśmy.</p>
             @endif
         </div>
     </section>
 
     <div class="mx-auto max-w-6xl px-4 py-10">
         @if ($projects->isEmpty())
-            <p class="text-muted">{{ ($archiveFilter ?? null) ? 'Brak projektów w tym okresie.' : 'Nie mamy jeszcze zrealizowanych projektów do pokazania.' }}</p>
+            <p class="text-muted">{{ ($archiveFilter ?? null) ? 'Brak działań w tym okresie.' : 'Nie mamy jeszcze zrealizowanych działań do pokazania.' }}</p>
         @else
             <div class="grid gap-10 lg:grid-cols-[10rem_minmax(0,1fr)] lg:gap-14">
                 @if ($byYear->count() > 1)
@@ -68,7 +68,7 @@
                                                 <img src="{{ $project->image_url }}" alt="" loading="lazy" class="h-14 w-20 flex-none rounded-md object-cover sm:h-16 sm:w-24">
                                             @endif
                                             <span class="min-w-0 flex-1">
-                                                <span class="block text-xs font-bold uppercase tracking-widest text-muted">{{ $project->category->name ?? 'Projekt' }}@if ($project->completed_at) · zakończono {{ $project->completed_at->translatedFormat('F Y') }}@endif</span>
+                                                <span class="block text-xs font-bold uppercase tracking-widest text-muted">{{ $project->category->name ?? 'Działanie' }}@if ($project->completed_at) · zakończono {{ $project->completed_at->translatedFormat('F Y') }}@endif</span>
                                                 <span class="mt-0.5 block text-lg font-bold leading-snug text-ink group-hover:text-brand-dark">{{ $project->title }}</span>
                                                 @if ($teaser = $project->teaser())
                                                     <span class="mt-1 line-clamp-2 block text-sm leading-relaxed text-muted">{{ $teaser }}</span>
@@ -86,7 +86,7 @@
         @endif
 
         <p class="mt-12 border-t border-gray-200 pt-6">
-            <a href="{{ route('projects.index') }}" class="inline-flex min-h-11 items-center text-sm font-bold text-brand-dark underline underline-offset-4 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">← Wróć do projektów</a>
+            <a href="{{ route('projects.index') }}" class="inline-flex min-h-11 items-center text-sm font-bold text-brand-dark underline underline-offset-4 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">← Wróć do działań</a>
         </p>
     </div>
 @endsection

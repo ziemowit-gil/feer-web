@@ -1,10 +1,10 @@
 @extends('layouts.site')
 
-@section('title', 'Projekty — ' . $siteSettings->site_name)
+@section('title', 'Działania — ' . $siteSettings->site_name)
 
 @section('breadcrumbs')
     @include('partials.breadcrumbs', ['items' => [
-        ['label' => 'Projekty', 'url' => null],
+        ['label' => 'Działania', 'url' => null],
     ]])
 @endsection
 
@@ -23,13 +23,13 @@
             <div class="flex flex-wrap items-end justify-between gap-6">
                 <div class="min-w-0">
                     <p class="text-xs font-bold uppercase tracking-widest text-brand">Nasze działania</p>
-                    <h1 class="mt-3 text-3xl font-extrabold leading-tight tracking-tight text-ink sm:text-5xl">Projekty</h1>
+                    <h1 class="mt-3 text-3xl font-extrabold leading-tight tracking-tight text-ink sm:text-5xl">Działania</h1>
                     @if ($siteSettings->projects_intro)
                         <div class="prose mt-4 max-w-2xl text-ink/80">{!! $siteSettings->projects_intro !!}</div>
                     @endif
                 </div>
 
-                <div class="flex gap-1 rounded-lg border border-gray-200 bg-white p-1 shadow-sm" role="group" aria-label="Przełącz widok projektów">
+                <div class="flex gap-1 rounded-lg border border-gray-200 bg-white p-1 shadow-sm" role="group" aria-label="Przełącz widok działań">
                     <button type="button" @click="view = 'grid'"
                         :class="view === 'grid' ? 'bg-brand text-white shadow-sm' : 'text-muted hover:text-ink hover:bg-gray-100'"
                         class="flex h-9 w-9 items-center justify-center rounded-lg transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
@@ -149,7 +149,7 @@
         @if ($hasArchive)
             <div class="mt-4 border-t border-gray-200 pt-8">
                 <a href="{{ route('projects.archive') }}" class="inline-flex items-center gap-2 rounded border border-brand px-4 py-2 text-sm font-bold text-brand hover:bg-brand-light">
-                    To już zrobiliśmy — zobacz zrealizowane projekty
+                    To już zrobiliśmy — zobacz zrealizowane działania
                 </a>
             </div>
         @endif

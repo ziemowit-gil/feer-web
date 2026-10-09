@@ -1,10 +1,10 @@
 @extends('admin.layout')
 
-@section('title', 'Projekty')
+@section('title', 'Działania')
 
 @section('content')
     <style>
-        /* Widok drzewa projektów w zwykłym CSS (niezależny od zbudowanych klas Tailwinda). */
+        /* Widok drzewa działań w zwykłym CSS (niezależny od zbudowanych klas Tailwinda). */
         .pt-wrap { display: grid; gap: 1rem; align-items: start; }
         @media (min-width: 1024px) { .pt-wrap { grid-template-columns: 22rem minmax(0, 1fr); } .pt-tree { position: sticky; top: 1rem; } }
         .pt-card { border: 1px solid #e5e7eb; border-radius: .75rem; background: #fff; }
@@ -49,17 +49,17 @@
             <a href="{{ route('admin.projekty.index', ['widok' => 'lista']) }}" class="pt-btn"><i class="fa-solid fa-list" aria-hidden="true"></i> Lista i filtry</a>
         </div>
         <a href="{{ route('admin.projekty.create', array_filter(['parent_id' => $selected?->id])) }}" class="pt-btn primary">
-            <i class="fa-solid fa-plus" aria-hidden="true"></i> {{ $selected ? 'Dodaj podprojekt' : 'Dodaj projekt' }}
+            <i class="fa-solid fa-plus" aria-hidden="true"></i> {{ $selected ? 'Dodaj poddziałanie' : 'Dodaj działanie' }}
         </a>
     </div>
 
     <div class="pt-wrap">
         {{-- Lewy panel: drzewo --}}
-        <nav class="pt-card pt-tree" aria-label="Drzewo projektów"
+        <nav class="pt-card pt-tree" aria-label="Drzewo działań"
             x-data="{ q: '', filter() { const q = this.q.trim().toLowerCase(); this.$root.querySelectorAll('[data-tree-node]').forEach(li => { li.style.display = (! q || li.dataset.title.includes(q) || li.querySelector('[data-tree-node][data-title*=&quot;' + q.replace(/[&quot;\\]/g, '') + '&quot;]')) ? '' : 'none'; }); } }">
-            <div class="pt-head"><span><i class="fa-solid fa-diagram-project" aria-hidden="true"></i> Projekty <span style="font-weight:400;color:#4b5563">({{ $total }})</span></span></div>
+            <div class="pt-head"><span><i class="fa-solid fa-diagram-project" aria-hidden="true"></i> Działania <span style="font-weight:400;color:#4b5563">({{ $total }})</span></span></div>
             <div class="pt-search">
-                <label for="pt-q" class="sr-only">Filtruj drzewo projektów</label>
+                <label for="pt-q" class="sr-only">Filtruj drzewo działań</label>
                 <input type="search" id="pt-q" x-model="q" @input="filter()" placeholder="Filtruj drzewo…">
             </div>
             @php $roots = $byParent->get(0, collect()); @endphp
@@ -79,8 +79,8 @@
             @if (! $selected)
                 <div class="pt-empty">
                     <i class="fa-solid fa-hand-pointer" aria-hidden="true" style="font-size:1.5rem"></i>
-                    <p style="margin:.5rem 0 0;font-weight:700;color:#1d1d1a">Wybierz projekt z drzewa</p>
-                    <p style="margin:.25rem 0 0;font-size:.9rem">Zobaczysz jego szczegóły, podprojekty i szybkie akcje.</p>
+                    <p style="margin:.5rem 0 0;font-weight:700;color:#1d1d1a">Wybierz działanie z drzewa</p>
+                    <p style="margin:.25rem 0 0;font-size:.9rem">Zobaczysz jego szczegóły, poddziałania i szybkie akcje.</p>
                 </div>
             @else
                 <div class="pt-card pt-body">
@@ -90,28 +90,28 @@
                         @if ($selected->is_completed)<span class="pt-badge">Zrealizowany</span>@endif
                         <span class="pt-badge {{ $selected->is_paid ? 'warn' : 'ok' }}"><i class="fa-solid fa-coins" aria-hidden="true"></i>{{ $selected->is_paid ? 'Odpłatny' : 'Bezpłatny' }}</span>
                         @if ($selected->isPaidOffer())<span class="pt-badge warn"><i class="fa-solid fa-coins" aria-hidden="true"></i>Usługa odpłatna</span>@endif
-                        @if ($selected->parent_id)<span class="pt-badge info"><i class="fa-solid fa-code-branch" aria-hidden="true"></i>Podprojekt (forma udziału){{ $selected->is_offered ? '' : ' — obecnie niedostępna' }}</span>@endif
+                        @if ($selected->parent_id)<span class="pt-badge info"><i class="fa-solid fa-code-branch" aria-hidden="true"></i>Poddziałanie (forma udziału){{ $selected->is_offered ? '' : ' — obecnie niedostępna' }}</span>@endif
                         @if ($selected->category)<span class="pt-badge">{{ $selected->category->name }}</span>@endif
                     </div>
 
                     <dl class="pt-meta">
                         <div><dt>Adres</dt><dd><code>/projekty/{{ $selected->slug }}</code></dd></div>
-                        <div><dt>Projekt nadrzędny</dt><dd>@if ($selected->parent_id && ($par = $byParent->flatten()->firstWhere('id', $selected->parent_id)))<a href="{{ route('admin.projekty.index', ['wybrana' => $par->id]) }}" style="color:var(--color-brand);text-decoration:underline">{{ $par->title }}</a>@else — najwyższy poziom @endif</dd></div>
+                        <div><dt>Działanie nadrzędne</dt><dd>@if ($selected->parent_id && ($par = $byParent->flatten()->firstWhere('id', $selected->parent_id)))<a href="{{ route('admin.projekty.index', ['wybrana' => $par->id]) }}" style="color:var(--color-brand);text-decoration:underline">{{ $par->title }}</a>@else — najwyższy poziom @endif</dd></div>
                         <div><dt>Kolejność</dt><dd>{{ $selected->order }}</dd></div>
                         <div><dt>Ostatnia zmiana</dt><dd>{{ $selected->updated_at?->format('d.m.Y H:i') }}</dd></div>
                     </dl>
 
-                    <div class="pt-actions" role="group" aria-label="Akcje projektu">
+                    <div class="pt-actions" role="group" aria-label="Akcje działania">
                         <a href="{{ route('admin.projekty.edit', $selected) }}" class="pt-btn primary"><i class="fa-solid fa-pen" aria-hidden="true"></i> Edytuj</a>
                         <a href="{{ route('projects.show', $selected) }}" target="_blank" rel="noopener" class="pt-btn"><i class="fa-solid fa-eye" aria-hidden="true"></i> Podgląd publiczny<span class="sr-only"> (nowa karta)</span></a>
                         <form method="POST" action="{{ route('admin.projekty.widocznosc', $selected) }}">@csrf @method('PATCH')
                             <button type="submit" class="pt-btn"><i class="fa-solid {{ $selected->is_published ? 'fa-eye-slash' : 'fa-eye' }}" aria-hidden="true"></i> {{ $selected->is_published ? 'Cofnij publikację' : 'Opublikuj' }}</button>
                         </form>
-                        <a href="{{ route('admin.projekty.create', ['parent_id' => $selected->id]) }}" class="pt-btn"><i class="fa-solid fa-plus" aria-hidden="true"></i> Dodaj podprojekt</a>
-                        <form method="POST" action="{{ route('admin.projekty.kopiuj', $selected) }}" onsubmit="return confirm('Utworzyć kopię projektu „{{ addslashes($selected->title) }}” jako szkic? Daty i etapy zostaną wyczyszczone.')">@csrf
+                        <a href="{{ route('admin.projekty.create', ['parent_id' => $selected->id]) }}" class="pt-btn"><i class="fa-solid fa-plus" aria-hidden="true"></i> Dodaj poddziałanie</a>
+                        <form method="POST" action="{{ route('admin.projekty.kopiuj', $selected) }}" onsubmit="return confirm('Utworzyć kopię działania „{{ addslashes($selected->title) }}” jako szkic? Daty i etapy zostaną wyczyszczone.')">@csrf
                             <button type="submit" class="pt-btn"><i class="fa-solid fa-clone" aria-hidden="true"></i> Kopiuj (nowa edycja)</button>
                         </form>
-                        <form method="POST" action="{{ route('admin.projekty.destroy', $selected) }}" style="margin-left:auto" onsubmit="return confirm('Przenieść projekt „{{ addslashes($selected->title) }}” do kosza?')">@csrf @method('DELETE')
+                        <form method="POST" action="{{ route('admin.projekty.destroy', $selected) }}" style="margin-left:auto" onsubmit="return confirm('Przenieść działanie „{{ addslashes($selected->title) }}” do kosza?')">@csrf @method('DELETE')
                             <button type="submit" class="pt-btn danger"><i class="fa-solid fa-trash" aria-hidden="true"></i> Usuń</button>
                         </form>
                     </div>
@@ -128,14 +128,14 @@
                             </select>
                         </div>
                         <button type="submit" class="pt-btn"><i class="fa-solid fa-arrows-up-down-left-right" aria-hidden="true"></i> Przenieś</button>
-                        <p style="flex-basis:100%;margin:0;font-size:.75rem;color:#4b5563">Adres URL projektu się nie zmienia. Projekt nie może trafić do samego siebie ani do własnego podprojektu.</p>
+                        <p style="flex-basis:100%;margin:0;font-size:.75rem;color:#4b5563">Adres URL działania się nie zmienia. Działanie nie może trafić do samego siebie ani do własnego podprojektu.</p>
                     </form>
                 </div>
 
                 <div class="pt-card pt-body" style="margin-top:1rem">
-                    <h3 style="margin:0 0 .75rem;font-size:1rem;font-weight:800">Podprojekty <span style="font-weight:400;color:#4b5563">({{ $children->count() }})</span></h3>
+                    <h3 style="margin:0 0 .75rem;font-size:1rem;font-weight:800">Poddziałania <span style="font-weight:400;color:#4b5563">({{ $children->count() }})</span></h3>
                     @if ($children->isEmpty())
-                        <p class="pt-empty">Ten projekt nie ma jeszcze podprojektów (form udziału).</p>
+                        <p class="pt-empty">To działanie nie ma jeszcze poddziałań (form udziału).</p>
                     @else
                         <ul role="list" style="list-style:none;margin:0;padding:0;display:grid;gap:.5rem">
                             @foreach ($children as $ch)

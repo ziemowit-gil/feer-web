@@ -111,7 +111,7 @@ class AppServiceProvider extends ServiceProvider
 
             $siteSettings = SiteSetting::current();
 
-            // Najbliższe szkolenie do karty w mega menu projektów: jedno zapytanie na kilka minut dla wszystkich
+            // Najbliższe szkolenie do karty w mega menu działań: jedno zapytanie na kilka minut dla wszystkich
             // odwiedzających, a nie przy każdym renderze nagłówka. Brak modułu lub błąd = brak karty.
             $navNextEvent = null;
             if ($siteSettings->isModuleEnabled('events')) {

@@ -48,7 +48,7 @@
                 <span class="inline-flex h-14 w-14 flex-none items-center justify-center rounded-full bg-brand text-xl font-bold text-white" aria-hidden="true">ZG</span>
                 <div>
                     <p class="text-xl font-bold text-ink">Ziemowit Gil</p>
-                    <p class="text-sm text-muted">Autor i twórca weCMS — projekt, rozwój i utrzymanie systemu.</p>
+                    <p class="text-sm text-muted">Autor i twórca weCMS — działanie, rozwój i utrzymanie systemu.</p>
                 </div>
             </div>
             <p class="mt-4 text-sm leading-relaxed text-muted">

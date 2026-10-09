@@ -21,7 +21,7 @@ class Subscriber extends Model
         'blog'      => 'Blog Wiem FEER',
         'materials' => 'Materiały edukacyjne',
         'etr'       => 'Treści ETR (Łatwy Odczyt)',
-        'projects'  => 'Projekty',
+        'projects'  => 'Działania',
         'campaigns' => 'Kampanie zbiórkowe',
     ];
 

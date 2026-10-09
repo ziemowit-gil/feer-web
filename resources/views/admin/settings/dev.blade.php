@@ -249,8 +249,8 @@
                         ['accessibility_contact_email',     'text','string?', 'E-mail koordynatora dostępności'],
                         ['accessibility_contact_phone',     'text','string?', 'Telefon koordynatora dostępności'],
                         ['accessibility_architectural',     'text','string?', 'Opis dostępności architektonicznej (Markdown)'],
-                        // Materiały i projekty
-                        ['projects_intro',   'text','string?', 'Wstęp na stronie Projekty'],
+                        // Materiały i działania
+                        ['projects_intro',   'text','string?', 'Wstęp na stronie Działania'],
                         ['materials_intro',  'text','string?', 'Wstęp na stronie Materiały'],
                         ['materials_notice', 'text','string?', 'Komunikat na liście materiałów'],
                         // Unsplash

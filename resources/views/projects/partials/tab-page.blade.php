@@ -13,7 +13,7 @@
     $hasExtras = filled($project->sidebar_note) || ! empty($project->sidebar_buttons);
     $localMenu = ($hasKids || $hasExtras) && ! $sidebarMode;
 @endphp
-{{-- W trybie menu bocznego strony stan (node) trzyma wspólny x-data projektu, menu jest poza panelem. --}}
+{{-- W trybie menu bocznego strony stan (node) trzyma wspólny x-data działania, menu jest poza panelem. --}}
 <div @unless ($sidebarMode) x-data="{ node: {{ $root->id }}, openIds: [] }" @endunless @class(['grid items-start gap-8', 'proj-tab-cols' => $localMenu])>
     @if ($localMenu && ! $hasKids)
         {{-- Zakładka bez podstron: tylko elementy dodatkowe (przyciski, notka) w prawej kolumnie --}}

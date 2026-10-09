@@ -1,4 +1,4 @@
-{{-- Znacznik formy udziału na listach projektów: „Odpłatne" (projekt płatny lub usługa odpłatna) albo „Bezpłatne".
+{{-- Znacznik formy udziału na listach działań: „Odpłatne" (działanie płatne lub usługa odpłatna) albo „Bezpłatne".
      Dziedziczy kolor tekstu z kafla (działa na białym i kolorowym tle). Zmienna: $project. --}}
 @php $isPaid = $project->is_paid || $project->isPaidOffer(); @endphp
 @if (! request()->attributes->get('pf_css'))

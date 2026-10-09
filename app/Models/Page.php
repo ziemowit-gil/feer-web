@@ -62,7 +62,7 @@ class Page extends Model
      * slugs without shadowing — or being shadowed by — the real route.
      */
     public const RESERVED_SLUGS = [
-        'strona', 'projekty', 'aktualnosci', 'newsletter', 'wsparcie', 'materialy', 'kontakt',
+        'strona', 'dzialania', 'projekty', 'aktualnosci', 'newsletter', 'wsparcie', 'materialy', 'kontakt',
         'bip', 'instagram', 'fb', 'facebook', 'li', 'linkedin',
         'dashboard', 'profile', 'admin', 'login', 'logout', 'ankieta', 'strefa',
         'forgot-password', 'reset-password', 'verify-email', 'confirm-password',
@@ -87,7 +87,7 @@ class Page extends Model
     public const SIDE_NAV_STYLES = [
         'sidebar' => 'Boczne drzewo',
         'accordion' => 'Podstrony jako akordeon (rozwijane sekcje)',
-        'panel'   => 'Panel boczny (styl projektów)',
+        'panel'   => 'Panel boczny (styl działań)',
         'tabs'    => 'Zakładki nad treścią',
         'tree'    => 'Drzewo działu (styl TYPO3)',
         'tiles'   => 'Nawigacja kafelkowa (podstrony jako kafelki)',
@@ -242,10 +242,10 @@ class Page extends Model
 
     /** How a page attached to a project is surfaced on that project's page. */
     public const PROJECT_DISPLAYS = [
-        'link' => 'Tylko odnośnik (na liście stron projektu)',
-        'tab' => 'Zakładka na stronie projektu',
-        'inline' => 'Sekcja w treści strony projektu',
-        'accordion' => 'Rozwijana sekcja (akordeon) w treści projektu',
+        'link' => 'Tylko odnośnik (na liście stron działania)',
+        'tab' => 'Zakładka na stronie działania',
+        'inline' => 'Sekcja w treści strony działania',
+        'accordion' => 'Rozwijana sekcja (akordeon) w treści działania',
     ];
 
     /** "Under construction" modes — full-screen notice vs. an info banner over the content. */

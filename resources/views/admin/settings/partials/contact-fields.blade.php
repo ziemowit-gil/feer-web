@@ -27,8 +27,8 @@
             <label class="mb-4 flex items-start gap-2 rounded-lg border border-gray-200 bg-gray-50 p-3 text-sm">
                 <input type="checkbox" name="show_coordinators" value="1" @checked(old('show_coordinators', $settings->show_coordinators)) class="mt-0.5 rounded border-gray-300 text-brand focus:ring-brand">
                 <span>
-                    <span class="font-bold">Pokazuj koordynatorów projektów</span>
-                    <span class="block text-xs text-muted">Wyłącza dane koordynatorów na stronach projektów. Poszczególne projekty mają dodatkowo własny przełącznik.</span>
+                    <span class="font-bold">Pokazuj koordynatorów działań</span>
+                    <span class="block text-xs text-muted">Wyłącza dane koordynatorów na stronach projektów. Poszczególne działania mają dodatkowo własny przełącznik.</span>
                 </span>
             </label>
 

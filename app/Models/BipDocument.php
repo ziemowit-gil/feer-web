@@ -39,7 +39,7 @@ class BipDocument extends Model implements HasMedia
         'subject_structure' => 'Struktura organizacyjna',
         // pkt 2 — Majątek publiczny
         'property'          => 'Majątek i nieruchomości',
-        'public_projects'   => 'Projekty ze środków publicznych',
+        'public_projects'   => 'Działania ze środków publicznych',
         // pkt 3 — Informacje o działaniu
         'operations'        => 'Tryb działania i obsługa spraw',
         'registers'         => 'Rejestry i ewidencje',

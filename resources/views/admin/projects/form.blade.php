@@ -1,6 +1,6 @@
 @extends('admin.layout')
 
-@section('title', $project->exists ? 'Edytuj projekt' : 'Nowy projekt')
+@section('title', $project->exists ? 'Edytuj działanie' : 'Nowe działanie')
 
 @section('content')
     @include('admin.partials.readable-form-css')
@@ -114,7 +114,7 @@
                                     <option value="{{ $value }}" {{ old('audience', $project->audience ?? 'brand') === $value ? 'selected' : '' }}>{{ $label }}</option>
                                 @endforeach
                             </select>
-                            <p class="mt-1 text-xs text-muted">Zmienia kolorystykę strony projektu na kolor wybranej submarki (definiowane w Ustawienia → Kolory). Domyślnie używany jest kolor marki.</p>
+                            <p class="mt-1 text-xs text-muted">Zmienia kolorystykę strony działania na kolor wybranej submarki (definiowane w Ustawienia → Kolory). Domyślnie używany jest kolor marki.</p>
                             @error('audience') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                         </div>
 
@@ -168,18 +168,18 @@
                         </div>
                     </div>
 
-                    {{-- Podprojekt: np. „Szkolenia z obsługi komputera — płatne" i „— bezpłatne" pod jednym projektem nadrzędnym. --}}
+                    {{-- Poddziałanie: np. „Szkolenia z obsługi komputera — płatne" i „— bezpłatne" pod jednym działaniem nadrzędnym. --}}
                     <div class="space-y-3 rounded-lg border border-gray-100 bg-gray-50 p-4" @unless ($siteSettings->projects_subprojects_enabled || $project->parent_id) hidden @endunless>
                         <div>
-                            <label for="parent_id" class="mb-1 block text-sm font-bold">Projekt nadrzędny <span class="font-normal text-muted">(opcjonalnie — tworzy podprojekt)</span></label>
+                            <label for="parent_id" class="mb-1 block text-sm font-bold">Działanie nadrzędne <span class="font-normal text-muted">(opcjonalnie — tworzy poddziałanie)</span></label>
                             <select id="parent_id" name="parent_id" x-model="parent" class="w-full rounded-lg border-gray-300 focus:border-brand focus:ring-brand sm:w-2/3">
-                                <option value="">— to jest zwykły projekt —</option>
+                                <option value="">— to jest zwykłe działanie —</option>
                                 @foreach ($parentOptions as $po)
                                     <option value="{{ $po->id }}">{{ $po->title }}</option>
                                 @endforeach
                             </select>
                             @error('parent_id') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
-                            <p class="mt-1 text-xs text-muted">Podprojekt ma własną stronę, ale może częściowo dziedziczyć dane projektu nadrzędnego i wyświetla się na jego stronie.</p>
+                            <p class="mt-1 text-xs text-muted">Poddziałanie ma własną stronę, ale może częściowo dziedziczyć dane działania nadrzędnego i wyświetla się na jego stronie.</p>
                         </div>
                         <div x-show="parent" x-cloak class="rounded-lg border border-gray-200 bg-white p-3">
                             <input type="hidden" name="is_offered_present" value="1">
@@ -193,8 +193,8 @@
                             </label>
                         </div>
                         <fieldset x-show="parent" x-cloak>
-                            <legend class="mb-1 text-sm font-bold">Dziedzicz z projektu nadrzędnego</legend>
-                            <p class="mb-2 text-xs text-muted">Zaznaczone pola są brane z projektu nadrzędnego i nie można ich zmienić na stronie podprojektu. Niezaznaczone ustawiasz tutaj osobno.</p>
+                            <legend class="mb-1 text-sm font-bold">Dziedzicz z działania nadrzędnego</legend>
+                            <p class="mb-2 text-xs text-muted">Zaznaczone pola są brane z działania nadrzędnego i nie można ich zmienić na stronie podprojektu. Niezaznaczone ustawiasz tutaj osobno.</p>
                             <div class="grid gap-2 sm:grid-cols-2">
                                 @foreach (\App\Models\Project::INHERITABLE as $ik => [$ilabel])
                                     <label class="flex items-center gap-2 text-sm">
@@ -216,13 +216,13 @@
                         <label class="flex items-center gap-2">
                             <input type="checkbox" name="is_completed" value="1" {{ old('is_completed', $project->is_completed ?? false) ? 'checked' : '' }}
                                 class="rounded border-gray-300 text-brand focus:ring-brand" data-completed-toggle>
-                            <span class="text-sm font-bold">Projekt już zrealizowany</span>
+                            <span class="text-sm font-bold">Działanie już zrealizowany</span>
                         </label>
                         <div class="mt-3 {{ old('is_completed', $project->is_completed ?? false) ? '' : 'hidden' }}" data-completed-fields>
                             <label for="completed_at" class="mb-1 block text-sm font-bold">Data zakończenia <span class="font-normal text-muted">(opcjonalnie)</span></label>
                             <input type="date" id="completed_at" name="completed_at" value="{{ old('completed_at', optional($project->completed_at ?? null)->format('Y-m-d')) }}"
                                 class="w-full max-w-xs rounded-lg border-gray-300 focus:border-brand focus:ring-brand">
-                            <p class="mt-1 text-xs text-muted">Pozwala filtrować archiwum „To już zrobiliśmy": <code>/projekty/archiwum?po=RRRR-MM-DD</code> pokaże projekty zakończone tego dnia lub później (analogicznie <code>?przed=</code>; projekt bez daty trafia do widoku „przed").</p>
+                            <p class="mt-1 text-xs text-muted">Pozwala filtrować archiwum „To już zrobiliśmy": <code>/projekty/archiwum?po=RRRR-MM-DD</code> pokaże działania zakończone tego dnia lub później (analogicznie <code>?przed=</code>; działanie bez daty trafia do widoku „przed").</p>
                             @error('completed_at') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                         </div>
                         <script>
@@ -239,10 +239,10 @@
                         <input type="hidden" name="is_paid" value="0">
                         <input type="checkbox" name="is_paid" value="1" x-model="paid"
                             class="rounded border-gray-300 text-brand focus:ring-brand">
-                        <span class="text-sm font-bold">Projekt odpłatny — pokaż cennik na stronie projektu</span>
+                        <span class="text-sm font-bold">Działanie odpłatne — pokaż cennik na stronie działania</span>
                     </label>
 
-                    {{-- Objaśnienie odpłatnej działalności pożytku publicznego (tekst z Ustawień, z możliwością nadpisania dla projektu) --}}
+                    {{-- Objaśnienie odpłatnej działalności pożytku publicznego (tekst z Ustawień, z możliwością nadpisania dla działania) --}}
                     <div x-show="paid" x-cloak class="space-y-3 rounded-lg border border-gray-100 bg-gray-50 p-4">
                         <label class="flex items-start gap-3">
                             <input type="hidden" name="paid_info_show" value="0">
@@ -399,14 +399,14 @@
             <div data-ftab-panel="tresc" class="hidden space-y-6">
                 <div class="space-y-5 rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
                     <div>
-                        <label class="mb-1 block text-sm font-bold">Opis projektu</label>
+                        <label class="mb-1 block text-sm font-bold">Opis działania</label>
                         @include('admin.partials.editor', ['name' => 'content', 'value' => old('content', $project->content)])
                         @error('content') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
 
                     <div>
                         <label for="why" class="mb-1 block text-sm font-bold">Dlaczego to robimy</label>
-                        <textarea id="why" name="why" rows="4" placeholder="Uzasadnienie, motywacja stojąca za projektem"
+                        <textarea id="why" name="why" rows="4" placeholder="Uzasadnienie, motywacja stojąca za działaniem"
                             class="w-full rounded-lg border-gray-300 focus:border-brand focus:ring-brand">{{ old('why', $project->why) }}</textarea>
                         @error('why') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
@@ -414,7 +414,7 @@
                     <div>
                         <label class="mb-1 block text-sm font-bold">Co udało się osiągnąć</label>
                         @include('admin.partials.editor', ['name' => 'outcomes', 'value' => old('outcomes', $project->outcomes)])
-                        <p class="mt-1 text-xs text-muted">Rezultaty, materiały i efekty, które zostają po zakończeniu projektu (np. raporty, narzędzia, nagrania, linki). Jeśli wypełnisz, na stronie projektu pojawi się osobna sekcja „Co udało się osiągnąć".</p>
+                        <p class="mt-1 text-xs text-muted">Rezultaty, materiały i efekty, które zostają po zakończeniu działania (np. raporty, narzędzia, nagrania, linki). Jeśli wypełnisz, na stronie działania pojawi się osobna sekcja „Co udało się osiągnąć".</p>
                         @error('outcomes') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
                 </div>
@@ -547,12 +547,12 @@
 
             {{-- ============================ SEKCJE ============================ --}}
             <div data-ftab-panel="sekcje" class="hidden space-y-6">
-                {{-- Struktura podstron projektu: drzewo jak w Stronach, dowolna głębokość. Każda podstrona to pełnoprawna strona (typ, treść, SEO). --}}
+                {{-- Struktura podstron działania: drzewo jak w Stronach, dowolna głębokość. Każda podstrona to pełnoprawna strona (typ, treść, SEO). --}}
                 <div class="space-y-3 rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
                     <div class="flex flex-wrap items-start justify-between gap-3">
                         <div>
                             <p class="text-sm font-bold uppercase tracking-wide text-muted">Struktura podstron</p>
-                            <p class="mt-1 text-xs text-muted">Podstrony projektu w drzewie — dowolnie zagnieżdżone. Na stronie projektu tworzą menu boczne; podstrony najwyższego poziomu mają tryb wyświetlania (zakładka, sekcja, odnośnik).</p>
+                            <p class="mt-1 text-xs text-muted">Podstrony działania w drzewie — dowolnie zagnieżdżone. Na stronie działania tworzą menu boczne; podstrony najwyższego poziomu mają tryb wyświetlania (zakładka, sekcja, odnośnik).</p>
                         </div>
                         @if ($project->exists)
                             <a href="{{ route('admin.podstrony.create', ['project_id' => $project->id, 'project_display' => 'tab']) }}"
@@ -571,11 +571,11 @@
                         </select>
                     </div>
                     @if (! $project->exists)
-                        <p class="text-sm text-muted">Zapisz projekt, aby dodawać podstrony.</p>
+                        <p class="text-sm text-muted">Zapisz działanie, aby dodawać podstrony.</p>
                     @else
                         @php $pageTree = $project->pageTree(); @endphp
                         @if ($pageTree->isEmpty())
-                            <p class="text-sm text-muted">Projekt nie ma jeszcze podstron.</p>
+                            <p class="text-sm text-muted">Działanie nie ma jeszcze podstron.</p>
                         @else
                             <p class="text-xs text-muted">Kliknięcie tytułu otwiera edycję podstrony — zapisz najpierw zmiany w projekcie.</p>
                             <ul class="space-y-1.5" role="list">
@@ -589,7 +589,7 @@
                          x-data="{ rows: @js(array_values((array) old('sidebar_buttons', $project->sidebar_buttons ?? []))) }">
                         <div>
                             <p class="text-sm font-bold">Elementy pod menu sekcji</p>
-                            <p class="text-xs text-muted">Wyświetlane pod menu sekcji na stronie projektu (do 6 przycisków i krótka notka).</p>
+                            <p class="text-xs text-muted">Wyświetlane pod menu sekcji na stronie działania (do 6 przycisków i krótka notka).</p>
                         </div>
                         <div>
                             <label for="sidebar_note" class="mb-1 block text-sm font-bold">Krótka notka <span class="font-normal text-muted">(opcjonalnie)</span></label>
@@ -654,7 +654,7 @@
                             @error('ends_on') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                         </div>
                     </div>
-                    <p class="text-xs text-muted">Status „Zakończony” oznacza też projekt jako zrealizowany (trafia do archiwum).</p>
+                    <p class="text-xs text-muted">Status „Zakończony” oznacza też działanie jako zrealizowany (trafia do archiwum).</p>
                 </div>
                 <div class="space-y-4 rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
                     <p class="text-sm font-bold uppercase tracking-wide text-muted">Etapy (harmonogram)</p>
@@ -690,7 +690,7 @@
             <div data-ftab-panel="zespol" class="hidden space-y-6"
                 x-data="{ rows: @js(array_values((array) old('team', $project->team ?? []))), srcs: @js(array_values((array) old('funding.sources', $fund['sources'] ?? []))), move(list, i, d) { const j = i + d; if (j < 0 || j >= list.length) return; const [x] = list.splice(i, 1); list.splice(j, 0, x); } }">
                 <div class="space-y-4 rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-                    <p class="text-sm font-bold uppercase tracking-wide text-muted">Zespół projektu</p>
+                    <p class="text-sm font-bold uppercase tracking-wide text-muted">Zespół działania</p>
                     <ul class="space-y-3" role="list">
                         <template x-for="(r, i) in rows" :key="i">
                             <li class="grid items-end gap-3 rounded-lg border border-gray-200 bg-gray-50 p-4 sm:grid-cols-[1fr_1fr_2fr_auto]">
@@ -739,7 +739,7 @@
                     <button type="button" @click="srcs.push({ name: '', text: '', url: '' })" class="inline-flex min-h-10 items-center gap-2 rounded-lg border-2 border-dashed border-brand px-4 text-sm font-bold text-brand-dark hover:bg-brand-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"><i class="fa-solid fa-plus" aria-hidden="true"></i> Dodaj źródło finansowania</button>
                     <div class="grid gap-4 sm:grid-cols-2">
                         <div>
-                            <label for="funding_budget" class="mb-1 block text-sm font-bold">Budżet projektu</label>
+                            <label for="funding_budget" class="mb-1 block text-sm font-bold">Budżet działania</label>
                             <input type="text" id="funding_budget" name="funding[budget]" value="{{ old('funding.budget', $fund['budget'] ?? '') }}" maxlength="80" placeholder="np. 120 000 zł" class="w-full rounded-lg border-gray-300 text-sm focus:border-brand focus:ring-brand">
                         </div>
                         <label class="flex items-center gap-2 self-end pb-2 text-sm">
@@ -758,8 +758,8 @@
             {{-- ==================== KOORDYNATOR I ARCHIWUM ==================== --}}
             <div data-ftab-panel="dodatkowe" class="hidden space-y-6">
                 <div class="space-y-5 rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-                    <p class="text-sm font-bold uppercase tracking-wide text-muted">Koordynator projektu</p>
-                    <p class="-mt-3 text-xs text-muted">Widoczny jako kontakt do projektu na jego stronie. Jeśli nie podasz e-maila koordynatora, wyświetli się ogólny e-mail kontaktowy fundacji.</p>
+                    <p class="text-sm font-bold uppercase tracking-wide text-muted">Koordynator działania</p>
+                    <p class="-mt-3 text-xs text-muted">Widoczny jako kontakt do działania na jego stronie. Jeśli nie podasz e-maila koordynatora, wyświetli się ogólny e-mail kontaktowy fundacji.</p>
 
                     <div class="grid gap-5 sm:grid-cols-3">
                         <div>
@@ -790,7 +790,7 @@
                         <input type="checkbox" name="show_coordinator" value="1" {{ old('show_coordinator', $project->show_coordinator ?? true) ? 'checked' : '' }}
                             class="mt-0.5 rounded border-gray-300 text-brand focus:ring-brand">
                         <span class="text-sm font-bold">Pokazuj koordynatora
-                            <span class="block font-normal text-muted">Gdy wyłączone, dane koordynatora nie pojawią się na stronie projektu ani na stronie „Kontakt". Można też wyłączyć globalnie w Ustawienia → Kontakt.</span>
+                            <span class="block font-normal text-muted">Gdy wyłączone, dane koordynatora nie pojawią się na stronie działania ani na stronie „Kontakt". Można też wyłączyć globalnie w Ustawienia → Kontakt.</span>
                         </span>
                     </label>
 

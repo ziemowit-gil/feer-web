@@ -129,7 +129,7 @@ class PageController extends Controller
     }
 
     /**
-     * Przenosi stronę (razem z jej podstronami) do projektu: strona zostaje powiązana z projektem
+     * Przenosi stronę (razem z jej podstronami) do działania: strona zostaje powiązana z działaniem
      * i pojawia się w jego drzewie podstron (zakładka / sekcja / odnośnik). Adres URL strony się nie zmienia.
      */
     public function moveToProject(Request $request, Page $page): \Illuminate\Http\RedirectResponse
@@ -145,15 +145,15 @@ class PageController extends Controller
         $moved = $this->attachPagesToProject(collect([$page]), $project, $data['project_display'], $data['parent_page_id'] ?? null, $request->boolean('hide_from_menu'));
 
         if ($moved === 0) {
-            return redirect()->back()->with('error', 'Tej strony nie można przenieść do projektu (strona systemowa albo wskazano niewłaściwą stronę nadrzędną).');
+            return redirect()->back()->with('error', 'Tej strony nie można przenieść do działania (strona systemowa albo wskazano niewłaściwą stronę nadrzędną).');
         }
 
         return redirect()->route('admin.podstrony.index', ['wybrana' => $page->id])
-            ->with('status', "Przeniesiono stronę „{$page->title}” do projektu „{$project->title}”.");
+            ->with('status', "Przeniesiono stronę „{$page->title}” do działania „{$project->title}”.");
     }
 
     /**
-     * Wspólna logika przenoszenia stron do projektu (pojedyncza i zbiorcza).
+     * Wspólna logika przenoszenia stron do działania (pojedyncza i zbiorcza).
      *
      * @return int liczba przeniesionych stron
      */
@@ -166,7 +166,7 @@ class PageController extends Controller
             if ($page->is_system || $page->is_locked) {
                 continue;
             }
-            // Strona nadrzędna musi należeć do projektu i nie może być samą stroną ani jej potomkiem.
+            // Strona nadrzędna musi należeć do działania i nie może być samą stroną ani jej potomkiem.
             if ($parent && ($parent->id === $page->id || $parent->project_id !== $project->id || in_array($parent->id, $this->descendantIds(Page::all()->groupBy('parent_id'), $page->id), true))) {
                 continue;
             }
@@ -705,7 +705,7 @@ class PageController extends Controller
             $moved = $this->attachPagesToProject($pages, $project, $data['project_display'] ?? 'tab', null, $request->boolean('hide_from_menu'));
 
             return redirect()->back()->with($moved ? 'status' : 'error', $moved
-                ? "Przeniesiono do projektu „{$project->title}” stron: {$moved}."
+                ? "Przeniesiono do działania „{$project->title}” stron: {$moved}."
                 : 'Nie przeniesiono żadnej strony (strony systemowe są pomijane).');
         }
 

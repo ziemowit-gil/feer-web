@@ -1,6 +1,6 @@
 @extends('admin.layout')
 
-@section('title', 'Kategorie projektów')
+@section('title', 'Kategorie działań')
 
 @section('content')
     <div class="mb-4 flex justify-end">
@@ -15,7 +15,7 @@
                 <tr>
                     <th class="px-4 py-3">Nazwa</th>
                     <th class="px-4 py-3">Slug</th>
-                    <th class="px-4 py-3">Projekty</th>
+                    <th class="px-4 py-3">Działania</th>
                     <th class="px-4 py-3">Kolejność</th>
                     <th class="px-4 py-3 text-right">Akcje</th>
                 </tr>
@@ -31,7 +31,7 @@
                             <div class="flex justify-end gap-3">
                                 <a href="{{ route('categories.show', $category) }}" target="_blank" class="text-muted hover:text-brand" title="Podgląd"><i class="fa-solid fa-eye" aria-hidden="true"></i></a>
                                 <a href="{{ route('admin.kategorie.edit', $category) }}" class="text-muted hover:text-brand" title="Edytuj"><i class="fa-solid fa-pen" aria-hidden="true"></i></a>
-                                <form method="POST" action="{{ route('admin.kategorie.destroy', $category) }}" onsubmit="return confirm('Usunąć kategorię &quot;{{ $category->name }}&quot; wraz z jej projektami?');">
+                                <form method="POST" action="{{ route('admin.kategorie.destroy', $category) }}" onsubmit="return confirm('Usunąć kategorię &quot;{{ $category->name }}&quot; wraz z jej działaniami?');">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="text-muted hover:text-red-600" title="Usuń" aria-label="Usuń"><i class="fa-solid fa-trash" aria-hidden="true"></i></button>

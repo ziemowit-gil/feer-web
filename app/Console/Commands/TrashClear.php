@@ -15,7 +15,7 @@ class TrashClear extends Command
                             {--days=30 : Usuń rekordy usunięte co najmniej tyle dni temu (0 = wszystkie)}
                             {--force : Pomiń potwierdzenie}';
 
-    protected $description = 'Trwale usuwa z bazy rekordy w koszu (soft-deleted: Strony, Aktualności, Projekty, Kampanie, Dokumenty BIP).';
+    protected $description = 'Trwale usuwa z bazy rekordy w koszu (soft-deleted: Strony, Aktualności, Działania, Kampanie, Dokumenty BIP).';
 
     public function handle(): int
     {
@@ -24,7 +24,7 @@ class TrashClear extends Command
         $models = [
             'Strony'         => Page::class,
             'Aktualnosci'    => News::class,
-            'Projekty'       => Project::class,
+            'Działania'       => Project::class,
             'Kampanie'       => Campaign::class,
             'Dokumenty BIP'  => BipDocument::class,
         ];

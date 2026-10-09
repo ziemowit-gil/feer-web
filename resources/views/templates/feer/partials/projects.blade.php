@@ -1,5 +1,5 @@
 {{--
-    Szablon FEER — „Nasze projekty": widok listy (wiersze), inny niż karty na liście projektów.
+    Szablon FEER — „Nasze działania": widok listy (wiersze), inny niż karty na liście projektów.
     Każdy wiersz: kolor akcentu po lewej, kategoria, tytuł, zajawka i strzałka; miniatura zdjęcia, gdy jest.
     Cały wiersz jest linkiem; bez ramek i kresek — białe wiersze na jasnoszarym tle sekcji; tekst ciemny (kontrast ≥ 4,5:1).
 --}}
@@ -7,11 +7,11 @@
 <section class="bg-gray-50 py-12" aria-labelledby="ngo-projects-heading">
     <div class="mx-auto max-w-6xl px-4">
         <div class="mb-8 flex items-end justify-between gap-4">
-            <h2 id="ngo-projects-heading" class="text-2xl font-bold text-ink md:text-3xl">Nasze projekty</h2>
+            <h2 id="ngo-projects-heading" class="text-2xl font-bold text-ink md:text-3xl">Nasze działania</h2>
             <div class="flex shrink-0 flex-wrap items-center justify-end gap-x-5 gap-y-1">
-                @include('partials.admin-manage-link', ['route' => 'admin.projekty.index', 'label' => 'Zarządzaj projektami'])
+                @include('partials.admin-manage-link', ['route' => 'admin.projekty.index', 'label' => 'Zarządzaj działaniami'])
                 <a href="{{ route('projects.index') }}" class="shrink-0 text-sm font-bold text-brand-dark underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
-                   aria-label="Wszystkie projekty">Wszystkie projekty →</a>
+                   aria-label="Wszystkie działania">Wszystkie działania →</a>
             </div>
         </div>
 
@@ -30,7 +30,7 @@
                             <img src="{{ $project->image_url }}" alt="" loading="lazy" class="h-14 w-20 flex-none rounded-md object-cover sm:h-16 sm:w-24">
                         @endif
                         <span class="min-w-0 flex-1">
-                            <span class="block text-xs font-bold uppercase tracking-widest text-muted">{{ $project->category->name ?? 'Projekt' }}</span>
+                            <span class="block text-xs font-bold uppercase tracking-widest text-muted">{{ $project->category->name ?? 'Działanie' }}</span>
                             <span class="mt-0.5 block text-lg font-bold leading-snug text-ink group-hover:text-brand-dark">{{ $project->title }}</span>
                             <span class="block">@include('projects.partials.form-badge', ['project' => $project])</span>
                             @if ($teaser = $project->teaser())

@@ -38,7 +38,7 @@
             @if ($isFederationTemplate)
                 @php
                     $coordinatorOptions = collect([['value' => '', 'label' => '— Ogólny kontakt —']])
-                        ->concat($coordinators->map(fn ($c) => ['value' => $c['email'], 'label' => $c['name'].' (Projekt: '.$c['project'].')']));
+                        ->concat($coordinators->map(fn ($c) => ['value' => $c['email'], 'label' => $c['name'].' (Działanie: '.$c['project'].')']));
                 @endphp
                 <div class="relative" x-data="{
                         open: false, active: -1,
@@ -84,7 +84,7 @@
                     <option value="">— Ogólny kontakt —</option>
                     @foreach ($coordinators as $c)
                         <option value="{{ $c['email'] }}" {{ old('coordinator_email') === $c['email'] ? 'selected' : '' }}>
-                            {{ $c['name'] }} (Projekt: {{ $c['project'] }})
+                            {{ $c['name'] }} (Działanie: {{ $c['project'] }})
                         </option>
                     @endforeach
                 </select>

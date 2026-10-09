@@ -132,12 +132,12 @@
                 <label class="flex items-start gap-2">
                     <input type="checkbox" name="own_content_only" value="1" x-model="own" class="mt-0.5 rounded border-gray-300 text-brand focus:ring-brand">
                     <span class="text-sm font-bold">Tylko własne wpisy
-                        <span class="block font-normal text-muted">Edytor widzi i edytuje tylko aktualności, strony, wydarzenia i projekty, które sam utworzył. Treści dodane wcześniej (bez autora) są dla niego niewidoczne.</span>
+                        <span class="block font-normal text-muted">Edytor widzi i edytuje tylko aktualności, strony, wydarzenia i działania, które sam utworzył. Treści dodane wcześniej (bez autora) są dla niego niewidoczne.</span>
                     </span>
                 </label>
 
                 <div class="mt-5">
-                    <p class="mb-1 text-sm font-bold">Projekty tylko z kategorii</p>
+                    <p class="mb-1 text-sm font-bold">Działania tylko z kategorii</p>
                     <p class="mb-2 text-xs text-muted">Bez zaznaczenia — wszystkie kategorie.</p>
                     <div class="flex flex-wrap gap-2">
                         @foreach ($categories as $cat)
@@ -197,7 +197,7 @@
                     <div>
                         <dt class="font-bold text-ink">Zakres</dt>
                         <dd class="text-muted" x-text="own ? 'Tylko własne wpisy' : 'Wszystkie wpisy w modułach'"></dd>
-                        <dd class="text-muted" x-text="cats.length ? 'Projekty z kategorii: ' + cats.map(i => catNames[i] || '?').join(', ') : 'Projekty ze wszystkich kategorii'"></dd>
+                        <dd class="text-muted" x-text="cats.length ? 'Działania z kategorii: ' + cats.map(i => catNames[i] || '?').join(', ') : 'Działania ze wszystkich kategorii'"></dd>
                         <dd class="text-muted" x-text="pages.length ? 'Strony z działów: ' + pages.map(i => pageNames[i] || '?').join(', ') : 'Wszystkie strony'"></dd>
                     </div>
                     <div>

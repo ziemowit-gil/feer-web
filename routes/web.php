@@ -136,9 +136,13 @@ Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap')
 Route::get('/mapa-strony', [SitemapController::class, 'page'])->name('sitemap.page');
 
 Route::middleware('module:projects')->group(function () {
-    Route::get('/projekty', [ProjectController::class, 'index'])->name('projects.index');
-    Route::get('/projekty/archiwum', [ProjectController::class, 'archive'])->name('projects.archive');
-    Route::get('/projekty/{project:slug}', [ProjectController::class, 'show'])->name('projects.show');
+    Route::get('/dzialania', [ProjectController::class, 'index'])->name('projects.index');
+    Route::get('/dzialania/archiwum', [ProjectController::class, 'archive'])->name('projects.archive');
+    Route::get('/dzialania/{project:slug}', [ProjectController::class, 'show'])->name('projects.show');
+    // Dawne adresy „/projekty" → stałe przekierowania na „/dzialania" (zmiana nazwy sekcji).
+    Route::get('/projekty', fn () => redirect()->to(url('/dzialania'), 301));
+    Route::get('/projekty/archiwum', fn () => redirect()->to(url('/dzialania/archiwum'), 301));
+    Route::get('/projekty/{slug}', fn (string $slug) => redirect()->to(url('/dzialania/'.$slug), 301))->where('slug', '[A-Za-z0-9\-]+');
     Route::get('/kategoria/{category:slug}', [ProjectController::class, 'category'])->name('categories.show');
 });
 

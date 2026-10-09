@@ -22,7 +22,7 @@ class ActivityLog extends Model
     public const SUBJECTS = [
         'News' => 'Aktualność',
         'Page' => 'Strona',
-        'Project' => 'Projekt',
+        'Project' => 'Działanie',
         'LandingPage' => 'Landing page',
         'AnnualReport' => 'Sprawozdanie',
         'BipDocument' => 'Dokument BIP',

@@ -95,7 +95,7 @@ class LinkCheckController extends Controller
         $sources = [
             [News::query(), 'admin.newsy.edit', 'Aktualność', ['content']],
             [Page::query(), 'admin.podstrony.edit', 'Strona', ['content']],
-            [Project::query(), 'admin.projekty.edit', 'Projekt', ['content', 'why', 'outcomes']],
+            [Project::query(), 'admin.projekty.edit', 'Działanie', ['content', 'why', 'outcomes']],
         ];
 
         foreach ($sources as [$query, $editRoute, $typeLabel, $fields]) {

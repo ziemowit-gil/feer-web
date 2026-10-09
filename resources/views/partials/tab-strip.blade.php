@@ -1,6 +1,6 @@
 {{--
     Pasek zakładek w formie kart — wspólny dla stron korzystających z układu zakładkowego
-    (kontakt „Instytucjonalny", widok projektu). Musi stać wewnątrz elementu z x-data zawierającym
+    (kontakt „Instytucjonalny", widok działania). Musi stać wewnątrz elementu z x-data zawierającym
     tabs / tab / move() / jump().
 
     Zmienne: $tabItems — lista ['id' => ..., 'label' => ...].

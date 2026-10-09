@@ -10,7 +10,7 @@ use Throwable;
 
 /**
  * Klient REST API v3 Przelewy24 (rejestracja i weryfikacja transakcji).
- * Bez SDK — projekt nie ma zależności do P24, więc integracja jest ręczna,
+ * Bez SDK — działanie nie ma zależności do P24, więc integracja jest ręczna,
  * tym samym wzorcem co istniejąca integracja PayU (app/Services/PaymentProcessor.php).
  *
  * Dane dostępowe pochodzą z panelu (Ustawienia → Logowanie i integracje →

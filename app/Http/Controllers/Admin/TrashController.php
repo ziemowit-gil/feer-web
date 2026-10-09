@@ -23,7 +23,7 @@ class TrashController extends Controller
     private const TYPES = [
         'page'         => [Page::class, 'pages', 'Strona'],
         'news'         => [News::class, 'news', 'Aktualność'],
-        'project'      => [Project::class, 'projects', 'Projekt'],
+        'project'      => [Project::class, 'projects', 'Działanie'],
         'bip_document' => [BipDocument::class, 'bip', 'Dokument BIP'],
     ];
 

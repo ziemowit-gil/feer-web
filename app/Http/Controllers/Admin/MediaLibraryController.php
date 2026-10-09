@@ -41,7 +41,7 @@ class MediaLibraryController extends Controller
     private const OWNERS = [
         GalleryImage::class => ['label' => 'Zdjęcie w galerii', 'route' => 'admin.galeria.edit', 'param' => 'galleryImage', 'module' => 'gallery'],
         HeroSlide::class => ['label' => 'Slajd hero', 'route' => 'admin.hero.edit', 'param' => 'heroSlide', 'module' => 'hero'],
-        Project::class => ['label' => 'Projekt', 'route' => 'admin.projekty.edit', 'param' => 'project', 'module' => 'projects'],
+        Project::class => ['label' => 'Działanie', 'route' => 'admin.projekty.edit', 'param' => 'project', 'module' => 'projects'],
         News::class => ['label' => 'Aktualność', 'route' => 'admin.newsy.edit', 'param' => 'news', 'module' => 'news'],
         Partner::class => ['label' => 'Partner', 'route' => 'admin.partnerzy.edit', 'param' => 'partner', 'module' => 'partners'],
         SiteSetting::class => ['label' => 'Ustawienia strony', 'route' => 'admin.ustawienia.edit', 'param' => null, 'module' => null],

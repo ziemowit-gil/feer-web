@@ -63,13 +63,13 @@
                     <option value="enable">Włącz (przywróć dostępność)</option>
                     <option value="feature">Wyróżnij</option>
                     <option value="unfeature">Cofnij wyróżnienie</option>
-                    <option value="move_to_project">Przenieś do projektu…</option>
+                    <option value="move_to_project">Przenieś do działania…</option>
                     <option value="trash">Przenieś do kosza</option>
                 @endif
             </select>
             <span id="bulk-project-fields" class="hidden flex-wrap items-center gap-2">
-                <select name="project_id" aria-label="Projekt docelowy" class="rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
-                    <option value="">— wybierz projekt —</option>
+                <select name="project_id" aria-label="Działanie docelowy" class="rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                    <option value="">— wybierz działanie —</option>
                     @foreach ($projectOptions as $po)
                         <option value="{{ $po->id }}">{{ $po->title }}</option>
                     @endforeach
