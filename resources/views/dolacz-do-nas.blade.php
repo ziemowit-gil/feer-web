@@ -39,7 +39,17 @@
     .jn-cols { display: grid; gap: 2.5rem; }
     @media (min-width: 1024px) { .jn-cols { grid-template-columns: minmax(0, 1fr) minmax(0, 1.6fr); align-items: start; } .jn-side { position: sticky; top: 1.5rem; } }
     .jn-side .jn-paths { grid-template-columns: 1fr; }
-    .jn-side .jn-path { min-height: 9rem; }
+    .jn-side .jn-path { min-height: 0; padding: 1rem 1.1rem; gap: .5rem; }
+    .jn-side .jn-path-i { font-size: 1.25rem; }
+    .jn-side .jn-path-t { font-size: 1.1rem; margin-top: .5rem !important; }
+    .jn-side .jn-path-d { font-size: .9rem; margin-top: .25rem; }
+    .jn-side .jn-path-f { display: none; }
+    .jn-main .jn-cards { grid-template-columns: 1fr; gap: .6rem; }
+    .jn-main .jn-card { flex-direction: row; flex-wrap: wrap; align-items: center; gap: .25rem 1rem; padding: .9rem 1rem; }
+    .jn-main .jn-card h3 { flex: 1 1 14rem; min-width: 0; }
+    .jn-main .jn-card p.jn-meta { flex-basis: 100%; margin: 0; }
+    .jn-main .jn-card p:not(.jn-meta) { flex-basis: 100%; }
+    .jn-main .jn-card .jn-cta { margin-top: 0; padding-top: 0; }
     .jn-paths { list-style: none; margin: 0; padding: 0; display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr)); }
     .jn-path { display: flex; min-height: 14rem; flex-direction: column; justify-content: space-between; gap: 1.25rem; padding: 1.5rem; border-radius: .5rem; text-decoration: none; }
     .jn-path:focus-visible { outline: 3px solid #1d1d1a; outline-offset: 3px; }
