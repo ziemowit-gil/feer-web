@@ -24,17 +24,26 @@ class DoubleOptInMail extends Mailable
     {
         $tpl = MailTemplate::findBySlug('newsletter_confirm');
 
-        return new Envelope(subject: $tpl ? $tpl->renderSubject($this->vars()) : 'Potwierdź zapis na newsletter — ' . SiteSetting::current()->site_name);
+        return new Envelope(subject: $tpl ? $tpl->renderSubject($this->templateVars()) : 'Potwierdź zapis na newsletter — ' . SiteSetting::current()->site_name);
     }
 
     public function content(): Content
     {
         $tpl = MailTemplate::findBySlug('newsletter_confirm');
         if ($tpl) {
-            return new Content(htmlString: $tpl->renderBody($this->vars()));
+            return new Content(htmlString: $tpl->renderBody($this->templateVars()));
         }
 
         return new Content(view: 'newsletter::mail.double-opt-in', with: $this->vars());
+    }
+
+    private function templateVars(): array
+    {
+        $v = $this->vars();
+        $v['topics'] = implode(', ', $v['topics']);
+        unset($v['subscriber']);
+
+        return $v;
     }
 
     private function vars(): array
@@ -47,8 +56,11 @@ class DoubleOptInMail extends Mailable
             'confirm_url' => route('newsletter.confirm', ['token' => $this->subscriber->token]),
             'site_name'   => $site->site_name,
             'site_url'    => config('app.url'),
-            'topics'      => implode(', ', $this->subscriber->topicLabels()),
+            'topics'      => $this->subscriber->topicLabels(),
             'ttl_days'    => (int) ($site->newsletter_doi_ttl_days ?: 7),
+            'logo_url'    => $site->logoUrl(),
+            'tagline'     => $site->tagline,
+            'preferences_url' => route('newsletter.preferences', ['token' => $this->subscriber->token]),
         ];
     }
 }
