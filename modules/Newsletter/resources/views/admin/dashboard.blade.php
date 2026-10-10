@@ -11,6 +11,32 @@
         </div>
     </div>
 
+    <nav aria-label="Sekcje newslettera" class="mb-6">
+        <ul class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+            @foreach ([
+                ['Kampanie', 'admin.newsletter.kampanie.index', 'fa-paper-plane', 'Wysyłki e-mail, push i SMS'],
+                ['Subskrybenci', 'admin.newsletter.subskrybenci.index', 'fa-users', 'Lista osób i ich zgody'],
+                ['Listy', 'admin.newsletter.listy.index', 'fa-list', 'Grupy odbiorców do wysyłek'],
+                ['Segmenty', 'admin.newsletter.segmenty.index', 'fa-filter', 'Filtrowane grupy subskrybentów'],
+                ['Tematy', 'admin.newsletter.tematy.index', 'fa-tags', 'Tematy do wyboru przy zapisie'],
+                ['Szablony', 'admin.newsletter.szablony.index', 'fa-file-code', 'Gotowe układy wiadomości'],
+                ['Edytor Mosaico', 'admin.newsletter.mosaico', 'fa-pen-ruler', 'Projektowanie wiadomości'],
+                ['Formularze zapisu', 'admin.newsletter.formularze.index', 'fa-clipboard-list', 'Formularze na stronach i ich wygląd'],
+                ['Ustawienia', 'admin.newsletter.ustawienia.edit', 'fa-gear', 'Nadawca, zgody i integracje'],
+            ] as [$title, $route, $icon, $desc])
+                <li>
+                    <a href="{{ route($route) }}" class="flex h-full items-start gap-3 rounded-lg border border-gray-200 bg-white p-4 hover:border-brand hover:bg-gray-50 focus-visible:outline focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-brand">
+                        <i class="fa-solid {{ $icon }} mt-1 text-brand-dark" aria-hidden="true"></i>
+                        <span>
+                            <span class="block text-sm font-bold text-ink">{{ $title }}</span>
+                            <span class="mt-1 block text-xs text-muted">{{ $desc }}</span>
+                        </span>
+                    </a>
+                </li>
+            @endforeach
+        </ul>
+    </nav>
+
     <dl class="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-5" role="group" aria-label="Kluczowe wskaźniki">
         @foreach ([
             ['Aktywni subskrybenci', number_format($active, 0, ',', ' '), 'fa-users', route('admin.newsletter.subskrybenci.index', ['status' => 'confirmed'])],

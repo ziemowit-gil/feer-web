@@ -153,26 +153,18 @@ final class AdminMenu
                     badge: fn () => TrashController::count(), badgeTone: 'muted'),
             ], defaultOpen: true),
 
-            ($isAdmin || $this->can('newsletter')) ? $this->section('marketing', 'Marketing', [
-                $isAdmin ? $this->item('banners', 'Bannery', 'admin.banery.index', 'fa-rectangle-ad', active: ['admin.banery.*', 'admin.strefy-bannerow.*'],
+            $isAdmin ? $this->section('marketing', 'Marketing', [
+                $this->item('banners', 'Bannery', 'admin.banery.index', 'fa-rectangle-ad', active: ['admin.banery.*', 'admin.strefy-bannerow.*'],
                     children: [
                         $this->child('Strefy bannerów', 'admin.strefy-bannerow.index', 'admin.strefy-bannerow.*'),
-                    ]) : null,
-                $isAdmin ? $this->item('campaigns', 'Kampanie zbiórkowe', 'admin.kampanie.index', 'fa-hand-holding-heart', active: 'admin.kampanie.*') : null,
-                $this->can('newsletter') ? $this->item('newsletter', 'Newsletter', 'admin.newsletter.dashboard', 'fa-envelope', active: 'admin.newsletter.*',
-                    children: [
-                        $this->child('Pulpit', 'admin.newsletter.dashboard', 'admin.newsletter.dashboard'),
-                        $this->child('Kampanie', 'admin.newsletter.kampanie.index', 'admin.newsletter.kampanie.*'),
-                        $this->child('Subskrybenci', 'admin.newsletter.subskrybenci.index', 'admin.newsletter.subskrybenci.*'),
-                        $this->child('Listy', 'admin.newsletter.listy.index', 'admin.newsletter.listy.*'),
-                        $this->child('Segmenty', 'admin.newsletter.segmenty.index', 'admin.newsletter.segmenty.*'),
-                        $this->child('Tematy', 'admin.newsletter.tematy.index', 'admin.newsletter.tematy.*'),
-                        $this->child('Szablony', 'admin.newsletter.szablony.index', 'admin.newsletter.szablony.*'),
-                        $this->child('Edytor Mosaico', 'admin.newsletter.mosaico', 'admin.newsletter.mosaico'),
-                        $this->child('Formularze zapisu', 'admin.newsletter.formularze.index', 'admin.newsletter.formularze.*'),
-                        $this->child('Ustawienia', 'admin.newsletter.ustawienia.edit', 'admin.newsletter.ustawienia.*'),
-                    ]) : null,
+                    ]),
+                $this->item('campaigns', 'Kampanie zbiórkowe', 'admin.kampanie.index', 'fa-hand-holding-heart', active: 'admin.kampanie.*'),
             ]) : null,
+
+            // Newsletter to osobny moduł: jedna pozycja, a jego sekcje są kafelkami na pulpicie.
+            $this->can('newsletter') ? $this->section('newsletter', 'Newsletter', [
+                $this->item('newsletter', 'Newsletter', 'admin.newsletter.dashboard', 'fa-envelope', active: 'admin.newsletter.*'),
+            ], defaultOpen: true) : null,
 
             $isAdmin ? $this->section('inbox', 'Skrzynka', [
                 $this->item('contact', 'Wiadomości z formularza', 'admin.wiadomosci-kontaktowe.index', 'fa-envelope-open',
