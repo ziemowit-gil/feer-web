@@ -1,11 +1,11 @@
 @extends('admin.layout')
 
-@section('title', 'Wiadomości kontaktowe')
+@section('title', 'Wiadomości z formularza')
 
 @section('content')
     <div class="mb-6 flex flex-wrap items-center justify-between gap-4">
         <div>
-            <h1 class="text-lg font-bold text-ink">Wiadomości kontaktowe</h1>
+            <h1 class="text-lg font-bold text-ink">Wiadomości z formularza</h1>
             <p class="text-sm text-muted">Wiadomości z formularza na stronie /kontakt</p>
         </div>
         <div class="flex items-center gap-2">

@@ -178,7 +178,7 @@ final class AdminMenu
             ], defaultOpen: true) : null,
 
             $isAdmin ? $this->section('inbox', 'Skrzynka', [
-                $this->item('contact', 'Wiadomości kontaktowe', 'admin.wiadomosci-kontaktowe.index', 'fa-envelope-open',
+                $this->item('contact', 'Wiadomości z formularza', 'admin.wiadomosci-kontaktowe.index', 'fa-envelope-open',
                     active: 'admin.wiadomosci-kontaktowe.*',
                     badge: function () {
                         try { return ContactMessage::unreadCount(); } catch (\Throwable) { return 0; }
