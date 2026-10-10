@@ -20,9 +20,6 @@
 .nlw__title{margin:0 0 14px;font-size:clamp(26px,3.4vw,40px);line-height:1.1;font-weight:800;color:var(--nlw-text)}
 .nlw--card .nlw__title,.nlw--inline .nlw__title{font-size:22px}
 .nlw__lead{margin:0;font-size:17px;line-height:1.6;color:var(--nlw-muted)}
-.nlw__trust{display:flex;flex-wrap:wrap;gap:14px 22px;margin:22px 0 0;padding:0;list-style:none;font-size:14px;color:var(--nlw-muted)}
-.nlw__trust li{display:inline-flex;align-items:center;gap:8px}
-.nlw__trust svg{width:18px;height:18px;flex:none;color:var(--nlw-brand-dark)}
 .nlw__form{display:grid;gap:18px;padding:28px;background:var(--nlw-card);border:1px solid var(--nlw-line);border-radius:14px;box-shadow:0 10px 30px rgba(29,29,26,.07)}
 .nlw--inline .nlw__form{padding:0;border:0;box-shadow:none;background:transparent}
 .nlw__row{display:grid;gap:16px;grid-template-columns:1fr}
@@ -78,13 +75,6 @@
       @if ($form->eyebrow)<p class="nlw__eyebrow">{{ $form->eyebrow }}</p>@endif
       <h2 id="{{ $id }}-title" class="nlw__title">{{ $form->heading }}</h2>
       @if ($form->lead)<p class="nlw__lead">{{ $form->lead }}</p>@endif
-      @if ($style === 'band')
-      <ul class="nlw__trust" aria-label="Zasady newslettera">
-        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>Dane tylko do wysyłki newslettera</li>
-        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 12l5 5L20 6"/></svg>Potwierdzenie e-mailem (double opt-in)</li>
-        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>Wypis jednym kliknięciem</li>
-      </ul>
-      @endif
     </div>
     @else
       <h2 id="{{ $id }}-title" class="sr-only">{{ $form->heading }}</h2>
