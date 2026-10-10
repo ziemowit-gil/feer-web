@@ -20,6 +20,16 @@
 .nlw__title{margin:0 0 14px;font-size:clamp(26px,3.4vw,40px);line-height:1.1;font-weight:800;color:var(--nlw-text)}
 .nlw--card .nlw__title,.nlw--inline .nlw__title{font-size:22px}
 .nlw__lead{margin:0;font-size:17px;line-height:1.6;color:var(--nlw-muted)}
+.nlw__benefits{list-style:none;margin:22px 0 0;padding:0;display:grid;gap:10px}
+.nlw__benefits li{position:relative;padding-left:30px;font-size:16px;line-height:1.5;color:var(--nlw-text)}
+.nlw__benefits li::before{content:"\2713";position:absolute;left:0;top:0;font-weight:800;color:var(--nlw-brand-dark)}
+.nlw__proof{margin:20px 0 0;font-size:15px;font-weight:700;color:var(--nlw-text)}
+.nlw__faq{margin-top:24px;display:grid;gap:8px}
+.nlw__faq details{border-top:1px solid var(--nlw-line);padding:10px 0}
+.nlw__faq details:last-child{border-bottom:1px solid var(--nlw-line)}
+.nlw__faq summary{cursor:pointer;font-weight:700;font-size:15px;color:var(--nlw-text);list-style-position:outside}
+.nlw__faq summary:focus-visible{outline:3px solid var(--nlw-brand);outline-offset:3px}
+.nlw__faq p{margin:8px 0 0;font-size:15px;line-height:1.55;color:var(--nlw-muted)}
 .nlw__form{display:grid;gap:18px;padding:28px;background:var(--nlw-card);border:var(--nlw-card-border);border-radius:14px;box-shadow:var(--nlw-card-shadow)}
 .nlw--inline .nlw__form{padding:0;border:0;box-shadow:none;background:transparent}
 .nlw__row{display:grid;gap:16px;grid-template-columns:1fr}
@@ -75,6 +85,13 @@
       @if ($form->eyebrow)<p class="nlw__eyebrow">{{ $form->eyebrow }}</p>@endif
       <h2 id="{{ $id }}-title" class="nlw__title">{{ $form->heading }}</h2>
       @if ($form->lead)<p class="nlw__lead">{{ $form->lead }}</p>@endif
+      @if (count($form->benefits ?? []))
+      <ul class="nlw__benefits">@foreach ($form->benefits as $benefit)<li>{{ $benefit }}</li>@endforeach</ul>
+      @endif
+      @if ($form->proof)<p class="nlw__proof">{{ $form->proof }}</p>@endif
+      @if (count($form->faq ?? []))
+      <div class="nlw__faq">@foreach ($form->faq as $item)<details><summary>{{ $item['q'] }}</summary><p>{{ $item['a'] }}</p></details>@endforeach</div>
+      @endif
     </div>
     @else
       <h2 id="{{ $id }}-title" class="sr-only">{{ $form->heading }}</h2>

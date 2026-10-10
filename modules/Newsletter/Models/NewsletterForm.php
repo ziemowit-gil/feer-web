@@ -18,13 +18,13 @@ class NewsletterForm extends Model
     protected $fillable = [
         'site_id', 'name', 'slug', 'eyebrow', 'heading', 'lead', 'ask_name', 'ask_phone', 'show_topics', 'topics',
         'default_topics', 'offer_webpush', 'offer_sms', 'consent_text', 'clause_id', 'privacy_url', 'button_label',
-        'success_message', 'style', 'accent_color', 'theme', 'list_ids', 'szo_form_slug', 'is_default', 'is_active', 'submissions_count',
+        'success_message', 'style', 'accent_color', 'theme', 'benefits', 'faq', 'proof', 'list_ids', 'szo_form_slug', 'is_default', 'is_active', 'submissions_count',
     ];
 
     protected $casts = [
         'ask_name' => 'boolean', 'ask_phone' => 'boolean', 'show_topics' => 'boolean', 'offer_webpush' => 'boolean',
         'offer_sms' => 'boolean', 'is_default' => 'boolean', 'is_active' => 'boolean',
-        'topics' => 'array', 'default_topics' => 'array', 'list_ids' => 'array', 'theme' => 'array',
+        'topics' => 'array', 'default_topics' => 'array', 'list_ids' => 'array', 'theme' => 'array', 'benefits' => 'array', 'faq' => 'array',
     ];
 
     public const STYLES = ['band' => 'Pasek (szeroki, dwie kolumny)', 'card' => 'Karta', 'inline' => 'Jedna linia (stopka)'];
@@ -96,6 +96,26 @@ class NewsletterForm extends Model
         $keys = $this->topics ?: array_keys($all);
 
         return array_intersect_key($all, array_flip($keys));
+    }
+
+    /** Korzyści z pola tekstowego: jedna na linię. */
+    public static function parseBenefits(?string $text): array
+    {
+        return array_values(array_filter(array_map('trim', preg_split('/\R/', (string) $text))));
+    }
+
+    /** Pytania z pola tekstowego: jedna para na linię w formacie „Pytanie :: odpowiedź”. */
+    public static function parseFaq(?string $text): array
+    {
+        $items = [];
+        foreach (preg_split('/\R/', (string) $text) as $line) {
+            [$q, $a] = array_pad(array_map('trim', explode('::', $line, 2)), 2, '');
+            if ($q !== '' && $a !== '') {
+                $items[] = ['q' => $q, 'a' => $a];
+            }
+        }
+
+        return $items;
     }
 
     /** Wartości wyglądu z uzupełnionymi domyślnymi (formularz bez zapisanego wyglądu = domyślny). */
@@ -217,6 +237,16 @@ class NewsletterForm extends Model
             'show_topics'     => true,
             'topics'          => ['news', 'events', 'materials', 'etr'],
             'default_topics'  => ['news'],
+            'benefits'        => [
+                'Aktualności z działań Fundacji FEER',
+                'Zaproszenia na szkolenia i wydarzenia',
+                'Materiały edukacyjne do wykorzystania w pracy',
+                'Treści w wersji Łatwy Odczyt (ETR)',
+            ],
+            'faq'             => [
+                ['q' => 'Jak często wysyłacie newsletter?', 'a' => 'Raz w miesiącu.'],
+                ['q' => 'Jak się wypisać?', 'a' => 'Link do wypisu i zmiany preferencji znajdziesz w stopce każdej wiadomości.'],
+            ],
             'consent_text'    => 'Chcę otrzymywać newsletter na podany adres e-mail. Wiem, że mogę się wypisać w każdej chwili.',
             'privacy_url'     => '/polityka-prywatnosci',
             'button_label'    => 'Zapisz się',

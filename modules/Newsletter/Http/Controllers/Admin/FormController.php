@@ -93,6 +93,9 @@ class FormController extends Controller
             'eyebrow' => ['nullable', 'string', 'max:120'],
             'heading' => ['required', 'string', 'max:200'],
             'lead' => ['nullable', 'string', 'max:1000'],
+            'benefits' => ['nullable', 'string', 'max:2000'],
+            'faq' => ['nullable', 'string', 'max:4000'],
+            'proof' => ['nullable', 'string', 'max:200'],
             'topics' => ['nullable', 'array'],
             'topics.*' => [Rule::in(array_keys(Subscriber::availableTopics()))],
             'default_topics' => ['nullable', 'array'],
@@ -111,6 +114,10 @@ class FormController extends Controller
         foreach (['ask_name', 'ask_phone', 'show_topics', 'offer_webpush', 'offer_sms', 'is_default', 'is_active'] as $b) {
             $data[$b] = $request->boolean($b);
         }
+        $data['benefits'] = NewsletterForm::parseBenefits($request->input('benefits'));
+        $data['faq'] = NewsletterForm::parseFaq($request->input('faq'));
+        $data['proof'] = trim((string) $request->input('proof')) ?: null;
+
         [$data['theme'], $themeErrors] = NewsletterForm::validateTheme((array) $request->input('theme', []));
         if ($themeErrors) {
             throw ValidationException::withMessages(collect($themeErrors)->mapWithKeys(fn ($msg, $key) => ["theme.{$key}" => [$msg]])->all());
