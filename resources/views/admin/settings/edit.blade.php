@@ -7,6 +7,25 @@
         $initialTab = in_array(request('tab'), array_keys(\App\Models\SiteSetting::SETTINGS_TABS), true)
             ? request('tab')
             : 'general';
+
+        // Pod-zakładka strony wsparcia: domyślnie pierwsza, a przy błędzie walidacji ta, w której jest pole z błędem.
+        $supportSec = 'naglowek';
+        $supportSecFields = [
+            'naglowek' => ['support_image', 'remove_support_image', 'support_hero_'],
+            'tresc' => ['support_intro', 'support_benefits_', 'support_testimonial_', 'support_show_partners'],
+            'zbiorka' => ['support_fundraiser_', 'support_gallery', 'remove_support_gallery'],
+            'wplaty' => ['donation_', 'bank_account_', 'support_buycoffee_url', 'support_faq', 'support_outro_', 'support_quick_transfer_url', 'support_transfer_title', 'support_wplacam_url', 'support_methods_title'],
+        ];
+        foreach ($supportSecFields as $secKey => $prefixes) {
+            foreach ($errors->keys() as $errorKey) {
+                foreach ($prefixes as $prefix) {
+                    if (str_starts_with($errorKey, $prefix)) {
+                        $supportSec = $secKey;
+                        break 3;
+                    }
+                }
+            }
+        }
     @endphp
     <div x-data="{ settingsNavCollapsed: (() => { try { return localStorage.getItem('admin-settings-nav') === '1'; } catch (e) { return false; } })(), toggleSettingsNav() { this.settingsNavCollapsed = ! this.settingsNavCollapsed; try { localStorage.setItem('admin-settings-nav', this.settingsNavCollapsed ? '1' : '0'); } catch (e) {} }, tab: '{{ $initialTab }}', wm_layout: '{{ old('header_layout', $settings->headerLayoutValue()) }}', wideModal: {{ $errors->has('wide_activation_code') && old('header_layout') === 'wide_mission' ? 'true' : 'false' }}, wideCode: '', wideCodeError: false, prevLayout: '{{ old('header_layout', $settings->headerLayoutValue()) }}' }"
         x-init="$watch('tab', value => history.replaceState(null, '', '?tab=' + value))"
@@ -945,8 +964,16 @@
             </div>
         </div>
 
-        <div x-show="tab === 'support'" x-cloak class="space-y-5">
-            @php $sd = \App\Models\SiteSetting::SUPPORT_DEFAULTS; @endphp
+        <div x-show="tab === 'support'" x-cloak class="space-y-5" x-data="{ sec: '{{ $supportSec }}' }">
+            @php
+                $sd = \App\Models\SiteSetting::SUPPORT_DEFAULTS;
+                $supportSecs = [
+                    'naglowek' => 'Nagłówek',
+                    'tresc' => 'Treść',
+                    'zbiorka' => 'Zbiórka i galeria',
+                    'wplaty' => 'Wpłaty i FAQ',
+                ];
+            @endphp
             <div class="flex flex-wrap items-center justify-between gap-3">
                 <p class="text-xs text-muted">Wyświetlane na podstronie <a href="{{ route('support.show') }}" target="_blank" rel="noopener" class="text-brand underline">/wsparcie</a>. Puste pola pokazują tekst domyślny (widoczny jako podpowiedź).</p>
                 <a href="{{ route('admin.historia.index', ['type' => 'support', 'id' => $settings->id]) }}"
@@ -959,7 +986,15 @@
                 i jednym kliknięciem przywrócisz starszą wersję. Przechowujemy 30 ostatnich wersji. Zdjęcia i galeria nie są wersjonowane.
             </p>
 
-            <div class="space-y-4 rounded-lg border border-gray-200 bg-gray-50 p-5">
+            <nav aria-label="Sekcje strony wsparcia" class="flex flex-wrap gap-2">
+                @foreach ($supportSecs as $secKey => $secLabel)
+                    <button type="button" @click="sec = @js($secKey)" :aria-current="sec === @js($secKey) ? 'page' : null"
+                        :class="sec === @js($secKey) ? 'bg-brand-light font-bold text-brand' : 'text-ink hover:bg-gray-100 hover:text-brand'"
+                        class="min-h-9 rounded px-3 py-1.5 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">{{ $secLabel }}</button>
+                @endforeach
+            </nav>
+
+            <div x-show="sec === 'zbiorka'" x-cloak class="space-y-4 rounded-lg border border-gray-200 bg-gray-50 p-5">
                 <p class="text-sm font-bold text-ink">Zbiórka na cele FEER</p>
                 <p class="-mt-2 text-xs text-muted">Podaj tytuł i cel (kwotę), aby na stronie pojawił się pasek postępu zbiórki. Pusty cel = brak bloku.</p>
                 <div class="grid gap-4 sm:grid-cols-2">
@@ -1005,7 +1040,7 @@
                 </div>
             </div>
 
-            <div class="space-y-4 rounded-lg border border-gray-200 bg-gray-50 p-5">
+            <div x-show="sec === 'tresc'" x-cloak class="space-y-4 rounded-lg border border-gray-200 bg-gray-50 p-5">
                 <p class="text-sm font-bold text-ink">Social proof — cytat</p>
                 <div>
                     <label for="support_testimonial_quote" class="mb-1 block text-sm font-bold">Cytat <span class="font-normal text-muted">(opcjonalnie)</span></label>
@@ -1035,7 +1070,7 @@
                 <span class="text-sm font-bold">Pokaż logotypy partnerów („Zaufali nam") na stronie wsparcia</span>
             </label>
 
-            <div>
+            <div x-show="sec === 'naglowek'" x-cloak>
                 <p class="mb-1 text-sm font-bold">Zdjęcie nagłówka <span class="font-normal text-muted">(opcjonalnie)</span></p>
                 @if ($settings->supportImageUrl())
                     <div class="mb-2 flex items-center gap-3">
@@ -1051,7 +1086,7 @@
                 @error('support_image') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
             </div>
 
-            <div class="border-t border-gray-100 pt-5">
+            <div x-show="sec === 'zbiorka'" x-cloak class="border-t border-gray-100 pt-5">
                 <p class="mb-1 text-sm font-bold">Galeria „działamy" (osobna od głównej galerii)</p>
                 <p class="mb-3 text-xs text-muted">Zdjęcia w mozaikowym kolażu na stronie wsparcia — dowód realnych działań. Wyświetlanych jest do 7 pierwszych.</p>
 
@@ -1076,7 +1111,7 @@
                 @error('support_gallery.*') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
             </div>
 
-            <div class="border-t border-gray-100 pt-5">
+            <div x-show="sec === 'naglowek'" x-cloak class="border-t border-gray-100 pt-5">
                 <p class="mb-3 text-sm font-bold">Nagłówek strony</p>
                 <div class="space-y-4">
                     <div>
@@ -1107,7 +1142,7 @@
                 </div>
             </div>
 
-            <div class="border-t border-gray-100 pt-5">
+            <div x-show="sec === 'tresc'" x-cloak class="border-t border-gray-100 pt-5">
                 <p class="mb-3 text-sm font-bold">Sekcja „Dlaczego warto nas wspierać"</p>
                 <div class="space-y-4">
                     <div>
@@ -1166,7 +1201,7 @@
             </div>
 
             {{-- Strona /wsparcie/darowizna (wpłata online przez Przelewy24) --}}
-            <div class="space-y-4 rounded-lg border border-gray-200 bg-gray-50/70 p-5">
+            <div x-show="sec === 'wplaty'" x-cloak class="space-y-4 rounded-lg border border-gray-200 bg-gray-50/70 p-5">
                 <div>
                     <h3 class="text-sm font-bold text-ink">Darowizna jednorazowa online</h3>
                     <p class="mt-1 text-xs text-muted">
@@ -1374,7 +1409,7 @@
                 @error('support_faq') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
             </div>
 
-            <div class="border-t border-gray-100 pt-5">
+            <div x-show="sec === 'wplaty'" x-cloak class="border-t border-gray-100 pt-5">
                 <p class="mb-3 text-sm font-bold">Ramka na dole strony</p>
                 <div class="space-y-4">
                     <div>
