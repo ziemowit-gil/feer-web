@@ -14,8 +14,7 @@
 .nlw--inline{padding:16px 0;background:transparent}
 .nlw__inner{max-width:1080px;margin:0 auto;display:grid;gap:28px;grid-template-columns:1fr}
 @media (min-width:900px){.nlw--band .nlw__inner{grid-template-columns:5fr 7fr;align-items:center;gap:48px}}
-.nlw__copy{position:relative;padding-left:20px}
-.nlw__copy::before{content:"";position:absolute;left:0;top:6px;bottom:6px;width:6px;border-radius:3px;background:var(--nlw-accent)}
+.nlw__copy{position:relative;padding-left:0}
 .nlw__eyebrow{margin:0 0 10px;font-size:13px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--nlw-brand-dark)}
 .nlw__title{margin:0 0 14px;font-size:clamp(26px,3.4vw,40px);line-height:1.1;font-weight:800;color:var(--nlw-text)}
 .nlw--card .nlw__title,.nlw--inline .nlw__title{font-size:22px}
