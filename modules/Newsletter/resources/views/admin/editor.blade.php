@@ -43,13 +43,33 @@
     <a href="{{ $backUrl }}" aria-label="Wróć bez zapisu">← Wróć</a>
     <span class="title">{{ $title }}</span>
     <span id="nl-contrast" role="status" aria-live="polite"></span>
+    @if (! empty($systemMail))
+    <label for="nl-subject" class="sr-only">Temat wiadomości</label>
+    <input id="nl-subject" type="text" value="{{ $mailSubject }}" placeholder="Temat wiadomości" style="min-height:32px;min-width:280px;padding:4px 10px;border-radius:6px;border:2px solid #fff;font:inherit;font-weight:400">
+    <button type="button" id="nl-tags" title="Tagi do wstawienia w treści i w adresach przycisków">{ } Tagi</button>
+    @else
     <button type="button" id="nl-insert-news" title="Wstaw aktualność z CMS jako blok artykułu">📰 Wstaw aktualność</button>
+    @endif
     <button type="button" id="nl-preview" title="Podgląd w nowym oknie">Podgląd</button>
     <span id="nl-status" role="status" aria-live="polite"></span>
     <button type="button" id="nl-save" class="primary">Zapisz</button>
     <button type="button" id="nl-save-close" class="primary">Zapisz i zamknij</button>
 </div>
 
+@if (! empty($systemMail))
+<div id="nl-tagbox" role="dialog" aria-modal="true" aria-labelledby="nl-tag-h" style="position:fixed;inset:0;z-index:10001;display:none;align-items:center;justify-content:center;background:rgba(29,29,26,.6);font-family:Montserrat,Arial,sans-serif">
+    <div style="width:min(560px,94vw);border-radius:10px;background:#fff;color:#1D1D1A;padding:20px">
+        <button type="button" aria-label="Zamknij" data-close-tags style="float:right;border:0;background:none;font-size:22px;cursor:pointer">×</button>
+        <h2 id="nl-tag-h" style="margin:0 0 6px;font-size:18px">Tagi maila systemowego</h2>
+        <p style="margin:0 0 12px;font-size:14px;color:#4A4A47">Wpisz tag w tekście albo w polu „Link” przycisku. Tag <code>@{{ {{ $systemMail['required'] }} }}</code> jest wymagany — bez niego używany jest wbudowany mail.</p>
+        <table style="width:100%;border-collapse:collapse;font-size:14px">
+            @foreach ($systemMail['tags'] as $tag => $desc)
+            <tr><td style="padding:6px 8px;border-top:1px solid #E5E7EB"><code>@{{ {{ $tag }} }}</code></td><td style="padding:6px 8px;border-top:1px solid #E5E7EB">{{ $desc }}</td><td style="padding:6px 8px;border-top:1px solid #E5E7EB;text-align:right"><button type="button" data-copy="@{{ {{ $tag }} }}" style="border:1px solid #8E8E8A;border-radius:6px;background:#fff;padding:4px 10px;font:inherit;cursor:pointer">Kopiuj</button></td></tr>
+            @endforeach
+        </table>
+    </div>
+</div>
+@endif
 <div id="nl-news" role="dialog" aria-modal="true" aria-labelledby="nl-news-h">
     <div class="box">
         <button type="button" class="close" aria-label="Zamknij" data-close>×</button>
@@ -109,11 +129,12 @@ $(function () {
         var btns = document.querySelectorAll('#nl-save, #nl-save-close'); btns.forEach(function (b) { b.disabled = true; });
         setStatus('Zapisuję…');
         var payload = { metadata: viewModel.exportMetadata(), content: viewModel.exportJSON(), html: viewModel.exportHTML() };
+        var subj = document.getElementById('nl-subject'); if (subj) payload.subject = subj.value;
         if (typeof payload.content === 'string') payload.content = JSON.parse(payload.content);
         if (typeof payload.metadata === 'string') payload.metadata = JSON.parse(payload.metadata);
         fetch(saveUrl, { method: 'PATCH', headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': csrf }, body: JSON.stringify(payload) })
             .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
-            .then(function (d) { dirty = false; setStatus('Zapisano ' + d.saved_at); if (close) window.location.href = @json($backUrl); })
+            .then(function (d) { dirty = false; setStatus((d.warnings && d.warnings.length) ? '⚠ ' + d.warnings.join(' ') : 'Zapisano ' + d.saved_at, !!(d.warnings && d.warnings.length)); if (close) window.location.href = @json($backUrl); })
             .catch(function (e) { setStatus('Błąd zapisu (' + e.message + '). Spróbuj ponownie.', true); })
             .finally(function () { btns.forEach(function (b) { b.disabled = false; }); });
     }
@@ -169,7 +190,16 @@ $(function () {
             setStatus('Wstawiono: ' + it.title);
         } catch (e) { console.error(e); alert('Nie udało się wstawić bloku automatycznie. Dodaj blok „Artykuł” z zakładki Bloki i wklej treść.'); }
     }
-    document.getElementById('nl-insert-news').addEventListener('click', function () { modal.classList.add('open'); loadNews(); document.getElementById('nl-q').focus(); });
+    var insertBtn = document.getElementById('nl-insert-news');
+    if (insertBtn) insertBtn.addEventListener('click', function () { modal.classList.add('open'); loadNews(); document.getElementById('nl-q').focus(); });
+    var tagBox = document.getElementById('nl-tagbox'), tagBtn = document.getElementById('nl-tags');
+    if (tagBox && tagBtn) {
+        tagBtn.addEventListener('click', function () { tagBox.style.display = 'flex'; });
+        tagBox.querySelector('[data-close-tags]').addEventListener('click', function () { tagBox.style.display = 'none'; });
+        tagBox.addEventListener('click', function (e) { if (e.target === tagBox) tagBox.style.display = 'none'; });
+        tagBox.querySelectorAll('[data-copy]').forEach(function (b) { b.addEventListener('click', function () { navigator.clipboard.writeText(b.dataset.copy).then(function () { b.textContent = 'Skopiowano'; setTimeout(function () { b.textContent = 'Kopiuj'; }, 1500); }); }); });
+        var subjInput = document.getElementById('nl-subject'); if (subjInput) subjInput.addEventListener('input', function () { dirty = true; });
+    }
     modal.querySelector('[data-close]').addEventListener('click', function () { modal.classList.remove('open'); });
     modal.addEventListener('click', function (e) { if (e.target === modal) modal.classList.remove('open'); });
     document.addEventListener('keydown', function (e) { if (e.key === 'Escape') modal.classList.remove('open'); });

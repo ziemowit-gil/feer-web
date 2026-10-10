@@ -14,7 +14,10 @@ class TemplateController extends Controller
 {
     public function index()
     {
-        return view('newsletter::admin.templates.index', ['templates' => NewsletterTemplate::orderByDesc('is_default')->orderBy('name')->get()]);
+        return view('newsletter::admin.templates.index', [
+            'templates' => NewsletterTemplate::whereNull('system_key')->orderByDesc('is_default')->orderBy('name')->get(),
+            'systemMails' => collect(NewsletterTemplate::SYSTEM_MAILS)->map(fn ($def, $key) => $def + ['key' => $key, 'template' => NewsletterTemplate::system($key)]),
+        ]);
     }
 
     public function create()
@@ -51,30 +54,51 @@ class TemplateController extends Controller
 
     public function destroy(NewsletterTemplate $template)
     {
-        $template->delete();
+        $wasSystem = $template->isSystem();
+        $template->forceDelete();
 
-        return redirect()->route('admin.newsletter.szablony.index')->with('status', 'Szablon usunięty.');
+        return redirect()->route('admin.newsletter.szablony.index')->with('status', $wasSystem ? 'Przywrócono wbudowany wygląd maila systemowego.' : 'Szablon usunięty.');
     }
 
     public function editor(NewsletterTemplate $template)
     {
         abort_unless($template->kind === 'mosaico', 404);
+        $sys = $template->system_key ? (NewsletterTemplate::SYSTEM_MAILS[$template->system_key] ?? null) : null;
 
         return view('newsletter::admin.editor', [
             'subject'  => $template,
             'saveUrl'  => route('admin.newsletter.szablony.editor.save', $template),
             'backUrl'  => route('admin.newsletter.szablony.index'),
-            'title'    => 'Szablon: ' . $template->name,
+            'title'    => ($sys ? 'Mail systemowy: ' : 'Szablon: ') . $template->name,
             'mosaicoTemplate' => $template->mosaico_template ?: 'feer-1',
+            'systemMail' => $sys,
+            'mailSubject' => $template->subject ?: ($sys['subject'] ?? null),
         ]);
+    }
+
+    /** Otwiera (tworząc przy pierwszym wejściu) szablon systemowy w Mosaico. */
+    public function system(string $key)
+    {
+        $def = NewsletterTemplate::SYSTEM_MAILS[$key] ?? abort(404);
+        $template = NewsletterTemplate::system($key) ?? NewsletterTemplate::create([
+            'site_id' => SiteSetting::current()->id, 'name' => $def['name'], 'subject' => $def['subject'], 'kind' => 'mosaico',
+            'system_key' => $key, 'mosaico_template' => 'feer-1', 'created_by' => auth()->id(),
+        ]);
+
+        return redirect()->route('admin.newsletter.szablony.editor', $template);
     }
 
     public function saveEditor(Request $request, NewsletterTemplate $template)
     {
-        $data = $request->validate(['metadata' => ['required', 'array'], 'content' => ['required', 'array'], 'html' => ['required', 'string']]);
-        $template->update(['editor_metadata' => $data['metadata'], 'editor_content' => $data['content'], 'html_body' => $data['html']]);
+        $data = $request->validate(['metadata' => ['required', 'array'], 'content' => ['required', 'array'], 'html' => ['required', 'string'], 'subject' => ['nullable', 'string', 'max:255']]);
+        $template->update(['editor_metadata' => $data['metadata'], 'editor_content' => $data['content'], 'html_body' => $data['html'], 'subject' => $data['subject'] ?? $template->subject]);
 
-        return response()->json(['ok' => true, 'saved_at' => now()->format('H:i:s')]);
+        $warnings = [];
+        if ($template->system_key && ($req = NewsletterTemplate::SYSTEM_MAILS[$template->system_key]['required'] ?? null) && ! str_contains($data['html'], $req)) {
+            $warnings[] = "Brak tagu {{{$req}}} — bez niego mail systemowy nie będzie używany (zostanie wysłany wbudowany).";
+        }
+
+        return response()->json(['ok' => true, 'saved_at' => now()->format('H:i:s'), 'warnings' => $warnings]);
     }
 
     public function duplicate(NewsletterTemplate $template)
