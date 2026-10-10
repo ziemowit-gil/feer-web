@@ -153,16 +153,13 @@ final class AdminMenu
                     badge: fn () => TrashController::count(), badgeTone: 'muted'),
             ], defaultOpen: true),
 
-            $isAdmin ? $this->section('marketing', 'Marketing', [
-                $this->item('banners', 'Bannery', 'admin.banery.index', 'fa-rectangle-ad', active: ['admin.banery.*', 'admin.strefy-bannerow.*'],
+            ($isAdmin || $this->can('newsletter')) ? $this->section('marketing', 'Marketing', [
+                $isAdmin ? $this->item('banners', 'Bannery', 'admin.banery.index', 'fa-rectangle-ad', active: ['admin.banery.*', 'admin.strefy-bannerow.*'],
                     children: [
                         $this->child('Strefy bannerów', 'admin.strefy-bannerow.index', 'admin.strefy-bannerow.*'),
-                    ]),
-                $this->item('campaigns', 'Kampanie zbiórkowe', 'admin.kampanie.index', 'fa-hand-holding-heart', active: 'admin.kampanie.*'),
-            ]) : null,
-
-            $this->can('newsletter') ? $this->section('newsletter', 'Newsletter', [
-                $this->item('newsletter', 'Newsletter', 'admin.newsletter.dashboard', 'fa-envelope', active: 'admin.newsletter.*',
+                    ]) : null,
+                $isAdmin ? $this->item('campaigns', 'Kampanie zbiórkowe', 'admin.kampanie.index', 'fa-hand-holding-heart', active: 'admin.kampanie.*') : null,
+                $this->can('newsletter') ? $this->item('newsletter', 'Newsletter', 'admin.newsletter.dashboard', 'fa-envelope', active: 'admin.newsletter.*',
                     children: [
                         $this->child('Pulpit', 'admin.newsletter.dashboard', 'admin.newsletter.dashboard'),
                         $this->child('Kampanie', 'admin.newsletter.kampanie.index', 'admin.newsletter.kampanie.*'),
@@ -174,8 +171,8 @@ final class AdminMenu
                         $this->child('Edytor Mosaico', 'admin.newsletter.mosaico', 'admin.newsletter.mosaico'),
                         $this->child('Formularze zapisu', 'admin.newsletter.formularze.index', 'admin.newsletter.formularze.*'),
                         $this->child('Ustawienia', 'admin.newsletter.ustawienia.edit', 'admin.newsletter.ustawienia.*'),
-                    ]),
-            ], defaultOpen: true) : null,
+                    ]) : null,
+            ]) : null,
 
             $isAdmin ? $this->section('inbox', 'Skrzynka', [
                 $this->item('contact', 'Wiadomości z formularza', 'admin.wiadomosci-kontaktowe.index', 'fa-envelope-open',
