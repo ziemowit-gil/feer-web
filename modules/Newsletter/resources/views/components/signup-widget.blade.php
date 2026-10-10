@@ -27,7 +27,10 @@
 .nlw__faq{margin-top:24px;display:grid;gap:8px}
 .nlw__faq details{border-top:1px solid var(--nlw-line);padding:10px 0}
 .nlw__faq details:last-child{border-bottom:1px solid var(--nlw-line)}
-.nlw__faq summary{cursor:pointer;font-weight:700;font-size:15px;color:var(--nlw-text);list-style-position:outside}
+.nlw__faq summary{cursor:pointer;position:relative;padding-left:24px;font-weight:700;font-size:15px;color:var(--nlw-text);list-style:none}
+.nlw__faq summary::-webkit-details-marker{display:none}
+.nlw__faq summary::before{content:"";position:absolute;left:6px;top:.45em;border-style:solid;border-width:5px 0 5px 8px;border-color:transparent transparent transparent var(--nlw-text);transition:transform .15s}
+.nlw__faq details[open] summary::before{transform:rotate(90deg);transform-origin:2px 5px}
 .nlw__faq summary:focus-visible{outline:3px solid var(--nlw-brand);outline-offset:3px}
 .nlw__faq p{margin:8px 0 0;font-size:15px;line-height:1.55;color:var(--nlw-muted)}
 .nlw__form{display:grid;gap:18px;padding:28px;background:var(--nlw-card);border:var(--nlw-card-border);border-radius:14px;box-shadow:var(--nlw-card-shadow)}
