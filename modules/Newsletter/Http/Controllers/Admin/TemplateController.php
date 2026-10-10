@@ -76,6 +76,15 @@ class TemplateController extends Controller
         ]);
     }
 
+    /** Skrót „Edytor Mosaico”: otwiera domyślny szablon kampanii (tworzy go przy pierwszym wejściu). */
+    public function mosaico()
+    {
+        $template = NewsletterTemplate::whereNull('system_key')->orderByDesc('is_default')->orderBy('id')->first()
+            ?? NewsletterTemplate::create(['site_id' => SiteSetting::current()->id, 'name' => 'Szablon FEER (domyślny)', 'kind' => 'mosaico', 'mosaico_template' => 'feer-1', 'is_default' => true, 'created_by' => auth()->id()]);
+
+        return redirect()->route('admin.newsletter.szablony.editor', $template);
+    }
+
     /** Otwiera (tworząc przy pierwszym wejściu) szablon systemowy w Mosaico. */
     public function system(string $key)
     {

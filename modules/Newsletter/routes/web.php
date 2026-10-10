@@ -76,6 +76,7 @@ Route::middleware(['auth', 'verified', '2fa', 'admin-site', 'module:newsletter',
         Route::post('tematy/kolejnosc', [AdminTopicController::class, 'reorder'])->name('tematy.reorder');
         Route::resource('tematy', AdminTopicController::class)->parameters(['tematy' => 'topic'])->except('show');
 
+        Route::get('mosaico', [AdminTemplateController::class, 'mosaico'])->name('mosaico');
         Route::get('szablony/systemowy/{key}', [AdminTemplateController::class, 'system'])->name('szablony.system');
         Route::resource('szablony', AdminTemplateController::class)->parameters(['szablony' => 'template'])->except('show');
         Route::get('szablony/{template}/edytor', [AdminTemplateController::class, 'editor'])->name('szablony.editor');

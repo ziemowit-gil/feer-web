@@ -167,6 +167,7 @@ final class AdminMenu
                         $this->child('Segmenty', 'admin.newsletter.segmenty.index', 'admin.newsletter.segmenty.*'),
                         $this->child('Tematy', 'admin.newsletter.tematy.index', 'admin.newsletter.tematy.*'),
                         $this->child('Szablony', 'admin.newsletter.szablony.index', 'admin.newsletter.szablony.*'),
+                        $this->child('Edytor Mosaico', 'admin.newsletter.mosaico', 'admin.newsletter.mosaico'),
                         $this->child('Formularze zapisu', 'admin.newsletter.formularze.index', 'admin.newsletter.formularze.*'),
                         $this->child('Ustawienia', 'admin.newsletter.ustawienia.edit', 'admin.newsletter.ustawienia.*'),
                     ]) : null,

@@ -6,6 +6,7 @@
         <p class="text-sm text-muted">Kampanie e-mail, push i SMS · subskrybenci z double opt-in</p>
         <div class="flex gap-2">
             <a href="{{ route('admin.newsletter.kampanie.create') }}" class="rounded bg-brand px-4 py-2 text-sm font-bold text-white hover:bg-brand-dark"><i class="fa-solid fa-plus" aria-hidden="true"></i> Nowa kampania</a>
+            <a href="{{ route('admin.newsletter.mosaico') }}" class="rounded border border-gray-300 bg-white px-4 py-2 text-sm font-bold text-gray-700 hover:bg-gray-50"><i class="fa-solid fa-pen-ruler" aria-hidden="true"></i> Edytor Mosaico</a>
             <a href="{{ route('newsletter.show') }}" target="_blank" rel="noopener" class="rounded border border-gray-300 bg-white px-4 py-2 text-sm font-bold text-gray-700 hover:bg-gray-50">Strona /newsletter <span class="sr-only">(nowe okno)</span></a>
         </div>
     </div>
