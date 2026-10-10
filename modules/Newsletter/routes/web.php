@@ -65,7 +65,10 @@ Route::middleware(['auth', 'verified', '2fa', 'admin-site', 'module:newsletter',
         Route::get('subskrybenci/{subscriber}/dane', [AdminSubscriberController::class, 'personalData'])->name('subskrybenci.data');
         Route::resource('subskrybenci', AdminSubscriberController::class)->parameters(['subskrybenci' => 'subscriber']);
 
-        Route::resource('listy', AdminListController::class)->parameters(['listy' => 'list'])->except('show');
+        Route::resource('listy', AdminListController::class)->parameters(['listy' => 'list']);
+        Route::post('listy/{list}/dodaj', [AdminListController::class, 'addMembers'])->name('listy.add');
+        Route::post('listy/{list}/czlonkowie', [AdminListController::class, 'members'])->name('listy.members');
+        Route::get('listy/{list}/eksport', [AdminListController::class, 'export'])->name('listy.export');
         Route::post('segmenty/policz', [AdminSegmentController::class, 'count'])->name('segmenty.count');
         Route::resource('segmenty', AdminSegmentController::class)->parameters(['segmenty' => 'segment'])->except('show');
 
