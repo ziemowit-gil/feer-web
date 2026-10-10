@@ -3,22 +3,40 @@
 @section('title', ($expired ? 'Link wygasł' : 'Zapis potwierdzony') . ' — ' . $siteSettings->site_name)
 
 @section('content')
-    <section class="mx-auto max-w-xl px-4 py-16 text-center">
-        @if ($expired)
-            <h1 class="mb-3 text-2xl font-bold text-ink">Ten link potwierdzający wygasł</h1>
-            <p class="mb-6 text-ink">Zapisz się ponownie — wyślemy nowy link.</p>
-            <a href="{{ route('newsletter.show') }}" class="inline-block rounded-md bg-brand-dark px-6 py-3 font-bold text-white hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">Zapisz się ponownie</a>
-        @else
-            <div class="mb-6 flex justify-center">
-                <span class="flex h-16 w-16 items-center justify-center rounded-full bg-green-100 text-3xl text-green-800" aria-hidden="true"><i class="fa-solid fa-check"></i></span>
+@include('newsletter::public._style')
+<div class="np np--narrow">
+    @if ($expired)
+        <section class="np__hero" aria-labelledby="np-h">
+            <span class="np__icon np__icon--warn" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span>
+            <h1 id="np-h">Ten link już wygasł</h1>
+            <p>Linki potwierdzające są ważne przez {{ (int) ($siteSettings->newsletter_doi_ttl_days ?: 7) }} dni. Nic straconego — zapisz się ponownie, a od razu wyślemy nowy.</p>
+            <div class="np__row">
+                <a href="{{ route('newsletter.show') }}" class="np__btn np__btn--primary">Zapisz się ponownie <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+                <a href="{{ route('home') }}" class="np__btn np__btn--ghost">Strona główna</a>
             </div>
-            <h1 class="mb-3 text-2xl font-bold text-ink">Dziękujemy{{ $subscriber->firstName() ? ', ' . $subscriber->firstName() : '' }}! Zapis potwierdzony</h1>
-            <p class="mb-2 text-ink">Będziesz otrzymywać wiadomości na temat: <strong>{{ implode(', ', $subscriber->topicLabels()) ?: 'aktualności' }}</strong>.</p>
-            <p class="text-sm text-muted">W każdej chwili możesz zmienić tematy lub się wypisać.</p>
-            <div class="mt-8 flex flex-wrap justify-center gap-3">
-                <a href="{{ route('newsletter.preferences', ['token' => $subscriber->token]) }}" class="inline-block rounded-md border-2 border-brand-dark px-5 py-2.5 font-bold text-brand-dark hover:bg-brand-dark hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">Ustaw preferencje</a>
-                <a href="{{ route('home') }}" class="inline-block rounded-md bg-brand-dark px-5 py-2.5 font-bold text-white hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">Przejdź na stronę główną</a>
+        </section>
+    @else
+        <section class="np__hero" aria-labelledby="np-h">
+            <span class="np__icon np__icon--ok" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 12l5 5L20 6"/></svg></span>
+            <p class="np__eyebrow" style="margin:0">Newsletter {{ $siteSettings->site_name }}</p>
+            <h1 id="np-h">Dziękujemy{{ $subscriber->firstName() ? ', ' . $subscriber->firstName() : '' }}! Zapis potwierdzony</h1>
+            <p>Adres <strong>{{ $subscriber->email }}</strong> jest aktywny. Będziesz otrzymywać wiadomości na temat:</p>
+            <ul class="np__chips" aria-label="Wybrane tematy">
+                @forelse ($subscriber->topicLabels() as $t)<li>{{ $t }}</li>@empty<li>Aktualności</li>@endforelse
+            </ul>
+            <div class="np__box">
+                <ol class="np__steps">
+                    <li>Pierwszy newsletter dotrze przy najbliższej wysyłce.</li>
+                    <li>Tematy i kanały zmienisz w każdej chwili na stronie preferencji.</li>
+                    <li>Link do wypisu jednym kliknięciem jest w stopce każdej wiadomości.</li>
+                </ol>
             </div>
-        @endif
-    </section>
+            <div class="np__row">
+                <a href="{{ route('newsletter.preferences', ['token' => $subscriber->token]) }}" class="np__btn np__btn--primary">Ustaw preferencje <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+                <a href="{{ route('home') }}" class="np__btn np__btn--ghost">Przejdź na stronę główną</a>
+            </div>
+        </section>
+        <p class="np__foot">Wskazówka: dodaj adres nadawcy do kontaktów, żeby newsletter nie trafiał do spamu.</p>
+    @endif
+</div>
 @endsection

@@ -23,9 +23,9 @@ Route::group(['middleware' => 'web', 'module' => 'newsletter'], function (): voi
 
 // ── Publiczne ─────────────────────────────────────────────────────────────────
 Route::get('/newsletter', [SignupController::class, 'show'])->name('newsletter.show');
-Route::get('/newsletter/{form:slug}', [SignupController::class, 'showForm'])->name('newsletter.form');
 Route::post('/newsletter/zapis', [SignupController::class, 'store'])->name('newsletter.subscribe')->middleware('throttle:5,1');
 Route::get('/newsletter/oczekiwanie', [SignupController::class, 'pending'])->name('newsletter.pending');
+Route::get('/newsletter/{form:slug}', [SignupController::class, 'showForm'])->name('newsletter.form'); // musi być ostatnia
 
 Route::prefix('n')->name('newsletter.')->group(function (): void {
     Route::get('potwierdz/{token}', [SignupController::class, 'confirm'])->name('confirm');

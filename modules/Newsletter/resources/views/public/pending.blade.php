@@ -3,13 +3,23 @@
 @section('title', 'Sprawdź swoją skrzynkę — ' . $siteSettings->site_name)
 
 @section('content')
-    <section class="mx-auto max-w-xl px-4 py-16 text-center">
-        <div class="mb-6 flex justify-center">
-            <span class="flex h-16 w-16 items-center justify-center rounded-full bg-brand/10 text-3xl text-brand-dark" aria-hidden="true"><i class="fa-solid fa-envelope-open-text"></i></span>
+@include('newsletter::public._style')
+<div class="np np--narrow">
+    <section class="np__hero" aria-labelledby="np-h">
+        <span class="np__icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16v12H4z"/><path d="M4 7l8 6 8-6"/></svg></span>
+        <p class="np__eyebrow" style="margin:0">Newsletter {{ $siteSettings->site_name }}</p>
+        <h1 id="np-h">Sprawdź swoją skrzynkę</h1>
+        <p>{{ $form?->success_message ?? 'Wysłaliśmy e-mail z linkiem potwierdzającym. Kliknij go, aby aktywować zapis.' }}</p>
+        <div class="np__box">
+            <ol class="np__steps">
+                <li>Otwórz wiadomość „Potwierdź zapis na newsletter”.</li>
+                <li>Kliknij przycisk „Potwierdzam zapis” — link działa przez {{ (int) ($siteSettings->newsletter_doi_ttl_days ?: 7) }} dni.</li>
+                <li>Nie widzisz maila? Sprawdź folder spam lub oferty i dodaj nas do kontaktów.</li>
+            </ol>
         </div>
-        <h1 class="mb-3 text-2xl font-bold text-ink">Sprawdź swoją skrzynkę</h1>
-        <p class="mb-2 text-ink">{{ $form?->success_message ?? 'Wysłaliśmy e-mail z linkiem potwierdzającym. Kliknij go, aby aktywować zapis.' }}</p>
-        <p class="text-sm text-muted">Link jest ważny przez {{ (int) ($siteSettings->newsletter_doi_ttl_days ?: 7) }} dni. Jeśli wiadomość nie dotarła, sprawdź folder spam.</p>
-        <a href="{{ route('home') }}" class="mt-8 inline-block text-sm font-bold text-brand-dark underline underline-offset-4 hover:text-ink">← Wróć na stronę główną</a>
+        <div class="np__row">
+            <a href="{{ route('home') }}" class="np__btn np__btn--ghost">Wróć na stronę główną</a>
+        </div>
     </section>
+</div>
 @endsection
