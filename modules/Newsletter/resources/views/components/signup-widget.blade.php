@@ -20,7 +20,7 @@
 .nlw__title{margin:0 0 14px;font-size:clamp(26px,3.4vw,40px);line-height:1.1;font-weight:800;color:var(--nlw-text)}
 .nlw--card .nlw__title,.nlw--inline .nlw__title{font-size:22px}
 .nlw__lead{margin:0;font-size:17px;line-height:1.6;color:var(--nlw-muted)}
-.nlw__form{display:grid;gap:18px;padding:28px;background:var(--nlw-card);border:1px solid var(--nlw-line);border-radius:14px;box-shadow:0 10px 30px rgba(29,29,26,.07)}
+.nlw__form{display:grid;gap:18px;padding:28px;background:var(--nlw-card);border:0;border-radius:14px;box-shadow:none}
 .nlw--inline .nlw__form{padding:0;border:0;box-shadow:none;background:transparent}
 .nlw__row{display:grid;gap:16px;grid-template-columns:1fr}
 @media (min-width:560px){.nlw--band .nlw__row,.nlw--inline .nlw__row{grid-template-columns:1fr 1.4fr}}
@@ -44,7 +44,7 @@
 .nlw__chip input:checked::before{transform:scale(1)}
 .nlw__chip:has(input:checked){border-color:var(--nlw-brand-dark);background:#EAF1FF;color:var(--nlw-brand-dark);font-weight:700}
 .nlw__chip:has(input:focus-visible){outline:3px solid var(--nlw-brand);outline-offset:3px}
-.nlw__consent{display:grid;grid-template-columns:24px 1fr;gap:12px;align-items:start;font-size:14px;line-height:1.55;color:var(--nlw-text);padding:16px 18px 16px 20px;border-radius:10px;background:#fff;border:1px solid var(--nlw-line);border-left:5px solid var(--nlw-brand-dark)}
+.nlw__consent{display:grid;grid-template-columns:24px 1fr;gap:12px;align-items:start;font-size:14px;line-height:1.55;color:var(--nlw-text);padding:16px 18px 16px 20px;border-radius:10px;background:#fff;border:0}
 .nlw__consent input{appearance:none;-webkit-appearance:none;width:24px;height:24px;margin-top:1px;border:2px solid var(--nlw-border);border-radius:6px;background:#fff;display:grid;place-content:center;cursor:pointer}
 .nlw__consent input::before{content:"";width:13px;height:13px;clip-path:polygon(14% 44%,0 65%,50% 100%,100% 16%,80% 0,43% 62%);background:#fff;transform:scale(0)}
 .nlw__consent input:checked{background:var(--nlw-brand-dark);border-color:var(--nlw-brand-dark)}
