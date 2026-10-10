@@ -147,7 +147,12 @@ class SignupController extends Controller
     /** Potwierdza subskrypcję przez token z e-maila. */
     public function confirm(string $token)
     {
-        $subscriber = Subscriber::where('token', $token)->firstOrFail();
+        $subscriber = Subscriber::where('token', $token)->first();
+        if (! $subscriber) {
+            // Token usunięty (np. wygasły zapis skasowany po 30 dniach albo wysłano nowy link): zamiast surowego 404 pokazujemy komunikat.
+            return response()->view('newsletter::public.confirmed', ['subscriber' => null, 'expired' => true], 404);
+        }
+
         $ttl = (int) (SiteSetting::current()->newsletter_doi_ttl_days ?: 7);
 
         if ($subscriber->isPending() || $subscriber->status === Subscriber::STATUS_EXPIRED) {
