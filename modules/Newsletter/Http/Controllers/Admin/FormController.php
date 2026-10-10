@@ -11,6 +11,7 @@ use App\Models\Subscriber;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Modules\Newsletter\Models\NewsletterForm;
 use Modules\Newsletter\Models\NewsletterList;
 
@@ -69,6 +70,8 @@ class FormController extends Controller
             'lists'   => NewsletterList::orderBy('name')->get(),
             'clauses' => $clauses,
             'styles'  => NewsletterForm::STYLES,
+            'themeColors' => NewsletterForm::THEME_COLORS,
+            'themeFlags'  => NewsletterForm::THEME_FLAGS,
             'szoForms'=> $this->szoForms(),
         ]);
     }
@@ -108,6 +111,11 @@ class FormController extends Controller
         foreach (['ask_name', 'ask_phone', 'show_topics', 'offer_webpush', 'offer_sms', 'is_default', 'is_active'] as $b) {
             $data[$b] = $request->boolean($b);
         }
+        [$data['theme'], $themeErrors] = NewsletterForm::validateTheme((array) $request->input('theme', []));
+        if ($themeErrors) {
+            throw ValidationException::withMessages(collect($themeErrors)->mapWithKeys(fn ($msg, $key) => ["theme.{$key}" => [$msg]])->all());
+        }
+
         $data['slug'] = Str::slug($data['slug'] ?: $data['name']) ?: 'formularz';
         $base = $data['slug'];
         $i = 2;

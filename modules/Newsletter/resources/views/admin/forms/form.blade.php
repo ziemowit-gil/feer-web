@@ -42,6 +42,26 @@
                 <div><label for="style" class="mb-1 block text-sm font-bold">Układ</label><select id="style" name="style" class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">@foreach ($styles as $k => $l)<option value="{{ $k }}" @selected(old('style', $form->style) === $k)>{{ $l }}</option>@endforeach</select></div>
                 <div><label for="accent_color" class="mb-1 block text-sm font-bold">Kolor akcentu (pasek)</label><div class="flex items-center gap-2"><input id="accent_color" name="accent_color" value="{{ old('accent_color', $form->accent_color) }}" placeholder="#EA8F00" class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand" data-admin-color-input></div><p class="mt-1 text-xs text-muted">Puste = pomarańcz z brandbooku (#EA8F00). Tylko dekoracja — tekst i przyciski pilnują kontrastu same.</p></div>
             </section>
+            <section class="space-y-4 rounded-lg border border-gray-200 bg-white p-6" aria-labelledby="f-look"><h2 id="f-look" class="text-sm font-bold uppercase text-muted">Wygląd i dostępność (WCAG)</h2>
+                <p class="text-xs text-muted">Kolory są sprawdzane przy zapisie: tekst min. 4,5:1, obramowania pól i fokus min. 3:1 względem tła. Kolor, który tego nie spełnia, nie zostanie zapisany.</p>
+                @php $themeValues = $form->themeValues(); @endphp
+                <div class="grid gap-3 sm:grid-cols-2">
+                    @foreach ($themeColors as $key => [$label, $default])
+                        <div>
+                            <div class="flex items-center gap-3">
+                                <input type="color" id="theme-{{ $key }}" name="theme[{{ $key }}]" value="{{ old("theme.$key", $themeValues[$key]) }}" class="h-10 w-14 shrink-0 cursor-pointer rounded border border-gray-300 bg-white p-1">
+                                <label for="theme-{{ $key }}" class="text-sm">{{ $label }} <span class="text-xs text-muted">({{ $default }})</span></label>
+                            </div>
+                            @error("theme.$key")<p class="mt-1 text-xs font-bold text-red-700">{{ $message }}</p>@enderror
+                        </div>
+                    @endforeach
+                </div>
+                <div class="flex flex-wrap gap-4 text-sm">
+                    @foreach ($themeFlags as $key => [$label])
+                        <label class="inline-flex items-center gap-2"><input type="hidden" name="theme[{{ $key }}]" value="0"><input type="checkbox" name="theme[{{ $key }}]" value="1" class="rounded border-gray-300 text-brand focus:ring-brand" @checked(old("theme.$key", $themeValues[$key]))> {{ $label }}</label>
+                    @endforeach
+                </div>
+            </section>
             <section class="space-y-4 rounded-lg border border-gray-200 bg-white p-6" aria-labelledby="f-int"><h2 id="f-int" class="text-sm font-bold uppercase text-muted">Listy i integracje</h2>
                 <fieldset><legend class="mb-1 text-sm font-bold">Dodaj zapisanych do list</legend><div class="space-y-1 text-sm">@forelse ($lists as $l)<label class="flex items-center gap-2"><input type="checkbox" name="list_ids[]" value="{{ $l->id }}" class="rounded border-gray-300 text-brand focus:ring-brand" @checked(in_array($l->id, old('list_ids', $form->list_ids ?? []), true))> {{ $l->name }}</label>@empty<span class="text-muted">Brak list.</span>@endforelse</div></fieldset>
                 <div><label for="szo_form_slug" class="mb-1 block text-sm font-bold">Formularz w SZO (kontakt + zgoda „newsletter”)</label>
