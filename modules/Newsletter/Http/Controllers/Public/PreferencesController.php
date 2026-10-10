@@ -51,6 +51,7 @@ class PreferencesController extends Controller
         return view('newsletter::public.preferences', [
             'subscriber' => $subscriber,
             'topics'     => Subscriber::availableTopics(),
+            'topicRows'  => \Illuminate\Support\Facades\Schema::hasTable('newsletter_topics') ? \Modules\Newsletter\Models\NewsletterTopic::where('is_active', true)->orderBy('order')->get() : collect(),
             'lists'      => NewsletterList::where('is_public', true)->orderBy('name')->get(),
             'pushEnabled'=> (bool) \App\Models\SiteSetting::current()->newsletter_webpush_enabled && filled(config('webpush.vapid.public_key')),
         ]);
