@@ -44,7 +44,7 @@
 .nlw__chip input:checked::before{transform:scale(1)}
 .nlw__chip:has(input:checked){border-color:var(--nlw-brand-dark);background:#EAF1FF;color:var(--nlw-brand-dark);font-weight:700}
 .nlw__chip:has(input:focus-visible){outline:3px solid var(--nlw-brand);outline-offset:3px}
-.nlw__consent{display:grid;grid-template-columns:24px 1fr;gap:12px;align-items:start;font-size:14px;line-height:1.55;color:var(--nlw-text);padding:14px;border-radius:10px;background:var(--nlw-bg)}
+.nlw__consent{display:grid;grid-template-columns:24px 1fr;gap:12px;align-items:start;font-size:14px;line-height:1.55;color:var(--nlw-text);padding:16px 18px 16px 20px;border-radius:10px;background:#fff;border:1px solid var(--nlw-line);border-left:5px solid var(--nlw-brand-dark)}
 .nlw__consent input{appearance:none;-webkit-appearance:none;width:24px;height:24px;margin-top:1px;border:2px solid var(--nlw-border);border-radius:6px;background:#fff;display:grid;place-content:center;cursor:pointer}
 .nlw__consent input::before{content:"";width:13px;height:13px;clip-path:polygon(14% 44%,0 65%,50% 100%,100% 16%,80% 0,43% 62%);background:#fff;transform:scale(0)}
 .nlw__consent input:checked{background:var(--nlw-brand-dark);border-color:var(--nlw-brand-dark)}
