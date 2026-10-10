@@ -198,11 +198,22 @@
             .proj-paid-link:hover { color: #1d1d1a; } .proj-paid-link:focus-visible { outline: 2px solid var(--color-brand); outline-offset: 3px; border-radius: .25rem; }
             .proj-paid-body { margin-top: .6rem; padding-left: .85rem; border-left: 3px solid var(--color-brand); font-size: .95rem; line-height: 1.6; font-weight: 500; }
             .proj-paid-body p { margin: 0 0 .6rem; } .proj-paid-body p:last-child { margin-bottom: 0; }
-                        .proj-price-grid { list-style: none; margin: 0; padding: 0; display: grid; gap: .75rem; grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr)); }
-            .proj-price-card { display: flex; flex-direction: column; gap: .35rem; min-height: 8rem; padding: 1rem 1.1rem; border: 2px solid #d1d5db; border-radius: .5rem; background: #f9fafb; }
-            .proj-price-item { font-size: 1rem; font-weight: 800; line-height: 1.3; color: #1d1d1a; }
-            .proj-price-note { font-size: .9rem; line-height: 1.45; color: #1d1d1a; }
-            .proj-price-amount { margin-top: auto; padding-top: .5rem; font-size: 1.5rem; font-weight: 800; line-height: 1.1; color: var(--color-brand); }
+            .proj-price-wrap { overflow-x: auto; border: 2px solid #d1d5db; border-radius: .5rem; background: #fff; }
+            .proj-price-table { width: 100%; border-collapse: collapse; font-size: 1rem; color: #1d1d1a; }
+            .proj-price-table th, .proj-price-table td { padding: .7rem .9rem; text-align: left; vertical-align: top; border-bottom: 1px solid #d1d5db; }
+            .proj-price-table thead th { background: #f9fafb; font-weight: 800; border-bottom: 2px solid var(--color-brand); }
+            .proj-price-table tbody tr:last-child > * { border-bottom: 0; }
+            .proj-price-item { font-weight: 700; }
+            .proj-price-note { font-size: .92rem; line-height: 1.45; }
+            .proj-price-amount { font-weight: 800; white-space: nowrap; }
+            @media print {
+                .proj-price-wrap { overflow: visible; border: 1px solid #000; border-radius: 0; }
+                .proj-price-table { font-size: 11pt; }
+                .proj-price-table th, .proj-price-table td { padding: .4rem .6rem; border-bottom: 1px solid #000; }
+                .proj-price-table thead th { background: none; border-bottom: 2px solid #000; }
+                .proj-price-table tr, .proj-price-table td, .proj-price-table th { break-inside: avoid; }
+                .proj-price-amount { white-space: normal; }
+            }
                         .proj-terms { margin: 0; display: grid; gap: .6rem; }
             .proj-terms-row { display: grid; gap: .15rem 1rem; grid-template-columns: minmax(8rem, 12rem) 1fr; padding-bottom: .6rem; border-bottom: 1px solid #e5e7eb; }
             .proj-terms-row:last-child { padding-bottom: 0; border-bottom: 0; }
@@ -533,20 +544,29 @@
 
                 @php $pricing = collect($project->pricing ?? [])->filter(fn ($p) => filled($p['item'] ?? null) || filled($p['price'] ?? null)); @endphp
                 @if ($project->is_paid && $pricing->isNotEmpty())
-                    {{-- Cennik jako karty cen w ramce: nazwa, opis i duża cena na dole. --}}
+                    {{-- Cennik jako tabela: pozycja, opis i cena. --}}
                     <section class="proj-frame proj-price" aria-labelledby="proj-price-h">
                         <h2 id="proj-price-h" class="proj-frame-h"><i class="fa-solid fa-coins" aria-hidden="true"></i> Cennik</h2>
-                        <ul role="list" class="proj-price-grid">
-                            @foreach ($pricing as $row)
-                                <li class="proj-price-card">
-                                    <span class="proj-price-item">{{ $row['item'] }}</span>
-                                    @if (filled($row['note'] ?? null))<span class="proj-price-note">{{ $row['note'] }}</span>@endif
-                                    @if (filled($row['price'] ?? null))
-                                        <span class="proj-price-amount"><span class="sr-only">Cena: </span>{{ $row['price'] }}</span>
-                                    @endif
-                                </li>
-                            @endforeach
-                        </ul>
+                        <div class="proj-price-wrap">
+                            <table class="proj-price-table" aria-labelledby="proj-price-h">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">Pozycja</th>
+                                        <th scope="col">Opis</th>
+                                        <th scope="col">Cena</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach ($pricing as $row)
+                                        <tr>
+                                            <th scope="row" class="proj-price-item">{{ $row['item'] ?? '' }}</th>
+                                            <td class="proj-price-note">{{ $row['note'] ?? '' }}</td>
+                                            <td class="proj-price-amount">{{ $row['price'] ?? '—' }}</td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
                     </section>
                 @endif
 
