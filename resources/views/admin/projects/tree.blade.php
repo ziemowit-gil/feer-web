@@ -33,6 +33,12 @@
         .pt-badges { display: flex; flex-wrap: wrap; gap: .4rem; margin-top: .4rem; }
         .pt-badge { display: inline-flex; align-items: center; gap: .35rem; border-radius: 9999px; padding: .15rem .65rem; font-size: .75rem; font-weight: 700; background: #f3f4f6; color: #1d1d1a; }
         .pt-badge.ok { background: #dcfce7; color: #14532d; } .pt-badge.warn { background: #fef3c7; color: #78350f; } .pt-badge.info { background: #dbeafe; color: #1e3a8a; }
+        .pt-ib { display: inline-flex; width: 1.9rem; height: 1.9rem; align-items: center; justify-content: center; border-radius: 9999px; background: #f3f4f6; color: #1d1d1a; font-size: .85rem; cursor: help; }
+        .pt-ib.ok { background: #dcfce7; color: #14532d; } .pt-ib.warn { background: #fef3c7; color: #78350f; } .pt-ib.info { background: #dbeafe; color: #1e3a8a; } .pt-ib.off { background: #e5e7eb; color: #374151; }
+        .pt-ib:focus-visible { outline: 2px solid var(--color-brand); outline-offset: 2px; }
+        .pt-legend { display: flex; flex-wrap: wrap; gap: .35rem 1rem; margin: .6rem 0 0; padding: .5rem .75rem; border-radius: .5rem; background: #f9fafb; border: 1px dashed #d1d5db; font-size: .75rem; color: #374151; }
+        .pt-legend > span { display: inline-flex; align-items: center; gap: .35rem; } .pt-legend .pt-ib { width: 1.4rem; height: 1.4rem; font-size: .7rem; cursor: default; }
+        .pt-legend strong { font-weight: 700; color: #1d1d1a; margin-right: .25rem; }
         .pt-actions { display: flex; flex-wrap: wrap; gap: .5rem; border-top: 1px solid #e5e7eb; padding-top: 1rem; }
         .pt-btn { display: inline-flex; min-height: 2.25rem; align-items: center; gap: .4rem; border: 1px solid #d1d5db; border-radius: .5rem; background: #fff; padding: .35rem .85rem; font-size: .8rem; font-weight: 700; color: #1d1d1a; text-decoration: none; cursor: pointer; }
         .pt-btn:hover { background: #f3f4f6; } .pt-btn.primary { background: var(--color-brand); border-color: var(--color-brand); color: #fff; } .pt-btn.danger { border-color: #fecaca; color: #b91c1c; }
@@ -53,6 +59,25 @@
         </a>
     </div>
 
+@php
+    /** Ikony stanu działań — jedna definicja dla nagłówka, listy poddziałań i legendy. [ikona, klasa koloru, etykieta] */
+    $ptIcons = [
+        'published'   => ['fa-circle-check',    'ok',   'Opublikowane'],
+        'draft'       => ['fa-pen',             'warn', 'Szkic (niewidoczne publicznie)'],
+        'completed'   => ['fa-flag-checkered',  'off',  'Zrealizowane'],
+        'free'        => ['fa-gift',            'ok',   'Bezpłatne'],
+        'paid'        => ['fa-coins',           'warn', 'Odpłatne'],
+        'paid_offer'  => ['fa-briefcase',       'warn', 'Usługa wyłącznie odpłatna'],
+        'sub'         => ['fa-code-branch',     'info', 'Poddziałanie (forma udziału)'],
+        'unavailable' => ['fa-ban',             'off',  'Obecnie niedostępne'],
+        'branch'      => ['fa-diagram-project', '',     'Ma poddziałania (w drzewie)'],
+        'leaf'        => ['fa-folder-closed',   '',     'Bez poddziałań (w drzewie)'],
+    ];
+    $ptIcon = fn (string $key, ?string $extra = null) => sprintf(
+        '<span class="pt-ib %s" title="%s" tabindex="0"><i class="fa-solid %s" aria-hidden="true"></i><span class="sr-only">%s</span></span>',
+        $ptIcons[$key][1], e($ptIcons[$key][2] . ($extra ? ' — ' . $extra : '')), $ptIcons[$key][0], e($ptIcons[$key][2] . ($extra ? ' — ' . $extra : ''))
+    );
+@endphp
     <div class="pt-wrap">
         {{-- Lewy panel: drzewo --}}
         <nav class="pt-card pt-tree" aria-label="Drzewo działań"
@@ -85,13 +110,19 @@
             @else
                 <div class="pt-card pt-body">
                     <h2 style="margin:0;font-size:1.5rem;font-weight:800;font-style:italic">{{ $selected->title }}</h2>
-                    <div class="pt-badges">
-                        <span class="pt-badge {{ $selected->is_published ? 'ok' : 'warn' }}"><i class="fa-solid {{ $selected->is_published ? 'fa-circle-check' : 'fa-pen' }}" aria-hidden="true"></i>{{ $selected->is_published ? 'Opublikowany' : 'Szkic' }}</span>
-                        @if ($selected->is_completed)<span class="pt-badge">Zrealizowany</span>@endif
-                        <span class="pt-badge {{ $selected->is_paid ? 'warn' : 'ok' }}"><i class="fa-solid fa-coins" aria-hidden="true"></i>{{ $selected->is_paid ? 'Odpłatny' : 'Bezpłatny' }}</span>
-                        @if ($selected->isPaidOffer())<span class="pt-badge warn"><i class="fa-solid fa-coins" aria-hidden="true"></i>Usługa odpłatna</span>@endif
-                        @if ($selected->parent_id)<span class="pt-badge info"><i class="fa-solid fa-code-branch" aria-hidden="true"></i>Poddziałanie (forma udziału){{ $selected->is_offered ? '' : ' — obecnie niedostępna' }}</span>@endif
-                        @if ($selected->category)<span class="pt-badge">{{ $selected->category->name }}</span>@endif
+                    <div class="pt-badges" role="group" aria-label="Stan działania">
+                        {!! $ptIcon($selected->is_published ? 'published' : 'draft') !!}
+                        @if ($selected->is_completed){!! $ptIcon('completed') !!}@endif
+                        {!! $ptIcon($selected->is_paid ? 'paid' : 'free') !!}
+                        @if ($selected->isPaidOffer()){!! $ptIcon('paid_offer') !!}@endif
+                        @if ($selected->parent_id){!! $ptIcon('sub') !!}@unless ($selected->is_offered){!! $ptIcon('unavailable') !!}@endunless @endif
+                        @if ($selected->category)<span class="pt-badge" title="Kategoria">{{ $selected->category->name }}</span>@endif
+                    </div>
+                    <p class="pt-legend" aria-label="Legenda ikon"><strong>Legenda:</strong>
+                        @foreach ($ptIcons as $key => [$ico, $cls, $label])
+                            <span><span class="pt-ib {{ $cls }}" aria-hidden="true"><i class="fa-solid {{ $ico }}"></i></span>{{ $label }}</span>
+                        @endforeach
+                    </p>
                     </div>
 
                     <dl class="pt-meta">
@@ -141,9 +172,9 @@
                             @foreach ($children as $ch)
                                 <li style="display:flex;flex-wrap:wrap;align-items:center;gap:.5rem;border:1px solid #e5e7eb;border-radius:.5rem;padding:.5rem .75rem">
                                     <a href="{{ route('admin.projekty.index', ['wybrana' => $ch->id]) }}" style="font-weight:700;color:#1d1d1a;text-decoration:none">{{ $ch->title }}</a>
-                                    <span class="pt-badge {{ $ch->is_paid ? 'warn' : 'ok' }}">{{ $ch->is_paid ? 'Odpłatny' : 'Bezpłatny' }}</span>
-                                    @unless ($ch->is_offered)<span class="pt-badge">Obecnie niedostępny</span>@endunless
-                                    @unless ($ch->is_published)<span class="pt-badge warn">Szkic</span>@endunless
+                                    {!! $ptIcon($ch->is_paid ? 'paid' : 'free') !!}
+                                    @unless ($ch->is_offered){!! $ptIcon('unavailable') !!}@endunless
+                                    @unless ($ch->is_published){!! $ptIcon('draft') !!}@endunless
                                     <a href="{{ route('admin.projekty.edit', $ch) }}" class="pt-btn" style="margin-left:auto"><i class="fa-solid fa-pen" aria-hidden="true"></i> Edytuj</a>
                                 </li>
                             @endforeach
