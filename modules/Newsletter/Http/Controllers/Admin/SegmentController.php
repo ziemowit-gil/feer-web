@@ -66,7 +66,7 @@ class SegmentController extends Controller
             'segment'   => $segment,
             'fields'    => SegmentResolver::FIELDS,
             'operators' => SegmentResolver::OPERATORS,
-            'topics'    => Subscriber::$availableTopics,
+            'topics'    => Subscriber::availableTopics(),
             'statuses'  => Subscriber::STATUSES,
             'channels'  => Subscriber::CHANNELS,
             'lists'     => NewsletterList::orderBy('name')->pluck('name', 'id'),

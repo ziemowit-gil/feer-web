@@ -50,7 +50,7 @@ class NewsletterForm extends Model
     /** Tematy pokazywane w formularzu: wybrane albo wszystkie dostępne. */
     public function topicOptions(): array
     {
-        $all = Subscriber::$availableTopics;
+        $all = Subscriber::availableTopics();
         $keys = $this->topics ?: array_keys($all);
 
         return array_intersect_key($all, array_flip($keys));

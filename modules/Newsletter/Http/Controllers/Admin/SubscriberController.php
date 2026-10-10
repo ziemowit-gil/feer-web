@@ -32,7 +32,7 @@ class SubscriberController extends Controller
         return view('newsletter::admin.subscribers.index', [
             'subscribers' => $q->paginate(50)->withQueryString(),
             'filters'     => $f,
-            'topics'      => Subscriber::$availableTopics,
+            'topics'      => Subscriber::availableTopics(),
             'statuses'    => Subscriber::STATUSES,
             'channels'    => Subscriber::CHANNELS,
             'lists'       => NewsletterList::orderBy('name')->get(),
@@ -171,7 +171,7 @@ class SubscriberController extends Controller
 
     public function importForm()
     {
-        return view('newsletter::admin.subscribers.import', ['lists' => NewsletterList::orderBy('name')->get(), 'topics' => Subscriber::$availableTopics]);
+        return view('newsletter::admin.subscribers.import', ['lists' => NewsletterList::orderBy('name')->get(), 'topics' => Subscriber::availableTopics()]);
     }
 
     public function import(Request $request)
@@ -206,7 +206,7 @@ class SubscriberController extends Controller
             $s ??= new Subscriber(['email' => $email, 'site_id' => SiteSetting::current()->id, 'source' => 'import']);
             $s->name = $row['name'] ?? ($row['imie'] ?? $s->name);
             $s->phone = ! empty($row['phone'] ?? $row['telefon'] ?? null) ? preg_replace('/[^0-9+]/', '', (string) ($row['phone'] ?? $row['telefon'])) : $s->phone;
-            $rowTopics = ! empty($row['topics']) ? array_values(array_intersect(array_map('trim', explode(',', (string) $row['topics'])), array_keys(Subscriber::$availableTopics))) : [];
+            $rowTopics = ! empty($row['topics']) ? array_values(array_intersect(array_map('trim', explode(',', (string) $row['topics'])), array_keys(Subscriber::availableTopics()))) : [];
             $s->topics = array_values(array_unique(array_merge($s->topics ?? [], $rowTopics ?: $topics)));
             if (! empty($data['tag'])) {
                 $s->tags = array_values(array_unique(array_merge($s->tags ?? [], [$data['tag']])));
@@ -303,7 +303,7 @@ class SubscriberController extends Controller
             'phone'      => ['nullable', 'string', 'max:30'],
             'status'     => ['required', Rule::in(array_keys(Subscriber::STATUSES))],
             'topics'     => ['nullable', 'array'],
-            'topics.*'   => [Rule::in(array_keys(Subscriber::$availableTopics))],
+            'topics.*'   => [Rule::in(array_keys(Subscriber::availableTopics()))],
             'channels'   => ['nullable', 'array'],
             'channels.*' => [Rule::in(array_keys(Subscriber::CHANNELS))],
             'tags'       => ['nullable', 'string', 'max:255'],

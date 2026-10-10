@@ -65,7 +65,7 @@ class ListController extends Controller
             'status'     => $status,
             'otherLists' => NewsletterList::where('id', '!=', $list->id)->orderBy('name')->get(),
             'segments'   => NewsletterSegment::orderBy('name')->get(),
-            'topics'     => Subscriber::$availableTopics,
+            'topics'     => Subscriber::availableTopics(),
         ]);
     }
 

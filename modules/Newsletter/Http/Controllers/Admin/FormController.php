@@ -65,7 +65,7 @@ class FormController extends Controller
 
         return view('newsletter::admin.forms.form', [
             'form'    => $form,
-            'topics'  => Subscriber::$availableTopics,
+            'topics'  => Subscriber::availableTopics(),
             'lists'   => NewsletterList::orderBy('name')->get(),
             'clauses' => $clauses,
             'styles'  => NewsletterForm::STYLES,
@@ -91,9 +91,9 @@ class FormController extends Controller
             'heading' => ['required', 'string', 'max:200'],
             'lead' => ['nullable', 'string', 'max:1000'],
             'topics' => ['nullable', 'array'],
-            'topics.*' => [Rule::in(array_keys(Subscriber::$availableTopics))],
+            'topics.*' => [Rule::in(array_keys(Subscriber::availableTopics()))],
             'default_topics' => ['nullable', 'array'],
-            'default_topics.*' => [Rule::in(array_keys(Subscriber::$availableTopics))],
+            'default_topics.*' => [Rule::in(array_keys(Subscriber::availableTopics()))],
             'consent_text' => ['required', 'string', 'max:1000'],
             'clause_id' => ['nullable', 'integer'],
             'privacy_url' => ['nullable', 'string', 'max:500'],
@@ -115,7 +115,7 @@ class FormController extends Controller
             $data['slug'] = $base . '-' . $i++;
         }
         $data['topics'] = array_values($data['topics'] ?? []);
-        $data['default_topics'] = array_values(array_intersect($data['default_topics'] ?? [], $data['topics'] ?: array_keys(Subscriber::$availableTopics)));
+        $data['default_topics'] = array_values(array_intersect($data['default_topics'] ?? [], $data['topics'] ?: array_keys(Subscriber::availableTopics())));
         $data['list_ids'] = array_values(array_map('intval', $data['list_ids'] ?? []));
 
         return $data;

@@ -73,7 +73,28 @@ class Subscriber extends Model
         'crm_synced_at'        => 'datetime',
     ];
 
-    /** Dostępne tematy subskrypcji: klucz => etykieta wyświetlana. */
+    /**
+     * Dostępne tematy subskrypcji: klucz => etykieta. Źródłem jest tabela
+     * `newsletter_topics` (panel: Newsletter → Tematy); lista poniżej to fallback
+     * przed migracją i wartości startowe.
+     */
+    public static function availableTopics(bool $onlyActive = true): array
+    {
+        try {
+            if (class_exists(\Modules\Newsletter\Models\NewsletterTopic::class) && \Illuminate\Support\Facades\Schema::hasTable('newsletter_topics')) {
+                $topics = \Modules\Newsletter\Models\NewsletterTopic::options($onlyActive);
+                if ($topics !== []) {
+                    return $topics;
+                }
+            }
+        } catch (\Throwable) {
+            // brak bazy (instalacja) — fallback poniżej
+        }
+
+        return static::$availableTopics;
+    }
+
+    /** Fallback / wartości startowe tematów. */
     public static array $availableTopics = [
         'news'      => 'Aktualności',
         'events'    => 'Szkolenia i wydarzenia',
@@ -216,7 +237,7 @@ class Subscriber extends Model
     public function topicLabels(): array
     {
         return array_values(array_intersect_key(
-            static::$availableTopics,
+            static::availableTopics(false),
             array_flip($this->topics ?? [])
         ));
     }

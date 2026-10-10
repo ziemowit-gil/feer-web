@@ -165,6 +165,7 @@ final class AdminMenu
                         $this->child('Subskrybenci', 'admin.newsletter.subskrybenci.index', 'admin.newsletter.subskrybenci.*'),
                         $this->child('Listy', 'admin.newsletter.listy.index', 'admin.newsletter.listy.*'),
                         $this->child('Segmenty', 'admin.newsletter.segmenty.index', 'admin.newsletter.segmenty.*'),
+                        $this->child('Tematy', 'admin.newsletter.tematy.index', 'admin.newsletter.tematy.*'),
                         $this->child('Szablony', 'admin.newsletter.szablony.index', 'admin.newsletter.szablony.*'),
                         $this->child('Formularze zapisu', 'admin.newsletter.formularze.index', 'admin.newsletter.formularze.*'),
                         $this->child('Ustawienia', 'admin.newsletter.ustawienia.edit', 'admin.newsletter.ustawienia.*'),

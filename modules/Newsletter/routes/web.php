@@ -13,6 +13,7 @@ use Modules\Newsletter\Http\Controllers\Admin\SegmentController as AdminSegmentC
 use Modules\Newsletter\Http\Controllers\Admin\SettingsController as AdminSettingsController;
 use Modules\Newsletter\Http\Controllers\Admin\SubscriberController as AdminSubscriberController;
 use Modules\Newsletter\Http\Controllers\Admin\TemplateController as AdminTemplateController;
+use Modules\Newsletter\Http\Controllers\Admin\TopicController as AdminTopicController;
 use Modules\Newsletter\Http\Controllers\Public\PreferencesController;
 use Modules\Newsletter\Http\Controllers\Public\SignupController;
 use Modules\Newsletter\Http\Controllers\Public\TrackingController;
@@ -71,6 +72,9 @@ Route::middleware(['auth', 'verified', '2fa', 'admin-site', 'module:newsletter',
         Route::get('listy/{list}/eksport', [AdminListController::class, 'export'])->name('listy.export');
         Route::post('segmenty/policz', [AdminSegmentController::class, 'count'])->name('segmenty.count');
         Route::resource('segmenty', AdminSegmentController::class)->parameters(['segmenty' => 'segment'])->except('show');
+
+        Route::post('tematy/kolejnosc', [AdminTopicController::class, 'reorder'])->name('tematy.reorder');
+        Route::resource('tematy', AdminTopicController::class)->parameters(['tematy' => 'topic'])->except('show');
 
         Route::resource('szablony', AdminTemplateController::class)->parameters(['szablony' => 'template'])->except('show');
         Route::get('szablony/{template}/edytor', [AdminTemplateController::class, 'editor'])->name('szablony.editor');

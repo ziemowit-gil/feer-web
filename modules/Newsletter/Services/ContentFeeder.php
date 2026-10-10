@@ -289,13 +289,23 @@ class ContentFeeder
         return null;
     }
 
+    /** Temat dla kategorii aktualności: z mapowania w panelu (Newsletter → Tematy), domyślnie „news". */
     private function topicForCategory(?string $slug): ?string
     {
-        return match ($slug) {
-            'etr', 'latwy-odczyt' => 'etr',
-            'dzialania', 'projekty' => 'projects',
-            default => 'news',
-        };
+        static $map = null;
+        if ($map === null) {
+            $map = [];
+            try {
+                foreach (\Modules\Newsletter\Models\NewsletterTopic::query()->where('is_active', true)->get(['key', 'news_category_slugs']) as $t) {
+                    foreach ((array) ($t->news_category_slugs ?? []) as $cat) {
+                        $map[$cat] = $t->key;
+                    }
+                }
+            } catch (\Throwable) {
+            }
+        }
+
+        return $slug !== null && isset($map[$slug]) ? $map[$slug] : 'news';
     }
 
     private function attr(string $attrs, string $name): ?string

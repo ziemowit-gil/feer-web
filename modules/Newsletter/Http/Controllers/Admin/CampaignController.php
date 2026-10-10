@@ -89,7 +89,7 @@ class CampaignController extends Controller
             'channels'  => $channels->all(),
             'lists'     => NewsletterList::whereIn('id', (array) ($campaign->audience['lists'] ?? []))->pluck('name'),
             'segments'  => NewsletterSegment::whereIn('id', (array) ($campaign->audience['segments'] ?? []))->pluck('name'),
-            'topics'    => array_intersect_key(Subscriber::$availableTopics, array_flip((array) ($campaign->audience['topics'] ?? []))),
+            'topics'    => array_intersect_key(Subscriber::availableTopics(), array_flip((array) ($campaign->audience['topics'] ?? []))),
             'batchProgress' => $campaign->batch_id ? Bus::findBatch($campaign->batch_id) : null,
         ]);
     }
@@ -330,7 +330,7 @@ class CampaignController extends Controller
             'templates' => NewsletterTemplate::orderByDesc('is_default')->orderBy('name')->get(),
             'lists'     => NewsletterList::withCount('subscribers')->orderBy('name')->get(),
             'segments'  => NewsletterSegment::orderBy('name')->get(),
-            'topics'    => Subscriber::$availableTopics,
+            'topics'    => Subscriber::availableTopics(),
             'channels'  => app(ChannelRegistry::class)->all(),
             'tags'      => Personalizer::TAGS,
             'sources'   => ContentFeeder::SOURCES,

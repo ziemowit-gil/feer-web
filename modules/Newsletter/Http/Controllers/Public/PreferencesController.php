@@ -50,7 +50,7 @@ class PreferencesController extends Controller
 
         return view('newsletter::public.preferences', [
             'subscriber' => $subscriber,
-            'topics'     => Subscriber::$availableTopics,
+            'topics'     => Subscriber::availableTopics(),
             'lists'      => NewsletterList::where('is_public', true)->orderBy('name')->get(),
             'pushEnabled'=> (bool) \App\Models\SiteSetting::current()->newsletter_webpush_enabled && filled(config('webpush.vapid.public_key')),
         ]);
@@ -63,7 +63,7 @@ class PreferencesController extends Controller
         $data = $request->validate([
             'name'       => ['nullable', 'string', 'max:100'],
             'topics'     => ['required', 'array', 'min:1'],
-            'topics.*'   => ['string', Rule::in(array_keys(Subscriber::$availableTopics))],
+            'topics.*'   => ['string', Rule::in(array_keys(Subscriber::availableTopics()))],
             'channels'   => ['nullable', 'array'],
             'channels.*' => ['string', Rule::in(array_keys(Subscriber::CHANNELS))],
             'lists'      => ['nullable', 'array'],
