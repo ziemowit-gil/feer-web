@@ -158,7 +158,11 @@ final class AdminMenu
                     children: [
                         $this->child('Strefy bannerów', 'admin.strefy-bannerow.index', 'admin.strefy-bannerow.*'),
                     ]),
-                $this->can('newsletter') ? $this->item('newsletter', 'Newsletter', 'admin.newsletter.dashboard', 'fa-envelope', active: 'admin.newsletter.*',
+                $this->item('campaigns', 'Kampanie zbiórkowe', 'admin.kampanie.index', 'fa-hand-holding-heart', active: 'admin.kampanie.*'),
+            ]) : null,
+
+            $this->can('newsletter') ? $this->section('newsletter', 'Newsletter', [
+                $this->item('newsletter', 'Newsletter', 'admin.newsletter.dashboard', 'fa-envelope', active: 'admin.newsletter.*',
                     children: [
                         $this->child('Pulpit', 'admin.newsletter.dashboard', 'admin.newsletter.dashboard'),
                         $this->child('Kampanie', 'admin.newsletter.kampanie.index', 'admin.newsletter.kampanie.*'),
@@ -170,9 +174,8 @@ final class AdminMenu
                         $this->child('Edytor Mosaico', 'admin.newsletter.mosaico', 'admin.newsletter.mosaico'),
                         $this->child('Formularze zapisu', 'admin.newsletter.formularze.index', 'admin.newsletter.formularze.*'),
                         $this->child('Ustawienia', 'admin.newsletter.ustawienia.edit', 'admin.newsletter.ustawienia.*'),
-                    ]) : null,
-                $this->item('campaigns', 'Kampanie zbiórkowe', 'admin.kampanie.index', 'fa-hand-holding-heart', active: 'admin.kampanie.*'),
-            ]) : null,
+                    ]),
+            ], defaultOpen: true) : null,
 
             $isAdmin ? $this->section('inbox', 'Skrzynka', [
                 $this->item('contact', 'Wiadomości kontaktowe', 'admin.wiadomosci-kontaktowe.index', 'fa-envelope-open',
