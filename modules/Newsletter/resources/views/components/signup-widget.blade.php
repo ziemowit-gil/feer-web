@@ -7,9 +7,9 @@
 @endphp
 @once
 <style>
-.nlw{--nlw-text:#1D1D1A;--nlw-brand:var(--color-brand,#1E6DFF);--nlw-brand-dark:#1752BF;--nlw-accent:#EA8F00;--nlw-bg:#F3F6FB;--nlw-card:#fff;--nlw-muted:#4A4A47;--nlw-border:#8E8E8A;--nlw-line:#D6DEEA;--nlw-error:#B3261E;--nlw-ok-bg:#E6F4EA;--nlw-ok:#0F5132;font-family:Montserrat,Arial,Helvetica,sans-serif;color:var(--nlw-text);background:var(--nlw-bg)}
+.nlw{--nlw-text:#1D1D1A;--nlw-brand:var(--color-brand,#1E6DFF);--nlw-brand-dark:#1752BF;--nlw-accent:#EA8F00;--nlw-bg:#F3F6FB;--nlw-card:#fff;--nlw-muted:#4A4A47;--nlw-border:#8E8E8A;--nlw-line:#D6DEEA;--nlw-error:#B3261E;--nlw-ok-bg:#E6F4EA;--nlw-ok:#0F5132;font-family:Montserrat,Arial,Helvetica,sans-serif;color:var(--nlw-text);background:transparent}
 .nlw *{box-sizing:border-box}
-.nlw--band{padding:clamp(32px,6vw,72px) 16px}
+.nlw--band{padding:clamp(8px,3vw,32px) 0}
 .nlw--card{padding:0;background:transparent}
 .nlw--inline{padding:16px 0;background:transparent}
 .nlw__inner{max-width:1080px;margin:0 auto;display:grid;gap:28px;grid-template-columns:1fr}
