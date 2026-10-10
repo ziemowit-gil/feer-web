@@ -255,7 +255,7 @@ draft ──► scheduled ──► queued ──► sending ──► sent
 | Throttling | job middleware `RateLimited('newsletter-email')` — limit z ustawień (np. 600/min dla SES, 30/min dla SMTP współdzielonego, 10 000/dzień dla Graph*). Limiter w cache (database/redis). Przekroczenie → `release(60)` |
 | Retry | `tries = 3`, `backoff = [60, 300, 1800]`; miękkie odbicie (4xx SMTP) → ponów, twarde (5xx) → `bounced` |
 | Deduplikacja | klucz idempotentny `delivery.uuid`; przed wysłaniem sprawdzamy `status = queued` (ochrona przed podwójną wysyłką po restarcie workera) |
-| Worker | serwer: `php85 artisan queue:work database --queue=newsletter,default --tries=3 --max-time=3600` pod supervisorem |
+| Worker | serwer: `php84 artisan queue:work database --queue=newsletter,default --tries=3 --max-time=3600` pod supervisorem |
 
 \* Microsoft Graph ma limity dzienne na skrzynkę (ok. 10 000 adresatów/dzień) — dla list > 5 000 rekomendujemy SES lub Mailgun w regionie UE.
 
@@ -362,7 +362,7 @@ Komponent generuje żeton i zadanie `SpamGuard`, zapisuje zgodę ze snapshotem k
 |---|---|---|
 | **SZO (feerSZO)** | Po potwierdzeniu DOI (i przy zmianie preferencji) job `SyncSubscriberToCrm` wysyła `POST {szo.url}/api/v1/forms.php` z `form` = slug formularza SZO (z formularza zapisu albo domyślny z ustawień), `data` (email, imię, telefon, notatka z tematami), `consents: ["rodo","newsletter"]`, `meta.external_id = "newsletter:{uuid}"` (idempotencja). Wynik w `subscribers.szo_contact_id / szo_synced_at / szo_error`. | Ustawienia → Integracje → SZO (adres, token) + Newsletter → Ustawienia → „SZO i CRM” |
 | **CRM (webhook)** | Zdarzenia `subscribed`, `confirmed`, `preferences_changed`, `unsubscribed`, `anonymized` jako JSON `{event, occurred_at, subscriber{…}, consents[]}` podpisany `X-Signature: sha256=HMAC(body, secret)`. | adres + sekret w ustawieniach newslettera |
-| **Ponowienia** | `php85 artisan newsletter:sync-crm` (harmonogram co 15 min) dosyła niezsynchronizowanych; przycisk „Synchronizuj z SZO/CRM” na karcie subskrybenta. | — |
+| **Ponowienia** | `php84 artisan newsletter:sync-crm` (harmonogram co 15 min) dosyła niezsynchronizowanych; przycisk „Synchronizuj z SZO/CRM” na karcie subskrybenta. | — |
 
 ---
 
@@ -1007,6 +1007,6 @@ Testy: feature testy przepływu DOI i wypisu (w tym one-click POST), testy jobó
 | RODO | rejestr zgód `newsletter_consents` (snapshot klauzuli, IP-hash, UA, metoda), DOI z TTL, samoobsługowy eksport i usunięcie, anonimizacja + lista tłumienia 30 dni, retencja `newsletter:prune`, `activity_log` dla importu/eksportu/wysyłki | |
 | Harmonogram | `newsletter:dispatch-due` (co minutę), `newsletter:recurring` (co godzinę), `newsletter:expire-pending`, `newsletter:prune`, `newsletter:sync-crm` | wymaga `schedule:run` i workera kolejki |
 
-**Uruchomienie na serwerze:** `php85 artisan migrate --force`, worker `php85 artisan queue:work database --queue=newsletter,default --tries=3` pod supervisorem, w panelu: Newsletter → Ustawienia (nadawca, dostawca, limity) oraz Formularze zapisu (treści i klauzula). Opcjonalnie seed klauzul SZO i włączenie synchronizacji.
+**Uruchomienie na serwerze:** `php84 artisan migrate --force`, worker `php84 artisan queue:work database --queue=newsletter,default --tries=3` pod supervisorem, w panelu: Newsletter → Ustawienia (nadawca, dostawca, limity) oraz Formularze zapisu (treści i klauzula). Opcjonalnie seed klauzul SZO i włączenie synchronizacji.
 
 **Do zrobienia w kolejnych iteracjach:** Cloudflare Turnstile (pola są, brak weryfikacji po stronie serwera), parser DSN dla odbić z Microsoft Graph, wysyłka „o lokalnej godzinie odbiorcy” (flaga zapisana, dispatcher wysyła o czasie serwera), nocne liczenie `engagement_score`, testy feature.

@@ -70,7 +70,7 @@
                     <li>DMARC: {!! $deliverability['dmarc'] ? '<span class="font-bold text-green-800">✔ ' . e(\Illuminate\Support\Str::limit($deliverability['dmarc'], 40)) . '</span>' : '<span class="font-bold text-red-700">✘ brak</span>' !!}</li>
                     @endif
                 </ul>
-                <p class="mt-3 text-xs text-muted">Worker: <code>php85 artisan queue:work database --queue=newsletter,default</code></p>
+                <p class="mt-3 text-xs text-muted">Worker: <code>php84 artisan queue:work database --queue=newsletter,default</code></p>
             </section>
         </div>
     </div>
