@@ -13,12 +13,14 @@
 .nlw--card{padding:0;background:transparent}
 .nlw--inline{padding:16px 0;background:transparent}
 .nlw__inner{max-width:1080px;margin:0 auto;display:grid;gap:28px;grid-template-columns:1fr}
-.nlw--band .nlw__inner{gap:36px;max-width:760px}
 .nlw--band .nlw__copy{text-align:center}
 .nlw--band .nlw__benefits{width:fit-content;margin-left:auto;margin-right:auto;text-align:left}
 .nlw--band .nlw__proof{text-align:center}
-.nlw--band .nlw__faq{max-width:640px;width:100%;margin-left:auto;margin-right:auto;text-align:left}
-.nlw--band .nlw__form{width:100%;max-width:640px;margin-left:auto;margin-right:auto}
+.nlw--band .nlw__faq{margin-top:0;align-self:start}
+@media (min-width:900px){
+  .nlw--band .nlw__inner{grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);align-items:start;gap:40px 48px}
+  .nlw--band .nlw__copy{grid-column:1 / -1}
+}
 .nlw__copy{position:relative;padding-left:0}
 .nlw__eyebrow{margin:0 0 10px;font-size:13px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--nlw-brand-dark)}
 .nlw__title{margin:0 0 14px;font-size:clamp(26px,3.4vw,40px);line-height:1.1;font-weight:800;color:var(--nlw-text)}
@@ -96,9 +98,6 @@
       <ul class="nlw__benefits">@foreach ($form->benefits as $benefit)<li>{{ $benefit }}</li>@endforeach</ul>
       @endif
       @if ($form->proof)<p class="nlw__proof">{{ $form->proof }}</p>@endif
-      @if (count($form->faq ?? []))
-      <div class="nlw__faq">@foreach ($form->faq as $item)<details><summary>{{ $item['q'] }}</summary><p>{{ $item['a'] }}</p></details>@endforeach</div>
-      @endif
     </div>
     @else
       <h2 id="{{ $id }}-title" class="sr-only">{{ $form->heading }}</h2>
@@ -177,6 +176,10 @@
 
       <p class="nlw__status" role="status" aria-live="polite" tabindex="-1" data-nlw-status data-success="{{ $form->success_message }}"></p>
     </form>
+
+    @if (count($form->faq ?? []))
+    <div class="nlw__faq">@foreach ($form->faq as $item)<details><summary>{{ $item['q'] }}</summary><p>{{ $item['a'] }}</p></details>@endforeach</div>
+    @endif
   </div>
 </section>
 @once
