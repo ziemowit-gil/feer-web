@@ -79,4 +79,22 @@ class MenuLinkPageTypesTest extends TestCase
         $standardHtml = $this->get(route('admin.podstrony.edit', $standard))->assertOk()->getContent();
         $this->assertMatchesRegularExpression('~data-content-field data-hide-for-link class=""~', $standardHtml);
     }
+
+    public function test_drzewo_dzialan_w_panelu_odroznia_link_od_zakladki(): void
+    {
+        $this->actingAs(User::factory()->create(['role' => User::ROLE_ADMIN]));
+        $category = Category::create(['name' => 'Dla NGO', 'slug' => 'dla-ngo']);
+        $project = Project::create(['title' => 'Edukacja', 'slug' => 'edukacja', 'category_id' => $category->id, 'content' => '<p>Opis</p>', 'is_published' => true]);
+        Page::create(['title' => 'Zakres', 'slug' => 'zakres', 'type' => 'standard', 'is_published' => true, 'project_id' => $project->id, 'project_display' => 'tab']);
+        Page::create(['title' => 'Profil FB', 'slug' => 'profil-fb', 'type' => 'menu_link', 'is_published' => true, 'project_id' => $project->id, 'project_display' => 'tab',
+            'type_data' => ['target_url' => 'https://facebook.com/feer']]);
+
+        $this->assertSame('Zakładka', Page::where('slug', 'zakres')->first()->projectDisplayInfo()['label']);
+        $this->assertSame(['label' => 'Link', 'link' => true, 'target' => 'https://facebook.com/feer'], Page::where('slug', 'profil-fb')->first()->projectDisplayInfo());
+
+        $this->get(route('admin.projects.index', ['wybrana' => $project->id]))->assertOk()
+            ->assertSee('Zakładka')
+            ->assertSee('→ https://facebook.com/feer')
+            ->assertSee('Dodaj link');
+    }
 }

@@ -5,7 +5,9 @@
         <i class="fa-solid {{ $kids->isNotEmpty() ? 'fa-folder-tree' : 'fa-file-lines' }} w-4 text-center text-gray-500" aria-hidden="true"></i>
         <a href="{{ route('admin.podstrony.edit', $node) }}" class="min-w-0 flex-1 truncate text-sm font-bold text-ink hover:text-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">{{ $node->title }}</a>
         @if (! $node->is_published)<span class="text-xs font-bold text-ink"><i class="fa-solid fa-pen-to-square mr-1 text-muted" aria-hidden="true"></i>Szkic</span>@endif
-        @if ($depth === 0)<span class="text-xs font-bold text-muted">{{ \App\Models\Page::PROJECT_DISPLAYS[$node->project_display ?? 'link'] ?? '' }}</span>@endif
+        @php $display = $node->projectDisplayInfo(); @endphp
+        @if ($display['link'])<span class="text-xs font-bold text-muted"><i class="fa-solid fa-link" aria-hidden="true"></i> {{ $display['label'] }}@if ($display['target']) → {{ $display['target'] }}@endif</span>
+        @elseif ($depth === 0)<span class="text-xs font-bold text-muted">{{ \App\Models\Page::PROJECT_DISPLAYS[$node->project_display ?? 'link'] ?? '' }}</span>@endif
         <a href="{{ route('admin.podstrony.create', ['parent_id' => $node->id, 'project_id' => $project->id, 'project_display' => 'tab']) }}"
            class="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs font-bold text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark bg-gray-100 hover:bg-brand-light">
             <i class="fa-solid fa-plus" aria-hidden="true"></i> Podstrona<span class="sr-only"> w „{{ $node->title }}”</span>

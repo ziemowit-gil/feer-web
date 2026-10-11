@@ -617,6 +617,27 @@ class Page extends Model
         return $this->navLinkAttributes() !== '' ? '<span class="sr-only"> (otwiera się w nowej karcie)</span>' : '';
     }
 
+    /**
+     * Etykieta sposobu pokazania podstrony na stronie działania (panel): przekierowanie,
+     * własny link i nagłówek wyróżnione osobno — to nie zakładki, tylko linki w menu.
+     *
+     * @return array{label: string, link: bool, target: ?string}
+     */
+    public function projectDisplayInfo(): array
+    {
+        if ($this->isMenuHeading()) {
+            return ['label' => 'Nagłówek w menu', 'link' => true, 'target' => null];
+        }
+
+        if ($this->navUrl() !== $this->publicUrl()) {
+            return ['label' => $this->isRedirect() ? 'Przekierowanie' : 'Link', 'link' => true, 'target' => $this->redirectTarget()];
+        }
+
+        $labels = ['tab' => 'Zakładka', 'inline' => 'Sekcja w treści', 'accordion' => 'Akordeon', 'link' => 'Odnośnik'];
+
+        return ['label' => $labels[$this->project_display ?? 'link'] ?? 'Odnośnik', 'link' => false, 'target' => null];
+    }
+
     public function isRegulation(): bool
     {
         return $this->type === 'regulation';

@@ -147,7 +147,6 @@
                     $flatPages = [];
                     $walk = function ($nodes, $depth) use (&$walk, &$flatPages) { foreach ($nodes as $n) { $flatPages[] = [$n, $depth]; $walk($n->tree_children ?? collect(), $depth + 1); } };
                     $walk($subPages, 0);
-                    $displayLabels = ['tab' => 'Zakładka', 'inline' => 'Sekcja w treści', 'accordion' => 'Akordeon', 'link' => 'Odnośnik'];
                 @endphp
 
                 <div class="pt-card pt-body">
@@ -190,7 +189,10 @@
                 <section class="pt-card pt-body pt-gap" aria-labelledby="pt-pages-h">
                     <div class="pt-sechead">
                         <h3 id="pt-pages-h" class="pt-h3">Podstrony i menu boczne <span class="pt-muted">({{ count($flatPages) }})</span></h3>
-                        <a href="{{ route('admin.podstrony.create', ['project_id' => $selected->id, 'project_display' => 'tab']) }}" class="pt-btn"><i class="fa-solid fa-plus" aria-hidden="true"></i> Dodaj podstronę</a>
+                        <span style="display:inline-flex;flex-wrap:wrap;gap:.5rem">
+                            <a href="{{ route('admin.podstrony.create', ['project_id' => $selected->id, 'project_display' => 'tab']) }}" class="pt-btn"><i class="fa-solid fa-plus" aria-hidden="true"></i> Dodaj podstronę</a>
+                            <a href="{{ route('admin.podstrony.create', ['project_id' => $selected->id, 'project_display' => 'tab', 'type' => 'menu_link']) }}" class="pt-btn"><i class="fa-solid fa-link" aria-hidden="true"></i> Dodaj link</a>
+                        </span>
                     </div>
                     <p class="pt-help">Na stronie działania pojawiają się obok „O projekcie” — jako zakładki albo pozycje menu bocznego (zależnie od ustawień), sekcje w treści lub odnośniki.</p>
                     @if (empty($flatPages))
@@ -201,7 +203,14 @@
                                 <li class="pt-item" style="padding-left: {{ 0.75 + $depth * 1.25 }}rem">
                                     @if ($depth)<i class="fa-solid fa-turn-up fa-rotate-90 pt-muted" aria-hidden="true"></i>@endif
                                     <span class="pt-item-title">{{ $pg->title }}</span>
-                                    @if (! $depth)<span class="pt-badge info">{{ $displayLabels[$pg->project_display] ?? 'Odnośnik' }}</span>@endif
+                                    @php $display = $pg->projectDisplayInfo(); @endphp
+                                    @if ($display['link'])
+                                        {{-- Link / przekierowanie: inna etykieta i adres docelowy — to nie zakładka. --}}
+                                        <span class="pt-badge"><i class="fa-solid fa-link" aria-hidden="true"></i>{{ $display['label'] }}</span>
+                                        @if ($display['target'])<span class="pt-muted" style="font-size:.8125rem;overflow-wrap:anywhere">→ {{ $display['target'] }}</span>@endif
+                                    @elseif (! $depth)
+                                        <span class="pt-badge info">{{ $display['label'] }}</span>
+                                    @endif
                                     @unless ($pg->is_published)<span class="pt-badge warn"><i class="fa-solid fa-pen" aria-hidden="true"></i>Szkic</span>@endunless
                                     <a href="{{ route('admin.podstrony.edit', $pg) }}" class="pt-btn pt-btn-sm" style="margin-left:auto"><i class="fa-solid fa-pen" aria-hidden="true"></i> Edytuj<span class="sr-only"> podstronę „{{ $pg->title }}”</span></a>
                                 </li>
