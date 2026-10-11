@@ -19,6 +19,14 @@ class EditionStatus extends Command
     {
         $this->line('Edycja: <info>'.(Edition::isPro() ? 'płatna (pro)' : 'darmowa (free)').'</info>');
         $this->line('Powód:  '.Edition::reason());
+
+        $last = \App\Support\LicenseOnlineCheck::last();
+        $this->line('Panel:  '.match (true) {
+            ! \App\Support\LicenseOnlineCheck::enabled() => 'sprawdzanie online wyłączone',
+            $last === null => 'jeszcze nie sprawdzano (php artisan license:check)',
+            default => ($last['valid'] ? 'klucz ważny' : (\App\Support\LicenseOnlineCheck::REASON_LABELS[$last['reason']] ?? $last['reason']))
+                .', sprawdzono '.\Illuminate\Support\Carbon::parse($last['checked_at'])->format('d.m.Y H:i'),
+        });
         $this->newLine();
 
         $this->table(['Funkcja', 'Klucz', 'Dostępna'], collect(config('editions.features', []))

@@ -13,7 +13,9 @@ namespace App\Support;
  *  2. wymuszenie EDITION=free|pro;
  *  3. środowisko lokalne/testowe (localhost, *.test, testy.*) → pro, żeby nic nie
  *     przeszkadzało w pracy nad kodem;
- *  4. ważny klucz licencji (LICENSE_KEY, podpis RSA, domena, termin) → edycja z klucza;
+ *  4. ważny klucz licencji (LICENSE_KEY, podpis RSA, domena, termin) → edycja z klucza,
+ *     chyba że panel licencji przy ostatnim sprawdzeniu online zgłosił unieważnienie
+ *     lub zastąpienie klucza (LicenseOnlineCheck);
  *  5. w pozostałych przypadkach → free.
  *
  * Host bierzemy z APP_URL, nie z bieżącego żądania — tak jak Helpdesk, bo klasa
@@ -120,6 +122,12 @@ final class Edition
         $payload = LicenseValidator::validate($key, (string) config('app.url'));
         if ($payload === null) {
             return ['edition' => self::FREE, 'reason' => 'klucz licencji nieważny, wygasły albo dla innej domeny'];
+        }
+
+        if (LicenseOnlineCheck::blocks()) {
+            $reason = LicenseOnlineCheck::last()['reason'];
+
+            return ['edition' => self::FREE, 'reason' => 'panel licencji: '.(LicenseOnlineCheck::REASON_LABELS[$reason] ?? $reason)];
         }
 
         $edition = ($payload['x'] ?? '') === self::FREE ? self::FREE : self::PRO;

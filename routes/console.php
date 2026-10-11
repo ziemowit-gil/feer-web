@@ -11,6 +11,9 @@ Artisan::command('inspire', function () {
 // Codzienna auto-archiwizacja przeterminowanych wydarzeń i ofert wolontariatu.
 Schedule::command('content:auto-archive')->dailyAt('03:00');
 
+// Sprawdzanie klucza licencji w panelu licencji weCMS (unieważnienie/zastąpienie klucza).
+Schedule::command('license:check')->dailyAt('05:10')->withoutOverlapping();
+
 // Poranny digest nieprzeczytanych wiadomości kontaktowych — wysyłany tylko gdy są.
 Schedule::command('contact:notify-unread')->dailyAt('08:00');
 

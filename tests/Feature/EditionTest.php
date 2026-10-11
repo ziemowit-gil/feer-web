@@ -21,6 +21,7 @@ class EditionTest extends TestCase
 
     protected function tearDown(): void
     {
+        @unlink(\App\Support\LicenseOnlineCheck::path());
         Edition::flush();
 
         parent::tearDown();
@@ -87,6 +88,45 @@ class EditionTest extends TestCase
         $this->useEdition(null, 'https://klient.example.org',
             $this->licenseKey($private, ['d' => 'klient.example.org', 'e' => '2020-01-01', 'x' => 'premium']));
         $this->assertFalse(Edition::isPro(), 'wygasły klucz');
+    }
+
+    public function test_online_check_revocation_downgrades_but_outage_and_not_found_do_not(): void
+    {
+        $private = openssl_pkey_new(['private_key_bits' => 2048, 'private_key_type' => OPENSSL_KEYTYPE_RSA]);
+        config(['license.public_key' => openssl_pkey_get_details($private)['key'], 'editions.check_url' => 'https://panel.example/api/v1/licenses/check']);
+        $key = $this->licenseKey($private, ['d' => 'klient.example.org', 'e' => '2099-12-31', 'x' => 'premium']);
+        $this->useEdition(null, 'https://klient.example.org', $key);
+
+        \Illuminate\Support\Facades\Http::fakeSequence('panel.example/*')
+            ->push('', 500)
+            ->push(['valid' => false, 'reason' => 'not_found'])
+            ->push(['valid' => false, 'reason' => 'revoked', 'edition' => 'premium'])
+            ->pushFailedConnection();
+
+        // Panel niedostępny → nic się nie zmienia.
+        $this->artisan('license:check')->assertFailed();
+        $this->assertTrue(Edition::isPro());
+
+        // Panel nie zna klucza → ignorowane.
+        $this->artisan('license:check')->assertSuccessful();
+        $this->assertTrue(Edition::isPro());
+
+        // Unieważniona → wersja darmowa.
+        $this->artisan('license:check')->assertSuccessful();
+        $this->assertFalse(Edition::isPro());
+        $this->assertStringContainsString('unieważniona', Edition::reason());
+
+        \Illuminate\Support\Facades\Http::assertSent(fn ($request) => $request['key'] === $key && $request['domain'] === 'https://klient.example.org');
+
+        // Kolejna awaria panelu → zostaje ostatni znany wynik (blokada).
+        $this->artisan('license:check')->assertFailed();
+        Edition::flush();
+        $this->assertFalse(Edition::isPro());
+
+        // Nowy klucz nie dziedziczy blokady starego.
+        $this->useEdition(null, 'https://klient.example.org',
+            $this->licenseKey($private, ['d' => 'klient.example.org', 'e' => '2100-01-01', 'x' => 'premium']));
+        $this->assertTrue(Edition::isPro());
     }
 
     /** Klucz w formacie panelu licencji / scripts/generate-license.php. */
