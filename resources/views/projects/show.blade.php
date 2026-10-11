@@ -158,6 +158,8 @@
             .proj-wrap { padding-bottom: 4rem; }
             .proj-measure { max-width: 46rem; }
             .proj-measure.proj-flow > * + * { margin-top: 2.5rem; } /* wyższa swoistość: nagłówki .proj-h2 mają własny margines i nie mogą go zerować */
+            /* Treść tuż pod swoim nagłówkiem sekcji — margines nagłówka (1 rem), nie odstęp między blokami. */
+            .proj-measure.proj-flow > .proj-h2 + * { margin-top: 0; }
             .proj-prose { color: #1d1d1a; font-size: 1.0625rem; line-height: 1.75; font-weight: 500; }
             .proj-prose p, .proj-prose li { color: #1d1d1a; }
             .proj-prose p + p { margin-top: 1rem; }

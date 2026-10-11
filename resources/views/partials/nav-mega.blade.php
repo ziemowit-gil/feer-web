@@ -133,6 +133,18 @@
         <div class="mx-auto grid max-w-6xl gap-8 px-4 py-6 {{ ! $isProjects ? 'lg:grid-cols-[1fr_16rem]' : '' }}">
 
             @if ($isProjects)
+                @once
+                    {{-- Nagłówki kategorii w jednej linii: na szerokim ekranie zawsze wysokość dwóch wierszy, tekst przy kresce —
+                         listy działań zaczynają się na tej samej wysokości (zwykły CSS, niezależny od zbudowanych klas). --}}
+                    <style>
+                        @media (min-width: 1024px) {
+                            .mega-cat-h { display: flex; align-items: flex-end; min-height: 3.75rem; min-height: calc(2lh + .75rem); }
+                        }
+                        /* Rząd przycisków: kafle tej samej wysokości, nawet gdy napis łamie się na dwie linie. */
+                        .mega-btns > li { display: flex; }
+                        .mega-btns > li > a { flex: 1; height: 100%; }
+                    </style>
+                @endonce
                 {{-- Prosta zasada: kolumna = kategoria (link), pod nią lista jej projektów. --}}
                 @if ($groups->isEmpty())
                     <p class="text-sm text-muted">Brak kategorii projektów.</p>
@@ -142,7 +154,7 @@
                             @foreach ($groups as $category)
                                 <div>
                                     <a href="{{ route('categories.show', $category) }}" @if ($catCurrentId === $category->id) aria-current="page" @endif
-                                       class="mb-2 block rounded-md border-b-2 border-brand/30 px-2 py-1.5 font-bold {{ $sz['cat'] }} hover:text-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand {{ $catCurrentId === $category->id ? 'text-brand-dark' : 'text-ink' }}">
+                                       class="mega-cat-h mb-2 block rounded-md border-b-2 border-brand/30 px-2 py-1.5 font-bold {{ $sz['cat'] }} hover:text-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand {{ $catCurrentId === $category->id ? 'text-brand-dark' : 'text-ink' }}">
                                         {{ $category->name }}
                                     </a>
                                     <ul role="list" class="space-y-0.5">
@@ -160,7 +172,7 @@
 
                             @if ($projectExtras->isNotEmpty())
                                 <div>
-                                    <p id="mega-done-{{ $item->id }}" class="mb-2 block border-b-2 border-brand/30 px-2 py-1.5 font-bold text-ink {{ $sz['cat'] }}">{{ $extraTitle }}</p>
+                                    <p id="mega-done-{{ $item->id }}" class="mega-cat-h mb-2 block border-b-2 border-brand/30 px-2 py-1.5 font-bold text-ink {{ $sz['cat'] }}">{{ $extraTitle }}</p>
                                     <ul role="list" aria-labelledby="mega-done-{{ $item->id }}" class="space-y-0.5">
                                         @foreach ($projectExtras as $extra)
                                             <li>
@@ -181,7 +193,7 @@
                                 @if ($sideTitle)
                                     <p id="mega-side-{{ $item->id }}" class="mb-3 font-bold text-ink {{ $sz['cat'] }}">{{ $sideTitle }}</p>
                                 @endif
-                                <ul role="list" @if ($sideTitle) aria-labelledby="mega-side-{{ $item->id }}" @else aria-label="Na skróty: {{ $item->label }}" @endif class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                                <ul role="list" @if ($sideTitle) aria-labelledby="mega-side-{{ $item->id }}" @else aria-label="Na skróty: {{ $item->label }}" @endif class="mega-btns grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                                     @if ($showAllBtn)
                                         <li>@include('partials.nav-side-link', ['sl' => ['label' => 'Wszystkie działania', 'url' => $targetUrl, 'style' => 'tile_filled', 'new_tab' => false], 'block' => true])</li>
                                     @endif
