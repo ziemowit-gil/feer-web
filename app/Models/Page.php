@@ -125,13 +125,14 @@ class Page extends Model
         'redirect'      => 'Przekierowanie (strona przenosi na inny adres)',
         'reports'       => 'Sprawozdania roczne (tabela z modułu Sprawozdania — np. do BIP)',
         'partners'      => 'Partnerzy i sponsorzy (logotypy w grupach, z modułu Partnerzy lub własne)',
+        'recruitment'   => 'Rekrutacja do projektu (status naboru, terminy, kryteria, dokumenty, zgłoszenie)',
     ];
 
     /** Ikony Font Awesome typów stron (karty podstron, kafelki działu). */
     /** Grupy typów stron — wspólne dla wyboru typu w edycji i filtra na liście. */
     public const TYPE_GROUPS = [
         'Treść i informacja' => ['standard', 'faq', 'glossary', 'guide', 'documents', 'regulation'],
-        'Oferta i edukacja' => ['service', 'pricing', 'case_study', 'training_institution'],
+        'Oferta i edukacja' => ['service', 'pricing', 'case_study', 'training_institution', 'recruitment'],
         'Organizacja' => ['about', 'about_person', 'team', 'wspolpraca', 'legacy', 'brand_assets', 'reports', 'partners'],
         'Kafelki i nawigacja' => ['links_hub', 'tiles_grid'],
         'Kontakt i wydarzenia' => ['contact', 'event', 'schedule'],
@@ -140,14 +141,28 @@ class Page extends Model
 
     public const TYPE_ICONS = [
         'pricing' => 'fa-coins', 'team' => 'fa-people-group', 'documents' => 'fa-folder-open', 'regulation' => 'fa-scale-balanced', 'redirect' => 'fa-share', 'reports' => 'fa-file-invoice', 'partners' => 'fa-handshake',
-        'service' => 'fa-briefcase', 'guide' => 'fa-list-ol', 'glossary' => 'fa-book', 'case_study' => 'fa-chart-line',
+        'recruitment' => 'fa-user-plus', 'service' => 'fa-briefcase', 'guide' => 'fa-list-ol', 'glossary' => 'fa-book', 'case_study' => 'fa-chart-line',
         'faq' => 'fa-circle-question', 'event' => 'fa-calendar', 'schedule' => 'fa-calendar-days', 'links_hub' => 'fa-table-cells-large',
         'tiles_grid' => 'fa-table-cells', 'internal' => 'fa-lock', 'internal_hub' => 'fa-user-lock', 'bip_move' => 'fa-landmark',
         'about' => 'fa-building', 'contact' => 'fa-envelope', 'wspolpraca' => 'fa-handshake', 'brand_assets' => 'fa-palette', 'legacy' => 'fa-clock-rotate-left',
     ];
 
     /** Typy, których dane trzymamy we wspólnej kolumnie JSON `type_data`. */
-    public const TYPE_DATA_TYPES = ['service', 'guide', 'glossary', 'case_study', 'pricing', 'team', 'documents', 'regulation', 'redirect', 'reports', 'partners'];
+    public const TYPE_DATA_TYPES = ['service', 'guide', 'glossary', 'case_study', 'pricing', 'team', 'documents', 'regulation', 'redirect', 'reports', 'partners', 'recruitment'];
+
+    /**
+     * Statusy naboru (typ „Rekrutacja do projektu"). „auto" wylicza status z dat
+     * naboru; pozostałe to ręczne ustawienie (np. wstrzymanie albo lista rezerwowa).
+     */
+    public const RECRUITMENT_STATUSES = [
+        'auto'       => 'Automatycznie z dat naboru',
+        'planned'    => 'Nabór wkrótce',
+        'open'       => 'Nabór trwa',
+        'continuous' => 'Nabór ciągły',
+        'reserve'    => 'Lista rezerwowa',
+        'suspended'  => 'Nabór wstrzymany',
+        'closed'     => 'Nabór zakończony',
+    ];
 
     /** Poziomy trudności poradnika. */
     public const GUIDE_LEVELS = [
@@ -580,6 +595,57 @@ class Page extends Model
         return $this->type === 'case_study';
     }
 
+    public function isRecruitment(): bool
+    {
+        return $this->type === 'recruitment';
+    }
+
+    /** Początek / koniec naboru (pola rec_starts_at / rec_ends_at w type_data) albo null. */
+    public function recruitmentDate(string $which): ?\Illuminate\Support\Carbon
+    {
+        $raw = trim((string) ($this->typeData()[$which === 'start' ? 'rec_starts_at' : 'rec_ends_at'] ?? ''));
+        if ($raw === '') {
+            return null;
+        }
+        try {
+            $date = \Illuminate\Support\Carbon::parse($raw);
+        } catch (\Throwable) {
+            return null;
+        }
+        // Sama data końca (bez godziny) obowiązuje do końca dnia.
+        return $which === 'end' && ! str_contains($raw, 'T') && ! str_contains($raw, ':') ? $date->endOfDay() : $date;
+    }
+
+    /**
+     * Bieżący status naboru: ręczny z panelu albo — w trybie „auto" — wyliczony
+     * z dat: przed startem „wkrótce", w terminie „trwa", po końcu „zakończony",
+     * bez dat „ciągły".
+     */
+    public function recruitmentStatus(): string
+    {
+        $manual = $this->typeData()['rec_status'] ?? 'auto';
+        if ($manual !== 'auto' && array_key_exists($manual, self::RECRUITMENT_STATUSES)) {
+            return $manual;
+        }
+
+        $start = $this->recruitmentDate('start');
+        $end = $this->recruitmentDate('end');
+        if ($start && $start->isFuture()) {
+            return 'planned';
+        }
+        if ($end && $end->isPast()) {
+            return 'closed';
+        }
+
+        return $start || $end ? 'open' : 'continuous';
+    }
+
+    /** Czy przyjmujemy zgłoszenia (przycisk/formularz zgłoszenia widoczny). */
+    public function recruitmentAcceptsApplications(): bool
+    {
+        return in_array($this->recruitmentStatus(), ['open', 'continuous', 'reserve'], true);
+    }
+
     /**
      * Dane typu (kolumna `type_data`) z domyślnymi pustymi listami, żeby widoki
      * i formularz nie musiały sprawdzać istnienia każdego klucza.
@@ -588,7 +654,7 @@ class Page extends Model
     {
         $data = is_array($this->type_data) ? $this->type_data : [];
 
-        foreach (['benefits', 'audience', 'steps', 'requirements', 'terms', 'results', 'price_rows', 'members', 'docs', 'versions', 'partners', 'partner_groups'] as $list) {
+        foreach (['benefits', 'audience', 'steps', 'requirements', 'terms', 'results', 'price_rows', 'members', 'docs', 'versions', 'partners', 'partner_groups', 'bonus', 'rec_faq'] as $list) {
             $data[$list] = array_values(array_filter(
                 is_array($data[$list] ?? null) ? $data[$list] : [],
                 fn ($row) => is_array($row) && array_filter($row, fn ($v) => is_string($v) && trim($v) !== ''),
@@ -605,6 +671,7 @@ class Page extends Model
             'event', 'schedule', 'about', 'faq', 'bip_move',
             'internal_hub', 'links_hub', 'wspolpraca', 'training_institution', 'brand_assets',
             'legacy', 'about_person', 'contact', 'service', 'guide', 'glossary', 'case_study', 'tiles_grid', 'pricing', 'team', 'documents', 'regulation', 'redirect', 'reports', 'partners',
+            'recruitment',
         ], true);
     }
 

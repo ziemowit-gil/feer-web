@@ -982,6 +982,8 @@
     @include('page.partials.typed.glossary')
     @elseif ($page->isCaseStudy())
     @include('page.partials.typed.case-study')
+    @elseif ($page->isRecruitment())
+    @include('page.partials.typed.recruitment')
     @elseif ($page->isPricing())
     @include('page.partials.typed.pricing')
     @elseif ($page->isTeam())
