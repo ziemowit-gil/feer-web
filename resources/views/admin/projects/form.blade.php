@@ -325,62 +325,6 @@
                                 @error('image') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                             </div>
 
-                            @if (! ($project->exists && $project->image_url) && \App\Models\SiteSetting::current()->unsplashAccessKey())
-                                {{-- Brak zdjęcia: sugestie z Unsplash dobrane do tytułu i kategorii, w ciepłym, ludzkim stylu FEER. --}}
-                                <div x-data="unsplashSuggest('{{ route('admin.multimedia.unsplash.search') }}')" x-init="init()" class="rounded-lg border border-dashed border-gray-300 p-3">
-                                    <p class="text-sm font-bold">Sugestie zdjęć z Unsplash</p>
-                                    <p class="mb-2 text-xs text-muted">Brak zdjęcia — wybierz jedno z propozycji albo wgraj własny plik.</p>
-                                    <p x-show="loading" class="text-xs text-muted" role="status">Szukam zdjęć…</p>
-                                    <p x-show="error" x-cloak class="text-xs text-red-600" x-text="error" role="alert"></p>
-                                    <p x-show="chosen" x-cloak class="mb-2 text-xs font-bold text-brand-dark" role="status">Wybrano zdjęcie (autor: <span x-text="chosen?.author_name"></span>) — zostanie zapisane razem z projektem. <button type="button" @click="clear()" class="underline">Cofnij</button></p>
-                                    <ul class="grid grid-cols-3 gap-2" role="list">
-                                        <template x-for="p in photos" :key="p.id">
-                                            <li>
-                                                <button type="button" @click="pick(p)" :aria-pressed="(chosen?.id === p.id).toString()"
-                                                    class="block w-full overflow-hidden rounded border-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark"
-                                                    :class="chosen?.id === p.id ? 'border-brand-dark' : 'border-transparent'">
-                                                    <img :src="p.thumb_url" :alt="p.alt" loading="lazy" class="h-20 w-full object-cover">
-                                                </button>
-                                            </li>
-                                        </template>
-                                    </ul>
-                                    <button type="button" @click="load(photos.length > 0)" class="mt-2 text-xs font-bold text-brand-dark hover:underline" x-text="photos.length ? 'Pokaż inne' : 'Szukaj sugestii'"></button>
-                                    <input type="hidden" name="unsplash_full_url" :value="chosen?.full_url">
-                                    <input type="hidden" name="unsplash_download_location" :value="chosen?.download_location">
-                                    <input type="hidden" name="unsplash_author" :value="chosen?.author_name">
-                                    <input type="hidden" name="unsplash_alt" :value="chosen?.alt">
-                                </div>
-                                <script>
-                                    document.addEventListener('alpine:init', () => {
-                                        Alpine.data('unsplashSuggest', (url) => ({
-                                            photos: [], chosen: null, loading: false, error: '', page: 0,
-                                            // Zapytanie: tytuł + kategoria + fraza stylu (ludzie, współpraca, naturalne światło).
-                                            query() {
-                                                const t = document.getElementById('title')?.value || '';
-                                                const c = document.getElementById('category_id');
-                                                const cat = c && c.selectedIndex > 0 ? c.options[c.selectedIndex].text : '';
-                                                return (t + ' ' + cat).trim().slice(0, 60) + ' people together natural light';
-                                            },
-                                            init() { if (document.getElementById('title')?.value) this.load(false); },
-                                            async load(more) {
-                                                this.loading = true; this.error = '';
-                                                try {
-                                                    const r = await fetch(url + '?q=' + encodeURIComponent(this.query().slice(0, 100)), { headers: { Accept: 'application/json' } });
-                                                    if (! r.ok) throw new Error();
-                                                    const all = await r.json();
-                                                    const size = 6;
-                                                    this.page = more ? (this.page + 1) % Math.max(1, Math.ceil(all.length / size)) : 0;
-                                                    this.photos = all.slice(this.page * size, this.page * size + size);
-                                                    if (! this.photos.length) this.error = 'Brak propozycji — wgraj własne zdjęcie.';
-                                                } catch (e) { this.error = 'Nie udało się pobrać sugestii z Unsplash.'; }
-                                                this.loading = false;
-                                            },
-                                            pick(p) { this.chosen = p; },
-                                            clear() { this.chosen = null; },
-                                        }));
-                                    });
-                                </script>
-                            @endif
 
                             <div>
                                 <label for="image_alt" class="mb-1 block text-sm font-bold">Opis alternatywny zdjęcia</label>
@@ -398,6 +342,107 @@
                             </label>
                         </div>
                     </div>
+
+                    @if (\App\Models\SiteSetting::current()->unsplashAccessKey())
+                        {{-- Zdjęcia z Unsplash: własne wyszukiwanie (domyślnie hasło z tytułu i kategorii), większe miniatury
+                             i podgląd na środku ekranu (natywny <dialog>: fokus w oknie, Esc zamyka). Bez zdjęcia propozycje
+                             ładują się same; przy istniejącym zdjęciu panel służy do jego wymiany. --}}
+                        <div x-data="unsplashSuggest('{{ route('admin.multimedia.unsplash.search') }}', {{ $project->exists && $project->image_url ? 'false' : 'true' }})" x-init="init()"
+                             class="rounded-lg border border-dashed border-gray-300 p-4">
+                            <p class="text-sm font-bold">Zdjęcia z Unsplash</p>
+                            <p class="mb-3 text-xs text-muted">{{ $project->exists && $project->image_url ? 'Wyszukaj zdjęcie, żeby zastąpić obecne.' : 'Brak zdjęcia — wybierz jedną z propozycji, wyszukaj własne hasło albo wgraj plik.' }}</p>
+
+                            <div class="mb-3 flex flex-wrap items-end gap-2">
+                                <div class="min-w-0 grow">
+                                    <label for="unsplash-q" class="mb-1 block text-xs font-bold">Szukaj w Unsplash</label>
+                                    <input type="search" id="unsplash-q" x-model="q" @keydown.enter.prevent="search()" placeholder="np. warsztaty, współpraca, laptop"
+                                        class="w-full rounded-lg border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark">
+                                </div>
+                                <button type="button" @click="search()" class="inline-flex min-h-10 items-center gap-2 rounded-lg bg-brand-dark px-4 text-sm font-bold text-white hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2">
+                                    <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i> Szukaj
+                                </button>
+                                <button type="button" x-show="all.length > size" x-cloak @click="next()" class="inline-flex min-h-10 items-center rounded-lg bg-gray-100 px-4 text-sm font-bold text-ink hover:bg-gray-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">
+                                    Pokaż inne
+                                </button>
+                            </div>
+
+                            <p x-show="loading" class="text-xs text-muted" role="status">Szukam zdjęć…</p>
+                            <p x-show="error" x-cloak class="text-xs text-red-600" x-text="error" role="alert"></p>
+                            <p x-show="chosen" x-cloak class="mb-2 text-xs font-bold text-brand-dark" role="status">Wybrano zdjęcie (autor: <span x-text="chosen?.author_name"></span>) — zostanie zapisane razem z działaniem. <button type="button" @click="clear()" class="underline">Cofnij</button></p>
+
+                            <ul class="grid grid-cols-2 gap-2 sm:grid-cols-4" role="list" aria-label="Wyniki z Unsplash">
+                                <template x-for="p in photos" :key="p.id">
+                                    <li>
+                                        <button type="button" @click="preview(p)" :aria-label="'Podgląd: ' + p.alt"
+                                            class="block w-full overflow-hidden rounded border-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark"
+                                            :class="chosen?.id === p.id ? 'border-brand-dark' : 'border-transparent'">
+                                            <img :src="p.thumb_url" alt="" loading="lazy" class="w-full object-cover" style="height: 7rem">
+                                        </button>
+                                    </li>
+                                </template>
+                            </ul>
+
+                            <dialog x-ref="dlg" @close="current = null" aria-labelledby="unsplash-preview-title" class="unsplash-dlg">
+                                <template x-if="current">
+                                    <div>
+                                        <img :src="current.full_url" :alt="current.alt" class="w-full bg-gray-100 object-contain" style="max-height: 70vh">
+                                        <div class="flex flex-wrap items-center justify-between gap-3 p-4">
+                                            <p id="unsplash-preview-title" class="min-w-0 text-sm">
+                                                <span class="block font-bold text-ink" x-text="current.alt"></span>
+                                                <span class="text-muted">Autor: <a :href="current.author_url" target="_blank" rel="noopener" class="underline" x-text="current.author_name"></a>, Unsplash<span class="sr-only"> (otwiera się w nowej karcie)</span></span>
+                                            </p>
+                                            <div class="flex gap-2">
+                                                <button type="button" @click="pick(current); $refs.dlg.close()" class="inline-flex min-h-10 items-center rounded-lg bg-brand-dark px-4 text-sm font-bold text-white hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2">Wybierz to zdjęcie</button>
+                                                <button type="button" @click="$refs.dlg.close()" class="inline-flex min-h-10 items-center rounded-lg bg-gray-100 px-4 text-sm font-bold text-ink hover:bg-gray-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">Zamknij</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </template>
+                            </dialog>
+
+                            <input type="hidden" name="unsplash_full_url" :value="chosen?.full_url">
+                            <input type="hidden" name="unsplash_download_location" :value="chosen?.download_location">
+                            <input type="hidden" name="unsplash_author" :value="chosen?.author_name">
+                            <input type="hidden" name="unsplash_alt" :value="chosen?.alt">
+                        </div>
+                        {{-- Okno podglądu w zwykłym CSS (nie zależy od zbudowanych klas): na środku ekranu, przyciemnione tło. --}}
+                        <style>
+                            .unsplash-dlg { width: min(64rem, calc(100vw - 2rem)); max-height: calc(100vh - 2rem); margin: auto; padding: 0; border: 0; border-radius: .5rem; background: #fff; overflow: auto; }
+                            .unsplash-dlg::backdrop { background: rgba(0, 0, 0, .6); }
+                        </style>
+                        <script>
+                            document.addEventListener('alpine:init', () => {
+                                Alpine.data('unsplashSuggest', (url, autoload) => ({
+                                    q: '', all: [], photos: [], chosen: null, current: null, loading: false, error: '', page: 0, size: 8,
+                                    // Domyślne hasło: tytuł + kategoria + fraza stylu (ludzie, współpraca, naturalne światło).
+                                    defaultQuery() {
+                                        const t = document.getElementById('title')?.value || '';
+                                        const c = document.getElementById('category_id');
+                                        const cat = c && c.selectedIndex > 0 ? c.options[c.selectedIndex].text : '';
+                                        return ((t + ' ' + cat).trim().slice(0, 60) + ' people together natural light').trim();
+                                    },
+                                    init() { if (autoload && document.getElementById('title')?.value) this.fetch(this.defaultQuery()); },
+                                    search() { const q = this.q.trim() || this.defaultQuery(); if (q) this.fetch(q); },
+                                    async fetch(q) {
+                                        this.loading = true; this.error = '';
+                                        try {
+                                            const r = await window.fetch(url + '?q=' + encodeURIComponent(q.slice(0, 100)), { headers: { Accept: 'application/json' } });
+                                            if (! r.ok) throw new Error();
+                                            this.all = await r.json();
+                                            this.page = 0; this.show();
+                                            if (! this.all.length) this.error = 'Brak wyników — spróbuj innego hasła albo wgraj własne zdjęcie.';
+                                        } catch (e) { this.error = 'Nie udało się pobrać zdjęć z Unsplash.'; }
+                                        this.loading = false;
+                                    },
+                                    show() { this.photos = this.all.slice(this.page * this.size, this.page * this.size + this.size); },
+                                    next() { this.page = (this.page + 1) % Math.max(1, Math.ceil(this.all.length / this.size)); this.show(); },
+                                    preview(p) { this.current = p; this.$nextTick(() => this.$refs.dlg.showModal()); },
+                                    pick(p) { this.chosen = p; },
+                                    clear() { this.chosen = null; },
+                                }));
+                            });
+                        </script>
+                    @endif
                 </div>
             </div>
 
