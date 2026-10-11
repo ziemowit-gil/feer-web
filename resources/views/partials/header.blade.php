@@ -206,20 +206,31 @@
      (fokus, Escape, kliknięcie obok, etykieta Otwórz/Zamknij) — jak w wide_mission.
 --}}
 <div class="{{ $inlineOnBrand ? 'bg-brand border-transparent' : 'bg-white' }}" x-data="siteMobileNav(1024)" @keydown.escape.window="closeMenu()">
-    <div class="relative mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-4 lg:gap-12">
-        <a href="{{ site_home_url() }}" class="flex min-w-0 items-center gap-3 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 {{ $inlineOnBrand ? 'focus-visible:ring-white focus-visible:ring-offset-brand' : 'focus-visible:ring-brand' }}" aria-label="{{ $siteSettings->site_name }} — strona główna">
+    <div @class(['relative mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 lg:gap-12', 'py-4' => ! $handBrand, 'py-3' => $handBrand])>
+        <a href="{{ site_home_url() }}" class="flex min-w-0 items-center {{ $handBrand ? 'gap-3 sm:gap-4' : 'gap-3' }} rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 {{ $inlineOnBrand ? 'focus-visible:ring-white focus-visible:ring-offset-brand' : 'focus-visible:ring-brand' }}" aria-label="{{ $siteSettings->site_name }} — strona główna">
             @if ($siteSettings->logoUrl())
                 <img src="{{ $siteSettings->logoUrl() }}" alt="{{ $siteSettings->logoAltText() }}" class="h-12 w-auto max-w-[16rem] flex-none rounded object-contain {{ $inlineOnBrand ? 'bg-white p-1' : '' }}">
             @else
                 <span class="flex h-11 w-11 flex-none items-center justify-center rounded text-xl font-bold {{ $inlineOnBrand ? 'bg-white text-brand' : 'bg-brand text-white' }}" aria-hidden="true">{{ mb_substr($siteSettings->site_name, 0, 1) }}</span>
             @endif
             @unless ($siteSettings->showLogoOnly())
+                @if ($handBrand)
+                    {{-- Blog Wiem FEER: cienka kreska między logo a nazwą, nazwa odręcznie w kolorze marki. --}}
+                    <span class="hidden h-10 w-px flex-none {{ $inlineOnBrand ? 'bg-white/40' : 'bg-gray-200' }} sm:block" aria-hidden="true"></span>
+                    <span class="min-w-0 leading-tight">
+                        <span class="block truncate text-2xl sm:text-3xl {{ $inlineOnBrand ? 'text-white' : 'text-brand-dark' }}" style="{{ $handBrandStyle }}">{{ $siteSettings->site_name }}</span>
+                        @if ($siteSettings->tagline)
+                            <span class="mt-0.5 block truncate text-sm {{ $inlineOnBrand ? 'text-white/90' : 'text-muted' }}">{{ $siteSettings->tagline }}</span>
+                        @endif
+                    </span>
+                @else
                 <span class="min-w-0 leading-tight">
-                    <span class="block truncate text-lg font-bold {{ $inlineOnBrand ? 'text-white' : 'text-ink' }}" @if ($handBrand) style="{{ $handBrandStyle }}" @endif>{{ $siteSettings->site_name }}</span>
+                    <span class="block truncate text-lg font-bold {{ $inlineOnBrand ? 'text-white' : 'text-ink' }}">{{ $siteSettings->site_name }}</span>
                     @if ($siteSettings->tagline)
                         <span class="block truncate text-xs {{ $inlineOnBrand ? 'text-white/90' : 'text-muted' }}">{{ $siteSettings->tagline }}</span>
                     @endif
                 </span>
+                @endif
             @endunless
         </a>
 
@@ -249,7 +260,11 @@
                     @endif
                     @if ($feerMaterials)
                         <a href="{{ site_route('materials.index') }}"
-                           class="inline-flex min-h-11 flex-none items-center gap-2 rounded-md bg-ink px-5 text-sm font-bold text-white transition hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2">
+                           @class([
+                               'inline-flex min-h-11 flex-none items-center gap-2 rounded-md px-5 text-sm font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2',
+                               'bg-ink text-white hover:bg-brand-dark' => ! $handBrand,
+                               'border-2 border-solid border-ink bg-white text-ink hover:bg-ink hover:text-white' => $handBrand,
+                           ])>
                             <i class="fa-solid fa-book-open" aria-hidden="true"></i>
                             Materiały edukacyjne
                         </a>
@@ -275,9 +290,9 @@
     </div>
 
     @if ($feerTwoRows)
-        <nav aria-label="Menu główne" class="relative hidden border-y border-gray-100 bg-white lg:block">
+        <nav aria-label="Menu główne" @class(['relative hidden bg-white lg:block', 'border-y border-gray-100' => ! $handBrand, 'border-t border-b-2 border-solid border-t-gray-100 border-b-brand-light' => $handBrand])>
             <div class="mx-auto max-w-6xl px-4">
-                @include('partials.main-nav-items', ['onBrand' => false, 'navDarkText' => false])
+                @include('partials.main-nav-items', ['onBrand' => false, 'navDarkText' => false, 'navSoft' => $handBrand])
             </div>
         </nav>
     @endif

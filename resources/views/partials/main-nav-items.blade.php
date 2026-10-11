@@ -3,13 +3,16 @@
     $mobile ??= false;
     $onBrand ??= false;
     $navDarkText ??= false;
+    // Lżejsze menu (blog Wiem FEER): zwykłe litery zamiast wersalików, mniejsza i cieńsza czcionka.
+    $navSoft ??= false;
     // Substyl paska: 'underline' (domyślny), 'icons' (ikona nad etykietą), 'pills' (zakładki).
     $navStyle ??= (($iconsNav ?? false) ? 'icons' : 'underline');
     $iconsNav = $navStyle === 'icons';
 @endphp
 
 <ul @class([
-    'flex items-center gap-5 text-lg font-bold uppercase tracking-wide xl:gap-6' => ! $mobile,
+    'flex items-center gap-5 text-lg font-bold uppercase tracking-wide xl:gap-6' => ! $mobile && ! $navSoft,
+    'flex items-center gap-6 text-base font-semibold tracking-normal xl:gap-8' => ! $mobile && $navSoft,
     'nav-icons gap-1 xl:gap-2' => ! $mobile && $navStyle === 'icons',
     'nav-pills gap-1 xl:gap-1.5 normal-case tracking-normal' => ! $mobile && $navStyle === 'pills',
     'nav-on-brand text-white' => ! $mobile && $onBrand && ! $navDarkText,
