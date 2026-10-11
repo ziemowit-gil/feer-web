@@ -4,6 +4,9 @@
     $wideMission   = $headerLayout === 'wide_mission';
     $wmLayout      = $siteSettings->wideMissionLayoutValue();
     $officeBar     = $headerLayout === 'office_bar';
+    // Witryna bloga Wiem FEER: nazwa w nagłówku odręczną czcionką (Pacifico ładowane w layoutach).
+    $handBrand      = (bool) request()->attributes->get('blog_site');
+    $handBrandStyle = $handBrand ? "font-family:'Pacifico',cursive;font-weight:400;line-height:1.35" : '';
 @endphp
 
 @if ($officeBar)
@@ -96,7 +99,7 @@
                 @endif
                 @unless ($siteSettings->showLogoOnly())
                     <span class="min-w-0 leading-tight">
-                        <span class="block truncate text-lg font-bold text-ink sm:text-xl">{{ $siteSettings->site_name }}</span>
+                        <span class="block truncate text-lg font-bold text-ink sm:text-xl" @if ($handBrand) style="{{ $handBrandStyle }}" @endif>{{ $siteSettings->site_name }}</span>
                         @if ($siteSettings->tagline && ! $siteSettings->wide_mission_show_mission)
                             <span class="hidden text-xs font-medium text-muted sm:block">{{ $siteSettings->tagline }}</span>
                         @endif
@@ -212,7 +215,7 @@
             @endif
             @unless ($siteSettings->showLogoOnly())
                 <span class="min-w-0 leading-tight">
-                    <span class="block truncate text-lg font-bold {{ $inlineOnBrand ? 'text-white' : 'text-ink' }}">{{ $siteSettings->site_name }}</span>
+                    <span class="block truncate text-lg font-bold {{ $inlineOnBrand ? 'text-white' : 'text-ink' }}" @if ($handBrand) style="{{ $handBrandStyle }}" @endif>{{ $siteSettings->site_name }}</span>
                     @if ($siteSettings->tagline)
                         <span class="block truncate text-xs {{ $inlineOnBrand ? 'text-white/90' : 'text-muted' }}">{{ $siteSettings->tagline }}</span>
                     @endif

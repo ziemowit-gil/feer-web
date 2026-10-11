@@ -31,7 +31,7 @@
                 @unless ($siteSettings->showLogoOnly())
                     <span class="hidden leading-tight sm:block">
                         <span class="block text-xs uppercase tracking-wide text-muted">{{ $siteSettings->tagline }}</span>
-                        <span class="block text-xl font-bold text-brand">{{ $siteSettings->site_name }}</span>
+                        <span class="block text-xl font-bold text-brand" @if ($handBrand ?? false) style="{{ $handBrandStyle }}" @endif>{{ $siteSettings->site_name }}</span>
                     </span>
                 @endunless
             </a>
