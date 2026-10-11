@@ -54,7 +54,7 @@
         aria-describedby="{{ $spamHelpId }}"
         @if ($spamHasError) aria-invalid="true" @endif
         class="{{ $spamFlat
-            ? 'w-28 rounded-xl border-0 px-4 py-3.5 text-base text-ink transition focus:bg-white focus:outline-none focus:ring-[3px] ' . ($spamHasError ? 'bg-red-50 focus:ring-red-700' : 'bg-[#eff1f5] hover:bg-[#e3e7ee] focus:ring-brand')
+            ? 'w-28 rounded-xl border-0 px-4 py-3.5 text-base text-ink transition focus:bg-white focus:outline-none focus:ring-[3px] ' . ($spamHasError ? 'bg-red-50 focus:ring-red-700' : 'bg-[#e3e7ee] hover:bg-[#d5dbe5] focus:ring-brand')
             : 'w-24 rounded-lg border px-3 py-2 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-1 ' . ($spamHasError ? 'border-red-400 bg-red-50' : 'border-gray-300 bg-white') }}">
 
     @error('spam')

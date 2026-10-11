@@ -11,8 +11,8 @@
     $fLabel      = $feerForm ? 'block text-base font-bold text-ink' : 'block text-sm font-semibold text-ink';
     $fLegend     = $feerForm ? 'text-base font-bold text-ink' : 'text-sm font-semibold text-ink';
     $fPad        = $feerForm ? 'px-4 py-3.5' : 'px-3 py-2';
-    $fFill       = 'bg-[#eff1f5]';
-    $fFillHover  = 'hover:bg-[#e3e7ee]';
+    $fFill       = 'bg-[#e3e7ee]';
+    $fFillHover  = 'hover:bg-[#d5dbe5]';
     $hasFile     = collect($fields)->contains(fn ($f) => ($f['type'] ?? '') === 'file');
     $hasInputs   = collect($fields)->contains(fn ($f) => \App\Models\FormDefinition::isInput($f['type'] ?? 'text'));
     $privacyUrl  = \Illuminate\Support\Facades\Route::has('page.show') ? url('/polityka-prywatnosci') : null;

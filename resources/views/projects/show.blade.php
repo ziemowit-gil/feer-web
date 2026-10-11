@@ -37,6 +37,30 @@
             ->merge($tabPages->map(fn ($sp, $i) => ['id' => 'podstrona-'.$i, 'label' => $sp->title]))
             ->all();
         $hasTabs = count($tabItems) > 1;
+        // Formularz wysłany z zakładki (np. z błędami) — po powrocie otwieramy tę zakładkę i podstronę z formularzem.
+        $openTab = 'opis';
+        $openNodeId = null;
+        if ($sentFormSlug = session('_form_slug')) {
+            $findForm = function ($n) use (&$findForm, $sentFormSlug) {
+                if ($n->type === 'form_page' && ($n->typeData()['fp_form'] ?? null) === $sentFormSlug) {
+                    return $n;
+                }
+                foreach ($n->tree_children as $c) {
+                    if ($hit = $findForm($c)) {
+                        return $hit;
+                    }
+                }
+
+                return null;
+            };
+            foreach ($tabPages as $i => $sp) {
+                if ($hit = $findForm($sp)) {
+                    $openTab = 'podstrona-'.$i;
+                    $openNodeId = $hit->id;
+                    break;
+                }
+            }
+        }
         // Zdania-ostrzeżenia („Ważne:", „Uwaga:") zamieniamy na wyróżnioną ramkę (callout), niezależnie od tego, jak wyrównał je edytor.
         $projectContentHtml = preg_replace('~<p((?![^>]*\bclass=)[^>]*)>(\s*(?:<(?:strong|b)[^>]*>)?\s*(?:Ważne|Ważna informacja|Uwaga)\b)~iu', '<p class="proj-callout"$1>$2', (string) $project->content);
         // Tryb nawigacji: pasek zakładek albo menu boczne (ustawienie serwisu lub własny wybór działania).
@@ -108,7 +132,7 @@
 
     <div x-data="{
             tabs: @js(array_column($tabItems, 'id')),
-            tab: 'opis', node: null, openIds: [],
+            tab: @js($openTab), node: @js($openTab !== 'opis' && $navSidebar ? $openNodeId : null), openIds: [],
             move(step) { const i = this.tabs.indexOf(this.tab); this.tab = this.tabs[(i + step + this.tabs.length) % this.tabs.length]; this.focusActive(); },
             jump(id) { this.tab = id; this.focusActive(); },
             focusActive() { this.$nextTick(() => document.getElementById('tab-' + this.tab)?.focus()); },
@@ -562,7 +586,7 @@
             @foreach ($tabPages as $i => $subpage)
                 <div id="panel-podstrona-{{ $i }}" role="tabpanel" aria-labelledby="tab-podstrona-{{ $i }}" tabindex="0" x-cloak
                      x-show="tab === 'podstrona-{{ $i }}'" class="focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand-dark">
-                    @include('projects.partials.tab-page', ['root' => $subpage, 'sidebarMode' => $navSidebar])
+                    @include('projects.partials.tab-page', ['root' => $subpage, 'sidebarMode' => $navSidebar, 'openNodeId' => $openNodeId])
                 </div>
             @endforeach
             </div>
