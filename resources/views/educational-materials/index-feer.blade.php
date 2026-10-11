@@ -103,4 +103,5 @@
             </div>
         </section>
     </div>
+    @include('partials.material-preview-dialog')
 @endsection

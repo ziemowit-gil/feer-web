@@ -75,8 +75,8 @@
                 <a href="{{ $material->fileUrl }}" target="_blank" rel="noopener" download class="{{ $btnPrimary }}">
                     <i class="fa-solid fa-download" aria-hidden="true"></i> Pobierz PDF<span class="sr-only"> — {{ $material->title }}</span>
                 </a>
-                <a href="{{ $material->fileUrl }}" target="_blank" rel="noopener" class="{{ $btnGhost }}">
-                    Podgląd<span class="sr-only"> — {{ $material->title }} (otwiera się w nowej karcie)</span>
+                <a href="{{ $material->fileUrl }}" data-material-preview="{{ $material->title }}" aria-haspopup="dialog" class="{{ $btnGhost }}">
+                    Podgląd<span class="sr-only"> — {{ $material->title }}</span>
                 </a>
             @endif
         </div>

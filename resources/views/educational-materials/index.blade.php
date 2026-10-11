@@ -86,4 +86,5 @@
             </div>
         </div>
     </section>
+    @include('partials.material-preview-dialog')
 @endsection

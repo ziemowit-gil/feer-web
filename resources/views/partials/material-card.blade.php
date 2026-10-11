@@ -86,7 +86,7 @@
             </a>
         @elseif (! $material->isVideo() && $material->fileUrl)
             <div class="mt-auto flex flex-wrap gap-2">
-                <a href="{{ $material->fileUrl }}" target="_blank" rel="noopener"
+                <a href="{{ $material->fileUrl }}" data-material-preview="{{ $material->title }}" aria-haspopup="dialog"
                     class="inline-flex w-fit items-center gap-2 rounded border-2 border-brand px-4 py-2 text-sm font-bold text-brand hover:bg-brand-light">
                     <i class="fa-solid fa-eye" aria-hidden="true"></i> Podgląd
                 </a>
