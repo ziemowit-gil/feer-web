@@ -17,6 +17,9 @@
     @endif
     @php
         $currentType = old('type', $page->type ?? 'standard');
+        // Typy-pozycje menu (przekierowanie, własny link, nagłówek) nie mają treści — w formularzu tylko niezbędne pola.
+        $linkTypes = ['redirect', 'menu_link', 'menu_heading'];
+        $isLinkType = in_array($currentType, $linkTypes, true);
         $scheduleItems = old('schedule_items', $page->schedule_items ?? []);
         $scheduleItems = is_array($scheduleItems) ? array_values($scheduleItems) : [];
         $hasProject = (bool) old('project_id', $page->project_id);
@@ -112,28 +115,28 @@
                 class="rounded-lg px-4 py-2 text-sm font-semibold text-gray-500 transition-all hover:text-ink">
                 <i class="fa-solid fa-gear" aria-hidden="true"></i> Publikacja
             </button>
-            <button type="button" data-ftab-btn="seo" role="tab" aria-selected="false"
-                class="rounded-lg px-4 py-2 text-sm font-semibold text-gray-500 transition-all hover:text-ink">
+            <button type="button" data-ftab-btn="seo" data-hide-for-link role="tab" aria-selected="false"
+                class="{{ $isLinkType ? 'hidden' : '' }} rounded-lg px-4 py-2 text-sm font-semibold text-gray-500 transition-all hover:text-ink">
                 <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i> SEO
             </button>
             @if ($page->exists)
                 @if ($currentType !== 'wspolpraca')
-                <button type="button" data-ftab-btn="pliki" data-wspolpraca-tab role="tab" aria-selected="false"
-                    class="rounded-lg px-4 py-2 text-sm font-semibold text-gray-500 transition-all hover:text-ink">
+                <button type="button" data-ftab-btn="pliki" data-hide-for-link data-wspolpraca-tab role="tab" aria-selected="false"
+                    class="{{ $isLinkType ? 'hidden' : '' }} rounded-lg px-4 py-2 text-sm font-semibold text-gray-500 transition-all hover:text-ink">
                     <i class="fa-solid fa-paperclip" aria-hidden="true"></i> Pliki
                     @if ($page->attachments->isNotEmpty())
                         <span class="ml-1 text-xs font-bold">{{ $page->attachments->count() }}</span>
                     @endif
                 </button>
-                <button type="button" data-ftab-btn="galeria" data-wspolpraca-tab role="tab" aria-selected="false"
-                    class="rounded-lg px-4 py-2 text-sm font-semibold text-gray-500 transition-all hover:text-ink">
+                <button type="button" data-ftab-btn="galeria" data-hide-for-link data-wspolpraca-tab role="tab" aria-selected="false"
+                    class="{{ $isLinkType ? 'hidden' : '' }} rounded-lg px-4 py-2 text-sm font-semibold text-gray-500 transition-all hover:text-ink">
                     <i class="fa-solid fa-images" aria-hidden="true"></i> Galeria
                     @if ($page->images->isNotEmpty())
                         <span class="ml-1 text-xs font-bold">{{ $page->images->count() }}</span>
                     @endif
                 </button>
-                <button type="button" data-ftab-btn="etr" data-wspolpraca-tab role="tab" aria-selected="false"
-                    class="rounded-lg px-4 py-2 text-sm font-semibold text-gray-500 transition-all hover:text-ink">
+                <button type="button" data-ftab-btn="etr" data-hide-for-link data-wspolpraca-tab role="tab" aria-selected="false"
+                    class="{{ $isLinkType ? 'hidden' : '' }} rounded-lg px-4 py-2 text-sm font-semibold text-gray-500 transition-all hover:text-ink">
                     <i class="fa-solid fa-book-open-reader" aria-hidden="true"></i> ETR
                     @if ($page->etr?->is_enabled)
                         <span class="ml-1 text-xs text-ink font-bold"><i class="fa-solid fa-circle-info mr-1 text-brand-dark" aria-hidden="true"></i>aktywna</span>
@@ -153,10 +156,12 @@
 
             {{-- ============================ TREŚĆ ============================ --}}
             <div data-ftab-panel="tresc" class="space-y-6">
+                <div data-hide-for-link class="{{ $isLinkType ? 'hidden' : '' }}">
                 @include('admin.partials.template-panel', [
                     'templateType'   => 'page',
                     'templateFields' => ['content', 'meta_title', 'meta_description'],
                 ])
+                </div>
 
                 <div class="space-y-5 p-6 rounded-md bg-white">
                     <div class="grid gap-5 sm:grid-cols-2">
@@ -180,7 +185,7 @@
 
                     {{-- Główny edytor treści — ukryty dla typów bez swobodnej treści
                          („O organizacji" i „Przeniesiono do BIP" mają własne pola). --}}
-                    <div data-content-field class="{{ in_array($currentType, ['about', 'bip_move', 'wspolpraca', 'contact'], true) ? 'hidden' : '' }}">
+                    <div data-content-field data-hide-for-link class="{{ in_array($currentType, ['about', 'bip_move', 'wspolpraca', 'contact'], true) || $isLinkType ? 'hidden' : '' }}">
                         <div class="mb-1 flex flex-wrap items-center justify-between gap-2">
                             <label class="block text-sm font-bold">Treść</label>
                             @if ($page->exists)
@@ -202,7 +207,7 @@
                     </div>
 
                     {{-- Zdjęcie w treści --}}
-                    <div data-hide-for="contact" class="{{ $currentType === 'contact' ? 'hidden' : '' }}">
+                    <div data-hide-for="contact" data-hide-for-link class="{{ $currentType === 'contact' || $isLinkType ? 'hidden' : '' }}">
                         <p class="mb-1 text-sm font-bold">Zdjęcie w treści <span class="font-normal text-muted">(opcjonalne)</span></p>
                         <p class="mb-3 text-xs text-muted">Pojawia się poniżej tytułu, przed główną treścią strony. Ustaw szerokość, by dopasować do układu.</p>
                         <div class="flex items-start gap-4">
@@ -293,7 +298,7 @@
                         @endif
                     </div>
 
-                    <div data-hide-for="contact" class="border-t border-gray-100 pt-5 sm:w-1/2 {{ $currentType === 'contact' ? 'hidden' : '' }}">
+                    <div data-hide-for="contact" data-hide-for-link class="border-t border-gray-100 pt-5 sm:w-1/2 {{ $currentType === 'contact' || $isLinkType ? 'hidden' : '' }}">
                         @php
                             $tplIcons = ['default' => 'fa-file-lines', 'wide' => 'fa-expand', 'hero' => 'fa-image', 'landing' => 'fa-bullhorn', 'portal' => 'fa-globe', 'section' => 'fa-table-columns', 'minimal' => 'fa-minimize'];
                             $tplCards = [];
@@ -391,7 +396,7 @@
                         $rowTitle = 'block text-[15px] font-bold text-ink';
                         $rowHint = 'mt-0.5 block text-sm leading-snug text-muted';
                     @endphp
-                    <div class="space-y-1 border-t border-gray-100 pt-5" x-data="{ sideNav: {{ old('show_side_nav', $page->show_side_nav ?? true) ? 'true' : 'false' }} }">
+                    <div data-hide-for-link class="space-y-1 border-t border-gray-100 pt-5 {{ $isLinkType ? 'hidden' : '' }}" x-data="{ sideNav: {{ old('show_side_nav', $page->show_side_nav ?? true) ? 'true' : 'false' }} }">
                         <h3 class="text-xs font-bold uppercase tracking-widest text-muted">Nawigacja po podstronach</h3>
                             <div>
                                 <label class="{{ $row }}">
@@ -456,7 +461,9 @@
 
                     @include('admin.pages.partials.types.training')
 
-                    @include('admin.pages.partials.types.tiles')
+                    <div data-hide-for-link class="{{ $isLinkType ? 'hidden' : '' }}">
+                        @include('admin.pages.partials.types.tiles')
+                    </div>
 
                     @include('admin.pages.partials.types.legacy')
 
@@ -513,7 +520,7 @@
                     </section>
 
                     {{-- Dostęp do strony: poziomy widoczności (nie dotyczy typów wewnętrznych — te mają własny tryb w „Typ i układ") --}}
-                    <section aria-labelledby="grp-dostep" class="mt-8 {{ in_array($currentType, ['internal', 'internal_hub', 'brand_assets'], true) ? 'hidden' : '' }}" data-access-level-section
+                    <section aria-labelledby="grp-dostep" data-hide-for-link class="mt-8 {{ in_array($currentType, ['internal', 'internal_hub', 'brand_assets'], true) || $isLinkType ? 'hidden' : '' }}" data-access-level-section
                         x-data="{ level: '{{ old('access_level', $page->access_level ?: 'inherit') }}' }">
                         <h3 id="grp-dostep" class="{{ $groupTitle }}">Dostęp do strony</h3>
                         <div class="mt-3 space-y-4">
@@ -572,7 +579,7 @@
                     </section>
 
                     {{-- 3. Dodatki --}}
-                    <section aria-labelledby="grp-dodatki" class="mt-8 {{ in_array($currentType, ['about', 'contact'], true) ? 'hidden' : '' }}" data-gallery-toggle>
+                    <section aria-labelledby="grp-dodatki" class="mt-8 {{ in_array($currentType, ['about', 'contact'], true) || $isLinkType ? 'hidden' : '' }}" data-gallery-toggle data-hide-for-link>
                         <h3 id="grp-dodatki" class="{{ $groupTitle }}">Dodatki</h3>
                         <div class="mt-2 divide-y divide-gray-100">
                             <label class="{{ $row }}">
@@ -872,6 +879,16 @@
                     document.querySelectorAll('[data-gallery-toggle]').forEach(function (el) {
                         el.classList.toggle('hidden', ['about', 'contact'].includes(typeSelect.value));
                     });
+                    // Typy-pozycje menu (przekierowanie, własny link, nagłówek): tylko niezbędne pola — na końcu, żeby wygrać z regułami wyżej.
+                    const isLinkType = @json($linkTypes).includes(typeSelect.value);
+                    document.querySelectorAll('[data-hide-for-link]').forEach(function (el) {
+                        if (isLinkType) el.classList.add('hidden');
+                        else if (el.matches('[data-access-level-section]')) el.classList.toggle('hidden', ['internal', 'internal_hub', 'brand_assets'].includes(typeSelect.value));
+                        else if (! el.matches('[data-content-field], [data-hide-for], [data-gallery-toggle]')) el.classList.remove('hidden');
+                    });
+                    if (isLinkType && document.querySelector('[data-hide-for-link][aria-selected="true"]')) {
+                        document.querySelector('[data-ftab-btn="tresc"]')?.click();
+                    }
                 });
             }
 

@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\Category;
 use App\Models\Page;
 use App\Models\Project;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -61,5 +62,21 @@ class MenuLinkPageTypesTest extends TestCase
         $this->assertStringContainsString('href="https://facebook.com/feer" target="_blank" rel="noopener"', $html);
         $this->assertStringNotContainsString("tab = 'podstrona-1'", $html, 'link nie jest zakładką');
         $this->assertStringContainsString("tab = 'podstrona-0'", $html);
+    }
+
+    public function test_formularz_linku_pokazuje_tylko_niezbedne_pola(): void
+    {
+        $this->actingAs(User::factory()->create(['role' => User::ROLE_ADMIN]));
+        $link = Page::create(['title' => 'Profil', 'slug' => 'profil', 'type' => 'menu_link', 'is_published' => true, 'type_data' => ['target_url' => 'https://facebook.com/feer']]);
+        $standard = Page::create(['title' => 'Zwykła', 'slug' => 'zwykla-2', 'type' => 'standard', 'is_published' => true]);
+
+        $linkHtml = $this->get(route('admin.podstrony.edit', $link))->assertOk()->getContent();
+        $this->assertMatchesRegularExpression('~data-content-field data-hide-for-link class="hidden"~', $linkHtml);
+        $this->assertMatchesRegularExpression('~data-ftab-btn="seo" data-hide-for-link[^>]*class="hidden ~', $linkHtml);
+        $this->assertStringContainsString('name="type_data[target_url]"', $linkHtml);
+        $this->assertStringContainsString('name="title"', $linkHtml);
+
+        $standardHtml = $this->get(route('admin.podstrony.edit', $standard))->assertOk()->getContent();
+        $this->assertMatchesRegularExpression('~data-content-field data-hide-for-link class=""~', $standardHtml);
     }
 }
