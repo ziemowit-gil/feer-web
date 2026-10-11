@@ -114,7 +114,7 @@
                             class="w-full rounded-lg object-cover sm:aspect-[4/3]">
                     </div>
                     <div class="min-w-0 flex-1">
-                        <div id="article-text" data-news-content class="prose max-w-none text-ink">@shortcodes($news->content)</div>
+                        @include('news._post-type', ['part' => 'top'])<div id="article-text" data-news-content class="prose max-w-none text-ink">@shortcodes($news->content)</div>@include('news._post-type', ['part' => 'bottom'])
                     </div>
                 </div>
             @else
@@ -123,7 +123,7 @@
                     <img src="{{ $img }}" alt="{{ $imgAlt }}" data-lightbox
                         class="mb-6 w-full rounded-lg object-cover {{ $articleLayout === 'wide' ? 'h-96' : 'h-64' }}">
                 @endif
-                <div id="article-text" data-news-content class="prose max-w-none text-ink">@shortcodes($news->content)</div>
+                @include('news._post-type', ['part' => 'top'])<div id="article-text" data-news-content class="prose max-w-none text-ink">@shortcodes($news->content)</div>@include('news._post-type', ['part' => 'bottom'])
             @endif
 
             <div class="mt-8 flex flex-wrap gap-3 print:hidden" aria-label="Opcje artykułu">

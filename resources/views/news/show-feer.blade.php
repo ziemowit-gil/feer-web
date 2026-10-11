@@ -122,14 +122,14 @@
                 @if ($isSide)
                     <div class="grid gap-8 md:grid-cols-[18rem_minmax(0,1fr)] md:items-start">
                         <img src="{{ $img }}" alt="{{ $imgAlt }}" data-lightbox class="aspect-[4/3] w-full rounded-lg object-cover md:sticky md:top-6">
-                        <div id="article-text" data-news-content class="news-feer-body prose prose-lg max-w-none text-ink">@shortcodes($news->content)</div>
+                        @include('news._post-type', ['part' => 'top'])<div id="article-text" data-news-content class="news-feer-body prose prose-lg max-w-none text-ink">@shortcodes($news->content)</div>@include('news._post-type', ['part' => 'bottom'])
                     </div>
                 @else
                     @if ($hasImg)
                         <img src="{{ $img }}" alt="{{ $imgAlt }}" data-lightbox
                              class="mb-8 aspect-[16/10] w-full rounded-lg object-cover {{ $articleLayout === 'wide' ? 'max-w-3xl' : 'mx-auto max-w-xl' }}">
                     @endif
-                    <div id="article-text" data-news-content class="news-feer-body prose prose-lg max-w-none text-ink">@shortcodes($news->content)</div>
+                    @include('news._post-type', ['part' => 'top'])<div id="article-text" data-news-content class="news-feer-body prose prose-lg max-w-none text-ink">@shortcodes($news->content)</div>@include('news._post-type', ['part' => 'bottom'])
                 @endif
 
                 @if ($news->tags->isNotEmpty())

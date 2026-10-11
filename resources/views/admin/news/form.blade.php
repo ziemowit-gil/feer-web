@@ -7,7 +7,7 @@
     @php
         // Zakładka, w której leży błąd walidacji — kropka na zakładce i automatyczne otwarcie po nieudanym zapisie.
         $tabFields = [
-            'ogolne' => ['title', 'slug', 'content'],
+            'ogolne' => ['title', 'slug', 'content', 'post_type', 'expires_at', 'type_data.cta_url', 'type_data.tool_name', 'type_data.tool_url', 'type_data.score', 'type_data.tested_at'],
             'obraz' => ['image', 'image_alt', 'article_layout', 'image_focal_x', 'image_focal_y', 'audience', 'accent_color'],
             'kategorie' => ['news_category_id', 'project_id', 'excerpt', 'tags'],
             'publikacja' => ['published_at', 'is_published', 'is_archived'],
@@ -144,6 +144,149 @@
         {{-- ═══ Zakładki rekordu (jak w TYPO3): Ogólne | Zdjęcie i wygląd | Kategoryzacja | Publikacja | SEO ═══ --}}
 
         <div data-tab-panel="ogolne" role="tabpanel" id="panel-ogolne" aria-labelledby="tab-ogolne" class="space-y-5">
+            {{-- ═══ Typ wpisu: zwykły / komunikat (z datą ważności) / test narzędzia ═══ --}}
+            @php
+                $td = old('type_data', $news->type_data ?? []);
+                $postType = old('post_type', $news->post_type ?? 'standard');
+                $inp = 'w-full rounded border-gray-500 text-sm focus:border-brand-dark focus-visible:ring-2 focus-visible:ring-brand-dark';
+                $lbl = 'mb-1 block text-sm font-bold text-ink';
+                $pros = array_values(array_filter((array) ($td['pros'] ?? []), 'filled')) ?: [''];
+                $cons = array_values(array_filter((array) ($td['cons'] ?? []), 'filled')) ?: [''];
+            @endphp
+            <div class="space-y-4 rounded-md bg-white p-6"
+                x-data="{ type: @js($postType), pros: @js($pros), cons: @js($cons) }">
+                <fieldset>
+                    <legend class="mb-2 text-sm font-bold uppercase tracking-wide text-muted">Typ wpisu</legend>
+                    <div class="grid gap-2 sm:grid-cols-3">
+                        @foreach (\App\Models\News::POST_TYPES as $val => $opt)
+                            <label class="flex cursor-pointer items-start gap-3 rounded-md bg-gray-50 p-3 hover:bg-brand-light has-[:checked]:bg-brand-light has-[:checked]:ring-2 has-[:checked]:ring-brand-dark has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-brand-dark">
+                                <input type="radio" name="post_type" value="{{ $val }}" x-model="type" @checked($postType === $val) class="mt-1 border-gray-500 text-brand-dark focus:ring-brand-dark">
+                                <span>
+                                    <span class="flex items-center gap-2 text-sm font-bold text-ink"><i class="fa-solid {{ $opt['icon'] }} text-brand-dark" aria-hidden="true"></i>{{ $opt['label'] }}</span>
+                                    <span class="mt-0.5 block text-xs text-muted">{{ $opt['desc'] }}</span>
+                                </span>
+                            </label>
+                        @endforeach
+                    </div>
+                    @error('post_type') <p class="mt-1 text-sm text-red-700">{{ $message }}</p> @enderror
+                </fieldset>
+
+                {{-- Komunikat --}}
+                <fieldset x-show="type === 'announcement'" x-cloak class="space-y-4 rounded-md bg-gray-50 p-4" :disabled="type !== 'announcement'">
+                    <legend class="px-1 text-sm font-bold text-ink"><i class="fa-solid fa-bullhorn mr-1 text-brand-dark" aria-hidden="true"></i> Komunikat</legend>
+                    <div class="grid gap-4 sm:grid-cols-2">
+                        <div>
+                            <label for="expires_at" class="{{ $lbl }}">Ważny do <span class="text-red-700" aria-hidden="true">*</span></label>
+                            <input type="datetime-local" id="expires_at" name="expires_at" aria-describedby="expires_at_help"
+                                value="{{ old('expires_at', $news->expires_at?->format('Y-m-d\TH:i')) }}" class="{{ $inp }}">
+                            <p id="expires_at_help" class="mt-1 text-xs text-muted">Po tej dacie komunikat zniknie z listy aktualności i trafi do archiwum.</p>
+                            @error('expires_at') <p class="mt-1 text-sm text-red-700">{{ $message }}</p> @enderror
+                        </div>
+                        <label class="flex items-center gap-2 self-center text-sm font-bold text-ink">
+                            <input type="hidden" name="type_data[important]" value="0">
+                            <input type="checkbox" name="type_data[important]" value="1" @checked(! empty($td['important'])) class="rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
+                            Ważny komunikat (wyróżniony na stronie wpisu)
+                        </label>
+                        <div>
+                            <label for="td_cta_label" class="{{ $lbl }}">Przycisk — napis <span class="font-normal text-muted">(opcjonalnie)</span></label>
+                            <input type="text" id="td_cta_label" name="type_data[cta_label]" value="{{ $td['cta_label'] ?? '' }}" placeholder="np. Zapisz się" class="{{ $inp }}">
+                        </div>
+                        <div>
+                            <label for="td_cta_url" class="{{ $lbl }}">Przycisk — adres</label>
+                            <input type="text" id="td_cta_url" name="type_data[cta_url]" value="{{ $td['cta_url'] ?? '' }}" placeholder="https://… lub /kontakt" class="{{ $inp }}">
+                            @error('type_data.cta_url') <p class="mt-1 text-sm text-red-700">{{ $message }}</p> @enderror
+                        </div>
+                    </div>
+                </fieldset>
+
+                {{-- Test narzędzia --}}
+                <fieldset x-show="type === 'review'" x-cloak class="space-y-4 rounded-md bg-gray-50 p-4" :disabled="type !== 'review'">
+                    <legend class="px-1 text-sm font-bold text-ink"><i class="fa-solid fa-clipboard-check mr-1 text-brand-dark" aria-hidden="true"></i> Test narzędzia</legend>
+                    <div class="grid gap-4 sm:grid-cols-3">
+                        <div>
+                            <label for="td_tool_name" class="{{ $lbl }}">Narzędzie <span class="text-red-700" aria-hidden="true">*</span></label>
+                            <input type="text" id="td_tool_name" name="type_data[tool_name]" value="{{ $td['tool_name'] ?? '' }}" placeholder="np. Canva" class="{{ $inp }}">
+                            @error('type_data.tool_name') <p class="mt-1 text-sm text-red-700">{{ $message }}</p> @enderror
+                        </div>
+                        <div>
+                            <label for="td_tool_url" class="{{ $lbl }}">Strona narzędzia</label>
+                            <input type="url" id="td_tool_url" name="type_data[tool_url]" value="{{ $td['tool_url'] ?? '' }}" placeholder="https://…" class="{{ $inp }}">
+                            @error('type_data.tool_url') <p class="mt-1 text-sm text-red-700">{{ $message }}</p> @enderror
+                        </div>
+                        <div>
+                            <label for="td_tool_version" class="{{ $lbl }}">Wersja / plan</label>
+                            <input type="text" id="td_tool_version" name="type_data[tool_version]" value="{{ $td['tool_version'] ?? '' }}" placeholder="np. wersja webowa, plan darmowy" class="{{ $inp }}">
+                        </div>
+                    </div>
+
+                    <div class="grid gap-4 sm:grid-cols-2">
+                        <fieldset>
+                            <legend class="{{ $lbl }}">Ocena dostępności <span class="text-red-700" aria-hidden="true">*</span></legend>
+                            <div class="flex flex-wrap gap-2">
+                                @foreach ([1, 2, 3, 4, 5] as $n)
+                                    <label class="flex h-11 w-11 cursor-pointer items-center justify-center rounded-md bg-white text-base font-bold text-ink hover:bg-brand-light has-[:checked]:bg-brand-dark has-[:checked]:text-white has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-brand-dark">
+                                        <input type="radio" name="type_data[score]" value="{{ $n }}" class="sr-only" @checked((int) ($td['score'] ?? 0) === $n)>
+                                        {{ $n }}<span class="sr-only"> z 5</span>
+                                    </label>
+                                @endforeach
+                            </div>
+                            <p class="mt-1 text-xs text-muted">1 — bardzo słaba, 5 — wzorowa dostępność.</p>
+                            @error('type_data.score') <p class="mt-1 text-sm text-red-700">{{ $message }}</p> @enderror
+                        </fieldset>
+                        <div>
+                            <label for="td_compliance" class="{{ $lbl }}">Wynik audytu</label>
+                            <select id="td_compliance" name="type_data[compliance]" class="{{ $inp }}">
+                                <option value="">— nie podawaj —</option>
+                                @foreach (\App\Models\News::REVIEW_COMPLIANCE as $k => $v)
+                                    <option value="{{ $k }}" @selected(($td['compliance'] ?? '') === $k)>{{ $v }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label for="td_audit_summary" class="{{ $lbl }}">Podsumowanie audytu</label>
+                        <textarea id="td_audit_summary" name="type_data[audit_summary]" rows="3" placeholder="np. Kontrast i nawigacja klawiaturą w porządku; brak tekstów alternatywnych w szablonach, edytor nie działa z czytnikiem NVDA." class="{{ $inp }}">{{ $td['audit_summary'] ?? '' }}</textarea>
+                    </div>
+
+                    <div class="grid gap-4 sm:grid-cols-2">
+                        <div>
+                            <label for="td_tested_with" class="{{ $lbl }}">Testowano z</label>
+                            <input type="text" id="td_tested_with" name="type_data[tested_with]" value="{{ $td['tested_with'] ?? '' }}" placeholder="np. NVDA + Firefox, VoiceOver (iOS), sama klawiatura" class="{{ $inp }}">
+                        </div>
+                        <div>
+                            <label for="td_tested_at" class="{{ $lbl }}">Data testu</label>
+                            <input type="date" id="td_tested_at" name="type_data[tested_at]" value="{{ $td['tested_at'] ?? '' }}" class="{{ $inp }}">
+                        </div>
+                    </div>
+
+                    <div class="grid gap-4 sm:grid-cols-2">
+                        @foreach (['pros' => ['Plusy', 'Dodaj plus', 'np. Pełna obsługa klawiaturą'], 'cons' => ['Minusy', 'Dodaj minus', 'np. Brak napisów w filmach instruktażowych']] as $listKey => [$listLabel, $addLabel, $ph])
+                            <fieldset>
+                                <legend class="{{ $lbl }}">{{ $listLabel }}</legend>
+                                <div class="space-y-2">
+                                    <template x-for="(row, i) in {{ $listKey }}" :key="i">
+                                        <div class="flex gap-2">
+                                            <input type="text" name="type_data[{{ $listKey }}][]" x-model="{{ $listKey }}[i]" placeholder="{{ $ph }}" :aria-label="'{{ $listLabel }} ' + (i + 1)" class="{{ $inp }}">
+                                            <button type="button" @click="{{ $listKey }}.splice(i, 1); if (! {{ $listKey }}.length) {{ $listKey }}.push('')" :aria-label="'Usuń: {{ $listLabel }} ' + (i + 1)"
+                                                class="shrink-0 rounded-md bg-white px-3 text-muted hover:text-red-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
+                                        </div>
+                                    </template>
+                                </div>
+                                <button type="button" @click="{{ $listKey }}.push('')" class="mt-2 inline-flex min-h-9 items-center gap-1.5 rounded-md bg-white px-3 text-xs font-bold text-ink hover:bg-brand-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">
+                                    <i class="fa-solid fa-plus" aria-hidden="true"></i> {{ $addLabel }}
+                                </button>
+                            </fieldset>
+                        @endforeach
+                    </div>
+
+                    <div>
+                        <label for="td_verdict" class="{{ $lbl }}">Werdykt (1–2 zdania)</label>
+                        <textarea id="td_verdict" name="type_data[verdict]" rows="2" placeholder="np. Dobre do prostych grafik, ale materiały dla osób niewidomych przygotuj w innym narzędziu." class="{{ $inp }}">{{ $td['verdict'] ?? '' }}</textarea>
+                    </div>
+                </fieldset>
+            </div>
+
             <div class="space-y-5 p-6 rounded-md bg-white">
                 <h2 class="text-sm font-bold uppercase tracking-wide text-muted">Nagłówek i adres</h2>
             <div class="grid gap-5 sm:grid-cols-2">

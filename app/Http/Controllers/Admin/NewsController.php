@@ -283,6 +283,34 @@ class NewsController extends Controller
             'content' => ['nullable', 'string'],
             'published_at' => ['required', 'date'],
             'image' => ['nullable', 'image', 'max:4096'],
+            // Typ wpisu i jego pola
+            'post_type' => ['nullable', Rule::in(array_keys(News::POST_TYPES))],
+            'expires_at' => ['nullable', 'date', 'after:published_at', 'required_if:post_type,announcement'],
+            'type_data.cta_label' => ['nullable', 'string', 'max:80'],
+            'type_data.cta_url' => ['nullable', 'string', 'max:500', 'regex:~^(https?://\S+|/(?!/)\S*|#\S*)$~i'],
+            'type_data.important' => ['nullable', 'boolean'],
+            'type_data.tool_name' => ['nullable', 'string', 'max:120', 'required_if:post_type,review'],
+            'type_data.tool_url' => ['nullable', 'url:http,https', 'max:500'],
+            'type_data.tool_version' => ['nullable', 'string', 'max:60'],
+            'type_data.score' => ['nullable', 'integer', 'between:1,5', 'required_if:post_type,review'],
+            'type_data.compliance' => ['nullable', Rule::in(array_keys(News::REVIEW_COMPLIANCE))],
+            'type_data.audit_summary' => ['nullable', 'string', 'max:2000'],
+            'type_data.tested_with' => ['nullable', 'string', 'max:300'],
+            'type_data.tested_at' => ['nullable', 'date'],
+            'type_data.verdict' => ['nullable', 'string', 'max:500'],
+            'type_data.pros' => ['nullable', 'array', 'max:20'],
+            'type_data.pros.*' => ['nullable', 'string', 'max:300'],
+            'type_data.cons' => ['nullable', 'array', 'max:20'],
+            'type_data.cons.*' => ['nullable', 'string', 'max:300'],
+        ], [
+            'expires_at.required_if' => 'Komunikat musi mieć datę ważności — po niej trafi do archiwum.',
+            'expires_at.after' => 'Data ważności komunikatu musi być późniejsza niż data publikacji.',
+            'type_data.tool_name.required_if' => 'Podaj nazwę testowanego narzędzia.',
+            'type_data.score.required_if' => 'Wybierz ocenę dostępności (1–5).',
+        ], [
+            'expires_at' => 'ważny do',
+            'type_data.cta_url' => 'adres przycisku',
+            'type_data.tool_url' => 'adres narzędzia',
         ]);
 
         $data['slug'] = trim($data['slug'] ?? '');
@@ -294,6 +322,31 @@ class NewsController extends Controller
         $data['image_focal_x'] = (int) ($data['image_focal_x'] ?? 50);
         $data['image_focal_y'] = (int) ($data['image_focal_y'] ?? 50);
         $data['article_layout'] = $data['article_layout'] ?? 'default';
+        $data['post_type'] = $data['post_type'] ?? 'standard';
+        $td = (array) ($data['type_data'] ?? []);
+        // Zapisujemy tylko pola bieżącego typu (bez śmieci po zmianie typu).
+        $data['type_data'] = match ($data['post_type']) {
+            'announcement' => array_filter([
+                'important' => ! empty($td['important']),
+                'cta_label' => trim((string) ($td['cta_label'] ?? '')) ?: null,
+                'cta_url' => trim((string) ($td['cta_url'] ?? '')) ?: null,
+            ], fn ($v) => $v !== null),
+            'review' => array_filter([
+                'tool_name' => trim((string) ($td['tool_name'] ?? '')),
+                'tool_url' => $td['tool_url'] ?? null,
+                'tool_version' => $td['tool_version'] ?? null,
+                'score' => isset($td['score']) ? (int) $td['score'] : null,
+                'compliance' => $td['compliance'] ?? null,
+                'audit_summary' => $td['audit_summary'] ?? null,
+                'tested_with' => $td['tested_with'] ?? null,
+                'tested_at' => $td['tested_at'] ?? null,
+                'verdict' => $td['verdict'] ?? null,
+                'pros' => array_values(array_filter(array_map('trim', (array) ($td['pros'] ?? [])), 'filled')),
+                'cons' => array_values(array_filter(array_map('trim', (array) ($td['cons'] ?? [])), 'filled')),
+            ], fn ($v) => $v !== null && $v !== '' && $v !== []),
+            default => null,
+        };
+        $data['expires_at'] = $data['post_type'] === 'announcement' ? ($data['expires_at'] ?? null) : null;
         $data['is_published'] = $request->boolean('is_published');
         $data['is_archived'] = $request->boolean('is_archived');
         $data['is_clone'] = $request->boolean('is_clone');

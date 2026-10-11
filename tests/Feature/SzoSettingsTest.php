@@ -147,11 +147,12 @@ class SzoSettingsTest extends TestCase
     public function test_zablokowany_klauzule_json_nie_przerywa_diagnozy_ani_importu(): void
     {
         // Serwer SZO blokuje *.json (403), ale bezpośredni list.php działa.
-        Http::fake([
-            'szo.test/klauzule.json' => Http::response('Forbidden', 403),
-            'szo.test/modules/gdpr_clauses/public/list.php' => Http::response(['ok' => true, 'clauses' => []]),
-            'szo.test/api/v1/forms.php' => Http::response(['forms' => [['slug' => 'a']]]),
-        ]);
+        // Każdy adres listy klauzul poza bezpośrednim list.php zwraca 403.
+        Http::fake(fn ($r) => match (true) {
+            str_contains($r->url(), 'forms.php') => Http::response(['forms' => [['slug' => 'a']]]),
+            str_contains($r->url(), '//szo.test/modules/gdpr_clauses/public/list.php') => Http::response(['ok' => true, 'clauses' => []]),
+            default => Http::response('Forbidden', 403),
+        });
         $this->assertTrue(SzoClient::diagnose('https://szo.test', 'dobry')['ok']);
 
         // Gdy obie ścieżki klauzul padają, token i tak jest sprawdzony — wynik to ostrzeżenie, nie błąd adresu.

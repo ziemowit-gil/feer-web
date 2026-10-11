@@ -114,7 +114,7 @@
                     </figure>
                 @endif
 
-                <div id="article-text" data-news-content class="news-portal-body {{ $pFeer ? 'news-feer-body' : '' }} prose prose-lg mt-8 max-w-none text-ink">@shortcodes($news->content)</div>
+                @include('news._post-type', ['part' => 'top'])<div id="article-text" data-news-content class="news-portal-body {{ $pFeer ? 'news-feer-body' : '' }} prose prose-lg mt-8 max-w-none text-ink">@shortcodes($news->content)</div>@include('news._post-type', ['part' => 'bottom'])
 
                 @if ($news->tags->isNotEmpty())
                     <p class="mt-8 text-sm text-muted">

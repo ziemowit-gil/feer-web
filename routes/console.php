@@ -23,6 +23,8 @@ Schedule::command('approvals:notify-pending')->hourly();
 // Dosyłanie do SZO zgłoszeń formularzy, których nie udało się przekazać przy
 // zapisie (niedostępne SZO, timeout). Co 15 minut, żeby zaległość nie rosła.
 Schedule::command('szo:push-submissions')->everyFifteenMinutes()->withoutOverlapping();
+// Komunikaty w Aktualnościach po dacie ważności → archiwum.
+Schedule::command('news:archiwizuj-komunikaty')->everyFifteenMinutes()->withoutOverlapping();
 
 // Klauzule RODO z SZO — lokalna kopia dla shortcode [klauzule-rodo] (strona /rodo).
 // Raz dziennie wystarcza; zmianę widać od razu po „Importuj teraz” w panelu.

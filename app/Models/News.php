@@ -41,6 +41,20 @@ class News extends Model implements HasMedia
         'portal'  => ['label' => 'Portal', 'desc' => 'Portal — treść i kolumna boczna działu', 'icon' => 'fa-newspaper'],
     ];
 
+    /** Typy wpisu (pole `post_type`): własne pola w panelu i własny blok na stronie wpisu. */
+    public const POST_TYPES = [
+        'standard'     => ['label' => 'Zwykły wpis', 'desc' => 'Artykuł lub aktualność', 'icon' => 'fa-newspaper'],
+        'announcement' => ['label' => 'Komunikat', 'desc' => 'Krótki, z datą ważności — potem sam trafia do archiwum', 'icon' => 'fa-bullhorn'],
+        'review'       => ['label' => 'Test narzędzia', 'desc' => 'Ocena dostępności, plusy i minusy, wynik audytu', 'icon' => 'fa-clipboard-check'],
+    ];
+
+    /** Wynik audytu dostępności w teście narzędzia. */
+    public const REVIEW_COMPLIANCE = [
+        'full'    => 'Zgodne z WCAG 2.2 AA',
+        'partial' => 'Częściowo zgodne z WCAG 2.2 AA',
+        'none'    => 'Niezgodne z WCAG 2.2 AA',
+    ];
+
     protected $table = 'news';
 
     public function toSearchableArray(): array
@@ -73,12 +87,14 @@ class News extends Model implements HasMedia
     }
 
     protected $fillable = [
-        'site_id', 'created_by', 'news_category_id', 'project_id', 'title', 'slug', 'excerpt', 'audience', 'accent_color', 'image_alt', 'image_focal_x', 'image_focal_y', 'article_layout', 'content', 'blocks', 'published_at', 'is_published', 'is_archived', 'is_legacy', 'is_clone', 'cloned_from_id',
+        'site_id', 'created_by', 'news_category_id', 'project_id', 'title', 'slug', 'excerpt', 'audience', 'accent_color', 'image_alt', 'image_focal_x', 'image_focal_y', 'article_layout', 'post_type', 'type_data', 'expires_at', 'content', 'blocks', 'published_at', 'is_published', 'is_archived', 'is_legacy', 'is_clone', 'cloned_from_id',
         'meta_title', 'meta_description', 'pending_approval', 'submitted_by_id',
     ];
 
     protected $casts = [
         'published_at' => 'datetime',
+        'expires_at' => 'datetime',
+        'type_data' => 'array',
         'is_published' => 'boolean',
         'is_archived' => 'boolean',
         'is_legacy' => 'boolean',
@@ -157,7 +173,42 @@ class News extends Model implements HasMedia
     {
         return $query->where('is_published', true)
             ->where('published_at', '<=', now())
-            ->where('is_archived', false);
+            ->where('is_archived', false)
+            // Komunikat po dacie ważności znika z list od razu (archiwizuje go news:archiwizuj-komunikaty).
+            ->where(fn (Builder $q) => $q->whereNull('expires_at')->orWhere('expires_at', '>', now()));
+    }
+
+    public function isAnnouncement(): bool
+    {
+        return $this->post_type === 'announcement';
+    }
+
+    public function isReview(): bool
+    {
+        return $this->post_type === 'review';
+    }
+
+    /** Komunikat, którego data ważności minęła. */
+    public function isExpired(): bool
+    {
+        return $this->isAnnouncement() && $this->expires_at !== null && $this->expires_at->isPast();
+    }
+
+    /** Dane typu wpisu z oczyszczonymi listami (puste wiersze odrzucone). */
+    public function typeData(): array
+    {
+        $d = (array) ($this->type_data ?? []);
+        foreach (['pros', 'cons'] as $list) {
+            $d[$list] = array_values(array_filter(array_map('trim', (array) ($d[$list] ?? [])), 'filled'));
+        }
+
+        return $d;
+    }
+
+    /** Nazwa typu wpisu do wyświetlenia (np. w meta nad tytułem). */
+    public function postTypeLabel(): string
+    {
+        return self::POST_TYPES[$this->post_type ?? 'standard']['label'] ?? self::POST_TYPES['standard']['label'];
     }
 
     public function registerMediaCollections(): void
