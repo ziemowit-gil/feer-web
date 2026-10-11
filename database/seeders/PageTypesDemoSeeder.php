@@ -75,6 +75,48 @@ class PageTypesDemoSeeder extends Seeder
             'title' => 'Przykład: lista zapytań ofertowych',
             'content' => '<p>Zapytania ofertowe prowadzone zgodnie z zasadą konkurencyjności. Zakończone postępowania znajdziesz w archiwum.</p><p>[zapytania-ofertowe]</p>',
         ]);
+
+        $this->sectionTemplate();
+    }
+
+    /**
+     * Szablon wizualny „Strona działu": strona z podstronami (menu działu po prawej),
+     * aktualnościami i — jeśli lokalnie są zdjęcia — sliderem.
+     */
+    private function sectionTemplate(): void
+    {
+        $section = $this->page('strona-dzialu', 'standard', [
+            'title' => 'Przykład: strona działu (szablon)',
+            'page_template' => 'section',
+            'layout_data' => ['news_category_id' => null, 'news_count' => 4, 'slider' => true],
+            'content' => '<h2>O dziale</h2><p>Dział dostępności cyfrowej prowadzi audyty, szkolenia i konsultacje. Szablon „Strona działu” pokazuje slider ze zdjęć strony, aktualności i menu podstron działu.</p>',
+        ]);
+
+        foreach (['Audyty dostępności', 'Szkolenia', 'Konsultacje', 'Materiały do pobrania', 'Kontakt z działem'] as $i => $title) {
+            Page::updateOrCreate(['slug' => 'przyklad-strona-dzialu-'.\Illuminate\Support\Str::slug($title)], [
+                'title' => $title,
+                'type' => 'standard',
+                'parent_id' => $section->id,
+                'is_published' => true,
+                'show_in_menu' => false,
+                'order' => $i + 1,
+                'content' => '<p>Podstrona działu „'.$title.'”.</p>',
+            ]);
+        }
+
+        // Slider: zdjęcia strony z plików dostępnych lokalnie (bez nich slider się nie pokazuje).
+        if ($section->images()->exists()) {
+            return;
+        }
+        $candidates = array_filter([
+            storage_path('app/public/1/biuro.jpg'),
+            storage_path('app/public/1/hero_0.jpg'),
+            storage_path('app/public/1/f1.jpg'),
+        ], 'is_file');
+        foreach (array_values($candidates) as $i => $file) {
+            $image = $section->images()->create(['alt' => 'Zdjęcie przykładowe '.($i + 1).' — zespół fundacji przy pracy', 'caption' => $i === 0 ? 'Przykładowy podpis slajdu' : null, 'order' => $i]);
+            $image->addMedia($file)->preservingOriginal()->toMediaCollection('image');
+        }
     }
 
     /** Zapis strony przykładu (pod stroną-rodzicem, poza menu, kolejno). */

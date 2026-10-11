@@ -797,6 +797,11 @@ class PageController extends Controller
                 Rule::notIn(array_diff(SiteSetting::current()->blocked_options['page_types'] ?? [], [$page?->type])),
             ],
             'page_template' => ['nullable', Rule::in(array_keys(Page::TEMPLATES))],
+            // Ustawienia szablonu „Strona działu".
+            'layout_data' => ['nullable', 'array'],
+            'layout_data.news_category_id' => ['nullable', 'integer', 'exists:news_categories,id'],
+            'layout_data.news_count' => ['nullable', 'integer', 'min:0', 'max:13'],
+            'layout_data.slider' => ['nullable', 'boolean'],
             'access_mode' => ['nullable', Rule::in(array_keys(Page::ACCESS_MODES))],
             'access_password' => ['nullable', 'string', 'max:255'],
             'access_level' => ['nullable', Rule::in(array_keys(Page::ACCESS_LEVELS))],

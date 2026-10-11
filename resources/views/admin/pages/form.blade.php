@@ -292,7 +292,7 @@
 
                     <div data-hide-for="contact" class="border-t border-gray-100 pt-5 sm:w-1/2 {{ $currentType === 'contact' ? 'hidden' : '' }}">
                         @php
-                            $tplIcons = ['default' => 'fa-file-lines', 'wide' => 'fa-expand', 'hero' => 'fa-image', 'landing' => 'fa-bullhorn', 'portal' => 'fa-globe', 'minimal' => 'fa-minimize'];
+                            $tplIcons = ['default' => 'fa-file-lines', 'wide' => 'fa-expand', 'hero' => 'fa-image', 'landing' => 'fa-bullhorn', 'portal' => 'fa-globe', 'section' => 'fa-table-columns', 'minimal' => 'fa-minimize'];
                             $tplCards = [];
                             foreach (\App\Models\Page::TEMPLATES as $value => $label) {
                                 $tplCards[$value] = [
@@ -314,6 +314,46 @@
                         ])
                         <p class="mt-1 text-xs text-muted">Zmienia wygląd i układ strony publicznej. Działa dla stron typu „Standardowa", „Wewnętrzna" i „FAQ". Dla pozostałych typów układ jest stały.</p>
                         @error('page_template') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+
+                        {{-- Ustawienia szablonu „Strona działu" (layout_data) — widoczne tylko dla tego szablonu. --}}
+                        @php
+                            $ld = old('layout_data', $page->layout_data ?? []);
+                            $newsCategories = \App\Models\NewsCategory::query()->orderBy('order')->orderBy('name')->get(['id', 'name']);
+                        @endphp
+                        <fieldset data-template-fields="section" class="mt-4 space-y-3 rounded-lg bg-gray-50 p-4 {{ $tplCurrent === 'section' ? '' : 'hidden' }}">
+                            <legend class="text-xs font-bold uppercase text-muted">Strona działu</legend>
+                            <div class="grid gap-3 sm:grid-cols-2">
+                                <div>
+                                    <label for="ld-news-category" class="mb-1 block text-xs font-bold text-muted">Aktualności z kategorii</label>
+                                    <select id="ld-news-category" name="layout_data[news_category_id]" class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                                        <option value="">— wszystkie kategorie —</option>
+                                        @foreach ($newsCategories as $cat)
+                                            <option value="{{ $cat->id }}" @selected((int) ($ld['news_category_id'] ?? 0) === $cat->id)>{{ $cat->name }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <div>
+                                    <label for="ld-news-count" class="mb-1 block text-xs font-bold text-muted">Liczba aktualności</label>
+                                    <select id="ld-news-count" name="layout_data[news_count]" class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand" aria-describedby="ld-news-count-help">
+                                        @foreach ([0 => 'Bez aktualności', 1 => '1 (tylko wyróżniona)', 4 => '4 (wyróżniona + 3)', 7 => '7 (wyróżniona + 6)', 10 => '10 (wyróżniona + 9)', 13 => '13 (wyróżniona + 12)'] as $n => $label)
+                                            <option value="{{ $n }}" @selected((int) ($ld['news_count'] ?? 4) === $n)>{{ $label }}</option>
+                                        @endforeach
+                                    </select>
+                                    <p id="ld-news-count-help" class="mt-1 text-xs text-muted">Pierwsza jest duża (zdjęcie obok tekstu), kolejne w siatce po trzy.</p>
+                                </div>
+                            </div>
+                            <label class="flex items-start gap-2 text-sm">
+                                <input type="hidden" name="layout_data[slider]" value="0">
+                                <input type="checkbox" name="layout_data[slider]" value="1" class="mt-0.5 rounded border-gray-300 text-brand focus:ring-brand" @checked($ld['slider'] ?? true)>
+                                <span>Slider ze zdjęć strony (zakładka „Galeria”) nad aktualnościami. Można go zatrzymać, a przy ograniczonym ruchu nie przewija się sam.</span>
+                            </label>
+                            <p class="text-xs text-muted">Menu w prawej kolumnie to podstrony działu. Treść strony wyświetla się pod aktualnościami.</p>
+                        </fieldset>
+                        <script>
+                            document.getElementById('page_template')?.addEventListener('change', function (e) {
+                                document.querySelectorAll('[data-template-fields]').forEach(function (el) { el.classList.toggle('hidden', el.dataset.templateFields !== e.target.value); });
+                            });
+                        </script>
                     </div>
 
                     {{-- Układ: nawigacja po podstronach działu (lista podstron obok treści) --}}

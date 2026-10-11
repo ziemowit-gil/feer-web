@@ -92,16 +92,42 @@ class PageController extends Controller
             return response()->view('templates.federation.cooperation', $data);
         }
 
+        // Szablon „Strona działu": aktualności (opcjonalnie z jednej kategorii) do sekcji pod sliderem.
+        if ($page->page_template === 'section' && $page->usesStandardLayout()) {
+            $data['sectionNews'] = $this->sectionNews($page);
+        }
+
         $view = match ($page->page_template) {
             'wide'    => 'page.show-wide',
             'hero'    => 'page.show-hero',
             'landing' => 'page.show-landing',
             'portal'  => 'page.show-portal',
+            // Strona działu ma sens tylko dla stron z treścią; typy z własnym układem zostają przy domyślnym.
+            'section' => $page->usesStandardLayout() ? 'page.show-section' : 'page.show',
             'minimal' => 'page.show-minimal',
             default   => 'page.show',
         };
 
         return response()->view($view, $data);
+    }
+
+    /** Aktualności dla szablonu „Strona działu" (layout_data: news_category_id, news_count). */
+    private function sectionNews(Page $page): \Illuminate\Support\Collection
+    {
+        $settings = $page->layout_data ?? [];
+        $count = (int) ($settings['news_count'] ?? 4);
+        if ($count <= 0 || ! SiteSetting::current()->isModuleEnabled('news')) {
+            return collect();
+        }
+
+        return \App\Models\News::query()
+            ->published()
+            ->forCurrentSite()
+            ->when($settings['news_category_id'] ?? null, fn ($q, $id) => $q->where('news_category_id', $id))
+            ->with('category')
+            ->latest('published_at')
+            ->limit(min($count, 13))
+            ->get();
     }
 
     /** Formularz logowania dla strony z zasobami marki (indywidualny login+hasło). */

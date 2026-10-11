@@ -75,6 +75,7 @@ class Page extends Model
         'hero'    => 'Z hero (kolorowy baner z tytułem nad treścią)',
         'landing' => 'Landing page (duży hero, bez okruszków nawigacyjnych)',
         'portal'  => 'Portal (hero ze zdjęciem, treść + sidebar, galeria, kontakt)',
+        'section' => 'Strona działu (slider ze zdjęć strony, aktualności, menu działu w prawej kolumnie)',
         'minimal' => 'Minimalna (bez nagłówka i stopki serwisu)',
     ];
 
@@ -346,7 +347,7 @@ class Page extends Model
         'legacy_name', 'legacy_intro',
         'brand_brandbook_url', 'brand_sections',
         'person_phone', 'person_role', 'person_bio', 'person_email', 'person_social', 'person_member_label', 'person_name_genitive', 'person_department',
-        'page_template',
+        'page_template', 'layout_data',
         'cooperation_data', 'type_data', 'blocks',
     ];
 
@@ -386,6 +387,7 @@ class Page extends Model
         'cooperation_data'   => 'array',
         'type_data'          => 'array',
         'blocks'             => 'array',
+        'layout_data'        => 'array',
     ];
 
     /**
