@@ -141,7 +141,7 @@
         @include('partials.tab-strip', ['tabItems' => $tabItems, 'tabsLabel' => 'Sekcje działania', 'tabLinks' => $tabLinks])
     @endif
 
-    <section @class(['mx-auto max-w-6xl px-4', 'relative -mt-16 pb-8 sm:-mt-24' => $heroInGrid, 'py-8' => ! $heroInGrid])>
+    <section @class(['proj-wrap mx-auto max-w-6xl px-4', 'relative -mt-16 sm:-mt-24' => $heroInGrid, 'pt-8' => ! $heroInGrid])>
         @php
             $showNews = $siteSettings->isModuleEnabled('news') && $project->publishedNews->isNotEmpty();
             $showTeamFunding = $siteSettings->projects_team_funding_enabled;
@@ -154,6 +154,8 @@
         <style>
             /* Płasko (jak strona w układzie portalu): bez ramek, kresek, pigułek i gradientów — grupowanie tłem (szare / jasnoniebieskie),
                linki i akcenty w kolorze brand-dark (≥ 4,5:1 na bieli i na tłach), treść ink. Układ kolumn w zwykłym CSS (nie zależy od zbudowanych klas Tailwinda). */
+            /* Odstęp końca treści od stopki — w zwykłym CSS, żeby nie zależał od zbudowanych klas. */
+            .proj-wrap { padding-bottom: 4rem; }
             .proj-measure { max-width: 46rem; }
             .proj-measure.proj-flow > * + * { margin-top: 2.5rem; } /* wyższa swoistość: nagłówki .proj-h2 mają własny margines i nie mogą go zerować */
             .proj-prose { color: #1d1d1a; font-size: 1.0625rem; line-height: 1.75; font-weight: 500; }

@@ -21,9 +21,10 @@
 <footer>
     @if ($partners->isNotEmpty())
         <div class="bg-white" role="region" aria-label="Partnerzy i systemy powiązane">
-            <div class="mx-auto max-w-6xl px-4 py-7">
-                <h2 class="mb-5 text-center text-sm font-bold uppercase tracking-wide text-ink">Współpracujemy</h2>
-                <ul class="mx-auto flex max-w-4xl flex-wrap items-center justify-center gap-x-10 gap-y-5" role="list">
+            {{-- Odstępy stylem w znaczniku — nie zależą od tego, czy klasy trafiły do zbudowanego CSS. --}}
+            <div class="mx-auto max-w-6xl px-4" style="padding-top: 1.75rem; padding-bottom: 1.75rem">
+                <h2 class="text-center text-sm font-bold uppercase tracking-wide text-ink" style="margin-bottom: 1.25rem">Współpracujemy</h2>
+                <ul class="mx-auto flex max-w-4xl flex-wrap items-center justify-center" style="column-gap: 2.5rem; row-gap: 1.25rem" role="list">
                     @foreach ($partners as $partner)
                         <li>
                             @if ($partner->url)
@@ -43,7 +44,7 @@
     <x-banner-zone name="footer" />
 
     <div class="relative bg-ink text-white">
-        <div class="mx-auto flex max-w-6xl flex-col gap-4 px-4 py-6 pr-12 text-sm lg:flex-row lg:items-center lg:justify-between lg:gap-8">
+        <div class="mx-auto flex max-w-6xl flex-col gap-4 px-4 text-sm lg:flex-row lg:items-center lg:justify-between lg:gap-8" style="padding-top: 1.5rem; padding-bottom: 1.5rem; padding-right: 3rem">
 
             {{-- Marka --}}
             <div class="flex min-w-0 items-center gap-3">
