@@ -323,18 +323,19 @@ class SzoClient
     public const CLAUSES_DIRECT_PATH = '/modules/gdpr_clauses/public/list.php';
 
     /**
-     * Pobiera listę klauzul: najpierw ładny adres /klauzule.json, a gdy serwer go nie
-     * obsłuży (403/404 — np. nginx serwuje *.json jako pliki statyczne i nie dochodzi
-     * do reguły .htaccess) — adres bezpośredni skryptu.
+     * Pobiera listę klauzul: /klauzule.json, a gdy serwer go nie obsłuży (403/404 — nginx
+     * serwuje *.json jako pliki statyczne i nie dochodzi do reguły .htaccess) — alias
+     * /klauzule, a na końcu adres bezpośredni skryptu.
      */
     public static function fetchClausesList(string $base, int $timeout): \Illuminate\Http\Client\Response
     {
         $base = rtrim($base, '/');
-        $res = Http::timeout($timeout)->acceptJson()->get($base . '/klauzule.json');
-        if (! $res->successful() || ! is_array($res->json('clauses'))) {
-            $direct = Http::timeout($timeout)->acceptJson()->get($base . self::CLAUSES_DIRECT_PATH);
-            if ($direct->successful() || ! $res->successful()) {
-                return $direct;
+        $res = null;
+        // Kolejno: /klauzule.json, alias bez rozszerzenia /klauzule (SZO ≥ 2026-10), adres bezpośredni skryptu.
+        foreach (['/klauzule.json', '/klauzule', self::CLAUSES_DIRECT_PATH] as $path) {
+            $res = Http::timeout($timeout)->acceptJson()->get($base . $path);
+            if ($res->successful() && is_array($res->json('clauses'))) {
+                return $res;
             }
         }
 
