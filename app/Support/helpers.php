@@ -93,3 +93,20 @@ if (! function_exists('icon_html')) {
         return new \Illuminate\Support\HtmlString('<i class="'.e(trim(icon_class($value, $fallback).' '.$class)).'"'.$attrs.'></i>');
     }
 }
+
+if (! function_exists('site_home_url')) {
+    /**
+     * Adres „strony głównej" bieżącej witryny dla logo w nagłówku. Na witrynie
+     * bloga Wiem FEER (middleware blog.site ustawia atrybut `blog_site`) logo
+     * prowadzi do strony głównej bloga (/wiem), a nie do witryny fundacji.
+     */
+    function site_home_url(): string
+    {
+        if (request()?->attributes->get('blog_site') && \Illuminate\Support\Facades\Route::has('blog.index')) {
+            return route('blog.index');
+        }
+
+        return site_route('home');
+    }
+}
+

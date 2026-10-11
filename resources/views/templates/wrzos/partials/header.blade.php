@@ -5,7 +5,7 @@
     <div class="mx-auto flex max-w-[1400px] items-center gap-6 px-4 py-3">
 
         {{-- Logo --}}
-        <a href="{{ site_route('home') }}"
+        <a href="{{ site_home_url() }}"
             class="flex flex-none items-center gap-3 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2"
             aria-label="{{ $siteSettings->site_name }} — strona główna">
             @if ($siteSettings->logoUrl())

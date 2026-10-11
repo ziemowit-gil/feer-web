@@ -1,7 +1,7 @@
 {{-- Minimalny nagłówek: logo i nazwa organizacji z linkiem do strony głównej, bez menu. Używany przez @section('minimal_header'). --}}
 <header class="site-header-minimal" style="background:#fff;border-bottom:1px solid #d1d5db">
     <div style="max-width:72rem;margin:0 auto;padding:.75rem 1rem;display:flex;align-items:center;justify-content:space-between;gap:1rem">
-        <a href="{{ site_route('home') }}" aria-label="{{ $siteSettings->site_name }} — strona główna"
+        <a href="{{ site_home_url() }}" aria-label="{{ $siteSettings->site_name }} — strona główna"
            style="display:inline-flex;align-items:center;gap:.75rem;min-height:2.75rem;color:#1d1d1a;text-decoration:none;border-radius:.375rem"
            class="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2">
             @if ($siteSettings->logoUrl())

@@ -46,6 +46,18 @@ class BlogSiteTest extends BlogTestCase
         $this->get('/wiem/wpis')->assertOk()->assertSee('<title>Wpis — Wiem FEER</title>', false);
     }
 
+    public function test_logo_witryny_wiem_prowadzi_do_bloga(): void
+    {
+        $this->get('/wiem')->assertOk()
+            ->assertDontSee('href="'.url('/wiem').'" class="flex min-w-0', false);
+
+        $this->artisan('blog:witryna')->assertSuccessful();
+        \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();
+
+        $html = $this->get('/wiem')->assertOk()->getContent();
+        $this->assertMatchesRegularExpression('~<a href="'.preg_quote(url('/wiem'), '~').'"[^>]*aria-label="[^"]*— strona główna"~', $html);
+    }
+
     public function test_komenda_blog_witryna_jest_idempotentna(): void
     {
         $main = SiteSetting::current();
