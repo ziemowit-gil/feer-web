@@ -19,7 +19,7 @@
 #   PHP_BIN       binarka PHP CLI                (domyślnie: php84)
 #   COMPOSER_BIN  binarka Composer               (domyślnie: composer84)
 #   COMPOSER_CMD  update | install               (domyślnie: update — jak dotąd; install = wersje z composer.lock)
-#   NPM_BIN       binarka npm                    (domyślnie: /opt/alt/alt-nodejs20/root/usr/bin/npm)
+#   NPM_BIN       binarka npm                    (domyślnie: najnowsza z /opt/alt/alt-nodejs24|22|20, potem npm z PATH)
 #   BRANCH        gałąź do pobrania              (domyślnie: main)
 #
 # Przykład lokalnego testu:  PHP_BIN=php COMPOSER_BIN=composer NPM_BIN=npm ./deploy.sh --dry-run
@@ -101,7 +101,19 @@ if ! command -v "$COMPOSER_BIN" >/dev/null 2>&1; then
     fi
     unset _c
 fi
-NPM_BIN="${NPM_BIN:-/opt/alt/alt-nodejs20/root/usr/bin/npm}"
+# Najnowszy dostępny Node: część narzędzi (puppeteer, rollup-plugin-visualizer) wymaga Node >= 22.
+if [ -z "${NPM_BIN:-}" ]; then
+    for _node in alt-nodejs24 alt-nodejs22 alt-nodejs20; do
+        if [ -x "/opt/alt/$_node/root/usr/bin/npm" ]; then
+            NPM_BIN="/opt/alt/$_node/root/usr/bin/npm"
+            break
+        fi
+    done
+    NPM_BIN="${NPM_BIN:-npm}"
+fi
+# Puppeteer (zależność deweloperska) przy npm ci pobiera całą przeglądarkę Chrome —
+# do budowania assetów niepotrzebna, a na hostingu współdzielonym potrafi zawiesić instalację.
+export PUPPETEER_SKIP_DOWNLOAD="${PUPPETEER_SKIP_DOWNLOAD:-1}"
 BRANCH="${BRANCH:-main}"
 DB="database/database.sqlite"
 BLOG_DB="database/blog.sqlite"                 # stara lokalizacja (śledzona w gicie)
