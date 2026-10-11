@@ -163,7 +163,7 @@ class NewsController extends Controller
     /** Aktualizuje aktualność z tagami i opcjonalnym zdjęciem. */
     public function update(Request $request, News $news)
     {
-        $data = $this->validated($request);
+        $data = $this->validated($request, $news);
         $data['slug'] = $this->uniqueSlug($data['slug'] !== '' ? $data['slug'] : $data['title'], $news->id);
 
         $news->update($data);
@@ -259,7 +259,7 @@ class NewsController extends Controller
         return redirect()->back()->with('status', $message);
     }
 
-    private function validated(Request $request): array
+    private function validated(Request $request, ?News $news = null): array
     {
         $data = $request->validate([
             'news_category_id' => ['nullable', 'exists:news_categories,id'],
@@ -274,7 +274,12 @@ class NewsController extends Controller
             'image_alt' => ['nullable', 'string', 'max:255'],
             'image_focal_x' => ['nullable', 'integer', 'min:0', 'max:100'],
             'image_focal_y' => ['nullable', 'integer', 'min:0', 'max:100'],
-            'article_layout' => ['nullable', Rule::in(['default', 'side', 'wide', 'none', 'portal'])],
+            'article_layout' => [
+                'nullable',
+                Rule::in(array_keys(News::ARTICLE_LAYOUTS)),
+                // Układ zablokowany w Ustawienia → Moduły — chyba że to bieżący układ edytowanego wpisu.
+                Rule::notIn(array_diff(SiteSetting::current()->blocked_options['news_layouts'] ?? [], [$news?->article_layout ?? 'default'])),
+            ],
             'content' => ['nullable', 'string'],
             'published_at' => ['required', 'date'],
             'image' => ['nullable', 'image', 'max:4096'],

@@ -330,13 +330,9 @@
                     @php $currentLayout = old('article_layout', $news->article_layout ?? 'default'); @endphp
                     <div x-data="{ layout: '{{ $currentLayout }}' }"
                          class="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5" role="radiogroup" aria-label="Układ zdjęcia">
-                        @foreach ([
-                            'default' => ['label' => 'Banner', 'desc' => 'Zdjęcie na górze, pełna szerokość', 'icon' => 'fa-image'],
-                            'wide'    => ['label' => 'Banner duży', 'desc' => 'Jak banner, ale wyższy', 'icon' => 'fa-panorama'],
-                            'side'    => ['label' => 'Obok tekstu', 'desc' => 'Zdjęcie po lewej, treść po prawej', 'icon' => 'fa-table-columns'],
-                            'none'    => ['label' => 'Bez zdjęcia', 'desc' => 'Ukryj zdjęcie nagłówkowe', 'icon' => 'fa-eye-slash'],
-                            'portal'  => ['label' => 'Portal', 'desc' => 'Portal — treść i kolumna boczna działu', 'icon' => 'fa-newspaper'],
-                        ] as $val => $opt)
+                        @foreach (\App\Models\News::ARTICLE_LAYOUTS as $val => $opt)
+                            {{-- Układ zablokowany w Ustawienia → Moduły znika z wyboru (bieżący zostaje widoczny). --}}
+                            @continue($siteSettings->isOptionBlocked('news_layouts', $val) && $currentLayout !== $val)
                             <label @click="layout = '{{ $val }}'"
                                 :class="layout === '{{ $val }}' ? 'border-brand bg-brand/5 font-bold text-brand' : 'border-gray-200 hover:border-gray-400'"
                                 class="flex cursor-pointer flex-col items-center gap-1 rounded-lg border-2 p-3 text-center text-xs transition">

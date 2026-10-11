@@ -51,6 +51,80 @@ class SiteSetting extends Model implements HasMedia
     ];
 
     /**
+     * Grupy modułów w zakładce Ustawienia → Moduły (kolejność wyświetlania).
+     * Moduł bez wpisu w MODULE_META trafia do grupy „Inne" — nic nie znika.
+     */
+    public const MODULE_GROUPS = [
+        'content' => 'Treści',
+        'community' => 'Komunikacja i społeczność',
+        'organization' => 'Organizacja i dokumenty',
+        'support' => 'Wsparcie i sprzedaż',
+        'tools' => 'Narzędzia',
+        'other' => 'Inne',
+    ];
+
+    /**
+     * Opis modułów do widoku kart: grupa (klucz z MODULE_GROUPS), ikona Font
+     * Awesome i jednozdaniowy opis. Jedno miejsce dla całego widoku modułów.
+     */
+    public const MODULE_META = [
+        'pages' => ['group' => 'content', 'icon' => 'fa-file-lines', 'desc' => 'Strony z treścią, drzewo stron i ich szablony.'],
+        'news' => ['group' => 'content', 'icon' => 'fa-newspaper', 'desc' => 'Aktualności z kategoriami, na stronie głównej i w archiwum.'],
+        'hero' => ['group' => 'content', 'icon' => 'fa-images', 'desc' => 'Duży slajder z hasłami u góry strony głównej.'],
+        'gallery' => ['group' => 'content', 'icon' => 'fa-camera', 'desc' => 'Albumy zdjęć z podpisami i tekstem alternatywnym.'],
+        'projects' => ['group' => 'content', 'icon' => 'fa-diagram-project', 'desc' => 'Opisy działań i projektów organizacji.'],
+        'timeline' => ['group' => 'content', 'icon' => 'fa-timeline', 'desc' => 'Najważniejsze wydarzenia z historii organizacji na osi czasu.'],
+        'faq' => ['group' => 'content', 'icon' => 'fa-circle-question', 'desc' => 'Pytania i odpowiedzi pogrupowane tematycznie.'],
+        'feer_bands' => ['group' => 'content', 'icon' => 'fa-grip-lines', 'desc' => 'Paski z tekstem i przyciskami wstawiane między sekcje strony.'],
+        'events' => ['group' => 'community', 'icon' => 'fa-calendar-days', 'desc' => 'Kalendarz szkoleń i wydarzeń z zapisami.'],
+        'volunteering' => ['group' => 'community', 'icon' => 'fa-hands-holding-child', 'desc' => 'Ogłoszenia o wolontariacie i zgłoszenia chętnych.'],
+        'cooperation' => ['group' => 'community', 'icon' => 'fa-handshake', 'desc' => 'Formularz zgłoszeń współpracy i skrzynka odpowiedzi.'],
+        'polls' => ['group' => 'community', 'icon' => 'fa-square-poll-vertical', 'desc' => 'Krótkie ankiety dla odwiedzających stronę.'],
+        'help_map' => ['group' => 'community', 'icon' => 'fa-map-location-dot', 'desc' => 'Punkty wsparcia zaznaczone na mapie.'],
+        'partners' => ['group' => 'community', 'icon' => 'fa-people-group', 'desc' => 'Logotypy i opisy partnerów oraz sponsorów.'],
+        'strategy' => ['group' => 'organization', 'icon' => 'fa-chess', 'desc' => 'Planowanie działań, zasobów i źródeł finansowania.'],
+        'authorizations' => ['group' => 'organization', 'icon' => 'fa-file-signature', 'desc' => 'Rejestr pełnomocnictw i upoważnień z terminami ważności.'],
+        'reports' => ['group' => 'organization', 'icon' => 'fa-file-contract', 'desc' => 'Sprawozdania merytoryczne i finansowe do pobrania.'],
+        'bip' => ['group' => 'organization', 'icon' => 'fa-landmark', 'desc' => 'Biuletyn Informacji Publicznej z dokumentami.'],
+        'jobs' => ['group' => 'organization', 'icon' => 'fa-briefcase', 'desc' => 'Oferty pracy i rekrutacje.'],
+        'support' => ['group' => 'support', 'icon' => 'fa-hand-holding-heart', 'desc' => 'Strona „Wesprzyj nas" z darowiznami i sposobami pomocy.'],
+        'materials' => ['group' => 'support', 'icon' => 'fa-book-open', 'desc' => 'Materiały edukacyjne do pobrania lub zakupu.'],
+        'forms' => ['group' => 'tools', 'icon' => 'fa-list-check', 'desc' => 'Własne formularze z polami do wyboru i listą zgłoszeń.'],
+        'landing' => ['group' => 'tools', 'icon' => 'fa-rocket', 'desc' => 'Kreator stron docelowych, np. zapisów na webinar.'],
+        'quick_actions' => ['group' => 'tools', 'icon' => 'fa-bolt', 'desc' => 'Skróty do najważniejszych akcji na stronie głównej.'],
+    ];
+
+    /**
+     * Moduły z MODULES pogrupowane wg MODULE_GROUPS (puste grupy pominięte).
+     *
+     * @return array<string, array{label: string, modules: array<string, array{label: string, icon: string, desc: string}>}>
+     */
+    public static function groupedModules(): array
+    {
+        $groups = [];
+
+        foreach (self::MODULES as $key => $label) {
+            $meta = self::MODULE_META[$key] ?? [];
+            $group = isset(self::MODULE_GROUPS[$meta['group'] ?? '']) ? $meta['group'] : 'other';
+
+            $groups[$group]['modules'][$key] = [
+                'label' => $label,
+                'icon' => $meta['icon'] ?? 'fa-puzzle-piece',
+                'desc' => $meta['desc'] ?? '',
+            ];
+        }
+
+        $ordered = [];
+        foreach (self::MODULE_GROUPS as $group => $groupLabel) {
+            if (isset($groups[$group])) {
+                $ordered[$group] = ['label' => $groupLabel, 'modules' => $groups[$group]['modules']];
+            }
+        }
+
+        return $ordered;
+    }
+
+    /**
      * Tabs of the site-settings admin screen, keyed by the value used in the
      * `?tab=` query param and the in-page Alpine state. Single source of truth
      * shared by the settings form and the sidebar sub-menu, so the two never
@@ -721,12 +795,34 @@ class SiteSetting extends Model implements HasMedia
     public static function blockableOptionGroups(): array
     {
         return [
-            'header_layouts' => self::HEADER_LAYOUTS,
             'page_types' => Page::types(),
+            'page_templates' => Page::TEMPLATES,
+            'news_layouts' => array_map(fn (array $layout) => $layout['label'], News::ARTICLE_LAYOUTS),
+            'header_layouts' => self::HEADER_LAYOUTS,
             'contact_layouts' => self::CONTACT_LAYOUTS,
             'site_templates' => self::SITE_TEMPLATES,
         ];
     }
+
+    /** Nagłówki grup z blockableOptionGroups() w Ustawienia → Moduły („Typy treści i układy"). */
+    public const BLOCKABLE_GROUP_LABELS = [
+        'page_types' => 'Typy stron',
+        'page_templates' => 'Szablony stron',
+        'news_layouts' => 'Układy artykułu (aktualności)',
+        'header_layouts' => 'Układy nagłówka',
+        'contact_layouts' => 'Układy strony kontaktu',
+        'site_templates' => 'Szablony serwisu',
+    ];
+
+    /**
+     * Opcje, których nie da się zablokować — bezpieczny wariant awaryjny
+     * (np. nowa strona bez wybranego typu/szablonu).
+     */
+    public const UNBLOCKABLE_OPTIONS = [
+        'page_types' => ['standard'],
+        'page_templates' => ['default'],
+        'news_layouts' => ['default'],
+    ];
 
     /**
      * Czy dana wartość w danej grupie opcji jest zablokowana dla tej instalacji

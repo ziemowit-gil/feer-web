@@ -1814,21 +1814,228 @@
         </div>
 
         <div x-show="tab === 'modules'" x-cloak>
-            <p class="mb-4 text-xs text-muted">Wyłącz moduł, aby ukryć go z panelu i strony publicznej. Adresy powiązane z wyłączonym modułem przestaną działać (błąd 404), dopóki nie zostanie ponownie włączony.</p>
-
             @php
                 $defaultEnabledModules = array_diff(array_keys(\App\Models\SiteSetting::MODULES), $settings->disabled_modules ?? []);
                 $enabledModules = old('enabled_modules', $defaultEnabledModules);
+                $moduleGroups = \App\Models\SiteSetting::groupedModules();
+                $pluginCards = app(\App\Support\PluginModules::class)->cards();
+
+                // „Typy treści i układy": dostępne = niezablokowane w blocked_options.
+                // Po błędzie walidacji odtwarzamy stan z old().
+                $optionGroups = \App\Models\SiteSetting::blockableOptionGroups();
+                $optionsFromOld = (bool) old('blocked_options_form');
+                $optionAvailable = function (string $group, string $value) use ($settings, $optionsFromOld): bool {
+                    if (in_array($value, \App\Models\SiteSetting::UNBLOCKABLE_OPTIONS[$group] ?? [], true)) {
+                        return true;
+                    }
+
+                    return $optionsFromOld
+                        ? in_array($value, (array) old("allowed_options.{$group}", []), true)
+                        : ! $settings->isOptionBlocked($group, $value);
+                };
+
+                // Stan dla Alpine: włączenie przełączników i teksty do wyszukiwarki.
+                $moduleState = [];
+                $moduleItems = [];
+                foreach ($moduleGroups as $group) {
+                    foreach ($group['modules'] as $key => $module) {
+                        $moduleState[$key] = in_array($key, $enabledModules, true);
+                        $moduleItems[$key] = $module['label'].' '.$module['desc'];
+                    }
+                }
+                foreach ($pluginCards as $card) {
+                    $moduleItems['plugin:'.$card['id']] = $card['manifest']->name.' '.$card['manifest']->description;
+                    $moduleState['plugin:'.$card['id']] = $card['status'] === 'active';
+                }
+                foreach ($optionGroups as $group => $options) {
+                    foreach ($options as $value => $label) {
+                        $moduleItems["opt:{$group}:{$value}"] = $label.' '.(\App\Models\SiteSetting::BLOCKABLE_GROUP_LABELS[$group] ?? '');
+                        $moduleState["opt:{$group}:{$value}"] = $optionAvailable($group, (string) $value);
+                    }
+                }
+                $toggleCount = count(\App\Models\SiteSetting::MODULES);
             @endphp
 
-            <div class="grid gap-3 sm:grid-cols-2">
-                @foreach (\App\Models\SiteSetting::MODULES as $key => $label)
-                    <label class="flex items-center gap-2 text-sm">
-                        <input type="checkbox" name="enabled_modules[]" value="{{ $key }}" {{ in_array($key, $enabledModules) ? 'checked' : '' }}
-                            class="rounded border-gray-300 text-brand focus:ring-brand">
-                        {{ $label }}
-                    </label>
+            {{-- Widok kart: przełączniki modułów pogrupowane tematycznie, wyszukiwarka
+                 i filtr stanu. Ukryte filtrem karty nadal wysyłają swoje pola —
+                 filtr zmienia tylko widok, nie zapisywane wartości. --}}
+            <div x-data="{
+                    q: '',
+                    show: 'all',
+                    enabled: @js($moduleState),
+                    items: @js($moduleItems),
+                    toggleKeys: @js(array_keys(\App\Models\SiteSetting::MODULES)),
+                    norm(s) { return String(s).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/ł/g, 'l'); },
+                    visible(key) {
+                        if (this.show === 'on' && ! this.enabled[key]) return false;
+                        if (this.show === 'off' && this.enabled[key]) return false;
+                        const q = this.norm(this.q.trim());
+                        return q === '' || this.norm(this.items[key] ?? '').includes(q);
+                    },
+                    anyVisible(keys) { return keys.some((k) => this.visible(k)); },
+                    get visibleCount() { return Object.keys(this.items).filter((k) => this.visible(k)).length; },
+                    get enabledCount() { return this.toggleKeys.filter((k) => this.enabled[k]).length; },
+                    plural(n) { const t = n % 10, h = n % 100; return n === 1 ? 'pozycja' : (t >= 2 && t <= 4 && (h < 12 || h > 14) ? 'pozycje' : 'pozycji'); },
+                }">
+                <p class="mb-4 text-sm text-muted">Wyłącz moduł, aby ukryć go z panelu i strony publicznej. Adresy powiązane z wyłączonym modułem przestaną działać (błąd 404), dopóki nie zostanie ponownie włączony. Zmiany przełączników zapisuje przycisk „Zapisz” na dole strony.</p>
+
+                {{-- Pasek narzędzi: wyszukiwarka, licznik, filtr stanu --}}
+                <div class="mb-6 flex flex-col gap-4 rounded-md bg-gray-50 p-4 lg:flex-row lg:items-end lg:justify-between">
+                    <div class="w-full lg:max-w-sm">
+                        <label for="modules-search" class="mb-1 block text-sm font-bold text-ink">Szukaj modułu lub opcji</label>
+                        <div class="relative">
+                            <i class="fa-solid fa-magnifying-glass pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted" aria-hidden="true"></i>
+                            <input type="search" id="modules-search" x-model.debounce.250ms="q" autocomplete="off"
+                                aria-describedby="modules-search-result"
+                                @keydown.enter.prevent
+                                placeholder="np. galeria, wydarzenia"
+                                class="w-full rounded-md border border-gray-500 bg-white py-2 pl-9 pr-3 text-sm text-ink focus:border-brand-dark focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">
+                        </div>
+                    </div>
+
+                    <p class="text-sm text-ink">
+                        Włączone moduły: <strong x-text="enabledCount">{{ count(array_intersect(array_keys(\App\Models\SiteSetting::MODULES), $enabledModules)) }}</strong> z <strong>{{ $toggleCount }}</strong>
+                    </p>
+
+                    <div role="group" aria-label="Pokaż" class="flex flex-wrap items-center gap-2">
+                        <span class="text-sm font-bold text-ink" aria-hidden="true">Pokaż:</span>
+                        @foreach (['all' => 'wszystkie', 'on' => 'włączone', 'off' => 'wyłączone'] as $value => $label)
+                            <button type="button" @click="show = '{{ $value }}'"
+                                :aria-pressed="(show === '{{ $value }}').toString()"
+                                aria-pressed="{{ $value === 'all' ? 'true' : 'false' }}"
+                                :class="show === '{{ $value }}' ? 'bg-brand-dark text-white hover:bg-ink' : 'bg-white text-ink ring-1 ring-gray-500 hover:bg-gray-100'"
+                                class="rounded-md px-3 py-1.5 text-sm font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2">{{ $label }}</button>
+                        @endforeach
+                    </div>
+                </div>
+
+                <p id="modules-search-result" role="status" aria-live="polite" class="sr-only"
+                    x-text="'Widoczne: ' + visibleCount + ' ' + plural(visibleCount)"></p>
+
+                <p x-show="visibleCount === 0" x-cloak class="mb-6 rounded-md bg-gray-50 p-4 text-sm text-ink">
+                    Brak modułów ani opcji pasujących do wyszukiwania lub filtra.
+                </p>
+
+                {{-- Przełączniki modułów wbudowanych (zapisywane jako enabled_modules[]) --}}
+                @foreach ($moduleGroups as $groupKey => $group)
+                    <section class="mb-8" aria-labelledby="modules-group-{{ $groupKey }}"
+                        x-show="anyVisible(@js(array_keys($group['modules'])))">
+                        <h2 id="modules-group-{{ $groupKey }}" class="mb-3 text-base font-bold text-ink">{{ $group['label'] }}</h2>
+                        <ul class="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+                            @foreach ($group['modules'] as $key => $module)
+                                @php $isOn = in_array($key, $enabledModules, true); @endphp
+                                <li x-show="visible('{{ $key }}')"
+                                    class="flex flex-col gap-3 rounded-md p-4 {{ $isOn ? 'bg-brand-light' : 'bg-gray-50' }}"
+                                    :class="enabled['{{ $key }}'] ? 'bg-brand-light' : 'bg-gray-50'">
+                                    <div class="flex items-start gap-3">
+                                        <i class="fa-solid {{ $module['icon'] }} mt-0.5 w-5 flex-none text-center text-lg text-brand-dark" aria-hidden="true"></i>
+                                        <div class="min-w-0 flex-1">
+                                            <h3 class="font-bold text-ink">
+                                                <label for="module-switch-{{ $key }}" class="cursor-pointer">{{ $module['label'] }}</label>
+                                            </h3>
+                                            @if ($module['desc'] !== '')
+                                                <p id="module-desc-{{ $key }}" class="mt-1 text-sm text-muted">{{ $module['desc'] }}</p>
+                                            @endif
+                                        </div>
+                                    </div>
+                                    <div class="mt-auto">
+                                        @include('admin.modules.partials.switch', [
+                                            'id' => 'module-switch-'.$key,
+                                            'name' => 'enabled_modules[]',
+                                            'value' => $key,
+                                            'checked' => $isOn,
+                                            'stateKey' => $key,
+                                            'label' => $module['label'],
+                                            'onText' => 'Włączony',
+                                            'offText' => 'Wyłączony',
+                                            'describedBy' => $module['desc'] !== '' ? 'module-desc-'.$key : null,
+                                        ])
+                                    </div>
+                                </li>
+                            @endforeach
+                        </ul>
+                    </section>
                 @endforeach
+
+                {{-- Moduły instalowane (rozszerzenia z katalogu modules/). Przyciski akcji
+                     wskazują atrybutem form="…" formularze dodane przez @push('scripts')
+                     poza głównym formularzem ustawień (HTML nie pozwala zagnieżdżać <form>). --}}
+                @if ($pluginCards->isNotEmpty())
+                    <section class="mb-8" aria-labelledby="modules-group-plugins"
+                        x-show="anyVisible(@js($pluginCards->keys()->map(fn ($id) => 'plugin:'.$id)->values()))">
+                        <h2 id="modules-group-plugins" class="mb-1 text-base font-bold text-ink">Moduły instalowane (rozszerzenia)</h2>
+                        <p class="mb-3 text-sm text-muted">Dodatki z osobnymi funkcjami panelu. Instalacja i aktywacja działa od razu, bez przycisku „Zapisz”. Pełna lista: <a href="{{ route('admin.moduly.index') }}" class="font-bold text-brand-dark underline hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">Moduły systemu</a>.</p>
+                        <ul class="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+                            @foreach ($pluginCards as $card)
+                                @include('admin.modules.partials.plugin-card', ['card' => $card, 'filterable' => true, 'heading' => 'h3'])
+                            @endforeach
+                        </ul>
+                    </section>
+
+                    @push('scripts')
+                        @include('admin.modules.partials.plugin-forms', ['cards' => $pluginCards, 'returnTo' => 'settings'])
+                    @endpush
+                @endif
+
+                {{-- Typy treści i układy: opcje do ukrycia w listach wyboru (blocked_options).
+                     Żądanie niesie DOSTĘPNE wartości (allowed_options[grupa][]); znacznik
+                     blocked_options_form mówi kontrolerowi, że sekcja była w formularzu. --}}
+                <section class="mt-10" aria-labelledby="content-options-heading">
+                    <input type="hidden" name="blocked_options_form" value="1">
+                    <h2 id="content-options-heading" class="mb-1 text-lg font-bold text-ink">Typy treści i układy</h2>
+                    <p class="mb-6 text-sm text-muted">Ukryta opcja znika z list wyboru przy tworzeniu i edycji. Treści, które już jej używają, działają dalej i zachowują swój wybór. W każdej grupie musi zostać co najmniej jedna dostępna opcja.</p>
+
+                    @foreach ($optionGroups as $group => $options)
+                        @php
+                            $groupLabel = \App\Models\SiteSetting::BLOCKABLE_GROUP_LABELS[$group] ?? $group;
+                            $protected = \App\Models\SiteSetting::UNBLOCKABLE_OPTIONS[$group] ?? [];
+                            $optionKeys = array_map(fn ($v) => "opt:{$group}:{$v}", array_keys($options));
+                        @endphp
+                        <section class="mb-8" aria-labelledby="options-group-{{ $group }}"
+                            x-show="anyVisible(@js($optionKeys))">
+                            <h3 id="options-group-{{ $group }}" class="mb-1 text-base font-bold text-ink">{{ $groupLabel }}</h3>
+                            <div id="allowed_options.{{ $group }}" tabindex="-1" class="focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">
+                                @error("allowed_options.{$group}")
+                                    <p class="mb-2 text-sm font-bold text-red-700" role="alert">{{ $message }}</p>
+                                @enderror
+                            </div>
+                            <ul class="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+                                @foreach ($options as $value => $label)
+                                    @php
+                                        $stateKey = "opt:{$group}:{$value}";
+                                        $isAvailable = $moduleState[$stateKey];
+                                        $isProtected = in_array((string) $value, $protected, true);
+                                        $switchId = 'option-switch-'.$group.'-'.$value;
+                                    @endphp
+                                    <li x-show="visible(@js($stateKey))"
+                                        class="flex flex-col gap-3 rounded-md p-4 {{ $isAvailable ? 'bg-brand-light' : 'bg-gray-50' }}"
+                                        :class="enabled[@js($stateKey)] ? 'bg-brand-light' : 'bg-gray-50'">
+                                        <p class="text-sm font-bold text-ink">
+                                            <label for="{{ $switchId }}" class="{{ $isProtected ? '' : 'cursor-pointer' }}">{{ $label }}</label>
+                                        </p>
+                                        @if ($isProtected)
+                                            <p id="{{ $switchId }}-note" class="text-xs text-muted">Zawsze dostępny — wariant awaryjny, gdy nic innego nie wybrano.</p>
+                                        @endif
+                                        <div class="mt-auto">
+                                            @include('admin.modules.partials.switch', [
+                                                'id' => $switchId,
+                                                'name' => "allowed_options[{$group}][]",
+                                                'value' => $value,
+                                                'checked' => $isAvailable,
+                                                'stateKey' => $stateKey,
+                                                'label' => $label.' ('.$groupLabel.')',
+                                                'onText' => 'Dostępny',
+                                                'offText' => 'Ukryty',
+                                                'describedBy' => $isProtected ? $switchId.'-note' : null,
+                                                'disabled' => $isProtected,
+                                            ])
+                                        </div>
+                                    </li>
+                                @endforeach
+                            </ul>
+                        </section>
+                    @endforeach
+                </section>
             </div>
         </div>
 

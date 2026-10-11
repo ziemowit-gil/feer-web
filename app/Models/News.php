@@ -28,6 +28,19 @@ class News extends Model implements HasMedia
     use InteractsWithMedia;
     use Searchable;
 
+    /**
+     * Układy zdjęcia na stronie artykułu (pole `article_layout`): wartość =>
+     * etykieta, opis i ikona do wyboru w formularzu. Źródło prawdy dla formularza,
+     * walidacji i blokowania układów (Ustawienia → Moduły, grupa `news_layouts`).
+     */
+    public const ARTICLE_LAYOUTS = [
+        'default' => ['label' => 'Banner', 'desc' => 'Zdjęcie na górze, pełna szerokość', 'icon' => 'fa-image'],
+        'wide'    => ['label' => 'Banner duży', 'desc' => 'Jak banner, ale wyższy', 'icon' => 'fa-panorama'],
+        'side'    => ['label' => 'Obok tekstu', 'desc' => 'Zdjęcie po lewej, treść po prawej', 'icon' => 'fa-table-columns'],
+        'none'    => ['label' => 'Bez zdjęcia', 'desc' => 'Ukryj zdjęcie nagłówkowe', 'icon' => 'fa-eye-slash'],
+        'portal'  => ['label' => 'Portal', 'desc' => 'Portal — treść i kolumna boczna działu', 'icon' => 'fa-newspaper'],
+    ];
+
     protected $table = 'news';
 
     public function toSearchableArray(): array

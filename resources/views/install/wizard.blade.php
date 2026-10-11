@@ -404,7 +404,7 @@ tailwind.config = {
                     ];
                 @endphp
                 @foreach (\App\Models\SiteSetting::blockableOptionGroups() as $groupKey => $groupOptions)
-                    @php $meta = $blockableGroupMeta[$groupKey]; @endphp
+                    @php $meta = $blockableGroupMeta[$groupKey] ?? ['icon' => 'fa-sliders', 'title' => 'Dozwolone: '.mb_strtolower(\App\Models\SiteSetting::BLOCKABLE_GROUP_LABELS[$groupKey] ?? $groupKey), 'hint' => 'których nie powinno się dać wybrać w tej instalacji (zmienisz to później w Ustawieniach → Moduły)']; @endphp
                     <div class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-100">
                         <h2 class="mb-1 flex items-center gap-2 text-lg font-extrabold text-gray-900">
                             <i class="fa-solid {{ $meta['icon'] }} text-brand"></i>

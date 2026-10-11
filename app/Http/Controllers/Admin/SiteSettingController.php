@@ -68,6 +68,53 @@ class SiteSettingController extends Controller
         return redirect()->route('admin.ustawienia.edit', ['tab' => 'login'])->with('status', $message);
     }
 
+    /**
+     * Zablokowane opcje (`blocked_options`) z przełączników „dostępny / ukryty".
+     * Żądanie niesie listę DOSTĘPNYCH wartości w allowed_options[grupa][];
+     * reszta wartości grupy trafia do blokady. Opcje z UNBLOCKABLE_OPTIONS są
+     * zawsze dostępne, a grupy nie da się ukryć w całości. Klucze spoza
+     * blockableOptionGroups() zostają nietknięte (scalanie per grupa).
+     *
+     * @return array<string, list<string>>
+     */
+    private function blockedOptionsFromRequest(Request $request): array
+    {
+        $groups = SiteSetting::blockableOptionGroups();
+
+        $rules = ['allowed_options' => ['nullable', 'array']];
+        foreach ($groups as $group => $options) {
+            $rules["allowed_options.{$group}"] = ['nullable', 'array'];
+            $rules["allowed_options.{$group}.*"] = ['string', Rule::in(array_keys($options))];
+        }
+        $request->validate($rules);
+
+        $blocked = SiteSetting::current()->blocked_options ?? [];
+        $errors = [];
+
+        foreach ($groups as $group => $options) {
+            $allowed = array_unique(array_merge(
+                (array) $request->input("allowed_options.{$group}", []),
+                SiteSetting::UNBLOCKABLE_OPTIONS[$group] ?? [],
+            ));
+            $allowed = array_values(array_intersect(array_keys($options), $allowed));
+
+            if ($allowed === []) {
+                $label = SiteSetting::BLOCKABLE_GROUP_LABELS[$group] ?? $group;
+                $errors["allowed_options.{$group}"] = "Nie można ukryć wszystkich opcji w grupie „{$label}” — zostaw dostępną co najmniej jedną.";
+
+                continue;
+            }
+
+            $blocked[$group] = array_values(array_diff(array_keys($options), $allowed));
+        }
+
+        if ($errors !== []) {
+            throw \Illuminate\Validation\ValidationException::withMessages($errors);
+        }
+
+        return $blocked;
+    }
+
     /** Zapisuje wszystkie ustawienia serwisu (wygląd, moduły, kontakt, SEO, poczta, WCAG). */
     public function update(Request $request)
     {
@@ -428,6 +475,12 @@ class SiteSettingController extends Controller
         $data['disabled_modules'] = $request->has('enabled_modules')
             ? array_values(array_diff(array_keys(SiteSetting::MODULES), $request->input('enabled_modules')))
             : (SiteSetting::current()->disabled_modules ?? []);
+
+        // Ustawienia → Moduły → „Typy treści i układy": przełączniki dostępności opcji.
+        // Znacznik blocked_options_form odróżnia „wszystko wyłączone" od braku sekcji w żądaniu.
+        if ($request->boolean('blocked_options_form')) {
+            $data['blocked_options'] = $this->blockedOptionsFromRequest($request);
+        }
 
         $orderedKeys = json_decode($request->input('section_order_json', '[]'), true) ?? [];
         $defined = array_keys(SiteSetting::HOMEPAGE_SECTIONS);
