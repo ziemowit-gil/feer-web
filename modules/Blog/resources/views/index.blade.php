@@ -48,7 +48,7 @@
         <div class="grid gap-10 lg:grid-cols-[minmax(0,1fr)_20rem]">
             <div class="min-w-0">
                 <header class="mb-8">
-                    <h1 class="text-3xl font-bold text-ink md:text-4xl">Wiem FEER</h1>
+                    <h1 class="text-4xl text-ink md:text-5xl" style="font-family:'Pacifico',cursive;font-weight:400;line-height:1.3">Wiem FEER</h1>
                     <span class="mt-3 block h-1 w-14 bg-brand" aria-hidden="true"></span>
                     <p class="mt-4 max-w-2xl text-lg leading-relaxed text-ink">Artykuły o dostępności cyfrowej, edukacji i empatii — miejsce, w którym dzielimy się wiedzą i doświadczeniem.</p>
                 </header>
