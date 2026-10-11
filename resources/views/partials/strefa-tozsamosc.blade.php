@@ -11,7 +11,7 @@
 @if ($tozsamoscUrl)
     <div class="{{ ($margin ?? true) ? 'mb-8' : 'mb-3' }}">
         <a href="{{ $tozsamoscUrl }}" target="_blank" rel="noopener"
-            class="inline-flex items-center gap-2 rounded-lg bg-brand px-6 py-3 font-bold text-white transition hover:bg-brand-dark focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
+            class="inline-flex items-center gap-2 rounded-md bg-brand-dark px-6 py-3 font-bold text-white transition hover:bg-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-dark">
             <i class="fa-solid fa-id-card" aria-hidden="true"></i>
             Zarządzaj tożsamością
             <i class="fa-solid fa-arrow-up-right-from-square text-xs" aria-hidden="true"></i>

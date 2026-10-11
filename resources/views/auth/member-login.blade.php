@@ -3,47 +3,46 @@
     @section('brand_heading', 'Strefa współpracownika')
     @section('brand_lead', 'Zaloguj się kontem Microsoft 365 organizacji, aby uzyskać dostęp do stron wewnętrznych.')
 
-    <div class="mb-6 flex flex-col items-center text-center">
-        <span class="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-brand-light text-brand">
-            <i class="fa-solid fa-user-shield" aria-hidden="true"></i>
-        </span>
-        <h1 class="text-xl font-bold text-ink">Strefa wewnętrzna</h1>
-        <p class="mt-1 text-sm text-muted">Dostęp dla współpracowników {{ $siteSettings->siteNameGenitive() }}</p>
+    {{-- Płasko, kolory firmowe — jak logowanie do panelu (auth/login). --}}
+    @php
+        $notice = 'mb-5 flex items-start gap-2 rounded-md bg-brand-light px-4 py-3 text-sm text-ink';
+    @endphp
+
+    <div class="mb-8">
+        <h1 class="text-2xl font-bold text-ink">Strefa wewnętrzna</h1>
+        <span class="mt-3 block h-1 w-14 bg-brand" aria-hidden="true"></span>
+        <p class="mt-3 text-ink">Dostęp dla współpracowników {{ $siteSettings->siteNameGenitive() }}.</p>
     </div>
 
     @if (session('error'))
-        <div class="mb-4 flex items-start gap-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2.5 text-sm text-red-700">
-            <i class="fa-solid fa-circle-exclamation mt-0.5" aria-hidden="true"></i>
-            <span>{{ session('error') }}</span>
+        <div class="{{ $notice }}" role="alert">
+            <i class="fa-solid fa-circle-exclamation mt-0.5 text-brand-dark" aria-hidden="true"></i>
+            <span><strong>Nie udało się zalogować.</strong> {{ session('error') }}</span>
         </div>
     @endif
 
     @if ($siteSettings->memberLoginEnabled())
         <a href="{{ route('member.microsoft.redirect') }}"
-            class="flex w-full items-center justify-center gap-2.5 rounded-lg border border-gray-300 bg-white px-5 py-3 text-sm font-bold text-ink shadow-sm transition hover:bg-gray-50 hover:shadow-md active:scale-[0.99]">
-            <svg class="h-5 w-5" viewBox="0 0 21 21" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                <rect x="1" y="1" width="9" height="9" fill="#f25022"/>
-                <rect x="11" y="1" width="9" height="9" fill="#7fba00"/>
-                <rect x="1" y="11" width="9" height="9" fill="#00a4ef"/>
-                <rect x="11" y="11" width="9" height="9" fill="#ffb900"/>
-            </svg>
+            class="flex w-full items-center justify-center gap-2.5 rounded-md bg-brand-dark px-5 py-3 text-base font-bold text-white transition hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2">
+            @include('auth.partials.microsoft-logo')
             Zaloguj się przez Microsoft 365
         </a>
 
-        <p class="mt-4 text-center text-xs text-muted">
+        <p class="mt-4 text-sm text-ink">
             Logowanie do strefy wewnętrznej jest niezależne od logowania do panelu administracyjnego.
         </p>
     @else
-        <div class="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
-            <i class="fa-solid fa-triangle-exclamation mr-1" aria-hidden="true"></i>
-            Logowanie do strefy wewnętrznej jest obecnie wyłączone. Skontaktuj się z administratorem.
-        </div>
+        <p class="{{ $notice }} font-bold">
+            <i class="fa-solid fa-circle-info mt-0.5 text-brand-dark" aria-hidden="true"></i>
+            <span>Logowanie do strefy wewnętrznej jest teraz wyłączone. Skontaktuj się z administratorem.</span>
+        </p>
     @endif
 
     @if ($siteSettings->szoTozsamoscUrl())
-        <div class="mt-6 border-t border-gray-200 pt-6 text-center">
+        <section class="mt-8 rounded-md bg-gray-50 p-5" aria-labelledby="tozsamosc-heading">
+            <h2 id="tozsamosc-heading" class="mb-3 font-bold text-ink">Konto współpracownika</h2>
             @include('partials.strefa-tozsamosc', ['margin' => false])
-            <p class="text-xs text-muted">Zarządzaj swoim kontem i danymi logowania współpracownika.</p>
-        </div>
+            <p class="text-sm text-ink">Zarządzaj swoim kontem i danymi logowania współpracownika.</p>
+        </section>
     @endif
 </x-guest-layout>
