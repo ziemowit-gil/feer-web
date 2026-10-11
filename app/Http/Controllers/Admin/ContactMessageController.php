@@ -7,7 +7,6 @@ use App\Models\ContactMessage;
 use App\Models\SiteSetting;
 use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Mail;
 
 class ContactMessageController extends Controller
 {
@@ -70,24 +69,5 @@ class ContactMessageController extends Controller
         $contactMessage->markAsReplied();
 
         return back()->with('status', 'Oznaczono jako odpowiedziano.');
-    }
-
-    /** Wysyła testową wiadomość e-mail do zalogowanego admina. */
-    public function mailTest(Request $request)
-    {
-        $user = $request->user();
-
-        try {
-            Mail::raw(
-                'To jest testowa wiadomość e-mail z panelu CMS. Jeśli ją widzisz, konfiguracja poczty działa poprawnie.',
-                fn ($m) => $m->to($user->email)->subject('Test wysyłki poczty — CMS')
-            );
-
-            return back()->with('mail_test_status', 'success')
-                ->with('mail_test_msg', "Wiadomość testowa wysłana na {$user->email}.");
-        } catch (\Throwable $e) {
-            return back()->with('mail_test_status', 'error')
-                ->with('mail_test_msg', 'Błąd wysyłki: ' . $e->getMessage());
-        }
     }
 }
