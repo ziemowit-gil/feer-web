@@ -190,6 +190,9 @@ class FormularzeController extends Controller
             'fields.*.options'               => 'nullable|string|max:2000',
             'fields.*.help_text'             => 'nullable|string|max:500',
             'fields.*.accept'                => 'nullable|string|max:200',
+            'fields.*.uid'                   => 'nullable|string|max:20',
+            'fields.*.show_if_uid'           => 'nullable|string|max:20',
+            'fields.*.show_if_value'         => 'nullable|string|max:255',
             'fields.*.max_mb'                => 'nullable|integer|min:1|max:' . FormDefinition::FILE_MAX_MB,
             'settings.confirmation_message'  => 'nullable|string|max:1000',
             'settings.notification_email'    => 'nullable|string|max:500',
@@ -232,6 +235,10 @@ class FormularzeController extends Controller
                 'help_text'   => $f['help_text'] ?? null,
                 'accept'      => ($f['type'] ?? '') === 'file' ? (trim((string) ($f['accept'] ?? '')) ?: null) : null,
                 'max_mb'      => ($f['type'] ?? '') === 'file' && filled($f['max_mb'] ?? null) ? (int) $f['max_mb'] : null,
+                // Stały identyfikator pola — warunki „Pokaż tylko, gdy…” przetrwają zmianę etykiety.
+                'uid'         => preg_match('/^[a-z0-9]{4,20}$/i', (string) ($f['uid'] ?? '')) ? $f['uid'] : Str::lower(Str::random(8)),
+                'show_if_uid'   => ($f['type'] ?? '') !== 'step' && filled($f['show_if_uid'] ?? null) ? (string) $f['show_if_uid'] : null,
+                'show_if_value' => ($f['type'] ?? '') !== 'step' && filled($f['show_if_uid'] ?? null) ? trim((string) ($f['show_if_value'] ?? '')) : null,
             ])
             ->values()
             ->all();

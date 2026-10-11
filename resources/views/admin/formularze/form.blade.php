@@ -87,6 +87,7 @@
                         :data-index="index">
 
                         <input type="hidden" :name="'fields[' + index + '][type]'" x-model="field.type">
+                        <input type="hidden" :name="'fields[' + index + '][uid]'" :value="field.uid">
                         <input type="hidden" :name="'fields[' + index + '][required]'" :value="field.required ? '1' : '0'">
 
                         <div class="flex items-start gap-3">
@@ -119,7 +120,7 @@
                                 </div>
 
                                 <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                                    <div x-show="! ['heading', 'checkbox', 'consent', 'radio', 'checkboxes', 'rating', 'file'].includes(field.type)">
+                                    <div x-show="! ['heading', 'step', 'checkbox', 'consent', 'radio', 'checkboxes', 'rating', 'file'].includes(field.type)">
                                         <label :for="'field-placeholder-' + index" class="mb-1 block text-xs font-bold text-muted uppercase tracking-wide">Placeholder</label>
                                         <input :id="'field-placeholder-' + index"
                                             :name="'fields[' + index + '][placeholder]'"
@@ -128,7 +129,7 @@
                                             class="w-full rounded border-gray-500 text-sm focus:border-brand-dark focus-visible:ring-2 focus-visible:ring-brand-dark">
                                     </div>
                                     <div>
-                                        <label :for="'field-help-' + index" class="mb-1 block text-xs font-bold text-muted uppercase tracking-wide" x-text="field.type === 'heading' ? 'Opis sekcji (pod nagłówkiem)' : 'Tekst pomocy'">Tekst pomocy</label>
+                                        <label :for="'field-help-' + index" class="mb-1 block text-xs font-bold text-muted uppercase tracking-wide" x-text="field.type === 'heading' ? 'Opis sekcji (pod nagłówkiem)' : (field.type === 'step' ? 'Opis kroku' : 'Tekst pomocy')">Tekst pomocy</label>
                                         <input :id="'field-help-' + index"
                                             :name="'fields[' + index + '][help_text]'"
                                             type="text" x-model="field.help_text"
@@ -172,7 +173,50 @@
                                     Odpowiedź: 1–5 (przyciski). W „Opcjach” nie trzeba nic wpisywać.
                                 </p>
 
-                                <div class="flex items-center gap-3" x-show="field.type !== 'heading'">
+                                {{-- Logika warunkowa: pokaż pole tylko przy określonej odpowiedzi we wcześniejszym polu --}}
+                                <div x-show="field.type !== 'step' && conditionSources(index).length" class="rounded bg-white p-3">
+                                    <label class="flex items-center gap-2 text-sm font-medium">
+                                        <input type="checkbox" class="rounded border-gray-500 text-brand-dark focus:ring-brand-dark"
+                                            :checked="!! field.show_if_uid"
+                                            @change="field.show_if_uid = $event.target.checked ? (conditionSources(index)[0]?.uid || '') : ''; field.show_if_value = ''">
+                                        Pokaż tylko, gdy…
+                                    </label>
+                                    <div x-show="field.show_if_uid" class="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2">
+                                        <div>
+                                            <label :for="'field-cond-' + index" class="mb-1 block text-xs font-bold uppercase tracking-wide text-muted">pole</label>
+                                            <select :id="'field-cond-' + index" :name="'fields[' + index + '][show_if_uid]'" x-model="field.show_if_uid" @change="field.show_if_value = ''"
+                                                :disabled="! field.show_if_uid"
+                                                class="w-full rounded border-gray-500 text-sm focus:border-brand-dark focus-visible:ring-2 focus-visible:ring-brand-dark">
+                                                <template x-for="src in conditionSources(index)" :key="src.uid">
+                                                    <option :value="src.uid" x-text="src.label || '(bez etykiety)'" :selected="src.uid === field.show_if_uid"></option>
+                                                </template>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label :for="'field-condv-' + index" class="mb-1 block text-xs font-bold uppercase tracking-wide text-muted">ma odpowiedź</label>
+                                            <template x-if="conditionChoices(field.show_if_uid) !== null">
+                                                <select :id="'field-condv-' + index" :name="'fields[' + index + '][show_if_value]'" x-model="field.show_if_value"
+                                                    class="w-full rounded border-gray-500 text-sm focus:border-brand-dark focus-visible:ring-2 focus-visible:ring-brand-dark">
+                                                    <option value="">— dowolną (pole wypełnione) —</option>
+                                                    <template x-for="opt in conditionChoices(field.show_if_uid)" :key="opt.value">
+                                                        <option :value="opt.value" x-text="opt.label" :selected="opt.value === field.show_if_value"></option>
+                                                    </template>
+                                                </select>
+                                            </template>
+                                            <template x-if="conditionChoices(field.show_if_uid) === null">
+                                                <input :id="'field-condv-' + index" :name="'fields[' + index + '][show_if_value]'" type="text" x-model="field.show_if_value"
+                                                    placeholder="puste = gdy pole jest wypełnione"
+                                                    class="w-full rounded border-gray-500 text-sm focus:border-brand-dark focus-visible:ring-2 focus-visible:ring-brand-dark">
+                                            </template>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <p x-show="field.type === 'step'" class="rounded bg-white px-3 py-2 text-xs text-muted">
+                                    Od tego miejsca zaczyna się kolejny krok formularza. Etykieta to tytuł kroku (widoczny na pasku postępu), tekst pomocy — opis kroku.
+                                </p>
+
+                                <div class="flex items-center gap-3" x-show="! ['heading', 'step'].includes(field.type)">
                                     <input :id="'field-required-' + index"
                                         type="checkbox" x-model="field.required"
                                         class="rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
@@ -423,12 +467,32 @@
     <script>
         document.addEventListener('alpine:init', () => {
             Alpine.data('formBuilder', (initialFields) => ({
-                fields: (initialFields || []).map((f, i) => ({ ...f, _id: i })),
+                fields: (initialFields || []).map((f, i) => ({ show_if_uid: '', show_if_value: '', ...f, uid: f.uid || Math.random().toString(36).slice(2, 10), _id: i })),
                 _nextId: (initialFields || []).length,
+
+                // Pola, od których może zależeć pole nr index: wcześniejsze pola z wartością.
+                conditionSources(index) {
+                    return this.fields.slice(0, index).filter(f => ! ['heading', 'step', 'file'].includes(f.type));
+                },
+
+                // Lista możliwych odpowiedzi pola źródłowego; null = dowolny tekst.
+                conditionChoices(uid) {
+                    const src = this.fields.find(f => f.uid === uid);
+                    if (! src) return null;
+                    if (['select', 'radio', 'checkboxes'].includes(src.type)) {
+                        return String(src.options || '').split(',').map(o => o.trim()).filter(Boolean).map(o => ({ value: o, label: o }));
+                    }
+                    if (['checkbox', 'consent'].includes(src.type)) return [{ value: '1', label: 'zaznaczone' }];
+                    if (src.type === 'rating') return ['1', '2', '3', '4', '5'].map(v => ({ value: v, label: v + '/5' }));
+                    return null;
+                },
 
                 addField(type) {
                     this.fields.push({
                         _id:         this._nextId++,
+                        uid:         Math.random().toString(36).slice(2, 10),
+                        show_if_uid: '',
+                        show_if_value: '',
                         label:       '',
                         type:        type,
                         placeholder: '',

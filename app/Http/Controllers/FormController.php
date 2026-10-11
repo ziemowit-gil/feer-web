@@ -51,7 +51,7 @@ class FormController extends Controller
 
         $validator = Validator::make(
             $request->all(),
-            $formularz->validationRules(),
+            $formularz->validationRules((array) $request->input('data', [])),
             $formularz->validationMessages(),
             $formularz->validationAttributes(),
         );
@@ -119,10 +119,16 @@ class FormController extends Controller
     private function submittedData(Request $request, FormDefinition $formularz): array
     {
         $input = (array) $request->input('data', []);
+        $visible = $formularz->visibility($input);
         $data = [];
 
         foreach ($formularz->inputFields() as $field) {
             $key = $field['key'];
+
+            // Pole ukryte warunkiem — nie zapisujemy (mogło zostać wypełnione przed zmianą odpowiedzi).
+            if (! ($visible[$key] ?? true)) {
+                continue;
+            }
 
             if (($field['type'] ?? '') === 'file') {
                 $file = $request->file('data.'.$key);

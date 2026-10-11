@@ -10,6 +10,15 @@
     $hasFile     = collect($fields)->contains(fn ($f) => ($f['type'] ?? '') === 'file');
     $hasInputs   = collect($fields)->contains(fn ($f) => \App\Models\FormDefinition::isInput($f['type'] ?? 'text'));
     $privacyUrl  = \Illuminate\Support\Facades\Route::has('page.show') ? url('/polityka-prywatnosci') : null;
+    // Logika warunkowa: uid pola źródłowego → jego klucz (atrybuty data-ff-if dla skryptu).
+    $uidToKey    = collect($fields)->filter(fn ($f) => filled($f['uid'] ?? null))->mapWithKeys(fn ($f) => [$f['uid'] => $f['key']])->all();
+    // Kroki: pola typu „Nowy krok” dzielą formularz na etapy. Bez JS wszystkie kroki są widoczne naraz.
+    $stepFields  = array_values(array_filter($fields, fn ($f) => ($f['type'] ?? '') === 'step'));
+    $hasSteps    = count($stepFields) > 0;
+    $startsWithStep = $hasSteps && (($fields[0]['type'] ?? '') === 'step');
+    $stepTitles  = array_merge($startsWithStep ? [] : [''], array_map(fn ($f) => (string) ($f['label'] ?? ''), $stepFields));
+    $stepCount   = count($stepTitles);
+    $stepNo      = 0;
 @endphp
 
 <section id="formularz-{{ $fs }}"
@@ -78,7 +87,43 @@
             </p>
         @endif
 
+        @if ($hasSteps)
+            {{-- Pasek postępu (pokazuje go skrypt; bez JS kroki są po prostu kolejnymi sekcjami). --}}
+            <ol class="mb-2 flex flex-wrap gap-x-4 gap-y-2 text-sm" data-ff-progress hidden aria-label="Kroki formularza">
+                @foreach ($stepTitles as $i => $t)
+                    <li class="flex items-center gap-2 text-muted" data-ff-progress-item>
+                        <span class="flex h-7 w-7 flex-none items-center justify-center rounded-full border-2 border-solid border-gray-300 bg-white text-xs font-bold" aria-hidden="true">{{ $i + 1 }}</span>
+                        <span>{{ $t !== '' ? $t : 'Krok ' . ($i + 1) }}</span>
+                    </li>
+                @endforeach
+            </ol>
+            @unless ($startsWithStep)
+                @php $stepNo = 1; @endphp
+                <div class="space-y-5" data-ff-step="1" role="group" aria-labelledby="ff-{{ $fs }}-step-1">
+                    <h3 id="ff-{{ $fs }}-step-1" class="text-lg font-bold text-ink focus:outline-none" tabindex="-1" data-ff-step-title>Krok 1 z {{ $stepCount }}</h3>
+            @endunless
+        @endif
+
         @foreach ($fields as $field)
+            @if (($field['type'] ?? '') === 'step')
+                @if ($stepNo > 0)
+                    </div>
+                @endif
+                @php $stepNo++; @endphp
+                <div class="space-y-5" data-ff-step="{{ $stepNo }}" role="group" aria-labelledby="ff-{{ $fs }}-step-{{ $stepNo }}">
+                    <h3 id="ff-{{ $fs }}-step-{{ $stepNo }}" class="text-lg font-bold text-ink focus:outline-none" tabindex="-1" data-ff-step-title>
+                        <span class="block text-xs font-bold uppercase tracking-wide text-muted">Krok {{ $stepNo }} z {{ $stepCount }}</span>
+                        {{ $field['label'] }}
+                    </h3>
+                    @if ($field['help_text'] ?? null)
+                        <p class="-mt-3 text-sm text-muted">{{ $field['help_text'] }}</p>
+                    @endif
+                @continue
+            @endif
+            @php
+                $ffIf = $uidToKey[$field['show_if_uid'] ?? ''] ?? null;
+            @endphp
+            <div data-ff-field="{{ $field['key'] }}" @if ($ffIf && $ffIf !== $field['key']) data-ff-if="{{ $ffIf }}" data-ff-val="{{ $field['show_if_value'] ?? '' }}" @endif>
             @php
                 $fid       = "field-{$fs}-{$field['key']}";
                 $fname     = "data[{$field['key']}]";
@@ -195,7 +240,7 @@
                     $choices  = $isRating ? ['1', '2', '3', '4', '5'] : \App\Models\FormDefinition::fieldOptions($field);
                     $oldArr   = $isRating ? [(string) $oldVal] : array_map('strval', (array) ($oldVal ?? []));
                 @endphp
-                <fieldset class="space-y-1.5" @if ($describedByStr) aria-describedby="{{ $describedByStr }}" @endif>
+                <fieldset class="space-y-1.5" @if ($describedByStr) aria-describedby="{{ $describedByStr }}" @endif @if ($required && ! $isRating) data-ff-group-required @endif>
                     <legend class="text-sm font-semibold text-ink">
                         {{ $field['label'] }}
                         @if ($required)
@@ -410,13 +455,28 @@
                     @endif
                 </div>
             @endif
+            </div>
         @endforeach
+
+        @if ($hasSteps && $stepNo > 0)
+            </div>
+        @endif
 
         @if ($hasInputs)
             @include('partials.spam-protection', ['spamScope' => $fs, 'cleantalk' => empty($form->settings['cleantalk_disabled'] ?? null)])
 
-            <div class="pt-2">
-                <button type="submit"
+            <div class="flex flex-wrap items-center gap-3 pt-2">
+                @if ($hasSteps)
+                    <button type="button" data-ff-prev hidden
+                        class="inline-flex min-h-11 items-center gap-2 rounded-md border-2 border-solid border-gray-300 bg-white px-5 text-sm font-bold text-ink hover:border-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
+                        <i class="fa-solid fa-arrow-left" aria-hidden="true"></i> Wstecz
+                    </button>
+                    <button type="button" data-ff-next hidden
+                        class="inline-flex min-h-11 items-center gap-2 rounded-md bg-ink px-5 text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
+                        Dalej <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+                    </button>
+                @endif
+                <button type="submit" data-ff-submit
                     class="inline-flex items-center gap-2 bg-brand text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 {{ $feerForm ? 'min-h-12 rounded-md px-7 text-base font-bold' : 'rounded-lg px-6 py-2.5 text-sm font-bold' }}">
                     Wyślij zgłoszenie
                     <i class="fa-solid fa-paper-plane" aria-hidden="true"></i>
@@ -435,6 +495,115 @@
         (function () {
             var summary = document.getElementById('{{ $errorSummaryId }}');
             if (summary) summary.focus();
+        })();
+    </script>
+@endif
+
+@if (! $showSuccess && ($hasSteps || collect($fields)->contains(fn ($f) => filled($f['show_if_uid'] ?? null))))
+    <script>
+        (function () {
+            var root = document.getElementById('formularz-{{ $fs }}');
+            var form = root && root.querySelector('form');
+            if (!form) return;
+            var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            var wraps = Array.prototype.slice.call(form.querySelectorAll('[data-ff-field]'));
+
+            // ── Logika warunkowa ────────────────────────────────────────────
+            function valueOf(key) {
+                var els = Array.prototype.slice.call(form.querySelectorAll('[name="data[' + key + ']"], [name="data[' + key + '][]"]'));
+                if (!els.length) return '';
+                var first = els[0];
+                if (first.type === 'radio') { var c = els.filter(function (e) { return e.checked; })[0]; return c ? c.value : ''; }
+                if (first.type === 'checkbox') {
+                    if (first.name.slice(-2) === '[]') return els.filter(function (e) { return e.checked; }).map(function (e) { return e.value; });
+                    return first.checked ? '1' : '';
+                }
+                return first.value;
+            }
+            function applyConditions() {
+                var visible = {};
+                wraps.forEach(function (w) {
+                    var show = true, target = w.getAttribute('data-ff-if');
+                    if (target !== null) {
+                        if (!visible[target]) { show = false; }
+                        else {
+                            var v = valueOf(target), want = w.getAttribute('data-ff-val') || '';
+                            show = want === '' ? (Array.isArray(v) ? v.length > 0 : v !== '') : (Array.isArray(v) ? v.indexOf(want) !== -1 : v === want);
+                        }
+                    }
+                    visible[w.getAttribute('data-ff-field')] = show;
+                    w.hidden = !show;
+                    // Ukryte pola nie są wysyłane ani sprawdzane.
+                    w.querySelectorAll('input, select, textarea').forEach(function (e) { e.disabled = !show; });
+                });
+            }
+            form.addEventListener('change', function (e) {
+                var group = e.target.closest && e.target.closest('[data-ff-group-required]');
+                if (group) group.querySelectorAll('input[type=checkbox]').forEach(function (b) { b.setCustomValidity(''); });
+                applyConditions();
+            });
+            form.addEventListener('input', applyConditions);
+            applyConditions();
+
+            // ── Kroki ───────────────────────────────────────────────────────
+            var steps = Array.prototype.slice.call(form.querySelectorAll('[data-ff-step]'));
+            if (!steps.length) return;
+            var progress = form.querySelector('[data-ff-progress]');
+            var items = Array.prototype.slice.call(form.querySelectorAll('[data-ff-progress-item]'));
+            var prev = form.querySelector('[data-ff-prev]'), next = form.querySelector('[data-ff-next]'), submit = form.querySelector('[data-ff-submit]');
+            var cur = 0;
+            progress.hidden = false;
+
+            function show(i, focus) {
+                cur = i;
+                steps.forEach(function (s, k) { s.hidden = k !== i; });
+                items.forEach(function (li, k) {
+                    var dot = li.firstElementChild;
+                    li.classList.toggle('text-muted', k > i);
+                    li.classList.toggle('text-ink', k <= i);
+                    li.classList.toggle('font-bold', k === i);
+                    dot.classList.toggle('bg-brand', k <= i); dot.classList.toggle('border-brand', k <= i); dot.classList.toggle('text-white', k <= i);
+                    if (k === i) li.setAttribute('aria-current', 'step'); else li.removeAttribute('aria-current');
+                });
+                prev.hidden = i === 0;
+                next.hidden = i === steps.length - 1;
+                submit.hidden = i !== steps.length - 1;
+                if (focus) {
+                    var h = steps[i].querySelector('[data-ff-step-title]');
+                    if (h) { h.focus({ preventScroll: true }); h.scrollIntoView({ block: 'start', behavior: reduced ? 'auto' : 'smooth' }); }
+                }
+            }
+            function stepValid(i, report) {
+                steps[i].querySelectorAll('[data-ff-group-required]').forEach(function (g) {
+                    if (g.closest('[hidden]') && g.closest('[hidden]') !== steps[i]) return;
+                    var boxes = Array.prototype.slice.call(g.querySelectorAll('input[type=checkbox]'));
+                    if (boxes.length) boxes[0].setCustomValidity(boxes.some(function (b) { return b.checked; }) ? '' : 'Zaznacz co najmniej jedną odpowiedź.');
+                });
+                var els = Array.prototype.slice.call(steps[i].querySelectorAll('input, select, textarea')).filter(function (e) { return !e.disabled && e.type !== 'hidden'; });
+                for (var k = 0; k < els.length; k++) {
+                    if (!els[k].checkValidity()) { if (report) { els[k].reportValidity(); els[k].focus(); } return false; }
+                }
+                return true;
+            }
+            next.addEventListener('click', function () { if (stepValid(cur, true)) show(cur + 1, true); });
+            prev.addEventListener('click', function () { show(cur - 1, true); });
+            form.addEventListener('submit', function (e) {
+                for (var i = 0; i < steps.length; i++) {
+                    if (!stepValid(i, false)) { e.preventDefault(); show(i, false); stepValid(i, true); return; }
+                }
+            });
+            // Linki z podsumowania błędów otwierają krok z danym polem.
+            root.querySelectorAll('a[href^="#field-"]').forEach(function (a) {
+                a.addEventListener('click', function () {
+                    var t = document.getElementById(a.getAttribute('href').slice(1));
+                    var s = t && t.closest('[data-ff-step]');
+                    if (s) show(steps.indexOf(s), false);
+                });
+            });
+            // Po błędach z serwera — krok z pierwszym błędnym polem.
+            var bad = form.querySelector('[aria-invalid="true"]');
+            var start = bad && bad.closest('[data-ff-step]') ? steps.indexOf(bad.closest('[data-ff-step]')) : 0;
+            show(Math.max(0, start), false);
         })();
     </script>
 @endif

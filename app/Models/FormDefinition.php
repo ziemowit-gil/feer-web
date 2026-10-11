@@ -44,10 +44,11 @@ class FormDefinition extends Model
         'file'     => 'Załącznik (plik)',
         'consent'  => 'Zgoda RODO (z linkiem do polityki prywatności)',
         'heading'  => 'Nagłówek / opis sekcji',
+        'step'     => 'Nowy krok (podział na etapy)',
     ];
 
     /** Elementy układu — bez wartości (nie walidowane, nie zapisywane, nie w eksporcie). */
-    const LAYOUT_TYPES = ['heading'];
+    const LAYOUT_TYPES = ['heading', 'step'];
 
     /** Domyślne typy plików i rozmiar (MB) dla pola „Załącznik”. */
     const FILE_DEFAULT_ACCEPT = 'pdf,doc,docx,odt,jpg,jpeg,png';
@@ -123,12 +124,61 @@ class FormDefinition extends Model
         return max(1, min(self::FILE_MAX_MB, (int) ($field['max_mb'] ?? 0) ?: 10));
     }
 
-    /** Dynamiczne reguły walidacji dla zgłoszenia. */
-    public function validationRules(): array
+    /**
+     * Czy pole jest widoczne przy danych odpowiedziach — warunek „Pokaż tylko, gdy…”.
+     * Pole jest ukryte, gdy warunek nie jest spełniony albo ukryte jest pole, od którego zależy.
+     * Puste „równa się” = gdy pole źródłowe jest wypełnione; przy wielokrotnym wyborze — „zawiera”.
+     *
+     * @param  array<string, mixed>  $data  odpowiedzi (klucze jak `key` pól)
+     * @return array<string, bool>  [key => widoczne]
+     */
+    public function visibility(array $data): array
+    {
+        $fields = $this->normalizedFields();
+        $byUid = [];
+        foreach ($fields as $f) {
+            if (filled($f['uid'] ?? null)) {
+                $byUid[$f['uid']] = $f;
+            }
+        }
+
+        $visible = [];
+        foreach ($fields as $f) {
+            $target = $byUid[$f['show_if_uid'] ?? ''] ?? null;
+            if (! $target || ($target['key'] ?? null) === $f['key']) {
+                $visible[$f['key']] = true;
+
+                continue;
+            }
+            // Pole zależy tylko od wcześniejszych pól (już ocenionych); ukryte źródło = ukryte pole.
+            if (! ($visible[$target['key']] ?? false)) {
+                $visible[$f['key']] = false;
+
+                continue;
+            }
+            $value = $data[$target['key']] ?? null;
+            $want = trim((string) ($f['show_if_value'] ?? ''));
+            $visible[$f['key']] = match (true) {
+                $want === '' => ! ($value === null || $value === '' || $value === []),
+                is_array($value) => in_array($want, array_map('strval', $value), true),
+                default => (string) $value === $want,
+            };
+        }
+
+        return $visible;
+    }
+
+    /** Dynamiczne reguły walidacji dla zgłoszenia (pola ukryte warunkiem są pomijane). */
+    public function validationRules(?array $data = null): array
     {
         $rules = [];
+        $visible = $data === null ? null : $this->visibility($data);
 
         foreach ($this->inputFields() as $field) {
+            if ($visible !== null && ! ($visible[$field['key']] ?? true)) {
+                continue;
+            }
+
             $required = ($field['required'] ?? false) ? 'required' : 'nullable';
             $type     = $field['type'] ?? 'text';
             $options  = self::fieldOptions($field);
