@@ -59,9 +59,6 @@
                                 @foreach ($items as $project)
                                     <li>
                                         <a href="{{ route('projects.show', $project) }}" class="group flex items-center gap-4 rounded-md bg-gray-50 px-4 py-4 transition-colors hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">
-                                            @if ($project->image_url)
-                                                <img src="{{ $project->image_url }}" alt="" loading="lazy" class="h-14 w-20 flex-none rounded-md object-cover sm:h-16 sm:w-24">
-                                            @endif
                                             <span class="min-w-0 flex-1">
                                                 <span class="block text-xs font-bold uppercase tracking-widest text-muted">{{ $project->category->name ?? 'Działanie' }}@if ($project->completed_at) · zakończono {{ $project->completed_at->translatedFormat('F Y') }}@endif</span>
                                                 <span class="mt-0.5 block text-lg font-bold leading-snug text-ink group-hover:text-brand-dark group-hover:underline group-hover:underline-offset-4">{{ $project->title }}</span>
