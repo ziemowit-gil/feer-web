@@ -94,7 +94,14 @@
         @endphp
 
     {{-- ══ NAGŁÓWEK (układ portalu): kategoria, tytuł, status i termin zwykłym tekstem, zajawka, zdjęcie — płasko, na białym ══ --}}
-    @php $imageHero = $project->image_hero && $project->image_url; @endphp
+    @php
+        $imageHero = $project->image_hero && $project->image_url;
+        // Hero z kolumną boczną: nagłówek trafia do lewej kolumny siatki treści, a siatka nachodzi na zdjęcie —
+        // menu boczne zaczyna się wtedy obok nagłówka, nie pod nim. Przy poziomym pasku zakładek zostaje zwykły układ.
+        $heroInGrid = $imageHero && ! ($hasTabs && ! $navSidebar);
+        $extrasOn = $siteSettings->projects_extras_enabled;
+        $mainCta = $extrasOn ? (array) ($project->main_cta ?? []) : [];
+    @endphp
     @if ($imageHero)
         {{-- Zdjęcie jako hero: baner na całą szerokość ekranu; nagłówek na białym polu nachodzącym na dolną krawędź zdjęcia
              (tytuł nigdy nie leży na samym zdjęciu — kontrast nie zależy od jego treści). --}}
@@ -103,6 +110,7 @@
                 class="h-56 w-full object-cover sm:h-72 lg:h-[24rem]">
         </div>
     @endif
+    @unless ($heroInGrid)
     <section>
         <div @class([
             'mx-auto grid max-w-6xl items-center gap-8 px-4 pb-4',
@@ -111,33 +119,7 @@
             'lg:grid-cols-[minmax(0,1fr)_26rem]' => $project->image_url && ! $imageHero,
         ])>
             <div @class(['min-w-0', 'max-w-3xl rounded-md bg-white p-6 sm:p-8' => $imageHero])>
-                <a href="{{ route('categories.show', $project->category) }}" class="inline-block text-sm font-bold uppercase tracking-widest text-brand-dark hover:underline hover:underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">
-                    {{ $project->category->name }}
-                </a>
-                <h1 class="mt-3 text-3xl font-extrabold leading-tight tracking-tight text-ink md:text-4xl" @if ($canInlineEdit) data-inline-field="title" data-inline-kind="text" @endif>{{ $project->title }}</h1>
-                @if (($siteSettings->site_template ?? 'default') === 'feer')<span class="mt-4 block h-1 w-14 bg-brand" aria-hidden="true"></span>@endif
-                @if ($siteSettings->projects_stages_enabled && ($project->status || $project->starts_on))
-                    {{-- Status i termin jako zwykły tekst (bez plakietek). --}}
-                    <dl class="proj-meta">
-                        @if ($project->status)<div><dt>Status:</dt> <dd>{{ \App\Models\Project::STATUSES[$project->status] ?? '' }}</dd></div>@endif
-                        @if ($project->starts_on)<div><dt>Termin:</dt> <dd>{{ $project->starts_on->locale('pl')->isoFormat('D MMMM YYYY') }}@if ($project->ends_on) – {{ $project->ends_on->locale('pl')->isoFormat('D MMMM YYYY') }}@endif</dd></div>@endif
-                    </dl>
-                @endif
-                @php $extrasOn = $siteSettings->projects_extras_enabled; $mainCta = $extrasOn ? (array) ($project->main_cta ?? []) : []; @endphp
-                @if ($project->excerpt)
-                    <p class="mt-4 max-w-2xl text-lg leading-relaxed text-ink">{{ $project->excerpt }}</p>
-                @endif
-                <p class="mt-4 no-print">@include('partials.print-button')</p>
-                @if (! empty($mainCta['label']) && ! empty($mainCta['url']))
-                    <p class="mt-5"><a href="{{ $mainCta['url'] }}" class="proj-cta">{{ $mainCta['label'] }} <span aria-hidden="true">→</span></a></p>
-                @endif
-                @if ($showForWhom || $project->since)
-                    <p class="mt-4 text-base text-ink">
-                        @if ($showForWhom)<span @if ($canInlineEdit) data-inline-field="for_whom" data-inline-kind="text" data-inline-multiline @endif><i class="fa-solid fa-users mr-1.5 text-brand-dark" aria-hidden="true"></i>Dla kogo: <span class="font-bold">{{ $project->for_whom }}</span></span>@endif
-                        @if ($showForWhom && $project->since)<span aria-hidden="true"> · </span>@endif
-                        @if ($project->since)<span><i class="fa-solid fa-calendar-days mr-1.5 text-brand-dark" aria-hidden="true"></i>Od kiedy: <span class="font-bold">{{ $project->since }}</span></span>@endif
-                    </p>
-                @endif
+                @include('projects.partials.header-content')
             </div>
 
             @if ($project->image_url && ! $imageHero)
@@ -146,6 +128,7 @@
             @endif
         </div>
     </section>
+    @endunless
 
     <div x-data="{
             tabs: @js(array_column($tabItems, 'id')),
@@ -158,7 +141,7 @@
         @include('partials.tab-strip', ['tabItems' => $tabItems, 'tabsLabel' => 'Sekcje działania', 'tabLinks' => $tabLinks])
     @endif
 
-    <section class="mx-auto max-w-6xl px-4 py-8">
+    <section @class(['mx-auto max-w-6xl px-4', 'relative -mt-16 pb-8 sm:-mt-24' => $heroInGrid, 'py-8' => ! $heroInGrid])>
         @php
             $showNews = $siteSettings->isModuleEnabled('news') && $project->publishedNews->isNotEmpty();
             $showTeamFunding = $siteSettings->projects_team_funding_enabled;
@@ -288,6 +271,11 @@
         </style>
         <div @class(['grid items-start gap-10', 'proj-cols' => $hasAside || $navSidebar])>
         <div class="min-w-0 proj-main">
+            @if ($heroInGrid)
+                <div class="mb-8 rounded-md bg-white p-6 sm:p-8">
+                    @include('projects.partials.header-content')
+                </div>
+            @endif
             <div id="panel-opis" @if ($hasTabs && ! $navSidebar) role="tabpanel" aria-labelledby="tab-opis" @endif x-show="tab === 'opis'" class="proj-measure proj-flow">
                 @if ($project->isPaidOffer())
                     {{-- Usługa wyłącznie odpłatna: wyraźna informacja, objaśnienie i przycisk kontaktu. --}}
