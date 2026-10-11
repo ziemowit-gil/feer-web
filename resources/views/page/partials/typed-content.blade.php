@@ -871,7 +871,9 @@
                  ikona, tytuł, opis i strzałka; kolor tekstu dobiera Color::button (kontrast ≥ 4,5:1). Cały kafelek jest linkiem. --}}
             @php
                 $cke = \App\Support\ThemePalette::tiles();
-                $ckeNamed = \App\Support\ThemePalette::named();
+                // Tylko kolory palety motywu (jak przed 76ced1b): zielony/czerwony ze statusów nie trafiają na kafelki
+                // FEER — nazwy spoza palety (np. automatyczne „green”, „red” podstron) biorą kolejny kolor z $cke.
+                $ckeNamed = array_intersect_key(\App\Support\ThemePalette::named(), array_flip(['blue', 'dark', 'orange']));
             @endphp
             <ul class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3" role="list">
                 @foreach ($hubLinks as $i => $link)
