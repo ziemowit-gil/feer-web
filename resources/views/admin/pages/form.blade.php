@@ -178,7 +178,22 @@
                     {{-- Główny edytor treści — ukryty dla typów bez swobodnej treści
                          („O organizacji" i „Przeniesiono do BIP" mają własne pola). --}}
                     <div data-content-field class="{{ in_array($currentType, ['about', 'bip_move', 'wspolpraca', 'contact'], true) ? 'hidden' : '' }}">
-                        <label class="mb-1 block text-sm font-bold">Treść</label>
+                        <div class="mb-1 flex flex-wrap items-center justify-between gap-2">
+                            <label class="block text-sm font-bold">Treść</label>
+                            @if ($page->exists)
+                                <a href="{{ route('admin.podstrony.bloki.edit', $page) }}"
+                                    class="inline-flex items-center gap-1.5 rounded border border-brand-dark px-3 py-1.5 text-xs font-bold text-brand-dark hover:bg-brand-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                                    <i class="fa-solid fa-cubes" aria-hidden="true"></i> Otwórz w edytorze blokowym
+                                </a>
+                            @endif
+                        </div>
+                        @if ($page->exists && is_array($page->blocks))
+                            <p class="mb-2 rounded border border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-900" role="note">
+                                <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
+                                Ta strona jest edytowana w edytorze blokowym. Zmiana treści tutaj zastąpi bloki zwykłym HTML-em —
+                                edytor blokowy wczyta ją potem jako jeden blok „Własny HTML”.
+                            </p>
+                        @endif
                         @include('admin.partials.editor', ['name' => 'content', 'value' => old('content', $page->content), 'revisionable' => $page->exists ? ['type' => 'page', 'id' => $page->id] : null])
                         @error('content') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>

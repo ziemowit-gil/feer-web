@@ -361,6 +361,9 @@ Route::middleware(['auth', 'verified', '2fa', 'admin-site'])->prefix(config('app
         Route::get('raporty/brakujace-alt', [AdminPageController::class, 'missingAltReport'])->name('raporty.brakujace-alt');
         Route::resource('podstrony', AdminPageController::class)->parameters(['podstrony' => 'page']);
         Route::put('edycja-na-zywo', [\App\Http\Controllers\Admin\InlineEditController::class, 'update'])->name('inline-edit.update');
+        // Edytor blokowy (styl Gutenberga) — pełnoekranowy, na stylach frontu.
+        Route::get('podstrony/{page}/edytor-blokowy', [\App\Http\Controllers\Admin\BlockEditorController::class, 'edit'])->name('podstrony.bloki.edit');
+        Route::put('podstrony/{page}/edytor-blokowy', [\App\Http\Controllers\Admin\BlockEditorController::class, 'update'])->name('podstrony.bloki.update');
         Route::post('podstrony/{page}/pliki', [AdminAttachmentController::class, 'storeForPage'])->name('podstrony.pliki.store');
         Route::get('podstrony/{page}/dostep/eksport', [AdminBrandAccessUserController::class, 'export'])->name('podstrony.dostep.eksport');
         Route::get('podstrony/{page}/dostep', [AdminBrandAccessUserController::class, 'index'])->name('podstrony.dostep.index');

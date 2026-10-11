@@ -766,3 +766,92 @@ html.no-animations .nav-mega-panel { transition: none !important; }
 .picker-tab:hover { background: #f3f4f6; }
 .picker-tab[aria-pressed="true"] { background: #1d1d1a; border-color: #1d1d1a; color: #fff; }
 .picker-tab:focus-visible { outline: 2px solid var(--color-brand); outline-offset: 2px; }
+
+/* ── Treść z edytora blokowego (App\Support\BlockRenderer) ───────────────
+   Klasy uzupełniają te z klasycznego edytora (content-columns, content-box…). */
+.prose .has-text-align-center { text-align: center; }
+.prose .has-text-align-right { text-align: right; }
+.prose p.is-lead { font-size: 1.2em; line-height: 1.6; }
+
+/* Kolumny: 3 i 4 oraz proporcje 1/3 + 2/3. Na wąskim ekranie jedna pod drugą. */
+.content-columns > .content-column > :first-child { margin-top: 0; }
+.content-columns > .content-column > :last-child { margin-bottom: 0; }
+.content-columns.content-columns--3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.content-columns.content-columns--4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.content-columns.content-columns--33-67 { grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); }
+.content-columns.content-columns--67-33 { grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); }
+@media (max-width: 900px) {
+    .content-columns.content-columns--4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 640px) {
+    .content-columns.content-columns--3,
+    .content-columns.content-columns--4,
+    .content-columns.content-columns--33-67,
+    .content-columns.content-columns--67-33 { grid-template-columns: 1fr; }
+}
+
+/* Obraz z podpisem i szerokością. */
+.prose .content-figure { margin: 1.5rem 0; }
+.prose .content-figure img { margin: 0; width: 100%; height: auto; border-radius: 0.375rem; }
+.prose .content-figure--medium { max-width: 66%; }
+.prose .content-figure--small { max-width: 33%; }
+.prose .content-figure--wide { margin-left: -2rem; margin-right: -2rem; }
+@media (max-width: 640px) {
+    .prose .content-figure--medium, .prose .content-figure--small { max-width: 100%; }
+    .prose .content-figure--wide { margin-left: 0; margin-right: 0; }
+}
+.prose .content-figure figcaption,
+.prose .content-embed figcaption,
+.prose .content-quote figcaption {
+    margin-top: 0.5rem;
+    font-size: 0.875rem;
+    color: var(--color-muted);
+}
+
+.prose .content-quote { margin: 1.5rem 0; }
+.prose .content-quote blockquote { margin: 0; }
+.prose .content-quote figcaption { font-weight: 700; }
+
+/* Film 16:9, bez przewijania w poziomie (WCAG 1.4.10). */
+.prose .content-embed { margin: 1.5rem 0; }
+.content-embed-frame { position: relative; aspect-ratio: 16 / 9; }
+.content-embed-frame iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; border-radius: 0.375rem; }
+
+/* Przyciski obok siebie. */
+.prose .content-buttons { display: flex; flex-wrap: wrap; gap: 0.75rem; }
+.prose .content-buttons.has-text-align-center { justify-content: center; }
+.prose .content-buttons.has-text-align-right { justify-content: flex-end; }
+
+/* Rozwijana sekcja (kilka pod rzędem = akordeon). Natywne <details> działa z klawiatury. */
+.prose .content-details {
+    margin: 0;
+    border: 1px solid #d1d5db;
+    border-radius: 0.5rem;
+    background: #fff;
+}
+.prose .content-details + .content-details { margin-top: 0.5rem; }
+.prose .content-details { margin-top: 1.5rem; }
+.prose .content-details:has(+ :not(.content-details)), .prose .content-details:last-child { margin-bottom: 1.5rem; }
+.prose .content-details summary {
+    cursor: pointer;
+    padding: 0.85rem 1rem;
+    font-weight: 700;
+    color: var(--color-ink);
+}
+.prose .content-details summary:hover { color: var(--color-brand-dark); }
+.prose .content-details summary:focus-visible { outline: 2px solid var(--color-brand-dark); outline-offset: 2px; border-radius: 0.5rem; }
+.prose .content-details[open] summary { border-bottom: 1px solid #e5e7eb; }
+.prose .content-details-body { padding: 0.25rem 1rem; }
+
+/* Plik do pobrania. */
+.prose .content-file { display: flex; flex-direction: column; gap: 0.15rem; padding-left: 1.75rem; position: relative; }
+.prose .content-file::before {
+    content: "\f56d"; /* fa-file-arrow-down */
+    font-family: "Font Awesome 7 Free", "Font Awesome 6 Free";
+    font-weight: 900;
+    position: absolute; left: 0; top: 0.1em;
+    color: var(--color-brand-dark);
+}
+.prose .content-file a { font-weight: 700; }
+.prose .content-file-meta { font-weight: 400; color: var(--color-muted); }
+.prose .content-file-desc { font-size: 0.875rem; color: var(--color-muted); }

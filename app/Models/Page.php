@@ -319,7 +319,7 @@ class Page extends Model
         'brand_brandbook_url', 'brand_sections',
         'person_phone', 'person_role', 'person_bio', 'person_email', 'person_social', 'person_member_label', 'person_name_genitive', 'person_department',
         'page_template',
-        'cooperation_data', 'type_data',
+        'cooperation_data', 'type_data', 'blocks',
     ];
 
     protected $casts = [
@@ -357,7 +357,22 @@ class Page extends Model
         'person_department'  => 'array',
         'cooperation_data'   => 'array',
         'type_data'          => 'array',
+        'blocks'             => 'array',
     ];
+
+    /**
+     * Treść zmieniona poza edytorem blokowym (formularz panelu, edycja na żywo,
+     * przywrócenie wersji) unieważnia zapisane bloki — inaczej edytor blokowy
+     * pokazałby starą wersję. Edytor wczyta wtedy aktualny HTML jako blok HTML.
+     */
+    protected static function booted(): void
+    {
+        static::saving(function (Page $page) {
+            if ($page->exists && $page->isDirty('content') && ! $page->isDirty('blocks') && $page->blocks !== null) {
+                $page->blocks = null;
+            }
+        });
+    }
 
     public function resolveRouteBindingQuery($query, $value, $field = null)
     {

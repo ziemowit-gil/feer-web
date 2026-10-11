@@ -49,6 +49,14 @@
                 </button>
             </template>
 
+            {{-- Edytor blokowy (styl Gutenberga) — tylko dla podstron. --}}
+            @if (isset($page) && $page instanceof \App\Models\Page && $page->exists && auth('web')->user()?->canAccessModule('pages'))
+                <a x-show="!editMode" href="{{ route('admin.podstrony.bloki.edit', $page) }}"
+                    class="inline-flex min-h-12 items-center gap-1.5 rounded-full bg-white px-5 text-sm font-bold text-ink shadow-[0_6px_20px_rgba(0,0,0,.18)] ring-1 ring-gray-300 transition hover:-translate-y-0.5 hover:bg-brand-light hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
+                    <i class="fa-solid fa-cubes mr-1" aria-hidden="true"></i>Bloki<span class="sr-only"> — edytuj tę stronę w edytorze blokowym</span>
+                </a>
+            @endif
+
             <button type="button" @click="toggleEdit()" :aria-pressed="editMode.toString()"
                 class="inline-flex items-center gap-1.5 rounded-md font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2"
                 :class="editMode
