@@ -13,7 +13,7 @@
     <section class="mx-auto max-w-5xl px-4 py-12">
         <header class="mb-10">
             <p class="text-xs font-bold uppercase tracking-wider text-brand">Blog</p>
-            <h1 class="mt-1 text-3xl font-bold text-ink sm:text-4xl">Wiem FEER</h1>
+            <h1 class="mt-1 text-4xl text-ink sm:text-5xl" style="font-family:'Pacifico',cursive;font-weight:400;line-height:1.3">Wiem FEER</h1>
             <p class="mt-2 max-w-2xl text-muted">Artykuły o dostępności cyfrowej, edukacji i empatii — miejsce, w którym dzielimy się wiedzą i doświadczeniem.</p>
         </header>
 
