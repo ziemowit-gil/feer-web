@@ -64,7 +64,8 @@
     // Menu działań: ręczne podpozycje tworzą dodatkową kolumnę „To już zrobiliśmy”.
     $projectExtras = $isProjects ? $item->children : collect();
     $extraTitle    = $item->mega_extra_title ?: 'To już zrobiliśmy';
-    $projectCols   = $groups->count() + ($projectExtras->isNotEmpty() ? 1 : 0) + (($item->hide_all_projects_btn && $item->hide_archive_btn && ! $sideLinks) ? 0 : 1);
+    // Przyciski są w osobnym rzędzie pod kolumnami — nie zajmują kolumny.
+    $projectCols   = $groups->count() + ($projectExtras->isNotEmpty() ? 1 : 0);
     $columns = match (true) {
         // Kolumny z nagłówkami: jedna kolumna na sekcję, w granicach wielkości pozycji.
         $grouped => min(match ($size) { 'sm' => 5, 'lg' => 2, default => 4 }, max(2, count($sections))),
@@ -171,16 +172,20 @@
                                 </div>
                             @endif
 
-                            {{-- Kolumna z przyciskami: „Wszystkie działania", „To już zrobiliśmy" i własne przyciski/linki (ustawiane przy pozycji menu). --}}
-                            <div>
+                        </div>
+
+                        {{-- Zdefiniowane przyciski („Wszystkie działania”, „To już zrobiliśmy” i własne z pozycji menu) w jednym rzędzie pod kolumnami. --}}
+                        @php $showAllBtn = ! $item->hide_all_projects_btn; $showArchiveBtn = ($navHasProjectArchive ?? false) && $projectExtras->isEmpty() && ! $item->hide_archive_btn; @endphp
+                        @if ($showAllBtn || $showArchiveBtn || $sideLinks)
+                            <div class="mt-6 border-t border-gray-100 pt-5">
                                 @if ($sideTitle)
-                                    <p id="mega-side-{{ $item->id }}" class="mb-2 block border-b-2 border-brand/30 px-2 py-1.5 font-bold text-ink {{ $sz['cat'] }}">{{ $sideTitle }}</p>
+                                    <p id="mega-side-{{ $item->id }}" class="mb-3 font-bold text-ink {{ $sz['cat'] }}">{{ $sideTitle }}</p>
                                 @endif
-                                <ul role="list" @if ($sideTitle) aria-labelledby="mega-side-{{ $item->id }}" @endif class="space-y-2 {{ $sideTitle ? '' : 'pt-1' }}">
-                                    @unless ($item->hide_all_projects_btn)
+                                <ul role="list" @if ($sideTitle) aria-labelledby="mega-side-{{ $item->id }}" @else aria-label="Na skróty: {{ $item->label }}" @endif class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                                    @if ($showAllBtn)
                                         <li>@include('partials.nav-side-link', ['sl' => ['label' => 'Wszystkie działania', 'url' => $targetUrl, 'style' => 'tile_filled', 'new_tab' => false], 'block' => true])</li>
-                                    @endunless
-                                    @if (($navHasProjectArchive ?? false) && $projectExtras->isEmpty() && ! $item->hide_archive_btn)
+                                    @endif
+                                    @if ($showArchiveBtn)
                                         <li>@include('partials.nav-side-link', ['sl' => ['label' => 'To już zrobiliśmy', 'url' => route('projects.archive'), 'style' => 'tile', 'new_tab' => false], 'block' => true])</li>
                                     @endif
                                     @foreach ($sideLinks as $sl)
@@ -188,7 +193,7 @@
                                     @endforeach
                                 </ul>
                             </div>
-                        </div>
+                        @endif
                     </div>
                 @endif
             @elseif ($grouped)
