@@ -365,6 +365,7 @@ class ProjectController extends Controller
             'coordinator_name' => ['nullable', 'string', 'max:255'],
             'coordinator_email' => ['nullable', 'email', 'max:255'],
             'coordinator_phone' => ['nullable', 'string', 'max:50'],
+            'coordinator_phone_hours' => ['nullable', 'string', 'max:120'],
             'legacy_url' => ['nullable', 'url', 'max:255'],
             'sections_nav' => ['nullable', 'in:tabs,sidebar'],
             'sidebar_note' => ['nullable', 'string', 'max:1000'],

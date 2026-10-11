@@ -331,6 +331,9 @@
                                         <i class="fa-solid fa-phone mr-1.5 text-brand" aria-hidden="true"></i>
                                         <a href="tel:{{ $project->coordinator_phone }}" class="font-medium text-brand hover:text-brand-dark">{{ $project->coordinator_phone }}</a>
                                     </p>
+                                    @if (filled($project->coordinator_phone_hours))
+                                        <p class="text-sm">Telefon czynny {{ $project->coordinator_phone_hours }}</p>
+                                    @endif
                                 @endif
                             </div>
                         </div>

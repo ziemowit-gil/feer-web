@@ -38,6 +38,9 @@ class NgoSupportContentSeeder extends Seeder
         if (blank($project->coordinator_email)) {
             $updates += ['coordinator_name' => $project->coordinator_name ?: 'Ziemowit Gil', 'coordinator_email' => 'ziemowit.gil@feer.org.pl', 'show_coordinator' => true];
         }
+        if (blank($project->coordinator_phone)) {
+            $updates += ['coordinator_phone' => '601 350 487', 'coordinator_phone_hours' => 'w poniedziałki 15:00–17:00'];
+        }
         if (mb_strlen(trim((string) $project->meta_description)) < 20) {
             $updates['meta_description'] = 'Wsparcie technologiczne dla NGO: Microsoft 365 i Google Workspace, strony WWW, bezpieczeństwo, hosting i dostępność WCAG — w stałym, miesięcznym abonamencie.';
         }
@@ -169,16 +172,17 @@ class NgoSupportContentSeeder extends Seeder
         $name = trim((string) ($project?->coordinator_name ?? ''));
         $email = trim((string) ($project?->coordinator_email ?? ''));
         $phone = trim((string) ($project?->coordinator_phone ?? ''));
+        $phoneHours = trim((string) ($project?->coordinator_phone_hours ?? ''));
         $contactCards = array_filter([
             $name !== '' ? ['person', 'Osoba kontaktowa', e($name)] : null,
             $email !== '' ? ['mail', 'E-mail', '<a href="mailto:'.e($email).'">'.e($email).'</a>'] : null,
-            $phone !== '' ? ['call', 'Telefon', '<a href="tel:'.e(preg_replace('/[^0-9+]/', '', $phone)).'">'.e($phone).'</a>'] : null,
+            $phone !== '' ? ['call', 'Telefon', '<a href="tel:'.e(preg_replace('/[^0-9+]/', '', $phone)).'">'.e($phone).'</a>'.($phoneHours !== '' ? '<br>Telefon czynny '.e($phoneHours) : '')] : null,
         ]);
         $contactHtml = implode('', array_map(fn ($c) => '<li class="ngo-card"><span class="ngo-ico material-symbols-outlined" aria-hidden="true">'.$c[0].'</span><h3>'.$c[1].'</h3><p>'.$c[2].'</p></li>', $contactCards));
 
         return [
             'wsparcie-ngo-kontakt' => ['Kontakt', 80, array_values(array_filter([
-                $p('Masz pytanie o wsparcie technologiczne dla NGO, zanim wypełnisz zgłoszenie? Napisz — chętnie doradzimy, od czego zacząć.', true),
+                $p('Masz pytanie o wsparcie technologiczne dla NGO, zanim wypełnisz zgłoszenie? Napisz albo zadzwoń — chętnie doradzimy, od czego zacząć.', true),
                 $contactHtml !== '' ? $html($css.'<ul class="ngo-cards" role="list">'.$contactHtml.'</ul>') : null,
                 $p('Jeśli wiesz już, czego potrzebujesz, najszybciej będzie przez formularz zgłoszeniowy.'),
                 $formButton,
