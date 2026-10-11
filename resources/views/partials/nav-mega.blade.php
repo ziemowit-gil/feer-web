@@ -46,16 +46,6 @@
     $groupCurrentId = request()->routeIs('projects.show') ? request()->route('project')?->id : null;
     $catCurrentId   = request()->routeIs('categories.show') ? request()->route('category')?->id : null;
 
-    // Trzecia kolumna menu działań: do 3 kafelków pod sobą z aktywnymi działaniami — sam tekst, bez grafiki. Brak kafelków = brak trzeciej kolumny.
-    $tiles = collect();
-    if ($isProjects) {
-        $featured = $groups->flatMap(fn ($c) => $c->publishedProjects)->unique('id')
-            ->filter(fn ($p) => ! $p->is_completed)->take(3);
-        foreach ($featured as $fp) {
-            $tiles->push(['kicker' => 'Polecane działanie', 'title' => $fp->title, 'url' => route('projects.show', $fp)]);
-        }
-    }
-
     $isCurrent = $item->isCurrent() || collect($entries)->contains(fn ($e) => $e[4])
         || collect($sections)->contains(fn ($s) => $s['heading']['current'] ?? false);
     $hasTarget = $isProjects ? true : ($item->url && $item->url !== '#');
@@ -139,7 +129,7 @@
         <span aria-hidden="true" style="position:absolute;left:0;right:0;top:-1.25rem;height:1.25rem"></span>
         {{-- Na niskich ekranach panel przewija się wewnątrz, zamiast wychodzić poza okno przeglądarki. --}}
         <div style="max-height:min(80vh, calc(100vh - 8rem));overflow-y:auto;overscroll-behavior:contain">
-        <div class="mx-auto grid max-w-6xl gap-8 px-4 py-6 {{ ! $isProjects || $tiles->isNotEmpty() ? 'lg:grid-cols-[1fr_16rem]' : '' }}">
+        <div class="mx-auto grid max-w-6xl gap-8 px-4 py-6 {{ ! $isProjects ? 'lg:grid-cols-[1fr_16rem]' : '' }}">
 
             @if ($isProjects)
                 {{-- Prosta zasada: kolumna = kategoria (link), pod nią lista jej projektów. --}}
@@ -271,22 +261,7 @@
                 </ul>
             @endif
 
-            {{-- Kolumna boczna: grafika promocyjna (lub wyróżnione działanie), opis, najbliższe szkolenie, CTA --}}
-            @if ($isProjects && $tiles->isNotEmpty())
-                <ul role="list" aria-label="Polecane" class="hidden flex-col gap-3 self-start lg:flex">
-                    @foreach ($tiles as $tile)
-                        <li>
-                            <a href="{{ $tile['url'] }}" class="group/t flex items-center gap-3 rounded-md bg-gray-50 px-4 py-3 transition hover:bg-brand-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">
-                                <span class="min-w-0 flex-1">
-                                    <span class="block text-xs font-bold uppercase tracking-wide text-brand-dark">{{ $tile['kicker'] }}</span>
-                                    <span class="mt-0.5 block text-sm font-bold leading-snug text-ink group-hover/t:text-brand-dark group-hover/t:underline group-hover/t:underline-offset-4">{{ $tile['title'] }}</span>
-                                </span>
-                                <span class="flex-none text-ink transition group-hover/t:translate-x-1 motion-reduce:transition-none" aria-hidden="true">→</span>
-                            </a>
-                        </li>
-                    @endforeach
-                </ul>
-            @endif
+            {{-- Kolumna boczna (poza menu działań): grafika promocyjna, opis, najbliższe szkolenie, CTA --}}
 
             @unless ($isProjects)
             <div class="hidden flex-col overflow-hidden rounded-xl bg-gray-50 lg:flex">
