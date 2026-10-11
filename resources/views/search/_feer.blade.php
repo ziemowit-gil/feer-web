@@ -63,7 +63,8 @@
                                             @if ($item['author'])<span><i class="fa-regular fa-user mr-1" aria-hidden="true"></i>{{ $item['author'] }}</span>@endif
                                         </p>
                                     @endif
-                                    @if ($item['snippet'] !== '')<p class="mt-1 text-[15px] leading-relaxed text-muted">{{ $item['snippet'] }}</p>@endif
+                                    @if (! empty($item['snippet_html']))<p class="mt-1 text-[15px] leading-relaxed text-muted">{!! $item['snippet_html'] !!}</p>
+                                    @elseif ($item['snippet'] !== '')<p class="mt-1 text-[15px] leading-relaxed text-muted">{{ $item['snippet'] }}</p>@endif
                                 </li>
                             @endforeach
                         </ul>

@@ -163,6 +163,22 @@
                     </ul>
                 @endif
             </section>
+
+            {{-- ── Najpopularniejsze (licznik wyświetleń) ──────────── --}}
+            <section aria-labelledby="blog-popular">
+                <h2 id="blog-popular" class="mb-3 text-lg font-bold text-ink">Najpopularniejsze</h2>
+                @if ($popular->isEmpty())
+                    <p class="rounded-md bg-gray-50 p-4 text-sm text-muted">Brak jeszcze wyświetleń opublikowanych wpisów.</p>
+                @else
+                    <ol role="list" class="divide-y divide-gray-200 rounded-md bg-gray-50 text-sm">
+                        @foreach ($popular as $a)
+                            <li class="p-3"><a href="{{ route('admin.wiem-feer.edit', $a) }}" class="{{ $link }}">{{ $a->title }}</a>
+                                <span class="block text-muted">{{ number_format((int) $a->views, 0, ',', ' ') }} {{ trans_choice('wyświetlenie|wyświetlenia|wyświetleń', (int) $a->views) }}</span></li>
+                        @endforeach
+                    </ol>
+                @endif
+                <p class="mt-2 text-xs text-muted">Liczone raz na sesję czytelnika, bez ciasteczek śledzących i adresów IP; wizyty zalogowanych redaktorów się nie liczą.</p>
+            </section>
         </div>
     @endif
 @endsection

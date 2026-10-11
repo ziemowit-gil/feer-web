@@ -33,7 +33,11 @@ final class ArticleListFilters
         'publikacja' => 'Data publikacji',
         'zmiana'     => 'Ostatnia zmiana',
         'komentarze' => 'Komentarze',
+        'wyswietlenia' => 'Wyświetlenia',
     ];
+
+    /** Kolumny, które przy pierwszym kliknięciu sortują malejąco (daty i liczniki). */
+    public const DESC_FIRST = ['publikacja', 'zmiana', 'komentarze', 'wyswietlenia'];
 
     public const PER_PAGE = [25, 50, 100];
 
@@ -190,6 +194,7 @@ final class ArticleListFilters
             'publikacja' => $query->orderBy('published_at', $dir),
             'zmiana'     => $query->orderBy('updated_at', $dir),
             'komentarze' => $query->orderBy('comments_count', $dir),
+            'wyswietlenia' => $query->orderBy('views', $dir),
             default      => $query->orderByDesc('created_at'),
         };
 
@@ -260,10 +265,10 @@ final class ArticleListFilters
         return route('admin.wiem-feer.index', $this->query($overrides));
     }
 
-    /** Link sortowania kolumny: pierwsze kliknięcie rosnąco (daty i komentarze — malejąco), drugie odwraca. */
+    /** Link sortowania kolumny: pierwsze kliknięcie rosnąco (daty i liczniki — malejąco), drugie odwraca. */
     public function sortUrl(string $column): string
     {
-        $default = in_array($column, ['publikacja', 'zmiana', 'komentarze'], true) ? 'desc' : 'asc';
+        $default = in_array($column, self::DESC_FIRST, true) ? 'desc' : 'asc';
         $dir = $this->values['sort'] === $column ? ($this->values['dir'] === 'asc' ? 'desc' : 'asc') : $default;
 
         return $this->url(['sort' => $column, 'dir' => $dir]);

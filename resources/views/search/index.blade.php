@@ -108,7 +108,10 @@
                                         @endif
                                     </div>
 
-                                    @if ($item['snippet'] !== '')
+                                    @if (! empty($item['snippet_html']))
+                                        {{-- Fragment z podświetloną frazą (escapowany w SearchController::highlightedSnippet). --}}
+                                        <p class="mt-0.5 text-sm text-muted">{!! $item['snippet_html'] !!}</p>
+                                    @elseif ($item['snippet'] !== '')
                                         <p class="mt-0.5 text-sm text-muted">{{ $item['snippet'] }}</p>
                                     @endif
                                 </li>

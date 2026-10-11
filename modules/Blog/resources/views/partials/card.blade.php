@@ -1,7 +1,7 @@
 {{--
     Karta wpisu w siatce Wiem FEER: zdjęcie (gdy jest), tytuł, data · kategoria, autorzy;
     bez zdjęcia — szare tło i zajawka. Płasko, bez ramek. Zdjęcie ma alt="" —
-    tytuł obok niesie tę samą informację. Zmienne: $article, opcjonalnie $headingLevel (3).
+    tytuł obok niesie tę samą informację. Zdjęcia autorów (32 px) — partials.card-authors. Zmienne: $article, opcjonalnie $headingLevel (3).
 --}}
 @php
     $hl = $headingLevel ?? 3;
@@ -19,9 +19,7 @@
         @if ($d)<time datetime="{{ $d->toDateString() }}">{{ $d->locale('pl')->translatedFormat('j F Y') }}</time>@endif
         @if ($article->category) · {{ $article->category->name }}@endif
     </p>
-    @if ($article->authorProfiles()->isNotEmpty() || filled($article->author_name))
-        <p class="mt-1 text-sm text-ink"><span class="sr-only">Autor: </span>@include('blog::partials.authors-inline', ['article' => $article])</p>
-    @endif
+    @include('blog::partials.card-authors', ['article' => $article, 'class' => 'mt-1'])
     @if (! $img && $article->excerpt)
         <p class="mt-2 text-sm leading-relaxed text-ink">{{ \Illuminate\Support\Str::limit($article->excerpt, 140) }}</p>
     @endif

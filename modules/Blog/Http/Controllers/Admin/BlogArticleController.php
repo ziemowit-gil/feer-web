@@ -164,6 +164,34 @@ class BlogArticleController extends Controller
         return response()->json(['html' => $html] + MarkdownRenderer::stats($html));
     }
 
+    /**
+     * Podpowiedzi pola „Tagi" (combobox w formularzu): istniejące tagi zaczynające się
+     * od wpisanego fragmentu (bez względu na wielkość liter), najpierw najczęściej używane.
+     */
+    public function tagSuggestions(Request $request)
+    {
+        $q = mb_substr(trim((string) $request->query('q', '')), 0, 60);
+        $like = str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $q) . '%';
+
+        $slug = Str::slug($q);
+
+        $tags = BlogTag::query()
+            // Nazwa od wpisanego fragmentu; slug — żeby „sr" znalazło też „Środowisko"
+            // (LIKE w SQLite nie zrównuje wielkości liter poza ASCII).
+            ->when($q !== '', fn ($query) => $query->where(fn ($w) => $w
+                ->whereRaw("name LIKE ? ESCAPE '\\'", [$like])
+                ->when($slug !== '', fn ($o) => $o->orWhere('slug', 'like', $slug . '%'))))
+            ->withCount('articles')
+            ->orderByDesc('articles_count')
+            ->orderBy('name')
+            ->limit(10)
+            ->get(['id', 'name', 'slug']);
+
+        return response()->json([
+            'tags' => $tags->map(fn (BlogTag $t) => ['name' => $t->name, 'slug' => $t->slug, 'count' => (int) $t->articles_count])->values(),
+        ]);
+    }
+
     /** „Przełącz na Markdown": konwersja bieżącego HTML z edytora wizualnego. */
     public function convertToMarkdown(Request $request)
     {

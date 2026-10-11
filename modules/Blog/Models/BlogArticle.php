@@ -80,6 +80,7 @@ class BlogArticle extends Model
         'is_featured'      => 'boolean',
         'image_decorative' => 'boolean',
         'published_at'     => 'datetime',
+        'views'            => 'integer',
     ];
 
     public function getRouteKeyName(): string
@@ -156,6 +157,12 @@ class BlogArticle extends Model
     public function scopeListed(Builder $query): Builder
     {
         return $query->published()->where('is_disabled', false);
+    }
+
+    /** Najczęściej czytane (licznik `views`), przy remisie nowsze wyżej. */
+    public function scopePopular(Builder $query): Builder
+    {
+        return $query->where('views', '>', 0)->orderByDesc('views')->orderByDesc('published_at')->orderByDesc('id');
     }
 
     /** Kolejność „najnowsze najpierw". */

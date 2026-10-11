@@ -67,7 +67,28 @@ class BlogDashboardTest extends BlogTestCase
             ->assertSee('Czekam na moderację')
             ->assertSee('Nowy wpis')
             ->assertSee('Zaplanowany wpis')
-            ->assertDontSee('Najpopularniejsze');
+            ->assertSee('Najpopularniejsze')
+            ->assertSee('Brak jeszcze wyświetleń opublikowanych wpisów.');
+    }
+
+    public function test_pulpit_pokazuje_najpopularniejsze_opublikowane_wpisy(): void
+    {
+        $hit = $this->article('Hit bloga');
+        $second = $this->article('Drugi wynik');
+        $draft = $this->article('Szkic z wyświetleniami', ['is_published' => false, 'published_at' => null]);
+        DB::connection('blog')->table('blog_articles')->where('id', $hit->id)->update(['views' => 120]);
+        DB::connection('blog')->table('blog_articles')->where('id', $second->id)->update(['views' => 2]);
+        DB::connection('blog')->table('blog_articles')->where('id', $draft->id)->update(['views' => 500]);
+
+        $html = $this->actingAs($this->admin())->get(route('admin.wiem.dashboard'))->assertOk()->getContent();
+        $section = substr($html, strpos($html, 'id="blog-popular"'));
+        $section = substr($section, 0, strpos($section, '</section>'));
+
+        $this->assertStringContainsString('Hit bloga</a>', $section);
+        $this->assertStringContainsString('120 wyświetleń', $section);
+        $this->assertStringContainsString('2 wyświetlenia', $section);
+        $this->assertStringNotContainsString('Szkic z wyświetleniami', $section);
+        $this->assertLessThan(strpos($section, 'Drugi wynik'), strpos($section, 'Hit bloga'));
     }
 
     public function test_brak_bazy_bloga_pokazuje_komunikat(): void

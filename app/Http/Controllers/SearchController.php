@@ -85,15 +85,18 @@ class SearchController extends Controller
                     ->map(fn ($m) => $this->item($m->title, route('materials.index'), $m->description, $m->created_at, null, $m->is_archival));
             }
 
-            // Blog działa na osobnym połączeniu — gdyby było niedostępne, nie
-            // przerywamy całej wyszukiwarki.
+            // Wiem FEER (blog) działa na osobnym połączeniu — gdy baza bloga jest
+            // niedostępna (brak pliku/tabel), pomijamy grupę zamiast przerywać wyszukiwarkę.
             if ($typ === '') {
                 try {
-                    $groups['Wiem FEER (blog)'] = BlogArticle::where('is_published', true)->where('is_disabled', false)
-                        ->where('published_at', '<=', now())
-                        ->where(fn ($w) => $w->where('title', 'like', $like)->orWhere('excerpt', 'like', $like)->orWhere('body', 'like', $like))
-                        ->orderByDesc('published_at')->limit(self::PER_GROUP)->get()
-                        ->map(fn ($a) => $this->item($a->title, route('blog.show', $a), $a->excerpt ?: $a->body, $a->published_at, $a->author_name));
+                    $groups['Wiem FEER'] = BlogArticle::listed()
+                        ->with(['author', 'coAuthors'])
+                        ->where(fn ($w) => $w->whereRaw("title LIKE ? ESCAPE '\\'", [$like])
+                            ->orWhereRaw("excerpt LIKE ? ESCAPE '\\'", [$like])
+                            ->orWhereRaw("body LIKE ? ESCAPE '\\'", [$like]))
+                        ->latestFirst()->limit(self::PER_GROUP)->get()
+                        ->map(fn (BlogArticle $a) => $this->item($a->title, route('blog.show', $a), null, $a->publishedDate(), $a->authorLine() ?: null)
+                            + ['snippet_html' => $this->highlightedSnippet($q, (string) $a->excerpt, (string) $a->body)]);
                 } catch (\Throwable $e) {
                     report($e);
                 }
@@ -117,6 +120,35 @@ class SearchController extends Controller
             'author' => $author,
             'archival' => $archival,
         ];
+    }
+
+    /**
+     * Fragment tekstu z podświetloną frazą (<mark>): zajawka, gdy zawiera frazę,
+     * w przeciwnym razie okolica pierwszego trafienia w treści. Tekst jest
+     * escapowany przed wstawieniem znaczników, więc wynik można wypisać przez {!! !!}.
+     */
+    private function highlightedSnippet(string $q, string $excerpt, string $body, int $length = 200): string
+    {
+        $plain = fn (string $html) => trim(preg_replace('/\s+/u', ' ', html_entity_decode(strip_tags($html), ENT_QUOTES | ENT_HTML5, 'UTF-8')));
+        $excerpt = $plain($excerpt);
+        $body = $plain($body);
+
+        if ($excerpt !== '' && mb_stripos($excerpt, $q) !== false) {
+            $text = Str::limit($excerpt, $length);
+        } elseif (($pos = mb_stripos($body, $q)) !== false) {
+            $start = max(0, $pos - (int) floor(($length - mb_strlen($q)) / 2));
+            $text = ($start > 0 ? '… ' : '') . mb_substr($body, $start, $length) . ($start + $length < mb_strlen($body) ? ' …' : '');
+        } else {
+            $text = Str::limit($excerpt !== '' ? $excerpt : $body, $length);
+        }
+
+        // Dzielimy surowy tekst na trafienia i resztę, escapujemy każdy kawałek osobno —
+        // fraza nie trafi w środek encji HTML (np. „amp” w &amp;).
+        $pieces = preg_split('/(' . preg_quote($q, '/') . ')/iu', $text, -1, PREG_SPLIT_DELIM_CAPTURE) ?: [$text];
+
+        return collect($pieces)
+            ->map(fn (string $piece, int $i) => $i % 2 === 1 ? '<mark>' . e($piece) . '</mark>' : e($piece))
+            ->implode('');
     }
 
     /** Zabezpiecz znaki specjalne LIKE (% _ \) w zapytaniu użytkownika. */

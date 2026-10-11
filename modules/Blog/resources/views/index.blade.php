@@ -91,9 +91,7 @@
                                 <h3 class="mt-2 text-2xl font-bold leading-tight text-ink">
                                     <a href="{{ route('blog.show', $featured) }}" class="hover:underline hover:underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">{{ $featured->title }}</a>
                                 </h3>
-                                @if ($featured->authorProfiles()->isNotEmpty() || filled($featured->author_name))
-                                    <p class="mt-2 text-sm text-ink"><span class="sr-only">Autor: </span>@include('blog::partials.authors-inline', ['article' => $featured])</p>
-                                @endif
+                                @include('blog::partials.card-authors', ['article' => $featured, 'class' => 'mt-2'])
                                 @if ($featured->excerpt)
                                     <p class="mt-3 leading-relaxed text-ink">{{ $featured->excerpt }}</p>
                                 @endif

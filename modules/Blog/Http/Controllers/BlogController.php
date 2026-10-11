@@ -35,6 +35,12 @@ class BlogController extends Controller
     /** Tagów w kolumnie bocznej listy. */
     private const SIDEBAR_TAGS = 15;
 
+    /** Wpisów w sekcji „Najpopularniejsze”. */
+    public const POPULAR = 5;
+
+    /** Klucz sesji z wpisami już policzonymi w tej sesji. */
+    public const VIEWED_SESSION_KEY = 'blog_viewed';
+
     /** Wpisów w kanale RSS. */
     private const FEED_LIMIT = 30;
 
@@ -76,8 +82,10 @@ class BlogController extends Controller
             ->paginate(self::PER_PAGE)
             ->withQueryString();
 
+        $popular = BlogArticle::listed()->popular()->limit(self::POPULAR)->get(['id', 'title', 'slug', 'published_at', 'views']);
+
         return view('blog::index', array_merge(
-            compact('articles', 'featured', 'category', 'tag', 'author', 'q', 'filtered'),
+            compact('articles', 'featured', 'category', 'tag', 'author', 'q', 'filtered', 'popular'),
             $this->sidebar(),
         ));
     }
@@ -122,6 +130,10 @@ class BlogController extends Controller
         $preview = $this->isPreviewRequest($request);
         abort_unless($article->isVisible() || $preview, 404);
 
+        if (! $preview) {
+            $this->countView($request, $article);
+        }
+
         $article->load(['approvedComments.replies', 'category', 'tags', 'author', 'coAuthors']);
 
         [$body, $toc] = TableOfContents::inject($article->body);
@@ -136,6 +148,30 @@ class BlogController extends Controller
             'previous' => $this->neighbour($article, 'previous'),
             'next'     => $this->neighbour($article, 'next'),
         ], $this->sidebar()));
+    }
+
+    /**
+     * Licznik wyświetleń przyjazny prywatności: najwyżej raz na sesję i wpis
+     * (identyfikator wpisu w istniejącej sesji — bez nowych ciasteczek i bez IP),
+     * z pominięciem zalogowanych użytkowników panelu i wpisów wyłączonych.
+     */
+    private function countView(Request $request, BlogArticle $article): void
+    {
+        if (auth('web')->check() || $article->isDisabled() || ! $request->hasSession()) {
+            return;
+        }
+
+        $session = $request->session();
+        $viewed = array_map('intval', (array) $session->get(self::VIEWED_SESSION_KEY, []));
+        if (in_array((int) $article->getKey(), $viewed, true)) {
+            return;
+        }
+
+        // Bez zmiany updated_at — wyświetlenie to nie edycja wpisu.
+        BlogArticle::query()->whereKey($article->getKey())->toBase()->increment('views');
+        $viewed[] = (int) $article->getKey();
+        // Ograniczenie rozmiaru sesji przy bardzo długim czytaniu.
+        $session->put(self::VIEWED_SESSION_KEY, array_slice($viewed, -200));
     }
 
     /** Zapytanie bazowe list: widoczne wpisy z danymi do kart. */

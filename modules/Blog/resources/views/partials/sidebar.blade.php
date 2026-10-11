@@ -3,7 +3,8 @@
     kategorie (panel jak partials.section-nav — bieżąca na jasnym tle marki,
     pogrubiona, z aria-current), popularne tagi (zwykłe odnośniki), newsletter, RSS.
     Na desktopie przyklejona; na telefonie pod listą.
-    Zmienne: $categories, $tags, $newsletter, opcjonalnie $q, $category, $tag, $searchId.
+    Najpopularniejsze (licznik wyświetleń) — tylko gdy kontroler przekaże $popular (lista wpisów).
+    Zmienne: $categories, $tags, $newsletter, opcjonalnie $q, $category, $tag, $searchId, $popular.
 --}}
 @php
     $currentCategory = $category ?? null;
@@ -38,6 +39,18 @@
                 @endforeach
             </ul>
         </nav>
+    @endif
+
+    @if (isset($popular) && $popular->isNotEmpty())
+        <section class="rounded-md bg-gray-50 p-5" aria-labelledby="blog-popular-heading">
+            <h2 id="blog-popular-heading" class="text-lg font-bold text-ink">Najpopularniejsze</h2>
+            <span class="mb-4 mt-2 block h-1 w-14 bg-brand" aria-hidden="true"></span>
+            <ol class="list-decimal space-y-2 pl-5 text-sm marker:text-ink">
+                @foreach ($popular as $item)
+                    <li><a href="{{ route('blog.show', $item) }}" class="{{ $sbLink }}">{{ $item->title }}</a></li>
+                @endforeach
+            </ol>
+        </section>
     @endif
 
     @if ($tags->isNotEmpty())

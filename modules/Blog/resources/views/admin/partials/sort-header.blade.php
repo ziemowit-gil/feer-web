@@ -5,7 +5,7 @@
 --}}
 @php
     $aria = $filters->ariaSort($col);
-    $next = $aria === 'ascending' ? 'malejąco' : ($aria === 'descending' ? 'rosnąco' : (in_array($col, ['publikacja', 'zmiana', 'komentarze'], true) ? 'malejąco' : 'rosnąco'));
+    $next = $aria === 'ascending' ? 'malejąco' : ($aria === 'descending' ? 'rosnąco' : (in_array($col, \Modules\Blog\Support\ArticleListFilters::DESC_FIRST, true) ? 'malejąco' : 'rosnąco'));
 @endphp
 <th scope="col" class="px-3 py-3" @if ($aria) aria-sort="{{ $aria }}" @endif>
     <a href="{{ $filters->sortUrl($col) }}" class="inline-flex items-center gap-1 text-ink hover:text-brand-dark hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">

@@ -100,13 +100,16 @@
     .md-dialog { width: min(40rem, calc(100vw - 2rem)); border-radius: 0.5rem; padding: 0; }
     .md-pick[aria-pressed="true"] { outline: 3px solid var(--color-brand-dark); outline-offset: 2px; }
     .seo-preview-title { color: #1a0dab; }
+    .tag-option { cursor: pointer; padding: 0.5rem 0.75rem; color: var(--color-ink); }
+    .tag-option[aria-selected="true"], .tag-option:hover { background: var(--color-brand-light); outline: 2px solid var(--color-brand-dark); outline-offset: -2px; }
     .seo-preview-url { color: #006621; }
 </style>
 
 <form method="POST" id="blog-article-form" novalidate
     action="{{ $article->exists ? route('admin.wiem-feer.update', $article) : route('admin.wiem-feer.store') }}"
     enctype="multipart/form-data" class="blog-editor"
-    data-first-error-tab="{{ $firstErrorTab }}" data-article-key="{{ $article->exists ? $article->id : 'new' }}">
+    data-first-error-tab="{{ $firstErrorTab }}" data-article-key="{{ $article->exists ? $article->id : 'new' }}"
+    @if (! $hasWysiwyg || $format !== 'html') data-skip-heading-check @endif>
     @csrf
     @if ($article->exists) @method('PUT') @endif
 
@@ -382,10 +385,16 @@
                     </div>
                     <div>
                         <label for="tags" class="mb-1 block text-sm font-bold">Tagi <span class="font-normal text-muted">(po przecinku)</span></label>
-                        <input type="text" id="tags" name="tags" value="{{ old('tags', $tagsValue) }}" placeholder="np. dostępność, WCAG, edukacja"
-                            aria-describedby="tags-help" {{ $invalid('tags') }} class="{{ $input }}">
+                        {{-- Combobox z podpowiedziami istniejących tagów (JS); bez JS zwykłe pole „po przecinku". --}}
+                        <div class="relative" data-tag-combobox data-url="{{ route('admin.wiem-feer.tagi') }}">
+                            <input type="text" id="tags" name="tags" value="{{ old('tags', $tagsValue) }}" placeholder="np. dostępność, WCAG, edukacja"
+                                autocomplete="off" aria-describedby="tags-help" {{ $invalid('tags') }} class="{{ $input }}">
+                            <ul id="tags-listbox" role="listbox" aria-label="Podpowiedzi tagów" hidden
+                                class="absolute left-0 right-0 z-20 mt-1 max-h-64 overflow-auto rounded-md border border-gray-300 bg-white py-1 text-sm shadow-lg"></ul>
+                            <p class="sr-only" role="status" aria-live="polite" data-tag-status></p>
+                        </div>
                         <p id="tags-help" class="mt-1 text-xs text-muted">
-                            Nowe tagi utworzą się same.
+                            Nowe tagi utworzą się same.<span data-tag-hint hidden> Podczas pisania pojawią się podpowiedzi istniejących tagów — wybierz strzałkami i Enterem.</span>
                             @if ($tagsAll->isNotEmpty()) Istniejące: {{ $tagsAll->take(30)->join(', ') }}@endif
                         </p>
                         @error('tags') <p class="{{ $err }}">{{ $message }}</p> @enderror
@@ -982,11 +991,60 @@
     }
 
     // ── Przełączanie formatu treści ──
+    // Wspólne sprawdzenie nagłówków edytora wizualnego (admin.partials.editor) czytałoby
+    // nieaktualną treść WYSIWYG — w trybie Markdown je wyłączamy (data-skip-heading-check),
+    // a nagłówki Markdown sprawdza osobny kod niżej.
+    function syncHeadingCheck() {
+        var htmlPane = form.querySelector('[data-format-pane="html"]');
+        form.toggleAttribute('data-skip-heading-check', !htmlPane || htmlPane.hidden);
+    }
     function setFormat(f) {
         formatInput.value = f;
         form.querySelectorAll('[data-format-pane]').forEach(function (p) { p.hidden = p.dataset.formatPane !== f; });
+        syncHeadingCheck();
         if (sideFormat) sideFormat.textContent = f === 'markdown' ? 'Markdown' : 'Wizualny (HTML)';
     }
+    syncHeadingCheck();
+
+    // ── Nagłówki w Markdown: H1 zarezerwowany na tytuł, bez przeskoków poziomów ──
+    function markdownHeadingProblems(text) {
+        var problems = [];
+        var prev = 1; // tytuł artykułu to H1
+        var inFence = false;
+        text.split(/\r?\n/).forEach(function (line) {
+            if (/^\s{0,3}(```|~~~)/.test(line)) { inFence = !inFence; return; }
+            if (inFence) return;
+            var m = /^\s{0,3}(#{1,6})(?:[ \t]+(.*?))?[ \t]*#*[ \t]*$/.exec(line);
+            var html = /^\s*<h([1-6])[\s>]/i.exec(line);
+            var level = m ? m[1].length : (html ? parseInt(html[1], 10) : 0);
+            if (!level) return;
+            var label = m ? (m[2] || '').trim() : '';
+            if (level === 1) problems.push('Nagłówek H1' + (label ? ' „' + label + '”' : '') + ' — H1 to tytuł artykułu, w treści zacznij od H2 (##).');
+            else if (level - prev > 1) problems.push('Przeskok w nagłówkach: H' + prev + ' → H' + level + (label ? ' („' + label + '”)' : '') + '.');
+            if (m && !label) problems.push('Pusty nagłówek H' + level + '.');
+            prev = level;
+        });
+        return problems.filter(function (p, i, a) { return a.indexOf(p) === i; });
+    }
+    var mdHeadingConfirmed = false;
+    // Faza przechwytywania: przed innymi obsługami „submit" (np. usuwaniem kopii roboczej).
+    form.addEventListener('submit', function (e) {
+        var mdPane = form.querySelector('[data-format-pane="markdown"]');
+        if (!ta || !mdPane || mdPane.hidden || mdHeadingConfirmed) { mdHeadingConfirmed = false; return; }
+        var problems = markdownHeadingProblems(ta.value);
+        if (!problems.length) return;
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        var submitter = e.submitter || null;
+        confirmBox('Wykryto problemy z nagłówkami:\n' + problems.map(function (p) { return '• ' + p; }).join('\n') + '\n\nZapisać mimo to?')
+            .then(function (ok) {
+                if (!ok) { activate('tresc', false); ta.focus(); return; }
+                mdHeadingConfirmed = true;
+                if (form.requestSubmit) form.requestSubmit(submitter && submitter.form === form ? submitter : undefined);
+                else form.submit();
+            });
+    }, true);
+
     var toMd = form.querySelector('[data-switch-to-markdown]');
     if (toMd) {
         toMd.addEventListener('click', function () {
@@ -1037,6 +1095,118 @@
             });
         });
     }
+
+    // ── Tagi: combobox z podpowiedziami (WAI-ARIA 1.2, lista po przecinku nadal działa) ──
+    (function tagCombobox() {
+        var box = form.querySelector('[data-tag-combobox]');
+        if (!box || !window.fetch) return;
+        var input = document.getElementById('tags');
+        var list = document.getElementById('tags-listbox');
+        var status = box.querySelector('[data-tag-status]');
+        var hint = form.querySelector('[data-tag-hint]');
+        var url = box.dataset.url;
+        var options = [];
+        var active = -1;
+        var timer = null;
+        var reqId = 0;
+
+        input.setAttribute('role', 'combobox');
+        input.setAttribute('aria-autocomplete', 'list');
+        input.setAttribute('aria-expanded', 'false');
+        input.setAttribute('aria-controls', 'tags-listbox');
+        if (hint) hint.hidden = false;
+
+        function parts() { return input.value.split(','); }
+        function current() { var p = parts(); return p[p.length - 1].trim(); }
+        function chosen() {
+            var p = parts(); p.pop();
+            return p.map(function (t) { return t.trim().toLowerCase(); }).filter(Boolean);
+        }
+        function close() {
+            list.hidden = true;
+            list.innerHTML = '';
+            options = [];
+            active = -1;
+            input.setAttribute('aria-expanded', 'false');
+            input.removeAttribute('aria-activedescendant');
+        }
+        function setActive(i) {
+            active = i;
+            options.forEach(function (li, j) { li.setAttribute('aria-selected', j === i ? 'true' : 'false'); });
+            if (i >= 0 && options[i]) {
+                input.setAttribute('aria-activedescendant', options[i].id);
+                options[i].scrollIntoView({ block: 'nearest' });
+            } else {
+                input.removeAttribute('aria-activedescendant');
+            }
+        }
+        function pick(name) {
+            var p = parts(); p.pop();
+            var kept = p.map(function (t) { return t.trim(); }).filter(Boolean);
+            kept.push(name);
+            input.value = kept.join(', ') + ', ';
+            close();
+            status.textContent = 'Dodano tag ' + name + '.';
+            input.focus();
+            input.setSelectionRange(input.value.length, input.value.length);
+        }
+        function render(tags) {
+            var taken = chosen();
+            tags = tags.filter(function (t) { return taken.indexOf(t.name.toLowerCase()) === -1; });
+            list.innerHTML = '';
+            options = tags.map(function (t, i) {
+                var li = document.createElement('li');
+                li.id = 'tags-option-' + i;
+                li.setAttribute('role', 'option');
+                li.setAttribute('aria-selected', 'false');
+                li.className = 'tag-option';
+                li.textContent = t.name;
+                var c = document.createElement('span');
+                c.className = 'ml-1 text-muted';
+                c.textContent = '(' + t.count + ')';
+                c.setAttribute('aria-hidden', 'true');
+                li.appendChild(c);
+                // mousedown zamiast click — pole nie traci fokusu przed wyborem.
+                li.addEventListener('mousedown', function (e) { e.preventDefault(); pick(t.name); });
+                list.appendChild(li);
+                return li;
+            });
+            active = -1;
+            if (!options.length) { close(); status.textContent = ''; return; }
+            list.hidden = false;
+            input.setAttribute('aria-expanded', 'true');
+            status.textContent = options.length + (options.length === 1 ? ' podpowiedź' : ' podpowiedzi') + '. Strzałki w dół i w górę wybierają, Enter dodaje tag.';
+        }
+        function query() {
+            var q = current();
+            if (q.length < 1) { close(); return; }
+            var my = ++reqId;
+            fetch(url + '?q=' + encodeURIComponent(q), { credentials: 'same-origin', headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' } })
+                .then(function (r) { if (!r.ok) throw new Error(); return r.json(); })
+                .then(function (data) { if (my === reqId && document.activeElement === input) render(data.tags || []); })
+                .catch(function () { close(); });
+        }
+
+        input.addEventListener('input', function () { clearTimeout(timer); timer = setTimeout(query, 200); });
+        input.addEventListener('keydown', function (e) {
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                if (list.hidden) { query(); return; }
+                setActive(active + 1 >= options.length ? 0 : active + 1);
+            } else if (e.key === 'ArrowUp') {
+                if (list.hidden) return;
+                e.preventDefault();
+                setActive(active - 1 < 0 ? options.length - 1 : active - 1);
+            } else if (e.key === 'Enter') {
+                if (!list.hidden && active >= 0) { e.preventDefault(); pick(options[active].firstChild.textContent); }
+            } else if (e.key === 'Escape') {
+                if (!list.hidden) { e.preventDefault(); e.stopPropagation(); close(); }
+            } else if (e.key === 'Tab') {
+                close();
+            }
+        });
+        input.addEventListener('blur', function () { setTimeout(close, 100); });
+    })();
 })();
 </script>
 @endsection

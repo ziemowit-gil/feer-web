@@ -135,6 +135,14 @@ class HomeController extends Controller
     /** Wyświetla stronę główną z danymi wszystkich włączonych modułów (hero, aktualności, ankieta itp.). */
     public function index()
     {
+        // Własna domena bloga Wiem FEER (np. wiem.feer.org.pl): strona główna to lista wpisów.
+        // Na domenie głównej i innych witrynach nic się nie zmienia.
+        if (class_exists(\Modules\Blog\Support\BlogSite::class) && \Modules\Blog\Support\BlogSite::servesOwnDomain(request())) {
+            request()->attributes->set('blog_site', true);
+
+            return app(\Modules\Blog\Http\Controllers\BlogController::class)->index(request());
+        }
+
         $settings = SiteSetting::current();
 
         $slides = $settings->isModuleEnabled('hero') ? HeroSlide::forCurrentSite()->orderBy('order')->get() : collect();

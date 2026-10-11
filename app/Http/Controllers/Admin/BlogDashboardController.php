@@ -12,10 +12,11 @@ use Modules\Blog\Models\BlogComment;
 /**
  * Panel admin: osobny pulpit bloga „Wiem FEER" — liczniki wpisów, lista „Do zrobienia”
  * (moderacja, stare szkice, braki SEO/dostępności, profile autorów), zaplanowane
- * publikacje i ostatnio edytowane wpisy.
+ * publikacje, ostatnio edytowane i najpopularniejsze wpisy.
  *
  * Blog ma własną bazę (połączenie `blog`) — gdy jej brak, pulpit pokazuje komunikat
- * zamiast błędu. Liczba wyświetleń nie jest śledzona, więc nie ma sekcji „Najpopularniejsze”.
+ * zamiast błędu. „Najpopularniejsze” korzystają z licznika `views` (raz na sesję i wpis,
+ * bez ciasteczek i IP — patrz BlogController::countView()).
  *
  * Metody: index().
  *
@@ -28,6 +29,9 @@ class BlogDashboardController extends Controller
 
     /** Zasięg paska nadchodzących publikacji (dni). */
     public const CALENDAR_DAYS = 14;
+
+    /** Wpisów w sekcji „Najpopularniejsze”. */
+    public const POPULAR = 5;
 
     /** Wyświetla pulpit bloga. */
     public function index()
@@ -89,6 +93,7 @@ class BlogDashboardController extends Controller
 
         $scheduled = BlogArticle::query()->status('scheduled')->orderBy('published_at')->limit(10)->get();
         $recent = BlogArticle::orderByDesc('updated_at')->limit(5)->get();
+        $popular = BlogArticle::query()->status('published')->popular()->limit(self::POPULAR)->get();
 
         // Pasek najbliższych dni z zaplanowanymi wpisami.
         $byDay = BlogArticle::query()->status('scheduled')
@@ -102,7 +107,7 @@ class BlogDashboardController extends Controller
             return ['date' => $day, 'articles' => $byDay->get($day->toDateString(), collect())];
         });
 
-        return compact('stats', 'pendingComments', 'staleDrafts', 'checklist', 'incompleteAuthors', 'scheduled', 'recent', 'calendar');
+        return compact('stats', 'pendingComments', 'staleDrafts', 'checklist', 'incompleteAuthors', 'scheduled', 'recent', 'popular', 'calendar');
     }
 
     /**

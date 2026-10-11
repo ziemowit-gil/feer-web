@@ -54,6 +54,8 @@ Route::middleware(['auth', 'verified', '2fa', 'module-access:blog'])
             ->name('wiem-feer.podglad-markdown');
         Route::post('wiem-feer/html-na-markdown', [AdminBlogArticleController::class, 'convertToMarkdown'])
             ->name('wiem-feer.html-na-markdown');
+        Route::get('wiem-feer/tagi', [AdminBlogArticleController::class, 'tagSuggestions'])
+            ->name('wiem-feer.tagi');
         Route::post('wiem-feer/zbiorczo', [AdminBlogArticleController::class, 'bulk'])
             ->name('wiem-feer.zbiorczo');
         Route::resource('wiem-feer', AdminBlogArticleController::class)

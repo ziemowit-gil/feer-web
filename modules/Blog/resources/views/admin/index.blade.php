@@ -208,6 +208,7 @@
                     @include('blog::admin.partials.sort-header', ['col' => 'publikacja', 'text' => 'Data publikacji'])
                     @include('blog::admin.partials.sort-header', ['col' => 'zmiana', 'text' => 'Ostatnia zmiana'])
                     @include('blog::admin.partials.sort-header', ['col' => 'komentarze', 'text' => 'Komentarze'])
+                    @include('blog::admin.partials.sort-header', ['col' => 'wyswietlenia', 'text' => 'Wyświetlenia'])
                     <th scope="col" class="px-3 py-3 text-right">Akcje</th>
                 </tr>
             </thead>
@@ -254,6 +255,7 @@
                                 <a href="{{ route('admin.komentarze-bloga.index') }}" class="block text-xs {{ $link }}">{{ $article->pending_comments_count }} do moderacji</a>
                             @endif
                         </td>
+                        <td class="px-3 py-3 text-ink tabular-nums">{{ number_format((int) $article->views, 0, ',', ' ') }}</td>
                         <td class="px-3 py-3">
                             <div class="flex justify-end gap-1">
                                 @if ($article->isVisible())
@@ -291,7 +293,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="10" class="px-4 py-8 text-center text-ink">
+                        <td colspan="11" class="px-4 py-8 text-center text-ink">
                             @if ($filters->active())
                                 Brak artykułów spełniających filtry. <a href="{{ route('admin.wiem-feer.index') }}" class="{{ $link }}">Wyczyść filtry</a>
                             @else

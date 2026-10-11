@@ -2434,6 +2434,9 @@
     form.dataset.headingCheckAttached = '1';
 
     form.addEventListener('submit', async function (e) {
+        // Formularz może wyłączyć sprawdzenie (np. blog w trybie Markdown — treść
+        // edytora wizualnego jest wtedy nieaktualna): atrybut data-skip-heading-check.
+        if (form.hasAttribute('data-skip-heading-check')) return;
         var getContent = window['__getContent_{{ $editorId }}'];
         if (!getContent) return;
         var html = getContent();
