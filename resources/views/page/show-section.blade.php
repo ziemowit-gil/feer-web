@@ -3,7 +3,7 @@
 {{--
     Szablon „Strona działu" (układ portalu miejskiego): lewa, szeroka kolumna —
     slider ze zdjęć strony, aktualności (wyróżniona duża + siatka po trzy), treść;
-    prawa kolumna — menu działu (podstrony). Płasko: bez ramek i etykiet, kolory
+    prawa kolumna — nawigacja po podstronach (menu działu, przełącznik „Nawigacja po podstronach”). Płasko: bez ramek i etykiet, kolory
     firmowe. Slider: przycisk wstrzymania (WCAG 2.2.2), strzałki, kropki,
     zatrzymanie przy najechaniu/fokusie, bez autoodtwarzania przy ograniczonym ruchu.
     Dane: $page, $sectionPosts (PageController::sectionPosts — aktualności albo Wiem FEER).
@@ -30,6 +30,8 @@
         $ownChildren = $page->publishedChildren()->where('type', '!=', 'about_person')->get();
         $sectionRoot = $ownChildren->isNotEmpty() ? $page : ($page->parent ?: $page);
         $menuSiblings = $ownChildren->isNotEmpty() ? $ownChildren : $page->menuSiblings();
+        // Menu działu w prawej kolumnie = „Nawigacja po podstronach” (to samo ustawienie co w innych szablonach).
+        $showSectionNav = ($page->show_side_nav ?? true) && $menuSiblings->isNotEmpty();
         $settings = $page->layout_data ?? [];
         $slides = ($settings['slider'] ?? true)
             ? $page->images->filter(fn ($i) => $i->image_url)->sortBy('order')->values()
@@ -122,10 +124,12 @@
                 @include('partials.attachments-list', ['attachments' => $page->attachments])
             </div>
 
-            {{-- ===== MENU DZIAŁU + NEWSLETTER ===== --}}
-            @if ($menuSiblings->isNotEmpty() || $showNewsletter)
+            {{-- ===== NAWIGACJA PO PODSTRONACH + NEWSLETTER ===== --}}
+            @if ($showSectionNav || $showNewsletter)
                 <aside class="space-y-6 lg:sticky lg:top-24 lg:self-start" aria-label="Kolumna boczna działu">
-                    @include('partials.section-nav', ['page' => $page, 'menuSiblings' => $menuSiblings, 'sectionRoot' => $sectionRoot])
+                    @if ($showSectionNav)
+                        @include('partials.section-nav', ['page' => $page, 'menuSiblings' => $menuSiblings, 'sectionRoot' => $sectionRoot])
+                    @endif
                     @if ($showNewsletter)
                         {{-- Zapis na newsletter: teksty ze strony albo z firmowego formularza (PageController::sectionNewsletter). --}}
                         <section class="rounded-md bg-brand-light p-5" aria-labelledby="section-newsletter-heading">

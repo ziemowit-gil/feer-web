@@ -78,7 +78,7 @@ class Page extends Model
         'hero'    => 'Z hero (kolorowy baner z tytułem nad treścią)',
         'landing' => 'Landing page (duży hero, bez okruszków nawigacyjnych)',
         'portal'  => 'Portal (hero ze zdjęciem, treść + sidebar, galeria, kontakt)',
-        'section' => 'Strona działu (slider ze zdjęć strony, aktualności, menu działu w prawej kolumnie)',
+        'section' => 'Strona działu (slider ze zdjęć strony, aktualności, nawigacja po podstronach w prawej kolumnie)',
         'minimal' => 'Minimalna (bez nagłówka i stopki serwisu)',
     ];
 

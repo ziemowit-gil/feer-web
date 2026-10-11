@@ -1,5 +1,5 @@
 {{--
-    Menu działu w prawej kolumnie szablonu „Strona działu": tytuł działu
+    Nawigacja po podstronach (menu działu) w prawej kolumnie szablonu „Strona działu": tytuł działu
     i podstrony jako pełnej szerokości odnośniki ze strzałką. Płasko: szare
     tło, bez linii; bieżąca strona pogrubiona, na jasnym tle marki,
     z aria-current. Zmienne: $page, $menuSiblings, opcjonalnie $sectionRoot.

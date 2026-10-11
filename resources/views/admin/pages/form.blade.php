@@ -376,7 +376,7 @@
                                 </div>
                             </div>
                             <p class="text-xs text-muted">Puste pola biorą teksty z firmowego formularza newslettera (Newsletter → Formularze, formularz domyślny){{ $nlDefaults ? '' : ' — teraz nieaktywny, więc panel się nie pokaże' }}.</p>
-                            <p class="text-xs text-muted">Menu w prawej kolumnie to podstrony działu. Treść strony wyświetla się pod wpisami.</p>
+                            <p class="text-xs text-muted">Prawa kolumna to „Nawigacja po podstronach” — włączasz ją i wyłączasz niżej, w sekcji o tej nazwie. Treść strony wyświetla się pod wpisami.</p>
                         </fieldset>
                         <script>
                             document.getElementById('page_template')?.addEventListener('change', function (e) {
