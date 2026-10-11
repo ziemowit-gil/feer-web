@@ -3,47 +3,59 @@
 namespace Database\Seeders;
 
 use App\Models\QuickAction;
+use App\Models\SiteSetting;
 use Illuminate\Database\Seeder;
 
+/**
+ * „Na skróty” na stronie głównej (moduł quick_actions) — zestaw startowy FEER.
+ * Kolory z brandbooka (niebieski #1E6DFF, grafit #1D1D1A, pomarańcz #EA8F00), ikony Material Symbols (outline).
+ * Idempotentny: dopasowuje po adresie w bieżącej witrynie, więc ponowne uruchomienie aktualizuje skróty
+ * zamiast je dublować; skrótów dodanych ręcznie w panelu nie rusza.
+ *
+ *   php artisan db:seed --class=QuickActionSeeder
+ */
 class QuickActionSeeder extends Seeder
 {
     public function run(): void
     {
+        $siteId = SiteSetting::current()->id;
+
         $actions = [
             [
-                'label' => 'Zamów audyt WCAG',
-                'icon'  => 'bi-clipboard2-check',
-                'url'   => '/kontakt',
-                'order' => 1,
-                'color' => '#c31432',
-            ],
-            [
                 'label' => 'Materiały edukacyjne',
-                'icon'  => 'bi-mortarboard',
-                'url'   => '/materialy',
-                'order' => 2,
-                'color' => '#2563eb',
+                'description' => 'Poradniki, scenariusze i materiały do pobrania',
+                'icon' => 'mi-menu_book',
+                'url' => '/materialy',
+                'color' => '#1E6DFF',
             ],
             [
-                'label' => 'Nadchodzące szkolenia',
-                'icon'  => 'bi-calendar-event',
-                'url'   => '/szkolenia',
-                'order' => 3,
-                'color' => '#16a34a',
+                'label' => 'Podcasty',
+                'description' => 'Słuchaj, kiedy masz czas — bez sztywnych terminów',
+                'icon' => 'mi-podcasts',
+                'url' => '/podcasty',
+                'color' => '#1D1D1A',
             ],
             [
-                'label' => 'Wesprzyj nas',
-                'icon'  => 'bi-heart',
-                'url'   => '/wesprzyj',
-                'order' => 4,
-                'color' => '#dc2626',
+                'label' => 'Wsparcie technologiczne dla NGO',
+                'description' => 'Strony, dostępność i narzędzia dla organizacji',
+                'icon' => 'mi-devices',
+                'url' => '/dzialania/wsparcie-ngo',
+                'color' => '#1E6DFF',
+            ],
+            [
+                'label' => 'Wesprzyj fundację',
+                'description' => 'Wpłać darowiznę online lub przelewem',
+                'icon' => 'mi-volunteer_activism',
+                'url' => '/wsparcie/darowizna',
+                'color' => '#EA8F00',
+                'is_negative' => true,
             ],
         ];
 
-        foreach ($actions as $data) {
+        foreach ($actions as $i => $data) {
             QuickAction::updateOrCreate(
-                ['label' => $data['label']],
-                $data,
+                ['site_id' => $siteId, 'url' => $data['url']],
+                $data + ['order' => $i + 1, 'is_negative' => false, 'cols' => 1, 'strip' => false],
             );
         }
     }
