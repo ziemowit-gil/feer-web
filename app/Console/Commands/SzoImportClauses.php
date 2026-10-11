@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Log;
 use RuntimeException;
 
 /**
- * Importuje opublikowane klauzule RODO z SZO (/klauzule.json) do lokalnej kopii,
+ * Importuje opublikowane klauzule RODO z SZO (/klauzule.json, zapasowo list.php) do lokalnej kopii,
  * z której korzysta shortcode [klauzule-rodo] (np. na stronie /rodo).
  *
  * W harmonogramie: codziennie. Ręcznie: Admin → Klauzule RODO → „Importuj teraz”.

@@ -85,7 +85,7 @@ class SzoSettingsTest extends TestCase
         $this->assertSame('error', SzoClient::diagnose('ftp://szo', 'x')['level']);
 
         Http::fake([
-            'szo.test/klauzule.json' => Http::response(['ok' => true]),
+            'szo.test/klauzule.json' => Http::response(['ok' => true, 'clauses' => []]),
             'szo.test/api/v1/forms.php' => Http::response(['error' => 'no'], 401),
         ]);
         $r = SzoClient::diagnose('https://szo.test/', 'zly');
@@ -96,7 +96,7 @@ class SzoSettingsTest extends TestCase
     public function test_diagnoza_sukces_i_ostrzezenie_bez_tokenu(): void
     {
         Http::fake([
-            'szo.test/klauzule.json' => Http::response(['ok' => true]),
+            'szo.test/klauzule.json' => Http::response(['ok' => true, 'clauses' => []]),
             'szo.test/api/v1/forms.php' => Http::response(['forms' => [['slug' => 'a'], ['slug' => 'b']]]),
         ]);
 
@@ -112,7 +112,7 @@ class SzoSettingsTest extends TestCase
     {
         config(['szo.url' => 'https://szo.test', 'szo.token' => 'tok']);
         Http::fake([
-            'szo.test/klauzule.json' => Http::response(['ok' => true]),
+            'szo.test/klauzule.json' => Http::response(['ok' => true, 'clauses' => []]),
             'szo.test/api/v1/forms.php' => Http::response(['forms' => []]),
         ]);
 
@@ -142,5 +142,25 @@ class SzoSettingsTest extends TestCase
         $this->assertNotFalse($szoTab);
         $this->assertGreaterThan($szoTab, strpos($html, 'name="szo_token"'));
         $this->assertLessThan($szoTab, strpos($html, "x-show=\"tab === 'login'\""));
+    }
+
+    public function test_zablokowany_klauzule_json_nie_przerywa_diagnozy_ani_importu(): void
+    {
+        // Serwer SZO blokuje *.json (403), ale bezpośredni list.php działa.
+        Http::fake([
+            'szo.test/klauzule.json' => Http::response('Forbidden', 403),
+            'szo.test/modules/gdpr_clauses/public/list.php' => Http::response(['ok' => true, 'clauses' => []]),
+            'szo.test/api/v1/forms.php' => Http::response(['forms' => [['slug' => 'a']]]),
+        ]);
+        $this->assertTrue(SzoClient::diagnose('https://szo.test', 'dobry')['ok']);
+
+        // Gdy obie ścieżki klauzul padają, token i tak jest sprawdzony — wynik to ostrzeżenie, nie błąd adresu.
+        Http::fake(fn ($r) => str_contains($r->url(), 'forms.php')
+            ? Http::response(['forms' => []])
+            : Http::response('Forbidden', 403));
+        $r = SzoClient::diagnose('https://szo2.test', 'dobry');
+        $this->assertTrue($r['ok']);
+        $this->assertSame('warning', $r['level']);
+        $this->assertStringContainsString('lista klauzul RODO niedostępna (HTTP 403)', $r['message']);
     }
 }

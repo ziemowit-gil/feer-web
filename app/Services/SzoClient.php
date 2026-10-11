@@ -51,17 +51,19 @@ class SzoClient
             return ['ok' => false, 'level' => 'error', 'message' => 'Adres SZO musi zaczynać się od https:// (lub http://).'];
         }
 
+        // Lista klauzul (publiczna) — jej brak nie przerywa diagnozy: token sprawdzamy i tak.
+        $clausesNote = '';
         try {
             $public = self::fetchClausesList($url, 10);
+            if (! $public->successful()) {
+                $clausesNote = " Uwaga: lista klauzul RODO niedostępna (HTTP {$public->status()}) — import klauzul nie zadziała.";
+            }
         } catch (Throwable $e) {
-            return ['ok' => false, 'level' => 'error', 'message' => 'Nie udało się połączyć z SZO: ' . $e->getMessage()];
-        }
-        if (! $public->successful()) {
-            return ['ok' => false, 'level' => 'error', 'message' => "SZO odpowiedziało HTTP {$public->status()} dla listy klauzul RODO (/klauzule.json i " . self::CLAUSES_DIRECT_PATH . ') — sprawdź adres.'];
+            return ['ok' => false, 'level' => 'error', 'message' => 'Nie udało się połączyć z SZO: ' . $e->getMessage() . ' Sprawdź adres (sam host, np. https://szo.feer.org.pl).'];
         }
 
         if (trim($token) === '') {
-            return ['ok' => false, 'level' => 'warning', 'message' => 'Adres SZO działa (import klauzul RODO będzie możliwy), ale bez tokenu nie da się przekazywać zgłoszeń ani darowizn.'];
+            return ['ok' => false, 'level' => 'warning', 'message' => 'Adres SZO odpowiada, ale bez tokenu nie da się przekazywać zgłoszeń ani darowizn.' . $clausesNote];
         }
 
         try {
@@ -71,15 +73,15 @@ class SzoClient
         }
 
         if (in_array($forms->status(), [401, 403], true)) {
-            return ['ok' => false, 'level' => 'error', 'message' => "SZO odrzuciło token (HTTP {$forms->status()}). Sprawdź token i uprawnienia forms:read, forms:submit (dla darowizn także donations:submit)."];
+            return ['ok' => false, 'level' => 'error', 'message' => "SZO odrzuciło token (HTTP {$forms->status()}). Sprawdź token i uprawnienia forms:read, forms:submit (dla darowizn także donations:submit)." . $clausesNote];
         }
         if (! $forms->successful()) {
-            return ['ok' => false, 'level' => 'error', 'message' => "SZO odpowiedziało HTTP {$forms->status()} dla /api/v1/forms.php."];
+            return ['ok' => false, 'level' => 'error', 'message' => "SZO odpowiedziało HTTP {$forms->status()} dla /api/v1/forms.php — sprawdź adres (sam host, bez /api)." . $clausesNote];
         }
 
         $count = count((array) $forms->json('forms', []));
 
-        return ['ok' => true, 'level' => 'success', 'message' => "Połączenie działa. Token ma dostęp do API; dostępnych formularzy w SZO: {$count}."];
+        return ['ok' => true, 'level' => $clausesNote === '' ? 'success' : 'warning', 'message' => "Połączenie działa. Token ma dostęp do API; dostępnych formularzy w SZO: {$count}." . $clausesNote];
     }
 
     /** Lista formularzy zdefiniowanych w SZO — do wyboru w panelu CMS. */
