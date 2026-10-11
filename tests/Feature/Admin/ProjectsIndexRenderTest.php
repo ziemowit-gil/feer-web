@@ -25,7 +25,8 @@ class ProjectsIndexRenderTest extends TestCase
         $project = Project::create(['title' => 'Audyt A', 'slug' => 'audyt-a', 'excerpt' => 'Krótki opis', 'is_published' => true, 'is_completed' => true, 'category_id' => $category->id]);
 
         $this->actingAs(User::factory()->create(['role' => User::ROLE_ADMIN]))
-            ->get(route('admin.projekty.index'))->assertOk()
+            // Domyślnie panel pokazuje drzewo działań (e670fe5); tabelaryczna lista jest pod ?widok=lista.
+            ->get(route('admin.projekty.index', ['widok' => 'lista']))->assertOk()
             ->assertSee('Audyt A')->assertSee('Krótki opis')->assertSee('Zrealizowany')
             ->assertSee('Edytuj: Audyt A');
 

@@ -23,6 +23,6 @@ class AdminMenuSearchTest extends TestCase
             ->get(route('admin.dashboard'))->assertOk()
             ->assertSee('Szukaj w menu', false)
             ->assertSee('id="admin-menu-search"', false)
-            ->assertSee('Wiadomości kontaktowe');
+            ->assertSee('Wiadomości z formularza');
     }
 }

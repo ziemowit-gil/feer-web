@@ -28,6 +28,8 @@ class ColorsPageTest extends TestCase
     {
         $this->actingAs($this->admin())->put(route('admin.kolory.update'), [
             'brand_color' => '#1E6DFF', 'brand_color_2' => '#ea8f00', 'brand_color_3' => '#1d1d1a', 'brand_color_4' => '#cbd5e7', 'ngo_color' => '#ea8f00',
+            // Od 76ced1b „Nie poprawiaj kolorów do WCAG” to jawny checkbox w formularzu.
+            'brand_skip_contrast' => '1',
         ])->assertRedirect(route('admin.kolory.edit'));
 
         $s = SiteSetting::query()->first();

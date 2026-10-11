@@ -22,10 +22,11 @@ class PageSectionNavTest extends TestCase
 
     private function section(): array
     {
-        $parent = Page::create(['title' => 'Dział', 'slug' => 'dzial', 'is_published' => true, 'content' => '<p>Wstęp działu</p>']);
-        $a = Page::create(['title' => 'Pierwsza', 'slug' => 'pierwsza', 'parent_id' => $parent->id, 'is_published' => true, 'order' => 1, 'meta_description' => 'Opis pierwszej']);
-        $b = Page::create(['title' => 'Druga', 'slug' => 'druga', 'parent_id' => $parent->id, 'is_published' => true, 'order' => 2]);
-        $c = Page::create(['title' => 'Trzecia', 'slug' => 'trzecia', 'parent_id' => $parent->id, 'is_published' => true, 'order' => 3]);
+        // Blok „W tym dziale” pokazuje się tylko bez bocznego menu (436428a) — wyłączamy je na stronach testowych.
+        $parent = Page::create(['title' => 'Dział', 'slug' => 'dzial', 'is_published' => true, 'show_side_nav' => false, 'content' => '<p>Wstęp działu</p>']);
+        $a = Page::create(['title' => 'Pierwsza', 'slug' => 'pierwsza', 'parent_id' => $parent->id, 'is_published' => true, 'show_side_nav' => false, 'order' => 1, 'meta_description' => 'Opis pierwszej']);
+        $b = Page::create(['title' => 'Druga', 'slug' => 'druga', 'parent_id' => $parent->id, 'is_published' => true, 'show_side_nav' => false, 'order' => 2]);
+        $c = Page::create(['title' => 'Trzecia', 'slug' => 'trzecia', 'parent_id' => $parent->id, 'is_published' => true, 'show_side_nav' => false, 'order' => 3]);
         Page::create(['title' => 'Szkic', 'slug' => 'szkic', 'parent_id' => $parent->id, 'is_published' => false, 'order' => 4]);
 
         return [$parent, $a, $b, $c];

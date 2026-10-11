@@ -40,7 +40,7 @@ class ProjectPricingTest extends TestCase
             ],
         ]);
 
-        $this->get('/projekty/warsztaty-wcag')
+        $this->get('/dzialania/warsztaty-wcag')
             ->assertOk()
             ->assertSee('Cennik')
             ->assertSee('Szkolenie 1-dniowe')
@@ -55,6 +55,7 @@ class ProjectPricingTest extends TestCase
             'pricing' => [['item' => 'X', 'price' => '10 zł', 'note' => '']],
         ]);
 
-        $this->get('/projekty/warsztaty-wcag')->assertOk()->assertDontSee('Cennik');
+        // Słowo „Cennik” występuje też w komentarzu CSS w <head> — sprawdzamy brak wierszy cennika i jego tabeli.
+        $this->get('/dzialania/warsztaty-wcag')->assertOk()->assertDontSee('10 zł')->assertDontSee('class="proj-price-wrap', false);
     }
 }

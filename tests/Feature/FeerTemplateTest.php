@@ -18,27 +18,34 @@ class FeerTemplateTest extends TestCase
 
     public function test_motyw_brandbooka_tylko_w_szablonie_feer(): void
     {
-        $this->get('/projekty')->assertOk()->assertDontSee('--color-ink: #1d1d1a', false);
+        $this->get('/dzialania')->assertOk()->assertDontSee('--color-ink: #1d1d1a', false);
 
         $this->assertArrayHasKey('feer', SiteSetting::SITE_TEMPLATES);
 
         SiteSetting::current()->update(['site_template' => 'ngo_mix']);
         \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();
-        $this->get('/projekty')->assertOk()->assertDontSee('--color-ink: #1d1d1a', false);
+        $this->get('/dzialania')->assertOk()->assertDontSee('--color-ink: #1d1d1a', false);
 
         SiteSetting::current()->update(['site_template' => 'feer']);
         \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();
 
-        $this->get('/projekty')->assertOk()->assertSee('--color-ink: #1d1d1a', false);
+        $this->get('/dzialania')->assertOk()->assertSee('--color-ink: #1d1d1a', false);
         $this->get('/')->assertOk()->assertSee('--color-ink: #1d1d1a', false);
     }
 
     public function test_szablon_feer_ma_wlasna_palete_i_strone_glowna(): void
     {
-        SiteSetting::current()->update(['site_template' => 'feer', 'brand_color' => '#c31432']);
+        // Domyślnie paleta brandbooka FEER 2024…
+        SiteSetting::current()->update(['site_template' => 'feer']);
         \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();
 
         $this->get('/')->assertOk()->assertSee('--color-brand: #1e6dff', false)->assertSee('--color-brand-4: #cbd5e7', false);
+
+        // …ale od dd61475 paletę motywu FEER zmienia się w Ustawienia → Kolory (kolory marki 1–4).
+        SiteSetting::current()->update(['brand_color' => '#c31432']);
+        \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();
+
+        $this->get('/')->assertOk()->assertSee('--color-brand: #c31432', false)->assertSee('--color-brand-4: #cbd5e7', false);
     }
 
     public function test_szablon_feer_pokazuje_szybkie_akcje_i_pozwala_je_wylaczyc(): void
@@ -71,7 +78,10 @@ class FeerTemplateTest extends TestCase
 
     public function test_kolory_szablonu_feer_maja_kontrast_co_najmniej_4_5_do_1_na_bialym(): void
     {
-        $css = file_get_contents(resource_path('views/partials/theme-feer.blade.php'));
+        // Paleta motywu jest liczona w widoku (dd61475) — sprawdzamy wyrenderowany CSS dla domyślnej palety brandbooka.
+        SiteSetting::current()->update(['site_template' => 'feer']);
+        \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();
+        $css = view('partials.theme-feer', ['siteSettings' => SiteSetting::current()])->render();
         $lum = function (string $hex): float {
             $hex = ltrim($hex, '#');
             $c = array_map(fn ($i) => hexdec(substr($hex, $i, 2)) / 255, [0, 2, 4]);
@@ -261,7 +271,9 @@ class FeerTemplateTest extends TestCase
 
         $this->get('/kontakt')->assertRedirect('/kontakt-2');
         $this->get('/kontakt-2')->assertOk()
-            ->assertSee('id="formularz-heading"', false)->assertSee('601 350 487')->assertSee('PL12 3456')->assertSee('contact-feer', false)->assertSee('tel:601350487', false);
+            ->assertSee('id="formularz-heading"', false)->assertSee('601 350 487')->assertSee('PL12 3456')->assertSee('contact-feer', false)
+            // Od abcf9a4 dane kontaktowe to zwykły tekst, bez linków tel:.
+            ->assertDontSee('tel:601350487', false);
     }
 
     public function test_dluga_uwaga_przy_rachunkach_jest_skrocona_do_pierwszego_zdania(): void
@@ -283,13 +295,13 @@ class FeerTemplateTest extends TestCase
         SiteSetting::current()->update(['site_template' => 'feer']);
         \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();
 
-        $html = $this->get('/projekty')->assertOk()->assertSee('Wsparcie IT')->assertSee('Kategorie projektów')->getContent();
+        $html = $this->get('/dzialania')->assertOk()->assertSee('Wsparcie IT')->assertSee('Kategorie działań')->getContent(); // zmiana nazwy sekcji (0adbee8)
         $this->assertStringContainsString('lg:grid-cols-[14rem_minmax(0,1fr)]', $html);
         $this->assertStringNotContainsString('role="tablist"', $html);
 
         SiteSetting::current()->update(['site_template' => 'ngo_mix']);
         \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();
-        $this->get('/projekty')->assertOk()->assertDontSee('lg:grid-cols-[14rem_minmax(0,1fr)]', false);
+        $this->get('/dzialania')->assertOk()->assertDontSee('lg:grid-cols-[14rem_minmax(0,1fr)]', false);
     }
 
     public function test_lista_materialow_feer_ma_wiersze_i_nawigacje_grup(): void
@@ -440,7 +452,7 @@ class FeerTemplateTest extends TestCase
         $this->assertStringContainsString('.feer-card:hover', $home);
         $this->assertStringContainsString('translateY(-3px)', $home);
         $this->assertStringContainsString('prefers-reduced-motion: reduce', $home);
-        $this->assertStringContainsString('feer-card group relative', $home);
+        // Karty aktualności na stronie głównej są od 13168c4 płaskie (bez uniesienia) — mikrointerakcje zostają na liście aktualności.
         $this->get('/aktualnosci')->assertOk()->assertSee('feer-card group', false);
     }
 
@@ -568,14 +580,14 @@ class FeerTemplateTest extends TestCase
             \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();
             \Illuminate\Support\Facades\Cache::flush();
 
-            $html = $this->get('/projekty')->assertOk()->assertSee('Wsparcie IT')->getContent();
+            $html = $this->get('/dzialania')->assertOk()->assertSee('Wsparcie IT')->getContent();
             $this->assertStringContainsString('min-h-40', $html, $template);
         }
 
         SiteSetting::current()->update(['site_template' => 'feer', 'projects_layout' => 'list']);
         \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();
         \Illuminate\Support\Facades\Cache::flush();
-        $this->get('/projekty')->assertOk()->assertDontSee('min-h-40', false);
+        $this->get('/dzialania')->assertOk()->assertDontSee('min-h-40', false);
     }
 
     public function test_naglowek_feer_ma_plaskie_skroty_social_i_przycisk_akcji(): void
@@ -639,7 +651,7 @@ class FeerTemplateTest extends TestCase
         $cat = \App\Models\Category::create(['name' => 'Dla każdego', 'slug' => 'dla-kazdego', 'order' => 1]);
         \App\Models\Project::create(['category_id' => $cat->id, 'title' => 'Projekt X', 'slug' => 'projekt-x', 'content' => '<p>Opis zajęć dla wolontariuszy.</p>', 'is_published' => true, 'order' => 1]);
 
-        $this->get('/projekty')->assertOk()->assertSee('Opis zajęć dla wolontariuszy.');
+        $this->get('/dzialania')->assertOk()->assertSee('Opis zajęć dla wolontariuszy.');
     }
 
     public function test_szybkie_akcje_feer_obsluguja_negatyw_pasek_i_kolumny(): void
@@ -723,7 +735,8 @@ class FeerTemplateTest extends TestCase
         $this->get('/')->assertOk()->assertDontSee('Zarządzaj skrótami');
         $admin = \App\Models\User::factory()->create(['role' => 'admin']);
         $this->actingAs($admin)->get('/')->assertOk()->assertSee('Zarządzaj skrótami');
-        $this->actingAs($admin)->get(route('admin.szybkie-akcje.create'))->assertOk()->assertSee('Niebieski FEER');
+        $this->actingAs($admin)->get(route('admin.szybkie-akcje.create'))->assertOk()
+            ->assertSee('aria-label="Kolory motywu"', false)->assertSee('Kolor główny'); // próbki z palety motywu (76ced1b)
     }
 
     public function test_szybka_akcja_feer_pokazuje_krotki_opis(): void
@@ -742,9 +755,9 @@ class FeerTemplateTest extends TestCase
         \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();
         \Illuminate\Support\Facades\Cache::flush();
 
-        $this->get('/projekty')->assertOk()->assertDontSee('Zarządzaj projektami');
+        $this->get('/dzialania')->assertOk()->assertDontSee('Zarządzaj działaniami');
         $admin = \App\Models\User::factory()->create(['role' => 'admin']);
-        $this->actingAs($admin)->get('/projekty')->assertOk()->assertSee('Zarządzaj projektami');
+        $this->actingAs($admin)->get('/dzialania')->assertOk()->assertSee('Zarządzaj działaniami');
         $this->actingAs($admin)->get('/aktualnosci')->assertOk()->assertSee('Zarządzaj aktualnościami');
     }
 
@@ -877,8 +890,10 @@ class FeerTemplateTest extends TestCase
         \App\Models\Project::create(['category_id' => $cat->id, 'title' => 'Zakończony A', 'slug' => 'zakonczony-a', 'content' => '<p>Opis A.</p>', 'is_published' => true, 'is_completed' => true, 'completed_at' => '2024-05-10', 'order' => 1]);
         \App\Models\Project::create(['category_id' => $cat->id, 'title' => 'Zakończony B', 'slug' => 'zakonczony-b', 'content' => '<p>Opis B.</p>', 'is_published' => true, 'is_completed' => true, 'completed_at' => '2023-02-01', 'order' => 2]);
 
-        $html = $this->get('/projekty/archiwum')->assertOk()->assertSee('Zakończony A')->assertSee('Zakończony B')->assertSee('Lata realizacji')->getContent();
-        $this->assertStringContainsString('border-left: 4px solid', $html);
+        $html = $this->get('/dzialania/archiwum')->assertOk()->assertSee('Zakończony A')->assertSee('Zakończony B')->assertSee('Lata realizacji')->getContent();
+        // Od 13168c4 wiersze są płaskie (szare tło, bez paska koloru po lewej).
+        $this->assertStringContainsString('group flex items-center gap-4 rounded-md bg-gray-50 px-4 py-4', $html);
+        $this->assertStringNotContainsString('border-left: 4px solid', $html);
         $this->assertStringContainsString('h-1 w-14 bg-brand', $html);
     }
 
@@ -927,7 +942,9 @@ class FeerTemplateTest extends TestCase
         $this->useFeer();
 
         $html = $this->get(route('categories.show', $cat))->assertOk()->assertSee('Projekt wzroku')->getContent();
-        $this->assertStringContainsString('border-left: 4px solid', $html);
+        // Wiersze zamiast kart — od 13168c4 płaskie (szare tło, bez paska koloru po lewej).
+        $this->assertStringContainsString('group flex items-center gap-4 rounded-md bg-gray-50 px-4 py-4', $html);
+        $this->assertStringNotContainsString('border-left: 4px solid', $html);
         $this->assertStringContainsString('h-1 w-14 bg-brand', $html);
     }
 
@@ -967,8 +984,9 @@ class FeerTemplateTest extends TestCase
     {
         $this->useFeer();
 
+        // BIP ma od 24c169b własny nagłówek z paskiem marki (.bip-head) zamiast akcentu h-1 w-14.
         $bip = $this->get('/bip')->assertOk()->getContent();
-        $this->assertStringContainsString('h-1 w-14 bg-brand', $bip);
+        $this->assertStringContainsString('class="bip-head"', $bip);
 
         $sklep = $this->get('/sklep')->assertOk()->getContent();
         $this->assertStringContainsString('h-1 w-14 bg-brand', $sklep);

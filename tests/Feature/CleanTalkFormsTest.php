@@ -166,6 +166,9 @@ class CleanTalkFormsTest extends TestCase
             'name' => 'Anna Kowalska', 'email' => 'anna@example.com', 'subject' => 'Pytanie o szkolenie',
             'message' => 'Dzień dobry, chciałabym zapytać o termin szkolenia.', 'rodo_consent' => '1',
             'ct_bot_detector_event_token' => str_repeat('b', 64),
+            // Formularz kontaktowy ma też własny SpamGuard (86ff60b) — poprawny żeton i odpowiedź na zadanie.
+            SpamGuard::TOKEN_FIELD => Crypt::encryptString(json_encode(['t' => now()->subSeconds(10)->timestamp, 'a' => 8])),
+            SpamGuard::ANSWER_FIELD => '8',
         ];
     }
 
