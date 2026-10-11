@@ -25,7 +25,7 @@ return [
 
     // Panel licencji: sprawdzanie online (unieważnienie, zastąpienie klucza). Raz dziennie
     // (`php artisan license:check`); niedostępny panel niczego nie zmienia. Puste = wyłączone.
-    'check_url' => env('LICENSE_CHECK_URL', 'https://cms2.ziemowitgil.pl/api/v1/licenses/check'),
+    'check_url' => env('LICENSE_CHECK_URL', 'https://cms2.feer.org.pl/api/v1/licenses/check'),
     'check_timeout' => (int) env('LICENSE_CHECK_TIMEOUT', 5),
 
     // Funkcje płatne: klucz → etykieta do komunikatów. Kluczem modułu jest jego
