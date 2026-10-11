@@ -37,7 +37,8 @@
         $posts = $sectionPosts ?? ['items' => collect(), 'heading' => '', 'allUrl' => null, 'allLabel' => ''];
         $featured = $posts['items']->first();
         $restNews = $posts['items']->slice(1)->values();
-        $showNewsletter = ($settings['newsletter'] ?? true) && $siteSettings->isModuleEnabled('newsletter');
+        $newsletter = $sectionNewsletter ?? null;
+        $showNewsletter = (bool) $newsletter;
         $contentHtml = \App\Support\ShortcodeParser::render($page->content);
         $canInlineEdit = auth('web')->check() && auth('web')->user()->canAccessModule('pages');
         $link = 'font-bold text-brand-dark underline underline-offset-4 hover:no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark';
@@ -172,16 +173,18 @@
                 <aside class="space-y-6 lg:sticky lg:top-24 lg:self-start" aria-label="Kolumna boczna działu">
                     @include('partials.section-nav', ['page' => $page, 'menuSiblings' => $menuSiblings, 'sectionRoot' => $sectionRoot])
                     @if ($showNewsletter)
-                        {{-- Zapis na newsletter: przycisk z ikoną prowadzący do formularza zapisu. --}}
+                        {{-- Zapis na newsletter: teksty ze strony albo z firmowego formularza (PageController::sectionNewsletter). --}}
                         <section class="rounded-md bg-brand-light p-5" aria-labelledby="section-newsletter-heading">
                             <h2 id="section-newsletter-heading" class="flex items-center gap-2 text-lg font-bold text-ink">
-                                <i class="fa-solid fa-envelope-open-text text-brand-dark" aria-hidden="true"></i> Newsletter
+                                <i class="fa-solid fa-envelope-open-text text-brand-dark" aria-hidden="true"></i> {{ $newsletter['title'] }}
                             </h2>
-                            <p class="mt-2 text-sm text-ink">Nowości z działu prosto na Twoją skrzynkę.</p>
-                            <a href="{{ route('newsletter.show') }}"
-                                class="mt-4 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-md bg-brand-dark px-4 py-2.5 font-bold text-white transition hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2">
+                            @if (filled($newsletter['text']))
+                                <p class="mt-2 text-sm text-ink">{{ $newsletter['text'] }}</p>
+                            @endif
+                            <a href="{{ $newsletter['url'] }}"
+                                class="mt-4 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-md bg-brand-dark px-4 py-2.5 text-center font-bold text-white transition hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2">
                                 <i class="fa-solid fa-paper-plane" aria-hidden="true"></i>
-                                Zapisz się na newsletter
+                                {{ $newsletter['button'] }}
                             </a>
                         </section>
                     @endif

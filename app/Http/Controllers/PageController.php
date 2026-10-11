@@ -95,6 +95,7 @@ class PageController extends Controller
         // Szablon „Strona działu": aktualności (opcjonalnie z jednej kategorii) do sekcji pod sliderem.
         if ($page->page_template === 'section' && $page->usesStandardLayout()) {
             $data['sectionPosts'] = $this->sectionPosts($page);
+            $data['sectionNewsletter'] = $this->sectionNewsletter($page);
         }
 
         $view = match ($page->page_template) {
@@ -168,6 +169,55 @@ class PageController extends Controller
             'heading' => 'Aktualności',
             'allUrl' => route('news.index', $category ? ['kategoria' => $category->slug] : []),
             'allLabel' => 'Wszystkie aktualności'.($category ? ': '.$category->name : ''),
+        ];
+    }
+
+    /**
+     * Panel „Newsletter" szablonu „Strona działu": teksty ze strony (layout_data),
+     * a gdy puste — z firmowego, domyślnego formularza modułu Newsletter.
+     * Null, gdy panel wyłączony, moduł nieaktywny albo brak aktywnego formularza.
+     *
+     * @return array{title: string, text: ?string, button: string, url: string}|null
+     */
+    public static function sectionNewsletterDefaults(): ?array
+    {
+        $site = SiteSetting::current();
+        if (! $site->isModuleEnabled('newsletter') || ! class_exists(\Modules\Newsletter\Models\NewsletterForm::class)) {
+            return null;
+        }
+        try {
+            $form = \Modules\Newsletter\Models\NewsletterForm::defaultFor($site->id);
+        } catch (\Illuminate\Database\QueryException) {
+            return null;
+        }
+        if (! $form || ! $form->is_active) {
+            return null;
+        }
+
+        return [
+            'title' => $form->heading ?: ($form->eyebrow ?: 'Newsletter'),
+            'text' => $form->lead,
+            // „Zapisz się" z formularza dopowiadamy do „Zapisz się na newsletter" — przycisk stoi sam w kolumnie.
+            'button' => match (trim((string) $form->button_label)) {
+                '', 'Zapisz się', 'Zapisz' => 'Zapisz się na newsletter',
+                default => $form->button_label,
+            },
+            'url' => $form->is_default ? route('newsletter.show') : route('newsletter.form', ['form' => $form->slug]),
+        ];
+    }
+
+    private function sectionNewsletter(Page $page): ?array
+    {
+        $settings = $page->layout_data ?? [];
+        if (! ($settings['newsletter'] ?? true) || ! ($defaults = self::sectionNewsletterDefaults())) {
+            return null;
+        }
+
+        return [
+            'title' => filled($settings['newsletter_title'] ?? null) ? $settings['newsletter_title'] : $defaults['title'],
+            'text' => filled($settings['newsletter_text'] ?? null) ? $settings['newsletter_text'] : $defaults['text'],
+            'button' => filled($settings['newsletter_button'] ?? null) ? $settings['newsletter_button'] : $defaults['button'],
+            'url' => $defaults['url'],
         ];
     }
 

@@ -92,6 +92,22 @@ class SectionTemplateTest extends TestCase
             ->assertDontSee('Zapisz się na newsletter');
     }
 
+    public function test_newsletter_panel_uses_brand_form_texts_and_page_overrides(): void
+    {
+        $form = \Modules\Newsletter\Models\NewsletterForm::defaultFor(SiteSetting::current()->id);
+        if (! $form) {
+            $this->markTestSkipped('Moduł Newsletter nie ma formularza w środowisku testowym.');
+        }
+        $form->update(['heading' => 'Newsletter firmowy', 'lead' => 'Opis z formularza.', 'button_label' => 'Zapisz się', 'is_active' => true]);
+
+        Page::create(['title' => 'Dział A', 'slug' => 'dzial-a', 'type' => 'standard', 'is_published' => true, 'page_template' => 'section', 'layout_data' => ['news_count' => 0]]);
+        Page::create(['title' => 'Dział B', 'slug' => 'dzial-b', 'type' => 'standard', 'is_published' => true, 'page_template' => 'section',
+            'layout_data' => ['news_count' => 0, 'newsletter_title' => 'Wiadomości z działu', 'newsletter_text' => 'Własny opis.', 'newsletter_button' => 'Chcę dostawać']]);
+
+        $this->get('/dzial-a')->assertOk()->assertSee('Newsletter firmowy')->assertSee('Opis z formularza.')->assertSee('Zapisz się na newsletter');
+        $this->get('/dzial-b')->assertOk()->assertSee('Wiadomości z działu')->assertSee('Własny opis.')->assertSee('Chcę dostawać')->assertDontSee('Opis z formularza.');
+    }
+
     public function test_admin_saves_section_settings(): void
     {
         $edu = NewsCategory::create(['name' => 'Edukacja', 'slug' => 'edukacja']);

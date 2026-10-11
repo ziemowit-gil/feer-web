@@ -357,8 +357,24 @@
                             <label class="flex items-start gap-2 text-sm">
                                 <input type="hidden" name="layout_data[newsletter]" value="0">
                                 <input type="checkbox" name="layout_data[newsletter]" value="1" class="mt-0.5 rounded border-gray-300 text-brand focus:ring-brand" @checked($ld['newsletter'] ?? true)>
-                                <span>Przycisk „Zapisz się na newsletter” w prawej kolumnie (prowadzi do strony zapisu).</span>
+                                <span>Panel „Newsletter” z przyciskiem zapisu w prawej kolumnie.</span>
                             </label>
+                            @php $nlDefaults = \App\Http\Controllers\PageController::sectionNewsletterDefaults(); @endphp
+                            <div class="grid gap-3 sm:grid-cols-3">
+                                <div>
+                                    <label for="ld-nl-title" class="mb-1 block text-xs font-bold text-muted">Tytuł panelu</label>
+                                    <input type="text" id="ld-nl-title" name="layout_data[newsletter_title]" value="{{ $ld['newsletter_title'] ?? '' }}" maxlength="120" placeholder="{{ $nlDefaults['title'] ?? 'Newsletter' }}" class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                                </div>
+                                <div class="sm:col-span-2">
+                                    <label for="ld-nl-text" class="mb-1 block text-xs font-bold text-muted">Opis</label>
+                                    <input type="text" id="ld-nl-text" name="layout_data[newsletter_text]" value="{{ $ld['newsletter_text'] ?? '' }}" maxlength="400" placeholder="{{ $nlDefaults['text'] ?? '' }}" class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                                </div>
+                                <div>
+                                    <label for="ld-nl-button" class="mb-1 block text-xs font-bold text-muted">Napis na przycisku</label>
+                                    <input type="text" id="ld-nl-button" name="layout_data[newsletter_button]" value="{{ $ld['newsletter_button'] ?? '' }}" maxlength="60" placeholder="{{ $nlDefaults['button'] ?? 'Zapisz się na newsletter' }}" class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                                </div>
+                            </div>
+                            <p class="text-xs text-muted">Puste pola biorą teksty z firmowego formularza newslettera (Newsletter → Formularze, formularz domyślny){{ $nlDefaults ? '' : ' — teraz nieaktywny, więc panel się nie pokaże' }}.</p>
                             <p class="text-xs text-muted">Menu w prawej kolumnie to podstrony działu. Treść strony wyświetla się pod wpisami.</p>
                         </fieldset>
                         <script>
