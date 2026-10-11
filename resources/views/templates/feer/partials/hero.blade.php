@@ -53,7 +53,7 @@
                         </div>
                     </div>
                     @if ($sImage)
-                        <img src="{{ $sImage }}" alt="{{ $sAlt }}" decoding="async" @if ($i === 0) fetchpriority="high" @endif
+                        <img src="{{ $sImage }}" alt="{{ $sAlt }}" data-no-lightbox decoding="async" @if ($i === 0) fetchpriority="high" @endif
                              :class="current === {{ $i }} ? 'scale-100' : 'scale-105'"
                              class="aspect-[4/3] w-full rounded-md object-cover transition-transform duration-1000 ease-out motion-reduce:transition-none motion-reduce:transform-none">
                     @endif

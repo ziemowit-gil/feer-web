@@ -27,11 +27,66 @@
         const nextBtn = overlay.querySelector('[data-lightbox-next]');
         const closeBtn = overlay.querySelector('[data-lightbox-close]');
 
-        // Content images, gallery images, and anything opted in with data-lightbox.
-        const triggers = Array.from(document.querySelectorAll(
-            '.prose img, [data-gallery-track] img, img[data-lightbox], [data-lightbox] img'
-        ));
-        if (!triggers.length) return;
+        // Jawnie oznaczone: treść (.prose), galerie i wszystko z data-lightbox.
+        const EXPLICIT = '.prose img, [data-gallery-track] img, img[data-lightbox], [data-lightbox] img';
+        // Ogólnie: każde zdjęcie w treści strony (<main>) — poza linkami/przyciskami, klikalnymi kartami
+        // (stretched-link), logotypami (object-contain), miniaturami i tym, co oznaczono data-no-lightbox.
+        const CARD = 'article, li, .feer-card, .group';
+        const MIN_NATURAL = 240;  // px — mniejsze pliki to ikony/miniatury
+        const MIN_RENDERED = 96;  // px — tak małe na stronie nie wymagają powiększenia
+
+        const triggers = [];
+
+        function inClickableCard(img) {
+            const card = img.closest(CARD);
+            if (!card) return false;
+            return Array.from(card.querySelectorAll('a[href].stretched-link, a[href][class*="after:absolute"], a[href][class*="before:absolute"]'))
+                .some(function (a) { return a.closest(CARD) === card; });
+        }
+
+        function structurallyEligible(img) {
+            if (img.matches(EXPLICIT)) return true;
+            if (!img.closest('main') || img.closest('[data-lightbox-overlay]')) return false;
+            if (img.closest('a, button, label, summary, [role="button"], [data-no-lightbox], [aria-hidden="true"], [aria-roledescription]')) return false;
+            if (img.classList.contains('object-contain') || img.getAttribute('role') === 'presentation') return false;
+            return !inClickableCard(img);
+        }
+
+        function bigEnough(img) {
+            if (img.matches(EXPLICIT)) return true;
+            if (img.complete && img.naturalWidth && img.naturalWidth < MIN_NATURAL && img.naturalHeight < MIN_NATURAL) return false;
+            const r = img.getBoundingClientRect();
+            // Ukryte (np. „hidden sm:block") mają 0 — wtedy decyduje sam plik.
+            return !(r.width > 0 && r.width < MIN_RENDERED && r.height < MIN_RENDERED);
+        }
+
+        function arm(img) {
+            if (triggers.indexOf(img) !== -1) return;
+            triggers.push(img);
+            img.classList.add('cursor-zoom-in');
+            img.setAttribute('tabindex', '0');
+            img.setAttribute('role', 'button');
+            img.setAttribute('aria-label', 'Powiększ grafikę' + (img.alt ? ': ' + img.alt : ''));
+            img.addEventListener('click', function () { open(img); });
+            img.addEventListener('keydown', function (event) {
+                if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    open(img);
+                }
+            });
+        }
+
+        function consider(img) {
+            if (!structurallyEligible(img)) return;
+            if (img.complete || img.matches(EXPLICIT)) {
+                if (bigEnough(img)) arm(img);
+            } else {
+                // Leniwie ładowane — rozmiar pliku znany dopiero po wczytaniu.
+                img.addEventListener('load', function () { if (bigEnough(img)) arm(img); }, { once: true });
+            }
+        }
+
+        document.querySelectorAll('main img, ' + EXPLICIT).forEach(consider);
 
         let group = [];
         let index = 0;
@@ -43,17 +98,21 @@
             // stays a singleton), or the surrounding prose.
             const scope = img.closest('[data-gallery-track]')
                 || img.closest('[data-lightbox]:not(img)')
-                || img.closest('.prose');
+                || img.closest('.prose')
+                || img.closest('section');
             if (!scope) return [img];
             return Array.from(scope.querySelectorAll('img')).filter(function (i) { return triggers.indexOf(i) !== -1; });
         }
 
         function render() {
             const img = group[index];
-            imgEl.src = img.currentSrc || img.src;
+            imgEl.src = img.dataset.full || img.currentSrc || img.src;
             imgEl.alt = img.alt || '';
-            captionEl.textContent = img.alt || '';
-            captionEl.classList.toggle('hidden', !img.alt);
+            const fig = img.closest('figure');
+            const figCap = fig && fig.querySelector('figcaption');
+            const caption = (figCap && figCap.textContent.trim()) || img.alt || '';
+            captionEl.textContent = caption;
+            captionEl.classList.toggle('hidden', !caption);
 
             const many = group.length > 1;
             [prevBtn, nextBtn].forEach(function (btn) {
@@ -85,20 +144,6 @@
             imgEl.src = '';
             if (lastFocused && typeof lastFocused.focus === 'function') lastFocused.focus();
         }
-
-        triggers.forEach(function (img) {
-            img.classList.add('cursor-zoom-in');
-            img.setAttribute('tabindex', '0');
-            img.setAttribute('role', 'button');
-            img.setAttribute('aria-label', 'Powiększ grafikę' + (img.alt ? ': ' + img.alt : ''));
-            img.addEventListener('click', function () { open(img); });
-            img.addEventListener('keydown', function (event) {
-                if (event.key === 'Enter' || event.key === ' ') {
-                    event.preventDefault();
-                    open(img);
-                }
-            });
-        });
 
         closeBtn.addEventListener('click', close);
         prevBtn.addEventListener('click', function () { step(-1); });

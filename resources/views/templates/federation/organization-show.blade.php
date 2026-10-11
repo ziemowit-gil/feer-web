@@ -43,7 +43,7 @@
                 <ul class="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3" role="list">
                     @foreach ($photos as $photo)
                         <li>
-                            <img src="{{ $photo->getAvailableUrl(['thumb']) }}"
+                            <img src="{{ $photo->getAvailableUrl(['thumb']) }}" data-full="{{ $photo->getUrl() }}"
                                 alt="Zdjęcie z działalności organizacji {{ $organization->name }} ({{ $loop->iteration }} z {{ $loop->count }})"
                                 class="h-32 w-full rounded-lg border border-gray-200 object-cover sm:h-36">
                         </li>
