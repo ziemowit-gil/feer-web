@@ -7,7 +7,7 @@ use App\Models\SiteSetting;
 use Illuminate\Database\Seeder;
 
 /**
- * „Na skróty” na stronie głównej (moduł quick_actions) — zestaw startowy FEER: 8 kafli w dwóch rzędach.
+ * „Na skróty” na stronie głównej (moduł quick_actions) — zestaw startowy FEER: 4 kafle w jednym rzędzie.
  * Kolory z brandbooka (niebieski #1E6DFF, grafit #1D1D1A, pomarańcz #EA8F00), ikony Material Symbols (outline).
  * Idempotentny: dopasowuje po adresie w bieżącej witrynie, więc ponowne uruchomienie aktualizuje skróty
  * zamiast je dublować; skrótów dodanych ręcznie w panelu nie rusza.
@@ -50,35 +50,14 @@ class QuickActionSeeder extends Seeder
                 'color' => '#EA8F00',
                 'is_negative' => true,
             ],
-            [
-                'label' => 'Dołącz do nas',
-                'description' => 'Wolontariat, praca i współpraca z fundacją',
-                'icon' => 'mi-group_add',
-                'url' => '/dolacz-do-nas',
-                'color' => '#1D1D1A',
-            ],
-            [
-                'label' => 'Wolontariat',
-                'description' => 'Aktualne ogłoszenia dla wolontariuszy',
-                'icon' => 'mi-diversity_3',
-                'url' => '/wolontariat',
-                'color' => '#1E6DFF',
-            ],
-            [
-                'label' => 'Newsletter',
-                'description' => 'Nowe materiały i szkolenia prosto na skrzynkę',
-                'icon' => 'mi-mail',
-                'url' => '/newsletter',
-                'color' => '#1D1D1A',
-            ],
-            [
-                'label' => 'Kontakt',
-                'description' => 'Napisz lub zadzwoń — odpowiemy',
-                'icon' => 'mi-call',
-                'url' => '/kontakt',
-                'color' => '#1E6DFF',
-            ],
         ];
+
+        // Skróty z wcześniejszej, 8-kaflowej wersji seedera — usuwane tylko, gdy nadal mają seedowaną etykietę.
+        QuickAction::where('site_id', $siteId)->where(function ($q) {
+            foreach (['/dolacz-do-nas' => 'Dołącz do nas', '/wolontariat' => 'Wolontariat', '/newsletter' => 'Newsletter', '/kontakt' => 'Kontakt'] as $url => $label) {
+                $q->orWhere(fn ($w) => $w->where('url', $url)->where('label', $label));
+            }
+        })->delete();
 
         foreach ($actions as $i => $data) {
             QuickAction::updateOrCreate(
