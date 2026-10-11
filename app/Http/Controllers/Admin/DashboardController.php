@@ -21,6 +21,7 @@ use App\Models\SiteSetting;
 use App\Models\User;
 use App\Models\VolunteerAd;
 use App\Support\AdminNotifications;
+use App\Support\BlogAdmin;
 
 /**
  * Panel admin: główny pulpit z licznikami treści, ostatnimi wpisami i statusem modułów.
@@ -36,6 +37,11 @@ class DashboardController extends Controller
     {
         $settings = SiteSetting::current();
         $user = auth()->user();
+
+        // Aktywna witryna bloga „Wiem FEER” ma własny pulpit.
+        if (BlogAdmin::isBlogSiteActive() && BlogAdmin::canAccess($user)) {
+            return redirect()->route('admin.wiem.dashboard');
+        }
 
         $allStats = [
             'pages' => [

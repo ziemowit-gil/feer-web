@@ -265,8 +265,29 @@
             </div>
         </header>
 
-        {{-- Pasek szybkich skrótów --}}
-        @if ($can('news') || $can('events'))
+        {{-- Pasek szybkich skrótów — w kontekście bloga „Wiem FEER” własne akcje bloga --}}
+        @if (\App\Support\BlogAdmin::inContext(auth()->user()))
+        @php $blogPending = \App\Support\BlogAdmin::pendingCommentsCount(); @endphp
+        <div class="flex flex-wrap items-center gap-2 border-b border-gray-100 bg-gray-50/80 px-6 py-2" data-quickbar="blog">
+            <span class="mr-1 text-xs font-bold uppercase tracking-wide text-muted">Szybko:</span>
+            <a href="{{ route('admin.wiem-feer.create') }}"
+                class="inline-flex items-center gap-1.5 rounded border border-gray-200 bg-white px-3 py-1 text-xs font-bold text-ink hover:border-brand hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                <i class="fa-solid fa-plus" aria-hidden="true"></i> Nowy wpis
+            </a>
+            <a href="{{ route('admin.wiem.dashboard') }}"
+                class="inline-flex items-center gap-1.5 rounded border border-gray-200 bg-white px-3 py-1 text-xs font-bold text-ink hover:border-brand hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                <i class="fa-solid fa-gauge" aria-hidden="true"></i> Pulpit Wiem FEER
+            </a>
+            <a href="{{ route('admin.komentarze-bloga.index') }}"
+                class="inline-flex items-center gap-1.5 rounded border border-gray-200 bg-white px-3 py-1 text-xs font-bold text-ink hover:border-brand hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                <i class="fa-solid fa-comments" aria-hidden="true"></i> Komentarze do moderacji ({{ $blogPending }})
+            </a>
+            <a href="{{ \App\Support\BlogAdmin::publicUrl() }}" target="_blank" rel="noopener"
+                class="inline-flex items-center gap-1.5 rounded border border-gray-200 bg-white px-3 py-1 text-xs font-bold text-ink hover:border-brand hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i> Zobacz blog<span class="sr-only"> (otwiera się w nowej karcie)</span>
+            </a>
+        </div>
+        @elseif ($can('news') || $can('events'))
         <div class="flex flex-wrap items-center gap-2 border-b border-gray-100 bg-gray-50/80 px-6 py-2">
             <span class="mr-1 text-xs font-bold uppercase tracking-wide text-muted">Szybko:</span>
             @if ($can('news'))
@@ -308,6 +329,10 @@
                 <div role="alert" class="mb-4 rounded border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-800">
                     {{ session('error') }}
                 </div>
+            @endif
+
+            @if (\App\Support\BlogAdmin::isBlogRoute() && \App\Support\BlogAdmin::canAccess(auth()->user()))
+                @include('admin.partials.blog-subnav')
             @endif
 
             @yield('content')

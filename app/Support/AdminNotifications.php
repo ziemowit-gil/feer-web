@@ -33,7 +33,13 @@ class AdminNotifications
             route('admin.zadania.index', ['moje' => 1]), 'fa-list-check');
 
         if ($user->canAccessModule('blog') && app(ModuleManager::class)->isActive('blog')) {
-            self::push($items, 'Komentarze do moderacji', BlogComment::pending()->count(),
+            // Baza bloga to osobny plik SQLite — gdy jej brak albo nie ma migracji, panel ma działać dalej.
+            try {
+                $pendingComments = BlogComment::pending()->count();
+            } catch (\Illuminate\Database\QueryException) {
+                $pendingComments = 0;
+            }
+            self::push($items, 'Komentarze do moderacji', $pendingComments,
                 route('admin.komentarze-bloga.index'), 'fa-comments');
         }
 

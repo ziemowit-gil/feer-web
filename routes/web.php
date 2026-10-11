@@ -308,6 +308,8 @@ Route::middleware('auth')->group(function () {
 
 Route::middleware(['auth', 'verified', '2fa', 'admin-site'])->prefix(config('app.admin_prefix', 'admin'))->name('admin.')->group(function () {
     Route::get('/', [AdminDashboardController::class, 'index'])->name('dashboard');
+    // Osobny pulpit bloga „Wiem FEER” (dostęp do modułu weryfikowany w kontrolerze).
+    Route::get('wiem/pulpit', [\App\Http\Controllers\Admin\BlogDashboardController::class, 'index'])->name('wiem.dashboard');
 
     // Historia zmian treści (dostęp weryfikowany per moduł w kontrolerze).
     Route::get('historia/{type}/{id}', [AdminRevisionController::class, 'index'])->name('historia.index');

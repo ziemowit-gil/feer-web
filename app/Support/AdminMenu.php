@@ -37,6 +37,21 @@ use Illuminate\Support\Facades\Route;
  */
 final class AdminMenu
 {
+    /**
+     * Menu skupione na blogu, gdy w panelu aktywna jest witryna „Wiem FEER” (BlogAdmin::isBlogSiteActive()):
+     * lista dozwolonych sekcji roboczych → klucze pozycji (null = wszystkie pozycje sekcji).
+     * Sekcje spoza listy (aktualności, działania, BIP, sklep, strona główna, marketing…) są ukryte.
+     */
+    public const BLOG_SITE_SECTIONS = [
+        'blog'       => null,
+        'start'      => ['approvals'],
+        'pages'      => ['pages'],
+        'library'    => null,
+        'newsletter' => null,
+        'users'      => null,
+        'system'     => null,
+    ];
+
     private User $user;
 
     private SiteSetting $site;
@@ -82,6 +97,16 @@ final class AdminMenu
                     : null,
             ], defaultOpen: true) : null,
 
+            // Pozycje bloga jako osobna sekcja — używana w menu witryny „Wiem FEER”.
+            $this->can('blog') ? $this->section('blog', 'Wiem FEER', [
+                $this->item('blog-dashboard', 'Pulpit Wiem FEER', 'admin.wiem.dashboard', 'fa-gauge'),
+                $this->item('blog-articles', 'Wpisy', 'admin.wiem-feer.index', 'fa-feather-pointed', active: 'admin.wiem-feer.*'),
+                $this->item('blog-categories', 'Kategorie', 'admin.kategorie-bloga.index', 'fa-tags', active: 'admin.kategorie-bloga.*'),
+                $this->item('blog-authors', 'Autorzy', 'admin.autorzy-bloga.index', 'fa-user-pen', active: 'admin.autorzy-bloga.*'),
+                $this->item('blog-comments', 'Komentarze', 'admin.komentarze-bloga.index', 'fa-comments',
+                    active: 'admin.komentarze-bloga.*', badge: fn () => BlogAdmin::pendingCommentsCount()),
+            ], defaultOpen: true) : null,
+
             $this->section('homepage', 'Strona główna', [
                 $this->can('hero')          ? $this->item('hero', 'Slajder (hero)', 'admin.hero.index', 'fa-images', active: 'admin.hero.*') : null,
                 $this->can('gallery')       ? $this->item('gallery', 'Galeria', 'admin.galeria.index', 'fa-panorama', active: 'admin.galeria.*') : null,
@@ -98,8 +123,9 @@ final class AdminMenu
                         $this->child('Tagi', 'admin.tagi.index', 'admin.tagi.*'),
                     ]) : null,
                 $this->can('blog') ? $this->item('blog', 'Wiem FEER (blog)', 'admin.wiem-feer.index', 'fa-feather-pointed',
-                    active: ['admin.wiem-feer.*', 'admin.komentarze-bloga.*', 'admin.kategorie-bloga.*', 'admin.autorzy-bloga.*'],
+                    active: BlogAdmin::ROUTES,
                     children: [
+                        $this->child('Pulpit Wiem FEER', 'admin.wiem.dashboard', 'admin.wiem.dashboard'),
                         $this->child('Kategorie', 'admin.kategorie-bloga.index', 'admin.kategorie-bloga.*'),
                         $this->child('Autorzy', 'admin.autorzy-bloga.index', 'admin.autorzy-bloga.*'),
                         $this->child('Komentarze', 'admin.komentarze-bloga.index', 'admin.komentarze-bloga.*'),
@@ -216,6 +242,10 @@ final class AdminMenu
         // użytkownik nie ma dostępu, już wypadły — pusta grupa znika w całości.
         $byKey = collect(array_filter($sections))->keyBy('key');
 
+        if ($byKey->has('blog') && BlogAdmin::isBlogSiteActive()) {
+            return $this->blogSiteGroups($byKey);
+        }
+
         return array_values(array_filter([
             $this->group($byKey, 'start', 'Pulpit', 'fa-gauge', [[null, 'start']]),
             $this->group($byKey, 'pages', 'Strony', 'fa-file-lines', [[null, 'pages'], ['Strona główna', 'homepage']]),
@@ -225,6 +255,33 @@ final class AdminMenu
             $this->group($byKey, 'system', 'System', 'fa-gear', [
                 ['Konfiguracja', 'system', ['settings', 'templates', 'seo']],
                 ['Narzędzia', 'system', ['activity', 'wcag', 'gdpr', 'modules', 'health', 'cache', 'sites']],
+            ]),
+        ]));
+    }
+
+    /**
+     * Menu witryny „Wiem FEER”: najpierw blog, potem wspólne niezbędne pozycje — według BLOG_SITE_SECTIONS.
+     *
+     * @param  \Illuminate\Support\Collection<string, array<string, mixed>>  $sections
+     * @return array<int, array<string, mixed>>
+     */
+    private function blogSiteGroups($sections): array
+    {
+        $sections = $sections->only(array_keys(self::BLOG_SITE_SECTIONS));
+        $spec = fn (?string $heading, string $key, ?array $keys = null) => array_filter(
+            [$heading, $key, $keys ?? self::BLOG_SITE_SECTIONS[$key]],
+            fn ($v, $i) => $i < 2 || $v !== null,
+            ARRAY_FILTER_USE_BOTH,
+        );
+
+        return array_values(array_filter([
+            $this->group($sections, 'start', 'Wiem FEER', 'fa-feather-pointed', [$spec(null, 'blog'), $spec(null, 'start')]),
+            $this->group($sections, 'pages', 'Strony', 'fa-file-lines', [$spec(null, 'pages')]),
+            $this->group($sections, 'content', 'Biblioteka', 'fa-photo-film', [$spec(null, 'library'), $spec('Newsletter', 'newsletter')]),
+            $this->group($sections, 'users', 'Użytkownicy', 'fa-users', [$spec(null, 'users')]),
+            $this->group($sections, 'system', 'System', 'fa-gear', [
+                $spec('Konfiguracja', 'system', ['settings', 'templates', 'seo']),
+                $spec('Narzędzia', 'system', ['activity', 'wcag', 'gdpr', 'modules', 'health', 'cache', 'sites']),
             ]),
         ]));
     }
