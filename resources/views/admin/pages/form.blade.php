@@ -1095,4 +1095,23 @@
         })();
 
     </script>
+
+    <script>
+        // Sekcje pól typów (type_data) powtarzają nazwy pól (np. type_data[lead]) —
+        // ukryte sekcje innych typów nie mogą nadpisać wartości z aktywnej sekcji
+        // (PHP bierze ostatnie pole o danej nazwie). Przy wysyłce wyłączamy ich pola.
+        (function () {
+            const form = document.getElementById('page-edit-form');
+            if (!form) return;
+            form.addEventListener('submit', function () {
+                form.querySelectorAll('[data-type-fields].hidden').forEach(function (section) {
+                    section.querySelectorAll('input, select, textarea').forEach(function (el) { el.disabled = true; el.dataset.tdDisabled = '1'; });
+                });
+            });
+            // Powrót przyciskiem „Wstecz” (bfcache) — przywróć pola.
+            window.addEventListener('pageshow', function () {
+                form.querySelectorAll('[data-td-disabled]').forEach(function (el) { el.disabled = false; delete el.dataset.tdDisabled; });
+            });
+        })();
+    </script>
 @endsection
