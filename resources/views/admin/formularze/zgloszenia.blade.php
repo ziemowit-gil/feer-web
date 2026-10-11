@@ -31,7 +31,7 @@
         </div>
     @endif
 
-    @php $fields = $form->inputFields(); @endphp
+    @php $fields = $form->inputFields(); $viaApi = $form->delivery() !== 'email'; @endphp
 
     <div class="overflow-x-auto rounded-md bg-white">
         <table class="w-full text-left text-sm">
@@ -42,6 +42,9 @@
                     @foreach ($fields as $field)
                         <th class="px-4 py-3">{{ $field['label'] }}</th>
                     @endforeach
+                    @if ($viaApi)
+                        <th class="px-4 py-3">API</th>
+                    @endif
                     <th class="px-4 py-3"><span class="sr-only">Akcje</span></th>
                 </tr>
             </thead>
@@ -66,6 +69,18 @@
                                 @endif
                             </td>
                         @endforeach
+                        @if ($viaApi)
+                            <td class="px-4 py-3 whitespace-nowrap">
+                                @if ($sub->webhook_sent_at)
+                                    <span class="text-xs font-bold text-green-700"><i class="fa-solid fa-circle-check mr-1" aria-hidden="true"></i>Wysłane</span>
+                                @elseif ($sub->webhook_error)
+                                    <span class="text-xs font-bold text-red-700" title="{{ $sub->webhook_error }}"><i class="fa-solid fa-triangle-exclamation mr-1" aria-hidden="true"></i>Błąd</span>
+                                    <span class="sr-only">: {{ $sub->webhook_error }}</span>
+                                @else
+                                    <span class="text-gray-300">—</span>
+                                @endif
+                            </td>
+                        @endif
                         <td class="px-4 py-3 text-right">
                             <form method="POST"
                                 action="{{ route('admin.formularze.zgloszenia.destroy', [$form, $sub]) }}"

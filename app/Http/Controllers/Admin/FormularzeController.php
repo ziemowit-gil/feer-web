@@ -204,6 +204,9 @@ class FormularzeController extends Controller
             'settings.submitter_copy_message' => 'nullable|string|max:1000',
             'settings.cleantalk_disabled'    => 'nullable|boolean',
             'settings.szo_form_slug'         => 'nullable|string|max:120',
+            'settings.delivery'              => 'nullable|in:' . implode(',', array_keys(FormDefinition::DELIVERY)),
+            'settings.webhook_url'           => ['nullable', 'url:http,https', 'max:500', 'required_if:settings.delivery,api,both'],
+            'settings.webhook_secret'        => 'nullable|string|max:200',
             'settings.open_from'             => 'nullable|date',
             'settings.open_until'            => 'nullable|date|after:settings.open_from',
             'settings.max_submissions'       => 'nullable|integer|min:1|max:100000',
@@ -218,6 +221,7 @@ class FormularzeController extends Controller
             'settings.open_from'          => 'początek zbierania zgłoszeń',
             'settings.open_until'         => 'koniec zbierania zgłoszeń',
             'settings.max_submissions'    => 'limit zgłoszeń',
+            'settings.webhook_url'        => 'adres API',
         ]);
 
         // Listy adresów rozdzielone przecinkami: każdy musi być poprawnym e-mailem.
@@ -274,6 +278,10 @@ class FormularzeController extends Controller
                 'szo_form_slug'        => $request->input('settings.szo_form_slug'),
                 // true = ten formularz nie jest sprawdzany w CleanTalk (np. formularz wewnętrzny, bez ryzyka spamu).
                 'cleantalk_disabled'   => $request->boolean('settings.cleantalk_disabled'),
+                // Doręczenie: e-mail, API (webhook) albo oba; sekret podpisuje treść (HMAC SHA-256).
+                'delivery'             => array_key_exists((string) $request->input('settings.delivery'), FormDefinition::DELIVERY) ? $request->input('settings.delivery') : 'email',
+                'webhook_url'          => trim((string) $request->input('settings.webhook_url')) ?: null,
+                'webhook_secret'       => $request->filled('settings.webhook_secret') ? $request->input('settings.webhook_secret') : ($existing?->settings['webhook_secret'] ?? null),
                 // Terminy i limity: zbieranie od–do, limit zgłoszeń (np. zapisy z ograniczoną liczbą miejsc).
                 'open_from'            => $request->input('settings.open_from') ?: null,
                 'open_until'           => $request->input('settings.open_until') ?: null,

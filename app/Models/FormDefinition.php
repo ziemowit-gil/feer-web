@@ -47,6 +47,20 @@ class FormDefinition extends Model
         'step'     => 'Nowy krok (podział na etapy)',
     ];
 
+    /** Gdzie trafiają zgłoszenia (poza zapisem w panelu, który jest zawsze). */
+    const DELIVERY = [
+        'email' => 'E-mailem',
+        'api'   => 'Na zewnętrzne API (webhook)',
+        'both'  => 'E-mailem i na API',
+    ];
+
+    public function delivery(): string
+    {
+        $d = $this->settings['delivery'] ?? 'email';
+
+        return array_key_exists($d, self::DELIVERY) ? $d : 'email';
+    }
+
     /** Elementy układu — bez wartości (nie walidowane, nie zapisywane, nie w eksporcie). */
     const LAYOUT_TYPES = ['heading', 'step'];
 

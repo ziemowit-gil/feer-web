@@ -113,7 +113,13 @@ class FormController extends Controller
         // dosyła polecenie `php artisan szo:push-submissions`.
         app(SzoClient::class)->pushSubmission($submission);
 
-        $this->sendNotifications($formularz, $submission);
+        // Doręczenie wg ustawień: e-mail, API (webhook) albo oba. Zapis w panelu jest zawsze.
+        if (in_array($formularz->delivery(), ['email', 'both'], true)) {
+            $this->sendNotifications($formularz, $submission);
+        }
+        if (in_array($formularz->delivery(), ['api', 'both'], true)) {
+            app(\App\Services\FormWebhook::class)->send($formularz, $submission);
+        }
 
         return back()
             ->with('success', $this->confirmationMessage($formularz))

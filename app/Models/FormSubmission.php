@@ -15,12 +15,15 @@ class FormSubmission extends Model
         'szo_contact_id',
         'szo_synced_at',
         'szo_error',
+        'webhook_sent_at',
+        'webhook_error',
     ];
 
     protected $casts = [
         'data'          => 'array',
         'read_at'       => 'datetime',
         'szo_synced_at' => 'datetime',
+        'webhook_sent_at' => 'datetime',
     ];
 
     /** Czy zgłoszenie dotarło do CRM-a w SZO. */

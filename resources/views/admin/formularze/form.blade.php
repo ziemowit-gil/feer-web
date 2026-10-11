@@ -276,6 +276,40 @@
                     class="w-full rounded border-gray-500 text-sm focus:border-brand-dark focus-visible:ring-2 focus-visible:ring-brand-dark">{{ old('settings.confirmation_message', $form->settings['confirmation_message'] ?? '') }}</textarea>
             </div>
 
+            {{-- Doręczenie zgłoszeń: e-mail / API / oba --}}
+            @php $delivery = old('settings.delivery', $form->delivery()); @endphp
+            <fieldset class="space-y-4 rounded-md bg-gray-50 p-4" x-data="{ delivery: @js($delivery) }">
+                <legend class="px-1 text-sm font-bold text-ink"><i class="fa-solid fa-paper-plane mr-1 text-brand-dark" aria-hidden="true"></i> Gdzie trafiają zgłoszenia</legend>
+                <p class="text-xs text-muted">Każde zgłoszenie jest zawsze zapisywane w panelu (Zgłoszenia). Tu wybierasz, dokąd ma być dodatkowo przesłane.</p>
+                <div class="flex flex-wrap gap-2" role="radiogroup" aria-label="Gdzie trafiają zgłoszenia">
+                    @foreach (\App\Models\FormDefinition::DELIVERY as $value => $label)
+                        <label class="inline-flex min-h-10 cursor-pointer items-center gap-2 rounded-md border border-solid border-gray-300 bg-white px-3 text-sm has-[:checked]:border-brand-dark has-[:checked]:bg-brand-light has-[:checked]:font-bold">
+                            <input type="radio" name="settings[delivery]" value="{{ $value }}" x-model="delivery" @checked($delivery === $value)
+                                class="border-gray-500 text-brand-dark focus:ring-brand-dark">
+                            {{ $label }}
+                        </label>
+                    @endforeach
+                </div>
+                <div x-show="delivery !== 'email'" class="grid gap-4 sm:grid-cols-2">
+                    <div>
+                        <label for="webhook_url" class="mb-1 block text-sm font-bold">Adres API <span class="text-red-500" aria-hidden="true">*</span></label>
+                        <input id="webhook_url" name="settings[webhook_url]" type="url" inputmode="url" autocomplete="off"
+                            value="{{ old('settings.webhook_url', $form->settings['webhook_url'] ?? '') }}" placeholder="https://api.przyklad.pl/zgloszenia"
+                            class="w-full rounded border-gray-500 font-mono text-sm focus:border-brand-dark focus-visible:ring-2 focus-visible:ring-brand-dark">
+                        <p class="mt-1 text-xs text-muted">Zgłoszenie idzie jako JSON (POST): formularz, numer, pola z etykietą, wartością i tekstem.</p>
+                        @error('settings.webhook_url') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </div>
+                    <div>
+                        <label for="webhook_secret" class="mb-1 block text-sm font-bold">Sekret do podpisu <span class="font-normal text-muted">(opcjonalnie)</span></label>
+                        <input id="webhook_secret" name="settings[webhook_secret]" type="password" autocomplete="new-password" value=""
+                            placeholder="{{ filled($form->settings['webhook_secret'] ?? null) ? '•••••••• (zapisany — wpisz nowy, aby zmienić)' : 'np. długi losowy ciąg' }}"
+                            class="w-full rounded border-gray-500 font-mono text-sm focus:border-brand-dark focus-visible:ring-2 focus-visible:ring-brand-dark">
+                        <p class="mt-1 text-xs text-muted">Podpis HMAC SHA-256 treści w nagłówku <code>X-Form-Signature: sha256=…</code> — odbiorca sprawdzi, że zgłoszenie jest od nas.</p>
+                    </div>
+                </div>
+                <p x-show="delivery === 'api'" class="text-xs text-muted">Powiadomienia e-mail poniżej nie będą wysyłane.</p>
+            </fieldset>
+
             {{-- Terminy i limity --}}
             @php
                 $fs = $form->settings ?? [];
