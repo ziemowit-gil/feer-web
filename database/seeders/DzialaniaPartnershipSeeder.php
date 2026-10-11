@@ -3,17 +3,19 @@
 namespace Database\Seeders;
 
 use App\Models\Category;
+use App\Models\Page;
 use App\Models\Project;
 use Illuminate\Database\Seeder;
 
 /**
  * Działanie „Dostępność w praktyce — wdrożenia i konsulting” (partnerstwa, bez otwartego naboru).
  *
- * Pola z pierwotnego szkicu przeniesione na model działania (Project):
- *  - recruitment_note → wyróżniona sekcja własna (bez naboru, kontakt bezpośredni),
- *  - scope / principles → sekcje własne „Zakres współpracy” i „Zasady współpracy”
- *    (formularz w panelu obsługuje do 3 sekcji — więcej by zginęło przy edycji),
- *  - for_whom (lista) → krótkie „Dla kogo” + sekcja „Dla kogo” w treści,
+ * Pola z pierwotnego szkicu przeniesione na model działania (Project) i jego podstrony:
+ *  - description, why → „O projekcie” (treść + „Dlaczego to robimy”),
+ *  - recruitment_note → wyróżniona ramka w „O projekcie” (bez naboru, kontakt bezpośredni),
+ *  - scope / principles / for_whom → podstrony w menu bocznym działania:
+ *    „Zakres współpracy”, „Zasady współpracy”, „Dla kogo”,
+ *  - kategoria „Wsparcie dla organizacji” (podział według formy, jak ProjectCategoriesByFormSeeder),
  *  - is_free = null (partnerstwo) → działanie, nie usługa odpłatna; bez informacji o płatności.
  *
  * Idempotentny (updateOrCreate po slugu). Uruchomienie:
@@ -24,8 +26,8 @@ class DzialaniaPartnershipSeeder extends Seeder
     public function run(): void
     {
         $category = Category::firstOrCreate(
-            ['slug' => 'dla-instytucji'],
-            ['name' => 'Dla instytucji i organizacji', 'order' => (int) Category::max('order') + 1],
+            ['slug' => 'wsparcie-dla-organizacji'],
+            ['name' => 'Wsparcie dla organizacji', 'order' => (int) Category::max('order') + 1],
         );
 
         $p = fn (string $text) => '<p>'.e($text).'</p>';
@@ -38,14 +40,14 @@ class DzialaniaPartnershipSeeder extends Seeder
 
         $content = $p('Tworzenie otwartego, włączającego środowiska to fundament naszej codziennej pracy. W FEER skupiamy się na realnej praktyce — rozwijamy wewnętrzne standardy i procedury, a wypracowaną wiedzę przekuwamy we współpracę z instytucjami i organizacjami.')
             .$p('Po prostu współdziałamy z różnymi instytucjami, organizacjami i partnerami społecznymi — na różnych zasadach i w różnym zakresie, zależnie od potrzeb i kontekstu. Nie ma tu jednego szablonu: raz to wspólny projekt, raz doradztwo, raz audyt.')
-            .$p('Wierzymy, że budowanie dostępności: cyfrowej, architektonicznej oraz informacyjno-komunikacyjnej, przynosi najlepsze efekty wtedy, gdy opiera się na zaufaniu i solidnej pracy u podstaw. Nie ogłaszamy naborów — partnerstwa nawiązujemy stopniowo, w oparciu o relacje i wspólne wartości.')
-            .'<h2>Dla kogo</h2>'.$items($forWhom);
+            .$p('Wierzymy, że budowanie dostępności: cyfrowej, architektonicznej oraz informacyjno-komunikacyjnej, przynosi najlepsze efekty wtedy, gdy opiera się na zaufaniu i solidnej pracy u podstaw. Nie ogłaszamy naborów — partnerstwa nawiązujemy stopniowo, w oparciu o relacje i wspólne wartości.');
 
         $scope = [
             ['title' => 'Współpraca wdrożeniowa', 'body' => 'Pomoc w praktycznym wprowadzaniu standardów dostępności i procedur u partnerów oraz zaprzyjaźnionych instytucjach.'],
             ['title' => 'Tajemniczy klient', 'body' => 'Przeprowadzamy audyty metodą tajemniczego klienta, sprawdzając dostępność usług, przestrzeni i obsługi z perspektywy osoby z niepełnosprawnością. Wyniki przekazujemy w formie rzetelnego raportu z rekomendacjami.'],
             ['title' => 'Wewnętrzne standardy i konsulting', 'body' => 'Dzielimy się naszym doświadczeniem z zakresu dostępności (WCAG) oraz dobrych praktyk organizacyjnych.'],
             ['title' => 'Dostępność informacyjno-komunikacyjna', 'body' => 'Wsparcie przy tworzeniu dokumentów, procedur i materiałów w formacie łatwym do czytania i rozumienia (ETR).'],
+            ['title' => 'Konsulting w zakresie nowoczesnych technologii w NGO', 'body' => 'Doradzamy organizacjom pozarządowym w wyborze i wdrażaniu nowoczesnych narzędzi cyfrowych — od pracy zespołowej w chmurze i bezpieczeństwa danych po rozwiązania wspierające dostępność — tak, by technologia realnie wspierała misję, a nie ją komplikowała.'],
             ['title' => 'Rzetelne doradztwo', 'body' => 'Oparte na zaufaniu konsultacje, bez zbędnej teorii i medialnego rozgłosu.'],
         ];
 
@@ -60,29 +62,47 @@ class DzialaniaPartnershipSeeder extends Seeder
             [
                 'title' => 'Dostępność w praktyce — wdrożenia i konsulting',
                 'category_id' => $category->id,
-                'excerpt' => 'Wdrożenia dostępności, audyty metodą tajemniczego klienta i doradztwo — wyłącznie w ramach partnerstw.',
+                'excerpt' => 'Wdrożenia dostępności, audyty metodą tajemniczego klienta, konsulting technologiczny dla NGO i doradztwo — wyłącznie w ramach partnerstw.',
                 'for_whom' => 'Instytucje, partnerzy społeczni i organizacje pozarządowe',
                 'content' => $content,
                 'why' => 'Dostępność wciąż jest traktowana jak obowiązek formalny, a nie realna wartość. Tymczasem najtrwalsze zmiany zachodzą wtedy, gdy organizacje przechodzą przez ten proces z kimś, kto rozumie zarówno przepisy, jak i ludzką perspektywę. My to rozumiemy — bo sami jesteśmy fundacją i sami wdrażamy to, o czym mówimy.',
                 'kind' => 'project',
                 'is_paid' => false,
                 'paid_info_show' => false,
-                'custom_sections' => [
-                    [
-                        'title' => 'Współpraca tylko w ramach partnerstw',
-                        'content' => $p('To działanie realizujemy wyłącznie w ramach partnerstw. Nie prowadzimy otwartego naboru — współpracę nawiązujemy bezpośrednio, na podstawie wzajemnego zaufania i dopasowania do misji fundacji. Jeśli chcesz nawiązać kontakt, napisz do nas.'),
-                        'featured' => true,
-                    ],
-                    ['title' => 'Zakres współpracy', 'content' => $items($scope), 'featured' => false],
-                    [
-                        'title' => 'Zasady współpracy',
-                        'content' => '<ol>'.collect($principles)->map(fn ($r) => '<li><strong>'.e($r['title']).'</strong> — '.e($r['body']).'</li>')->implode('').'</ol>',
-                        'featured' => false,
-                    ],
-                ],
+                'custom_sections' => [[
+                    'title' => 'Współpraca tylko w ramach partnerstw',
+                    'content' => $p('To działanie realizujemy wyłącznie w ramach partnerstw. Nie prowadzimy otwartego naboru — współpracę nawiązujemy bezpośrednio, na podstawie wzajemnego zaufania i dopasowania do misji fundacji. Jeśli chcesz nawiązać kontakt, napisz do nas.'),
+                    'featured' => true,
+                ]],
+                'sections_as_tabs' => false,
+                'sections_nav' => 'sidebar',
                 'main_cta' => ['label' => 'Napisz do nas', 'url' => '/kontakt'],
                 'is_published' => true,
             ],
         );
+
+        $project = Project::where('slug', 'dostepnosc-w-praktyce')->firstOrFail();
+
+        // Podstrony działania w menu bocznym (tryb „zakładka”), w tej kolejności.
+        $subpages = [
+            'zakres' => ['Zakres współpracy', $items($scope)],
+            'zasady' => ['Zasady współpracy', '<ol>'.collect($principles)->map(fn ($r) => '<li><strong>'.e($r['title']).'</strong> — '.e($r['body']).'</li>')->implode('').'</ol>'],
+            'dla-kogo' => ['Dla kogo', $items($forWhom)],
+        ];
+        $order = 1;
+        foreach ($subpages as $suffix => [$title, $html]) {
+            Page::updateOrCreate(
+                ['slug' => 'dostepnosc-w-praktyce-'.$suffix],
+                [
+                    'title' => $title,
+                    'type' => 'standard',
+                    'content' => $html,
+                    'project_id' => $project->id,
+                    'project_display' => 'tab',
+                    'is_published' => true,
+                    'order' => $order++,
+                ],
+            );
+        }
     }
 }

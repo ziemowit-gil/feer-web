@@ -17,15 +17,16 @@ class DzialaniaPartnershipSeederTest extends TestCase
         $this->seed(DzialaniaPartnershipSeeder::class);
 
         $project = Project::where('slug', 'dostepnosc-w-praktyce')->sole();
-        $this->assertSame('dla-instytucji', $project->category->slug);
-        $this->assertCount(3, $project->custom_sections);
-        $this->assertFalse($project->is_paid);
+        $this->assertSame('wsparcie-dla-organizacji', $project->category->slug);
+        $this->assertSame('sidebar', $project->sectionsNavMode());
+        $this->assertCount(1, $project->custom_sections);
+        $this->assertSame(['Zakres współpracy', 'Zasady współpracy', 'Dla kogo'], $project->pageTree(true)->pluck('title')->all());
+        $this->assertSame(3, \App\Models\Page::where('project_id', $project->id)->count(), 'bez duplikatów po ponownym uruchomieniu');
 
-        $this->get(route('projects.show', $project))->assertOk()
-            ->assertSee('Dostępność w praktyce — wdrożenia i konsulting')
-            ->assertSee('Współpraca tylko w ramach partnerstw')
-            ->assertSee('Tajemniczy klient')
-            ->assertSee('Bez niespodzianek')
-            ->assertSee('Organizacje pozarządowe');
+        $html = $this->get(route('projects.show', $project))->assertOk()->getContent();
+        $this->assertStringContainsString('aria-label="Sekcje działania"', $html);
+        foreach (['Współpraca tylko w ramach partnerstw', 'Zakres współpracy', 'Zasady współpracy', 'Dla kogo', 'Tajemniczy klient', 'Konsulting w zakresie nowoczesnych technologii w NGO', 'Bez niespodzianek', 'Organizacje pozarządowe'] as $text) {
+            $this->assertStringContainsString($text, $html);
+        }
     }
 }
