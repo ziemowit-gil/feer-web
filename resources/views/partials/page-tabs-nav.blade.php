@@ -53,8 +53,8 @@
         @foreach ($menuSiblings as $sibling)
             @php $tabCurrent = $sibling->is($page) || $sibling->publishedChildren->contains(fn ($c) => $c->is($page)); @endphp
             <li class="flex-none">
-                <a href="{{ $sibling->publicUrl() }}" @if ($sibling->is($page)) aria-current="page" @endif class="{{ $tabClass($tabCurrent) }}">
-                    {{ $sibling->title }}
+                <a href="{{ $sibling->navUrl() }}" {!! $sibling->navLinkAttributes() !!} @if ($sibling->is($page)) aria-current="page" @endif class="{{ $tabClass($tabCurrent) }}">
+                    {{ $sibling->title }}{!! $sibling->navNewTabNotice() !!}
                     @if (! $tabsPills && $tabCurrent)<span class="absolute inset-x-4 bottom-1 block h-1 bg-brand" aria-hidden="true"></span>@endif
                 </a>
             </li>

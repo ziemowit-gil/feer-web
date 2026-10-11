@@ -23,12 +23,16 @@
         @endphp
         <li @if ($hasBranch) x-data="{ open: {{ $onRootline ? 'true' : 'false' }} }" @endif>
             <div class="flex items-stretch gap-0.5 pl-2">
-                <a href="{{ $node->publicUrl() }}" @if ($isCurrent) aria-current="page" @endif
+                @if ($node->isMenuHeading())
+                    <p class="flex min-h-11 min-w-0 flex-1 items-center px-2.5 py-2 text-xs font-bold uppercase tracking-wide text-muted">{{ $node->title }}</p>
+                @else
+                <a href="{{ $node->navUrl() }}" {!! $node->navLinkAttributes() !!} @if ($isCurrent) aria-current="page" @endif
                     class="flex min-h-11 min-w-0 flex-1 items-center gap-2 rounded-md px-2.5 py-2 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark
                         {{ $isCurrent ? 'bg-brand-light font-bold text-brand-dark' : ($onRootline ? 'font-semibold ' : '') . 'text-ink hover:bg-white hover:text-brand-dark hover:underline hover:underline-offset-4' }}">
                     <i class="fa-solid {{ $hasBranch ? 'fa-folder' : 'fa-file-lines' }} w-4 flex-none text-center text-xs {{ $isCurrent ? 'text-brand-dark' : 'text-muted' }}" aria-hidden="true"></i>
-                    <span class="min-w-0 flex-1 leading-snug">{{ $node->title }}</span>
+                    <span class="min-w-0 flex-1 leading-snug">{{ $node->title }}{!! $node->navNewTabNotice() !!}</span>
                 </a>
+                @endif
 
                 @if ($hasBranch)
                     <button type="button" @click="open = ! open" :aria-expanded="open.toString()" aria-expanded="{{ $onRootline ? 'true' : 'false' }}"

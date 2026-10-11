@@ -46,18 +46,23 @@
         @foreach ($menuSiblings as $sibling)
             @php $kids = $sibling->publishedChildren; @endphp
             <li>
-                <a href="{{ $sibling->publicUrl() }}" @if ($sibling->is($page)) aria-current="page" @endif
+                {{-- „Nagłówek w menu”: niklikalny tytuł grupy, jego podstrony zawsze widoczne. --}}
+                @if ($sibling->isMenuHeading())
+                    <p class="px-3 pb-1 pt-3 text-sm font-bold uppercase tracking-wide text-muted">{{ $sibling->title }}</p>
+                @else
+                <a href="{{ $sibling->navUrl() }}" {!! $sibling->navLinkAttributes() !!} @if ($sibling->is($page)) aria-current="page" @endif
                     class="{{ $localItem($sibling->is($page)) }}">
-                    <span class="min-w-0">{{ $sibling->title }}</span>
+                    <span class="min-w-0">{{ $sibling->title }}{!! $sibling->navNewTabNotice() !!}</span>
                     <i class="fa-solid fa-chevron-right flex-none text-xs" aria-hidden="true"></i>
                 </a>
-                @if ($kids->isNotEmpty() && ($sibling->is($page) || $kids->contains(fn ($k) => $k->is($page))))
+                @endif
+                @if ($kids->isNotEmpty() && ($sibling->isMenuHeading() || $sibling->is($page) || $kids->contains(fn ($k) => $k->is($page))))
                     <ul role="list" class="mt-1 space-y-1 pl-4">
                         @foreach ($kids as $child)
                             <li>
-                                <a href="{{ $child->publicUrl() }}" @if ($child->is($page)) aria-current="page" @endif
+                                <a href="{{ $child->navUrl() }}" {!! $child->navLinkAttributes() !!} @if ($child->is($page)) aria-current="page" @endif
                                     class="{{ $localChild($child->is($page)) }}">
-                                    <span class="min-w-0">{{ $child->title }}</span>
+                                    <span class="min-w-0">{{ $child->title }}{!! $child->navNewTabNotice() !!}</span>
                                     <i class="fa-solid fa-chevron-right flex-none text-[0.625rem]" aria-hidden="true"></i>
                                 </a>
                             </li>
@@ -85,12 +90,16 @@
         @endif
         @foreach ($menuSiblings as $sibling)
             <li>
-                <a href="{{ $sibling->publicUrl() }}"
+                @if ($sibling->isMenuHeading())
+                    <p class="px-3 pb-1 pt-3 text-sm font-bold uppercase tracking-wide text-muted">{{ $sibling->title }}</p>
+                @else
+                <a href="{{ $sibling->navUrl() }}" {!! $sibling->navLinkAttributes() !!}
                     {{ $sibling->is($page) ? 'aria-current=page' : '' }}
                     class="{{ $localItem($sibling->is($page)) }}">
-                    <span class="min-w-0">{{ $sibling->title }}</span>
+                    <span class="min-w-0">{{ $sibling->title }}{!! $sibling->navNewTabNotice() !!}</span>
                     <i class="fa-solid fa-chevron-right flex-none text-xs" aria-hidden="true"></i>
                 </a>
+                @endif
 
                 {{-- Drzewo: opublikowane podstrony rodzeństwa jako zagnieżdżona gałąź (wcięcie zamiast linii). --}}
                 @php $childBranch = $sibling->publishedChildren; @endphp
@@ -98,10 +107,10 @@
                     <ul role="list" class="mt-1 space-y-1 pl-4">
                         @foreach ($childBranch as $child)
                             <li>
-                                <a href="{{ $child->publicUrl() }}"
+                                <a href="{{ $child->navUrl() }}" {!! $child->navLinkAttributes() !!}
                                     {{ $child->is($page) ? 'aria-current=page' : '' }}
                                     class="{{ $localChild($child->is($page)) }}">
-                                    <span class="min-w-0">{{ $child->title }}</span>
+                                    <span class="min-w-0">{{ $child->title }}{!! $child->navNewTabNotice() !!}</span>
                                     <i class="fa-solid fa-chevron-right flex-none text-[0.625rem]" aria-hidden="true"></i>
                                 </a>
                             </li>

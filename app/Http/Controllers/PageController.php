@@ -34,6 +34,18 @@ class PageController extends Controller
             return redirect()->away($target, 301);
         }
 
+        // „Własny link w menu” nie ma treści — jego adres przenosi pod adres docelowy.
+        if ($page->isMenuLink() && ! $preview && ($target = $page->redirectTarget())) {
+            return redirect()->away($target, 301);
+        }
+
+        // „Nagłówek w menu” też nie ma treści — przenosi do pierwszej podstrony albo strony nadrzędnej.
+        if ($page->isMenuHeading() && ! $preview) {
+            $first = $page->publishedChildren->first();
+
+            return redirect()->to($first?->navUrl() ?? $page->parent?->publicUrl() ?? url('/'));
+        }
+
         // Strona typu „Kontakt” ma stały układ i własny kontroler.
         if ($page->type === 'contact') {
             return app(ContactController::class)->render();

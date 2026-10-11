@@ -64,6 +64,8 @@ class PageTypeRegistryTest extends TestCase
             'documents' => 'Dokumenty (grupy odnośników do plików i stron)',
             'regulation' => 'Regulamin lub dokument (data obowiązywania, spis treści)',
             'redirect' => 'Przekierowanie (strona przenosi na inny adres)',
+            'menu_link' => 'Własny link w menu (pozycja prowadzi pod wskazany adres)',
+            'menu_heading' => 'Nagłówek w menu (grupuje podstrony, bez własnej treści)',
             'reports' => 'Sprawozdania roczne (tabela z modułu Sprawozdania — np. do BIP)',
             'partners' => 'Partnerzy i sponsorzy (logotypy w grupach, z modułu Partnerzy lub własne)',
             'recruitment' => 'Rekrutacja do projektu (status naboru, terminy, kryteria, dokumenty, zgłoszenie)',
@@ -76,14 +78,14 @@ class PageTypeRegistryTest extends TestCase
             'Organizacja' => ['about', 'about_person', 'team', 'wspolpraca', 'legacy', 'brand_assets', 'reports', 'partners', 'tender'],
             'Kafelki i nawigacja' => ['links_hub', 'tiles_grid'],
             'Kontakt i wydarzenia' => ['contact', 'form_page', 'event', 'schedule'],
-            'Wewnętrzne i przekierowania' => ['internal', 'internal_hub', 'bip_move', 'redirect'],
+            'Wewnętrzne i przekierowania' => ['internal', 'internal_hub', 'bip_move', 'redirect', 'menu_link', 'menu_heading'],
         ], Page::typeGroups());
 
         // Dawne TYPE_ICONS + ikona instytucji szkoleniowej (wcześniej tylko w drzewie stron).
         $icons = Page::typeIcons();
         ksort($icons);
         $expected = [
-            'pricing' => 'fa-coins', 'team' => 'fa-people-group', 'documents' => 'fa-folder-open', 'regulation' => 'fa-scale-balanced', 'redirect' => 'fa-share', 'reports' => 'fa-file-invoice', 'partners' => 'fa-handshake',
+            'pricing' => 'fa-coins', 'team' => 'fa-people-group', 'documents' => 'fa-folder-open', 'regulation' => 'fa-scale-balanced', 'redirect' => 'fa-share', 'menu_link' => 'fa-link', 'menu_heading' => 'fa-heading', 'reports' => 'fa-file-invoice', 'partners' => 'fa-handshake',
             'recruitment' => 'fa-user-plus', 'tender' => 'fa-file-signature', 'service' => 'fa-briefcase', 'guide' => 'fa-list-ol', 'glossary' => 'fa-book', 'case_study' => 'fa-chart-line',
             'faq' => 'fa-circle-question', 'event' => 'fa-calendar', 'schedule' => 'fa-calendar-days', 'links_hub' => 'fa-table-cells-large',
             'tiles_grid' => 'fa-table-cells', 'internal' => 'fa-lock', 'internal_hub' => 'fa-user-lock', 'bip_move' => 'fa-landmark',
@@ -94,7 +96,7 @@ class PageTypeRegistryTest extends TestCase
         $this->assertSame($expected, $icons);
 
         $this->assertSame(
-            ['form_page', 'service', 'guide', 'glossary', 'case_study', 'pricing', 'team', 'documents', 'regulation', 'redirect', 'reports', 'partners', 'recruitment', 'tender'],
+            ['form_page', 'service', 'guide', 'glossary', 'case_study', 'pricing', 'team', 'documents', 'regulation', 'redirect', 'menu_link', 'reports', 'partners', 'recruitment', 'tender'],
             Page::typeDataTypes(),
         );
 

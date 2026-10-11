@@ -41,10 +41,21 @@
         @foreach ($page->publishedChildren as $child)
             @php $isCurrentChild = request()->routeIs('page.show') && request()->route('page')?->id === $child->id; @endphp
             <li>
-                <a href="{{ $child->publicUrl() }}" @if ($isCurrentChild) aria-current="page" @endif
+                @if ($child->isMenuHeading())
+                    {{-- „Nagłówek w menu”: tytuł grupy (bez linku) i jego podstrony. --}}
+                    <p class="px-5 pb-1 pt-3 text-xs font-bold uppercase tracking-wide text-muted">{{ $child->title }}</p>
+                    @foreach ($child->publishedChildren as $grandchild)
+                        <a href="{{ $grandchild->navUrl() }}" {!! $grandchild->navLinkAttributes() !!}
+                            class="block px-5 py-3 text-base font-medium normal-case text-ink hover:bg-gray-50 hover:text-brand-dark focus-visible:bg-gray-50">
+                            {{ $grandchild->title }}{!! $grandchild->navNewTabNotice() !!}
+                        </a>
+                    @endforeach
+                @else
+                <a href="{{ $child->navUrl() }}" {!! $child->navLinkAttributes() !!} @if ($isCurrentChild) aria-current="page" @endif
                     class="block px-5 py-3 text-base font-medium normal-case {{ $isCurrentChild ? 'text-brand-dark' : 'text-ink' }} hover:bg-gray-50 hover:text-brand-dark focus-visible:bg-gray-50">
-                    {{ $child->title }}
+                    {{ $child->title }}{!! $child->navNewTabNotice() !!}
                 </a>
+                @endif
             </li>
         @endforeach
 

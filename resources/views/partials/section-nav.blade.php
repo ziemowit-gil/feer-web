@@ -22,9 +22,9 @@
             @foreach ($menuSiblings as $item)
                 @php $current = $item->is($page); @endphp
                 <li>
-                    <a href="{{ $item->publicUrl() }}" @if ($current) aria-current="page" @endif
+                    <a href="{{ $item->navUrl() }}" {!! $item->navLinkAttributes() !!} @if ($current) aria-current="page" @endif
                         class="flex items-center justify-between gap-3 rounded-md px-3 py-2.5 text-ink transition hover:bg-white hover:text-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark {{ $current ? 'bg-brand-light font-bold' : 'font-semibold' }}">
-                        <span>{{ $item->title }}</span>
+                        <span>{{ $item->title }}{!! $item->navNewTabNotice() !!}</span>
                         <i class="fa-solid fa-chevron-right shrink-0 text-xs text-brand-dark" aria-hidden="true"></i>
                     </a>
                 </li>

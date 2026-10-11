@@ -3,7 +3,8 @@
     (kontakt „Instytucjonalny", widok działania). Musi stać wewnątrz elementu z x-data zawierającym
     tabs / tab / move() / jump().
 
-    Zmienne: $tabItems — lista ['id' => ..., 'label' => ...].
+    Zmienne: $tabItems — lista ['id' => ..., 'label' => ...]; opcjonalnie $tabLinks — strony-przekierowania
+    pokazywane jako zwykłe linki obok paska (poza role="tablist", bo link nie jest zakładką).
 
     Wygląd: karty z zaokrąglonymi górnymi rogami na jasnym pasku; aktywna karta ma białe tło (łączy się z treścią
     pod spodem), tekst w kolorze marki i wyraźny pasek na górze; nieaktywne są stonowane. Szerokość bloku
@@ -38,6 +39,13 @@
                 </button>
             @endforeach
         </div>
+        @if (! empty($tabLinks) && count($tabLinks))
+            <ul role="list" class="mt-3 flex flex-wrap gap-x-6 gap-y-1">
+                @foreach ($tabLinks as $linkPage)
+                    <li><a href="{{ $linkPage->navUrl() }}" {!! $linkPage->navLinkAttributes() !!} class="inline-flex min-h-11 items-center gap-2 font-bold text-brand-dark underline underline-offset-4 hover:no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">{{ $linkPage->title }}{!! $linkPage->navNewTabNotice() !!} <i class="fa-solid {{ $linkPage->navLinkAttributes() !== '' ? 'fa-arrow-up-right-from-square' : 'fa-arrow-right' }} text-xs" aria-hidden="true"></i></a></li>
+                @endforeach
+            </ul>
+        @endif
     </div>
 @elseif (count($tabItems) > 1)
     <div class="border-b border-gray-200 bg-gray-50">
@@ -62,6 +70,13 @@
                     </button>
                 @endforeach
             </div>
+            @if (! empty($tabLinks) && count($tabLinks))
+                <ul role="list" class="mt-3 flex flex-wrap gap-x-6 gap-y-1">
+                    @foreach ($tabLinks as $linkPage)
+                        <li><a href="{{ $linkPage->navUrl() }}" {!! $linkPage->navLinkAttributes() !!} class="inline-flex min-h-11 items-center gap-2 font-bold text-brand-dark underline underline-offset-4 hover:no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">{{ $linkPage->title }}{!! $linkPage->navNewTabNotice() !!} <i class="fa-solid {{ $linkPage->navLinkAttributes() !== '' ? 'fa-arrow-up-right-from-square' : 'fa-arrow-right' }} text-xs" aria-hidden="true"></i></a></li>
+                    @endforeach
+                </ul>
+            @endif
         </div>
     </div>
 @endif

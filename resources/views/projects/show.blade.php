@@ -28,6 +28,9 @@
         // Drzewo podstron (dowolna głębokość): na poziomie działania liczą się tylko korzenie; potomków pokazuje menu boczne w zakładce.
         $pageRoots = $project->pageTree(true);
         $tabPages = $pageRoots->where('project_display', 'tab')->values();
+        // Przekierowanie / „Własny link w menu” w trybie zakładki to zwykły link (w menu bocznym albo obok paska zakładek), nie zakładka.
+        $tabLinks = $tabPages->filter(fn ($p) => $p->navUrl() !== $p->publicUrl())->values();
+        $tabPages = $tabPages->reject(fn ($p) => $p->navUrl() !== $p->publicUrl())->values();
         $inlinePages = $pageRoots->where('project_display', 'inline')->values();
         $accordionPages = $pageRoots->where('project_display', 'accordion')->values();
         // Zakładki (jak w kontakcie): „O projekcie” + sekcje własne (gdy włączono zakładki) + podstrony w trybie zakładki.
@@ -36,7 +39,7 @@
             ->merge($sectionTabs->map(fn ($sec, $i) => ['id' => 'sekcja-'.$i, 'label' => $sec['title'] ?: 'Sekcja '.($i + 1)]))
             ->merge($tabPages->map(fn ($sp, $i) => ['id' => 'podstrona-'.$i, 'label' => $sp->title]))
             ->all();
-        $hasTabs = count($tabItems) > 1;
+        $hasTabs = count($tabItems) > 1 || ($tabLinks->isNotEmpty() && $project->sectionsNavMode() === 'sidebar');
         // Formularz wysłany z zakładki (np. z błędami) — po powrocie otwieramy tę zakładkę i podstronę z formularzem.
         $openTab = 'opis';
         $openNodeId = null;
@@ -138,7 +141,7 @@
             focusActive() { this.$nextTick(() => document.getElementById('tab-' + this.tab)?.focus()); },
         }">
     @if ($hasTabs && ! $navSidebar)
-        @include('partials.tab-strip', ['tabItems' => $tabItems, 'tabsLabel' => 'Sekcje działania'])
+        @include('partials.tab-strip', ['tabItems' => $tabItems, 'tabsLabel' => 'Sekcje działania', 'tabLinks' => $tabLinks])
     @endif
 
     <section class="mx-auto max-w-6xl px-4 py-8">
@@ -593,7 +596,7 @@
 
             {{-- ══ PANEL BOCZNY: harmonogram, kontakt, strony działania, powrót ══ --}}
             @if ($navSidebar)
-                @include('projects.partials.sidebar-nav', ['sectionTabs' => $sectionTabs, 'tabPages' => $tabPages])
+                @include('projects.partials.sidebar-nav', ['sectionTabs' => $sectionTabs, 'tabPages' => $tabPages, 'tabLinks' => $tabLinks])
             @endif
             @if ($hasAside)
             <aside class="proj-aside space-y-5" aria-label="Informacje o projekcie">

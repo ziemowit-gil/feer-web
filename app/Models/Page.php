@@ -579,6 +579,44 @@ class Page extends Model
         return preg_match('~^(https?://|/(?!/))~i', $url) ? $url : null;
     }
 
+    public function isMenuLink(): bool
+    {
+        return $this->type === 'menu_link';
+    }
+
+    public function isMenuHeading(): bool
+    {
+        return $this->type === 'menu_heading';
+    }
+
+    /**
+     * Adres pozycji menu: „Własny link w menu” i „Przekierowanie” prowadzą od razu pod swój
+     * adres docelowy (w menu bocznym, drzewie działu, menu rozwijanym i zakładkach działania),
+     * reszta — na stronę.
+     */
+    public function navUrl(): string
+    {
+        if (($this->isMenuLink() || $this->isRedirect()) && ($target = $this->redirectTarget())) {
+            return $target;
+        }
+
+        return $this->publicUrl();
+    }
+
+    /** Atrybuty linku w menu (nowa karta dla linku/przekierowania z zaznaczoną opcją). */
+    public function navLinkAttributes(): string
+    {
+        return ($this->isMenuLink() || $this->isRedirect()) && ! empty($this->typeData()['new_tab']) && $this->redirectTarget()
+            ? 'target="_blank" rel="noopener"'
+            : '';
+    }
+
+    /** Tekst dla czytników przy linku otwieranym w nowej karcie (pusty, gdy nie dotyczy). */
+    public function navNewTabNotice(): string
+    {
+        return $this->navLinkAttributes() !== '' ? '<span class="sr-only"> (otwiera się w nowej karcie)</span>' : '';
+    }
+
     public function isRegulation(): bool
     {
         return $this->type === 'regulation';

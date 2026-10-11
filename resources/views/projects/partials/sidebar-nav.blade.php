@@ -33,6 +33,9 @@
         @foreach ($tabPages as $i => $subpage)
             @include('projects.partials.tab-page-nav', ['item' => $subpage, 'depth' => 0, 'tabId' => 'podstrona-'.$i])
         @endforeach
+        @foreach ($tabLinks ?? [] as $linkPage)
+            @include('projects.partials.tab-page-nav', ['item' => $linkPage, 'depth' => 0, 'tabId' => null])
+        @endforeach
     </ul>
     @include('projects.partials.sidebar-extras', ['project' => $project])
 </nav>
