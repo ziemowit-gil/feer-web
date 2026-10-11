@@ -187,7 +187,9 @@ class NgoSupportContentSeeder extends Seeder
                 $p('Wierzymy w przejrzystość relacji. Dlatego nasze wsparcie techniczne opiera się na trzech zasadach:', true),
                 $html($css.'<ol class="ngo-steps" role="list">'.$principlesHtml.'</ol>'),
                 $p('Wszystko kalkulujemy indywidualnie — zależnie od potrzeb Waszej organizacji: liczby osób i stanowisk, systemów, z których korzystacie, oraz zakresu wsparcia. Wycenę przygotowujemy po rozmowie i diagnozie, zanim podpiszemy umowę.'),
-                $p('Wsparcia technologicznego udziela <a href="https://ziemowitgil.pl">ziemowitgil.pl</a>.'),
+                ['type' => 'heading', 'attrs' => ['text' => 'Kto udziela wsparcia', 'level' => 3]],
+                $p('Wsparcia technologicznego udziela <a href="https://ziemowitgil.pl">ziemowitgil.pl</a> — <strong>Ziemowit Gil</strong>, tyfloinformatyk, edukator i prezes Fundacji FEER. Od ponad siedmiu lat łączy nowoczesne technologie z sektorem pozarządowym i edukacją, bo wierzy, że dobrze zaprojektowane narzędzie otwiera drzwi, których wcześniej nie było.'),
+                $p('Na co dzień zajmuje się dostępnością cyfrową, automatyzacją procesów i uczeniem technologii dzieci oraz młodzieży z niepełnosprawnościami. Organizacji nie zostawia samej z wiedzą — działa razem z nią.'),
                 $formButton,
             ]],
             'wsparcie-ngo-zakres-wsparcia' => ['Zakres wsparcia', 10, [
