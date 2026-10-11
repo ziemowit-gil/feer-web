@@ -94,8 +94,16 @@
         @endphp
 
     {{-- ══ NAGŁÓWEK (układ portalu): kategoria, tytuł, status i termin zwykłym tekstem, zajawka, zdjęcie — płasko, na białym ══ --}}
+    @php $imageHero = $project->image_hero && $project->image_url; @endphp
+    @if ($imageHero)
+        {{-- Zdjęcie jako hero: szeroki baner nad nagłówkiem; tytuł pod nim na białym (kontrast nie zależy od zdjęcia). --}}
+        <div class="mx-auto max-w-6xl px-4 pt-6 sm:pt-8">
+            <img src="{{ $project->image_url }}" alt="{{ $project->image_alt ?: 'Zdjęcie ilustracyjne: '.$project->title }}" data-lightbox
+                class="aspect-[16/9] max-h-[28rem] w-full rounded-md object-cover sm:aspect-[21/8]">
+        </div>
+    @endif
     <section>
-        <div class="mx-auto grid max-w-6xl items-center gap-8 px-4 pb-4 pt-8 sm:pt-10 {{ $project->image_url ? 'lg:grid-cols-[minmax(0,1fr)_26rem]' : '' }}">
+        <div class="mx-auto grid max-w-6xl items-center gap-8 px-4 pb-4 {{ $imageHero ? 'pt-6 sm:pt-8' : 'pt-8 sm:pt-10' }} {{ $project->image_url && ! $imageHero ? 'lg:grid-cols-[minmax(0,1fr)_26rem]' : '' }}">
             <div class="min-w-0">
                 <a href="{{ route('categories.show', $project->category) }}" class="inline-block text-sm font-bold uppercase tracking-widest text-brand-dark hover:underline hover:underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">
                     {{ $project->category->name }}
@@ -126,7 +134,7 @@
                 @endif
             </div>
 
-            @if ($project->image_url)
+            @if ($project->image_url && ! $imageHero)
                 <img src="{{ $project->image_url }}" alt="{{ $project->image_alt ?: 'Zdjęcie ilustracyjne: '.$project->title }}" data-lightbox
                     class="aspect-[4/3] w-full rounded-md object-cover">
             @endif

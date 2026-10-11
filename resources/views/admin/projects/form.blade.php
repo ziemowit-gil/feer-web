@@ -390,6 +390,12 @@
                                 <p class="mt-1 text-xs text-muted">Opisz, co przedstawia zdjęcie — czytają to osoby korzystające z czytników ekranu.</p>
                                 @error('image_alt') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                             </div>
+
+                            <label class="flex items-start gap-2 text-sm">
+                                <input type="checkbox" name="image_hero" value="1" @checked(old('image_hero', $project->image_hero))
+                                    class="mt-0.5 rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
+                                <span><span class="font-bold">Zdjęcie jako hero</span> — szeroki baner na całą szerokość nad tytułem zamiast zdjęcia obok tytułu.</span>
+                            </label>
                         </div>
                     </div>
                 </div>

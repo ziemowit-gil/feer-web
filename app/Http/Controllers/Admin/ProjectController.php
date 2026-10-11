@@ -470,6 +470,7 @@ class ProjectController extends Controller
         $data['is_featured_contact'] = $request->boolean('is_featured_contact');
         $data['show_coordinator'] = $request->boolean('show_coordinator');
         $data['show_legacy_box'] = $request->boolean('show_legacy_box');
+        $data['image_hero'] = $request->boolean('image_hero');
         $data['sections_as_tabs'] = $request->boolean('sections_as_tabs');
 
         // Przyciski pod menu sekcji: pomijamy puste wiersze i adresy spoza http(s)/mailto/tel/ścieżek względnych.
