@@ -104,6 +104,10 @@
             --color-brand-dark:  {{ $brandPalette['dark'] }};
             --color-brand-light: {{ $brandPalette['light'] }};
         }
+        /* Białe karty i przyciski bez ramki zlewały się z jasnoszarym tłem panelu — delikatny obrys i cień je odcinają. */
+        #main :is(.rounded, .rounded-md, .rounded-lg, .rounded-xl).bg-white:not([class*="border"]):not([class*="shadow"]) {
+            box-shadow: 0 0 0 1px #d9dde4, 0 1px 2px rgba(16, 24, 40, .05);
+        }
     </style>
 </head>
 <body class="flex min-h-screen bg-gray-100 text-ink antialiased" data-admin-pickers x-data :class="{ 'overflow-hidden lg:overflow-auto': $store.adminNav.mobileOpen }">
