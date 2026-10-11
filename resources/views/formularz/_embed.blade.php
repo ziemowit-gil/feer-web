@@ -5,8 +5,14 @@
     $showSuccess = $isThisForm && session('success');
     $showErrors  = $isThisForm && $errors->any();
     $errorSummaryId = 'form-errors-' . $fs;
-    // Szablon FEER: formularz bez obwódek — pola wypełnione jasnym szarym tłem z grubszą linią u dołu (kontrast krawędzi pola ≥ 3:1).
+    // Szablon FEER: formularz bez ramek i linii — bez karty wokół, pola wypełnione jasnym tłem, zaokrąglone;
+    // fokus sygnalizuje wyraźny pierścień w kolorze marki (2.4.7), błąd — tło i komunikat z ikoną (nie sam kolor).
     $feerForm    = ($siteSettings->site_template ?? 'default') === 'feer';
+    $fLabel      = $feerForm ? 'block text-base font-bold text-ink' : 'block text-sm font-semibold text-ink';
+    $fLegend     = $feerForm ? 'text-base font-bold text-ink' : 'text-sm font-semibold text-ink';
+    $fPad        = $feerForm ? 'px-4 py-3.5' : 'px-3 py-2';
+    $fFill       = 'bg-[#eff1f5]';
+    $fFillHover  = 'hover:bg-[#e3e7ee]';
     $hasFile     = collect($fields)->contains(fn ($f) => ($f['type'] ?? '') === 'file');
     $hasInputs   = collect($fields)->contains(fn ($f) => \App\Models\FormDefinition::isInput($f['type'] ?? 'text'));
     $privacyUrl  = \Illuminate\Support\Facades\Route::has('page.show') ? url('/polityka-prywatnosci') : null;
@@ -23,14 +29,14 @@
 
 <section id="formularz-{{ $fs }}"
     aria-labelledby="form-heading-{{ $fs }}"
-    class="not-prose my-8 {{ $feerForm ? 'rounded-md bg-gray-50 p-6 sm:p-8' : 'rounded-xl border border-gray-200 bg-white p-6 shadow-sm' }}">
+    class="not-prose my-10 {{ $feerForm ? '' : 'rounded-xl border border-gray-200 bg-white p-6 shadow-sm' }}">
 
     @php $headingTag = in_array($headingTag ?? 'h2', ['h2', 'h3'], true) ? ($headingTag ?? 'h2') : 'h2'; @endphp
-    <{{ $headingTag }} id="form-heading-{{ $fs }}" class="mb-1 text-xl font-bold text-ink">
+    <{{ $headingTag }} id="form-heading-{{ $fs }}" class="mb-1 font-bold text-ink {{ $feerForm ? 'text-2xl sm:text-3xl' : 'text-xl' }}">
         {{ $form->title }}
     </{{ $headingTag }}>
     @if ($form->description)
-        <p class="mb-5 text-sm text-muted">{{ $form->description }}</p>
+        <p class="mb-6 text-muted {{ $feerForm ? 'max-w-2xl text-base' : 'text-sm' }}">{{ $form->description }}</p>
     @else
         <div class="mb-5"></div>
     @endif
@@ -43,7 +49,7 @@
     {{-- ── Potwierdzenie wysłania ─────────────────────────────────────────── --}}
     @if ($showSuccess)
         <div role="status" aria-live="polite" aria-atomic="true"
-            class="flex items-start gap-3 rounded-lg bg-green-50 px-5 py-4 text-sm text-green-800 {{ $feerForm ? '' : 'border border-green-200' }}">
+            class="flex items-start gap-3 {{ $feerForm ? 'rounded-xl' : 'rounded-lg' }} bg-green-50 px-5 py-4 text-sm text-green-800 {{ $feerForm ? '' : 'border border-green-200' }}">
             <i class="fa-solid fa-circle-check mt-0.5 shrink-0 text-green-600" aria-hidden="true"></i>
             <p>{{ session('success') }}</p>
         </div>
@@ -70,7 +76,7 @@
     @if ($showErrors)
         <div id="{{ $errorSummaryId }}" role="alert" aria-live="assertive" aria-atomic="true"
             tabindex="-1"
-            class="mb-5 rounded-lg bg-red-50 px-5 py-4 text-sm text-red-800 {{ $feerForm ? '' : 'border border-red-200' }}">
+            class="mb-5 {{ $feerForm ? 'rounded-xl' : 'rounded-lg' }} bg-red-50 px-5 py-4 text-sm text-red-800 {{ $feerForm ? '' : 'border border-red-200' }}">
             <p class="flex items-center gap-2 font-bold">
                 <i class="fa-solid fa-triangle-exclamation shrink-0" aria-hidden="true"></i>
                 Proszę poprawić następujące błędy:
@@ -103,7 +109,7 @@
         @if ($hasFile) enctype="multipart/form-data" @endif
         @if ($showErrors) aria-describedby="{{ $errorSummaryId }}" @endif
         novalidate
-        class="space-y-5">
+        class="{{ $feerForm ? 'space-y-7' : 'space-y-5' }}">
         @csrf
 
         @if ($hasInputs)
@@ -118,7 +124,7 @@
             <ol class="mb-2 flex flex-wrap gap-x-4 gap-y-2 text-sm" data-ff-progress hidden aria-label="Kroki formularza">
                 @foreach ($stepTitles as $i => $t)
                     <li class="flex items-center gap-2 text-muted" data-ff-progress-item>
-                        <span class="flex h-7 w-7 flex-none items-center justify-center rounded-full border-2 border-solid border-gray-300 bg-white text-xs font-bold" aria-hidden="true">{{ $i + 1 }}</span>
+                        <span class="flex h-7 w-7 flex-none items-center justify-center rounded-full text-xs font-bold {{ $feerForm ? 'bg-gray-200' : 'border-2 border-solid border-gray-300 bg-white' }}" data-ff-off="{{ $feerForm ? 'bg-gray-200' : 'bg-white' }}" aria-hidden="true">{{ $i + 1 }}</span>
                         <span>{{ $t !== '' ? $t : 'Krok ' . ($i + 1) }}</span>
                     </li>
                 @endforeach
@@ -167,8 +173,8 @@
                 $describedByStr = implode(' ', $describedBy);
 
                 $baseInputClass = $feerForm
-                    ? 'w-full rounded-t-md rounded-b-none border-0 border-b-2 text-base text-ink transition focus:outline-none focus:ring-0 focus:border-brand '
-                        . ($hasError ? 'border-red-700 bg-red-50' : 'border-gray-500 bg-gray-100 hover:bg-gray-200/70 focus:bg-white')
+                    ? 'w-full rounded-xl border-0 text-base text-ink placeholder:text-gray-600 transition focus:bg-white focus:outline-none focus:ring-[3px] '
+                        . ($hasError ? 'bg-red-50 focus:ring-red-700' : $fFill . ' ' . $fFillHover . ' focus:ring-brand')
                     : 'w-full rounded-lg border text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-1 '
                         . ($hasError ? 'border-red-400 bg-red-50' : 'border-gray-300 bg-white');
             @endphp
@@ -176,7 +182,7 @@
             @if ($type === 'radio')
                 {{-- ── Radio group (fieldset + legend) ──────────────────────── --}}
                 <fieldset class="space-y-1.5">
-                    <legend class="text-sm font-semibold text-ink">
+                    <legend class="{{ $fLegend }}">
                         {{ $field['label'] }}
                         @if ($required)
                             <span aria-hidden="true" class="ml-0.5 font-bold text-red-500">*</span>
@@ -201,7 +207,7 @@
                                         {{ $oldVal === $opt ? 'checked' : '' }}
                                         @if ($hasError) aria-invalid="true" @endif
                                         @if ($describedByStr) aria-describedby="{{ $describedByStr }}" @endif
-                                        class="h-4 w-4 shrink-0 border-gray-300 text-brand focus:ring-brand {{ $hasError ? 'border-red-400' : '' }}">
+                                        class="{{ $feerForm ? 'h-5 w-5' : 'h-4 w-4' }} shrink-0 border-gray-300 text-brand focus:ring-brand {{ $hasError ? 'border-red-400' : '' }}">
                                     {{ $opt }}
                                 </label>
                             @endif
@@ -228,7 +234,7 @@
                             {{ $oldVal ? 'checked' : '' }}
                             @if ($hasError) aria-invalid="true" @endif
                             @if ($describedByStr) aria-describedby="{{ $describedByStr }}" @endif
-                            class="mt-0.5 h-4 w-4 shrink-0 cursor-pointer rounded border-gray-300 text-brand focus:ring-brand {{ $hasError ? 'border-red-400' : '' }}">
+                            class="mt-0.5 {{ $feerForm ? 'h-5 w-5' : 'h-4 w-4' }} shrink-0 cursor-pointer rounded border-gray-300 text-brand focus:ring-brand {{ $hasError ? 'border-red-400' : '' }}">
                         <label for="{{ $fid }}" class="cursor-pointer text-sm text-ink">
                             {{ $field['label'] }}
                             @if ($required)
@@ -239,11 +245,11 @@
                     </div>
 
                     @if ($field['help_text'] ?? null)
-                        <p id="{{ $helpId }}" class="pl-6 text-xs text-muted">{{ $field['help_text'] }}</p>
+                        <p id="{{ $helpId }}" class="{{ $feerForm ? 'pl-7' : 'pl-6' }} text-xs text-muted">{{ $field['help_text'] }}</p>
                     @endif
 
                     @if ($hasError)
-                        <p id="{{ $errorId }}" class="flex items-center gap-1 pl-6 text-sm font-medium text-red-700" role="alert">
+                        <p id="{{ $errorId }}" class="flex items-center gap-1 {{ $feerForm ? 'pl-7' : 'pl-6' }} text-sm font-medium text-red-700" role="alert">
                             <i class="fa-solid fa-circle-exclamation shrink-0" aria-hidden="true"></i>
                             @error("data.{$field['key']}") {{ $message }} @enderror
                         </p>
@@ -252,8 +258,8 @@
 
             @elseif ($type === 'heading')
                 {{-- ── Nagłówek / opis sekcji (bez wartości) ─────────────────── --}}
-                <div class="border-t border-solid border-gray-200 pt-5 first:border-t-0 first:pt-0">
-                    <h3 class="text-lg font-bold text-ink">{{ $field['label'] }}</h3>
+                <div class="{{ $feerForm ? 'pt-6 first:pt-0' : 'border-t border-solid border-gray-200 pt-5 first:border-t-0 first:pt-0' }}">
+                    <h3 class="font-bold text-ink {{ $feerForm ? 'text-xl' : 'text-lg' }}">{{ $field['label'] }}</h3>
                     @if ($field['help_text'] ?? null)
                         <p class="mt-1 text-sm text-muted">{{ $field['help_text'] }}</p>
                     @endif
@@ -262,7 +268,7 @@
             @elseif ($type === 'link')
                 {{-- ── Tekst z przyciskiem: przejście na inny adres (bez wartości) ── --}}
                 @php $linkUrl = \App\Models\FormDefinition::safeUrl($field['url'] ?? null); $linkNewTab = ! empty($field['new_tab']); @endphp
-                <div class="rounded-md bg-brand-light p-5">
+                <div class="{{ $feerForm ? 'rounded-xl' : 'rounded-md' }} bg-brand-light p-5">
                     @if ($field['help_text'] ?? null)
                         <p class="whitespace-pre-line text-ink">{{ $field['help_text'] }}</p>
                     @endif
@@ -283,7 +289,7 @@
                     $oldArr   = $isRating ? [(string) $oldVal] : array_map('strval', (array) ($oldVal ?? []));
                 @endphp
                 <fieldset class="space-y-1.5" @if ($describedByStr) aria-describedby="{{ $describedByStr }}" @endif @if ($required && ! $isRating) data-ff-group-required @endif>
-                    <legend class="text-sm font-semibold text-ink">
+                    <legend class="{{ $fLegend }}">
                         {{ $field['label'] }}
                         @if ($required)
                             <span aria-hidden="true" class="ml-0.5 font-bold text-red-500">*</span>
@@ -299,7 +305,7 @@
                         @foreach ($choices as $opt)
                             @php $optId = $fid . '-' . \Illuminate\Support\Str::slug($opt, '_'); @endphp
                             @if ($isRating)
-                                <label for="{{ $optId }}" class="flex h-11 w-11 cursor-pointer items-center justify-center rounded-md border-2 border-solid border-gray-300 bg-white text-base font-bold text-ink transition hover:border-brand has-[:checked]:border-brand has-[:checked]:bg-brand has-[:checked]:text-white has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-brand has-[:focus-visible]:ring-offset-2">
+                                <label for="{{ $optId }}" class="flex h-11 w-11 cursor-pointer items-center justify-center text-base font-bold text-ink transition {{ $feerForm ? 'rounded-xl ' . $fFill . ' ' . $fFillHover : 'rounded-md border-2 border-solid border-gray-300 bg-white hover:border-brand has-[:checked]:border-brand' }} has-[:checked]:bg-brand has-[:checked]:text-white has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-brand has-[:focus-visible]:ring-offset-2">
                                     <input id="{{ $optId }}" type="radio" name="{{ $fname }}" value="{{ $opt }}" class="sr-only"
                                         {{ $required ? 'required' : '' }} {{ in_array($opt, $oldArr, true) ? 'checked' : '' }}
                                         @if ($hasError) aria-invalid="true" @endif>
@@ -310,7 +316,7 @@
                                     <input id="{{ $optId }}" type="checkbox" name="{{ $fname }}[]" value="{{ $opt }}"
                                         {{ in_array($opt, $oldArr, true) ? 'checked' : '' }}
                                         @if ($hasError) aria-invalid="true" @endif
-                                        class="h-4 w-4 shrink-0 rounded border-gray-300 text-brand focus:ring-brand {{ $hasError ? 'border-red-400' : '' }}">
+                                        class="{{ $feerForm ? 'h-5 w-5' : 'h-4 w-4' }} shrink-0 rounded border-gray-300 text-brand focus:ring-brand {{ $hasError ? 'border-red-400' : '' }}">
                                     {{ $opt }}
                                 </label>
                             @endif
@@ -337,7 +343,7 @@
                             {{ $oldVal ? 'checked' : '' }}
                             @if ($hasError) aria-invalid="true" @endif
                             @if ($describedByStr) aria-describedby="{{ $describedByStr }}" @endif
-                            class="mt-0.5 h-4 w-4 shrink-0 cursor-pointer rounded border-gray-300 text-brand focus:ring-brand {{ $hasError ? 'border-red-400' : '' }}">
+                            class="mt-0.5 {{ $feerForm ? 'h-5 w-5' : 'h-4 w-4' }} shrink-0 cursor-pointer rounded border-gray-300 text-brand focus:ring-brand {{ $hasError ? 'border-red-400' : '' }}">
                         <label for="{{ $fid }}" class="cursor-pointer text-sm text-ink">
                             {{ $field['label'] }}
                             @if ($privacyUrl)
@@ -350,10 +356,10 @@
                         </label>
                     </div>
                     @if ($field['help_text'] ?? null)
-                        <p id="{{ $helpId }}" class="pl-6 text-xs text-muted">{{ $field['help_text'] }}</p>
+                        <p id="{{ $helpId }}" class="{{ $feerForm ? 'pl-7' : 'pl-6' }} text-xs text-muted">{{ $field['help_text'] }}</p>
                     @endif
                     @if ($hasError)
-                        <p id="{{ $errorId }}" class="flex items-center gap-1 pl-6 text-sm font-medium text-red-700" role="alert">
+                        <p id="{{ $errorId }}" class="flex items-center gap-1 {{ $feerForm ? 'pl-7' : 'pl-6' }} text-sm font-medium text-red-700" role="alert">
                             <i class="fa-solid fa-circle-exclamation shrink-0" aria-hidden="true"></i>
                             @error("data.{$field['key']}") {{ $message }} @enderror
                         </p>
@@ -369,7 +375,7 @@
                     $fileDescribed = trim($describedByStr . ' ' . $fileHintId);
                 @endphp
                 <div class="space-y-1">
-                    <label for="{{ $fid }}" class="block text-sm font-semibold text-ink">
+                    <label for="{{ $fid }}" class="{{ $fLabel }}">
                         {{ $field['label'] }}
                         @if ($required)
                             <span aria-hidden="true" class="ml-0.5 font-bold text-red-500">*</span>
@@ -384,7 +390,7 @@
                         {{ $required ? 'required aria-required="true"' : '' }}
                         @if ($hasError) aria-invalid="true" @endif
                         aria-describedby="{{ $fileDescribed }}"
-                        class="{{ $baseInputClass }} px-3 py-2 file:mr-3 file:rounded-md file:border-0 file:bg-brand-light file:px-3 file:py-1.5 file:font-bold file:text-brand-dark">
+                        class="{{ $baseInputClass }} {{ $fPad }} file:mr-3 file:rounded-md file:border-0 file:bg-brand-light file:px-3 file:py-1.5 file:font-bold file:text-brand-dark">
                     <p id="{{ $fileHintId }}" class="text-xs text-muted">Dozwolone: {{ strtoupper(implode(', ', $accept)) }}. Maksymalnie {{ $maxMb }} MB.@if ($showErrors) Po błędzie plik trzeba wybrać ponownie.@endif</p>
                     @if ($hasError)
                         <p id="{{ $errorId }}" class="flex items-center gap-1 text-sm font-medium text-red-700" role="alert">
@@ -397,7 +403,7 @@
             @elseif ($type === 'select')
                 {{-- ── Select ───────────────────────────────────────────────── --}}
                 <div class="space-y-1">
-                    <label for="{{ $fid }}" class="block text-sm font-semibold text-ink">
+                    <label for="{{ $fid }}" class="{{ $fLabel }}">
                         {{ $field['label'] }}
                         @if ($required)
                             <span aria-hidden="true" class="ml-0.5 font-bold text-red-500">*</span>
@@ -414,7 +420,7 @@
                         {{ $required ? 'required aria-required="true"' : '' }}
                         @if ($hasError) aria-invalid="true" @endif
                         @if ($describedByStr) aria-describedby="{{ $describedByStr }}" @endif
-                        class="{{ $baseInputClass }} py-2 pl-3 pr-8">
+                        class="{{ $baseInputClass }} {{ $feerForm ? 'py-3.5 pl-4 pr-10' : 'py-2 pl-3 pr-8' }}">
                         <option value="">— wybierz —</option>
                         @foreach (array_map('trim', explode(',', $field['options'] ?? '')) as $opt)
                             @if (filled($opt))
@@ -434,7 +440,7 @@
             @elseif ($type === 'textarea')
                 {{-- ── Textarea ─────────────────────────────────────────────── --}}
                 <div class="space-y-1">
-                    <label for="{{ $fid }}" class="block text-sm font-semibold text-ink">
+                    <label for="{{ $fid }}" class="{{ $fLabel }}">
                         {{ $field['label'] }}
                         @if ($required)
                             <span aria-hidden="true" class="ml-0.5 font-bold text-red-500">*</span>
@@ -453,7 +459,7 @@
                         placeholder="{{ $field['placeholder'] ?? '' }}"
                         @if ($hasError) aria-invalid="true" @endif
                         @if ($describedByStr) aria-describedby="{{ $describedByStr }}" @endif
-                        class="{{ $baseInputClass }} px-3 py-2">{{ $oldVal }}</textarea>
+                        class="{{ $baseInputClass }} {{ $fPad }}">{{ $oldVal }}</textarea>
 
                     @if ($hasError)
                         <p id="{{ $errorId }}" class="flex items-center gap-1 text-sm font-medium text-red-700" role="alert">
@@ -467,7 +473,7 @@
                 {{-- ── Numer KRS: pobiera dane podmiotu i uzupełnia pola oznaczone w kreatorze ── --}}
                 @php $krsStatusId = $fid . '-status'; @endphp
                 <div class="space-y-1" data-krs-field data-krs-url="{{ url('/krs') }}">
-                    <label for="{{ $fid }}" class="block text-sm font-semibold text-ink">
+                    <label for="{{ $fid }}" class="{{ $fLabel }}">
                         {{ $field['label'] }}
                         @if ($required)
                             <span aria-hidden="true" class="ml-0.5 font-bold text-red-500">*</span>
@@ -491,9 +497,9 @@
                             @if ($hasError) aria-invalid="true" @endif
                             aria-describedby="{{ trim($helpId.' '.$krsStatusId.($hasError ? ' '.$errorId : '')) }}"
                             data-krs-input
-                            class="{{ $baseInputClass }} max-w-xs px-3 py-2 font-mono tracking-wider">
+                            class="{{ $baseInputClass }} {{ $feerForm ? 'min-w-0 flex-1 basis-56 px-4 py-3.5 tabular-nums tracking-wider' : 'max-w-xs px-3 py-2 font-mono tracking-wider' }}">
                         <button type="button" data-krs-button
-                            class="inline-flex min-h-11 items-center gap-2 rounded-md bg-ink px-4 text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
+                            class="inline-flex items-center justify-center gap-2 bg-ink font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 {{ $feerForm ? 'min-h-12 rounded-xl px-5 text-base' : 'min-h-11 rounded-md px-4 text-sm' }}">
                             <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i> Pobierz dane z KRS
                         </button>
                     </div>
@@ -510,7 +516,7 @@
             @else
                 {{-- ── Wszystkie inne pola: text, email, tel, number, date ───── --}}
                 <div class="space-y-1">
-                    <label for="{{ $fid }}" class="block text-sm font-semibold text-ink">
+                    <label for="{{ $fid }}" class="{{ $fLabel }}">
                         {{ $field['label'] }}
                         @if ($required)
                             <span aria-hidden="true" class="ml-0.5 font-bold text-red-500">*</span>
@@ -531,7 +537,7 @@
                         @if ($hasError) aria-invalid="true" @endif
                         @if ($describedByStr) aria-describedby="{{ $describedByStr }}" @endif
                         @if ($loop->first && !$showErrors) autofocus @endif
-                        class="{{ $baseInputClass }} px-3 py-2">
+                        class="{{ $baseInputClass }} {{ $fPad }}">
 
                     @if ($hasError)
                         <p id="{{ $errorId }}" class="flex items-center gap-1 text-sm font-medium text-red-700" role="alert">
@@ -549,21 +555,21 @@
         @endif
 
         @if ($hasInputs)
-            @include('partials.spam-protection', ['spamScope' => $fs, 'cleantalk' => empty($form->settings['cleantalk_disabled'] ?? null)])
+            @include('partials.spam-protection', ['spamScope' => $fs, 'flat' => $feerForm, 'cleantalk' => empty($form->settings['cleantalk_disabled'] ?? null)])
 
             <div class="flex flex-wrap items-center gap-3 pt-2">
                 @if ($hasSteps)
                     <button type="button" data-ff-prev hidden
-                        class="inline-flex min-h-11 items-center gap-2 rounded-md border-2 border-solid border-gray-300 bg-white px-5 text-sm font-bold text-ink hover:border-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
+                        class="inline-flex min-h-11 items-center gap-2 px-5 text-sm font-bold text-ink {{ $feerForm ? 'rounded-xl ' . $fFill . ' ' . $fFillHover : 'rounded-md border-2 border-solid border-gray-300 bg-white hover:border-brand' }} focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
                         <i class="fa-solid fa-arrow-left" aria-hidden="true"></i> Wstecz
                     </button>
                     <button type="button" data-ff-next hidden
-                        class="inline-flex min-h-11 items-center gap-2 rounded-md bg-ink px-5 text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
+                        class="inline-flex min-h-11 items-center gap-2 {{ $feerForm ? 'rounded-xl' : 'rounded-md' }} bg-ink px-5 text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
                         Dalej <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
                     </button>
                 @endif
                 <button type="submit" data-ff-submit
-                    class="inline-flex items-center gap-2 bg-brand text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 {{ $feerForm ? 'min-h-12 rounded-md px-7 text-base font-bold' : 'rounded-lg px-6 py-2.5 text-sm font-bold' }}">
+                    class="inline-flex items-center gap-2 bg-brand text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 {{ $feerForm ? 'min-h-13 rounded-xl px-8 text-base font-bold' : 'rounded-lg px-6 py-2.5 text-sm font-bold' }}">
                     Wyślij zgłoszenie
                     <i class="fa-solid fa-paper-plane" aria-hidden="true"></i>
                 </button>
@@ -648,6 +654,7 @@
                     li.classList.toggle('text-muted', k > i);
                     li.classList.toggle('text-ink', k <= i);
                     li.classList.toggle('font-bold', k === i);
+                    (dot.getAttribute('data-ff-off') || '').split(' ').forEach(function (c) { if (c) dot.classList.toggle(c, k > i); });
                     dot.classList.toggle('bg-brand', k <= i); dot.classList.toggle('border-brand', k <= i); dot.classList.toggle('text-white', k <= i);
                     if (k === i) li.setAttribute('aria-current', 'step'); else li.removeAttribute('aria-current');
                 });

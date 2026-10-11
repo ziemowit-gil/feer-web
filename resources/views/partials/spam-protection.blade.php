@@ -32,8 +32,9 @@
 
 <input type="hidden" name="{{ \App\Support\SpamGuard::TOKEN_FIELD }}" value="{{ $spamChallenge['token'] }}">
 
+@php $spamFlat = ! empty($flat); @endphp
 <div class="space-y-1">
-    <label for="{{ $spamAnswerId }}" class="block text-sm font-semibold text-ink">
+    <label for="{{ $spamAnswerId }}" class="block text-ink {{ $spamFlat ? 'text-base font-bold' : 'text-sm font-semibold' }}">
         Zadanie antyspamowe: {{ $spamChallenge['question'] }}
         <span aria-hidden="true" class="ml-0.5 font-bold text-red-500">*</span>
         <span class="sr-only">(wymagane)</span>
@@ -52,7 +53,9 @@
         aria-required="true"
         aria-describedby="{{ $spamHelpId }}"
         @if ($spamHasError) aria-invalid="true" @endif
-        class="w-24 rounded-lg border px-3 py-2 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-1 {{ $spamHasError ? 'border-red-400 bg-red-50' : 'border-gray-300 bg-white' }}">
+        class="{{ $spamFlat
+            ? 'w-28 rounded-xl border-0 px-4 py-3.5 text-base text-ink transition focus:bg-white focus:outline-none focus:ring-[3px] ' . ($spamHasError ? 'bg-red-50 focus:ring-red-700' : 'bg-[#eff1f5] hover:bg-[#e3e7ee] focus:ring-brand')
+            : 'w-24 rounded-lg border px-3 py-2 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-1 ' . ($spamHasError ? 'border-red-400 bg-red-50' : 'border-gray-300 bg-white') }}">
 
     @error('spam')
         <p class="flex items-center gap-1 text-sm font-medium text-red-700" role="alert">
