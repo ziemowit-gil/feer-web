@@ -16,34 +16,50 @@
         $localHeading = $page->parent->title;
         $localUp = ['label' => $page->parent->title, 'url' => route('page.show', $page->parent), 'current' => $page->parent->is($page)];
     }
+
+    // Płaski styl menu działu: pozycje jako pełnej szerokości linki z szewronem,
+    // odstępy zamiast linii; bieżąca strona tłem marki, pogrubieniem i aria-current.
+    $panelStyle = ($variant ?? null) === 'project' || $page->sideNavStyle() === 'panel';
+    $localItem = fn (bool $current) => 'flex min-h-11 w-full items-center justify-between gap-3 rounded-md px-3 py-2 text-base transition '
+        . 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark '
+        . ($current ? 'bg-brand-light font-bold text-brand-dark' : 'text-ink hover:bg-white hover:text-brand-dark hover:underline hover:underline-offset-4');
+    $localChild = fn (bool $current) => 'flex min-h-10 w-full items-center justify-between gap-3 rounded-md px-3 py-1.5 text-[0.9375rem] transition '
+        . 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark '
+        . ($current ? 'bg-brand-light font-bold text-brand-dark' : 'text-ink hover:bg-white hover:text-brand-dark hover:underline hover:underline-offset-4');
 @endphp
 
-@if (($variant ?? null) === 'project' || $page->sideNavStyle() === 'panel')
-{{-- Wygląd menu jak na stronie działania: szare pole, kreska w kolorze marki, tytuł i pozycje oddzielone cienkimi liniami. --}}
-<nav aria-label="Podstrony w tym dziale" class="relative bg-gray-100 p-6">
-    <span class="absolute block bg-brand" style="left:0;top:0;height:.25rem;width:4rem" aria-hidden="true"></span>
-    <p class="mb-4 border-b border-gray-900 pb-3 text-lg font-bold text-ink">{{ $localHeading }}</p>
-    <ul role="list" class="text-ink">
+@if ($panelStyle)
+{{-- Wygląd menu jak na stronie działania: szare pole, kreska w kolorze marki, tytuł działu i lista linków. --}}
+<nav aria-label="Podstrony w tym dziale" class="rounded-md bg-gray-50 p-5">
+    <p class="text-lg font-bold leading-snug text-ink">{{ $localHeading }}</p>
+    <span class="mb-4 mt-2 block h-1 w-14 bg-brand" aria-hidden="true"></span>
+    <ul role="list" class="space-y-1">
         @if ($localUp)
-            <li class="border-b border-gray-300">
+            <li>
                 <a href="{{ $localUp['url'] }}" @if (! empty($localUp['current'])) aria-current="page" @endif
-                    class="flex w-full items-center py-3 text-base font-normal hover:text-brand-dark focus-visible:outline-2 focus-visible:outline-brand {{ ! empty($localUp['current']) ? 'text-brand-dark' : '' }}">{{ $localUp['label'] }}</a>
+                    class="{{ $localItem(! empty($localUp['current'])) }}">
+                    <span class="min-w-0">{{ $localUp['label'] }}</span>
+                    <i class="fa-solid fa-chevron-right flex-none text-xs" aria-hidden="true"></i>
+                </a>
             </li>
         @endif
         @foreach ($menuSiblings as $sibling)
             @php $kids = $sibling->publishedChildren; @endphp
-            <li class="border-b border-gray-300 last:border-0">
+            <li>
                 <a href="{{ $sibling->publicUrl() }}" @if ($sibling->is($page)) aria-current="page" @endif
-                    class="flex w-full items-center justify-between gap-2 py-3 text-base font-normal hover:text-brand-dark focus-visible:outline-2 focus-visible:outline-brand {{ $sibling->is($page) ? 'text-brand-dark' : '' }}">
-                    <span>{{ $sibling->title }}</span>
-                    @if ($kids->isNotEmpty())<i class="fa-solid fa-chevron-right text-xs" aria-hidden="true"></i>@endif
+                    class="{{ $localItem($sibling->is($page)) }}">
+                    <span class="min-w-0">{{ $sibling->title }}</span>
+                    <i class="fa-solid fa-chevron-right flex-none text-xs" aria-hidden="true"></i>
                 </a>
                 @if ($kids->isNotEmpty() && ($sibling->is($page) || $kids->contains(fn ($k) => $k->is($page))))
-                    <ul role="list" class="border-t border-gray-300">
+                    <ul role="list" class="mt-1 space-y-1 pl-4">
                         @foreach ($kids as $child)
-                            <li class="border-b border-gray-300 last:border-0">
+                            <li>
                                 <a href="{{ $child->publicUrl() }}" @if ($child->is($page)) aria-current="page" @endif
-                                    class="flex py-2.5 pl-3 text-[0.9375rem] font-normal hover:text-brand-dark focus-visible:outline-2 focus-visible:outline-brand {{ $child->is($page) ? 'text-brand-dark' : '' }}">{{ $child->title }}</a>
+                                    class="{{ $localChild($child->is($page)) }}">
+                                    <span class="min-w-0">{{ $child->title }}</span>
+                                    <i class="fa-solid fa-chevron-right flex-none text-[0.625rem]" aria-hidden="true"></i>
+                                </a>
                             </li>
                         @endforeach
                     </ul>
@@ -53,15 +69,17 @@
     </ul>
 </nav>
 @else
-<aside aria-label="Podstrony w tym dziale" class="md:border-l md:border-gray-200 md:pl-6">
-    <p class="mb-3 text-xs font-bold uppercase tracking-wide text-muted">{{ $localHeading }}</p>
-    <ul class="space-y-1 text-sm">
+<aside aria-label="Podstrony w tym dziale" class="rounded-md bg-gray-50 p-5">
+    <p class="text-base font-bold leading-snug text-ink">{{ $localHeading }}</p>
+    <span class="mb-4 mt-2 block h-1 w-14 bg-brand" aria-hidden="true"></span>
+    <ul role="list" class="space-y-1">
         @if ($localUp)
             <li>
                 <a href="{{ $localUp['url'] }}"
                     {{ ! empty($localUp['current']) ? 'aria-current=page' : '' }}
-                    class="block rounded px-2 py-1.5 {{ ! empty($localUp['current']) ? 'bg-brand-light font-bold text-brand-dark' : 'text-ink hover:bg-gray-50' }}">
-                    {{ $localUp['label'] }}
+                    class="{{ $localItem(! empty($localUp['current'])) }}">
+                    <span class="min-w-0">{{ $localUp['label'] }}</span>
+                    <i class="fa-solid fa-chevron-right flex-none text-xs" aria-hidden="true"></i>
                 </a>
             </li>
         @endif
@@ -69,20 +87,22 @@
             <li>
                 <a href="{{ $sibling->publicUrl() }}"
                     {{ $sibling->is($page) ? 'aria-current=page' : '' }}
-                    class="block rounded px-2 py-1.5 {{ $sibling->is($page) ? 'bg-brand-light font-bold text-brand-dark' : 'text-ink hover:bg-gray-50' }}">
-                    {{ $sibling->title }}
+                    class="{{ $localItem($sibling->is($page)) }}">
+                    <span class="min-w-0">{{ $sibling->title }}</span>
+                    <i class="fa-solid fa-chevron-right flex-none text-xs" aria-hidden="true"></i>
                 </a>
 
-                {{-- Drzewo: opublikowane podstrony rodzeństwa jako zagnieżdżona gałąź. --}}
+                {{-- Drzewo: opublikowane podstrony rodzeństwa jako zagnieżdżona gałąź (wcięcie zamiast linii). --}}
                 @php $childBranch = $sibling->publishedChildren; @endphp
                 @if ($childBranch->isNotEmpty())
-                    <ul class="mt-1 space-y-1 border-l border-gray-200 pl-3">
+                    <ul role="list" class="mt-1 space-y-1 pl-4">
                         @foreach ($childBranch as $child)
                             <li>
                                 <a href="{{ $child->publicUrl() }}"
                                     {{ $child->is($page) ? 'aria-current=page' : '' }}
-                                    class="block rounded px-2 py-1 text-[0.8rem] {{ $child->is($page) ? 'bg-brand-light font-bold text-brand-dark' : 'text-muted hover:bg-gray-50 hover:text-ink' }}">
-                                    {{ $child->title }}
+                                    class="{{ $localChild($child->is($page)) }}">
+                                    <span class="min-w-0">{{ $child->title }}</span>
+                                    <i class="fa-solid fa-chevron-right flex-none text-[0.625rem]" aria-hidden="true"></i>
                                 </a>
                             </li>
                         @endforeach

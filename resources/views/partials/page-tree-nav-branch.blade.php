@@ -12,7 +12,7 @@
     $branchIndent = ['', 'pl-3', 'pl-6', 'pl-9', 'pl-12', 'pl-14'][min($depth, 5)];
 @endphp
 
-<ul role="list" class="mt-0.5 space-y-0.5 border-l border-gray-200 {{ $depth === 1 ? 'ml-3' : 'ml-2' }}">
+<ul role="list" class="mt-0.5 space-y-0.5 {{ $depth === 1 ? 'ml-3' : 'ml-2' }}">
     @foreach ($nodes as $node)
         @php
             $isCurrent = $node->is($page);
@@ -24,9 +24,9 @@
         <li @if ($hasBranch) x-data="{ open: {{ $onRootline ? 'true' : 'false' }} }" @endif>
             <div class="flex items-stretch gap-0.5 pl-2">
                 <a href="{{ $node->publicUrl() }}" @if ($isCurrent) aria-current="page" @endif
-                    class="flex min-h-11 min-w-0 flex-1 items-center gap-2 rounded-lg px-2.5 py-2 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand
-                        {{ $isCurrent ? 'bg-brand-light font-bold text-brand-dark' : ($onRootline ? 'font-semibold text-ink hover:bg-gray-50' : 'text-ink hover:bg-gray-50 hover:text-brand-dark') }}">
-                    <i class="fa-solid {{ $hasBranch ? 'fa-folder' : 'fa-file-lines' }} w-4 flex-none text-center text-xs {{ $isCurrent ? 'text-brand-dark' : 'text-gray-400' }}" aria-hidden="true"></i>
+                    class="flex min-h-11 min-w-0 flex-1 items-center gap-2 rounded-md px-2.5 py-2 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark
+                        {{ $isCurrent ? 'bg-brand-light font-bold text-brand-dark' : ($onRootline ? 'font-semibold ' : '') . 'text-ink hover:bg-white hover:text-brand-dark hover:underline hover:underline-offset-4' }}">
+                    <i class="fa-solid {{ $hasBranch ? 'fa-folder' : 'fa-file-lines' }} w-4 flex-none text-center text-xs {{ $isCurrent ? 'text-brand-dark' : 'text-muted' }}" aria-hidden="true"></i>
                     <span class="min-w-0 flex-1 leading-snug">{{ $node->title }}</span>
                 </a>
 
@@ -35,8 +35,8 @@
                         aria-controls="{{ $branchId }}"
                         aria-label="{{ $onRootline ? 'Zwiń' : 'Rozwiń' }}: {{ $node->title }} ({{ $branch->count() }} {{ trans_choice('podstrona|podstrony|podstron', $branch->count()) }})"
                         :aria-label="(open ? 'Zwiń' : 'Rozwiń') + ': {{ addslashes($node->title) }} ({{ $branch->count() }} {{ trans_choice('podstrona|podstrony|podstron', $branch->count()) }})'"
-                        class="flex min-h-11 w-9 flex-none items-center justify-center rounded-lg text-xs text-muted transition hover:bg-gray-100 hover:text-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
-                        <span class="inline-flex h-5 min-w-5 items-center justify-center gap-0.5 rounded border border-gray-300 bg-white px-1 font-mono text-[11px] leading-none">
+                        class="flex min-h-11 w-9 flex-none items-center justify-center rounded-md text-xs font-bold text-ink transition hover:bg-white hover:text-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">
+                        <span class="inline-flex items-center justify-center gap-0.5 font-mono text-xs leading-none">
                             <span x-text="open ? '−' : '+'" aria-hidden="true">{{ $onRootline ? '−' : '+' }}</span><span aria-hidden="true">{{ $branch->count() }}</span>
                         </span>
                     </button>

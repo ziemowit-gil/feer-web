@@ -93,18 +93,11 @@
                 @if ($hasSidebar)
                     <aside class="space-y-6 lg:sticky lg:top-24 lg:self-start">
                         @if ($portalToc)
-                            <div class="rounded-xl border border-gray-200 bg-white p-5">
-                                @include('partials.page-toc', ['toc' => $portalToc, 'variant' => 'desktop'])
-                            </div>
+                            @include('partials.page-toc', ['toc' => $portalToc, 'variant' => 'desktop'])
                         @endif
                         @if ($menuSiblings->isNotEmpty() && ! $portalTabs)
-                        <div class="rounded-xl border border-gray-200 bg-gray-50 p-5">
-                            <p class="mb-3 text-xs font-bold uppercase tracking-wide text-muted">
-                                <i class="fa-solid fa-sitemap mr-1.5 text-brand" aria-hidden="true"></i>
-                                W tej sekcji
-                            </p>
+                            {{-- Menu działu ma własny panel (tło, tytuł działu) — bez dodatkowej ramki. --}}
                             @include('partials.page-local-nav', ['menuSiblings' => $menuSiblings])
-                        </div>
                         @endif
                     </aside>
                 @endif

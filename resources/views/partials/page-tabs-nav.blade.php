@@ -26,25 +26,27 @@
     }
 
     // Zakładki dziedziczą substyl paska menu głównego (Ustawienia → Nagłówek):
-    // „pigułki" wypełniają aktywną zakładkę kolorem marki, pozostałe style
-    // podkreślają ją kreską w kolorze marki.
+    // „pigułki" wypełniają aktywną zakładkę ciemnym kolorem marki, pozostałe
+    // style oznaczają ją pogrubionym tekstem w kolorze marki i kreską pod spodem
+    // (kształt, nie tylko kolor). Płasko: szare pole zamiast linii.
     $tabsPills = ($siteSettings->wide_mission_nav_style ?? 'brand_bar') === 'pills';
     $tabClass = $tabsPills
-        ? fn (bool $current) => 'inline-flex min-h-11 items-center whitespace-nowrap rounded-full px-4 text-sm font-bold transition '
-            . 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 '
-            . ($current ? 'bg-brand text-white' : 'text-ink hover:bg-brand-light hover:text-brand-dark')
-        : fn (bool $current) => 'inline-flex min-h-11 items-center whitespace-nowrap border-b-[3px] px-4 text-sm font-bold transition '
-            . 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand '
-            . ($current ? 'border-brand text-brand-dark' : 'border-transparent text-muted hover:border-gray-300 hover:text-ink');
+        ? fn (bool $current) => 'inline-flex min-h-11 items-center whitespace-nowrap rounded-md px-4 text-sm font-bold transition '
+            . 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2 '
+            . ($current ? 'bg-brand-dark text-white' : 'text-ink hover:bg-white hover:text-brand-dark')
+        : fn (bool $current) => 'relative inline-flex min-h-11 items-center whitespace-nowrap rounded-md px-4 text-sm font-bold transition '
+            . 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-dark '
+            . ($current ? 'bg-white text-brand-dark' : 'text-ink hover:bg-white hover:text-brand-dark hover:underline hover:underline-offset-4');
 @endphp
 
-<nav aria-label="Podstrony w tym dziale" class="mb-8 {{ $tabsPills ? 'rounded-2xl bg-gray-50 p-1.5' : 'border-b border-gray-200' }}">
+<nav aria-label="Podstrony w tym dziale" class="mb-8 rounded-md bg-gray-50 p-1.5">
     <p class="sr-only">{{ $tabsHeading }}</p>
-    <ul role="list" class="flex overflow-x-auto {{ $tabsPills ? 'gap-1' : '-mb-px' }}">
+    <ul role="list" class="flex gap-1 overflow-x-auto">
         @if ($tabsUp)
             <li class="flex-none">
                 <a href="{{ $tabsUp['url'] }}" @if ($tabsUp['current']) aria-current="page" @endif class="{{ $tabClass($tabsUp['current']) }}">
                     {{ $tabsUp['label'] }}
+                    @if (! $tabsPills && $tabsUp['current'])<span class="absolute inset-x-4 bottom-1 block h-1 bg-brand" aria-hidden="true"></span>@endif
                 </a>
             </li>
         @endif
@@ -53,6 +55,7 @@
             <li class="flex-none">
                 <a href="{{ $sibling->publicUrl() }}" @if ($sibling->is($page)) aria-current="page" @endif class="{{ $tabClass($tabCurrent) }}">
                     {{ $sibling->title }}
+                    @if (! $tabsPills && $tabCurrent)<span class="absolute inset-x-4 bottom-1 block h-1 bg-brand" aria-hidden="true"></span>@endif
                 </a>
             </li>
         @endforeach

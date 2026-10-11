@@ -39,50 +39,49 @@
 @endphp
 
 @if ($sectionChildren->isNotEmpty())
-    <section class="mt-12 border-t border-gray-200 pt-8" aria-labelledby="section-children-heading">
-        <h2 id="section-children-heading" class="mb-5 text-xl font-bold text-ink">
-            <i class="fa-solid fa-folder-open mr-1.5 text-brand-dark" aria-hidden="true"></i>W tym dziale
-        </h2>
-        <ul role="list" class="grid gap-4 sm:grid-cols-2">
+    {{-- Płasko: szare karty bez ramek, cała karta klikalna (stretched-link), fokus widoczny pierścieniem. --}}
+    <section class="mt-12" aria-labelledby="section-children-heading">
+        <h2 id="section-children-heading" class="text-2xl font-bold text-ink">W tym dziale</h2>
+        <span class="mb-6 mt-3 block h-1 w-14 bg-brand" aria-hidden="true"></span>
+        <ul role="list" class="grid gap-3 sm:grid-cols-2">
             @foreach ($sectionChildren as $child)
-                <li class="relative flex gap-4 rounded-xl border border-gray-200 bg-white p-4 transition hover:border-brand hover:shadow-md focus-within:border-brand focus-within:ring-2 focus-within:ring-brand">
-                    <span class="flex h-10 w-10 flex-none items-center justify-center rounded-lg bg-brand-light text-brand-dark" aria-hidden="true">
-                        <i class="fa-solid {{ $typeIcons[$child->type] ?? 'fa-file-lines' }}"></i>
-                    </span>
-                    <span class="min-w-0">
-                        <a href="{{ $child->publicUrl() }}" class="stretched-link text-base font-bold text-ink hover:text-brand-dark focus-visible:outline-none">{{ $child->title }}</a>
+                <li class="group relative flex gap-4 rounded-md bg-gray-50 p-4 transition hover:bg-brand-light focus-within:ring-2 focus-within:ring-brand-dark">
+                    <i class="fa-solid {{ $typeIcons[$child->type] ?? 'fa-file-lines' }} mt-1 w-5 flex-none text-center text-lg text-brand-dark" aria-hidden="true"></i>
+                    <span class="min-w-0 flex-1">
+                        <a href="{{ $child->publicUrl() }}" class="stretched-link text-base font-bold text-brand-dark underline underline-offset-4 group-hover:no-underline focus-visible:outline-none">{{ $child->title }}</a>
                         @php $excerpt = $excerptOf($child); @endphp
                         @if ($excerpt !== '')
                             <span class="mt-1 block text-sm leading-snug text-muted">{{ $excerpt }}</span>
                         @endif
                         @if ($child->publishedChildren->isNotEmpty())
-                            <span class="mt-2 block text-xs font-semibold text-brand-dark">{{ $child->publishedChildren->count() }} {{ trans_choice('podstrona|podstrony|podstron', $child->publishedChildren->count()) }}</span>
+                            <span class="mt-2 block text-sm font-bold text-ink">{{ $child->publishedChildren->count() }} {{ trans_choice('podstrona|podstrony|podstron', $child->publishedChildren->count()) }}</span>
                         @endif
                     </span>
+                    <i class="fa-solid fa-chevron-right mt-1.5 flex-none text-xs text-brand-dark" aria-hidden="true"></i>
                 </li>
             @endforeach
         </ul>
     </section>
 @elseif ($prev || $next || $sectionParent)
-    <nav class="mt-12 border-t border-gray-200 pt-6" aria-label="Nawigacja w dziale">
+    <nav class="mt-12" aria-label="Nawigacja w dziale">
         @if ($sectionParent)
             <p class="mb-4 text-sm text-muted">
                 <i class="fa-solid fa-folder-open mr-1 text-brand-dark" aria-hidden="true"></i>
-                W tym dziale: <a href="{{ $sectionParent['url'] }}" class="font-bold text-brand-dark underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">{{ $sectionParent['label'] }}</a>
+                W tym dziale: <a href="{{ $sectionParent['url'] }}" class="font-bold text-brand-dark underline underline-offset-4 hover:no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">{{ $sectionParent['label'] }}</a>
             </p>
         @endif
         <div class="grid gap-3 sm:grid-cols-2">
             @if ($prev)
-                <a href="{{ $prev->publicUrl() }}" rel="prev" class="group flex min-h-16 items-center gap-3 rounded-xl border border-gray-200 px-4 py-3 transition hover:border-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                <a href="{{ $prev->publicUrl() }}" rel="prev" class="group flex min-h-16 items-center gap-3 rounded-md bg-gray-50 px-4 py-3 transition hover:bg-brand-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">
                     <i class="fa-solid fa-arrow-left flex-none text-brand-dark" aria-hidden="true"></i>
-                    <span class="min-w-0"><span class="block text-xs font-bold uppercase tracking-wide text-muted">Poprzednia</span><span class="block truncate font-semibold text-ink group-hover:text-brand-dark">{{ $prev->title }}</span></span>
+                    <span class="min-w-0"><span class="block text-xs font-bold uppercase tracking-wide text-muted">Poprzednia</span><span class="block truncate font-bold text-brand-dark underline underline-offset-4 group-hover:no-underline">{{ $prev->title }}</span></span>
                 </a>
             @else
                 <span aria-hidden="true"></span>
             @endif
             @if ($next)
-                <a href="{{ $next->publicUrl() }}" rel="next" class="group flex min-h-16 items-center justify-end gap-3 rounded-xl border border-gray-200 px-4 py-3 text-right transition hover:border-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
-                    <span class="min-w-0"><span class="block text-xs font-bold uppercase tracking-wide text-muted">Następna</span><span class="block truncate font-semibold text-ink group-hover:text-brand-dark">{{ $next->title }}</span></span>
+                <a href="{{ $next->publicUrl() }}" rel="next" class="group flex min-h-16 items-center justify-end gap-3 rounded-md bg-gray-50 px-4 py-3 text-right transition hover:bg-brand-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">
+                    <span class="min-w-0"><span class="block text-xs font-bold uppercase tracking-wide text-muted">Następna</span><span class="block truncate font-bold text-brand-dark underline underline-offset-4 group-hover:no-underline">{{ $next->title }}</span></span>
                     <i class="fa-solid fa-arrow-right flex-none text-brand-dark" aria-hidden="true"></i>
                 </a>
             @endif

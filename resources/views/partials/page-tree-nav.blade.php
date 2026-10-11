@@ -38,17 +38,18 @@
         : $page->ancestors()->map(fn ($a) => ['label' => $a->title, 'url' => $a->publicUrl()]);
 @endphp
 
-<nav aria-label="Podstrony w tym dziale" class="page-tree-nav text-sm md:border-r md:border-gray-200 md:pr-6">
-    <p class="mb-3 flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide text-muted">
+<nav aria-label="Podstrony w tym dziale" class="page-tree-nav rounded-md bg-gray-50 p-4 text-sm">
+    <p class="flex items-center gap-1.5 text-base font-bold text-ink">
         <i class="fa-solid fa-sitemap text-brand-dark" aria-hidden="true"></i> W tym dziale
     </p>
+    <span class="mb-4 mt-2 block h-1 w-14 bg-brand" aria-hidden="true"></span>
 
     @if ($treeCrumbs->isNotEmpty())
-        <p class="mb-3 rounded-lg bg-gray-50 px-3 py-2 text-xs leading-relaxed text-muted">
+        <p class="mb-3 rounded-md bg-white px-3 py-2 text-xs leading-relaxed text-muted">
             <span class="font-bold">Jesteś tu:</span>
             @foreach ($treeCrumbs as $crumb)
-                <a href="{{ $crumb['url'] }}" class="rounded text-ink underline-offset-2 hover:text-brand-dark hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">{{ $crumb['label'] }}</a>
-                <span aria-hidden="true" class="mx-0.5 text-gray-400">›</span>
+                <a href="{{ $crumb['url'] }}" class="rounded font-bold text-brand-dark underline underline-offset-2 hover:no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">{{ $crumb['label'] }}</a>
+                <span aria-hidden="true" class="mx-0.5 text-muted">›</span>
             @endforeach
             <span class="font-semibold text-ink" aria-current="page">{{ $page->title }}</span>
         </p>
@@ -57,8 +58,8 @@
     <ul role="list" class="space-y-0.5">
         <li>
             <a href="{{ $treeRootUrl }}" @if ($treeRootCurrent) aria-current="page" @endif
-                class="flex min-h-11 items-center gap-2 rounded-lg px-3 py-2 font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand {{ $treeRootCurrent ? 'bg-brand text-white' : 'text-ink hover:bg-brand-light hover:text-brand-dark' }}">
-                <i class="fa-solid {{ $treeRootIsProject ? 'fa-diagram-project' : 'fa-house' }} w-4 text-center text-xs opacity-70" aria-hidden="true"></i>
+                class="flex min-h-11 items-center gap-2 rounded-md px-3 py-2 font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark {{ $treeRootCurrent ? 'bg-brand-light text-brand-dark' : 'text-ink hover:bg-white hover:text-brand-dark hover:underline hover:underline-offset-4' }}">
+                <i class="fa-solid {{ $treeRootIsProject ? 'fa-diagram-project' : 'fa-house' }} w-4 text-center text-xs text-brand-dark" aria-hidden="true"></i>
                 <span class="min-w-0 flex-1">{{ $treeRootLabel }}</span>
             </a>
 

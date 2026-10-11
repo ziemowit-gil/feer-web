@@ -29,16 +29,18 @@
             </ul>
         </section>
     @else
+    {{-- Pozostałe szablony: płaska siatka zdjęć na szarym tle, bez ramek; podpis pod zdjęciem. --}}
     <section class="mt-10" aria-label="Galeria zdjęć">
-        <h2 class="mb-4 flex items-center gap-2 text-xl font-bold text-ink">
-            <i class="fa-solid fa-images text-brand" aria-hidden="true"></i> Galeria
+        <h2 class="flex items-center gap-2 text-2xl font-bold text-ink">
+            <i class="fa-solid fa-images text-brand-dark" aria-hidden="true"></i> Galeria
         </h2>
+        <span class="mb-6 mt-3 block h-1 w-14 bg-brand" aria-hidden="true"></span>
         <div class="grid grid-cols-2 gap-3 sm:grid-cols-3" data-lightbox>
             @foreach ($galleryImages as $image)
-                <figure class="overflow-hidden rounded-xl border border-gray-200">
+                <figure class="overflow-hidden rounded-md bg-gray-50">
                     <img src="{{ $image->image_url }}" alt="{{ $image->alt }}" loading="lazy" class="h-40 w-full object-cover">
                     @if ($image->caption)
-                        <figcaption class="bg-gray-50 px-3 py-1.5 text-xs text-muted">{{ $image->caption }}</figcaption>
+                        <figcaption class="px-3 py-2 text-sm text-muted">{{ $image->caption }}</figcaption>
                     @endif
                 </figure>
             @endforeach
