@@ -31,6 +31,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'admin' => EnsureUserIsAdmin::class,
             'module' => EnsureModuleEnabled::class,
+            'edition' => \App\Http\Middleware\EnsureEditionAllows::class,
             'module-access' => EnsureUserCanAccessModule::class,
             '2fa' => EnsureTwoFactorSetup::class,
             'site.bySlug' => EnsureSiteBySlug::class,

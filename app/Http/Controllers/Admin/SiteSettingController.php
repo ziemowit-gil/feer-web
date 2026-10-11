@@ -350,6 +350,12 @@ class SiteSettingController extends Controller
                 // Wartość już zapisana pozostaje dozwolona, choćby została zablokowana
                 // później — inaczej samo zapisanie reszty ustawień by się wywalało.
                 Rule::notIn(array_diff(SiteSetting::current()->blocked_options['site_templates'] ?? [], [SiteSetting::current()->site_template])),
+                // Szablony płatne (config/editions.php) — ta sama zasada: zapisany zostaje.
+                function (string $attribute, mixed $value, \Closure $fail): void {
+                    if ($value !== SiteSetting::current()->site_template && ! \App\Support\Edition::allowsTemplate((string) $value)) {
+                        $fail('Ten szablon jest dostępny w wersji płatnej weCMS.');
+                    }
+                },
             ],
             'municipality_shortcuts_slug'      => ['nullable', 'string', 'max:255'],
             'municipality_carousel_title'      => ['nullable', 'string', 'max:255'],

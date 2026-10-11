@@ -146,6 +146,11 @@ class InstallController extends Controller
                 $this->setEnvValue('DB_PASSWORD', $request->db_pass ?? '');
             }
 
+            // Klucz licencji — z niego App\Support\Edition ustala edycję (darmowa/płatna).
+            if (filled($request->input('license_key'))) {
+                $this->setEnvValue('LICENSE_KEY', trim((string) $request->input('license_key')));
+            }
+
             // 3. Migracje
             Artisan::call('migrate', ['--force' => true]);
 

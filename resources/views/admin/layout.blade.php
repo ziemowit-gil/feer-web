@@ -337,6 +337,13 @@
                 </div>
             @endif
 
+            @isset($editionLocked)
+                <div role="status" class="mb-4 flex items-start gap-2 rounded-md bg-gray-100 px-4 py-3 text-sm font-bold text-ink">
+                    <i class="fa-solid fa-lock mt-0.5" aria-hidden="true"></i>
+                    <span>{{ $editionLocked }}</span>
+                </div>
+            @endisset
+
             @if (\App\Support\BlogAdmin::isBlogRoute() && \App\Support\BlogAdmin::canAccess(auth()->user()))
                 @include('admin.partials.blog-subnav')
             @endif

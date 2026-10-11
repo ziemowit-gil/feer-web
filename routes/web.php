@@ -236,7 +236,7 @@ Route::get('/kampanie/{slug}', [CampaignController::class, 'show'])->name('kampa
 Route::get('/wsparcie', [SupportController::class, 'index'])->name('support.show')->middleware('module:support');
 
 // Darowizna jednorazowa online (Przelewy24 → rejestr darowizn SZO).
-Route::middleware('module:support')->prefix('wsparcie/darowizna')->name('donation.')->group(function () {
+Route::middleware(['module:support', 'edition:donations'])->prefix('wsparcie/darowizna')->name('donation.')->group(function () {
     Route::get('/', [DonationController::class, 'show'])->name('show');
     Route::post('/', [DonationController::class, 'store'])->name('store')->middleware('throttle:10,1');
     Route::get('/druk-przelewu', [DonationController::class, 'slip'])->name('slip')->middleware('throttle:20,1');
@@ -338,8 +338,10 @@ Route::middleware(['auth', 'verified', '2fa', 'admin-site'])->prefix(config('app
     Route::post('powiadomienia/widziano', [AdminNotificationController::class, 'seen'])->name('powiadomienia.seen');
 
     // Zadania (lista + CRUD + szybkie oznaczenie jako done).
-    Route::resource('zadania', AdminTaskController::class)->parameters(['zadania' => 'zadanie'])->except('show');
-    Route::post('zadania/{zadanie}/done', [AdminTaskController::class, 'done'])->name('zadania.done');
+    Route::middleware('edition:tasks')->group(function () {
+        Route::resource('zadania', AdminTaskController::class)->parameters(['zadania' => 'zadanie'])->except('show');
+        Route::post('zadania/{zadanie}/done', [AdminTaskController::class, 'done'])->name('zadania.done');
+    });
 
     // Blokada równoczesnej edycji (heartbeat, dostęp per moduł w kontrolerze).
     Route::post('blokada-edycji', AdminEditLockController::class)->name('edit-lock');
@@ -348,7 +350,7 @@ Route::middleware(['auth', 'verified', '2fa', 'admin-site'])->prefix(config('app
     Route::get('szablony', [AdminContentTemplateController::class, 'index'])->name('szablony.index');
     Route::get('szablony/zarzadzaj', [AdminContentTemplateController::class, 'manage'])->name('szablony.manage');
     Route::get('szablony/{template}/dane', [AdminContentTemplateController::class, 'load'])->name('szablony.load');
-    Route::post('szablony', [AdminContentTemplateController::class, 'store'])->name('szablony.store');
+    Route::post('szablony', [AdminContentTemplateController::class, 'store'])->name('szablony.store')->middleware('edition:content_templates');
     Route::delete('szablony/{template}', [AdminContentTemplateController::class, 'destroy'])->name('szablony.destroy');
 
     // Kalendarz redakcyjny.
@@ -561,7 +563,7 @@ Route::middleware(['auth', 'verified', '2fa', 'admin-site'])->prefix(config('app
     Route::get('multimedia/audyt-alt', [MediaLibraryController::class, 'altAudit'])->name('multimedia.alt-audit');
     Route::get('multimedia/unsplash', [MediaLibraryController::class, 'unsplashSearch'])->name('multimedia.unsplash.search');
     Route::post('multimedia/unsplash', [MediaLibraryController::class, 'unsplashImport'])->name('multimedia.unsplash.import');
-    Route::post('editor/importuj-docx', [DocxImportController::class, 'import'])->name('editor.docx.import');
+    Route::post('editor/importuj-docx', [DocxImportController::class, 'import'])->name('editor.docx.import')->middleware('edition:docx_import');
     Route::post('multimedia/onedrive', [MediaLibraryController::class, 'oneDriveImport'])->name('multimedia.onedrive.import');
     Route::post('multimedia/upload-ajax', [MediaLibraryController::class, 'uploadAjax'])->name('multimedia.upload-ajax');
     Route::get('bloki-tresci', [\App\Http\Controllers\Admin\ContentBlockController::class, 'index'])->name('bloki-tresci.index');
@@ -627,6 +629,7 @@ Route::middleware(['auth', 'verified', '2fa', 'admin-site'])->prefix(config('app
     Route::middleware('can-manage-sites')->group(function () {
         Route::resource('witryny', \App\Http\Controllers\Admin\SiteController::class)
             ->except(['show'])
+            ->middleware('edition:multisite')
             ->parameters(['witryny' => 'site']);
         Route::post('witryny/{site}/przelacz', [\App\Http\Controllers\Admin\ActiveSiteController::class, 'switch'])
             ->name('witryny.przelacz');
@@ -652,15 +655,15 @@ Route::middleware(['auth', 'verified', '2fa', 'admin-site'])->prefix(config('app
         Route::delete('wiadomosci-kontaktowe', [AdminContactMessageController::class, 'destroyAll'])->name('wiadomosci-kontaktowe.destroy-all');
         Route::delete('wiadomosci-kontaktowe/{contactMessage}', [AdminContactMessageController::class, 'destroy'])->name('wiadomosci-kontaktowe.destroy');
 
-        Route::resource('kampanie', AdminCampaignController::class)->parameters(['kampanie' => 'campaign'])->except('show');
-        Route::post('kampanie/zbiorczo', [AdminCampaignController::class, 'bulk'])->name('kampanie.bulk');
+        Route::resource('kampanie', AdminCampaignController::class)->parameters(['kampanie' => 'campaign'])->except('show')->middleware('edition:campaigns');
+        Route::post('kampanie/zbiorczo', [AdminCampaignController::class, 'bulk'])->name('kampanie.bulk')->middleware('edition:campaigns');
 
         Route::resource('pozycje-menu', NavItemController::class)->parameters(['pozycje-menu' => 'navItem'])->except('show');
         Route::patch('pozycje-menu/{navItem}/przenies', [NavItemController::class, 'move'])->name('pozycje-menu.przenies');
         Route::post('pozycje-menu/kolejnosc', [NavItemController::class, 'reorder'])->name('pozycje-menu.reorder');
         Route::patch('pozycje-menu/{navItem}/aktywna', [NavItemController::class, 'toggleActive'])->name('pozycje-menu.aktywna');
 
-        Route::resource('grupy', AdminUserGroupController::class)->parameters(['grupy' => 'group'])->except('show');
+        Route::resource('grupy', AdminUserGroupController::class)->parameters(['grupy' => 'group'])->except('show')->middleware('edition:user_groups');
 
         // Przenośność treści (eksport/import) między instalacjami.
         Route::get('tresc', [AdminContentPortabilityController::class, 'index'])->name('tresc.index');
@@ -703,7 +706,8 @@ Route::middleware(['auth', 'verified', '2fa', 'admin-site'])->prefix(config('app
 
         Route::resource('zaproszenia-strefy', AdminMemberInvitationController::class)
             ->parameters(['zaproszenia-strefy' => 'zaproszenieStrefy'])
-            ->only(['index', 'create', 'store', 'destroy']);
+            ->only(['index', 'create', 'store', 'destroy'])
+            ->middleware('edition:invitations');
 
         Route::get('health', [AdminHealthCheckController::class, 'index'])->name('health.index');
         Route::get('cache', [AdminCacheController::class, 'index'])->name('cache.index');
@@ -713,9 +717,9 @@ Route::middleware(['auth', 'verified', '2fa', 'admin-site'])->prefix(config('app
 
         Route::get('dziennik', [AdminActivityController::class, 'index'])->name('dziennik.index');
         Route::get('martwe-linki', [AdminLinkCheckController::class, 'index'])->name('martwe-linki.index');
-        Route::post('martwe-linki/skanuj', [AdminLinkCheckController::class, 'scan'])->name('martwe-linki.scan');
+        Route::post('martwe-linki/skanuj', [AdminLinkCheckController::class, 'scan'])->name('martwe-linki.scan')->middleware('edition:link_check');
         Route::get('skaner-wcag', [AdminWcagScanController::class, 'index'])->name('wcag-scans.index');
-        Route::post('skaner-wcag/skanuj', [AdminWcagScanController::class, 'scan'])->name('wcag-scans.scan');
+        Route::post('skaner-wcag/skanuj', [AdminWcagScanController::class, 'scan'])->name('wcag-scans.scan')->middleware('edition:wcag_scan');
         Route::get('skaner-wcag/{wcagScan}', [AdminWcagScanController::class, 'show'])->name('wcag-scans.show');
         Route::delete('skaner-wcag/{wcagScan}', [AdminWcagScanController::class, 'destroy'])->name('wcag-scans.destroy');
     });

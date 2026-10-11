@@ -4,6 +4,7 @@ namespace App\Http\Middleware;
 
 use App\Models\SiteSetting;
 use App\Modules\ModuleManager;
+use App\Support\Edition;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -27,6 +28,11 @@ class EnsureModuleEnabled
                 ]);
             }
             abort(404);
+        }
+
+        // Moduł płatny w wersji darmowej → tylko do odczytu (patrz config/editions.php).
+        if (! Edition::allows($module)) {
+            return EnsureEditionAllows::readOnly($request, $next, $module);
         }
 
         return $next($request);

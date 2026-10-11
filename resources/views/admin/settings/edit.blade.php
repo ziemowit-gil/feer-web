@@ -1934,7 +1934,7 @@
                                                 <label for="module-switch-{{ $key }}" class="cursor-pointer">{{ $module['label'] }}</label>
                                             </h3>
                                             @if ($module['desc'] !== '')
-                                                <p id="module-desc-{{ $key }}" class="mt-1 text-sm text-muted">{{ $module['desc'] }}</p>
+                                                <p id="module-desc-{{ $key }}" class="mt-1 text-sm text-muted">{{ $module['desc'] }}@unless (\App\Support\Edition::allows($key)) <span class="font-bold text-ink">Wersja płatna — w darmowej tylko podgląd dotychczasowych treści.</span>@endunless</p>
                                             @endif
                                         </div>
                                     </div>
@@ -2392,9 +2392,10 @@
                     class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
                     @foreach (\App\Models\SiteSetting::SITE_TEMPLATES as $value => $label)
                         @continue($settings->isOptionBlocked('site_templates', $value) && old('site_template', $settings->site_template ?? 'default') !== $value)
-                        <option value="{{ $value }}"
+                        @php $tplLocked = ! \App\Support\Edition::allowsTemplate($value) && ($settings->site_template ?? 'default') !== $value; @endphp
+                        <option value="{{ $value }}" @disabled($tplLocked)
                             {{ old('site_template', $settings->site_template ?? 'default') === $value ? 'selected' : '' }}>
-                            {{ $label }}
+                            {{ $label }}{{ $tplLocked ? ' — wersja płatna' : '' }}
                         </option>
                     @endforeach
                 </select>
