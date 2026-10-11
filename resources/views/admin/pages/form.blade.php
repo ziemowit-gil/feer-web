@@ -353,11 +353,6 @@
                                 </div>
                             </div>
                             <label class="flex items-start gap-2 text-sm">
-                                <input type="hidden" name="layout_data[slider]" value="0">
-                                <input type="checkbox" name="layout_data[slider]" value="1" class="mt-0.5 rounded border-gray-500 text-brand-dark focus:ring-brand-dark" @checked($ld['slider'] ?? true)>
-                                <span>Slider ze zdjęć strony (zakładka „Galeria”) nad aktualnościami. Można go zatrzymać, a przy ograniczonym ruchu nie przewija się sam.</span>
-                            </label>
-                            <label class="flex items-start gap-2 text-sm">
                                 <input type="hidden" name="layout_data[newsletter]" value="0">
                                 <input type="checkbox" name="layout_data[newsletter]" value="1" class="mt-0.5 rounded border-gray-500 text-brand-dark focus:ring-brand-dark" @checked($ld['newsletter'] ?? true)>
                                 <span>Panel „Newsletter” z przyciskiem zapisu w prawej kolumnie.</span>
@@ -581,6 +576,12 @@
                                 <input type="hidden" name="show_gallery" value="0">
                                 <input type="checkbox" name="show_gallery" value="1" {{ old('show_gallery', $page->show_gallery ?? false) ? 'checked' : '' }}>
                                 <span><span class="{{ $rowTitle }}">Pokaż galerię zdjęć</span><span class="{{ $rowHint }}">Wyświetla zdjęcia z zakładki „Galeria".</span></span>
+                            </label>
+                            @php $ldSlider = old('layout_data.slider', ($page->layout_data ?? [])['slider'] ?? (($page->page_template ?? 'default') === 'section')); @endphp
+                            <label class="{{ $row }}">
+                                <input type="hidden" name="layout_data[slider]" value="0">
+                                <input type="checkbox" name="layout_data[slider]" value="1" @checked((bool) $ldSlider)>
+                                <span><span class="{{ $rowTitle }}">Slider ze zdjęć strony</span><span class="{{ $rowHint }}">Przewijane zdjęcia z zakładki „Galeria" nad treścią strony (w szablonie „Strona działu" — nad wpisami). Można je zatrzymać, a przy ograniczonym ruchu nie przewijają się same.</span></span>
                             </label>
                         </div>
                     </section>
