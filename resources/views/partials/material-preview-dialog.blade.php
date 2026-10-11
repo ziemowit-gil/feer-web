@@ -3,8 +3,10 @@
     fokus wraca na przycisk „Podgląd"). Przyciski z data-material-preview otwierają okienko;
     bez JS albo bez wbudowanego podglądu PDF w przeglądarce zostają zwykłymi linkami do pliku. Płasko: biel, ink, kolor marki.
 --}}
+{{-- Wymiary i wyśrodkowanie inline: niezależne od domyślnych stylów <dialog> w przeglądarce. --}}
 <dialog data-material-preview-dialog aria-labelledby="material-preview-title"
-    class="m-auto h-[min(92vh,60rem)] w-[min(96vw,64rem)] max-w-none overflow-hidden rounded-lg bg-white p-0 text-ink backdrop:bg-ink/80">
+    style="position: fixed; inset: 0; margin: auto; width: min(96vw, 112rem); height: 94vh; max-width: none; max-height: none;"
+    class="overflow-hidden rounded-lg bg-white p-0 text-ink backdrop:bg-ink/80">
     <div class="flex h-full flex-col">
         <div class="flex items-center gap-3 border-b border-gray-200 px-4 py-3 sm:px-5">
             <h2 id="material-preview-title" data-material-preview-title class="min-w-0 flex-1 truncate text-base font-bold sm:text-lg"></h2>
