@@ -8,13 +8,13 @@ use App\Models\Project;
 use Illuminate\Database\Seeder;
 
 /**
- * Działanie „Dostępność w praktyce — wdrożenia i konsulting” (partnerstwa, bez otwartego naboru).
+ * Działanie „Dostępność w praktyce — współpraca i partnerstwa” (różne formy współpracy, bez otwartego naboru).
  *
  * Pola z pierwotnego szkicu przeniesione na model działania (Project) i jego podstrony:
  *  - description, why → „O projekcie” (treść + „Dlaczego to robimy”),
  *  - recruitment_note → wyróżniona ramka w „O projekcie” (bez naboru, kontakt bezpośredni),
  *  - scope / principles / for_whom → podstrony w menu bocznym działania:
- *    „Zakres współpracy”, „Zasady współpracy”, „Dla kogo”,
+ *    „Zakres współpracy”, „Inne formy współpracy” (wsparcie innych podmiotów), „Zasady współpracy”, „Dla kogo”,
  *  - kategoria „Wsparcie dla organizacji” (podział według formy, jak ProjectCategoriesByFormSeeder);
  *    pusta kategoria „Dla instytucji i organizacji” z pierwszej wersji seedera jest usuwana,
  *  - is_free = null (partnerstwo) → działanie, nie usługa odpłatna; bez informacji o płatności.
@@ -50,7 +50,6 @@ class DzialaniaPartnershipSeeder extends Seeder
             ['title' => 'Wewnętrzne standardy i konsulting', 'body' => 'Dzielimy się naszym doświadczeniem z zakresu dostępności (WCAG) oraz dobrych praktyk organizacyjnych.'],
             ['title' => 'Dostępność informacyjno-komunikacyjna', 'body' => 'Wsparcie przy tworzeniu dokumentów, procedur i materiałów w formacie łatwym do czytania i rozumienia (ETR).'],
             ['title' => 'Konsulting w zakresie nowoczesnych technologii w NGO', 'body' => 'Doradzamy organizacjom pozarządowym w wyborze i wdrażaniu nowoczesnych narzędzi cyfrowych — od pracy zespołowej w chmurze i bezpieczeństwa danych po rozwiązania wspierające dostępność — tak, by technologia realnie wspierała misję, a nie ją komplikowała.'],
-            ['title' => 'Wspieranie działań innych podmiotów', 'body' => 'Wspieramy inicjatywy innych organizacji i instytucji, jeśli są zbieżne z celami naszej fundacji i służą interesowi społecznemu.'],
             ['title' => 'Rzetelne doradztwo', 'body' => 'Oparte na zaufaniu konsultacje, bez zbędnej teorii i medialnego rozgłosu.'],
         ];
 
@@ -63,9 +62,9 @@ class DzialaniaPartnershipSeeder extends Seeder
         Project::updateOrCreate(
             ['slug' => 'dostepnosc-w-praktyce'],
             [
-                'title' => 'Dostępność w praktyce — wdrożenia i konsulting',
+                'title' => 'Dostępność w praktyce — współpraca i partnerstwa',
                 'category_id' => $category->id,
-                'excerpt' => 'Wdrożenia dostępności, audyty metodą tajemniczego klienta, konsulting technologiczny dla NGO i doradztwo — wyłącznie w ramach partnerstw.',
+                'excerpt' => 'Współpracujemy z instytucjami i organizacjami na różnych zasadach — od audytów i doradztwa po wsparcie inicjatyw zbieżnych z naszą misją. Wyłącznie w ramach partnerstw.',
                 'for_whom' => 'Instytucje, partnerzy społeczni i organizacje pozarządowe',
                 'content' => $content,
                 'why' => 'Dostępność wciąż jest traktowana jak obowiązek formalny, a nie realna wartość. Tymczasem najtrwalsze zmiany zachodzą wtedy, gdy organizacje przechodzą przez ten proces z kimś, kto rozumie zarówno przepisy, jak i ludzką perspektywę. My to rozumiemy — bo sami jesteśmy fundacją i sami wdrażamy to, o czym mówimy.',
@@ -96,6 +95,16 @@ class DzialaniaPartnershipSeeder extends Seeder
         // Podstrony działania w menu bocznym (tryb „zakładka”), w tej kolejności.
         $subpages = [
             'zakres' => ['Zakres współpracy', $items($scope)],
+            'inne-formy' => ['Inne formy współpracy',
+                $p('Poza wdrożeniami i doradztwem wspieramy inne podmioty w ich działaniach — jeśli są zbieżne z celami naszej fundacji i widzimy w nich interes społeczny. Formę wsparcia dobieramy do sytuacji, na przykład:')
+                .'<ul>'.collect([
+                    'partnerstwo w projektach i inicjatywach społecznych,',
+                    'wsparcie merytoryczne i eksperckie — dostępność, nowoczesne technologie, prawa osób z niepełnosprawnościami,',
+                    'konsultacja materiałów, wydarzeń i usług pod kątem dostępności,',
+                    'dzielenie się wiedzą, materiałami edukacyjnymi i doświadczeniem,',
+                    'promowanie wartościowych inicjatyw w naszych kanałach.',
+                ])->map(fn ($item) => '<li>'.e($item).'</li>')->implode('').'</ul>'
+                .$p('Każdą prośbę rozpatrujemy indywidualnie. Jeśli Twoja inicjatywa jest bliska naszej misji, napisz do nas.')],
             'zasady' => ['Zasady współpracy', '<ol>'.collect($principles)->map(fn ($r) => '<li><strong>'.e($r['title']).'</strong> — '.e($r['body']).'</li>')->implode('').'</ol>'],
             'dla-kogo' => ['Dla kogo', $items($forWhom)],
         ];
