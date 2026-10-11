@@ -173,17 +173,17 @@ class NgoSupportContentSeeder extends Seeder
         $email = trim((string) ($project?->coordinator_email ?? ''));
         $phone = trim((string) ($project?->coordinator_phone ?? ''));
         $phoneHours = trim((string) ($project?->coordinator_phone_hours ?? ''));
-        $contactCards = array_filter([
-            $name !== '' ? ['person', 'Osoba kontaktowa', e($name)] : null,
-            $email !== '' ? ['mail', 'E-mail', '<a href="mailto:'.e($email).'">'.e($email).'</a>'] : null,
-            $phone !== '' ? ['call', 'Telefon', '<a href="tel:'.e(preg_replace('/[^0-9+]/', '', $phone)).'">'.e($phone).'</a>'.($phoneHours !== '' ? '<br>Telefon czynny '.e($phoneHours) : '')] : null,
+        // Czysty tekst: etykieta pogrubiona, wartość obok (linki mailto:/tel:).
+        $contactLines = array_filter([
+            $name !== '' ? '<strong>Osoba kontaktowa:</strong> '.e($name) : null,
+            $email !== '' ? '<strong>E-mail:</strong> <a href="mailto:'.e($email).'">'.e($email).'</a>' : null,
+            $phone !== '' ? '<strong>Telefon:</strong> <a href="tel:'.e(preg_replace('/[^0-9+]/', '', $phone)).'">'.e($phone).'</a>'.($phoneHours !== '' ? ' ('.e($phoneHours).')' : '') : null,
         ]);
-        $contactHtml = implode('', array_map(fn ($c) => '<li class="ngo-card"><span class="ngo-ico material-symbols-outlined" aria-hidden="true">'.$c[0].'</span><h3>'.$c[1].'</h3><p>'.$c[2].'</p></li>', $contactCards));
 
         return [
             'wsparcie-ngo-kontakt' => ['Kontakt', 80, array_values(array_filter([
                 $p('Masz pytanie o wsparcie technologiczne dla NGO, zanim wypełnisz zgłoszenie? Napisz albo zadzwoń — chętnie doradzimy, od czego zacząć.', true),
-                $contactHtml !== '' ? $html($css.'<ul class="ngo-cards" role="list">'.$contactHtml.'</ul>') : null,
+                $contactLines ? $p(implode('<br>', $contactLines)) : null,
                 $p('Jeśli wiesz już, czego potrzebujesz, najszybciej będzie przez formularz zgłoszeniowy.'),
                 $formButton,
             ]))],

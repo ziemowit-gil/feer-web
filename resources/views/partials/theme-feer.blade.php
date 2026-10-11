@@ -83,8 +83,8 @@
 
     /* Kolory linków: tylko niebieski i czarny (brandbook). Linki w treści — niebieskie z podkreśleniem, po najechaniu czarne;
        pozycje menu — czarne, po najechaniu/aktywne niebieskie (#1E6DFF na bieli 4,48:1, var(--color-brand-3) 16,9:1). */
-    .prose a:not([class*="bg-"]) { color: var(--color-brand); text-decoration: underline; text-underline-offset: .2em; }
-    .prose a:not([class*="bg-"]):hover { color: var(--color-brand-3); }
+    .prose a:not([class*="bg-"]):not(.cta-button) { color: var(--color-brand); text-decoration: underline; text-underline-offset: .2em; }
+    .prose a:not([class*="bg-"]):not(.cta-button):hover { color: var(--color-brand-3); }
     /* Małe niebieskie linki akcji („Wszystkie działania →", „Zobacz …") mają podkreślenie — informacja nie opiera się tylko na kolorze
        (niebieski #1E6DFF na jasnoszarym tle ma 4,29:1), a po najechaniu stają się czarne. */
     main a.text-brand-dark:not([class*="bg-"]):not(.no-underline), main a.text-brand:not([class*="bg-"]):not(.no-underline) { text-decoration: underline; text-underline-offset: .2em; text-decoration-thickness: 1px; }

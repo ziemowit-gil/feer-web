@@ -246,7 +246,7 @@ Route::middleware('module:support')->prefix('wsparcie/darowizna')->name('donatio
 // Podcasty
 Route::get('/podcasty', [PodcastController::class, 'index'])->name('podcasts.index');
 Route::get('/podcasty/{podcast:slug}', [PodcastController::class, 'show'])->name('podcasts.show');
-Route::get('/podcasty/{podcast}/audio', [PodcastController::class, 'stream'])->name('podcasts.stream')->middleware('auth');
+Route::get('/podcasty/{podcast}/audio', [PodcastController::class, 'stream'])->name('podcasts.stream'); // premium: canAccess() w kontrolerze
 
 // PayU — webhook bez CSRF (przyjmuje JSON od serwera PayU)
 Route::post('/payu/webhook', [PayuWebhookController::class, 'handle'])->name('payu.webhook')->withoutMiddleware([\Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class]);

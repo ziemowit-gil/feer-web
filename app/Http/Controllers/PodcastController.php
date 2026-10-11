@@ -15,8 +15,10 @@ class PodcastController extends Controller
 
         // Szablon FEER ma własny układ listy odcinków.
         $view = \App\Models\SiteSetting::current()->site_template === 'feer' ? 'podcasts.index-feer' : 'podcasts.index';
+        // Które odcinki bieżący użytkownik może odtworzyć (szablon FEER ma odtwarzacz od razu na liście).
+        $playable = $podcasts->getCollection()->filter(fn ($p) => $this->canAccess(request()->user(), $p))->pluck('id')->all();
 
-        return view($view, compact('podcasts'));
+        return view($view, compact('podcasts', 'playable'));
     }
 
     public function show(Podcast $podcast)
@@ -26,8 +28,9 @@ class PodcastController extends Controller
         $canPlay = $this->canAccess(request()->user(), $podcast);
 
         $view = \App\Models\SiteSetting::current()->site_template === 'feer' ? 'podcasts.show-feer' : 'podcasts.show';
+        $more = Podcast::published()->whereKeyNot($podcast->id)->latest('published_at')->limit(4)->get();
 
-        return view($view, compact('podcast', 'canPlay'));
+        return view($view, compact('podcast', 'canPlay', 'more'));
     }
 
     public function stream(Request $request, Podcast $podcast): StreamedResponse

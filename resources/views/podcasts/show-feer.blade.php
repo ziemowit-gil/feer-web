@@ -1,7 +1,7 @@
 @extends('layouts.site')
 
 @section('title', $podcast->title . ' — Podcasty — ' . $siteSettings->site_name)
-@section('meta_description', $podcast->description)
+@section('meta_description', \Illuminate\Support\Str::limit((string) $podcast->description, 160))
 
 @section('breadcrumbs')
     @include('partials.breadcrumbs', ['items' => [
@@ -10,30 +10,75 @@
     ]])
 @endsection
 
-{{-- Odcinek w stylu FEER: jasny nagłówek z okładką, numerem i datą; odtwarzacz (partials.podcast-player) w jasnoszarym bloku. --}}
+{{--
+    Odcinek w stylu FEER: tytuł z akcentem marki, numer i data zwykłym tekstem, odtwarzacz (partials.podcast-player-feer),
+    pełny opis i „Kolejne odcinki”. Płasko, bez ramek i plakietek; zwykły CSS (klasy pd-*).
+--}}
 @section('content')
-    @php $cover = $podcast->getFirstMediaUrl('cover'); @endphp
+    @php
+        $cover = $podcast->getFirstMediaUrl('cover');
+        $more = $more ?? collect();
+    @endphp
+    <style>
+        .pd-bar { display: block; width: 3.5rem; height: .25rem; background: #1e6dff; margin: 1rem 0 1.25rem; }
+        .pd-meta { margin: 0; font-size: .8rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: #4b5563; }
+        .pd-meta .pd-strong { color: #1752bf; }
+        .pd-head { display: grid; gap: 1.5rem; align-items: center; }
+        @media (min-width: 640px) { .pd-head.has-cover { grid-template-columns: 11rem minmax(0, 1fr); } }
+        .pd-cover { width: 100%; max-width: 11rem; aspect-ratio: 1; object-fit: cover; border-radius: .75rem; }
+        .pd-desc { margin: 2rem 0 0; font-size: 1.075rem; line-height: 1.75; color: #1d1d1a; white-space: pre-line; }
+        .pd-section-h { margin: 3rem 0 1rem; font-size: 1.4rem; font-weight: 800; color: #1d1d1a; }
+        .pd-list { list-style: none; margin: 0; padding: 0; display: grid; gap: .5rem; }
+        .pd-item { position: relative; display: flex; gap: 1rem; align-items: center; border-radius: .75rem; background: #f3f4f6; padding: .9rem 1.1rem; }
+        .pd-item:hover { background: #e8f0ff; }
+        .pd-item:focus-within { outline: 3px solid #1752bf; outline-offset: 2px; }
+        .pd-num { flex: none; width: 2.5rem; text-align: center; font-size: 1.3rem; font-weight: 800; color: #1752bf; }
+        .pd-item a { color: #1d1d1a; font-weight: 700; text-decoration: none; }
+        .pd-item a::after { content: ''; position: absolute; inset: 0; border-radius: .75rem; }
+        .pd-item a:focus-visible { outline: none; }
+        .pd-back { display: inline-block; margin-top: 2rem; font-weight: 700; color: #1752bf; text-decoration: underline; text-underline-offset: 3px; }
+        .pd-back:focus-visible { outline: 3px solid #1752bf; outline-offset: 2px; }
+    </style>
 
-    <section class="bg-gray-50">
-        <div class="mx-auto grid max-w-6xl items-center gap-8 px-4 py-12 md:py-16 {{ $cover ? 'md:grid-cols-[16rem_minmax(0,1fr)]' : '' }}">
-            @if ($cover)
-                <img src="{{ $cover }}" alt="{{ $podcast->title }}" class="aspect-square w-full max-w-xs rounded-lg object-cover">
-            @endif
+    <div class="mx-auto max-w-3xl px-4 py-10 md:py-12">
+        <header class="pd-head {{ $cover ? 'has-cover' : '' }}">
+            @if ($cover)<img src="{{ $cover }}" alt="" class="pd-cover">@endif
             <div class="min-w-0">
-                <p class="text-xs font-bold uppercase tracking-widest text-brand-dark">
-                    Podcast @if ($podcast->episode_number) · odcinek {{ $podcast->episode_number }}@endif
-                    @if ($podcast->published_at)<span class="font-medium text-muted"> · <time datetime="{{ $podcast->published_at->toDateString() }}">{{ $podcast->published_at->translatedFormat('j F Y') }}</time></span>@endif
-                    @if ($podcast->is_premium)<span class="ml-2 rounded-sm bg-amber-100 px-1.5 py-0.5 text-amber-900">Premium</span>@endif
+                <p class="pd-meta">
+                    <span class="pd-strong">Podcast</span>
+                    @if ($podcast->episode_number) · odcinek {{ $podcast->episode_number }}@endif
+                    @if ($podcast->published_at) · <time datetime="{{ $podcast->published_at->toDateString() }}">{{ $podcast->published_at->locale('pl')->translatedFormat('j F Y') }}</time>@endif
+                    @if ($podcast->is_premium) · <i class="fa-solid fa-lock" aria-hidden="true"></i> dla subskrybentów @endif
                 </p>
-                <h1 class="mt-3 max-w-3xl text-3xl font-extrabold leading-tight tracking-tight text-ink md:text-5xl">{{ $podcast->title }}</h1>
-                @if ($podcast->description)<p class="mt-4 max-w-2xl text-lg leading-relaxed text-ink">{{ $podcast->description }}</p>@endif
+                <h1 class="mt-2 text-3xl font-extrabold leading-tight tracking-tight text-ink md:text-4xl">{{ $podcast->title }}</h1>
+                <span class="pd-bar" aria-hidden="true"></span>
             </div>
+        </header>
+
+        <div class="mt-6">
+            @include('partials.podcast-player-feer', ['podcast' => $podcast, 'canPlay' => $canPlay, 'compact' => true])
         </div>
-    </section>
 
-    <div class="mx-auto max-w-3xl px-4 py-10">
-        @include('partials.podcast-player', ['podcast' => $podcast, 'canPlay' => $canPlay])
+        @if ($podcast->description)
+            <h2 class="sr-only">Opis odcinka</h2>
+            <p class="pd-desc">{{ $podcast->description }}</p>
+        @endif
 
-        <p class="mt-8"><a href="{{ route('podcasts.index') }}" class="text-sm font-bold text-brand-dark underline underline-offset-4 hover:no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">← Wszystkie odcinki</a></p>
+        @if ($more->isNotEmpty())
+            <h2 id="pd-more-h" class="pd-section-h">Kolejne odcinki</h2>
+            <ul class="pd-list" role="list" aria-labelledby="pd-more-h">
+                @foreach ($more as $ep)
+                    <li class="pd-item">
+                        <span class="pd-num" aria-hidden="true">{{ $ep->episode_number ?: '•' }}</span>
+                        <div class="min-w-0">
+                            <a href="{{ route('podcasts.show', $ep) }}">@if ($ep->episode_number)<span class="sr-only">Odcinek {{ $ep->episode_number }}: </span>@endif{{ $ep->title }}</a>
+                            @if ($ep->published_at)<p class="pd-meta" style="margin-top:.2rem">{{ $ep->published_at->locale('pl')->translatedFormat('j F Y') }}@if ($ep->is_premium) · dla subskrybentów @endif</p>@endif
+                        </div>
+                    </li>
+                @endforeach
+            </ul>
+        @endif
+
+        <a href="{{ route('podcasts.index') }}" class="pd-back">← Wszystkie odcinki</a>
     </div>
 @endsection
