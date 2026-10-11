@@ -18,7 +18,7 @@ use Illuminate\Support\Facades\Route;
 /**
  * Definicja menu bocznego panelu administracyjnego.
  *
- * Układ jak w module menu TYPO3: najwyżej SZEŚĆ grup głównych (Pulpit, Strony, Treści,
+ * Układ jak w module menu TYPO3: najwyżej SZEŚĆ grup głównych (Pulpit, Witryna, Treści,
  * Komunikacja, Użytkownicy, System), a w grupie bloki z podtytułami → pozycje → podpozycje.
  * Widok `admin.partials.sidebar` tylko to renderuje. Dzięki temu:
  *  - widoczność pozycji (moduły, role) jest rozstrzygana w jednym miejscu,
@@ -45,7 +45,7 @@ final class AdminMenu
     public const BLOG_SITE_SECTIONS = [
         'blog'       => null,
         'start'      => ['approvals'],
-        'pages'      => ['pages'],
+        'pages'      => ['pages', 'nav'],
         'library'    => null,
         'newsletter' => null,
         'users'      => null,
@@ -84,17 +84,12 @@ final class AdminMenu
                     : null,
             ], defaultOpen: true),
 
+            // Witryna = struktura serwisu: drzewo stron, menu nawigacji i osoby (strony typu „osoba”).
             $this->can('pages') ? $this->section('pages', 'Strony', [
-                $this->item('pages', 'Strony i menu', 'admin.podstrony.index', 'fa-file-lines',
-                    active: ['admin.podstrony.*', 'admin.pozycje-menu.*', 'admin.osoby.*']),
-                $this->can('timeline')
-                    ? $this->item('timeline', 'Oś czasu (historia)', 'admin.os-czasu.edit', 'fa-timeline', active: 'admin.os-czasu.*')
-                    : null,
-                $this->can('cooperation')
-                    ? $this->item('cooperation', 'Zgłoszenia współpracy', 'admin.wspolpraca-zgloszenia.index', 'fa-handshake',
-                        active: 'admin.wspolpraca-zgloszenia.*',
-                        badge: fn () => CooperationRequest::whereNull('read_at')->count())
-                    : null,
+                $this->item('pages', 'Strony', 'admin.podstrony.index', 'fa-file-lines',
+                    active: 'admin.podstrony.*'),
+                $this->item('nav', 'Menu nawigacji', 'admin.pozycje-menu.index', 'fa-bars', active: 'admin.pozycje-menu.*'),
+                $this->item('persons', 'Osoby', 'admin.osoby.index', 'fa-address-card', active: 'admin.osoby.*'),
             ], defaultOpen: true) : null,
 
             // Pozycje bloga jako osobna sekcja — używana w menu witryny „Wiem FEER”.
@@ -173,6 +168,14 @@ final class AdminMenu
                     ? $this->item('organizations', 'Organizacje członkowskie', 'admin.organizacje.index', 'fa-people-roof', active: 'admin.organizacje.*')
                     : null,
                 $this->can('polls') ? $this->item('polls', 'Ankiety', 'admin.ankiety.index', 'fa-square-poll-vertical', active: 'admin.ankiety.*') : null,
+                $this->can('timeline')
+                    ? $this->item('timeline', 'Oś czasu (historia)', 'admin.os-czasu.edit', 'fa-timeline', active: 'admin.os-czasu.*')
+                    : null,
+                $this->can('cooperation')
+                    ? $this->item('cooperation', 'Zgłoszenia współpracy', 'admin.wspolpraca-zgloszenia.index', 'fa-handshake',
+                        active: 'admin.wspolpraca-zgloszenia.*',
+                        badge: fn () => CooperationRequest::whereNull('read_at')->count())
+                    : null,
             ]),
 
             $this->section('library', 'Biblioteka', [
@@ -248,9 +251,18 @@ final class AdminMenu
 
         return array_values(array_filter([
             $this->group($byKey, 'start', 'Pulpit', 'fa-gauge', [[null, 'start']]),
-            $this->group($byKey, 'pages', 'Strony', 'fa-file-lines', [[null, 'pages'], ['Strona główna', 'homepage']]),
-            $this->group($byKey, 'content', 'Treści', 'fa-newspaper', [[null, 'content'], ['Biblioteka', 'library']]),
-            $this->group($byKey, 'comms', 'Komunikacja', 'fa-comments', [['Marketing', 'marketing'], ['Skrzynka', 'inbox']]),
+            // „Witryna” — jak serwis jest zbudowany (strony, menu, strona główna);
+            // „Treści” — wpisy publikowane w modułach (aktualności, działania, wydarzenia…), bez stron.
+            $this->group($byKey, 'pages', 'Witryna', 'fa-sitemap', [['Strony i nawigacja', 'pages'], ['Strona główna', 'homepage']]),
+            $this->group($byKey, 'content', 'Treści', 'fa-newspaper', [
+                ['Publikacje', 'content', ['news', 'blog', 'podcasts', 'faq', 'landing', 'timeline']],
+                ['Działalność', 'content', ['projects', 'events', 'materials', 'volunteering', 'jobs', 'help-map', 'organizations']],
+                ['Dokumenty', 'content', ['reports', 'bip']],
+                ['Formularze i ankiety', 'content', ['forms', 'polls', 'cooperation']],
+                ['Sklep', 'content', ['shop']],
+                ['Biblioteka', 'library'],
+            ]),
+            $this->group($byKey, 'comms', 'Komunikacja', 'fa-comments', [['Newsletter', 'newsletter'], ['Marketing', 'marketing'], ['Skrzynka', 'inbox']]),
             $this->group($byKey, 'users', 'Użytkownicy', 'fa-users', [[null, 'users']]),
             $this->group($byKey, 'system', 'System', 'fa-gear', [
                 ['Konfiguracja', 'system', ['settings', 'templates', 'seo']],
@@ -276,7 +288,7 @@ final class AdminMenu
 
         return array_values(array_filter([
             $this->group($sections, 'start', 'Wiem FEER', 'fa-feather-pointed', [$spec(null, 'blog'), $spec(null, 'start')]),
-            $this->group($sections, 'pages', 'Strony', 'fa-file-lines', [$spec(null, 'pages')]),
+            $this->group($sections, 'pages', 'Witryna', 'fa-sitemap', [$spec('Strony i nawigacja', 'pages')]),
             $this->group($sections, 'content', 'Biblioteka', 'fa-photo-film', [$spec(null, 'library'), $spec('Newsletter', 'newsletter')]),
             $this->group($sections, 'users', 'Użytkownicy', 'fa-users', [$spec(null, 'users')]),
             $this->group($sections, 'system', 'System', 'fa-gear', [

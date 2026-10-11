@@ -36,13 +36,18 @@ class AdminMenuGroupsTest extends TestCase
     {
         $this->actingAs(User::factory()->create(['role' => User::ROLE_CONTENT_EDITOR]));
 
-        $keys = array_column(AdminMenu::for(auth()->user()), 'key');
+        $groups = AdminMenu::for(auth()->user());
+        $keys = array_column($groups, 'key');
+        $items = collect($groups)->flatMap(fn ($g) => $g['blocks'])->flatMap(fn ($b) => $b['items'])->pluck('key')->all();
 
         $this->assertContains('start', $keys);
         $this->assertContains('content', $keys);
         $this->assertNotContains('system', $keys);
         $this->assertNotContains('users', $keys);
-        $this->assertNotContains('comms', $keys);
+        // W „Komunikacji” redaktor może widzieć najwyżej newsletter — marketing i skrzynka są tylko dla administratora.
+        foreach (['banners', 'campaigns', 'contact', 'meetings', 'barriers'] as $adminOnly) {
+            $this->assertNotContains($adminOnly, $items);
+        }
     }
 
     public function test_aktywna_pozycja_oznacza_swoja_grupe(): void
@@ -52,6 +57,7 @@ class AdminMenuGroupsTest extends TestCase
         $html = $this->actingAs($admin)->get(route('admin.podstrony.index'))->assertOk()->getContent();
 
         $this->assertMatchesRegularExpression('/class="tm-group relative is-active"/', $html);
+        $this->assertStringContainsString('Witryna', $html);
         $this->assertSame(6, substr_count($html, 'class="tm-head nav-link relative"'));
         $this->assertStringContainsString('aria-label="Menu panelu"', $html);
     }
