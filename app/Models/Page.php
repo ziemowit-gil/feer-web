@@ -696,6 +696,51 @@ class Page extends Model
         return in_array($this->recruitmentStatus(), ['open', 'continuous', 'reserve'], true);
     }
 
+    /** Statusy „aktualne" na listach [nabory] / [zapytania-ofertowe] i stronie głównej. */
+    public const LISTING_ACTIVE_STATUSES = [
+        'recruitment' => ['planned', 'open', 'continuous', 'reserve'],
+        'tender'      => ['open', 'evaluation'],
+    ];
+
+    /** Statusy „zakończone" (archiwum) na listach naborów i zapytań ofertowych. */
+    public const LISTING_ARCHIVE_STATUSES = [
+        'recruitment' => ['closed'],
+        'tender'      => ['awarded', 'cancelled'],
+    ];
+
+    /** Strony opublikowane i już widoczne (bez zaplanowanej publikacji w przyszłości). */
+    public function scopeLive(\Illuminate\Database\Eloquent\Builder $query): \Illuminate\Database\Eloquent\Builder
+    {
+        return $query->where($this->getTable().'.is_published', true)
+            ->where(fn ($q) => $q->whereNull($this->getTable().'.publish_at')->orWhere($this->getTable().'.publish_at', '<=', now()));
+    }
+
+    /** Strony danego typu (np. 'recruitment', 'tender'). */
+    public function scopeOfType(\Illuminate\Database\Eloquent\Builder $query, string $type): \Illuminate\Database\Eloquent\Builder
+    {
+        return $query->where($this->getTable().'.type', $type);
+    }
+
+    /** Status naboru albo zapytania ofertowego (null dla innych typów). */
+    public function listingStatus(): ?string
+    {
+        return match ($this->type) {
+            'recruitment' => $this->recruitmentStatus(),
+            'tender' => $this->tenderStatus(),
+            default => null,
+        };
+    }
+
+    /** Termin, wg którego sortujemy listy: koniec naboru albo termin składania ofert. */
+    public function listingDeadline(): ?\Illuminate\Support\Carbon
+    {
+        return match ($this->type) {
+            'recruitment' => $this->recruitmentDate('end'),
+            'tender' => $this->tenderDeadline(),
+            default => null,
+        };
+    }
+
     /**
      * Dane typu (kolumna `type_data`) z domyślnymi pustymi listami, żeby widoki
      * i formularz nie musiały sprawdzać istnienia każdego klucza.

@@ -65,6 +65,16 @@ class PageTypesDemoSeeder extends Seeder
         $this->partners();
         $this->recruitment();
         $this->tender();
+
+        // Listy stron typów „Rekrutacja do projektu" i „Zapytanie ofertowe" (shortcody z filtrem i archiwum).
+        $this->page('lista-naborow', 'standard', [
+            'title' => 'Przykład: lista naborów',
+            'content' => '<p>Wszystkie nabory do naszych projektów. Domyślnie widzisz nabory aktualne — zakończone znajdziesz w archiwum.</p><p>[nabory]</p>',
+        ]);
+        $this->page('lista-zapytan-ofertowych', 'standard', [
+            'title' => 'Przykład: lista zapytań ofertowych',
+            'content' => '<p>Zapytania ofertowe prowadzone zgodnie z zasadą konkurencyjności. Zakończone postępowania znajdziesz w archiwum.</p><p>[zapytania-ofertowe]</p>',
+        ]);
     }
 
     /** Zapis strony przykładu (pod stroną-rodzicem, poza menu, kolejno). */

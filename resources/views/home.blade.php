@@ -89,6 +89,11 @@
 
             @include('partials.home.'.$section)
 
+            {{-- Kończące się nabory i zapytania ofertowe — tuż pod slajderem (albo pod pierwszą sekcją, gdy slajder wyłączony). --}}
+            @if ($section === 'hero' || ($loop->first && ! in_array('hero', $sectionOrder, true)))
+                @include('partials.home.closing-recruitments')
+            @endif
+
         </div>
         @endforeach
 

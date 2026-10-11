@@ -34,3 +34,7 @@ Schedule::command('sklep:verify-pending')->everyTenMinutes()->withoutOverlapping
 
 // Darowizny online: uzgadnianie z Przelewy24 i dosyłanie do rejestru darowizn SZO.
 Schedule::command('donations:sync')->everyTenMinutes()->withoutOverlapping();
+
+// Przypomnienia dla redakcji: kończące się nabory i terminy zapytań ofertowych,
+// brak informacji po naborze / wyniku postępowania (każde wysyłane raz).
+Schedule::command('strony:przypomnienia')->dailyAt('08:00')->withoutOverlapping();

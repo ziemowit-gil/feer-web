@@ -16,6 +16,9 @@ use Illuminate\Support\Facades\View;
  *   [pasek:ID]       — wstawia pasek z modułu „FEER Paski” (tytuł, tekst, przyciski)
  *   [klauzule-rodo]  — lista klauzul informacyjnych RODO zaimportowanych z SZO
  *                      ([klauzule-rodo:en] — wersje angielskie)
+ *   [nabory]         — lista naborów (strony typu „Rekrutacja do projektu") z filtrem
+ *                      aktualne / zakończone / wszystkie (?status=…) i archiwum
+ *   [zapytania-ofertowe] — lista zapytań ofertowych z tym samym filtrem
  */
 class ShortcodeParser
 {
@@ -64,6 +67,12 @@ class ShortcodeParser
             $content,
         );
 
+        $content = preg_replace_callback(
+            '/(?:<p>\s*)?\[(nabory|zapytania-ofertowe)\](?:\s*<\/p>)?/i',
+            fn ($matches) => static::renderListing(strtolower($matches[1]) === 'nabory' ? 'recruitment' : 'tender'),
+            $content,
+        );
+
         return $content;
     }
 
@@ -73,7 +82,7 @@ class ShortcodeParser
      */
     private static function unwrapBlockShortcodes(string $content): string
     {
-        $blocks = '(?:kafelki-zestaw|kafelki|blok|formularz):[a-z0-9_\-]+';
+        $blocks = '(?:(?:kafelki-zestaw|kafelki|blok|formularz):[a-z0-9_\-]+|nabory|zapytania-ofertowe)';
 
         return preg_replace_callback(
             '~<(blockquote|div class="content-(?:box|note|important)")[^>]*>((?:(?!</?(?:blockquote|div)\b).)*?)</(?:blockquote|div)>~is',
@@ -83,11 +92,84 @@ class ShortcodeParser
     }
 
     /** Wzorzec wszystkich shortcodów — do wykrywania (np. wyłączenie edycji inline). */
-    public const DETECT_PATTERN = '/\[(?:(?:formularz|kafelki):[a-z0-9_\-]+|kafelki-zestaw:\d+|blok:\d+|pasek:\d+|klauzule-rodo(?::[a-z]{2})?)\]/i';
+    public const DETECT_PATTERN = '/\[(?:(?:formularz|kafelki):[a-z0-9_\-]+|kafelki-zestaw:\d+|blok:\d+|pasek:\d+|klauzule-rodo(?::[a-z]{2})?|nabory|zapytania-ofertowe)\]/i';
 
     public static function has(?string $content): bool
     {
         return filled($content) && (bool) preg_match(self::DETECT_PATTERN, $content);
+    }
+
+    /** Filtry list naborów / zapytań: wartość parametru ?status= => etykieta. */
+    public const LISTING_FILTERS = [
+        'aktualne'   => 'Aktualne',
+        'zakonczone' => 'Zakończone',
+        'wszystkie'  => 'Wszystkie',
+    ];
+
+    /** Liczba pozycji na jednej stronie listy naborów / zapytań. */
+    public const LISTING_PER_PAGE = 12;
+
+    /**
+     * Opublikowane strony naborów ('recruitment') albo zapytań ofertowych ('tender')
+     * bieżącej witryny, podzielone na aktualne (najbliższy termin najpierw, bez
+     * terminu na końcu) i zakończone (najnowsze najpierw). Pozostałe statusy
+     * (np. nabór wstrzymany) trafiają tylko do „Wszystkie".
+     *
+     * @return array{active: \Illuminate\Support\Collection, archive: \Illuminate\Support\Collection, other: \Illuminate\Support\Collection}
+     */
+    public static function listingGroups(string $type): array
+    {
+        $pages = Page::forCurrentSite()->live()->ofType($type)
+            ->where('is_disabled', false)
+            ->orderBy('title')
+            ->get()
+            ->reject(fn (Page $p) => $p->requiresAccess() || $p->isDisabled())
+            ->values();
+
+        $active = Page::LISTING_ACTIVE_STATUSES[$type];
+        $archive = Page::LISTING_ARCHIVE_STATUSES[$type];
+        $farFuture = PHP_INT_MAX;
+
+        return [
+            'active' => $pages->filter(fn (Page $p) => in_array($p->listingStatus(), $active, true))
+                ->sortBy(fn (Page $p) => $p->listingDeadline()?->getTimestamp() ?? $farFuture)->values(),
+            'archive' => $pages->filter(fn (Page $p) => in_array($p->listingStatus(), $archive, true))
+                ->sortByDesc(fn (Page $p) => ($p->listingDeadline() ?? $p->publish_at ?? $p->created_at)?->getTimestamp() ?? 0)->values(),
+            'other' => $pages->reject(fn (Page $p) => in_array($p->listingStatus(), [...$active, ...$archive], true))->values(),
+        ];
+    }
+
+    /** Lista naborów / zapytań ofertowych z filtrem statusu (bez JS) i prostą paginacją. */
+    private static function renderListing(string $type): string
+    {
+        $filter = (string) request()->query('status', 'aktualne');
+        if (! array_key_exists($filter, self::LISTING_FILTERS)) {
+            $filter = 'aktualne';
+        }
+
+        $groups = static::listingGroups($type);
+        $counts = [
+            'aktualne' => $groups['active']->count(),
+            'zakonczone' => $groups['archive']->count(),
+            'wszystkie' => $groups['active']->count() + $groups['archive']->count() + $groups['other']->count(),
+        ];
+        $items = match ($filter) {
+            'zakonczone' => $groups['archive'],
+            'wszystkie' => $groups['active']->concat($groups['other'])->concat($groups['archive']),
+            default => $groups['active'],
+        };
+
+        $perPage = self::LISTING_PER_PAGE;
+        $lastPage = max(1, (int) ceil($items->count() / $perPage));
+        $current = min($lastPage, max(1, (int) request()->query('strona', 1)));
+
+        return View::make('partials.listings.'.($type === 'recruitment' ? 'recruitments' : 'tenders'), [
+            'items' => $items->forPage($current, $perPage)->values(),
+            'filter' => $filter,
+            'counts' => $counts,
+            'currentPage' => $current,
+            'lastPage' => $lastPage,
+        ])->render();
     }
 
     private static function renderBand(int $id): string

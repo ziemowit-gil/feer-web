@@ -20,6 +20,8 @@
     @if ($siteSettings->home_search_enabled ?? false)
         @include('templates.feer.partials.search')
     @endif
+    {{-- Kończące się nabory i zapytania ofertowe (renderuje się tylko, gdy są). --}}
+    @include('partials.home.closing-recruitments')
     @if ($siteSettings->isHomepageSectionEnabled('ankieta'))
         @include('templates.feer.partials.shortcuts')
     @endif
