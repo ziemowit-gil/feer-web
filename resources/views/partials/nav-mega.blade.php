@@ -46,13 +46,13 @@
     $groupCurrentId = request()->routeIs('projects.show') ? request()->route('project')?->id : null;
     $catCurrentId   = request()->routeIs('categories.show') ? request()->route('category')?->id : null;
 
-    // Trzecia kolumna menu działań: do 3 kafelków pod sobą z aktywnymi działaniami ze zdjęciem. Brak kafelków = brak trzeciej kolumny.
+    // Trzecia kolumna menu działań: do 3 kafelków pod sobą z aktywnymi działaniami — sam tekst, bez grafiki. Brak kafelków = brak trzeciej kolumny.
     $tiles = collect();
     if ($isProjects) {
         $featured = $groups->flatMap(fn ($c) => $c->publishedProjects)->unique('id')
-            ->filter(fn ($p) => ! $p->is_completed && $p->image_url)->take(3);
+            ->filter(fn ($p) => ! $p->is_completed)->take(3);
         foreach ($featured as $fp) {
-            $tiles->push(['kicker' => 'Polecane działanie', 'title' => $fp->title, 'url' => route('projects.show', $fp), 'image' => $fp->image_url, 'alt' => $fp->image_alt ?: '']);
+            $tiles->push(['kicker' => 'Polecane działanie', 'title' => $fp->title, 'url' => route('projects.show', $fp)]);
         }
     }
 
@@ -273,15 +273,15 @@
 
             {{-- Kolumna boczna: grafika promocyjna (lub wyróżnione działanie), opis, najbliższe szkolenie, CTA --}}
             @if ($isProjects && $tiles->isNotEmpty())
-                <ul role="list" aria-label="Polecane" class="hidden flex-col gap-3 lg:flex">
+                <ul role="list" aria-label="Polecane" class="hidden flex-col gap-3 self-start lg:flex">
                     @foreach ($tiles as $tile)
-                        <li class="flex-1">
-                            <a href="{{ $tile['url'] }}" class="group/t flex h-full min-h-20 overflow-hidden rounded-xl border border-gray-200 bg-white transition hover:border-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
-                                <img src="{{ $tile['image'] }}" alt="{{ $tile['alt'] }}" class="w-20 flex-none object-cover" loading="lazy">
-                                <span class="min-w-0 self-center px-3 py-2">
-                                    <span class="block text-[10px] font-bold uppercase tracking-wide text-brand-dark">{{ $tile['kicker'] }}</span>
-                                    <span class="line-clamp-2 block text-sm font-bold leading-snug text-ink group-hover/t:text-brand-dark">{{ $tile['title'] }}</span>
+                        <li>
+                            <a href="{{ $tile['url'] }}" class="group/t flex items-center gap-3 rounded-md bg-gray-50 px-4 py-3 transition hover:bg-brand-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">
+                                <span class="min-w-0 flex-1">
+                                    <span class="block text-xs font-bold uppercase tracking-wide text-brand-dark">{{ $tile['kicker'] }}</span>
+                                    <span class="mt-0.5 block text-sm font-bold leading-snug text-ink group-hover/t:text-brand-dark group-hover/t:underline group-hover/t:underline-offset-4">{{ $tile['title'] }}</span>
                                 </span>
+                                <span class="flex-none text-ink transition group-hover/t:translate-x-1 motion-reduce:transition-none" aria-hidden="true">→</span>
                             </a>
                         </li>
                     @endforeach
