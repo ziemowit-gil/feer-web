@@ -61,7 +61,48 @@ class BlogArticlePageTest extends BlogTestCase
         $this->get('/wiem/srodkowy')->assertOk()
             ->assertSee('Poprzedni wpis')->assertSee('Następny wpis')
             ->assertSeeInOrder(['Poprzedni wpis', 'Najstarszy', 'Następny wpis', 'Najnowszy'])
-            ->assertSee('Przeczytaj także');
+            ->assertSee('Zobacz także');
+    }
+
+    public function test_uklad_portalu_kolumna_boczna_i_zobacz_takze(): void
+    {
+        $cat = BlogCategory::create(['name' => 'Prawo', 'slug' => 'prawo']);
+        $main = $this->article('Główny wpis', ['category_id' => $cat->id, 'excerpt' => 'Pogrubiony wstęp', 'image_path' => 'wiem-feer/g.jpg', 'image_alt' => 'Opis']);
+        foreach (range(1, 8) as $i) {
+            $this->article('Inny ' . $i, ['category_id' => $cat->id, 'published_at' => now()->subDays(1 + $i)]);
+        }
+        $this->article('Spoza kategorii', ['published_at' => now()->subHours(2)]);
+
+        $response = $this->get('/wiem/' . $main->slug)->assertOk();
+        $html = $response->getContent();
+
+        // Jeden H1, kategoria nad tytułem, metryczka z przyciskami A A A, zajawka, zdjęcie.
+        $this->assertSame(1, substr_count($html, '<h1'));
+        $response->assertSeeInOrder(['tracking-widest', 'Prawo', '<h1', 'Główny wpis', 'Rozmiar tekstu artykułu', 'Pogrubiony wstęp', 'g.jpg'], false)
+            ->assertSee('role="group" aria-label="Rozmiar tekstu artykułu"', false)
+            ->assertSee('feer-blog-text-size', false)
+            ->assertSee('Największy tekst')
+            ->assertSee('blog-portal-lead', false)
+            ->assertSee('blog-portal-body prose', false)
+            ->assertSee('lg:col-span-3', false)
+            ->assertSee('<aside class="space-y-6 print:hidden lg:sticky lg:top-24 lg:self-start" aria-label="Kolumna boczna wpisu">', false)
+            ->assertSee('Więcej w kategorii Prawo')
+            ->assertSee('Wszystkie w kategorii Prawo')
+            ->assertSee('Zobacz także');
+
+        // „Więcej w kategorii": najwyżej 6 innych wpisów z tej kategorii, bez bieżącego.
+        $aside = substr($html, strpos($html, 'blog-category-more-heading'), 4000);
+        $aside = substr($aside, 0, strpos($aside, '</nav>'));
+        $this->assertSame(6, substr_count($aside, 'fa-chevron-right'));
+        $this->assertStringContainsString('Inny 1', $aside);
+        $this->assertStringNotContainsString('Inny 7', $aside);
+        $this->assertStringNotContainsString('Główny wpis', $aside);
+
+        // „Zobacz także": 4 karty z nagłówkami H3; komentarze pod spodem.
+        $related = substr($html, strpos($html, 'blog-related-heading'));
+        $related = substr($related, 0, strpos($related, '</section>'));
+        $this->assertSame(4, substr_count($related, '<h3'));
+        $this->assertGreaterThan(strpos($html, 'blog-related-heading'), strpos($html, 'id="komentarze"'));
     }
 
     public function test_autorzy_profil_i_zapas_tekstowy(): void

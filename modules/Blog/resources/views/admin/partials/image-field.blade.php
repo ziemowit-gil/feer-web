@@ -33,7 +33,7 @@
         <div class="flex flex-wrap items-center gap-4">
             <img src="{{ $currentUrl }}" alt="{{ $currentAlt ?: 'Aktualne zdjęcie' }}" class="h-24 w-36 rounded-md object-cover">
             <label class="flex items-center gap-2 text-sm font-bold">
-                <input type="checkbox" name="{{ $removeName }}" value="1" class="rounded border-gray-300 text-brand focus:ring-brand"> Usuń zdjęcie
+                <input type="checkbox" name="{{ $removeName }}" value="1" class="rounded border-gray-400 text-brand-dark focus:ring-brand-dark"> Usuń zdjęcie
             </label>
         </div>
     @endif
@@ -47,7 +47,7 @@
 
     <div>
         <p class="mb-1 text-sm font-bold">Albo wybierz z biblioteki multimediów</p>
-        <button type="button" @click="load()" :aria-expanded="open.toString()" class="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-bold text-ink hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+        <button type="button" @click="load()" :aria-expanded="open.toString()" class="rounded-lg border border-gray-400 bg-white px-4 py-2 text-sm font-bold text-ink hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">
             <i class="fa-solid fa-images mr-1.5" aria-hidden="true"></i><span x-text="open ? 'Zwiń bibliotekę' : 'Otwórz bibliotekę zdjęć'">Otwórz bibliotekę zdjęć</span>
         </button>
         <input type="hidden" name="library_media_id" :value="chosenId">
@@ -55,7 +55,7 @@
         <p x-show="err" x-cloak x-text="err" class="mt-2 text-xs text-red-700" role="alert"></p>
         <div x-show="open && lib.length" x-cloak class="mt-3 grid max-h-72 grid-cols-3 gap-2 overflow-y-auto sm:grid-cols-4" role="group" aria-label="Zdjęcia z biblioteki">
             <template x-for="m in lib" :key="m.id">
-                <button type="button" @click="pick(m)" :aria-pressed="(chosenId === m.id).toString()" class="overflow-hidden rounded-md border-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand" :class="chosenId === m.id ? 'border-brand-dark' : 'border-transparent'">
+                <button type="button" @click="pick(m)" :aria-pressed="(chosenId === m.id).toString()" class="overflow-hidden rounded-md border-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark" :class="chosenId === m.id ? 'border-brand-dark' : 'border-transparent'">
                     <img :src="m.url" :alt="m.alt || m.file_name" loading="lazy" class="aspect-[4/3] w-full object-cover">
                 </button>
             </template>
@@ -67,14 +67,14 @@
         <label for="{{ $p }}-alt" class="mb-1 block text-sm font-bold">{{ $altLabel }}</label>
         <input type="text" id="{{ $p }}-alt" name="{{ $altName }}" maxlength="255" value="{{ $altValue }}"
             aria-describedby="{{ $p }}-alt-help" @error($altName) aria-invalid="true" @enderror
-            class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+            class="w-full rounded border-gray-400 focus:border-brand-dark focus:ring-brand-dark">
         <p id="{{ $p }}-alt-help" class="mt-1 text-xs text-muted">{{ $altHelp }}</p>
         @error($altName) <p class="mt-1 text-sm text-red-700">{{ $message }}</p> @enderror
     </div>
 
     @isset($decorativeName)
         <label class="flex items-start gap-2">
-            <input type="checkbox" name="{{ $decorativeName }}" value="1" @checked($decorativeValue) class="mt-0.5 rounded border-gray-300 text-brand focus:ring-brand">
+            <input type="checkbox" name="{{ $decorativeName }}" value="1" @checked($decorativeValue) class="mt-0.5 rounded border-gray-400 text-brand-dark focus:ring-brand-dark">
             <span>
                 <span class="block text-sm font-bold">Zdjęcie dekoracyjne</span>
                 <span class="block text-xs text-muted">Nie niesie informacji — czytniki ekranu je pominą (pusty tekst alternatywny).</span>

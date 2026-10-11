@@ -26,6 +26,12 @@ class BlogController extends Controller
     /** Wpisów na stronę listy. */
     public const PER_PAGE = 12;
 
+    /** Kart „Zobacz także" pod wpisem. */
+    private const RELATED = 4;
+
+    /** Wpisów w kolumnie „Więcej w kategorii". */
+    private const CATEGORY_ARTICLES = 6;
+
     /** Tagów w kolumnie bocznej listy. */
     private const SIDEBAR_TAGS = 15;
 
@@ -126,6 +132,7 @@ class BlogController extends Controller
             'body'     => $body,
             'toc'      => $toc,
             'related'  => $this->related($article),
+            'categoryArticles' => $this->categoryArticles($article),
             'previous' => $this->neighbour($article, 'previous'),
             'next'     => $this->neighbour($article, 'next'),
         ], $this->sidebar()));
@@ -199,16 +206,16 @@ class BlogController extends Controller
             ->get()
             ->sortByDesc(fn (BlogArticle $a) => ($a->category_id && $a->category_id === $article->category_id ? 1 : 0)
                 + $a->tags->pluck('id')->intersect($tagIds)->count())
-            ->take(3)
+            ->take(self::RELATED)
             ->values();
 
-        if ($candidates->count() < 3) {
+        if ($candidates->count() < self::RELATED) {
             $candidates = $candidates->concat(
                 BlogArticle::listed()
                     ->whereKeyNot($article->getKey())
                     ->whereNotIn('id', $candidates->pluck('id'))
                     ->latestFirst()
-                    ->limit(3 - $candidates->count())
+                    ->limit(self::RELATED - $candidates->count())
                     ->get()
             );
         }
@@ -217,6 +224,21 @@ class BlogController extends Controller
     }
 
     /** Poprzedni (starszy) albo następny (nowszy) wpis według daty publikacji. */
+    /** Inne wpisy z kategorii tego wpisu — kolumna boczna „Więcej w kategorii". */
+    private function categoryArticles(BlogArticle $article): Collection
+    {
+        if (! $article->category_id) {
+            return collect();
+        }
+
+        return BlogArticle::listed()
+            ->where('category_id', $article->category_id)
+            ->whereKeyNot($article->getKey())
+            ->latestFirst()
+            ->limit(self::CATEGORY_ARTICLES)
+            ->get(['id', 'title', 'slug', 'published_at']);
+    }
+
     private function neighbour(BlogArticle $article, string $direction): ?BlogArticle
     {
         $date = $article->published_at;

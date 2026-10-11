@@ -55,8 +55,24 @@ class BlogArticle extends Model
         'title', 'slug', 'author_name', 'author_bio', 'excerpt', 'body', 'is_published', 'published_at',
         'is_disabled', 'disabled_message', 'wip_mode', 'wip_message',
         'category_id', 'image_path', 'image_alt', 'image_decorative', 'is_featured',
-        'meta_title', 'meta_description', 'author_id',
+        'meta_title', 'meta_description', 'author_id', 'body_format', 'body_markdown',
     ];
+
+    /** Formaty treści: edytor wizualny (HTML) albo Markdown (HTML renderowany przy zapisie). */
+    public const FORMAT_HTML = 'html';
+
+    public const FORMAT_MARKDOWN = 'markdown';
+
+    public const FORMATS = [self::FORMAT_HTML, self::FORMAT_MARKDOWN];
+
+    protected $attributes = [
+        'body_format' => self::FORMAT_HTML,
+    ];
+
+    public function isMarkdown(): bool
+    {
+        return $this->body_format === self::FORMAT_MARKDOWN;
+    }
 
     protected $casts = [
         'is_published'     => 'boolean',

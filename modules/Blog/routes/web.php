@@ -45,10 +45,17 @@ foreach ((array) config('blog.legacy_prefixes', []) as $legacy) {
 }
 
 // ── Adminowe ──────────────────────────────────────────────────────────────────
-Route::middleware(['auth', 'verified', '2fa'])
+Route::middleware(['auth', 'verified', '2fa', 'module-access:blog'])
     ->prefix(config('app.admin_prefix', 'admin'))
     ->name('admin.')
     ->group(function (): void {
+        // Edytor Markdown: podgląd i konwersja HTML → Markdown (JSON, przed zasobem).
+        Route::post('wiem-feer/podglad-markdown', [AdminBlogArticleController::class, 'previewMarkdown'])
+            ->name('wiem-feer.podglad-markdown');
+        Route::post('wiem-feer/html-na-markdown', [AdminBlogArticleController::class, 'convertToMarkdown'])
+            ->name('wiem-feer.html-na-markdown');
+        Route::post('wiem-feer/zbiorczo', [AdminBlogArticleController::class, 'bulk'])
+            ->name('wiem-feer.zbiorczo');
         Route::resource('wiem-feer', AdminBlogArticleController::class)
             ->parameters(['wiem-feer' => 'article'])
             ->except('show');

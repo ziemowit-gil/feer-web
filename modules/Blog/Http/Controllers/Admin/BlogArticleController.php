@@ -11,28 +11,103 @@ use Modules\Blog\Models\BlogArticle;
 use Modules\Blog\Models\BlogAuthor;
 use Modules\Blog\Models\BlogCategory;
 use Modules\Blog\Models\BlogTag;
+use Modules\Blog\Support\ArticleListFilters;
 use Modules\Blog\Support\BlogImages;
+use Modules\Blog\Support\HtmlToMarkdown;
+use Modules\Blog\Support\MarkdownRenderer;
 
 class BlogArticleController extends Controller
 {
     /** Katalog zdjęć wyróżniających na dysku `public`. */
     private const IMAGE_DIR = 'wiem-feer';
 
+    /** Akcje zbiorcze listy: klucz → opis w komunikacie. */
+    public const BULK_ACTIONS = [
+        'publish'  => 'Opublikowano',
+        'draft'    => 'Cofnięto do szkicu',
+        'disable'  => 'Wyłączono',
+        'enable'   => 'Włączono',
+        'category' => 'Przypisano kategorię',
+        'delete'   => 'Usunięto',
+    ];
+
+    /** Limit długości treści Markdown/HTML (znaki). */
+    private const MARKDOWN_MAX = 500000;
+
     public function index(Request $request)
     {
-        $status = (string) $request->query('status', '');
-        $status = array_key_exists($status, BlogArticle::STATUSES) ? $status : '';
+        $filters = new ArticleListFilters($request);
 
-        $articles = BlogArticle::with(['category', 'author', 'coAuthors'])
-            ->withCount([
-                'comments',
-                'comments as pending_comments_count' => fn ($q) => $q->where('is_approved', false),
-            ])
-            ->when($status !== '', fn ($q) => $q->status($status))
-            ->orderByDesc('created_at')
-            ->get();
+        $articles = $filters->apply(
+            BlogArticle::with(['category', 'author', 'coAuthors', 'tags'])
+                ->withCount([
+                    'comments as approved_comments_count' => fn ($q) => $q->where('is_approved', true),
+                    'comments as pending_comments_count' => fn ($q) => $q->where('is_approved', false),
+                    'comments',
+                ])
+        )->paginate($filters->values['na_strone'])->appends($filters->query());
 
-        return view('blog::admin.index', compact('articles', 'status'));
+        return view('blog::admin.index', [
+            'articles'   => $articles,
+            'filters'    => $filters,
+            'status'     => $filters->values['status'],
+            'categories' => BlogCategory::orderBy('sort_order')->orderBy('name')->get(['id', 'name', 'slug']),
+            'authors'    => BlogAuthor::orderBy('name')->get(['id', 'name']),
+            'tags'       => BlogTag::orderBy('name')->get(['id', 'name', 'slug']),
+        ]);
+    }
+
+    /** Akcje zbiorcze na zaznaczonych artykułach (z listy). */
+    public function bulk(Request $request)
+    {
+        $data = $request->validate([
+            'ids'         => ['required', 'array', 'min:1', 'max:200'],
+            'ids.*'       => ['integer', Rule::exists('blog.blog_articles', 'id')],
+            'action'      => ['required', Rule::in(array_keys(self::BULK_ACTIONS))],
+            'category_id' => ['nullable', 'required_if:action,category', 'string'],
+            'confirm_delete' => ['accepted_if:action,delete'],
+        ], [
+            'ids.required'               => 'Zaznacz co najmniej jeden artykuł.',
+            'action.required'            => 'Wybierz akcję zbiorczą.',
+            'category_id.required_if'    => 'Wybierz kategorię do przypisania.',
+            'confirm_delete.accepted_if' => 'Potwierdź usunięcie zaznaczonych artykułów.',
+        ], ['action' => 'akcja', 'ids' => 'artykuły']);
+
+        $articles = BlogArticle::whereIn('id', $data['ids'])->get();
+
+        switch ($data['action']) {
+            case 'publish':
+                $articles->each(fn (BlogArticle $a) => $a->update(['is_published' => true, 'published_at' => $a->published_at ?? now()]));
+                break;
+            case 'draft':
+                $articles->each(fn (BlogArticle $a) => $a->update(['is_published' => false]));
+                break;
+            case 'disable':
+                $articles->each(fn (BlogArticle $a) => $a->update(['is_disabled' => true]));
+                break;
+            case 'enable':
+                $articles->each(fn (BlogArticle $a) => $a->update(['is_disabled' => false]));
+                break;
+            case 'category':
+                $categoryId = $data['category_id'] === 'brak' ? null : (int) $data['category_id'];
+                if ($categoryId !== null && ! BlogCategory::whereKey($categoryId)->exists()) {
+                    throw ValidationException::withMessages(['category_id' => 'Wybrana kategoria nie istnieje.']);
+                }
+                $articles->each(fn (BlogArticle $a) => $a->update(['category_id' => $categoryId]));
+                break;
+            case 'delete':
+                $articles->each(function (BlogArticle $a) {
+                    $this->deleteImageFile($a->image_path, $a->id);
+                    $a->delete();
+                });
+                break;
+        }
+
+        $count = $articles->count();
+        $back = $request->input('return_to');
+        $url = is_string($back) && str_starts_with($back, route('admin.wiem-feer.index')) ? $back : route('admin.wiem-feer.index');
+
+        return redirect()->to($url)->with('status', self::BULK_ACTIONS[$data['action']] . ' — artykułów: ' . $count . '.');
     }
 
     public function create()
@@ -51,7 +126,7 @@ class BlogArticleController extends Controller
         $article->tags()->sync(BlogTag::idsFromList($request->input('tags')));
         $this->syncCoAuthors($request, $article);
 
-        return redirect()->route('admin.wiem-feer.index')->with('status', 'Artykuł został utworzony.');
+        return $this->afterSave($request, $article, 'Artykuł został utworzony.');
     }
 
     public function edit(BlogArticle $article)
@@ -69,7 +144,32 @@ class BlogArticleController extends Controller
         $article->tags()->sync(BlogTag::idsFromList($request->input('tags')));
         $this->syncCoAuthors($request, $article);
 
-        return redirect()->route('admin.wiem-feer.index')->with('status', 'Artykuł został zaktualizowany.');
+        return $this->afterSave($request, $article, 'Artykuł został zaktualizowany.');
+    }
+
+    /** „Zapisz" zostaje w edycji, „Zapisz i zamknij" (oraz domyślnie) wraca do listy. */
+    private function afterSave(Request $request, BlogArticle $article, string $message)
+    {
+        return $request->input('after_save') === 'edit'
+            ? redirect()->route('admin.wiem-feer.edit', $article)->with('status', $message)
+            : redirect()->route('admin.wiem-feer.index')->with('status', $message);
+    }
+
+    /** Podgląd Markdown w edytorze — ten sam renderer co przy zapisie. */
+    public function previewMarkdown(Request $request)
+    {
+        $data = $request->validate(['markdown' => ['nullable', 'string', 'max:' . self::MARKDOWN_MAX]]);
+        $html = MarkdownRenderer::toHtml($data['markdown'] ?? '');
+
+        return response()->json(['html' => $html] + MarkdownRenderer::stats($html));
+    }
+
+    /** „Przełącz na Markdown": konwersja bieżącego HTML z edytora wizualnego. */
+    public function convertToMarkdown(Request $request)
+    {
+        $data = $request->validate(['html' => ['nullable', 'string', 'max:' . self::MARKDOWN_MAX]]);
+
+        return response()->json(['markdown' => HtmlToMarkdown::convert($data['html'] ?? '')]);
     }
 
     public function destroy(BlogArticle $article)
@@ -138,7 +238,9 @@ class BlogArticleController extends Controller
             'author_name'      => ['nullable', 'string', 'max:255'],
             'author_bio'       => ['nullable', 'string', 'max:600'],
             'excerpt'          => ['nullable', 'string', 'max:500'],
-            'body'             => ['required', 'string'],
+            'body'             => ['nullable', 'string'],
+            'body_format'      => ['nullable', Rule::in(BlogArticle::FORMATS)],
+            'body_markdown'    => ['nullable', 'string', 'max:' . self::MARKDOWN_MAX],
             'published_at'     => ['nullable', 'date'],
             'disabled_message' => ['nullable', 'string', 'max:2000'],
             'wip_mode'         => ['nullable', Rule::in(array_keys(BlogArticle::WIP_MODES))],
@@ -162,7 +264,11 @@ class BlogArticleController extends Controller
             'meta_title'       => 'tytuł SEO',
             'meta_description' => 'opis SEO',
             'author_bio'       => 'nota o autorze',
+            'body'             => 'treść',
+            'body_markdown'    => 'treść (Markdown)',
         ]);
+
+        $this->applyBody($data, $article);
 
         $data['slug'] = trim($data['slug'] ?? '');
         $data['is_published'] = $request->boolean('is_published');
@@ -201,6 +307,37 @@ class BlogArticleController extends Controller
         unset($data['tags'], $data['image'], $data['library_media_id'], $data['co_authors']);
 
         return $data;
+    }
+
+    /**
+     * Treść: w trybie Markdown `body` (HTML) renderujemy z `body_markdown`; w trybie HTML
+     * bierzemy `body` z edytora wizualnego (a gdy go nie ma — np. tuż po „Wróć do edytora
+     * wizualnego" we wpisie pisanym w Markdown — renderujemy Markdown). Źródło Markdown
+     * zostaje zapisane także w trybie HTML, żeby można było do niego wrócić.
+     */
+    private function applyBody(array &$data, ?BlogArticle $article): void
+    {
+        $format = $data['body_format'] ?? $article?->body_format ?? BlogArticle::FORMAT_HTML;
+        $markdown = isset($data['body_markdown']) ? str_replace(["\r\n", "\r"], "\n", $data['body_markdown']) : null;
+
+        if ($format === BlogArticle::FORMAT_MARKDOWN) {
+            if (blank($markdown)) {
+                throw ValidationException::withMessages(['body_markdown' => 'Wpisz treść artykułu.']);
+            }
+            $data['body'] = MarkdownRenderer::toHtml($markdown);
+        } else {
+            if (blank($data['body'] ?? null) && filled($markdown)) {
+                $data['body'] = MarkdownRenderer::toHtml($markdown);
+            }
+            if (blank($data['body'] ?? null)) {
+                throw ValidationException::withMessages(['body' => 'Wpisz treść artykułu.']);
+            }
+        }
+
+        $data['body_format'] = $format;
+        if ($markdown === null) {
+            unset($data['body_markdown']);
+        }
     }
 
     /**
