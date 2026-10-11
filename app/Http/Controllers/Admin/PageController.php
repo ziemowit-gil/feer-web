@@ -796,7 +796,11 @@ class PageController extends Controller
                 // została zablokowana później dla całej instalacji.
                 Rule::notIn(array_diff(SiteSetting::current()->blocked_options['page_types'] ?? [], [$page?->type])),
             ],
-            'page_template' => ['nullable', Rule::in(array_keys(Page::TEMPLATES))],
+            'page_template' => [
+                'nullable', Rule::in(array_keys(Page::TEMPLATES)),
+                // Szablon ukryty w Ustawieniach → Moduły nie może być wybrany; strona, która już go ma, może go zachować.
+                Rule::notIn(array_diff(SiteSetting::current()->blocked_options['page_templates'] ?? [], [$page?->page_template])),
+            ],
             // Ustawienia szablonu „Strona działu".
             'layout_data' => ['nullable', 'array'],
             'layout_data.news_category_id' => ['nullable', 'integer', 'exists:news_categories,id'],

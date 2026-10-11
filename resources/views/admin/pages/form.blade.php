@@ -294,7 +294,10 @@
                         @php
                             $tplIcons = ['default' => 'fa-file-lines', 'wide' => 'fa-expand', 'hero' => 'fa-image', 'landing' => 'fa-bullhorn', 'portal' => 'fa-globe', 'section' => 'fa-table-columns', 'minimal' => 'fa-minimize'];
                             $tplCards = [];
-                            foreach (\App\Models\Page::TEMPLATES as $value => $label) {
+                            $tplCurrentRaw = old('page_template', $page->page_template ?? 'default');
+                            // Szablony ukryte w Ustawieniach → Moduły (blocked_options.page_templates); bieżący zostaje widoczny.
+                            $tplAvailable = array_filter(\App\Models\Page::TEMPLATES, fn ($v, $k) => ! $siteSettings->isOptionBlocked('page_templates', $k) || $k === $tplCurrentRaw, ARRAY_FILTER_USE_BOTH);
+                            foreach ($tplAvailable as $value => $label) {
                                 $tplCards[$value] = [
                                     'name' => trim(\Illuminate\Support\Str::before($label, ' (')),
                                     'desc' => \Illuminate\Support\Str::contains($label, ' (') ? rtrim(\Illuminate\Support\Str::after($label, ' ('), ')') : '',
@@ -304,7 +307,7 @@
                             $tplCurrent = old('page_template', $page->page_template ?? 'default');
                         @endphp
                         <select id="page_template" name="page_template" class="sr-only" tabindex="-1" aria-hidden="true">
-                            @foreach (\App\Models\Page::TEMPLATES as $value => $label)
+                            @foreach ($tplAvailable as $value => $label)
                                 <option value="{{ $value }}" {{ $tplCurrent === $value ? 'selected' : '' }}>{{ $label }}</option>
                             @endforeach
                         </select>
