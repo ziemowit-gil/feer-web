@@ -181,7 +181,7 @@
                             <h2 id="pane-heading" class="text-xl font-bold text-ink">{{ $selected->title }}</h2>
                             <p class="mt-1 flex flex-wrap items-center gap-2 text-xs">
                                 @include('admin.pages.partials.status-chip', ['page' => $selected, 'inherited' => isset($inheritedDisabled[$selected->id])])
-                                <span class="rounded-full bg-gray-100 px-2 py-0.5 font-semibold text-gray-700">{{ \App\Models\Page::TYPES[$selected->type] ?? $selected->type }}</span>
+                                <span class="rounded-full bg-gray-100 px-2 py-0.5 font-semibold text-gray-700">{{ \App\Models\Page::types()[$selected->type] ?? $selected->type }}</span>
                                 @if ($selected->isWip())<span class="rounded-full bg-orange-100 px-2 py-0.5 font-bold text-orange-700"><i class="fa-solid fa-person-digging" aria-hidden="true"></i> WIP</span>@endif
                                 @if ($selected->is_featured)<span class="rounded-full bg-amber-100 px-2 py-0.5 font-bold text-amber-700"><i class="fa-solid fa-star" aria-hidden="true"></i> Wyróżniona</span>@endif
                                 @if ($selected->is_system)<span class="rounded-full bg-slate-100 px-2 py-0.5 font-bold text-slate-600"><i class="fa-solid fa-lock" aria-hidden="true"></i> Systemowa</span>@endif

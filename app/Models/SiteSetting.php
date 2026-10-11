@@ -722,7 +722,7 @@ class SiteSetting extends Model implements HasMedia
     {
         return [
             'header_layouts' => self::HEADER_LAYOUTS,
-            'page_types' => Page::TYPES,
+            'page_types' => Page::types(),
             'contact_layouts' => self::CONTACT_LAYOUTS,
             'site_templates' => self::SITE_TEMPLATES,
         ];

@@ -6,12 +6,7 @@
     rozwijania z aria-expanded/aria-controls, cele ≥ 44 px wysokości (2.5.8).
 --}}
 @php
-    $typeIcons = [
-        'about' => 'fa-building', 'faq' => 'fa-circle-question', 'event' => 'fa-calendar', 'schedule' => 'fa-calendar-days',
-        'links_hub' => 'fa-table-cells-large', 'tiles_grid' => 'fa-table-cells', 'internal' => 'fa-lock', 'internal_hub' => 'fa-user-lock',
-        'bip_move' => 'fa-landmark', 'recruitment' => 'fa-user-plus', 'tender' => 'fa-file-signature', 'service' => 'fa-briefcase', 'guide' => 'fa-list-ol', 'glossary' => 'fa-book', 'case_study' => 'fa-chart-line',
-        'brand_assets' => 'fa-palette', 'wspolpraca' => 'fa-handshake', 'legacy' => 'fa-clock-rotate-left', 'training_institution' => 'fa-graduation-cap',
-    ];
+    $typeIcons = \App\Models\Page::typeIcons();
 @endphp
 <ul role="list" data-tree-list class="{{ $depth > 0 ? 'ml-3 border-l border-gray-200 pl-1' : '' }} space-y-0.5">
     @foreach ($nodes as $node)

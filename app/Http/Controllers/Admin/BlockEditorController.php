@@ -323,7 +323,7 @@ class BlockEditorController extends Controller
     private function typeLabel(string $type, Model $record): string
     {
         return match (true) {
-            $record instanceof Page => Page::TYPES[$record->type] ?? (string) $record->type,
+            $record instanceof Page => Page::types()[$record->type] ?? (string) $record->type,
             $record instanceof News => $record->category?->name ? 'Aktualność · '.$record->category->name : 'Aktualność',
             $record instanceof Project => $record->category?->name ? 'Działanie · '.$record->category->name : 'Działanie',
             default => self::TARGETS[$type]['labels']['kind'],

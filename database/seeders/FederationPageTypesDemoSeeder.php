@@ -7,7 +7,7 @@ use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 
 /**
- * Po jednej przykładowej podstronie na każdy typ z Page::TYPES (poza
+ * Po jednej przykładowej podstronie na każdy typ z Page::types() (poza
  * "about_person", zarządzanym przez osobny moduł "Osoby") — demonstracja
  * wszystkich dostępnych układów, podpięta pod rozwijane menu "Demo".
  */

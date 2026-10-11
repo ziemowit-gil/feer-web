@@ -11,7 +11,7 @@
 --}}
 @php
     $sectionChildren = $page->publishedChildren;
-    $typeIcons = \App\Models\Page::TYPE_ICONS;
+    $typeIcons = \App\Models\Page::typeIcons();
     $excerptOf = function (\App\Models\Page $p): string {
         $text = trim((string) $p->meta_description);
         if ($text === '') {

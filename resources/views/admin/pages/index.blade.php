@@ -21,7 +21,7 @@
         'q'           => $q,
         'status'      => $status,
         'sort'        => $sort,
-        'typeGroups'  => \App\Models\Page::TYPE_GROUPS,
+        'typeGroups'  => \App\Models\Page::typeGroups(),
         'typeValue'   => $type,
         'sortOptions' => ['default' => 'Domyślne (kolejność)', 'title_asc' => 'Tytuł A–Z', 'title_desc' => 'Tytuł Z–A'],
         'total'       => $pages->total(),
@@ -200,7 +200,7 @@
                                     @endif
                                     <div class="mt-1 flex flex-wrap items-center gap-1.5">
                                         <span class="rounded-full px-2 py-0.5 text-[11px] font-semibold {{ $badgeClass }}">
-                                            {{ \App\Models\Page::TYPES[$page->type] ?? $page->type }}
+                                            {{ \App\Models\Page::types()[$page->type] ?? $page->type }}
                                         </span>
                                         <span class="font-mono text-xs text-muted">/{{ $page->slug }}</span>
                                     </div>

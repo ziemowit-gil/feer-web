@@ -979,32 +979,9 @@
             @endif
         </div>
     </section>
-    @elseif ($page->isService())
-    @include('page.partials.typed.service')
-    @elseif ($page->isGuide())
-    @include('page.partials.typed.guide')
-    @elseif ($page->isGlossary())
-    @include('page.partials.typed.glossary')
-    @elseif ($page->isCaseStudy())
-    @include('page.partials.typed.case-study')
-    @elseif ($page->isRecruitment())
-    @include('page.partials.typed.recruitment')
-    @elseif ($page->isTender())
-    @include('page.partials.typed.tender')
-    @elseif ($page->isPricing())
-    @include('page.partials.typed.pricing')
-    @elseif ($page->isTeam())
-    @include('page.partials.typed.team')
-    @elseif ($page->isDocuments())
-    @include('page.partials.typed.documents')
-    @elseif ($page->isRegulation())
-    @include('page.partials.typed.regulation')
-    @elseif ($page->isRedirect())
-    @include('page.partials.typed.redirect')
-    @elseif ($page->isReports())
-    @include('page.partials.typed.reports')
-    @elseif ($page->isPartners())
-    @include('page.partials.typed.partners')
+    {{-- Typy z danymi w `type_data`: widok wskazuje klasa typu (App\PageTypes\Types\…, frontView()). --}}
+    @elseif (($pageTypeDef = \App\PageTypes\PageTypeRegistry::get($page->type)) && $pageTypeDef->frontView())
+    @include($pageTypeDef->frontView())
     @elseif ($page->isCooperation())
     @php
         $cd      = $page->cooperation_data ?? [];

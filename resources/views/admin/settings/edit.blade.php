@@ -81,7 +81,7 @@
                     <h2 class="font-bold text-amber-900">Adres <code>/strefa-wspolpracownika-feer</code> jest już zajęty</h2>
                     <p class="mt-1 text-sm text-amber-800">
                         Ten adres zajmuje strona „<strong>{{ $strefaConflict->title }}</strong>"
-                        (typ: {{ \App\Models\Page::TYPES[$strefaConflict->type] ?? $strefaConflict->type }}), więc
+                        (typ: {{ \App\Models\Page::types()[$strefaConflict->type] ?? $strefaConflict->type }}), więc
                         strefa współpracownika nie działa. Potwierdź, aby ją nadpisać — strona zostanie przełączona na
                         wewnętrzną z logowaniem Microsoft 365. Dotychczasowa treść zostanie zachowana.
                     </p>

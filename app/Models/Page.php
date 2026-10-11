@@ -6,6 +6,7 @@ use App\Models\Concerns\Approvable;
 use App\Models\Concerns\BelongsToSite;
 use App\Models\Concerns\LogsActivity;
 use App\Models\SiteSetting;
+use App\PageTypes\PageTypeRegistry;
 use Laravel\Scout\Searchable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -97,60 +98,35 @@ class Page extends Model
     /** Maksymalna głębokość drzewa działu renderowanego w nawigacji „tree". */
     public const TREE_NAV_MAX_DEPTH = 5;
 
-    /** Page types: a plain content page, an event (webinar / on-site), a schedule listing, or an "about the organisation" page — each with its own layout. */
-    public const TYPES = [
-        'standard' => 'Standardowa',
-        'event' => 'Wydarzenie',
-        'schedule' => 'Harmonogram zajęć / spotkań',
-        'about' => 'O organizacji',
-        'faq' => 'FAQ (pytania i odpowiedzi)',
-        'training_institution' => 'Instytucja szkoleniowa',
-        'bip_move' => 'Przeniesiono do BIP',
-        'internal' => 'Wewnętrzna (dostęp ograniczony)',
-        'internal_hub' => 'Strefa współpracownika (wewnętrzny panel: komunikaty i odnośniki)',
-        'links_hub' => 'Strona z kafelkami — metro (publiczne linki do działów)',
-        'tiles_grid' => 'Siatka kafelków + treść (kafelki z ikonami, treść nad lub pod nimi, boczne menu)',
-        'wspolpraca' => 'Współpraca z FEER (partnerstwo, sektory, formy, CTA)',
-        'legacy' => 'Prezentacja tego, co było',
-        'brand_assets'  => 'Marka — identyfikacja wizualna (pliki do pobrania)',
-        'about_person'  => 'O organizacji — osoba',
-        'contact'       => 'Kontakt (formularz, dane teleadresowe, spotkania)',
-        'service'       => 'Oferta / usługa (korzyści, dla kogo, jak działamy, CTA)',
-        'guide'         => 'Poradnik krok po kroku (numerowane kroki, wymagania, podsumowanie)',
-        'glossary'      => 'Słownik pojęć (hasła z definicjami i indeksem liter)',
-        'case_study'    => 'Studium przypadku (wyzwanie, rozwiązanie, efekty, cytat)',
-        'pricing'       => 'Cennik i opłaty (karty cen, zasady płatności)',
-        'team'          => 'Zespół (osoby z rolą i krótkim opisem)',
-        'documents'     => 'Dokumenty (grupy odnośników do plików i stron)',
-        'regulation'    => 'Regulamin lub dokument (data obowiązywania, spis treści)',
-        'redirect'      => 'Przekierowanie (strona przenosi na inny adres)',
-        'reports'       => 'Sprawozdania roczne (tabela z modułu Sprawozdania — np. do BIP)',
-        'partners'      => 'Partnerzy i sponsorzy (logotypy w grupach, z modułu Partnerzy lub własne)',
-        'recruitment'   => 'Rekrutacja do projektu (status naboru, terminy, kryteria, dokumenty, zgłoszenie)',
-        'tender'        => 'Zapytanie ofertowe (zasada konkurencyjności: termin ofert, warunki, kryteria, zmiany, wynik)',
-    ];
+    /**
+     * Typy stron — każdy typ to klasa w app/PageTypes/Types (patrz PageType:
+     * „Jak dodać nowy typ strony"). Poniższe metody zastępują dawne stałe
+     * TYPES / TYPE_GROUPS / TYPE_ICONS / TYPE_DATA_TYPES i czytają z rejestru.
+     *
+     * @return array<string, string> klucz => etykieta
+     */
+    public static function types(): array
+    {
+        return PageTypeRegistry::labels();
+    }
 
-    /** Ikony Font Awesome typów stron (karty podstron, kafelki działu). */
     /** Grupy typów stron — wspólne dla wyboru typu w edycji i filtra na liście. */
-    public const TYPE_GROUPS = [
-        'Treść i informacja' => ['standard', 'faq', 'glossary', 'guide', 'documents', 'regulation'],
-        'Oferta i edukacja' => ['service', 'pricing', 'case_study', 'training_institution', 'recruitment'],
-        'Organizacja' => ['about', 'about_person', 'team', 'wspolpraca', 'legacy', 'brand_assets', 'reports', 'partners', 'tender'],
-        'Kafelki i nawigacja' => ['links_hub', 'tiles_grid'],
-        'Kontakt i wydarzenia' => ['contact', 'event', 'schedule'],
-        'Wewnętrzne i przekierowania' => ['internal', 'internal_hub', 'bip_move', 'redirect'],
-    ];
+    public static function typeGroups(): array
+    {
+        return PageTypeRegistry::groups();
+    }
 
-    public const TYPE_ICONS = [
-        'pricing' => 'fa-coins', 'team' => 'fa-people-group', 'documents' => 'fa-folder-open', 'regulation' => 'fa-scale-balanced', 'redirect' => 'fa-share', 'reports' => 'fa-file-invoice', 'partners' => 'fa-handshake',
-        'recruitment' => 'fa-user-plus', 'tender' => 'fa-file-signature', 'service' => 'fa-briefcase', 'guide' => 'fa-list-ol', 'glossary' => 'fa-book', 'case_study' => 'fa-chart-line',
-        'faq' => 'fa-circle-question', 'event' => 'fa-calendar', 'schedule' => 'fa-calendar-days', 'links_hub' => 'fa-table-cells-large',
-        'tiles_grid' => 'fa-table-cells', 'internal' => 'fa-lock', 'internal_hub' => 'fa-user-lock', 'bip_move' => 'fa-landmark',
-        'about' => 'fa-building', 'contact' => 'fa-envelope', 'wspolpraca' => 'fa-handshake', 'brand_assets' => 'fa-palette', 'legacy' => 'fa-clock-rotate-left',
-    ];
+    /** Ikony Font Awesome typów stron (karty podstron, kafelki działu, drzewo stron). */
+    public static function typeIcons(): array
+    {
+        return PageTypeRegistry::icons();
+    }
 
     /** Typy, których dane trzymamy we wspólnej kolumnie JSON `type_data`. */
-    public const TYPE_DATA_TYPES = ['service', 'guide', 'glossary', 'case_study', 'pricing', 'team', 'documents', 'regulation', 'redirect', 'reports', 'partners', 'recruitment', 'tender'];
+    public static function typeDataTypes(): array
+    {
+        return PageTypeRegistry::typeDataTypes();
+    }
 
     /**
      * Statusy zapytania ofertowego. „auto": do terminu składania ofert „Przyjmowanie
@@ -751,7 +727,7 @@ class Page extends Model
     {
         $data = is_array($this->type_data) ? $this->type_data : [];
 
-        foreach (['benefits', 'audience', 'steps', 'requirements', 'terms', 'results', 'price_rows', 'members', 'docs', 'versions', 'partners', 'partner_groups', 'bonus', 'rec_faq', 'criteria', 'notices'] as $list) {
+        foreach (PageTypeRegistry::listKeys() as $list) {
             $data[$list] = array_values(array_filter(
                 is_array($data[$list] ?? null) ? $data[$list] : [],
                 fn ($row) => is_array($row) && array_filter($row, fn ($v) => is_string($v) && trim($v) !== ''),
@@ -764,12 +740,8 @@ class Page extends Model
     /** Czy strona używa standardowej sekcji treści (a nie własnego układu typowego). */
     public function usesStandardLayout(): bool
     {
-        return ! in_array($this->type, [
-            'event', 'schedule', 'about', 'faq', 'bip_move',
-            'internal_hub', 'links_hub', 'wspolpraca', 'training_institution', 'brand_assets',
-            'legacy', 'about_person', 'contact', 'service', 'guide', 'glossary', 'case_study', 'tiles_grid', 'pricing', 'team', 'documents', 'regulation', 'redirect', 'reports', 'partners',
-            'recruitment', 'tender',
-        ], true);
+        // Typy spoza rejestru (np. stara wartość w bazie) — jak strona standardowa.
+        return PageTypeRegistry::get($this->type)?->standardLayout() ?? true;
     }
 
     /** Kanoniczny publiczny URL strony (uwzględnia wielosegmentowy slug dla stron osoby). */
@@ -1065,7 +1037,7 @@ class Page extends Model
                     'label' => $c->title,
                     'url' => $c->publicUrl(),
                     'description' => $text,
-                    'icon' => 'fa-solid '.(self::TYPE_ICONS[$c->type] ?? 'fa-file-lines'),
+                    'icon' => 'fa-solid '.(self::typeIcons()[$c->type] ?? 'fa-file-lines'),
                     'color' => $palette[($offset + $i) % count($palette)],
                     'cta_label' => null,
                     'auto' => true,

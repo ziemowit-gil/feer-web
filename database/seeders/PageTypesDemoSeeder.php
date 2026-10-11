@@ -8,7 +8,7 @@ use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 
 /**
- * Przykładowa strona każdego typu z Page::TYPES, z treściami w realiach FEER
+ * Przykładowa strona każdego typu z Page::types(), z treściami w realiach FEER
  * (dostępność cyfrowa, osoby z niepełnosprawnościami). Wszystkie trafiają pod
  * stronę „Przykłady typów stron" (/przyklady-typow-stron, kafelki podstron),
  * poza menu. Seeder jest idempotentny — slugi „przyklad-…".

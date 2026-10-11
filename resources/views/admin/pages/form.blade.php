@@ -39,7 +39,7 @@
                         <span class="inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-bold {{ $page->is_published ? 'bg-green-100 text-green-800' : 'bg-amber-100 text-amber-900' }}">
                             <i class="fa-solid {{ $page->is_published ? 'fa-circle-check' : 'fa-pen' }}" aria-hidden="true"></i>{{ $page->is_published ? 'Opublikowana' : 'Szkic' }}
                         </span>
-                        <span><i class="fa-solid {{ \App\Models\Page::TYPE_ICONS[$page->type] ?? 'fa-file-lines' }} mr-1" aria-hidden="true"></i>{{ trim(\Illuminate\Support\Str::before(\App\Models\Page::TYPES[$page->type] ?? 'Standardowa', ' (')) }}</span>
+                        <span><i class="fa-solid {{ \App\Models\Page::typeIcons()[$page->type] ?? 'fa-file-lines' }} mr-1" aria-hidden="true"></i>{{ trim(\Illuminate\Support\Str::before(\App\Models\Page::types()[$page->type] ?? 'Standardowa', ' (')) }}</span>
                         <span class="font-mono text-xs">{{ $page->publicUrl() }}</span>
                     </p>
                 @endif
@@ -264,15 +264,15 @@
                             @php
                                 // Wybór typu: karty z ikoną, nazwą i opisem, pogrupowane i z wyszukiwarką. Natywny <select> zostaje
                                 // (ukryty) — nadal niesie wartość formularza, a skrypt strony nasłuchuje na jego zdarzeniu „change".
-                                $typeGroups = \App\Models\Page::TYPE_GROUPS;
+                                $typeGroups = \App\Models\Page::typeGroups();
                                 $typeCards = [];
-                                foreach (\App\Models\Page::TYPES as $value => $label) {
+                                foreach (\App\Models\Page::types() as $value => $label) {
                                     if ($siteSettings->isOptionBlocked('page_types', $value) && $currentType !== $value) { continue; }
                                     $typeCards[$value] = [
                                         'full' => $label,
                                         'name' => trim(\Illuminate\Support\Str::before($label, ' (')),
                                         'desc' => \Illuminate\Support\Str::contains($label, ' (') ? rtrim(\Illuminate\Support\Str::after($label, ' ('), ')') : '',
-                                        'icon' => \App\Models\Page::TYPE_ICONS[$value] ?? 'fa-file-lines',
+                                        'icon' => \App\Models\Page::typeIcons()[$value] ?? 'fa-file-lines',
                                     ];
                                 }
                             @endphp

@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Page;
 use App\Models\Project;
 use App\Models\SiteSetting;
+use App\PageTypes\PageTypeRegistry;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
@@ -31,7 +32,7 @@ class PageController extends Controller
         $status = $request->query('status', '');
         $sort = $request->query('sort', 'default');
         $type = (string) $request->query('type', '');
-        if (! array_key_exists($type, Page::TYPES)) { $type = ''; }
+        if (! array_key_exists($type, Page::types())) { $type = ''; }
 
         // Domyślnie dwupanelowy widok w stylu TYPO3 (drzewo + szczegóły). Lista
         // tabelaryczna — na żądanie (?widok=lista) oraz zawsze, gdy użyte są
@@ -319,7 +320,7 @@ class PageController extends Controller
                 $page->id,
                 $page->title,
                 '/' . $page->slug,
-                Page::TYPES[$page->type] ?? $page->type,
+                Page::types()[$page->type] ?? $page->type,
                 $page->order,
                 $status,
                 filled($page->content_image) ? 'Tak' : 'Nie',
@@ -454,7 +455,7 @@ class PageController extends Controller
             $page->project_display = array_key_exists((string) $request->query('project_display'), Page::PROJECT_DISPLAYS)
                 ? $request->query('project_display') : 'tab';
         }
-        if (array_key_exists((string) $request->query('type'), Page::TYPES)) {
+        if (array_key_exists((string) $request->query('type'), Page::types())) {
             $page->type = $request->query('type');
             $page->title = $request->query('type') === 'contact' ? 'Kontakt' : null;
         }
@@ -791,7 +792,7 @@ class PageController extends Controller
             'wip_message' => ['nullable', 'string', 'max:2000'],
             'type' => [
                 'required',
-                Rule::in(array_keys(Page::TYPES)),
+                Rule::in(array_keys(Page::types())),
                 // Wartość już zapisana na tej stronie pozostaje dozwolona, choćby
                 // została zablokowana później dla całej instalacji.
                 Rule::notIn(array_diff(SiteSetting::current()->blocked_options['page_types'] ?? [], [$page?->type])),
@@ -938,120 +939,6 @@ class PageController extends Controller
             'person_department' => ['nullable', 'array'],
             'person_department.*' => ['string', 'max:120'],
             'type_data' => ['nullable', 'array'],
-            'type_data.lead' => ['nullable', 'string', 'max:1000'],
-            'type_data.cta_label' => ['nullable', 'string', 'max:80'],
-            'type_data.cta_url' => ['nullable', 'string', 'max:500'],
-            'type_data.contact_name' => ['nullable', 'string', 'max:120'],
-            'type_data.contact_email' => ['nullable', 'email', 'max:190'],
-            'type_data.contact_phone' => ['nullable', 'string', 'max:40'],
-            'type_data.audience' => ['nullable', 'array'],
-            'type_data.audience.*.text' => ['nullable', 'string', 'max:200'],
-            'type_data.benefits' => ['nullable', 'array'],
-            'type_data.benefits.*.icon' => ['nullable', 'string', 'max:100'],
-            'type_data.benefits.*.title' => ['nullable', 'string', 'max:120'],
-            'type_data.benefits.*.text' => ['nullable', 'string', 'max:500'],
-            'type_data.steps' => ['nullable', 'array'],
-            'type_data.steps.*.title' => ['nullable', 'string', 'max:160'],
-            'type_data.steps.*.text' => ['nullable', 'string', 'max:5000'],
-            'type_data.steps.*.tip' => ['nullable', 'string', 'max:500'],
-            'type_data.time_estimate' => ['nullable', 'string', 'max:60'],
-            'type_data.level' => ['nullable', Rule::in(array_keys(Page::GUIDE_LEVELS))],
-            'type_data.requirements' => ['nullable', 'array'],
-            'type_data.requirements.*.text' => ['nullable', 'string', 'max:200'],
-            'type_data.summary' => ['nullable', 'string', 'max:2000'],
-            'type_data.terms' => ['nullable', 'array'],
-            'type_data.terms.*.term' => ['nullable', 'string', 'max:120'],
-            'type_data.terms.*.definition' => ['nullable', 'string', 'max:3000'],
-            'type_data.terms.*.related' => ['nullable', 'string', 'max:255'],
-            'type_data.client' => ['nullable', 'string', 'max:160'],
-            'type_data.sector' => ['nullable', 'string', 'max:120'],
-            'type_data.period' => ['nullable', 'string', 'max:80'],
-            'type_data.challenge' => ['nullable', 'string', 'max:5000'],
-            'type_data.solution' => ['nullable', 'string', 'max:5000'],
-            'type_data.results' => ['nullable', 'array'],
-            'type_data.results.*.value' => ['nullable', 'string', 'max:40'],
-            'type_data.results.*.label' => ['nullable', 'string', 'max:120'],
-            'type_data.quote' => ['nullable', 'string', 'max:1000'],
-            'type_data.price_rows' => ['nullable', 'array', 'max:60'],
-            'type_data.price_rows.*.group' => ['nullable', 'string', 'max:120'],
-            'type_data.price_rows.*.item' => ['nullable', 'string', 'max:200'],
-            'type_data.price_rows.*.price' => ['nullable', 'string', 'max:80'],
-            'type_data.price_rows.*.note' => ['nullable', 'string', 'max:300'],
-            'type_data.payment_info' => ['nullable', 'string', 'max:3000'],
-            'type_data.members' => ['nullable', 'array', 'max:60'],
-            'type_data.members.*.name' => ['nullable', 'string', 'max:120'],
-            'type_data.members.*.role' => ['nullable', 'string', 'max:160'],
-            'type_data.members.*.text' => ['nullable', 'string', 'max:600'],
-            'type_data.members.*.email' => ['nullable', 'email', 'max:190'],
-            'type_data.docs' => ['nullable', 'array', 'max:100'],
-            'type_data.docs.*.group' => ['nullable', 'string', 'max:120'],
-            'type_data.docs.*.title' => ['nullable', 'string', 'max:200'],
-            'type_data.docs.*.url' => ['nullable', 'string', 'max:2048', 'regex:~^(https?://|/|mailto:)~i'],
-            'type_data.docs.*.note' => ['nullable', 'string', 'max:300'],
-            'type_data.partner_groups' => ['nullable', 'array', 'max:20'],
-            'type_data.partner_groups.*.title' => ['nullable', 'string', 'max:120'],
-            'type_data.partner_groups.*.text' => ['nullable', 'string', 'max:600'],
-            'type_data.partners' => ['nullable', 'array', 'max:200'],
-            'type_data.partners.*.group' => ['nullable', 'string', 'max:120'],
-            'type_data.partners.*.partner_id' => ['nullable', 'integer', 'exists:partners,id'],
-            'type_data.partners.*.name' => ['nullable', 'string', 'max:160'],
-            'type_data.partners.*.url' => ['nullable', 'string', 'max:2048', 'regex:~^(https?://|/)~i'],
-            'type_data.partners.*.logo' => ['nullable', 'string', 'max:2048', 'regex:~^(https?://|/)~i'],
-            'type_data.partners.*.note' => ['nullable', 'string', 'max:300'],
-            'type_data.partners_layout' => ['nullable', 'in:logos,cards'],
-            'type_data.partners_all' => ['nullable', 'boolean'],
-            'type_data.partners_cta_label' => ['nullable', 'string', 'max:80'],
-            'type_data.partners_cta_url' => ['nullable', 'string', 'max:2048', 'regex:~^(https?://|/|mailto:)~i'],
-            'type_data.partners_thanks' => ['nullable', 'string', 'max:1000'],
-            'type_data.target_url' => ['nullable', 'string', 'max:2048', 'regex:~^(https?://|/(?!/))~i'],
-            'type_data.redirect_mode' => ['nullable', 'in:notice,auto'],
-            'type_data.redirect_message' => ['nullable', 'string', 'max:600'],
-            'type_data.redirect_label' => ['nullable', 'string', 'max:80'],
-            'type_data.valid_from' => ['nullable', 'string', 'max:60'],
-            'type_data.version' => ['nullable', 'string', 'max:40'],
-            'type_data.versions' => ['nullable', 'array', 'max:30'],
-            'type_data.versions.*.label' => ['nullable', 'string', 'max:120'],
-            'type_data.versions.*.url' => ['nullable', 'string', 'max:2048', 'regex:~^(https?://|/)~i'],
-            'type_data.quote_author' => ['nullable', 'string', 'max:160'],
-            // Rekrutacja do projektu (reszta pól wspólna: lead, audience, requirements, benefits, steps, docs, cta_*, contact_*).
-            'type_data.rec_status' => ['nullable', Rule::in(array_keys(Page::RECRUITMENT_STATUSES))],
-            'type_data.rec_starts_at' => ['nullable', 'date'],
-            'type_data.rec_ends_at' => ['nullable', 'date', 'after_or_equal:type_data.rec_starts_at'],
-            'type_data.rec_places' => ['nullable', 'string', 'max:120'],
-            'type_data.rec_mode' => ['nullable', 'string', 'max:200'],
-            'type_data.rec_period' => ['nullable', 'string', 'max:120'],
-            'type_data.rec_cost' => ['nullable', 'string', 'max:120'],
-            'type_data.rec_form' => ['nullable', 'string', 'max:120', 'regex:/^[a-z0-9_-]+$/i'],
-            'type_data.rec_accessibility' => ['nullable', 'string', 'max:3000'],
-            'type_data.rec_results' => ['nullable', 'string', 'max:3000'],
-            'type_data.bonus' => ['nullable', 'array', 'max:30'],
-            'type_data.bonus.*.text' => ['nullable', 'string', 'max:300'],
-            'type_data.bonus.*.points' => ['nullable', 'string', 'max:20'],
-            'type_data.rec_faq' => ['nullable', 'array', 'max:40'],
-            'type_data.rec_faq.*.q' => ['nullable', 'string', 'max:300'],
-            'type_data.rec_faq.*.a' => ['nullable', 'string', 'max:3000'],
-            // Zapytanie ofertowe (reszta pól wspólna: lead, requirements, docs, contact_*).
-            'type_data.tender_status' => ['nullable', Rule::in(array_keys(Page::TENDER_STATUSES))],
-            'type_data.tender_number' => ['nullable', 'string', 'max:80'],
-            'type_data.tender_published_at' => ['nullable', 'date'],
-            'type_data.tender_deadline' => ['nullable', 'date'],
-            'type_data.tender_cpv' => ['nullable', 'string', 'max:300'],
-            'type_data.tender_place' => ['nullable', 'string', 'max:200'],
-            'type_data.tender_period' => ['nullable', 'string', 'max:200'],
-            'type_data.tender_bk_url' => ['nullable', 'string', 'max:2048', 'regex:~^https?://~i'],
-            'type_data.tender_submission' => ['nullable', 'string', 'max:3000'],
-            'type_data.tender_exclusions' => ['nullable', 'string', 'max:5000'],
-            'type_data.tender_result' => ['nullable', 'string', 'max:5000'],
-            'type_data.tender_result_at' => ['nullable', 'date'],
-            'type_data.criteria' => ['nullable', 'array', 'max:20'],
-            'type_data.criteria.*.name' => ['nullable', 'string', 'max:200'],
-            'type_data.criteria.*.weight' => ['nullable', 'string', 'max:20'],
-            'type_data.criteria.*.text' => ['nullable', 'string', 'max:1000'],
-            'type_data.notices' => ['nullable', 'array', 'max:50'],
-            'type_data.notices.*.date' => ['nullable', 'date'],
-            'type_data.notices.*.title' => ['nullable', 'string', 'max:200'],
-            'type_data.notices.*.text' => ['nullable', 'string', 'max:5000'],
-            'type_data.notices.*.url' => ['nullable', 'string', 'max:2048', 'regex:~^(https?://|/)~i'],
             'cooperation_data' => ['nullable', 'array'],
             'cooperation_data.hero_badge' => ['nullable', 'string', 'max:100'],
             'cooperation_data.hero_subtitle' => ['nullable', 'string', 'max:600'],
@@ -1087,7 +974,8 @@ class PageController extends Controller
             'cooperation_data.form_title' => ['nullable', 'string', 'max:150'],
             'cooperation_data.form_subtitle' => ['nullable', 'string', 'max:400'],
             'cooperation_data.form_confirmation' => ['nullable', 'string', 'max:400'],
-        ]);
+            // Pola `type_data.*` deklarują klasy typów (app/PageTypes/Types) — scalone w rejestrze.
+        ] + PageTypeRegistry::rules());
 
         $data['parent_id'] = $data['parent_id'] ?: null;
         $data['project_id'] = ($data['project_id'] ?? null) ?: null;
@@ -1105,7 +993,7 @@ class PageController extends Controller
         $data['show_gallery'] = $request->boolean('show_gallery');
         // Dane typu (oferta, poradnik, słownik, studium) tylko dla tych typów —
         // po zmianie typu na inny nie zostawiamy osieroconego JSON-a.
-        $data['type_data'] = in_array($data['type'] ?? null, Page::TYPE_DATA_TYPES, true)
+        $data['type_data'] = in_array($data['type'] ?? null, Page::typeDataTypes(), true)
             ? ($data['type_data'] ?? [])
             : null;
         // Flagę „zablokuj do edycji” może ustawiać/zdejmować wyłącznie administrator.

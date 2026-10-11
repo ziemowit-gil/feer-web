@@ -62,8 +62,8 @@
                 @foreach ($typeGroups as $group => $keys)
                     <optgroup label="{{ $group }}">
                         @foreach ($keys as $k)
-                            @if (isset(\App\Models\Page::TYPES[$k]))
-                                <option value="{{ $k }}" @selected($typeValue === $k)>{{ trim(\Illuminate\Support\Str::before(\App\Models\Page::TYPES[$k], ' (')) }}</option>
+                            @if (isset(\App\Models\Page::types()[$k]))
+                                <option value="{{ $k }}" @selected($typeValue === $k)>{{ trim(\Illuminate\Support\Str::before(\App\Models\Page::types()[$k], ' (')) }}</option>
                             @endif
                         @endforeach
                     </optgroup>
