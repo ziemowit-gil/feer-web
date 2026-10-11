@@ -1,0 +1,27 @@
+#!/bin/sh
+#
+# Blokuje commitowanie plików baz SQLite z danymi (żywe dane produkcyjne).
+# database/blog.sqlite jest jeszcze śledzony w gicie — każdy commit ze zmianą
+# tego pliku sprawiłby, że `git pull` na produkcji nadpisze lub zablokuje
+# bazę bloga. Patrz docs/blog-db-migration.md.
+#
+# Włączenie (raz na klon):  git config core.hooksPath .githooks
+#
+# Usunięcie pliku z repo (git rm --cached) jest dozwolone — blokujemy tylko
+# dodanie/zmianę (filtr AMCR).
+
+blocked=$(git diff --cached --name-only --diff-filter=AMCR -- \
+    database/blog.sqlite 'database/*.sqlite' 'database/*.sqlite-wal' 'database/*.sqlite-shm' \
+    'storage/app/blog/*')
+
+if [ -n "$blocked" ]; then
+    echo "pre-commit: commit zablokowany — w indeksie są pliki baz danych:" >&2
+    echo "$blocked" | sed 's/^/  /' >&2
+    echo "" >&2
+    echo "Usuń je z indeksu (dane zostają na dysku):" >&2
+    echo "  git restore --staged $(echo "$blocked" | tr '\n' ' ')" >&2
+    echo "Szczegóły: docs/blog-db-migration.md" >&2
+    exit 1
+fi
+
+exit 0

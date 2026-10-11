@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\SiteSetting;
+use App\Support\DeployHealth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
@@ -12,7 +13,7 @@ use Illuminate\View\View;
 
 class HealthCheckController extends Controller
 {
-    public function index(): View
+    public function index(DeployHealth $deployHealth): View
     {
         $checks = collect([
             $this->checkDatabase(),
@@ -23,10 +24,14 @@ class HealthCheckController extends Controller
             $this->checkPendingApprovals(),
         ]);
 
-        $overall = $checks->contains(fn ($c) => $c['status'] === 'error') ? 'error'
-            : ($checks->contains(fn ($c) => $c['status'] === 'warning') ? 'warning' : 'ok');
+        // Kompletność wdrożenia — te same kontrole co `artisan system:sprawdz`.
+        $deploy = collect($deployHealth->run());
 
-        return view('admin.health.index', compact('checks', 'overall'));
+        $all = $checks->concat($deploy);
+        $overall = $all->contains(fn ($c) => $c['status'] === 'error') ? 'error'
+            : ($all->contains(fn ($c) => $c['status'] === 'warning') ? 'warning' : 'ok');
+
+        return view('admin.health.index', compact('checks', 'deploy', 'overall'));
     }
 
     private function checkDatabase(): array

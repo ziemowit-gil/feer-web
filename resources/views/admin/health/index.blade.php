@@ -35,7 +35,7 @@
                 @else Wykryto błędy — wymagana interwencja
                 @endif
             </p>
-            <p class="text-sm text-muted">{{ $checks->count() }} sprawdzonych komponentów</p>
+            <p class="text-sm text-muted">{{ $checks->count() + $deploy->count() }} sprawdzonych komponentów</p>
         </div>
     </div>
 
@@ -59,4 +59,27 @@
             </div>
         @endforeach
     </div>
+
+    {{-- Wdrożenie — te same kontrole co `artisan system:sprawdz` (App\Support\DeployHealth) --}}
+    @php $deployLabels = ['ok' => 'OK', 'warning' => 'Uwaga', 'error' => 'Problem']; @endphp
+    <section class="mt-8" aria-labelledby="health-deploy-heading">
+        <h2 id="health-deploy-heading" class="text-base font-bold text-ink">Wdrożenie</h2>
+        <p class="mb-3 text-sm text-muted">Assety, migracje obu baz, plik bazy bloga, link do plików i harmonogram. Z konsoli: <code class="text-ink">php84 artisan system:sprawdz</code></p>
+        <dl class="divide-y divide-gray-200 border border-gray-200 bg-white">
+            @foreach ($deploy as $row)
+                @php
+                    $rowClass = match ($row['status']) {
+                        'error'   => 'bg-red-50 text-red-800',
+                        'warning' => 'bg-gray-50 text-ink',
+                        default   => 'text-ink',
+                    };
+                @endphp
+                <div class="grid gap-1 px-4 py-3 text-sm sm:grid-cols-[14rem_6rem_1fr] sm:gap-4 {{ $rowClass }}">
+                    <dt class="font-bold">{{ $row['name'] }}</dt>
+                    <dd class="font-bold {{ $row['status'] === 'ok' ? 'text-brand-dark' : '' }}">{{ $deployLabels[$row['status']] }}</dd>
+                    <dd class="break-words">{{ $row['detail'] }}</dd>
+                </div>
+            @endforeach
+        </dl>
+    </section>
 @endsection

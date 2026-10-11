@@ -46,10 +46,17 @@ return [
 
         // Dedicated database for the "Wiem FEER" blog (articles + comments),
         // kept in its own SQLite file so the blog is isolated from the CMS data.
+        // Ścieżka: BLOG_DB_DATABASE → storage/app/blog/blog.sqlite (jeśli istnieje)
+        // → database/blog.sqlite (stara, śledzona w gicie). Patrz
+        // App\Support\BlogDatabasePath i docs/blog-db-migration.md.
         'blog' => [
             'driver' => 'sqlite',
             'url' => env('BLOG_DB_URL'),
-            'database' => env('BLOG_DB_DATABASE', database_path('blog.sqlite')),
+            'database' => App\Support\BlogDatabasePath::resolve(
+                env('BLOG_DB_DATABASE'),
+                storage_path(App\Support\BlogDatabasePath::NEW_RELATIVE),
+                database_path(App\Support\BlogDatabasePath::LEGACY_RELATIVE),
+            ),
             'prefix' => '',
             'foreign_key_constraints' => env('DB_FOREIGN_KEYS', true),
             'busy_timeout' => null,

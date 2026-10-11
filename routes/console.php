@@ -38,3 +38,11 @@ Schedule::command('donations:sync')->everyTenMinutes()->withoutOverlapping();
 // Przypomnienia dla redakcji: kończące się nabory i terminy zapytań ofertowych,
 // brak informacji po naborze / wyniku postępowania (każde wysyłane raz).
 Schedule::command('strony:przypomnienia')->dailyAt('08:00')->withoutOverlapping();
+
+// Sygnał życia harmonogramu — co minutę zapis do cache; `system:sprawdz`
+// i Health Check alarmują, gdy ostatni zapis jest starszy niż 10 minut.
+// Działa także w trybie serwisowym, żeby po deployu sygnał nie znikał.
+Schedule::call(fn () => \App\Support\DeployHealth::recordHeartbeat())
+    ->everyMinute()
+    ->name('system:heartbeat')
+    ->evenInMaintenanceMode();
