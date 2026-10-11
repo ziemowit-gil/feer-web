@@ -1,7 +1,7 @@
 @extends('layouts.site')
 
 @section('title', 'Wolontariat — ' . $siteSettings->site_name)
-@section('meta_description', 'Aktualne ogłoszenia o wolontariacie w ' . $siteSettings->site_name . '.')
+@section('meta_description', 'Aktualne oferty wolontariatu w ' . $siteSettings->site_name . '.')
 
 @section('breadcrumbs')
     @include('partials.breadcrumbs', ['items' => [
@@ -12,7 +12,7 @@
 @section('content')
     <section class="mx-auto max-w-5xl px-4 py-12">
         <h1 class="mb-2 text-3xl font-bold text-ink">Wolontariat</h1>
-        <p class="mb-8 max-w-2xl text-muted">Dołącz do nas w konkretnym działaniu. Poniżej znajdziesz aktualne ogłoszenia — każde odpowiada na to, co warto wiedzieć, zanim się zgłosisz.</p>
+        <p class="mb-8 max-w-2xl text-muted">Dołącz do nas w konkretnym działaniu. Poniżej znajdziesz aktualne oferty — każda odpowiada na to, co warto wiedzieć, zanim się zgłosisz.</p>
 
         @if ($ads->isEmpty())
             <div class="rounded-xl border border-gray-200 bg-gray-50 p-8 text-center text-muted">

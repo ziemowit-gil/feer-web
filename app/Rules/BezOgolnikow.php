@@ -6,7 +6,7 @@ use Closure;
 use Illuminate\Contracts\Validation\ValidationRule;
 
 /**
- * Blokuje puste, zniechęcające ogólniki w ogłoszeniach o wolontariacie
+ * Blokuje puste, zniechęcające ogólniki w ofertach wolontariatu
  * („zasada krytyczna" KCW: komunikacja ma być konkretna i partnerska).
  */
 class BezOgolnikow implements ValidationRule

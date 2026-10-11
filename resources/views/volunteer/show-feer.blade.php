@@ -11,7 +11,7 @@
 @endsection
 
 {{--
-    Ogłoszenie wolontariackie w stylu FEER: jasny nagłówek z faktami (miejsce, czas, termin) jako płaskie kafelki,
+    Oferta wolontariatu w stylu FEER: jasny nagłówek z faktami (miejsce, czas, termin) jako płaskie kafelki,
     treść w kolumnie, po prawej przyklejona karta „Jak się zgłosić". Kolor grupy docelowej tylko jako pasek (kontrast ≥ 4,5:1).
 --}}
 @php
@@ -22,7 +22,7 @@
 @section('content')
     <section class="bg-gray-50" style="border-left: 6px solid {{ $accent }}">
         <div class="mx-auto max-w-6xl px-4 py-12 md:py-16">
-            <p class="text-xs font-bold uppercase tracking-widest text-muted">Ogłoszenie o wolontariacie</p>
+            <p class="text-xs font-bold uppercase tracking-widest text-muted">Oferta wolontariatu</p>
             <h1 class="mt-3 max-w-3xl text-3xl font-extrabold leading-tight tracking-tight text-ink md:text-5xl">{{ $ad->title }}</h1>
             <p class="mt-4 max-w-2xl text-lg leading-relaxed text-ink">{{ $ad->lead }}</p>
 

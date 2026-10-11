@@ -383,7 +383,7 @@ class NavItemController extends Controller
 
         $data['url'] = ($data['url'] ?? null) ?: '#';
 
-        // Typ „Ogłoszenia o wolontariacie" kieruje zawsze na listę /wolontariat
+        // Typ „Oferty wolontariatu" kieruje zawsze na listę /wolontariat
         // i automatycznie chowa się, gdy moduł wolontariatu jest wyłączony.
         // Renderuje się jak zwykły link (może być przyciskiem CTA).
         if ($data['type'] === 'volunteering') {

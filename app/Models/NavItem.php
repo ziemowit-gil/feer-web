@@ -17,7 +17,7 @@ class NavItem extends Model
         'dropdown' => 'Rozwijane menu (własne podpozycje)',
         'projects' => 'Menu działań (automatyczne z kategorii)',
         'pages' => 'Menu podstron (automatyczne z podstron)',
-        'volunteering' => 'Ogłoszenia o wolontariacie',
+        'volunteering' => 'Oferty wolontariatu',
         'events' => 'Szkolenia i wydarzenia',
         'faq' => 'FAQ (najczęstsze pytania)',
     ];

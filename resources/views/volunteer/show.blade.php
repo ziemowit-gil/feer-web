@@ -15,7 +15,7 @@
 @section('content')
     <article class="mx-auto max-w-3xl px-4 py-12" style="--accent: {{ $accent }}">
         <header class="mb-8">
-            <p class="text-sm font-bold uppercase tracking-wide" style="color: var(--accent)">Ogłoszenie o wolontariacie</p>
+            <p class="text-sm font-bold uppercase tracking-wide" style="color: var(--accent)">Oferta wolontariatu</p>
             <h1 class="mt-1 text-3xl font-bold text-ink">{{ $ad->title }}</h1>
             <p class="mt-3 text-lg text-gray-700">{{ $ad->lead }}</p>
 

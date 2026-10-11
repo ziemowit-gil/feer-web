@@ -1,6 +1,6 @@
 @extends('admin.layout')
 
-@section('title', $ad->exists ? 'Edytuj ogłoszenie o wolontariacie' : 'Nowe ogłoszenie o wolontariacie')
+@section('title', $ad->exists ? 'Edytuj ofertę wolontariatu' : 'Nowa oferta wolontariatu')
 
 @php
     $oldArrayText = function (string $key, $model) {
@@ -43,8 +43,8 @@
         {{-- Licznik kompletności 6 pytań --}}
         <div class="sticky top-0 z-10 flex items-center justify-between gap-4 rounded-md bg-white px-5 py-3 shadow-sm">
             <div>
-                <p class="text-sm font-bold text-ink">Kompletność ogłoszenia (zasada 6 pytań)</p>
-                <p class="text-xs text-muted">Dobre ogłoszenie odpowiada na wszystkie 6 pytań, których szuka kandydat.</p>
+                <p class="text-sm font-bold text-ink">Kompletność oferty (zasada 6 pytań)</p>
+                <p class="text-xs text-muted">Dobra oferta odpowiada na wszystkie 6 pytań, których szuka kandydat.</p>
             </div>
             <div class="flex items-center gap-2">
                 <div class="flex gap-1" aria-hidden="true">
@@ -59,14 +59,14 @@
         {{-- Podstawy --}}
         <div class="space-y-5 p-6 rounded-md bg-white">
             <div>
-                <label for="title" class="mb-1 block text-sm font-bold">Tytuł ogłoszenia (rola) <span aria-hidden="true" class="text-red-600">*</span></label>
+                <label for="title" class="mb-1 block text-sm font-bold">Tytuł oferty (rola) <span aria-hidden="true" class="text-red-600">*</span></label>
                 <input type="text" id="title" name="title" value="{{ old('title', $ad->title) }}" required placeholder="np. Wolontariusz/ka w Klubie Cyfrowym FEER"
                     class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
                 <p class="mt-1 text-xs text-muted">Konkretna rola, nie „Wolontariat w FEER".</p>
             </div>
             <div>
                 <label for="lead" class="mb-1 block text-sm font-bold">Krótki wstęp (1–2 zdania) <span aria-hidden="true" class="text-red-600">*</span></label>
-                <textarea id="lead" name="lead" rows="2" required maxlength="300" placeholder="Jedno–dwa konkretne zdania, dla kogo i po co jest to ogłoszenie."
+                <textarea id="lead" name="lead" rows="2" required maxlength="300" placeholder="Jedno–dwa konkretne zdania, dla kogo i po co jest ta oferta."
                     class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">{{ old('lead', $ad->lead) }}</textarea>
             </div>
         </div>
@@ -174,7 +174,7 @@
         <div class="p-6 rounded-md bg-white">
             <div class="mb-4">
                 <h2 class="text-base font-bold text-ink">Publikacja i powiązania</h2>
-                <p class="mt-1 text-xs text-muted">Widoczność ogłoszenia, termin naboru, kolejność na liście i schemat kolorów spójny z projektami.</p>
+                <p class="mt-1 text-xs text-muted">Widoczność oferty, termin naboru, kolejność na liście i schemat kolorów spójny z projektami.</p>
             </div>
             <div class="grid gap-4 sm:grid-cols-3">
             <div>
@@ -189,7 +189,7 @@
                 <label for="closes_at" class="mb-1 block text-sm font-bold">Termin zgłoszeń</label>
                 <input type="date" id="closes_at" name="closes_at" value="{{ old('closes_at', $ad->closes_at?->format('Y-m-d')) }}"
                     class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
-                <p class="mt-1 text-xs text-muted">Po tej dacie ogłoszenie znika ze strony.</p>
+                <p class="mt-1 text-xs text-muted">Po tej dacie oferta znika ze strony.</p>
             </div>
             <div>
                 <label for="order" class="mb-1 block text-sm font-bold">Kolejność</label>

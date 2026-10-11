@@ -77,7 +77,7 @@
     </select>
     @error('type') <p class="mt-1 text-sm text-red-700">{{ $message }}</p> @enderror
     <p class="mt-1 text-xs text-muted" x-show="form.type === 'volunteering'" x-cloak>
-        Pozycja prowadzi automatycznie do listy ogłoszeń o wolontariacie (/wolontariat) i ukrywa się, gdy moduł jest wyłączony. Możesz wyróżnić ją jako przycisk (CTA) poniżej.
+        Pozycja prowadzi automatycznie do listy ofert wolontariatu (/wolontariat) i ukrywa się, gdy moduł jest wyłączony. Możesz wyróżnić ją jako przycisk (CTA) poniżej.
     </p>
 </div>
 

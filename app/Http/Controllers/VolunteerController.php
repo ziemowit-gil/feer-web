@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\VolunteerAd;
 
 /**
- * Publiczna lista aktywnych ogłoszeń wolontariackich i widok szczegółów ogłoszenia.
+ * Publiczna lista aktywnych ofert wolontariatu i widok szczegółów oferty.
  *
  * Metody: index(), show().
  *
@@ -13,10 +13,10 @@ use App\Models\VolunteerAd;
  */
 class VolunteerController extends Controller
 {
-    /** Wyświetla listę aktywnych ogłoszeń wolontariackich. */
+    /** Wyświetla listę aktywnych ofert wolontariatu. */
     public function index()
     {
-        // Szablon FEER ma własny układ listy ogłoszeń.
+        // Szablon FEER ma własny układ listy ofert.
         $view = \App\Models\SiteSetting::current()->site_template === 'feer' ? 'volunteer.index-feer' : 'volunteer.index';
 
         return view($view, [
@@ -24,10 +24,10 @@ class VolunteerController extends Controller
         ]);
     }
 
-    /** Wyświetla stronę szczegółów opublikowanego i aktywnego (nie zakończonego) ogłoszenia wolontariackiego. */
+    /** Wyświetla stronę szczegółów opublikowanego i aktywnego (nie zakończonej) oferty wolontariatu. */
     public function show(VolunteerAd $ad)
     {
-        // Nieopublikowane/przeterminowane ogłoszenia nie są publicznie dostępne.
+        // Nieopublikowane/przeterminowane oferty nie są publicznie dostępne.
         abort_unless($ad->is_published && ! $ad->isClosed(), 404);
 
         $view = \App\Models\SiteSetting::current()->site_template === 'feer' ? 'volunteer.show-feer' : 'volunteer.show';

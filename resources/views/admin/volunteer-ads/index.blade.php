@@ -1,10 +1,10 @@
 @extends('admin.layout')
 
-@section('title', 'Wolontariat — ogłoszenia')
+@section('title', 'Wolontariat — oferty')
 
 @section('content')
     <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <p class="text-sm text-muted">Ogłoszenia o wolontariacie (strona <a href="{{ route('volunteer.index') }}" target="_blank" rel="noopener" class="text-brand-dark underline">/wolontariat</a>).</p>
+        <p class="text-sm text-muted">Oferty wolontariatu (strona <a href="{{ route('volunteer.index') }}" target="_blank" rel="noopener" class="text-brand-dark underline">/wolontariat</a>).</p>
         <div class="flex items-center gap-3">
             @if ($showArchived || $archivedCount > 0)
                 <a href="{{ route('admin.wolontariat.index', ['archived' => $showArchived ? null : 1]) }}"
@@ -14,14 +14,14 @@
                 </a>
             @endif
             <a href="{{ route('admin.wolontariat.create') }}" class="rounded bg-brand-dark px-4 py-2 text-sm font-bold text-white hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2">
-                <i class="fa-solid fa-plus" aria-hidden="true"></i> Dodaj ogłoszenie
+                <i class="fa-solid fa-plus" aria-hidden="true"></i> Dodaj ofertę
             </a>
         </div>
     </div>
 
     @if ($showArchived)
         <p class="mb-4 rounded-md bg-amber-50 px-4 py-2 text-sm text-amber-800">
-            <i class="fa-solid fa-box-archive" aria-hidden="true"></i> Widok archiwum — ogłoszenia po terminie zgłoszeń schowane z domyślnej listy.
+            <i class="fa-solid fa-box-archive" aria-hidden="true"></i> Widok archiwum — oferty po terminie zgłoszeń schowane z domyślnej listy.
         </p>
     @endif
 
@@ -96,7 +96,7 @@
                                             <button type="submit" class="text-muted hover:text-brand-dark" title="Zarchiwizuj (schowaj z listy)" aria-label="Zarchiwizuj (schowaj z listy)"><i class="fa-solid fa-box-archive"></i></button>
                                         </form>
                                     @endif
-                                    <form method="POST" action="{{ route('admin.wolontariat.destroy', $ad) }}" onsubmit="return confirm('Usunąć ogłoszenie &quot;{{ $ad->title }}&quot;?');">
+                                    <form method="POST" action="{{ route('admin.wolontariat.destroy', $ad) }}" onsubmit="return confirm('Usunąć ofertę &quot;{{ $ad->title }}&quot;?');">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="text-muted hover:text-red-600" title="Usuń" aria-label="Usuń"><i class="fa-solid fa-trash" aria-hidden="true"></i></button>
@@ -106,7 +106,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" class="px-4 py-8 text-center text-muted">Brak ogłoszeń. <a href="{{ route('admin.wolontariat.create') }}" class="text-brand-dark underline">Dodaj pierwsze</a>.</td>
+                            <td colspan="6" class="px-4 py-8 text-center text-muted">Brak ofert. <a href="{{ route('admin.wolontariat.create') }}" class="text-brand-dark underline">Dodaj pierwsze</a>.</td>
                         </tr>
                     @endforelse
                 </tbody>

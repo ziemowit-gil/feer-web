@@ -9,7 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
 /**
- * Panel admin: zarządzanie ogłoszeniami wolontariackimi z archiwizacją,
+ * Panel admin: zarządzanie ofertami wolontariatu z archiwizacją,
  * klonowaniem i operacjami zbiorczymi.
  *
  * Metody: index(), create(), store(), edit(), update(), destroy(), clone(),
@@ -19,7 +19,7 @@ use Illuminate\Support\Str;
  */
 class VolunteerAdController extends Controller
 {
-    /** Wyświetla listę ogłoszeń wolontariackich z przełącznikiem archiwum. */
+    /** Wyświetla listę ofert wolontariatu z przełącznikiem archiwum. */
     public function index(Request $request)
     {
         $showArchived = $request->boolean('archived');
@@ -36,29 +36,29 @@ class VolunteerAdController extends Controller
         return view('admin.volunteer-ads.index', compact('ads', 'showArchived', 'archivedCount'));
     }
 
-    /** Schowaj ogłoszenie z domyślnej listy (ręczna archiwizacja). */
+    /** Schowaj ofertę z domyślnej listy (ręczna archiwizacja). */
     public function archive(VolunteerAd $wolontariat)
     {
         $wolontariat->update(['archived_at' => now()]);
 
-        return redirect()->back()->with('status', 'Ogłoszenie zostało zarchiwizowane.');
+        return redirect()->back()->with('status', 'Oferta została zarchiwizowana.');
     }
 
-    /** Przywróć ogłoszenie z archiwum na aktywną listę. */
+    /** Przywróć ofertę z archiwum na aktywną listę. */
     public function restore(VolunteerAd $wolontariat)
     {
         $wolontariat->update(['archived_at' => null]);
 
-        return redirect()->back()->with('status', 'Ogłoszenie zostało przywrócone z archiwum.');
+        return redirect()->back()->with('status', 'Oferta została przywrócona z archiwum.');
     }
 
-    /** Wyświetla formularz tworzenia nowego ogłoszenia. */
+    /** Wyświetla formularz tworzenia nowej oferty. */
     public function create()
     {
         return view('admin.volunteer-ads.form', ['ad' => new VolunteerAd(['application_cta_label' => 'Zgłoś się', 'q_mode' => 'stacjonarnie'])]);
     }
 
-    /** Zapisuje nowe ogłoszenie wolontariackie z unikalnym slugiem. */
+    /** Zapisuje nową ofertę wolontariatu z unikalnym slugiem. */
     public function store(VolunteerAdRequest $request)
     {
         $data = $this->prepared($request);
@@ -66,16 +66,16 @@ class VolunteerAdController extends Controller
 
         VolunteerAd::create($data);
 
-        return redirect()->route('admin.wolontariat.index')->with('status', 'Ogłoszenie zostało dodane.');
+        return redirect()->route('admin.wolontariat.index')->with('status', 'Oferta została dodana.');
     }
 
-    /** Wyświetla formularz edycji ogłoszenia. */
+    /** Wyświetla formularz edycji oferty. */
     public function edit(VolunteerAd $wolontariat)
     {
         return view('admin.volunteer-ads.form', ['ad' => $wolontariat]);
     }
 
-    /** Aktualizuje ogłoszenie wolontariackie. */
+    /** Aktualizuje ofertę wolontariatu. */
     public function update(VolunteerAdRequest $request, VolunteerAd $wolontariat)
     {
         $data = $this->prepared($request);
@@ -83,18 +83,18 @@ class VolunteerAdController extends Controller
 
         $wolontariat->update($data);
 
-        return redirect()->route('admin.wolontariat.index')->with('status', 'Ogłoszenie zostało zaktualizowane.');
+        return redirect()->route('admin.wolontariat.index')->with('status', 'Oferta została zaktualizowana.');
     }
 
-    /** Usuwa ogłoszenie wolontariackie. */
+    /** Usuwa ofertę wolontariatu. */
     public function destroy(VolunteerAd $wolontariat)
     {
         $wolontariat->delete();
 
-        return redirect()->route('admin.wolontariat.index')->with('status', 'Ogłoszenie zostało usunięte.');
+        return redirect()->route('admin.wolontariat.index')->with('status', 'Oferta została usunięta.');
     }
 
-    /** Klonuje ogłoszenie jako szkic bez terminu zgłoszeń. */
+    /** Klonuje ofertę jako szkic bez terminu zgłoszeń. */
     public function clone(VolunteerAd $wolontariat)
     {
         $clone = $wolontariat->replicate();
@@ -106,10 +106,10 @@ class VolunteerAdController extends Controller
         $clone->save();
 
         return redirect()->route('admin.wolontariat.edit', $clone)
-            ->with('status', 'Ogłoszenie zostało sklonowane jako "' . $clone->title . '". Jest zapisane jako szkic — uzupełnij termin zgłoszeń.');
+            ->with('status', 'Oferta została sklonowana jako "' . $clone->title . '". Jest zapisana jako szkic — uzupełnij termin zgłoszeń.');
     }
 
-    /** Wykonuje zbiorczą operację (archiwizuj / przywróć / usuń) na zaznaczonych ogłoszeniach. */
+    /** Wykonuje zbiorczą operację (archiwizuj / przywróć / usuń) na zaznaczonych ofertach. */
     public function bulk(Request $request)
     {
         $data = $request->validate([
@@ -121,7 +121,7 @@ class VolunteerAdController extends Controller
         $ads = VolunteerAd::whereIn('id', $data['ids'])->get();
 
         if ($ads->isEmpty()) {
-            return redirect()->back()->with('error', 'Nie znaleziono ogłoszeń do przetworzenia.');
+            return redirect()->back()->with('error', 'Nie znaleziono ofert do przetworzenia.');
         }
 
         $count = $ads->count();
@@ -133,9 +133,9 @@ class VolunteerAdController extends Controller
         };
 
         $message = match ($data['action']) {
-            'archive' => "Zarchiwizowano ogłoszeń: {$count}.",
-            'restore' => "Przywrócono z archiwum ogłoszeń: {$count}.",
-            'delete' => "Usunięto ogłoszeń: {$count}.",
+            'archive' => "Zarchiwizowano ofert: {$count}.",
+            'restore' => "Przywrócono z archiwum ofert: {$count}.",
+            'delete' => "Usunięto ofert: {$count}.",
         };
 
         return redirect()->back()->with('status', $message);
@@ -152,10 +152,10 @@ class VolunteerAdController extends Controller
         return $data;
     }
 
-    /** Unikalny slug ogłoszenia (pomijając bieżące przy edycji). */
+    /** Unikalny slug oferty (pomijając bieżące przy edycji). */
     private function uniqueSlug(string $base, ?int $ignoreId = null): string
     {
-        $slug = Str::slug($base) ?: 'ogloszenie';
+        $slug = Str::slug($base) ?: 'oferta';
         $candidate = $slug;
         $i = 2;
 

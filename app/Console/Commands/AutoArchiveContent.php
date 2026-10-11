@@ -9,7 +9,7 @@ use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
 
 #[Signature('content:auto-archive')]
-#[Description('Archiwizuje przeterminowane wydarzenia i ogłoszenia wolontariatu (chowa je z domyślnych list panelu).')]
+#[Description('Archiwizuje przeterminowane wydarzenia i oferty wolontariatu (chowa je z domyślnych list panelu).')]
 class AutoArchiveContent extends Command
 {
     public function handle(): int
@@ -22,14 +22,14 @@ class AutoArchiveContent extends Command
             ->whereRaw('COALESCE(ends_at, starts_at) < ?', [$now])
             ->update(['archived_at' => $now]);
 
-        // Ogłoszenia wolontariatu: termin zgłoszeń już minął.
+        // Oferty wolontariatu: termin zgłoszeń już minął.
         $ads = VolunteerAd::query()
             ->whereNull('archived_at')
             ->whereNotNull('closes_at')
             ->whereDate('closes_at', '<', $now)
             ->update(['archived_at' => $now]);
 
-        $this->info("Zarchiwizowano: wydarzenia — {$events}, ogłoszenia wolontariatu — {$ads}.");
+        $this->info("Zarchiwizowano: wydarzenia — {$events}, oferty wolontariatu — {$ads}.");
 
         return self::SUCCESS;
     }

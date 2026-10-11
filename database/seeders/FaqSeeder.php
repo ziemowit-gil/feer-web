@@ -75,7 +75,7 @@ class FaqSeeder extends Seeder
             // Wolontariat
             [
                 'question'     => 'Jak zostać wolontariuszem w Fundacji FEER?',
-                'answer'       => 'Aktualne ogłoszenia wolontariackie publikujemy w zakładce Wolontariat. Każde ogłoszenie zawiera opis zadań, wymagania i sposób zgłoszenia. Jeśli nie widzisz ogłoszenia pasującego do Twoich kompetencji, napisz do nas na kontakt@feer.org.pl – zbieramy zgłoszenia do wolontariatu stałego.',
+                'answer'       => 'Aktualne oferty wolontariatu publikujemy w zakładce Wolontariat. Każda oferta zawiera opis zadań, wymagania i sposób zgłoszenia. Jeśli nie widzisz oferty pasującej do Twoich kompetencji, napisz do nas na kontakt@feer.org.pl – zbieramy zgłoszenia do wolontariatu stałego.',
                 'category'     => 'Wolontariat',
                 'is_published' => true,
                 'order'        => 1,

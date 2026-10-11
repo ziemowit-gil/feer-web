@@ -11,7 +11,7 @@
 
 {{--
     Strona „Dołącz do nas": jeden widok bez zakładek — nagłówek, kafle ścieżek (wolontariat, praca, współpraca,
-    wsparcie, newsletter — zależnie od włączonych modułów), aktualne ogłoszenia wolontariatu i oferty pracy,
+    wsparcie, newsletter — zależnie od włączonych modułów), aktualne oferty wolontariatu i oferty pracy,
     „Jak to działa" w trzech krokach oraz ramka kontaktu. Płasko, zwykły CSS, kontrast ≥ 4,5:1.
 --}}
 @section('content')
@@ -23,7 +23,7 @@
     $pal = \App\Support\ThemePalette::tiles();
 
     $paths = array_values(array_filter([
-        $volunteeringActive ? [$jt('vol_title'), $jt('vol_text'), route('volunteer.index'), 'fa-handshake-angle', $adsCount, trans_choice('ogłoszenie|ogłoszenia|ogłoszeń', $adsCount)] : null,
+        $volunteeringActive ? [$jt('vol_title'), $jt('vol_text'), route('volunteer.index'), 'fa-handshake-angle', $adsCount, trans_choice('oferta|oferty|ofert', $adsCount)] : null,
         $jobsActive ? [$jt('job_title'), $jt('job_text'), route('praca.index'), 'fa-briefcase', $offersCount, trans_choice('oferta|oferty|ofert', $offersCount)] : null,
         $cooperationPage ? [$jt('coop_title'), $jt('coop_text'), $cooperationPage->publicUrl(), 'fa-handshake', null, null] : null,
         $supportActive ? [$jt('support_title'), $jt('support_text'), route('support.show'), 'fa-heart', null, null] : null,

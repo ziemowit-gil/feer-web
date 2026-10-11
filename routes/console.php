@@ -8,7 +8,7 @@ Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
 
-// Codzienna auto-archiwizacja przeterminowanych wydarzeń i ogłoszeń wolontariatu.
+// Codzienna auto-archiwizacja przeterminowanych wydarzeń i ofert wolontariatu.
 Schedule::command('content:auto-archive')->dailyAt('03:00');
 
 // Poranny digest nieprzeczytanych wiadomości kontaktowych — wysyłany tylko gdy są.

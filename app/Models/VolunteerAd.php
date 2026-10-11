@@ -56,7 +56,7 @@ class VolunteerAd extends Model
 
     /**
      * Dokąd prowadzi przycisk „Zgłoś się": zewnętrzny formularz, a gdy go nie
-     * podano — e-mail kontaktowy ogłoszenia.
+     * podano — e-mail kontaktowy oferty.
      */
     public function applyHref(): ?string
     {
