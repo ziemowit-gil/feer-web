@@ -125,4 +125,22 @@ class SzoSettingsTest extends TestCase
         $this->actingAs($this->admin())->get(route('admin.ustawienia.edit'))
             ->assertOk()->assertSee('Integracja z SZO')->assertSee('name="szo_token"', false);
     }
+
+    public function test_szo_ma_wlasna_zakladke_ze_stanem_integracji(): void
+    {
+        $this->assertArrayHasKey('szo', SiteSetting::SETTINGS_TABS);
+        \App\Models\FormDefinition::create(['title' => 'Kontakt CRM', 'slug' => 'kontakt-crm', 'is_active' => true, 'fields' => [], 'settings' => ['szo_form_slug' => 'kontakt']]);
+
+        $html = $this->actingAs($this->admin())->get(route('admin.ustawienia.edit', ['tab' => 'szo']))->assertOk()
+            ->assertSee('Integracja z SZO jest wyłączona')
+            ->assertSee('Kontakt CRM')
+            ->assertSee(route('admin.ustawienia.edit', ['tab' => 'szo']), false)
+            ->getContent();
+
+        // Pola SZO są w zakładce „SZO”, a nie w „Logowaniu”.
+        $szoTab = strpos($html, "x-show=\"tab === 'szo'\"");
+        $this->assertNotFalse($szoTab);
+        $this->assertGreaterThan($szoTab, strpos($html, 'name="szo_token"'));
+        $this->assertLessThan($szoTab, strpos($html, "x-show=\"tab === 'login'\""));
+    }
 }

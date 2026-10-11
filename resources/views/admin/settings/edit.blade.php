@@ -38,7 +38,7 @@
         $settingsIcons = ['general' => 'fa-sliders', 'header' => 'fa-window-maximize', 'colors' => 'fa-palette', 'maintenance' => 'fa-screwdriver-wrench',
             'seo' => 'fa-magnifying-glass', 'contact' => 'fa-address-book', 'social' => 'fa-share-nodes', 'registry' => 'fa-file-signature',
             'accessibility' => 'fa-universal-access', 'support' => 'fa-hand-holding-heart', 'join' => 'fa-people-group', 'content' => 'fa-file-lines', 'modules' => 'fa-puzzle-piece',
-            'homepage' => 'fa-house', 'template' => 'fa-clone', 'login' => 'fa-right-to-bracket', 'mail' => 'fa-envelope'];
+            'homepage' => 'fa-house', 'template' => 'fa-clone', 'login' => 'fa-right-to-bracket', 'mail' => 'fa-envelope', 'szo' => 'fa-diagram-project'];
     @endphp
     <nav aria-label="Sekcje ustawień" class="rounded-md bg-white" style="position:sticky;top:1rem;padding:.375rem;width:max-content;max-width:100%">
         <div class="flex items-center justify-between gap-2 pb-1 pt-0.5" :class="settingsNavCollapsed ? 'justify-center' : 'pl-2'">
@@ -2781,115 +2781,6 @@
 
             </div>
 
-            {{-- ===================== Integracja z SZO ===================== --}}
-            @php
-                $szoEffUrl = (string) config('szo.url');
-                $szoEffEnabled = (bool) config('szo.enabled');
-                $szoUrlFromEnv = blank($settings->szo_api_url) && $szoEffUrl !== '';
-                $szoTokenFromEnv = blank($settings->szo_token) && filled(config('szo.token'));
-                $szoEnabledValue = old('szo_enabled', $settings->szo_enabled ?? $szoEffEnabled);
-            @endphp
-            <div class="border-t border-gray-200 pt-6" x-data="{
-                    busy: false, res: null,
-                    async check() {
-                        this.busy = true; this.res = null;
-                        const v = id => document.getElementById(id)?.value || '';
-                        try {
-                            const r = await fetch(@js(route('admin.ustawienia.szo-check')), {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content },
-                                body: JSON.stringify({ url: v('szo_api_url'), token: v('szo_token') }),
-                            });
-                            this.res = await r.json();
-                            if (! r.ok && ! this.res.message) this.res = { level: 'error', message: 'Nie udało się sprawdzić połączenia.' };
-                        } catch (e) { this.res = { level: 'error', message: 'Brak połączenia z serwerem.' }; }
-                        finally { this.busy = false; }
-                    },
-                }">
-                <h2 class="text-base font-bold text-ink"><i class="fa-solid fa-diagram-project mr-1 text-brand-dark" aria-hidden="true"></i> Integracja z SZO</h2>
-                <p class="mt-1 text-xs text-muted">
-                    System Zarządzania Organizacją (CRM). Z tego adresu strona pobiera komunikaty strefy współpracownika i klauzule RODO,
-                    a z tokenem przekazuje do SZO zgłoszenia z formularzy i darowizny. Wartości z panelu mają pierwszeństwo przed <code>.env</code>;
-                    puste pola dziedziczą wartości z <code>.env</code> (SZO_URL, SZO_TOKEN, SZO_ENABLED).
-                </p>
-
-                <div class="mt-4 grid gap-4 sm:grid-cols-2">
-                    <div class="sm:col-span-2">
-                        <label for="szo_api_url" class="mb-1 block text-sm font-bold">Adres systemu SZO</label>
-                        <input type="url" id="szo_api_url" name="szo_api_url" autocomplete="off" inputmode="url"
-                            value="{{ old('szo_api_url', $settings->szo_api_url) }}"
-                            placeholder="{{ $szoUrlFromEnv ? $szoEffUrl.' (z .env)' : 'np. https://szo.feer.org.pl' }}"
-                            aria-describedby="szo_api_url_help"
-                            class="w-full rounded border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark">
-                        <p id="szo_api_url_help" class="mt-1 text-xs text-muted">
-                            Adres bazowy, bez ukośnika na końcu.
-                            @if ($szoUrlFromEnv) <strong>Obecnie używany adres z <code>.env</code>: {{ $szoEffUrl }}.</strong>
-                            @elseif (blank($szoEffUrl)) <strong class="text-amber-700">Brak adresu — import klauzul RODO i komunikaty strefy nie działają.</strong> @endif
-                        </p>
-                        @error('szo_api_url') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
-                    </div>
-                    <div class="sm:col-span-2">
-                        <label for="szo_token" class="mb-1 block text-sm font-bold">Token API</label>
-                        <input type="password" id="szo_token" name="szo_token" autocomplete="new-password"
-                            placeholder="{{ $settings->szo_token ? '•••••••• (zapisany — zostaw puste, aby nie zmieniać)' : ($szoTokenFromEnv ? '•••••••• (z .env)' : '') }}"
-                            aria-describedby="szo_token_help"
-                            class="w-full rounded border-gray-500 font-mono text-sm focus:border-brand-dark focus:ring-brand-dark">
-                        <p id="szo_token_help" class="mt-1 text-xs text-muted">
-                            Token z Admin → API w SZO z uprawnieniami <code>forms:read</code>, <code>forms:submit</code> (dla darowizn także <code>donations:submit</code>).
-                            Przechowywany zaszyfrowany; trafia wyłącznie do połączeń serwer–serwer.
-                        </p>
-                        @error('szo_token') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
-                    </div>
-                </div>
-
-                <label class="mt-4 flex items-start gap-3 rounded-lg border border-gray-200 p-3">
-                    <input type="hidden" name="szo_enabled" value="0">
-                    <input type="checkbox" name="szo_enabled" value="1" @checked($szoEnabledValue)
-                        class="mt-0.5 rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
-                    <span>
-                        <span class="block text-sm font-bold">Przekazuj zgłoszenia i darowizny do SZO</span>
-                        <span class="block text-xs text-muted">Wymaga adresu i tokenu. Zgłoszenie zawsze zapisuje się najpierw lokalnie — niedostępne SZO go nie gubi; nieudane próby dosyła polecenie <code>szo:push-submissions</code>.</span>
-                    </span>
-                </label>
-
-                <div class="mt-4 grid gap-4 sm:grid-cols-3">
-                    <div>
-                        <label for="szo_default_form" class="mb-1 block text-sm font-bold">Domyślny formularz w SZO</label>
-                        <input type="text" id="szo_default_form" name="szo_default_form" value="{{ old('szo_default_form', $settings->szo_default_form) }}"
-                            placeholder="{{ config('szo.default_form') ?: 'slug formularza' }}" autocomplete="off"
-                            class="w-full rounded border-gray-500 font-mono text-sm focus:border-brand-dark focus:ring-brand-dark">
-                        <p class="mt-1 text-xs text-muted">Używany, gdy formularz nie ma własnego.</p>
-                        @error('szo_default_form') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
-                    </div>
-                    <div>
-                        <label for="szo_donation_form" class="mb-1 block text-sm font-bold">Formularz darowizn</label>
-                        <input type="text" id="szo_donation_form" name="szo_donation_form" value="{{ old('szo_donation_form', $settings->szo_donation_form) }}"
-                            placeholder="{{ config('szo.donation_form') ?: 'darowizna' }}" autocomplete="off"
-                            class="w-full rounded border-gray-500 font-mono text-sm focus:border-brand-dark focus:ring-brand-dark">
-                        <p class="mt-1 text-xs text-muted">Zapis zgód darczyńcy (RODO, newsletter).</p>
-                        @error('szo_donation_form') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
-                    </div>
-                    <div>
-                        <label for="szo_timeout" class="mb-1 block text-sm font-bold">Limit czasu (s)</label>
-                        <input type="number" id="szo_timeout" name="szo_timeout" min="1" max="60" value="{{ old('szo_timeout', $settings->szo_timeout) }}"
-                            placeholder="{{ config('szo.timeout', 5) }}"
-                            class="w-full rounded border-gray-500 font-mono text-sm focus:border-brand-dark focus:ring-brand-dark">
-                        <p class="mt-1 text-xs text-muted">Krótki, żeby SZO nie blokowało strony.</p>
-                        @error('szo_timeout') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
-                    </div>
-                </div>
-
-                <div class="mt-4 space-y-2">
-                    <button type="button" @click="check()" :disabled="busy"
-                        class="inline-flex min-h-10 items-center gap-2 rounded-md px-4 py-2 text-xs font-bold text-ink hover:text-brand-dark disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark bg-gray-100 hover:bg-brand-light">
-                        <i class="fa-solid" :class="busy ? 'fa-spinner fa-spin' : 'fa-plug-circle-check'" aria-hidden="true"></i> Sprawdź połączenie z SZO
-                    </button>
-                    <p role="status" aria-live="polite" x-show="res" x-cloak x-text="res?.message"
-                        class="rounded border px-3 py-2 text-sm"
-                        :class="{ 'border-green-200 bg-green-50 text-green-800': res?.level === 'success', 'border-amber-200 bg-amber-50 text-amber-800': res?.level === 'warning', 'border-red-200 bg-red-50 text-red-800': res?.level === 'error' }"></p>
-                </div>
-            </div>
-
             {{-- ===================== Ochrona antyspamowa CleanTalk ===================== --}}
             @php
                 $ctEnabled = old('cleantalk_enabled', $settings->cleantalk_enabled ?? (bool) config('cleantalk.enabled'));
@@ -3097,6 +2988,152 @@
                     </button>
                 </div>
             </div>
+        </div>
+
+        {{-- ===================== Zakładka: SZO ===================== --}}
+        <div x-show="tab === 'szo'" x-cloak class="space-y-6">
+            {{-- Stan integracji: skąd konfiguracja, zaległe wysyłki, co korzysta z SZO --}}
+            @php
+                $szoActive = app(\App\Services\SzoClient::class)->enabled();
+                $szoFailedSubs = \App\Models\FormSubmission::query()->pendingSzo()->whereNotNull('szo_error')->count();
+                $szoPendingDonations = \Illuminate\Support\Facades\Schema::hasTable('donations') ? \App\Models\Donation::query()->pendingSzo()->count() : 0;
+                $szoLinkedForms = \App\Models\FormDefinition::query()->get(['id', 'title', 'settings'])
+                    ->filter(fn ($f) => filled($f->settings['szo_form_slug'] ?? null));
+            @endphp
+            <section class="rounded-md {{ $szoActive ? 'bg-brand-light' : 'bg-gray-50' }} p-5" aria-labelledby="szo-state">
+                <h2 id="szo-state" class="flex items-center gap-2 text-base font-bold text-ink">
+                    <i class="fa-solid {{ $szoActive ? 'fa-circle-check text-brand-dark' : 'fa-circle-pause text-ink' }}" aria-hidden="true"></i>
+                    {{ $szoActive ? 'Integracja z SZO działa' : 'Integracja z SZO jest wyłączona' }}
+                </h2>
+                <dl class="mt-3 grid gap-x-6 gap-y-2 text-sm sm:grid-cols-2">
+                    <div><dt class="font-bold text-ink">Adres</dt><dd class="break-all text-ink">{{ config('szo.url') ?: '— nie ustawiono —' }}@if (filled(config('szo.url'))) <span class="text-muted">({{ filled($settings->szo_api_url) ? 'z panelu' : 'z .env' }})</span>@endif</dd></div>
+                    <div><dt class="font-bold text-ink">Token API</dt><dd class="text-ink">{{ filled(config('szo.token')) ? 'zapisany ('.(filled($settings->szo_token) ? 'z panelu' : 'z .env').')' : '— brak —' }}</dd></div>
+                    <div><dt class="font-bold text-ink">Zgłoszenia z błędem wysyłki</dt><dd class="text-ink">{{ $szoFailedSubs }} @if ($szoFailedSubs) <span class="text-muted">— ponawiane co 15 min (<code>szo:push-submissions</code>)</span>@endif</dd></div>
+                    <div><dt class="font-bold text-ink">Darowizny czekające na SZO</dt><dd class="text-ink">{{ $szoPendingDonations }}</dd></div>
+                </dl>
+                <div class="mt-4 text-sm text-ink">
+                    <p class="font-bold">Formularze przekazujące zgłoszenia do CRM</p>
+                    @if ($szoLinkedForms->isNotEmpty())
+                        <ul class="mt-1 list-disc space-y-0.5 pl-5">
+                            @foreach ($szoLinkedForms as $lf)
+                                <li><a href="{{ route('admin.formularze.edit', $lf->id) }}" class="font-bold text-brand-dark underline underline-offset-2 hover:no-underline">{{ $lf->title }}</a> → <code>{{ $lf->settings['szo_form_slug'] }}</code></li>
+                            @endforeach
+                        </ul>
+                    @else
+                        <p class="mt-1 text-muted">Żaden — podepnij formularz w jego ustawieniach („Przekazuj zgłoszenia do CRM (SZO)”).</p>
+                    @endif
+                </div>
+            </section>
+
+            {{-- ===================== Integracja z SZO ===================== --}}
+            @php
+                $szoEffUrl = (string) config('szo.url');
+                $szoEffEnabled = (bool) config('szo.enabled');
+                $szoUrlFromEnv = blank($settings->szo_api_url) && $szoEffUrl !== '';
+                $szoTokenFromEnv = blank($settings->szo_token) && filled(config('szo.token'));
+                $szoEnabledValue = old('szo_enabled', $settings->szo_enabled ?? $szoEffEnabled);
+            @endphp
+            <div x-data="{
+                    busy: false, res: null,
+                    async check() {
+                        this.busy = true; this.res = null;
+                        const v = id => document.getElementById(id)?.value || '';
+                        try {
+                            const r = await fetch(@js(route('admin.ustawienia.szo-check')), {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content },
+                                body: JSON.stringify({ url: v('szo_api_url'), token: v('szo_token') }),
+                            });
+                            this.res = await r.json();
+                            if (! r.ok && ! this.res.message) this.res = { level: 'error', message: 'Nie udało się sprawdzić połączenia.' };
+                        } catch (e) { this.res = { level: 'error', message: 'Brak połączenia z serwerem.' }; }
+                        finally { this.busy = false; }
+                    },
+                }">
+                <h2 class="text-base font-bold text-ink"><i class="fa-solid fa-diagram-project mr-1 text-brand-dark" aria-hidden="true"></i> Integracja z SZO</h2>
+                <p class="mt-1 text-xs text-muted">
+                    System Zarządzania Organizacją (CRM). Z tego adresu strona pobiera komunikaty strefy współpracownika i klauzule RODO,
+                    a z tokenem przekazuje do SZO zgłoszenia z formularzy i darowizny. Wartości z panelu mają pierwszeństwo przed <code>.env</code>;
+                    puste pola dziedziczą wartości z <code>.env</code> (SZO_URL, SZO_TOKEN, SZO_ENABLED).
+                </p>
+
+                <div class="mt-4 grid gap-4 sm:grid-cols-2">
+                    <div class="sm:col-span-2">
+                        <label for="szo_api_url" class="mb-1 block text-sm font-bold">Adres systemu SZO</label>
+                        <input type="url" id="szo_api_url" name="szo_api_url" autocomplete="off" inputmode="url"
+                            value="{{ old('szo_api_url', $settings->szo_api_url) }}"
+                            placeholder="{{ $szoUrlFromEnv ? $szoEffUrl.' (z .env)' : 'np. https://szo.feer.org.pl' }}"
+                            aria-describedby="szo_api_url_help"
+                            class="w-full rounded border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark">
+                        <p id="szo_api_url_help" class="mt-1 text-xs text-muted">
+                            Adres bazowy, bez ukośnika na końcu.
+                            @if ($szoUrlFromEnv) <strong>Obecnie używany adres z <code>.env</code>: {{ $szoEffUrl }}.</strong>
+                            @elseif (blank($szoEffUrl)) <strong class="text-amber-700">Brak adresu — import klauzul RODO i komunikaty strefy nie działają.</strong> @endif
+                        </p>
+                        @error('szo_api_url') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </div>
+                    <div class="sm:col-span-2">
+                        <label for="szo_token" class="mb-1 block text-sm font-bold">Token API</label>
+                        <input type="password" id="szo_token" name="szo_token" autocomplete="new-password"
+                            placeholder="{{ $settings->szo_token ? '•••••••• (zapisany — zostaw puste, aby nie zmieniać)' : ($szoTokenFromEnv ? '•••••••• (z .env)' : '') }}"
+                            aria-describedby="szo_token_help"
+                            class="w-full rounded border-gray-500 font-mono text-sm focus:border-brand-dark focus:ring-brand-dark">
+                        <p id="szo_token_help" class="mt-1 text-xs text-muted">
+                            Token z Admin → API w SZO z uprawnieniami <code>forms:read</code>, <code>forms:submit</code> (dla darowizn także <code>donations:submit</code>).
+                            Przechowywany zaszyfrowany; trafia wyłącznie do połączeń serwer–serwer.
+                        </p>
+                        @error('szo_token') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </div>
+                </div>
+
+                <label class="mt-4 flex items-start gap-3 rounded-lg border border-gray-200 p-3">
+                    <input type="hidden" name="szo_enabled" value="0">
+                    <input type="checkbox" name="szo_enabled" value="1" @checked($szoEnabledValue)
+                        class="mt-0.5 rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
+                    <span>
+                        <span class="block text-sm font-bold">Przekazuj zgłoszenia i darowizny do SZO</span>
+                        <span class="block text-xs text-muted">Wymaga adresu i tokenu. Zgłoszenie zawsze zapisuje się najpierw lokalnie — niedostępne SZO go nie gubi; nieudane próby dosyła polecenie <code>szo:push-submissions</code>.</span>
+                    </span>
+                </label>
+
+                <div class="mt-4 grid gap-4 sm:grid-cols-3">
+                    <div>
+                        <label for="szo_default_form" class="mb-1 block text-sm font-bold">Domyślny formularz w SZO</label>
+                        <input type="text" id="szo_default_form" name="szo_default_form" value="{{ old('szo_default_form', $settings->szo_default_form) }}"
+                            placeholder="{{ config('szo.default_form') ?: 'slug formularza' }}" autocomplete="off"
+                            class="w-full rounded border-gray-500 font-mono text-sm focus:border-brand-dark focus:ring-brand-dark">
+                        <p class="mt-1 text-xs text-muted">Używany, gdy formularz nie ma własnego.</p>
+                        @error('szo_default_form') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </div>
+                    <div>
+                        <label for="szo_donation_form" class="mb-1 block text-sm font-bold">Formularz darowizn</label>
+                        <input type="text" id="szo_donation_form" name="szo_donation_form" value="{{ old('szo_donation_form', $settings->szo_donation_form) }}"
+                            placeholder="{{ config('szo.donation_form') ?: 'darowizna' }}" autocomplete="off"
+                            class="w-full rounded border-gray-500 font-mono text-sm focus:border-brand-dark focus:ring-brand-dark">
+                        <p class="mt-1 text-xs text-muted">Zapis zgód darczyńcy (RODO, newsletter).</p>
+                        @error('szo_donation_form') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </div>
+                    <div>
+                        <label for="szo_timeout" class="mb-1 block text-sm font-bold">Limit czasu (s)</label>
+                        <input type="number" id="szo_timeout" name="szo_timeout" min="1" max="60" value="{{ old('szo_timeout', $settings->szo_timeout) }}"
+                            placeholder="{{ config('szo.timeout', 5) }}"
+                            class="w-full rounded border-gray-500 font-mono text-sm focus:border-brand-dark focus:ring-brand-dark">
+                        <p class="mt-1 text-xs text-muted">Krótki, żeby SZO nie blokowało strony.</p>
+                        @error('szo_timeout') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </div>
+                </div>
+
+                <div class="mt-4 space-y-2">
+                    <button type="button" @click="check()" :disabled="busy"
+                        class="inline-flex min-h-10 items-center gap-2 rounded-md px-4 py-2 text-xs font-bold text-ink hover:text-brand-dark disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark bg-gray-100 hover:bg-brand-light">
+                        <i class="fa-solid" :class="busy ? 'fa-spinner fa-spin' : 'fa-plug-circle-check'" aria-hidden="true"></i> Sprawdź połączenie z SZO
+                    </button>
+                    <p role="status" aria-live="polite" x-show="res" x-cloak x-text="res?.message"
+                        class="rounded border px-3 py-2 text-sm"
+                        :class="{ 'border-green-200 bg-green-50 text-green-800': res?.level === 'success', 'border-amber-200 bg-amber-50 text-amber-800': res?.level === 'warning', 'border-red-200 bg-red-50 text-red-800': res?.level === 'error' }"></p>
+                </div>
+            </div>
+
         </div>
 
         <div x-show="tab === 'mail'" x-cloak class="space-y-6" x-data="{ transport: '{{ old('mail_transport', $settings->mail_transport ?: 'default') }}' }">

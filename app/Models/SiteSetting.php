@@ -158,6 +158,7 @@ class SiteSetting extends Model implements HasMedia
         'login' => 'Logowanie',
         'mail' => 'Poczta',
         'join' => 'Dołącz do nas',
+        'szo' => 'SZO',
     ];
 
     /**
@@ -211,7 +212,7 @@ class SiteSetting extends Model implements HasMedia
     public const SETTINGS_TAB_GROUPS = [
         'Wygląd' => ['general', 'header', 'colors', 'template', 'homepage'],
         'Treści i dane' => ['content', 'contact', 'social', 'support', 'join', 'registry'],
-        'Funkcje i integracje' => ['modules', 'login', 'mail', 'maintenance'],
+        'Funkcje i integracje' => ['modules', 'login', 'mail', 'szo', 'maintenance'],
         'SEO i dostępność' => ['seo', 'accessibility'],
     ];
 
