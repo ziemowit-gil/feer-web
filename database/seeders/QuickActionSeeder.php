@@ -7,7 +7,7 @@ use App\Models\SiteSetting;
 use Illuminate\Database\Seeder;
 
 /**
- * „Na skróty” na stronie głównej (moduł quick_actions) — zestaw startowy FEER.
+ * „Na skróty” na stronie głównej (moduł quick_actions) — zestaw startowy FEER: 8 kafli w dwóch rzędach.
  * Kolory z brandbooka (niebieski #1E6DFF, grafit #1D1D1A, pomarańcz #EA8F00), ikony Material Symbols (outline).
  * Idempotentny: dopasowuje po adresie w bieżącej witrynie, więc ponowne uruchomienie aktualizuje skróty
  * zamiast je dublować; skrótów dodanych ręcznie w panelu nie rusza.
@@ -49,6 +49,34 @@ class QuickActionSeeder extends Seeder
                 'url' => '/wsparcie/darowizna',
                 'color' => '#EA8F00',
                 'is_negative' => true,
+            ],
+            [
+                'label' => 'Dołącz do nas',
+                'description' => 'Wolontariat, praca i współpraca z fundacją',
+                'icon' => 'mi-group_add',
+                'url' => '/dolacz-do-nas',
+                'color' => '#1D1D1A',
+            ],
+            [
+                'label' => 'Wolontariat',
+                'description' => 'Aktualne ogłoszenia dla wolontariuszy',
+                'icon' => 'mi-diversity_3',
+                'url' => '/wolontariat',
+                'color' => '#1E6DFF',
+            ],
+            [
+                'label' => 'Newsletter',
+                'description' => 'Nowe materiały i szkolenia prosto na skrzynkę',
+                'icon' => 'mi-mail',
+                'url' => '/newsletter',
+                'color' => '#1D1D1A',
+            ],
+            [
+                'label' => 'Kontakt',
+                'description' => 'Napisz lub zadzwoń — odpowiemy',
+                'icon' => 'mi-call',
+                'url' => '/kontakt',
+                'color' => '#1E6DFF',
             ],
         ];
 
