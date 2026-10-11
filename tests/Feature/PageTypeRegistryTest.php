@@ -54,6 +54,7 @@ class PageTypeRegistryTest extends TestCase
             'brand_assets' => 'Marka — identyfikacja wizualna (pliki do pobrania)',
             'about_person' => 'O organizacji — osoba',
             'contact' => 'Kontakt (formularz, dane teleadresowe, spotkania)',
+            'form_page' => 'Formularz (wstęp, formularz, co przygotować, co dalej)',
             'service' => 'Oferta / usługa (korzyści, dla kogo, jak działamy, CTA)',
             'guide' => 'Poradnik krok po kroku (numerowane kroki, wymagania, podsumowanie)',
             'glossary' => 'Słownik pojęć (hasła z definicjami i indeksem liter)',
@@ -74,7 +75,7 @@ class PageTypeRegistryTest extends TestCase
             'Oferta i edukacja' => ['service', 'pricing', 'case_study', 'training_institution', 'recruitment'],
             'Organizacja' => ['about', 'about_person', 'team', 'wspolpraca', 'legacy', 'brand_assets', 'reports', 'partners', 'tender'],
             'Kafelki i nawigacja' => ['links_hub', 'tiles_grid'],
-            'Kontakt i wydarzenia' => ['contact', 'event', 'schedule'],
+            'Kontakt i wydarzenia' => ['contact', 'form_page', 'event', 'schedule'],
             'Wewnętrzne i przekierowania' => ['internal', 'internal_hub', 'bip_move', 'redirect'],
         ], Page::typeGroups());
 
@@ -87,13 +88,13 @@ class PageTypeRegistryTest extends TestCase
             'faq' => 'fa-circle-question', 'event' => 'fa-calendar', 'schedule' => 'fa-calendar-days', 'links_hub' => 'fa-table-cells-large',
             'tiles_grid' => 'fa-table-cells', 'internal' => 'fa-lock', 'internal_hub' => 'fa-user-lock', 'bip_move' => 'fa-landmark',
             'about' => 'fa-building', 'contact' => 'fa-envelope', 'wspolpraca' => 'fa-handshake', 'brand_assets' => 'fa-palette', 'legacy' => 'fa-clock-rotate-left',
-            'training_institution' => 'fa-graduation-cap',
+            'training_institution' => 'fa-graduation-cap', 'form_page' => 'fa-pen-to-square',
         ];
         ksort($expected);
         $this->assertSame($expected, $icons);
 
         $this->assertSame(
-            ['service', 'guide', 'glossary', 'case_study', 'pricing', 'team', 'documents', 'regulation', 'redirect', 'reports', 'partners', 'recruitment', 'tender'],
+            ['form_page', 'service', 'guide', 'glossary', 'case_study', 'pricing', 'team', 'documents', 'regulation', 'redirect', 'reports', 'partners', 'recruitment', 'tender'],
             Page::typeDataTypes(),
         );
 

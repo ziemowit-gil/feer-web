@@ -25,9 +25,10 @@
     aria-labelledby="form-heading-{{ $fs }}"
     class="not-prose my-8 {{ $feerForm ? 'rounded-md bg-gray-50 p-6 sm:p-8' : 'rounded-xl border border-gray-200 bg-white p-6 shadow-sm' }}">
 
-    <h2 id="form-heading-{{ $fs }}" class="mb-1 text-xl font-bold text-ink">
+    @php $headingTag = in_array($headingTag ?? 'h2', ['h2', 'h3'], true) ? ($headingTag ?? 'h2') : 'h2'; @endphp
+    <{{ $headingTag }} id="form-heading-{{ $fs }}" class="mb-1 text-xl font-bold text-ink">
         {{ $form->title }}
-    </h2>
+    </{{ $headingTag }}>
     @if ($form->description)
         <p class="mb-5 text-sm text-muted">{{ $form->description }}</p>
     @else

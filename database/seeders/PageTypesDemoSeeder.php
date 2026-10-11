@@ -65,6 +65,7 @@ class PageTypesDemoSeeder extends Seeder
         $this->partners();
         $this->recruitment();
         $this->tender();
+        $this->formPage();
 
         // Listy stron typów „Rekrutacja do projektu" i „Zapytanie ofertowe" (shortcody z filtrem i archiwum).
         $this->page('lista-naborow', 'standard', [
@@ -510,6 +511,36 @@ class PageTypesDemoSeeder extends Seeder
                 'rec_faq' => [['q' => 'Czy udział jest płatny?', 'a' => 'Nie, udział jest bezpłatny.']],
                 'cta_label' => 'Zgłoś się do projektu', 'cta_url' => '/kontakt',
                 'contact_name' => 'Anna Kowalska', 'contact_email' => 'rekrutacja@example.org', 'contact_phone' => '500 000 000',
+            ],
+        ]);
+    }
+
+    private function formPage(): void
+    {
+        $form = \App\Models\FormDefinition::firstOrCreate(['slug' => 'przyklad-zgloszenie-organizacji'], [
+            'title' => 'Zgłoszenie organizacji',
+            'is_active' => true,
+            'fields' => [
+                ['label' => 'Numer KRS', 'type' => 'krs', 'required' => true, 'uid' => 'fpkrs001'],
+                ['label' => 'Nazwa organizacji', 'type' => 'text', 'required' => true, 'krs_fill' => 'nazwa', 'uid' => 'fpkrs002'],
+                ['label' => 'Adres siedziby', 'type' => 'text', 'krs_fill' => 'adres', 'uid' => 'fpkrs003'],
+                ['label' => 'Adres e-mail do kontaktu', 'type' => 'email', 'required' => true, 'uid' => 'fpkrs004'],
+                ['label' => 'W czym możemy pomóc?', 'type' => 'textarea', 'required' => true, 'uid' => 'fpkrs005'],
+                ['label' => 'Zgadzam się na przetwarzanie danych w celu obsługi zgłoszenia.', 'type' => 'consent', 'required' => true, 'uid' => 'fpkrs006'],
+            ],
+        ]);
+
+        $this->page('formularz', 'form_page', [
+            'title' => 'Przykład: formularz — zgłoś organizację do programu',
+            'content' => '<p>Program wspiera organizacje pozarządowe w zapewnianiu dostępności: audyt strony, szkolenie zespołu i pomoc w przygotowaniu deklaracji dostępności.</p><p>Wypełnij krótki formularz — po wpisaniu numeru KRS dane organizacji uzupełnią się same.</p>',
+            'type_data' => [
+                'lead' => 'Zgłoś organizację do bezpłatnego programu wsparcia w dostępności.',
+                'fp_form' => $form->slug,
+                'fp_time' => 'ok. 5 minut',
+                'requirements' => [['text' => 'Numer KRS organizacji'], ['text' => 'Adres strony internetowej'], ['text' => 'Krótki opis potrzeb']],
+                'fp_after' => 'Odpowiemy w ciągu 5 dni roboczych i umówimy rozmowę.',
+                'fp_help' => 'Możesz też zadzwonić — wypełnimy formularz razem.',
+                'contact_name' => 'Anna Kowalska', 'contact_email' => 'program@example.org', 'contact_phone' => '500 000 000',
             ],
         ]);
     }
