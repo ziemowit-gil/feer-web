@@ -1,6 +1,6 @@
 @extends('admin.layout')
 
-@section('title', 'Menu nawigacyjne')
+@section('title', $location === 'bip' ? 'BIP — menu boczne' : 'Menu nawigacji')
 
 @section('content')
     @php
@@ -42,17 +42,6 @@
 
     <div x-data="menuBuilder({{ Js::from($reopen) }}, {{ Js::from(route('admin.pozycje-menu.store')) }})"
         @keydown.escape.window="close()">
-        @push('content-tab-actions')
-            <p class="text-muted" style="font-size:.8125rem;max-width:36rem">
-                <i class="fa-solid fa-grip-vertical text-gray-400" aria-hidden="true"></i>
-                Kolejność zmieniasz przeciągając pozycje w drzewie albo przyciskami w panelu szczegółów (dostępne z klawiatury).
-            </p>
-            <button type="button" @click="openCreate($event)" data-location="{{ $location }}"
-                class="inline-flex items-center rounded bg-brand-dark text-sm font-bold text-white hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2"
-                style="min-height:2.25rem;padding:.375rem 1rem;gap:.375rem">
-                <i class="fa-solid fa-plus" aria-hidden="true"></i> Dodaj pozycję menu
-            </button>
-        @endpush
 
         @include('admin.partials.content-nav-tabs')
 
@@ -61,11 +50,18 @@
 
         {{-- Układ jak w module „Strona” TYPO3: drzewo pozycji | szczegóły wybranej pozycji. --}}
         <style>@media (max-width: 767px) { .nav-split { grid-template-columns: 1fr !important; } }</style>
-        <div class="nav-split" style="display:grid;grid-template-columns:minmax(16rem,23rem) minmax(0,1fr);gap:1rem;align-items:start">
+        <div class="nav-split" style="display:grid;grid-template-columns:minmax(17rem,24rem) minmax(0,1fr);gap:1.25rem;align-items:start">
             <nav aria-label="Struktura menu — {{ \App\Models\NavItem::LOCATIONS[$location] ?? $location }}" class="rounded-md bg-white" style="min-width:0">
-                <div class="border-b border-gray-100" style="padding:.75rem">
-                    <h2 class="text-sm font-bold text-ink"><i class="fa-solid fa-bars mr-1 text-brand-dark" aria-hidden="true"></i> {{ \App\Models\NavItem::LOCATIONS[$location] ?? $location }}</h2>
-                    <p class="mt-0.5 text-xs text-muted">Pozycje wyświetlane na stronie. „Menu działań” pobiera zawartość z <a href="{{ route('admin.kategorie.index') }}" class="text-brand-dark hover:underline">kategorii działań</a>.</p>
+                <div style="display:flex;align-items:center;justify-content:space-between;gap:.5rem;padding:.875rem .875rem .5rem">
+                    <h2 class="text-sm font-bold text-ink">
+                        <i class="fa-solid fa-bars mr-1 text-brand-dark" aria-hidden="true"></i> {{ \App\Models\NavItem::LOCATIONS[$location] ?? $location }}
+                        <span class="font-normal text-muted">({{ $navItems->count() }})</span>
+                    </h2>
+                    <button type="button" @click="openCreate($event)" data-location="{{ $location }}"
+                        class="inline-flex shrink-0 items-center rounded-md bg-brand-dark text-sm font-bold text-white hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2"
+                        style="min-height:2.25rem;padding:.375rem .875rem;gap:.375rem">
+                        <i class="fa-solid fa-plus" aria-hidden="true"></i> Dodaj<span class="sr-only"> pozycję menu</span>
+                    </button>
                 </div>
                 <div style="padding:.5rem">
                     @forelse ($navItems as $index => $item)
@@ -79,6 +75,11 @@
                         </div>
                     @endforelse
                 </div>
+                <p class="text-muted" style="font-size:.75rem;padding:.25rem .875rem .875rem">
+                    <i class="fa-solid fa-grip-vertical mr-1" aria-hidden="true"></i>
+                    Kolejność: przeciągnij pozycję albo użyj przycisków „W górę / W dół” po prawej (działają z klawiatury).
+                    @if ($location === 'main') „Menu działań” pobiera zawartość z <a href="{{ route('admin.kategorie.index') }}" class="font-bold text-brand-dark hover:underline">kategorii działań</a>.@endif
+                </p>
             </nav>
 
             <section aria-labelledby="nav-pane-heading" style="min-width:0">

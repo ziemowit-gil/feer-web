@@ -88,7 +88,8 @@ final class AdminMenu
             $this->can('pages') ? $this->section('pages', 'Strony', [
                 $this->item('pages', 'Strony', 'admin.podstrony.index', 'fa-file-lines',
                     active: 'admin.podstrony.*'),
-                $this->item('nav', 'Menu nawigacji', 'admin.pozycje-menu.index', 'fa-bars', active: 'admin.pozycje-menu.*'),
+                $isAdmin ? $this->item('nav', 'Menu nawigacji', 'admin.pozycje-menu.index', 'fa-bars',
+                    active: fn () => request()->routeIs('admin.pozycje-menu.*') && request('location') !== 'bip') : null,
                 $this->item('persons', 'Osoby', 'admin.osoby.index', 'fa-address-card', active: 'admin.osoby.*'),
             ], defaultOpen: true) : null,
 
@@ -101,6 +102,13 @@ final class AdminMenu
                 $this->item('blog-comments', 'Komentarze', 'admin.komentarze-bloga.index', 'fa-comments',
                     active: 'admin.komentarze-bloga.*', badge: fn () => BlogAdmin::pendingCommentsCount()),
             ], defaultOpen: true) : null,
+
+            // BIP jako osobna „witryna”: boczne menu BIP i rejestr dokumentów.
+            $this->section('bipsite', 'BIP', [
+                $isAdmin ? $this->item('bip-menu', 'Menu BIP', 'admin.pozycje-menu.index', 'fa-bars',
+                    active: fn () => request()->routeIs('admin.pozycje-menu.*') && request('location') === 'bip', params: ['location' => 'bip']) : null,
+                $this->can('bip') ? $this->item('bip', 'Dokumenty BIP', 'admin.bip-dokumenty.index', 'fa-landmark', active: 'admin.bip-dokumenty.*') : null,
+            ]),
 
             $this->section('homepage', 'Strona główna', [
                 $this->can('hero')          ? $this->item('hero', 'Slajder (hero)', 'admin.hero.index', 'fa-images', active: 'admin.hero.*') : null,
@@ -161,7 +169,6 @@ final class AdminMenu
                     ]) : null,
                 $this->can('faq')      ? $this->item('faq', 'FAQ', 'admin.faq.index', 'fa-circle-question', active: 'admin.faq.*') : null,
                 $this->can('reports')  ? $this->item('reports', 'Sprawozdania', 'admin.sprawozdania.index', 'fa-file-invoice', active: 'admin.sprawozdania.*') : null,
-                $this->can('bip')      ? $this->item('bip', 'BIP — dokumenty', 'admin.bip-dokumenty.index', 'fa-landmark', active: 'admin.bip-dokumenty.*') : null,
                 $this->can('landing')  ? $this->item('landing', 'Landing pages', 'admin.lp.index', 'fa-bullhorn', active: 'admin.lp.*') : null,
                 $this->can('help_map') ? $this->item('help-map', 'Mapa pomocy', 'admin.mapa-pomocy.index', 'fa-map-location-dot', active: 'admin.mapa-pomocy.*') : null,
                 $this->site->site_template === 'federation'
@@ -253,11 +260,11 @@ final class AdminMenu
             $this->group($byKey, 'start', 'Pulpit', 'fa-gauge', [[null, 'start']]),
             // „Witryna” — jak serwis jest zbudowany (strony, menu, strona główna);
             // „Treści” — wpisy publikowane w modułach (aktualności, działania, wydarzenia…), bez stron.
-            $this->group($byKey, 'pages', 'Witryna', 'fa-sitemap', [['Strony i nawigacja', 'pages'], ['Strona główna', 'homepage']]),
+            $this->group($byKey, 'pages', 'Witryna', 'fa-sitemap', [['Strony i nawigacja', 'pages'], ['BIP', 'bipsite'], ['Strona główna', 'homepage']]),
             $this->group($byKey, 'content', 'Treści', 'fa-newspaper', [
                 ['Publikacje', 'content', ['news', 'blog', 'podcasts', 'faq', 'landing', 'timeline']],
                 ['Działalność', 'content', ['projects', 'events', 'materials', 'volunteering', 'jobs', 'help-map', 'organizations']],
-                ['Dokumenty', 'content', ['reports', 'bip']],
+                ['Dokumenty', 'content', ['reports']],
                 ['Formularze i ankiety', 'content', ['forms', 'polls', 'cooperation']],
                 ['Sklep', 'content', ['shop']],
                 ['Biblioteka', 'library'],
@@ -396,25 +403,27 @@ final class AdminMenu
     }
 
     /**
-     * @param  string|array<int, string>|null  $active  wzorce tras (`routeIs`); domyślnie sama trasa
+     * @param  string|array<int, string>|Closure|null  $active  wzorce tras (`routeIs`) albo warunek; domyślnie sama trasa
      * @param  array<int, ?array<string, mixed>>  $children
+     * @param  array<string, mixed>  $params  parametry adresu (np. ['location' => 'bip'])
      */
     private function item(
         string $key,
         string $label,
         string $route,
         string $icon,
-        string|array|null $active = null,
+        string|array|Closure|null $active = null,
         ?Closure $badge = null,
         string $badgeTone = 'brand',
         array $children = [],
+        array $params = [],
     ): ?array {
         if (! Route::has($route)) {
             return null;
         }
 
         $children = array_values(array_filter($children));
-        $isActive = request()->routeIs($active ?? $route)
+        $isActive = ($active instanceof Closure ? (bool) $active() : request()->routeIs($active ?? $route))
             || (bool) array_filter($children, fn (array $child) => $child['active']);
 
         $count = $badge ? (int) $badge() : null;
@@ -422,7 +431,7 @@ final class AdminMenu
         return [
             'key'        => $key,
             'label'      => $label,
-            'url'        => route($route),
+            'url'        => route($route, $params),
             'icon'       => $icon,
             'active'     => $isActive,
             'badge'      => $count > 0 ? $count : null,

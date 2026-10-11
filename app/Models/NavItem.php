@@ -171,6 +171,32 @@ class NavItem extends Model
     }
 
     /**
+     * Strona serwisu, do której prowadzi pozycja — do przycisków „Edytuj stronę” / „Edytuj w edytorze
+     * blokowym” w panelu menu. W odróżnieniu od linkedPage() bierze też strony nieopublikowane
+     * i adresy wieloczłonowe (ostatni człon = slug strony).
+     */
+    public function editablePage(): ?Page
+    {
+        $url = (string) $this->url;
+        if ($url === '' || Str::startsWith($url, ['#', 'mailto:', 'tel:'])) {
+            return null;
+        }
+        if (Str::startsWith($url, ['http://', 'https://'])) {
+            if (! Str::startsWith($url, rtrim(url('/'), '/'))) {
+                return null;
+            }
+            $url = Str::after($url, rtrim(url('/'), '/'));
+        }
+
+        $path = trim((string) parse_url($url, PHP_URL_PATH), '/');
+        if ($path === '') {
+            return null;
+        }
+
+        return Page::where('slug', Str::afterLast($path, '/'))->first();
+    }
+
+    /**
      * Sekcje (kolumny) panelu mega menu: [ ['heading' => ?array, 'links' => array], … ].
      *
      * Źródła, w tej kolejności:

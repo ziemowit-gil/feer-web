@@ -16,6 +16,8 @@
     $btn = 'inline-flex items-center rounded-lg border border-gray-300 bg-white text-xs font-bold text-ink hover:border-brand-dark hover:text-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark disabled:cursor-not-allowed disabled:opacity-40';
     $btnStyle = 'min-height:2.25rem;padding:.375rem .75rem;gap:.375rem';
     $mega = $item->isMega() ? $item->megaSections() : [];
+    $page = $item->editablePage();
+    $canEditPage = $page && auth()->user()->canAccessModule('pages');
 @endphp
 
 @if ($parent)
@@ -34,6 +36,9 @@
                 @if ($item->is_button)<span class="font-bold text-brand-dark">Przycisk (CTA)</span>@endif
                 @if ($item->is_column_heading)<span class="font-bold text-ink"><i class="fa-solid fa-table-columns" aria-hidden="true"></i> Nagłówek kolumny</span>@endif
                 @if ($item->is_mega && ! $parent)<span class="font-bold text-ink">Mega menu</span>@endif
+                @if ($canEditPage)
+                    <span class="inline-flex items-center gap-1 text-ink"><i class="fa-solid fa-file-lines text-brand-dark" aria-hidden="true"></i> strona „{{ $page->title }}”@unless ($page->is_published) (nieopublikowana)@endunless</span>
+                @endif
                 @if ($item->is_active)
                     <span class="inline-flex items-center gap-1 font-bold text-ink"><i class="fa-solid fa-circle-check" aria-hidden="true"></i> Widoczna</span>
                 @else
@@ -46,8 +51,16 @@
                 @include('admin.nav-items._edit-attrs', ['item' => $item])
                 class="inline-flex items-center rounded bg-brand-dark text-sm font-bold text-white hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2"
                 style="min-height:2.25rem;padding:.375rem 1rem;gap:.375rem">
-                <i class="fa-solid fa-pen" aria-hidden="true"></i> Edytuj
+                <i class="fa-solid fa-pen" aria-hidden="true"></i> Edytuj pozycję
             </button>
+            @if ($canEditPage)
+                <a href="{{ route('admin.podstrony.bloki.edit', $page) }}" class="{{ $btn }}" style="{{ $btnStyle }}">
+                    <i class="fa-solid fa-cubes" aria-hidden="true"></i> Edytuj w edytorze blokowym<span class="sr-only"> — strona „{{ $page->title }}”</span>
+                </a>
+                <a href="{{ route('admin.podstrony.edit', $page) }}" class="{{ $btn }}" style="{{ $btnStyle }}">
+                    <i class="fa-solid fa-file-pen" aria-hidden="true"></i> Ustawienia strony<span class="sr-only"> „{{ $page->title }}”</span>
+                </a>
+            @endif
             @if ($canHold)
                 <button type="button" @click="openCreate($event)" data-parent="{{ $item->id }}" data-location="{{ $item->location }}" class="{{ $btn }}" style="{{ $btnStyle }}">
                     <i class="fa-solid fa-plus" aria-hidden="true"></i> Dodaj podpozycję
@@ -147,6 +160,12 @@
                                 @unless ($child->is_active)<span class="ml-1 text-[10px] font-bold text-ink"><i class="fa-solid fa-eye-slash mr-1 text-muted" aria-hidden="true"></i>ukryta</span>@endunless
                                 <span class="block truncate font-mono text-xs font-normal text-muted">{{ $child->url }}</span>
                             </a>
+                            @php $childPage = auth()->user()->canAccessModule('pages') ? $child->editablePage() : null; @endphp
+                            @if ($childPage)
+                                <a href="{{ route('admin.podstrony.bloki.edit', $childPage) }}" class="{{ $btn }}" style="{{ $btnStyle }}" title="Edytuj stronę w edytorze blokowym">
+                                    <i class="fa-solid fa-cubes" aria-hidden="true"></i> Edytor blokowy<span class="sr-only"> — strona „{{ $childPage->title }}”</span>
+                                </a>
+                            @endif
                             <button type="button" @click="openEdit($event)"
                                 @include('admin.nav-items._edit-attrs', ['item' => $child])
                                 class="{{ $btn }}" style="{{ $btnStyle }}"><i class="fa-solid fa-pen" aria-hidden="true"></i> Edytuj<span class="sr-only"> „{{ $child->label }}”</span></button>

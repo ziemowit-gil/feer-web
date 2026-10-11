@@ -20,22 +20,42 @@
     $tabStyle = 'display:inline-flex;align-items:center;gap:.375rem;min-height:2.75rem;padding:.625rem .875rem;margin-bottom:-1px;border-bottom-width:2px;border-bottom-style:solid;white-space:nowrap';
 @endphp
 
-<nav aria-label="Sekcje stron i menu" class="border-gray-200"
+@php
+    $onMenu = request()->routeIs('admin.pozycje-menu.*');
+    $onBip = $activeLocation === 'bip' || request()->routeIs('admin.bip-dokumenty.*');
+@endphp
+<nav aria-label="{{ $onBip ? 'Sekcje BIP' : ($onMenu ? 'Sekcje menu' : 'Sekcje stron') }}" class="border-gray-200"
      style="display:flex;flex-wrap:wrap;align-items:flex-end;gap:.25rem 1rem;margin-bottom:1rem;border-bottom-width:1px;border-bottom-style:solid">
     <div style="display:flex;flex-wrap:wrap;gap:.125rem">
-        @if ($user->canAccessModule('pages'))
+        @if ($onBip)
+            {{-- BIP jako osobna „witryna”: menu boczne BIP i dokumenty --}}
+            @if ($user->isAdmin())
+                <a href="{{ route('admin.pozycje-menu.index', ['location' => 'bip']) }}" @if ($activeLocation === 'bip') aria-current="page" @endif class="{{ $tab($activeLocation === 'bip') }}" style="{{ $tabStyle }}">
+                    <i class="fa-solid fa-bars text-xs" aria-hidden="true"></i>Menu BIP
+                </a>
+            @endif
+            @if (Route::has('admin.bip-dokumenty.index') && $user->canAccessModule('bip'))
+                <a href="{{ route('admin.bip-dokumenty.index') }}" @if (request()->routeIs('admin.bip-dokumenty.*')) aria-current="page" @endif class="{{ $tab(request()->routeIs('admin.bip-dokumenty.*')) }}" style="{{ $tabStyle }}">
+                    <i class="fa-solid fa-landmark text-xs" aria-hidden="true"></i>Dokumenty BIP
+                </a>
+            @endif
+        @elseif ($onMenu)
+            <a href="{{ route('admin.pozycje-menu.index', ['location' => 'main']) }}" @if ($activeLocation === 'main') aria-current="page" @endif class="{{ $tab($activeLocation === 'main') }}" style="{{ $tabStyle }}">
+                <i class="fa-solid fa-window-maximize text-xs" aria-hidden="true"></i>Menu główne
+            </a>
+            <a href="{{ route('admin.pozycje-menu.index', ['location' => 'footer']) }}" @if ($activeLocation === 'footer') aria-current="page" @endif class="{{ $tab($activeLocation === 'footer') }}" style="{{ $tabStyle }}">
+                <i class="fa-solid fa-grip-lines text-xs" aria-hidden="true"></i>Stopka
+            </a>
+        @elseif ($user->canAccessModule('pages'))
             <a href="{{ route('admin.podstrony.index') }}" @if ($pagesTreeActive) aria-current="page" @endif class="{{ $tab($pagesTreeActive) }}" style="{{ $tabStyle }}">
                 <i class="fa-solid fa-sitemap text-xs" aria-hidden="true"></i>Strony
             </a>
             <a href="{{ route('admin.podstrony.index', ['widok' => 'lista']) }}" @if ($pagesListMode) aria-current="page" @endif class="{{ $tab($pagesListMode) }}" style="{{ $tabStyle }}">
                 <i class="fa-solid fa-list text-xs" aria-hidden="true"></i>Lista stron
             </a>
-            <a href="{{ route('admin.osoby.index') }}" @if (request()->routeIs('admin.osoby.*')) aria-current="page" @endif class="{{ $tab(request()->routeIs('admin.osoby.*')) }}" style="{{ $tabStyle }}">Osoby</a>
-        @endif
-        @if ($user->isAdmin())
-            <a href="{{ route('admin.pozycje-menu.index', ['location' => 'main']) }}" @if ($activeLocation === 'main') aria-current="page" @endif class="{{ $tab($activeLocation === 'main') }}" style="{{ $tabStyle }}">Menu główne</a>
-            <a href="{{ route('admin.pozycje-menu.index', ['location' => 'footer']) }}" @if ($activeLocation === 'footer') aria-current="page" @endif class="{{ $tab($activeLocation === 'footer') }}" style="{{ $tabStyle }}">Stopka</a>
-            <a href="{{ route('admin.pozycje-menu.index', ['location' => 'bip']) }}" @if ($activeLocation === 'bip') aria-current="page" @endif class="{{ $tab($activeLocation === 'bip') }}" style="{{ $tabStyle }}">Menu BIP</a>
+            <a href="{{ route('admin.osoby.index') }}" @if (request()->routeIs('admin.osoby.*')) aria-current="page" @endif class="{{ $tab(request()->routeIs('admin.osoby.*')) }}" style="{{ $tabStyle }}">
+                <i class="fa-solid fa-address-card text-xs" aria-hidden="true"></i>Osoby
+            </a>
         @endif
     </div>
 </nav>
