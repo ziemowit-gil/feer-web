@@ -141,6 +141,8 @@
 
     <form id="news-form" method="POST" action="{{ $news->exists ? route('admin.newsy.update', $news) : route('admin.newsy.store') }}"
         enctype="multipart/form-data" class="mt-4 space-y-6" data-readable>
+        @csrf
+        @if ($news->exists) @method('PUT') @endif
         {{-- ═══ Zakładki rekordu (jak w TYPO3): Ogólne | Zdjęcie i wygląd | Kategoryzacja | Publikacja | SEO ═══ --}}
 
         <div data-tab-panel="ogolne" role="tabpanel" id="panel-ogolne" aria-labelledby="tab-ogolne" class="space-y-5">
