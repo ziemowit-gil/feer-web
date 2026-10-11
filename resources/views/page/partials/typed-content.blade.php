@@ -1,3 +1,8 @@
+    @php
+        // Menu działu dla widoków typów stron (kolumna boczna). show.blade.php liczy je
+        // dopiero po tym include'ie, więc bez tego widoki typów nigdy go nie dostawały.
+        $menuSiblings ??= $page->menuSiblings();
+    @endphp
     @if ($page->wipIsNotice())
         <div class="px-4 pt-8">
             @include('partials.page-wip-notice', ['message' => $page->wipMessage()])
