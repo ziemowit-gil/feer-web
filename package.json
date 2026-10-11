@@ -29,5 +29,8 @@
         "leaflet": "^1.9.4",
         "material-symbols": "^0.47.6",
         "pdfjs-dist": "^4.10.38"
+    },
+    "overrides": {
+        "postcss-selector-parser": "^7.1.6"
     }
 }
