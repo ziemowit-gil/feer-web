@@ -110,3 +110,28 @@ if (! function_exists('site_home_url')) {
     }
 }
 
+
+if (! function_exists('meta_excerpt')) {
+    /**
+     * Opis strony (meta description) z treści HTML: usuwa shortcode'y (np. „[nabory]",
+     * „[formularz:kontakt]"), znaczniki (ze spacją między blokami, żeby słowa się nie sklejały),
+     * dekoduje encje, zwija białe znaki i przycina do $limit znaków.
+     */
+    function meta_excerpt(?string $html, int $limit = 160): string
+    {
+        $text = (string) $html;
+        if (trim($text) === '') {
+            return '';
+        }
+
+        $text = preg_replace(\App\Support\ShortcodeParser::DETECT_PATTERN, ' ', $text) ?? $text;
+        $text = preg_replace('/\[[a-z0-9_-]+(?::[^\]]*)?\]/i', ' ', $text) ?? $text;
+        // Skrypty i style nie są treścią — wycinamy razem z zawartością.
+        $text = preg_replace('#<(script|style)\b[^>]*>.*?</\1>#is', ' ', $text) ?? $text;
+        $text = strip_tags(str_replace('<', ' <', $text));
+        $text = html_entity_decode($text, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        $text = trim(preg_replace('/\s+/u', ' ', $text) ?? $text);
+
+        return \Illuminate\Support\Str::limit($text, $limit);
+    }
+}

@@ -1,7 +1,13 @@
 @extends('layouts.site')
 
+{{--
+    Szablon „Portal" — pas tytułowy brand-dark (zdjęcie strony obok tytułu, nie jako
+    półprzezroczyste tło), treść + przyklejona kolumna boczna (spis treści, menu działu),
+    galeria na pełną szerokość i pas kontaktowy. Płasko: tła zamiast ramek, bez przezroczystości.
+--}}
+
 @section('title', ($page->meta_title ?: $page->title) . ' — ' . $siteSettings->site_name)
-@section('meta_description', $page->meta_description ?: \Illuminate\Support\Str::limit(trim(strip_tags(str_replace('<', ' <', $page->content))), 160))
+@section('meta_description', $page->meta_description ?: meta_excerpt($page->content))
 
 @section('breadcrumbs')
     @include('partials.breadcrumbs', ['items' => array_filter([
@@ -34,44 +40,47 @@
             : collect();
         $canInlineEdit = auth('web')->check() && auth('web')->user()->canAccessModule('pages');
         $contentHasShortcode = \App\Support\ShortcodeParser::has($page->content);
+        $heroImage = filled($page->content_image);
+        $link = 'font-bold text-brand-dark underline underline-offset-4 hover:no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark';
     @endphp
 
-    <div @if ($canInlineEdit) x-data="inlineContentEditor('page', {{ $page->id }}, '{{ route('admin.inline-edit.update') }}', { engine: '{{ $siteSettings->contentEditorValue() }}', uploadUrl: '{{ route('admin.multimedia.upload-ajax') }}' })" @endif>
+    <div data-page-template="portal" @if ($canInlineEdit) x-data="inlineContentEditor('page', {{ $page->id }}, '{{ route('admin.inline-edit.update') }}', { engine: '{{ $siteSettings->contentEditorValue() }}', uploadUrl: '{{ route('admin.multimedia.upload-ajax') }}' })" @endif>
         @if ($canInlineEdit)
             @include('partials.inline-edit-bar')
         @endif
 
-        {{-- ===== HERO ===== --}}
-        <header class="relative overflow-hidden bg-brand text-white">
-            @if (filled($page->content_image))
-                <img src="{{ $page->content_image }}"
-                     alt="{{ $page->content_image_alt ?: 'Grafika ilustracyjna' }}"
-                     class="absolute inset-0 h-full w-full object-cover opacity-35"
-                     aria-hidden="true">
-            @endif
-            <div class="relative mx-auto max-w-6xl px-4 py-14 md:py-20">
-                @if ($canInlineEdit)
-                    <h1 data-inline-field="title" data-inline-kind="text"
-                        :class="editMode ? 'outline-dashed outline-2 outline-offset-4 outline-white rounded' : ''"
-                        class="max-w-3xl text-3xl font-bold leading-tight md:text-5xl">{{ $page->title }}</h1>
-                @else
-                    <h1 class="max-w-3xl text-3xl font-bold leading-tight md:text-5xl">{{ $page->title }}</h1>
-                @endif
-                @if ($page->meta_description)
-                    <p class="mt-3 max-w-2xl text-base text-white/85 md:text-lg">{{ $page->meta_description }}</p>
+        {{-- ===== HERO: jednolity pas brand-dark (biały tekst ok. 7:1); zdjęcie obok, nie pod tekstem ===== --}}
+        <header class="bg-brand-dark text-white">
+            <div class="mx-auto grid max-w-6xl items-center gap-8 px-4 py-12 md:py-16 {{ $heroImage ? 'md:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]' : '' }}">
+                <div class="min-w-0">
+                    @if ($canInlineEdit)
+                        <h1 data-inline-field="title" data-inline-kind="text"
+                            :class="editMode ? 'outline-dashed outline-2 outline-offset-4 outline-white rounded' : ''"
+                            class="max-w-3xl text-3xl font-extrabold leading-tight tracking-tight md:text-5xl">{{ $page->title }}</h1>
+                    @else
+                        <h1 class="max-w-3xl text-3xl font-extrabold leading-tight tracking-tight md:text-5xl">{{ $page->title }}</h1>
+                    @endif
+                    @if ($page->meta_description)
+                        <p class="mt-4 max-w-2xl text-base text-white md:text-lg">{{ $page->meta_description }}</p>
+                    @endif
+                </div>
+                @if ($heroImage)
+                    <img src="{{ $page->content_image }}"
+                         alt="{{ $page->content_image_alt ?: '' }}"
+                         class="aspect-[4/3] w-full rounded-md object-cover">
                 @endif
             </div>
         </header>
 
-        {{-- ===== TREŚĆ GŁÓWNA + SIDEBAR ===== --}}
+        {{-- ===== TREŚĆ GŁÓWNA + KOLUMNA BOCZNA ===== --}}
         <div class="mx-auto max-w-6xl px-4 py-12">
             @if ($portalTabs)
                 @include('partials.page-tabs-nav', ['menuSiblings' => $menuSiblings])
             @endif
-            <div class="grid gap-10 {{ $hasSidebar ? 'lg:grid-cols-[1fr_280px]' : '' }}">
+            <div class="grid gap-10 {{ $hasSidebar ? 'lg:grid-cols-[minmax(0,1fr)_18rem]' : '' }}">
 
                 {{-- Lewa: główna treść --}}
-                <main class="min-w-0">
+                <article class="min-w-0" aria-label="{{ $page->title }}">
                     @if ($portalToc)
                         @include('partials.page-toc', ['toc' => $portalToc, 'variant' => 'mobile'])
                     @endif
@@ -87,16 +96,15 @@
                     @include('partials.page-gallery', ['page' => $page])
                     @include('partials.attachments-list', ['attachments' => $page->attachments])
                     @include('partials.page-section-nav', ['page' => $page])
-                </main>
+                </article>
 
-                {{-- Prawa: spis treści + podstrony sekcji --}}
+                {{-- Prawa: spis treści + podstrony działu (płaskie panele na tle, bez ramek) --}}
                 @if ($hasSidebar)
-                    <aside class="space-y-6 lg:sticky lg:top-24 lg:self-start">
+                    <aside aria-label="Kolumna boczna" class="space-y-6 print:hidden lg:sticky lg:top-24 lg:self-start">
                         @if ($portalToc)
                             @include('partials.page-toc', ['toc' => $portalToc, 'variant' => 'desktop'])
                         @endif
                         @if ($menuSiblings->isNotEmpty() && ! $portalTabs)
-                            {{-- Menu działu ma własny panel (tło, tytuł działu) — bez dodatkowej ramki. --}}
                             @include('partials.page-local-nav', ['menuSiblings' => $menuSiblings])
                         @endif
                     </aside>
@@ -108,82 +116,65 @@
 
     {{-- ===== GALERIA (pełna szerokość) ===== --}}
     @if ($galleryImages->isNotEmpty())
-        <section class="border-t border-gray-100 bg-gray-50 py-12" aria-label="Galeria zdjęć">
+        <section class="bg-gray-50 py-12" aria-labelledby="portal-gallery-heading">
             <div class="mx-auto max-w-6xl px-4">
-                <h2 class="mb-6 flex items-center gap-2 text-2xl font-bold text-ink">
-                    <i class="fa-solid fa-images text-brand" aria-hidden="true"></i>
+                <h2 id="portal-gallery-heading" class="mb-6 flex items-center gap-2 text-2xl font-bold text-ink">
+                    <i class="fa-solid fa-images text-brand-dark" aria-hidden="true"></i>
                     Galeria zdjęć
                 </h2>
-                <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4" data-lightbox>
+                <ul class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4" data-lightbox role="list">
                     @foreach ($galleryImages as $image)
-                        <figure class="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
-                            <a href="{{ $image->image_url }}" data-lightbox-src="{{ $image->image_url }}" class="block">
-                                <img src="{{ $image->image_url }}"
-                                     alt="{{ $image->alt }}"
-                                     loading="lazy"
-                                     class="h-44 w-full object-cover transition hover:opacity-90">
-                            </a>
-                            @if ($image->caption)
-                                <figcaption class="px-3 py-2 text-xs text-muted">{{ $image->caption }}</figcaption>
-                            @endif
-                        </figure>
+                        <li>
+                            <figure class="h-full overflow-hidden rounded-md bg-white">
+                                <a href="{{ $image->image_url }}" data-lightbox-src="{{ $image->image_url }}" class="block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">
+                                    <img src="{{ $image->image_url }}"
+                                         alt="{{ $image->alt }}"
+                                         loading="lazy"
+                                         class="h-44 w-full object-cover">
+                                </a>
+                                @if ($image->caption)
+                                    <figcaption class="px-3 py-2 text-sm text-muted">{{ $image->caption }}</figcaption>
+                                @endif
+                            </figure>
+                        </li>
                     @endforeach
-                </div>
+                </ul>
             </div>
         </section>
     @endif
 
-    {{-- ===== KONTAKT ===== --}}
+    {{-- ===== KONTAKT: płaski pas na jasnym tle marki ===== --}}
     @if ($siteSettings->contact_address || $siteSettings->contact_email || $siteSettings->contact_phone)
-        <section class="bg-brand text-white" aria-label="Dane kontaktowe">
+        <section class="bg-brand-light" aria-labelledby="portal-contact-heading">
             <div class="mx-auto max-w-6xl px-4 py-10">
-                <h2 class="mb-6 text-xl font-bold">Kontakt</h2>
-                <div class="flex flex-wrap gap-10">
+                <h2 id="portal-contact-heading" class="mb-6 text-xl font-bold text-ink">Kontakt</h2>
+                <dl class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
                     @if ($siteSettings->contact_address || $siteSettings->contact_city)
-                        <div class="flex items-start gap-3">
-                            <span class="flex h-10 w-10 flex-none items-center justify-center rounded-full bg-white/15" aria-hidden="true">
-                                <i class="fa-solid fa-location-dot"></i>
-                            </span>
-                            <div>
-                                <p class="text-sm font-bold uppercase tracking-wide text-white/70">Adres</p>
-                                <p class="font-medium">{{ $siteSettings->contact_address }}</p>
+                        <div>
+                            <dt class="flex items-center gap-2 text-sm font-bold uppercase tracking-wide text-muted"><i class="fa-solid fa-location-dot w-5 text-center text-brand-dark" aria-hidden="true"></i> Adres</dt>
+                            <dd class="mt-1 pl-7 font-medium text-ink">
+                                {{ $siteSettings->contact_address }}
                                 @if ($siteSettings->contact_city)
-                                    <p class="text-white/85">{{ $siteSettings->contact_city }}</p>
+                                    <span class="block">{{ $siteSettings->contact_city }}</span>
                                 @endif
-                            </div>
+                            </dd>
                         </div>
                     @endif
 
                     @if ($siteSettings->contact_email)
-                        <div class="flex items-start gap-3">
-                            <span class="flex h-10 w-10 flex-none items-center justify-center rounded-full bg-white/15" aria-hidden="true">
-                                <i class="fa-solid fa-envelope"></i>
-                            </span>
-                            <div>
-                                <p class="text-sm font-bold uppercase tracking-wide text-white/70">E-mail</p>
-                                <a href="mailto:{{ $siteSettings->contact_email }}"
-                                   class="font-medium hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white">
-                                    {{ $siteSettings->contact_email }}
-                                </a>
-                            </div>
+                        <div>
+                            <dt class="flex items-center gap-2 text-sm font-bold uppercase tracking-wide text-muted"><i class="fa-solid fa-envelope w-5 text-center text-brand-dark" aria-hidden="true"></i> E-mail</dt>
+                            <dd class="mt-1 pl-7"><a href="mailto:{{ $siteSettings->contact_email }}" class="{{ $link }}">{{ $siteSettings->contact_email }}</a></dd>
                         </div>
                     @endif
 
                     @if ($siteSettings->contact_phone)
-                        <div class="flex items-start gap-3">
-                            <span class="flex h-10 w-10 flex-none items-center justify-center rounded-full bg-white/15" aria-hidden="true">
-                                <i class="fa-solid fa-phone"></i>
-                            </span>
-                            <div>
-                                <p class="text-sm font-bold uppercase tracking-wide text-white/70">Telefon</p>
-                                <a href="tel:{{ preg_replace('/\s+/', '', $siteSettings->contact_phone) }}"
-                                   class="font-medium hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white">
-                                    {{ $siteSettings->contact_phone }}
-                                </a>
-                            </div>
+                        <div>
+                            <dt class="flex items-center gap-2 text-sm font-bold uppercase tracking-wide text-muted"><i class="fa-solid fa-phone w-5 text-center text-brand-dark" aria-hidden="true"></i> Telefon</dt>
+                            <dd class="mt-1 pl-7"><a href="tel:{{ preg_replace('/\s+/', '', $siteSettings->contact_phone) }}" class="{{ $link }}">{{ $siteSettings->contact_phone }}</a></dd>
                         </div>
                     @endif
-                </div>
+                </dl>
             </div>
         </section>
     @endif

@@ -1,7 +1,12 @@
 @extends('layouts.minimal')
 
+{{--
+    Szablon „Minimalny" — uproszczony układ (layouts.minimal), wąska kolumna treści.
+    Płasko: H1, szary pasek z datą aktualizacji, treść; bez ramek i kolorowych wyróżnień.
+--}}
+
 @section('title', ($page->meta_title ?: $page->title) . ' — ' . $siteSettings->site_name)
-@section('meta_description', $page->meta_description ?: \Illuminate\Support\Str::limit(trim(strip_tags(str_replace('<', ' <', $page->content))), 160))
+@section('meta_description', $page->meta_description ?: meta_excerpt($page->content))
 
 @section('content')
     @if ($page->showsPlaceholder())
@@ -18,19 +23,26 @@
         $canInlineEdit = auth('web')->check() && auth('web')->user()->canAccessModule('pages');
         $contentHasShortcode = \App\Support\ShortcodeParser::has($page->content);
     @endphp
-    <div @if ($canInlineEdit) x-data="inlineContentEditor('page', {{ $page->id }}, '{{ route('admin.inline-edit.update') }}', { engine: '{{ $siteSettings->contentEditorValue() }}', uploadUrl: '{{ route('admin.multimedia.upload-ajax') }}' })" @endif>
+    <div data-page-template="minimal" @if ($canInlineEdit) x-data="inlineContentEditor('page', {{ $page->id }}, '{{ route('admin.inline-edit.update') }}', { engine: '{{ $siteSettings->contentEditorValue() }}', uploadUrl: '{{ route('admin.multimedia.upload-ajax') }}' })" @endif>
         @if ($canInlineEdit)
             @include('partials.inline-edit-bar')
         @endif
 
-        <div class="mx-auto max-w-4xl px-4 py-12">
-            @if ($canInlineEdit)
-                <h1 data-inline-field="title" data-inline-kind="text"
-                    :class="editMode ? 'outline-dashed outline-2 outline-offset-4 outline-brand rounded' : ''"
-                    class="mb-8 text-3xl font-bold text-ink">{{ $page->title }}</h1>
-            @else
-                <h1 class="mb-8 text-3xl font-bold text-ink">{{ $page->title }}</h1>
-            @endif
+        <article class="mx-auto max-w-3xl px-4 py-12">
+            <header class="mb-8">
+                @if ($canInlineEdit)
+                    <h1 data-inline-field="title" data-inline-kind="text"
+                        :class="editMode ? 'outline-dashed outline-2 outline-offset-4 outline-brand rounded' : ''"
+                        class="text-3xl font-extrabold leading-tight tracking-tight text-ink md:text-4xl">{{ $page->title }}</h1>
+                @else
+                    <h1 class="text-3xl font-extrabold leading-tight tracking-tight text-ink md:text-4xl">{{ $page->title }}</h1>
+                @endif
+                @if ($page->updated_at)
+                    <p class="mt-4 rounded-md bg-gray-50 px-4 py-3 text-sm text-muted">
+                        Zaktualizowano <time datetime="{{ $page->updated_at->toDateString() }}" class="font-bold text-ink">{{ $page->updated_at->locale('pl')->translatedFormat('j F Y') }}</time>
+                    </p>
+                @endif
+            </header>
 
             @include('partials.page-content-image')
 
@@ -44,7 +56,7 @@
 
             @include('partials.page-gallery', ['page' => $page])
             @include('partials.attachments-list', ['attachments' => $page->attachments])
-        </div>
+        </article>
     </div>
 
     @endif
