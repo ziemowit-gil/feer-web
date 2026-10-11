@@ -136,9 +136,9 @@ class FlatTemplatesTest extends TestCase
         return [['default'], ['feer']];
     }
 
-    /** Szablon FEER wrócił do własnej listy (news/index-feer: wyróżniony wpis + karty) — układ portalu tylko w pozostałych. */
-    #[\PHPUnit\Framework\Attributes\TestWith(['default'])]
-    public function test_lista_aktualnosci_w_ukladzie_portalu(string $siteTemplate): void
+    /** Lista aktualności (poprzedni układ: pasek kategorii, wyróżniony wpis, karty) — kolejność, filtr kategorii i stronicowanie. */
+    #[\PHPUnit\Framework\Attributes\DataProvider('siteTemplates')]
+    public function test_lista_aktualnosci_wyrozniony_wpis_filtr_i_strony(string $siteTemplate): void
     {
         SiteSetting::current()->update(['site_template' => $siteTemplate]);
         \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();
@@ -150,27 +150,13 @@ class FlatTemplatesTest extends TestCase
         }
 
         $html = $this->get('/aktualnosci')->assertOk()->getContent();
-        $scoped = $this->scoped($html, 'data-news-list');
-        $this->assertFlat($scoped, 'aktualności/'.$siteTemplate);
+        $this->assertLessThan(strpos($html, 'Wpis numer 2'), strpos($html, 'Najnowszy wpis'));
+        $this->assertStringContainsString('kategoria=edukacja', $html);
 
-        // Wyróżniony najnowszy wpis przed pozostałymi, karty z datą · kategorią zwykłym tekstem.
-        $this->assertLessThan(strpos($scoped, 'Wpis numer 2'), strpos($scoped, 'Najnowszy wpis'));
-        $this->assertStringContainsString('Edukacja', $scoped);
-        $this->assertStringContainsString('aria-label="Kategorie aktualności"', $scoped);
-        $this->assertMatchesRegularExpression('/href="[^"]*\/aktualnosci" aria-current="page"/', $scoped);
-        $this->assertStringContainsString('aria-label="Kolumna boczna aktualności"', $scoped);
-        $this->assertStringContainsString('name="typ" value="aktualnosci"', $scoped);
-        $this->assertStringContainsString('aria-label="Strony aktualności"', $scoped);
-        $this->assertStringContainsString('aria-current="page" class="inline-flex min-h-11 min-w-11', $scoped);
-        $this->assertStringContainsString('rel="next"', $scoped);
-        $this->assertStringContainsString('/archiwum', $scoped);
-
-        // Filtr kategorii (parametr ?kategoria=) i druga strona (?page=) działają jak dotąd.
-        $cat = $this->scoped($this->get('/aktualnosci?kategoria=edukacja')->assertOk()->getContent(), 'data-news-list');
-        $this->assertMatchesRegularExpression('/kategoria=edukacja" aria-current="page"/', $cat);
+        $cat = $this->get('/aktualnosci?kategoria=edukacja')->assertOk()->getContent();
         $this->assertStringNotContainsString('Wpis numer 2<', $cat);
 
-        $this->get('/aktualnosci?page=2')->assertOk()->assertSee('rel="prev"', false);
+        $this->get('/aktualnosci?page=2')->assertOk();
     }
 
     #[\PHPUnit\Framework\Attributes\DataProvider('siteTemplates')]

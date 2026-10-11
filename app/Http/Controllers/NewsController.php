@@ -54,13 +54,10 @@ class NewsController extends Controller
             ->paginate(9)
             ->withQueryString();
 
-        // Zapis na newsletter w kolumnie bocznej (ten sam firmowy formularz co na stronie działu).
-        $newsletter = PageController::sectionNewsletterDefaults();
-
-        // Szablon FEER ma własny wariant listy aktualności (mikrointerakcje kart).
+        // Szablon FEER ma własny układ listy aktualności (wyróżniony wpis + płaskie karty).
         $view = $settings->site_template === 'feer' ? 'news.index-feer' : 'news.index';
 
-        return view($view, compact('news', 'categories', 'activeCategory', 'newsletter'));
+        return view($view, compact('news', 'categories', 'activeCategory'));
     }
 
     /** Wyświetla stronę szczegółów aktualności; obsługuje tryb podglądu szkicu. */
