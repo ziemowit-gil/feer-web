@@ -25,7 +25,7 @@
                 @if ($szoUrl === '')
                     <span class="font-bold text-red-700">Brak adresu SZO — wpisz go w <a href="{{ route('admin.ustawienia.edit', ['tab' => 'login']) }}" class="underline">Ustawienia → Logowanie i integracje → SZO</a> (lub ustaw <code>SZO_URL</code> w pliku .env).</span>
                 @else
-                    Źródło: <a href="{{ $szoUrl }}/klauzule.json" class="font-mono text-brand-dark underline" target="_blank" rel="noopener">{{ $szoUrl }}/klauzule.json<span class="sr-only"> (otwiera się w nowej karcie)</span></a>
+                    Źródło: <a href="{{ $szoUrl }}{{ \App\Services\SzoClient::CLAUSES_DIRECT_PATH }}" class="font-mono text-brand-dark underline" target="_blank" rel="noopener">{{ $szoUrl }}/klauzule.json<span class="sr-only"> (otwiera się w nowej karcie)</span></a>
                 @endif
                 <br>
                 @if ($lastRun)

@@ -52,12 +52,12 @@ class SzoClient
         }
 
         try {
-            $public = Http::timeout(10)->acceptJson()->get($url . '/klauzule.json');
+            $public = self::fetchClausesList($url, 10);
         } catch (Throwable $e) {
             return ['ok' => false, 'level' => 'error', 'message' => 'Nie udało się połączyć z SZO: ' . $e->getMessage()];
         }
         if (! $public->successful()) {
-            return ['ok' => false, 'level' => 'error', 'message' => "SZO odpowiedziało HTTP {$public->status()} dla /klauzule.json — sprawdź adres."];
+            return ['ok' => false, 'level' => 'error', 'message' => "SZO odpowiedziało HTTP {$public->status()} dla listy klauzul RODO (/klauzule.json i " . self::CLAUSES_DIRECT_PATH . ') — sprawdź adres.'];
         }
 
         if (trim($token) === '') {
@@ -317,8 +317,30 @@ class SzoClient
             ->asJson();
     }
 
+    /** Bezpośredni adres listy klauzul w SZO — gdy serwer (np. nginx przed Apache) nie przepuszcza /klauzule.json do reguły .htaccess. */
+    public const CLAUSES_DIRECT_PATH = '/modules/gdpr_clauses/public/list.php';
+
     /**
-     * Opublikowane klauzule RODO z SZO (GET /klauzule.json).
+     * Pobiera listę klauzul: najpierw ładny adres /klauzule.json, a gdy serwer go nie
+     * obsłuży (403/404 — np. nginx serwuje *.json jako pliki statyczne i nie dochodzi
+     * do reguły .htaccess) — adres bezpośredni skryptu.
+     */
+    public static function fetchClausesList(string $base, int $timeout): \Illuminate\Http\Client\Response
+    {
+        $base = rtrim($base, '/');
+        $res = Http::timeout($timeout)->acceptJson()->get($base . '/klauzule.json');
+        if (! $res->successful() || ! is_array($res->json('clauses'))) {
+            $direct = Http::timeout($timeout)->acceptJson()->get($base . self::CLAUSES_DIRECT_PATH);
+            if ($direct->successful() || ! $res->successful()) {
+                return $direct;
+            }
+        }
+
+        return $res;
+    }
+
+    /**
+     * Opublikowane klauzule RODO z SZO (GET /klauzule.json, zapasowo adres bezpośredni).
      *
      * Wymaga tylko SZO_URL — to publiczne dane (te same co /klauzula/{slug}),
      * więc bez tokenu i niezależnie od SZO_ENABLED (który dotyczy wysyłki
@@ -336,15 +358,13 @@ class SzoClient
         }
 
         try {
-            $res = Http::timeout(max(15, (int) config('szo.timeout', 5)))
-                ->acceptJson()
-                ->get($base . '/klauzule.json');
+            $res = self::fetchClausesList($base, max(15, (int) config('szo.timeout', 5)));
         } catch (Throwable $e) {
             throw new \RuntimeException('Nie udało się połączyć z SZO: ' . $e->getMessage(), 0, $e);
         }
 
         if (! $res->successful()) {
-            throw new \RuntimeException("SZO odpowiedziało HTTP {$res->status()} dla /klauzule.json.");
+            throw new \RuntimeException("SZO odpowiedziało HTTP {$res->status()} dla listy klauzul (/klauzule.json i " . self::CLAUSES_DIRECT_PATH . ').');
         }
         if (! $res->json('ok') || ! is_array($res->json('clauses'))) {
             throw new \RuntimeException('SZO zwróciło nieoczekiwaną odpowiedź zamiast listy klauzul.');
