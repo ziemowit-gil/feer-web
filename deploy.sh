@@ -18,7 +18,7 @@
 # Zmienne środowiskowe (opcjonalne):
 #   PHP_BIN       binarka PHP CLI                (domyślnie: php84)
 #   COMPOSER_BIN  binarka Composer               (domyślnie: composer84)
-#   COMPOSER_CMD  update | install               (domyślnie: update — jak dotąd; install = wersje z composer.lock)
+#   COMPOSER_CMD  install | update               (domyślnie: install — dokładnie wersje z composer.lock)
 #   NPM_BIN       binarka npm                    (domyślnie: najnowsza z /opt/alt/alt-nodejs24|22|20, potem npm z PATH)
 #   BRANCH        gałąź do pobrania              (domyślnie: main)
 #
@@ -63,19 +63,30 @@ mark() { SUMMARY+=("$1|$2"); }
 
 # ─── Konfiguracja ─────────────────────────────────────────────────────────────
 
+# PHP: php84 bywa na hostingu tylko ALIASEM powłoki (działa w terminalu, ale nie
+# w skrypcie) — dlatego poza poleceniami z PATH sprawdzamy też ścieżki CloudLinux
+# (/opt/alt/phpXX/usr/bin/php). Kolejność: 8.4 → 8.5 → 8.3 → php.
 if [ -z "${PHP_BIN:-}" ]; then
-    if php84 -v >/dev/null 2>&1; then
-        PHP_BIN="php84"
-    elif php85 -v >/dev/null 2>&1; then
-        PHP_BIN="php85"
-    elif php83 -v >/dev/null 2>&1; then
-        PHP_BIN="php83"
-    else
-        PHP_BIN="php"
-    fi
+    for _p in php84 /opt/alt/php84/usr/bin/php /usr/local/bin/php84 \
+              php85 /opt/alt/php85/usr/bin/php /usr/local/bin/php85 \
+              php83 /opt/alt/php83/usr/bin/php php; do
+        if command -v "$_p" >/dev/null 2>&1 && "$_p" -v >/dev/null 2>&1; then
+            PHP_BIN="$_p"
+            break
+        fi
+    done
+    unset _p
+fi
+PHP_BIN="${PHP_BIN:-php}"
+# Wymagane PHP >= 8.4 (zależności Composera) — przerwij od razu z jasnym komunikatem.
+if ! "$PHP_BIN" -r 'exit(version_compare(PHP_VERSION, "8.4.0", ">=") ? 0 : 1);' 2>/dev/null; then
+    printf "\n  ✗  Znalezione PHP (%s, wersja %s) jest starsze niż 8.4.\n" "$PHP_BIN" "$("$PHP_BIN" -r 'echo PHP_VERSION;' 2>/dev/null)"
+    printf "     Wskaż PHP 8.4 ręcznie, np.:  PHP_BIN=/opt/alt/php84/usr/bin/php ./deploy.sh\n"
+    printf "     (ścieżkę pokaże: type php84  albo  ls /opt/alt/ | grep php)\n\n"
+    exit 1
 fi
 COMPOSER_BIN="${COMPOSER_BIN:-composer84}"
-COMPOSER_CMD="${COMPOSER_CMD:-update}"
+COMPOSER_CMD="${COMPOSER_CMD:-install}"
 
 # Jeśli composer84 nie jest dostępny w PATH, szukamy alternatyw.
 if ! command -v "$COMPOSER_BIN" >/dev/null 2>&1; then
