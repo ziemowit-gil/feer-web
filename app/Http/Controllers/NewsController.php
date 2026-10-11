@@ -67,19 +67,59 @@ class NewsController extends Controller
     {
         $preview = $this->isPreviewRequest($request);
         abort_unless(($news->is_published && $news->published_at <= now()) || $preview, 404);
-        $news->load(['category', 'tags', 'etr']);
+        $news->load(['category', 'tags', 'etr', 'project']);
 
         // Własny kolor akcentu ma priorytet; w przeciwnym razie preset grupy docelowej.
         $brandColor = $news->accent_color ?: SiteSetting::current()->audienceColor($news->audience);
 
-        // Szablon FEER ma własny widok wpisu (nagłówek z zajawką, narzędzia artykułu z boku).
-        if (SiteSetting::current()->site_template === 'feer') {
-            $related = News::published()->forCurrentSite()->with('category')->where('id', '!=', $news->id)->orderByDesc('published_at')->limit(3)->get();
+        // Układ „portal": kolumna boczna z najnowszymi wpisami działu + „Zobacz także" (4 karty).
+        $isPortal = ($news->article_layout ?? 'default') === 'portal';
+        $categoryNews = $isPortal ? $this->categoryNews($news, 6) : collect();
+        $isFeer = SiteSetting::current()->site_template === 'feer';
 
-            return view('news.show-feer', compact('news', 'brandColor', 'preview', 'related'));
+        if ($isPortal) {
+            $related = $this->relatedNews($news, 4, $categoryNews->pluck('id')->all());
+        } elseif ($isFeer) {
+            $related = News::published()->forCurrentSite()->with('category')->where('id', '!=', $news->id)->orderByDesc('published_at')->limit(3)->get();
+        } else {
+            $related = collect();
         }
 
-        return view('news.show', compact('news', 'brandColor', 'preview'));
+        // Szablon FEER ma własny widok wpisu (nagłówek z zajawką, narzędzia artykułu z boku).
+        $view = $isFeer ? 'news.show-feer' : 'news.show';
+
+        return view($view, compact('news', 'brandColor', 'preview', 'related', 'categoryNews'));
+    }
+
+    /** Najnowsze inne opublikowane wpisy z tej samej kategorii (kolumna boczna układu „portal"). */
+    private function categoryNews(News $news, int $limit)
+    {
+        if (! $news->news_category_id) {
+            return collect();
+        }
+
+        return News::published()->forCurrentSite()
+            ->where('news_category_id', $news->news_category_id)
+            ->where('id', '!=', $news->id)
+            ->orderByDesc('published_at')
+            ->limit($limit)
+            ->get();
+    }
+
+    /**
+     * „Zobacz także": najpierw wpisy z tej samej kategorii, potem najnowsze pozostałe.
+     * Pomija bieżący wpis i te już widoczne w kolumnie bocznej.
+     */
+    private function relatedNews(News $news, int $limit, array $exclude = [])
+    {
+        return News::published()->forCurrentSite()->with('category')
+            ->whereNotIn('id', array_merge([$news->id], $exclude))
+            ->when($news->news_category_id, fn ($q) => $q->orderByRaw(
+                'CASE WHEN news_category_id = ? THEN 0 ELSE 1 END', [$news->news_category_id]
+            ))
+            ->orderByDesc('published_at')
+            ->limit($limit)
+            ->get();
     }
 
     /**

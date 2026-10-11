@@ -274,7 +274,7 @@ class NewsController extends Controller
             'image_alt' => ['nullable', 'string', 'max:255'],
             'image_focal_x' => ['nullable', 'integer', 'min:0', 'max:100'],
             'image_focal_y' => ['nullable', 'integer', 'min:0', 'max:100'],
-            'article_layout' => ['nullable', Rule::in(['default', 'side', 'wide', 'none'])],
+            'article_layout' => ['nullable', Rule::in(['default', 'side', 'wide', 'none', 'portal'])],
             'content' => ['nullable', 'string'],
             'published_at' => ['required', 'date'],
             'image' => ['nullable', 'image', 'max:4096'],

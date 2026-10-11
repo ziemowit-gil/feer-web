@@ -66,6 +66,11 @@
         $isSide        = $articleLayout === 'side' && $img;
     @endphp
 
+    @if ($articleLayout === 'portal')
+        {{-- Układ „portal": artykuł + kolumna boczna działu + „Zobacz także" (wspólny dla obu szablonów). --}}
+        @include('news._portal')
+    @else
+
     {{-- Układ "obok": max-w-5xl, żeby było miejsce na dwie kolumny --}}
     <section class="mx-auto px-4 py-12 {{ $isSide ? 'max-w-5xl' : 'max-w-2xl' }}" x-data="audioPlayer()">
         @if ($news->is_legacy)
@@ -144,6 +149,7 @@
             @include('partials.attachments-list', ['attachments' => $news->attachments])
         </div>
     </section>
+    @endif
 
     @if ($canQuickEdit)
         </div>
