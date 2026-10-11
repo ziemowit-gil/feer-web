@@ -3,10 +3,9 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\BipDocument;
-use App\Models\NavItem;
 use App\Models\Page;
 use App\Models\SiteSetting;
+use App\Support\BipSite;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
@@ -48,10 +47,7 @@ class SiteController extends Controller
 
         // Witryna BIP startuje z ustawieniami BIP witryny nadrzędnej (wstęp, redakcja, logo BIP).
         if (($data['site_kind'] ?? 'standard') === 'bip') {
-            foreach (['bip_intro', 'bip_editor_name', 'bip_editor_email', 'bip_gov_url', 'bip_show_reports'] as $field) {
-                $data[$field] = $parent->{$field};
-            }
-            $data['bip_mode'] = 'internal';
+            $data += BipSite::inheritedAttributes($parent);
         }
 
         $site = SiteSetting::create($data);
@@ -61,7 +57,7 @@ class SiteController extends Controller
         }
 
         if ($site->isBipSite()) {
-            $parent->getFirstMedia('bip_logo')?->copy($site, 'bip_logo');
+            BipSite::copyLogo($parent, $site);
             $this->moveBipContent($request, $site);
         }
 
@@ -119,17 +115,18 @@ class SiteController extends Controller
      */
     private function moveBipContent(Request $request, SiteSetting $site): void
     {
-        if (! $request->boolean('move_bip_content') || ! $site->parent_site_id) {
-            return;
+        if ($request->boolean('move_bip_content')) {
+            BipSite::moveContent($site);
         }
-
-        BipDocument::withTrashed()->where('site_id', $site->parent_site_id)->update(['site_id' => $site->id]);
-        NavItem::where('site_id', $site->parent_site_id)->where('location', 'bip')->update(['site_id' => $site->id]);
     }
 
     private function validated(Request $request, ?SiteSetting $site = null): array
     {
         $reserved = array_merge(Page::RESERVED_SLUGS, ['site']);
+        // Witryna BIP może mieć adres /bip — pod nim i tak jest pokazywany BIP witryny nadrzędnej.
+        if ($request->input('site_kind', $site?->site_kind) === 'bip') {
+            $reserved = array_values(array_diff($reserved, ['bip']));
+        }
         $parentId = $site?->parent_site_id ?? SiteSetting::current()->id;
 
         return $request->validate([

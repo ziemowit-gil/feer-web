@@ -22,11 +22,7 @@ class BipController extends Controller
      */
     public function index(Request $request)
     {
-        $settings = SiteSetting::current();
-
-        if ($redirect = $this->redirectToBipSite($settings, '', $request->getQueryString())) {
-            return $redirect;
-        }
+        $settings = $this->useBipSite();
 
         // Nagłówek i menu boczne BIP zaznaczają „Stronę główną BIP" — także wtedy,
         // gdy to strona główna witryny BIP (HomeController), a nie trasa /bip.
@@ -86,21 +82,13 @@ class BipController extends Controller
     /** Instrukcja korzystania z BIP (wymóg rozporządzenia w sprawie BIP). */
     public function instructions()
     {
-        if ($redirect = $this->redirectToBipSite(SiteSetting::current(), 'bip/instrukcja')) {
-            return $redirect;
-        }
-
-        return view('bip.instructions', ['isExternal' => (SiteSetting::current()->bip_mode ?? 'internal') === 'external']);
+        return view('bip.instructions', ['isExternal' => ($this->useBipSite()->bip_mode ?? 'internal') === 'external']);
     }
 
     /** Wyświetla treść pojedynczego dokumentu BIP z historią edycji. */
     public function show(string $bipSlug)
     {
-        $settings = SiteSetting::current();
-
-        if ($redirect = $this->redirectToBipSite($settings, 'bip/'.$bipSlug)) {
-            return $redirect;
-        }
+        $settings = $this->useBipSite();
 
         if (($settings->bip_mode ?? 'internal') === 'external') {
             return redirect()->to(bip_route('bip'));
@@ -125,11 +113,7 @@ class BipController extends Controller
     /** Publiczny rejestr zmian BIP (tylko w trybie wbudowanym). */
     public function changeLog(Request $request)
     {
-        $settings = SiteSetting::current();
-
-        if ($redirect = $this->redirectToBipSite($settings, 'bip/rejestr-zmian', $request->getQueryString())) {
-            return $redirect;
-        }
+        $settings = $this->useBipSite();
 
         if (($settings->bip_mode ?? 'internal') === 'external') {
             return redirect()->to(bip_route('bip'));
@@ -150,20 +134,23 @@ class BipController extends Controller
     }
 
     /**
-     * Gdy witryna ma w sieci osobną witrynę BIP (np. bip.feer.org.pl), jej
-     * dotychczasowe adresy /bip… przekierowują tam na stałe.
+     * Gdy witryna ma w sieci osobną witrynę BIP (np. bip.feer.org.pl), jej adresy
+     * /bip… pokazują BIP tej witryny — te same dokumenty, logo i nagłówek co pod
+     * jej własnym adresem — z linkami zostającymi pod /bip (patrz bip_route()).
      */
-    private function redirectToBipSite(SiteSetting $settings, string $path, ?string $query = null)
+    private function useBipSite(): SiteSetting
     {
+        $settings = SiteSetting::current();
         $bipSite = $settings->bipSite();
 
         if (! $bipSite || $bipSite->is($settings)) {
-            return null;
+            return $settings;
         }
 
-        $url = rtrim(current_site_url($bipSite), '/').($path !== '' ? '/'.$path : '');
+        app()->instance(SiteSetting::CURRENT_SITE_BINDING, $bipSite);
+        request()->attributes->set('bip_mounted', true);
 
-        return redirect()->away($url.($query ? '?'.$query : ''), 301);
+        return $bipSite;
     }
 
     /** Identyfikatory dokumentów BIP bieżącej witryny (także usuniętych) — do rejestru zmian. */

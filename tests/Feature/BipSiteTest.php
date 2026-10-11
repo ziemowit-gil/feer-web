@@ -67,11 +67,32 @@ class BipSiteTest extends TestCase
         $this->get('/bip-fundacji/bip/statut')->assertOk()->assertSee('Statut w BIP');
     }
 
-    public function test_main_site_bip_redirects_to_bip_site(): void
+    public function test_main_site_bip_path_shows_bip_site(): void
     {
-        $this->get('/bip')->assertRedirect('https://bip.example.test');
-        $this->get('/bip/statut')->assertRedirect('https://bip.example.test/bip/statut');
-        $this->get('/bip/rejestr-zmian')->assertRedirect('https://bip.example.test/bip/rejestr-zmian');
+        $this->document($this->bip, 'Statut w BIP', 'statut');
+        $this->document($this->main, 'Dokument głównej witryny', 'inny');
+
+        $this->get('/bip')
+            ->assertOk()
+            ->assertSee('Statut w BIP')
+            ->assertDontSee('Dokument głównej witryny')
+            ->assertSee(url('/bip/statut'), false)
+            ->assertSee(url('/bip/rejestr-zmian'), false);
+
+        $this->forgetCurrentSite();
+        $this->get('/bip/statut')->assertOk()->assertSee('Statut w BIP')->assertSee('href="'.url('/bip').'" class="underline', false);
+        $this->forgetCurrentSite();
+        $this->get('/bip/inny')->assertNotFound();
+        $this->forgetCurrentSite();
+        $this->get('/bip/rejestr-zmian')->assertOk()->assertSee('BIP Fundacji');
+        $this->forgetCurrentSite();
+        $this->get('/bip/instrukcja')->assertOk()->assertSee('BIP Fundacji');
+    }
+
+    /** Aplikacja w teście żyje między żądaniami — witryna związana przez poprzednie żądanie nie może przeciekać. */
+    private function forgetCurrentSite(): void
+    {
+        app()->forgetInstance(SiteSetting::CURRENT_SITE_BINDING);
     }
 
     public function test_main_site_links_to_bip_site(): void
@@ -100,5 +121,34 @@ class BipSiteTest extends TestCase
         $this->actingAs($admin)->post(route('admin.witryny.store'), [
             'site_name' => 'BIP 2', 'slug' => 'biuletyn-2', 'site_kind' => 'bip',
         ])->assertSessionHasErrors('site_kind');
+    }
+
+    public function test_seeder_creates_bip_site_under_bip_path_and_moves_documents(): void
+    {
+        $this->bip->delete();
+        $document = $this->document($this->main, 'Statut', 'statut');
+
+        $this->seed(\Database\Seeders\BipSiteSeeder::class);
+        $this->seed(\Database\Seeders\BipSiteSeeder::class); // idempotentny
+
+        $site = SiteSetting::where('site_kind', 'bip')->sole();
+        $this->assertSame('bip', $site->slug);
+        $this->assertSame($site->id, $document->fresh()->site_id);
+        $this->assertSame(url('/bip'), SiteSetting::find($this->main->id)->bipHref());
+        $this->assertSame(url('/bip/statut'), $document->fresh()->publicUrl());
+
+        $this->forgetCurrentSite();
+        $this->get('/bip')->assertOk()->assertSee('Statut');
+    }
+
+    public function test_bip_slug_is_allowed_only_for_bip_site(): void
+    {
+        $this->bip->delete();
+        $admin = \App\Models\User::factory()->create(['role' => 'admin']);
+
+        $this->actingAs($admin)->post(route('admin.witryny.store'), ['site_name' => 'Ośrodek', 'slug' => 'bip', 'site_kind' => 'standard'])
+            ->assertSessionHasErrors('slug');
+        $this->actingAs($admin)->post(route('admin.witryny.store'), ['site_name' => 'BIP', 'slug' => 'bip', 'site_kind' => 'bip'])
+            ->assertSessionHasNoErrors();
     }
 }

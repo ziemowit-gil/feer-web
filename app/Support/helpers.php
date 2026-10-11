@@ -41,10 +41,16 @@ if (! function_exists('site_route')) {
 if (! function_exists('bip_route')) {
     /**
      * Adres strony BIP w obrębie bieżącej witryny. Na witrynie rodzaju „bip”
-     * stroną główną BIP jest strona główna witryny, więc „bip” wskazuje na nią.
+     * stroną główną BIP jest strona główna witryny, więc „bip” wskazuje na nią
+     * (chyba że witryna BIP jest pokazywana pod /bip witryny nadrzędnej).
      */
     function bip_route(string $name, mixed $parameters = []): string
     {
+        // Witryna BIP pokazywana pod /bip witryny nadrzędnej — linki zostają pod /bip.
+        if (request()?->attributes->get('bip_mounted')) {
+            return route($name, $parameters);
+        }
+
         if ($name === 'bip' && SiteSetting::current()->isBipSite()) {
             return site_route('home');
         }

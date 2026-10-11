@@ -94,6 +94,11 @@ class BipDocument extends Model implements HasMedia
     {
         $site = $this->site ?? SiteSetting::current();
 
+        // Witryna BIP bez własnej domeny głównej witryny jest pokazywana pod jej /bip.
+        if ($site->isBipSite() && ! $site->domain && ! $site->parentSite?->isSubsite()) {
+            return route('bip.document', $this->slug);
+        }
+
         if ($site->isSubsite()) {
             return rtrim(current_site_url($site), '/').'/bip/'.$this->slug;
         }
