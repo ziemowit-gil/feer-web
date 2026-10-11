@@ -40,13 +40,13 @@
             'accessibility' => 'fa-universal-access', 'support' => 'fa-hand-holding-heart', 'join' => 'fa-people-group', 'content' => 'fa-file-lines', 'modules' => 'fa-puzzle-piece',
             'homepage' => 'fa-house', 'template' => 'fa-clone', 'login' => 'fa-right-to-bracket', 'mail' => 'fa-envelope'];
     @endphp
-    <nav aria-label="Sekcje ustawień" class="rounded-lg border border-gray-200 bg-white" style="position:sticky;top:1rem;padding:.375rem;width:max-content;max-width:100%">
+    <nav aria-label="Sekcje ustawień" class="rounded-md bg-white" style="position:sticky;top:1rem;padding:.375rem;width:max-content;max-width:100%">
         <div class="flex items-center justify-between gap-2 pb-1 pt-0.5" :class="settingsNavCollapsed ? 'justify-center' : 'pl-2'">
             <p class="whitespace-nowrap text-[10px] font-bold uppercase tracking-wider text-muted" x-show="! settingsNavCollapsed">Sekcje ustawień</p>
             <button type="button" @click="toggleSettingsNav()" :aria-expanded="(! settingsNavCollapsed).toString()"
                 :aria-label="settingsNavCollapsed ? 'Rozwiń menu sekcji ustawień' : 'Zwiń menu sekcji ustawień do ikon'"
                 :title="settingsNavCollapsed ? 'Rozwiń menu' : 'Zwiń do ikon'"
-                class="flex h-6 w-6 flex-none items-center justify-center rounded text-gray-500 hover:bg-gray-100 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                class="flex h-6 w-6 flex-none items-center justify-center rounded text-gray-500 hover:bg-gray-100 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">
                 <i class="fa-solid text-[0.65rem]" :class="settingsNavCollapsed ? 'fa-angles-right' : 'fa-angles-left'" aria-hidden="true"></i>
             </button>
         </div>
@@ -55,8 +55,8 @@
                 <li>
                     <a href="{{ route('admin.ustawienia.edit', ['tab' => $tabKey]) }}" @click.prevent="tab = @js($tabKey)"
                         :aria-current="tab === @js($tabKey) ? 'page' : null"
-                        :class="tab === @js($tabKey) ? 'bg-brand-light font-bold text-brand' : 'text-ink hover:bg-gray-100 hover:text-brand'"
-                        class="flex items-center gap-2 whitespace-nowrap rounded-md px-2 text-[13px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+                        :class="tab === @js($tabKey) ? 'bg-brand-light font-bold text-brand-dark' : 'text-ink hover:bg-gray-100 hover:text-ink'"
+                        class="flex items-center gap-2 whitespace-nowrap rounded-md px-2 text-[13px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark"
                         :class="{ 'justify-center': settingsNavCollapsed }" title="{{ $tabLabel }}"
                         style="min-height:2rem">
                         <i class="fa-solid {{ $settingsIcons[$tabKey] ?? 'fa-gear' }} w-4 flex-none text-center text-[0.75rem] text-gray-400" aria-hidden="true"></i>
@@ -65,7 +65,7 @@
                 </li>
             @endforeach
             <li class="mt-1 border-t border-gray-100 pt-1">
-                <a href="{{ route('admin.ustawienia.env') }}" class="flex items-center gap-2 whitespace-nowrap rounded-md px-2 text-[13px] text-muted hover:bg-gray-100 hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand" style="min-height:2rem" :class="{ 'justify-center': settingsNavCollapsed }" title="Plik .env">
+                <a href="{{ route('admin.ustawienia.env') }}" class="flex items-center gap-2 whitespace-nowrap rounded-md px-2 text-[13px] text-muted hover:bg-gray-100 hover:text-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark" style="min-height:2rem" :class="{ 'justify-center': settingsNavCollapsed }" title="Plik .env">
                     <i class="fa-solid fa-file-code w-4 flex-none text-center text-[0.75rem] text-gray-400" aria-hidden="true"></i> <span :class="{ 'sr-only': settingsNavCollapsed }">Plik .env</span>
                 </a>
             </li>
@@ -74,7 +74,7 @@
 
     <div class="max-w-3xl space-y-6" style="min-width:0">
     @if (! empty($strefaConflict))
-        <div role="alert" class="rounded-lg border border-amber-300 bg-amber-50 p-4">
+        <div role="alert" class="rounded-md bg-amber-50 p-4">
             <div class="flex items-start gap-3">
                 <i class="fa-solid fa-triangle-exclamation mt-0.5 text-lg text-amber-600" aria-hidden="true"></i>
                 <div class="flex-1">
@@ -86,7 +86,7 @@
                         wewnętrzną z logowaniem Microsoft 365. Dotychczasowa treść zostanie zachowana.
                     </p>
                     <form method="POST" action="{{ route('admin.strefa.overwrite') }}" class="mt-3"
-                        onsubmit="return confirm('Nadpisać stronę /strefa-wspolpracownika-feer jako strefę współpracownika? Strona „{{ $strefaConflict->title }}" stanie się stroną wewnętrzną (logowanie MS365).')">
+                        onsubmit="return confirm('Nadpisać stronę /strefa-wspolpracownika-feer jako strefę współpracownika? Strona „{{ $strefaConflict->title }}” stanie się stroną wewnętrzną (logowanie MS365).')">
                         @csrf
                         <button type="submit"
                             class="inline-flex items-center gap-2 rounded bg-amber-600 px-4 py-2 text-sm font-bold text-white transition hover:bg-amber-700 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2">
@@ -102,7 +102,7 @@
          stąd lista na górze z przyciskiem przenoszącym do właściwej zakładki. --}}
     @if ($errors->any())
         <div id="settings-errors" role="alert" tabindex="-1"
-            class="rounded-lg border border-red-200 bg-red-50 p-5 text-sm text-red-800">
+            class="rounded-md bg-red-50 p-5 text-sm text-red-800">
             <p class="flex items-center gap-2 font-bold">
                 <i class="fa-solid fa-triangle-exclamation shrink-0" aria-hidden="true"></i>
                 Ustawienia nie zostały zapisane — popraw poniższe błędy:
@@ -125,7 +125,7 @@
          zakładce blokuje wysyłkę bez żadnego komunikatu („klikam i nic się nie
          dzieje"). Walidację robi serwer, a błędy pokazuje lista powyżej. --}}
     <form method="POST" action="{{ route('admin.ustawienia.update') }}" enctype="multipart/form-data" novalidate
-        class="rounded-lg border border-gray-200 bg-white p-6">
+        class="p-6 rounded-md bg-white">
         @csrf
         @method('PUT')
         <input type="hidden" name="_redirect_tab" :value="tab">
@@ -140,7 +140,7 @@
         <div>
             <label for="site_name" class="mb-1 block text-sm font-bold">Nazwa strony</label>
             <input type="text" id="site_name" name="site_name" value="{{ old('site_name', $settings->site_name) }}" required
-                class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
             @error('site_name') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
         </div>
 
@@ -150,7 +150,7 @@
             </label>
             <input type="text" id="site_name_genitive" name="site_name_genitive" value="{{ old('site_name_genitive', $settings->site_name_genitive) }}"
                 placeholder="np. Krakowskiego Forum Organizacji Społecznych"
-                class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
             <p class="mt-1 text-xs text-muted">Używana w zdaniach typu „Organizacje …”. Zostaw puste, jeśli nazwa strony nie odmienia się (np. akronim).</p>
             @error('site_name_genitive') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
         </div>
@@ -158,14 +158,14 @@
         <div>
             <label for="tagline" class="mb-1 block text-sm font-bold">Podtytuł (tagline)</label>
             <input type="text" id="tagline" name="tagline" value="{{ old('tagline', $settings->tagline) }}"
-                class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
             <p class="mt-1 text-xs text-muted">Wyświetlany w nagłówku pod nazwą strony.</p>
             @error('tagline') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
         </div>
 
         <div>
             <label for="content_editor" class="mb-1 block text-sm font-bold">Edytor treści (strony, aktualności, działania)</label>
-            <select id="content_editor" name="content_editor" class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+            <select id="content_editor" name="content_editor" class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
                 @foreach (\App\Models\SiteSetting::EDITORS as $value => $label)
                     <option value="{{ $value }}" {{ old('content_editor', $settings->contentEditorValue()) === $value ? 'selected' : '' }}>{{ $label }}</option>
                 @endforeach
@@ -177,22 +177,22 @@
             <label for="unsplash_access_key" class="mb-1 block text-sm font-bold">Klucz Unsplash (Access Key)</label>
             <input type="password" id="unsplash_access_key" name="unsplash_access_key" autocomplete="new-password"
                 placeholder="{{ $settings->unsplash_access_key ? '•••••••• (zapisany — zostaw puste, aby nie zmieniać)' : 'Wklej Access Key z unsplash.com/developers' }}"
-                class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
-            <p class="mt-1 text-xs text-muted">Umożliwia wyszukiwanie i import zdjęć z Unsplash w module Multimedia. Darmowy klucz: <a href="https://unsplash.com/developers" target="_blank" rel="noopener" class="text-brand underline">unsplash.com/developers</a>. Puste = wartość z pliku <code>.env</code>.</p>
+                class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
+            <p class="mt-1 text-xs text-muted">Umożliwia wyszukiwanie i import zdjęć z Unsplash w module Multimedia. Darmowy klucz: <a href="https://unsplash.com/developers" target="_blank" rel="noopener" class="text-brand-dark underline">unsplash.com/developers</a>. Puste = wartość z pliku <code>.env</code>.</p>
             @error('unsplash_access_key') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
         </div>
 
-        <div class="space-y-3 rounded-lg border border-gray-200 bg-gray-50 p-4">
+        <div class="space-y-3 p-4 rounded-md bg-gray-50">
             <label class="flex items-center gap-2">
                 <input type="checkbox" name="cookie_banner_enabled" value="1" {{ old('cookie_banner_enabled', $settings->cookie_banner_enabled ?? true) ? 'checked' : '' }}
-                    class="rounded border-gray-300 text-brand focus:ring-brand">
+                    class="rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
                 <span class="text-sm font-bold">Pokaż baner o plikach cookies</span>
             </label>
             <div>
                 <label for="cookie_banner_text" class="mb-1 block text-sm font-bold">Tekst banera <span class="font-normal text-muted">(opcjonalnie)</span></label>
                 <textarea id="cookie_banner_text" name="cookie_banner_text" rows="2"
                     placeholder="{{ \App\Models\SiteSetting::DEFAULT_COOKIE_BANNER_TEXT }}"
-                    class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">{{ old('cookie_banner_text', $settings->cookie_banner_text) }}</textarea>
+                    class="w-full rounded border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark">{{ old('cookie_banner_text', $settings->cookie_banner_text) }}</textarea>
                 <p class="mt-1 text-xs text-muted">Baner z przyciskiem „Akceptuję" i linkiem do polityki prywatności. Puste = tekst domyślny.</p>
                 @error('cookie_banner_text') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
             </div>
@@ -203,14 +203,14 @@
             <input type="checkbox" name="show_cms_credit" value="1"
                 {{ ($isFeerInstall ? old('show_cms_credit', $settings->show_cms_credit ?? true) : true) ? 'checked' : '' }}
                 {{ $isFeerInstall ? '' : 'disabled' }}
-                class="rounded border-gray-300 text-brand focus:ring-brand disabled:cursor-not-allowed disabled:opacity-60">
+                class="rounded border-gray-500 text-brand-dark focus:ring-brand-dark disabled:cursor-not-allowed disabled:opacity-60">
             @if (! $isFeerInstall)
                 <input type="hidden" name="show_cms_credit" value="1">
             @endif
             <span class="text-sm font-bold">
                 Pokaż nazwę CMS w stopce („weCMS · autor…")
                 @unless ($isFeerInstall)
-                    <span class="ml-1 rounded-full bg-gray-200 px-2 py-0.5 text-[0.65rem] font-semibold text-gray-600">🔒 Zawsze widoczne poza feer.org.pl</span>
+                    <span class="ml-1 text-[0.65rem] font-bold text-muted">🔒 Zawsze widoczne poza feer.org.pl</span>
                 @endunless
             </span>
         </label>
@@ -221,25 +221,25 @@
                 <div class="mb-2 flex items-center gap-3">
                     <img src="{{ $settings->logoUrl() }}" alt="Logo" class="h-14 w-14 rounded object-contain">
                     <label class="flex items-center gap-2 text-sm text-muted">
-                        <input type="checkbox" name="remove_logo" value="1" class="rounded border-gray-300 text-brand focus:ring-brand">
+                        <input type="checkbox" name="remove_logo" value="1" class="rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
                         Usuń logo (wróć do domyślnego znaczka)
                     </label>
                 </div>
             @endif
-            <input type="file" name="logo" accept="image/*" class="block w-full cursor-pointer text-sm text-muted file:mr-3 file:cursor-pointer file:rounded file:border-0 file:bg-brand file:px-4 file:py-2 file:text-sm file:font-bold file:text-white hover:file:bg-brand-dark">
+            <input type="file" name="logo" accept="image/*" class="block w-full cursor-pointer text-sm text-muted file:mr-3 file:cursor-pointer file:rounded file:border-0 file:bg-brand-dark file:px-4 file:py-2 file:text-sm file:font-bold file:text-white hover:file:bg-brand-dark">
             @error('logo') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
 
             <div class="mt-3">
                 <label for="logo_alt" class="mb-1 block text-sm font-bold">Tekst alternatywny logo <span class="font-normal text-muted">(opcjonalnie)</span></label>
                 <input type="text" id="logo_alt" name="logo_alt" value="{{ old('logo_alt', $settings->logo_alt) }}"
                     placeholder="{{ $settings->site_name }}"
-                    class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                    class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
                 <p class="mt-1 text-xs text-muted">Opis logo dla czytników ekranu (WCAG). Puste = nazwa strony.</p>
                 @error('logo_alt') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
             </div>
 
             <label class="mt-3 flex items-start gap-2 text-sm">
-                <input type="checkbox" name="logo_only" value="1" @checked(old('logo_only', $settings->logo_only)) class="mt-0.5 rounded border-gray-300 text-brand focus:ring-brand">
+                <input type="checkbox" name="logo_only" value="1" @checked(old('logo_only', $settings->logo_only)) class="mt-0.5 rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
                 <span>
                     <span class="font-bold">Pokazuj samo logo</span>
                     <span class="block text-xs text-muted">Ukrywa nazwę strony i podtytuł w nagłówku. Działa tylko, gdy logo jest wgrane.</span>
@@ -249,29 +249,29 @@
         </div>
 
         <div x-show="tab === 'header'" x-cloak class="space-y-6">
-            <details open class="rounded-lg border border-gray-200 bg-white">
+            <details open class="rounded-md bg-gray-50">
                 <summary class="cursor-pointer rounded-lg px-5 py-3 text-sm font-bold text-ink hover:bg-gray-100">Układ nagłówka strony</summary>
                 <div class="border-t border-gray-200 p-5">
                 @php $isFeer = str_contains(request()->getHost(), 'feer.org.pl') || in_array(request()->getHost(), ['localhost', '127.0.0.1'], true); @endphp
                 <div class="grid gap-3 sm:grid-cols-2">
                     @foreach (\App\Models\SiteSetting::HEADER_LAYOUTS as $layoutValue => $layoutLabel)
                     @continue($settings->isOptionBlocked('header_layouts', $layoutValue) && old('header_layout', $settings->headerLayoutValue()) !== $layoutValue)
-                    <label class="flex cursor-pointer items-start gap-3 rounded-lg border p-3 transition has-[:checked]:border-brand has-[:checked]:bg-brand-light">
+                    <label class="flex cursor-pointer items-start gap-3 rounded-lg border p-3 transition has-[:checked]:border-brand-dark has-[:checked]:bg-brand-light">
                         @if ($layoutValue === 'wide_mission')
                         <input type="radio" name="header_layout" value="wide_mission"
                             :checked="wm_layout === 'wide_mission'"
                             @click.prevent="if (wm_layout !== 'wide_mission') { prevLayout = wm_layout; wideCode = ''; wideCodeError = false; wideModal = true; }"
-                            class="mt-0.5 border-gray-300 text-brand focus:ring-brand">
+                            class="mt-0.5 border-gray-500 text-brand-dark focus:ring-brand-dark">
                         @else
                         <input type="radio" name="header_layout" value="{{ $layoutValue }}"
                             {{ old('header_layout', $settings->headerLayoutValue()) === $layoutValue ? 'checked' : '' }}
                             x-model="wm_layout"
-                            class="mt-0.5 border-gray-300 text-brand focus:ring-brand">
+                            class="mt-0.5 border-gray-500 text-brand-dark focus:ring-brand-dark">
                         @endif
                         <span class="text-sm leading-snug">
                             {{ $layoutLabel }}
                             @if ($layoutValue === 'wide_mission' && !$isFeer)
-                            <span class="ml-1 rounded-full bg-gray-200 px-2 py-0.5 text-[0.65rem] font-semibold text-gray-600">🔒 Tylko FEER</span>
+                            <span class="ml-1 text-[0.65rem] font-bold text-muted">🔒 Tylko FEER</span>
                             <span class="mt-1 block text-xs text-muted">weCMS powstał jako autorskie rozwiązanie dla FEER. Działa tylko na feer.org.pl i localhost.</span>
                             @endif
                         </span>
@@ -296,15 +296,15 @@
                     $navLabels = ['O nas', 'Organizacje', 'Działania zrealizowane', 'Kontakt'];
                     $colorfulItems = old('federation_colorful_nav_items', $settings->federation_colorful_nav_items ?? [0, 1, 2, 3]);
                 @endphp
-                <details open class="rounded-lg border border-gray-200 bg-gray-50">
+                <details open class="rounded-md bg-gray-50">
                 <summary class="cursor-pointer rounded-lg px-5 py-3 text-sm font-bold text-ink hover:bg-gray-100">Menu i strona główna (szablon federacja)</summary>
                 <div class="space-y-4 border-t border-gray-200 p-5">
-                <div class="rounded-lg border border-gray-200 bg-white p-4" x-data="{ colorfulNav: {{ old('federation_colorful_nav', $settings->federation_colorful_nav ?? true) ? 'true' : 'false' }} }">
+                <div class="p-4 rounded-md bg-white" x-data="{ colorfulNav: {{ old('federation_colorful_nav', $settings->federation_colorful_nav ?? true) ? 'true' : 'false' }} }">
                     <label class="flex items-center gap-2">
                         <input type="hidden" name="federation_colorful_nav" value="0">
                         <input type="checkbox" name="federation_colorful_nav" value="1" x-model="colorfulNav"
                             {{ old('federation_colorful_nav', $settings->federation_colorful_nav ?? true) ? 'checked' : '' }}
-                            class="rounded border-gray-300 text-brand focus:ring-brand">
+                            class="rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
                         <span class="text-sm font-bold">Kolorowe pozycje menu <span class="font-normal text-muted">(każda zakładka w innym kolorze marki, zamiast jednolitego koloru tekstu)</span></span>
                     </label>
 
@@ -313,7 +313,7 @@
                             <label class="flex items-center gap-2 rounded border border-gray-200 bg-white px-3 py-2 text-sm">
                                 <input type="checkbox" name="federation_colorful_nav_items[]" value="{{ $i }}"
                                     {{ in_array($i, $colorfulItems) ? 'checked' : '' }}
-                                    class="rounded border-gray-300 text-brand focus:ring-brand">
+                                    class="rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
                                 {{ $label }}
                             </label>
                         @endforeach
@@ -321,19 +321,19 @@
                 </div>
 
                 {{-- Sekcje na stronie głównej — możliwe do wyłączenia --}}
-                <div class="space-y-3 rounded-lg border border-gray-200 bg-white p-4">
+                <div class="space-y-3 p-4 rounded-md bg-white">
                     <label class="flex items-center gap-2">
                         <input type="hidden" name="federation_show_org_spotlight" value="0">
                         <input type="checkbox" name="federation_show_org_spotlight" value="1"
                             {{ old('federation_show_org_spotlight', $settings->federation_show_org_spotlight ?? false) ? 'checked' : '' }}
-                            class="rounded border-gray-300 text-brand focus:ring-brand">
+                            class="rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
                         <span class="text-sm font-bold">„Poznaj naszą organizację" na stronie głównej <span class="font-normal text-muted">(losowo wybrana organizacja członkowska)</span></span>
                     </label>
                     <label class="flex items-center gap-2">
                         <input type="hidden" name="federation_show_members_banner" value="0">
                         <input type="checkbox" name="federation_show_members_banner" value="1"
                             {{ old('federation_show_members_banner', $settings->federation_show_members_banner ?? false) ? 'checked' : '' }}
-                            class="rounded border-gray-300 text-brand focus:ring-brand">
+                            class="rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
                         <span class="text-sm font-bold">Skrót do Strefy członkowskiej na stronie głównej</span>
                     </label>
                 </div>
@@ -353,11 +353,11 @@
                            @keydown.enter="wm_layout = 'wide_mission'; wideModal = false"
                            placeholder="Sekretny kod"
                            autocomplete="off"
-                           class="mb-2 w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                           class="mb-2 w-full rounded border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark">
                     <div class="flex gap-2">
                         <button type="button"
                                 @click="wm_layout = 'wide_mission'; wideModal = false"
-                                class="flex-1 rounded bg-brand px-3 py-2 text-sm font-bold text-white hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-1">
+                                class="flex-1 rounded bg-brand-dark px-3 py-2 text-sm font-bold text-white hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-brand-dark focus:ring-offset-1">
                             Aktywuj
                         </button>
                         <button type="button"
@@ -372,7 +372,7 @@
             {{-- Substyl „Urzędowy" + wspólny pasek informacyjny (także szablon gminny) --}}
             @php $officeVisible = $settings->site_template === 'municipality' ? 'true' : 'false'; @endphp
             <details open x-show="wm_layout === 'office_bar' || {{ $officeVisible }}" x-cloak
-                class="rounded-lg border border-gray-200 bg-gray-50">
+                class="rounded-md bg-gray-50">
                 <summary class="cursor-pointer rounded-lg px-5 py-3 text-sm font-bold text-ink hover:bg-gray-100">Pasek informacyjny i belka urzędowa</summary>
                 <div class="space-y-4 border-t border-gray-200 p-5">
                 <p class="text-xs text-muted">
@@ -385,21 +385,21 @@
                     <label class="flex items-center gap-2 rounded-lg border border-gray-200 bg-white p-3">
                         <input type="checkbox" name="infobar_show_date" value="1"
                             {{ old('infobar_show_date', $settings->infobar_show_date ?? true) ? 'checked' : '' }}
-                            class="rounded border-gray-300 text-brand focus:ring-brand">
+                            class="rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
                         <span class="text-sm font-bold">Data <span class="font-normal text-muted">(np. „Środa, 26 sierpnia 2026")</span></span>
                     </label>
 
                     <label class="flex items-center gap-2 rounded-lg border border-gray-200 bg-white p-3">
                         <input type="checkbox" name="infobar_show_nameday" value="1"
                             {{ old('infobar_show_nameday', $settings->infobar_show_nameday ?? true) ? 'checked' : '' }}
-                            class="rounded border-gray-300 text-brand focus:ring-brand">
+                            class="rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
                         <span class="text-sm font-bold">Imieniny</span>
                     </label>
 
                     <label class="flex items-center gap-2 rounded-lg border border-gray-200 bg-white p-3">
                         <input type="checkbox" name="office_show_account" value="1"
                             {{ old('office_show_account', $settings->office_show_account ?? true) ? 'checked' : '' }}
-                            class="rounded border-gray-300 text-brand focus:ring-brand">
+                            class="rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
                         <span class="text-sm font-bold">Numer konta na środku belki
                             <span class="font-normal text-muted">— numer ustawisz w zakładce „Wesprzyj nas"</span></span>
                     </label>
@@ -407,7 +407,7 @@
                     <label class="flex items-center gap-2 rounded-lg border border-gray-200 bg-white p-3">
                         <input type="checkbox" name="office_show_search" value="1"
                             {{ old('office_show_search', $settings->office_show_search ?? true) ? 'checked' : '' }}
-                            class="rounded border-gray-300 text-brand focus:ring-brand">
+                            class="rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
                         <span class="text-sm font-bold">Wyszukiwarka z boku
                             <span class="font-normal text-muted">— obok BIP i ikon social</span></span>
                     </label>
@@ -416,21 +416,21 @@
             </details>
 
             <details open x-show="wm_layout === 'wide_mission'" x-cloak
-                class="rounded-lg border border-gray-200 bg-gray-50">
+                class="rounded-md bg-gray-50">
                 <summary class="cursor-pointer rounded-lg px-5 py-3 text-sm font-bold text-ink hover:bg-gray-100">Ustawienia nagłówka WOŚP</summary>
                 <div class="space-y-5 border-t border-gray-200 p-5">
 
                 <label class="flex items-center gap-2 rounded-lg border border-gray-200 bg-white p-3">
                     <input type="checkbox" name="wide_mission_show_mission" value="1"
                         {{ old('wide_mission_show_mission', $settings->wide_mission_show_mission ?? false) ? 'checked' : '' }}
-                        class="rounded border-gray-300 text-brand focus:ring-brand">
+                        class="rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
                     <span class="text-sm font-bold">Pokazuj misję <span class="font-normal text-muted">(pobiera motto ze strony „O organizacji")</span></span>
                 </label>
 
                 <label class="flex items-center gap-2 rounded-lg border border-gray-200 bg-white p-3">
                     <input type="checkbox" name="wide_mission_highlight_account" value="1"
                         {{ old('wide_mission_highlight_account', $settings->wide_mission_highlight_account ?? false) ? 'checked' : '' }}
-                        class="rounded border-gray-300 text-brand focus:ring-brand">
+                        class="rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
                     <span class="text-sm font-bold">Podświetlaj nr konta <span class="font-normal text-muted">(wyświetla numer w kolorze marki)</span></span>
                 </label>
 
@@ -441,7 +441,7 @@
                         <label class="flex cursor-pointer items-center gap-2">
                             <input type="radio" name="wide_mission_nav_align" value="{{ $alignVal }}"
                                 {{ old('wide_mission_nav_align', $settings->wide_mission_nav_align ?? 'left') === $alignVal ? 'checked' : '' }}
-                                class="border-gray-300 text-brand focus:ring-brand">
+                                class="border-gray-500 text-brand-dark focus:ring-brand-dark">
                             <span class="text-sm">{{ $alignLabel }}</span>
                         </label>
                         @endforeach
@@ -451,14 +451,14 @@
                 <label class="flex items-center gap-2 rounded-lg border border-gray-200 bg-white p-3">
                     <input type="checkbox" name="wide_mission_search_in_nav" value="1"
                         {{ old('wide_mission_search_in_nav', $settings->wide_mission_search_in_nav ?? false) ? 'checked' : '' }}
-                        class="rounded border-gray-300 text-brand focus:ring-brand">
+                        class="rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
                     <span class="text-sm font-bold">Wyszukiwarka w menu <span class="font-normal text-muted">(przenosi search z górnego paska na koniec paska nav)</span></span>
                 </label>
 
                 <label class="flex items-center gap-2 rounded-lg border border-gray-200 bg-white p-3">
                     <input type="checkbox" name="wide_mission_sidebar" value="1"
                         {{ old('wide_mission_sidebar', $settings->wide_mission_sidebar ?? false) ? 'checked' : '' }}
-                        class="rounded border-gray-300 text-brand focus:ring-brand">
+                        class="rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
                     <span class="text-sm font-bold">Sidebar obok slidera <span class="font-normal text-muted">(misja organizacji lub skróty obok slidera; slider przyjmuje mniejsze wymiary)</span></span>
                 </label>
 
@@ -466,10 +466,10 @@
                     <label class="mb-1 block text-sm font-bold">Zawartość sidebara</label>
                     <div class="flex flex-wrap gap-3">
                         @foreach (['mission' => 'Misja organizacji', 'colored' => 'Kolorowe kafle (skróty)', 'cards' => 'Białe karty (skróty)'] as $sv => $sl)
-                            <label class="flex cursor-pointer items-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2.5 has-[:checked]:border-brand has-[:checked]:bg-brand-light">
+                            <label class="flex cursor-pointer items-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2.5 has-[:checked]:border-brand-dark has-[:checked]:bg-brand-light">
                                 <input type="radio" name="wide_mission_sidebar_style" value="{{ $sv }}"
                                     {{ old('wide_mission_sidebar_style', $settings->wide_mission_sidebar_style ?? 'colored') === $sv ? 'checked' : '' }}
-                                    class="text-brand focus:ring-brand">
+                                    class="text-brand-dark focus:ring-brand-dark">
                                 <span class="text-sm font-bold">{{ $sl }}</span>
                             </label>
                         @endforeach
@@ -480,29 +480,29 @@
                     <label class="mb-1 block text-sm font-bold">Substyl paska nawigacji</label>
                     <div class="flex flex-wrap gap-3">
                         @foreach (['brand_bar' => 'Pasek koloru marki (domyślny)', 'icons_white' => 'Biały pasek — ikony + etykiety', 'pills' => 'Biały pasek — zakładki (pigułki)'] as $nv => $nl)
-                            <label class="flex cursor-pointer items-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2.5 has-[:checked]:border-brand has-[:checked]:bg-brand-light">
+                            <label class="flex cursor-pointer items-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2.5 has-[:checked]:border-brand-dark has-[:checked]:bg-brand-light">
                                 <input type="radio" name="wide_mission_nav_style" value="{{ $nv }}"
                                     {{ old('wide_mission_nav_style', $settings->wide_mission_nav_style ?? 'brand_bar') === $nv ? 'checked' : '' }}
-                                    class="text-brand focus:ring-brand">
+                                    class="text-brand-dark focus:ring-brand-dark">
                                 <span class="text-sm font-bold">{{ $nl }}</span>
                             </label>
                         @endforeach
                     </div>
                     <p class="mt-1 text-xs text-muted">Styl „ikony + etykiety" korzysta z pola Ikona w pozycjach menu (Strony → Menu główne); „zakładki" wypełniają aktywną pozycję kolorem marki.</p>
-                    <div class="mt-3 space-y-2 rounded-lg border border-gray-200 bg-gray-50 p-3 text-sm">
+                    <div class="mt-3 space-y-2 p-3 text-sm rounded-md bg-white">
                         <p class="text-xs font-bold uppercase tracking-wide text-muted">Kolory pozycji — tylko pasek koloru marki</p>
                         <label class="flex items-center gap-2">
-                            <input type="checkbox" name="wide_mission_nav_hover_white" value="1" @checked(old('wide_mission_nav_hover_white', $settings->wide_mission_nav_hover_white ?? false)) class="rounded border-gray-300 text-brand focus:ring-brand">
+                            <input type="checkbox" name="wide_mission_nav_hover_white" value="1" @checked(old('wide_mission_nav_hover_white', $settings->wide_mission_nav_hover_white ?? false)) class="rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
                             <span class="font-bold">Biały hover</span>
                             <span class="text-xs text-muted">— tekst/podkreślenie na biało przy najechaniu</span>
                         </label>
                         <label class="flex items-center gap-2">
-                            <input type="checkbox" name="wide_mission_nav_active_white" value="1" @checked(old('wide_mission_nav_active_white', $settings->wide_mission_nav_active_white ?? false)) class="rounded border-gray-300 text-brand focus:ring-brand">
+                            <input type="checkbox" name="wide_mission_nav_active_white" value="1" @checked(old('wide_mission_nav_active_white', $settings->wide_mission_nav_active_white ?? false)) class="rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
                             <span class="font-bold">Biały active</span>
                             <span class="text-xs text-muted">— białe podkreślenie aktywnej pozycji</span>
                         </label>
                         <label class="flex items-center gap-2">
-                            <input type="checkbox" name="wide_mission_nav_icons_white" value="1" @checked(old('wide_mission_nav_icons_white', $settings->wide_mission_nav_icons_white ?? false)) class="rounded border-gray-300 text-brand focus:ring-brand">
+                            <input type="checkbox" name="wide_mission_nav_icons_white" value="1" @checked(old('wide_mission_nav_icons_white', $settings->wide_mission_nav_icons_white ?? false)) class="rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
                             <span class="font-bold">Białe ikony/strzałki</span>
                             <span class="text-xs text-muted">— strzałki podmenu w kolorze białym</span>
                         </label>
@@ -513,10 +513,10 @@
                     <p class="mb-2 text-sm font-bold">Rozmieszczenie elementów</p>
                     <div class="grid gap-3 sm:grid-cols-2">
                         @foreach (\App\Models\SiteSetting::WIDE_MISSION_LAYOUTS as $wmlValue => $wmlLabel)
-                            <label class="flex cursor-pointer items-start gap-3 rounded-lg border bg-white p-3 transition has-[:checked]:border-brand has-[:checked]:bg-brand-light">
+                            <label class="flex cursor-pointer items-start gap-3 rounded-lg border bg-white p-3 transition has-[:checked]:border-brand-dark has-[:checked]:bg-brand-light">
                                 <input type="radio" name="wide_mission_layout" value="{{ $wmlValue }}"
                                     {{ old('wide_mission_layout', $settings->wideMissionLayoutValue()) === $wmlValue ? 'checked' : '' }}
-                                    class="mt-0.5 border-gray-300 text-brand focus:ring-brand">
+                                    class="mt-0.5 border-gray-500 text-brand-dark focus:ring-brand-dark">
                                 <span class="text-sm leading-snug">{{ $wmlLabel }}</span>
                             </label>
                         @endforeach
@@ -529,7 +529,7 @@
                         @php $smField = 'wide_mission_social_'.$smSlot; @endphp
                         <div>
                             <label for="{{ $smField }}" class="mb-1 block text-sm font-bold">Social media {{ $smSlot }}</label>
-                            <select id="{{ $smField }}" name="{{ $smField }}" class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                            <select id="{{ $smField }}" name="{{ $smField }}" class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
                                 <option value="">— brak —</option>
                                 @foreach (\App\Models\SiteSetting::SOCIAL_KEYS as $smKey => $smMeta)
                                     <option value="{{ $smKey }}" {{ old($smField, $settings->$smField) === $smKey ? 'selected' : '' }}>{{ $smMeta['label'] }}</option>
@@ -548,7 +548,7 @@
                     <input type="text" id="wide_mission_cta_label" name="wide_mission_cta_label"
                         value="{{ old('wide_mission_cta_label', $settings->wide_mission_cta_label) }}"
                         placeholder="np. Wolontariat" maxlength="80"
-                        class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                        class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
                 </div>
                 <div>
                     <label for="wide_mission_cta_url" class="mb-1 block text-sm font-bold">
@@ -558,7 +558,7 @@
                     <input type="text" id="wide_mission_cta_url" name="wide_mission_cta_url"
                         value="{{ old('wide_mission_cta_url', $settings->wide_mission_cta_url) }}"
                         placeholder="https://..."
-                        class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                        class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
                     <p class="mt-1 text-xs text-muted">Przycisk pojawi się obok ikon social media w górnym pasku nagłówka.</p>
                 </div>
 
@@ -567,10 +567,10 @@
                     <div class="flex items-center gap-3">
                         <input type="color" id="wide_mission_cta_color_picker" value="{{ old('wide_mission_cta_color', $settings->wide_mission_cta_color) ?: ($settings->brand_color ?: '#1e6dff') }}"
                             oninput="document.getElementById('wide_mission_cta_color_text').value = this.value"
-                            class="h-10 w-14 flex-none rounded border-gray-300" aria-label="Wybierz kolor: pierwszego przycisku">
+                            class="h-10 w-14 flex-none rounded border-gray-500" aria-label="Wybierz kolor: pierwszego przycisku">
                         <input type="text" id="wide_mission_cta_color_text" name="wide_mission_cta_color" value="{{ old('wide_mission_cta_color', $settings->wide_mission_cta_color) }}" placeholder="puste = kolor marki" pattern="#[0-9a-fA-F]{6}" data-color-picker
                             oninput="if (/^#[0-9a-fA-F]{6}$/.test(this.value)) document.getElementById('wide_mission_cta_color_picker').value = this.value"
-                            class="w-44 rounded border-gray-300 font-mono text-sm focus:border-brand focus:ring-brand">
+                            class="w-44 rounded border-gray-500 font-mono text-sm focus:border-brand-dark focus:ring-brand-dark">
                     </div>
                     @error('wide_mission_cta_color') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                 </div>
@@ -584,7 +584,7 @@
                         <input type="text" id="wide_mission_cta2_label" name="wide_mission_cta2_label"
                             value="{{ old('wide_mission_cta2_label', $settings->wide_mission_cta2_label) }}"
                             placeholder="np. Wolontariat" maxlength="80"
-                            class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                            class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
                         @error('wide_mission_cta2_label') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
                     <div>
@@ -595,7 +595,7 @@
                         <input type="text" id="wide_mission_cta2_url" name="wide_mission_cta2_url"
                             value="{{ old('wide_mission_cta2_url', $settings->wide_mission_cta2_url) }}"
                             placeholder="https://… lub /wolontariat"
-                            class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                            class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
                         @error('wide_mission_cta2_url') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
 
@@ -604,10 +604,10 @@
                     <div class="flex items-center gap-3">
                         <input type="color" id="wide_mission_cta2_color_picker" value="{{ old('wide_mission_cta2_color', $settings->wide_mission_cta2_color) ?: ($settings->brand_color ?: '#1e6dff') }}"
                             oninput="document.getElementById('wide_mission_cta2_color_text').value = this.value"
-                            class="h-10 w-14 flex-none rounded border-gray-300" aria-label="Wybierz kolor: drugiego przycisku">
+                            class="h-10 w-14 flex-none rounded border-gray-500" aria-label="Wybierz kolor: drugiego przycisku">
                         <input type="text" id="wide_mission_cta2_color_text" name="wide_mission_cta2_color" value="{{ old('wide_mission_cta2_color', $settings->wide_mission_cta2_color) }}" placeholder="puste = kolor marki" pattern="#[0-9a-fA-F]{6}" data-color-picker
                             oninput="if (/^#[0-9a-fA-F]{6}$/.test(this.value)) document.getElementById('wide_mission_cta2_color_picker').value = this.value"
-                            class="w-44 rounded border-gray-300 font-mono text-sm focus:border-brand focus:ring-brand">
+                            class="w-44 rounded border-gray-500 font-mono text-sm focus:border-brand-dark focus:ring-brand-dark">
                     </div>
                     @error('wide_mission_cta2_color') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                 </div>
@@ -630,37 +630,37 @@
                         ['Kolor 4', 'brand_color_4', $settings->brand_color_4 ?: '#cbd5e7', 'Jasne tło pomocnicze'],
                     ];
                 @endphp
-                <section class="rounded-lg border border-gray-200 bg-white p-4" aria-labelledby="feer-theme-colors-h">
+                <section class="p-4 rounded-md bg-gray-50" aria-labelledby="feer-theme-colors-h">
                     <h3 id="feer-theme-colors-h" class="text-sm font-bold text-ink">Kolory motywu FEER</h3>
                     <p class="mb-3 mt-1 text-xs text-muted">Wszystkie kolory używane przez motyw FEER w jednym miejscu. Zmieniasz je w polach niżej (kolor przewodni oraz kolory 2–4) albo w pełnym panelu kolorów.</p>
                     <ul role="list" class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                         @foreach ($feerSwatches as [$fLabel, $fKey, $fHex, $fNote])
-                            <li class="flex items-center gap-3 rounded border border-gray-200 p-2">
+                            <li class="flex items-center gap-3 p-2 rounded-md bg-white">
                                 <span class="h-10 w-10 flex-none rounded border border-gray-300" style="background: {{ $fHex }}" aria-hidden="true"></span>
                                 <span class="min-w-0 text-xs"><span class="block font-bold text-ink">{{ $fLabel }}</span><span class="font-mono text-muted">{{ strtoupper($fHex) }}</span><span class="block text-muted">{{ $fNote }}</span></span>
                             </li>
                         @endforeach
                     </ul>
-                    <p class="mt-3 text-xs"><a href="{{ route('admin.kolory.edit') }}" class="font-bold text-brand underline hover:text-ink">Otwórz pełny panel kolorów (podgląd, kontrast, gotowe palety)</a></p>
+                    <p class="mt-3 text-xs"><a href="{{ route('admin.kolory.edit') }}" class="font-bold text-brand-dark underline hover:text-ink">Otwórz pełny panel kolorów (podgląd, kontrast, gotowe palety)</a></p>
                 </section>
             @endif
 
-            <div class="flex items-start gap-3 rounded-lg border border-amber-200 bg-amber-50 p-3 dark:border-amber-700 dark:bg-amber-950">
+            <div class="flex items-start gap-3 rounded-md bg-amber-50 p-3 dark:border-amber-700 dark:bg-amber-950">
                 <input type="hidden" name="brand_skip_contrast" value="0">
                 <input type="checkbox" id="brand_skip_contrast" name="brand_skip_contrast" value="1"
                     {{ old('brand_skip_contrast', $settings->brand_skip_contrast) ? 'checked' : '' }}
-                    class="mt-0.5 rounded border-gray-300 text-brand focus:ring-brand">
+                    class="mt-0.5 rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
                 <label for="brand_skip_contrast" class="text-sm leading-snug">
                     <span class="font-bold">Nie poprawiaj kolorów do WCAG</span>
                     <span class="block text-xs text-muted">Kolory nie będą przyciemniane ani korygowane (przy zapisie i na stronie). Użyj tylko gdy identyfikacja wizualna organizacji wymaga konkretnego koloru niespełniającego WCAG AA.</span>
                 </label>
             </div>
 
-            <div class="flex items-start gap-3 rounded-lg border border-gray-200 bg-gray-50 p-3 dark:border-gray-700 dark:bg-gray-900">
+            <div class="flex items-start gap-3 p-3 dark:border-gray-700 dark:bg-gray-900 rounded-md bg-gray-50">
                 <input type="hidden" name="nav_dark_text" value="0">
                 <input type="checkbox" id="nav_dark_text" name="nav_dark_text" value="1"
                     {{ old('nav_dark_text', $settings->nav_dark_text) ? 'checked' : '' }}
-                    class="mt-0.5 rounded border-gray-300 text-brand focus:ring-brand">
+                    class="mt-0.5 rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
                 <label for="nav_dark_text" class="text-sm leading-snug">
                     <span class="font-bold">Czarna czcionka w menu nawigacyjnym</span>
                     <span class="block text-xs text-muted">Gdy kolor marki jest jasny i białe litery w menu nie mają wystarczającego kontrastu, zaznacz tę opcję, aby linki menu były czarne.</span>
@@ -671,13 +671,13 @@
                 <label for="brand_color" class="mb-1 block text-sm font-bold">Kolor przewodni (marka)</label>
                 <div class="flex flex-wrap items-center gap-3">
                     <input type="color" id="brand_color" name="brand_color" value="{{ old('brand_color', $settings->brand_color) }}"
-                        class="h-10 w-16 rounded border-gray-300">
+                        class="h-10 w-16 rounded border-gray-500">
                     <input type="text" id="brand_color_text" value="{{ old('brand_color', $settings->brand_color) }}"
                         oninput="document.getElementById('brand_color').value = this.value"
-                        class="w-32 rounded border-gray-300 font-mono text-sm focus:border-brand focus:ring-brand">
-                    <span id="contrast-badge" class="rounded-full px-3 py-1 text-xs font-bold"></span>
+                        class="w-32 rounded border-gray-500 font-mono text-sm focus:border-brand-dark focus:ring-brand-dark">
+                    <span id="contrast-badge" class="text-xs font-bold"></span>
                     <button type="button" id="contrast-fix-button" hidden
-                        class="rounded border border-brand px-3 py-1 text-xs font-bold text-brand hover:bg-brand-light">
+                        class="rounded border border-brand-dark px-3 py-1 text-xs font-bold text-brand-dark hover:bg-brand-light">
                         Dostosuj automatycznie
                     </button>
                 </div>
@@ -696,11 +696,11 @@
                             <div class="flex items-center gap-2">
                                 <input type="color" id="brand_color_{{ $n }}_picker" value="{{ $val ?: $settings->brand_color }}"
                                     oninput="document.getElementById('brand_color_{{ $n }}_text').value = this.value"
-                                    class="h-10 w-12 flex-none rounded border-gray-300" aria-label="Wybierz kolor {{ $n }} marki">
+                                    class="h-10 w-12 flex-none rounded border-gray-500" aria-label="Wybierz kolor {{ $n }} marki">
                                 <input type="text" id="brand_color_{{ $n }}_text" name="brand_color_{{ $n }}" value="{{ $val }}"
                                     placeholder="#RRGGBB" pattern="^#[0-9a-fA-F]{6}$"
                                     oninput="if (/^#[0-9a-fA-F]{6}$/.test(this.value)) document.getElementById('brand_color_{{ $n }}_picker').value = this.value"
-                                    class="w-full rounded border-gray-300 font-mono text-sm focus:border-brand focus:ring-brand">
+                                    class="w-full rounded border-gray-500 font-mono text-sm focus:border-brand-dark focus:ring-brand-dark">
                             </div>
                             @error('brand_color_'.$n) <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
                         </div>
@@ -713,11 +713,11 @@
                 <div class="flex flex-wrap items-center gap-3">
                     <input type="color" id="ngo_color_picker" value="{{ old('ngo_color', $settings->ngo_color ?: '#1f6feb') }}"
                         oninput="document.getElementById('ngo_color_text').value = this.value"
-                        class="h-10 w-16 rounded border-gray-300" aria-label="Wybierz kolor NGO">
+                        class="h-10 w-16 rounded border-gray-500" aria-label="Wybierz kolor NGO">
                     <input type="text" id="ngo_color_text" name="ngo_color" value="{{ old('ngo_color', $settings->ngo_color) }}"
                         placeholder="np. #1f6feb — puste = brak"
                         oninput="if (/^#[0-9a-fA-F]{6}$/.test(this.value)) document.getElementById('ngo_color_picker').value = this.value"
-                        class="w-48 rounded border-gray-300 font-mono text-sm focus:border-brand focus:ring-brand">
+                        class="w-48 rounded border-gray-500 font-mono text-sm focus:border-brand-dark focus:ring-brand-dark">
                 </div>
                 <p class="mt-1 text-xs text-muted">Wbudowana submarka „NGO", wybierana przy działaniach i aktualnościach. Zostaw puste, aby używać koloru przewodniego.</p>
                 @error('ngo_color') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
@@ -725,7 +725,7 @@
                     <input type="hidden" name="ngo_skip_contrast" value="0">
                     <input type="checkbox" id="ngo_skip_contrast" name="ngo_skip_contrast" value="1"
                         {{ old('ngo_skip_contrast', $settings->ngo_skip_contrast) ? 'checked' : '' }}
-                        class="mt-0.5 rounded border-gray-300 text-brand focus:ring-brand">
+                        class="mt-0.5 rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
                     <label for="ngo_skip_contrast" class="text-xs leading-snug text-muted">
                         Wyłącz korygowanie kontrastu dla tego koloru
                     </label>
@@ -739,26 +739,26 @@
                     @foreach ($subBrands as $i => $sb)
                         <div data-subbrands-row class="flex flex-wrap items-center gap-2">
                             <input type="color" value="{{ $sb['color'] ?? '#1f6feb' }}" oninput="this.nextElementSibling.value = this.value"
-                                class="h-10 w-14 flex-none rounded border-gray-300" aria-label="Kolor submarki {{ $i + 1 }}">
+                                class="h-10 w-14 flex-none rounded border-gray-500" aria-label="Kolor submarki {{ $i + 1 }}">
                             <input type="text" name="sub_brands[{{ $i }}][color]" value="{{ $sb['color'] ?? '' }}" data-color-picker placeholder="#1f6feb"
                                 oninput="if (/^#[0-9a-fA-F]{6}$/.test(this.value)) this.previousElementSibling.value = this.value"
-                                class="w-32 rounded border-gray-300 font-mono text-sm focus:border-brand focus:ring-brand" aria-label="Kod koloru submarki {{ $i + 1 }}">
+                                class="w-32 rounded border-gray-500 font-mono text-sm focus:border-brand-dark focus:ring-brand-dark" aria-label="Kod koloru submarki {{ $i + 1 }}">
                             <input type="text" name="sub_brands[{{ $i }}][name]" value="{{ $sb['name'] ?? '' }}" placeholder="Nazwa, np. Seniorzy"
-                                class="min-w-0 flex-1 rounded border-gray-300 text-sm focus:border-brand focus:ring-brand" aria-label="Nazwa submarki {{ $i + 1 }}">
+                                class="min-w-0 flex-1 rounded border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark" aria-label="Nazwa submarki {{ $i + 1 }}">
                             <button type="button" data-subbrands-remove class="rounded p-2 text-muted hover:bg-red-50 hover:text-red-600" aria-label="Usuń submarkę {{ $i + 1 }}"><i class="fa-solid fa-trash" aria-hidden="true"></i></button>
                         </div>
                     @endforeach
                 </div>
-                <button type="button" data-subbrands-add class="mt-3 inline-flex items-center gap-2 rounded border border-brand px-3 py-1.5 text-sm font-bold text-brand hover:bg-brand-light"><i class="fa-solid fa-plus" aria-hidden="true"></i> Dodaj kolor submarki</button>
+                <button type="button" data-subbrands-add class="mt-3 inline-flex items-center gap-2 rounded border border-brand-dark px-3 py-1.5 text-sm font-bold text-brand-dark hover:bg-brand-light"><i class="fa-solid fa-plus" aria-hidden="true"></i> Dodaj kolor submarki</button>
                 <template data-subbrands-template>
                     <div data-subbrands-row class="flex flex-wrap items-center gap-2">
                         <input type="color" value="#1f6feb" oninput="this.nextElementSibling.value = this.value"
-                            class="h-10 w-14 flex-none rounded border-gray-300" aria-label="Kolor submarki">
+                            class="h-10 w-14 flex-none rounded border-gray-500" aria-label="Kolor submarki">
                         <input type="text" name="sub_brands[__INDEX__][color]" data-color-picker placeholder="#1f6feb"
                             oninput="if (/^#[0-9a-fA-F]{6}$/.test(this.value)) this.previousElementSibling.value = this.value"
-                            class="w-32 rounded border-gray-300 font-mono text-sm focus:border-brand focus:ring-brand" aria-label="Kod koloru submarki">
+                            class="w-32 rounded border-gray-500 font-mono text-sm focus:border-brand-dark focus:ring-brand-dark" aria-label="Kod koloru submarki">
                         <input type="text" name="sub_brands[__INDEX__][name]" placeholder="Nazwa, np. Seniorzy"
-                            class="min-w-0 flex-1 rounded border-gray-300 text-sm focus:border-brand focus:ring-brand" aria-label="Nazwa submarki">
+                            class="min-w-0 flex-1 rounded border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark" aria-label="Nazwa submarki">
                         <button type="button" data-subbrands-remove class="rounded p-2 text-muted hover:bg-red-50 hover:text-red-600" aria-label="Usuń submarkę"><i class="fa-solid fa-trash" aria-hidden="true"></i></button>
                     </div>
                 </template>
@@ -770,7 +770,7 @@
                 <label for="site_url" class="mb-1 block text-sm font-bold">Główny adres strony (Site URL)</label>
                 <input type="url" id="site_url" name="site_url" value="{{ old('site_url', $settings->site_url) }}"
                     placeholder="{{ config('app.url') }}"
-                    class="w-full rounded border-gray-300 font-mono text-sm focus:border-brand focus:ring-brand">
+                    class="w-full rounded border-gray-500 font-mono text-sm focus:border-brand-dark focus:ring-brand-dark">
                 <p class="mt-1 text-xs text-muted">Adres używany do budowania linków bezwzględnych (mapa strony, e-maile, powiadomienia, adres powrotny logowania Microsoft). Puste = wartość <code>APP_URL</code> z pliku <code>.env</code>. Zmieniaj tylko, gdy wiesz, że domena serwisu jest inna niż wykrywana automatycznie.</p>
                 @error('site_url') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
             </div>
@@ -782,7 +782,7 @@
                 <label class="mt-4 flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm">
                     <input type="checkbox" name="maintenance_mode" value="1" x-model="maintenance"
                         @checked(old('maintenance_mode', $settings->maintenance_mode))
-                        class="mt-0.5 rounded border-gray-300 text-brand focus:ring-brand">
+                        class="mt-0.5 rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
                     <span>
                         <span class="font-bold text-amber-900">Włącz tryb konserwacji</span>
                         <span class="block text-xs text-amber-800">Strona publiczna zostanie zastąpiona komunikatem o przerwie technicznej (HTTP 503).</span>
@@ -793,12 +793,12 @@
                     <label for="maintenance_message" class="mb-1 block text-sm font-bold">Komunikat dla użytkowników</label>
                     <textarea id="maintenance_message" name="maintenance_message" rows="3"
                         placeholder="{{ \App\Models\SiteSetting::DEFAULT_MAINTENANCE_MESSAGE }}"
-                        class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">{{ old('maintenance_message', $settings->maintenance_message) }}</textarea>
+                        class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">{{ old('maintenance_message', $settings->maintenance_message) }}</textarea>
                     <p class="mt-1 text-xs text-muted">Puste = komunikat domyślny (widoczny jako podpowiedź).</p>
                     @error('maintenance_message') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                 </div>
 
-                <p class="mt-4 flex items-start gap-2 rounded border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-800" x-show="maintenance" x-cloak>
+                <p class="mt-4 flex items-start gap-2 rounded-md bg-red-50 px-3 py-2 text-xs text-red-800" x-show="maintenance" x-cloak>
                     <i class="fa-solid fa-shield-halved mt-0.5" aria-hidden="true"></i>
                     <span>W trybie konserwacji <strong>logowanie przez Microsoft 365 jest całkowicie zablokowane</strong>. Zaloguj się loginem i hasłem, aby wyłączyć tryb.</span>
                 </p>
@@ -809,7 +809,7 @@
             <div class="mb-5">
                 <label for="meta_description" class="mb-1 block text-sm font-bold">Domyślny opis strony (meta description)</label>
                 <textarea id="meta_description" name="meta_description" rows="3" maxlength="300"
-                    class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">{{ old('meta_description', $settings->meta_description) }}</textarea>
+                    class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">{{ old('meta_description', $settings->meta_description) }}</textarea>
                 <p class="mt-1 text-xs text-muted">Używany, gdy strona/artykuł nie ma własnego opisu. Widoczny w wynikach Google i podglądach linków.</p>
                 @error('meta_description') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
             </div>
@@ -820,19 +820,19 @@
                     <div class="mb-2 flex items-center gap-3">
                         <img src="{{ $settings->ogImageUrl() }}" alt="Obrazek OG" class="h-14 w-24 rounded object-cover">
                         <label class="flex items-center gap-2 text-sm text-muted">
-                            <input type="checkbox" name="remove_og_image" value="1" class="rounded border-gray-300 text-brand focus:ring-brand">
+                            <input type="checkbox" name="remove_og_image" value="1" class="rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
                             Usuń obrazek
                         </label>
                     </div>
                 @endif
-                <input type="file" name="og_image" accept="image/*" class="block w-full cursor-pointer text-sm text-muted file:mr-3 file:cursor-pointer file:rounded file:border-0 file:bg-brand file:px-4 file:py-2 file:text-sm file:font-bold file:text-white hover:file:bg-brand-dark">
+                <input type="file" name="og_image" accept="image/*" class="block w-full cursor-pointer text-sm text-muted file:mr-3 file:cursor-pointer file:rounded file:border-0 file:bg-brand-dark file:px-4 file:py-2 file:text-sm file:font-bold file:text-white hover:file:bg-brand-dark">
                 <p class="mt-1 text-xs text-muted">Pojawia się w podglądzie linku na Facebooku, LinkedInie i Messengerze (zalecane 1200×630 px).</p>
                 @error('og_image') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
             </div>
 
             <label class="flex items-center gap-2 text-sm">
                 <input type="checkbox" name="allow_indexing" value="1" {{ old('allow_indexing', $settings->allow_indexing) ? 'checked' : '' }}
-                    class="rounded border-gray-300 text-brand focus:ring-brand">
+                    class="rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
                 Zezwól wyszukiwarkom na indeksowanie strony
             </label>
             <p class="mt-1 text-xs text-muted">Odznacz, aby ukryć całą stronę przed Google (np. na czas prac testowych).</p>
@@ -842,7 +842,7 @@
                 <input type="text" id="ga_measurement_id" name="ga_measurement_id"
                     value="{{ old('ga_measurement_id', $settings->ga_measurement_id) }}"
                     placeholder="G-XXXXXXXXXX" pattern="G-[A-Za-z0-9]+"
-                    class="w-full max-w-xs rounded border-gray-300 font-mono focus:border-brand focus:ring-brand">
+                    class="w-full max-w-xs rounded border-gray-500 font-mono focus:border-brand-dark focus:ring-brand-dark">
                 <p class="mt-1 text-xs text-muted">
                     Zostaw puste, aby wyłączyć. Kod śledzenia ładuje się dopiero po akceptacji cookies (RODO), z anonimizacją IP.
                 </p>
@@ -857,38 +857,38 @@
                 <div>
                     <label for="krs_number" class="mb-1 block text-sm font-bold">Numer KRS</label>
                     <input type="text" id="krs_number" name="krs_number" value="{{ old('krs_number', $settings->krs_number) }}"
-                        class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                        class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
                     @error('krs_number') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                 </div>
                 <div>
                     <label for="nip_number" class="mb-1 block text-sm font-bold">NIP</label>
                     <input type="text" id="nip_number" name="nip_number" value="{{ old('nip_number', $settings->nip_number) }}"
-                        class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                        class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
                     @error('nip_number') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                 </div>
                 <div>
                     <label for="regon_number" class="mb-1 block text-sm font-bold">REGON</label>
                     <input type="text" id="regon_number" name="regon_number" value="{{ old('regon_number', $settings->regon_number) }}"
-                        class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                        class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
                     @error('regon_number') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                 </div>
             </div>
         </div>
 
         <div x-show="tab === 'accessibility'" x-cloak class="space-y-6">
-            <p class="text-xs text-muted">Zmienne części <a href="{{ route('accessibility.show') }}" target="_blank" rel="noopener" class="text-brand underline">deklaracji dostępności</a>. Stały, prawny szkielet deklaracji jest wbudowany — tu uzupełniasz tylko dane podmiotu, status i kontakt do zgłoszeń barier.</p>
+            <p class="text-xs text-muted">Zmienne części <a href="{{ route('accessibility.show') }}" target="_blank" rel="noopener" class="text-brand-dark underline">deklaracji dostępności</a>. Stały, prawny szkielet deklaracji jest wbudowany — tu uzupełniasz tylko dane podmiotu, status i kontakt do zgłoszeń barier.</p>
 
             <div>
                 <label for="accessibility_entity_name" class="mb-1 block text-sm font-bold">Nazwa podmiotu</label>
                 <input type="text" id="accessibility_entity_name" name="accessibility_entity_name" value="{{ old('accessibility_entity_name', $settings->accessibility_entity_name) }}" placeholder="{{ $settings->site_name }}"
-                    class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                    class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
                 <p class="mt-1 text-xs text-muted">Puste = nazwa strony ({{ $settings->site_name }}).</p>
                 @error('accessibility_entity_name') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
             </div>
 
             <div>
                 <label for="accessibility_status" class="mb-1 block text-sm font-bold">Status zgodności z ustawą</label>
-                <select id="accessibility_status" name="accessibility_status" class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                <select id="accessibility_status" name="accessibility_status" class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
                     @foreach (\App\Models\SiteSetting::ACCESSIBILITY_STATUSES as $value => $label)
                         <option value="{{ $value }}" {{ old('accessibility_status', $settings->accessibility_status) === $value ? 'selected' : '' }}>{{ $label }}</option>
                     @endforeach
@@ -899,7 +899,7 @@
             <div>
                 <label for="accessibility_status_note" class="mb-1 block text-sm font-bold">Uzasadnienie / wyłączenia <span class="font-normal text-muted">(opcjonalnie)</span></label>
                 <textarea id="accessibility_status_note" name="accessibility_status_note" rows="4" placeholder="Np. które elementy nie są jeszcze dostępne i dlaczego."
-                    class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">{{ old('accessibility_status_note', $settings->accessibility_status_note) }}</textarea>
+                    class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">{{ old('accessibility_status_note', $settings->accessibility_status_note) }}</textarea>
                 @error('accessibility_status_note') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
             </div>
 
@@ -907,26 +907,26 @@
                 <div>
                     <label for="accessibility_page_published_at" class="mb-1 block text-sm font-bold">Data publikacji strony</label>
                     <input type="date" id="accessibility_page_published_at" name="accessibility_page_published_at" value="{{ old('accessibility_page_published_at', $settings->accessibility_page_published_at?->format('Y-m-d')) }}"
-                        class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                        class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
                     @error('accessibility_page_published_at') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                 </div>
                 <div>
                     <label for="accessibility_page_updated_at" class="mb-1 block text-sm font-bold">Ostatnia istotna aktualizacja</label>
                     <input type="date" id="accessibility_page_updated_at" name="accessibility_page_updated_at" value="{{ old('accessibility_page_updated_at', $settings->accessibility_page_updated_at?->format('Y-m-d')) }}"
-                        class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                        class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
                     @error('accessibility_page_updated_at') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                 </div>
                 <div>
                     <label for="accessibility_declaration_date" class="mb-1 block text-sm font-bold">Data sporządzenia deklaracji</label>
                     <input type="date" id="accessibility_declaration_date" name="accessibility_declaration_date" value="{{ old('accessibility_declaration_date', $settings->accessibility_declaration_date?->format('Y-m-d')) }}"
-                        class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                        class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
                     @error('accessibility_declaration_date') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                 </div>
             </div>
 
             <div>
                 <label for="accessibility_review_method" class="mb-1 block text-sm font-bold">Sposób sporządzenia deklaracji</label>
-                <select id="accessibility_review_method" name="accessibility_review_method" class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                <select id="accessibility_review_method" name="accessibility_review_method" class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
                     @foreach (\App\Models\SiteSetting::ACCESSIBILITY_REVIEW_METHODS as $value => $label)
                         <option value="{{ $value }}" {{ old('accessibility_review_method', $settings->accessibility_review_method) === $value ? 'selected' : '' }}>{{ ucfirst($label) }}</option>
                     @endforeach
@@ -938,20 +938,20 @@
                 <div>
                     <label for="accessibility_contact_name" class="mb-1 block text-sm font-bold">Osoba do kontaktu</label>
                     <input type="text" id="accessibility_contact_name" name="accessibility_contact_name" value="{{ old('accessibility_contact_name', $settings->accessibility_contact_name) }}"
-                        class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                        class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
                     @error('accessibility_contact_name') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                 </div>
                 <div>
                     <label for="accessibility_contact_email" class="mb-1 block text-sm font-bold">E-mail do zgłoszeń</label>
                     <input type="email" id="accessibility_contact_email" name="accessibility_contact_email" value="{{ old('accessibility_contact_email', $settings->accessibility_contact_email) }}" placeholder="{{ $settings->contact_email }}"
-                        class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                        class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
                     <p class="mt-1 text-xs text-muted">Puste = ogólny e-mail kontaktowy. Tu trafiają zgłoszenia barier.</p>
                     @error('accessibility_contact_email') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                 </div>
                 <div>
                     <label for="accessibility_contact_phone" class="mb-1 block text-sm font-bold">Telefon do zgłoszeń</label>
                     <input type="text" id="accessibility_contact_phone" name="accessibility_contact_phone" value="{{ old('accessibility_contact_phone', $settings->accessibility_contact_phone) }}" placeholder="{{ $settings->contact_phone }}"
-                        class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                        class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
                     @error('accessibility_contact_phone') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                 </div>
             </div>
@@ -959,7 +959,7 @@
             <div>
                 <label for="accessibility_architectural" class="mb-1 block text-sm font-bold">Dostępność architektoniczna <span class="font-normal text-muted">(opcjonalnie)</span></label>
                 <textarea id="accessibility_architectural" name="accessibility_architectural" rows="5" placeholder="Opis dostępności budynku/siedziby: wejście, windy, toalety, miejsca parkingowe, pętla indukcyjna itp."
-                    class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">{{ old('accessibility_architectural', $settings->accessibility_architectural) }}</textarea>
+                    class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">{{ old('accessibility_architectural', $settings->accessibility_architectural) }}</textarea>
                 @error('accessibility_architectural') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
             </div>
         </div>
@@ -975,13 +975,13 @@
                 ];
             @endphp
             <div class="flex flex-wrap items-center justify-between gap-3">
-                <p class="text-xs text-muted">Wyświetlane na podstronie <a href="{{ route('support.show') }}" target="_blank" rel="noopener" class="text-brand underline">/wsparcie</a>. Puste pola pokazują tekst domyślny (widoczny jako podpowiedź).</p>
+                <p class="text-xs text-muted">Wyświetlane na podstronie <a href="{{ route('support.show') }}" target="_blank" rel="noopener" class="text-brand-dark underline">/wsparcie</a>. Puste pola pokazują tekst domyślny (widoczny jako podpowiedź).</p>
                 <a href="{{ route('admin.historia.index', ['type' => 'support', 'id' => $settings->id]) }}"
-                    class="inline-flex min-h-9 items-center gap-1.5 rounded border border-gray-300 px-3 py-1.5 text-xs font-bold text-ink hover:border-brand hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                    class="inline-flex min-h-9 items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-bold text-ink hover:text-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark bg-gray-100 hover:bg-brand-light">
                     <i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i> Historia wersji tej strony
                 </a>
             </div>
-            <p class="rounded border border-blue-200 bg-blue-50 px-3 py-2 text-xs text-blue-800">
+            <p class="rounded-md bg-brand-light px-3 py-2 text-xs text-ink">
                 Każdy zapis zmieniający teksty tej strony tworzy wersję (autor, data). W historii porównasz zmiany obok siebie
                 i jednym kliknięciem przywrócisz starszą wersję. Przechowujemy 30 ostatnich wersji. Zdjęcia i galeria nie są wersjonowane.
             </p>
@@ -989,76 +989,76 @@
             <nav aria-label="Sekcje strony wsparcia" class="flex flex-wrap gap-2">
                 @foreach ($supportSecs as $secKey => $secLabel)
                     <button type="button" @click="sec = @js($secKey)" :aria-current="sec === @js($secKey) ? 'page' : null"
-                        :class="sec === @js($secKey) ? 'bg-brand-light font-bold text-brand' : 'text-ink hover:bg-gray-100 hover:text-brand'"
-                        class="min-h-9 rounded px-3 py-1.5 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">{{ $secLabel }}</button>
+                        :class="sec === @js($secKey) ? 'bg-brand-light font-bold text-brand-dark' : 'text-ink hover:bg-gray-100 hover:text-ink'"
+                        class="min-h-9 rounded px-3 py-1.5 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">{{ $secLabel }}</button>
                 @endforeach
             </nav>
 
-            <div x-show="sec === 'zbiorka'" x-cloak class="space-y-4 rounded-lg border border-gray-200 bg-gray-50 p-5">
+            <div x-show="sec === 'zbiorka'" x-cloak class="space-y-4 p-5 rounded-md bg-gray-50">
                 <p class="text-sm font-bold text-ink">Zbiórka na cele FEER</p>
                 <p class="-mt-2 text-xs text-muted">Podaj tytuł i cel (kwotę), aby na stronie pojawił się pasek postępu zbiórki. Pusty cel = brak bloku.</p>
                 <div class="grid gap-4 sm:grid-cols-2">
                     <div>
                         <label for="support_fundraiser_title" class="mb-1 block text-sm font-bold">Tytuł zbiórki</label>
                         <input type="text" id="support_fundraiser_title" name="support_fundraiser_title" value="{{ old('support_fundraiser_title', $settings->support_fundraiser_title) }}"
-                            placeholder="np. Wyposażenie pracowni cyfrowej" class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                            placeholder="np. Wyposażenie pracowni cyfrowej" class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
                         @error('support_fundraiser_title') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
                     <div>
                         <label for="support_fundraiser_url" class="mb-1 block text-sm font-bold">Link do wpłaty na zbiórkę</label>
                         <input type="text" id="support_fundraiser_url" name="support_fundraiser_url" value="{{ old('support_fundraiser_url', $settings->support_fundraiser_url) }}"
-                            placeholder="np. https://wplacam.ngo.pl/..." class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                            placeholder="np. https://wplacam.ngo.pl/..." class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
                         @error('support_fundraiser_url') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
                 </div>
                 <div>
                     <label for="support_fundraiser_text" class="mb-1 block text-sm font-bold">Opis <span class="font-normal text-muted">(opcjonalnie)</span></label>
                     <textarea id="support_fundraiser_text" name="support_fundraiser_text" rows="2"
-                        placeholder="Na co zbieramy i dlaczego to ważne." class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">{{ old('support_fundraiser_text', $settings->support_fundraiser_text) }}</textarea>
+                        placeholder="Na co zbieramy i dlaczego to ważne." class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">{{ old('support_fundraiser_text', $settings->support_fundraiser_text) }}</textarea>
                     @error('support_fundraiser_text') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                 </div>
                 <div class="grid gap-4 sm:grid-cols-3">
                     <div>
                         <label for="support_fundraiser_goal" class="mb-1 block text-sm font-bold">Cel (zł)</label>
                         <input type="number" id="support_fundraiser_goal" name="support_fundraiser_goal" value="{{ old('support_fundraiser_goal', $settings->support_fundraiser_goal) }}" min="0"
-                            class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                            class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
                         @error('support_fundraiser_goal') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
                     <div>
                         <label for="support_fundraiser_raised" class="mb-1 block text-sm font-bold">Zebrano (zł)</label>
                         <input type="number" id="support_fundraiser_raised" name="support_fundraiser_raised" value="{{ old('support_fundraiser_raised', $settings->support_fundraiser_raised) }}" min="0"
-                            class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                            class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
                         <p class="mt-1 text-xs text-muted">Aktualizuj ręcznie.</p>
                         @error('support_fundraiser_raised') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
                     <div>
                         <label for="support_fundraiser_cta_label" class="mb-1 block text-sm font-bold">Tekst przycisku</label>
                         <input type="text" id="support_fundraiser_cta_label" name="support_fundraiser_cta_label" value="{{ old('support_fundraiser_cta_label', $settings->support_fundraiser_cta_label) }}"
-                            placeholder="Wesprzyj zbiórkę" class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                            placeholder="Wesprzyj zbiórkę" class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
                         @error('support_fundraiser_cta_label') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
                 </div>
             </div>
 
-            <div x-show="sec === 'tresc'" x-cloak class="space-y-4 rounded-lg border border-gray-200 bg-gray-50 p-5">
+            <div x-show="sec === 'tresc'" x-cloak class="space-y-4 p-5 rounded-md bg-gray-50">
                 <p class="text-sm font-bold text-ink">Social proof — cytat</p>
                 <div>
                     <label for="support_testimonial_quote" class="mb-1 block text-sm font-bold">Cytat <span class="font-normal text-muted">(opcjonalnie)</span></label>
                     <textarea id="support_testimonial_quote" name="support_testimonial_quote" rows="2"
-                        placeholder="np. „Dzięki FEER mama nauczyła się rozmawiać z wnukami przez wideo."" class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">{{ old('support_testimonial_quote', $settings->support_testimonial_quote) }}</textarea>
+                        placeholder="np. „Dzięki FEER mama nauczyła się rozmawiać z wnukami przez wideo.”" class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">{{ old('support_testimonial_quote', $settings->support_testimonial_quote) }}</textarea>
                     @error('support_testimonial_quote') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                 </div>
                 <div class="grid gap-4 sm:grid-cols-2">
                     <div>
                         <label for="support_testimonial_author" class="mb-1 block text-sm font-bold">Autor</label>
                         <input type="text" id="support_testimonial_author" name="support_testimonial_author" value="{{ old('support_testimonial_author', $settings->support_testimonial_author) }}"
-                            placeholder="np. Anna, uczestniczka warsztatów" class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                            placeholder="np. Anna, uczestniczka warsztatów" class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
                         @error('support_testimonial_author') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
                     <div>
                         <label for="support_testimonial_role" class="mb-1 block text-sm font-bold">Rola / kontekst</label>
                         <input type="text" id="support_testimonial_role" name="support_testimonial_role" value="{{ old('support_testimonial_role', $settings->support_testimonial_role) }}"
-                            placeholder="np. darczyńca, wolontariuszka" class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                            placeholder="np. darczyńca, wolontariuszka" class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
                         @error('support_testimonial_role') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
                 </div>
@@ -1066,7 +1066,7 @@
 
             <label class="flex items-center gap-2 rounded-lg border border-gray-200 bg-gray-50 p-5">
                 <input type="checkbox" name="support_show_partners" value="1" {{ old('support_show_partners', $settings->support_show_partners) ? 'checked' : '' }}
-                    class="rounded border-gray-300 text-brand focus:ring-brand">
+                    class="rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
                 <span class="text-sm font-bold">Pokaż logotypy partnerów („Zaufali nam") na stronie wsparcia</span>
             </label>
 
@@ -1076,12 +1076,12 @@
                     <div class="mb-2 flex items-center gap-3">
                         <img src="{{ $settings->supportImageUrl() }}" alt="Zdjęcie nagłówka strony wsparcia" class="h-20 w-32 rounded object-cover">
                         <label class="flex items-center gap-2 text-sm text-muted">
-                            <input type="checkbox" name="remove_support_image" value="1" class="rounded border-gray-300 text-brand focus:ring-brand">
+                            <input type="checkbox" name="remove_support_image" value="1" class="rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
                             Usuń zdjęcie
                         </label>
                     </div>
                 @endif
-                <input type="file" name="support_image" accept="image/*" class="block w-full cursor-pointer text-sm text-muted file:mr-3 file:cursor-pointer file:rounded file:border-0 file:bg-brand file:px-4 file:py-2 file:text-sm file:font-bold file:text-white hover:file:bg-brand-dark">
+                <input type="file" name="support_image" accept="image/*" class="block w-full cursor-pointer text-sm text-muted file:mr-3 file:cursor-pointer file:rounded file:border-0 file:bg-brand-dark file:px-4 file:py-2 file:text-sm file:font-bold file:text-white hover:file:bg-brand-dark">
                 <p class="mt-1 text-xs text-muted">Wyświetlane jako duże zdjęcie w tle nagłówka strony (zalecane min. 1600×500 px).</p>
                 @error('support_image') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
             </div>
@@ -1096,7 +1096,7 @@
                             <label class="group relative block cursor-pointer overflow-hidden rounded-lg border border-gray-200">
                                 <img src="{{ $media->getUrl() }}" alt="" class="h-24 w-full object-cover">
                                 <span class="absolute inset-x-0 bottom-0 flex items-center justify-center gap-1.5 bg-black/60 py-1 text-xs font-bold text-white opacity-0 transition group-hover:opacity-100">
-                                    <input type="checkbox" name="remove_support_gallery[]" value="{{ $media->id }}" class="rounded border-gray-300 text-red-600 focus:ring-red-500">
+                                    <input type="checkbox" name="remove_support_gallery[]" value="{{ $media->id }}" class="rounded border-gray-500 text-red-600 focus:ring-red-500">
                                     Usuń
                                 </span>
                             </label>
@@ -1106,7 +1106,7 @@
                 @endif
 
                 <input type="file" name="support_gallery[]" accept="image/*" multiple
-                    class="block w-full cursor-pointer text-sm text-muted file:mr-3 file:cursor-pointer file:rounded file:border-0 file:bg-brand file:px-4 file:py-2 file:text-sm file:font-bold file:text-white hover:file:bg-brand-dark">
+                    class="block w-full cursor-pointer text-sm text-muted file:mr-3 file:cursor-pointer file:rounded file:border-0 file:bg-brand-dark file:px-4 file:py-2 file:text-sm file:font-bold file:text-white hover:file:bg-brand-dark">
                 <p class="mt-1 text-xs text-muted">Możesz wybrać kilka zdjęć naraz. Dodane pojawią się po zapisaniu.</p>
                 @error('support_gallery.*') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
             </div>
@@ -1117,25 +1117,25 @@
                     <div>
                         <label for="support_hero_badge" class="mb-1 block text-sm font-bold">Etykieta (badge)</label>
                         <input type="text" id="support_hero_badge" name="support_hero_badge" value="{{ old('support_hero_badge', $settings->support_hero_badge) }}"
-                            placeholder="{{ $sd['support_hero_badge'] }}" class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                            placeholder="{{ $sd['support_hero_badge'] }}" class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
                         @error('support_hero_badge') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
                     <div>
                         <label for="support_hero_title" class="mb-1 block text-sm font-bold">Tytuł (H1)</label>
                         <input type="text" id="support_hero_title" name="support_hero_title" value="{{ old('support_hero_title', $settings->support_hero_title) }}"
-                            placeholder="{{ $sd['support_hero_title'] }}" class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                            placeholder="{{ $sd['support_hero_title'] }}" class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
                         @error('support_hero_title') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
                     <div>
                         <label for="support_hero_subtitle" class="mb-1 block text-sm font-bold">Podtytuł</label>
                         <textarea id="support_hero_subtitle" name="support_hero_subtitle" rows="2"
-                            placeholder="{{ $sd['support_hero_subtitle'] }}" class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">{{ old('support_hero_subtitle', $settings->support_hero_subtitle) }}</textarea>
+                            placeholder="{{ $sd['support_hero_subtitle'] }}" class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">{{ old('support_hero_subtitle', $settings->support_hero_subtitle) }}</textarea>
                         @error('support_hero_subtitle') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
                     <div>
                         <label for="support_hero_cta_label" class="mb-1 block text-sm font-bold">Tekst przycisku „Wpłać teraz"</label>
                         <input type="text" id="support_hero_cta_label" name="support_hero_cta_label" value="{{ old('support_hero_cta_label', $settings->support_hero_cta_label) }}"
-                            placeholder="{{ $sd['support_hero_cta_label'] }}" class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                            placeholder="{{ $sd['support_hero_cta_label'] }}" class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
                         <p class="mt-1 text-xs text-muted">Przycisk pojawia się tylko, gdy ustawiono link do szybkiego przelewu (poniżej).</p>
                         @error('support_hero_cta_label') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
@@ -1148,38 +1148,38 @@
                     <div>
                         <label for="support_benefits_title" class="mb-1 block text-sm font-bold">Tytuł sekcji</label>
                         <input type="text" id="support_benefits_title" name="support_benefits_title" value="{{ old('support_benefits_title', $settings->support_benefits_title) }}"
-                            placeholder="{{ $sd['support_benefits_title'] }}" class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                            placeholder="{{ $sd['support_benefits_title'] }}" class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
                         @error('support_benefits_title') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
                     <div>
                         <label for="support_benefits_subtitle" class="mb-1 block text-sm font-bold">Opis sekcji</label>
                         <textarea id="support_benefits_subtitle" name="support_benefits_subtitle" rows="2"
-                            placeholder="{{ $sd['support_benefits_subtitle'] }}" class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">{{ old('support_benefits_subtitle', $settings->support_benefits_subtitle) }}</textarea>
+                            placeholder="{{ $sd['support_benefits_subtitle'] }}" class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">{{ old('support_benefits_subtitle', $settings->support_benefits_subtitle) }}</textarea>
                         @error('support_benefits_subtitle') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
 
                     @foreach (['1', '2', '3'] as $i)
-                        <div class="rounded border border-gray-200 p-4">
+                        <div class="p-4 rounded-md bg-gray-50">
                             <p class="mb-2 text-xs font-bold uppercase tracking-wide text-muted">Karta {{ $i }}</p>
                             <div class="grid gap-3 sm:grid-cols-[10rem_1fr]">
                                 <div>
                                     <label for="support_benefit{{ $i }}_icon" class="mb-1 block text-sm font-bold">Ikona</label>
                                     <input type="text" id="support_benefit{{ $i }}_icon" name="support_benefit{{ $i }}_icon" value="{{ old('support_benefit'.$i.'_icon', $settings->{'support_benefit'.$i.'_icon'}) }}"
-                                        placeholder="{{ $sd['support_benefit'.$i.'_icon'] }}" class="w-full rounded border-gray-300 font-mono text-xs focus:border-brand focus:ring-brand">
-                                    <p class="mt-1 text-xs text-muted">Klasa <a href="https://fontawesome.com/search?o=r&m=free" target="_blank" rel="noopener" class="text-brand underline">Font Awesome</a>.</p>
+                                        placeholder="{{ $sd['support_benefit'.$i.'_icon'] }}" class="w-full rounded border-gray-500 font-mono text-xs focus:border-brand-dark focus:ring-brand-dark">
+                                    <p class="mt-1 text-xs text-muted">Klasa <a href="https://fontawesome.com/search?o=r&m=free" target="_blank" rel="noopener" class="text-brand-dark underline">Font Awesome</a>.</p>
                                     @error('support_benefit'.$i.'_icon') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                                 </div>
                                 <div>
                                     <label for="support_benefit{{ $i }}_title" class="mb-1 block text-sm font-bold">Tytuł</label>
                                     <input type="text" id="support_benefit{{ $i }}_title" name="support_benefit{{ $i }}_title" value="{{ old('support_benefit'.$i.'_title', $settings->{'support_benefit'.$i.'_title'}) }}"
-                                        placeholder="{{ $sd['support_benefit'.$i.'_title'] }}" class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                                        placeholder="{{ $sd['support_benefit'.$i.'_title'] }}" class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
                                     @error('support_benefit'.$i.'_title') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                                 </div>
                             </div>
                             <div class="mt-3">
                                 <label for="support_benefit{{ $i }}_text" class="mb-1 block text-sm font-bold">Opis</label>
                                 <textarea id="support_benefit{{ $i }}_text" name="support_benefit{{ $i }}_text" rows="2"
-                                    placeholder="{{ $sd['support_benefit'.$i.'_text'] }}" class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">{{ old('support_benefit'.$i.'_text', $settings->{'support_benefit'.$i.'_text'}) }}</textarea>
+                                    placeholder="{{ $sd['support_benefit'.$i.'_text'] }}" class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">{{ old('support_benefit'.$i.'_text', $settings->{'support_benefit'.$i.'_text'}) }}</textarea>
                                 @error('support_benefit'.$i.'_text') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                             </div>
                         </div>
@@ -1190,7 +1190,7 @@
             <div class="border-t border-gray-100 pt-5">
                 <label for="support_methods_title" class="mb-1 block text-sm font-bold">Tytuł sekcji „Jak możesz pomóc"</label>
                 <input type="text" id="support_methods_title" name="support_methods_title" value="{{ old('support_methods_title', $settings->support_methods_title) }}"
-                    placeholder="{{ $sd['support_methods_title'] }}" class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                    placeholder="{{ $sd['support_methods_title'] }}" class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
                 @error('support_methods_title') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
             </div>
 
@@ -1201,11 +1201,11 @@
             </div>
 
             {{-- Strona /wsparcie/darowizna (wpłata online przez Przelewy24) --}}
-            <div x-show="sec === 'wplaty'" x-cloak class="space-y-4 rounded-lg border border-gray-200 bg-gray-50/70 p-5">
+            <div x-show="sec === 'wplaty'" x-cloak class="space-y-4 p-5 rounded-md bg-gray-50">
                 <div>
                     <h3 class="text-sm font-bold text-ink">Darowizna jednorazowa online</h3>
                     <p class="mt-1 text-xs text-muted">
-                        Strona <a href="{{ route('donation.show') }}" class="font-bold text-brand hover:underline" target="_blank" rel="noopener">/wsparcie/darowizna<span class="sr-only"> (otwiera się w nowej karcie)</span></a>.
+                        Strona <a href="{{ route('donation.show') }}" class="font-bold text-brand-dark hover:underline" target="_blank" rel="noopener">/wsparcie/darowizna<span class="sr-only"> (otwiera się w nowej karcie)</span></a>.
                         Płatność przez Przelewy24 (dane w zakładce <span class="font-bold">Logowanie i integracje</span>);
                         opłacone wpłaty trafiają do rejestru darowizn SZO (SZO_TOKEN z uprawnieniem <code>donations:submit</code>).
                     </p>
@@ -1215,14 +1215,14 @@
                     <input type="text" id="donation_amounts" name="donation_amounts" inputmode="numeric" maxlength="100"
                         value="{{ old('donation_amounts', $settings->donation_amounts) }}" placeholder="30, 60, 100, 250"
                         aria-describedby="donation_amounts_help"
-                        class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                        class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
                     <p id="donation_amounts_help" class="mt-1 text-xs text-muted">Oddzielone przecinkami, 5–50 000 zł, najwyżej 6. Obok zawsze jest pole „Inna kwota".</p>
                     @error('donation_amounts') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                 </div>
                 <div>
                     <label for="donation_intro" class="mb-1 block text-sm font-bold">Tekst wstępu <span class="font-normal text-muted">(opcjonalnie)</span></label>
                     <textarea id="donation_intro" name="donation_intro" rows="4" maxlength="2000"
-                        class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">{{ old('donation_intro', $settings->donation_intro) }}</textarea>
+                        class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">{{ old('donation_intro', $settings->donation_intro) }}</textarea>
                     <p class="mt-1 text-xs text-muted">Pusta linia rozpoczyna nowy akapit.</p>
                     @error('donation_intro') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                 </div>
@@ -1230,7 +1230,7 @@
                     <label for="donation_headline" class="mb-1 block text-sm font-bold">Nagłówek strony <span class="font-normal text-muted">(opcjonalnie)</span></label>
                     <input type="text" id="donation_headline" name="donation_headline" maxlength="160"
                         value="{{ old('donation_headline', $settings->donation_headline) }}" placeholder="Twoja wpłata zamienia się w realną pomoc"
-                        class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                        class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
                     <p class="mt-1 text-xs text-muted">Hasło nad formularzem — konkretne i o efekcie wpłaty, nie o samej organizacji.</p>
                     @error('donation_headline') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                 </div>
@@ -1239,14 +1239,14 @@
                     <textarea id="donation_impacts" name="donation_impacts" rows="4" maxlength="1500"
                         aria-describedby="donation_impacts_help"
                         placeholder="30 | Materiały edukacyjne dla jednej osoby&#10;60 | Godzina indywidualnego wsparcia"
-                        class="w-full rounded border-gray-300 font-mono text-sm focus:border-brand focus:ring-brand">{{ old('donation_impacts', $settings->donation_impacts) }}</textarea>
+                        class="w-full rounded border-gray-500 font-mono text-sm focus:border-brand-dark focus:ring-brand-dark">{{ old('donation_impacts', $settings->donation_impacts) }}</textarea>
                     <p id="donation_impacts_help" class="mt-1 text-xs text-muted">Jedna linia na kwotę: <code>kwota | opis</code>. Opis pojawia się pod wybraną kwotą. Wpisuj tylko to, co organizacja faktycznie może potwierdzić.</p>
                     @error('donation_impacts') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                 </div>
                 <div>
                     <label for="donation_use_note" class="mb-1 block text-sm font-bold">Na co przeznaczamy wpłaty <span class="font-normal text-muted">(opcjonalnie)</span></label>
                     <textarea id="donation_use_note" name="donation_use_note" rows="4" maxlength="1500"
-                        class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">{{ old('donation_use_note', $settings->donation_use_note) }}</textarea>
+                        class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">{{ old('donation_use_note', $settings->donation_use_note) }}</textarea>
                     <p class="mt-1 text-xs text-muted">Pusta linia rozpoczyna nowy akapit. Transparentność zwiększa zaufanie darczyńców.</p>
                     @error('donation_use_note') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                 </div>
@@ -1254,7 +1254,7 @@
                     <label for="donation_reports_url" class="mb-1 block text-sm font-bold">Odnośnik do sprawozdań <span class="font-normal text-muted">(opcjonalnie)</span></label>
                     <input type="text" id="donation_reports_url" name="donation_reports_url" maxlength="255"
                         value="{{ old('donation_reports_url', $settings->donation_reports_url) }}" placeholder="/sprawozdania lub https://…"
-                        class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                        class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
                     @error('donation_reports_url') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                 </div>
             </div>
@@ -1265,7 +1265,7 @@
                     <div>
                         <label for="support_method1_title" class="mb-1 block text-sm font-bold">Tytuł karty</label>
                         <input type="text" id="support_method1_title" name="support_method1_title" value="{{ old('support_method1_title', $settings->support_method1_title) }}"
-                            placeholder="{{ $sd['support_method1_title'] }}" class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                            placeholder="{{ $sd['support_method1_title'] }}" class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
                         @error('support_method1_title') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
                     <div class="grid gap-4 sm:grid-cols-2">
@@ -1273,34 +1273,34 @@
                             <label for="bank_account_number" class="mb-1 block text-sm font-bold">Numer konta <span class="font-normal text-muted">(opcjonalnie)</span></label>
                             <input type="text" id="bank_account_number" name="bank_account_number" value="{{ old('bank_account_number', $settings->bank_account_number) }}"
                                 placeholder="PL00 0000 0000 0000 0000 0000 0000"
-                                class="w-full rounded border-gray-300 font-mono text-sm focus:border-brand focus:ring-brand">
+                                class="w-full rounded border-gray-500 font-mono text-sm focus:border-brand-dark focus:ring-brand-dark">
                             @error('bank_account_number') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                             <label for="support_method1_account_label" class="mb-1 mt-2 block text-xs font-bold text-muted">Etykieta pola</label>
                             <input type="text" id="support_method1_account_label" name="support_method1_account_label" value="{{ old('support_method1_account_label', $settings->support_method1_account_label) }}"
-                                placeholder="{{ $sd['support_method1_account_label'] }}" class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                                placeholder="{{ $sd['support_method1_account_label'] }}" class="w-full rounded border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark">
                             @error('support_method1_account_label') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                         </div>
                         <div>
                             <label for="bank_account_tax_number" class="mb-1 block text-sm font-bold">Konto na 1,5% podatku <span class="font-normal text-muted">(opcjonalnie)</span></label>
                             <input type="text" id="bank_account_tax_number" name="bank_account_tax_number" value="{{ old('bank_account_tax_number', $settings->bank_account_tax_number) }}"
                                 placeholder="zostaw puste, jeśli takie samo jak wyżej"
-                                class="w-full rounded border-gray-300 font-mono text-sm focus:border-brand focus:ring-brand">
+                                class="w-full rounded border-gray-500 font-mono text-sm focus:border-brand-dark focus:ring-brand-dark">
                             @error('bank_account_tax_number') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                             <label for="support_method1_tax_label" class="mb-1 mt-2 block text-xs font-bold text-muted">Etykieta pola</label>
                             <input type="text" id="support_method1_tax_label" name="support_method1_tax_label" value="{{ old('support_method1_tax_label', $settings->support_method1_tax_label) }}"
-                                placeholder="{{ $sd['support_method1_tax_label'] }}" class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                                placeholder="{{ $sd['support_method1_tax_label'] }}" class="w-full rounded border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark">
                             @error('support_method1_tax_label') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                         </div>
                     </div>
                     <div>
                         <label for="support_transfer_title" class="mb-1 block text-sm font-bold">Tytuł przelewu <span class="font-normal text-muted">(opcjonalnie)</span></label>
                         <input type="text" id="support_transfer_title" name="support_transfer_title" value="{{ old('support_transfer_title', $settings->support_transfer_title) }}"
-                            placeholder="{{ $sd['support_transfer_title'] }}" class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                            placeholder="{{ $sd['support_transfer_title'] }}" class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
                         <p class="mt-1 text-xs text-muted">Sugerowany tytuł przelewu dla darczyńcy (z przyciskiem „Kopiuj tytuł"). Zostaw puste, aby ukryć.</p>
                         @error('support_transfer_title') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                         <label for="support_method1_transfer_label" class="mb-1 mt-2 block text-xs font-bold text-muted">Etykieta pola</label>
                         <input type="text" id="support_method1_transfer_label" name="support_method1_transfer_label" value="{{ old('support_method1_transfer_label', $settings->support_method1_transfer_label) }}"
-                            placeholder="{{ $sd['support_method1_transfer_label'] }}" class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                            placeholder="{{ $sd['support_method1_transfer_label'] }}" class="w-full rounded border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark">
                         @error('support_method1_transfer_label') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
                 </div>
@@ -1312,26 +1312,26 @@
                     <div>
                         <label for="support_method2_title" class="mb-1 block text-sm font-bold">Tytuł karty</label>
                         <input type="text" id="support_method2_title" name="support_method2_title" value="{{ old('support_method2_title', $settings->support_method2_title) }}"
-                            placeholder="{{ $sd['support_method2_title'] }}" class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                            placeholder="{{ $sd['support_method2_title'] }}" class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
                         @error('support_method2_title') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
                     <div>
                         <label for="support_method2_text" class="mb-1 block text-sm font-bold">Opis</label>
                         <textarea id="support_method2_text" name="support_method2_text" rows="2"
-                            placeholder="{{ $sd['support_method2_text'] }}" class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">{{ old('support_method2_text', $settings->support_method2_text) }}</textarea>
+                            placeholder="{{ $sd['support_method2_text'] }}" class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">{{ old('support_method2_text', $settings->support_method2_text) }}</textarea>
                         @error('support_method2_text') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
                     <div>
                         <label for="support_quick_transfer_url" class="mb-1 block text-sm font-bold">Link do szybkiego przelewu <span class="font-normal text-muted">(opcjonalnie)</span></label>
                         <input type="text" id="support_quick_transfer_url" name="support_quick_transfer_url" value="{{ old('support_quick_transfer_url', $settings->support_quick_transfer_url) }}"
                             placeholder="np. link do Przelewy24, Tpay lub PayPal.me"
-                            class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                            class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
                         @error('support_quick_transfer_url') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
                     <div>
                         <label for="support_method2_cta_label" class="mb-1 block text-sm font-bold">Tekst przycisku</label>
                         <input type="text" id="support_method2_cta_label" name="support_method2_cta_label" value="{{ old('support_method2_cta_label', $settings->support_method2_cta_label) }}"
-                            placeholder="{{ $sd['support_method2_cta_label'] }}" class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                            placeholder="{{ $sd['support_method2_cta_label'] }}" class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
                         @error('support_method2_cta_label') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
                 </div>
@@ -1343,26 +1343,26 @@
                     <div>
                         <label for="support_method3_title" class="mb-1 block text-sm font-bold">Tytuł karty</label>
                         <input type="text" id="support_method3_title" name="support_method3_title" value="{{ old('support_method3_title', $settings->support_method3_title) }}"
-                            placeholder="{{ $sd['support_method3_title'] }}" class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                            placeholder="{{ $sd['support_method3_title'] }}" class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
                         @error('support_method3_title') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
                     <div>
                         <label for="support_method3_text" class="mb-1 block text-sm font-bold">Opis</label>
                         <textarea id="support_method3_text" name="support_method3_text" rows="2"
-                            placeholder="{{ $sd['support_method3_text'] }}" class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">{{ old('support_method3_text', $settings->support_method3_text) }}</textarea>
+                            placeholder="{{ $sd['support_method3_text'] }}" class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">{{ old('support_method3_text', $settings->support_method3_text) }}</textarea>
                         @error('support_method3_text') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
                     <div>
                         <label for="support_buycoffee_url" class="mb-1 block text-sm font-bold">Link do profilu BuyCoffee <span class="font-normal text-muted">(opcjonalnie)</span></label>
                         <input type="text" id="support_buycoffee_url" name="support_buycoffee_url" value="{{ old('support_buycoffee_url', $settings->support_buycoffee_url) }}"
                             placeholder="np. https://buycoffee.to/nazwa"
-                            class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                            class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
                         @error('support_buycoffee_url') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
                     <div>
                         <label for="support_method3_cta_label" class="mb-1 block text-sm font-bold">Tekst przycisku</label>
                         <input type="text" id="support_method3_cta_label" name="support_method3_cta_label" value="{{ old('support_method3_cta_label', $settings->support_method3_cta_label) }}"
-                            placeholder="{{ $sd['support_method3_cta_label'] }}" class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                            placeholder="{{ $sd['support_method3_cta_label'] }}" class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
                         @error('support_method3_cta_label') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
                 </div>
@@ -1374,27 +1374,27 @@
                     <div>
                         <label for="support_method4_title" class="mb-1 block text-sm font-bold">Tytuł karty</label>
                         <input type="text" id="support_method4_title" name="support_method4_title" value="{{ old('support_method4_title', $settings->support_method4_title) }}"
-                            placeholder="{{ $sd['support_method4_title'] }}" class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                            placeholder="{{ $sd['support_method4_title'] }}" class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
                         @error('support_method4_title') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
                     <div>
                         <label for="support_method4_text" class="mb-1 block text-sm font-bold">Opis</label>
                         <textarea id="support_method4_text" name="support_method4_text" rows="2"
-                            placeholder="{{ $sd['support_method4_text'] }}" class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">{{ old('support_method4_text', $settings->support_method4_text) }}</textarea>
+                            placeholder="{{ $sd['support_method4_text'] }}" class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">{{ old('support_method4_text', $settings->support_method4_text) }}</textarea>
                         @error('support_method4_text') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
                     <div>
                         <label for="support_wplacam_url" class="mb-1 block text-sm font-bold">Link do wpłaty (wpłacam.ngo.pl) <span class="font-normal text-muted">(opcjonalnie)</span></label>
                         <input type="text" id="support_wplacam_url" name="support_wplacam_url" value="{{ old('support_wplacam_url', $settings->support_wplacam_url) }}"
                             placeholder="np. https://wplacam.ngo.pl/wesprzyj/nazwa"
-                            class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                            class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
                         <p class="mt-1 text-xs text-muted">Karta pojawi się na stronie /wsparcie po podaniu linku.</p>
                         @error('support_wplacam_url') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
                     <div>
                         <label for="support_method4_cta_label" class="mb-1 block text-sm font-bold">Tekst przycisku</label>
                         <input type="text" id="support_method4_cta_label" name="support_method4_cta_label" value="{{ old('support_method4_cta_label', $settings->support_method4_cta_label) }}"
-                            placeholder="{{ $sd['support_method4_cta_label'] }}" class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                            placeholder="{{ $sd['support_method4_cta_label'] }}" class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
                         @error('support_method4_cta_label') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
                 </div>
@@ -1404,7 +1404,7 @@
                 <label for="support_faq" class="mb-1 block text-sm font-bold">Pytania i odpowiedzi <span class="font-normal text-muted">(opcjonalnie)</span></label>
                 <textarea id="support_faq" name="support_faq" rows="6" maxlength="4000" aria-describedby="support_faq_help"
                     placeholder="Czy płatność jest bezpieczna? | Tak, obsługuje ją Przelewy24…"
-                    class="w-full rounded border-gray-300 font-mono text-sm focus:border-brand focus:ring-brand">{{ old('support_faq', $settings->support_faq) }}</textarea>
+                    class="w-full rounded border-gray-500 font-mono text-sm focus:border-brand-dark focus:ring-brand-dark">{{ old('support_faq', $settings->support_faq) }}</textarea>
                 <p id="support_faq_help" class="mt-1 text-xs text-muted">Jedna linia = jedno pytanie: <code>Pytanie | Odpowiedź</code>. Puste pole pokazuje krótki zestaw domyślny. Nie wpisuj obietnic, których organizacja nie może potwierdzić.</p>
                 @error('support_faq') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
             </div>
@@ -1415,13 +1415,13 @@
                     <div>
                         <label for="support_outro_title" class="mb-1 block text-sm font-bold">Tytuł</label>
                         <input type="text" id="support_outro_title" name="support_outro_title" value="{{ old('support_outro_title', $settings->support_outro_title) }}"
-                            placeholder="{{ $sd['support_outro_title'] }}" class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                            placeholder="{{ $sd['support_outro_title'] }}" class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
                         @error('support_outro_title') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
                     <div>
                         <label for="support_outro_subtitle" class="mb-1 block text-sm font-bold">Podtytuł</label>
                         <input type="text" id="support_outro_subtitle" name="support_outro_subtitle" value="{{ old('support_outro_subtitle', $settings->support_outro_subtitle) }}"
-                            placeholder="{{ $sd['support_outro_subtitle'] }}" class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                            placeholder="{{ $sd['support_outro_subtitle'] }}" class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
                         @error('support_outro_subtitle') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
                 </div>
@@ -1430,16 +1430,16 @@
 
         <div x-show="tab === 'contact'" x-cloak>
             @php $contactPage = \App\Models\Page::where('type', 'contact')->orderBy('id')->first(); @endphp
-            <div class="rounded-lg border border-gray-200 bg-gray-50 p-6">
-                <p class="text-sm font-bold text-ink"><i class="fa-solid fa-address-book mr-1.5 text-brand" aria-hidden="true"></i> Kontakt zarządzasz teraz na stronie „Kontakt"</p>
+            <div class="p-6 rounded-md bg-gray-50">
+                <p class="text-sm font-bold text-ink"><i class="fa-solid fa-address-book mr-1.5 text-brand-dark" aria-hidden="true"></i> Kontakt zarządzasz teraz na stronie „Kontakt"</p>
                 <p class="mt-2 text-sm text-muted">Wygląd strony, dane teleadresowe, przesyłki, rachunki bankowe, spotkania i harmonogram edytujesz w module Strony — na stronie typu „Kontakt". Adres /kontakt kieruje na tę stronę.</p>
                 <p class="mt-4">
                     @if ($contactPage)
-                        <a href="{{ route('admin.podstrony.edit', $contactPage) }}" class="inline-flex min-h-10 items-center gap-2 rounded bg-brand px-4 text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
+                        <a href="{{ route('admin.podstrony.edit', $contactPage) }}" class="inline-flex min-h-10 items-center gap-2 rounded bg-brand-dark px-4 text-sm font-bold text-white hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2">
                             <i class="fa-solid fa-pen" aria-hidden="true"></i> Edytuj stronę „{{ $contactPage->title }}"
                         </a>
                     @else
-                        <a href="{{ route('admin.podstrony.create', ['type' => 'contact']) }}" class="inline-flex min-h-10 items-center gap-2 rounded bg-brand px-4 text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
+                        <a href="{{ route('admin.podstrony.create', ['type' => 'contact']) }}" class="inline-flex min-h-10 items-center gap-2 rounded bg-brand-dark px-4 text-sm font-bold text-white hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2">
                             <i class="fa-solid fa-plus" aria-hidden="true"></i> Utwórz stronę „Kontakt"
                         </a>
                     @endif
@@ -1455,9 +1455,9 @@
                     <div class="{{ mb_strlen($jdefault) > 70 ? 'sm:col-span-2' : '' }}">
                         <label for="join_us_texts_{{ $jk }}" class="mb-1 block text-xs font-bold text-muted">{{ $jlabel }}</label>
                         @if (mb_strlen($jdefault) > 70)
-                            <textarea id="join_us_texts_{{ $jk }}" name="join_us_texts[{{ $jk }}]" rows="2" placeholder="{{ $jdefault }}" maxlength="600" class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">{{ $joinOld[$jk] ?? '' }}</textarea>
+                            <textarea id="join_us_texts_{{ $jk }}" name="join_us_texts[{{ $jk }}]" rows="2" placeholder="{{ $jdefault }}" maxlength="600" class="w-full rounded border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark">{{ $joinOld[$jk] ?? '' }}</textarea>
                         @else
-                            <input type="text" id="join_us_texts_{{ $jk }}" name="join_us_texts[{{ $jk }}]" value="{{ $joinOld[$jk] ?? '' }}" placeholder="{{ $jdefault }}" maxlength="600" class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                            <input type="text" id="join_us_texts_{{ $jk }}" name="join_us_texts[{{ $jk }}]" value="{{ $joinOld[$jk] ?? '' }}" placeholder="{{ $jdefault }}" maxlength="600" class="w-full rounded border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark">
                         @endif
                     </div>
                 @endforeach
@@ -1471,12 +1471,12 @@
             <div class="mb-5 flex flex-wrap gap-4">
                 <label class="flex items-center gap-2 text-sm">
                     <input type="checkbox" name="show_topbar_bip" value="1" {{ old('show_topbar_bip', $settings->show_topbar_bip) ? 'checked' : '' }}
-                        class="rounded border-gray-300 text-brand focus:ring-brand">
+                        class="rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
                     Pokaż link BIP w górnym pasku
                 </label>
                 <label class="flex items-center gap-2 text-sm">
                     <input type="checkbox" name="show_topbar_social" value="1" {{ old('show_topbar_social', $settings->show_topbar_social) ? 'checked' : '' }}
-                        class="rounded border-gray-300 text-brand focus:ring-brand">
+                        class="rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
                     Pokaż ikony mediów społecznościowych w górnym pasku
                 </label>
             </div>
@@ -1490,15 +1490,15 @@
                         <div class="space-y-2">
                             <label class="flex items-start gap-2 text-sm">
                                 <input type="radio" name="bip_mode" value="internal" x-model="bipMode"
-                                    class="mt-0.5 border-gray-300 text-brand focus:ring-brand">
+                                    class="mt-0.5 border-gray-500 text-brand-dark focus:ring-brand-dark">
                                 <span>
                                     <strong>Własny BIP</strong> — dokumenty zarządzane w tym panelu<br>
-                                    <span class="text-xs text-muted">Wymaga włączonego modułu BIP w zakładce Moduły oraz dodania dokumentów w <a href="{{ route('admin.bip-dokumenty.index') }}" class="text-brand underline">Publikacje → BIP</a>.</span>
+                                    <span class="text-xs text-muted">Wymaga włączonego modułu BIP w zakładce Moduły oraz dodania dokumentów w <a href="{{ route('admin.bip-dokumenty.index') }}" class="text-brand-dark underline">Publikacje → BIP</a>.</span>
                                 </span>
                             </label>
                             <label class="flex items-start gap-2 text-sm">
                                 <input type="radio" name="bip_mode" value="external" x-model="bipMode"
-                                    class="mt-0.5 border-gray-300 text-brand focus:ring-brand">
+                                    class="mt-0.5 border-gray-500 text-brand-dark focus:ring-brand-dark">
                                 <span>
                                     <strong>Zewnętrzny BIP</strong> — odnośnik do osobnej strony BIP<br>
                                     <span class="text-xs text-muted">Strona /bip pokazuje opis i przycisk prowadzący do zewnętrznego adresu.</span>
@@ -1511,7 +1511,7 @@
                     <div x-show="bipMode === 'external'" x-cloak class="mb-4">
                         <label for="bip_url" class="mb-1 block text-sm font-bold">Adres zewnętrznego BIP</label>
                         <input type="text" id="bip_url" name="bip_url" value="{{ old('bip_url', $settings->bip_url) }}" placeholder="https://bip..."
-                            class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                            class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
                         <p class="mt-1 text-xs text-muted">Pojawi się jako przycisk „Przejdź do pełnego BIP" na stronie /bip.</p>
                         @error('bip_url') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
@@ -1529,20 +1529,20 @@
                             <div class="mb-2 flex items-center gap-3">
                                 <img src="{{ $settings->bipLogoUrl() }}" alt="Logo BIP" class="h-12 w-auto rounded bg-white object-contain p-1 ring-1 ring-gray-200">
                                 <label class="flex items-center gap-2 text-sm text-muted">
-                                    <input type="checkbox" name="remove_bip_logo" value="1" class="rounded border-gray-300 text-brand focus:ring-brand">
+                                    <input type="checkbox" name="remove_bip_logo" value="1" class="rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
                                     Usuń logo BIP
                                 </label>
                             </div>
                         @endif
-                        <input type="file" name="bip_logo" accept="image/*" class="block w-full cursor-pointer text-sm text-muted file:mr-3 file:cursor-pointer file:rounded file:border-0 file:bg-brand file:px-4 file:py-2 file:text-sm file:font-bold file:text-white hover:file:bg-brand-dark">
+                        <input type="file" name="bip_logo" accept="image/*" class="block w-full cursor-pointer text-sm text-muted file:mr-3 file:cursor-pointer file:rounded file:border-0 file:bg-brand-dark file:px-4 file:py-2 file:text-sm file:font-bold file:text-white hover:file:bg-brand-dark">
                         <p class="mt-1 text-xs text-muted">Oficjalne logo BIP na stronie <code>/bip</code>. Puste = wbudowany znak „BIP".</p>
                         @error('bip_logo') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
 
                     {{-- Sprawozdania w BIP (opcja) --}}
-                    <div class="flex items-start gap-3 rounded-lg border border-gray-200 bg-gray-50 p-3">
+                    <div class="flex items-start gap-3 p-3 rounded-md bg-gray-50">
                         <input type="hidden" name="bip_show_reports" value="0">
-                        <input type="checkbox" id="bip_show_reports" name="bip_show_reports" value="1" @checked(old('bip_show_reports', $settings->bip_show_reports ?? true)) class="mt-0.5 rounded border-gray-300 text-brand focus:ring-brand">
+                        <input type="checkbox" id="bip_show_reports" name="bip_show_reports" value="1" @checked(old('bip_show_reports', $settings->bip_show_reports ?? true)) class="mt-0.5 rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
                         <label for="bip_show_reports" class="text-sm leading-snug"><span class="font-bold">Pokaż w BIP sprawozdania roczne</span><span class="block text-xs text-muted">Łączy moduł „Sprawozdania” z BIP: sprawozdania merytoryczne i finansowe z plikami do pobrania pojawiają się na stronie BIP i są przeszukiwane wyszukiwarką.</span></label>
                     </div>
 
@@ -1552,7 +1552,7 @@
                         <input type="text" id="bip_editor_name" name="bip_editor_name"
                             value="{{ old('bip_editor_name', $settings->bip_editor_name) }}"
                             placeholder="Jan Kowalski"
-                            class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                            class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
                         <p class="mt-1 text-xs text-muted">Wymagane przez rozporządzenie MSWiA — imię i nazwisko redaktora strony BIP widoczne publicznie.</p>
                         @error('bip_editor_name') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
@@ -1562,7 +1562,7 @@
                         <input type="email" id="bip_editor_email" name="bip_editor_email"
                             value="{{ old('bip_editor_email', $settings->bip_editor_email) }}"
                             placeholder="bip@example.org"
-                            class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                            class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
                         <p class="mt-1 text-xs text-muted">Kontaktowy adres e-mail redaktora BIP — widoczny publicznie jako punkt kontaktowy.</p>
                         @error('bip_editor_email') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
@@ -1572,10 +1572,10 @@
                         <input type="url" id="bip_gov_url" name="bip_gov_url"
                             value="{{ old('bip_gov_url', $settings->bip_gov_url) }}"
                             placeholder="https://www.gov.pl/web/podmiot/bip-fundacja-..."
-                            class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                            class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
                         <p class="mt-1 text-xs text-muted">
                             Każda strona BIP musi być zarejestrowana u Ministra ds. Informatyzacji.
-                            Podaj URL wpisu podmiotu na <a href="https://www.gov.pl/web/gov/bip" target="_blank" rel="noopener" class="text-brand underline">gov.pl/bip</a>.
+                            Podaj URL wpisu podmiotu na <a href="https://www.gov.pl/web/gov/bip" target="_blank" rel="noopener" class="text-brand-dark underline">gov.pl/bip</a>.
                         </p>
                         @error('bip_gov_url') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
@@ -1584,14 +1584,14 @@
                 <div>
                     <label for="facebook_url" class="mb-1 block text-sm font-bold">Facebook</label>
                     <input type="text" id="facebook_url" name="facebook_url" value="{{ old('facebook_url', $settings->facebook_url) }}" placeholder="https://facebook.com/..."
-                        class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                        class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
                     @error('facebook_url') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                 </div>
 
                 <div>
                     <label for="facebook_group_url" class="mb-1 block text-sm font-bold">Grupa Facebook</label>
                     <input type="text" id="facebook_group_url" name="facebook_group_url" value="{{ old('facebook_group_url', $settings->facebook_group_url) }}" placeholder="https://facebook.com/groups/..."
-                        class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                        class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
                     <p class="mt-1 text-xs text-muted">Link do grupy FB — pojawi się w nagłówku i stopce obok ikony strony.</p>
                     @error('facebook_group_url') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                 </div>
@@ -1599,35 +1599,35 @@
                 <div>
                     <label for="twitter_url" class="mb-1 block text-sm font-bold">Twitter / X</label>
                     <input type="text" id="twitter_url" name="twitter_url" value="{{ old('twitter_url', $settings->twitter_url) }}" placeholder="https://x.com/..."
-                        class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                        class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
                     @error('twitter_url') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                 </div>
 
                 <div>
                     <label for="instagram_url" class="mb-1 block text-sm font-bold">Instagram</label>
                     <input type="text" id="instagram_url" name="instagram_url" value="{{ old('instagram_url', $settings->instagram_url) }}" placeholder="https://instagram.com/..."
-                        class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                        class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
                     @error('instagram_url') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                 </div>
 
                 <div>
                     <label for="linkedin_url" class="mb-1 block text-sm font-bold">LinkedIn</label>
                     <input type="text" id="linkedin_url" name="linkedin_url" value="{{ old('linkedin_url', $settings->linkedin_url) }}" placeholder="https://linkedin.com/company/..."
-                        class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                        class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
                     @error('linkedin_url') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                 </div>
 
                 <div>
                     <label for="youtube_url" class="mb-1 block text-sm font-bold">YouTube</label>
                     <input type="text" id="youtube_url" name="youtube_url" value="{{ old('youtube_url', $settings->youtube_url) }}" placeholder="https://youtube.com/@..."
-                        class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                        class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
                     @error('youtube_url') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                 </div>
 
                 <div>
                     <label for="substack_url" class="mb-1 block text-sm font-bold">Substack (blog)</label>
                     <input type="text" id="substack_url" name="substack_url" value="{{ old('substack_url', $settings->substack_url) }}" placeholder="https://fundacjafeer.substack.com"
-                        class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                        class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
                     <p class="mt-1 text-xs text-muted">Adres profilu Substack. Najnowsze wpisy pojawią się na stronie głównej w sekcji „O tym piszemy" (kolejność ustawisz w zakładce „Strona główna").</p>
                     @error('substack_url') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                 </div>
@@ -1637,7 +1637,7 @@
         <div x-show="tab === 'content'" x-cloak class="space-y-6">
             <div>
                 <label for="editor-projects_intro" class="mb-1 block text-sm font-bold">Tekst wprowadzający na stronie działań <span class="font-normal text-muted">(opcjonalnie)</span></label>
-                <p class="mb-2 text-xs text-muted">Wyświetlany pod nagłówkiem na stronie <a href="{{ route('projects.index') }}" target="_blank" rel="noopener" class="text-brand underline">/projekty</a> i na stronach kategorii.</p>
+                <p class="mb-2 text-xs text-muted">Wyświetlany pod nagłówkiem na stronie <a href="{{ route('projects.index') }}" target="_blank" rel="noopener" class="text-brand-dark underline">/projekty</a> i na stronach kategorii.</p>
                 @include('admin.partials.editor', ['name' => 'projects_intro', 'value' => old('projects_intro', $settings->projects_intro)])
                 @error('projects_intro') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
             </div>
@@ -1647,11 +1647,11 @@
                 @php $projectsLayout = old('projects_layout', $settings->projects_layout ?? 'list'); @endphp
                 <div class="flex flex-wrap gap-6">
                     <label class="flex cursor-pointer items-center gap-2 text-sm">
-                        <input type="radio" name="projects_layout" value="list" {{ $projectsLayout !== 'tiles' ? 'checked' : '' }} class="text-brand focus:ring-brand">
+                        <input type="radio" name="projects_layout" value="list" {{ $projectsLayout !== 'tiles' ? 'checked' : '' }} class="text-brand-dark focus:ring-brand-dark">
                         Standardowy (zależny od szablonu)
                     </label>
                     <label class="flex cursor-pointer items-center gap-2 text-sm">
-                        <input type="radio" name="projects_layout" value="tiles" {{ $projectsLayout === 'tiles' ? 'checked' : '' }} class="text-brand focus:ring-brand">
+                        <input type="radio" name="projects_layout" value="tiles" {{ $projectsLayout === 'tiles' ? 'checked' : '' }} class="text-brand-dark focus:ring-brand-dark">
                         Nawigacja kafelkowa (działania jako duże kolorowe kafelki)
                     </label>
                 </div>
@@ -1661,13 +1661,13 @@
                 <label for="paid_activity_info" class="mb-1 block text-sm font-bold">Objaśnienie odpłatnej działalności pożytku publicznego (dla całego serwisu)</label>
                 <p class="mb-2 text-xs text-muted">Pokazywane przy płatnych formach udziału w rozwijanym objaśnieniu. Pisz prostym językiem: krótkie zdania, bez trudnych słów. Puste pole = tekst domyślny. Akapity rozdzielaj pustą linią. W formularzu działania można to zmienić dla pojedynczego projektu. Upewnij się, że opis „jak to działa u nas” zgadza się z faktycznymi zasadami organizacji i statutem.</p>
                 <textarea id="paid_activity_info" name="paid_activity_info" rows="8" maxlength="3000" placeholder="{{ \Illuminate\Support\Str::limit(\App\Models\SiteSetting::PAID_ACTIVITY_DEFAULT, 160) }}"
-                    class="w-full rounded-lg border-gray-300 text-sm focus:border-brand focus:ring-brand">{{ old('paid_activity_info', $settings->paid_activity_info) }}</textarea>
-                <button type="button" class="mt-1 text-xs font-bold text-brand underline" onclick="document.getElementById('paid_activity_info').value = @js(\App\Models\SiteSetting::PAID_ACTIVITY_DEFAULT)">Wstaw tekst domyślny do edycji</button>
+                    class="w-full rounded-lg border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark">{{ old('paid_activity_info', $settings->paid_activity_info) }}</textarea>
+                <button type="button" class="mt-1 text-xs font-bold text-brand-dark underline" onclick="document.getElementById('paid_activity_info').value = @js(\App\Models\SiteSetting::PAID_ACTIVITY_DEFAULT)">Wstaw tekst domyślny do edycji</button>
                 @error('paid_activity_info') <p class="mt-1 text-sm text-red-700">{{ $message }}</p> @enderror
 
                 <div class="mt-4">
                     <label for="paid_info_page_id" class="mb-1 block text-sm font-bold">Strona z pełnym objaśnieniem (link „Przeczytaj więcej”)</label>
-                    <select id="paid_info_page_id" name="paid_info_page_id" class="w-full rounded-lg border-gray-300 text-sm focus:border-brand focus:ring-brand sm:w-2/3">
+                    <select id="paid_info_page_id" name="paid_info_page_id" class="w-full rounded-lg border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark sm:w-2/3">
                         <option value="">— automatycznie: strona „odplatna-dzialalnosc-pozytku-publicznego” —</option>
                         @foreach (\App\Models\Page::orderBy('title')->get(['id', 'title', 'is_published']) as $pgOpt)
                             <option value="{{ $pgOpt->id }}" {{ (int) old('paid_info_page_id', $settings->paid_info_page_id) === $pgOpt->id ? 'selected' : '' }}>{{ $pgOpt->title }}{{ $pgOpt->is_published ? '' : ' (szkic)' }}</option>
@@ -1681,7 +1681,7 @@
                 <legend class="mb-1 text-sm font-bold">Drukowanie</legend>
                 <label class="flex items-start gap-3">
                     <input type="hidden" name="show_print_button" value="0">
-                    <input type="checkbox" name="show_print_button" value="1" {{ old('show_print_button', $settings->show_print_button ?? true) ? 'checked' : '' }} class="mt-0.5 rounded border-gray-300 text-brand focus:ring-brand">
+                    <input type="checkbox" name="show_print_button" value="1" {{ old('show_print_button', $settings->show_print_button ?? true) ? 'checked' : '' }} class="mt-0.5 rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
                     <span><span class="block text-sm font-bold">Przycisk „Drukuj tę stronę”</span><span class="block text-xs text-muted">Pokazuje przycisk na stronach i w projektach. Wydruk zawiera samą treść: bez nagłówka, menu i stopki, z rozwiniętymi sekcjami i adresami linków.</span></span>
                 </label>
             </fieldset>
@@ -1692,27 +1692,27 @@
                 <div class="space-y-3">
                     <label class="flex items-start gap-3">
                         <input type="hidden" name="projects_subprojects_enabled" value="0">
-                        <input type="checkbox" name="projects_subprojects_enabled" value="1" {{ old('projects_subprojects_enabled', $settings->projects_subprojects_enabled ?? true) ? 'checked' : '' }} class="mt-0.5 rounded border-gray-300 text-brand focus:ring-brand">
+                        <input type="checkbox" name="projects_subprojects_enabled" value="1" {{ old('projects_subprojects_enabled', $settings->projects_subprojects_enabled ?? true) ? 'checked' : '' }} class="mt-0.5 rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
                         <span><span class="block text-sm font-bold">Poddziałania (formy udziału)</span><span class="block text-xs text-muted">Pole „Działanie nadrzędne”, dziedziczenie pól oraz sekcja „Formy udziału” z objaśnieniem odpłatności.</span></span>
                     </label>
                     <label class="flex items-start gap-3">
                         <input type="hidden" name="projects_extras_enabled" value="0">
-                        <input type="checkbox" name="projects_extras_enabled" value="1" {{ old('projects_extras_enabled', $settings->projects_extras_enabled ?? true) ? 'checked' : '' }} class="mt-0.5 rounded border-gray-300 text-brand focus:ring-brand">
+                        <input type="checkbox" name="projects_extras_enabled" value="1" {{ old('projects_extras_enabled', $settings->projects_extras_enabled ?? true) ? 'checked' : '' }} class="mt-0.5 rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
                         <span><span class="block text-sm font-bold">Dodatkowe informacje o projekcie</span><span class="block text-xs text-muted">W skrócie (termin, miejsce, forma, liczba miejsc), streszczenie prostym językiem, główny przycisk, wskaźniki rezultatów, opinie uczestników i pytania (FAQ).</span></span>
                     </label>
                     <label class="flex items-start gap-3">
                         <input type="hidden" name="projects_terms_enabled" value="0">
-                        <input type="checkbox" name="projects_terms_enabled" value="1" {{ old('projects_terms_enabled', $settings->projects_terms_enabled ?? true) ? 'checked' : '' }} class="mt-0.5 rounded border-gray-300 text-brand focus:ring-brand">
+                        <input type="checkbox" name="projects_terms_enabled" value="1" {{ old('projects_terms_enabled', $settings->projects_terms_enabled ?? true) ? 'checked' : '' }} class="mt-0.5 rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
                         <span><span class="block text-sm font-bold">Kto może wziąć udział</span><span class="block text-xs text-muted">Zakładka „Kto może wziąć udział” w formularzu (wiek, miejsce, sprzęt, dostępność sali) i ramka o tej nazwie na stronie projektu.</span></span>
                     </label>
                     <label class="flex items-start gap-3">
                         <input type="hidden" name="projects_stages_enabled" value="0">
-                        <input type="checkbox" name="projects_stages_enabled" value="1" {{ old('projects_stages_enabled', $settings->projects_stages_enabled ?? false) ? 'checked' : '' }} class="mt-0.5 rounded border-gray-300 text-brand focus:ring-brand">
+                        <input type="checkbox" name="projects_stages_enabled" value="1" {{ old('projects_stages_enabled', $settings->projects_stages_enabled ?? false) ? 'checked' : '' }} class="mt-0.5 rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
                         <span><span class="block text-sm font-bold">Etapy, status i harmonogram</span><span class="block text-xs text-muted">Status realizacji, daty, etapy z oznaczeniem postępu.</span></span>
                     </label>
                     <label class="flex items-start gap-3">
                         <input type="hidden" name="projects_team_funding_enabled" value="0">
-                        <input type="checkbox" name="projects_team_funding_enabled" value="1" {{ old('projects_team_funding_enabled', $settings->projects_team_funding_enabled ?? false) ? 'checked' : '' }} class="mt-0.5 rounded border-gray-300 text-brand focus:ring-brand">
+                        <input type="checkbox" name="projects_team_funding_enabled" value="1" {{ old('projects_team_funding_enabled', $settings->projects_team_funding_enabled ?? false) ? 'checked' : '' }} class="mt-0.5 rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
                         <span><span class="block text-sm font-bold">Zespół, partnerzy i finansowanie</span><span class="block text-xs text-muted">Osoby zaangażowane, partnerzy z logotypami, źródła dofinansowania, budżet i obowiązkowe oznaczenia.</span></span>
                     </label>
                 </div>
@@ -1724,11 +1724,11 @@
                 @php $sectionsNav = old('project_sections_nav', $settings->project_sections_nav ?? 'tabs'); @endphp
                 <div class="flex flex-wrap gap-6">
                     <label class="flex cursor-pointer items-center gap-2 text-sm">
-                        <input type="radio" name="project_sections_nav" value="tabs" {{ $sectionsNav !== 'sidebar' ? 'checked' : '' }} class="text-brand focus:ring-brand">
+                        <input type="radio" name="project_sections_nav" value="tabs" {{ $sectionsNav !== 'sidebar' ? 'checked' : '' }} class="text-brand-dark focus:ring-brand-dark">
                         Zakładki (pasek pod nagłówkiem)
                     </label>
                     <label class="flex cursor-pointer items-center gap-2 text-sm">
-                        <input type="radio" name="project_sections_nav" value="sidebar" {{ $sectionsNav === 'sidebar' ? 'checked' : '' }} class="text-brand focus:ring-brand">
+                        <input type="radio" name="project_sections_nav" value="sidebar" {{ $sectionsNav === 'sidebar' ? 'checked' : '' }} class="text-brand-dark focus:ring-brand-dark">
                         Menu boczne (po lewej, z zagnieżdżonymi podstronami)
                     </label>
                 </div>
@@ -1736,7 +1736,7 @@
 
             <div class="border-t border-gray-100 pt-6">
                 <label for="editor-materials_intro" class="mb-1 block text-sm font-bold">Tekst wprowadzający na stronie materiałów <span class="font-normal text-muted">(opcjonalnie)</span></label>
-                <p class="mb-2 text-xs text-muted">Wyświetlany pod nagłówkiem na stronie <a href="{{ route('materials.index') }}" target="_blank" rel="noopener" class="text-brand underline">/materialy</a>.</p>
+                <p class="mb-2 text-xs text-muted">Wyświetlany pod nagłówkiem na stronie <a href="{{ route('materials.index') }}" target="_blank" rel="noopener" class="text-brand-dark underline">/materialy</a>.</p>
                 @include('admin.partials.editor', ['name' => 'materials_intro', 'value' => old('materials_intro', $settings->materials_intro)])
                 @error('materials_intro') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
             </div>
@@ -1747,12 +1747,12 @@
                     <div class="mb-2 flex items-center gap-3">
                         <img src="{{ $settings->newsDefaultImageUrl() }}" alt="Domyślne zdjęcie newsa" class="h-20 w-32 rounded object-cover">
                         <label class="flex items-center gap-2 text-sm text-muted">
-                            <input type="checkbox" name="remove_news_default_image" value="1" class="rounded border-gray-300 text-brand focus:ring-brand">
+                            <input type="checkbox" name="remove_news_default_image" value="1" class="rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
                             Usuń
                         </label>
                     </div>
                 @endif
-                <input type="file" name="news_default_image" accept="image/*" class="block w-full cursor-pointer text-sm text-muted file:mr-3 file:cursor-pointer file:rounded file:border-0 file:bg-brand file:px-4 file:py-2 file:text-sm file:font-bold file:text-white hover:file:bg-brand-dark">
+                <input type="file" name="news_default_image" accept="image/*" class="block w-full cursor-pointer text-sm text-muted file:mr-3 file:cursor-pointer file:rounded file:border-0 file:bg-brand-dark file:px-4 file:py-2 file:text-sm file:font-bold file:text-white hover:file:bg-brand-dark">
                 <p class="mt-1 text-xs text-muted">Używane dla newsów bez własnego zdjęcia (lista aktualności, strona główna, sekcja na stronie działania).</p>
                 @error('news_default_image') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
             </div>
@@ -1763,25 +1763,25 @@
                     <label class="flex cursor-pointer items-center gap-2">
                         <input type="radio" name="news_layout" value="grid"
                             {{ old('news_layout', $settings->news_layout ?? 'grid') === 'grid' ? 'checked' : '' }}
-                            class="border-gray-300 text-brand focus:ring-brand">
+                            class="border-gray-500 text-brand-dark focus:ring-brand-dark">
                         <span class="text-sm"><i class="fa-solid fa-grip text-muted"></i> Siatka (domyślna)</span>
                     </label>
                     <label class="flex cursor-pointer items-center gap-2">
                         <input type="radio" name="news_layout" value="list"
                             {{ old('news_layout', $settings->news_layout ?? 'grid') === 'list' ? 'checked' : '' }}
-                            class="border-gray-300 text-brand focus:ring-brand">
+                            class="border-gray-500 text-brand-dark focus:ring-brand-dark">
                         <span class="text-sm"><i class="fa-solid fa-list text-muted"></i> Lista</span>
                     </label>
                     <label class="flex cursor-pointer items-center gap-2">
                         <input type="radio" name="news_layout" value="cards"
                             {{ old('news_layout', $settings->news_layout ?? 'grid') === 'cards' ? 'checked' : '' }}
-                            class="border-gray-300 text-brand focus:ring-brand">
+                            class="border-gray-500 text-brand-dark focus:ring-brand-dark">
                         <span class="text-sm"><i class="fa-solid fa-table-cells-large text-muted"></i> Karty 3-kolumnowe</span>
                     </label>
                     <label class="flex cursor-pointer items-center gap-2">
                         <input type="radio" name="news_layout" value="side"
                             {{ old('news_layout', $settings->news_layout ?? 'grid') === 'side' ? 'checked' : '' }}
-                            class="border-gray-300 text-brand focus:ring-brand">
+                            class="border-gray-500 text-brand-dark focus:ring-brand-dark">
                         <span class="text-sm"><i class="fa-solid fa-image text-muted"></i> Zdjęcie obok (kwadrat)</span>
                     </label>
                 </div>
@@ -1793,13 +1793,13 @@
                     <label class="flex cursor-pointer items-center gap-2">
                         <input type="radio" name="volunteer_layout" value="grid"
                             {{ old('volunteer_layout', $settings->volunteer_layout ?? 'grid') === 'grid' ? 'checked' : '' }}
-                            class="border-gray-300 text-brand focus:ring-brand">
+                            class="border-gray-500 text-brand-dark focus:ring-brand-dark">
                         <span class="text-sm"><i class="fa-solid fa-grip text-muted"></i> Siatka (domyślna)</span>
                     </label>
                     <label class="flex cursor-pointer items-center gap-2">
                         <input type="radio" name="volunteer_layout" value="list"
                             {{ old('volunteer_layout', $settings->volunteer_layout ?? 'grid') === 'list' ? 'checked' : '' }}
-                            class="border-gray-300 text-brand focus:ring-brand">
+                            class="border-gray-500 text-brand-dark focus:ring-brand-dark">
                         <span class="text-sm"><i class="fa-solid fa-list text-muted"></i> Lista</span>
                     </label>
                 </div>
@@ -2053,9 +2053,9 @@
                 ];
             @endphp
             <div class="mb-6">
-                <div class="mb-4 flex items-start gap-3 rounded-lg border border-gray-200 bg-gray-50 p-3">
+                <div class="mb-4 flex items-start gap-3 p-3 rounded-md bg-gray-50">
                     <input type="hidden" name="home_search_enabled" value="0">
-                    <input type="checkbox" id="home_search_enabled" name="home_search_enabled" value="1" @checked(old('home_search_enabled', $settings->home_search_enabled ?? false)) class="mt-0.5 rounded border-gray-300 text-brand focus:ring-brand">
+                    <input type="checkbox" id="home_search_enabled" name="home_search_enabled" value="1" @checked(old('home_search_enabled', $settings->home_search_enabled ?? false)) class="mt-0.5 rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
                     <label for="home_search_enabled" class="text-sm leading-snug"><span class="font-bold">Duża wyszukiwarka na stronie głównej</span><span class="block text-xs text-muted">Pole wyszukiwania pod slajderem (szablon FEER). Szuka w aktualnościach i materiałach.</span></label>
                 </div>
 
@@ -2071,7 +2071,7 @@
                     @foreach ($settings->orderedHomepageSections() as $key)
                         @php $enabledSection = old('homepage_sections_enabled') !== null ? in_array($key, (array) old('homepage_sections_enabled'), true) : $settings->isHomepageSectionEnabled($key); @endphp
                         <li data-section="{{ $key }}" draggable="true"
-                            class="flex items-center gap-3 rounded-lg border border-gray-200 bg-white px-3 py-2.5 text-sm transition">
+                            class="flex items-center gap-3 px-3 py-2.5 text-sm transition rounded-md bg-gray-50">
                             <span class="cursor-grab text-gray-300" aria-hidden="true" title="Przeciągnij"><i class="fa-solid fa-grip-vertical"></i></span>
                             <span class="min-w-0 flex-1">
                                 <span class="block font-bold text-ink">{{ \App\Models\SiteSetting::HOMEPAGE_SECTIONS[$key] ?? $key }}</span>
@@ -2080,15 +2080,15 @@
                             <label class="flex flex-none cursor-pointer items-center gap-2 text-xs font-bold text-muted">
                                 <input type="checkbox" name="homepage_sections_enabled[]" value="{{ $key }}" @checked($enabledSection)
                                     class="peer sr-only">
-                                <span class="relative h-5 w-9 rounded-full bg-gray-300 transition peer-checked:bg-brand peer-focus-visible:ring-2 peer-focus-visible:ring-brand peer-focus-visible:ring-offset-2 after:absolute after:left-0.5 after:top-0.5 after:h-4 after:w-4 after:rounded-full after:bg-white after:transition peer-checked:after:translate-x-4" aria-hidden="true"></span>
+                                <span class="relative h-5 w-9 rounded-full bg-gray-300 transition peer-checked:bg-brand-dark peer-focus-visible:ring-2 peer-focus-visible:ring-brand-dark peer-focus-visible:ring-offset-2 after:absolute after:left-0.5 after:top-0.5 after:h-4 after:w-4 after:rounded-full after:bg-white after:transition peer-checked:after:translate-x-4" aria-hidden="true"></span>
                                 <span class="w-16">Włączona</span>
                                 <span class="sr-only">sekcja {{ \App\Models\SiteSetting::HOMEPAGE_SECTIONS[$key] ?? $key }}</span>
                             </label>
                             <span class="flex flex-none items-center gap-1">
-                                <button type="button" data-move="up" class="flex h-7 w-7 items-center justify-center rounded text-muted hover:bg-gray-100 hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand" aria-label="Przenieś wyżej: {{ \App\Models\SiteSetting::HOMEPAGE_SECTIONS[$key] ?? $key }}">
+                                <button type="button" data-move="up" class="flex h-7 w-7 items-center justify-center rounded text-muted hover:bg-gray-100 hover:text-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark" aria-label="Przenieś wyżej: {{ \App\Models\SiteSetting::HOMEPAGE_SECTIONS[$key] ?? $key }}">
                                     <i class="fa-solid fa-arrow-up" aria-hidden="true"></i>
                                 </button>
-                                <button type="button" data-move="down" class="flex h-7 w-7 items-center justify-center rounded text-muted hover:bg-gray-100 hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand" aria-label="Przenieś niżej: {{ \App\Models\SiteSetting::HOMEPAGE_SECTIONS[$key] ?? $key }}">
+                                <button type="button" data-move="down" class="flex h-7 w-7 items-center justify-center rounded text-muted hover:bg-gray-100 hover:text-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark" aria-label="Przenieś niżej: {{ \App\Models\SiteSetting::HOMEPAGE_SECTIONS[$key] ?? $key }}">
                                     <i class="fa-solid fa-arrow-down" aria-hidden="true"></i>
                                 </button>
                             </span>
@@ -2102,13 +2102,13 @@
 
 
             {{-- Slider hero --}}
-            <details class="mt-3 rounded-lg border border-gray-200 bg-gray-50">
+            <details class="mt-3 rounded-md bg-gray-50">
                 <summary class="cursor-pointer rounded-lg px-5 py-3 text-sm font-bold text-ink hover:bg-gray-100">Slider hero</summary>
                 <div class="border-t border-gray-200 p-5">
                 <label class="flex items-center gap-2 rounded-lg border border-gray-200 bg-white p-3">
                     <input type="checkbox" name="hero_mission_slide" value="1"
                         {{ old('hero_mission_slide', $settings->hero_mission_slide ?? false) ? 'checked' : '' }}
-                        class="rounded border-gray-300 text-brand focus:ring-brand">
+                        class="rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
                     <span class="text-sm font-bold">Misja jako slajd <span class="font-normal text-muted">(dodaje slajd z misją organizacji na początku slidera)</span></span>
                 </label>
                 </div>
@@ -2117,26 +2117,26 @@
             @if ($settings->site_template === 'federation')
                 {{-- Nagłówek i wstęp hero — tylko szablon "federation". Te same pola można
                      edytować też bezpośrednio na stronie głównej (edycja "na żywo"). --}}
-                <div class="mt-6 rounded-lg border border-gray-200 bg-gray-50 p-5">
+                <div class="mt-6 p-5 rounded-md bg-gray-50">
                     <p class="mb-3 text-sm font-bold text-ink">Nagłówek i wstęp hero (strona główna)</p>
                     <label class="mb-3 block">
                         <span class="mb-1 block text-xs font-bold text-muted">Nagłówek</span>
                         <input type="text" name="federation_hero_heading"
                             value="{{ old('federation_hero_heading', $settings->federationHeroHeading()) }}"
                             maxlength="255"
-                            class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                            class="w-full rounded border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark">
                     </label>
                     <label class="block">
                         <span class="mb-1 block text-xs font-bold text-muted">Wstęp (akapity)</span>
                         <textarea name="federation_hero_intro" rows="5"
-                            class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">{{ old('federation_hero_intro', $settings->federationHeroIntro()) }}</textarea>
+                            class="w-full rounded border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark">{{ old('federation_hero_intro', $settings->federationHeroIntro()) }}</textarea>
                         <span class="mt-1 block text-xs text-muted">Proste znaczniki HTML (np. &lt;p&gt;) są dozwolone — to samo pole edytujesz też bezpośrednio na stronie głównej.</span>
                     </label>
                 </div>
 
                 {{-- Kafelki hero — tylko szablon "federation" --}}
                 @php $heroTiles = array_values((array) old('federation_hero_tiles', $settings->federationHeroTiles())); @endphp
-                <div class="mt-6 rounded-lg border border-gray-200 bg-gray-50 p-5" data-hero-tiles>
+                <div class="mt-6 p-5 rounded-md bg-gray-50" data-hero-tiles>
                     <p class="mb-1 text-sm font-bold text-ink">Kafelki bloku hero (strona główna)</p>
                     <p class="mb-3 text-xs text-muted">
                         Mozaika kolorowych kafelków obok tekstu „O nas". Każdy kafelek to albo duża liczba (np. rok
@@ -2144,17 +2144,17 @@
                     </p>
                     <div data-hero-tiles-rows class="space-y-3">
                         @foreach ($heroTiles as $i => $tile)
-                            <div data-hero-tiles-row class="grid gap-2 rounded-lg border border-gray-200 bg-white p-3 sm:grid-cols-12 sm:items-center">
+                            <div data-hero-tiles-row class="grid gap-2 p-3 sm:grid-cols-12 sm:items-center rounded-md bg-white">
                                 <input type="text" name="federation_hero_tiles[{{ $i }}][value]" value="{{ $tile['value'] ?? '' }}"
                                     placeholder="Liczba, np. 1998 (puste = ikona)"
-                                    class="rounded border-gray-300 text-sm focus:border-brand focus:ring-brand sm:col-span-3">
+                                    class="rounded border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark sm:col-span-3">
                                 <input type="text" name="federation_hero_tiles[{{ $i }}][icon]" value="{{ $tile['icon'] ?? '' }}" data-icon-picker data-icon-format="class"
                                     placeholder="Ikona Font Awesome, np. fa-solid fa-city"
-                                    class="rounded border-gray-300 text-sm focus:border-brand focus:ring-brand sm:col-span-3">
+                                    class="rounded border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark sm:col-span-3">
                                 <input type="text" name="federation_hero_tiles[{{ $i }}][title]" value="{{ $tile['title'] ?? '' }}"
                                     placeholder="Tytuł / podpis"
-                                    class="min-w-0 rounded border-gray-300 text-sm focus:border-brand focus:ring-brand sm:col-span-3">
-                                <select name="federation_hero_tiles[{{ $i }}][color]" class="rounded border-gray-300 text-sm focus:border-brand focus:ring-brand sm:col-span-2">
+                                    class="min-w-0 rounded border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark sm:col-span-3">
+                                <select name="federation_hero_tiles[{{ $i }}][color]" class="rounded border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark sm:col-span-2">
                                     @foreach ([1, 2, 3, 4] as $c)
                                         <option value="{{ $c }}" {{ (int) ($tile['color'] ?? 1) === $c ? 'selected' : '' }}>Kolor {{ $c }}</option>
                                     @endforeach
@@ -2163,7 +2163,7 @@
                                     <input type="hidden" name="federation_hero_tiles[{{ $i }}][wide]" value="0">
                                     <input type="checkbox" name="federation_hero_tiles[{{ $i }}][wide]" value="1"
                                         {{ ($tile['wide'] ?? false) ? 'checked' : '' }}
-                                        class="rounded border-gray-300 text-brand focus:ring-brand">
+                                        class="rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
                                     Szeroki
                                 </label>
                                 <button type="button" data-hero-tiles-remove class="rounded p-2 text-muted hover:bg-red-50 hover:text-red-600 sm:col-span-12 sm:w-fit sm:justify-self-end" aria-label="Usuń kafelek {{ $i + 1 }}">
@@ -2172,25 +2172,25 @@
                             </div>
                         @endforeach
                     </div>
-                    <button type="button" data-hero-tiles-add class="mt-3 inline-flex items-center gap-2 rounded border border-brand px-3 py-1.5 text-sm font-bold text-brand hover:bg-brand-light">
+                    <button type="button" data-hero-tiles-add class="mt-3 inline-flex items-center gap-2 rounded border border-brand-dark px-3 py-1.5 text-sm font-bold text-brand-dark hover:bg-brand-light">
                         <i class="fa-solid fa-plus" aria-hidden="true"></i> Dodaj kafelek
                     </button>
                     <template data-hero-tiles-template>
-                        <div data-hero-tiles-row class="grid gap-2 rounded-lg border border-gray-200 bg-white p-3 sm:grid-cols-12 sm:items-center">
+                        <div data-hero-tiles-row class="grid gap-2 p-3 sm:grid-cols-12 sm:items-center rounded-md bg-white">
                             <input type="text" name="federation_hero_tiles[__INDEX__][value]" placeholder="Liczba, np. 1998 (puste = ikona)"
-                                class="rounded border-gray-300 text-sm focus:border-brand focus:ring-brand sm:col-span-3">
+                                class="rounded border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark sm:col-span-3">
                             <input type="text" name="federation_hero_tiles[__INDEX__][icon]" data-icon-picker data-icon-format="class" placeholder="Ikona Font Awesome, np. fa-solid fa-city"
-                                class="rounded border-gray-300 text-sm focus:border-brand focus:ring-brand sm:col-span-3">
+                                class="rounded border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark sm:col-span-3">
                             <input type="text" name="federation_hero_tiles[__INDEX__][title]" placeholder="Tytuł / podpis"
-                                class="min-w-0 rounded border-gray-300 text-sm focus:border-brand focus:ring-brand sm:col-span-3">
-                            <select name="federation_hero_tiles[__INDEX__][color]" class="rounded border-gray-300 text-sm focus:border-brand focus:ring-brand sm:col-span-2">
+                                class="min-w-0 rounded border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark sm:col-span-3">
+                            <select name="federation_hero_tiles[__INDEX__][color]" class="rounded border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark sm:col-span-2">
                                 @foreach ([1, 2, 3, 4] as $c)
                                     <option value="{{ $c }}">Kolor {{ $c }}</option>
                                 @endforeach
                             </select>
                             <label class="flex items-center gap-1.5 text-xs font-medium sm:col-span-1">
                                 <input type="hidden" name="federation_hero_tiles[__INDEX__][wide]" value="0">
-                                <input type="checkbox" name="federation_hero_tiles[__INDEX__][wide]" value="1" class="rounded border-gray-300 text-brand focus:ring-brand">
+                                <input type="checkbox" name="federation_hero_tiles[__INDEX__][wide]" value="1" class="rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
                                 Szeroki
                             </label>
                             <button type="button" data-hero-tiles-remove class="rounded p-2 text-muted hover:bg-red-50 hover:text-red-600 sm:col-span-12 sm:w-fit sm:justify-self-end" aria-label="Usuń kafelek">
@@ -2202,38 +2202,38 @@
 
                 {{-- Kafelki "Dlaczego warto?" (Dołącz do nas) — tylko szablon "federation" --}}
                 @php $joinBenefits = array_values((array) old('federation_join_benefits', $settings->federationJoinBenefits())); @endphp
-                <div class="mt-6 rounded-lg border border-gray-200 bg-gray-50 p-5" data-join-benefits>
+                <div class="mt-6 p-5 rounded-md bg-gray-50" data-join-benefits>
                     <p class="mb-1 text-sm font-bold text-ink">Kafelki „Dlaczego warto?" (strona „Dołącz do nas")</p>
                     <p class="mb-3 text-xs text-muted">Cztery (albo więcej) powody, dla których warto dołączyć do federacji — ikona, tytuł i krótki opis.</p>
                     <div data-join-benefits-rows class="space-y-3">
                         @foreach ($joinBenefits as $i => $benefit)
-                            <div data-join-benefits-row class="grid gap-2 rounded-lg border border-gray-200 bg-white p-3 sm:grid-cols-12 sm:items-start">
+                            <div data-join-benefits-row class="grid gap-2 p-3 sm:grid-cols-12 sm:items-start rounded-md bg-white">
                                 <input type="text" name="federation_join_benefits[{{ $i }}][icon]" value="{{ $benefit['icon'] ?? '' }}" data-icon-picker data-icon-format="class"
                                     placeholder="Ikona Font Awesome, np. fa-people-group"
-                                    class="rounded border-gray-300 text-sm focus:border-brand focus:ring-brand sm:col-span-3">
+                                    class="rounded border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark sm:col-span-3">
                                 <input type="text" name="federation_join_benefits[{{ $i }}][title]" value="{{ $benefit['title'] ?? '' }}"
                                     placeholder="Tytuł"
-                                    class="min-w-0 rounded border-gray-300 text-sm focus:border-brand focus:ring-brand sm:col-span-3">
+                                    class="min-w-0 rounded border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark sm:col-span-3">
                                 <input type="text" name="federation_join_benefits[{{ $i }}][text]" value="{{ $benefit['text'] ?? '' }}"
                                     placeholder="Krótki opis"
-                                    class="min-w-0 rounded border-gray-300 text-sm focus:border-brand focus:ring-brand sm:col-span-5">
+                                    class="min-w-0 rounded border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark sm:col-span-5">
                                 <button type="button" data-join-benefits-remove class="rounded p-2 text-muted hover:bg-red-50 hover:text-red-600 sm:col-span-1 sm:w-fit sm:justify-self-end" aria-label="Usuń pozycję {{ $i + 1 }}">
                                     <i class="fa-solid fa-trash" aria-hidden="true"></i>
                                 </button>
                             </div>
                         @endforeach
                     </div>
-                    <button type="button" data-join-benefits-add class="mt-3 inline-flex items-center gap-2 rounded border border-brand px-3 py-1.5 text-sm font-bold text-brand hover:bg-brand-light">
+                    <button type="button" data-join-benefits-add class="mt-3 inline-flex items-center gap-2 rounded border border-brand-dark px-3 py-1.5 text-sm font-bold text-brand-dark hover:bg-brand-light">
                         <i class="fa-solid fa-plus" aria-hidden="true"></i> Dodaj pozycję
                     </button>
                     <template data-join-benefits-template>
-                        <div data-join-benefits-row class="grid gap-2 rounded-lg border border-gray-200 bg-white p-3 sm:grid-cols-12 sm:items-start">
+                        <div data-join-benefits-row class="grid gap-2 p-3 sm:grid-cols-12 sm:items-start rounded-md bg-white">
                             <input type="text" name="federation_join_benefits[__INDEX__][icon]" data-icon-picker data-icon-format="class" placeholder="Ikona Font Awesome, np. fa-people-group"
-                                class="rounded border-gray-300 text-sm focus:border-brand focus:ring-brand sm:col-span-3">
+                                class="rounded border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark sm:col-span-3">
                             <input type="text" name="federation_join_benefits[__INDEX__][title]" placeholder="Tytuł"
-                                class="min-w-0 rounded border-gray-300 text-sm focus:border-brand focus:ring-brand sm:col-span-3">
+                                class="min-w-0 rounded border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark sm:col-span-3">
                             <input type="text" name="federation_join_benefits[__INDEX__][text]" placeholder="Krótki opis"
-                                class="min-w-0 rounded border-gray-300 text-sm focus:border-brand focus:ring-brand sm:col-span-5">
+                                class="min-w-0 rounded border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark sm:col-span-5">
                             <button type="button" data-join-benefits-remove class="rounded p-2 text-muted hover:bg-red-50 hover:text-red-600 sm:col-span-1 sm:w-fit sm:justify-self-end" aria-label="Usuń pozycję">
                                 <i class="fa-solid fa-trash" aria-hidden="true"></i>
                             </button>
@@ -2245,38 +2245,38 @@
             @if ($settings->site_template === 'ngo_3')
                 {{-- Pasek statystyk (strona główna, szablon "ngo_3") --}}
                 @php $ngo3Stats = array_values((array) old('ngo_3_stats', $settings->ngo3Stats())); @endphp
-                <div class="mt-6 rounded-lg border border-gray-200 bg-gray-50 p-5" data-ngo3-stats>
+                <div class="mt-6 p-5 rounded-md bg-gray-50" data-ngo3-stats>
                     <p class="mb-1 text-sm font-bold text-ink">Pasek statystyk (strona główna)</p>
                     <p class="mb-3 text-xs text-muted">Liczby, którymi organizacja się chwali — np. lata działania, liczba działań, wolontariuszy.</p>
                     <div data-ngo3-stats-rows class="space-y-3">
                         @foreach ($ngo3Stats as $i => $stat)
-                            <div data-ngo3-stats-row class="grid gap-2 rounded-lg border border-gray-200 bg-white p-3 sm:grid-cols-12 sm:items-center">
+                            <div data-ngo3-stats-row class="grid gap-2 p-3 sm:grid-cols-12 sm:items-center rounded-md bg-white">
                                 <input type="text" name="ngo_3_stats[{{ $i }}][value]" value="{{ $stat['value'] ?? '' }}"
                                     placeholder="Wartość, np. 10+"
-                                    class="rounded border-gray-300 text-sm focus:border-brand focus:ring-brand sm:col-span-3">
+                                    class="rounded border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark sm:col-span-3">
                                 <input type="text" name="ngo_3_stats[{{ $i }}][label]" value="{{ $stat['label'] ?? '' }}"
                                     placeholder="Etykieta, np. Lat działania"
-                                    class="min-w-0 rounded border-gray-300 text-sm focus:border-brand focus:ring-brand sm:col-span-6">
+                                    class="min-w-0 rounded border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark sm:col-span-6">
                                 <input type="text" name="ngo_3_stats[{{ $i }}][icon]" value="{{ $stat['icon'] ?? '' }}" data-icon-picker data-icon-format="class"
                                     placeholder="Ikona Font Awesome (opcjonalnie)"
-                                    class="min-w-0 rounded border-gray-300 text-sm focus:border-brand focus:ring-brand sm:col-span-2">
+                                    class="min-w-0 rounded border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark sm:col-span-2">
                                 <button type="button" data-ngo3-stats-remove class="rounded p-2 text-muted hover:bg-red-50 hover:text-red-600 sm:col-span-1 sm:w-fit sm:justify-self-end" aria-label="Usuń statystykę {{ $i + 1 }}">
                                     <i class="fa-solid fa-trash" aria-hidden="true"></i>
                                 </button>
                             </div>
                         @endforeach
                     </div>
-                    <button type="button" data-ngo3-stats-add class="mt-3 inline-flex items-center gap-2 rounded border border-brand px-3 py-1.5 text-sm font-bold text-brand hover:bg-brand-light">
+                    <button type="button" data-ngo3-stats-add class="mt-3 inline-flex items-center gap-2 rounded border border-brand-dark px-3 py-1.5 text-sm font-bold text-brand-dark hover:bg-brand-light">
                         <i class="fa-solid fa-plus" aria-hidden="true"></i> Dodaj statystykę
                     </button>
                     <template data-ngo3-stats-template>
-                        <div data-ngo3-stats-row class="grid gap-2 rounded-lg border border-gray-200 bg-white p-3 sm:grid-cols-12 sm:items-center">
+                        <div data-ngo3-stats-row class="grid gap-2 p-3 sm:grid-cols-12 sm:items-center rounded-md bg-white">
                             <input type="text" name="ngo_3_stats[__INDEX__][value]" placeholder="Wartość, np. 10+"
-                                class="rounded border-gray-300 text-sm focus:border-brand focus:ring-brand sm:col-span-3">
+                                class="rounded border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark sm:col-span-3">
                             <input type="text" name="ngo_3_stats[__INDEX__][label]" placeholder="Etykieta, np. Lat działania"
-                                class="min-w-0 rounded border-gray-300 text-sm focus:border-brand focus:ring-brand sm:col-span-6">
+                                class="min-w-0 rounded border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark sm:col-span-6">
                             <input type="text" name="ngo_3_stats[__INDEX__][icon]" data-icon-picker data-icon-format="class" placeholder="Ikona Font Awesome (opcjonalnie)"
-                                class="min-w-0 rounded border-gray-300 text-sm focus:border-brand focus:ring-brand sm:col-span-2">
+                                class="min-w-0 rounded border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark sm:col-span-2">
                             <button type="button" data-ngo3-stats-remove class="rounded p-2 text-muted hover:bg-red-50 hover:text-red-600 sm:col-span-1 sm:w-fit sm:justify-self-end" aria-label="Usuń statystykę">
                                 <i class="fa-solid fa-trash" aria-hidden="true"></i>
                             </button>
@@ -2286,21 +2286,21 @@
             @endif
 
             {{-- Sekcja skrótów —- styl tła --}}
-            <details class="mt-3 rounded-lg border border-gray-200 bg-gray-50">
+            <details class="mt-3 rounded-md bg-gray-50">
                 <summary class="cursor-pointer rounded-lg px-5 py-3 text-sm font-bold text-ink hover:bg-gray-100">Ankieta i szybkie akcje</summary>
                 <div class="border-t border-gray-200 p-5">
                 <label class="flex items-center gap-2 rounded-lg border border-gray-200 bg-white p-3">
                     <input type="hidden" name="quick_actions_panel_negative" value="0">
                     <input type="checkbox" name="quick_actions_panel_negative" value="1"
                         {{ old('quick_actions_panel_negative', $settings->quick_actions_panel_negative ?? false) ? 'checked' : '' }}
-                        class="rounded border-gray-300 text-brand focus:ring-brand">
+                        class="rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
                     <span class="text-sm font-bold">Białe tło sekcji <span class="font-normal text-muted">(domyślnie sekcja ma szare tło — zaznacz, aby zmienić na białe)</span></span>
                 </label>
                 </div>
             </details>
 
             {{-- Kolor sekcji „Szkolenia i wydarzenia" na stronie głównej --}}
-            <details class="mt-3 rounded-lg border border-gray-200 bg-gray-50">
+            <details class="mt-3 rounded-md bg-gray-50">
                 <summary class="cursor-pointer rounded-lg px-5 py-3 text-sm font-bold text-ink hover:bg-gray-100">Szkolenia i wydarzenia</summary>
                 <div class="border-t border-gray-200 p-5">
                 <label for="events_home_color_text" class="mb-1 block text-sm font-bold">Kolor sekcji „Szkolenia i wydarzenia"</label>
@@ -2308,18 +2308,18 @@
                 <div class="flex items-center gap-2">
                     <input type="color" id="events_home_color_picker" value="{{ old('events_home_color', $settings->events_home_color ?: $settings->brand_color) }}"
                         oninput="document.getElementById('events_home_color_text').value = this.value"
-                        class="h-10 w-14 cursor-pointer rounded border-gray-300">
+                        class="h-10 w-14 cursor-pointer rounded border-gray-500">
                     <input type="text" id="events_home_color_text" name="events_home_color" value="{{ old('events_home_color', $settings->events_home_color) }}"
                         placeholder="#RRGGBB (puste = kolor marki)" pattern="^#[0-9a-fA-F]{6}$"
                         oninput="if (/^#[0-9a-fA-F]{6}$/.test(this.value)) document.getElementById('events_home_color_picker').value = this.value"
-                        class="w-56 rounded border-gray-300 focus:border-brand focus:ring-brand">
+                        class="w-56 rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
                 </div>
                 @error('events_home_color') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                 </div>
             </details>
 
             {{-- Pasek informacyjny na górze strony głównej --}}
-            <details class="mt-3 rounded-lg border border-gray-200 bg-gray-50" @if ($errors->hasAny(['homepage_banner_text', 'homepage_banner_link_label', 'homepage_banner_link_url', 'homepage_banner_visible_from', 'homepage_banner_visible_until'])) open @endif>
+            <details class="mt-3 rounded-md bg-gray-50" @if ($errors->hasAny(['homepage_banner_text', 'homepage_banner_link_label', 'homepage_banner_link_url', 'homepage_banner_visible_from', 'homepage_banner_visible_until'])) open @endif>
                 <summary class="cursor-pointer rounded-lg px-5 py-3 text-sm font-bold text-ink hover:bg-gray-100">Pasek informacyjny</summary>
                 <div class="space-y-4 border-t border-gray-200 p-5">
                 <div>
@@ -2331,7 +2331,7 @@
                     <label for="homepage_banner_text" class="mb-1 block text-sm font-bold">Treść paska</label>
                     <textarea id="homepage_banner_text" name="homepage_banner_text" rows="2"
                         placeholder="np. Zapraszamy na bezpłatny webinar o dostępności — 12 marca."
-                        class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">{{ old('homepage_banner_text', $settings->homepage_banner_text) }}</textarea>
+                        class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">{{ old('homepage_banner_text', $settings->homepage_banner_text) }}</textarea>
                     @error('homepage_banner_text') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                 </div>
 
@@ -2340,7 +2340,7 @@
                         <label for="homepage_banner_link_label" class="mb-1 block text-sm font-bold">Tekst linku <span class="font-normal text-muted">(opcjonalnie)</span></label>
                         <input type="text" id="homepage_banner_link_label" name="homepage_banner_link_label" value="{{ old('homepage_banner_link_label', $settings->homepage_banner_link_label) }}"
                             placeholder="np. Zapisz się"
-                            class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                            class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
                         @error('homepage_banner_link_label') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
 
@@ -2348,7 +2348,7 @@
                         <label for="homepage_banner_link_url" class="mb-1 block text-sm font-bold">Adres linku <span class="font-normal text-muted">(opcjonalnie)</span></label>
                         <input type="text" id="homepage_banner_link_url" name="homepage_banner_link_url" value="{{ old('homepage_banner_link_url', $settings->homepage_banner_link_url) }}"
                             placeholder="np. /aktualnosci lub https://…"
-                            class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                            class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
                         @error('homepage_banner_link_url') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
 
@@ -2356,7 +2356,7 @@
                         <label for="homepage_banner_visible_from" class="mb-1 block text-sm font-bold">Pokaż od <span class="font-normal text-muted">(opcjonalnie)</span></label>
                         <input type="datetime-local" id="homepage_banner_visible_from" name="homepage_banner_visible_from"
                             value="{{ old('homepage_banner_visible_from', $settings->homepage_banner_visible_from?->format('Y-m-d\TH:i')) }}"
-                            class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                            class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
                         <p class="mt-1 text-xs text-muted">Pusto = pasek widoczny od razu.</p>
                         @error('homepage_banner_visible_from') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
@@ -2365,7 +2365,7 @@
                         <label for="homepage_banner_visible_until" class="mb-1 block text-sm font-bold">Ukryj po <span class="font-normal text-muted">(opcjonalnie)</span></label>
                         <input type="datetime-local" id="homepage_banner_visible_until" name="homepage_banner_visible_until"
                             value="{{ old('homepage_banner_visible_until', $settings->homepage_banner_visible_until?->format('Y-m-d\TH:i')) }}"
-                            class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                            class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
                         <p class="mt-1 text-xs text-muted">Pusto = pasek widoczny bezterminowo.</p>
                         @error('homepage_banner_visible_until') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
@@ -2389,7 +2389,7 @@
             <div>
                 <label for="site_template" class="mb-1 block text-sm font-bold">Aktywny szablon</label>
                 <select id="site_template" name="site_template" x-model="tpl"
-                    class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                    class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
                     @foreach (\App\Models\SiteSetting::SITE_TEMPLATES as $value => $label)
                         @continue($settings->isOptionBlocked('site_templates', $value) && old('site_template', $settings->site_template ?? 'default') !== $value)
                         <option value="{{ $value }}"
@@ -2401,7 +2401,7 @@
             </div>
 
             {{-- Opis szablonów, które nie mają własnych pól --}}
-            <div x-show="tpl === 'default'" x-cloak class="rounded-lg border border-gray-200 bg-gray-50/70 p-5">
+            <div x-show="tpl === 'default'" x-cloak class="p-5 rounded-md bg-gray-50">
                 <h3 class="text-sm font-bold text-ink">Ustawienia szablonu: Domyślny (klasyczny)</h3>
                 <p class="mt-1 text-xs text-muted">
                     Ten szablon nie ma własnych pól — jego wygląd ustawiasz w zakładkach
@@ -2410,7 +2410,7 @@
                 </p>
             </div>
 
-            <div x-show="tpl === 'ngo'" x-cloak class="rounded-lg border border-gray-200 bg-gray-50/70 p-5">
+            <div x-show="tpl === 'ngo'" x-cloak class="p-5 rounded-md bg-gray-50">
                 <h3 class="text-sm font-bold text-ink">Ustawienia szablonu: NGO / fundacja (rozbudowany)</h3>
                 <p class="mt-1 text-xs text-muted">
                     Szablon ma własny nagłówek, stopkę i stronę główną (hero, trzy aktualności, działania,
@@ -2419,7 +2419,7 @@
                 </p>
             </div>
 
-            <div x-show="tpl === 'ngo_mix'" x-cloak class="rounded-lg border border-gray-200 bg-gray-50/70 p-5">
+            <div x-show="tpl === 'ngo_mix'" x-cloak class="p-5 rounded-md bg-gray-50">
                 <h3 class="text-sm font-bold text-ink">Ustawienia szablonu: NGO / fundacja (mieszany)</h3>
                 <p class="mt-1 text-xs text-muted">
                     Klasyczny górny pasek, nagłówek i stopka (ustawiasz je w zakładce <span class="font-bold">Nagłówek</span>)
@@ -2428,7 +2428,7 @@
                 </p>
             </div>
 
-            <div x-show="tpl === 'feer'" x-cloak class="rounded-lg border border-gray-200 bg-gray-50/70 p-5">
+            <div x-show="tpl === 'feer'" x-cloak class="p-5 rounded-md bg-gray-50">
                 <h3 class="text-sm font-bold text-ink">Ustawienia szablonu: FEER</h3>
                 <p class="mt-1 text-xs text-muted">
                     Szablon dedykowany Fundacji FEER, zgodny z Brand bookiem 2024: klasyczny górny pasek, nagłówek i stopka
@@ -2439,7 +2439,7 @@
                 </p>
             </div>
 
-            <div x-show="tpl === 'ngo_3'" x-cloak class="rounded-lg border border-gray-200 bg-gray-50/70 p-5">
+            <div x-show="tpl === 'ngo_3'" x-cloak class="p-5 rounded-md bg-gray-50">
                 <h3 class="text-sm font-bold text-ink">Ustawienia szablonu: NGO / fundacja (rozbudowany 3)</h3>
                 <p class="mt-1 text-xs text-muted">
                     Nagłówek i stopka jak w szablonie „NGO / fundacja (rozbudowany)". Strona główna: hero,
@@ -2455,7 +2455,7 @@
                 $vmButtons = array_pad($vmButtons, 3, ['label' => '', 'url' => '']);
                 $vmPages = \App\Models\Page::forCurrentSite()->whereNull('parent_id')->orderBy('title')->get(['id', 'title']);
             @endphp
-            <div x-show="tpl === 'vm'" x-cloak class="space-y-5 rounded-lg border border-gray-200 p-5">
+            <div x-show="tpl === 'vm'" x-cloak class="space-y-5 p-5 rounded-md bg-gray-50">
                 <h3 class="text-sm font-bold text-ink">Ustawienia szablonu: VM</h3>
                 <p class="text-xs text-muted">
                     Czarny pasek (KRS, 1,5%, czcionka, kontrast, kontakt, szukajka), belka z logo i przyciskiem „Wpłać",
@@ -2468,7 +2468,7 @@
                     <label for="vm_intro_heading" class="mb-1 block text-sm font-bold">Nagłówek bloku powitalnego</label>
                     <input type="text" id="vm_intro_heading" name="vm_intro_heading" maxlength="255"
                         value="{{ old('vm_intro_heading', $settings->vm_intro_heading) }}" placeholder="{{ $settings->site_name }}"
-                        class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                        class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
                     <p class="mt-1 text-xs text-muted">Puste = nazwa organizacji.</p>
                     @error('vm_intro_heading') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                 </div>
@@ -2476,7 +2476,7 @@
                 <div>
                     <label for="vm_intro_text" class="mb-1 block text-sm font-bold">Tekst bloku powitalnego <span class="font-normal text-muted">(HTML — akapity &lt;p&gt;)</span></label>
                     <textarea id="vm_intro_text" name="vm_intro_text" rows="6"
-                        class="w-full rounded border-gray-300 font-mono text-sm focus:border-brand focus:ring-brand">{{ old('vm_intro_text', $settings->vm_intro_text) }}</textarea>
+                        class="w-full rounded border-gray-500 font-mono text-sm focus:border-brand-dark focus:ring-brand-dark">{{ old('vm_intro_text', $settings->vm_intro_text) }}</textarea>
                     @error('vm_intro_text') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                 </div>
 
@@ -2489,11 +2489,11 @@
                                 <label class="sr-only" for="vm_intro_buttons_{{ $i }}_label">Przycisk {{ $i + 1 }} — etykieta</label>
                                 <input type="text" id="vm_intro_buttons_{{ $i }}_label" name="vm_intro_buttons[{{ $i }}][label]" maxlength="60"
                                     value="{{ $button['label'] ?? '' }}" placeholder="Etykieta, np. Wesprzyj nas"
-                                    class="rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                                    class="rounded border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark">
                                 <label class="sr-only" for="vm_intro_buttons_{{ $i }}_url">Przycisk {{ $i + 1 }} — adres</label>
                                 <input type="text" id="vm_intro_buttons_{{ $i }}_url" name="vm_intro_buttons[{{ $i }}][url]" maxlength="255"
                                     value="{{ $button['url'] ?? '' }}" placeholder="Adres, np. /wsparcie"
-                                    class="rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                                    class="rounded border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark">
                             </div>
                         @endforeach
                     </div>
@@ -2503,7 +2503,7 @@
                 <div>
                     <label for="vm_knowledge_page_id" class="mb-1 block text-sm font-bold">Strona sekcji „Wiedza"</label>
                     <select id="vm_knowledge_page_id" name="vm_knowledge_page_id"
-                        class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                        class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
                         <option value="">— nie pokazuj sekcji —</option>
                         @foreach ($vmPages as $vmPage)
                             <option value="{{ $vmPage->id }}" @selected((int) old('vm_knowledge_page_id', $settings->vm_knowledge_page_id) === $vmPage->id)>{{ $vmPage->title }}</option>
@@ -2523,13 +2523,13 @@
                             <div class="mb-2 flex items-center gap-3">
                                 <img src="{{ $vmUrl }}" alt="Aktualny plik: {{ $vmLabel }}" class="h-16 w-auto rounded object-contain ring-1 ring-gray-200">
                                 <label class="flex items-center gap-2 text-sm text-muted">
-                                    <input type="checkbox" name="remove_{{ $vmField }}" value="1" class="rounded border-gray-300 text-brand focus:ring-brand">
+                                    <input type="checkbox" name="remove_{{ $vmField }}" value="1" class="rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
                                     Usuń
                                 </label>
                             </div>
                         @endif
                         <input type="file" id="{{ $vmField }}" name="{{ $vmField }}" accept="image/*"
-                            class="block w-full cursor-pointer text-sm text-muted file:mr-3 file:cursor-pointer file:rounded file:border-0 file:bg-brand file:px-4 file:py-2 file:text-sm file:font-bold file:text-white hover:file:bg-brand-dark">
+                            class="block w-full cursor-pointer text-sm text-muted file:mr-3 file:cursor-pointer file:rounded file:border-0 file:bg-brand-dark file:px-4 file:py-2 file:text-sm file:font-bold file:text-white hover:file:bg-brand-dark">
                         <p class="mt-1 text-xs text-muted">{{ $vmHelp }}</p>
                         @error($vmField) <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
@@ -2539,27 +2539,27 @@
                     <label for="vm_header_badge_alt" class="mb-1 block text-sm font-bold">Tekst alternatywny logo partnera</label>
                     <input type="text" id="vm_header_badge_alt" name="vm_header_badge_alt" maxlength="255"
                         value="{{ old('vm_header_badge_alt', $settings->vm_header_badge_alt) }}" placeholder="np. Unia Europejska"
-                        class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                        class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
                     @error('vm_header_badge_alt') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                 </div>
 
                 <div>
                     <label for="vm_newsletter_text" class="mb-1 block text-sm font-bold">Tekst nad formularzem newslettera</label>
                     <textarea id="vm_newsletter_text" name="vm_newsletter_text" rows="2" maxlength="500"
-                        class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">{{ old('vm_newsletter_text', $settings->vm_newsletter_text) }}</textarea>
+                        class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">{{ old('vm_newsletter_text', $settings->vm_newsletter_text) }}</textarea>
                     @error('vm_newsletter_text') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                 </div>
 
                 <div>
                     <label for="vm_footer_note" class="mb-1 block text-sm font-bold">Nota w stopce <span class="font-normal text-muted">(np. informacja o finansowaniu)</span></label>
                     <textarea id="vm_footer_note" name="vm_footer_note" rows="2" maxlength="1000"
-                        class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">{{ old('vm_footer_note', $settings->vm_footer_note) }}</textarea>
+                        class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">{{ old('vm_footer_note', $settings->vm_footer_note) }}</textarea>
                     @error('vm_footer_note') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                 </div>
             </div>
 
             {{-- Ustawienia szablonu Gmina / urząd --}}
-            <div x-show="tpl === 'municipality'" x-cloak class="rounded-lg border border-gray-200 p-5 space-y-5">
+            <div x-show="tpl === 'municipality'" x-cloak class="p-5 space-y-5 rounded-md bg-gray-50">
                 <h3 class="text-sm font-bold text-ink">Ustawienia szablonu: Gmina / urząd</h3>
                 <p class="text-xs text-muted">Pola widoczne tylko przy tym szablonie. Zapisane wartości zostają w bazie, gdy przełączysz szablon na inny.</p>
 
@@ -2570,7 +2570,7 @@
                     <input type="text" id="municipality_shortcuts_slug" name="municipality_shortcuts_slug"
                         value="{{ old('municipality_shortcuts_slug', $settings->municipality_shortcuts_slug) }}"
                         placeholder="np. na-skroty"
-                        class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                        class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
                     <p class="mt-1 text-xs text-muted">
                         Utwórz stronę o typie „Siatka kafelków" (podstrony → nowa → typ: Siatka kafelków),
                         wpisz jej slug (bez ukośnika).
@@ -2587,7 +2587,7 @@
                     <input type="text" id="municipality_carousel_title" name="municipality_carousel_title"
                         value="{{ old('municipality_carousel_title', $settings->municipality_carousel_title) }}"
                         placeholder="Polecamy"
-                        class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                        class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
                 </div>
 
                 <div class="grid gap-4 sm:grid-cols-2">
@@ -2599,7 +2599,7 @@
                             step="0.000001" min="-90" max="90"
                             value="{{ old('municipality_weather_lat', $settings->municipality_weather_lat) }}"
                             placeholder="np. 53.136985"
-                            class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                            class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
                         <p class="mt-1 text-xs text-muted">Pozostaw puste, by ukryć pogodę.</p>
                     </div>
                     <div>
@@ -2610,7 +2610,7 @@
                             step="0.000001" min="-180" max="180"
                             value="{{ old('municipality_weather_lon', $settings->municipality_weather_lon) }}"
                             placeholder="np. 17.057556"
-                            class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                            class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
                     </div>
                 </div>
 
@@ -2618,7 +2618,7 @@
                     <label class="flex items-center gap-2 text-sm font-medium">
                         <input type="checkbox" name="municipality_show_google_translate" value="1"
                             {{ old('municipality_show_google_translate', $settings->municipality_show_google_translate) ? 'checked' : '' }}
-                            class="rounded border-gray-300 text-brand focus:ring-brand">
+                            class="rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
                         Pokaż przycisk Google Translate w pasku górnym
                     </label>
                     <p class="ml-6 mt-1 text-xs text-muted">
@@ -2643,7 +2643,7 @@
             <label class="flex items-center gap-2 text-sm font-medium">
                 <input type="checkbox" name="microsoft_login_enabled" value="1" x-model="msEnabled"
                     {{ old('microsoft_login_enabled', $settings->microsoft_login_enabled) ? 'checked' : '' }}
-                    class="rounded border-gray-300 text-brand focus:ring-brand">
+                    class="rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
                 Włącz logowanie przez Microsoft 365
             </label>
 
@@ -2652,7 +2652,7 @@
                     <label class="flex items-center gap-2 text-sm font-medium">
                         <input type="checkbox" name="microsoft_only_login" value="1"
                             {{ old('microsoft_only_login', $settings->microsoft_only_login) ? 'checked' : '' }}
-                            class="rounded border-gray-300 text-brand focus:ring-brand">
+                            class="rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
                         Wyłącz lokalne logowanie hasłem (tylko Microsoft 365)
                     </label>
                     <p class="ml-6 mt-1 text-xs text-muted">
@@ -2660,7 +2660,7 @@
                     </p>
                 </div>
 
-                <div class="rounded-lg border border-gray-200 bg-gray-50 p-4">
+                <div class="p-4 rounded-md bg-gray-50">
                     <p class="mb-2 text-sm font-bold text-ink">Adres dostępu awaryjnego</p>
                     @if ($settings->emergency_login_token)
                         <code class="block break-all rounded bg-white px-3 py-2 text-xs text-ink ring-1 ring-gray-200">{{ url('/'.$settings->emergency_login_token) }}</code>
@@ -2670,7 +2670,7 @@
                     @endif
                     <button type="submit" form="emergency-token-form"
                         onclick="return confirm('Wygenerować nowy adres? Stary przestanie działać natychmiast.')"
-                        class="mt-3 inline-flex items-center gap-1.5 rounded border border-gray-300 bg-white px-3 py-1.5 text-xs font-medium text-ink shadow-sm hover:bg-gray-50">
+                        class="mt-3 inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium text-ink bg-white hover:bg-brand-light">
                         <i class="fa-solid fa-rotate-right"></i>
                         {{ $settings->emergency_login_token ? 'Wygeneruj nowy adres' : 'Wygeneruj adres' }}
                     </button>
@@ -2682,7 +2682,7 @@
                     <label for="microsoft_client_id" class="mb-1 block text-sm font-bold">Client ID</label>
                     <input type="text" id="microsoft_client_id" name="microsoft_client_id" autocomplete="off"
                         value="{{ old('microsoft_client_id', $settings->microsoft_client_id) }}"
-                        class="w-full rounded border-gray-300 font-mono text-sm focus:border-brand focus:ring-brand">
+                        class="w-full rounded border-gray-500 font-mono text-sm focus:border-brand-dark focus:ring-brand-dark">
                     <p class="mt-1 text-xs text-muted">Application (client) ID z Microsoft Entra ID.</p>
                     @error('microsoft_client_id') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                 </div>
@@ -2691,7 +2691,7 @@
                     <label for="microsoft_client_secret" class="mb-1 block text-sm font-bold">Client Secret</label>
                     <input type="password" id="microsoft_client_secret" name="microsoft_client_secret" autocomplete="new-password"
                         placeholder="{{ $settings->microsoft_client_secret ? '•••••••• (zapisany — zostaw puste, aby nie zmieniać)' : '' }}"
-                        class="w-full rounded border-gray-300 font-mono text-sm focus:border-brand focus:ring-brand">
+                        class="w-full rounded border-gray-500 font-mono text-sm focus:border-brand-dark focus:ring-brand-dark">
                     <p class="mt-1 text-xs text-muted">Wartość sekretu (nie „Secret ID"). Przechowywana w bazie w postaci zaszyfrowanej.</p>
                     @error('microsoft_client_secret') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                 </div>
@@ -2701,12 +2701,12 @@
                     <input type="text" id="microsoft_tenant_id" name="microsoft_tenant_id" autocomplete="off"
                         value="{{ old('microsoft_tenant_id', $settings->microsoft_tenant_id) }}"
                         placeholder="common"
-                        class="w-full rounded border-gray-300 font-mono text-sm focus:border-brand focus:ring-brand">
+                        class="w-full rounded border-gray-500 font-mono text-sm focus:border-brand-dark focus:ring-brand-dark">
                     <p class="mt-1 text-xs text-muted">Directory (tenant) ID fundacji zawęża logowanie do jej domeny. Puste = „common" (dowolne konto Microsoft).</p>
                     @error('microsoft_tenant_id') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                 </div>
 
-                <p class="rounded border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
+                <p class="rounded-md bg-amber-50 px-3 py-2 text-xs text-amber-800">
                     Pozostawione puste pola dziedziczą wartości z pliku <code>.env</code>, jeśli tam je ustawiono.
                 </p>
             </div>
@@ -2725,7 +2725,7 @@
                 <label class="mt-4 flex items-center gap-2 text-sm font-medium">
                     <input type="checkbox" name="google_login_enabled" value="1" x-model="googleEnabled"
                         {{ old('google_login_enabled', $settings->google_login_enabled) ? 'checked' : '' }}
-                        class="rounded border-gray-300 text-brand focus:ring-brand">
+                        class="rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
                     Włącz logowanie przez Google
                 </label>
 
@@ -2734,7 +2734,7 @@
                         <label for="google_client_id" class="mb-1 block text-sm font-bold">Client ID</label>
                         <input type="text" id="google_client_id" name="google_client_id" autocomplete="off"
                             value="{{ old('google_client_id', $settings->google_client_id) }}"
-                            class="w-full rounded border-gray-300 font-mono text-sm focus:border-brand focus:ring-brand">
+                            class="w-full rounded border-gray-500 font-mono text-sm focus:border-brand-dark focus:ring-brand-dark">
                         @error('google_client_id') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
 
@@ -2742,11 +2742,11 @@
                         <label for="google_client_secret" class="mb-1 block text-sm font-bold">Client Secret</label>
                         <input type="password" id="google_client_secret" name="google_client_secret" autocomplete="new-password"
                             placeholder="{{ $settings->google_client_secret ? '•••••••• (zapisany — zostaw puste, aby nie zmieniać)' : '' }}"
-                            class="w-full rounded border-gray-300 font-mono text-sm focus:border-brand focus:ring-brand">
+                            class="w-full rounded border-gray-500 font-mono text-sm focus:border-brand-dark focus:ring-brand-dark">
                         @error('google_client_secret') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
 
-                    <p class="rounded border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
+                    <p class="rounded-md bg-amber-50 px-3 py-2 text-xs text-amber-800">
                         Pozostawione puste pola dziedziczą wartości z pliku <code>.env</code>, jeśli tam je ustawiono.
                     </p>
                 </div>
@@ -2765,7 +2765,7 @@
                 <label class="mt-4 flex items-center gap-2 text-sm font-medium">
                     <input type="checkbox" name="member_login_enabled" value="1" x-model="memberEnabled"
                         {{ old('member_login_enabled', $settings->member_login_enabled) ? 'checked' : '' }}
-                        class="rounded border-gray-300 text-brand focus:ring-brand">
+                        class="rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
                     Włącz logowanie do strefy wewnętrznej
                 </label>
 
@@ -2774,7 +2774,7 @@
                     <input type="text" id="member_allowed_domains" name="member_allowed_domains" autocomplete="off"
                         value="{{ old('member_allowed_domains', $settings->member_allowed_domains) }}"
                         placeholder="np. feer.org.pl, wspolpraca.feer.org.pl"
-                        class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                        class="w-full rounded border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark">
                     <p class="mt-1 text-xs text-muted">Domeny po przecinku. Puste = dowolne konto z tenanta skonfigurowanego w Azure.</p>
                     @error('member_allowed_domains') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                 </div>
@@ -2806,7 +2806,7 @@
                         finally { this.busy = false; }
                     },
                 }">
-                <h2 class="text-base font-bold text-ink"><i class="fa-solid fa-diagram-project mr-1 text-brand" aria-hidden="true"></i> Integracja z SZO</h2>
+                <h2 class="text-base font-bold text-ink"><i class="fa-solid fa-diagram-project mr-1 text-brand-dark" aria-hidden="true"></i> Integracja z SZO</h2>
                 <p class="mt-1 text-xs text-muted">
                     System Zarządzania Organizacją (CRM). Z tego adresu strona pobiera komunikaty strefy współpracownika i klauzule RODO,
                     a z tokenem przekazuje do SZO zgłoszenia z formularzy i darowizny. Wartości z panelu mają pierwszeństwo przed <code>.env</code>;
@@ -2820,7 +2820,7 @@
                             value="{{ old('szo_api_url', $settings->szo_api_url) }}"
                             placeholder="{{ $szoUrlFromEnv ? $szoEffUrl.' (z .env)' : 'np. https://szo.feer.org.pl' }}"
                             aria-describedby="szo_api_url_help"
-                            class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                            class="w-full rounded border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark">
                         <p id="szo_api_url_help" class="mt-1 text-xs text-muted">
                             Adres bazowy, bez ukośnika na końcu.
                             @if ($szoUrlFromEnv) <strong>Obecnie używany adres z <code>.env</code>: {{ $szoEffUrl }}.</strong>
@@ -2833,7 +2833,7 @@
                         <input type="password" id="szo_token" name="szo_token" autocomplete="new-password"
                             placeholder="{{ $settings->szo_token ? '•••••••• (zapisany — zostaw puste, aby nie zmieniać)' : ($szoTokenFromEnv ? '•••••••• (z .env)' : '') }}"
                             aria-describedby="szo_token_help"
-                            class="w-full rounded border-gray-300 font-mono text-sm focus:border-brand focus:ring-brand">
+                            class="w-full rounded border-gray-500 font-mono text-sm focus:border-brand-dark focus:ring-brand-dark">
                         <p id="szo_token_help" class="mt-1 text-xs text-muted">
                             Token z Admin → API w SZO z uprawnieniami <code>forms:read</code>, <code>forms:submit</code> (dla darowizn także <code>donations:submit</code>).
                             Przechowywany zaszyfrowany; trafia wyłącznie do połączeń serwer–serwer.
@@ -2845,7 +2845,7 @@
                 <label class="mt-4 flex items-start gap-3 rounded-lg border border-gray-200 p-3">
                     <input type="hidden" name="szo_enabled" value="0">
                     <input type="checkbox" name="szo_enabled" value="1" @checked($szoEnabledValue)
-                        class="mt-0.5 rounded border-gray-300 text-brand focus:ring-brand">
+                        class="mt-0.5 rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
                     <span>
                         <span class="block text-sm font-bold">Przekazuj zgłoszenia i darowizny do SZO</span>
                         <span class="block text-xs text-muted">Wymaga adresu i tokenu. Zgłoszenie zawsze zapisuje się najpierw lokalnie — niedostępne SZO go nie gubi; nieudane próby dosyła polecenie <code>szo:push-submissions</code>.</span>
@@ -2857,7 +2857,7 @@
                         <label for="szo_default_form" class="mb-1 block text-sm font-bold">Domyślny formularz w SZO</label>
                         <input type="text" id="szo_default_form" name="szo_default_form" value="{{ old('szo_default_form', $settings->szo_default_form) }}"
                             placeholder="{{ config('szo.default_form') ?: 'slug formularza' }}" autocomplete="off"
-                            class="w-full rounded border-gray-300 font-mono text-sm focus:border-brand focus:ring-brand">
+                            class="w-full rounded border-gray-500 font-mono text-sm focus:border-brand-dark focus:ring-brand-dark">
                         <p class="mt-1 text-xs text-muted">Używany, gdy formularz nie ma własnego.</p>
                         @error('szo_default_form') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
@@ -2865,7 +2865,7 @@
                         <label for="szo_donation_form" class="mb-1 block text-sm font-bold">Formularz darowizn</label>
                         <input type="text" id="szo_donation_form" name="szo_donation_form" value="{{ old('szo_donation_form', $settings->szo_donation_form) }}"
                             placeholder="{{ config('szo.donation_form') ?: 'darowizna' }}" autocomplete="off"
-                            class="w-full rounded border-gray-300 font-mono text-sm focus:border-brand focus:ring-brand">
+                            class="w-full rounded border-gray-500 font-mono text-sm focus:border-brand-dark focus:ring-brand-dark">
                         <p class="mt-1 text-xs text-muted">Zapis zgód darczyńcy (RODO, newsletter).</p>
                         @error('szo_donation_form') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
@@ -2873,7 +2873,7 @@
                         <label for="szo_timeout" class="mb-1 block text-sm font-bold">Limit czasu (s)</label>
                         <input type="number" id="szo_timeout" name="szo_timeout" min="1" max="60" value="{{ old('szo_timeout', $settings->szo_timeout) }}"
                             placeholder="{{ config('szo.timeout', 5) }}"
-                            class="w-full rounded border-gray-300 font-mono text-sm focus:border-brand focus:ring-brand">
+                            class="w-full rounded border-gray-500 font-mono text-sm focus:border-brand-dark focus:ring-brand-dark">
                         <p class="mt-1 text-xs text-muted">Krótki, żeby SZO nie blokowało strony.</p>
                         @error('szo_timeout') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
@@ -2881,7 +2881,7 @@
 
                 <div class="mt-4 space-y-2">
                     <button type="button" @click="check()" :disabled="busy"
-                        class="inline-flex min-h-10 items-center gap-2 rounded border border-gray-300 px-4 py-2 text-xs font-bold text-ink hover:border-brand hover:text-brand disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                        class="inline-flex min-h-10 items-center gap-2 rounded-md px-4 py-2 text-xs font-bold text-ink hover:text-brand-dark disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark bg-gray-100 hover:bg-brand-light">
                         <i class="fa-solid" :class="busy ? 'fa-spinner fa-spin' : 'fa-plug-circle-check'" aria-hidden="true"></i> Sprawdź połączenie z SZO
                     </button>
                     <p role="status" aria-live="polite" x-show="res" x-cloak x-text="res?.message"
@@ -2911,13 +2911,13 @@
                         finally { this.busy = false; }
                     },
                 }">
-                <h2 class="text-base font-bold text-ink"><i class="fa-solid fa-shield-virus mr-1 text-brand" aria-hidden="true"></i> Ochrona antyspamowa CleanTalk</h2>
+                <h2 class="text-base font-bold text-ink"><i class="fa-solid fa-shield-virus mr-1 text-brand-dark" aria-hidden="true"></i> Ochrona antyspamowa CleanTalk</h2>
                 <p class="mt-1 text-xs text-muted">
                     Dodatkowa warstwa ochrony formularzy (moduł Formularze oraz formularz kontaktowy) obok lokalnego zadania antyspamowego: skrypt analizuje zachowanie odwiedzającego,
-                    a usługa <a href="https://cleantalk.org" target="_blank" rel="noopener" class="text-brand underline">CleanTalk<span class="sr-only"> (otwiera się w nowej karcie)</span></a> ocenia treść zgłoszenia.
+                    a usługa <a href="https://cleantalk.org" target="_blank" rel="noopener" class="text-brand-dark underline">CleanTalk<span class="sr-only"> (otwiera się w nowej karcie)</span></a> ocenia treść zgłoszenia.
                     Klucz dostępu (Access key) wygenerujesz w koncie CleanTalk. Gdy usługa jest niedostępna, formularz działa normalnie.
                 </p>
-                <p class="mt-3 rounded border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900" role="note">
+                <p class="mt-3 rounded-md bg-amber-50 px-3 py-2 text-xs text-amber-900" role="note">
                     <strong>Dane wysyłane do CleanTalk:</strong> treść zgłoszenia, imię i adres e-mail nadawcy, jego adres IP i strona odsyłająca. Na stronach z formularzem ładowany jest też skrypt z domeny <code>fd.cleantalk.org</code>.
                     Uwzględnij to w polityce prywatności i zawrzyj z dostawcą umowę powierzenia przetwarzania danych. Formularz z modułu Formularze możesz wyłączyć z kontroli w jego własnych ustawieniach.
                 </p>
@@ -2925,7 +2925,7 @@
                 <label class="mt-4 flex items-start gap-3 rounded-lg border border-gray-200 p-3">
                     <input type="hidden" name="cleantalk_enabled" value="0">
                     <input type="checkbox" name="cleantalk_enabled" value="1" @checked($ctEnabled)
-                        class="mt-0.5 rounded border-gray-300 text-brand focus:ring-brand">
+                        class="mt-0.5 rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
                     <span>
                         <span class="block text-sm font-bold">Sprawdzaj zgłoszenia formularzy w CleanTalk</span>
                         <span class="block text-xs text-muted">Wymaga klucza dostępu. Zgłoszenie uznane za spam nie zostaje zapisane, a osoba widzi komunikat z prośbą o zmianę treści.</span>
@@ -2936,14 +2936,14 @@
                     <label for="cleantalk_access_key" class="mb-1 block text-sm font-bold">Klucz dostępu (Access key)</label>
                     <input type="password" id="cleantalk_access_key" name="cleantalk_access_key" autocomplete="new-password" maxlength="255"
                         placeholder="{{ $settings->cleantalk_access_key ? '•••••••• (zapisany — zostaw puste, aby nie zmieniać)' : ($ctKeyFromEnv ? '•••••••• (z .env)' : '') }}"
-                        class="w-full rounded border-gray-300 font-mono text-sm focus:border-brand focus:ring-brand">
+                        class="w-full rounded border-gray-500 font-mono text-sm focus:border-brand-dark focus:ring-brand-dark">
                     <p class="mt-1 text-xs text-muted">Przechowywany zaszyfrowany. Puste pole zachowuje zapisany klucz.</p>
                     @error('cleantalk_access_key') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                 </div>
 
                 <div class="mt-4 space-y-2">
                     <button type="button" @click="check()" :disabled="busy"
-                        class="inline-flex min-h-10 items-center gap-2 rounded border border-gray-300 px-4 py-2 text-xs font-bold text-ink hover:border-brand hover:text-brand disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                        class="inline-flex min-h-10 items-center gap-2 rounded-md px-4 py-2 text-xs font-bold text-ink hover:text-brand-dark disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark bg-gray-100 hover:bg-brand-light">
                         <i class="fa-solid" :class="busy ? 'fa-spinner fa-spin' : 'fa-plug-circle-check'" aria-hidden="true"></i> Sprawdź klucz
                     </button>
                     <p role="status" aria-live="polite" x-show="res" x-cloak x-text="res?.message"
@@ -2963,25 +2963,25 @@
                 <label class="mt-4 flex items-center gap-2 text-sm font-medium">
                     <input type="checkbox" name="two_factor_required_admins" value="1"
                         {{ old('two_factor_required_admins', $settings->two_factor_required_admins) ? 'checked' : '' }}
-                        class="rounded border-gray-300 text-brand focus:ring-brand">
+                        class="rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
                     Wymagaj 2FA od administratorów (logujących się hasłem)
                 </label>
 
                 <div class="mt-5 space-y-5">
                     <p class="text-sm font-bold text-ink">Klucze YubiKey (Yubico OTP)</p>
-                    <p class="-mt-3 text-xs text-muted">Dane API z <a href="https://upgrade.yubico.com/getapikey/" target="_blank" rel="noopener" class="text-brand underline">upgrade.yubico.com/getapikey</a> (link otwiera się w nowej karcie).</p>
+                    <p class="-mt-3 text-xs text-muted">Dane API z <a href="https://upgrade.yubico.com/getapikey/" target="_blank" rel="noopener" class="text-brand-dark underline">upgrade.yubico.com/getapikey</a> (link otwiera się w nowej karcie).</p>
                     <div>
                         <label for="yubico_client_id" class="mb-1 block text-sm font-bold">Yubico Client ID</label>
                         <input type="text" id="yubico_client_id" name="yubico_client_id" autocomplete="off"
                             value="{{ old('yubico_client_id', $settings->yubico_client_id) }}"
-                            class="w-full rounded border-gray-300 font-mono text-sm focus:border-brand focus:ring-brand">
+                            class="w-full rounded border-gray-500 font-mono text-sm focus:border-brand-dark focus:ring-brand-dark">
                         @error('yubico_client_id') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
                     <div>
                         <label for="yubico_secret_key" class="mb-1 block text-sm font-bold">Yubico Secret Key</label>
                         <input type="password" id="yubico_secret_key" name="yubico_secret_key" autocomplete="new-password"
                             placeholder="{{ $settings->yubico_secret_key ? '•••••••• (zapisany — zostaw puste, aby nie zmieniać)' : '' }}"
-                            class="w-full rounded border-gray-300 font-mono text-sm focus:border-brand focus:ring-brand">
+                            class="w-full rounded border-gray-500 font-mono text-sm focus:border-brand-dark focus:ring-brand-dark">
                         <p class="mt-1 text-xs text-muted">Przechowywany w bazie w postaci zaszyfrowanej.</p>
                         @error('yubico_secret_key') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
@@ -2992,8 +2992,8 @@
             <div class="border-t border-gray-200 pt-6">
                 <h2 class="text-base font-bold text-ink">Przelewy24 (Sklep)</h2>
                 <p class="mt-1 text-xs text-muted">
-                    Dane z panelu sprzedawcy <a href="https://www.przelewy24.pl/" target="_blank" rel="noopener" class="text-brand underline">Przelewy24</a>
-                    (dla testów użyj konta <a href="https://sandbox.przelewy24.pl/" target="_blank" rel="noopener" class="text-brand underline">sandbox.przelewy24.pl</a>).
+                    Dane z panelu sprzedawcy <a href="https://www.przelewy24.pl/" target="_blank" rel="noopener" class="text-brand-dark underline">Przelewy24</a>
+                    (dla testów użyj konta <a href="https://sandbox.przelewy24.pl/" target="_blank" rel="noopener" class="text-brand-dark underline">sandbox.przelewy24.pl</a>).
                     Klucz CRC i klucz API znajdziesz w Ustawieniach sklepu w panelu P24.
                 </p>
 
@@ -3001,7 +3001,7 @@
                     <div>
                         <label for="przelewy24_sandbox" class="mb-1 block text-sm font-bold">Środowisko</label>
                         <select id="przelewy24_sandbox" name="przelewy24_sandbox"
-                            class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                            class="w-full rounded border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark">
                             @php $currentSandbox = old('przelewy24_sandbox', $settings->przelewy24_sandbox); @endphp
                             <option value="" @selected($currentSandbox === null)>Dziedzicz z .env ({{ config('przelewy24.sandbox', true) ? 'sandbox' : 'produkcja' }})</option>
                             <option value="1" @selected($currentSandbox !== null && (bool) $currentSandbox === true)>Sandbox (testowe)</option>
@@ -3013,14 +3013,14 @@
                         <label for="przelewy24_merchant_id" class="mb-1 block text-sm font-bold">Merchant ID</label>
                         <input type="text" id="przelewy24_merchant_id" name="przelewy24_merchant_id" autocomplete="off"
                             value="{{ old('przelewy24_merchant_id', $settings->przelewy24_merchant_id) }}"
-                            class="w-full rounded border-gray-300 font-mono text-sm focus:border-brand focus:ring-brand">
+                            class="w-full rounded border-gray-500 font-mono text-sm focus:border-brand-dark focus:ring-brand-dark">
                         @error('przelewy24_merchant_id') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
                     <div>
                         <label for="przelewy24_pos_id" class="mb-1 block text-sm font-bold">POS ID</label>
                         <input type="text" id="przelewy24_pos_id" name="przelewy24_pos_id" autocomplete="off"
                             value="{{ old('przelewy24_pos_id', $settings->przelewy24_pos_id) }}"
-                            class="w-full rounded border-gray-300 font-mono text-sm focus:border-brand focus:ring-brand">
+                            class="w-full rounded border-gray-500 font-mono text-sm focus:border-brand-dark focus:ring-brand-dark">
                         <p class="mt-1 text-xs text-muted">Zwykle taki sam jak Merchant ID, chyba że masz kilka POS-ów.</p>
                         @error('przelewy24_pos_id') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
@@ -3028,20 +3028,20 @@
                         <label for="przelewy24_crc" class="mb-1 block text-sm font-bold">Klucz CRC</label>
                         <input type="password" id="przelewy24_crc" name="przelewy24_crc" autocomplete="new-password"
                             placeholder="{{ $settings->przelewy24_crc ? '•••••••• (zapisany — zostaw puste, aby nie zmieniać)' : '' }}"
-                            class="w-full rounded border-gray-300 font-mono text-sm focus:border-brand focus:ring-brand">
+                            class="w-full rounded border-gray-500 font-mono text-sm focus:border-brand-dark focus:ring-brand-dark">
                         @error('przelewy24_crc') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
                     <div>
                         <label for="przelewy24_api_key" class="mb-1 block text-sm font-bold">Klucz API</label>
                         <input type="password" id="przelewy24_api_key" name="przelewy24_api_key" autocomplete="new-password"
                             placeholder="{{ $settings->przelewy24_api_key ? '•••••••• (zapisany — zostaw puste, aby nie zmieniać)' : '' }}"
-                            class="w-full rounded border-gray-300 font-mono text-sm focus:border-brand focus:ring-brand">
+                            class="w-full rounded border-gray-500 font-mono text-sm focus:border-brand-dark focus:ring-brand-dark">
                         <p class="mt-1 text-xs text-muted">Ustawienia sklepu → Klucz do raportów. Inny niż klucz CRC.</p>
                         @error('przelewy24_api_key') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
                 </div>
 
-                <p class="mt-4 rounded border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
+                <p class="mt-4 rounded-md bg-amber-50 px-3 py-2 text-xs text-amber-800">
                     Pozostawione puste pola dziedziczą wartości z pliku <code>.env</code>, jeśli tam je ustawiono.
                     Status integracji: {{ $settings->przelewy24Configured() ? 'skonfigurowana' : 'nieskonfigurowana' }}.
                 </p>
@@ -3077,14 +3077,14 @@
                                 value="{{ $currentPrefix }}"
                                 pattern="[a-z0-9][a-z0-9\-_]*[a-z0-9]" minlength="3" maxlength="60" required
                                 autocomplete="off" spellcheck="false"
-                                class="flex-1 rounded-none rounded-r border-gray-300 font-mono text-sm focus:border-brand focus:ring-brand"
+                                class="flex-1 rounded-none rounded-r border-gray-500 font-mono text-sm focus:border-brand-dark focus:ring-brand-dark"
                                 aria-describedby="admin-prefix-hint">
                         </div>
                         <p id="admin-prefix-hint" class="mt-1 text-xs text-muted">Małe litery, cyfry, myślniki i podkreślenia. Minimum 3 znaki. Przykład: <code>zarzadzanie</code>, <code>cms-feer</code>.</p>
                         @error('admin_prefix') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
 
-                    <div class="rounded border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800" role="alert">
+                    <div class="rounded-md bg-amber-50 px-3 py-2 text-xs text-amber-800" role="alert">
                         <i class="fa-solid fa-triangle-exclamation mr-1" aria-hidden="true"></i>
                         Po zapisaniu panel otworzy się pod <strong>nowym adresem</strong>. Stary link przestanie działać — zaktualizuj zakładkę w przeglądarce.
                     </div>
@@ -3112,16 +3112,16 @@
                      formularz ustawień i przycisk „Zapisz" przestałby cokolwiek
                      wysyłać. Przycisk wskazuje formularz testu poczty atrybutem form. --}}
                 <button type="submit" form="mail-test-form"
-                        class="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-bold text-muted hover:bg-gray-50 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-brand">
+                        class="inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-bold text-muted focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-brand-dark bg-gray-100 hover:bg-brand-light">
                     <i class="fa-solid fa-paper-plane" aria-hidden="true"></i>
                     Testuj wysyłkę
                 </button>
             </div>
             @if (session('mail_test_status'))
-                <div class="flex items-center gap-2 rounded-xl border px-4 py-3 text-sm font-medium
-                            {{ session('mail_test_status') === 'success' ? 'border-green-200 bg-green-50 text-green-800' : 'border-red-200 bg-red-50 text-red-800' }}"
+                <div class="flex items-center gap-2 rounded-md px-4 py-3 text-sm font-bold
+ {{ session('mail_test_status') === 'success' ? 'bg-brand-light text-ink' : 'bg-red-50 text-red-800' }}"
                      role="alert">
-                    <i class="fa-solid {{ session('mail_test_status') === 'success' ? 'fa-circle-check text-green-600' : 'fa-circle-xmark text-red-600' }}" aria-hidden="true"></i>
+                    <i class="fa-solid {{ session('mail_test_status') === 'success' ? 'fa-circle-check text-brand-dark' : 'fa-circle-xmark text-red-700' }}" aria-hidden="true"></i>
                     {{ session('mail_test_msg') }}
                 </div>
             @endif
@@ -3177,7 +3177,7 @@
                     },
                  }">
                 <div>
-                    <h3 class="text-sm font-bold text-ink"><i class="fa-solid fa-wand-magic-sparkles mr-1 text-brand" aria-hidden="true"></i> Autokonfigurator poczty</h3>
+                    <h3 class="text-sm font-bold text-ink"><i class="fa-solid fa-wand-magic-sparkles mr-1 text-brand-dark" aria-hidden="true"></i> Autokonfigurator poczty</h3>
                     <p class="mt-1 text-xs text-muted">Wpisz adres skrzynki, z której ma wychodzić poczta. Rozpoznamy dostawcę (Microsoft 365, Google, OVH, home.pl i inne) i uzupełnimy ustawienia. Hasła i sekrety wpisujesz samodzielnie.</p>
                 </div>
                 <div class="flex flex-wrap items-end gap-3">
@@ -3185,18 +3185,18 @@
                         <label for="mail_autoconfig_email" class="mb-1 block text-sm font-bold">Adres skrzynki nadawczej</label>
                         <input type="email" id="mail_autoconfig_email" x-model="email" @keydown.enter.prevent="detect()" autocomplete="off"
                             placeholder="np. powiadomienia@feer.org.pl" aria-describedby="mail_autoconfig_status"
-                            class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                            class="w-full rounded border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark">
                     </div>
                     <button type="button" @click="detect()" :disabled="busy"
-                        class="inline-flex min-h-10 items-center gap-2 rounded bg-brand px-4 py-2 text-sm font-bold text-white hover:bg-brand-dark disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
+                        class="inline-flex min-h-10 items-center gap-2 rounded bg-brand-dark px-4 py-2 text-sm font-bold text-white hover:bg-ink disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2">
                         <i class="fa-solid" :class="busy ? 'fa-spinner fa-spin' : 'fa-magnifying-glass'" aria-hidden="true"></i> Wykryj ustawienia
                     </button>
                 </div>
 
                 <div id="mail_autoconfig_status" role="status" aria-live="polite">
-                    <p x-show="error" x-cloak x-text="error" class="rounded border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800"></p>
+                    <p x-show="error" x-cloak x-text="error" class="rounded-md bg-red-50 px-3 py-2 text-sm text-red-800"></p>
 
-                    <div x-show="result" x-cloak class="space-y-3 rounded-lg border border-gray-200 bg-white p-4 text-sm">
+                    <div x-show="result" x-cloak class="space-y-3 p-4 text-sm rounded-md bg-gray-50">
                         <p>
                             <strong x-text="result?.detected ? 'Rozpoznano: ' + result.provider.label : 'Nie rozpoznano dostawcy'"></strong>
                             <span class="text-xs text-muted" x-show="result?.via === 'mx'"> (po rekordach MX domeny <span x-text="result?.domain"></span>)</span>
@@ -3213,15 +3213,15 @@
 
                         <div class="flex flex-wrap gap-2">
                             <button type="button" x-show="result?.provider?.graph" @click="apply('msgraph')"
-                                class="inline-flex min-h-10 items-center gap-2 rounded bg-brand px-4 py-2 text-xs font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
+                                class="inline-flex min-h-10 items-center gap-2 rounded bg-brand-dark px-4 py-2 text-xs font-bold text-white hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2">
                                 <i class="fa-brands fa-microsoft" aria-hidden="true"></i> Zastosuj: Microsoft Graph (zalecane)
                             </button>
                             <button type="button" @click="apply('smtp')"
-                                class="inline-flex min-h-10 items-center gap-2 rounded border border-brand px-4 py-2 text-xs font-bold text-brand hover:bg-brand-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
+                                class="inline-flex min-h-10 items-center gap-2 rounded border border-brand-dark px-4 py-2 text-xs font-bold text-brand-dark hover:bg-brand-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2">
                                 <i class="fa-solid fa-server" aria-hidden="true"></i> Zastosuj: SMTP
                             </button>
                         </div>
-                        <p x-show="applied" x-cloak class="rounded border border-green-200 bg-green-50 px-3 py-2 text-xs font-medium text-green-800">
+                        <p x-show="applied" x-cloak class="rounded-md bg-brand-light px-3 py-2 text-xs font-medium text-ink">
                             <i class="fa-solid fa-circle-check mr-1" aria-hidden="true"></i>
                             Ustawienia wstawiono do formularza poniżej. Uzupełnij hasło lub sekret, kliknij „Zapisz”, a potem „Wyślij test”.
                         </p>
@@ -3232,7 +3232,7 @@
             <div>
                 <label for="mail_transport" class="mb-1 block text-sm font-bold">Tryb wysyłki</label>
                 <select id="mail_transport" name="mail_transport" x-model="transport"
-                    class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                    class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
                     @foreach (\App\Models\SiteSetting::MAIL_TRANSPORTS as $value => $label)
                         <option value="{{ $value }}" {{ old('mail_transport', $settings->mail_transport ?: 'default') === $value ? 'selected' : '' }}>{{ $label }}</option>
                     @endforeach
@@ -3252,7 +3252,7 @@
                     <label for="mail_from_address" class="mb-1 block text-sm font-bold">Adres nadawcy</label>
                     <input type="email" id="mail_from_address" name="mail_from_address" value="{{ old('mail_from_address', $settings->mail_from_address) }}"
                         placeholder="np. kontakt@feer.org.pl"
-                        class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                        class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
                     <p class="mt-1 text-xs text-muted">Puste = wartość z <code>.env</code>.</p>
                     @error('mail_from_address') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                 </div>
@@ -3260,45 +3260,45 @@
                     <label for="mail_from_name" class="mb-1 block text-sm font-bold">Nazwa nadawcy</label>
                     <input type="text" id="mail_from_name" name="mail_from_name" value="{{ old('mail_from_name', $settings->mail_from_name) }}"
                         placeholder="{{ $settings->site_name }}"
-                        class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                        class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
                     @error('mail_from_name') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                 </div>
             </div>
 
-            <div class="space-y-5 rounded-lg border border-gray-200 p-4" x-show="transport === 'smtp'" x-cloak>
+            <div class="space-y-5 p-4 rounded-md bg-gray-50" x-show="transport === 'smtp'" x-cloak>
                 <p class="text-sm font-bold text-ink">Ustawienia serwera SMTP</p>
                 <div class="grid gap-5 sm:grid-cols-2">
                     <div>
                         <label for="mail_host" class="mb-1 block text-sm font-bold">Host</label>
                         <input type="text" id="mail_host" name="mail_host" value="{{ old('mail_host', $settings->mail_host) }}"
                             placeholder="np. smtp.example.com"
-                            class="w-full rounded border-gray-300 font-mono text-sm focus:border-brand focus:ring-brand">
+                            class="w-full rounded border-gray-500 font-mono text-sm focus:border-brand-dark focus:ring-brand-dark">
                         @error('mail_host') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
                     <div>
                         <label for="mail_port" class="mb-1 block text-sm font-bold">Port</label>
                         <input type="number" id="mail_port" name="mail_port" value="{{ old('mail_port', $settings->mail_port) }}"
                             placeholder="587" min="1" max="65535"
-                            class="w-full rounded border-gray-300 font-mono text-sm focus:border-brand focus:ring-brand">
+                            class="w-full rounded border-gray-500 font-mono text-sm focus:border-brand-dark focus:ring-brand-dark">
                         @error('mail_port') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
                     <div>
                         <label for="mail_username" class="mb-1 block text-sm font-bold">Użytkownik</label>
                         <input type="text" id="mail_username" name="mail_username" autocomplete="off" value="{{ old('mail_username', $settings->mail_username) }}"
-                            class="w-full rounded border-gray-300 font-mono text-sm focus:border-brand focus:ring-brand">
+                            class="w-full rounded border-gray-500 font-mono text-sm focus:border-brand-dark focus:ring-brand-dark">
                         @error('mail_username') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
                     <div>
                         <label for="mail_password" class="mb-1 block text-sm font-bold">Hasło</label>
                         <input type="password" id="mail_password" name="mail_password" autocomplete="new-password"
                             placeholder="{{ $settings->mail_password ? '•••••••• (zapisane — zostaw puste, aby nie zmieniać)' : '' }}"
-                            class="w-full rounded border-gray-300 font-mono text-sm focus:border-brand focus:ring-brand">
+                            class="w-full rounded border-gray-500 font-mono text-sm focus:border-brand-dark focus:ring-brand-dark">
                         <p class="mt-1 text-xs text-muted">Przechowywane w bazie w postaci zaszyfrowanej.</p>
                         @error('mail_password') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
                     <div>
                         <label for="mail_encryption" class="mb-1 block text-sm font-bold">Szyfrowanie</label>
-                        <select id="mail_encryption" name="mail_encryption" class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                        <select id="mail_encryption" name="mail_encryption" class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
                             @foreach (\App\Models\SiteSetting::MAIL_ENCRYPTIONS as $value => $label)
                                 <option value="{{ $value }}" {{ old('mail_encryption', (string) $settings->mail_encryption) === (string) $value ? 'selected' : '' }}>{{ $label }}</option>
                             @endforeach
@@ -3318,7 +3318,7 @@
                 <div class="flex flex-wrap items-start justify-between gap-3">
                     <div>
                         <p class="text-sm font-bold text-ink">
-                            <i class="fa-brands fa-microsoft mr-1 text-brand" aria-hidden="true"></i> Microsoft 365 — Graph API
+                            <i class="fa-brands fa-microsoft mr-1 text-brand-dark" aria-hidden="true"></i> Microsoft 365 — Graph API
                         </p>
                         <p class="mt-1 text-xs text-muted">
                             Wysyłka bez SMTP AUTH, przez uprawnienie aplikacyjne <code>Mail.Send</code>. Powiadomienia z formularzy
@@ -3326,14 +3326,14 @@
                             w „Trybie wysyłki” przełącza całą pocztę.
                         </p>
                     </div>
-                    <span class="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-bold {{ $graphReady ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600' }}">
+                    <span class="inline-flex items-center gap-1.5 text-xs font-bold {{ $graphReady ? ' text-ink' : ' text-muted' }}">
                         <i class="fa-solid {{ $graphReady ? 'fa-circle-check' : 'fa-circle-minus' }}" aria-hidden="true"></i>
                         {{ $graphReady ? 'Skonfigurowany — nadawca: '.$graphCfg['sender'] : 'Nieskonfigurowany' }}
                     </span>
                 </div>
 
                 @if ($graphInheritsSso)
-                    <p class="rounded border border-blue-200 bg-blue-50 px-3 py-2 text-xs text-blue-800">
+                    <p class="rounded-md bg-brand-light px-3 py-2 text-xs text-ink">
                         Tenant, ID aplikacji i sekret są dziedziczone z konfiguracji logowania Microsoft 365 (zakładka „Logowanie”).
                         Tej samej rejestracji w Azure wystarczy nadać uprawnienie aplikacyjne <code>Mail.Send</code>. Wpisz poniżej własne wartości, aby użyć osobnej aplikacji.
                     </p>
@@ -3344,7 +3344,7 @@
                         <label for="msgraph_tenant_id" class="mb-1 block text-sm font-bold">ID tenanta (Directory ID)</label>
                         <input type="text" id="msgraph_tenant_id" name="msgraph_tenant_id" value="{{ old('msgraph_tenant_id', $settings->msgraph_tenant_id) }}"
                             placeholder="{{ $graphCfg['tenant_id'] ?: 'np. 1a2b3c4d-… (nie „common”)' }}" autocomplete="off" aria-describedby="msgraph_tenant_help"
-                            class="w-full rounded border-gray-300 font-mono text-sm focus:border-brand focus:ring-brand">
+                            class="w-full rounded border-gray-500 font-mono text-sm focus:border-brand-dark focus:ring-brand-dark">
                         <p id="msgraph_tenant_help" class="mt-1 text-xs text-muted">Uwierzytelnianie aplikacji wymaga konkretnego tenanta — wartość „common” nie zadziała.</p>
                         @error('msgraph_tenant_id') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
@@ -3352,14 +3352,14 @@
                         <label for="msgraph_client_id" class="mb-1 block text-sm font-bold">ID aplikacji (Client ID)</label>
                         <input type="text" id="msgraph_client_id" name="msgraph_client_id" value="{{ old('msgraph_client_id', $settings->msgraph_client_id) }}"
                             placeholder="{{ $graphCfg['client_id'] ?: '' }}" autocomplete="off"
-                            class="w-full rounded border-gray-300 font-mono text-sm focus:border-brand focus:ring-brand">
+                            class="w-full rounded border-gray-500 font-mono text-sm focus:border-brand-dark focus:ring-brand-dark">
                         @error('msgraph_client_id') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
                     <div>
                         <label for="msgraph_client_secret" class="mb-1 block text-sm font-bold">Sekret klienta (Client Secret)</label>
                         <input type="password" id="msgraph_client_secret" name="msgraph_client_secret" autocomplete="new-password"
                             placeholder="{{ $settings->msgraph_client_secret ? '•••••••• (zapisany — zostaw puste, aby nie zmieniać)' : ($graphCfg['client_secret'] ? '•••••••• (dziedziczony)' : '') }}"
-                            class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                            class="w-full rounded border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark">
                         <p class="mt-1 text-xs text-muted">Przechowywany w bazie w postaci zaszyfrowanej.</p>
                         @error('msgraph_client_secret') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
@@ -3367,7 +3367,7 @@
                         <label for="msgraph_sender" class="mb-1 block text-sm font-bold">Skrzynka nadawcza (UPN)</label>
                         <input type="email" id="msgraph_sender" name="msgraph_sender" value="{{ old('msgraph_sender', $settings->msgraph_sender) }}"
                             placeholder="{{ $graphCfg['sender'] ?: 'np. powiadomienia@feer.org.pl' }}" aria-describedby="msgraph_sender_help"
-                            class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                            class="w-full rounded border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark">
                         <p id="msgraph_sender_help" class="mt-1 text-xs text-muted">Skrzynka użytkownika lub współdzielona w tenancie; to ona jest nadawcą (nagłówek From z wiadomości jest pomijany). Puste = adres nadawcy powyżej.</p>
                         @error('msgraph_sender') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
@@ -3377,7 +3377,7 @@
                     <label class="flex items-start gap-3 rounded-lg border border-gray-200 bg-white p-3">
                         <input type="hidden" name="msgraph_save_to_sent" value="0">
                         <input type="checkbox" name="msgraph_save_to_sent" value="1" @checked(old('msgraph_save_to_sent', $settings->msgraph_save_to_sent ?? true))
-                            class="mt-0.5 rounded border-gray-300 text-brand focus:ring-brand">
+                            class="mt-0.5 rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
                         <span>
                             <span class="block text-sm font-bold">Zapisuj w „Elementach wysłanych”</span>
                             <span class="block text-xs text-muted">Kopia każdej wiadomości zostaje w skrzynce nadawczej.</span>
@@ -3386,7 +3386,7 @@
                     <label class="flex items-start gap-3 rounded-lg border border-gray-200 bg-white p-3">
                         <input type="hidden" name="forms_mail_via_msgraph" value="0">
                         <input type="checkbox" name="forms_mail_via_msgraph" value="1" @checked(old('forms_mail_via_msgraph', $settings->forms_mail_via_msgraph ?? true))
-                            class="mt-0.5 rounded border-gray-300 text-brand focus:ring-brand">
+                            class="mt-0.5 rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
                         <span>
                             <span class="block text-sm font-bold">Formularze: powiadomienia przez Graph</span>
                             <span class="block text-xs text-muted">Domyślnie włączone. Pojedynczy formularz może to nadpisać w swoich ustawieniach („Sposób wysyłki”).</span>
@@ -3412,7 +3412,7 @@
                         },
                      }" class="space-y-2">
                     <button type="button" @click="check()" :disabled="busy"
-                        class="inline-flex min-h-10 items-center gap-2 rounded border border-gray-300 px-4 py-2 text-xs font-bold text-ink hover:border-brand hover:text-brand disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                        class="inline-flex min-h-10 items-center gap-2 rounded-md px-4 py-2 text-xs font-bold text-ink hover:text-brand-dark disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark bg-gray-100 hover:bg-brand-light">
                         <i class="fa-solid" :class="busy ? 'fa-spinner fa-spin' : 'fa-plug-circle-check'" aria-hidden="true"></i> Sprawdź połączenie z Graph
                     </button>
                     <p class="text-xs text-muted">Sprawdza dane aplikacji i uprawnienie Mail.Send bez wysyłania wiadomości (także dla niezapisanych jeszcze wartości).</p>
@@ -3421,7 +3421,7 @@
                         :class="{ 'border-green-200 bg-green-50 text-green-800': res?.level === 'success', 'border-amber-200 bg-amber-50 text-amber-800': res?.level === 'warning', 'border-red-200 bg-red-50 text-red-800': res?.level === 'error' }"></p>
                 </div>
 
-                <details class="rounded-lg border border-gray-200 bg-gray-50 p-3 text-xs text-muted">
+                <details class="p-3 text-xs text-muted rounded-md bg-gray-50">
                     <summary class="cursor-pointer font-bold text-ink">Jak skonfigurować aplikację w Azure (krok po kroku)</summary>
                     <ol class="mt-2 list-decimal space-y-1 pl-5">
                         <li>Entra ID → <em>App registrations</em> → <em>New registration</em> (lub użyj istniejącej aplikacji logowania).</li>
@@ -3436,7 +3436,7 @@
         </div>
 
         <div class="flex items-center gap-3 border-t border-gray-100 pt-5">
-            <button type="submit" class="rounded bg-brand px-5 py-2 text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">Zapisz</button>
+            <button type="submit" class="rounded bg-brand-dark px-5 py-2 text-sm font-bold text-white hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2">Zapisz</button>
         </div>
     </form>
 
@@ -3454,7 +3454,7 @@
 
     {{-- Test poczty: osobny formularz (nie można zagnieżdżać formularzy), widoczny w zakładce „Poczta". --}}
     <form id="mail-test-form" method="POST" action="{{ route('admin.ustawienia.mail-test') }}" x-show="tab === 'mail'" x-cloak
-        class="rounded-lg border border-gray-200 bg-white p-6">
+        class="p-6 rounded-md bg-white">
         @csrf
         <h2 class="mb-1 text-base font-bold text-ink">Wyślij wiadomość testową</h2>
         <p class="mb-3 text-xs text-muted">Najpierw zapisz ustawienia powyżej, a następnie sprawdź wysyłkę na wybrany adres.</p>
@@ -3462,11 +3462,11 @@
             <div class="grow">
                 <label for="test_email" class="mb-1 block text-sm font-bold">Adres e-mail</label>
                 <input type="email" id="test_email" name="test_email" required value="{{ old('test_email', $settings->contact_email) }}"
-                    class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                    class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
                 @error('test_email') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
             </div>
-            <button type="submit" name="via" value="default" class="rounded border border-brand px-4 py-2 text-sm font-bold text-brand hover:bg-brand-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">Wyślij test</button>
-            <button type="submit" name="via" value="msgraph" class="inline-flex items-center gap-1.5 rounded border border-gray-300 px-4 py-2 text-sm font-bold text-ink hover:border-brand hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+            <button type="submit" name="via" value="default" class="rounded border border-brand-dark px-4 py-2 text-sm font-bold text-brand-dark hover:bg-brand-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">Wyślij test</button>
+            <button type="submit" name="via" value="msgraph" class="inline-flex items-center gap-1.5 rounded-md px-4 py-2 text-sm font-bold text-ink hover:text-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark bg-gray-100 hover:bg-brand-light"
                 title="Wysyła testową wiadomość transportem Microsoft Graph niezależnie od wybranego trybu wysyłki">
                 <i class="fa-brands fa-microsoft" aria-hidden="true"></i> Wyślij test przez Graph
             </button>
@@ -3598,7 +3598,7 @@
             function update() {
                 if (skipCheckbox && skipCheckbox.checked) {
                     badge.textContent = 'Sprawdzanie kontrastu wyłączone';
-                    badge.className = 'rounded-full px-3 py-1 text-xs font-bold bg-gray-100 text-gray-500';
+                    badge.className = 'text-xs font-bold text-muted';
                     fixButton.hidden = true;
                     return;
                 }
@@ -3609,8 +3609,8 @@
                     return;
                 }
                 const passes = ratio >= 4.5;
-                badge.textContent = `${ratio.toFixed(2)}:1 ${passes ? '— OK (WCAG AA)' : '— za niski kontrast'}`;
-                badge.className = `rounded-full px-3 py-1 text-xs font-bold ${passes ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`;
+                badge.textContent = `${passes ? '✓' : '✗'} ${ratio.toFixed(2)}:1 ${passes ? '— OK (WCAG AA)' : '— za niski kontrast'}`;
+                badge.className = `text-xs font-bold ${passes ? 'text-ink' : 'text-red-700'}`;
                 fixButton.hidden = passes;
             }
 
@@ -3642,7 +3642,7 @@
 
             let dragged = null;
             list.addEventListener('dragstart', (e) => { dragged = e.target.closest('li'); if (dragged) { e.dataTransfer.effectAllowed = 'move'; dragged.classList.add('opacity-50'); } });
-            list.addEventListener('dragend', () => { if (dragged) dragged.classList.remove('opacity-50'); dragged = null; list.querySelectorAll('li').forEach(li => li.classList.remove('border-brand')); renumber(); });
+            list.addEventListener('dragend', () => { if (dragged) dragged.classList.remove('opacity-50'); dragged = null; list.querySelectorAll('li').forEach(li => li.classList.remove('border-brand-dark')); renumber(); });
             list.addEventListener('dragover', (e) => {
                 e.preventDefault();
                 const target = e.target.closest('li');

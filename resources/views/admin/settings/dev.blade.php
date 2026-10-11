@@ -15,7 +15,7 @@
         </p>
         <div class="mt-2 flex gap-3">
             <a href="{{ route('admin.ustawienia.edit') }}"
-               class="rounded border border-gray-300 px-3 py-1 text-sm text-muted hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+               class="rounded-md px-3 py-1 text-sm text-muted hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark bg-white hover:bg-brand-light">
                 ← Wróć do ustawień
             </a>
         </div>
@@ -24,9 +24,9 @@
     {{-- ====== Trasy (routes) ====== --}}
     <section aria-labelledby="routes-heading">
         <h2 id="routes-heading" class="mb-3 text-base font-bold text-ink">Trasy (routes)</h2>
-        <div class="overflow-x-auto rounded-lg border border-gray-200">
+        <div class="overflow-x-auto rounded-md bg-white">
             <table class="w-full text-sm">
-                <thead class="bg-gray-50">
+                <thead class="bg-gray-100">
                     <tr>
                         <th class="px-4 py-2 text-left font-bold text-ink">Metoda</th>
                         <th class="px-4 py-2 text-left font-bold text-ink">URI</th>
@@ -49,7 +49,7 @@
                     @foreach ($routes as $r)
                     <tr class="hover:bg-gray-50">
                         <td class="px-4 py-2">
-                            <span class="rounded bg-blue-100 px-1.5 py-0.5 font-mono text-xs font-bold text-blue-800">{{ $r[0] }}</span>
+                            <span class="font-mono text-xs font-bold text-ink">{{ $r[0] }}</span>
                         </td>
                         <td class="px-4 py-2 font-mono text-xs text-ink">{{ config('app.admin_prefix', 'admin') }}/{{ $r[1] }}</td>
                         <td class="px-4 py-2 font-mono text-xs text-muted">{{ $r[2] }}</td>
@@ -69,9 +69,9 @@
             Kolumna <code class="rounded bg-gray-100 px-1 font-mono">id</code> (bigint, PK) i znaczniki czasu (<code class="rounded bg-gray-100 px-1 font-mono">created_at</code>,
             <code class="rounded bg-gray-100 px-1 font-mono">updated_at</code>) pominięte. Typ PHP = typ po odczytaniu z modelu (cast).
         </p>
-        <div class="overflow-x-auto rounded-lg border border-gray-200">
+        <div class="overflow-x-auto rounded-md bg-white">
             <table class="w-full text-sm">
-                <thead class="bg-gray-50">
+                <thead class="bg-gray-100">
                     <tr>
                         <th class="px-4 py-2 text-left font-bold text-ink">Kolumna (DB)</th>
                         <th class="px-4 py-2 text-left font-bold text-ink">Typ DB</th>
@@ -285,14 +285,7 @@
                         <td class="px-4 py-1.5 text-ink">{{ $col[0] }}</td>
                         <td class="px-4 py-1.5 text-muted">{{ $col[1] }}</td>
                         <td class="px-4 py-1.5">
-                            <span class="rounded px-1 py-0.5
-                                @if(str_contains($col[2], 'bool')) bg-yellow-100 text-yellow-800
-                                @elseif(str_contains($col[2], 'array')) bg-purple-100 text-purple-800
-                                @elseif(str_contains($col[2], 'encrypted')) bg-red-100 text-red-800
-                                @elseif(str_contains($col[2], 'datetime') || str_contains($col[2], 'date')) bg-blue-100 text-blue-800
-                                @elseif(str_contains($col[2], 'int')) bg-green-100 text-green-800
-                                @else bg-gray-100 text-gray-700
-                                @endif">{{ $col[2] }}</span>
+                            <span class="font-mono text-xs font-bold text-ink">{{ $col[2] }}</span>
                         </td>
                         <td class="px-4 py-1.5 font-sans text-muted">{{ $col[3] }}</td>
                     </tr>
@@ -323,7 +316,7 @@
             @endphp
 
             @foreach ($consts as [$name, $values, $desc])
-            <div class="rounded-lg border border-gray-200 bg-white">
+            <div class="rounded-md bg-white">
                 <div class="flex items-start justify-between border-b border-gray-100 px-4 py-3">
                     <div>
                         <code class="font-mono text-sm font-bold text-ink">SiteSetting::{{ $name }}</code>
@@ -332,7 +325,7 @@
                 </div>
                 <div class="overflow-x-auto">
                     <table class="w-full font-mono text-xs">
-                        <thead class="bg-gray-50">
+                        <thead class="bg-gray-100">
                             <tr>
                                 <th class="px-4 py-2 text-left font-bold text-ink">Klucz</th>
                                 <th class="px-4 py-2 text-left font-bold text-ink">Etykieta</th>
@@ -341,7 +334,7 @@
                         <tbody class="divide-y divide-gray-100">
                             @foreach ($values as $key => $label)
                             <tr class="hover:bg-gray-50">
-                                <td class="px-4 py-1.5 text-brand">{{ $key }}</td>
+                                <td class="px-4 py-1.5 text-brand-dark">{{ $key }}</td>
                                 <td class="px-4 py-1.5 font-sans text-muted">{{ $label }}</td>
                             </tr>
                             @endforeach
@@ -356,9 +349,9 @@
     {{-- ====== Metody publiczne ====== --}}
     <section aria-labelledby="methods-heading">
         <h2 id="methods-heading" class="mb-3 text-base font-bold text-ink">Publiczne metody modelu</h2>
-        <div class="overflow-x-auto rounded-lg border border-gray-200">
+        <div class="overflow-x-auto rounded-md bg-white">
             <table class="w-full text-sm">
-                <thead class="bg-gray-50">
+                <thead class="bg-gray-100">
                     <tr>
                         <th class="px-4 py-2 text-left font-bold text-ink">Metoda</th>
                         <th class="px-4 py-2 text-left font-bold text-ink">Zwraca</th>
@@ -420,7 +413,7 @@
                     @endphp
                     @foreach ($methods as [$sig, $returns, $desc])
                     <tr class="hover:bg-gray-50">
-                        <td class="px-4 py-1.5 text-brand">{{ $sig }}</td>
+                        <td class="px-4 py-1.5 text-brand-dark">{{ $sig }}</td>
                         <td class="px-4 py-1.5 text-muted">{{ $returns }}</td>
                         <td class="px-4 py-1.5 font-sans text-muted">{{ $desc }}</td>
                     </tr>
@@ -433,7 +426,7 @@
     {{-- ====== Aktualne wartości ====== --}}
     <section aria-labelledby="live-heading">
         <h2 id="live-heading" class="mb-3 text-base font-bold text-ink">Aktualne wartości <span class="text-sm font-normal text-muted">(SiteSetting::current())</span></h2>
-        <div class="overflow-x-auto rounded-lg border border-gray-200 bg-gray-50 p-4">
+        <div class="overflow-x-auto p-4 rounded-md bg-white">
             <pre class="whitespace-pre-wrap break-all font-mono text-xs text-ink">{{ json_encode($settings->only($settings->getFillable()), JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) }}</pre>
         </div>
     </section>
@@ -447,18 +440,18 @@
         </p>
 
         @if (session('status'))
-            <div class="mb-4 rounded-lg bg-green-50 px-4 py-3 text-sm text-green-800 ring-1 ring-green-200" role="alert">
+            <div class="mb-4 rounded-md bg-brand-light px-4 py-3 text-sm text-ink ring-1 ring-green-200" role="alert">
                 {{ session('status') }}
             </div>
         @endif
 
-        <form method="POST" action="{{ route('admin.push.send') }}" class="max-w-lg space-y-4 rounded-xl border border-gray-200 bg-white p-5">
+        <form method="POST" action="{{ route('admin.push.send') }}" class="max-w-lg space-y-4 p-5 rounded-md bg-white">
             @csrf
             <div>
                 <label for="push_title" class="mb-1 block text-sm font-medium text-ink">Tytuł <span aria-hidden="true">*</span></label>
                 <input id="push_title" name="push_title" type="text" maxlength="80" required
                        value="{{ old('push_title') }}"
-                       class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand"
+                       class="w-full rounded-lg border border-gray-500 px-3 py-2 text-sm focus:border-brand-dark focus:outline-none focus:ring-2 focus:ring-brand-dark"
                        aria-describedby="push_title_hint">
                 <p id="push_title_hint" class="mt-0.5 text-xs text-muted">Maks. 80 znaków.</p>
                 @error('push_title') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
@@ -467,7 +460,7 @@
             <div>
                 <label for="push_body" class="mb-1 block text-sm font-medium text-ink">Treść <span aria-hidden="true">*</span></label>
                 <textarea id="push_body" name="push_body" maxlength="200" required rows="3"
-                          class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand"
+                          class="w-full rounded-lg border border-gray-500 px-3 py-2 text-sm focus:border-brand-dark focus:outline-none focus:ring-2 focus:ring-brand-dark"
                           aria-describedby="push_body_hint">{{ old('push_body') }}</textarea>
                 <p id="push_body_hint" class="mt-0.5 text-xs text-muted">Maks. 200 znaków.</p>
                 @error('push_body') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
@@ -477,14 +470,14 @@
                 <label for="push_url" class="mb-1 block text-sm font-medium text-ink">URL (opcjonalny)</label>
                 <input id="push_url" name="push_url" type="url" maxlength="500"
                        value="{{ old('push_url', '/') }}"
-                       class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand"
+                       class="w-full rounded-lg border border-gray-500 px-3 py-2 text-sm focus:border-brand-dark focus:outline-none focus:ring-2 focus:ring-brand-dark"
                        aria-describedby="push_url_hint">
                 <p id="push_url_hint" class="mt-0.5 text-xs text-muted">Adres, który otworzy się po kliknięciu powiadomienia.</p>
                 @error('push_url') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
             </div>
 
             <button type="submit"
-                    class="rounded-lg bg-brand px-5 py-2 text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
+                    class="rounded-lg bg-brand-dark px-5 py-2 text-sm font-bold text-white hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2">
                 Wyślij powiadomienie
             </button>
         </form>

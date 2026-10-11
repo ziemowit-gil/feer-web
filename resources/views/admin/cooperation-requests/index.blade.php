@@ -12,7 +12,7 @@
             <form method="GET" class="flex items-center gap-2">
                 <label for="strona" class="text-sm font-medium text-muted">Strona:</label>
                 <select id="strona" name="strona" onchange="this.form.submit()"
-                        class="rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                        class="rounded border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark">
                     <option value="">Wszystkie</option>
                     @foreach ($pages as $p)
                         <option value="{{ $p->id }}" {{ (string)$pageId === (string)$p->id ? 'selected' : '' }}>
@@ -25,20 +25,20 @@
     </div>
 
     @if (session('status'))
-        <div class="mb-5 flex items-center gap-2 rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm font-medium text-green-800" role="alert">
+        <div class="mb-5 flex items-center gap-2 rounded-md bg-brand-light px-4 py-3 text-sm font-medium text-ink" role="alert">
             <i class="fa-solid fa-circle-check text-green-600" aria-hidden="true"></i>
             {{ session('status') }}
         </div>
     @endif
 
     @if ($requests->isEmpty())
-        <div class="rounded-xl border border-gray-200 bg-gray-50 p-10 text-center text-muted">
+        <div class="p-10 text-center text-muted rounded-md bg-white">
             <i class="fa-solid fa-inbox mb-3 text-3xl text-gray-300" aria-hidden="true"></i>
             <p class="font-medium">Brak zgłoszeń</p>
             <p class="mt-1 text-sm">Gdy ktoś wypełni formularz współpracy, zgłoszenie pojawi się tutaj.</p>
         </div>
     @else
-        <div class="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+        <div class="overflow-hidden rounded-md bg-white">
             <table class="w-full text-sm">
                 <thead class="border-b border-gray-100 bg-gray-50">
                     <tr>
@@ -54,7 +54,7 @@
                             <td class="px-4 py-3">
                                 <div class="flex items-center gap-2">
                                     @if ($req->isUnread())
-                                        <span class="h-2 w-2 shrink-0 rounded-full bg-brand" title="Nieprzeczytane" aria-label="Nowe"></span>
+                                        <span class="h-2 w-2 shrink-0 rounded-full bg-brand-dark" title="Nieprzeczytane" aria-label="Nowe"></span>
                                     @else
                                         <span class="h-2 w-2 shrink-0 rounded-full bg-transparent"></span>
                                     @endif
@@ -69,12 +69,12 @@
                             </td>
                             <td class="px-4 py-3 text-muted">
                                 @if ($req->sector)
-                                    <span class="inline-block rounded-full bg-gray-100 px-2 py-0.5 text-xs">{{ $req->sector }}</span>
+                                    <span class="inline-block text-xs font-bold">{{ $req->sector }}</span>
                                 @endif
                                 @if (!empty($req->cooperation_types))
                                     <div class="mt-1 flex flex-wrap gap-1">
                                         @foreach ($req->cooperation_types as $type)
-                                            <span class="inline-block rounded-full bg-brand-light px-2 py-0.5 text-xs text-brand">{{ $type }}</span>
+                                            <span class="inline-block rounded-full bg-brand-light px-2 py-0.5 text-xs text-brand-dark">{{ $type }}</span>
                                         @endforeach
                                     </div>
                                 @endif
@@ -84,7 +84,7 @@
                             </td>
                             <td class="px-4 py-3 text-right">
                                 <a href="{{ route('admin.wspolpraca-zgloszenia.show', $req) }}"
-                                   class="rounded px-3 py-1 text-xs font-bold text-brand hover:bg-brand-light focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-brand">
+                                   class="rounded px-3 py-1 text-xs font-bold text-brand-dark hover:bg-brand-light focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-brand-dark">
                                     Szczegóły
                                 </a>
                             </td>

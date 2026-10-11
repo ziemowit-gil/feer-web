@@ -4,14 +4,14 @@
 
 @section('content')
     <div class="mb-4 flex justify-end">
-        <a href="{{ route('admin.ankiety.create') }}" class="rounded bg-brand px-4 py-2 text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
+        <a href="{{ route('admin.ankiety.create') }}" class="rounded bg-brand-dark px-4 py-2 text-sm font-bold text-white hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2">
             <i class="fa-solid fa-plus" aria-hidden="true"></i> Dodaj ankietę
         </a>
     </div>
 
-    <div class="overflow-hidden rounded-lg border border-gray-200 bg-white">
+    <div class="overflow-hidden rounded-md bg-white">
         <table class="w-full text-left text-sm">
-            <thead class="bg-gray-50 text-xs font-bold uppercase text-muted">
+            <thead class="bg-gray-100 text-xs font-bold uppercase text-muted">
                 <tr>
                     <th class="px-4 py-3">Pytanie</th>
                     <th class="px-4 py-3">Opcje</th>
@@ -28,17 +28,17 @@
                         <td class="px-4 py-3 text-muted">{{ $poll->totalVotes() }}</td>
                         <td class="px-4 py-3">
                             @if ($poll->is_active)
-                                <span class="rounded-full bg-green-100 px-2 py-0.5 text-xs font-bold text-green-700">Aktywna</span>
+                                <span class="text-xs font-bold text-ink"><i class="fa-solid fa-circle-check mr-1 text-brand-dark" aria-hidden="true"></i>Aktywna</span>
                             @else
-                                <span class="rounded-full bg-gray-100 px-2 py-0.5 text-xs font-bold text-gray-500">Nieaktywna</span>
+                                <span class="text-xs font-bold text-muted">Nieaktywna</span>
                             @endif
                         </td>
                         <td class="px-4 py-3">
                             <div class="flex justify-end gap-3">
-                                <a href="{{ route('admin.ankiety.edit', $poll) }}" class="text-muted hover:text-brand" title="Edytuj"><i class="fa-solid fa-pen" aria-hidden="true"></i></a>
+                                <a href="{{ route('admin.ankiety.edit', $poll) }}" class="text-muted hover:text-brand-dark" title="Edytuj"><i class="fa-solid fa-pen" aria-hidden="true"></i></a>
                                 @if ($poll->totalVotes() > 0)
                                     <form method="POST" action="{{ route('admin.ankiety.reset-votes', $poll) }}"
-                                        onsubmit="return confirm('Wyzerować wszystkie głosy ankiety „{{ $poll->question }}"?\n\nTej operacji nie można cofnąć.');">
+                                        onsubmit="return confirm('Wyzerować wszystkie głosy ankiety „{{ $poll->question }}”?\n\nTej operacji nie można cofnąć.');">
                                         @csrf
                                         <button type="submit" class="text-muted hover:text-amber-600" title="Zeruj głosy" aria-label="Zeruj głosy">
                                             <i class="fa-solid fa-rotate-left" aria-hidden="true"></i>

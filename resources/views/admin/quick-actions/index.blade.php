@@ -13,7 +13,7 @@
         ])->values();
     @endphp
     @if ($quickActions->isNotEmpty())
-    <section class="mb-8 rounded-lg border border-gray-200 bg-white p-5" aria-labelledby="qa-grid-h"
+    <section class="mb-8 p-5 rounded-md bg-white" aria-labelledby="qa-grid-h"
         x-data="quickGrid(@js($gridData), @js(route('admin.szybkie-akcje.uklad')), @js(csrf_token()))">
         <div class="mb-3 flex flex-wrap items-start justify-between gap-3">
             <div>
@@ -23,7 +23,7 @@
             <div class="flex items-center gap-3">
                 <span class="text-sm" :class="status === 'error' ? 'text-red-700' : 'text-muted'" role="status" x-text="message"></span>
                 <button type="button" @click="save()" :disabled="! dirty || saving"
-                    class="rounded bg-brand px-4 py-2 text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
+                    class="rounded bg-brand-dark px-4 py-2 text-sm font-bold text-white hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
                     <i class="fa-solid fa-floppy-disk" aria-hidden="true"></i> Zapisz układ
                 </button>
             </div>
@@ -31,7 +31,7 @@
 
         <ul role="list" class="gap-3 overflow-x-auto rounded-lg bg-gray-50 p-3" style="display:grid;grid-template-columns:repeat(4,minmax(10rem,1fr))" @dragover.prevent>
             <template x-for="(t, i) in tiles" :key="t.id">
-                <li :style="'grid-column: span ' + Math.min(t.cols, 4)" :class="dragOver === i ? 'ring-2 ring-brand ring-offset-2' : ''"
+                <li :style="'grid-column: span ' + Math.min(t.cols, 4)" :class="dragOver === i ? 'ring-2 ring-brand-dark ring-offset-2' : ''"
                     class="rounded-md" draggable="true"
                     @dragstart="dragFrom = i; $event.dataTransfer.effectAllowed = 'move'" @dragenter.prevent="dragOver = i"
                     @dragend="dragFrom = null; dragOver = null"
@@ -64,7 +64,7 @@
         .qa-btn:hover:not(:disabled) { background: #f3f4f6; }
         .qa-btn:disabled { opacity: .4; cursor: not-allowed; }
         .qa-btn.is-on { background: #1d1d1a; border-color: #1d1d1a; color: #fff; }
-        .qa-btn:focus-visible { outline: 2px solid var(--color-brand); outline-offset: 2px; }
+        .qa-btn:focus-visible { outline: 2px solid var(--color-brand-dark); outline-offset: 2px; }
     </style>
     <script>
         document.addEventListener('alpine:init', () => {
@@ -92,14 +92,14 @@
     @endif
 
     <div class="mb-4 flex justify-end">
-        <a href="{{ route('admin.szybkie-akcje.create') }}" class="rounded bg-brand px-4 py-2 text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
+        <a href="{{ route('admin.szybkie-akcje.create') }}" class="rounded bg-brand-dark px-4 py-2 text-sm font-bold text-white hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2">
             <i class="fa-solid fa-plus" aria-hidden="true"></i> Dodaj szybką akcję
         </a>
     </div>
 
-    <div class="overflow-hidden rounded-lg border border-gray-200 bg-white">
+    <div class="overflow-hidden rounded-md bg-white">
         <table class="w-full text-left text-sm">
-            <thead class="bg-gray-50 text-xs font-bold uppercase text-muted">
+            <thead class="bg-gray-100 text-xs font-bold uppercase text-muted">
                 <tr>
                     <th class="px-4 py-3">Ikona</th>
                     <th class="px-4 py-3">Etykieta</th>
@@ -112,7 +112,7 @@
                 @forelse ($quickActions as $action)
                     <tr>
                         <td class="px-4 py-3">
-                            <span class="flex h-8 w-8 items-center justify-center rounded-full bg-brand-light text-brand">
+                            <span class="flex h-8 w-8 items-center justify-center rounded-full bg-brand-light text-brand-dark">
                                 {!! icon_html($action->icon, '') !!}
                             </span>
                         </td>
@@ -121,7 +121,7 @@
                         <td class="px-4 py-3 text-muted">{{ $action->order }}</td>
                         <td class="px-4 py-3">
                             <div class="flex justify-end gap-3">
-                                <a href="{{ route('admin.szybkie-akcje.edit', $action) }}" class="text-muted hover:text-brand" title="Edytuj"><i class="fa-solid fa-pen" aria-hidden="true"></i></a>
+                                <a href="{{ route('admin.szybkie-akcje.edit', $action) }}" class="text-muted hover:text-brand-dark" title="Edytuj"><i class="fa-solid fa-pen" aria-hidden="true"></i></a>
                                 <form method="POST" action="{{ route('admin.szybkie-akcje.destroy', $action) }}" onsubmit="return confirm('Usunąć szybką akcję &quot;{{ $action->label }}&quot;?');">
                                     @csrf
                                     @method('DELETE')

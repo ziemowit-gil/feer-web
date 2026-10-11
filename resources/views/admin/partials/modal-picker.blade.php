@@ -20,7 +20,7 @@
 <div x-data="modalPicker(@js($cfg))" @keydown.escape.window="if (open) close()" class="space-y-1">
     <p class="text-sm font-bold text-ink" id="{{ $pickerId }}-label">{{ $title }}</p>
 
-    <div class="flex flex-wrap items-center gap-3 rounded-xl border border-gray-200 bg-white p-3">
+    <div class="flex flex-wrap items-center gap-3 p-3 rounded-md bg-white">
         @foreach ($options as $key => $o)
             <div x-show="cur === '{{ $key }}'" @if ($key !== $current) x-cloak @endif class="flex min-w-0 flex-1 items-center gap-3">
                 <span class="flex h-10 w-10 flex-none items-center justify-center rounded-lg bg-brand-light text-brand-dark" aria-hidden="true"><i class="fa-solid {{ $o['icon'] }}"></i></span>
@@ -31,7 +31,7 @@
             </div>
         @endforeach
         <button type="button" x-ref="opener" @click="show()" aria-haspopup="dialog" :aria-expanded="open.toString()"
-            class="inline-flex min-h-10 flex-none items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 text-sm font-bold text-ink hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+            class="inline-flex min-h-10 flex-none items-center gap-2 rounded-md px-4 text-sm font-bold text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark bg-gray-100 hover:bg-brand-light">
             <i class="fa-solid fa-pen" aria-hidden="true"></i>Zmień<span class="sr-only"> — {{ $title }}</span>
         </button>
     </div>
@@ -42,7 +42,7 @@
                 class="w-full max-w-3xl rounded-2xl bg-white shadow-2xl">
                 <div class="flex items-center justify-between gap-4 border-b border-gray-200 px-6 py-4">
                     <h2 id="{{ $pickerId }}-title" class="text-lg font-bold text-ink">{{ $title }}</h2>
-                    <button type="button" @click="close()" class="flex h-10 w-10 items-center justify-center rounded-lg text-gray-600 hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand" aria-label="Zamknij okno">
+                    <button type="button" @click="close()" class="flex h-10 w-10 items-center justify-center rounded-lg text-gray-600 hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark" aria-label="Zamknij okno">
                         <i class="fa-solid fa-xmark text-lg" aria-hidden="true"></i>
                     </button>
                 </div>
@@ -50,18 +50,18 @@
                     @if (count($options) > 6)
                         <div>
                             <label for="{{ $pickerId }}-q" class="sr-only">Szukaj</label>
-                            <input id="{{ $pickerId }}-q" type="search" x-ref="search" x-model="q" placeholder="Szukaj…" class="w-full rounded-lg border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                            <input id="{{ $pickerId }}-q" type="search" x-ref="search" x-model="q" placeholder="Szukaj…" class="w-full rounded-lg border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark">
                         </div>
                     @endif
                     @if (count($groups) > 2 && array_key_first($groups) !== '')
                         {{-- Filtr grup: jedna grupa albo wszystkie --}}
                         <div class="flex flex-wrap gap-1.5" role="group" aria-label="Filtr grup">
                             <button type="button" @click="g = ''" :aria-pressed="(g === '').toString()"
-                                class="rounded-full border px-3 py-1 text-xs font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-1"
+                                class="rounded-full border px-3 py-1 text-xs font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-1"
                                 :class="g === '' ? 'border-ink bg-ink text-white' : 'border-gray-300 bg-white text-ink hover:bg-gray-50'">Wszystkie</button>
                             @foreach ($groups as $groupName => $keys)
                                 <button type="button" @click="g = @js($groupName)" :aria-pressed="(g === @js($groupName)).toString()"
-                                    class="rounded-full border px-3 py-1 text-xs font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-1"
+                                    class="rounded-full border px-3 py-1 text-xs font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-1"
                                     :class="g === @js($groupName) ? 'border-ink bg-ink text-white' : 'border-gray-300 bg-white text-ink hover:bg-gray-50'">{{ $groupName }} <span class="font-normal">({{ count(array_filter($keys, fn ($k) => isset($options[$k]))) }})</span></button>
                             @endforeach
                         </div>
@@ -75,8 +75,8 @@
                                     @php $o = $options[$key]; @endphp
                                     <button type="button" role="radio" :aria-checked="(cur === '{{ $key }}').toString()" @click="pick('{{ $key }}')"
                                         x-show="match(@js($o['name'].' '.($o['desc'] ?? '')))"
-                                        class="flex items-start gap-3 rounded-lg border-2 p-3 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-1"
-                                        :class="cur === '{{ $key }}' ? 'border-brand bg-brand-light' : 'border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50'">
+                                        class="flex items-start gap-3 rounded-lg border-2 p-3 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-1"
+                                        :class="cur === '{{ $key }}' ? 'border-brand-dark bg-brand-light' : 'border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50'">
                                         <span class="flex h-9 w-9 flex-none items-center justify-center rounded-md bg-gray-100 text-brand-dark" aria-hidden="true"><i class="fa-solid {{ $o['icon'] }}"></i></span>
                                         <span class="min-w-0">
                                             <span class="block text-sm font-bold text-ink">{{ $o['name'] }} <i x-show="cur === '{{ $key }}'" class="fa-solid fa-check ml-1 text-brand-dark" aria-hidden="true"></i></span>

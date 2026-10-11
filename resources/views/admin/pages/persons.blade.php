@@ -8,7 +8,7 @@
     <div class="mb-4 flex items-center justify-between gap-2">
         <p class="text-sm text-muted">Pełna lista osób ze wszystkich stron „O organizacji".</p>
         <a href="{{ route('admin.osoby.create') }}"
-            class="rounded bg-brand px-4 py-2 text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
+            class="rounded bg-brand-dark px-4 py-2 text-sm font-bold text-white hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2">
             <i class="fa-solid fa-user-plus" aria-hidden="true"></i> Dodaj osobę
         </a>
     </div>
@@ -20,32 +20,32 @@
             name="q"
             value="{{ $q }}"
             placeholder="Szukaj po nazwisku…"
-            class="w-60 rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:border-brand focus:ring-brand"
+            class="w-60 rounded-lg border border-gray-500 px-3 py-1.5 text-sm focus:border-brand-dark focus:ring-brand-dark"
             aria-label="Szukaj osoby"
         >
         @if ($departments->isNotEmpty())
-            <select name="dept" class="rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:border-brand focus:ring-brand" aria-label="Filtruj po dziale">
+            <select name="dept" class="rounded-lg border border-gray-500 px-3 py-1.5 text-sm focus:border-brand-dark focus:ring-brand-dark" aria-label="Filtruj po dziale">
                 <option value="">Wszystkie działy</option>
                 @foreach ($departments as $d)
                     <option value="{{ $d }}" @selected($dept === $d)>{{ $d }}</option>
                 @endforeach
             </select>
         @endif
-        <button type="submit" class="rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-sm font-bold text-muted hover:bg-gray-50">
+        <button type="submit" class="rounded-md px-3 py-1.5 text-sm font-bold text-muted bg-white hover:bg-brand-light">
             <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i> Szukaj
         </button>
         @if ($q || $dept)
-            <a href="{{ route('admin.osoby.index') }}" class="rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-sm text-muted hover:bg-gray-50">
+            <a href="{{ route('admin.osoby.index') }}" class="rounded-md px-3 py-1.5 text-sm text-muted bg-white hover:bg-brand-light">
                 <i class="fa-solid fa-xmark" aria-hidden="true"></i> Wyczyść
             </a>
         @endif
     </form>
 
     @if (session('status'))
-        <div class="mb-4 rounded-lg bg-green-50 px-4 py-2 text-sm text-green-800">{{ session('status') }}</div>
+        <div class="mb-4 rounded-md bg-brand-light px-4 py-2 text-sm text-ink">{{ session('status') }}</div>
     @endif
 
-    <div class="overflow-x-auto rounded-lg border border-gray-200 bg-white">
+    <div class="overflow-x-auto rounded-md bg-white">
         <table class="min-w-full text-sm">
             <thead class="border-b border-gray-200 bg-gray-50 text-left text-xs font-bold uppercase tracking-wide text-muted">
                 <tr>
@@ -86,18 +86,18 @@
                         <td class="px-4 py-2 text-muted">
                             @if ($person->parent)
                                 <a href="{{ route('admin.podstrony.edit', $person->parent) }}"
-                                    class="text-brand hover:underline">{{ $person->parent->title }}</a>
+                                    class="text-brand-dark hover:underline">{{ $person->parent->title }}</a>
                             @else
                                 —
                             @endif
                         </td>
                         <td class="px-4 py-2 text-center">
                             @if ($person->is_published)
-                                <span class="inline-flex items-center gap-1 rounded-full bg-green-100 px-2 py-0.5 text-xs font-bold text-green-800">
+                                <span class="inline-flex items-center gap-1 text-xs font-bold text-ink">
                                     <i class="fa-solid fa-circle text-[6px]" aria-hidden="true"></i> Opublikowana
                                 </span>
                             @else
-                                <span class="inline-flex items-center gap-1 rounded-full bg-gray-100 px-2 py-0.5 text-xs font-bold text-muted">
+                                <span class="inline-flex items-center gap-1 text-xs font-bold text-muted">
                                     <i class="fa-solid fa-circle text-[6px]" aria-hidden="true"></i> Szkic
                                 </span>
                             @endif
@@ -105,17 +105,17 @@
                         <td class="px-4 py-2">
                             <div class="flex items-center justify-end gap-2">
                                 <a href="{{ route('admin.podstrony.edit', $person) }}"
-                                    class="text-muted hover:text-brand"
+                                    class="text-muted hover:text-brand-dark"
                                     title="Edytuj" aria-label="Edytuj {{ $person->title }}">
                                     <i class="fa-solid fa-pen-to-square" aria-hidden="true"></i>
                                 </a>
                                 <a href="{{ route('admin.osoby.scal', $person) }}"
-                                    class="text-muted hover:text-brand"
+                                    class="text-muted hover:text-brand-dark"
                                     title="Scal z inną osobą" aria-label="Scal {{ $person->title }} z inną osobą">
                                     <i class="fa-solid fa-code-merge" aria-hidden="true"></i>
                                 </a>
                                 <form method="POST" action="{{ route('admin.osoby.destroy', $person) }}"
-                                    data-confirm="Usunąć osobę „{{ $person->title }}"? Tej operacji nie można cofnąć.">
+                                    data-confirm="Usunąć osobę „{{ $person->title }}”? Tej operacji nie można cofnąć.">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit"

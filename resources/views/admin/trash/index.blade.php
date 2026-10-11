@@ -8,7 +8,7 @@
         <p class="text-sm text-muted">Usunięte treści. Możesz je przywrócić albo skasować trwale. Trwałego usunięcia nie da się cofnąć.</p>
     </div>
 
-    <div class="overflow-x-auto rounded-lg border border-gray-200 bg-white">
+    <div class="overflow-x-auto rounded-md bg-white">
         <table class="w-full text-sm">
             <thead class="border-b border-gray-200 text-left text-muted">
                 <tr>
@@ -28,15 +28,15 @@
                             <div class="flex items-center justify-end gap-2">
                                 <form method="POST" action="{{ route('admin.kosz.restore', ['type' => $item['type'], 'id' => $item['id']]) }}">
                                     @csrf
-                                    <button type="submit" class="rounded bg-brand px-3 py-1.5 text-xs font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
+                                    <button type="submit" class="rounded bg-brand-dark px-3 py-1.5 text-xs font-bold text-white hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2">
                                         <i class="fa-solid fa-rotate-left" aria-hidden="true"></i> Przywróć
                                     </button>
                                 </form>
                                 <form method="POST" action="{{ route('admin.kosz.force', ['type' => $item['type'], 'id' => $item['id']]) }}"
-                                    onsubmit="return confirm('Trwale usunąć „{{ $item['title'] }}"? Tej operacji nie można cofnąć.');">
+                                    onsubmit="return confirm('Trwale usunąć „{{ $item['title'] }}”? Tej operacji nie można cofnąć.');">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="rounded border border-gray-300 px-3 py-1.5 text-xs font-bold text-muted hover:border-red-400 hover:text-red-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600">
+                                    <button type="submit" class="rounded-md px-3 py-1.5 text-xs font-bold text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600 bg-gray-100 hover:bg-brand-light">
                                         <i class="fa-solid fa-trash" aria-hidden="true"></i> Usuń trwale
                                     </button>
                                 </form>

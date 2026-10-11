@@ -17,7 +17,7 @@
     @endphp
 
     <div class="max-w-4xl space-y-8">
-        <header class="rounded-2xl border border-gray-200 bg-white" style="padding: 2rem">
+        <header class="rounded-md bg-white" style="padding: 2rem">
             <p class="text-3xl" style="font-family:'Pacifico',cursive">
                 <span style="color:var(--color-brand)">We</span><span style="font-weight:300">CMS</span>
             </p>
@@ -33,8 +33,8 @@
             <h2 id="about-features" class="mb-4 text-lg font-bold text-ink">Co potrafi</h2>
             <ul role="list" class="grid gap-4" style="grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr))">
                 @foreach ($features as [$icon, $title, $text])
-                    <li class="rounded-xl border border-gray-200 bg-white" style="padding: 1.25rem">
-                        <span class="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-lg bg-brand-light text-brand" aria-hidden="true"><i class="fa-solid {{ $icon }}"></i></span>
+                    <li class="rounded-md bg-white" style="padding: 1.25rem">
+                        <span class="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-lg bg-brand-light text-brand-dark" aria-hidden="true"><i class="fa-solid {{ $icon }}"></i></span>
                         <h3 class="font-bold text-ink">{{ $title }}</h3>
                         <p class="mt-1 text-sm leading-relaxed text-muted">{{ $text }}</p>
                     </li>
@@ -42,10 +42,10 @@
             </ul>
         </section>
 
-        <section class="rounded-2xl border border-gray-200 bg-white" style="padding: 2rem" aria-labelledby="about-author">
+        <section class="rounded-md bg-white" style="padding: 2rem" aria-labelledby="about-author">
             <h2 id="about-author" class="text-lg font-bold text-ink">Autor</h2>
             <div class="mt-4 flex flex-wrap items-center gap-4">
-                <span class="inline-flex h-14 w-14 flex-none items-center justify-center rounded-full bg-brand text-xl font-bold text-white" aria-hidden="true">ZG</span>
+                <span class="inline-flex h-14 w-14 flex-none items-center justify-center rounded-full bg-brand-dark text-xl font-bold text-white" aria-hidden="true">ZG</span>
                 <div>
                     <p class="text-xl font-bold text-ink">Ziemowit Gil</p>
                     <p class="text-sm text-muted">Autor i twórca weCMS — działanie, rozwój i utrzymanie systemu.</p>
@@ -53,11 +53,11 @@
             </div>
             <p class="mt-4 text-sm leading-relaxed text-muted">
                 Pytania, uwagi i zgłoszenia błędów kieruj bezpośrednio do autora:
-                <a href="mailto:ziemowit.gil@gmail.com" class="font-bold text-brand underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">ziemowit.gil@gmail.com</a>.
+                <a href="mailto:ziemowit.gil@gmail.com" class="font-bold text-brand-dark underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">ziemowit.gil@gmail.com</a>.
             </p>
         </section>
 
-        <section class="rounded-2xl border border-gray-200 bg-white" style="padding: 1.5rem 2rem" aria-labelledby="about-tech">
+        <section class="rounded-md bg-white" style="padding: 1.5rem 2rem" aria-labelledby="about-tech">
             <h2 id="about-tech" class="mb-3 text-lg font-bold text-ink">Informacje techniczne</h2>
             <dl class="grid gap-x-8 gap-y-3 text-sm" style="grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr))">
                 <div><dt class="text-xs font-bold uppercase tracking-wide text-muted">Framework</dt><dd class="mt-0.5 font-semibold text-ink">Laravel {{ $laravel }}</dd></div>
@@ -66,7 +66,7 @@
             </dl>
             @if (auth()->user()->isAdmin())
                 <p class="mt-4 text-sm">
-                    <a href="{{ route('admin.dokumentacja') }}" target="_blank" rel="noopener" class="inline-flex min-h-9 items-center gap-1.5 font-bold text-brand hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                    <a href="{{ route('admin.dokumentacja') }}" target="_blank" rel="noopener" class="inline-flex min-h-9 items-center gap-1.5 font-bold text-brand-dark hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">
                         <i class="fa-solid fa-book" aria-hidden="true"></i> Dokumentacja techniczna<span class="sr-only"> (otwiera się w nowej karcie)</span>
                     </a>
                 </p>

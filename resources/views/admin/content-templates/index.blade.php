@@ -8,7 +8,7 @@
     </div>
 
     @if ($templates->isEmpty())
-        <p class="rounded-lg border border-gray-200 bg-white px-6 py-8 text-center text-muted">
+        <p class="px-6 py-8 text-center text-muted rounded-md bg-white">
             Brak szablonów. Użyj przycisku <strong>Zapisz jako szablon</strong> w formularzu newsa lub wydarzenia.
         </p>
     @else
@@ -16,9 +16,9 @@
             <h2 class="mb-2 mt-6 text-sm font-bold uppercase tracking-wide text-muted">
                 {{ match ($type) { 'news' => 'Aktualności', 'event' => 'Wydarzenia', 'volunteer_ad' => 'Wolontariat', 'page' => 'Strony', default => $type } }}
             </h2>
-            <div class="overflow-hidden rounded-lg border border-gray-200 bg-white">
+            <div class="overflow-hidden rounded-md bg-white">
                 <table class="w-full text-left text-sm">
-                    <thead class="bg-gray-50 text-xs font-bold uppercase text-muted">
+                    <thead class="bg-gray-100 text-xs font-bold uppercase text-muted">
                         <tr>
                             <th class="px-4 py-3">Nazwa szablonu</th>
                             <th class="px-4 py-3">Utworzony</th>
@@ -33,7 +33,7 @@
                                 <td class="px-4 py-3">
                                     <div class="flex justify-end">
                                         <form method="POST" action="{{ route('admin.szablony.destroy', $template) }}"
-                                            onsubmit="return confirm('Usunąć szablon „{{ $template->name }}"?');">
+                                            onsubmit="return confirm('Usunąć szablon „{{ $template->name }}”?');">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" class="text-muted hover:text-red-600" title="Usuń szablon" aria-label="Usuń szablon">

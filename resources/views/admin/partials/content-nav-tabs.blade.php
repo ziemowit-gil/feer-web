@@ -15,8 +15,8 @@
     // w którym po prawej mieszczą się akcje strony (@push('content-tab-actions')).
     // Odstępy, wysokość i grubość podkreślenia są wbudowane (inline), nie klasami: pasek wygląda
     // poprawnie także wtedy, gdy po wdrożeniu nie przebudowano CSS (wcześniej zakładki zlewały się w jeden ciąg).
-    $tab = fn (bool $active) => 'text-sm font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand '
-        . ($active ? 'border-brand text-brand' : 'border-transparent text-muted hover:border-gray-300 hover:text-ink');
+    $tab = fn (bool $active) => 'text-sm font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-dark '
+        . ($active ? 'border-brand-dark text-brand-dark' : 'border-transparent text-muted hover:border-gray-300 hover:text-ink');
     $tabStyle = 'display:inline-flex;align-items:center;gap:.375rem;min-height:2.75rem;padding:.625rem .875rem;margin-bottom:-1px;border-bottom-width:2px;border-bottom-style:solid;white-space:nowrap';
 @endphp
 

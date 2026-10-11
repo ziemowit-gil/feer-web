@@ -13,38 +13,38 @@
     $canHold = ! $parent && $item->location === 'main' && ! $item->is_button && in_array($item->type, ['dropdown', 'link', 'projects'], true);
     $canIndent = ! $parent && $pos > 0 && $item->location === 'main' && $item->type === 'link' && ! $item->is_button && $children->isEmpty();
     $canOutdent = (bool) $parent;
-    $btn = 'inline-flex items-center rounded-lg border border-gray-300 bg-white text-xs font-bold text-ink hover:border-brand hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand disabled:cursor-not-allowed disabled:opacity-40';
+    $btn = 'inline-flex items-center rounded-lg border border-gray-300 bg-white text-xs font-bold text-ink hover:border-brand-dark hover:text-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark disabled:cursor-not-allowed disabled:opacity-40';
     $btnStyle = 'min-height:2.25rem;padding:.375rem .75rem;gap:.375rem';
     $mega = $item->isMega() ? $item->megaSections() : [];
 @endphp
 
 @if ($parent)
     <nav aria-label="Ścieżka pozycji" class="mb-2 text-xs text-muted">
-        <a href="{{ route('admin.pozycje-menu.index', ['location' => $location, 'pozycja' => $parent->id]) }}" class="hover:text-brand hover:underline">{{ $parent->label }}</a>
+        <a href="{{ route('admin.pozycje-menu.index', ['location' => $location, 'pozycja' => $parent->id]) }}" class="hover:text-brand-dark hover:underline">{{ $parent->label }}</a>
         <span aria-hidden="true" class="mx-1">›</span><span class="font-semibold text-ink" aria-current="page">{{ $item->label }}</span>
     </nav>
 @endif
 
-<div class="rounded-lg border border-gray-200 bg-white" style="padding: 1.25rem">
+<div class="rounded-md bg-white" style="padding: 1.25rem">
     <div style="display:flex;flex-wrap:wrap;align-items:flex-start;justify-content:space-between;gap:.75rem">
         <div style="min-width:0">
             <h2 id="nav-pane-heading" class="text-xl font-bold text-ink">{{ $item->label }}</h2>
             <p class="mt-1 flex flex-wrap items-center gap-2 text-xs">
-                <span class="rounded-full bg-gray-100 px-2 py-0.5 font-semibold text-gray-700">{{ \App\Models\NavItem::TYPES[$item->type] ?? $item->type }}</span>
-                @if ($item->is_button)<span class="rounded-full bg-brand-light px-2 py-0.5 font-bold text-brand">Przycisk (CTA)</span>@endif
-                @if ($item->is_column_heading)<span class="rounded-full bg-indigo-50 px-2 py-0.5 font-bold text-indigo-700"><i class="fa-solid fa-table-columns" aria-hidden="true"></i> Nagłówek kolumny</span>@endif
-                @if ($item->is_mega && ! $parent)<span class="rounded-full bg-indigo-50 px-2 py-0.5 font-bold text-indigo-700">Mega menu</span>@endif
+                <span class="font-bold text-muted">{{ \App\Models\NavItem::TYPES[$item->type] ?? $item->type }}</span>
+                @if ($item->is_button)<span class="font-bold text-brand-dark">Przycisk (CTA)</span>@endif
+                @if ($item->is_column_heading)<span class="font-bold text-ink"><i class="fa-solid fa-table-columns" aria-hidden="true"></i> Nagłówek kolumny</span>@endif
+                @if ($item->is_mega && ! $parent)<span class="font-bold text-ink">Mega menu</span>@endif
                 @if ($item->is_active)
-                    <span class="inline-flex items-center gap-1 rounded-full bg-green-100 px-2 py-0.5 font-bold text-green-700"><i class="fa-solid fa-circle-check" aria-hidden="true"></i> Widoczna</span>
+                    <span class="inline-flex items-center gap-1 font-bold text-ink"><i class="fa-solid fa-circle-check" aria-hidden="true"></i> Widoczna</span>
                 @else
-                    <span class="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 font-bold text-amber-700"><i class="fa-solid fa-eye-slash" aria-hidden="true"></i> Ukryta</span>
+                    <span class="inline-flex items-center gap-1 font-bold text-ink"><i class="fa-solid fa-eye-slash" aria-hidden="true"></i> Ukryta</span>
                 @endif
             </p>
         </div>
         <div style="display:flex;flex-wrap:wrap;gap:.5rem">
             <button type="button" data-nav-first-action @click="openEdit($event)"
                 @include('admin.nav-items._edit-attrs', ['item' => $item])
-                class="inline-flex items-center rounded bg-brand text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2"
+                class="inline-flex items-center rounded bg-brand-dark text-sm font-bold text-white hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2"
                 style="min-height:2.25rem;padding:.375rem 1rem;gap:.375rem">
                 <i class="fa-solid fa-pen" aria-hidden="true"></i> Edytuj
             </button>
@@ -63,7 +63,7 @@
                 @else {{ $item->url ?: '—' }} @endif
             </dd></div>
         <div><dt class="text-xs font-bold uppercase tracking-wide text-muted">Pozycja nadrzędna</dt>
-            <dd class="mt-0.5">@if ($parent)<a href="{{ route('admin.pozycje-menu.index', ['location' => $location, 'pozycja' => $parent->id]) }}" class="text-brand hover:underline">{{ $parent->label }}</a>@else<span class="text-muted">— pasek menu</span>@endif</dd></div>
+            <dd class="mt-0.5">@if ($parent)<a href="{{ route('admin.pozycje-menu.index', ['location' => $location, 'pozycja' => $parent->id]) }}" class="text-brand-dark hover:underline">{{ $parent->label }}</a>@else<span class="text-muted">— pasek menu</span>@endif</dd></div>
         <div><dt class="text-xs font-bold uppercase tracking-wide text-muted">Kolejność</dt><dd class="mt-0.5">{{ $pos !== false ? $pos + 1 : '—' }} z {{ $siblings->count() }}</dd></div>
         @if ($item->module)<div><dt class="text-xs font-bold uppercase tracking-wide text-muted">Widoczna gdy moduł włączony</dt><dd class="mt-0.5">{{ \App\Models\SiteSetting::MODULES[$item->module] ?? $item->module }}</dd></div>@endif
         @if ($item->icon)<div><dt class="text-xs font-bold uppercase tracking-wide text-muted">Ikona</dt><dd class="mt-0.5">{!! icon_html($item->icon, '') !!} <span class="font-mono text-xs">{{ $item->icon }}</span></dd></div>@endif
@@ -102,7 +102,7 @@
             </form>
             <form method="POST" action="{{ route('admin.pozycje-menu.destroy', $item) }}"
                 onsubmit="return confirm('Usunąć „{{ addslashes($item->label) }}”?{{ $children->isNotEmpty() ? ' Usunięte zostaną też podpozycje.' : '' }}');">@csrf @method('DELETE')
-                <button type="submit" class="inline-flex items-center rounded-lg border border-red-200 bg-white text-xs font-bold text-red-700 hover:bg-red-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500" style="{{ $btnStyle }}">
+                <button type="submit" class="inline-flex items-center rounded-md text-xs font-bold text-red-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 bg-red-50 hover:bg-red-100" style="{{ $btnStyle }}">
                     <i class="fa-solid fa-trash" aria-hidden="true"></i> Usuń
                 </button>
             </form>
@@ -112,8 +112,8 @@
 
 {{-- Podgląd kolumn mega menu --}}
 @if ($mega)
-    <div class="mt-4 rounded-lg border border-gray-200 bg-white" style="padding: 1.25rem">
-        <h3 class="text-sm font-bold text-ink"><i class="fa-solid fa-table-columns mr-1 text-brand" aria-hidden="true"></i> Układ w mega menu</h3>
+    <div class="mt-4 rounded-md bg-white" style="padding: 1.25rem">
+        <h3 class="text-sm font-bold text-ink"><i class="fa-solid fa-table-columns mr-1 text-brand-dark" aria-hidden="true"></i> Układ w mega menu</h3>
         <p class="mt-0.5 text-xs text-muted">Tak podpozycje układają się w kolumny. Nagłówek kolumny dodasz w formularzu podpozycji (pole „Nagłówek kolumny”).</p>
         <div class="mt-3" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(11rem,1fr));gap:.75rem">
             @foreach ($mega as $section)
@@ -138,13 +138,13 @@
             @if ($children->isEmpty())
                 <div class="rounded-lg border border-dashed border-gray-300 bg-white px-4 py-8 text-center text-sm text-muted">Ta pozycja nie ma jeszcze podpozycji.</div>
             @else
-                <ul role="list" class="divide-y divide-gray-100 rounded-lg border border-gray-200 bg-white">
+                <ul role="list" class="divide-y divide-gray-100 rounded-md bg-white">
                     @foreach ($children as $child)
                         <li style="display:flex;flex-wrap:wrap;align-items:center;gap:.5rem;padding:.5rem .75rem">
-                            <a href="{{ route('admin.pozycje-menu.index', ['location' => $location, 'pozycja' => $child->id]) }}" class="min-w-0 flex-1 text-sm font-semibold text-ink hover:text-brand" style="min-width:10rem">
+                            <a href="{{ route('admin.pozycje-menu.index', ['location' => $location, 'pozycja' => $child->id]) }}" class="min-w-0 flex-1 text-sm font-semibold text-ink hover:text-brand-dark" style="min-width:10rem">
                                 {{ $child->label }}
-                                @if ($child->is_column_heading)<span class="ml-1 rounded-full bg-indigo-50 px-1.5 text-[10px] font-bold text-indigo-700">nagłówek kolumny</span>@endif
-                                @unless ($child->is_active)<span class="ml-1 rounded-full bg-amber-100 px-1.5 text-[10px] font-bold text-amber-700">ukryta</span>@endunless
+                                @if ($child->is_column_heading)<span class="ml-1 text-[10px] font-bold text-ink"><i class="fa-solid fa-circle-info mr-1 text-brand-dark" aria-hidden="true"></i>nagłówek kolumny</span>@endif
+                                @unless ($child->is_active)<span class="ml-1 text-[10px] font-bold text-ink"><i class="fa-solid fa-eye-slash mr-1 text-muted" aria-hidden="true"></i>ukryta</span>@endunless
                                 <span class="block truncate font-mono text-xs font-normal text-muted">{{ $child->url }}</span>
                             </a>
                             <button type="button" @click="openEdit($event)"

@@ -13,7 +13,7 @@
     </div>
 
     @if (session('status'))
-        <div class="mb-5 flex items-center gap-2 rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm font-medium text-green-800" role="status">
+        <div class="mb-5 flex items-center gap-2 rounded-md bg-brand-light px-4 py-3 text-sm font-medium text-ink" role="status">
             <i class="fa-solid fa-circle-check text-green-600" aria-hidden="true"></i>{{ session('status') }}
         </div>
     @endif
@@ -24,12 +24,12 @@
             @method('PUT')
 
             {{-- Gotowe palety --}}
-            <section class="rounded-xl border border-gray-200 bg-white p-5" aria-labelledby="presets-h">
+            <section class="p-5 rounded-md bg-white" aria-labelledby="presets-h">
                 <h2 id="presets-h" class="mb-3 text-sm font-bold text-ink">Gotowe palety</h2>
                 <div class="flex flex-wrap gap-3">
                     @foreach ($presets as $key => $preset)
                         <button type="button" @click="apply(@js($preset['colors']))"
-                            class="flex items-center gap-3 rounded-lg border border-gray-200 bg-white px-3 py-2 text-left text-sm font-bold text-ink transition hover:-translate-y-0.5 hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                            class="flex items-center gap-3 rounded-md px-3 py-2 text-left text-sm font-bold text-ink transition hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark bg-gray-100 hover:bg-brand-light">
                             <span class="flex" aria-hidden="true">
                                 @foreach ($preset['colors'] as $hex)
                                     <span class="-ml-1 h-6 w-6 rounded-full border-2 border-white first:ml-0" style="background: {{ $hex }}"></span>
@@ -45,7 +45,7 @@
             {{-- Pola kolorów --}}
             <section class="space-y-3" aria-label="Kolory marki">
                 @foreach ($fields as $key => [$label, $hint])
-                    <div class="rounded-xl border border-gray-200 bg-white p-4">
+                    <div class="p-4 rounded-md bg-white">
                         <div class="flex flex-wrap items-center gap-4">
                             <span class="h-14 w-14 flex-none rounded-lg border border-gray-200" :style="'background:' + c.{{ $key }}" aria-hidden="true"></span>
                             <div class="min-w-0 flex-1">
@@ -53,9 +53,9 @@
                                 <p class="text-xs text-muted">{{ $hint }}</p>
                             </div>
                             <div class="flex items-center gap-2">
-                                <input type="color" x-model="c.{{ $key }}" aria-label="Wybierz: {{ $label }}" class="h-10 w-12 cursor-pointer rounded border border-gray-300">
+                                <input type="color" x-model="c.{{ $key }}" aria-label="Wybierz: {{ $label }}" class="h-10 w-12 cursor-pointer rounded border border-gray-500">
                                 <input type="text" id="{{ $key }}" name="{{ $key }}" x-model="c.{{ $key }}" pattern="#[0-9a-fA-F]{6}" maxlength="7" {{ $key === 'brand_color' ? 'required' : '' }}
-                                    class="w-28 rounded border-gray-300 font-mono text-sm focus:border-brand focus:ring-brand">
+                                    class="w-28 rounded border-gray-500 font-mono text-sm focus:border-brand-dark focus:ring-brand-dark">
                             </div>
                         </div>
                         @error($key) <p class="mt-2 text-sm text-red-600">{{ $message }}</p> @enderror
@@ -68,9 +68,9 @@
                 @endforeach
             </section>
 
-            <div class="flex items-start gap-3 rounded-lg border border-amber-200 bg-amber-50 p-3">
+            <div class="flex items-start gap-3 rounded-md bg-amber-50 p-3">
                 <input type="hidden" name="brand_skip_contrast" value="0">
-                <input type="checkbox" id="brand_skip_contrast" name="brand_skip_contrast" value="1" @checked(old('brand_skip_contrast', $settings->brand_skip_contrast)) class="mt-0.5 rounded border-gray-300 text-brand focus:ring-brand">
+                <input type="checkbox" id="brand_skip_contrast" name="brand_skip_contrast" value="1" @checked(old('brand_skip_contrast', $settings->brand_skip_contrast)) class="mt-0.5 rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
                 <label for="brand_skip_contrast" class="text-sm leading-snug">
                     <span class="font-bold">Nie poprawiaj kolorów do WCAG</span>
                     <span class="block text-xs text-muted">Kolory zostaną użyte dokładnie takie, jak ustawione — bez przyciemniania. Użyj, gdy identyfikacja wizualna wymaga konkretnych kolorów; część zestawień może wtedy mieć kontrast poniżej 4,5:1.</span>
@@ -78,7 +78,7 @@
             </div>
 
             <div class="flex items-center gap-3">
-                <button type="submit" class="inline-flex min-h-11 items-center gap-2 rounded-lg bg-brand px-6 text-sm font-bold text-white transition hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
+                <button type="submit" class="inline-flex min-h-11 items-center gap-2 rounded-lg bg-brand-dark px-6 text-sm font-bold text-white transition hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2">
                     <i class="fa-solid fa-floppy-disk" aria-hidden="true"></i>Zapisz kolory
                 </button>
                 <p class="text-xs text-muted">Wskaźnik: ≥ 4,5:1 = zgodne z WCAG AA, 3–4,5 = tylko duży tekst, poniżej 3 = za niski.</p>
@@ -87,7 +87,7 @@
 
         <aside class="min-w-0 space-y-6" aria-label="Podgląd i narzędzia">
             {{-- Podgląd na żywo --}}
-            <section class="rounded-xl border border-gray-200 bg-white p-5" aria-labelledby="prev-h">
+            <section class="p-5 rounded-md bg-white" aria-labelledby="prev-h">
                 <h2 id="prev-h" class="mb-4 text-sm font-bold text-ink">Podgląd na żywo</h2>
                 {{-- Atrapy elementów — wyłączone z czytników ekranu i z nawigacji klawiaturą (inert), żeby nie udawały prawdziwych kontrolek. --}}
                 <div class="space-y-4" inert aria-hidden="true">
@@ -105,10 +105,10 @@
 
             {{-- Paski (moduł FEER Paski): trzy style w bieżącej palecie --}}
             @if ($bandsEnabled)
-                <section class="rounded-xl border border-gray-200 bg-white p-5" aria-labelledby="bands-h">
+                <section class="p-5 rounded-md bg-white" aria-labelledby="bands-h">
                     <div class="mb-3 flex items-center justify-between gap-3">
                         <h2 id="bands-h" class="text-sm font-bold text-ink">Paski <span class="font-normal text-muted">({{ $bandsCount }})</span></h2>
-                        <a href="{{ route('admin.feer-paski.index') }}" class="text-xs font-bold text-ink underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">Zarządzaj paskami</a>
+                        <a href="{{ route('admin.feer-paski.index') }}" class="text-xs font-bold text-ink underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">Zarządzaj paskami</a>
                     </div>
                     <div class="space-y-2 text-xs font-bold" inert aria-hidden="true">
                         <div class="flex items-center justify-between gap-2 rounded-md px-3 py-3" :style="'background:' + c.brand_color + ';color:#fff'">
@@ -126,19 +126,19 @@
             @endif
 
             {{-- Narzędzia masowe --}}
-            <section class="rounded-xl border border-gray-200 bg-white p-5" aria-labelledby="tools-h">
+            <section class="p-5 rounded-md bg-white" aria-labelledby="tools-h">
                 <h2 id="tools-h" class="mb-3 text-sm font-bold text-ink">Narzędzia</h2>
                 <div class="space-y-4 text-sm">
                     <form method="POST" action="{{ route('admin.kolory.brandbook-akcje') }}" onsubmit="return confirm('Nadpisać kolory wszystkich szybkich akcji ({{ $actionsCount }})?');">
                         @csrf
-                        <button type="submit" @disabled($actionsCount === 0) class="w-full rounded-lg border border-gray-300 px-4 py-2 text-left font-bold text-ink hover:bg-gray-50 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                        <button type="submit" @disabled($actionsCount === 0) class="w-full rounded-md px-4 py-2 text-left font-bold text-ink disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark bg-gray-100 hover:bg-brand-light">
                             <i class="fa-solid fa-bolt mr-2" aria-hidden="true"></i>Kolory szybkich akcji wg brandbooka
                         </button>
                         <p class="mt-1 text-xs text-muted">Niebieski → grafit → pomarańcz, po kolei ({{ $actionsCount }} akcji).</p>
                     </form>
                     <form method="POST" action="{{ route('admin.kolory.wyczysc-menu') }}" onsubmit="return confirm('Usunąć kolory z {{ $navColored }} pozycji menu?');">
                         @csrf
-                        <button type="submit" @disabled($navColored === 0) class="w-full rounded-lg border border-gray-300 px-4 py-2 text-left font-bold text-ink hover:bg-gray-50 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                        <button type="submit" @disabled($navColored === 0) class="w-full rounded-md px-4 py-2 text-left font-bold text-ink disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark bg-gray-100 hover:bg-brand-light">
                             <i class="fa-solid fa-eraser mr-2" aria-hidden="true"></i>Usuń kolory pozycji menu
                         </button>
                         <p class="mt-1 text-xs text-muted">Pozycje z własnym kolorem: {{ $navColored }}. Kolor pozycji jest opcjonalny i ustawia się w Menu.</p>

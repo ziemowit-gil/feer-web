@@ -15,7 +15,7 @@
 
         {{-- Filtry --}}
         <form method="GET" action="{{ route('admin.dziennik.index') }}"
-            class="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+            class="p-4 rounded-md bg-white">
             <fieldset>
                 <legend class="sr-only">Filtry dziennika zdarzeń</legend>
                 <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
@@ -23,7 +23,7 @@
                     <div>
                         <label for="f-event" class="mb-1 block text-xs font-bold text-muted">Zdarzenie</label>
                         <select id="f-event" name="event"
-                            class="w-full rounded-lg border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                            class="w-full rounded-lg border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark">
                             <option value="">Wszystkie</option>
                             @foreach (\App\Models\Activity::EVENTS as $key => $label)
                                 <option value="{{ $key }}" @selected($event === $key)>{{ $label }}</option>
@@ -34,7 +34,7 @@
                     <div>
                         <label for="f-subject" class="mb-1 block text-xs font-bold text-muted">Typ treści</label>
                         <select id="f-subject" name="subject"
-                            class="w-full rounded-lg border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                            class="w-full rounded-lg border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark">
                             <option value="">Wszystkie</option>
                             @foreach (\App\Models\Activity::SUBJECTS as $key => $label)
                                 <option value="{{ $key }}" @selected($subject === $key)>{{ $label }}</option>
@@ -46,7 +46,7 @@
                         <label for="f-user" class="mb-1 block text-xs font-bold text-muted">Użytkownik</label>
                         <input type="text" id="f-user" name="user" value="{{ $userName }}"
                             list="user-datalist" placeholder="np. Jan Kowalski"
-                            class="w-full rounded-lg border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                            class="w-full rounded-lg border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark">
                         <datalist id="user-datalist">
                             @foreach ($users as $u)<option value="{{ $u }}">@endforeach
                         </datalist>
@@ -55,19 +55,19 @@
                     <div>
                         <label for="f-date-from" class="mb-1 block text-xs font-bold text-muted">Data od</label>
                         <input type="date" id="f-date-from" name="date_from" value="{{ $dateFrom }}"
-                            class="w-full rounded-lg border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                            class="w-full rounded-lg border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark">
                     </div>
 
                     <div>
                         <label for="f-date-to" class="mb-1 block text-xs font-bold text-muted">Data do</label>
                         <input type="date" id="f-date-to" name="date_to" value="{{ $dateTo }}"
-                            class="w-full rounded-lg border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                            class="w-full rounded-lg border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark">
                     </div>
                 </div>
 
                 <div class="mt-3 flex items-center gap-3">
                     <button type="submit"
-                        class="rounded-lg bg-brand px-4 py-2 text-xs font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
+                        class="rounded-lg bg-brand-dark px-4 py-2 text-xs font-bold text-white hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2">
                         Filtruj
                     </button>
                     @if ($event || $subject || $userName || $dateFrom || $dateTo)
@@ -79,7 +79,7 @@
         </form>
 
         {{-- Tabela --}}
-        <div class="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+        <div class="overflow-hidden rounded-md bg-white">
             @if ($logs->isEmpty())
                 <div class="flex flex-col items-center gap-3 py-16 text-center">
                     <i class="fa-solid fa-clock-rotate-left text-4xl text-gray-300" aria-hidden="true"></i>
@@ -108,12 +108,12 @@
                                     </td>
                                     <td class="whitespace-nowrap px-4 py-3">
                                         @php $badge = match ($log->event) {
-                                            'created' => 'bg-green-100 text-green-700',
-                                            'updated' => 'bg-blue-100 text-blue-700',
-                                            'deleted' => 'bg-red-100 text-red-700',
-                                            default   => 'bg-gray-100 text-gray-700',
+                                            'created' => 'text-ink',
+                                            'updated' => 'text-ink',
+                                            'deleted' => 'text-ink',
+                                            default   => 'text-muted',
                                         }; @endphp
-                                        <span class="rounded-full px-2 py-0.5 text-[10px] font-bold {{ $badge }}">
+                                        <span class="text-xs font-bold {{ $badge }}">
                                             {{ $log->eventLabel() }}
                                         </span>
                                     </td>
@@ -126,7 +126,7 @@
                                     <td class="whitespace-nowrap px-4 py-3">
                                         @if ($log->user_name)
                                             <div class="flex items-center gap-2">
-                                                <span class="inline-flex h-7 w-7 flex-none items-center justify-center rounded-full bg-brand-light text-xs font-bold text-brand"
+                                                <span class="inline-flex h-7 w-7 flex-none items-center justify-center rounded-full bg-brand-light text-xs font-bold text-brand-dark"
                                                     aria-hidden="true">
                                                     {{ mb_strtoupper(mb_substr($log->user_name, 0, 1)) }}
                                                 </span>

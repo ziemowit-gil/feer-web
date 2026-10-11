@@ -4,14 +4,14 @@
 
 @section('content')
     @if (session('status'))
-        <div class="mb-4 rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800">
+        <div class="mb-4 rounded-md bg-brand-light px-4 py-3 text-sm text-ink">
             {{ session('status') }}
         </div>
     @endif
 
-    <div class="overflow-hidden rounded-lg border border-gray-200 bg-white">
+    <div class="overflow-hidden rounded-md bg-white">
         <table class="w-full text-left text-sm">
-            <thead class="bg-gray-50 text-xs font-bold uppercase text-muted">
+            <thead class="bg-gray-100 text-xs font-bold uppercase text-muted">
                 <tr>
                     <th class="px-4 py-3">Nazwa tagu</th>
                     <th class="px-4 py-3">Slug</th>
@@ -35,11 +35,11 @@
                                 <input type="text"
                                        name="name"
                                        value="{{ $tag->name }}"
-                                       class="rounded border border-gray-300 px-2 py-1 text-sm focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
+                                       class="rounded border border-gray-500 px-2 py-1 text-sm focus:border-brand-dark focus:outline-none focus:ring-1 focus:ring-brand-dark"
                                        required
                                        maxlength="100"
                                        aria-label="Nowa nazwa tagu {{ $tag->name }}">
-                                <button type="submit" class="text-brand hover:text-brand-dark" title="Zapisz" aria-label="Zapisz">
+                                <button type="submit" class="text-brand-dark hover:text-ink" title="Zapisz" aria-label="Zapisz">
                                     <i class="fa-solid fa-check"></i>
                                 </button>
                                 <button type="button" @click="editing = null" class="text-muted hover:text-ink" title="Anuluj" aria-label="Anuluj">
@@ -51,7 +51,7 @@
                         <td class="px-4 py-3">
                             @if ($tag->news_count > 0)
                                 <a href="{{ route('admin.newsy.index', ['tag' => $tag->slug]) }}"
-                                   class="font-bold text-ink hover:text-brand">
+                                   class="font-bold text-ink hover:text-brand-dark">
                                     {{ $tag->news_count }}
                                 </a>
                             @else
@@ -61,7 +61,7 @@
                         <td class="px-4 py-3">
                             <div class="flex justify-end gap-3" x-show="editing !== {{ $tag->id }}">
                                 <button @click="editing = {{ $tag->id }}"
-                                        class="text-muted hover:text-brand"
+                                        class="text-muted hover:text-brand-dark"
                                         title="Zmień nazwę">
                                     <i class="fa-solid fa-pen" aria-hidden="true"></i>
                                 </button>

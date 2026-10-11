@@ -9,8 +9,8 @@
     <fieldset>
         <legend class="{{ $lbl }}">Co ma się stać po wejściu na tę stronę</legend>
         @php $rmode = $td['redirect_mode'] ?? 'notice'; @endphp
-        <label class="mb-1 flex items-start gap-2 text-sm"><input type="radio" name="type_data[redirect_mode]" value="notice" @checked($rmode !== 'auto') class="mt-0.5 border-gray-300 text-brand focus:ring-brand"> <span><span class="font-bold">Pokaż stronę z informacją</span> i przycisk do nowego adresu (przyjazne dla osób korzystających z czytników ekranu).</span></label>
-        <label class="flex items-start gap-2 text-sm"><input type="radio" name="type_data[redirect_mode]" value="auto" @checked($rmode === 'auto') class="mt-0.5 border-gray-300 text-brand focus:ring-brand"> <span><span class="font-bold">Przekieruj od razu</span> (301). W podglądzie z panelu zobaczysz stronę z informacją.</span></label>
+        <label class="mb-1 flex items-start gap-2 text-sm"><input type="radio" name="type_data[redirect_mode]" value="notice" @checked($rmode !== 'auto') class="mt-0.5 border-gray-500 text-brand-dark focus:ring-brand-dark"> <span><span class="font-bold">Pokaż stronę z informacją</span> i przycisk do nowego adresu (przyjazne dla osób korzystających z czytników ekranu).</span></label>
+        <label class="flex items-start gap-2 text-sm"><input type="radio" name="type_data[redirect_mode]" value="auto" @checked($rmode === 'auto') class="mt-0.5 border-gray-500 text-brand-dark focus:ring-brand-dark"> <span><span class="font-bold">Przekieruj od razu</span> (301). W podglądzie z panelu zobaczysz stronę z informacją.</span></label>
     </fieldset>
     <div>
         <label for="td-redirect-msg" class="{{ $lbl }}">Komunikat <span class="font-normal text-muted">(opcjonalnie)</span></label>

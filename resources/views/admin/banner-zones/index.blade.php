@@ -4,7 +4,7 @@
 
 @section('content')
     @if (session('status'))
-        <div class="mb-4 rounded border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
+        <div class="mb-4 rounded-md bg-brand-light px-4 py-3 text-sm text-ink">
             {{ session('status') }}
         </div>
     @endif
@@ -15,14 +15,14 @@
             <p class="mt-1 text-xs text-muted">Użyj <code class="rounded bg-gray-100 px-1 font-mono">&lt;x-banner-zone name="slug" /&gt;</code> w szablonie Blade.</p>
         </div>
         <a href="{{ route('admin.strefy-bannerow.create') }}"
-            class="rounded bg-brand px-4 py-2 text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
+            class="rounded bg-brand-dark px-4 py-2 text-sm font-bold text-white hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2">
             <i class="fa-solid fa-plus fa-sm"></i> Dodaj strefę
         </a>
     </div>
 
-    <div class="overflow-x-auto rounded-lg border border-gray-200 bg-white">
+    <div class="overflow-x-auto rounded-md bg-white">
         <table class="w-full text-left text-sm">
-            <thead class="bg-gray-50 text-xs font-bold uppercase text-muted">
+            <thead class="bg-gray-100 text-xs font-bold uppercase text-muted">
                 <tr>
                     <th class="px-4 py-3">Nazwa / slug</th>
                     <th class="px-4 py-3">Opis</th>
@@ -44,11 +44,11 @@
                         <td class="px-4 py-3">
                             <div class="flex items-center justify-end gap-3">
                                 <a href="{{ route('admin.strefy-bannerow.edit', $zone) }}"
-                                    class="text-brand hover:text-brand-dark" title="Edytuj">
+                                    class="text-brand-dark hover:text-ink" title="Edytuj">
                                     <i class="fa-solid fa-pen fa-sm"></i>
                                 </a>
                                 <form method="POST" action="{{ route('admin.strefy-bannerow.destroy', $zone) }}"
-                                    onsubmit="return confirm('Usunąć strefę „{{ addslashes($zone->label) }}"? Bannery pozostaną, ale stracą to przypisanie.');">
+                                    onsubmit="return confirm('Usunąć strefę „{{ addslashes($zone->label) }}”? Bannery pozostaną, ale stracą to przypisanie.');">
                                     @csrf @method('DELETE')
                                     <button type="submit" class="text-muted hover:text-red-600" title="Usuń" aria-label="Usuń">
                                         <i class="fa-solid fa-trash fa-sm"></i>
@@ -60,7 +60,7 @@
                 @empty
                     <tr>
                         <td colspan="5" class="px-4 py-8 text-center text-muted">
-                            Brak stref. <a href="{{ route('admin.strefy-bannerow.create') }}" class="text-brand underline">Dodaj pierwszą</a>.
+                            Brak stref. <a href="{{ route('admin.strefy-bannerow.create') }}" class="text-brand-dark underline">Dodaj pierwszą</a>.
                         </td>
                     </tr>
                 @endforelse

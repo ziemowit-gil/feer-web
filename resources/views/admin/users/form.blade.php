@@ -3,28 +3,28 @@
 @section('title', $user->exists ? 'Edytuj użytkownika' : 'Nowy użytkownik')
 
 @section('content')
-    <form method="POST" action="{{ $user->exists ? route('admin.uzytkownicy.update', $user) : route('admin.uzytkownicy.store') }}" class="max-w-xl space-y-5 rounded-lg border border-gray-200 bg-white p-6">
+    <form method="POST" action="{{ $user->exists ? route('admin.uzytkownicy.update', $user) : route('admin.uzytkownicy.store') }}" class="max-w-xl space-y-5 p-6 rounded-md bg-white">
         @csrf
         @if ($user->exists) @method('PUT') @endif
 
         <div>
             <label for="name" class="mb-1 block text-sm font-bold">Imię i nazwisko</label>
             <input type="text" id="name" name="name" value="{{ old('name', $user->name) }}" required
-                class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
             @error('name') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
         </div>
 
         <div>
             <label for="email" class="mb-1 block text-sm font-bold">E-mail</label>
             <input type="email" id="email" name="email" value="{{ old('email', $user->email) }}" required
-                class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
             @error('email') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
         </div>
 
         <div x-data="{ role: '{{ old('role', $user->role ?? 'editor') }}' }">
             <label for="role" class="mb-1 block text-sm font-bold">Rola</label>
             <select id="role" name="role" required x-model="role"
-                class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
                 @foreach (\App\Models\User::ROLES as $val => $label)
                     <option value="{{ $val }}" {{ old('role', $user->role) === $val ? 'selected' : '' }}>{{ $label }}</option>
                 @endforeach
@@ -32,11 +32,11 @@
             @error('role') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
 
             {{-- Podpowiedzi per rola --}}
-            <p x-show="role === 'content_editor'" x-cloak class="mt-1.5 rounded border border-green-200 bg-green-50 px-3 py-2 text-xs text-green-800">
+            <p x-show="role === 'content_editor'" x-cloak class="mt-1.5 rounded-md bg-brand-light px-3 py-2 text-xs text-ink">
                 <i class="fa-solid fa-circle-info mr-1" aria-hidden="true"></i>
                 Edytor treści ma dostęp do wszystkich aktywnych modułów z treścią (aktualności, blog, wydarzenia, materiały, działania itp.), bez ustawień i systemu.
             </p>
-            <p x-show="role === 'coordinator'" x-cloak class="mt-1.5 rounded border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
+            <p x-show="role === 'coordinator'" x-cloak class="mt-1.5 rounded-md bg-amber-50 px-3 py-2 text-xs text-amber-800">
                 <i class="fa-solid fa-circle-info mr-1" aria-hidden="true"></i>
                 Koordynator ma dostęp do: wolontariat, ogłoszenia o pracę, szkolenia i wydarzenia, materiały edukacyjne.
             </p>
@@ -44,15 +44,15 @@
                 <i class="fa-solid fa-circle-info mr-1" aria-hidden="true"></i>
                 Redaktor PR ma dostęp do: aktualności, blog Wiem FEER, landing pages, działania, ankiety.
             </p>
-            <p x-show="role === 'bip_editor_plus'" x-cloak class="mt-1.5 rounded border border-blue-200 bg-blue-50 px-3 py-2 text-xs text-blue-800">
+            <p x-show="role === 'bip_editor_plus'" x-cloak class="mt-1.5 rounded-md bg-brand-light px-3 py-2 text-xs text-ink">
                 <i class="fa-solid fa-circle-info mr-1" aria-hidden="true"></i>
                 Edytor BIP+ ma dostęp do modułu BIP oraz sprawozdań finansowych.
             </p>
-            <p x-show="role === 'bip_editor'" x-cloak class="mt-1.5 rounded border border-blue-200 bg-blue-50 px-3 py-2 text-xs text-blue-800">
+            <p x-show="role === 'bip_editor'" x-cloak class="mt-1.5 rounded-md bg-brand-light px-3 py-2 text-xs text-ink">
                 <i class="fa-solid fa-circle-info mr-1" aria-hidden="true"></i>
                 Edytor BIP ma dostęp wyłącznie do modułu BIP. Imię i nazwisko są wymagane — widoczne publicznie na stronie BIP.
             </p>
-            <p x-show="role === 'editor'" x-cloak class="mt-1.5 rounded border border-gray-200 bg-gray-50 px-3 py-2 text-xs text-gray-700">
+            <p x-show="role === 'editor'" x-cloak class="mt-1.5 px-3 py-2 text-xs text-gray-700 rounded-md bg-gray-50">
                 <i class="fa-solid fa-circle-info mr-1" aria-hidden="true"></i>
                 Edytor (grupy) ma dostęp tylko do modułów przypisanych przez grupę poniżej.
             </p>
@@ -61,7 +61,7 @@
         <div id="group-field" x-data="{ role: '{{ old('role', $user->role ?? 'editor') }}' }" x-show="role === 'editor'" x-cloak
             @change.window="role = document.getElementById('role').value">
             <label for="user_group_id" class="mb-1 block text-sm font-bold">Grupa</label>
-            <select id="user_group_id" name="user_group_id" class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+            <select id="user_group_id" name="user_group_id" class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
                 <option value="">— brak (bez dostępu do modułów) —</option>
                 @foreach ($groups as $group)
                     <option value="{{ $group->id }}" {{ (int) old('user_group_id', $user->user_group_id) === $group->id ? 'selected' : '' }}>
@@ -79,7 +79,7 @@
             </label>
             <input type="password" id="password" name="password" autocomplete="new-password"
                 placeholder="{{ $user->exists ? 'zostaw puste, aby nie zmieniać' : '' }}"
-                class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
             @error('password') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
         </div>
 
@@ -88,7 +88,7 @@
                 <input type="hidden" name="local_login_allowed" value="0">
                 <input type="checkbox" name="local_login_allowed" value="1"
                     {{ old('local_login_allowed', $user->local_login_allowed ?? false) ? 'checked' : '' }}
-                    class="rounded border-gray-300 text-brand focus:ring-brand">
+                    class="rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
                 Dostęp awaryjny (logowanie hasłem gdy MS wyłączone)
             </label>
             <p class="ml-6 mt-1 text-xs text-muted">
@@ -97,13 +97,13 @@
         </div>
 
         <div class="flex items-center gap-3 border-t border-gray-100 pt-5">
-            <button type="submit" class="rounded bg-brand px-5 py-2 text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">Zapisz</button>
-            <a href="{{ route('admin.uzytkownicy.index') }}" class="text-sm text-muted hover:text-brand">Anuluj</a>
+            <button type="submit" class="rounded bg-brand-dark px-5 py-2 text-sm font-bold text-white hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2">Zapisz</button>
+            <a href="{{ route('admin.uzytkownicy.index') }}" class="text-sm text-muted hover:text-brand-dark">Anuluj</a>
         </div>
     </form>
 
     @if ($user->exists)
-        <div class="mt-6 max-w-xl rounded-lg border border-gray-200 bg-white p-6">
+        <div class="mt-6 max-w-xl p-6 rounded-md bg-white">
             <h2 class="text-sm font-bold text-ink">Logowanie Microsoft 365</h2>
             @if ($user->microsoft_id)
                 <div class="mt-3 flex flex-wrap items-center justify-between gap-3">

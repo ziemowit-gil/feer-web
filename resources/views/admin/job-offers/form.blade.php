@@ -22,7 +22,7 @@
         @if ($offer->exists) @method('PUT') @endif
 
         @if ($errors->any())
-            <div class="rounded border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            <div class="rounded-md bg-red-50 px-4 py-3 text-sm text-red-700">
                 <p class="font-bold">Popraw poniższe pola:</p>
                 <ul class="mt-1 list-inside list-disc">
                     @foreach ($errors->all() as $error)<li>{{ $error }}</li>@endforeach
@@ -31,27 +31,27 @@
         @endif
 
         {{-- Podstawy --}}
-        <div class="space-y-5 rounded-lg border border-gray-200 bg-white p-6">
+        <div class="space-y-5 p-6 rounded-md bg-white">
             <h2 class="text-base font-bold text-ink">Podstawowe informacje</h2>
             <div>
                 <label for="title" class="mb-1 block text-sm font-bold">Tytuł stanowiska <span aria-hidden="true" class="text-red-600">*</span></label>
                 <input type="text" id="title" name="title" value="{{ old('title', $offer->title) }}" required placeholder="np. Specjalistka/Specjalista ds. dostępności cyfrowej"
-                    class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                    class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
             </div>
             <div>
                 <label for="lead" class="mb-1 block text-sm font-bold">Krótki opis stanowiska (1–2 zdania) <span aria-hidden="true" class="text-red-600">*</span></label>
                 <textarea id="lead" name="lead" rows="2" required maxlength="300" placeholder="Jedno–dwa zdania o tym, czym się zajmujesz i jaki jest sens tej roli."
-                    class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">{{ old('lead', $offer->lead) }}</textarea>
+                    class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">{{ old('lead', $offer->lead) }}</textarea>
             </div>
         </div>
 
         {{-- Warunki zatrudnienia --}}
-        <div class="space-y-5 rounded-lg border border-gray-200 bg-white p-6">
+        <div class="space-y-5 p-6 rounded-md bg-white">
             <h2 class="text-base font-bold text-ink">Warunki zatrudnienia</h2>
             <div class="grid gap-4 sm:grid-cols-2">
                 <div>
                     <label for="job_type" class="mb-1 block text-sm font-bold">Rodzaj umowy <span aria-hidden="true" class="text-red-600">*</span></label>
-                    <select id="job_type" name="job_type" x-model="jobType" class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                    <select id="job_type" name="job_type" x-model="jobType" class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
                         @foreach (\App\Models\JobOffer::TYPES as $value => $label)
                             <option value="{{ $value }}" {{ old('job_type', $offer->job_type) === $value ? 'selected' : '' }}>{{ $label }}</option>
                         @endforeach
@@ -59,7 +59,7 @@
                 </div>
                 <div>
                     <label for="mode" class="mb-1 block text-sm font-bold">Tryb pracy <span aria-hidden="true" class="text-red-600">*</span></label>
-                    <select id="mode" name="mode" class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                    <select id="mode" name="mode" class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
                         @foreach (\App\Models\JobOffer::MODES as $value => $label)
                             <option value="{{ $value }}" {{ old('mode', $offer->mode) === $value ? 'selected' : '' }}>{{ $label }}</option>
                         @endforeach
@@ -68,12 +68,12 @@
                 <div>
                     <label for="location" class="mb-1 block text-sm font-bold">Lokalizacja</label>
                     <input type="text" id="location" name="location" value="{{ old('location', $offer->location) }}" placeholder="np. Nowy Sącz / cała Polska"
-                        class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                        class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
                 </div>
                 <div>
                     <label for="salary_range" class="mb-1 block text-sm font-bold">Wynagrodzenie</label>
                     <input type="text" id="salary_range" name="salary_range" value="{{ old('salary_range', $offer->salary_range) }}" placeholder="np. 3500–5000 PLN brutto/mies."
-                        class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                        class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
                     <p class="mt-1 text-xs text-muted">Zostaw puste, jeśli nie podajesz widełek.</p>
                 </div>
             </div>
@@ -84,7 +84,7 @@
                 <div class="grid gap-4 sm:grid-cols-3">
                     <div>
                         <label for="contract_duration_type" class="mb-1 block text-sm font-bold">Czas trwania umowy</label>
-                        <select id="contract_duration_type" name="contract_duration_type" class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                        <select id="contract_duration_type" name="contract_duration_type" class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
                             <option value="">— nie podano —</option>
                             @foreach (\App\Models\JobOffer::CONTRACT_DURATION_TYPES as $value => $label)
                                 <option value="{{ $value }}" {{ old('contract_duration_type', $offer->contract_duration_type) === $value ? 'selected' : '' }}>{{ $label }}</option>
@@ -94,13 +94,13 @@
                     <div>
                         <label for="contract_duration" class="mb-1 block text-sm font-bold">Okres trwania</label>
                         <input type="text" id="contract_duration" name="contract_duration" value="{{ old('contract_duration', $offer->contract_duration) }}" placeholder="np. 6 miesięcy, 1 rok"
-                            class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                            class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
                         <p class="mt-1 text-xs text-muted">Tylko przy czasie określonym.</p>
                     </div>
                     <div>
                         <label for="start_date" class="mb-1 block text-sm font-bold">Termin rozpoczęcia</label>
                         <input type="date" id="start_date" name="start_date" value="{{ old('start_date', $offer->start_date?->format('Y-m-d')) }}"
-                            class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                            class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
                     </div>
                 </div>
             </div>
@@ -112,88 +112,88 @@
                     <div>
                         <label for="hourly_rate" class="mb-1 block text-sm font-bold">Stawka godzinowa</label>
                         <input type="text" id="hourly_rate" name="hourly_rate" value="{{ old('hourly_rate', $offer->hourly_rate) }}" placeholder="np. 35–45 PLN/h"
-                            class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                            class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
                     </div>
                     <div>
                         <label for="start_date_uod" class="mb-1 block text-sm font-bold">Planowany termin rozpoczęcia</label>
                         <input type="date" id="start_date_uod" name="start_date" value="{{ old('start_date', $offer->start_date?->format('Y-m-d')) }}"
-                            class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                            class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
                     </div>
                 </div>
             </div>
         </div>
 
         {{-- Obowiązki --}}
-        <fieldset class="rounded-lg border border-gray-200 bg-white p-6">
-            <legend class="px-2 text-sm font-bold text-brand">Zakres obowiązków</legend>
+        <fieldset class="p-6 rounded-md bg-white">
+            <legend class="px-2 text-sm font-bold text-brand-dark">Zakres obowiązków</legend>
             <label for="duties" class="mb-1 block text-xs text-muted">Konkretne zadania — jeden obowiązek w wierszu.</label>
             <textarea id="duties" name="duties" rows="6" required placeholder="Prowadzenie audytów dostępności&#10;Przygotowywanie raportów WCAG&#10;Szkolenia dla partnerów organizacji"
-                class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">{{ $dutiesText }}</textarea>
+                class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">{{ $dutiesText }}</textarea>
             @error('duties') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
         </fieldset>
 
         {{-- Wymagania --}}
-        <fieldset class="rounded-lg border border-gray-200 bg-white p-6">
-            <legend class="px-2 text-sm font-bold text-brand">Wymagania</legend>
+        <fieldset class="p-6 rounded-md bg-white">
+            <legend class="px-2 text-sm font-bold text-brand-dark">Wymagania</legend>
             <label for="requirements" class="mb-1 block text-xs text-muted">Jedno wymaganie w wierszu. Oddziel obowiązkowe od mile widzianych.</label>
             <textarea id="requirements" name="requirements" rows="5" required placeholder="Znajomość WCAG 2.1 i 2.2&#10;Doświadczenie w testowaniu dostępności&#10;Mile widziane: doświadczenie z czytnikami ekranu"
-                class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">{{ $requirementsText }}</textarea>
+                class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">{{ $requirementsText }}</textarea>
             @error('requirements') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
         </fieldset>
 
         {{-- Wymagania mile widziane --}}
-        <fieldset class="rounded-lg border border-gray-200 bg-white p-6">
-            <legend class="px-2 text-sm font-bold text-brand">Wymagania mile widziane <span class="font-normal text-muted">(opcjonalnie)</span></legend>
+        <fieldset class="p-6 rounded-md bg-white">
+            <legend class="px-2 text-sm font-bold text-brand-dark">Wymagania mile widziane <span class="font-normal text-muted">(opcjonalnie)</span></legend>
             <label for="nice_to_have" class="mb-1 block text-xs text-muted">Jedno wymaganie w wierszu — umiejętności dodatkowe, których posiadanie będzie atutem.</label>
             <textarea id="nice_to_have" name="nice_to_have" rows="4"
                 placeholder="Doświadczenie z czytnikami ekranu&#10;Znajomość języka migowego&#10;Certyfikat IAAP"
-                class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">{{ $niceToHaveText }}</textarea>
+                class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">{{ $niceToHaveText }}</textarea>
             @error('nice_to_have') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
         </fieldset>
 
         {{-- Benefity --}}
-        <fieldset class="rounded-lg border border-gray-200 bg-white p-6">
-            <legend class="px-2 text-sm font-bold text-brand">Co oferujemy <span class="font-normal text-muted">(opcjonalnie)</span></legend>
+        <fieldset class="p-6 rounded-md bg-white">
+            <legend class="px-2 text-sm font-bold text-brand-dark">Co oferujemy <span class="font-normal text-muted">(opcjonalnie)</span></legend>
             <label for="benefits" class="mb-1 block text-xs text-muted">Jeden benefit w wierszu — elastyczność, sprzęt, szkolenia, misja itd.</label>
             <textarea id="benefits" name="benefits" rows="4" placeholder="Praca na rzecz dostępności cyfrowej&#10;Elastyczny czas pracy&#10;Możliwość zdalnej pracy&#10;Rozwój w środowisku NGO"
-                class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">{{ $benefitsText }}</textarea>
+                class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">{{ $benefitsText }}</textarea>
         </fieldset>
 
         {{-- Kontakt i aplikowanie --}}
-        <div class="space-y-4 rounded-lg border border-gray-200 bg-white p-6">
+        <div class="space-y-4 p-6 rounded-md bg-white">
             <h2 class="text-base font-bold text-ink">Kontakt i aplikowanie</h2>
             <div class="grid gap-4 sm:grid-cols-2">
                 <div>
                     <label for="application_url" class="mb-1 block text-sm font-bold">Link do formularza zgłoszeniowego</label>
                     <input type="url" id="application_url" name="application_url" value="{{ old('application_url', $offer->application_url) }}" placeholder="https://..."
-                        class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                        class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
                 </div>
                 <div>
                     <label for="application_cta_label" class="mb-1 block text-sm font-bold">Napis na przycisku</label>
                     <input type="text" id="application_cta_label" name="application_cta_label" value="{{ old('application_cta_label', $offer->application_cta_label ?: 'Aplikuj') }}" maxlength="60"
-                        class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                        class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
                 </div>
                 <div>
                     <label for="contact_name" class="mb-1 block text-sm font-bold">Osoba kontaktowa <span class="font-normal text-muted">(opcjonalnie)</span></label>
                     <input type="text" id="contact_name" name="contact_name" value="{{ old('contact_name', $offer->contact_name) }}" placeholder="np. Anna Kowalska, HR"
-                        class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                        class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
                 </div>
                 <div>
                     <label for="contact_email" class="mb-1 block text-sm font-bold">E-mail kontaktowy <span class="font-normal text-muted">(zapasowo)</span></label>
                     <input type="email" id="contact_email" name="contact_email" value="{{ old('contact_email', $offer->contact_email) }}" placeholder="np. praca@feer.org.pl"
-                        class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                        class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
                 </div>
             </div>
         </div>
 
         {{-- Instrukcja aplikowania --}}
-        <div class="rounded-lg border border-gray-200 bg-white p-6">
+        <div class="p-6 rounded-md bg-white">
             <h2 class="mb-4 text-base font-bold text-ink">Instrukcja wysyłania dokumentów <span class="font-normal text-sm text-muted">(opcjonalnie)</span></h2>
             <div>
                 <label for="apply_note" class="mb-1 block text-sm font-bold">Dodatkowa informacja dla kandydatów</label>
                 <textarea id="apply_note" name="apply_note" rows="3"
                     placeholder="np. Prosimy o CV na maila fundacja@feer.org.pl, w temacie proszę wpisać nazwę stanowiska."
-                    class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">{{ old('apply_note', $offer->apply_note) }}</textarea>
+                    class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">{{ old('apply_note', $offer->apply_note) }}</textarea>
                 <p class="mt-1 text-xs text-muted">Tekst ten pojawi się w sekcji „Jak aplikować?" na stronie ogłoszenia.</p>
             </div>
             <div class="mt-4 grid gap-4 border-t border-gray-100 pt-4 sm:grid-cols-2">
@@ -201,7 +201,7 @@
                     <label for="offer_deadline" class="mb-1 block text-sm font-bold">Składanie ofert do <span class="font-normal text-muted">(opcjonalnie)</span></label>
                     <input type="date" id="offer_deadline" name="offer_deadline"
                         value="{{ old('offer_deadline', $offer->offer_deadline?->format('Y-m-d')) }}"
-                        class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                        class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
                     <p class="mt-1 text-xs text-muted">Data graniczna składania dokumentów, wyświetlana na stronie ogłoszenia.</p>
                 </div>
                 <div>
@@ -209,7 +209,7 @@
                     <input type="text" id="task_period" name="task_period"
                         value="{{ old('task_period', $offer->task_period) }}"
                         placeholder="np. od 1 września 2026 lub I kwartał 2027"
-                        class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                        class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
                     <p class="mt-1 text-xs text-muted">Prawdopodobny okres realizacji zadania, wyświetlany na stronie ogłoszenia.</p>
                 </div>
             </div>
@@ -218,7 +218,7 @@
                 <input type="hidden" name="grant_condition" value="0">
                 <input type="checkbox" name="grant_condition" value="1"
                     {{ old('grant_condition', $offer->grant_condition ?? false) ? 'checked' : '' }}
-                    class="mt-0.5 h-4 w-4 rounded border-gray-300 text-brand focus:ring-brand">
+                    class="mt-0.5 h-4 w-4 rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
                 <div>
                     <span class="text-sm font-bold text-ink">Oferta warunkowa (dotacja)</span>
                     <p class="text-xs text-muted">Na stronie ogłoszenia pojawi się: <em>Oferta ma charakter informacyjny. Związanie ofertą oraz zawarcie umowy warunkowane jest pozyskaniem środków zewnętrznych (dotacji) na realizację zadania.</em></p>
@@ -227,12 +227,12 @@
         </div>
 
         {{-- Publikacja --}}
-        <div class="rounded-lg border border-gray-200 bg-white p-6">
+        <div class="p-6 rounded-md bg-white">
             <h2 class="mb-4 text-base font-bold text-ink">Publikacja</h2>
             <div class="grid gap-4 sm:grid-cols-3">
                 <div>
                     <label for="audience" class="mb-1 block text-sm font-bold">Schemat kolorów</label>
-                    <select id="audience" name="audience" class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                    <select id="audience" name="audience" class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
                         @foreach ($siteSettings->audienceOptions() as $value => $label)
                             <option value="{{ $value }}" {{ old('audience', $offer->audience ?: 'brand') === $value ? 'selected' : '' }}>{{ $label }}</option>
                         @endforeach
@@ -241,24 +241,24 @@
                 <div>
                     <label for="closes_at" class="mb-1 block text-sm font-bold">Termin aplikacji</label>
                     <input type="date" id="closes_at" name="closes_at" value="{{ old('closes_at', $offer->closes_at?->format('Y-m-d')) }}"
-                        class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                        class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
                     <p class="mt-1 text-xs text-muted">Po tej dacie ogłoszenie znika.</p>
                 </div>
                 <div>
                     <label for="order" class="mb-1 block text-sm font-bold">Kolejność</label>
                     <input type="number" id="order" name="order" value="{{ old('order', $offer->order ?? 0) }}" min="0"
-                        class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                        class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
                 </div>
                 <label class="flex items-center gap-2 sm:col-span-3">
                     <input type="checkbox" name="is_published" value="1" {{ old('is_published', $offer->is_published) ? 'checked' : '' }}
-                        class="rounded border-gray-300 text-brand focus:ring-brand">
+                        class="rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
                     <span class="text-sm font-bold">Opublikowane (widoczne na stronie)</span>
                 </label>
             </div>
         </div>
 
         <div class="flex items-center gap-3">
-            <button type="submit" class="rounded bg-brand px-5 py-2 text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">Zapisz</button>
+            <button type="submit" class="rounded bg-brand-dark px-5 py-2 text-sm font-bold text-white hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2">Zapisz</button>
             <a href="{{ route('admin.praca.index') }}" class="text-sm text-muted hover:text-ink">Anuluj</a>
         </div>
     </form>

@@ -22,7 +22,7 @@
             'publikacja' => ['Publikacja', 'fa-calendar-check'],
             'seo' => ['SEO', 'fa-magnifying-glass'],
         ];
-        $btnSecondary = 'inline-flex items-center rounded-lg border border-gray-300 bg-white text-xs font-bold text-ink hover:border-brand hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand';
+        $btnSecondary = 'inline-flex items-center rounded-lg border border-gray-300 bg-white text-xs font-bold text-ink hover:border-brand-dark hover:text-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark';
         $btnStyle = 'min-height:2.25rem;padding:.375rem .75rem;gap:.375rem';
     @endphp
 
@@ -42,9 +42,9 @@
                         <span class="truncate">{{ $news->exists ? $news->title : 'Nowa aktualność' }}</span>
                         @if ($news->exists)
                             @if ($news->is_published)
-                                <span class="inline-flex items-center gap-1 rounded-full bg-green-100 px-2 py-0.5 text-[11px] font-bold text-green-700"><i class="fa-solid fa-circle-check" aria-hidden="true"></i> Opublikowana</span>
+                                <span class="inline-flex items-center gap-1 text-[11px] font-bold text-ink"><i class="fa-solid fa-circle-check" aria-hidden="true"></i> Opublikowana</span>
                             @else
-                                <span class="inline-flex items-center gap-1 rounded-full bg-gray-100 px-2 py-0.5 text-[11px] font-bold text-gray-600"><i class="fa-solid fa-pen-ruler" aria-hidden="true"></i> Szkic</span>
+                                <span class="inline-flex items-center gap-1 text-[11px] font-bold text-muted"><i class="fa-solid fa-pen-ruler" aria-hidden="true"></i> Szkic</span>
                             @endif
                         @endif
                     </h1>
@@ -54,12 +54,12 @@
                     {{-- Zapis: „Zapisz” zostaje na rekordzie, „Zapisz i zamknij” wraca do listy --}}
                     <div style="display:inline-flex;overflow:hidden;border-radius:.5rem">
                         <button type="submit" form="news-form" name="after" value="stay"
-                            class="inline-flex items-center bg-brand text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2"
+                            class="inline-flex items-center bg-brand-dark text-sm font-bold text-white hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2"
                             style="min-height:2.25rem;padding:.375rem 1rem;gap:.375rem">
                             <i class="fa-solid fa-floppy-disk" aria-hidden="true"></i> Zapisz
                         </button>
                         <button type="submit" form="news-form" name="after" value="close"
-                            class="inline-flex items-center bg-brand text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2"
+                            class="inline-flex items-center bg-brand-dark text-sm font-bold text-white hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2"
                             style="min-height:2.25rem;padding:.375rem .875rem;gap:.375rem;border-left:1px solid rgba(255,255,255,.35)">
                             Zapisz i zamknij
                         </button>
@@ -82,7 +82,7 @@
                             data-confirm="Usunąć news „{{ $news->title }}”? Operacji nie można cofnąć."
                             @if (($clonesCount ?? 0) > 0) data-clone-count="{{ $clonesCount }}" @endif>
                             @csrf @method('DELETE')
-                            <button type="submit" class="inline-flex items-center rounded-lg border border-red-200 bg-white text-xs font-bold text-red-700 hover:bg-red-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500" style="{{ $btnStyle }}">
+                            <button type="submit" class="inline-flex items-center rounded-md text-xs font-bold text-red-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 bg-red-50 hover:bg-red-100" style="{{ $btnStyle }}">
                                 <i class="fa-solid fa-trash" aria-hidden="true"></i> Usuń
                             </button>
                         </form>
@@ -95,7 +95,7 @@
                 @foreach ($tabs as $key => [$label, $icon])
                     <button type="button" role="tab" id="tab-{{ $key }}" data-tab-btn="{{ $key }}" aria-controls="panel-{{ $key }}"
                         aria-selected="{{ $loop->first ? 'true' : 'false' }}" tabindex="{{ $loop->first ? '0' : '-1' }}"
-                        class="relative text-sm font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand {{ $loop->first ? 'border-brand text-brand' : 'border-transparent text-muted hover:text-brand' }}"
+                        class="relative text-sm font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-dark {{ $loop->first ? 'border-brand-dark text-brand-dark' : 'border-transparent text-muted hover:text-ink' }}"
                         style="display:inline-flex;align-items:center;gap:.375rem;min-height:2.5rem;padding:.5rem .875rem;margin-bottom:-1px;border-bottom-width:2px;border-bottom-style:solid">
                         <i class="fa-solid {{ $icon }} text-xs" aria-hidden="true"></i>{{ $label }}
                         @if ($tabErrors[$key] ?? false)
@@ -105,16 +105,16 @@
                 @endforeach
                 @if ($news->exists)
                     <button type="button" role="tab" id="tab-etr" data-tab-btn="etr" aria-controls="panel-etr" aria-selected="false" tabindex="-1"
-                        class="border-transparent text-sm font-bold text-muted hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand"
+                        class="border-transparent text-sm font-bold text-muted hover:text-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-dark"
                         style="display:inline-flex;align-items:center;gap:.375rem;min-height:2.5rem;padding:.5rem .875rem;margin-bottom:-1px;border-bottom-width:2px;border-bottom-style:solid">
                         <i class="fa-solid fa-book-open-reader text-xs" aria-hidden="true"></i>ETR
-                        @if ($news->etr?->is_enabled)<span class="rounded-full bg-sky-100 px-1.5 py-0.5 text-xs text-sky-700">aktywna</span>@endif
+                        @if ($news->etr?->is_enabled)<span class="text-xs text-ink font-bold"><i class="fa-solid fa-circle-info mr-1 text-brand-dark" aria-hidden="true"></i>aktywna</span>@endif
                     </button>
                     <button type="button" role="tab" id="tab-files" data-tab-btn="files" aria-controls="panel-files" aria-selected="false" tabindex="-1"
-                        class="border-transparent text-sm font-bold text-muted hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand"
+                        class="border-transparent text-sm font-bold text-muted hover:text-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-dark"
                         style="display:inline-flex;align-items:center;gap:.375rem;min-height:2.5rem;padding:.5rem .875rem;margin-bottom:-1px;border-bottom-width:2px;border-bottom-style:solid">
                         <i class="fa-solid fa-paperclip text-xs" aria-hidden="true"></i>Pliki do pobrania
-                        @if ($news->attachments->isNotEmpty())<span class="rounded-full bg-gray-100 px-1.5 py-0.5 text-xs">{{ $news->attachments->count() }}</span>@endif
+                        @if ($news->attachments->isNotEmpty())<span class="text-xs font-bold">{{ $news->attachments->count() }}</span>@endif
                     </button>
                 @endif
             </div>
@@ -127,7 +127,7 @@
     ])
 
     @if (session('preview_url'))
-        <div class="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3">
+        <div class="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-md bg-amber-50 px-4 py-3">
             <p class="flex items-center gap-2 text-sm font-bold text-amber-800">
                 <i class="fa-solid fa-eye" aria-hidden="true"></i>
                 Aktualność utworzona na podstawie wydarzenia — sprawdź podgląd przed publikacją.
@@ -144,7 +144,7 @@
         {{-- ═══ Zakładki rekordu (jak w TYPO3): Ogólne | Zdjęcie i wygląd | Kategoryzacja | Publikacja | SEO ═══ --}}
 
         <div data-tab-panel="ogolne" role="tabpanel" id="panel-ogolne" aria-labelledby="tab-ogolne" class="space-y-5">
-            <div class="space-y-5 rounded-lg border border-gray-200 bg-white p-6">
+            <div class="space-y-5 p-6 rounded-md bg-white">
                 <h2 class="text-sm font-bold uppercase tracking-wide text-muted">Nagłówek i adres</h2>
             <div class="grid gap-5 sm:grid-cols-2">
                 <div x-data="{
@@ -163,10 +163,10 @@
                     <label for="title" class="mb-1 block text-sm font-bold">Tytuł</label>
                     <input type="text" id="title" name="title" value="{{ old('title', $news->title) }}" required
                         @input="checkDupe($el.value)"
-                        class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                        class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
                     @error('title') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     <template x-if="dupeItems.length > 0">
-                        <div class="mt-2 rounded-lg border border-amber-200 bg-amber-50 p-3" role="alert">
+                        <div class="mt-2 rounded-md bg-amber-50 p-3" role="alert">
                             <p class="mb-1 text-xs font-bold text-amber-800">
                                 <i class="fa-solid fa-triangle-exclamation mr-1" aria-hidden="true"></i>Możliwe duplikaty:
                             </p>
@@ -184,27 +184,27 @@
                     <div class="flex items-center gap-2">
                         <span class="text-sm text-muted">/aktualnosci/</span>
                         <input type="text" id="slug" name="slug" value="{{ old('slug', $news->slug) }}" placeholder="zostanie wygenerowany z tytułu"
-                            class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                            class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
                     </div>
                     @error('slug') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                 </div>
             </div>
 
             </div>
-            <div class="space-y-3 rounded-lg border border-gray-200 bg-white p-6">
+            <div class="space-y-3 p-6 rounded-md bg-white">
                 <h2 class="text-sm font-bold uppercase tracking-wide text-muted">Treść</h2>
             <div>
                 <div class="mb-1 flex flex-wrap items-center justify-between gap-2">
                     <label class="block text-sm font-bold">Treść</label>
                     @if ($news->exists)
                         <a href="{{ route('admin.edytor-blokowy.edit', ['news', $news->id]) }}"
-                            class="inline-flex items-center gap-1.5 rounded border border-brand-dark px-3 py-1.5 text-xs font-bold text-brand-dark hover:bg-brand-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                            class="inline-flex items-center gap-1.5 rounded border border-brand-dark px-3 py-1.5 text-xs font-bold text-brand-dark hover:bg-brand-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">
                             <i class="fa-solid fa-cubes" aria-hidden="true"></i> Otwórz w edytorze blokowym
                         </a>
                     @endif
                 </div>
                 @if ($news->exists && is_array($news->blocks))
-                    <p class="mb-2 rounded border border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-900" role="note">
+                    <p class="mb-2 rounded-md bg-amber-50 px-3 py-2 text-xs text-amber-900" role="note">
                         <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
                         Ta aktualność jest edytowana w edytorze blokowym. Zmiana treści tutaj zastąpi bloki zwykłym HTML-em —
                         edytor blokowy wczyta ją potem jako jeden blok „Własny HTML”.
@@ -217,7 +217,7 @@
         </div>
 
         <div data-tab-panel="obraz" role="tabpanel" id="panel-obraz" aria-labelledby="tab-obraz" class="hidden space-y-5">
-            <div class="space-y-5 rounded-lg border border-gray-200 bg-white p-6">
+            <div class="space-y-5 p-6 rounded-md bg-white">
                 <h2 class="text-sm font-bold uppercase tracking-wide text-muted">Zdjęcie</h2>
             @php $hasUnsplash = (bool) config('services.unsplash.access_key'); @endphp
             <div x-data="imagePickerModal('{{ route('admin.multimedia.unsplash.search') }}')"
@@ -240,7 +240,7 @@
                             </button>
                         </div>
                         <div x-show="deleteImage && !localPreview && !unsplashThumb && !libraryThumb" x-cloak
-                            class="flex items-center justify-between rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm">
+                            class="flex items-center justify-between rounded-md bg-red-50 px-3 py-2 text-sm">
                             <span class="text-red-700"><i class="fa-solid fa-triangle-exclamation mr-1" aria-hidden="true"></i>Zdjęcie zostanie usunięte po zapisaniu.</span>
                             <button type="button" @click="deleteImage = false" class="text-xs font-bold text-red-600 underline hover:text-red-700">Cofnij</button>
                         </div>
@@ -261,7 +261,7 @@
                     </div>
 
                     <button type="button" @click="openModal()" data-modal-trigger
-                        class="inline-flex items-center gap-2 rounded border border-gray-300 bg-white px-4 py-2 text-sm font-bold text-ink hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                        class="inline-flex items-center gap-2 rounded-md px-4 py-2 text-sm font-bold text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark bg-gray-100 hover:bg-brand-light">
                         <i class="fa-solid fa-image text-muted" aria-hidden="true"></i>
                         <span x-text="localPreview || unsplashThumb || libraryThumb || {{ $news->exists && $news->image_url ? 'true' : 'false' }} ? 'Zmień zdjęcie' : 'Wybierz zdjęcie'"></span>
                     </button>
@@ -286,7 +286,7 @@
                     <label for="image_alt" class="mb-1 block text-sm font-bold">Opis alternatywny zdjęcia</label>
                     <input type="text" id="image_alt" name="image_alt" value="{{ old('image_alt', $news->image_alt) }}"
                         placeholder="np. Uczestnicy warsztatu przy laptopach w sali szkoleniowej"
-                        class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                        class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
                     <p class="mt-1 text-xs text-muted">Opisz, co przedstawia zdjęcie — czytają to osoby korzystające z czytników ekranu.</p>
                     @error('image_alt') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                 </div>
@@ -305,14 +305,14 @@
                     <p class="mb-1 text-sm font-bold">Punkt ogniskowy</p>
                     <p class="mb-2 text-xs text-muted">Kliknij na zdjęciu, by wskazać ważny punkt — zachowany przy przycinaniu do miniatur.</p>
                     @if ($news->exists && $news->image_url)
-                        <div class="relative inline-block cursor-crosshair select-none overflow-hidden rounded-lg border border-gray-200"
+                        <div class="relative inline-block cursor-crosshair select-none overflow-hidden rounded-md bg-gray-50"
                              @click="setPoint($event)" title="Kliknij, by ustawić punkt ogniskowy">
                             <img src="{{ $news->image_url }}" alt="" draggable="false"
                                 class="pointer-events-none block h-32 max-w-xs object-cover"
                                 style="object-position: 50% 50%">
                             <div class="pointer-events-none absolute"
                                 :style="'left:' + fx + '%;top:' + fy + '%;transform:translate(-50%,-50%)'">
-                                <span class="flex h-5 w-5 items-center justify-center rounded-full border-2 border-white bg-brand/40 shadow ring-2 ring-brand"
+                                <span class="flex h-5 w-5 items-center justify-center rounded-full border-2 border-white bg-brand/40 shadow ring-2 ring-brand-dark"
                                     aria-hidden="true"></span>
                             </div>
                         </div>
@@ -334,7 +334,7 @@
                             {{-- Układ zablokowany w Ustawienia → Moduły znika z wyboru (bieżący zostaje widoczny). --}}
                             @continue($siteSettings->isOptionBlocked('news_layouts', $val) && $currentLayout !== $val)
                             <label @click="layout = '{{ $val }}'"
-                                :class="layout === '{{ $val }}' ? 'border-brand bg-brand/5 font-bold text-brand' : 'border-gray-200 hover:border-gray-400'"
+                                :class="layout === '{{ $val }}' ? 'border-brand-dark bg-brand/5 font-bold text-brand-dark' : 'border-gray-200 hover:border-gray-400'"
                                 class="flex cursor-pointer flex-col items-center gap-1 rounded-lg border-2 p-3 text-center text-xs transition">
                                 <input type="radio" name="article_layout" value="{{ $val }}"
                                     {{ $currentLayout === $val ? 'checked' : '' }}
@@ -360,7 +360,7 @@
                         <div class="flex items-center justify-between border-b border-gray-100 px-6 py-4">
                             <h2 id="img-modal-title" class="text-lg font-bold text-ink">Wybierz zdjęcie</h2>
                             <button type="button" @click="close()"
-                                class="rounded p-2 text-muted hover:bg-gray-100 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                                class="rounded p-2 text-muted hover:bg-gray-100 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">
                                 <i class="fa-solid fa-xmark" aria-hidden="true"></i>
                                 <span class="sr-only">Zamknij okno</span>
                             </button>
@@ -371,16 +371,16 @@
                             <button type="button" role="tab" id="tab-file"
                                 :aria-selected="tab === 'file'" :tabindex="tab === 'file' ? 0 : -1"
                                 @click="tab = 'file'"
-                                :class="tab === 'file' ? 'border-b-2 border-brand text-brand font-bold' : 'text-muted hover:text-ink'"
-                                class="mr-6 py-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                                :class="tab === 'file' ? 'border-b-2 border-brand-dark text-brand-dark font-bold' : 'text-muted hover:text-ink'"
+                                class="mr-6 py-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">
                                 <i class="fa-solid fa-upload mr-1" aria-hidden="true"></i> Plik z dysku
                             </button>
                             @if ($hasUnsplash)
                             <button type="button" role="tab" id="tab-unsplash"
                                 :aria-selected="tab === 'unsplash'" :tabindex="tab === 'unsplash' ? 0 : -1"
                                 @click="tab = 'unsplash'"
-                                :class="tab === 'unsplash' ? 'border-b-2 border-brand text-brand font-bold' : 'text-muted hover:text-ink'"
-                                class="py-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                                :class="tab === 'unsplash' ? 'border-b-2 border-brand-dark text-brand-dark font-bold' : 'text-muted hover:text-ink'"
+                                class="py-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">
                                 <i class="fa-solid fa-camera-retro mr-1" aria-hidden="true"></i> Unsplash
                             </button>
                             @else
@@ -392,8 +392,8 @@
                                 :aria-selected="tab === 'library'" :tabindex="tab === 'library' ? 0 : -1"
                                 aria-controls="tabpanel-library"
                                 @click="tab = 'library'; !libraryLoaded && loadLibrary()"
-                                :class="tab === 'library' ? 'border-b-2 border-brand text-brand font-bold' : 'text-muted hover:text-ink'"
-                                class="ml-4 py-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                                :class="tab === 'library' ? 'border-b-2 border-brand-dark text-brand-dark font-bold' : 'text-muted hover:text-ink'"
+                                class="ml-4 py-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">
                                 <i class="fa-solid fa-photo-film mr-1" aria-hidden="true"></i> Biblioteka
                             </button>
                         </div>
@@ -406,7 +406,7 @@
                                     <p class="mb-3 text-xs text-muted"><i class="fa-solid fa-circle-info mr-1" aria-hidden="true"></i>System automatycznie konwertuje przesłane zdjęcia do formatu WebP.</p>
                                     <button type="button"
                                         @click="$el.closest('[x-data]').querySelector('#image').click()"
-                                        class="inline-flex items-center gap-2 rounded bg-brand px-4 py-2 text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
+                                        class="inline-flex items-center gap-2 rounded bg-brand-dark px-4 py-2 text-sm font-bold text-white hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2">
                                         <i class="fa-solid fa-folder-open" aria-hidden="true"></i> Wybierz plik
                                     </button>
                                     <span x-show="fileName && !cropMode" x-cloak x-text="fileName" class="ml-3 text-sm text-muted"></span>
@@ -422,16 +422,16 @@
                                 <div x-show="cropMode" x-cloak class="space-y-3">
                                     <p class="text-sm font-medium text-ink">Zaznacz obszar do zachowania</p>
                                     <p class="text-xs text-muted">Przeciągnij ramkę lub jej narożniki, aby wybrać kadr.</p>
-                                    <div class="rounded-lg border border-gray-200 bg-gray-50" style="max-height:320px;">
+                                    <div class="rounded-md bg-gray-50" style="max-height:320px;">
                                         <img :src="cropImgSrc" data-crop-img alt="" style="display:block;max-width:100%;max-height:320px;">
                                     </div>
                                     <div class="flex gap-2 pt-1">
                                         <button type="button" @click="confirmCrop()"
-                                            class="inline-flex items-center gap-2 rounded bg-brand px-4 py-2 text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                                            class="inline-flex items-center gap-2 rounded bg-brand-dark px-4 py-2 text-sm font-bold text-white hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">
                                             <i class="fa-solid fa-crop-simple" aria-hidden="true"></i> Przytnij
                                         </button>
                                         <button type="button" @click="skipCrop()"
-                                            class="rounded border border-gray-300 px-4 py-2 text-sm font-bold text-ink hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                                            class="rounded-md px-4 py-2 text-sm font-bold text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark bg-gray-100 hover:bg-brand-light">
                                             Pomiń kadrowanie
                                         </button>
                                     </div>
@@ -439,11 +439,11 @@
 
                                 <div x-show="!cropMode" class="flex gap-3 border-t border-gray-100 pt-4">
                                     <button type="button" @click="close()" :disabled="!localPreview"
-                                        :class="localPreview ? 'bg-brand hover:bg-brand-dark cursor-pointer' : 'bg-gray-200 text-gray-400 cursor-not-allowed'"
-                                        class="rounded px-5 py-2 text-sm font-bold text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                                        :class="localPreview ? 'bg-brand-dark hover:bg-ink cursor-pointer' : 'bg-gray-200 text-gray-400 cursor-not-allowed'"
+                                        class="rounded px-5 py-2 text-sm font-bold text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">
                                         Wstaw
                                     </button>
-                                    <button type="button" @click="close()" class="text-sm text-muted hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand rounded px-2">Anuluj</button>
+                                    <button type="button" @click="close()" class="text-sm text-muted hover:text-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark rounded px-2">Anuluj</button>
                                 </div>
                             </div>
 
@@ -455,9 +455,9 @@
                                     <input type="text" id="unsplash-query" x-model="query"
                                         @keydown.enter.prevent="search()"
                                         placeholder="Szukaj zdjęć, np. edukacja, warsztaty, sport…"
-                                        class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                                        class="w-full rounded border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark">
                                     <button type="button" @click="search()" :disabled="loading"
-                                        class="flex-none rounded bg-brand px-4 py-2 text-sm font-bold text-white hover:bg-brand-dark disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                                        class="flex-none rounded bg-brand-dark px-4 py-2 text-sm font-bold text-white hover:bg-ink disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">
                                         <span x-show="!loading">Szukaj</span>
                                         <span x-show="loading" x-cloak aria-live="polite">…</span>
                                     </button>
@@ -471,12 +471,12 @@
                                     <template x-for="photo in results" :key="photo.id">
                                         <button type="button" @click="pickUnsplash(photo)" role="listitem"
                                             :aria-pressed="unsplashSelected && unsplashSelected.id === photo.id"
-                                            :class="unsplashSelected && unsplashSelected.id === photo.id ? 'border-brand ring-1 ring-brand' : 'border-transparent hover:border-gray-300'"
-                                            class="relative overflow-hidden rounded border-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                                            :class="unsplashSelected && unsplashSelected.id === photo.id ? 'border-brand-dark ring-1 ring-brand-dark' : 'border-transparent hover:border-gray-300'"
+                                            class="relative overflow-hidden rounded border-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">
                                             <img :src="photo.thumb_url" :alt="'Zdjęcie autora ' + photo.author_name" class="h-20 w-full object-cover">
                                             <span class="absolute inset-x-0 bottom-0 truncate bg-black/60 px-1 py-0.5 text-[10px] text-white" x-text="photo.author_name"></span>
                                             <span x-show="unsplashSelected && unsplashSelected.id === photo.id"
-                                                class="absolute right-1 top-1 flex h-5 w-5 items-center justify-center rounded-full bg-brand text-white" aria-hidden="true">
+                                                class="absolute right-1 top-1 flex h-5 w-5 items-center justify-center rounded-full bg-brand-dark text-white" aria-hidden="true">
                                                 <i class="fa-solid fa-check text-[10px]"></i>
                                             </span>
                                         </button>
@@ -484,7 +484,7 @@
                                 </div>
 
                                 <div x-show="unsplashSelected" x-cloak
-                                    class="flex items-center gap-3 rounded-lg border border-green-200 bg-green-50 p-3">
+                                    class="flex items-center gap-3 rounded-md bg-brand-light p-3">
                                     <img :src="unsplashSelected?.thumb_url" alt="" class="h-12 w-16 flex-none rounded object-cover">
                                     <div class="min-w-0 text-xs">
                                         <p class="font-bold text-ink">Wybrano</p>
@@ -498,11 +498,11 @@
 
                                 <div class="flex gap-3 border-t border-gray-100 pt-4">
                                     <button type="button" @click="confirmUnsplash()" :disabled="!unsplashSelected"
-                                        :class="unsplashSelected ? 'bg-brand hover:bg-brand-dark cursor-pointer' : 'bg-gray-200 text-gray-400 cursor-not-allowed'"
-                                        class="rounded px-5 py-2 text-sm font-bold text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                                        :class="unsplashSelected ? 'bg-brand-dark hover:bg-ink cursor-pointer' : 'bg-gray-200 text-gray-400 cursor-not-allowed'"
+                                        class="rounded px-5 py-2 text-sm font-bold text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">
                                         Wstaw
                                     </button>
-                                    <button type="button" @click="close()" class="text-sm text-muted hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand rounded px-2">Anuluj</button>
+                                    <button type="button" @click="close()" class="text-sm text-muted hover:text-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark rounded px-2">Anuluj</button>
                                 </div>
                             </div>
                             @endif
@@ -518,7 +518,7 @@
                                     <p class="py-6 text-center text-sm text-muted">
                                         Brak zdjęć w bibliotece multimediów.
                                         <a href="{{ route('admin.multimedia.index') }}" target="_blank" rel="noopener"
-                                            class="font-bold text-brand hover:text-brand-dark">Otwórz bibliotekę</a>
+                                            class="font-bold text-brand-dark hover:text-ink">Otwórz bibliotekę</a>
                                     </p>
                                 </template>
 
@@ -528,7 +528,7 @@
                                             <label for="lib-search" class="sr-only">Filtruj zdjęcia biblioteki</label>
                                             <input type="text" id="lib-search" x-model="librarySearch"
                                                 placeholder="Filtruj po nazwie lub opisie…"
-                                                class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                                                class="w-full rounded border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark">
                                         </div>
                                         <div class="grid max-h-72 grid-cols-3 gap-2 overflow-y-auto sm:grid-cols-4"
                                             role="list" aria-label="Zdjęcia z biblioteki multimediów">
@@ -536,12 +536,12 @@
                                                 <button type="button" @click="pickLibrary(img)" role="listitem"
                                                     :aria-pressed="librarySelected && librarySelected.id === img.id"
                                                     :aria-label="'Wybierz: ' + (img.alt || img.file_name)"
-                                                    :class="librarySelected && librarySelected.id === img.id ? 'border-brand ring-1 ring-brand' : 'border-transparent hover:border-gray-300'"
-                                                    class="relative overflow-hidden rounded border-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+                                                    :class="librarySelected && librarySelected.id === img.id ? 'border-brand-dark ring-1 ring-brand-dark' : 'border-transparent hover:border-gray-300'"
+                                                    class="relative overflow-hidden rounded border-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark"
                                                     :title="img.alt || img.file_name">
                                                     <img :src="img.url" :alt="img.alt || img.file_name" class="h-20 w-full object-cover">
                                                     <span x-show="librarySelected && librarySelected.id === img.id"
-                                                        class="absolute right-1 top-1 flex h-5 w-5 items-center justify-center rounded-full bg-brand text-white" aria-hidden="true">
+                                                        class="absolute right-1 top-1 flex h-5 w-5 items-center justify-center rounded-full bg-brand-dark text-white" aria-hidden="true">
                                                         <i class="fa-solid fa-check text-[10px]"></i>
                                                     </span>
                                                 </button>
@@ -551,7 +551,7 @@
                                 </template>
 
                                 <div x-show="librarySelected" x-cloak
-                                    class="flex items-center gap-3 rounded-lg border border-green-200 bg-green-50 p-3">
+                                    class="flex items-center gap-3 rounded-md bg-brand-light p-3">
                                     <img :src="librarySelected?.url" alt="" class="h-12 w-16 flex-none rounded object-cover">
                                     <div class="min-w-0 text-xs">
                                         <p class="font-bold text-ink">Wybrano</p>
@@ -565,11 +565,11 @@
 
                                 <div class="flex gap-3 border-t border-gray-100 pt-4">
                                     <button type="button" @click="confirmLibrary()" :disabled="!librarySelected"
-                                        :class="librarySelected ? 'bg-brand hover:bg-brand-dark cursor-pointer' : 'bg-gray-200 text-gray-400 cursor-not-allowed'"
-                                        class="rounded px-5 py-2 text-sm font-bold text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                                        :class="librarySelected ? 'bg-brand-dark hover:bg-ink cursor-pointer' : 'bg-gray-200 text-gray-400 cursor-not-allowed'"
+                                        class="rounded px-5 py-2 text-sm font-bold text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">
                                         Wstaw
                                     </button>
-                                    <button type="button" @click="close()" class="rounded px-2 text-sm text-muted hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">Anuluj</button>
+                                    <button type="button" @click="close()" class="rounded px-2 text-sm text-muted hover:text-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">Anuluj</button>
                                 </div>
                             </div>
                         </div>
@@ -577,12 +577,12 @@
                 </div>
             </div>
             </div>
-            <div class="space-y-5 rounded-lg border border-gray-200 bg-white p-6">
+            <div class="space-y-5 p-6 rounded-md bg-white">
                 <h2 class="text-sm font-bold uppercase tracking-wide text-muted">Kolorystyka strony</h2>
                     <div class="grid gap-5 sm:grid-cols-2">
                         <div>
                             <label for="audience" class="mb-1 block text-sm font-bold">Grupa docelowa (kolorystyka)</label>
-                            <select id="audience" name="audience" class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                            <select id="audience" name="audience" class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
                                 @foreach ($siteSettings->audienceOptions() as $value => $label)
                                     <option value="{{ $value }}" {{ old('audience', $news->audience ?? 'brand') === $value ? 'selected' : '' }}>{{ $label }}</option>
                                 @endforeach
@@ -596,11 +596,11 @@
                             <div class="flex flex-wrap items-center gap-3">
                                 <input type="color" id="accent_color_picker" value="{{ old('accent_color', $news->accent_color ?: '#1e6dff') }}"
                                     oninput="document.getElementById('accent_color_text').value = this.value"
-                                    class="h-10 w-16 rounded border-gray-300" aria-label="Wybierz własny kolor akcentu">
+                                    class="h-10 w-16 rounded border-gray-500" aria-label="Wybierz własny kolor akcentu">
                                 <input type="text" id="accent_color_text" name="accent_color" value="{{ old('accent_color', $news->accent_color) }}"
                                     placeholder="np. #0d7d4d — puste = jak obok"
                                     oninput="if (/^#[0-9a-fA-F]{6}$/.test(this.value)) document.getElementById('accent_color_picker').value = this.value"
-                                    class="w-48 rounded border-gray-300 font-mono text-sm focus:border-brand focus:ring-brand">
+                                    class="w-48 rounded border-gray-500 font-mono text-sm focus:border-brand-dark focus:ring-brand-dark">
                             </div>
                             <p class="mt-1 text-xs text-muted">Nadpisuje kolorystykę tej strony dowolnym kolorem (ma pierwszeństwo przed grupą docelową obok). Zbyt jasny kolor zostanie przyciemniony przy zapisie (kontrast WCAG). Puste = kolor z grupy docelowej.</p>
                             @error('accent_color') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
@@ -610,7 +610,7 @@
         </div>
 
         <div data-tab-panel="kategorie" role="tabpanel" id="panel-kategorie" aria-labelledby="tab-kategorie" class="hidden space-y-5">
-            <div class="space-y-5 rounded-lg border border-gray-200 bg-white p-6">
+            <div class="space-y-5 p-6 rounded-md bg-white">
                 <h2 class="text-sm font-bold uppercase tracking-wide text-muted">Kategoria i działanie</h2>
             @php $categoryColor = optional($newsCategories->firstWhere('id', old('news_category_id', $news->news_category_id)))->badgeColor(); @endphp
             <div class="grid gap-5 sm:grid-cols-2">
@@ -619,7 +619,7 @@
                     <div class="flex items-center gap-2">
                         <span id="category-color-preview" @class(['h-5 w-5 flex-none rounded-full ring-1 ring-gray-900/10', 'hidden' => empty($categoryColor)])
                             style="background-color: {{ $categoryColor }}" aria-hidden="true"></span>
-                        <select id="news_category_id" name="news_category_id" class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                        <select id="news_category_id" name="news_category_id" class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
                             <option value="">— brak —</option>
                             @foreach ($newsCategories as $category)
                                 <option value="{{ $category->id }}" data-color="{{ $category->badgeColor() }}" {{ (int) old('news_category_id', $news->news_category_id) === $category->id ? 'selected' : '' }}>
@@ -637,7 +637,7 @@
 
                 <div>
                     <label for="project_id" class="mb-1 block text-sm font-bold">Działanie <span class="font-normal text-muted">(opcjonalnie)</span></label>
-                    <select id="project_id" name="project_id" class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                    <select id="project_id" name="project_id" class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
                         <option value="">— brak —</option>
                         @foreach ($projects as $project)
                             <option value="{{ $project->id }}" {{ (int) old('project_id', $news->project_id) === $project->id ? 'selected' : '' }}>
@@ -651,13 +651,13 @@
 
             </div>
             </div>
-            <div class="space-y-5 rounded-lg border border-gray-200 bg-white p-6">
+            <div class="space-y-5 p-6 rounded-md bg-white">
                 <h2 class="text-sm font-bold uppercase tracking-wide text-muted">Opis i tagi</h2>
                     <div class="mb-5 grid gap-5 sm:grid-cols-2">
                         <div>
                             <label for="excerpt" class="mb-1 block text-sm font-bold">Krótki opis</label>
                             <input type="text" id="excerpt" name="excerpt" value="{{ old('excerpt', $news->excerpt) }}"
-                                class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                                class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
                             @error('excerpt') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                         </div>
 
@@ -666,7 +666,7 @@
                             <input type="text" id="tags" name="tags"
                                 value="{{ old('tags', $news->relationLoaded('tags') ? $news->tags->pluck('name')->implode(', ') : '') }}"
                                 placeholder="np. dostępność, wcag, audyt"
-                                class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                                class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
                             <p class="mt-1 text-xs text-muted">Oddziel tagi przecinkami. Nowe tagi zostaną utworzone automatycznie.</p>
                         </div>
                     </div>
@@ -675,35 +675,35 @@
         </div>
 
         <div data-tab-panel="publikacja" role="tabpanel" id="panel-publikacja" aria-labelledby="tab-publikacja" class="hidden space-y-5">
-            <div class="space-y-5 rounded-lg border border-gray-200 bg-white p-6">
+            <div class="space-y-5 p-6 rounded-md bg-white">
                 <h2 class="text-sm font-bold uppercase tracking-wide text-muted">Termin i status</h2>
                 <div class="max-w-xs">
                 <div>
                     <label for="published_at" class="mb-1 block text-sm font-bold">Opublikowano od</label>
                     <input type="datetime-local" id="published_at" name="published_at"
                         value="{{ old('published_at', optional($news->published_at ?? now())->format('Y-m-d\TH:i')) }}" required
-                        class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                        class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
                     @error('published_at') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                 </div>
                 </div>
-            <fieldset class="rounded-lg border border-gray-200 bg-gray-50/70 p-4">
+            <fieldset class="p-4 rounded-md bg-gray-50">
                 <legend class="px-1 text-sm font-bold text-ink">Status publikacji</legend>
                 <div class="flex flex-wrap gap-x-6 gap-y-3">
                     <label class="flex items-center gap-2">
                         <input type="checkbox" name="is_published" value="1" {{ old('is_published', $news->is_published ?? true) ? 'checked' : '' }}
-                            class="rounded border-gray-300 text-brand focus:ring-brand">
+                            class="rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
                         <span class="text-sm font-bold">Opublikowany</span>
                     </label>
                     <label class="flex items-center gap-2">
                         <input type="checkbox" name="is_archived" value="1" {{ old('is_archived', $news->is_archived ?? false) ? 'checked' : '' }}
-                            class="rounded border-gray-300 text-brand focus:ring-brand">
+                            class="rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
                         <span class="flex items-center gap-1 text-sm font-bold"><i class="fa-solid fa-clock-rotate-left text-muted" aria-hidden="true"></i> Treść archiwalna</span>
                     </label>
                     @if ($news->exists)
                         <label class="flex items-center gap-2">
                             <input type="hidden" name="is_clone" value="0">
                             <input type="checkbox" name="is_clone" value="1" {{ old('is_clone', $news->is_clone ?? false) ? 'checked' : '' }}
-                                class="rounded border-gray-300 text-amber-500 focus:ring-amber-400">
+                                class="rounded border-gray-500 text-amber-500 focus:ring-amber-400">
                             <span class="flex items-center gap-1 text-sm font-bold"><i class="fa-solid fa-copy text-amber-500" aria-hidden="true"></i> Kopia</span>
                         </label>
                     @endif
@@ -723,20 +723,20 @@
         @if ($news->exists)
             <div data-tab-panel="etr" role="tabpanel" id="panel-etr" aria-labelledby="tab-etr" class="hidden">
                 @php $etrModel = $news->etr; @endphp
-                <div class="mb-4 rounded-xl border border-sky-100 bg-sky-50 p-4 text-sm text-sky-800">
+                <div class="mb-4 rounded-md bg-brand-light p-4 text-sm text-ink">
                     <strong>Wersja ETR (łatwa do czytania)</strong> — uproszczony tekst dla osób z trudnościami w czytaniu.
                     Gdy włączysz ETR, na stronie artykułu pojawi się przycisk pozwalający przełączyć się na prostszą wersję.
                     <a href="{{ route('etr.about') }}" target="_blank" class="ml-1 underline hover:text-sky-900">Co to jest ETR? →</a>
                 </div>
 
                 <form method="POST" action="{{ route('admin.etr.update', ['type' => 'news', 'id' => $news->id]) }}"
-                    class="space-y-5 rounded-lg border border-gray-200 bg-white p-6">
+                    class="space-y-5 p-6 rounded-md bg-white">
                     @csrf @method('PUT')
 
                     <label class="flex items-center gap-2">
                         <input type="checkbox" name="is_enabled" value="1"
                             {{ old('is_enabled', $etrModel?->is_enabled ?? false) ? 'checked' : '' }}
-                            class="rounded border-gray-300 text-sky-600 focus:ring-sky-500">
+                            class="rounded border-gray-500 text-sky-600 focus:ring-sky-500">
                         <span class="font-bold text-ink">Włącz wersję ETR dla tego artykułu</span>
                     </label>
 
@@ -745,21 +745,21 @@
                         <input type="text" id="etr_title" name="etr_title"
                             value="{{ old('etr_title', $etrModel?->etr_title) }}"
                             placeholder="{{ $news->title }}"
-                            class="w-full rounded border-gray-300 focus:border-sky-500 focus:ring-sky-500">
+                            class="w-full rounded border-gray-500 focus:border-sky-500 focus:ring-sky-500">
                     </div>
 
                     <div>
                         <label for="etr_summary" class="mb-1 block text-sm font-bold">Wstęp <span class="font-normal text-muted">— 1–3 zdania prostym językiem</span></label>
                         <textarea id="etr_summary" name="etr_summary" rows="3"
                             placeholder="Krótkie, proste wyjaśnienie o czym jest ten artykuł."
-                            class="w-full rounded border-gray-300 focus:border-sky-500 focus:ring-sky-500">{{ old('etr_summary', $etrModel?->etr_summary) }}</textarea>
+                            class="w-full rounded border-gray-500 focus:border-sky-500 focus:ring-sky-500">{{ old('etr_summary', $etrModel?->etr_summary) }}</textarea>
                     </div>
 
                     <div>
                         <label for="etr_content" class="mb-1 block text-sm font-bold">Treść ETR <span class="font-normal text-muted">— prosty tekst, jedno zdanie w akapicie</span></label>
                         <textarea id="etr_content" name="etr_content" rows="12"
                             placeholder="Pisz prostymi słowami.&#10;&#10;Krótkie zdania.&#10;&#10;Jedna myśl — jeden akapit."
-                            class="w-full rounded border-gray-300 font-mono text-sm focus:border-sky-500 focus:ring-sky-500">{{ old('etr_content', $etrModel?->etr_content) }}</textarea>
+                            class="w-full rounded border-gray-500 font-mono text-sm focus:border-sky-500 focus:ring-sky-500">{{ old('etr_content', $etrModel?->etr_content) }}</textarea>
                         <p class="mt-1 text-xs text-muted">Puste wiersze tworzą nowe akapity. Nie używaj formatowania HTML.</p>
                     </div>
 
@@ -795,8 +795,8 @@
             function activate(btn, focus) {
                 buttons.forEach(function (b) {
                     const active = b === btn;
-                    b.classList.toggle('border-brand', active);
-                    b.classList.toggle('text-brand', active);
+                    b.classList.toggle('border-brand-dark', active);
+                    b.classList.toggle('text-brand-dark', active);
                     b.classList.toggle('border-transparent', !active);
                     b.classList.toggle('text-muted', !active);
                     b.setAttribute('aria-selected', active ? 'true' : 'false');

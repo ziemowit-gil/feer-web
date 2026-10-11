@@ -6,15 +6,15 @@
     <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
         <p class="text-sm text-muted">Adresy zapisane na powiadomienia o nowych materiałach: <span class="font-bold text-ink">{{ $total }}</span></p>
         @if ($total > 0)
-            <a href="{{ route('admin.zapisy-materialy.export') }}" class="rounded bg-brand px-4 py-2 text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
+            <a href="{{ route('admin.zapisy-materialy.export') }}" class="rounded bg-brand-dark px-4 py-2 text-sm font-bold text-white hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2">
                 <i class="fa-solid fa-file-csv"></i> Eksport CSV
             </a>
         @endif
     </div>
 
-    <div class="overflow-hidden rounded-lg border border-gray-200 bg-white">
+    <div class="overflow-hidden rounded-md bg-white">
         <table class="w-full text-left text-sm">
-            <thead class="bg-gray-50 text-xs font-bold uppercase text-muted">
+            <thead class="bg-gray-100 text-xs font-bold uppercase text-muted">
                 <tr>
                     <th class="px-4 py-3">Adres e-mail</th>
                     <th class="px-4 py-3">Data zapisu</th>

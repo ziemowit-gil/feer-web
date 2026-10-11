@@ -11,26 +11,26 @@
         <div id="bb-dialog" role="dialog" aria-modal="true" aria-labelledby="bb-title" class="w-full rounded-2xl bg-white shadow-2xl" style="max-width:56rem">
             <div class="flex items-center justify-between gap-4 border-b border-gray-200 px-6 py-4">
                 <h2 id="bb-title" class="text-lg font-bold text-ink">Blok treści</h2>
-                <button type="button" id="bb-close" class="flex h-10 w-10 flex-none items-center justify-center rounded-lg text-gray-600 hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                <button type="button" id="bb-close" class="flex h-10 w-10 flex-none items-center justify-center rounded-lg text-gray-600 hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">
                     <i class="fa-solid fa-xmark text-lg" aria-hidden="true"></i><span class="sr-only">Zamknij kreator</span>
                 </button>
             </div>
             <div class="space-y-4 px-6 py-5">
                 <div>
                     <label for="bb-name" class="mb-1 block text-sm font-bold text-ink">Nazwa bloku <span class="font-normal text-muted">(tylko dla Ciebie)</span></label>
-                    <input type="text" id="bb-name" maxlength="120" class="w-full rounded-lg border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                    <input type="text" id="bb-name" maxlength="120" class="w-full rounded-lg border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark">
                 </div>
                 <div id="bb-opts"></div>
                 <ol id="bb-rows" class="space-y-2" role="list"></ol>
-                <button type="button" id="bb-add" class="inline-flex min-h-10 items-center gap-2 rounded-lg bg-brand px-4 text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2"></button>
- <div id="bb-hints" class="hidden rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-900" role="status" aria-live="polite"></div>
-                <p id="bb-error" role="alert" class="hidden rounded border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800"></p>
+                <button type="button" id="bb-add" class="inline-flex min-h-10 items-center gap-2 rounded-lg bg-brand-dark px-4 text-sm font-bold text-white hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2"></button>
+ <div id="bb-hints" class="hidden rounded-md bg-amber-50 px-3 py-2 text-sm text-amber-900" role="status" aria-live="polite"></div>
+                <p id="bb-error" role="alert" class="hidden rounded-md bg-red-50 px-3 py-2 text-sm text-red-800"></p>
             </div>
             <div class="flex flex-wrap items-center justify-between gap-3 border-t border-gray-200 px-6 py-4">
                 <p class="text-xs text-muted">Blok wstawi się w treść; edytujesz go ponownie z menu „Wstaw”.</p>
                 <div class="flex gap-2">
-                    <button type="button" id="bb-cancel" class="rounded-lg px-4 py-2 text-sm font-bold text-muted hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">Anuluj</button>
-                    <button type="button" id="bb-save" class="rounded-lg bg-brand px-5 py-2 text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">Zapisz i wstaw</button>
+                    <button type="button" id="bb-cancel" class="rounded-lg px-4 py-2 text-sm font-bold text-muted hover:text-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">Anuluj</button>
+                    <button type="button" id="bb-save" class="rounded-lg bg-brand-dark px-5 py-2 text-sm font-bold text-white hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2">Zapisz i wstaw</button>
                 </div>
             </div>
         </div>
@@ -63,7 +63,7 @@
                 return '<span class="tb-seg" role="group">' + opts.map(function (o) { return '<button type="button" data-seg="' + field + '" data-val="' + o[0] + '" aria-pressed="' + (String(cur) === String(o[0]) ? 'true' : 'false') + '">' + o[1] + '</button>'; }).join('') + '</span>';
             }
             function check(field, label, val) {
-                return '<label style="display:flex;align-items:center;gap:.5rem;font-size:.875rem"><input type="checkbox" data-opt="' + field + '"' + (val ? ' checked' : '') + ' class="rounded border-gray-300 text-brand focus:ring-brand"> ' + label + '</label>';
+                return '<label style="display:flex;align-items:center;gap:.5rem;font-size:.875rem"><input type="checkbox" data-opt="' + field + '"' + (val ? ' checked' : '') + ' class="rounded border-gray-500 text-brand-dark focus:ring-brand-dark"> ' + label + '</label>';
             }
             function ibtn(act, icon, label, disabled) { return '<button type="button" class="tb-ibtn" data-act="' + act + '" aria-label="' + label + '"' + (disabled ? ' disabled' : '') + '><i class="fa-solid ' + icon + '" aria-hidden="true"></i></button>'; }
 
@@ -107,7 +107,7 @@
                         + '<div style="display:flex;flex-wrap:wrap;gap:1rem;align-items:flex-end">'
                         + '<div><span class="tb-label">Kolor</span><span style="display:flex;gap:.5rem">' + sw + '</span></div>'
                         + '<div><span class="tb-label">Wygląd</span>' + seg('filled', [[0, 'Obwódka'], [1, 'Wypełniony']], t.filled ? 1 : 0) + '</div>'
-                        + '<label style="display:flex;align-items:center;gap:.5rem;font-size:.875rem"><input type="checkbox" data-f="new_tab"' + (t.new_tab ? ' checked' : '') + ' class="rounded border-gray-300 text-brand focus:ring-brand"> Nowa karta</label></div></li>';
+                        + '<label style="display:flex;align-items:center;gap:.5rem;font-size:.875rem"><input type="checkbox" data-f="new_tab"' + (t.new_tab ? ' checked' : '') + ' class="rounded border-gray-500 text-brand-dark focus:ring-brand-dark"> Nowa karta</label></div></li>';
                 }
                 if (state.type === 'pricing') {
                     return '<li class="tb-card" data-i="' + i + '" style="padding:.75rem;display:grid;gap:.5rem">'

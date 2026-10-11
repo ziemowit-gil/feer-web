@@ -9,29 +9,29 @@
             z tego samego szablonu. Przełącz się na wybraną witrynę w pasku bocznym, żeby edytować jej ustawienia
             i treść w dotychczasowych ekranach panelu.
         </p>
-        <a href="{{ route('admin.witryny.create') }}" class="shrink-0 rounded bg-brand px-4 py-2 text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
+        <a href="{{ route('admin.witryny.create') }}" class="shrink-0 rounded bg-brand-dark px-4 py-2 text-sm font-bold text-white hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2">
             <i class="fa-solid fa-plus" aria-hidden="true"></i> Nowa sub-witryna
         </a>
     </div>
 
     <div class="space-y-3">
         @foreach ($sites->whereNull('parent_site_id') as $site)
-            <div class="overflow-hidden rounded-lg border border-gray-200 bg-white">
+            <div class="overflow-hidden rounded-md bg-white">
                 <div class="flex items-center gap-3 px-4 py-3">
                     @if ($site->logoUrl())
                         <img src="{{ $site->logoUrl() }}" alt="" class="h-9 w-9 flex-none rounded object-contain">
                     @else
-                        <span class="flex h-9 w-9 flex-none items-center justify-center rounded bg-brand text-sm font-bold text-white">{{ mb_substr($site->site_name, 0, 1) }}</span>
+                        <span class="flex h-9 w-9 flex-none items-center justify-center rounded bg-brand-dark text-sm font-bold text-white">{{ mb_substr($site->site_name, 0, 1) }}</span>
                     @endif
                     <div class="min-w-0 flex-1">
                         <p class="truncate font-bold text-ink">{{ $site->site_name }}
-                            <span class="ml-1 rounded bg-gray-100 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-muted">Główna witryna</span>
+                            <span class="ml-1 text-[10px] font-bold uppercase tracking-wide text-muted">Główna witryna</span>
                         </p>
                         <p class="truncate text-xs text-muted">{{ $site->domain ?: url('/') }}</p>
                     </div>
                     <form method="POST" action="{{ route('admin.witryny.przelacz', $site) }}">
                         @csrf
-                        <button type="submit" class="rounded border border-gray-300 px-3 py-1.5 text-xs font-bold text-muted hover:border-brand hover:text-brand">Przełącz się</button>
+                        <button type="submit" class="rounded-md px-3 py-1.5 text-xs font-bold text-muted hover:text-brand-dark bg-gray-100 hover:bg-brand-light">Przełącz się</button>
                     </form>
                 </div>
 
@@ -58,9 +58,9 @@
                                 <div class="flex shrink-0 items-center gap-2">
                                     <form method="POST" action="{{ route('admin.witryny.przelacz', $sub) }}">
                                         @csrf
-                                        <button type="submit" class="rounded border border-gray-300 px-3 py-1.5 text-xs font-bold text-muted hover:border-brand hover:text-brand">Przełącz się</button>
+                                        <button type="submit" class="rounded-md px-3 py-1.5 text-xs font-bold text-muted hover:text-brand-dark bg-white hover:bg-brand-light">Przełącz się</button>
                                     </form>
-                                    <a href="{{ route('admin.witryny.edit', $sub) }}" class="text-muted hover:text-brand" title="Edytuj"><i class="fa-solid fa-pen" aria-hidden="true"></i></a>
+                                    <a href="{{ route('admin.witryny.edit', $sub) }}" class="text-muted hover:text-brand-dark" title="Edytuj"><i class="fa-solid fa-pen" aria-hidden="true"></i></a>
                                     <form method="POST" action="{{ route('admin.witryny.destroy', $sub) }}" onsubmit="return confirm('Usunąć witrynę „{{ $sub->site_name }}”?');">
                                         @csrf
                                         @method('DELETE')

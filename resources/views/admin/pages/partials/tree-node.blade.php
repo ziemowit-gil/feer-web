@@ -22,7 +22,7 @@
                     <button type="button" @click="open = ! open" :aria-expanded="open.toString()" aria-expanded="{{ $isOpen ? 'true' : 'false' }}"
                         aria-controls="tree-branch-{{ $node->id }}"
                         :aria-label="(open ? 'Zwiń' : 'Rozwiń') + ': {{ addslashes($node->title) }}'" aria-label="{{ $isOpen ? 'Zwiń' : 'Rozwiń' }}: {{ $node->title }}"
-                        class="flex min-h-9 w-7 flex-none items-center justify-center rounded text-[11px] text-muted hover:bg-gray-100 hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                        class="flex min-h-9 w-7 flex-none items-center justify-center rounded text-[11px] text-muted hover:bg-gray-100 hover:text-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">
                         <i class="fa-solid fa-chevron-right transition-transform" :class="open ? 'rotate-90' : ''" aria-hidden="true"></i>
                     </button>
                 @else
@@ -30,8 +30,8 @@
                 @endif
 
                 <a href="{{ route('admin.podstrony.index', ['wybrana' => $node->id]) }}" @if ($isSel) aria-current="true" @endif
-                    class="flex min-h-9 min-w-0 flex-1 items-center gap-2 rounded px-2 py-1.5 text-sm transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand
-                        {{ $isSel ? 'bg-brand text-white font-bold' : 'text-ink hover:bg-gray-100' }}">
+                    class="flex min-h-9 min-w-0 flex-1 items-center gap-2 rounded px-2 py-1.5 text-sm transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark
+                        {{ $isSel ? 'bg-brand-dark text-white font-bold' : 'text-ink hover:bg-gray-100' }}">
                     <i class="fa-solid {{ $icon }} w-4 flex-none text-center text-xs {{ $isSel ? 'text-white' : 'text-gray-400' }}" aria-hidden="true"></i>
                     <span class="min-w-0 flex-1 truncate {{ $node->is_published && ! $node->is_disabled && ! isset($inheritedDisabled[$node->id]) ? '' : 'opacity-70' }}">{{ $node->title }}</span>
                     @if ($node->is_system)<i class="fa-solid fa-lock text-[10px] opacity-60" aria-hidden="true"></i><span class="sr-only">(systemowa)</span>@endif

@@ -16,11 +16,11 @@
     {{-- Przycisk wyzwalający modal --}}
     <button type="button"
         @click="trigger = $event.currentTarget; open('load')"
-        class="inline-flex items-center gap-2 rounded border border-gray-300 bg-white px-3 py-1.5 text-sm font-bold text-gray-700 hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
-        <i class="fa-solid fa-layer-group text-brand" aria-hidden="true"></i>
+        class="inline-flex items-center gap-2 rounded-md px-3 py-1.5 text-sm font-bold text-gray-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2 bg-white hover:bg-brand-light">
+        <i class="fa-solid fa-layer-group text-brand-dark" aria-hidden="true"></i>
         Dodaj z szablonu / Zarządzaj szablonami
         <template x-if="templates.length > 0">
-            <span class="rounded-full bg-brand/10 px-1.5 py-0.5 text-xs text-brand" x-text="templates.length" aria-hidden="true"></span>
+            <span class="rounded-full bg-brand/10 px-1.5 py-0.5 text-xs text-brand-dark" x-text="templates.length" aria-hidden="true"></span>
         </template>
     </button>
 
@@ -49,11 +49,11 @@
             {{-- Nagłówek --}}
             <div class="flex items-center justify-between border-b border-gray-100 px-5 py-4">
                 <h2 id="tmpl-modal-title" class="text-base font-bold">
-                    <i class="fa-solid fa-layer-group mr-1.5 text-brand" aria-hidden="true"></i>
+                    <i class="fa-solid fa-layer-group mr-1.5 text-brand-dark" aria-hidden="true"></i>
                     Szablony treści
                 </h2>
                 <button type="button" @click="close()"
-                    class="rounded p-1.5 text-muted hover:bg-gray-100 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                    class="rounded p-1.5 text-muted hover:bg-gray-100 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">
                     <i class="fa-solid fa-xmark" aria-hidden="true"></i>
                     <span class="sr-only">Zamknij okno</span>
                 </button>
@@ -67,9 +67,9 @@
                     aria-controls="tmpl-panel-load"
                     @click="activeTab = 'load'"
                     :class="activeTab === 'load'
-                        ? '-mb-px border-b-2 border-brand text-brand'
+                        ? '-mb-px border-b-2 border-brand-dark text-brand-dark'
                         : 'text-muted hover:text-ink'"
-                    class="px-5 py-3 text-sm font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand">
+                    class="px-5 py-3 text-sm font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-dark">
                     <i class="fa-solid fa-file-import mr-1" aria-hidden="true"></i> Dodaj z szablonu
                 </button>
                 <button type="button" role="tab" id="tmpl-tab-manage"
@@ -78,9 +78,9 @@
                     aria-controls="tmpl-panel-manage"
                     @click="activeTab = 'manage'"
                     :class="activeTab === 'manage'
-                        ? '-mb-px border-b-2 border-brand text-brand'
+                        ? '-mb-px border-b-2 border-brand-dark text-brand-dark'
                         : 'text-muted hover:text-ink'"
-                    class="px-5 py-3 text-sm font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand">
+                    class="px-5 py-3 text-sm font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-dark">
                     <i class="fa-solid fa-list-check mr-1" aria-hidden="true"></i> Zarządzaj szablonami
                 </button>
             </div>
@@ -102,14 +102,14 @@
                 </template>
 
                 <template x-if="templates.length > 0">
-                    <ul class="divide-y divide-gray-100 overflow-hidden rounded-lg border border-gray-200">
+                    <ul class="divide-y divide-gray-100 overflow-hidden rounded-md bg-gray-50">
                         <template x-for="t in templates" :key="t.id">
                             <li class="flex items-center justify-between gap-3 px-4 py-3 hover:bg-gray-50">
                                 <span class="flex-1 text-sm font-medium text-ink" x-text="t.name"></span>
                                 <button type="button"
                                     @click="apply(t.id)"
                                     :aria-label="'Załaduj szablon: ' + t.name"
-                                    class="rounded bg-brand px-3 py-1 text-xs font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-1">
+                                    class="rounded bg-brand-dark px-3 py-1 text-xs font-bold text-white hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-1">
                                     Załaduj
                                 </button>
                             </li>
@@ -119,7 +119,7 @@
 
                 <div class="mt-5 flex justify-end">
                     <button type="button" @click="close()"
-                        class="rounded px-3 py-1.5 text-sm text-muted hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                        class="rounded px-3 py-1.5 text-sm text-muted hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">
                         Anuluj
                     </button>
                 </div>
@@ -130,7 +130,7 @@
                 x-show="activeTab === 'manage'" class="space-y-5 p-5">
 
                 {{-- Zapisz bieżącą treść jako szablon --}}
-                <div class="rounded-lg border border-blue-100 bg-blue-50 p-4">
+                <div class="rounded-md bg-brand-light p-4">
                     <p class="mb-2 text-sm font-bold text-blue-900">
                         <i class="fa-solid fa-floppy-disk mr-1" aria-hidden="true"></i>
                         Zapisz bieżącą treść jako szablon
@@ -140,12 +140,12 @@
                         <input type="text" id="tmpl-save-name" x-model="saveName"
                             placeholder="np. Szkolenie FEER — standardowy"
                             @keydown.enter.prevent="saveTemplate()"
-                            class="flex-1 rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                            class="flex-1 rounded border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark">
                         <button type="button" @click="saveTemplate()"
                             :disabled="!saveName.trim()"
-                            class="rounded bg-brand px-3 py-1.5 text-sm font-bold text-white hover:bg-brand-dark
+                            class="rounded bg-brand-dark px-3 py-1.5 text-sm font-bold text-white hover:bg-ink
                                    disabled:cursor-not-allowed disabled:opacity-40
-                                   focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                                   focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">
                             Zapisz
                         </button>
                     </div>
@@ -171,7 +171,7 @@
                     </template>
 
                     <template x-if="templates.length > 0">
-                        <ul class="divide-y divide-gray-100 overflow-hidden rounded-lg border border-gray-200">
+                        <ul class="divide-y divide-gray-100 overflow-hidden rounded-md bg-gray-50">
                             <template x-for="t in templates" :key="t.id">
                                 <li class="flex items-center justify-between gap-3 px-4 py-3">
                                     <span class="flex-1 text-sm text-ink" x-text="t.name"></span>
@@ -191,7 +191,7 @@
 
                 <div class="flex justify-end border-t border-gray-100 pt-4">
                     <button type="button" @click="close()"
-                        class="rounded px-3 py-1.5 text-sm text-muted hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                        class="rounded px-3 py-1.5 text-sm text-muted hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">
                         Zamknij
                     </button>
                 </div>
@@ -338,7 +338,7 @@ function templateModal(type, fields) {
         },
 
         async deleteTemplate(t) {
-            if (!confirm('Usunąć szablon „' + t.name + '"?')) return;
+            if (!confirm('Usunąć szablon „' + t.name + '”?')) return;
             try {
                 const r = await fetch('{{ url('admin/szablony') }}/' + t.id, {
                     method: 'DELETE',

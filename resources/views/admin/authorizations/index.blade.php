@@ -10,12 +10,12 @@
             <div class="min-w-[14rem] flex-1">
                 <label for="f-q" class="mb-1 block text-xs font-semibold text-muted">Szukaj</label>
                 <input id="f-q" type="search" name="q" value="{{ $q }}" placeholder="Nazwisko, numer lub zakres…"
-                       class="w-full rounded-lg border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                       class="w-full rounded-lg border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark">
             </div>
             <div>
                 <label for="f-typ" class="mb-1 block text-xs font-semibold text-muted">Rodzaj</label>
                 <select id="f-typ" name="typ" @change="$el.form.requestSubmit()"
-                        class="rounded-lg border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                        class="rounded-lg border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark">
                     <option value="">Wszystkie</option>
                     @foreach ($types as $key => $label)
                         <option value="{{ $key }}" @selected($type === $key)>{{ $label }}</option>
@@ -23,31 +23,31 @@
                 </select>
             </div>
             <button type="submit"
-                    class="rounded-lg border border-gray-300 px-4 py-2 text-sm font-semibold text-muted hover:border-brand hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                    class="rounded-md px-4 py-2 text-sm font-semibold text-muted hover:text-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark bg-white hover:bg-brand-light">
                 <i class="fa-solid fa-magnifying-glass mr-1" aria-hidden="true"></i> Szukaj
             </button>
             @if ($q !== '' || $type !== '')
                 <a href="{{ route('admin.pelnomocnictwa.index') }}"
-                   class="rounded-lg px-3 py-2 text-sm font-semibold text-muted hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">Wyczyść</a>
+                   class="rounded-lg px-3 py-2 text-sm font-semibold text-muted hover:text-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">Wyczyść</a>
             @endif
         </form>
 
         <div class="flex items-center gap-2">
             <a href="{{ route('authorizations.index') }}" target="_blank" rel="noopener"
-               class="inline-flex items-center gap-2 rounded-lg border border-gray-300 px-3 py-2 text-sm font-semibold text-muted hover:border-brand hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+               class="inline-flex items-center gap-2 rounded-md px-3 py-2 text-sm font-semibold text-muted hover:text-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark bg-white hover:bg-brand-light">
                 <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i> Strona publiczna
             </a>
             <a href="{{ route('admin.pelnomocnictwa.create') }}"
-               class="inline-flex items-center gap-2 rounded-lg bg-brand px-4 py-2 text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
+               class="inline-flex items-center gap-2 rounded-lg bg-brand-dark px-4 py-2 text-sm font-bold text-white hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2">
                 <i class="fa-solid fa-plus" aria-hidden="true"></i> Dodaj wpis
             </a>
         </div>
     </div>
 
-    <div class="overflow-x-auto rounded-xl border border-gray-200 bg-white">
+    <div class="overflow-x-auto rounded-md bg-white">
         <table class="min-w-full divide-y divide-gray-200 text-sm">
             <caption class="sr-only">Rejestr pełnomocnictw i upoważnień — widok administracyjny</caption>
-            <thead class="bg-gray-50">
+            <thead class="bg-gray-100">
                 <tr>
                     <th scope="col" class="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider text-muted">Nr dokumentu</th>
                     <th scope="col" class="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider text-muted">Rodzaj</th>
@@ -73,14 +73,14 @@
                             {{ $item->valid_from->format('d.m.Y') }} – {{ $item->valid_to?->format('d.m.Y') ?? 'bezterminowo' }}
                         </td>
                         <td class="whitespace-nowrap px-4 py-3">
-                            <span class="rounded-full px-2.5 py-1 text-xs font-bold
-                                {{ ['active' => 'bg-green-100 text-green-800', 'upcoming' => 'bg-sky-100 text-sky-800', 'expired' => 'bg-gray-200 text-gray-700', 'revoked' => 'bg-red-100 text-red-800'][$status] }}">
+                            <span class="text-xs font-bold
+ {{ ['active' => ' text-ink', 'upcoming' => ' text-ink', 'expired' => ' text-muted', 'revoked' => ' text-ink'][$status] }}">
                                 {{ $status === 'upcoming' ? 'Od ' . $item->valid_from->format('d.m.Y') : \App\Models\Authorization::STATUSES[$status] }}
                             </span>
                         </td>
                         <td class="whitespace-nowrap px-4 py-3 text-right">
                             <form method="POST" action="{{ route('admin.pelnomocnictwa.aktywnosc', $item) }}" class="inline"
-                                  @if ($item->is_active) data-confirm="Unieważnić dokument „{{ $item->document_number }}"? Wpis pozostanie w rejestrze ze statusem „Unieważnione"." @endif>
+                                  @if ($item->is_active) data-confirm="Unieważnić dokument „{{ $item->document_number }}”? Wpis pozostanie w rejestrze ze statusem „Unieważnione”." @endif>
                                 @csrf
                                 @method('PATCH')
                                 <button type="submit"
@@ -91,12 +91,12 @@
                                 </button>
                             </form>
                             <a href="{{ route('admin.pelnomocnictwa.edit', $item) }}"
-                               class="inline-block rounded-lg p-2 text-muted hover:bg-brand-light hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+                               class="inline-block rounded-lg p-2 text-muted hover:bg-brand-light hover:text-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark"
                                aria-label="Edytuj wpis {{ $item->document_number }}">
                                 <i class="fa-solid fa-pen" aria-hidden="true"></i>
                             </a>
                             <form method="POST" action="{{ route('admin.pelnomocnictwa.destroy', $item) }}" class="inline"
-                                  data-confirm="Usunąć wpis „{{ $item->document_number }}" z rejestru? Tej operacji nie można cofnąć — do unieważnienia służy osobny przycisk.">
+                                  data-confirm="Usunąć wpis „{{ $item->document_number }}” z rejestru? Tej operacji nie można cofnąć — do unieważnienia służy osobny przycisk.">
                                 @csrf
                                 @method('DELETE')
                                 <button type="submit"

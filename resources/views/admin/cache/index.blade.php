@@ -24,7 +24,7 @@
             <p class="text-sm text-muted">Konfiguracja, status i czyszczenie cache aplikacji.</p>
         </div>
         <div class="flex items-center gap-2">
-            <span class="inline-flex items-center gap-1.5 rounded-full border {{ $dc['border'] }} {{ $dc['bg'] }} px-3 py-1 text-xs font-bold {{ $dc['color'] }}">
+            <span class="inline-flex items-center gap-1.5 text-sm font-bold text-ink">
                 <i class="fa-solid fa-server" aria-hidden="true"></i>
                 Sterownik: {{ $dc['label'] }}
             </span>
@@ -41,13 +41,13 @@
     </div>
 
     @if (session('status'))
-        <div role="alert" class="mb-4 rounded-lg border border-green-200 bg-green-50 p-3 text-sm text-green-800">
+        <div role="alert" class="mb-4 rounded-md bg-brand-light p-3 text-sm text-ink">
             <i class="fa-solid fa-circle-check mr-1.5" aria-hidden="true"></i>{{ session('status') }}
         </div>
     @endif
 
     @if ($errors->any())
-        <div role="alert" class="mb-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800">
+        <div role="alert" class="mb-4 rounded-md bg-red-50 p-3 text-sm text-red-800">
             <i class="fa-solid fa-circle-xmark mr-1.5" aria-hidden="true"></i>
             @foreach ($errors->all() as $error) {{ $error }} @endforeach
         </div>
@@ -72,11 +72,11 @@
                         ->values();
                 @endphp
 
-                <div class="rounded-xl border border-gray-200 bg-white">
+                <div class="rounded-md bg-white">
                     {{-- Nagłówek grupy --}}
                     <div class="flex flex-wrap items-center justify-between gap-3 border-b border-gray-100 px-5 py-4">
                         <div class="flex items-center gap-3">
-                            <span class="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-light text-brand">
+                            <span class="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-light text-brand-dark">
                                 <i class="fa-solid {{ $group['icon'] }}" aria-hidden="true"></i>
                             </span>
                             <div>
@@ -95,7 +95,7 @@
                                 <input type="hidden"   name="{{ $id }}_enabled" value="0">
                                 <input type="checkbox" name="{{ $id }}_enabled" value="1"
                                     @checked($group['enabled'])
-                                    class="rounded border-gray-300 text-brand focus:ring-brand">
+                                    class="rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
                                 Cache aktywny
                             </label>
 
@@ -103,7 +103,7 @@
                             <form method="POST" action="{{ route('admin.cache.flush', $id) }}">
                                 @csrf
                                 <button type="submit"
-                                    class="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-bold text-muted transition hover:border-red-200 hover:bg-red-50 hover:text-red-700 focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-offset-1">
+                                    class="inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-bold text-muted transition focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-offset-1 bg-gray-100 hover:bg-brand-light">
                                     <i class="fa-solid fa-rotate-right" aria-hidden="true"></i>
                                     Wyczyść
                                 </button>
@@ -119,9 +119,9 @@
                                     <div class="flex flex-wrap items-center justify-between gap-2">
                                         <div class="flex items-center gap-2 text-sm">
                                             <span @class([
-                                                'flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-bold',
-                                                'bg-green-100 text-green-700' => $namedKey['cached'],
-                                                'bg-gray-100 text-gray-500'   => !$namedKey['cached'],
+                                                'flex h-5 w-5 items-center justify-center text-xs font-bold',
+                                                'text-brand-dark' => $namedKey['cached'],
+                                                'text-muted'   => !$namedKey['cached'],
                                             ])>
                                                 <i class="fa-solid {{ $namedKey['cached'] ? 'fa-check' : 'fa-minus' }}" aria-hidden="true"></i>
                                             </span>
@@ -129,9 +129,9 @@
                                             <code class="rounded bg-gray-100 px-1.5 py-0.5 text-[11px] text-muted">{{ $namedKey['key'] }}</code>
                                         </div>
                                         <span @class([
-                                            'rounded-full px-2 py-0.5 text-[11px] font-bold',
-                                            'bg-green-100 text-green-700' => $namedKey['cached'],
-                                            'bg-gray-100 text-gray-500'   => !$namedKey['cached'],
+                                            'text-xs font-bold',
+                                            'text-ink' => $namedKey['cached'],
+                                            'text-muted'   => !$namedKey['cached'],
                                         ])>
                                             {{ $namedKey['cached'] ? 'W cache' : 'Brak' }}
                                         </span>
@@ -160,7 +160,7 @@
                                         min="60" max="{{ $ttlMax }}" step="60"
                                         value="{{ $ttlCurrent }}"
                                         @input="document.getElementById('{{ $ttlFieldName }}_display').textContent = formatTtl($event.target.value)"
-                                        class="w-full accent-brand">
+                                        class="w-full accent-brand-dark">
                                     <div class="mt-0.5 flex justify-between text-[10px] text-muted">
                                         <span>1 min</span>
                                         <span id="{{ $ttlFieldName }}_display">{{ \App\Http\Controllers\Admin\CacheController::formatTtlStatic($ttlCurrent) }}</span>
@@ -186,7 +186,7 @@
                                     min="60" max="86400" step="60"
                                     value="{{ $itemTtlValue }}"
                                     @input="document.getElementById('{{ $itemTtlKey }}_display').textContent = formatTtl($event.target.value)"
-                                    class="w-full accent-brand">
+                                    class="w-full accent-brand-dark">
                                 <div class="mt-0.5 flex justify-between text-[10px] text-muted">
                                     <span>1 min</span>
                                     <span id="{{ $itemTtlKey }}_display">{{ \App\Http\Controllers\Admin\CacheController::formatTtlStatic($itemTtlValue) }}</span>
@@ -208,7 +208,7 @@
         {{-- Zapisz --}}
         <div class="mt-6 flex justify-end">
             <button type="submit"
-                class="inline-flex items-center gap-2 rounded-lg bg-brand px-5 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-brand-dark focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2">
+                class="inline-flex items-center gap-2 rounded-lg bg-brand-dark px-5 py-2.5 text-sm font-bold text-white transition hover:bg-ink focus:outline-none focus:ring-2 focus:ring-brand-dark focus:ring-offset-2">
                 <i class="fa-solid fa-floppy-disk" aria-hidden="true"></i>
                 Zapisz konfigurację
             </button>

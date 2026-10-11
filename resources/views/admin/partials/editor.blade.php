@@ -98,12 +98,12 @@
 @include('admin.partials.tiles-builder')
 @include('admin.partials.content-block-builder')
 
-@php $mi = 'flex w-full items-center gap-2 rounded px-3 py-2 text-left text-xs font-bold text-ink hover:bg-brand-light hover:text-brand'; @endphp
+@php $mi = 'flex w-full items-center gap-2 rounded px-3 py-2 text-left text-xs font-bold text-ink hover:bg-brand-light hover:text-brand-dark'; @endphp
 <div id="{{ $editorId }}-toolbar" class="mb-2 flex-wrap items-center gap-2 {{ $useCkEditor ? 'flex' : 'hidden' }}">
     {{-- Menu „Wstaw" — bloki, multimedia, układ --}}
     <div class="relative" x-data="{ open: false }" @click.outside="open = false" @keydown.escape="open = false">
         <button type="button" @click="open = !open" :aria-expanded="open"
-            class="inline-flex items-center gap-2 rounded border border-gray-300 px-3 py-1.5 text-xs font-bold text-ink hover:border-brand hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+            class="inline-flex items-center gap-2 rounded-md px-3 py-1.5 text-xs font-bold text-ink hover:text-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark bg-white hover:bg-brand-light">
             <i class="fa-solid fa-plus" aria-hidden="true"></i> Wstaw <i class="fa-solid fa-chevron-down text-[0.6rem]" aria-hidden="true"></i>
         </button>
         <div x-show="open" x-cloak class="absolute left-0 z-20 mt-1 w-60 rounded-lg border border-gray-200 bg-white p-1 shadow-lg" role="menu">
@@ -112,7 +112,7 @@
             <button type="button" id="{{ $editorId }}-gallery" @click="open = false" class="{{ $mi }}"><i class="fa-solid fa-border-all w-4 text-center" aria-hidden="true"></i> Galeria zdjęć</button>
             <hr class="my-1 border-gray-100" role="separator">
             {{-- Przyciski --}}
-            <button type="button" id="{{ $editorId }}-cta" @click="open = false" class="{{ $mi }}"><i class="fa-solid fa-square w-4 text-center text-brand" aria-hidden="true"></i> Przycisk CTA</button>
+            <button type="button" id="{{ $editorId }}-cta" @click="open = false" class="{{ $mi }}"><i class="fa-solid fa-square w-4 text-center text-brand-dark" aria-hidden="true"></i> Przycisk CTA</button>
             <button type="button" data-insert-key="red" @click="open = false" class="{{ $mi }}"><i class="fa-solid fa-square w-4 text-center" style="color:#c81e1e" aria-hidden="true"></i> Przycisk czerwony</button>
             <button type="button" data-insert-key="green" @click="open = false" class="{{ $mi }}"><i class="fa-solid fa-square w-4 text-center" style="color:#15803d" aria-hidden="true"></i> Przycisk zielony</button>
             <hr class="my-1 border-gray-100" role="separator">
@@ -134,7 +134,7 @@
             @if ($eventBoxOptions->isNotEmpty())
                 <hr class="my-1 border-gray-100" role="separator">
                 <label for="{{ $editorId }}-event-box" class="block px-3 pb-1 pt-0.5 text-[0.65rem] font-bold uppercase tracking-wide text-muted">Ramka z wydarzeniem</label>
-                <select id="{{ $editorId }}-event-box" @change="open = false" class="w-full rounded border-gray-300 px-2 py-1.5 text-xs font-bold text-ink focus:border-brand focus:ring-brand">
+                <select id="{{ $editorId }}-event-box" @change="open = false" class="w-full rounded border-gray-500 px-2 py-1.5 text-xs font-bold text-ink focus:border-brand-dark focus:ring-brand-dark">
                     <option value="">— wybierz wydarzenie —</option>
                     @foreach ($eventBoxOptions as $ev)
                         <option value="{{ $ev['slug'] }}">{{ $ev['title'] }}</option>
@@ -144,7 +144,7 @@
             @if ($activeForms->isNotEmpty())
                 <hr class="my-1 border-gray-100" role="separator">
                 <label for="{{ $editorId }}-form-pick" class="block px-3 pb-1 pt-0.5 text-[0.65rem] font-bold uppercase tracking-wide text-muted">Wstaw formularz</label>
-                <select id="{{ $editorId }}-form-pick" @change="open = false" class="w-full rounded border-gray-300 px-2 py-1.5 text-xs font-bold text-ink focus:border-brand focus:ring-brand">
+                <select id="{{ $editorId }}-form-pick" @change="open = false" class="w-full rounded border-gray-500 px-2 py-1.5 text-xs font-bold text-ink focus:border-brand-dark focus:ring-brand-dark">
                     <option value="">— wybierz formularz —</option>
                     @foreach ($activeForms as $af)
                         <option value="{{ $af->slug }}">{{ $af->title }}</option>
@@ -159,12 +159,12 @@
             <button type="button" id="{{ $editorId }}-block-new-pricing" @click="open = false" class="{{ $mi }}"><i class="fa-solid fa-coins w-4 text-center" aria-hidden="true"></i> Nowy cennik…</button>
             <div id="{{ $editorId }}-block-wrap" class="{{ $contentBlocks->isEmpty() ? 'hidden' : '' }}">
                 <label for="{{ $editorId }}-block-pick" class="block px-3 pb-1 pt-1 text-[0.65rem] font-bold uppercase tracking-wide text-muted">Wstaw blok</label>
-                <select id="{{ $editorId }}-block-pick" @change="open = false" class="w-full rounded border-gray-300 px-2 py-1.5 text-xs font-bold text-ink focus:border-brand focus:ring-brand">
+                <select id="{{ $editorId }}-block-pick" @change="open = false" class="w-full rounded border-gray-500 px-2 py-1.5 text-xs font-bold text-ink focus:border-brand-dark focus:ring-brand-dark">
                     <option value="">— wybierz blok —</option>
                     @foreach ($contentBlocks as $cb)<option value="{{ $cb->id }}" data-type="{{ $cb->type }}">{{ $blockTypeLabels[$cb->type] ?? $cb->type }}: {{ $cb->name }}</option>@endforeach
                 </select>
                 <label for="{{ $editorId }}-block-edit" class="block px-3 pb-1 pt-2 text-[0.65rem] font-bold uppercase tracking-wide text-muted">Edytuj blok</label>
-                <select id="{{ $editorId }}-block-edit" @change="open = false" class="w-full rounded border-gray-300 px-2 py-1.5 text-xs font-bold text-ink focus:border-brand focus:ring-brand">
+                <select id="{{ $editorId }}-block-edit" @change="open = false" class="w-full rounded border-gray-500 px-2 py-1.5 text-xs font-bold text-ink focus:border-brand-dark focus:ring-brand-dark">
                     <option value="">— wybierz blok —</option>
                     @foreach ($contentBlocks as $cb)<option value="{{ $cb->id }}" data-type="{{ $cb->type }}">{{ $blockTypeLabels[$cb->type] ?? $cb->type }}: {{ $cb->name }}</option>@endforeach
                 </select>
@@ -174,12 +174,12 @@
             <button type="button" id="{{ $editorId }}-tileset-new" @click="open = false" class="{{ $mi }}"><i class="fa-solid fa-table-cells w-4 text-center" aria-hidden="true"></i> Nowy zestaw kafelków…</button>
             <div id="{{ $editorId }}-tileset-wrap" class="{{ $tileSets->isEmpty() ? 'hidden' : '' }}">
                 <label for="{{ $editorId }}-tileset-pick" class="block px-3 pb-1 pt-1 text-[0.65rem] font-bold uppercase tracking-wide text-muted">Wstaw zestaw kafelków</label>
-                <select id="{{ $editorId }}-tileset-pick" @change="open = false" class="w-full rounded border-gray-300 px-2 py-1.5 text-xs font-bold text-ink focus:border-brand focus:ring-brand">
+                <select id="{{ $editorId }}-tileset-pick" @change="open = false" class="w-full rounded border-gray-500 px-2 py-1.5 text-xs font-bold text-ink focus:border-brand-dark focus:ring-brand-dark">
                     <option value="">— wybierz zestaw —</option>
                     @foreach ($tileSets as $ts)<option value="{{ $ts->id }}">{{ $ts->name }}</option>@endforeach
                 </select>
                 <label for="{{ $editorId }}-tileset-edit" class="block px-3 pb-1 pt-2 text-[0.65rem] font-bold uppercase tracking-wide text-muted">Edytuj zestaw kafelków</label>
-                <select id="{{ $editorId }}-tileset-edit" @change="open = false" class="w-full rounded border-gray-300 px-2 py-1.5 text-xs font-bold text-ink focus:border-brand focus:ring-brand">
+                <select id="{{ $editorId }}-tileset-edit" @change="open = false" class="w-full rounded border-gray-500 px-2 py-1.5 text-xs font-bold text-ink focus:border-brand-dark focus:ring-brand-dark">
                     <option value="">— wybierz zestaw —</option>
                     @foreach ($tileSets as $ts)<option value="{{ $ts->id }}">{{ $ts->name }}</option>@endforeach
                 </select>
@@ -187,7 +187,7 @@
             @if ($activeTilesGridPages->isNotEmpty())
                 <hr class="my-1 border-gray-100" role="separator">
                 <label for="{{ $editorId }}-tiles-pick" class="block px-3 pb-1 pt-0.5 text-[0.65rem] font-bold uppercase tracking-wide text-muted">Wstaw siatkę kafelków</label>
-                <select id="{{ $editorId }}-tiles-pick" @change="open = false" class="w-full rounded border-gray-300 px-2 py-1.5 text-xs font-bold text-ink focus:border-brand focus:ring-brand">
+                <select id="{{ $editorId }}-tiles-pick" @change="open = false" class="w-full rounded border-gray-500 px-2 py-1.5 text-xs font-bold text-ink focus:border-brand-dark focus:ring-brand-dark">
                     <option value="">— wybierz siatkę —</option>
                     @foreach ($activeTilesGridPages as $tg)
                         <option value="{{ $tg->slug }}">{{ $tg->title }}</option>
@@ -200,7 +200,7 @@
     {{-- Menu „Wstaw link" --}}
     <div class="relative" x-data="{ open: false }" @click.outside="open = false" @keydown.escape="open = false">
         <button type="button" @click="open = !open" :aria-expanded="open"
-            class="inline-flex items-center gap-2 rounded border border-gray-300 px-3 py-1.5 text-xs font-bold text-ink hover:border-brand hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+            class="inline-flex items-center gap-2 rounded-md px-3 py-1.5 text-xs font-bold text-ink hover:text-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark bg-white hover:bg-brand-light">
             <i class="fa-solid fa-link" aria-hidden="true"></i> Wstaw link <i class="fa-solid fa-chevron-down text-[0.6rem]" aria-hidden="true"></i>
         </button>
         <div x-show="open" x-cloak class="absolute left-0 z-20 mt-1 w-64 rounded-lg border border-gray-200 bg-white p-1 shadow-lg" role="menu">
@@ -231,7 +231,7 @@
             @if ($schedulePages->isNotEmpty())
                 <hr class="my-1 border-gray-100" role="separator">
                 <label for="{{ $editorId }}-schedule-cta" class="block px-3 pb-1 pt-0.5 text-[0.65rem] font-bold uppercase tracking-wide text-muted">Przycisk CTA do harmonogramu</label>
-                <select id="{{ $editorId }}-schedule-cta" @change="open = false" class="w-full rounded border-gray-300 px-2 py-1.5 text-xs font-bold text-ink focus:border-brand focus:ring-brand">
+                <select id="{{ $editorId }}-schedule-cta" @change="open = false" class="w-full rounded border-gray-500 px-2 py-1.5 text-xs font-bold text-ink focus:border-brand-dark focus:ring-brand-dark">
                     <option value="">— wybierz harmonogram —</option>
                     @foreach ($schedulePages as $sp)
                         <option value="/{{ $sp->slug }}" data-title="{{ $sp->title }}">{{ $sp->title }}</option>
@@ -246,7 +246,7 @@
     {{-- Menu „Import" --}}
     <div class="relative" x-data="{ open: false }" @click.outside="open = false" @keydown.escape="open = false">
         <button type="button" @click="open = !open" :aria-expanded="open"
-            class="inline-flex items-center gap-2 rounded border border-gray-300 px-3 py-1.5 text-xs font-bold text-ink hover:border-brand hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+            class="inline-flex items-center gap-2 rounded-md px-3 py-1.5 text-xs font-bold text-ink hover:text-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark bg-white hover:bg-brand-light">
             <i class="fa-solid fa-file-import" aria-hidden="true"></i> Import <i class="fa-solid fa-chevron-down text-[0.6rem]" aria-hidden="true"></i>
         </button>
         <div x-show="open" x-cloak class="absolute left-0 z-20 mt-1 w-52 rounded-lg border border-gray-200 bg-white p-1 shadow-lg" role="menu">
@@ -260,7 +260,7 @@
     {{-- Menu „Kotwice" --}}
     <div class="relative" x-data="{ open: false }" @click.outside="open = false" @keydown.escape="open = false">
         <button type="button" @click="open = !open" :aria-expanded="open"
-            class="inline-flex items-center gap-2 rounded border border-gray-300 px-3 py-1.5 text-xs font-bold text-ink hover:border-brand hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+            class="inline-flex items-center gap-2 rounded-md px-3 py-1.5 text-xs font-bold text-ink hover:text-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark bg-white hover:bg-brand-light">
             <i class="fa-solid fa-hashtag" aria-hidden="true"></i> Kotwice <i class="fa-solid fa-chevron-down text-[0.6rem]" aria-hidden="true"></i>
         </button>
         <div x-show="open" x-cloak class="absolute left-0 z-20 mt-1 w-52 rounded-lg border border-gray-200 bg-white p-1 shadow-lg" role="menu">
@@ -272,7 +272,7 @@
     {{-- Menu „Style" --}}
     <div class="relative" x-data="{ open: false }" @click.outside="open = false" @keydown.escape="open = false">
         <button type="button" @click="open = !open" :aria-expanded="open"
-            class="inline-flex items-center gap-2 rounded border border-gray-300 px-3 py-1.5 text-xs font-bold text-ink hover:border-brand hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+            class="inline-flex items-center gap-2 rounded-md px-3 py-1.5 text-xs font-bold text-ink hover:text-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark bg-white hover:bg-brand-light">
             <i class="fa-solid fa-a" aria-hidden="true"></i> Style <i class="fa-solid fa-chevron-down text-[0.6rem]" aria-hidden="true"></i>
         </button>
         <div x-show="open" x-cloak class="absolute left-0 z-20 mt-1 w-72 rounded-lg border border-gray-200 bg-white p-1 shadow-lg" role="menu">
@@ -280,7 +280,7 @@
                 <i class="fa-solid fa-bold w-4 text-center" aria-hidden="true"></i> Pogrubiony i pochylony
             </button>
             <button type="button" id="{{ $editorId }}-brandcolor-btn" @click="open = false" class="{{ $mi }}">
-                <i class="fa-solid fa-a w-4 text-center text-brand" aria-hidden="true"></i> Kolor marki
+                <i class="fa-solid fa-a w-4 text-center text-brand-dark" aria-hidden="true"></i> Kolor marki
             </button>
             <button type="button" id="{{ $editorId }}-sronly-btn" @click="open = false" class="{{ $mi }}">
                 <i class="fa-solid fa-eye-slash w-4 text-center text-violet-600" aria-hidden="true"></i> Tylko czytnik ekranu (sr-only)
@@ -294,7 +294,7 @@
     <button type="button" @click="window['__clearFormat_{{ $editorId }}']?.()"
         title="Wyczyść formatowanie zaznaczenia (usuwa pogrubienie, kursywę, nagłówki…)"
         aria-label="Wyczyść formatowanie zaznaczenia"
-        class="inline-flex items-center gap-2 rounded border border-gray-300 px-3 py-1.5 text-xs font-bold text-ink hover:border-red-400 hover:text-red-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+        class="inline-flex items-center gap-2 rounded-md px-3 py-1.5 text-xs font-bold text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark bg-white hover:bg-brand-light">
         <i class="fa-solid fa-eraser" aria-hidden="true"></i> Wyczyść formatowanie
     </button>
 
@@ -302,7 +302,7 @@
     <button type="button" id="{{ $editorId }}-a11y-btn"
         title="Sprawdź dostępność treści (WCAG)"
         aria-label="Sprawdź dostępność treści"
-        class="inline-flex items-center gap-2 rounded border border-gray-300 px-3 py-1.5 text-xs font-bold text-ink hover:border-blue-400 hover:text-blue-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+        class="inline-flex items-center gap-2 rounded-md px-3 py-1.5 text-xs font-bold text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark bg-white hover:bg-brand-light">
         <i class="fa-solid fa-universal-access" aria-hidden="true"></i> Dostępność
     </button>
 
@@ -310,7 +310,7 @@
     <button type="button" id="{{ $editorId }}-h-btn"
         title="Pokaż strukturę nagłówków (WCAG 1.3.1)"
         aria-label="Pokaż strukturę nagłówków"
-        class="inline-flex items-center gap-2 rounded border border-gray-300 px-3 py-1.5 text-xs font-bold text-ink hover:border-violet-500 hover:text-violet-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+        class="inline-flex items-center gap-2 rounded-md px-3 py-1.5 text-xs font-bold text-ink hover:text-violet-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark bg-white hover:bg-brand-light">
         <i class="fa-solid fa-heading" aria-hidden="true"></i> Nagłówki
     </button>
 
@@ -319,21 +319,21 @@
     <button type="button" @click="window['__historyOpen_{{ $editorId }}']?.()"
         title="Historia wersji treści"
         aria-label="Otwórz historię wersji treści"
-        class="ml-auto inline-flex items-center gap-2 rounded border border-gray-300 px-3 py-1.5 text-xs font-bold text-ink hover:border-brand hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+        class="ml-auto inline-flex items-center gap-2 rounded-md px-3 py-1.5 text-xs font-bold text-ink hover:text-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark bg-white hover:bg-brand-light">
         <i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i> Historia wersji
     </button>
     @endif
 </div>
 
 <textarea name="{{ $name }}" id="{{ $editorId }}" rows="14" placeholder="Tu wpisz tekst…"
-    class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">{{ $value }}</textarea>
+    class="w-full rounded border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark">{{ $value }}</textarea>
 
 <input type="file" id="{{ $editorId }}-docx-input" accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document" class="sr-only" aria-hidden="true" tabindex="-1">
 <input type="file" id="{{ $editorId }}-txt-input" accept=".txt,text/plain" class="sr-only" aria-hidden="true" tabindex="-1">
 
 <div id="{{ $editorId }}-stats" class="mt-1 min-h-[1.25rem] text-xs text-muted" aria-live="polite" aria-atomic="true"></div>
 
-<div id="{{ $editorId }}-a11y-panel" class="mt-2 hidden rounded-lg border border-blue-200 bg-blue-50 p-3 text-sm" role="alert">
+<div id="{{ $editorId }}-a11y-panel" class="mt-2 hidden rounded-md bg-brand-light p-3 text-sm" role="alert">
     <div class="flex items-start gap-2">
         <div id="{{ $editorId }}-a11y-content" class="flex-1"></div>
         <button type="button" id="{{ $editorId }}-a11y-close" class="flex-none text-muted hover:text-red-600" aria-label="Zamknij wyniki sprawdzenia dostępności"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
@@ -358,7 +358,7 @@
         </div>
         <label class="sr-only" for="{{ $editorId }}-page-modal-search">Szukaj strony po tytule lub adresie URL</label>
         <input type="search" id="{{ $editorId }}-page-modal-search" placeholder="Szukaj po tytule lub adresie URL…"
-            class="mb-3 w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+            class="mb-3 w-full rounded border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark">
         <div class="flex-1 overflow-y-auto">
             <ul id="{{ $editorId }}-page-modal-list" class="divide-y divide-gray-100" role="listbox" aria-label="Lista stron serwisu"></ul>
             <p id="{{ $editorId }}-page-modal-empty" class="hidden py-6 text-center text-sm text-muted">Brak wyników.</p>
@@ -376,7 +376,7 @@
         </div>
         <label class="sr-only" for="{{ $editorId }}-news-modal-search">Szukaj newsa po tytule</label>
         <input type="search" id="{{ $editorId }}-news-modal-search" placeholder="Szukaj po tytule…"
-            class="mb-3 w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+            class="mb-3 w-full rounded border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark">
         <div class="flex-1 overflow-y-auto">
             <ul id="{{ $editorId }}-news-modal-list" class="divide-y divide-gray-100" role="listbox" aria-label="Lista newsów"></ul>
             <p id="{{ $editorId }}-news-modal-empty" class="hidden py-6 text-center text-sm text-muted">Brak wyników.</p>
@@ -394,7 +394,7 @@
         </div>
         <label class="sr-only" for="{{ $editorId }}-event-link-modal-search">Szukaj wydarzenia po tytule</label>
         <input type="search" id="{{ $editorId }}-event-link-modal-search" placeholder="Szukaj po tytule…"
-            class="mb-3 w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+            class="mb-3 w-full rounded border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark">
         <div class="flex-1 overflow-y-auto">
             <ul id="{{ $editorId }}-event-link-modal-list" class="divide-y divide-gray-100" role="listbox" aria-label="Lista wydarzeń"></ul>
             <p id="{{ $editorId }}-event-link-modal-empty" class="hidden py-6 text-center text-sm text-muted">Brak wyników.</p>
@@ -412,7 +412,7 @@
         </div>
         <label class="sr-only" for="{{ $editorId }}-person-modal-search">Szukaj osoby po imieniu lub adresie URL</label>
         <input type="search" id="{{ $editorId }}-person-modal-search" placeholder="Szukaj po imieniu lub adresie URL…"
-            class="mb-3 w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+            class="mb-3 w-full rounded border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark">
         <div class="flex-1 overflow-y-auto">
             <ul id="{{ $editorId }}-person-modal-list" class="divide-y divide-gray-100" role="listbox" aria-label="Lista osób"></ul>
             <p id="{{ $editorId }}-person-modal-empty" class="hidden py-6 text-center text-sm text-muted">Brak wyników.</p>
@@ -431,12 +431,12 @@
         <p class="mb-3 text-xs text-muted">Kotwica to punkt na stronie, do którego można prowadzić linki (<code class="font-mono">#sekcja-id</code>). Zostanie wstawiona w miejscu kursora.</p>
         <label class="mb-1 block text-xs font-bold" for="{{ $editorId }}-anchor-insert-id">ID kotwicy</label>
         <input type="text" id="{{ $editorId }}-anchor-insert-id" placeholder="np. sekcja-kontakt"
-            class="mb-1 w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand"
+            class="mb-1 w-full rounded border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark"
             pattern="[a-z0-9\-]+" title="Tylko małe litery, cyfry i myślniki">
         <p class="mb-4 text-[0.65rem] text-muted">Tylko małe litery, cyfry i myślniki. Bez spacji.</p>
         <div class="flex justify-end gap-2">
-            <button type="button" data-anchor-insert-close class="rounded border border-gray-300 px-3 py-1.5 text-sm text-ink hover:bg-gray-50">Anuluj</button>
-            <button type="button" id="{{ $editorId }}-anchor-insert-submit" class="rounded bg-brand px-3 py-1.5 text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">Wstaw kotwicę</button>
+            <button type="button" data-anchor-insert-close class="rounded-md px-3 py-1.5 text-sm text-ink bg-gray-100 hover:bg-brand-light">Anuluj</button>
+            <button type="button" id="{{ $editorId }}-anchor-insert-submit" class="rounded bg-brand-dark px-3 py-1.5 text-sm font-bold text-white hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2">Wstaw kotwicę</button>
         </div>
     </div>
 </div>
@@ -452,24 +452,24 @@
         <p class="mb-3 text-xs text-muted">Kliknij kotwicę z listy lub wpisz ID ręcznie. Kotwice muszą być wcześniej wstawione w treści.</p>
         <div class="mb-3 min-h-0 flex-1 overflow-y-auto">
             <p class="mb-1 text-[0.65rem] font-bold uppercase tracking-wide text-muted">Kotwice znalezione w treści</p>
-            <ul id="{{ $editorId }}-anchor-link-found" class="divide-y divide-gray-100 rounded border border-gray-200" role="listbox" aria-label="Znalezione kotwice"></ul>
+            <ul id="{{ $editorId }}-anchor-link-found" class="divide-y divide-gray-100 rounded-md bg-gray-50" role="listbox" aria-label="Znalezione kotwice"></ul>
             <p id="{{ $editorId }}-anchor-link-none" class="py-3 text-center text-xs text-muted">Brak kotwic w treści — najpierw wstaw kotwicę.</p>
         </div>
         <div class="space-y-2 border-t border-gray-100 pt-3">
             <div>
                 <label class="mb-0.5 block text-xs font-bold" for="{{ $editorId }}-anchor-link-id">ID kotwicy (bez #)</label>
                 <input type="text" id="{{ $editorId }}-anchor-link-id" placeholder="sekcja-kontakt"
-                    class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                    class="w-full rounded border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark">
             </div>
             <div>
                 <label class="mb-0.5 block text-xs font-bold" for="{{ $editorId }}-anchor-link-text">Tekst linku</label>
                 <input type="text" id="{{ $editorId }}-anchor-link-text" placeholder="np. Przejdź do sekcji kontakt"
-                    class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                    class="w-full rounded border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark">
             </div>
         </div>
         <div class="mt-4 flex justify-end gap-2">
-            <button type="button" data-anchor-link-close class="rounded border border-gray-300 px-3 py-1.5 text-sm text-ink hover:bg-gray-50">Anuluj</button>
-            <button type="button" id="{{ $editorId }}-anchor-link-submit" class="rounded bg-brand px-3 py-1.5 text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">Wstaw link</button>
+            <button type="button" data-anchor-link-close class="rounded-md px-3 py-1.5 text-sm text-ink bg-gray-100 hover:bg-brand-light">Anuluj</button>
+            <button type="button" id="{{ $editorId }}-anchor-link-submit" class="rounded bg-brand-dark px-3 py-1.5 text-sm font-bold text-white hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2">Wstaw link</button>
         </div>
     </div>
 </div>
@@ -481,7 +481,7 @@
     <div class="flex h-[70vh] w-full max-w-4xl flex-col overflow-hidden rounded-xl bg-white shadow-2xl">
         <div class="flex shrink-0 items-center justify-between border-b border-gray-100 px-5 py-3">
             <h2 id="{{ $editorId }}-history-title" class="text-base font-bold">
-                <i class="fa-solid fa-clock-rotate-left mr-2 text-brand" aria-hidden="true"></i>Historia wersji treści
+                <i class="fa-solid fa-clock-rotate-left mr-2 text-brand-dark" aria-hidden="true"></i>Historia wersji treści
             </h2>
             <button type="button" id="{{ $editorId }}-history-close"
                 class="text-muted hover:text-red-600" aria-label="Zamknij historię wersji">
@@ -505,7 +505,7 @@
                 </div>
                 <div id="{{ $editorId }}-history-footer" class="hidden shrink-0 border-t border-gray-100 px-5 py-3">
                     <button type="button" id="{{ $editorId }}-history-load"
-                        class="rounded-lg bg-brand px-4 py-2 text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                        class="rounded-lg bg-brand-dark px-4 py-2 text-sm font-bold text-white hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">
                         <i class="fa-solid fa-rotate-left mr-1" aria-hidden="true"></i> Załaduj tę wersję do edytora
                     </button>
                     <span class="ml-3 text-xs text-muted">Aktualna treść zostanie zastąpiona — możesz cofnąć (Ctrl+Z).</span>
@@ -527,7 +527,7 @@
         <div class="mb-3 flex flex-wrap items-center gap-4">
             <div class="flex items-center gap-2">
                 <label for="{{ $editorId }}-gallery-cols" class="text-xs font-bold">Kolumny:</label>
-                <select id="{{ $editorId }}-gallery-cols" class="rounded border-gray-300 py-1 text-sm focus:border-brand focus:ring-brand">
+                <select id="{{ $editorId }}-gallery-cols" class="rounded border-gray-500 py-1 text-sm focus:border-brand-dark focus:ring-brand-dark">
                     <option value="2">2</option>
                     <option value="3" selected>3</option>
                     <option value="4">4</option>
@@ -535,13 +535,13 @@
             </div>
             <span id="{{ $editorId }}-gallery-count" class="text-xs text-muted" aria-live="polite">Zaznaczono: 0 zdjęć</span>
             <button type="button" id="{{ $editorId }}-gallery-submit" disabled
-                class="ml-auto rounded bg-brand px-4 py-1.5 text-sm font-bold text-white hover:bg-brand-dark disabled:opacity-40">
+                class="ml-auto rounded bg-brand-dark px-4 py-1.5 text-sm font-bold text-white hover:bg-ink disabled:opacity-40">
                 <i class="fa-solid fa-border-all" aria-hidden="true"></i> Wstaw galerię
             </button>
         </div>
         <label class="sr-only" for="{{ $editorId }}-gallery-search">Szukaj zdjęcia po nazwie pliku</label>
         <input type="search" id="{{ $editorId }}-gallery-search" placeholder="Szukaj po nazwie pliku…"
-            class="mb-3 w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+            class="mb-3 w-full rounded border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark">
         <div class="flex-1 overflow-y-auto">
             <p id="{{ $editorId }}-gallery-loading" class="py-6 text-center text-sm text-muted" aria-live="polite">Ładowanie zdjęć…</p>
             <div id="{{ $editorId }}-gallery-grid" class="grid grid-cols-3 gap-2 sm:grid-cols-4 lg:grid-cols-5"></div>
@@ -560,7 +560,7 @@
         </div>
         <label class="sr-only" for="{{ $editorId }}-af-search">Szukaj pliku po nazwie lub stronie</label>
         <input type="search" id="{{ $editorId }}-af-search" placeholder="Szukaj po nazwie pliku lub stronie…"
-            class="mb-3 w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+            class="mb-3 w-full rounded border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark">
         <div class="flex-1 overflow-y-auto">
             <ul id="{{ $editorId }}-af-list" class="divide-y divide-gray-100" role="listbox" aria-label="Lista plików do pobrania"></ul>
             <p id="{{ $editorId }}-af-empty" class="hidden py-6 text-center text-sm text-muted">Brak plików do pobrania.</p>
@@ -580,7 +580,7 @@
             </h2>
             <button type="button" id="{{ $editorId }}-sronly-close" class="text-muted hover:text-red-600" aria-label="Zamknij"><i class="fa-solid fa-xmark"></i></button>
         </div>
-        <div class="mb-4 rounded border-l-4 border-amber-400 bg-amber-50 px-4 py-3 text-sm">
+        <div class="mb-4 rounded-md border-l-4 bg-amber-50 px-4 py-3 text-sm">
             <p class="mb-1 font-bold">⚠ Tekst będzie niewidoczny wizualnie na stronie</p>
             <p class="mb-2">Klasa <code class="font-mono">sr-only</code> ukrywa element przez CSS (<code class="font-mono">position:absolute; width:1px; height:1px</code>), ale czytniki ekranu — NVDA, JAWS, VoiceOver — nadal go przeczytają.</p>
             <p class="mb-1 font-semibold">Prawidłowe zastosowania (WCAG 2.1):</p>
@@ -593,9 +593,9 @@
         </div>
         <label class="mb-1 block text-xs font-bold" for="{{ $editorId }}-sronly-text">Tekst tylko dla czytnika ekranu</label>
         <input type="text" id="{{ $editorId }}-sronly-text" placeholder="np. Usuń element, Wymagane pole…"
-            class="mb-4 w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+            class="mb-4 w-full rounded border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark">
         <div class="flex justify-end gap-2">
-            <button type="button" id="{{ $editorId }}-sronly-close2" class="rounded border border-gray-300 px-3 py-1.5 text-sm text-ink hover:bg-gray-50">Anuluj</button>
+            <button type="button" id="{{ $editorId }}-sronly-close2" class="rounded-md px-3 py-1.5 text-sm text-ink bg-gray-100 hover:bg-brand-light">Anuluj</button>
             <button type="button" id="{{ $editorId }}-sronly-submit" class="rounded bg-violet-600 px-3 py-1.5 text-sm font-bold text-white hover:bg-violet-700">Wstaw sr-only</button>
         </div>
     </div>
@@ -609,8 +609,8 @@
             <button type="button" data-media-close class="text-muted hover:text-red-600" aria-label="Zamknij okno wyboru obrazu"><i class="fa-solid fa-xmark"></i></button>
         </div>
 
-        <div class="mb-4 flex w-fit gap-1 rounded-lg border border-gray-200 bg-gray-50 p-1 text-sm font-bold">
-            <button type="button" data-media-tab-btn="library" class="rounded px-3 py-1.5 bg-brand text-white">Biblioteka</button>
+        <div class="mb-4 flex w-fit gap-1 p-1 text-sm font-bold rounded-md bg-gray-50">
+            <button type="button" data-media-tab-btn="library" class="rounded px-3 py-1.5 bg-brand-dark text-white">Biblioteka</button>
             <button type="button" data-media-tab-btn="unsplash" class="rounded px-3 py-1.5 text-muted hover:bg-gray-100">Unsplash</button>
             <button type="button" data-media-tab-btn="onedrive" class="rounded px-3 py-1.5 text-muted hover:bg-gray-100">OneDrive</button>
         </div>
@@ -618,7 +618,7 @@
         <div data-media-panel="library">
             <label class="sr-only" for="{{ $editorId }}-media-search">Szukaj obrazu po nazwie pliku</label>
             <input type="search" id="{{ $editorId }}-media-search" placeholder="Szukaj po nazwie pliku&hellip;"
-                class="mb-4 w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                class="mb-4 w-full rounded border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark">
             <div class="overflow-y-auto">
                 <div data-media-grid class="grid grid-cols-3 gap-3 sm:grid-cols-4"></div>
                 <p data-media-empty class="hidden py-6 text-center text-sm text-muted">Brak obrazów.</p>
@@ -632,8 +632,8 @@
             <div data-unsplash-form class="mb-4 flex gap-2">
                 <label class="sr-only" for="{{ $editorId }}-unsplash-search">Szukaj zdjęć na Unsplash</label>
                 <input type="search" id="{{ $editorId }}-unsplash-search" placeholder="Szukaj zdjęć na Unsplash&hellip;"
-                    class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
-                <button type="button" data-unsplash-submit class="flex-none rounded bg-brand px-3 py-1.5 text-xs font-bold text-white hover:bg-brand-dark">Szukaj</button>
+                    class="w-full rounded border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark">
+                <button type="button" data-unsplash-submit class="flex-none rounded bg-brand-dark px-3 py-1.5 text-xs font-bold text-white hover:bg-ink">Szukaj</button>
             </div>
             <div class="overflow-y-auto">
                 <div data-unsplash-grid class="grid grid-cols-3 gap-3 sm:grid-cols-4"></div>
@@ -662,9 +662,9 @@
             @endif
                 <label class="sr-only" for="{{ $editorId }}-onedrive-url">Adres URL obrazu z OneDrive</label>
                 <input type="url" id="{{ $editorId }}-onedrive-url" placeholder="https://1drv.ms/i/&hellip;"
-                    class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                    class="w-full rounded border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark">
                 <button type="button" data-onedrive-submit
-                    class="flex-none rounded bg-brand px-3 py-1.5 text-xs font-bold text-white hover:bg-brand-dark disabled:opacity-50">Importuj</button>
+                    class="flex-none rounded bg-brand-dark px-3 py-1.5 text-xs font-bold text-white hover:bg-ink disabled:opacity-50">Importuj</button>
             @if ($msClientId)
                 </div>
             </details>
@@ -702,7 +702,7 @@
             list.forEach(function (image) {
                 var button = document.createElement('button');
                 button.type = 'button';
-                button.className = 'overflow-hidden rounded border border-gray-200 text-left hover:border-brand';
+                button.className = 'overflow-hidden rounded border border-gray-200 text-left hover:border-brand-dark';
                 button.innerHTML = '<img src="' + image.url + '" alt="' + escapeHtml(image.alt) + '" class="h-24 w-full object-cover">' +
                     '<span class="block truncate p-1 text-xs text-muted">' + escapeHtml(image.file_name) + '</span>';
                 button.addEventListener('click', function () {
@@ -766,7 +766,7 @@
         tabButtons.forEach(function (btn) {
             btn.addEventListener('click', function () {
                 tabButtons.forEach(function (b) {
-                    b.classList.toggle('bg-brand', b === btn);
+                    b.classList.toggle('bg-brand-dark', b === btn);
                     b.classList.toggle('text-white', b === btn);
                     b.classList.toggle('text-muted', b !== btn);
                 });
@@ -806,7 +806,7 @@
                     results.forEach(function (photo) {
                         var button = document.createElement('button');
                         button.type = 'button';
-                        button.className = 'overflow-hidden rounded border border-gray-200 text-left hover:border-brand';
+                        button.className = 'overflow-hidden rounded border border-gray-200 text-left hover:border-brand-dark';
                         button.innerHTML = '<img src="' + photo.thumb_url + '" alt="' + escapeHtml(photo.alt) + '" class="h-24 w-full object-cover">' +
                             '<span class="block truncate p-1 text-[11px] text-muted">Zdjęcie: ' + escapeHtml(photo.author_name) + '</span>';
                         button.disabled = false;
@@ -984,11 +984,11 @@
                 var btn = document.createElement('button');
                 btn.type = 'button';
                 btn.className = 'relative overflow-hidden rounded border-2 text-left transition-colors '
-                    + (sel ? 'border-brand' : 'border-transparent hover:border-gray-300');
+                    + (sel ? 'border-brand-dark' : 'border-transparent hover:border-gray-300');
                 btn.setAttribute('aria-pressed', sel ? 'true' : 'false');
                 btn.setAttribute('aria-label', (sel ? 'Odznacz: ' : 'Zaznacz: ') + image.file_name);
                 btn.innerHTML = '<img src="' + image.url + '" alt="" class="h-24 w-full object-cover">'
-                    + (sel ? '<span class="absolute top-1 right-1 flex h-5 w-5 items-center justify-center rounded-full bg-brand text-white text-[10px]" aria-hidden="true"><i class="fa-solid fa-check"></i></span>' : '');
+                    + (sel ? '<span class="absolute top-1 right-1 flex h-5 w-5 items-center justify-center rounded-full bg-brand-dark text-white text-[10px]" aria-hidden="true"><i class="fa-solid fa-check"></i></span>' : '');
                 btn.addEventListener('click', function () {
                     var idx = gmSelected.findIndex(function (s) { return s.id === image.id; });
                     if (idx >= 0) gmSelected.splice(idx, 1); else gmSelected.push(image);
@@ -1364,7 +1364,7 @@
                 var btn = document.createElement('button');
                 btn.type = 'button'; btn.setAttribute('role', 'option');
                 btn.className = 'flex w-full items-baseline gap-3 px-3 py-2 text-left hover:bg-brand-light focus-visible:bg-brand-light focus-visible:outline-none';
-                btn.innerHTML = '<code class="shrink-0 font-mono text-xs text-brand">#' + item.id + '</code>'
+                btn.innerHTML = '<code class="shrink-0 font-mono text-xs text-brand-dark">#' + item.id + '</code>'
                     + '<span class="flex-1 truncate text-xs text-muted">' + item.label + '</span>';
                 btn.addEventListener('click', function () {
                     alIdInput.value = item.id;
@@ -2376,9 +2376,9 @@
                     + '<span class="block text-muted">' + rev.word_count + ' słów</span>';
                 btn.addEventListener('click', function () {
                     hvList.querySelectorAll('[role=option]').forEach(function (b) {
-                        b.classList.remove('bg-brand-light', 'ring-1', 'ring-brand');
+                        b.classList.remove('bg-brand-light', 'ring-1', 'ring-brand-dark');
                     });
-                    btn.classList.add('bg-brand-light', 'ring-1', 'ring-brand');
+                    btn.classList.add('bg-brand-light', 'ring-1', 'ring-brand-dark');
                     selected = rev;
                     hvHint.classList.add('hidden');
                     hvPreviewWrap.classList.remove('hidden');

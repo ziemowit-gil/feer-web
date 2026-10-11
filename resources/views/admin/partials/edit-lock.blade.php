@@ -1,6 +1,6 @@
 {{-- Ostrzeżenie o równoczesnej edycji. Wymaga: $lockType, $lockId. --}}
 <div data-edit-lock-warning hidden role="alert"
-    class="mb-4 flex items-start gap-2 rounded border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+    class="mb-4 flex items-start gap-2 rounded-md bg-amber-50 px-4 py-3 text-sm text-amber-900">
     <i class="fa-solid fa-triangle-exclamation mt-0.5" aria-hidden="true"></i>
     <span><span data-edit-lock-text></span> Zapis może nadpisać cudze zmiany — uzgodnijcie, kto edytuje.</span>
 </div>

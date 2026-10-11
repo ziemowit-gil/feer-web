@@ -8,7 +8,7 @@
 @section('content')
     @if ($isPersonForm)
         <nav class="mb-4 flex items-center gap-1.5 text-sm text-muted" aria-label="Breadcrumb">
-            <a href="{{ route('admin.osoby.index') }}" class="text-brand hover:underline">
+            <a href="{{ route('admin.osoby.index') }}" class="text-brand-dark hover:underline">
                 <i class="fa-solid fa-users mr-1" aria-hidden="true"></i>Osoby
             </a>
             <span aria-hidden="true">/</span>
@@ -36,7 +36,7 @@
                 <h1 class="mt-1 truncate text-2xl font-bold text-ink">{{ $page->exists ? $page->title : 'Nowa strona' }}</h1>
                 @if ($page->exists)
                     <p class="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted">
-                        <span class="inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-bold {{ $page->is_published ? 'bg-green-100 text-green-800' : 'bg-amber-100 text-amber-900' }}">
+                        <span class="inline-flex items-center gap-1.5 text-xs font-bold {{ $page->is_published ? ' text-ink' : ' text-ink' }}">
                             <i class="fa-solid {{ $page->is_published ? 'fa-circle-check' : 'fa-pen' }}" aria-hidden="true"></i>{{ $page->is_published ? 'Opublikowana' : 'Szkic' }}
                         </span>
                         <span><i class="fa-solid {{ \App\Models\Page::typeIcons()[$page->type] ?? 'fa-file-lines' }} mr-1" aria-hidden="true"></i>{{ trim(\Illuminate\Support\Str::before(\App\Models\Page::types()[$page->type] ?? 'Standardowa', ' (')) }}</span>
@@ -58,16 +58,16 @@
     @endunless
 
     <style>
-        /* Przyciski edytora: jeden styl dla akcji w nagłówku i na dolnym pasku — obrysowane drugorzędne, wypełniony główny. */
+        /* Przyciski edytora: jeden styl dla akcji w nagłówku i na dolnym pasku — płaskie: szare drugorzędne, wypełniony główny. */
         .pe-actions { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; }
-        .pe-btn { display: inline-flex; min-height: 2.75rem; align-items: center; gap: .5rem; padding: 0 1rem; border: 2px solid #d1d5db; border-radius: .5rem; background: #fff; font-size: .875rem; font-weight: 700; color: #1d1d1a; text-decoration: none; cursor: pointer; white-space: nowrap; }
-        .pe-btn:hover { border-color: #1d1d1a; background: #f9fafb; }
+        .pe-btn { display: inline-flex; min-height: 2.75rem; align-items: center; gap: .5rem; padding: 0 1rem; border: 2px solid transparent; border-radius: .375rem; background: #f3f4f6; font-size: .875rem; font-weight: 700; color: #1d1d1a; text-decoration: none; cursor: pointer; white-space: nowrap; }
+        .pe-btn:hover { background: var(--color-brand-light); }
         .pe-btn:focus-visible { outline: 3px solid #1d1d1a; outline-offset: 2px; }
-        .pe-btn-primary { border-color: var(--color-brand); background: var(--color-brand); color: #fff; padding: 0 1.5rem; }
+        .pe-btn-primary { border-color: var(--color-brand-dark); background: var(--color-brand-dark); color: #fff; padding: 0 1.5rem; }
         .pe-btn-primary:hover { border-color: #1d1d1a; background: #1d1d1a; color: #fff; }
         .pe-btn-ghost { border-color: transparent; background: transparent; text-decoration: underline; text-underline-offset: 3px; }
         .pe-btn-ghost:hover { background: #f3f4f6; border-color: transparent; }
-        .pe-btn-danger { color: #991b1b; } .pe-btn-danger:hover { border-color: #991b1b; background: #fef2f2; }
+        .pe-btn-danger { color: #991b1b; } .pe-btn-danger:hover { background: #fef2f2; }
         .pe-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .75rem; }
         .pe-bar-left, .pe-bar-right { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; }
         .pe-bar-hint { font-size: .8rem; color: #4b5563; }
@@ -76,9 +76,9 @@
         [data-page-form-tabs] [role="tablist"] { background: transparent; padding: 0; border: 0; border-radius: 0; gap: .5rem; margin-bottom: 1.5rem; }
         [data-page-form-tabs] [data-ftab-btn] { border-radius: .375rem; padding: .5rem 1rem; font-size: .875rem; font-weight: 700; margin: 0; border: 0; box-shadow: none !important; background: #f3f4f6 !important; color: #1a1a1a !important; transition: background-color .15s; }
         [data-page-form-tabs] [data-ftab-btn]:hover { background: #e5e7eb !important; }
-        [data-page-form-tabs] [data-ftab-btn][aria-selected="true"] { background: var(--color-brand) !important; color: #fff !important; }
-        [data-page-form-tabs] [data-ftab-btn]:focus-visible { outline: 2px solid var(--color-brand); outline-offset: 2px; }
-        [data-page-form-tabs] form > [data-ftab-panel] > div.rounded-lg, [data-page-form-tabs] form > [data-ftab-panel] div.space-y-5.rounded-lg { border-radius: .75rem; padding: 1.75rem; }
+        [data-page-form-tabs] [data-ftab-btn][aria-selected="true"] { background: var(--color-brand-dark) !important; color: #fff !important; }
+        [data-page-form-tabs] [data-ftab-btn]:focus-visible { outline: 2px solid var(--color-brand-dark); outline-offset: 2px; }
+        [data-page-form-tabs] form > [data-ftab-panel] > div.rounded-md, [data-page-form-tabs] form > [data-ftab-panel] div.space-y-5.rounded-md { border-radius: .375rem; padding: 1.75rem; }
         [data-page-form-tabs] form .space-y-5 > * + * { margin-top: 1.75rem; }
         [data-page-form-tabs] form label.block.text-sm, [data-page-form-tabs] form label.mb-1.block { font-size: .95rem; color: #1a1a1a; margin-bottom: .4rem; }
         [data-page-form-tabs] form input[type="text"], [data-page-form-tabs] form input[type="url"], [data-page-form-tabs] form input[type="number"],
@@ -89,16 +89,16 @@
         [data-page-form-tabs] [data-ftab-panel="ustawienia"] .grid { align-items: start; }
         [data-page-form-tabs] [data-ftab-panel="ustawienia"] label.flex > input[type="checkbox"] { appearance: none; -webkit-appearance: none; flex: none; width: 2.75rem; height: 1.5rem; border-radius: 9999px; border: 0; background-color: #6b7280; position: relative; cursor: pointer; transition: background-color .2s; margin-top: .125rem; }
         [data-page-form-tabs] [data-ftab-panel="ustawienia"] label.flex > input[type="checkbox"]::after { content: ""; position: absolute; top: .1875rem; left: .1875rem; width: 1.125rem; height: 1.125rem; border-radius: 9999px; background: #fff; transition: transform .2s; }
-        [data-page-form-tabs] [data-ftab-panel="ustawienia"] label.flex > input[type="checkbox"]:checked { background-color: var(--color-brand); }
+        [data-page-form-tabs] [data-ftab-panel="ustawienia"] label.flex > input[type="checkbox"]:checked { background-color: var(--color-brand-dark); }
         [data-page-form-tabs] [data-ftab-panel="ustawienia"] label.flex > input[type="checkbox"]:checked::after { transform: translateX(1.25rem); }
         [data-page-form-tabs] [data-ftab-panel="ustawienia"] label.flex > input[type="checkbox"]:focus-visible { outline: 2px solid #1a1a1a; outline-offset: 2px; }
-        [data-page-form-tabs] [data-main-form-actions] { position: sticky; bottom: 0; z-index: 20; margin-top: 1.5rem; padding: .85rem 1.25rem; background: rgba(255,255,255,.96); border-top: 1px solid #e5e7eb; border-radius: .75rem .75rem 0 0; }
+        [data-page-form-tabs] [data-main-form-actions] { position: sticky; bottom: 0; z-index: 20; margin-top: 1.5rem; padding: .85rem 1.25rem; background: rgba(255,255,255,.96); border-top: 1px solid #e5e7eb; border-radius: .375rem .375rem 0 0; }
     </style>
 
     <div data-page-form-tabs>
-        <div class="mb-6 flex flex-wrap items-center gap-1.5 rounded-xl bg-gray-100/70 p-1.5" role="tablist">
+        <div class="mb-6 flex flex-wrap items-center gap-1.5 rounded-md p-1.5" role="tablist">
             <button type="button" data-ftab-btn="tresc" role="tab" aria-selected="true"
-                class="rounded-lg bg-white px-4 py-2 text-sm font-semibold text-brand shadow-sm transition-all">
+                class="rounded-lg bg-white px-4 py-2 text-sm font-semibold text-brand-dark shadow-sm transition-all">
                 <i class="fa-solid fa-align-left" aria-hidden="true"></i> Treść
             </button>
             <button type="button" data-ftab-btn="typ" role="tab" aria-selected="false"
@@ -119,21 +119,21 @@
                     class="rounded-lg px-4 py-2 text-sm font-semibold text-gray-500 transition-all hover:text-ink">
                     <i class="fa-solid fa-paperclip" aria-hidden="true"></i> Pliki
                     @if ($page->attachments->isNotEmpty())
-                        <span class="ml-1 rounded-full bg-gray-200 px-1.5 py-0.5 text-xs">{{ $page->attachments->count() }}</span>
+                        <span class="ml-1 text-xs font-bold">{{ $page->attachments->count() }}</span>
                     @endif
                 </button>
                 <button type="button" data-ftab-btn="galeria" data-wspolpraca-tab role="tab" aria-selected="false"
                     class="rounded-lg px-4 py-2 text-sm font-semibold text-gray-500 transition-all hover:text-ink">
                     <i class="fa-solid fa-images" aria-hidden="true"></i> Galeria
                     @if ($page->images->isNotEmpty())
-                        <span class="ml-1 rounded-full bg-gray-200 px-1.5 py-0.5 text-xs">{{ $page->images->count() }}</span>
+                        <span class="ml-1 text-xs font-bold">{{ $page->images->count() }}</span>
                     @endif
                 </button>
                 <button type="button" data-ftab-btn="etr" data-wspolpraca-tab role="tab" aria-selected="false"
                     class="rounded-lg px-4 py-2 text-sm font-semibold text-gray-500 transition-all hover:text-ink">
                     <i class="fa-solid fa-book-open-reader" aria-hidden="true"></i> ETR
                     @if ($page->etr?->is_enabled)
-                        <span class="ml-1 rounded-full bg-sky-100 px-1.5 py-0.5 text-xs text-sky-700">aktywna</span>
+                        <span class="ml-1 text-xs text-ink font-bold"><i class="fa-solid fa-circle-info mr-1 text-brand-dark" aria-hidden="true"></i>aktywna</span>
                     @endif
                 </button>
                 @endif
@@ -155,12 +155,12 @@
                     'templateFields' => ['content', 'meta_title', 'meta_description'],
                 ])
 
-                <div class="space-y-5 rounded-lg border border-gray-200 bg-white p-6">
+                <div class="space-y-5 p-6 rounded-md bg-white">
                     <div class="grid gap-5 sm:grid-cols-2">
                         <div>
                             <label for="title" class="mb-1 block text-sm font-bold">Tytuł</label>
                             <input type="text" id="title" name="title" value="{{ old('title', $page->title) }}" required
-                                class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                                class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
                             @error('title') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                         </div>
 
@@ -169,7 +169,7 @@
                             <div class="flex items-center gap-2">
                                 <span class="text-sm text-muted">/</span>
                                 <input type="text" id="slug" name="slug" value="{{ old('slug', $page->slug) }}" placeholder="zostanie wygenerowany z tytułu"
-                                    class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                                    class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
                             </div>
                             @error('slug') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                         </div>
@@ -182,13 +182,13 @@
                             <label class="block text-sm font-bold">Treść</label>
                             @if ($page->exists)
                                 <a href="{{ route('admin.podstrony.bloki.edit', $page) }}"
-                                    class="inline-flex items-center gap-1.5 rounded border border-brand-dark px-3 py-1.5 text-xs font-bold text-brand-dark hover:bg-brand-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                                    class="inline-flex items-center gap-1.5 rounded border border-brand-dark px-3 py-1.5 text-xs font-bold text-brand-dark hover:bg-brand-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">
                                     <i class="fa-solid fa-cubes" aria-hidden="true"></i> Otwórz w edytorze blokowym
                                 </a>
                             @endif
                         </div>
                         @if ($page->exists && is_array($page->blocks))
-                            <p class="mb-2 rounded border border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-900" role="note">
+                            <p class="mb-2 rounded-md bg-amber-50 px-3 py-2 text-xs text-amber-900" role="note">
                                 <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
                                 Ta strona jest edytowana w edytorze blokowym. Zmiana treści tutaj zastąpi bloki zwykłym HTML-em —
                                 edytor blokowy wczyta ją potem jako jeden blok „Własny HTML”.
@@ -208,7 +208,7 @@
                                     class="h-20 w-32 shrink-0 rounded object-cover">
                                 <label class="mt-1 flex items-center gap-1.5 text-sm text-red-600">
                                     <input type="checkbox" name="remove_content_image" value="1"
-                                        class="rounded border-gray-300 text-brand focus:ring-brand">
+                                        class="rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
                                     Usuń zdjęcie
                                 </label>
                             @else
@@ -219,22 +219,22 @@
                             <div class="min-w-0 flex-1 space-y-2">
                                 <input type="file" name="content_image_file" accept="image/*"
                                     aria-label="Wgraj zdjęcie"
-                                    class="block w-full text-sm text-muted file:mr-3 file:rounded file:border-0 file:bg-brand-light file:px-3 file:py-1.5 file:text-sm file:font-bold file:text-brand">
+                                    class="block w-full text-sm text-muted file:mr-3 file:rounded file:border-0 file:bg-brand-light file:px-3 file:py-1.5 file:text-sm file:font-bold file:text-brand-dark">
                                 <input type="text" name="content_image" value="{{ old('content_image', $page->content_image ?? '') }}"
                                     placeholder="…albo wklej URL zdjęcia"
-                                    class="w-full rounded border-gray-300 text-xs focus:border-brand focus:ring-brand">
+                                    class="w-full rounded border-gray-500 text-xs focus:border-brand-dark focus:ring-brand-dark">
                                 <div class="grid gap-3 sm:grid-cols-2">
                                     <div>
                                         <label for="content_image_alt" class="mb-1 block text-xs font-bold">Tekst alternatywny (dostępność)</label>
                                         <input type="text" id="content_image_alt" name="content_image_alt"
                                             value="{{ old('content_image_alt', $page->content_image_alt ?? '') }}"
                                             placeholder="Opisz co przedstawia zdjęcie"
-                                            class="w-full rounded border-gray-300 text-xs focus:border-brand focus:ring-brand">
+                                            class="w-full rounded border-gray-500 text-xs focus:border-brand-dark focus:ring-brand-dark">
                                     </div>
                                     <div>
                                         <label for="content_image_width" class="mb-1 block text-xs font-bold">Szerokość</label>
                                         <select id="content_image_width" name="content_image_width"
-                                            class="w-full rounded border-gray-300 text-xs focus:border-brand focus:ring-brand">
+                                            class="w-full rounded border-gray-500 text-xs focus:border-brand-dark focus:ring-brand-dark">
                                             <option value="" {{ old('content_image_width', $page->content_image_width ?? '') === '' ? 'selected' : '' }}>Pełna (100%)</option>
                                             <option value="max-w-2xl" {{ old('content_image_width', $page->content_image_width ?? '') === 'max-w-2xl' ? 'selected' : '' }}>Duże (ok. 672px)</option>
                                             <option value="max-w-xl" {{ old('content_image_width', $page->content_image_width ?? '') === 'max-w-xl' ? 'selected' : '' }}>Średnie (ok. 576px)</option>
@@ -251,14 +251,14 @@
 
             {{-- ============================ TYP I UKŁAD ============================ --}}
             <div data-ftab-panel="typ" class="hidden space-y-6">
-                <div class="space-y-5 rounded-lg border border-gray-200 bg-white p-6">
+                <div class="space-y-5 p-6 rounded-md bg-white">
                     <div class="{{ $isPersonForm ? 'sm:w-1/2' : '' }}">
                         @if ($isPersonForm)
                             <input type="hidden" name="type" value="about_person">
                             <label class="mb-1 block text-sm font-bold">Typ strony</label>
-                            <p class="rounded border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-muted">
-                                <i class="fa-solid fa-user mr-1.5 text-brand" aria-hidden="true"></i>
-                                Osoba (typ stały — zarządzaj przez moduł <a href="{{ route('admin.osoby.index') }}" class="text-brand underline">Osoby</a>)
+                            <p class="px-3 py-2 text-sm text-muted rounded-md bg-gray-50">
+                                <i class="fa-solid fa-user mr-1.5 text-brand-dark" aria-hidden="true"></i>
+                                Osoba (typ stały — zarządzaj przez moduł <a href="{{ route('admin.osoby.index') }}" class="text-brand-dark underline">Osoby</a>)
                             </p>
                         @else
                             @php
@@ -328,14 +328,14 @@
                             <div class="grid gap-3 sm:grid-cols-2">
                                 <div class="sm:col-span-2">
                                     <label for="ld-source" class="mb-1 block text-xs font-bold text-muted">Wpisy pod sliderem</label>
-                                    <select id="ld-source" name="layout_data[source]" class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                                    <select id="ld-source" name="layout_data[source]" class="w-full rounded border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark">
                                         <option value="news" @selected(($ld['source'] ?? 'news') === 'news')>Aktualności</option>
                                         <option value="blog" @selected(($ld['source'] ?? 'news') === 'blog')>Wiem FEER (blog)</option>
                                     </select>
                                 </div>
                                 <div>
                                     <label for="ld-news-category" class="mb-1 block text-xs font-bold text-muted">Aktualności z kategorii (tylko dla aktualności)</label>
-                                    <select id="ld-news-category" name="layout_data[news_category_id]" class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                                    <select id="ld-news-category" name="layout_data[news_category_id]" class="w-full rounded border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark">
                                         <option value="">— wszystkie kategorie —</option>
                                         @foreach ($newsCategories as $cat)
                                             <option value="{{ $cat->id }}" @selected((int) ($ld['news_category_id'] ?? 0) === $cat->id)>{{ $cat->name }}</option>
@@ -344,7 +344,7 @@
                                 </div>
                                 <div>
                                     <label for="ld-news-count" class="mb-1 block text-xs font-bold text-muted">Liczba wpisów</label>
-                                    <select id="ld-news-count" name="layout_data[news_count]" class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand" aria-describedby="ld-news-count-help">
+                                    <select id="ld-news-count" name="layout_data[news_count]" class="w-full rounded border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark" aria-describedby="ld-news-count-help">
                                         @foreach ([0 => 'Bez wpisów', 1 => '1 (tylko wyróżniona)', 4 => '4 (wyróżniona + 3)', 7 => '7 (wyróżniona + 6)', 10 => '10 (wyróżniona + 9)', 13 => '13 (wyróżniona + 12)'] as $n => $label)
                                             <option value="{{ $n }}" @selected((int) ($ld['news_count'] ?? 4) === $n)>{{ $label }}</option>
                                         @endforeach
@@ -354,27 +354,27 @@
                             </div>
                             <label class="flex items-start gap-2 text-sm">
                                 <input type="hidden" name="layout_data[slider]" value="0">
-                                <input type="checkbox" name="layout_data[slider]" value="1" class="mt-0.5 rounded border-gray-300 text-brand focus:ring-brand" @checked($ld['slider'] ?? true)>
+                                <input type="checkbox" name="layout_data[slider]" value="1" class="mt-0.5 rounded border-gray-500 text-brand-dark focus:ring-brand-dark" @checked($ld['slider'] ?? true)>
                                 <span>Slider ze zdjęć strony (zakładka „Galeria”) nad aktualnościami. Można go zatrzymać, a przy ograniczonym ruchu nie przewija się sam.</span>
                             </label>
                             <label class="flex items-start gap-2 text-sm">
                                 <input type="hidden" name="layout_data[newsletter]" value="0">
-                                <input type="checkbox" name="layout_data[newsletter]" value="1" class="mt-0.5 rounded border-gray-300 text-brand focus:ring-brand" @checked($ld['newsletter'] ?? true)>
+                                <input type="checkbox" name="layout_data[newsletter]" value="1" class="mt-0.5 rounded border-gray-500 text-brand-dark focus:ring-brand-dark" @checked($ld['newsletter'] ?? true)>
                                 <span>Panel „Newsletter” z przyciskiem zapisu w prawej kolumnie.</span>
                             </label>
                             @php $nlDefaults = \App\Http\Controllers\PageController::sectionNewsletterDefaults(); @endphp
                             <div class="grid gap-3 sm:grid-cols-3">
                                 <div>
                                     <label for="ld-nl-title" class="mb-1 block text-xs font-bold text-muted">Tytuł panelu</label>
-                                    <input type="text" id="ld-nl-title" name="layout_data[newsletter_title]" value="{{ $ld['newsletter_title'] ?? '' }}" maxlength="120" placeholder="{{ $nlDefaults['title'] ?? 'Newsletter' }}" class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                                    <input type="text" id="ld-nl-title" name="layout_data[newsletter_title]" value="{{ $ld['newsletter_title'] ?? '' }}" maxlength="120" placeholder="{{ $nlDefaults['title'] ?? 'Newsletter' }}" class="w-full rounded border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark">
                                 </div>
                                 <div class="sm:col-span-2">
                                     <label for="ld-nl-text" class="mb-1 block text-xs font-bold text-muted">Opis</label>
-                                    <input type="text" id="ld-nl-text" name="layout_data[newsletter_text]" value="{{ $ld['newsletter_text'] ?? '' }}" maxlength="400" placeholder="{{ $nlDefaults['text'] ?? '' }}" class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                                    <input type="text" id="ld-nl-text" name="layout_data[newsletter_text]" value="{{ $ld['newsletter_text'] ?? '' }}" maxlength="400" placeholder="{{ $nlDefaults['text'] ?? '' }}" class="w-full rounded border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark">
                                 </div>
                                 <div>
                                     <label for="ld-nl-button" class="mb-1 block text-xs font-bold text-muted">Napis na przycisku</label>
-                                    <input type="text" id="ld-nl-button" name="layout_data[newsletter_button]" value="{{ $ld['newsletter_button'] ?? '' }}" maxlength="60" placeholder="{{ $nlDefaults['button'] ?? 'Zapisz się na newsletter' }}" class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                                    <input type="text" id="ld-nl-button" name="layout_data[newsletter_button]" value="{{ $ld['newsletter_button'] ?? '' }}" maxlength="60" placeholder="{{ $nlDefaults['button'] ?? 'Zapisz się na newsletter' }}" class="w-full rounded border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark">
                                 </div>
                             </div>
                             <p class="text-xs text-muted">Puste pola biorą teksty z firmowego formularza newslettera (Newsletter → Formularze, formularz domyślny){{ $nlDefaults ? '' : ' — teraz nieaktywny, więc panel się nie pokaże' }}.</p>
@@ -483,7 +483,7 @@
                     $rowHint = 'mt-0.5 block text-sm leading-snug text-muted';
                     $groupTitle = 'text-xs font-bold uppercase tracking-widest text-muted';
                 @endphp
-                <div class="rounded-xl border border-gray-200 bg-white p-6 sm:p-8"
+                <div class="p-6 sm:p-8 rounded-md bg-white"
                     x-data="{ pub: {{ old('is_published', $page->is_published ?? true) ? 'true' : 'false' }}, sideNav: {{ old('show_side_nav', $page->show_side_nav ?? true) ? 'true' : 'false' }} }">
                     <div class="mb-2">
                         <h2 class="text-lg font-bold text-ink">Ustawienia strony</h2>
@@ -502,7 +502,7 @@
                                 {{-- Harmonogram: data i godzina pierwszego pokazania strony --}}
                                 <div x-show="pub" x-cloak class="mb-4 ml-[3.75rem] rounded-lg bg-gray-50 p-4">
                                     <label for="publish_at" class="mb-1.5 block text-sm font-bold text-ink"><i class="fa-regular fa-clock mr-1 text-brand-dark" aria-hidden="true"></i>Opublikuj dopiero od <span class="font-normal text-muted">(opcjonalnie)</span></label>
-                                    <input type="datetime-local" id="publish_at" name="publish_at" value="{{ old('publish_at', $page->publish_at?->format('Y-m-d\TH:i')) }}" class="rounded-lg border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                                    <input type="datetime-local" id="publish_at" name="publish_at" value="{{ old('publish_at', $page->publish_at?->format('Y-m-d\TH:i')) }}" class="rounded-lg border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark">
                                     @error('publish_at') <p class="mt-1 text-sm text-red-700">{{ $message }}</p> @enderror
                                     <p class="mt-2 text-xs text-muted">Puste = widoczna natychmiast. Podaj datę, aby strona pojawiła się publicznie dopiero od tej chwili.</p>
                                 </div>
@@ -521,7 +521,7 @@
                         <div class="mt-3 space-y-4">
                             <div>
                                 <label for="access_level" class="mb-1 block text-sm font-bold text-ink">Kto może zobaczyć stronę</label>
-                                <select id="access_level" name="access_level" x-model="level" class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                                <select id="access_level" name="access_level" x-model="level" class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
                                     @foreach (\App\Models\Page::ACCESS_LEVELS as $lv => $lvLabel)
                                         <option value="{{ $lv }}">{{ $lvLabel }}</option>
                                     @endforeach
@@ -538,7 +538,7 @@
                                 <label for="access_password_lvl" class="mb-1 block text-sm font-bold text-ink">Hasło dostępu</label>
                                 <input type="text" id="access_password_lvl" name="access_password_level" autocomplete="off"
                                     placeholder="{{ $page->exists && $page->access_level === 'password' && filled($page->access_password) ? 'Ustawione — wpisz nowe, aby zmienić' : 'Wpisz hasło' }}"
-                                    class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                                    class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
                                 @error('access_password_level') <p class="mt-1 text-sm text-red-700">{{ $message }}</p> @enderror
                             </div>
                             <fieldset x-show="level === 'groups'" x-cloak>
@@ -548,7 +548,7 @@
                                     @forelse (\App\Models\UserGroup::orderBy('name')->get() as $ug)
                                         <label class="cursor-pointer">
                                             <input type="checkbox" name="access_group_ids[]" value="{{ $ug->id }}" {{ in_array($ug->id, $selGroups, true) ? 'checked' : '' }} class="peer sr-only">
-                                            <span class="inline-flex min-h-9 items-center rounded-full border border-gray-300 bg-white px-3 text-sm font-medium text-ink peer-checked:border-brand peer-checked:bg-brand peer-checked:text-white peer-focus-visible:ring-2 peer-focus-visible:ring-brand peer-focus-visible:ring-offset-2">{{ $ug->name }}</span>
+                                            <span class="inline-flex min-h-9 items-center rounded-full border border-gray-300 bg-white px-3 text-sm font-medium text-ink peer-checked:border-brand-dark peer-checked:bg-brand-dark peer-checked:text-white peer-focus-visible:ring-2 peer-focus-visible:ring-brand-dark peer-focus-visible:ring-offset-2">{{ $ug->name }}</span>
                                         </label>
                                     @empty
                                         <p class="text-sm text-muted">Brak grup — utwórz je w Użytkownicy → Grupy.</p>
@@ -606,7 +606,7 @@
                 </div>
 
                 {{-- Karta: powiązania i kolejność --}}
-                <div class="rounded-lg border border-gray-200 bg-white p-6">
+                <div class="p-6 rounded-md bg-white">
                     <div class="mb-4">
                         <h2 class="text-base font-bold text-ink">Powiązania i kolejność</h2>
                         <p class="mt-0.5 text-xs text-muted">Umiejscowienie strony w strukturze serwisu.</p>
@@ -615,7 +615,7 @@
                     <div class="grid gap-5 sm:grid-cols-2">
                         <div>
                             <label for="parent_id" class="mb-1 block text-sm font-bold">Nadrzędna strona</label>
-                            <select id="parent_id" name="parent_id" class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                            <select id="parent_id" name="parent_id" class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
                                 <option value="">— brak (strona główna) —</option>
                                 @foreach ($parentOptions as $option)
                                     <option value="{{ $option->id }}" {{ (int) old('parent_id', $page->parent_id ?? request('parent_id')) === $option->id ? 'selected' : '' }}>
@@ -629,7 +629,7 @@
 
                         <div>
                             <label for="project_id" class="mb-1 block text-sm font-bold">Powiąż z działaniem</label>
-                            <select id="project_id" name="project_id" data-project-select class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                            <select id="project_id" name="project_id" data-project-select class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
                                 <option value="">— brak —</option>
                                 @foreach ($projectOptions as $option)
                                     <option value="{{ $option->id }}" {{ (int) old('project_id', $page->project_id) === $option->id ? 'selected' : '' }}>
@@ -643,7 +643,7 @@
 
                         <div class="sm:col-span-2 {{ $hasProject ? '' : 'hidden' }}" data-project-display-wrap>
                             <label for="project_display" class="mb-1 block text-sm font-bold">Jak pokazać na stronie działania</label>
-                            <select id="project_display" name="project_display" class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand sm:w-2/3">
+                            <select id="project_display" name="project_display" class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark sm:w-2/3">
                                 @foreach (\App\Models\Page::PROJECT_DISPLAYS as $value => $label)
                                     <option value="{{ $value }}" {{ old('project_display', $page->project_display ?? 'link') === $value ? 'selected' : '' }}>{{ $label }}</option>
                                 @endforeach
@@ -655,7 +655,7 @@
                         <div>
                             <label for="order" class="mb-1 block text-sm font-bold">Kolejność</label>
                             <input type="number" id="order" name="order" min="0" value="{{ old('order', $page->order) }}"
-                                class="w-28 rounded border-gray-300 focus:border-brand focus:ring-brand">
+                                class="w-28 rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
                             <p class="mt-1 text-xs text-muted">Mniejsza liczba = wyżej.</p>
                         </div>
                     </div>
@@ -663,7 +663,7 @@
 
                 {{-- ==================== DOSTĘPNOŚĆ STRONY ==================== --}}
                 @php $currentWip = old('wip_mode', $page->wip_mode); @endphp
-                <div class="space-y-5 rounded-lg border border-gray-200 bg-white p-6">
+                <div class="space-y-5 p-6 rounded-md bg-white">
                     <div>
                         <p class="text-sm font-bold uppercase tracking-wide text-muted">Dostępność strony</p>
                         <p class="mt-1 text-xs text-muted">Tymczasowo wyłącz stronę lub oznacz, że jest w przygotowaniu. Działa niezależnie od statusu publikacji.</p>
@@ -673,7 +673,7 @@
                     <div class="border-t border-gray-100 pt-5">
                         <label class="flex items-start gap-2">
                             <input type="checkbox" name="is_disabled" value="1" {{ old('is_disabled', $page->is_disabled ?? false) ? 'checked' : '' }}
-                                class="mt-0.5 rounded border-gray-300 text-brand focus:ring-brand" data-disable-toggle>
+                                class="mt-0.5 rounded border-gray-500 text-brand-dark focus:ring-brand-dark" data-disable-toggle>
                             <span>
                                 <span class="block text-sm font-bold">Wyłącz stronę</span>
                                 <span class="block text-xs text-muted">Odwiedzający zamiast treści zobaczą pełnoekranowy komunikat, że strona jest tymczasowo niedostępna. Wyłączenie obejmuje także wszystkie podstrony tej strony.</span>
@@ -682,7 +682,7 @@
                         <div class="mt-3 sm:pl-6" data-disable-message>
                             <label for="disabled_message" class="mb-1 block text-sm font-bold">Komunikat <span class="font-normal text-muted">(opcjonalnie)</span></label>
                             <textarea id="disabled_message" name="disabled_message" rows="2" placeholder="{{ \App\Models\Page::DEFAULT_DISABLED_MESSAGE }}"
-                                class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">{{ old('disabled_message', $page->disabled_message) }}</textarea>
+                                class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">{{ old('disabled_message', $page->disabled_message) }}</textarea>
                             <p class="mt-1 text-xs text-muted">Zostaw puste, aby użyć domyślnego komunikatu.</p>
                             @error('disabled_message') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                         </div>
@@ -696,13 +696,13 @@
                         <div class="space-y-2" data-wip-modes>
                             <label class="flex items-start gap-2">
                                 <input type="radio" name="wip_mode" value="" {{ ! $currentWip ? 'checked' : '' }}
-                                    class="mt-0.5 border-gray-300 text-brand focus:ring-brand">
+                                    class="mt-0.5 border-gray-500 text-brand-dark focus:ring-brand-dark">
                                 <span class="text-sm">Wyłączone <span class="text-muted">— strona działa normalnie</span></span>
                             </label>
                             @foreach (\App\Models\Page::WIP_MODES as $value => $label)
                                 <label class="flex items-start gap-2">
                                     <input type="radio" name="wip_mode" value="{{ $value }}" {{ $currentWip === $value ? 'checked' : '' }}
-                                        class="mt-0.5 border-gray-300 text-brand focus:ring-brand">
+                                        class="mt-0.5 border-gray-500 text-brand-dark focus:ring-brand-dark">
                                     <span class="text-sm">{{ $label }}</span>
                                 </label>
                             @endforeach
@@ -712,7 +712,7 @@
                         <div class="mt-3 sm:pl-6 {{ $currentWip ? '' : 'hidden' }}" data-wip-message>
                             <label for="wip_message" class="mb-1 block text-sm font-bold">Treść komunikatu <span class="font-normal text-muted">(opcjonalnie)</span></label>
                             <textarea id="wip_message" name="wip_message" rows="2" placeholder="{{ \App\Models\Page::DEFAULT_WIP_NOTICE_MESSAGE }}"
-                                class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">{{ old('wip_message', $page->wip_message) }}</textarea>
+                                class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">{{ old('wip_message', $page->wip_message) }}</textarea>
                             <p class="mt-1 text-xs text-muted">Zostaw puste, aby użyć domyślnego komunikatu dla wybranego trybu.</p>
                             @error('wip_message') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                         </div>
@@ -760,20 +760,20 @@
             </div>
             <div data-ftab-panel="etr" class="hidden">
                 @php $etrModel = $page->etr; @endphp
-                <div class="mb-4 rounded-xl border border-sky-100 bg-sky-50 p-4 text-sm text-sky-800">
+                <div class="mb-4 rounded-md bg-brand-light p-4 text-sm text-ink">
                     <strong>Wersja ETR (łatwa do czytania)</strong> — uproszczony tekst dla osób z trudnościami w czytaniu.
                     Gdy włączysz ETR, na tej stronie pojawi się przycisk pozwalający przełączyć się na prostszą wersję.
                     <a href="{{ route('etr.about') }}" target="_blank" class="ml-1 underline hover:text-sky-900">Co to jest ETR? →</a>
                 </div>
 
                 <form method="POST" action="{{ route('admin.etr.update', ['type' => 'podstrona', 'id' => $page->id]) }}"
-                    class="space-y-5 rounded-lg border border-gray-200 bg-white p-6">
+                    class="space-y-5 p-6 rounded-md bg-white">
                     @csrf @method('PUT')
 
                     <label class="flex items-center gap-2">
                         <input type="checkbox" name="is_enabled" value="1"
                             {{ old('is_enabled', $etrModel?->is_enabled ?? false) ? 'checked' : '' }}
-                            class="rounded border-gray-300 text-sky-600 focus:ring-sky-500">
+                            class="rounded border-gray-500 text-sky-600 focus:ring-sky-500">
                         <span class="font-bold text-ink">Włącz wersję ETR dla tej strony</span>
                     </label>
 
@@ -782,21 +782,21 @@
                         <input type="text" id="etr_title" name="etr_title"
                             value="{{ old('etr_title', $etrModel?->etr_title) }}"
                             placeholder="{{ $page->title }}"
-                            class="w-full rounded border-gray-300 focus:border-sky-500 focus:ring-sky-500">
+                            class="w-full rounded border-gray-500 focus:border-sky-500 focus:ring-sky-500">
                     </div>
 
                     <div>
                         <label for="etr_summary" class="mb-1 block text-sm font-bold">Wstęp <span class="font-normal text-muted">— 1–3 zdania prostym językiem</span></label>
                         <textarea id="etr_summary" name="etr_summary" rows="3"
                             placeholder="Krótkie, proste wyjaśnienie o czym jest ta strona."
-                            class="w-full rounded border-gray-300 focus:border-sky-500 focus:ring-sky-500">{{ old('etr_summary', $etrModel?->etr_summary) }}</textarea>
+                            class="w-full rounded border-gray-500 focus:border-sky-500 focus:ring-sky-500">{{ old('etr_summary', $etrModel?->etr_summary) }}</textarea>
                     </div>
 
                     <div>
                         <label for="etr_content" class="mb-1 block text-sm font-bold">Treść ETR <span class="font-normal text-muted">— prosty tekst, jedno zdanie w akapicie</span></label>
                         <textarea id="etr_content" name="etr_content" rows="12"
                             placeholder="Pisz prostymi słowami.&#10;&#10;Krótkie zdania.&#10;&#10;Jedna myśl — jeden akapit."
-                            class="w-full rounded border-gray-300 font-mono text-sm focus:border-sky-500 focus:ring-sky-500">{{ old('etr_content', $etrModel?->etr_content) }}</textarea>
+                            class="w-full rounded border-gray-500 font-mono text-sm focus:border-sky-500 focus:ring-sky-500">{{ old('etr_content', $etrModel?->etr_content) }}</textarea>
                         <p class="mt-1 text-xs text-muted">Puste wiersze tworzą nowe akapity. Nie używaj formatowania HTML.</p>
                     </div>
 
@@ -993,9 +993,7 @@
                 const pendingBox = scheduleFields.querySelector('[data-schedule-pending-box]');
                 if (pendingToggle && pendingBox) {
                     const syncPending = function () {
-                        pendingBox.classList.toggle('border-amber-300', pendingToggle.checked);
                         pendingBox.classList.toggle('bg-amber-50', pendingToggle.checked);
-                        pendingBox.classList.toggle('border-gray-200', !pendingToggle.checked);
                         pendingBox.classList.toggle('bg-gray-50', !pendingToggle.checked);
                     };
                     pendingToggle.addEventListener('change', syncPending);
@@ -1046,7 +1044,7 @@
                     const active = b.dataset.ftabBtn === key;
                     b.classList.toggle('bg-white', active);
                     b.classList.toggle('shadow-sm', active);
-                    b.classList.toggle('text-brand', active);
+                    b.classList.toggle('text-brand-dark', active);
                     b.classList.toggle('text-gray-500', !active);
                     b.setAttribute('aria-selected', active ? 'true' : 'false');
                 });

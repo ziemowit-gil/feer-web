@@ -6,7 +6,7 @@
 
     {{-- Panel: slajd z misją --}}
     @php $missionImg = $siteSettings->missionSlideImageUrl(); @endphp
-    <div class="mb-6 rounded-lg border border-gray-200 bg-white"
+    <div class="mb-6 rounded-md bg-white"
          x-data="{ bg: '{{ $siteSettings->hero_mission_bg ?? 'brand' }}' }">
 
         <div class="flex flex-wrap items-center justify-between gap-4 border-b border-gray-100 px-5 py-4">
@@ -24,9 +24,9 @@
                     <input type="checkbox" name="hero_mission_slide" value="1"
                         {{ $siteSettings->hero_mission_slide ? 'checked' : '' }}
                         onchange="this.form.submit()"
-                        class="h-4 w-4 rounded border-gray-300 text-brand focus:ring-brand"
+                        class="h-4 w-4 rounded border-gray-500 text-brand-dark focus:ring-brand-dark"
                         aria-label="Włącz slajd z misją organizacji">
-                    <span class="text-sm font-bold {{ $siteSettings->hero_mission_slide ? 'text-brand' : 'text-muted' }}">
+                    <span class="text-sm font-bold {{ $siteSettings->hero_mission_slide ? 'text-brand-dark' : 'text-muted' }}">
                         {{ $siteSettings->hero_mission_slide ? 'Włączony' : 'Wyłączony' }}
                     </span>
                 </label>
@@ -43,20 +43,20 @@
 
                 {{-- Opcja: kolor marki --}}
                 <label class="flex cursor-pointer items-center gap-3 rounded-lg border px-4 py-3 transition"
-                    :class="bg === 'brand' ? 'border-brand bg-brand-light' : 'border-gray-200 hover:border-gray-300'">
+                    :class="bg === 'brand' ? 'border-brand-dark bg-brand-light' : 'border-gray-200 hover:border-gray-300'">
                     <input type="radio" name="hero_mission_bg" value="brand"
                         x-model="bg"
-                        class="text-brand focus:ring-brand">
-                    <span class="inline-block h-5 w-5 rounded-sm bg-brand"></span>
+                        class="text-brand-dark focus:ring-brand-dark">
+                    <span class="inline-block h-5 w-5 rounded-sm bg-brand-dark"></span>
                     <span class="text-sm font-bold">Kolor marki</span>
                 </label>
 
                 {{-- Opcja: zdjęcie --}}
                 <label class="flex cursor-pointer items-center gap-3 rounded-lg border px-4 py-3 transition"
-                    :class="bg === 'image' ? 'border-brand bg-brand-light' : 'border-gray-200 hover:border-gray-300'">
+                    :class="bg === 'image' ? 'border-brand-dark bg-brand-light' : 'border-gray-200 hover:border-gray-300'">
                     <input type="radio" name="hero_mission_bg" value="image"
                         x-model="bg"
-                        class="text-brand focus:ring-brand">
+                        class="text-brand-dark focus:ring-brand-dark">
                     <i class="fa-solid fa-image text-gray-400"></i>
                     <span class="text-sm font-bold">Zdjęcie</span>
                 </label>
@@ -76,7 +76,7 @@
                     </label>
                     <input type="file" name="hero_mission_image" id="hero_mission_image"
                         accept="image/*"
-                        class="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand">
+                        class="block w-full rounded-lg border border-gray-500 px-3 py-2 text-sm focus:border-brand-dark focus:outline-none focus:ring-1 focus:ring-brand-dark">
                     <p class="mt-1 text-xs text-muted">Zalecane: min. 1280×500 px, max 4 MB. Napisy będą białe.</p>
                 </div>
             </div>
@@ -90,7 +90,7 @@
                     <input type="number" name="hero_mission_order" id="hero_mission_order"
                         min="1" max="{{ $heroSlides->count() + 1 }}"
                         value="{{ $siteSettings->hero_mission_order ?? 1 }}"
-                        class="w-24 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand">
+                        class="w-24 rounded-lg border border-gray-500 px-3 py-2 text-sm focus:border-brand-dark focus:outline-none focus:ring-1 focus:ring-brand-dark">
                     <p class="text-sm text-muted">
                         1 = pierwszy slajd, {{ $heroSlides->count() + 1 }} = ostatni
                         @if ($heroSlides->isEmpty())
@@ -102,7 +102,7 @@
 
             <div class="mt-4">
                 <button type="submit"
-                    class="rounded bg-brand px-4 py-2 text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                    class="rounded bg-brand-dark px-4 py-2 text-sm font-bold text-white hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">
                     Zapisz ustawienia
                 </button>
             </div>
@@ -110,14 +110,14 @@
     </div>
 
     <div class="mb-4 flex justify-end">
-        <a href="{{ route('admin.hero.create') }}" class="rounded bg-brand px-4 py-2 text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
+        <a href="{{ route('admin.hero.create') }}" class="rounded bg-brand-dark px-4 py-2 text-sm font-bold text-white hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2">
             <i class="fa-solid fa-plus" aria-hidden="true"></i> Dodaj slajd
         </a>
     </div>
 
     <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         @forelse ($heroSlides as $slide)
-            <div class="overflow-hidden rounded-lg border border-gray-200 bg-white">
+            <div class="overflow-hidden rounded-md bg-white">
                 <img src="{{ $slide->image_url }}" alt="" class="h-36 w-full object-cover">
                 <div class="p-4">
                     <div class="text-xs font-bold uppercase text-muted">Kolejność: {{ $slide->order }}</div>
@@ -125,7 +125,7 @@
                     <p class="mt-1 text-sm text-muted">{{ $slide->text }}</p>
 
                     <div class="mt-3 flex items-center gap-3 border-t border-gray-100 pt-3">
-                        <a href="{{ route('admin.hero.edit', $slide) }}" class="text-sm font-bold text-brand hover:text-brand-dark">Edytuj</a>
+                        <a href="{{ route('admin.hero.edit', $slide) }}" class="text-sm font-bold text-brand-dark hover:text-ink">Edytuj</a>
                         <form method="POST" action="{{ route('admin.hero.destroy', $slide) }}" onsubmit="return confirm('Usunąć ten slajd?');">
                             @csrf
                             @method('DELETE')

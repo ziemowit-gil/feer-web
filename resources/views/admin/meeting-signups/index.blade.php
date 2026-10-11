@@ -4,17 +4,17 @@
 
 @section('content')
     <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <p class="text-sm text-muted">Zgłoszenia z formularza „Daj znać, że przyjdziesz" (podstrona <a href="{{ route('contact.show') }}" target="_blank" rel="noopener" class="text-brand underline">/kontakt</a>): <span class="font-bold text-ink">{{ $total }}</span></p>
+        <p class="text-sm text-muted">Zgłoszenia z formularza „Daj znać, że przyjdziesz" (podstrona <a href="{{ route('contact.show') }}" target="_blank" rel="noopener" class="text-brand-dark underline">/kontakt</a>): <span class="font-bold text-ink">{{ $total }}</span></p>
         @if ($total > 0)
-            <a href="{{ route('admin.zgloszenia-spotkania.export') }}" class="rounded bg-brand px-4 py-2 text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
+            <a href="{{ route('admin.zgloszenia-spotkania.export') }}" class="rounded bg-brand-dark px-4 py-2 text-sm font-bold text-white hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2">
                 <i class="fa-solid fa-file-csv"></i> Eksport CSV
             </a>
         @endif
     </div>
 
-    <div class="overflow-x-auto rounded-lg border border-gray-200 bg-white">
+    <div class="overflow-x-auto rounded-md bg-white">
         <table class="w-full text-left text-sm">
-            <thead class="bg-gray-50 text-xs font-bold uppercase text-muted">
+            <thead class="bg-gray-100 text-xs font-bold uppercase text-muted">
                 <tr>
                     <th class="px-4 py-3">Imię i nazwisko</th>
                     <th class="px-4 py-3">E-mail</th>
@@ -28,7 +28,7 @@
                 @forelse ($signups as $signup)
                     <tr>
                         <td class="px-4 py-3 font-medium">{{ $signup->name }}</td>
-                        <td class="px-4 py-3"><a href="mailto:{{ $signup->email }}" class="text-brand hover:text-brand-dark">{{ $signup->email }}</a></td>
+                        <td class="px-4 py-3"><a href="mailto:{{ $signup->email }}" class="text-brand-dark hover:text-ink">{{ $signup->email }}</a></td>
                         <td class="px-4 py-3 text-muted">{{ $signup->term ?: '—' }}</td>
                         <td class="max-w-xs px-4 py-3 text-muted">{{ $signup->message ? \Illuminate\Support\Str::limit($signup->message, 120) : '—' }}</td>
                         <td class="px-4 py-3 whitespace-nowrap text-muted">{{ $signup->created_at->format('d.m.Y H:i') }}</td>

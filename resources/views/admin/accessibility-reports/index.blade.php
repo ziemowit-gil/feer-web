@@ -4,17 +4,17 @@
 
 @section('content')
     <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <p class="text-sm text-muted">Zgłoszenia z formularza na stronie <a href="{{ route('accessibility.show') }}" target="_blank" rel="noopener" class="text-brand underline">deklaracji dostępności</a>: <span class="font-bold text-ink">{{ $total }}</span></p>
+        <p class="text-sm text-muted">Zgłoszenia z formularza na stronie <a href="{{ route('accessibility.show') }}" target="_blank" rel="noopener" class="text-brand-dark underline">deklaracji dostępności</a>: <span class="font-bold text-ink">{{ $total }}</span></p>
         @if ($total > 0)
-            <a href="{{ route('admin.zgloszenia-barier.export') }}" class="rounded bg-brand px-4 py-2 text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
+            <a href="{{ route('admin.zgloszenia-barier.export') }}" class="rounded bg-brand-dark px-4 py-2 text-sm font-bold text-white hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2">
                 <i class="fa-solid fa-file-csv"></i> Eksport CSV
             </a>
         @endif
     </div>
 
-    <div class="overflow-x-auto rounded-lg border border-gray-200 bg-white">
+    <div class="overflow-x-auto rounded-md bg-white">
         <table class="w-full text-left text-sm">
-            <thead class="bg-gray-50 text-xs font-bold uppercase text-muted">
+            <thead class="bg-gray-100 text-xs font-bold uppercase text-muted">
                 <tr>
                     <th class="px-4 py-3">Imię i nazwisko</th>
                     <th class="px-4 py-3">E-mail</th>
@@ -28,7 +28,7 @@
                 @forelse ($reports as $report)
                     <tr>
                         <td class="px-4 py-3 font-medium">{{ $report->name ?: '—' }}</td>
-                        <td class="px-4 py-3"><a href="mailto:{{ $report->email }}" class="text-brand hover:text-brand-dark">{{ $report->email }}</a></td>
+                        <td class="px-4 py-3"><a href="mailto:{{ $report->email }}" class="text-brand-dark hover:text-ink">{{ $report->email }}</a></td>
                         <td class="max-w-[12rem] px-4 py-3 text-muted">
                             @if ($report->page_url)
                                 <span class="break-words">{{ \Illuminate\Support\Str::limit($report->page_url, 80) }}</span>

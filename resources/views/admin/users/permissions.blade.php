@@ -5,10 +5,10 @@
 @section('content')
     <p class="mb-4 text-sm text-muted">Kto ma dostęp do których modułów panelu. Administratorzy mają dostęp do wszystkiego; edytorzy z grup — do modułów zaznaczonych w ich grupie (z ewentualnym zakresem treści).</p>
 
-    <div class="overflow-x-auto rounded-lg border border-gray-200 bg-white">
+    <div class="overflow-x-auto rounded-md bg-white">
         <table class="w-full min-w-max text-left text-sm">
             <caption class="sr-only">Uprawnienia użytkowników do modułów panelu</caption>
-            <thead class="bg-gray-50 text-xs font-bold uppercase text-muted">
+            <thead class="bg-gray-100 text-xs font-bold uppercase text-muted">
                 <tr>
                     <th scope="col" class="sticky left-0 z-10 bg-gray-50 px-4 py-3">Użytkownik</th>
                     <th scope="col" class="px-4 py-3">Rola / grupa</th>

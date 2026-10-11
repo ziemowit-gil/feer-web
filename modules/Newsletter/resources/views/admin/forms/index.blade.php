@@ -4,15 +4,15 @@
     @include('newsletter::admin.partials.flash')
     <div class="mb-4 flex items-center justify-between gap-3">
         <p class="text-sm text-muted">Dedykowane formularze zapisu: treści, pola, tematy, zgoda, listy docelowe i podpięcie do SZO. Domyślny formularz wyświetla się na stronie <a href="{{ route('newsletter.show') }}" target="_blank" rel="noopener" class="font-bold text-brand-dark underline">/newsletter</a> i w sekcji newslettera na stronie głównej.</p>
-        <a href="{{ route('admin.newsletter.formularze.create') }}" class="rounded bg-brand px-4 py-2 text-sm font-bold text-white hover:bg-brand-dark"><i class="fa-solid fa-plus" aria-hidden="true"></i> Nowy formularz</a>
+        <a href="{{ route('admin.newsletter.formularze.create') }}" class="rounded bg-brand-dark px-4 py-2 text-sm font-bold text-white hover:bg-ink"><i class="fa-solid fa-plus" aria-hidden="true"></i> Nowy formularz</a>
     </div>
-    <div class="overflow-hidden rounded-lg border border-gray-200 bg-white">
+    <div class="overflow-hidden rounded-md bg-white">
         <table class="w-full text-left text-sm">
-            <thead class="bg-gray-50 text-xs font-bold uppercase text-muted"><tr><th class="px-4 py-3">Nazwa</th><th class="px-4 py-3">Nagłówek</th><th class="px-4 py-3">Adres</th><th class="px-4 py-3 text-right">Zgłoszeń</th><th class="px-4 py-3">Stan</th><th class="px-4 py-3"><span class="sr-only">Akcje</span></th></tr></thead>
+            <thead class="bg-gray-100 text-xs font-bold uppercase text-muted"><tr><th class="px-4 py-3">Nazwa</th><th class="px-4 py-3">Nagłówek</th><th class="px-4 py-3">Adres</th><th class="px-4 py-3 text-right">Zgłoszeń</th><th class="px-4 py-3">Stan</th><th class="px-4 py-3"><span class="sr-only">Akcje</span></th></tr></thead>
             <tbody>
             @forelse ($forms as $f)
                 <tr class="border-t border-gray-100">
-                    <td class="px-4 py-2 font-bold">{{ $f->name }} @if($f->is_default)<span class="ml-1 rounded-full bg-brand/10 px-2 py-0.5 text-xs text-brand-dark">domyślny</span>@endif</td>
+                    <td class="px-4 py-2 font-bold">{{ $f->name }} @if($f->is_default)<span class="ml-1 text-xs text-brand-dark font-bold">domyślny</span>@endif</td>
                     <td class="px-4 py-2">{{ $f->heading }}</td>
                     <td class="px-4 py-2 text-xs"><a href="{{ route('newsletter.form', $f) }}" target="_blank" rel="noopener" class="text-brand-dark underline">/newsletter/{{ $f->slug }}</a></td>
                     <td class="px-4 py-2 text-right">{{ $f->submissions_count }}</td>

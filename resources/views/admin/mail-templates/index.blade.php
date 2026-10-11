@@ -8,14 +8,14 @@
     </div>
 
     @if (session('success'))
-        <div class="mb-4 rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800" role="alert">
+        <div class="mb-4 rounded-md bg-brand-light px-4 py-3 text-sm text-ink" role="alert">
             {{ session('success') }}
         </div>
     @endif
 
-    <div class="overflow-hidden rounded-lg border border-gray-200 bg-white">
+    <div class="overflow-hidden rounded-md bg-white">
         <table class="w-full text-left text-sm">
-            <thead class="bg-gray-50 text-xs font-bold uppercase text-muted">
+            <thead class="bg-gray-100 text-xs font-bold uppercase text-muted">
                 <tr>
                     <th class="px-4 py-3">Nazwa szablonu</th>
                     <th class="px-4 py-3">Klucz</th>

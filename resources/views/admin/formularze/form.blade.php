@@ -4,7 +4,7 @@
 
 @section('content')
     @if ($errors->any())
-        <div class="mb-4 rounded border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700" role="alert">
+        <div class="mb-4 rounded-md bg-red-50 px-4 py-3 text-sm text-red-700" role="alert">
             <p class="font-bold">Popraw błędy:</p>
             <ul class="mt-1 list-inside list-disc">
                 @foreach ($errors->all() as $error)
@@ -15,7 +15,7 @@
     @endif
 
     @if (session('status'))
-        <div class="mb-4 rounded border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700" role="status">
+        <div class="mb-4 rounded-md bg-brand-light px-4 py-3 text-sm text-ink" role="status">
             {{ session('status') }}
         </div>
     @endif
@@ -29,7 +29,7 @@
         @if ($form->exists) @method('PUT') @endif
 
         {{-- Podstawowe dane --}}
-        <fieldset class="space-y-5 rounded-lg border border-gray-200 bg-white p-6">
+        <fieldset class="space-y-5 p-6 rounded-md bg-white">
             <legend class="px-2 text-sm font-bold text-ink">Podstawowe informacje</legend>
 
             <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
@@ -40,7 +40,7 @@
                     <input id="title" name="title" type="text" required
                         value="{{ old('title', $form->title) }}"
                         @input="syncSlug($el.value)"
-                        class="w-full rounded border-gray-300 text-sm focus:border-brand focus-visible:ring-2 focus-visible:ring-brand">
+                        class="w-full rounded border-gray-500 text-sm focus:border-brand-dark focus-visible:ring-2 focus-visible:ring-brand-dark">
                     @error('title') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                 </div>
 
@@ -54,7 +54,7 @@
                             value="{{ old('slug', $form->slug) }}"
                             x-ref="slug"
                             pattern="[a-z0-9\-]+"
-                            class="w-full rounded border-gray-300 font-mono text-sm focus:border-brand focus-visible:ring-2 focus-visible:ring-brand">
+                            class="w-full rounded border-gray-500 font-mono text-sm focus:border-brand-dark focus-visible:ring-2 focus-visible:ring-brand-dark">
                     </div>
                     @error('slug') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                 </div>
@@ -63,27 +63,27 @@
             <div>
                 <label for="description" class="mb-1 block text-sm font-bold">Opis (widoczny dla edytorów)</label>
                 <textarea id="description" name="description" rows="2"
-                    class="w-full rounded border-gray-300 text-sm focus:border-brand focus-visible:ring-2 focus-visible:ring-brand">{{ old('description', $form->description) }}</textarea>
+                    class="w-full rounded border-gray-500 text-sm focus:border-brand-dark focus-visible:ring-2 focus-visible:ring-brand-dark">{{ old('description', $form->description) }}</textarea>
             </div>
 
             <div class="flex items-center gap-3">
                 <input type="hidden" name="is_active" value="0">
                 <input id="is_active" name="is_active" type="checkbox" value="1"
                     {{ old('is_active', $form->is_active ?? true) ? 'checked' : '' }}
-                    class="rounded border-gray-300 text-brand focus:ring-brand">
+                    class="rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
                 <label for="is_active" class="text-sm font-medium">Formularz aktywny (publiczny)</label>
             </div>
         </fieldset>
 
         {{-- Builder pól --}}
-        <fieldset class="rounded-lg border border-gray-200 bg-white p-6">
+        <fieldset class="p-6 rounded-md bg-white">
             <legend class="px-2 text-sm font-bold text-ink">Pola formularza</legend>
 
             <p class="mb-4 text-sm text-muted">Dodaj pola, które użytkownicy będą wypełniać. Przeciągnij wiersze, aby zmienić kolejność.</p>
 
             <div class="space-y-3" id="fields-list">
                 <template x-for="(field, index) in fields" :key="field._id">
-                    <div class="group relative rounded-lg border border-gray-200 bg-gray-50 p-4"
+                    <div class="group relative p-4 rounded-md bg-gray-50"
                         :data-index="index">
 
                         <input type="hidden" :name="'fields[' + index + '][type]'" x-model="field.type">
@@ -103,14 +103,14 @@
                                             :name="'fields[' + index + '][label]'"
                                             type="text" x-model="field.label" required
                                             placeholder="np. Imię i nazwisko"
-                                            class="w-full rounded border-gray-300 text-sm focus:border-brand focus-visible:ring-2 focus-visible:ring-brand">
+                                            class="w-full rounded border-gray-500 text-sm focus:border-brand-dark focus-visible:ring-2 focus-visible:ring-brand-dark">
                                     </div>
                                     <div>
                                         <label :for="'field-type-' + index" class="mb-1 block text-xs font-bold text-muted uppercase tracking-wide">Typ pola</label>
                                         <select :id="'field-type-' + index"
                                             :name="'fields[' + index + '][type]'"
                                             x-model="field.type"
-                                            class="w-full rounded border-gray-300 text-sm focus:border-brand focus-visible:ring-2 focus-visible:ring-brand">
+                                            class="w-full rounded border-gray-500 text-sm focus:border-brand-dark focus-visible:ring-2 focus-visible:ring-brand-dark">
                                             @foreach ($types as $value => $label)
                                                 <option value="{{ $value }}">{{ $label }}</option>
                                             @endforeach
@@ -125,7 +125,7 @@
                                             :name="'fields[' + index + '][placeholder]'"
                                             type="text" x-model="field.placeholder"
                                             placeholder="Tekst pomocniczy w pustym polu"
-                                            class="w-full rounded border-gray-300 text-sm focus:border-brand focus-visible:ring-2 focus-visible:ring-brand">
+                                            class="w-full rounded border-gray-500 text-sm focus:border-brand-dark focus-visible:ring-2 focus-visible:ring-brand-dark">
                                     </div>
                                     <div>
                                         <label :for="'field-help-' + index" class="mb-1 block text-xs font-bold text-muted uppercase tracking-wide">Tekst pomocy</label>
@@ -133,7 +133,7 @@
                                             :name="'fields[' + index + '][help_text]'"
                                             type="text" x-model="field.help_text"
                                             placeholder="Dodatkowy opis pod polem"
-                                            class="w-full rounded border-gray-300 text-sm focus:border-brand focus-visible:ring-2 focus-visible:ring-brand">
+                                            class="w-full rounded border-gray-500 text-sm focus:border-brand-dark focus-visible:ring-2 focus-visible:ring-brand-dark">
                                     </div>
                                 </div>
 
@@ -146,13 +146,13 @@
                                         :name="'fields[' + index + '][options]'"
                                         type="text" x-model="field.options"
                                         placeholder="np. Tak, Nie, Nie wiem"
-                                        class="w-full rounded border-gray-300 text-sm focus:border-brand focus-visible:ring-2 focus-visible:ring-brand">
+                                        class="w-full rounded border-gray-500 text-sm focus:border-brand-dark focus-visible:ring-2 focus-visible:ring-brand-dark">
                                 </div>
 
                                 <div class="flex items-center gap-3">
                                     <input :id="'field-required-' + index"
                                         type="checkbox" x-model="field.required"
-                                        class="rounded border-gray-300 text-brand focus:ring-brand">
+                                        class="rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
                                     <label :for="'field-required-' + index" class="text-sm font-medium">Pole wymagane</label>
                                 </div>
                             </div>
@@ -160,18 +160,18 @@
                             {{-- Przyciski operacji --}}
                             <div class="flex shrink-0 flex-col gap-1">
                                 <button type="button" @click="moveUp(index)" :disabled="index === 0"
-                                    class="rounded p-1.5 text-gray-400 hover:text-brand disabled:opacity-30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
-                                    :aria-label="'Przesuń pole „' + field.label + '" w górę'">
+                                    class="rounded p-1.5 text-gray-400 hover:text-brand-dark disabled:opacity-30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark"
+                                    :aria-label="'Przesuń pole „' + field.label + '” w górę'">
                                     <i class="fa-solid fa-arrow-up text-xs" aria-hidden="true"></i>
                                 </button>
                                 <button type="button" @click="moveDown(index)" :disabled="index === fields.length - 1"
-                                    class="rounded p-1.5 text-gray-400 hover:text-brand disabled:opacity-30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
-                                    :aria-label="'Przesuń pole „' + field.label + '" w dół'">
+                                    class="rounded p-1.5 text-gray-400 hover:text-brand-dark disabled:opacity-30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark"
+                                    :aria-label="'Przesuń pole „' + field.label + '” w dół'">
                                     <i class="fa-solid fa-arrow-down text-xs" aria-hidden="true"></i>
                                 </button>
                                 <button type="button" @click="removeField(index)"
                                     class="rounded p-1.5 text-gray-400 hover:text-red-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
-                                    :aria-label="'Usuń pole „' + field.label + '"'">
+                                    :aria-label="'Usuń pole „' + field.label + '”'">
                                     <i class="fa-solid fa-xmark text-xs" aria-hidden="true"></i>
                                 </button>
                             </div>
@@ -189,7 +189,7 @@
             <div class="mt-4 flex flex-wrap gap-2">
                 @foreach ($types as $value => $label)
                     <button type="button" @click="addField('{{ $value }}')"
-                        class="rounded border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-ink hover:border-brand hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                        class="rounded-md px-3 py-1.5 text-xs font-medium text-ink hover:text-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark bg-gray-100 hover:bg-brand-light">
                         <i class="fa-solid fa-plus mr-1" aria-hidden="true"></i>{{ $label }}
                     </button>
                 @endforeach
@@ -197,7 +197,7 @@
         </fieldset>
 
         {{-- Ustawienia --}}
-        <fieldset class="space-y-4 rounded-lg border border-gray-200 bg-white p-6">
+        <fieldset class="space-y-4 p-6 rounded-md bg-white">
             <legend class="px-2 text-sm font-bold text-ink">Ustawienia formularza</legend>
 
             <div>
@@ -206,7 +206,7 @@
                 </label>
                 <textarea id="confirmation_message" name="settings[confirmation_message]" rows="2"
                     placeholder="Dziękujemy! Twoje zgłoszenie zostało przyjęte."
-                    class="w-full rounded border-gray-300 text-sm focus:border-brand focus-visible:ring-2 focus-visible:ring-brand">{{ old('settings.confirmation_message', $form->settings['confirmation_message'] ?? '') }}</textarea>
+                    class="w-full rounded border-gray-500 text-sm focus:border-brand-dark focus-visible:ring-2 focus-visible:ring-brand-dark">{{ old('settings.confirmation_message', $form->settings['confirmation_message'] ?? '') }}</textarea>
             </div>
 
             {{-- Powiadomienia e-mail o zgłoszeniach --}}
@@ -218,8 +218,8 @@
                     ? 'Microsoft 365 (Graph API)'
                     : (\App\Models\SiteSetting::MAIL_TRANSPORTS[$siteCfg->mail_transport ?? 'default'] ?? 'domyślny tryb wysyłki');
             @endphp
-            <fieldset class="space-y-4 rounded-lg border border-gray-200 bg-gray-50 p-4">
-                <legend class="px-1 text-sm font-bold text-ink"><i class="fa-solid fa-envelope mr-1 text-brand" aria-hidden="true"></i> Powiadomienia e-mail o zgłoszeniach</legend>
+            <fieldset class="space-y-4 p-4 rounded-md bg-gray-50">
+                <legend class="px-1 text-sm font-bold text-ink"><i class="fa-solid fa-envelope mr-1 text-brand-dark" aria-hidden="true"></i> Powiadomienia e-mail o zgłoszeniach</legend>
 
                 <div class="grid gap-4 sm:grid-cols-2">
                     <div>
@@ -228,7 +228,7 @@
                             value="{{ old('settings.notification_email', $form->settings['notification_email'] ?? '') }}"
                             placeholder="np. biuro@feer.org.pl, sekretariat@feer.org.pl"
                             aria-describedby="notification_email_help"
-                            class="w-full rounded border-gray-300 text-sm focus:border-brand focus-visible:ring-2 focus-visible:ring-brand">
+                            class="w-full rounded border-gray-500 text-sm focus:border-brand-dark focus-visible:ring-2 focus-visible:ring-brand-dark">
                         <p id="notification_email_help" class="mt-1 text-xs text-muted">Kilka adresów rozdziel przecinkami. Puste = brak powiadomień.</p>
                         @error('settings.notification_email')
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -239,7 +239,7 @@
                         <input id="notification_cc" name="settings[notification_cc]" type="text" inputmode="email" autocomplete="off"
                             value="{{ old('settings.notification_cc', $form->settings['notification_cc'] ?? '') }}"
                             placeholder="opcjonalnie"
-                            class="w-full rounded border-gray-300 text-sm focus:border-brand focus-visible:ring-2 focus-visible:ring-brand">
+                            class="w-full rounded border-gray-500 text-sm focus:border-brand-dark focus-visible:ring-2 focus-visible:ring-brand-dark">
                         @error('settings.notification_cc')
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                         @enderror
@@ -253,20 +253,20 @@
                             value="{{ old('settings.notification_subject', $form->settings['notification_subject'] ?? '') }}"
                             placeholder="Nowe zgłoszenie: {tytul}"
                             aria-describedby="notification_subject_help"
-                            class="w-full rounded border-gray-300 text-sm focus:border-brand focus-visible:ring-2 focus-visible:ring-brand">
+                            class="w-full rounded border-gray-500 text-sm focus:border-brand-dark focus-visible:ring-2 focus-visible:ring-brand-dark">
                         <p id="notification_subject_help" class="mt-1 text-xs text-muted">Znaczniki: <code>{tytul}</code> — nazwa formularza, <code>{id}</code> — numer zgłoszenia.</p>
                     </div>
                     <div>
                         <label for="form_mailer" class="mb-1 block text-sm font-bold">Sposób wysyłki</label>
                         <select id="form_mailer" name="settings[mailer]" aria-describedby="form_mailer_help"
-                            class="w-full rounded border-gray-300 text-sm focus:border-brand focus-visible:ring-2 focus-visible:ring-brand">
+                            class="w-full rounded border-gray-500 text-sm focus:border-brand-dark focus-visible:ring-2 focus-visible:ring-brand-dark">
                             <option value="" @selected($formMailer === '')>Dziedzicz z ustawień ({{ $inheritedLabel }})</option>
                             <option value="msgraph" @selected($formMailer === 'msgraph')>Microsoft 365 (Graph API){{ $graphReady ? '' : ' — nieskonfigurowany' }}</option>
                             <option value="default" @selected($formMailer === 'default')>Domyślny tryb wysyłki serwisu</option>
                         </select>
                         <p id="form_mailer_help" class="mt-1 text-xs text-muted">
                             Formularze domyślnie wysyłają przez Microsoft Graph, gdy jest skonfigurowany w
-                            <a href="{{ route('admin.ustawienia.edit', ['tab' => 'mail']) }}" class="text-brand underline-offset-2 hover:underline">Ustawienia → Poczta</a>.
+                            <a href="{{ route('admin.ustawienia.edit', ['tab' => 'mail']) }}" class="text-brand-dark underline-offset-2 hover:underline">Ustawienia → Poczta</a>.
                             @unless ($graphReady) <span class="text-amber-700">Graph nie jest jeszcze skonfigurowany — do czasu uzupełnienia danych używany jest domyślny tryb.</span> @endunless
                         </p>
                     </div>
@@ -277,7 +277,7 @@
                         <input type="hidden" name="settings[reply_to_submitter]" value="0">
                         <input type="checkbox" name="settings[reply_to_submitter]" value="1"
                             @checked(old('settings.reply_to_submitter', $form->settings['reply_to_submitter'] ?? true))
-                            class="mt-0.5 rounded border-gray-300 text-brand focus:ring-brand">
+                            class="mt-0.5 rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
                         <span>
                             <span class="block text-sm font-bold">Odpowiedz-do: adres zgłaszającego</span>
                             <span class="block text-xs text-muted">Jeśli formularz ma pole „Adres e-mail”, odpowiedź na powiadomienie trafi wprost do tej osoby.</span>
@@ -287,7 +287,7 @@
                         <input type="hidden" name="settings[send_copy_to_submitter]" value="0">
                         <input type="checkbox" name="settings[send_copy_to_submitter]" value="1"
                             @checked(old('settings.send_copy_to_submitter', $form->settings['send_copy_to_submitter'] ?? false))
-                            class="mt-0.5 rounded border-gray-300 text-brand focus:ring-brand">
+                            class="mt-0.5 rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
                         <span>
                             <span class="block text-sm font-bold">Wyślij kopię zgłaszającemu</span>
                             <span class="block text-xs text-muted">Potwierdzenie z kopią przesłanych danych na adres z pola „Adres e-mail”.</span>
@@ -299,7 +299,7 @@
                     <label for="submitter_copy_message" class="mb-1 block text-sm font-bold">Treść wstępu w kopii dla zgłaszającego</label>
                     <textarea id="submitter_copy_message" name="settings[submitter_copy_message]" rows="2"
                         placeholder="Dziękujemy za wypełnienie formularza. Poniżej kopia przesłanych danych."
-                        class="w-full rounded border-gray-300 text-sm focus:border-brand focus-visible:ring-2 focus-visible:ring-brand">{{ old('settings.submitter_copy_message', $form->settings['submitter_copy_message'] ?? '') }}</textarea>
+                        class="w-full rounded border-gray-500 text-sm focus:border-brand-dark focus-visible:ring-2 focus-visible:ring-brand-dark">{{ old('settings.submitter_copy_message', $form->settings['submitter_copy_message'] ?? '') }}</textarea>
                 </div>
             </fieldset>
 
@@ -309,7 +309,7 @@
                     <input type="hidden" name="settings[cleantalk_disabled]" value="0">
                     <input type="checkbox" name="settings[cleantalk_disabled]" value="1"
                         @checked(old('settings.cleantalk_disabled', $form->settings['cleantalk_disabled'] ?? false))
-                        class="mt-0.5 rounded border-gray-300 text-brand focus:ring-brand">
+                        class="mt-0.5 rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
                     <span>
                         <span class="block text-sm font-bold">Nie sprawdzaj tego formularza w CleanTalk</span>
                         <span class="block text-xs text-muted">Domyślnie zgłoszenia są oceniane przez CleanTalk (włączone w ustawieniach). Zaznacz, jeśli formularz jest wewnętrzny albo nie powinien wysyłać danych do zewnętrznej usługi. Lokalna ochrona antyspamowa działa nadal.</span>
@@ -334,7 +334,7 @@
                         value="{{ old('settings.szo_form_slug', $form->settings['szo_form_slug'] ?? '') }}">
                 @else
                     <select id="szo_form_slug" name="settings[szo_form_slug]"
-                        class="w-full max-w-sm rounded border-gray-300 text-sm focus:border-brand focus-visible:ring-2 focus-visible:ring-brand">
+                        class="w-full max-w-sm rounded border-gray-500 text-sm focus:border-brand-dark focus-visible:ring-2 focus-visible:ring-brand-dark">
                         <option value="">— nie przekazuj —</option>
                         @foreach ($szoForms as $szoForm)
                             <option value="{{ $szoForm['slug'] }}"
@@ -358,7 +358,7 @@
 
         {{-- Osadzanie formularza --}}
         @if ($form->exists)
-            <div class="rounded-lg border border-blue-200 bg-blue-50 p-4 text-sm">
+            <div class="rounded-md bg-brand-light p-4 text-sm">
                 <p class="mb-2 font-bold text-blue-800">
                     <i class="fa-solid fa-code mr-1" aria-hidden="true"></i>
                     Osadzanie formularza
@@ -380,16 +380,16 @@
 
         <div class="flex items-center gap-3">
             <button type="submit"
-                class="rounded bg-brand px-5 py-2 text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
+                class="rounded bg-brand-dark px-5 py-2 text-sm font-bold text-white hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2">
                 Zapisz formularz
             </button>
             <a href="{{ route('admin.formularze.index') }}"
-                class="text-sm text-muted hover:text-brand focus-visible:rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                class="text-sm text-muted hover:text-brand-dark focus-visible:rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">
                 Anuluj
             </a>
             @if ($form->exists)
                 <a href="{{ route('admin.formularze.zgloszenia', $form) }}"
-                    class="ml-auto text-sm text-muted hover:text-brand focus-visible:rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                    class="ml-auto text-sm text-muted hover:text-brand-dark focus-visible:rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">
                     <i class="fa-solid fa-inbox mr-1" aria-hidden="true"></i>
                     Zgłoszenia ({{ $form->submissions()->count() }})
                 </a>

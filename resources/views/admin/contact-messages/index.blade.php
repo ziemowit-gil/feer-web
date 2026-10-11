@@ -12,7 +12,7 @@
             @foreach (['wszystkie' => 'Wszystkie', 'nieprzeczytane' => 'Nieprzeczytane', 'przeczytane' => 'Przeczytane'] as $val => $label)
                 <a href="{{ route('admin.wiadomosci-kontaktowe.index', ['filtr' => $val]) }}"
                    class="rounded-lg border px-3 py-1.5 text-xs font-bold transition
-                          {{ $filter === $val ? 'border-brand bg-brand text-white' : 'border-gray-200 bg-white text-muted hover:bg-gray-50' }}">
+                          {{ $filter === $val ? 'border-brand-dark bg-brand-dark text-white' : 'border-gray-200 bg-white text-muted hover:bg-gray-50' }}">
                     {{ $label }}
                     @if ($val === 'nieprzeczytane' && $unreadCount > 0)
                         <span class="ml-1 inline-flex h-4 w-4 items-center justify-center rounded-full bg-white/30 text-[10px]">{{ $unreadCount }}</span>
@@ -26,7 +26,7 @@
                     @csrf
                     @method('DELETE')
                     <input type="hidden" name="filtr" value="{{ $filter }}">
-                    <button type="submit" class="rounded-lg border border-red-200 bg-white px-3 py-1.5 text-xs font-bold text-red-600 transition hover:bg-red-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500">
+                    <button type="submit" class="rounded-md px-3 py-1.5 text-xs font-bold text-red-800 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 bg-red-50 hover:bg-red-100">
                         Usuń wszystkie ({{ $messages->total() }})
                     </button>
                 </form>
@@ -35,20 +35,20 @@
     </div>
 
     @if (session('status'))
-        <div class="mb-5 flex items-center gap-2 rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm font-medium text-green-800" role="alert">
+        <div class="mb-5 flex items-center gap-2 rounded-md bg-brand-light px-4 py-3 text-sm font-medium text-ink" role="alert">
             <i class="fa-solid fa-circle-check text-green-600" aria-hidden="true"></i>
             {{ session('status') }}
         </div>
     @endif
 
     @if ($messages->isEmpty())
-        <div class="rounded-xl border border-gray-200 bg-gray-50 p-10 text-center text-muted">
+        <div class="p-10 text-center text-muted rounded-md bg-white">
             <i class="fa-solid fa-inbox mb-3 text-3xl text-gray-300" aria-hidden="true"></i>
             <p class="font-medium">Brak wiadomości</p>
             <p class="mt-1 text-sm">Wiadomości z formularza kontaktowego pojawią się tutaj.</p>
         </div>
     @else
-        <div class="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+        <div class="overflow-hidden rounded-md bg-white">
             <table class="w-full text-sm">
                 <thead class="border-b border-gray-100 bg-gray-50">
                     <tr>
@@ -64,7 +64,7 @@
                             <td class="px-4 py-3">
                                 <div class="flex items-center gap-2">
                                     @if ($msg->isUnread())
-                                        <span class="h-2 w-2 shrink-0 rounded-full bg-brand" title="Nieprzeczytane" aria-label="Nowe"></span>
+                                        <span class="h-2 w-2 shrink-0 rounded-full bg-brand-dark" title="Nieprzeczytane" aria-label="Nowe"></span>
                                     @else
                                         <span class="h-2 w-2 shrink-0 rounded-full bg-transparent"></span>
                                     @endif
@@ -91,7 +91,7 @@
                             </td>
                             <td class="px-4 py-3 text-right">
                                 <a href="{{ route('admin.wiadomosci-kontaktowe.show', $msg) }}"
-                                   class="inline-flex items-center gap-1 rounded-lg border border-gray-200 px-3 py-1 text-xs font-bold text-muted hover:bg-gray-50 hover:text-ink">
+                                   class="inline-flex items-center gap-1 rounded-md px-3 py-1 text-xs font-bold text-muted hover:text-ink bg-gray-100 hover:bg-brand-light">
                                     Otwórz
                                 </a>
                             </td>

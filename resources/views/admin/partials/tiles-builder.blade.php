@@ -15,7 +15,7 @@
                     <h2 id="tb-title" class="text-lg font-bold text-ink">Zestaw kafelków</h2>
                     <p class="text-xs text-muted">Układ kafelków widzisz na bieżąco po prawej stronie.</p>
                 </div>
-                <button type="button" id="tb-close" class="flex h-10 w-10 flex-none items-center justify-center rounded-lg text-gray-600 hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                <button type="button" id="tb-close" class="flex h-10 w-10 flex-none items-center justify-center rounded-lg text-gray-600 hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">
                     <i class="fa-solid fa-xmark text-lg" aria-hidden="true"></i><span class="sr-only">Zamknij kreator</span>
                 </button>
             </div>
@@ -25,19 +25,19 @@
                 <div class="space-y-4 px-6 py-5">
                     <div>
                         <label for="tb-name" class="mb-1 block text-sm font-bold text-ink">Nazwa zestawu <span class="font-normal text-muted">(tylko dla Ciebie)</span></label>
-                        <input type="text" id="tb-name" maxlength="120" placeholder="np. Kafelki działu Szkolenia" class="w-full rounded-lg border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                        <input type="text" id="tb-name" maxlength="120" placeholder="np. Kafelki działu Szkolenia" class="w-full rounded-lg border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark">
                     </div>
                     <ol id="tb-rows" class="space-y-2" role="list"></ol>
                     <div class="flex flex-wrap gap-2">
-                        <button type="button" id="tb-add" class="inline-flex min-h-10 items-center gap-2 rounded-lg bg-brand px-4 text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
+                        <button type="button" id="tb-add" class="inline-flex min-h-10 items-center gap-2 rounded-lg bg-brand-dark px-4 text-sm font-bold text-white hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2">
                             <i class="fa-solid fa-plus" aria-hidden="true"></i> Dodaj kafelek
                         </button>
-                        <button type="button" id="tb-add-section" class="inline-flex min-h-10 items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 text-sm font-bold text-ink hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                        <button type="button" id="tb-add-section" class="inline-flex min-h-10 items-center gap-2 rounded-md px-4 text-sm font-bold text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark bg-gray-100 hover:bg-brand-light">
                             <i class="fa-solid fa-heading" aria-hidden="true"></i> Dodaj sekcję (nagłówek)
                         </button>
                     </div>
- <div id="tb-hints" class="hidden rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-900" role="status" aria-live="polite"></div>
-                    <p id="tb-error" role="alert" class="hidden rounded border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800"></p>
+ <div id="tb-hints" class="hidden rounded-md bg-amber-50 px-3 py-2 text-sm text-amber-900" role="status" aria-live="polite"></div>
+                    <p id="tb-error" role="alert" class="hidden rounded-md bg-red-50 px-3 py-2 text-sm text-red-800"></p>
                 </div>
 
                 {{-- Prawa strona: podgląd na żywo --}}
@@ -50,8 +50,8 @@
             <div class="flex flex-wrap items-center justify-between gap-3 border-t border-gray-200 px-6 py-4">
                 <p class="text-xs text-muted">Siatka wstawi się w treść jako blok; edytujesz ją ponownie z menu „Wstaw”.</p>
                 <div class="flex gap-2">
-                    <button type="button" id="tb-cancel" class="rounded-lg px-4 py-2 text-sm font-bold text-muted hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">Anuluj</button>
-                    <button type="button" id="tb-save" class="rounded-lg bg-brand px-5 py-2 text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">Zapisz i wstaw</button>
+                    <button type="button" id="tb-cancel" class="rounded-lg px-4 py-2 text-sm font-bold text-muted hover:text-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">Anuluj</button>
+                    <button type="button" id="tb-save" class="rounded-lg bg-brand-dark px-5 py-2 text-sm font-bold text-white hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2">Zapisz i wstaw</button>
                 </div>
             </div>
         </div>
@@ -69,11 +69,11 @@
         .tb-head { display: flex; align-items: center; gap: .625rem; padding: .5rem .625rem; }
         .tb-chip { display: inline-flex; width: 2.25rem; height: 2.25rem; flex: none; align-items: center; justify-content: center; border-radius: .5rem; font-size: 1.05rem; }
         .tb-input { width: 100%; border: 1px solid #d1d5db; border-radius: .5rem; padding: .4rem .6rem; font-size: .875rem; }
-        .tb-input:focus { outline: 2px solid var(--color-brand); outline-offset: 0; border-color: var(--color-brand); }
+        .tb-input:focus { outline: 2px solid var(--color-brand-dark); outline-offset: 0; border-color: var(--color-brand-dark); }
         .tb-ibtn { display: inline-flex; width: 2rem; height: 2rem; flex: none; align-items: center; justify-content: center; border-radius: .5rem; color: #374151; }
         .tb-ibtn:hover:not(:disabled) { background: #f3f4f6; }
         .tb-ibtn:disabled { opacity: .35; cursor: not-allowed; }
-        .tb-ibtn:focus-visible, .tb-seg button:focus-visible, .tb-sw:focus-visible { outline: 2px solid var(--color-brand); outline-offset: 2px; }
+        .tb-ibtn:focus-visible, .tb-seg button:focus-visible, .tb-sw:focus-visible { outline: 2px solid var(--color-brand-dark); outline-offset: 2px; }
         .tb-seg { display: inline-flex; border: 1px solid #d1d5db; border-radius: .5rem; overflow: hidden; }
         .tb-seg button { padding: .3rem .7rem; font-size: .8rem; font-weight: 700; background: #fff; color: #1d1d1a; border-left: 1px solid #d1d5db; }
         .tb-seg button:first-child { border-left: 0; }
@@ -81,7 +81,7 @@
         .tb-sw { width: 1.75rem; height: 1.75rem; border-radius: 9999px; border: 2px solid #fff; box-shadow: 0 0 0 1px #9ca3af; }
         .tb-sw[aria-pressed="true"] { box-shadow: 0 0 0 2px #1d1d1a; }
         .tb-label { display: block; margin-bottom: .25rem; font-size: .75rem; font-weight: 700; color: #374151; }
-        .tb-section { border: 2px solid var(--color-brand); border-radius: .75rem; background: var(--color-brand-light); padding: .5rem .625rem; display: flex; align-items: center; gap: .5rem; }
+        .tb-section { border: 2px solid var(--color-brand-dark); border-radius: .75rem; background: var(--color-brand-light); padding: .5rem .625rem; display: flex; align-items: center; gap: .5rem; }
         .tb-pv-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .5rem; }
         .tb-pv-tile { display: flex; align-items: center; gap: .5rem; border-radius: .375rem; padding: .5rem .65rem; font-size: .8rem; font-weight: 700; line-height: 1.25; min-height: 3.25rem; }
         .tb-pv-tile.is-strip { min-height: 2.25rem; padding-top: .25rem; padding-bottom: .25rem; }

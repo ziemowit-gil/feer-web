@@ -4,11 +4,11 @@
     @include('newsletter::admin.partials.flash')
     <div class="mb-4 flex items-center justify-between gap-3">
         <p class="text-sm text-muted">Segmenty wyliczane w chwili wysyłki z reguł (status, tematy, aktywność, listy, ośrodek…).</p>
-        <a href="{{ route('admin.newsletter.segmenty.create') }}" class="rounded bg-brand px-4 py-2 text-sm font-bold text-white hover:bg-brand-dark"><i class="fa-solid fa-plus" aria-hidden="true"></i> Nowy segment</a>
+        <a href="{{ route('admin.newsletter.segmenty.create') }}" class="rounded bg-brand-dark px-4 py-2 text-sm font-bold text-white hover:bg-ink"><i class="fa-solid fa-plus" aria-hidden="true"></i> Nowy segment</a>
     </div>
-    <div class="overflow-hidden rounded-lg border border-gray-200 bg-white">
+    <div class="overflow-hidden rounded-md bg-white">
         <table class="w-full text-left text-sm">
-            <thead class="bg-gray-50 text-xs font-bold uppercase text-muted"><tr><th class="px-4 py-3">Nazwa</th><th class="px-4 py-3">Reguły</th><th class="px-4 py-3 text-right">Liczność</th><th class="px-4 py-3"><span class="sr-only">Akcje</span></th></tr></thead>
+            <thead class="bg-gray-100 text-xs font-bold uppercase text-muted"><tr><th class="px-4 py-3">Nazwa</th><th class="px-4 py-3">Reguły</th><th class="px-4 py-3 text-right">Liczność</th><th class="px-4 py-3"><span class="sr-only">Akcje</span></th></tr></thead>
             <tbody>
             @forelse ($segments as $s)
                 <tr class="border-t border-gray-100">

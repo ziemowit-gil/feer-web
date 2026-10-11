@@ -39,13 +39,13 @@
             <p class="mt-1 text-sm text-muted">Plik konfiguracyjny środowiska aplikacji — ścieżka: <code class="font-mono text-xs">{{ base_path('.env') }}</code></p>
         </div>
         <a href="{{ route('admin.ustawienia.edit') }}"
-            class="rounded border border-gray-300 px-3 py-1.5 text-sm text-muted hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+            class="rounded-md px-3 py-1.5 text-sm text-muted hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark bg-white hover:bg-brand-light">
             ← Ustawienia
         </a>
     </div>
 
     {{-- Ostrzeżenie --}}
-    <div role="alert" class="rounded-xl border border-amber-300 bg-amber-50 p-5">
+    <div role="alert" class="rounded-md bg-amber-50 p-5">
         <div class="flex items-start gap-3">
             <i class="fa-solid fa-triangle-exclamation mt-0.5 text-xl text-amber-600" aria-hidden="true"></i>
             <div class="space-y-1">
@@ -66,19 +66,19 @@
 
     {{-- Status / błędy --}}
     @if (session('status'))
-        <div role="status" class="rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800">
+        <div role="status" class="rounded-md bg-brand-light px-4 py-3 text-sm text-ink">
             <i class="fa-solid fa-circle-check mr-2" aria-hidden="true"></i>{{ session('status') }}
         </div>
     @endif
     @if (session('error'))
-        <div role="alert" class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
+        <div role="alert" class="rounded-md bg-red-50 px-4 py-3 text-sm text-red-800">
             <i class="fa-solid fa-circle-exclamation mr-2" aria-hidden="true"></i>{{ session('error') }}
         </div>
     @endif
 
     {{-- Formularz --}}
     <form method="POST" action="{{ route('admin.ustawienia.env.update') }}"
-        class="rounded-xl border border-gray-200 bg-white divide-y divide-gray-100">
+        class="divide-y divide-gray-100 rounded-md bg-white">
         @csrf
 
         @foreach ($entries as $entry)
@@ -103,8 +103,8 @@
                             <div class="flex items-center gap-2">
                                 <input id="env-{{ $k }}" type="password"
                                     value="{{ $v }}" disabled
-                                    class="w-full rounded border border-gray-200 bg-gray-100 px-3 py-1.5 font-mono text-xs text-muted cursor-not-allowed">
-                                <span class="shrink-0 rounded bg-amber-100 px-2 py-1 text-[0.65rem] font-bold text-amber-700">TYLKO ODCZYT</span>
+                                    class="w-full rounded border border-gray-500 bg-gray-100 px-3 py-1.5 font-mono text-xs text-muted cursor-not-allowed">
+                                <span class="shrink-0 text-[0.65rem] font-bold text-ink"><i class="fa-solid fa-circle-exclamation mr-1 text-ink" aria-hidden="true"></i>TYLKO ODCZYT</span>
                             </div>
                             <p class="text-[0.7rem] text-muted">Klucz szyfrowania — zmiana spowoduje utratę wszystkich zaszyfrowanych danych.</p>
                         @elseif ($sens)
@@ -112,10 +112,10 @@
                                 <input id="env-{{ $k }}" name="env[{{ $k }}]"
                                     :type="show ? 'text' : 'password'"
                                     value="{{ $v }}"
-                                    class="w-full rounded border-gray-300 px-3 py-1.5 font-mono text-xs focus:border-brand focus:ring-brand">
+                                    class="w-full rounded border-gray-500 px-3 py-1.5 font-mono text-xs focus:border-brand-dark focus:ring-brand-dark">
                                 <button type="button" @click="show = !show"
                                     :aria-label="show ? 'Ukryj wartość' : 'Pokaż wartość'"
-                                    class="shrink-0 rounded border border-gray-300 px-2.5 py-1.5 text-xs text-muted hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                                    class="shrink-0 rounded-md px-2.5 py-1.5 text-xs text-muted hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark bg-gray-100 hover:bg-brand-light">
                                     <i :class="show ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye'" aria-hidden="true"></i>
                                 </button>
                             </div>
@@ -123,7 +123,7 @@
                             <input id="env-{{ $k }}" name="env[{{ $k }}]"
                                 type="text"
                                 value="{{ $v }}"
-                                class="w-full rounded border-gray-300 px-3 py-1.5 font-mono text-xs focus:border-brand focus:ring-brand">
+                                class="w-full rounded border-gray-500 px-3 py-1.5 font-mono text-xs focus:border-brand-dark focus:ring-brand-dark">
                         @endif
                     </div>
                 </div>
@@ -133,7 +133,7 @@
         {{-- Zapis --}}
         <div class="flex items-center gap-4 px-5 py-4 bg-gray-50 rounded-b-xl">
             <button type="submit"
-                class="inline-flex items-center gap-2 rounded-lg bg-brand px-5 py-2.5 text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2"
+                class="inline-flex items-center gap-2 rounded-lg bg-brand-dark px-5 py-2.5 text-sm font-bold text-white hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2"
                 onclick="return confirm('Zapisać zmiany w pliku .env? Aplikacja zostanie natychmiast skonfigurowana z nowymi wartościami.')">
                 <i class="fa-solid fa-floppy-disk" aria-hidden="true"></i>
                 Zapisz plik .env

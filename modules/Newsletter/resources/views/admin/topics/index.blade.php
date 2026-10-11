@@ -4,11 +4,11 @@
     @include('newsletter::admin.partials.flash')
     <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
         <p class="text-sm text-muted">Tematy, które subskrybent wybiera przy zapisie i w preferencjach. Kolejność tutaj = kolejność w formularzach (przeciągnij wiersze). Klucz tematu jest stały, bo siedzi w danych subskrybentów.</p>
-        <a href="{{ route('admin.newsletter.tematy.create') }}" class="rounded bg-brand px-4 py-2 text-sm font-bold text-white hover:bg-brand-dark"><i class="fa-solid fa-plus" aria-hidden="true"></i> Nowy temat</a>
+        <a href="{{ route('admin.newsletter.tematy.create') }}" class="rounded bg-brand-dark px-4 py-2 text-sm font-bold text-white hover:bg-ink"><i class="fa-solid fa-plus" aria-hidden="true"></i> Nowy temat</a>
     </div>
-    <div class="overflow-hidden rounded-lg border border-gray-200 bg-white">
+    <div class="overflow-hidden rounded-md bg-white">
         <table class="w-full text-left text-sm">
-            <thead class="bg-gray-50 text-xs font-bold uppercase text-muted"><tr><th class="px-3 py-3 w-8"><span class="sr-only">Kolejność</span></th><th class="px-3 py-3">Temat</th><th class="px-3 py-3">Klucz</th><th class="px-3 py-3">Treść dynamiczna</th><th class="px-3 py-3 text-right">Subskrybenci</th><th class="px-3 py-3 text-right">Aktywni</th><th class="px-3 py-3">Stan</th><th class="px-3 py-3"><span class="sr-only">Akcje</span></th></tr></thead>
+            <thead class="bg-gray-100 text-xs font-bold uppercase text-muted"><tr><th class="px-3 py-3 w-8"><span class="sr-only">Kolejność</span></th><th class="px-3 py-3">Temat</th><th class="px-3 py-3">Klucz</th><th class="px-3 py-3">Treść dynamiczna</th><th class="px-3 py-3 text-right">Subskrybenci</th><th class="px-3 py-3 text-right">Aktywni</th><th class="px-3 py-3">Stan</th><th class="px-3 py-3"><span class="sr-only">Akcje</span></th></tr></thead>
             <tbody id="topics-body" data-reorder-url="{{ route('admin.newsletter.tematy.reorder') }}">
             @forelse ($topics as $t)
                 <tr class="border-t border-gray-100 hover:bg-gray-50" draggable="true" data-id="{{ $t->id }}">
@@ -21,7 +21,7 @@
                     <td class="min-w-[10rem] px-3 py-2 text-xs text-muted">{{ collect($t->feed_sources ?? [])->map(fn ($s) => \Modules\Newsletter\Services\ContentFeeder::SOURCES[$s] ?? $s)->implode(', ') ?: '—' }}@if ($t->news_category_slugs)<br>kategorie: {{ implode(', ', $t->news_category_slugs) }}@endif</td>
                     <td class="px-3 py-2 text-right"><a href="{{ route('admin.newsletter.subskrybenci.index', ['topic' => $t->key]) }}" class="hover:underline">{{ $counts[$t->key]['all'] }}</a></td>
                     <td class="px-3 py-2 text-right">{{ $counts[$t->key]['active'] }}</td>
-                    <td class="px-3 py-2">{!! $t->is_active ? '<span class="rounded-full bg-green-100 px-2 py-0.5 text-xs font-bold text-green-900">aktywny</span>' : '<span class="rounded-full bg-gray-200 px-2 py-0.5 text-xs font-bold text-gray-800">ukryty</span>' !!}</td>
+                    <td class="px-3 py-2">{!! $t->is_active ? '<span class="text-xs font-bold text-ink"><i class="fa-solid fa-circle-check mr-1 text-brand-dark" aria-hidden="true"></i>aktywny</span>' : '<span class="text-xs font-bold text-muted">ukryty</span>' !!}</td>
                     <td class="px-3 py-2 text-right whitespace-nowrap"><a href="{{ route('admin.newsletter.tematy.edit', $t) }}" class="text-muted hover:text-brand-dark" aria-label="Edytuj {{ $t->label }}"><i class="fa-solid fa-pen" aria-hidden="true"></i></a></td>
                 </tr>
             @empty
@@ -31,7 +31,7 @@
         </table>
     </div>
     @if ($orphans)
-        <div class="mt-4 rounded border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+        <div class="mt-4 rounded-md bg-amber-50 px-4 py-3 text-sm text-amber-900">
             <p class="font-bold">Klucze tematów u subskrybentów, których nie ma na liście:</p>
             <ul class="list-disc pl-5">@foreach ($orphans as $k => $n)<li><code>{{ $k }}</code> — {{ $n }} subskrybentów. Dodaj temat o tym kluczu, aby znów był widoczny, albo zostaw (nie przeszkadza w wysyłce).</li>@endforeach</ul>
         </div>

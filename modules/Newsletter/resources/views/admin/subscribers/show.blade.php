@@ -8,22 +8,22 @@
             <p class="mt-1">@include('newsletter::admin.partials.status-badge', ['value' => $subscriber->status, 'label' => $subscriber->statusLabel()]) <span class="ml-2 text-sm text-muted">zapisany {{ $subscriber->created_at?->format('d.m.Y H:i') }} · źródło: {{ $subscriber->source ?? '—' }}</span></p>
         </div>
         <div class="flex flex-wrap gap-2">
-            <a href="{{ route('admin.newsletter.subskrybenci.edit', $subscriber) }}" class="rounded bg-brand px-4 py-2 text-sm font-bold text-white hover:bg-brand-dark">Edytuj</a>
+            <a href="{{ route('admin.newsletter.subskrybenci.edit', $subscriber) }}" class="rounded bg-brand-dark px-4 py-2 text-sm font-bold text-white hover:bg-ink">Edytuj</a>
             @if (in_array($subscriber->status, ['pending', 'expired']))
-            <form method="POST" action="{{ route('admin.newsletter.subskrybenci.resend', $subscriber) }}">@csrf<button class="rounded border border-gray-300 bg-white px-4 py-2 text-sm font-bold text-gray-700 hover:bg-gray-50">Wyślij potwierdzenie ponownie</button></form>
+            <form method="POST" action="{{ route('admin.newsletter.subskrybenci.resend', $subscriber) }}">@csrf<button class="rounded-md px-4 py-2 text-sm font-bold text-gray-700 bg-white hover:bg-brand-light">Wyślij potwierdzenie ponownie</button></form>
             @endif
             @if ($subscriber->isConfirmed())
-            <form method="POST" action="{{ route('admin.newsletter.subskrybenci.sync', $subscriber) }}">@csrf<button class="rounded border border-gray-300 bg-white px-4 py-2 text-sm font-bold text-gray-700 hover:bg-gray-50">Synchronizuj z SZO/CRM</button></form>
+            <form method="POST" action="{{ route('admin.newsletter.subskrybenci.sync', $subscriber) }}">@csrf<button class="rounded-md px-4 py-2 text-sm font-bold text-gray-700 bg-white hover:bg-brand-light">Synchronizuj z SZO/CRM</button></form>
             @endif
-            <a href="{{ route('admin.newsletter.subskrybenci.data', $subscriber) }}" class="rounded border border-gray-300 bg-white px-4 py-2 text-sm font-bold text-gray-700 hover:bg-gray-50">Eksport danych osoby (JSON)</a>
+            <a href="{{ route('admin.newsletter.subskrybenci.data', $subscriber) }}" class="rounded-md px-4 py-2 text-sm font-bold text-gray-700 bg-white hover:bg-brand-light">Eksport danych osoby (JSON)</a>
             @if ($subscriber->status !== 'anonymized')
-            <form method="POST" action="{{ route('admin.newsletter.subskrybenci.anonymize', $subscriber) }}" onsubmit="return confirm('Zanonimizować dane osobowe? Adres, imię i telefon zostaną usunięte bezpowrotnie.')">@csrf<button class="rounded border border-red-300 bg-white px-4 py-2 text-sm font-bold text-red-800 hover:bg-red-50">Anonimizuj (RODO)</button></form>
+            <form method="POST" action="{{ route('admin.newsletter.subskrybenci.anonymize', $subscriber) }}" onsubmit="return confirm('Zanonimizować dane osobowe? Adres, imię i telefon zostaną usunięte bezpowrotnie.')">@csrf<button class="rounded-md px-4 py-2 text-sm font-bold text-red-800 bg-red-50 hover:bg-red-100">Anonimizuj (RODO)</button></form>
             @endif
         </div>
     </div>
 
     <div class="grid gap-6 lg:grid-cols-3">
-        <section class="rounded-lg border border-gray-200 bg-white p-4" aria-labelledby="prof-h">
+        <section class="p-4 rounded-md bg-white" aria-labelledby="prof-h">
             <h2 id="prof-h" class="mb-3 text-sm font-bold uppercase text-muted">Profil</h2>
             <dl class="space-y-2 text-sm">
                 <div><dt class="font-bold">Imię</dt><dd>{{ $subscriber->name ?: '—' }}</dd></div>
@@ -41,7 +41,7 @@
             </dl>
         </section>
 
-        <section class="rounded-lg border border-gray-200 bg-white p-4" aria-labelledby="cons-h">
+        <section class="p-4 rounded-md bg-white" aria-labelledby="cons-h">
             <h2 id="cons-h" class="mb-3 text-sm font-bold uppercase text-muted">Rejestr zgód</h2>
             @forelse ($subscriber->consents->sortByDesc('granted_at') as $c)
                 <div class="mb-3 border-b border-gray-100 pb-3 text-sm last:border-0">
@@ -54,7 +54,7 @@
             @endforelse
         </section>
 
-        <section class="rounded-lg border border-gray-200 bg-white p-4" aria-labelledby="hist-h">
+        <section class="p-4 rounded-md bg-white" aria-labelledby="hist-h">
             <h2 id="hist-h" class="mb-3 text-sm font-bold uppercase text-muted">Historia aktywności</h2>
             <ol class="space-y-2 text-sm">
                 @forelse ($subscriber->events->take(60) as $e)
@@ -66,10 +66,10 @@
         </section>
     </div>
 
-    <section class="mt-6 rounded-lg border border-gray-200 bg-white" aria-labelledby="del-h">
+    <section class="mt-6 rounded-md bg-white" aria-labelledby="del-h">
         <h2 id="del-h" class="border-b border-gray-200 px-4 py-3 text-sm font-bold uppercase text-muted">Dostawy</h2>
         <table class="w-full text-left text-sm">
-            <thead class="bg-gray-50 text-xs font-bold uppercase text-muted"><tr><th class="px-4 py-2">Kampania</th><th class="px-4 py-2">Kanał</th><th class="px-4 py-2">Status</th><th class="px-4 py-2">Wysłano</th><th class="px-4 py-2">Otwarto</th><th class="px-4 py-2">Klik.</th><th class="px-4 py-2">Błąd</th></tr></thead>
+            <thead class="bg-gray-100 text-xs font-bold uppercase text-muted"><tr><th class="px-4 py-2">Kampania</th><th class="px-4 py-2">Kanał</th><th class="px-4 py-2">Status</th><th class="px-4 py-2">Wysłano</th><th class="px-4 py-2">Otwarto</th><th class="px-4 py-2">Klik.</th><th class="px-4 py-2">Błąd</th></tr></thead>
             <tbody>
             @forelse ($subscriber->deliveries->sortByDesc('id') as $d)
                 <tr class="border-t border-gray-100"><td class="px-4 py-2">{{ $d->campaign?->title ?? '—' }}</td><td class="px-4 py-2">{{ $d->channel }}</td><td class="px-4 py-2">@include('newsletter::admin.partials.status-badge', ['value' => $d->status, 'label' => $d->statusLabel()])</td><td class="px-4 py-2 text-muted">{{ $d->sent_at?->format('d.m.Y H:i') ?? '—' }}</td><td class="px-4 py-2 text-muted">{{ $d->opened_at?->format('d.m.Y H:i') ?? '—' }}</td><td class="px-4 py-2">{{ $d->clicks_count }}</td><td class="px-4 py-2 text-xs text-red-800">{{ $d->error_message }}</td></tr>

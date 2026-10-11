@@ -3,7 +3,7 @@
     $brandSections ??= [];
 @endphp
 
-<div class="space-y-6 rounded-xl border border-gray-200 bg-white p-6 sm:p-8">
+<div class="space-y-6 p-6 sm:p-8 rounded-md bg-white">
     <div class="flex items-center justify-between gap-3">
         <div>
             <h2 class="text-lg font-bold text-ink">Pliki do pobrania</h2>
@@ -57,8 +57,8 @@
         <label for="attachment_file"
             @dragover.prevent="over = true" @dragleave.prevent="over = false"
             @drop.prevent="over = false; $refs.file.files = $event.dataTransfer.files; pick($refs.file.files[0])"
-            class="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed px-6 py-8 text-center transition focus-within:ring-2 focus-within:ring-brand focus-within:ring-offset-2"
-            :class="over ? 'border-brand bg-brand-light' : 'border-gray-300 bg-gray-50 hover:border-gray-400'">
+            class="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-md border-2 border-dashed px-6 py-8 text-center transition focus-within:ring-2 focus-within:ring-brand-dark focus-within:ring-offset-2"
+            :class="over ? 'border-brand-dark bg-brand-light' : 'border-gray-300 bg-gray-50 hover:border-gray-400'">
             <i class="fa-solid fa-cloud-arrow-up text-3xl text-brand-dark" aria-hidden="true"></i>
             <span class="text-sm font-bold text-ink" x-text="name || 'Kliknij, aby wybrać plik, albo przeciągnij go tutaj'">Kliknij, aby wybrać plik, albo przeciągnij go tutaj</span>
             <span class="text-xs text-muted">Dowolny dokument lub obraz</span>
@@ -70,14 +70,14 @@
             <div>
                 <label for="attachment_label" class="mb-1.5 block text-sm font-bold text-ink">Nazwa pliku</label>
                 <input type="text" id="attachment_label" name="label" value="{{ old('label') }}" placeholder="np. Logotyp kolorowy JPEG" required
-                    class="w-full rounded-lg border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                    class="w-full rounded-lg border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark">
                 @error('label') <p class="mt-1 text-sm text-red-700">{{ $message }}</p> @enderror
             </div>
 
             @if (!empty($brandSections))
                 <div>
                     <label for="attachment_group" class="mb-1.5 block text-sm font-bold text-ink">Sekcja</label>
-                    <select id="attachment_group" name="group" class="w-full rounded-lg border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                    <select id="attachment_group" name="group" class="w-full rounded-lg border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark">
                         <option value="">— bez sekcji —</option>
                         @foreach ($brandSections as $bs)
                             <option value="{{ $bs['key'] }}">{{ $bs['title'] }}</option>
@@ -88,7 +88,7 @@
             @endif
         </div>
 
-        <button type="submit" class="inline-flex min-h-11 items-center gap-2 rounded-lg bg-brand px-5 text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
+        <button type="submit" class="inline-flex min-h-11 items-center gap-2 rounded-lg bg-brand-dark px-5 text-sm font-bold text-white hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2">
             <i class="fa-solid fa-plus" aria-hidden="true"></i>Dodaj plik
         </button>
     </form>

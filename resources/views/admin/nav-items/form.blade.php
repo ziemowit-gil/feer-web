@@ -37,15 +37,15 @@
             description: {{ Js::from(old('description', $navItem->description ?? '')) }},
             isActive: {{ Js::from((bool) old('is_active', $navItem->is_active ?? true)) }}
         } }"
-        class="max-w-xl space-y-5 rounded-lg border border-gray-200 bg-white p-6">
+        class="max-w-xl space-y-5 p-6 rounded-md bg-white">
         @csrf
         @if ($navItem->exists) @method('PUT') @endif
 
         @include('admin.nav-items._fields')
 
         <div class="flex items-center gap-3 border-t border-gray-100 pt-5">
-            <button type="submit" class="rounded bg-brand px-5 py-2 text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">Zapisz</button>
-            <a href="{{ route('admin.pozycje-menu.index', ['location' => old('location', $navItem->location ?? 'main')]) }}" class="rounded text-sm text-muted hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">Anuluj</a>
+            <button type="submit" class="rounded bg-brand-dark px-5 py-2 text-sm font-bold text-white hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2">Zapisz</button>
+            <a href="{{ route('admin.pozycje-menu.index', ['location' => old('location', $navItem->location ?? 'main')]) }}" class="rounded text-sm text-muted hover:text-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">Anuluj</a>
         </div>
     </form>
 @endsection

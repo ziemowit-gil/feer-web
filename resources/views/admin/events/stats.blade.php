@@ -9,7 +9,7 @@
         <p class="text-sm text-muted">Zestawienie zbiorcze wszystkich szkoleń i wydarzeń w systemie.</p>
     </div>
     <a href="{{ route('admin.wydarzenia.index') }}"
-        class="inline-flex items-center gap-1.5 rounded border border-gray-300 px-3 py-2 text-sm font-bold text-muted hover:bg-gray-100">
+        class="inline-flex items-center gap-1.5 rounded-md px-3 py-2 text-sm font-bold text-muted bg-white hover:bg-brand-light">
         <i class="fa-solid fa-arrow-left text-xs" aria-hidden="true"></i> Lista wydarzeń
     </a>
 </div>
@@ -18,14 +18,14 @@
 <div class="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
     @php
     $tiles = [
-        ['label' => 'Łącznie w systemie',  'value' => $total,     'icon' => 'fa-calendar-days',     'color' => 'text-brand',   'bg' => 'bg-brand/10'],
+        ['label' => 'Łącznie w systemie',  'value' => $total,     'icon' => 'fa-calendar-days',     'color' => 'text-brand-dark',   'bg' => 'bg-brand/10'],
         ['label' => 'Aktywnych',            'value' => $active,    'icon' => 'fa-calendar-check',    'color' => 'text-green-600','bg' => 'bg-green-50'],
         ['label' => 'Nadchodzących',        'value' => $upcoming,  'icon' => 'fa-hourglass-half',    'color' => 'text-blue-600', 'bg' => 'bg-blue-50'],
         ['label' => 'Zakończonych',         'value' => $past,      'icon' => 'fa-clock-rotate-left', 'color' => 'text-gray-500', 'bg' => 'bg-gray-100'],
     ];
     @endphp
     @foreach ($tiles as $tile)
-        <div class="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+        <div class="p-5 rounded-md bg-white">
             <div class="flex items-center gap-3">
                 <span class="flex h-10 w-10 flex-none items-center justify-center rounded-lg {{ $tile['bg'] }}">
                     <i class="fa-solid {{ $tile['icon'] }} {{ $tile['color'] }}" aria-hidden="true"></i>
@@ -43,9 +43,9 @@
 <div class="mb-6 grid gap-4 lg:grid-cols-2">
 
     {{-- Rodzaj wydarzenia --}}
-    <div class="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+    <div class="p-5 rounded-md bg-white">
         <h2 class="mb-4 flex items-center gap-2 text-sm font-bold text-ink">
-            <i class="fa-solid fa-shapes text-brand" aria-hidden="true"></i> Po rodzaju
+            <i class="fa-solid fa-shapes text-brand-dark" aria-hidden="true"></i> Po rodzaju
         </h2>
         @php
         $typeRows = [
@@ -75,9 +75,9 @@
     </div>
 
     {{-- Tryb --}}
-    <div class="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+    <div class="p-5 rounded-md bg-white">
         <h2 class="mb-4 flex items-center gap-2 text-sm font-bold text-ink">
-            <i class="fa-solid fa-location-dot text-brand" aria-hidden="true"></i> Po trybie
+            <i class="fa-solid fa-location-dot text-brand-dark" aria-hidden="true"></i> Po trybie
         </h2>
         @php
         $modeRows = [
@@ -107,9 +107,9 @@
 </div>
 
 {{-- ── Wykres miesięczny ───────────────────────────────────────── --}}
-<div class="mb-6 rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+<div class="mb-6 p-5 rounded-md bg-white">
     <h2 class="mb-1 flex items-center gap-2 text-sm font-bold text-ink">
-        <i class="fa-solid fa-chart-bar text-brand" aria-hidden="true"></i>
+        <i class="fa-solid fa-chart-bar text-brand-dark" aria-hidden="true"></i>
         Wydarzenia w {{ $currentYear }} roku
     </h2>
     <p class="mb-4 text-xs text-muted">Liczba aktywnych wydarzeń z datą startu w danym miesiącu.</p>
@@ -123,7 +123,7 @@
         @foreach ($byMonth as $i => $cnt)
             <div class="flex flex-1 min-w-[2.5rem] flex-col items-center gap-1">
                 <span class="text-xs font-bold text-ink {{ $cnt > 0 ? '' : 'invisible' }}" aria-hidden="true">{{ $cnt }}</span>
-                <div class="w-full rounded-t-md bg-brand transition-all"
+                <div class="w-full rounded-t-md bg-brand-dark transition-all"
                     style="height: {{ max(4, round($cnt / $maxMonth * 120)) }}px"
                     title="{{ $months[$i] }}: {{ $cnt }}"></div>
                 <span class="text-[10px] text-muted">{{ $months[$i] }}</span>
@@ -136,9 +136,9 @@
 <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
 
     {{-- Publikacja --}}
-    <div class="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+    <div class="p-5 rounded-md bg-white">
         <h2 class="mb-4 flex items-center gap-2 text-sm font-bold text-ink">
-            <i class="fa-solid fa-eye text-brand" aria-hidden="true"></i> Status publikacji
+            <i class="fa-solid fa-eye text-brand-dark" aria-hidden="true"></i> Status publikacji
         </h2>
         <ul class="space-y-3" role="list">
             @php
@@ -163,9 +163,9 @@
     </div>
 
     {{-- Rejestracja --}}
-    <div class="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+    <div class="p-5 rounded-md bg-white">
         <h2 class="mb-4 flex items-center gap-2 text-sm font-bold text-ink">
-            <i class="fa-solid fa-paper-plane text-brand" aria-hidden="true"></i> Sposób zapisu
+            <i class="fa-solid fa-paper-plane text-brand-dark" aria-hidden="true"></i> Sposób zapisu
         </h2>
         <ul class="space-y-3" role="list">
             @php
@@ -190,9 +190,9 @@
     </div>
 
     {{-- Prowadzący i serie --}}
-    <div class="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+    <div class="p-5 rounded-md bg-white">
         <h2 class="mb-4 flex items-center gap-2 text-sm font-bold text-ink">
-            <i class="fa-solid fa-circle-info text-brand" aria-hidden="true"></i> Dodatkowe informacje
+            <i class="fa-solid fa-circle-info text-brand-dark" aria-hidden="true"></i> Dodatkowe informacje
         </h2>
         <dl class="space-y-3 text-sm">
             <div class="flex items-center justify-between border-b border-gray-100 pb-3">

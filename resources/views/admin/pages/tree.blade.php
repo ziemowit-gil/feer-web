@@ -6,10 +6,10 @@
     @php
         $canEditSelected = $selected && (! $selected->is_locked || auth()->user()->isAdmin());
         $selectedLive = $selected && $selected->is_published && ($selected->publish_at === null || $selected->publish_at->isPast());
-        $btn = 'inline-flex min-h-9 items-center gap-1.5 rounded border border-gray-200 bg-white px-3 py-1.5 text-xs font-bold text-ink hover:border-brand hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand';
-        $tool = 'inline-flex items-center rounded-lg border border-gray-300 bg-white text-xs font-bold text-ink hover:border-brand hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand';
+        $btn = 'inline-flex min-h-9 items-center gap-1.5 rounded border border-gray-200 bg-white px-3 py-1.5 text-xs font-bold text-ink hover:border-brand-dark hover:text-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark';
+        $tool = 'inline-flex items-center rounded-lg border border-gray-300 bg-white text-xs font-bold text-ink hover:border-brand-dark hover:text-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark';
         $toolStyle = 'min-height:2.25rem;padding:.375rem .75rem;gap:.375rem';
-        $seg = 'inline-flex items-center text-xs font-bold text-ink hover:bg-gray-50 hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand';
+        $seg = 'inline-flex items-center text-xs font-bold text-ink hover:bg-gray-50 hover:text-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-dark';
         $segStyle = 'min-height:2.25rem;padding:.375rem .75rem;gap:.375rem;background:transparent';
     @endphp
 
@@ -79,7 +79,7 @@
             </a>
             <span style="width:1px;height:1.5rem;background:#d1d5db" aria-hidden="true"></span>
             <a href="{{ route('admin.podstrony.create', array_filter(['parent_id' => $selected?->id])) }}"
-                class="inline-flex items-center rounded bg-brand text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2"
+                class="inline-flex items-center rounded bg-brand-dark text-sm font-bold text-white hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2"
                 style="min-height:2.25rem;padding:.375rem 1rem;gap:.375rem">
                 <i class="fa-solid fa-plus" aria-hidden="true"></i> {{ $selected ? 'Dodaj podstronę' : 'Dodaj stronę' }}
             </a>
@@ -92,7 +92,7 @@
          :style="twoCols ? 'grid-template-columns:' + width + 'px 0.75rem minmax(0,1fr);column-gap:0' : ''">
 
         {{-- ═════════ Lewy panel: drzewo stron ═════════ --}}
-        <nav aria-label="Drzewo stron" id="page-tree" x-show="open" class="min-w-0 rounded-lg border border-gray-200 bg-white" :style="twoCols ? 'position:sticky;top:1rem;align-self:start' : ''"
+        <nav aria-label="Drzewo stron" id="page-tree" x-show="open" class="min-w-0 rounded-md bg-white" :style="twoCols ? 'position:sticky;top:1rem;align-self:start' : ''"
             x-data="{
                 q: '',
                 filter() {
@@ -113,12 +113,12 @@
             }">
             <div class="space-y-2 border-b border-gray-100 p-3">
                 <div class="flex items-center justify-between gap-2">
-                    <h2 class="text-sm font-bold text-ink"><i class="fa-solid fa-sitemap mr-1 text-brand" aria-hidden="true"></i> Struktura serwisu <span class="font-normal text-muted">({{ $total }})</span></h2>
+                    <h2 class="text-sm font-bold text-ink"><i class="fa-solid fa-sitemap mr-1 text-brand-dark" aria-hidden="true"></i> Struktura serwisu <span class="font-normal text-muted">({{ $total }})</span></h2>
                     <div class="flex gap-1">
-                        <button type="button" @click="setAll(true)" class="rounded p-1.5 text-xs text-muted hover:bg-gray-100 hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand" title="Rozwiń wszystko" aria-label="Rozwiń wszystkie gałęzie">
+                        <button type="button" @click="setAll(true)" class="rounded p-1.5 text-xs text-muted hover:bg-gray-100 hover:text-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark" title="Rozwiń wszystko" aria-label="Rozwiń wszystkie gałęzie">
                             <i class="fa-solid fa-angles-down" aria-hidden="true"></i>
                         </button>
-                        <button type="button" @click="setAll(false)" class="rounded p-1.5 text-xs text-muted hover:bg-gray-100 hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand" title="Zwiń wszystko" aria-label="Zwiń wszystkie gałęzie">
+                        <button type="button" @click="setAll(false)" class="rounded p-1.5 text-xs text-muted hover:bg-gray-100 hover:text-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark" title="Zwiń wszystko" aria-label="Zwiń wszystkie gałęzie">
                             <i class="fa-solid fa-angles-up" aria-hidden="true"></i>
                         </button>
                     </div>
@@ -128,7 +128,7 @@
                     <div class="relative">
                         <i class="fa-solid fa-magnifying-glass pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-xs text-muted" aria-hidden="true"></i>
                         <input type="search" id="tree-filter" x-model="q" @input="filter()" placeholder="Filtruj drzewo…" autocomplete="off"
-                            class="w-full rounded border-gray-300 py-1.5 pl-8 text-sm focus:border-brand focus:ring-brand">
+                            class="w-full rounded border-gray-500 py-1.5 pl-8 text-sm focus:border-brand-dark focus:ring-brand-dark">
                     </div>
                 </div>
             </div>
@@ -145,7 +145,7 @@
                 @else
                     @include('admin.pages.partials.tree-node', ['nodes' => $byParent->get(0), 'depth' => 0, 'canDrag' => true, 'inheritedDisabled' => $inheritedDisabled])
                 @endif
-                <div data-tree-root-drop class="mt-2 hidden rounded border-2 border-dashed border-brand/50 px-3 py-3 text-center text-xs font-bold text-brand">
+                <div data-tree-root-drop class="mt-2 hidden rounded border-2 border-dashed border-brand/50 px-3 py-3 text-center text-xs font-bold text-brand-dark">
                     Upuść tutaj, aby przenieść na poziom główny
                 </div>
             </div>
@@ -157,7 +157,7 @@
              :aria-valuenow="width" aria-valuemin="224" aria-valuemax="560"
              @pointerdown.prevent="drag($event)" @keydown="resizeKey($event)"
              class="group flex h-full cursor-col-resize items-center justify-center self-stretch focus-visible:outline-none" style="min-height:8rem">
-            <span class="h-12 w-1 rounded bg-gray-300 transition group-hover:bg-brand group-focus-visible:bg-brand group-focus-visible:ring-2 group-focus-visible:ring-brand group-focus-visible:ring-offset-1" aria-hidden="true"></span>
+            <span class="h-12 w-1 rounded bg-gray-300 transition group-hover:bg-brand-dark group-focus-visible:bg-brand-dark group-focus-visible:ring-2 group-focus-visible:ring-brand-dark group-focus-visible:ring-offset-1" aria-hidden="true"></span>
         </div>
 
         {{-- ═════════ Prawy panel: szczegóły wybranej strony ═════════ --}}
@@ -165,33 +165,33 @@
             @if ($selected)
                 {{-- Ścieżka --}}
                 <nav aria-label="Ścieżka strony" class="text-xs text-muted">
-                    <a href="{{ route('admin.podstrony.index') }}" class="hover:text-brand hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"><i class="fa-solid fa-house" aria-hidden="true"></i><span class="sr-only">Poziom główny</span></a>
+                    <a href="{{ route('admin.podstrony.index') }}" class="hover:text-brand-dark hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark"><i class="fa-solid fa-house" aria-hidden="true"></i><span class="sr-only">Poziom główny</span></a>
                     @foreach ($rootline as $ancestor)
                         <span aria-hidden="true" class="mx-1">›</span>
-                        <a href="{{ route('admin.podstrony.index', ['wybrana' => $ancestor->id]) }}" class="hover:text-brand hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">{{ $ancestor->title }}</a>
+                        <a href="{{ route('admin.podstrony.index', ['wybrana' => $ancestor->id]) }}" class="hover:text-brand-dark hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">{{ $ancestor->title }}</a>
                     @endforeach
                     <span aria-hidden="true" class="mx-1">›</span>
                     <span class="font-semibold text-ink" aria-current="page">{{ $selected->title }}</span>
                 </nav>
 
                 {{-- Karta strony --}}
-                <div class="rounded-lg border border-gray-200 bg-white p-5">
+                <div class="p-5 rounded-md bg-white">
                     <div class="flex flex-wrap items-start justify-between gap-3">
                         <div class="min-w-0">
                             <h2 id="pane-heading" class="text-xl font-bold text-ink">{{ $selected->title }}</h2>
                             <p class="mt-1 flex flex-wrap items-center gap-2 text-xs">
                                 @include('admin.pages.partials.status-chip', ['page' => $selected, 'inherited' => isset($inheritedDisabled[$selected->id])])
-                                <span class="rounded-full bg-gray-100 px-2 py-0.5 font-semibold text-gray-700">{{ \App\Models\Page::types()[$selected->type] ?? $selected->type }}</span>
-                                @if ($selected->isWip())<span class="rounded-full bg-orange-100 px-2 py-0.5 font-bold text-orange-700"><i class="fa-solid fa-person-digging" aria-hidden="true"></i> WIP</span>@endif
-                                @if ($selected->is_featured)<span class="rounded-full bg-amber-100 px-2 py-0.5 font-bold text-amber-700"><i class="fa-solid fa-star" aria-hidden="true"></i> Wyróżniona</span>@endif
-                                @if ($selected->is_system)<span class="rounded-full bg-slate-100 px-2 py-0.5 font-bold text-slate-600"><i class="fa-solid fa-lock" aria-hidden="true"></i> Systemowa</span>@endif
-                                @if ($selected->is_locked)<span class="rounded-full bg-slate-100 px-2 py-0.5 font-bold text-slate-600"><i class="fa-solid fa-user-lock" aria-hidden="true"></i> Zablokowana</span>@endif
+                                <span class="font-bold text-muted">{{ \App\Models\Page::types()[$selected->type] ?? $selected->type }}</span>
+                                @if ($selected->isWip())<span class="font-bold text-ink"><i class="fa-solid fa-person-digging" aria-hidden="true"></i> WIP</span>@endif
+                                @if ($selected->is_featured)<span class="font-bold text-ink"><i class="fa-solid fa-star" aria-hidden="true"></i> Wyróżniona</span>@endif
+                                @if ($selected->is_system)<span class="font-bold text-muted"><i class="fa-solid fa-lock" aria-hidden="true"></i> Systemowa</span>@endif
+                                @if ($selected->is_locked)<span class="font-bold text-muted"><i class="fa-solid fa-user-lock" aria-hidden="true"></i> Zablokowana</span>@endif
                             </p>
                         </div>
                         <div class="flex flex-wrap items-center gap-2">
                             @if ($canEditSelected)
                                 <a href="{{ route('admin.podstrony.edit', $selected) }}"
-                                    class="inline-flex min-h-9 items-center gap-1.5 rounded bg-brand px-4 py-1.5 text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
+                                    class="inline-flex min-h-9 items-center gap-1.5 rounded bg-brand-dark px-4 py-1.5 text-sm font-bold text-white hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2">
                                     <i class="fa-solid fa-pen" aria-hidden="true"></i> Edytuj
                                 </a>
                             @endif
@@ -203,7 +203,7 @@
 
                     @if (isset($inheritedDisabled[$selected->id]))
                         @php $disabledParent = $rootline->firstWhere('id', $inheritedDisabled[$selected->id]); @endphp
-                        <p class="mt-3 rounded border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-800" role="status">
+                        <p class="mt-3 rounded-md bg-red-50 px-3 py-2 text-xs text-red-800" role="status">
                             <i class="fa-solid fa-ban mr-1" aria-hidden="true"></i>
                             Ta strona jest niedostępna dla odwiedzających, bo wyłączono stronę nadrzędną
                             @if ($disabledParent)„<a href="{{ route('admin.podstrony.index', ['wybrana' => $disabledParent->id]) }}" class="font-bold underline">{{ $disabledParent->title }}</a>”@endif.
@@ -220,7 +220,7 @@
                     <dl class="mt-4 grid gap-x-6 gap-y-3 text-sm sm:grid-cols-2 xl:grid-cols-3">
                         <div><dt class="text-xs font-bold uppercase tracking-wide text-muted">Adres</dt><dd class="mt-0.5 break-all font-mono text-xs">/{{ $selected->slug }}</dd></div>
                         <div><dt class="text-xs font-bold uppercase tracking-wide text-muted">Strona nadrzędna</dt>
-                            <dd class="mt-0.5">@if ($rootline->isNotEmpty())<a href="{{ route('admin.podstrony.index', ['wybrana' => $rootline->last()->id]) }}" class="text-brand hover:underline">{{ $rootline->last()->title }}</a>@else<span class="text-muted">— strona najwyższego poziomu</span>@endif</dd></div>
+                            <dd class="mt-0.5">@if ($rootline->isNotEmpty())<a href="{{ route('admin.podstrony.index', ['wybrana' => $rootline->last()->id]) }}" class="text-brand-dark hover:underline">{{ $rootline->last()->title }}</a>@else<span class="text-muted">— strona najwyższego poziomu</span>@endif</dd></div>
                         <div><dt class="text-xs font-bold uppercase tracking-wide text-muted">Kolejność</dt><dd class="mt-0.5">{{ $selected->order }}</dd></div>
                         <div><dt class="text-xs font-bold uppercase tracking-wide text-muted">W menu głównym</dt><dd class="mt-0.5">{{ ! $selected->parent_id && $selected->show_in_menu ? 'Tak' : 'Nie' }}</dd></div>
                         <div><dt class="text-xs font-bold uppercase tracking-wide text-muted">Nawigacja po podstronach</dt><dd class="mt-0.5">{{ $selected->show_side_nav ? (\App\Models\Page::SIDE_NAV_STYLES[$selected->side_nav_style] ?? 'Boczne drzewo') : 'Wyłączona' }}</dd></div>
@@ -229,7 +229,7 @@
                             <div><dt class="text-xs font-bold uppercase tracking-wide text-muted">Publikacja</dt><dd class="mt-0.5">{{ $selected->publish_at->format('d.m.Y H:i') }}</dd></div>
                         @endif
                         @if ($personsCount)
-                            <div><dt class="text-xs font-bold uppercase tracking-wide text-muted">Osoby</dt><dd class="mt-0.5"><a href="{{ route('admin.osoby.index') }}" class="text-brand hover:underline">{{ $personsCount }} {{ trans_choice('osoba|osoby|osób', $personsCount) }}</a></dd></div>
+                            <div><dt class="text-xs font-bold uppercase tracking-wide text-muted">Osoby</dt><dd class="mt-0.5"><a href="{{ route('admin.osoby.index') }}" class="text-brand-dark hover:underline">{{ $personsCount }} {{ trans_choice('osoba|osoby|osób', $personsCount) }}</a></dd></div>
                         @endif
                     </dl>
 
@@ -268,7 +268,7 @@
                                         @csrf
                                         <div>
                                             <label for="to-project" class="mb-1 block text-xs font-bold text-ink">Działanie</label>
-                                            <select id="to-project" name="project_id" required class="w-full rounded border-gray-300 py-1.5 text-sm focus:border-brand focus:ring-brand">
+                                            <select id="to-project" name="project_id" required class="w-full rounded border-gray-500 py-1.5 text-sm focus:border-brand-dark focus:ring-brand-dark">
                                                 <option value="" disabled @selected(! $selected->project_id)>— wybierz działanie —</option>
                                                 @foreach ($projectOptions as $po)
                                                     <option value="{{ $po->id }}" @selected($selected->project_id === $po->id)>{{ $po->title }}</option>
@@ -277,20 +277,20 @@
                                         </div>
                                         <div>
                                             <label for="to-project-display" class="mb-1 block text-xs font-bold text-ink">Pokaż w projekcie jako</label>
-                                            <select id="to-project-display" name="project_display" class="w-full rounded border-gray-300 py-1.5 text-sm focus:border-brand focus:ring-brand">
+                                            <select id="to-project-display" name="project_display" class="w-full rounded border-gray-500 py-1.5 text-sm focus:border-brand-dark focus:ring-brand-dark">
                                                 @foreach (\App\Models\Page::PROJECT_DISPLAYS as $v => $l)
                                                     <option value="{{ $v }}" @selected(($selected->project_display ?? 'tab') === $v || ($v === 'tab' && ! $selected->project_id))>{{ \Illuminate\Support\Str::before($l, ' (') }}</option>
                                                 @endforeach
                                             </select>
                                         </div>
                                         <label class="flex items-start gap-2 text-xs text-ink">
-                                            <input type="checkbox" name="hide_from_menu" value="1" checked class="mt-0.5 rounded border-gray-300 text-brand focus:ring-brand">
+                                            <input type="checkbox" name="hide_from_menu" value="1" checked class="mt-0.5 rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
                                             <span>Usuń z menu głównego (ukryj stronę i pozycje menu, które do niej prowadzą)</span>
                                         </label>
                                         <p class="text-xs text-muted">Strona razem z podstronami trafi do drzewa podstron projektu. Adres URL się nie zmienia.</p>
                                         <div class="flex items-center gap-2">
-                                            <button type="submit" class="rounded bg-brand px-4 py-1.5 text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">Przenieś</button>
-                                            <button type="button" @click="open = false" class="text-sm text-muted hover:text-brand">Anuluj</button>
+                                            <button type="submit" class="rounded bg-brand-dark px-4 py-1.5 text-sm font-bold text-white hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2">Przenieś</button>
+                                            <button type="button" @click="open = false" class="text-sm text-muted hover:text-brand-dark">Anuluj</button>
                                         </div>
                                     </form>
                                 </div>
@@ -298,7 +298,7 @@
                             @unless ($selected->is_system)
                                 <form method="POST" action="{{ route('admin.podstrony.destroy', $selected) }}" class="ml-auto" data-confirm="Usunąć stronę „{{ $selected->title }}”? Trafi do kosza.">
                                     @csrf @method('DELETE') <input type="hidden" name="wybrana" value="{{ $selected->id }}">
-                                    <button type="submit" class="inline-flex min-h-9 items-center gap-1.5 rounded border border-red-200 bg-white px-3 py-1.5 text-xs font-bold text-red-700 hover:bg-red-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500">
+                                    <button type="submit" class="inline-flex min-h-9 items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-bold text-red-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 bg-red-50 hover:bg-red-100">
                                         <i class="fa-solid fa-trash" aria-hidden="true"></i> Usuń
                                     </button>
                                 </form>
@@ -310,7 +310,7 @@
                             @csrf @method('PATCH')
                             <div class="min-w-56 flex-1">
                                 <label for="move-parent" class="mb-1 block text-xs font-bold text-ink">Przenieś w drzewie</label>
-                                <select id="move-parent" name="parent_id" class="w-full rounded border-gray-300 py-1.5 text-sm focus:border-brand focus:ring-brand">
+                                <select id="move-parent" name="parent_id" class="w-full rounded border-gray-500 py-1.5 text-sm focus:border-brand-dark focus:ring-brand-dark">
                                     <option value="" @selected(! $selected->parent_id)>— poziom główny —</option>
                                     @foreach ($moveOptions as $opt)
                                         <option value="{{ $opt['id'] }}" @selected($selected->parent_id === $opt['id']) @disabled($opt['disabled'])>{{ $opt['label'] }}</option>
@@ -385,7 +385,7 @@
                     <p id="bulk-desc" class="mt-0.5 text-sm text-muted">Przefiltruj strony w widoku listy albo zmień status wielu stron naraz. Klawisz Escape zamyka okno.</p>
                 </div>
                 <button type="button" onclick="this.closest('dialog').close()"
-                    class="inline-flex min-h-9 flex-none items-center gap-1.5 rounded border border-gray-300 px-3 py-1.5 text-sm font-bold hover:border-brand hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                    class="inline-flex min-h-9 flex-none items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-bold hover:text-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark bg-white hover:bg-brand-light text-ink">
                     <i class="fa-solid fa-xmark" aria-hidden="true"></i> Zamknij
                 </button>
             </div>
@@ -399,11 +399,11 @@
                     <div>
                         <label for="bulk-q" class="mb-1 block text-sm font-bold">Szukaj w tytule lub adresie</label>
                         <input type="search" id="bulk-q" name="q" autocomplete="off" autofocus
-                            class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                            class="w-full rounded border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark">
                     </div>
                     <div>
                         <label for="bulk-status" class="mb-1 block text-sm font-bold">Status</label>
-                        <select id="bulk-status" name="status" class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                        <select id="bulk-status" name="status" class="w-full rounded border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark">
                             <option value="">Wszystkie</option>
                             <option value="published">Opublikowane</option>
                             <option value="draft">Szkice</option>
@@ -412,13 +412,13 @@
                     </div>
                     <div>
                         <label for="bulk-sort" class="mb-1 block text-sm font-bold">Sortowanie</label>
-                        <select id="bulk-sort" name="sort" class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                        <select id="bulk-sort" name="sort" class="w-full rounded border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark">
                             <option value="default">Domyślne (kolejność)</option>
                             <option value="title_asc">Tytuł A–Z</option>
                             <option value="title_desc">Tytuł Z–A</option>
                         </select>
                     </div>
-                    <button type="submit" class="inline-flex min-h-10 items-center gap-2 rounded bg-brand px-4 py-2 text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
+                    <button type="submit" class="inline-flex min-h-10 items-center gap-2 rounded bg-brand-dark px-4 py-2 text-sm font-bold text-white hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2">
                         <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i> Pokaż wyniki w liście
                     </button>
                 </form>
@@ -431,13 +431,13 @@
                         <legend class="mb-1 text-sm font-bold">Wybierz strony</legend>
                         <label for="bulk-list-filter" class="sr-only">Filtruj listę stron po tytule</label>
                         <input type="search" id="bulk-list-filter" placeholder="Filtruj listę stron…" autocomplete="off" @input="filterList($event.target.value)"
-                            class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                            class="w-full rounded border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark">
                         <div class="flex flex-wrap items-center gap-2 text-xs">
-                            <button type="button" @click="setAll(true)" class="rounded border border-gray-300 px-2.5 py-1 font-bold hover:border-brand hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">Zaznacz widoczne</button>
-                            <button type="button" @click="setAll(false)" class="rounded border border-gray-300 px-2.5 py-1 font-bold hover:border-brand hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">Odznacz</button>
+                            <button type="button" @click="setAll(true)" class="rounded-md px-2.5 py-1 font-bold hover:text-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark bg-white hover:bg-brand-light text-ink">Zaznacz widoczne</button>
+                            <button type="button" @click="setAll(false)" class="rounded-md px-2.5 py-1 font-bold hover:text-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark bg-white hover:bg-brand-light text-ink">Odznacz</button>
                             <span class="ml-auto font-bold" role="status" aria-live="polite">Zaznaczono: <span x-text="count">0</span></span>
                         </div>
-                        <div class="overflow-y-auto rounded border border-gray-200 p-1" style="max-height: 18rem" tabindex="0" aria-label="Lista stron do zaznaczenia">
+                        <div class="overflow-y-auto p-1 rounded-md bg-white" style="max-height: 18rem" tabindex="0" aria-label="Lista stron do zaznaczenia">
                             @include('admin.pages.partials.bulk-node', ['nodes' => $byParent->get(0, collect()), 'depth' => 0])
                         </div>
                     </fieldset>
@@ -445,7 +445,7 @@
                     <div>
                         <label for="bulk-action" class="mb-1 block text-sm font-bold">Operacja</label>
                         <select id="bulk-action" name="action" x-model="action" @change="confirming = false"
-                            class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                            class="w-full rounded border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark">
                             <option value="publish">Opublikuj</option>
                             <option value="unpublish">Cofnij publikację (szkic)</option>
                             <option value="disable">Wyłącz (wraz z podstronami)</option>
@@ -458,25 +458,25 @@
 
                     <div x-show="! confirming">
                         <button type="submit" :disabled="count === 0" :aria-disabled="(count === 0).toString()"
-                            class="inline-flex min-h-10 items-center gap-2 rounded bg-brand px-4 py-2 text-sm font-bold text-white hover:bg-brand-dark disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
+                            class="inline-flex min-h-10 items-center gap-2 rounded bg-brand-dark px-4 py-2 text-sm font-bold text-white hover:bg-ink disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2">
                             <i class="fa-solid fa-play" aria-hidden="true"></i> Wykonaj
                         </button>
                         <p class="mt-1 text-xs text-muted" x-show="count === 0">Zaznacz co najmniej jedną stronę.</p>
                     </div>
 
                     {{-- Potwierdzenie w oknie (bez drugiego modala nad natywnym dialogiem) --}}
-                    <div x-show="confirming" x-cloak role="alertdialog" aria-labelledby="bulk-confirm-text" class="rounded-lg border border-amber-300 bg-amber-50 p-4">
+                    <div x-show="confirming" x-cloak role="alertdialog" aria-labelledby="bulk-confirm-text" class="rounded-md bg-amber-50 p-4">
                         <p id="bulk-confirm-text" class="text-sm font-bold text-amber-900">
                             Wykonać operację „<span x-text="labels[action]"></span>” na <span x-text="count"></span> zaznaczonych stronach?
                         </p>
                         <p class="mt-1 text-xs text-amber-900" x-show="action === 'disable'">Wyłączenie obejmuje też wszystkie podstrony zaznaczonych stron.</p>
                         <div class="mt-3 flex flex-wrap gap-2">
                             <button type="submit" x-ref="confirmBtn"
-                                class="inline-flex min-h-10 items-center gap-2 rounded bg-brand px-4 py-2 text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
+                                class="inline-flex min-h-10 items-center gap-2 rounded bg-brand-dark px-4 py-2 text-sm font-bold text-white hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2">
                                 Tak, wykonaj
                             </button>
                             <button type="button" @click="confirming = false"
-                                class="inline-flex min-h-10 items-center rounded border border-gray-300 bg-white px-4 py-2 text-sm font-bold hover:border-brand hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                                class="inline-flex min-h-10 items-center rounded-md px-4 py-2 text-sm font-bold hover:text-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark bg-white hover:bg-brand-light text-ink">
                                 Anuluj
                             </button>
                         </div>
@@ -522,7 +522,7 @@
             const siblingsOf = (li, exceptId) => [...li.parentElement.children].filter(n => n.matches('[data-tree-node]') && idOf(n) !== exceptId);
             const clearMarks = () => tree.querySelectorAll('[data-drop]').forEach(r => {
                 r.removeAttribute('data-drop');
-                r.classList.remove('bg-brand-light', 'ring-2', 'ring-brand', 'border-t-2', 'border-b-2', 'border-brand');
+                r.classList.remove('bg-brand-light', 'ring-2', 'ring-brand-dark', 'border-t-2', 'border-b-2', 'border-brand-dark');
             });
             const announce = msg => { status.textContent = ''; setTimeout(() => status.textContent = msg, 30); };
 
@@ -582,8 +582,8 @@
                 const zone = zoneOf(row, e);
                 clearMarks();
                 row.dataset.drop = zone;
-                if (zone === 'inside') row.classList.add('bg-brand-light', 'ring-2', 'ring-brand');
-                else row.classList.add(zone === 'before' ? 'border-t-2' : 'border-b-2', 'border-brand');
+                if (zone === 'inside') row.classList.add('bg-brand-light', 'ring-2', 'ring-brand-dark');
+                else row.classList.add(zone === 'before' ? 'border-t-2' : 'border-b-2', 'border-brand-dark');
 
                 // Zwinięta gałąź rozwija się po chwili zawisu nad jej środkiem.
                 clearTimeout(hoverTimer);

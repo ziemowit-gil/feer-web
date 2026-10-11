@@ -5,23 +5,23 @@
 @section('content')
     <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
         <p class="text-sm text-muted">
-            Dokumenty Biuletynu Informacji Publicznej (strona <a href="{{ route('bip') }}" target="_blank" rel="noopener" class="text-brand underline">/bip</a>).
+            Dokumenty Biuletynu Informacji Publicznej (strona <a href="{{ route('bip') }}" target="_blank" rel="noopener" class="text-brand-dark underline">/bip</a>).
         </p>
         <a href="{{ route('admin.bip-dokumenty.create') }}"
-            class="rounded bg-brand px-4 py-2 text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
+            class="rounded bg-brand-dark px-4 py-2 text-sm font-bold text-white hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2">
             <i class="fa-solid fa-plus" aria-hidden="true"></i> Dodaj dokument
         </a>
     </div>
 
     @if (session('status'))
-        <div role="status" class="mb-4 rounded border border-green-300 bg-green-50 px-4 py-3 text-sm text-green-800">
+        <div role="status" class="mb-4 rounded-md bg-brand-light px-4 py-3 text-sm text-ink">
             {{ session('status') }}
         </div>
     @endif
 
-    <div class="overflow-x-auto rounded-lg border border-gray-200 bg-white">
+    <div class="overflow-x-auto rounded-md bg-white">
         <table class="w-full text-left text-sm">
-            <thead class="bg-gray-50 text-xs font-bold uppercase text-muted">
+            <thead class="bg-gray-100 text-xs font-bold uppercase text-muted">
                 <tr>
                     <th class="px-4 py-3">Tytuł</th>
                     <th class="px-4 py-3">Kategoria</th>
@@ -36,20 +36,20 @@
                 @forelse ($documents as $document)
                     <tr>
                         <th scope="row" class="px-4 py-3 font-semibold text-ink">
-                            <a href="{{ route('admin.bip-dokumenty.edit', $document) }}" class="hover:text-brand hover:underline">
+                            <a href="{{ route('admin.bip-dokumenty.edit', $document) }}" class="hover:text-brand-dark hover:underline">
                                 {{ $document->title }}
                             </a>
                         </th>
                         <td class="px-4 py-3">
-                            <span class="rounded-full bg-blue-50 px-2 py-0.5 text-xs font-bold text-blue-700">
+                            <span class="text-xs font-bold text-ink"><i class="fa-solid fa-circle-info mr-1 text-brand-dark" aria-hidden="true"></i>
                                 {{ $document->categoryLabel() }}
                             </span>
                         </td>
                         <td class="px-4 py-3">
                             @if ($document->is_published)
-                                <span class="rounded-full bg-green-100 px-2 py-0.5 text-xs font-bold text-green-700">Widoczny</span>
+                                <span class="text-xs font-bold text-ink"><i class="fa-solid fa-circle-check mr-1 text-brand-dark" aria-hidden="true"></i>Widoczny</span>
                             @else
-                                <span class="rounded-full bg-gray-100 px-2 py-0.5 text-xs font-bold text-gray-600">Ukryty</span>
+                                <span class="text-xs font-bold text-muted">Ukryty</span>
                             @endif
                         </td>
                         <td class="px-4 py-3 text-muted">
@@ -66,7 +66,7 @@
                                 {{-- Podgląd publiczny --}}
                                 @if ($document->is_published)
                                     <a href="{{ route('bip.document', $document->slug) }}" target="_blank" rel="noopener"
-                                        class="text-muted hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand rounded"
+                                        class="text-muted hover:text-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark rounded"
                                         title="Podgląd na stronie">
                                         <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i>
                                         <span class="sr-only">Podgląd na stronie — {{ $document->title }}</span>
@@ -75,7 +75,7 @@
 
                                 {{-- Historia zmian --}}
                                 <a href="{{ route('admin.historia.index', ['type' => 'bip_document', 'id' => $document->id]) }}"
-                                    class="text-muted hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand rounded"
+                                    class="text-muted hover:text-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark rounded"
                                     title="Historia zmian">
                                     <i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i>
                                     <span class="sr-only">Historia zmian — {{ $document->title }}</span>
@@ -86,7 +86,7 @@
                                     @csrf
                                     @method('PATCH')
                                     <button type="submit"
-                                        class="{{ $document->is_published ? 'text-green-600 hover:text-gray-400' : 'text-gray-400 hover:text-green-600' }} focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand rounded"
+                                        class="{{ $document->is_published ? 'text-green-600 hover:text-gray-400' : 'text-gray-400 hover:text-green-600' }} focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark rounded"
                                         title="{{ $document->is_published ? 'Ukryj' : 'Opublikuj' }}">
                                         <i class="fa-solid {{ $document->is_published ? 'fa-eye' : 'fa-eye-slash' }}" aria-hidden="true"></i>
                                         <span class="sr-only">{{ $document->is_published ? 'Ukryj' : 'Opublikuj' }} — {{ $document->title }}</span>
@@ -95,7 +95,7 @@
 
                                 {{-- Edytuj --}}
                                 <a href="{{ route('admin.bip-dokumenty.edit', $document) }}"
-                                    class="text-brand hover:text-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand rounded"
+                                    class="text-brand-dark hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark rounded"
                                     title="Edytuj">
                                     <i class="fa-solid fa-pen" aria-hidden="true"></i>
                                     <span class="sr-only">Edytuj — {{ $document->title }}</span>
@@ -103,7 +103,7 @@
 
                                 {{-- Usuń --}}
                                 <form method="POST" action="{{ route('admin.bip-dokumenty.destroy', $document) }}"
-                                    onsubmit="return confirm('Przenieść dokument „{{ addslashes($document->title) }}" do kosza?')">
+                                    onsubmit="return confirm('Przenieść dokument „{{ addslashes($document->title) }}” do kosza?')">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit"
@@ -120,7 +120,7 @@
                     <tr>
                         <td colspan="7" class="px-4 py-8 text-center text-muted">
                             Brak dokumentów BIP.
-                            <a href="{{ route('admin.bip-dokumenty.create') }}" class="text-brand underline">Dodaj pierwszy dokument</a>.
+                            <a href="{{ route('admin.bip-dokumenty.create') }}" class="text-brand-dark underline">Dodaj pierwszy dokument</a>.
                         </td>
                     </tr>
                 @endforelse

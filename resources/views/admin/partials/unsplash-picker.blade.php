@@ -29,9 +29,9 @@
         <div class="flex flex-wrap gap-2">
             <label for="unsplash-q" class="sr-only">Fraza wyszukiwania w Unsplash</label>
             <input id="unsplash-q" type="search" x-model="q" @keydown.enter.prevent="search()" placeholder="np. ludzie, współpraca, edukacja"
-                   class="min-w-0 flex-1 rounded-lg border-gray-300 text-sm focus:border-brand focus:ring-brand">
-            <button type="button" @click="search()" class="rounded-lg bg-brand px-4 py-2 text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">Szukaj</button>
-            <template x-if="titleId"><button type="button" @click="useTitle()" class="rounded-lg border border-gray-300 px-3 py-2 text-sm font-bold text-ink hover:border-brand hover:text-brand-dark">Użyj tytułu</button></template>
+                   class="min-w-0 flex-1 rounded-lg border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark">
+            <button type="button" @click="search()" class="rounded-lg bg-brand-dark px-4 py-2 text-sm font-bold text-white hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2">Szukaj</button>
+            <template x-if="titleId"><button type="button" @click="useTitle()" class="rounded-md px-3 py-2 text-sm font-bold text-ink hover:text-brand-dark bg-white hover:bg-brand-light">Użyj tytułu</button></template>
         </div>
 
         <p x-show="loading" class="mt-3 text-xs text-muted" role="status">Szukam zdjęć…</p>
@@ -45,8 +45,8 @@
             <template x-for="p in photos" :key="p.id">
                 <li>
                     <button type="button" @click="chosen = p" :aria-pressed="(chosen?.id === p.id).toString()"
-                            class="block w-full overflow-hidden rounded-lg border-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
-                            :class="chosen?.id === p.id ? 'border-brand' : 'border-transparent'">
+                            class="block w-full overflow-hidden rounded-lg border-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark"
+                            :class="chosen?.id === p.id ? 'border-brand-dark' : 'border-transparent'">
                         <img :src="p.thumb_url" :alt="p.alt" loading="lazy" class="h-24 w-full object-cover">
                     </button>
                     <p class="mt-1 truncate text-[11px] text-muted" x-text="'Autor: ' + p.author_name"></p>

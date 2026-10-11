@@ -5,9 +5,9 @@
 @section('content')
     <p class="mb-4 text-sm text-muted">Treści zgłoszone przez edytorów, oczekujące na zatwierdzenie i publikację.</p>
 
-    <div class="overflow-x-auto rounded-lg border border-gray-200 bg-white">
+    <div class="overflow-x-auto rounded-md bg-white">
         <table class="w-full text-left text-sm">
-            <thead class="bg-gray-50 text-xs font-bold uppercase text-muted">
+            <thead class="bg-gray-100 text-xs font-bold uppercase text-muted">
                 <tr>
                     <th class="px-4 py-3">Typ</th>
                     <th class="px-4 py-3">Tytuł</th>
@@ -19,15 +19,15 @@
             <tbody class="divide-y divide-gray-100">
                 @forelse ($items as $item)
                     <tr>
-                        <td class="px-4 py-3"><span class="rounded-full bg-gray-100 px-2 py-0.5 text-xs font-bold text-gray-700">{{ $item['label'] }}</span></td>
+                        <td class="px-4 py-3"><span class="text-xs font-bold text-muted">{{ $item['label'] }}</span></td>
                         <td class="px-4 py-3 font-medium text-ink">
-                            <a href="{{ $item['edit_url'] }}" class="text-brand hover:text-brand-dark">{{ $item['title'] }}</a>
+                            <a href="{{ $item['edit_url'] }}" class="text-brand-dark hover:text-ink">{{ $item['title'] }}</a>
                         </td>
                         <td class="px-4 py-3 text-muted">{{ $item['submitted_by'] }}</td>
                         <td class="px-4 py-3 text-muted">{{ $item['updated_at']?->format('Y-m-d H:i') }}</td>
                         <td class="px-4 py-3">
                             <div class="flex items-center justify-end gap-2">
-                                <a href="{{ $item['edit_url'] }}" class="rounded px-2 py-1 text-xs font-bold text-muted hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">Podgląd / edycja</a>
+                                <a href="{{ $item['edit_url'] }}" class="rounded px-2 py-1 text-xs font-bold text-muted hover:text-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">Podgląd / edycja</a>
                                 <form method="POST" action="{{ route('admin.zatwierdzanie.approve', ['type' => $item['type'], 'id' => $item['id']]) }}">
                                     @csrf
                                     <button type="submit" class="rounded bg-green-600 px-3 py-1.5 text-xs font-bold text-white hover:bg-green-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-600 focus-visible:ring-offset-2">
@@ -42,8 +42,8 @@
                                     <label x-show="open" x-cloak class="sr-only" for="reason-{{ $item['type'] }}-{{ $item['id'] }}">Powód odrzucenia (opcjonalnie)</label>
                                     <input x-show="open" x-cloak x-ref="reason" id="reason-{{ $item['type'] }}-{{ $item['id'] }}"
                                         type="text" name="reason" maxlength="1000" placeholder="Powód (opcjonalnie)"
-                                        class="w-44 rounded border-gray-300 text-xs focus:border-red-500 focus:ring-red-500">
-                                    <button type="submit" class="rounded border border-gray-300 px-3 py-1.5 text-xs font-bold text-muted hover:border-red-400 hover:text-red-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600">
+                                        class="w-44 rounded border-gray-500 text-xs focus:border-red-500 focus:ring-red-500">
+                                    <button type="submit" class="rounded-md px-3 py-1.5 text-xs font-bold text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600 bg-gray-100 hover:bg-brand-light">
                                         <span x-text="open ? 'Potwierdź odrzucenie' : 'Odrzuć'">Odrzuć</span>
                                     </button>
                                 </form>

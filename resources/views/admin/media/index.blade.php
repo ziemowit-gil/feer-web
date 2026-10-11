@@ -38,12 +38,12 @@
 
             {{-- ── Folder tree ─────────────────────────────────────────────── --}}
             <aside class="w-full flex-none lg:w-56">
-                <div class="rounded-xl border border-gray-200 bg-white p-3 shadow-sm">
+                <div class="p-3 rounded-md bg-white">
                     <p class="mb-2 px-2 text-[10px] font-bold uppercase tracking-widest text-muted">Foldery</p>
 
                     <a href="{{ route('admin.multimedia.index', ['archived' => $showArchived ? 1 : null]) }}"
-                        class="flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm {{ ! $folder ? 'bg-brand-light font-bold text-brand' : 'text-ink hover:bg-gray-100' }}">
-                        <i class="fa-solid fa-photo-film w-4 text-brand" aria-hidden="true"></i>
+                        class="flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm {{ ! $folder ? 'bg-brand-light font-bold text-brand-dark' : 'text-ink hover:bg-gray-100' }}">
+                        <i class="fa-solid fa-photo-film w-4 text-brand-dark" aria-hidden="true"></i>
                         <span class="flex-1">Wszystkie multimedia</span>
                     </a>
 
@@ -57,17 +57,17 @@
 
                 {{-- Tag filter sidebar --}}
                 @if ($allTags->isNotEmpty())
-                    <div class="mt-4 rounded-xl border border-gray-200 bg-white p-3 shadow-sm">
+                    <div class="mt-4 p-3 rounded-md bg-white">
                         <p class="mb-2 px-2 text-[10px] font-bold uppercase tracking-widest text-muted">Filtruj po tagu</p>
                         <div class="space-y-0.5">
                             <a href="{{ route('admin.multimedia.index', array_filter(['folder' => $folder?->id, 'archived' => $showArchived ? 1 : null, 'q' => $currentSearch])) }}"
-                                class="flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm {{ ! $currentTag ? 'bg-brand-light font-bold text-brand' : 'text-ink hover:bg-gray-100' }}">
+                                class="flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm {{ ! $currentTag ? 'bg-brand-light font-bold text-brand-dark' : 'text-ink hover:bg-gray-100' }}">
                                 <i class="fa-solid fa-tags w-4 text-xs text-muted" aria-hidden="true"></i>
                                 <span class="flex-1">Wszystkie tagi</span>
                             </a>
                             @foreach ($allTags as $t)
                                 <a href="{{ route('admin.multimedia.index', array_filter(['folder' => $folder?->id, 'archived' => $showArchived ? 1 : null, 'q' => $currentSearch, 'tag' => $t])) }}"
-                                    class="flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm {{ $currentTag === $t ? 'bg-brand-light font-bold text-brand' : 'text-ink hover:bg-gray-100' }}">
+                                    class="flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm {{ $currentTag === $t ? 'bg-brand-light font-bold text-brand-dark' : 'text-ink hover:bg-gray-100' }}">
                                     <i class="fa-solid fa-tag w-4 text-xs text-muted" aria-hidden="true"></i>
                                     <span class="flex-1 truncate">{{ $t }}</span>
                                 </a>
@@ -83,20 +83,20 @@
                 {{-- Breadcrumbs --}}
                 <nav aria-label="Ścieżka folderów" class="mb-4 flex flex-wrap items-center gap-1 text-sm text-muted">
                     <a href="{{ route('admin.multimedia.index', ['archived' => $showArchived ? 1 : null]) }}"
-                        class="hover:text-brand {{ ! $folder ? 'font-bold text-ink' : '' }}">
+                        class="hover:text-brand-dark {{ ! $folder ? 'font-bold text-ink' : '' }}">
                         <i class="fa-solid fa-folder-open" aria-hidden="true"></i> Multimedia
                     </a>
                     @foreach ($breadcrumbs as $crumb)
                         <span aria-hidden="true">/</span>
                         <a href="{{ route('admin.multimedia.index', ['folder' => $crumb->id, 'archived' => $showArchived ? 1 : null]) }}"
-                            class="hover:text-brand {{ $loop->last ? 'font-bold text-ink' : '' }}">
+                            class="hover:text-brand-dark {{ $loop->last ? 'font-bold text-ink' : '' }}">
                             {{ $crumb->name }}
                         </a>
                     @endforeach
                 </nav>
 
                 {{-- ── Toolbar ─────────────────────────────────────────────── --}}
-                <div class="mb-4 rounded-xl border border-gray-200 bg-white p-3 shadow-sm">
+                <div class="mb-4 p-3 rounded-md bg-white">
                     <div class="flex flex-wrap items-center gap-3">
 
                         {{-- New folder --}}
@@ -105,9 +105,9 @@
                             <input type="hidden" name="parent_id" value="{{ $folder?->id }}">
                             <label class="sr-only" for="new-folder-name">Nazwa nowego folderu</label>
                             <input type="text" id="new-folder-name" name="name" placeholder="Nowy folder…" required
-                                class="rounded-lg border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                                class="rounded-lg border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark">
                             <button type="submit"
-                                class="flex items-center gap-1.5 rounded-lg border border-brand px-3 py-2 text-xs font-bold text-brand hover:bg-brand-light">
+                                class="flex items-center gap-1.5 rounded-lg border border-brand-dark px-3 py-2 text-xs font-bold text-brand-dark hover:bg-brand-light">
                                 <i class="fa-solid fa-folder-plus" aria-hidden="true"></i> Utwórz
                             </button>
                         </form>
@@ -115,15 +115,15 @@
                         <div class="flex-1"></div>
 
                         {{-- View switch --}}
-                        <div class="flex items-center divide-x divide-gray-300 overflow-hidden rounded-lg border border-gray-300"
+                        <div class="flex items-center divide-x divide-gray-300 overflow-hidden rounded-md bg-gray-50"
                             role="group" aria-label="Widok multimediów">
                             <button type="button" @click="view = 'grid'"
-                                :class="view === 'grid' ? 'bg-brand-light text-brand' : 'text-muted hover:bg-gray-100'"
+                                :class="view === 'grid' ? 'bg-brand-light text-brand-dark' : 'text-muted hover:bg-gray-100'"
                                 class="px-3 py-2 text-xs" aria-label="Widok kafelków">
                                 <i class="fa-solid fa-table-cells-large" aria-hidden="true"></i>
                             </button>
                             <button type="button" @click="view = 'list'"
-                                :class="view === 'list' ? 'bg-brand-light text-brand' : 'text-muted hover:bg-gray-100'"
+                                :class="view === 'list' ? 'bg-brand-light text-brand-dark' : 'text-muted hover:bg-gray-100'"
                                 class="px-3 py-2 text-xs" aria-label="Widok listy">
                                 <i class="fa-solid fa-list" aria-hidden="true"></i>
                             </button>
@@ -133,14 +133,14 @@
 
                         {{-- Archive toggle --}}
                         <a href="{{ route('admin.multimedia.index', array_filter(['folder' => $folder?->id, 'archived' => $showArchived ? null : 1, 'q' => $currentSearch, 'tag' => $currentTag])) }}"
-                            class="flex items-center gap-1.5 rounded-lg border px-3 py-2 text-xs font-bold {{ $showArchived ? 'border-brand bg-brand-light text-brand' : 'border-gray-300 text-muted hover:bg-gray-100' }}">
+                            class="flex items-center gap-1.5 rounded-lg border px-3 py-2 text-xs font-bold {{ $showArchived ? 'border-brand-dark bg-brand-light text-brand-dark' : 'border-gray-300 text-muted hover:bg-gray-100' }}">
                             <i class="fa-solid fa-box-archive" aria-hidden="true"></i>
                             {{ $showArchived ? 'Pokaż aktywne pliki' : 'Pokaż archiwum' }}
                         </a>
 
                         {{-- Alt audit --}}
                         <a href="{{ route('admin.multimedia.alt-audit') }}"
-                            class="flex items-center gap-1.5 rounded-lg border border-gray-300 px-3 py-2 text-xs font-bold text-muted hover:bg-gray-100"
+                            class="flex items-center gap-1.5 rounded-md px-3 py-2 text-xs font-bold text-muted bg-gray-100 hover:bg-brand-light"
                             title="Audyt dostępności — pliki bez alt-text">
                             <i class="fa-solid fa-universal-access" aria-hidden="true"></i>
                             <span class="hidden sm:inline">Audyt alt</span>
@@ -150,7 +150,7 @@
 
                         {{-- Export --}}
                         <a href="{{ route('admin.multimedia.export', ['folder' => $folder?->id]) }}"
-                            class="flex items-center gap-1.5 rounded-lg border border-gray-300 px-3 py-2 text-xs font-bold text-muted hover:bg-gray-100"
+                            class="flex items-center gap-1.5 rounded-md px-3 py-2 text-xs font-bold text-muted bg-gray-100 hover:bg-brand-light"
                             title="{{ $folder ? 'Eksportuj folder jako ZIP' : 'Eksportuj wszystko jako ZIP' }}">
                             <i class="fa-solid fa-file-zipper" aria-hidden="true"></i>
                             <span class="hidden sm:inline">{{ $folder ? 'Eksportuj folder' : 'Eksportuj' }}</span>
@@ -179,7 +179,7 @@
                     @if ($folder) <input type="hidden" name="folder" value="{{ $folder->id }}"> @endif
 
                     <div x-data="{ expanded: {{ ($currentDateFrom || $currentDateTo || $currentAuthor || $withArchived) ? 'true' : 'false' }} }"
-                        class="rounded-xl border border-gray-200 bg-white shadow-sm">
+                        class="rounded-md bg-white">
 
                         {{-- Main row --}}
                         <div class="flex flex-wrap items-center gap-2 px-4 py-3">
@@ -188,22 +188,22 @@
                                 <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-xs text-muted" aria-hidden="true"></i>
                                 <input type="text" id="media-search" name="q" value="{{ $currentSearch }}"
                                     placeholder="Szukaj po nazwie pliku…"
-                                    class="w-full rounded-lg border-gray-300 py-2 pl-8 pr-3 text-sm focus:border-brand focus:ring-brand">
+                                    class="w-full rounded-lg border-gray-500 py-2 pl-8 pr-3 text-sm focus:border-brand-dark focus:ring-brand-dark">
                             </div>
 
                             <button type="submit"
-                                class="rounded-lg bg-brand px-4 py-2 text-xs font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
+                                class="rounded-lg bg-brand-dark px-4 py-2 text-xs font-bold text-white hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2">
                                 <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
                                 <span class="ml-1 hidden sm:inline">Szukaj</span>
                             </button>
 
                             <button type="button" @click="expanded = !expanded"
-                                class="flex items-center gap-1.5 rounded-lg border border-gray-300 px-3 py-2 text-xs font-bold text-muted hover:bg-gray-100"
+                                class="flex items-center gap-1.5 rounded-md px-3 py-2 text-xs font-bold text-muted bg-gray-100 hover:bg-brand-light"
                                 :aria-expanded="expanded" aria-controls="search-filters">
                                 <i class="fa-solid fa-sliders text-[11px]" aria-hidden="true"></i>
                                 <span>Filtry</span>
                                 @if ($currentDateFrom || $currentDateTo || $currentAuthor || $withArchived)
-                                    <span class="flex h-4 w-4 items-center justify-center rounded-full bg-brand text-[9px] font-bold text-white"
+                                    <span class="flex h-4 w-4 items-center justify-center rounded-full bg-brand-dark text-[9px] font-bold text-white"
                                         aria-label="Aktywne filtry">
                                         {{ (int)($currentDateFrom || $currentDateTo) + (int)($currentAuthor > 0) + (int)$withArchived }}
                                     </span>
@@ -219,7 +219,7 @@
                             @endif
 
                             @if ($currentTag)
-                                <span class="flex items-center gap-1.5 rounded-full bg-brand-light px-3 py-1 text-xs font-bold text-brand">
+                                <span class="flex items-center gap-1.5 rounded-full bg-brand-light px-3 py-1 text-xs font-bold text-brand-dark">
                                     <i class="fa-solid fa-tag text-[10px]" aria-hidden="true"></i>
                                     {{ $currentTag }}
                                     <a href="{{ route('admin.multimedia.index', array_filter(['folder' => $folder?->id, 'q' => $currentSearch])) }}"
@@ -248,7 +248,7 @@
                                     </label>
                                     <input type="date" id="filter-date-from" name="date_from"
                                         value="{{ $currentDateFrom }}"
-                                        class="w-full rounded-lg border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                                        class="w-full rounded-lg border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark">
                                 </div>
 
                                 {{-- Date to --}}
@@ -258,7 +258,7 @@
                                     </label>
                                     <input type="date" id="filter-date-to" name="date_to"
                                         value="{{ $currentDateTo }}"
-                                        class="w-full rounded-lg border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                                        class="w-full rounded-lg border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark">
                                 </div>
 
                                 {{-- Author --}}
@@ -269,7 +269,7 @@
                                     <input type="text" id="filter-author" name="author"
                                         value="{{ $currentAuthor }}"
                                         placeholder="np. Jan Kowalski"
-                                        class="w-full rounded-lg border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                                        class="w-full rounded-lg border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark">
                                 </div>
 
                                 {{-- Archive checkbox --}}
@@ -277,7 +277,7 @@
                                     <label class="flex cursor-pointer items-center gap-2.5 rounded-lg border border-gray-300 px-3 py-2.5 text-sm text-ink hover:bg-gray-50 w-full">
                                         <input type="checkbox" name="with_archived" value="1"
                                             {{ $withArchived ? 'checked' : '' }}
-                                            class="h-4 w-4 rounded border-gray-300 text-brand focus:ring-brand">
+                                            class="h-4 w-4 rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
                                         <span>Szukaj też w archiwum</span>
                                     </label>
                                 </div>
@@ -285,7 +285,7 @@
 
                             <div class="mt-3 flex justify-end">
                                 <button type="submit"
-                                    class="rounded-lg bg-brand px-4 py-2 text-xs font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
+                                    class="rounded-lg bg-brand-dark px-4 py-2 text-xs font-bold text-white hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2">
                                     Zastosuj filtry
                                 </button>
                             </div>
@@ -363,9 +363,9 @@
                         <input id="media-upload" x-ref="input" type="file" name="files[]" multiple required
                             class="peer sr-only" @change="setFiles($event.target.files)">
                         <label for="media-upload"
-                            class="flex cursor-pointer items-center gap-4 rounded-xl border-2 border-dashed px-6 py-5 transition peer-focus-visible:ring-2 peer-focus-visible:ring-brand"
-                            :class="drag ? 'border-brand bg-brand-light' : 'border-gray-300 bg-white hover:border-brand hover:bg-gray-50'">
-                            <i class="fa-solid fa-cloud-arrow-up flex-none text-3xl text-brand" aria-hidden="true"></i>
+                            class="flex cursor-pointer items-center gap-4 rounded-md border-2 border-dashed px-6 py-5 transition peer-focus-visible:ring-2 peer-focus-visible:ring-brand-dark"
+                            :class="drag ? 'border-brand-dark bg-brand-light' : 'border-gray-300 bg-white hover:border-brand-dark hover:bg-gray-50'">
+                            <i class="fa-solid fa-cloud-arrow-up flex-none text-3xl text-brand-dark" aria-hidden="true"></i>
                             <div>
                                 <p class="text-sm font-bold text-ink">Przeciągnij pliki tutaj lub kliknij, aby wybrać</p>
                                 <p class="text-xs text-muted">Wiele plików naraz &middot; maks. 10 MB każdy</p>
@@ -373,7 +373,7 @@
                         </label>
 
                         <template x-if="files.length">
-                            <div class="mt-3 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+                            <div class="mt-3 overflow-hidden rounded-md bg-white">
                                 <div class="flex items-center justify-between border-b border-gray-100 bg-gray-50 px-4 py-2.5">
                                     <p class="text-[10px] font-bold uppercase tracking-widest text-muted">
                                         Wybrane pliki (<span x-text="files.length"></span>)
@@ -405,7 +405,7 @@
                                                             <span class="max-w-[10rem] truncate text-sm" x-text="file.name"></span>
                                                             <template x-if="isImage(file)">
                                                                 <button type="button" @click="openCrop(i)"
-                                                                    class="flex-none rounded border border-gray-300 px-1.5 py-0.5 text-[10px] font-bold text-muted hover:border-brand hover:text-brand"
+                                                                    class="flex-none rounded-md px-1.5 py-0.5 text-[10px] font-bold text-muted hover:text-brand-dark bg-gray-100 hover:bg-brand-light"
                                                                     :aria-label="'Kadruj plik ' + file.name">
                                                                     <i class="fa-solid fa-crop-simple" aria-hidden="true"></i>
                                                                     <span x-text="croppedFiles[i] ? 'Kadrowano' : 'Kadruj'"></span>
@@ -420,7 +420,7 @@
                                                             :name="'authors[' + i + ']'"
                                                             x-model="meta[i].author"
                                                             placeholder="np. Jan Kowalski"
-                                                            class="w-full min-w-[10rem] rounded-lg border-gray-300 py-1.5 text-xs focus:border-brand focus:ring-brand">
+                                                            class="w-full min-w-[10rem] rounded-lg border-gray-500 py-1.5 text-xs focus:border-brand-dark focus:ring-brand-dark">
                                                     </td>
                                                     <td class="px-4 py-2">
                                                         <label :for="'upl-alt-' + i" class="sr-only"
@@ -429,7 +429,7 @@
                                                             :name="'alts[' + i + ']'"
                                                             x-model="meta[i].alt"
                                                             placeholder="Co przedstawia ten plik?"
-                                                            class="w-full min-w-[14rem] rounded-lg border-gray-300 py-1.5 text-xs focus:border-brand focus:ring-brand">
+                                                            class="w-full min-w-[14rem] rounded-lg border-gray-500 py-1.5 text-xs focus:border-brand-dark focus:ring-brand-dark">
                                                     </td>
                                                 </tr>
                                             </template>
@@ -439,7 +439,7 @@
 
                                 <div class="flex items-center gap-3 border-t border-gray-100 px-4 py-3">
                                     <button type="submit"
-                                        class="rounded-lg bg-brand px-4 py-2 text-xs font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
+                                        class="rounded-lg bg-brand-dark px-4 py-2 text-xs font-bold text-white hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2">
                                         <i class="fa-solid fa-upload" aria-hidden="true"></i>
                                         Prześlij (<span x-text="files.length"></span>)
                                     </button>
@@ -470,7 +470,7 @@
                                 </div>
                                 <div class="flex items-center gap-3 border-t border-gray-100 px-5 py-4">
                                     <button type="button" @click="confirmCrop()"
-                                        class="rounded-lg bg-brand px-4 py-2 text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
+                                        class="rounded-lg bg-brand-dark px-4 py-2 text-sm font-bold text-white hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2">
                                         <i class="fa-solid fa-check" aria-hidden="true"></i>
                                         Zastosuj kadrowanie
                                     </button>
@@ -489,7 +489,7 @@
                 @error('name') <p class="mb-4 text-sm text-red-600">{{ $message }}</p> @enderror
 
                 @if ($showArchived)
-                    <div class="mb-6 flex flex-wrap items-center gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+                    <div class="mb-6 flex flex-wrap items-center gap-3 rounded-md bg-amber-50 px-4 py-3 text-sm text-amber-800">
                         <i class="fa-solid fa-box-archive flex-none text-amber-500" aria-hidden="true"></i>
                         <span class="flex-1">Przeglądasz archiwum — schowane pliki nie pojawiają się w bibliotece ani edytorze, ale nie zostały usunięte.</span>
                         <form method="POST" action="{{ route('admin.multimedia.empty-archive', array_filter(['folder' => $folder?->id])) }}"
@@ -507,10 +507,10 @@
 
                 {{-- ── Bulk action bar ──────────────────────────────────────── --}}
                 <div x-show="selected.length" x-cloak x-transition
-                    class="sticky top-2 z-30 mb-4 flex flex-wrap items-center gap-3 rounded-xl border border-brand bg-brand-light px-4 py-3 shadow-md"
+                    class="sticky top-2 z-30 mb-4 flex flex-wrap items-center gap-3 rounded-md bg-brand-light px-4 py-3 shadow-md"
                     role="region" aria-label="Akcje dla zaznaczonych plików">
 
-                    <p class="text-sm font-bold text-brand" aria-live="polite">
+                    <p class="text-sm font-bold text-brand-dark" aria-live="polite">
                         Zaznaczono: <span x-text="selected.length"></span>
                     </p>
 
@@ -519,7 +519,7 @@
                             @csrf
                             <template x-for="id in selected" :key="id"><input type="hidden" name="ids[]" :value="id"></template>
                             <button type="submit"
-                                class="flex items-center gap-1.5 rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-xs font-bold text-muted hover:bg-gray-100">
+                                class="flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-bold text-muted bg-white hover:bg-brand-light">
                                 <i class="fa-solid fa-file-zipper" aria-hidden="true"></i> Eksportuj ZIP
                             </button>
                         </form>
@@ -531,14 +531,14 @@
                                 <template x-for="id in selected" :key="id"><input type="hidden" name="ids[]" :value="id"></template>
                                 <label class="sr-only" for="bulk-folder">Przenieś zaznaczone do folderu</label>
                                 <select id="bulk-folder" name="folder_id"
-                                    class="rounded-lg border-gray-300 text-xs focus:border-brand focus:ring-brand">
+                                    class="rounded-lg border-gray-500 text-xs focus:border-brand-dark focus:ring-brand-dark">
                                     <option value="">— główny katalog —</option>
                                     @foreach ($allFolders as $option)
                                         <option value="{{ $option->id }}">{{ $option->fullPath() }}</option>
                                     @endforeach
                                 </select>
                                 <button type="submit"
-                                    class="rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-xs font-bold text-muted hover:bg-gray-100">
+                                    class="rounded-md px-3 py-1.5 text-xs font-bold text-muted bg-white hover:bg-brand-light">
                                     Przenieś
                                 </button>
                             </form>
@@ -550,7 +550,7 @@
                                 <input type="hidden" name="action" value="restore">
                                 <template x-for="id in selected" :key="id"><input type="hidden" name="ids[]" :value="id"></template>
                                 <button type="submit"
-                                    class="flex items-center gap-1.5 rounded-lg border border-brand bg-white px-3 py-1.5 text-xs font-bold text-brand hover:bg-brand-light">
+                                    class="flex items-center gap-1.5 rounded-lg border border-brand-dark bg-white px-3 py-1.5 text-xs font-bold text-brand-dark hover:bg-brand-light">
                                     <i class="fa-solid fa-rotate-left" aria-hidden="true"></i> Przywróć
                                 </button>
                             </form>
@@ -560,7 +560,7 @@
                                 <input type="hidden" name="action" value="archive">
                                 <template x-for="id in selected" :key="id"><input type="hidden" name="ids[]" :value="id"></template>
                                 <button type="submit"
-                                    class="flex items-center gap-1.5 rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-xs font-bold text-muted hover:bg-gray-100">
+                                    class="flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-bold text-muted bg-white hover:bg-brand-light">
                                     <i class="fa-solid fa-box-archive" aria-hidden="true"></i> Schowaj
                                 </button>
                             </form>
@@ -572,7 +572,7 @@
                             <input type="hidden" name="action" value="delete">
                             <template x-for="id in selected" :key="id"><input type="hidden" name="ids[]" :value="id"></template>
                             <button type="submit"
-                                class="flex items-center gap-1.5 rounded-lg border border-red-300 bg-white px-3 py-1.5 text-xs font-bold text-red-600 hover:bg-red-50">
+                                class="flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-bold text-red-800 bg-red-50 hover:bg-red-100">
                                 <i class="fa-solid fa-trash" aria-hidden="true"></i> Usuń
                             </button>
                         </form>
@@ -601,7 +601,7 @@
                     <div class="mb-3 flex items-center justify-between">
                         <label class="flex items-center gap-2 text-sm text-muted">
                             <input type="checkbox" id="select-all" :checked="allSelected" @change="toggleAll()"
-                                class="h-4 w-4 rounded border-gray-300 text-brand focus:ring-brand">
+                                class="h-4 w-4 rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
                             Zaznacz wszystkie na tej stronie
                         </label>
                         <p class="text-xs text-muted">{{ $media->total() }} {{ $media->total() === 1 ? 'plik' : ($media->total() < 5 ? 'pliki' : 'plików') }}</p>
@@ -612,7 +612,7 @@
                         class="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
                         @foreach ($media as $item)
                             <div class="group relative overflow-visible rounded-xl border bg-white shadow-sm transition-shadow hover:shadow-md {{ $item['archived'] ? 'opacity-60' : '' }}"
-                                :class="isSelected({{ $item['id'] }}) ? 'border-brand ring-2 ring-brand' : 'border-gray-200'">
+                                :class="isSelected({{ $item['id'] }}) ? 'border-brand-dark ring-2 ring-brand-dark' : 'border-gray-200'">
 
                                 {{-- Thumbnail --}}
                                 <div class="relative h-40 overflow-hidden rounded-t-xl bg-gray-100">
@@ -620,7 +620,7 @@
                                         <input type="checkbox" id="sel-{{ $item['id'] }}"
                                             :checked="isSelected({{ $item['id'] }})"
                                             @change="toggle({{ $item['id'] }})"
-                                            class="h-5 w-5 rounded border-gray-300 bg-white text-brand shadow focus:ring-brand">
+                                            class="h-5 w-5 rounded border-gray-500 bg-white text-brand-dark shadow focus:ring-brand-dark">
                                         <label for="sel-{{ $item['id'] }}" class="sr-only">Zaznacz plik {{ $item['file_name'] }}</label>
                                     </div>
 
@@ -664,9 +664,9 @@
                                             title="{{ $item['file_name'] }}">{{ $item['file_name'] }}</p>
                                         @if ($item['is_image'])
                                             @if ($item['is_webp'])
-                                                <span class="flex-none rounded bg-green-100 px-1 py-0.5 text-[10px] font-bold text-green-700">WebP</span>
+                                                <span class="flex-none text-[10px] font-bold text-ink"><i class="fa-solid fa-circle-check mr-1 text-brand-dark" aria-hidden="true"></i>WebP</span>
                                             @else
-                                                <span class="flex-none rounded border border-amber-200 bg-amber-50 px-1 py-0.5 text-[10px] font-bold text-amber-700">{{ strtoupper(pathinfo($item['file_name'], PATHINFO_EXTENSION)) }}</span>
+                                                <span class="flex-none text-[10px] font-bold text-ink"><i class="fa-solid fa-circle-exclamation mr-1 text-ink" aria-hidden="true"></i>{{ strtoupper(pathinfo($item['file_name'], PATHINFO_EXTENSION)) }}</span>
                                             @endif
                                         @endif
                                     </div>
@@ -680,7 +680,7 @@
                                     {{-- Usage (owner) link --}}
                                     @if ($item['owner']['url'])
                                         <a href="{{ $item['owner']['url'] }}"
-                                            class="mt-1 flex items-center gap-1 text-[11px] font-bold text-brand hover:text-brand-dark">
+                                            class="mt-1 flex items-center gap-1 text-[11px] font-bold text-brand-dark hover:text-ink">
                                             <i class="fa-solid fa-arrow-up-right-from-square text-[9px]" aria-hidden="true"></i>
                                             {{ $item['owner']['label'] }}
                                         </a>
@@ -714,7 +714,7 @@
                                             </template>
 
                                             <button type="button" @click="addingTag = !addingTag"
-                                                class="rounded-full border border-dashed border-gray-300 px-2 py-0.5 text-[10px] text-muted hover:border-brand hover:text-brand"
+                                                class="rounded-full border border-dashed border-gray-300 px-2 py-0.5 text-[10px] text-muted hover:border-brand-dark hover:text-brand-dark"
                                                 aria-label="Dodaj tag">
                                                 <i class="fa-solid fa-plus text-[8px]" aria-hidden="true"></i> Tag
                                             </button>
@@ -723,7 +723,7 @@
                                         <div x-show="addingTag" x-cloak class="mt-1.5">
                                             <input type="text" x-model="tagInput"
                                                 placeholder="Nowy tag…"
-                                                class="w-full rounded-lg border-gray-300 py-1 pl-2 pr-2 text-xs focus:border-brand focus:ring-brand"
+                                                class="w-full rounded-lg border-gray-500 py-1 pl-2 pr-2 text-xs focus:border-brand-dark focus:ring-brand-dark"
                                                 @keydown.enter.prevent="
                                                     const t = tagInput.trim();
                                                     if (t && !tags.includes(t)) { tags.push(t); $refs['tagForm-{{ $item['id'] }}'].requestSubmit(); }
@@ -764,7 +764,7 @@
                                                             <label class="sr-only" for="folder-g-{{ $item['id'] }}">Wybierz folder</label>
                                                             <select id="folder-g-{{ $item['id'] }}" name="folder_id"
                                                                 onchange="this.form.submit()"
-                                                                class="w-full rounded-lg border-gray-300 text-xs focus:border-brand focus:ring-brand">
+                                                                class="w-full rounded-lg border-gray-500 text-xs focus:border-brand-dark focus:ring-brand-dark">
                                                                 <option value="" {{ ! $folder ? 'selected' : '' }}>— główny katalog —</option>
                                                                 @foreach ($allFolders as $option)
                                                                     <option value="{{ $option->id }}" {{ $folder?->id === $option->id ? 'selected' : '' }}>{{ $option->fullPath() }}</option>
@@ -778,7 +778,7 @@
                                                     <form method="POST" action="{{ route('admin.multimedia.restore', $item['id']) }}">
                                                         @csrf
                                                         @method('PUT')
-                                                        <button type="submit" class="flex w-full items-center gap-2 px-3 py-2 text-xs text-brand hover:bg-brand-light">
+                                                        <button type="submit" class="flex w-full items-center gap-2 px-3 py-2 text-xs text-brand-dark hover:bg-brand-light">
                                                             <i class="fa-solid fa-rotate-left w-4 text-center" aria-hidden="true"></i>
                                                             Przywróć z archiwum
                                                         </button>
@@ -814,13 +814,13 @@
                     </div>
 
                     {{-- ── List view ───────────────────────────────────────── --}}
-                    <div x-show="view === 'list'" x-cloak class="overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-sm">
+                    <div x-show="view === 'list'" x-cloak class="overflow-x-auto rounded-md bg-white">
                         <table class="w-full text-left text-sm">
                             <thead class="border-b border-gray-200 bg-gray-50 text-[10px] font-bold uppercase tracking-widest text-muted">
                                 <tr>
                                     <th scope="col" class="px-4 py-3">
                                         <input type="checkbox" :checked="allSelected" @change="toggleAll()"
-                                            class="h-4 w-4 rounded border-gray-300 text-brand focus:ring-brand"
+                                            class="h-4 w-4 rounded border-gray-500 text-brand-dark focus:ring-brand-dark"
                                             aria-label="Zaznacz wszystkie na tej stronie">
                                     </th>
                                     <th scope="col" class="px-4 py-3"><span class="sr-only">Podgląd</span></th>
@@ -846,7 +846,7 @@
                                             <input type="checkbox" id="sel-list-{{ $item['id'] }}"
                                                 :checked="isSelected({{ $item['id'] }})"
                                                 @change="toggle({{ $item['id'] }})"
-                                                class="h-4 w-4 rounded border-gray-300 text-brand focus:ring-brand">
+                                                class="h-4 w-4 rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
                                             <label for="sel-list-{{ $item['id'] }}" class="sr-only">Zaznacz plik {{ $item['file_name'] }}</label>
                                         </td>
 
@@ -874,22 +874,22 @@
                                                     <div class="group/name flex items-center gap-1">
                                                         <p class="min-w-0 flex-1 truncate font-bold text-ink" title="{{ $item['file_name'] }}">{{ $item['file_name'] }}</p>
                                                         <button type="button" @click="renaming = true"
-                                                            class="flex-none px-0.5 py-0.5 text-[11px] text-muted opacity-0 transition-opacity group-hover/name:opacity-100 hover:text-brand"
+                                                            class="flex-none px-0.5 py-0.5 text-[11px] text-muted opacity-0 transition-opacity group-hover/name:opacity-100 hover:text-brand-dark"
                                                             aria-label="Zmień nazwę pliku {{ $item['file_name'] }}">
                                                             <i class="fa-solid fa-pen" aria-hidden="true"></i>
                                                         </button>
                                                     </div>
                                                     <p class="mt-0.5 text-xs text-muted">{{ $item['mime_type'] }}</p>
                                                     @if ($item['archived'])
-                                                        <span class="mt-0.5 inline-block rounded bg-gray-200 px-1.5 py-0.5 text-[10px] font-bold text-gray-600">W archiwum</span>
+                                                        <span class="mt-0.5 inline-block text-[10px] font-bold text-muted">W archiwum</span>
                                                     @endif
                                                     @if ($item['is_image'])
                                                         @if ($item['is_webp'])
-                                                            <span class="mt-0.5 inline-flex items-center gap-0.5 rounded bg-green-100 px-1.5 py-0.5 text-[10px] font-bold text-green-700">
+                                                            <span class="mt-0.5 inline-flex items-center gap-0.5 text-[10px] font-bold text-ink">
                                                                 <i class="fa-solid fa-check" aria-hidden="true"></i> WebP
                                                             </span>
                                                         @else
-                                                            <span class="mt-0.5 inline-block rounded border border-amber-200 bg-amber-50 px-1.5 py-0.5 text-[10px] font-bold text-amber-700">
+                                                            <span class="mt-0.5 inline-block text-[10px] font-bold text-ink"><i class="fa-solid fa-circle-exclamation mr-1 text-ink" aria-hidden="true"></i>
                                                                 {{ strtoupper(pathinfo($item['file_name_real'], PATHINFO_EXTENSION)) }}
                                                             </span>
                                                         @endif
@@ -907,8 +907,8 @@
                                                     <input type="text" id="rename-{{ $item['id'] }}" x-ref="rename-{{ $item['id'] }}"
                                                         name="name" x-model="nameVal" required
                                                         @keydown.escape="renaming = false"
-                                                        class="w-full min-w-0 rounded border-gray-300 text-xs focus:border-brand focus:ring-brand">
-                                                    <button type="submit" class="flex-none text-brand hover:text-brand-dark" aria-label="Zapisz"><i class="fa-solid fa-check text-xs" aria-hidden="true"></i></button>
+                                                        class="w-full min-w-0 rounded border-gray-500 text-xs focus:border-brand-dark focus:ring-brand-dark">
+                                                    <button type="submit" class="flex-none text-brand-dark hover:text-ink" aria-label="Zapisz"><i class="fa-solid fa-check text-xs" aria-hidden="true"></i></button>
                                                     <button type="button" @click="renaming = false" class="flex-none text-muted" aria-label="Anuluj"><i class="fa-solid fa-xmark text-xs" aria-hidden="true"></i></button>
                                                 </form>
                                             </template>
@@ -918,17 +918,17 @@
                                         <td class="px-4 py-3">
                                             @if ($item['owner']['url'])
                                                 <a href="{{ $item['owner']['url'] }}"
-                                                    class="inline-flex items-center gap-1.5 rounded-lg border border-brand/30 bg-brand-light px-2.5 py-1.5 text-xs font-bold text-brand hover:bg-brand hover:text-white transition-colors">
+                                                    class="inline-flex items-center gap-1.5 rounded-lg border border-brand/30 bg-brand-light px-2.5 py-1.5 text-xs font-bold text-brand-dark hover:bg-brand-dark hover:text-white transition-colors">
                                                     <i class="fa-solid fa-arrow-up-right-from-square text-[10px]" aria-hidden="true"></i>
                                                     {{ $item['owner']['label'] }}
                                                 </a>
                                             @elseif ($item['owner']['standalone'] ?? false)
-                                                <span class="inline-flex items-center gap-1.5 rounded-lg bg-gray-100 px-2.5 py-1.5 text-xs text-muted">
+                                                <span class="inline-flex items-center gap-1.5 text-xs text-muted font-bold">
                                                     <i class="fa-solid fa-layer-group text-[10px]" aria-hidden="true"></i>
                                                     Biblioteka plików
                                                 </span>
                                             @else
-                                                <span class="inline-flex items-center gap-1.5 rounded-lg bg-amber-50 px-2.5 py-1.5 text-xs text-amber-700">
+                                                <span class="inline-flex items-center gap-1.5 text-xs text-ink font-bold">
                                                     <i class="fa-solid fa-triangle-exclamation text-[10px]" aria-hidden="true"></i>
                                                     Osierocony plik
                                                 </span>
@@ -959,7 +959,7 @@
                                                     </span>
                                                 </template>
                                                 <button type="button" @click="addingTag = !addingTag"
-                                                    class="rounded-full border border-dashed border-gray-300 px-2 py-0.5 text-[10px] text-muted hover:border-brand hover:text-brand"
+                                                    class="rounded-full border border-dashed border-gray-300 px-2 py-0.5 text-[10px] text-muted hover:border-brand-dark hover:text-brand-dark"
                                                     aria-label="Dodaj tag">
                                                     <i class="fa-solid fa-plus text-[8px]" aria-hidden="true"></i>
                                                 </button>
@@ -968,7 +968,7 @@
                                             <div x-show="addingTag" x-cloak class="mt-1">
                                                 <input type="text" x-model="tagInput"
                                                     placeholder="Nowy tag…"
-                                                    class="w-32 rounded-lg border-gray-300 py-1 px-2 text-xs focus:border-brand focus:ring-brand"
+                                                    class="w-32 rounded-lg border-gray-500 py-1 px-2 text-xs focus:border-brand-dark focus:ring-brand-dark"
                                                     @keydown.enter.prevent="
                                                         const t = tagInput.trim();
                                                         if (t && !tags.includes(t)) { tags.push(t); $refs['tagFormList-{{ $item['id'] }}'].requestSubmit(); }
@@ -985,10 +985,10 @@
                                                 <label class="sr-only" for="url-list-{{ $item['id'] }}">Adres URL pliku {{ $item['file_name'] }}</label>
                                                 <input type="text" id="url-list-{{ $item['id'] }}" readonly value="{{ $item['url'] }}"
                                                     @focus="$event.target.select()"
-                                                    class="w-32 rounded-lg border-gray-200 bg-gray-50 px-2 py-1.5 text-xs text-muted focus:border-brand focus:ring-brand">
+                                                    class="w-32 rounded-lg border-gray-500 bg-gray-50 px-2 py-1.5 text-xs text-muted focus:border-brand-dark focus:ring-brand-dark">
                                                 <button type="button"
                                                     @click="copy(@js($item['url']), {{ $item['id'] }})"
-                                                    class="flex-none rounded-lg border border-gray-300 px-2 py-1.5 hover:bg-gray-100"
+                                                    class="flex-none rounded-md px-2 py-1.5 bg-gray-100 hover:bg-brand-light text-ink"
                                                     :aria-label="copiedId === {{ $item['id'] }} ? 'Skopiowano adres URL' : 'Kopiuj adres URL'">
                                                     <i class="fa-solid"
                                                         :class="copiedId === {{ $item['id'] }} ? 'fa-check text-green-600' : 'fa-copy text-muted'"
@@ -1004,7 +1004,7 @@
                                                 <div class="group/author flex items-center gap-1">
                                                     <span class="whitespace-nowrap text-sm text-muted" x-text="authorVal || @js($item['author'])"></span>
                                                     <button type="button" @click="editingAuthor = true"
-                                                        class="flex-none px-0.5 text-[11px] text-muted opacity-0 transition-opacity group-hover/author:opacity-100 hover:text-brand"
+                                                        class="flex-none px-0.5 text-[11px] text-muted opacity-0 transition-opacity group-hover/author:opacity-100 hover:text-brand-dark"
                                                         aria-label="Edytuj autora">
                                                         <i class="fa-solid fa-pen" aria-hidden="true"></i>
                                                     </button>
@@ -1021,8 +1021,8 @@
                                                         name="author" x-model="authorVal"
                                                         placeholder="np. Jan Kowalski"
                                                         @keydown.escape="editingAuthor = false"
-                                                        class="w-32 rounded border-gray-300 text-xs focus:border-brand focus:ring-brand">
-                                                    <button type="submit" class="flex-none text-brand" aria-label="Zapisz"><i class="fa-solid fa-check text-xs" aria-hidden="true"></i></button>
+                                                        class="w-32 rounded border-gray-500 text-xs focus:border-brand-dark focus:ring-brand-dark">
+                                                    <button type="submit" class="flex-none text-brand-dark" aria-label="Zapisz"><i class="fa-solid fa-check text-xs" aria-hidden="true"></i></button>
                                                     <button type="button" @click="editingAuthor = false" class="flex-none text-muted" aria-label="Anuluj"><i class="fa-solid fa-xmark text-xs" aria-hidden="true"></i></button>
                                                 </form>
                                             </template>
@@ -1043,7 +1043,7 @@
                                                     <label class="sr-only" for="folder-list-{{ $item['id'] }}">Przenieś do folderu</label>
                                                     <select id="folder-list-{{ $item['id'] }}" name="folder_id"
                                                         onchange="this.form.submit()"
-                                                        class="w-full min-w-[9rem] rounded-lg border-gray-300 text-xs focus:border-brand focus:ring-brand">
+                                                        class="w-full min-w-[9rem] rounded-lg border-gray-500 text-xs focus:border-brand-dark focus:ring-brand-dark">
                                                         <option value="" {{ ! $folder ? 'selected' : '' }}>— główny katalog —</option>
                                                         @foreach ($allFolders as $option)
                                                             <option value="{{ $option->id }}" {{ $folder?->id === $option->id ? 'selected' : '' }}>{{ $option->fullPath() }}</option>
@@ -1067,8 +1067,8 @@
                                                         name="alt" x-model="altVal"
                                                         placeholder="Co przedstawia obraz?"
                                                         @keydown.escape="editingAlt = false"
-                                                        class="w-36 rounded border-gray-300 text-xs focus:border-brand focus:ring-brand">
-                                                    <button type="submit" class="flex-none text-brand" aria-label="Zapisz alt"><i class="fa-solid fa-check text-xs" aria-hidden="true"></i></button>
+                                                        class="w-36 rounded border-gray-500 text-xs focus:border-brand-dark focus:ring-brand-dark">
+                                                    <button type="submit" class="flex-none text-brand-dark" aria-label="Zapisz alt"><i class="fa-solid fa-check text-xs" aria-hidden="true"></i></button>
                                                     <button type="button" @click="editingAlt = false" class="flex-none text-muted" aria-label="Anuluj"><i class="fa-solid fa-xmark text-xs" aria-hidden="true"></i></button>
                                                 </form>
                                             </template>
@@ -1086,7 +1086,7 @@
                                                         @csrf
                                                         @method('PUT')
                                                         <button type="submit"
-                                                            class="rounded-lg p-1.5 text-brand hover:bg-brand-light"
+                                                            class="rounded-lg p-1.5 text-brand-dark hover:bg-brand-light"
                                                             title="Przywróć z archiwum" aria-label="Przywróć z archiwum">
                                                             <i class="fa-solid fa-rotate-left" aria-hidden="true"></i>
                                                         </button>

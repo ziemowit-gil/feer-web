@@ -4,7 +4,7 @@
 
 @section('content')
     @if ($errors->any())
-        <div role="alert" class="mb-4 rounded border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-800">
+        <div role="alert" class="mb-4 rounded-md bg-red-50 px-4 py-3 text-sm text-red-800">
             <p class="font-bold">Popraw poniższe błędy:</p>
             <ul class="mt-1 list-inside list-disc">
                 @foreach ($errors->all() as $error)
@@ -15,7 +15,7 @@
     @endif
 
     @if (session('status'))
-        <div role="status" class="mb-4 rounded border border-green-300 bg-green-50 px-4 py-3 text-sm text-green-800">
+        <div role="status" class="mb-4 rounded-md bg-brand-light px-4 py-3 text-sm text-ink">
             {{ session('status') }}
         </div>
     @endif
@@ -28,7 +28,7 @@
         @csrf
         @if ($document->exists) @method('PUT') @endif
 
-        <div class="rounded-lg border border-gray-200 bg-white p-6 space-y-5">
+        <div class="p-6 space-y-5 rounded-md bg-white">
 
             {{-- Tytuł i slug --}}
             <div>
@@ -36,7 +36,7 @@
                 <input type="text" id="title" name="title" required maxlength="255"
                     value="{{ old('title', $document->title) }}"
                     @input="if (!slugManual) { document.getElementById('slug').value = $event.target.value.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'') }"
-                    class="w-full rounded border-gray-300 focus:border-brand focus-visible:ring-2 focus-visible:ring-brand">
+                    class="w-full rounded border-gray-500 focus:border-brand-dark focus-visible:ring-2 focus-visible:ring-brand-dark">
             </div>
 
             <div>
@@ -51,7 +51,7 @@
                     <input type="text" id="slug" name="slug" maxlength="255"
                         value="{{ old('slug', $document->slug) }}"
                         @input="slugManual = true"
-                        class="flex-1 rounded border-gray-300 font-mono text-sm focus:border-brand focus-visible:ring-2 focus-visible:ring-brand">
+                        class="flex-1 rounded border-gray-500 font-mono text-sm focus:border-brand-dark focus-visible:ring-2 focus-visible:ring-brand-dark">
                 </div>
                 @if ($document->exists)
                     <p class="mt-1 text-xs text-muted">
@@ -64,7 +64,7 @@
             <div>
                 <label for="category" class="mb-1 block text-sm font-bold">Kategoria BIP <span class="text-red-500" aria-hidden="true">*</span></label>
                 <select id="category" name="category" required
-                    class="w-full rounded border-gray-300 focus:border-brand focus-visible:ring-2 focus-visible:ring-brand">
+                    class="w-full rounded border-gray-500 focus:border-brand-dark focus-visible:ring-2 focus-visible:ring-brand-dark">
                     @foreach (\App\Models\BipDocument::CATEGORIES as $value => $label)
                         <option value="{{ $value }}" {{ old('category', $document->category ?? 'other') === $value ? 'selected' : '' }}>
                             {{ $label }}
@@ -77,7 +77,7 @@
             <div>
                 <label for="summary" class="mb-1 block text-sm font-bold">Skrót / opis</label>
                 <textarea id="summary" name="summary" rows="3" maxlength="1000"
-                    class="w-full rounded border-gray-300 focus:border-brand focus-visible:ring-2 focus-visible:ring-brand">{{ old('summary', $document->summary) }}</textarea>
+                    class="w-full rounded border-gray-500 focus:border-brand-dark focus-visible:ring-2 focus-visible:ring-brand-dark">{{ old('summary', $document->summary) }}</textarea>
                 <p class="mt-1 text-xs text-muted">Krótki opis widoczny na liście dokumentów BIP (max. 1000 znaków).</p>
             </div>
 
@@ -86,20 +86,20 @@
                 <div>
                     <label for="order" class="mb-1 block text-sm font-bold">Kolejność</label>
                     <input type="number" id="order" name="order" min="0" value="{{ old('order', $document->order ?? 0) }}"
-                        class="w-24 rounded border-gray-300 focus:border-brand focus-visible:ring-2 focus-visible:ring-brand">
+                        class="w-24 rounded border-gray-500 focus:border-brand-dark focus-visible:ring-2 focus-visible:ring-brand-dark">
                     <p class="mt-1 text-xs text-muted">Mniejsza liczba = wyżej w kategorii.</p>
                 </div>
                 <label class="flex items-center gap-2 pb-2">
                     <input type="checkbox" name="is_published" value="1"
                         {{ old('is_published', $document->is_published ?? true) ? 'checked' : '' }}
-                        class="rounded border-gray-300 text-brand focus-visible:ring-2 focus-visible:ring-brand">
+                        class="rounded border-gray-500 text-brand-dark focus-visible:ring-2 focus-visible:ring-brand-dark">
                     <span class="text-sm font-bold">Widoczny na stronie BIP</span>
                 </label>
             </div>
         </div>
 
         {{-- Treść --}}
-        <div class="rounded-lg border border-gray-200 bg-white p-6">
+        <div class="p-6 rounded-md bg-white">
             <h2 class="mb-4 text-sm font-bold text-ink">Treść dokumentu</h2>
             @include('admin.partials.editor', [
                 'name' => 'content',
@@ -109,22 +109,22 @@
         </div>
 
         {{-- Pliki załączone --}}
-        <fieldset class="rounded-lg border border-gray-200 bg-white p-6">
+        <fieldset class="p-6 rounded-md bg-white">
             <legend class="px-2 text-sm font-bold text-ink">Pliki do pobrania</legend>
 
             @if ($document->exists && $document->attachedFiles()->isNotEmpty())
                 <ul class="mb-4 space-y-1">
                     @foreach ($document->attachedFiles() as $media)
-                        <li class="flex items-center justify-between gap-3 rounded border border-gray-100 bg-gray-50 px-3 py-2 text-sm">
+                        <li class="flex items-center justify-between gap-3 px-3 py-2 text-sm rounded-md bg-gray-50">
                             <a href="{{ $media->getUrl() }}" target="_blank" rel="noopener"
-                                class="inline-flex items-center gap-2 text-brand hover:text-brand-dark">
+                                class="inline-flex items-center gap-2 text-brand-dark hover:text-ink">
                                 <i class="fa-solid {{ $document->fileIcon($media) }}" aria-hidden="true"></i>
                                 {{ $media->file_name }}
                                 <span class="text-xs text-muted">({{ $media->human_readable_size }})</span>
                             </a>
                             <label class="flex items-center gap-1.5 text-xs text-muted">
                                 <input type="checkbox" name="remove_files[]" value="{{ $media->id }}"
-                                    class="rounded border-gray-300 text-red-600 focus-visible:ring-2 focus-visible:ring-red-600">
+                                    class="rounded border-gray-500 text-red-600 focus-visible:ring-2 focus-visible:ring-red-600">
                                 Usuń
                             </label>
                         </li>
@@ -137,7 +137,7 @@
             </label>
             <input type="file" id="files" name="files[]" multiple
                 accept=".pdf,.doc,.docx,.odt,.xls,.xlsx,.ods,.csv,.zip,.jpg,.jpeg,.png,.webp"
-                class="block w-full text-sm text-muted file:mr-3 file:rounded file:border-0 file:bg-brand file:px-3 file:py-1.5 file:text-sm file:font-bold file:text-white hover:file:bg-brand-dark">
+                class="block w-full text-sm text-muted file:mr-3 file:rounded file:border-0 file:bg-brand-dark file:px-3 file:py-1.5 file:text-sm file:font-bold file:text-white hover:file:bg-brand-dark">
             <p class="mt-1 text-xs text-muted">
                 Dopuszczalne formaty: PDF, Word, Excel, ODS, CSV, ZIP, obrazy. Każdy plik do 10 MB.
             </p>
@@ -145,7 +145,7 @@
 
         {{-- Metadane BIP (informacja o autorze i datach — wymóg ustawowy) --}}
         @if ($document->exists)
-            <div class="rounded-lg border border-gray-200 bg-white p-6 text-sm text-muted space-y-1">
+            <div class="p-6 text-sm text-muted space-y-1 rounded-md bg-white">
                 <p class="font-bold text-ink mb-2">Metadane BIP (wymagane przepisami)</p>
                 <p>
                     <span class="font-semibold">Wprowadził/-a:</span>
@@ -164,7 +164,7 @@
                 </p>
                 <p class="mt-2">
                     <a href="{{ route('admin.historia.index', ['type' => 'bip_document', 'id' => $document->id]) }}"
-                        class="inline-flex items-center gap-1.5 text-brand hover:text-brand-dark">
+                        class="inline-flex items-center gap-1.5 text-brand-dark hover:text-ink">
                         <i class="fa-solid fa-clock-rotate-left text-xs" aria-hidden="true"></i>
                         Historia wszystkich zmian
                     </a>
@@ -174,11 +174,11 @@
 
         <div class="flex items-center gap-3 border-t border-gray-100 pt-2">
             <button type="submit"
-                class="rounded bg-brand px-5 py-2 text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
+                class="rounded bg-brand-dark px-5 py-2 text-sm font-bold text-white hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2">
                 Zapisz
             </button>
             <a href="{{ route('admin.bip-dokumenty.index') }}"
-                class="rounded text-sm text-muted hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                class="rounded text-sm text-muted hover:text-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">
                 Anuluj
             </a>
         </div>

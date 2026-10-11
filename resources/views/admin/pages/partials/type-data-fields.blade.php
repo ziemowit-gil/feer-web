@@ -18,10 +18,10 @@
 @php
     $td = old('type_data', $page->type_data ?? []);
     $tdRows = fn (string $key) => array_values(array_filter(is_array($td[$key] ?? null) ? $td[$key] : [], 'is_array'));
-    $inp = 'w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand';
+    $inp = 'w-full rounded border-gray-300 text-sm focus:border-brand-dark focus:ring-brand-dark';
     $lbl = 'mb-1 block text-xs font-bold text-muted';
     $box = 'space-y-3 rounded-lg border border-gray-100 bg-gray-50 p-4';
-    $addBtn = 'mt-2 inline-flex items-center gap-2 rounded border border-brand px-3 py-1.5 text-sm font-bold text-brand hover:bg-brand-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand';
+    $addBtn = 'mt-2 inline-flex items-center gap-2 rounded border border-brand-dark px-3 py-1.5 text-sm font-bold text-brand-dark hover:bg-brand-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark';
     $rmBtn = 'rounded p-2 text-muted hover:bg-red-50 hover:text-red-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400';
     // Klasy siatki jako literały (Tailwind wykrywa tylko pełne nazwy klas w źródle).
     $recCols = [

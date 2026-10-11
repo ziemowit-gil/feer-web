@@ -3,7 +3,7 @@
 @php $brandSectionsValue = array_values((array) old('brand_sections', $page->brand_sections ?? [])); @endphp
 <div data-brand-fields class="space-y-5 border-t border-gray-100 pt-5 {{ $currentType === 'brand_assets' ? '' : 'hidden' }}">
     <p class="text-sm font-bold uppercase tracking-wide text-muted">Identyfikacja wizualna</p>
-    <p class="rounded border border-blue-200 bg-blue-50 px-3 py-2 text-xs text-blue-800">
+    <p class="rounded-md bg-brand-light px-3 py-2 text-xs text-ink">
         Strona chroniona indywidualnym loginem i hasłem. Pliki do pobrania wgrywasz w zakładce „Pliki" — tam przypisujesz plik do sekcji zdefiniowanej poniżej.
     </p>
 
@@ -13,7 +13,7 @@
         <input type="url" id="brand_brandbook_url" name="brand_brandbook_url"
             value="{{ old('brand_brandbook_url', $page->brand_brandbook_url) }}"
             placeholder="https://…"
-            class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+            class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
         <p class="mt-1 text-xs text-muted">Wyświetli się jako przycisk „Pobierz brandbook" na stronie.</p>
         @error('brand_brandbook_url') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
     </div>
@@ -26,21 +26,21 @@
         <div data-repeater data-repeater-name="brand_sections">
             <div data-repeater-rows class="space-y-2">
                 @foreach ($brandSectionsValue as $bsIndex => $bs)
-                    <div data-repeater-row class="flex items-center gap-2 rounded border border-gray-200 bg-gray-50 p-2">
+                    <div data-repeater-row class="flex items-center gap-2 p-2 rounded-md bg-white">
                         <div class="flex flex-1 gap-2">
                             <div class="flex-1">
                                 <label class="sr-only">Tytuł sekcji</label>
                                 <input type="text" name="brand_sections[{{ $bsIndex }}][title]"
                                     value="{{ old('brand_sections.' . $bsIndex . '.title', $bs['title'] ?? '') }}"
                                     placeholder="Tytuł sekcji, np. Logotyp — wersja kolorowa"
-                                    class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                                    class="w-full rounded border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark">
                             </div>
                             <div class="w-40">
                                 <label class="sr-only">Klucz (ID sekcji)</label>
                                 <input type="text" name="brand_sections[{{ $bsIndex }}][key]"
                                     value="{{ old('brand_sections.' . $bsIndex . '.key', $bs['key'] ?? '') }}"
                                     placeholder="klucz-sekcji"
-                                    class="w-full rounded border-gray-300 font-mono text-xs focus:border-brand focus:ring-brand">
+                                    class="w-full rounded border-gray-500 font-mono text-xs focus:border-brand-dark focus:ring-brand-dark">
                             </div>
                         </div>
                         <button type="button" data-repeater-remove
@@ -52,20 +52,20 @@
                 @endforeach
             </div>
             <template data-repeater-template>
-                <div data-repeater-row class="flex items-center gap-2 rounded border border-gray-200 bg-gray-50 p-2 mt-2">
+                <div data-repeater-row class="flex items-center gap-2 p-2 mt-2 rounded-md bg-white">
                     <div class="flex flex-1 gap-2">
                         <div class="flex-1">
                             <label class="sr-only">Tytuł sekcji</label>
                             <input type="text" name="brand_sections[__INDEX__][title]"
                                 placeholder="Tytuł sekcji, np. Logotyp — wersja kolorowa"
-                                class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand"
+                                class="w-full rounded border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark"
                                 data-autoslug-source data-autoslug-target="brand_sections[__INDEX__][key]">
                         </div>
                         <div class="w-40">
                             <label class="sr-only">Klucz (ID sekcji)</label>
                             <input type="text" name="brand_sections[__INDEX__][key]"
                                 placeholder="klucz-sekcji"
-                                class="w-full rounded border-gray-300 font-mono text-xs focus:border-brand focus:ring-brand">
+                                class="w-full rounded border-gray-500 font-mono text-xs focus:border-brand-dark focus:ring-brand-dark">
                         </div>
                     </div>
                     <button type="button" data-repeater-remove
@@ -83,9 +83,9 @@
     </div>
 
     @if ($page->exists && $page->isBrandAssets())
-        <div class="rounded border border-gray-200 bg-gray-50 p-3">
+        <div class="p-3 rounded-md bg-white">
             <a href="{{ route('admin.podstrony.dostep.index', $page) }}"
-                class="inline-flex items-center gap-2 font-bold text-brand hover:text-brand-dark hover:underline">
+                class="inline-flex items-center gap-2 font-bold text-brand-dark hover:text-ink hover:underline">
                 <i class="fa-solid fa-users-gear" aria-hidden="true"></i>
                 Zarządzaj użytkownikami dostępu ({{ $page->brandAccessUsers()->count() }})
                 <i class="fa-solid fa-arrow-right text-xs" aria-hidden="true"></i>

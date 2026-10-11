@@ -106,9 +106,9 @@
         }
     </style>
 </head>
-<body class="flex min-h-screen bg-gray-50 text-ink antialiased" data-admin-pickers x-data :class="{ 'overflow-hidden lg:overflow-auto': $store.adminNav.mobileOpen }">
+<body class="flex min-h-screen bg-gray-100 text-ink antialiased" data-admin-pickers x-data :class="{ 'overflow-hidden lg:overflow-auto': $store.adminNav.mobileOpen }">
 
-    <a href="#main" class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-lg focus:bg-white focus:px-4 focus:py-2 focus:text-sm focus:font-bold focus:text-brand focus:shadow-xl focus:outline-none focus:ring-2 focus:ring-brand">Przejdź do treści</a>
+    <a href="#main" class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-md focus:bg-white focus:px-4 focus:py-2 focus:text-sm focus:font-bold focus:text-brand-dark focus:shadow-xl focus:outline-none focus:ring-2 focus:ring-brand-dark">Przejdź do treści</a>
 
     @include('admin.partials.sidebar')
 
@@ -125,7 +125,7 @@
         <header class="sticky top-0 z-20 flex h-16 items-center justify-between gap-4 border-b border-gray-200 bg-white px-4 sm:px-6">
             <div class="flex min-w-0 flex-1 items-center gap-3">
                 <button type="button" @click="$store.adminNav.open()"
-                    class="flex h-10 w-10 flex-none items-center justify-center rounded-lg border border-gray-300 text-muted hover:border-brand hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand lg:hidden"
+                    class="flex h-10 w-10 flex-none items-center justify-center rounded-md bg-gray-100 text-ink hover:bg-brand-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark lg:hidden"
                     aria-label="Otwórz menu" aria-controls="admin-sidebar" :aria-expanded="$store.adminNav.mobileOpen.toString()">
                     <i class="fa-solid fa-bars" aria-hidden="true"></i>
                 </button>
@@ -136,19 +136,19 @@
                 {{-- Zadania --}}
                 @php $myTaskCount = \App\Http\Controllers\Admin\TaskController::myPendingCount(auth()->id()); @endphp
                 <a href="{{ route('admin.zadania.index') }}"
-                    class="relative flex items-center gap-2 rounded-lg border px-3 py-2 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand {{ request()->routeIs('admin.zadania.*') ? 'border-brand bg-brand-light text-brand' : 'border-gray-300 text-muted hover:border-brand hover:text-brand' }}"
+                    class="relative flex min-h-10 items-center gap-2 rounded-md px-3 py-2 text-sm font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark {{ request()->routeIs('admin.zadania.*') ? 'bg-brand-light text-brand-dark' : 'bg-gray-100 text-ink hover:bg-brand-light' }}"
                     aria-label="Zadania{{ $myTaskCount ? ' (' . $myTaskCount . ' oczekujących)' : '' }}">
                     <i class="fa-solid fa-list-check" aria-hidden="true"></i>
                     <span class="hidden sm:inline">Zadania</span>
                     @if ($myTaskCount > 0)
-                        <span class="absolute -right-1.5 -top-1.5 flex h-5 min-w-[1.25rem] items-center justify-center rounded-full bg-brand px-1 text-xs font-bold text-white">{{ $myTaskCount > 99 ? '99+' : $myTaskCount }}</span>
+                        <span class="absolute -right-1.5 -top-1.5 flex h-5 min-w-[1.25rem] items-center justify-center rounded-full bg-brand-dark px-1 text-xs font-bold text-white">{{ $myTaskCount > 99 ? '99+' : $myTaskCount }}</span>
                     @endif
                 </a>
 
                 {{-- Kalendarz redakcyjny --}}
                 @if ($can('news') || $can('events'))
                     <a href="{{ route('admin.kalendarz.index') }}"
-                        class="flex items-center gap-2 rounded-lg border px-3 py-2 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand {{ request()->routeIs('admin.kalendarz.*') ? 'border-brand bg-brand-light text-brand' : 'border-gray-300 text-muted hover:border-brand hover:text-brand' }}"
+                        class="flex min-h-10 items-center gap-2 rounded-md px-3 py-2 text-sm font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark {{ request()->routeIs('admin.kalendarz.*') ? 'bg-brand-light text-brand-dark' : 'bg-gray-100 text-ink hover:bg-brand-light' }}"
                         aria-label="Kalendarz redakcyjny">
                         <i class="fa-solid fa-calendar-days" aria-hidden="true"></i>
                         <span class="hidden md:inline">Kalendarz</span>
@@ -156,22 +156,22 @@
                 @endif
 
                 <button type="button" onclick="window.dispatchEvent(new CustomEvent('open-command-palette'))"
-                    class="flex items-center gap-2 rounded-lg border border-gray-300 px-3 py-2 text-sm text-muted hover:border-brand hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+                    class="flex min-h-10 items-center gap-2 rounded-md bg-gray-100 px-3 py-2 text-sm font-bold text-ink hover:bg-brand-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark"
                     aria-label="Szukaj w panelu (Ctrl+K)">
                     <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
                     <span class="hidden sm:inline">Szukaj…</span>
-                    <kbd class="hidden rounded border border-gray-300 bg-gray-50 px-1.5 text-xs sm:inline">Ctrl K</kbd>
+                    <kbd class="hidden rounded bg-white px-1.5 text-xs font-normal text-muted sm:inline">Ctrl K</kbd>
                 </button>
 
                 {{-- Dostępność --}}
                 <div x-data="{ open: false }" class="relative">
                     <button type="button" @click="open = ! open" :aria-expanded="open.toString()"
-                        class="rounded-lg border border-gray-300 px-3 py-2 text-muted hover:border-brand hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+                        class="min-h-10 rounded-md bg-gray-100 px-3 py-2 text-ink hover:bg-brand-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark"
                         aria-label="Ułatwienia dostępu">
                         <i class="fa-solid fa-universal-access" aria-hidden="true"></i>
                     </button>
                     <div x-show="open" x-cloak @click.outside="open = false" @keydown.escape.window="open = false"
-                        class="absolute right-0 z-50 mt-2 w-64 overflow-hidden rounded-lg border border-gray-200 bg-white shadow-xl"
+                        class="absolute right-0 z-50 mt-2 w-64 overflow-hidden rounded-md border border-gray-200 bg-white shadow-xl"
                         role="dialog" aria-label="Ułatwienia dostępu">
                         <div class="border-b border-gray-100 px-4 py-2 text-xs font-bold uppercase tracking-wide text-muted">Ułatwienia dostępu</div>
 
@@ -179,13 +179,13 @@
                         <div class="flex items-center gap-2 border-b border-gray-100 px-4 py-3">
                             <span class="flex-1 text-sm text-ink">Rozmiar tekstu</span>
                             <button type="button" data-a11y-font="decrease"
-                                class="flex h-8 w-8 items-center justify-center rounded border border-gray-300 text-sm text-muted hover:border-brand hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+                                class="flex h-8 w-8 items-center justify-center rounded-md bg-gray-100 text-sm font-bold text-ink hover:bg-brand-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark"
                                 aria-label="Zmniejsz tekst">A<sup>−</sup></button>
                             <button type="button" data-a11y-font="reset"
-                                class="flex h-8 w-8 items-center justify-center rounded border border-gray-300 text-sm text-muted hover:border-brand hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+                                class="flex h-8 w-8 items-center justify-center rounded-md bg-gray-100 text-sm font-bold text-ink hover:bg-brand-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark"
                                 aria-label="Domyślny rozmiar tekstu">A</button>
                             <button type="button" data-a11y-font="increase"
-                                class="flex h-8 w-8 items-center justify-center rounded border border-gray-300 text-sm text-muted hover:border-brand hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+                                class="flex h-8 w-8 items-center justify-center rounded-md bg-gray-100 text-sm font-bold text-ink hover:bg-brand-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark"
                                 aria-label="Powiększ tekst">A<sup>+</sup></button>
                         </div>
 
@@ -194,16 +194,16 @@
                             <p class="mb-2 text-xs font-semibold text-muted">Kontrast</p>
                             <div class="flex flex-wrap gap-1.5">
                                 <button type="button" data-a11y-contrast="off"
-                                    class="rounded border border-gray-300 px-2 py-1 text-xs text-muted hover:border-brand hover:text-brand aria-pressed:border-brand aria-pressed:bg-brand-light aria-pressed:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+                                    class="rounded-md bg-gray-100 px-2 py-1 text-xs font-bold text-ink hover:bg-brand-light aria-pressed:bg-brand-dark aria-pressed:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark"
                                     aria-pressed="false" aria-label="Normalny kontrast">Normalny</button>
                                 <button type="button" data-a11y-contrast="contrast"
-                                    class="rounded border border-gray-300 px-2 py-1 text-xs text-muted hover:border-brand hover:text-brand aria-pressed:border-brand aria-pressed:bg-brand-light aria-pressed:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+                                    class="rounded-md bg-gray-100 px-2 py-1 text-xs font-bold text-ink hover:bg-brand-light aria-pressed:bg-brand-dark aria-pressed:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark"
                                     aria-pressed="false" aria-label="Wysoki kontrast czarno-biały">Wysoki</button>
                                 <button type="button" data-a11y-contrast="contrast-bw"
-                                    class="rounded border border-gray-300 px-2 py-1 text-xs text-muted hover:border-brand hover:text-brand aria-pressed:border-brand aria-pressed:bg-brand-light aria-pressed:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+                                    class="rounded-md bg-gray-100 px-2 py-1 text-xs font-bold text-ink hover:bg-brand-light aria-pressed:bg-brand-dark aria-pressed:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark"
                                     aria-pressed="false" aria-label="Kontrast czarno-żółty">Czarno-żółty</button>
                                 <button type="button" data-a11y-contrast="contrast-gray"
-                                    class="rounded border border-gray-300 px-2 py-1 text-xs text-muted hover:border-brand hover:text-brand aria-pressed:border-brand aria-pressed:bg-brand-light aria-pressed:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+                                    class="rounded-md bg-gray-100 px-2 py-1 text-xs font-bold text-ink hover:bg-brand-light aria-pressed:bg-brand-dark aria-pressed:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark"
                                     aria-pressed="false" aria-label="Skala szarości">Szary</button>
                             </div>
                         </div>
@@ -211,19 +211,19 @@
                         {{-- Odstępy i czcionka --}}
                         <div class="flex flex-col gap-1 px-4 py-3">
                             <button type="button" data-a11y-ls
-                                class="flex items-center gap-3 rounded px-1 py-1.5 text-sm text-ink hover:bg-gray-50 aria-pressed:font-semibold aria-pressed:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+                                class="flex items-center gap-3 rounded px-1 py-1.5 text-sm text-ink hover:bg-gray-50 aria-pressed:font-semibold aria-pressed:text-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark"
                                 aria-pressed="false">
                                 <i class="fa-solid fa-text-width w-4 text-center text-muted" aria-hidden="true"></i>
                                 Zwiększ odstęp liter
                             </button>
                             <button type="button" data-a11y-sans
-                                class="flex items-center gap-3 rounded px-1 py-1.5 text-sm text-ink hover:bg-gray-50 aria-pressed:font-semibold aria-pressed:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+                                class="flex items-center gap-3 rounded px-1 py-1.5 text-sm text-ink hover:bg-gray-50 aria-pressed:font-semibold aria-pressed:text-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark"
                                 aria-pressed="false">
                                 <i class="fa-solid fa-font w-4 text-center text-muted" aria-hidden="true"></i>
                                 Czcionka bezszeryfowa
                             </button>
                             <button type="button" data-a11y-animations
-                                class="flex items-center gap-3 rounded px-1 py-1.5 text-sm text-ink hover:bg-gray-50 aria-pressed:font-semibold aria-pressed:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+                                class="flex items-center gap-3 rounded px-1 py-1.5 text-sm text-ink hover:bg-gray-50 aria-pressed:font-semibold aria-pressed:text-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark"
                                 aria-pressed="false">
                                 <i class="fa-solid fa-person-running w-4 text-center text-muted" aria-hidden="true"></i>
                                 Wstrzymaj animacje
@@ -239,7 +239,7 @@
                 <div x-data="{ open: false, markSeen() { fetch('{{ route('admin.powiadomienia.seen') }}', { method: 'POST', headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'X-Requested-With': 'XMLHttpRequest' } }); } }"
                     class="relative">
                     <button type="button" @click="open = ! open; if (open) markSeen()" :aria-expanded="open.toString()"
-                        class="relative rounded-lg border border-gray-300 px-3 py-2 text-muted hover:border-brand hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+                        class="relative min-h-10 rounded-md bg-gray-100 px-3 py-2 text-ink hover:bg-brand-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark"
                         aria-label="Powiadomienia{{ $notifCount ? ' (' . $notifCount . ' nowych)' : '' }}">
                         <i class="fa-regular fa-bell" aria-hidden="true"></i>
                         @if ($notifCount)
@@ -247,15 +247,15 @@
                         @endif
                     </button>
                     <div x-show="open" x-cloak @click.outside="open = false" @keydown.escape="open = false"
-                        class="absolute right-0 z-50 mt-2 w-72 overflow-hidden rounded-lg border border-gray-200 bg-white shadow-xl"
+                        class="absolute right-0 z-50 mt-2 w-72 overflow-hidden rounded-md border border-gray-200 bg-white shadow-xl"
                         role="menu" aria-label="Powiadomienia">
                         <div class="border-b border-gray-100 px-4 py-2 text-xs font-bold uppercase tracking-wide text-muted">Powiadomienia</div>
                         @forelse ($notifItems as $it)
                             <a href="{{ $it['url'] }}" role="menuitem"
                                 class="flex items-center gap-3 px-4 py-3 text-sm text-ink hover:bg-gray-50">
-                                <i class="fa-solid {{ $it['icon'] }} w-4 text-center text-gray-400" aria-hidden="true"></i>
+                                <i class="fa-solid {{ $it['icon'] }} w-4 text-center text-muted" aria-hidden="true"></i>
                                 <span class="flex-1">{{ $it['label'] }}</span>
-                                <span class="rounded-full bg-brand/10 px-2 py-0.5 text-xs font-bold text-brand">{{ $it['count'] }}</span>
+                                <span class="text-sm font-bold text-brand-dark">{{ $it['count'] }}</span>
                             </a>
                         @empty
                             <p class="px-4 py-6 text-center text-sm text-muted">Brak nowych powiadomień.</p>
@@ -268,47 +268,47 @@
         {{-- Pasek szybkich skrótów — w kontekście bloga „Wiem FEER” własne akcje bloga --}}
         @if (\App\Support\BlogAdmin::inContext(auth()->user()))
         @php $blogPending = \App\Support\BlogAdmin::pendingCommentsCount(); @endphp
-        <div class="flex flex-wrap items-center gap-2 border-b border-gray-100 bg-gray-50/80 px-6 py-2" data-quickbar="blog">
+        <div class="flex flex-wrap items-center gap-2 border-b border-gray-200 bg-white px-4 py-2 sm:px-6" data-quickbar="blog">
             <span class="mr-1 text-xs font-bold uppercase tracking-wide text-muted">Szybko:</span>
             <a href="{{ route('admin.wiem-feer.create') }}"
-                class="inline-flex items-center gap-1.5 rounded border border-gray-200 bg-white px-3 py-1 text-xs font-bold text-ink hover:border-brand hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                class="inline-flex min-h-8 items-center gap-1.5 rounded-md bg-gray-100 px-3 py-1 text-xs font-bold text-ink hover:bg-brand-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">
                 <i class="fa-solid fa-plus" aria-hidden="true"></i> Nowy wpis
             </a>
             <a href="{{ route('admin.wiem.dashboard') }}"
-                class="inline-flex items-center gap-1.5 rounded border border-gray-200 bg-white px-3 py-1 text-xs font-bold text-ink hover:border-brand hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                class="inline-flex min-h-8 items-center gap-1.5 rounded-md bg-gray-100 px-3 py-1 text-xs font-bold text-ink hover:bg-brand-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">
                 <i class="fa-solid fa-gauge" aria-hidden="true"></i> Pulpit Wiem FEER
             </a>
             <a href="{{ route('admin.komentarze-bloga.index') }}"
-                class="inline-flex items-center gap-1.5 rounded border border-gray-200 bg-white px-3 py-1 text-xs font-bold text-ink hover:border-brand hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                class="inline-flex min-h-8 items-center gap-1.5 rounded-md bg-gray-100 px-3 py-1 text-xs font-bold text-ink hover:bg-brand-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">
                 <i class="fa-solid fa-comments" aria-hidden="true"></i> Komentarze do moderacji ({{ $blogPending }})
             </a>
             <a href="{{ \App\Support\BlogAdmin::publicUrl() }}" target="_blank" rel="noopener"
-                class="inline-flex items-center gap-1.5 rounded border border-gray-200 bg-white px-3 py-1 text-xs font-bold text-ink hover:border-brand hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                class="inline-flex min-h-8 items-center gap-1.5 rounded-md bg-gray-100 px-3 py-1 text-xs font-bold text-ink hover:bg-brand-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">
                 <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i> Zobacz blog<span class="sr-only"> (otwiera się w nowej karcie)</span>
             </a>
         </div>
         @elseif ($can('news') || $can('events'))
-        <div class="flex flex-wrap items-center gap-2 border-b border-gray-100 bg-gray-50/80 px-6 py-2">
+        <div class="flex flex-wrap items-center gap-2 border-b border-gray-200 bg-white px-4 py-2 sm:px-6">
             <span class="mr-1 text-xs font-bold uppercase tracking-wide text-muted">Szybko:</span>
             @if ($can('news'))
             <a href="{{ route('admin.newsy.create') }}"
-                class="inline-flex items-center gap-1.5 rounded border border-gray-200 bg-white px-3 py-1 text-xs font-bold text-ink hover:border-brand hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                class="inline-flex min-h-8 items-center gap-1.5 rounded-md bg-gray-100 px-3 py-1 text-xs font-bold text-ink hover:bg-brand-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">
                 <i class="fa-solid fa-plus" aria-hidden="true"></i> Dodaj aktualność
             </a>
             @endif
             @if ($can('events'))
             <a href="{{ route('admin.wydarzenia.create') }}"
-                class="inline-flex items-center gap-1.5 rounded border border-gray-200 bg-white px-3 py-1 text-xs font-bold text-ink hover:border-brand hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                class="inline-flex min-h-8 items-center gap-1.5 rounded-md bg-gray-100 px-3 py-1 text-xs font-bold text-ink hover:bg-brand-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">
                 <i class="fa-solid fa-calendar-plus" aria-hidden="true"></i> Nowe wydarzenie
             </a>
             @endif
             <a href="{{ route('home') }}" target="_blank" rel="noopener"
-                class="inline-flex items-center gap-1.5 rounded border border-gray-200 bg-white px-3 py-1 text-xs font-bold text-ink hover:border-brand hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                class="inline-flex min-h-8 items-center gap-1.5 rounded-md bg-gray-100 px-3 py-1 text-xs font-bold text-ink hover:bg-brand-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">
                 <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i> Strona główna
             </a>
             <a href="{{ route('admin.raporty.brakujace-alt') }}"
-                class="ml-auto inline-flex items-center gap-1.5 rounded border border-gray-200 bg-white px-3 py-1 text-xs font-bold text-muted hover:border-amber-400 hover:text-amber-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
-                <i class="fa-solid fa-triangle-exclamation text-amber-500" aria-hidden="true"></i> Brakujące alt
+                class="ml-auto inline-flex min-h-8 items-center gap-1.5 rounded-md bg-gray-100 px-3 py-1 text-xs font-bold text-ink hover:bg-brand-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">
+                <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i> Brakujące alt
             </a>
         </div>
         @endif
@@ -317,8 +317,9 @@
 
         <main id="main" class="p-4 sm:p-6" tabindex="-1">
             @if (session('status'))
-                <div role="status" aria-live="polite" class="mb-4 rounded border border-green-300 bg-green-50 px-4 py-3 text-sm text-green-800">
-                    {{ session('status') }}
+                <div role="status" aria-live="polite" class="mb-4 flex items-start gap-2 rounded-md bg-brand-light px-4 py-3 text-sm font-bold text-ink">
+                    <i class="fa-solid fa-circle-check mt-0.5 text-brand-dark" aria-hidden="true"></i>
+                    <span>{{ session('status') }}</span>
                 </div>
             @endif
             @if (session('reload_url'))
@@ -326,8 +327,9 @@
             @endif
 
             @if (session('error'))
-                <div role="alert" class="mb-4 rounded border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-800">
-                    {{ session('error') }}
+                <div role="alert" class="mb-4 flex items-start gap-2 rounded-md bg-red-50 px-4 py-3 text-sm font-bold text-red-800">
+                    <i class="fa-solid fa-circle-exclamation mt-0.5" aria-hidden="true"></i>
+                    <span>{{ session('error') }}</span>
                 </div>
             @endif
 
@@ -347,7 +349,7 @@
          class="fixed inset-0 z-[200] flex items-start justify-center bg-black/40 p-4 pt-[10vh]"
          role="dialog" aria-modal="true" aria-label="Wyszukiwarka panelu"
          @click.self="close()">
-        <div class="w-full max-w-xl overflow-hidden rounded-xl bg-white shadow-2xl" @click.stop>
+        <div class="w-full max-w-xl overflow-hidden rounded-md bg-white shadow-2xl" @click.stop>
             <div class="flex items-center gap-3 border-b border-gray-200 px-4">
                 <i class="fa-solid fa-magnifying-glass text-gray-400" aria-hidden="true"></i>
                 <input x-ref="input" x-model="q" @input="onInput()" type="text"
@@ -368,12 +370,12 @@
                             @click="go(item)" @mouseenter="active = item._idx"
                             :class="item._idx === active ? 'bg-brand/10' : ''"
                             class="flex cursor-pointer items-center gap-3 px-4 py-2.5 text-sm transition-colors">
-                            <i class="fa-solid w-4 shrink-0 text-center" :class="item._idx === active ? 'text-brand' : 'text-gray-400'" aria-hidden="true" x-bind:class="item.icon"></i>
+                            <i class="fa-solid w-4 shrink-0 text-center" :class="item._idx === active ? 'text-brand-dark' : 'text-gray-400'" aria-hidden="true" x-bind:class="item.icon"></i>
                             <span class="min-w-0 flex-1">
-                                <span class="block truncate font-medium" :class="item._idx === active ? 'text-brand' : 'text-ink'" x-text="item.title"></span>
+                                <span class="block truncate font-medium" :class="item._idx === active ? 'text-brand-dark' : 'text-ink'" x-text="item.title"></span>
                                 <span x-show="item.secondary" class="block truncate text-xs text-muted" x-text="item.secondary"></span>
                             </span>
-                            <span class="shrink-0 rounded-full bg-gray-100 px-2 py-0.5 text-xs text-muted" x-text="item.label"></span>
+                            <span class="shrink-0 text-xs text-muted font-bold" x-text="item.label"></span>
                         </li>
                     </template>
                 </template>
@@ -384,7 +386,7 @@
                 <li x-show="q.trim().length < 2"
                     class="px-4 py-8 text-center text-sm text-muted">
                     Zacznij pisać — strony, aktualności, osoby, sekcje…
-                    <br><span class="mt-1 block text-xs opacity-60">↑↓ nawigacja &nbsp;·&nbsp; Enter otwiera &nbsp;·&nbsp; Esc zamyka</span>
+                    <br><span class="mt-1 block text-xs text-muted">↑↓ nawigacja &nbsp;·&nbsp; Enter otwiera &nbsp;·&nbsp; Esc zamyka</span>
                 </li>
             </ul>
         </div>
@@ -438,20 +440,20 @@
          class="fixed inset-0 z-[300] flex items-center justify-center bg-black/40 p-4"
          role="alertdialog" aria-modal="true" aria-labelledby="confirm-msg"
          @keydown.escape.window="$store.confirm.cancel()">
-        <div class="w-full max-w-sm rounded-xl bg-white p-6 shadow-2xl" @click.stop>
+        <div class="w-full max-w-sm rounded-md bg-white p-6 shadow-2xl" @click.stop>
             <p id="confirm-msg" class="mb-6 text-sm leading-relaxed text-ink" x-text="$store.confirm.message"></p>
             <div class="flex flex-wrap justify-end gap-3">
                 <button type="button" id="confirm-cancel-btn" @click="$store.confirm.cancel()"
-                    class="rounded-lg border border-gray-300 px-4 py-2 text-sm font-bold text-ink hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                    class="rounded-md bg-gray-100 px-4 py-2 text-sm font-bold text-ink hover:bg-brand-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">
                     Anuluj
                 </button>
                 <button type="button" @click="$store.confirm.confirm()"
-                    class="rounded-lg bg-red-600 px-4 py-2 text-sm font-bold text-white hover:bg-red-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600">
+                    class="rounded-md bg-red-700 px-4 py-2 text-sm font-bold text-white hover:bg-red-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600">
                     Potwierdź
                 </button>
                 <button type="button" x-show="$store.confirm.extraLabel" x-text="$store.confirm.extraLabel"
                     @click="$store.confirm.extra()"
-                    class="w-full rounded-lg border border-red-300 px-4 py-2 text-sm font-bold text-red-700 hover:bg-red-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400">
+                    class="w-full rounded-md bg-red-50 px-4 py-2 text-sm font-bold text-red-800 hover:bg-red-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400">
                 </button>
             </div>
         </div>

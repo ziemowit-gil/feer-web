@@ -10,7 +10,7 @@
         <label class="flex cursor-pointer items-center gap-2.5 text-sm">
             <input type="checkbox" name="is_featured" value="1"
                 {{ old('is_featured', $page->is_featured) ? 'checked' : '' }}
-                class="rounded border-gray-300 text-brand focus:ring-brand">
+                class="rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
             <span class="font-semibold text-ink">Fundator — wprowadzenie</span>
         </label>
         <p class="mt-1.5 pl-6 text-xs text-muted">Zaznacz dla fundatora/ki — sekcja „Słowo od Fundatora" pojawi się na stronie O organizacji.</p>
@@ -20,7 +20,7 @@
             <p class="mb-2 text-xs text-muted">Niezależne od biografii osoby. Pojawi się jako cytat w sekcji na stronie O organizacji.</p>
             <textarea id="founder_quote" name="founder_quote" rows="5"
                 placeholder="Wpisz cytat lub krótkie słowo od fundatora…"
-                class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">{{ old('founder_quote', $page->founder_quote ?? '') }}</textarea>
+                class="w-full rounded border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark">{{ old('founder_quote', $page->founder_quote ?? '') }}</textarea>
             @error('founder_quote') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
         </div>
 
@@ -34,7 +34,7 @@
                         class="h-20 w-32 rounded object-cover" loading="lazy">
                     <label class="flex items-center gap-1.5 text-xs text-red-600">
                         <input type="checkbox" name="remove_founder_image" value="1"
-                            class="rounded border-gray-300 text-red-500 focus:ring-red-400">
+                            class="rounded border-gray-500 text-red-500 focus:ring-red-400">
                         Usuń zdjęcie
                     </label>
                 </div>
@@ -48,7 +48,7 @@
                 <input type="text" id="founder_image_alt" name="founder_image_alt"
                     value="{{ old('founder_image_alt', $page->founder_image_alt ?? '') }}"
                     placeholder="np. Jan Kowalski podczas konferencji"
-                    class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                    class="w-full rounded border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark">
             </div>
         </div>
     </div>
@@ -58,14 +58,14 @@
         <div class="mb-2 flex flex-wrap gap-2">
             @foreach (['Członkini zespołu FEER', 'Członek zespołu FEER', 'Wolontariuszka', 'Wolontariusz', 'Współpracowniczka', 'Współpracownik'] as $lbl)
                 <button type="button" onclick="document.getElementById('person_member_label').value='{{ $lbl }}'"
-                    class="rounded border border-gray-300 px-3 py-1 text-xs hover:border-brand hover:text-brand">{{ $lbl }}</button>
+                    class="rounded-md px-3 py-1 text-xs hover:text-brand-dark bg-white hover:bg-brand-light text-ink">{{ $lbl }}</button>
             @endforeach
         </div>
         <input type="text" id="person_member_label" name="person_member_label"
             value="{{ old('person_member_label', $page->person_member_label) }}"
             placeholder="np. Członkini zespołu FEER"
             maxlength="60"
-            class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+            class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
         @error('person_member_label') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
     </div>
 
@@ -75,7 +75,7 @@
             <input type="tel" id="person_phone" name="person_phone"
                 value="{{ old('person_phone', $page->person_phone) }}"
                 placeholder="+48 000 000 000"
-                class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
             @error('person_phone') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
         </div>
         <div>
@@ -83,7 +83,7 @@
             <input type="email" id="person_email" name="person_email"
                 value="{{ old('person_email', $page->person_email) }}"
                 placeholder="osoba@feer.org.pl"
-                class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
             @error('person_email') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
         </div>
     </div>
@@ -93,7 +93,7 @@
         <input type="text" id="person_role" name="person_role"
             value="{{ old('person_role', $page->person_role) }}"
             placeholder="np. Koordynatorka działań, wolontariusz…"
-            class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+            class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
         @error('person_role') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
     </div>
 
@@ -108,11 +108,11 @@
         remove(t) { this.tags = this.tags.filter(x => x !== t); }
     }">
         <label class="mb-1 block text-sm font-bold">Działy / sekcje <span class="font-normal text-muted">(opcjonalnie, można dodać kilka)</span></label>
-        <div class="flex flex-wrap gap-1.5 rounded border border-gray-300 bg-white p-2 focus-within:border-brand focus-within:ring-1 focus-within:ring-brand">
+        <div class="flex flex-wrap gap-1.5 rounded border border-gray-500 bg-white p-2 focus-within:border-brand-dark focus-within:ring-1 focus-within:ring-brand-dark">
             <template x-for="t in tags" :key="t">
                 <span class="inline-flex items-center gap-1 rounded-full bg-brand-light px-2.5 py-0.5 text-xs font-bold text-brand-dark">
                     <span x-text="t"></span>
-                    <button type="button" @click="remove(t)" class="text-brand hover:text-red-600" :aria-label="'Usuń ' + t">&times;</button>
+                    <button type="button" @click="remove(t)" class="text-brand-dark hover:text-red-600" :aria-label="'Usuń ' + t">&times;</button>
                     <input type="hidden" :name="'person_department[]'" :value="t">
                 </span>
             </template>
@@ -130,7 +130,7 @@
         <label for="person_bio" class="mb-1 block text-sm font-bold">Krótkie o mnie <span class="font-normal text-muted">(opcjonalnie)</span></label>
         <textarea id="person_bio" name="person_bio" rows="4"
             placeholder="Kilka zdań — pojawi się wyróżnione na stronie osoby."
-            class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">{{ old('person_bio', $page->person_bio) }}</textarea>
+            class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">{{ old('person_bio', $page->person_bio) }}</textarea>
         @error('person_bio') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
     </div>
 
@@ -141,25 +141,25 @@
                 <label for="person_social_facebook" class="mb-1 block text-xs font-bold text-muted">Facebook</label>
                 <input type="url" id="person_social_facebook" name="person_social[facebook]"
                     value="{{ $personSocialValues['facebook'] ?? '' }}" placeholder="https://facebook.com/…"
-                    class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                    class="w-full rounded border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark">
             </div>
             <div>
                 <label for="person_social_instagram" class="mb-1 block text-xs font-bold text-muted">Instagram</label>
                 <input type="url" id="person_social_instagram" name="person_social[instagram]"
                     value="{{ $personSocialValues['instagram'] ?? '' }}" placeholder="https://instagram.com/…"
-                    class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                    class="w-full rounded border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark">
             </div>
             <div>
                 <label for="person_social_linkedin" class="mb-1 block text-xs font-bold text-muted">LinkedIn</label>
                 <input type="url" id="person_social_linkedin" name="person_social[linkedin]"
                     value="{{ $personSocialValues['linkedin'] ?? '' }}" placeholder="https://linkedin.com/in/…"
-                    class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                    class="w-full rounded border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark">
             </div>
             <div>
                 <label for="person_social_website" class="mb-1 block text-xs font-bold text-muted">Strona internetowa</label>
                 <input type="url" id="person_social_website" name="person_social[website]"
                     value="{{ $personSocialValues['website'] ?? '' }}" placeholder="https://…"
-                    class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                    class="w-full rounded border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark">
             </div>
         </div>
     </div>

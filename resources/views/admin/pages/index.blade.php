@@ -7,11 +7,11 @@
 
     <div class="mb-4 flex items-center justify-end gap-2">
         <a href="{{ route('admin.podstrony.eksport') }}"
-            class="inline-flex items-center gap-1.5 rounded border border-gray-300 bg-white px-3 py-2 text-sm font-bold text-muted hover:border-gray-400 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+            class="inline-flex items-center gap-1.5 rounded-md px-3 py-2 text-sm font-bold text-muted hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark bg-white hover:bg-brand-light">
             <i class="fa-solid fa-file-csv" aria-hidden="true"></i> Eksportuj CSV
         </a>
         <a href="{{ route('admin.podstrony.create') }}"
-            class="rounded bg-brand px-4 py-2 text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
+            class="rounded bg-brand-dark px-4 py-2 text-sm font-bold text-white hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2">
             <i class="fa-solid fa-plus" aria-hidden="true"></i> Dodaj stronę
         </a>
     </div>
@@ -30,17 +30,17 @@
     {{-- Przełącznik: kosz (strony usunięte) --}}
     <div class="mb-3 flex flex-wrap items-center gap-x-5 gap-y-2">
         <a href="{{ route('admin.podstrony.index') }}"
-            class="inline-flex items-center gap-1.5 text-sm font-bold text-brand hover:text-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+            class="inline-flex items-center gap-1.5 text-sm font-bold text-brand-dark hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">
             <i class="fa-solid fa-sitemap text-xs" aria-hidden="true"></i> Wróć do drzewa stron
         </a>
         @if ($status === 'trashed')
             <a href="{{ route('admin.podstrony.index') }}"
-                class="inline-flex items-center gap-1.5 text-sm font-bold text-muted hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                class="inline-flex items-center gap-1.5 text-sm font-bold text-muted hover:text-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">
                 <i class="fa-solid fa-arrow-left text-xs" aria-hidden="true"></i> Wróć do listy stron
             </a>
         @else
             <a href="{{ route('admin.podstrony.index', ['status' => 'trashed']) }}"
-                class="inline-flex items-center gap-1.5 text-sm text-muted hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                class="inline-flex items-center gap-1.5 text-sm text-muted hover:text-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">
                 <i class="fa-solid fa-trash-can text-xs" aria-hidden="true"></i> Kosz
             </a>
         @endif
@@ -51,9 +51,9 @@
 
         {{-- Pasek operacji zbiorczych --}}
         <div id="bulk-pages-bar"
-            class="mb-3 hidden items-center gap-3 rounded-lg border border-blue-200 bg-blue-50 px-4 py-2">
+            class="mb-3 hidden items-center gap-3 rounded-md bg-brand-light px-4 py-2">
             <span id="bulk-pages-count" class="text-sm font-bold text-blue-800"></span>
-            <select name="action" class="rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+            <select name="action" class="rounded border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark">
                 @if ($status === 'trashed')
                     <option value="restore">Przywróć z kosza</option>
                 @else
@@ -68,22 +68,22 @@
                 @endif
             </select>
             <span id="bulk-project-fields" class="hidden flex-wrap items-center gap-2">
-                <select name="project_id" aria-label="Działanie docelowy" class="rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                <select name="project_id" aria-label="Działanie docelowy" class="rounded border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark">
                     <option value="">— wybierz działanie —</option>
                     @foreach ($projectOptions as $po)
                         <option value="{{ $po->id }}">{{ $po->title }}</option>
                     @endforeach
                 </select>
-                <select name="project_display" aria-label="Sposób wyświetlenia w projekcie" class="rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                <select name="project_display" aria-label="Sposób wyświetlenia w projekcie" class="rounded border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark">
                     @foreach (\App\Models\Page::PROJECT_DISPLAYS as $v => $l)
                         <option value="{{ $v }}">{{ \Illuminate\Support\Str::before($l, ' (') }}</option>
                     @endforeach
                 </select>
-                <label class="flex items-center gap-1.5 text-xs text-blue-900"><input type="checkbox" name="hide_from_menu" value="1" checked class="rounded border-gray-300 text-brand focus:ring-brand"> Usuń z menu</label>
+                <label class="flex items-center gap-1.5 text-xs text-blue-900"><input type="checkbox" name="hide_from_menu" value="1" checked class="rounded border-gray-500 text-brand-dark focus:ring-brand-dark"> Usuń z menu</label>
             </span>
             <button type="button"
                 @click="Alpine.store('confirm').ask('Wykonać tę operację na zaznaczonych stronach?').then(ok => { if (ok) $el.closest('form').submit() })"
-                class="rounded bg-brand px-3 py-1.5 text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
+                class="rounded bg-brand-dark px-3 py-1.5 text-sm font-bold text-white hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2">
                 Wykonaj
             </button>
         </div>
@@ -103,7 +103,7 @@
             <div class="mb-2 flex justify-end">
                 <div class="relative">
                     <button type="button" @click="open = !open" :aria-expanded="open"
-                        class="inline-flex items-center gap-1.5 rounded border border-gray-300 bg-white px-3 py-1.5 text-xs font-bold text-muted hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                        class="inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-bold text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark bg-white hover:bg-brand-light">
                         <i class="fa-solid fa-sliders" aria-hidden="true"></i> Kolumny
                         <i class="fa-solid fa-chevron-down text-[10px] transition" :class="open ? 'rotate-180' : ''" aria-hidden="true"></i>
                     </button>
@@ -113,7 +113,7 @@
                         @foreach (['thumb' => 'Miniatura', 'order' => 'Kolejność'] as $key => $label)
                             <label class="flex cursor-pointer items-center gap-2 px-3 py-1.5 hover:bg-gray-50">
                                 <input type="checkbox" x-model="cols.{{ $key }}"
-                                    class="rounded border-gray-300 text-brand focus:ring-brand">
+                                    class="rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
                                 <span class="text-sm">{{ $label }}</span>
                             </label>
                         @endforeach
@@ -121,13 +121,13 @@
                 </div>
             </div>
 
-            <div class="rounded-lg border border-gray-200 bg-white">
+            <div class="rounded-md bg-white">
                 <table class="w-full text-left text-sm">
                     <thead class="border-b border-gray-100 bg-gray-50/80">
                         <tr>
                             <th class="w-8 px-4 py-3">
                                 <input type="checkbox" id="pages-select-all"
-                                    class="rounded border-gray-300 text-brand focus:ring-brand"
+                                    class="rounded border-gray-500 text-brand-dark focus:ring-brand-dark"
                                     aria-label="Zaznacz wszystkie strony">
                             </th>
                             <th x-show="cols.thumb" class="w-16 px-4 py-3 text-xs font-bold uppercase tracking-wide text-muted">Foto</th>
@@ -138,39 +138,15 @@
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-50">
-                        @php
-                            $typeColors = [
-                                'standard'             => 'bg-gray-100 text-gray-700',
-                                'event'                => 'bg-blue-50 text-blue-700',
-                                'schedule'             => 'bg-indigo-50 text-indigo-700',
-                                'about'                => 'bg-green-50 text-green-700',
-                                'faq'                  => 'bg-amber-50 text-amber-700',
-                                'training_institution' => 'bg-teal-50 text-teal-700',
-                                'bip_move'             => 'bg-slate-100 text-slate-600',
-                                'redirect'             => 'bg-slate-100 text-slate-600',
-                                'reports'              => 'bg-emerald-50 text-emerald-700',
-                                'partners'             => 'bg-sky-50 text-sky-700',
-                                'internal'             => 'bg-slate-100 text-slate-600',
-                                'internal_hub'         => 'bg-purple-50 text-purple-700',
-                                'links_hub'            => 'bg-violet-50 text-violet-700',
-                                'wspolpraca'           => 'bg-orange-50 text-orange-700',
-                                'legacy'               => 'bg-stone-100 text-stone-600',
-                                'brand_assets'         => 'bg-amber-50 text-amber-700',
-                                'about_person'         => 'bg-emerald-50 text-emerald-700',
-                            ];
-                        @endphp
 
                         @forelse ($pages as $page)
-                            @php
-                                $badgeClass = $typeColors[$page->type] ?? 'bg-gray-100 text-gray-700';
-                            @endphp
                             <tr class="group hover:bg-gray-50/60 @if ($page->is_featured) bg-amber-50/40 @endif">
 
                                 {{-- Checkbox --}}
                                 <td class="px-4 py-3">
                                     @unless ($page->is_system)
                                         <input type="checkbox" name="ids[]" value="{{ $page->id }}"
-                                            class="page-row-check rounded border-gray-300 text-brand focus:ring-brand"
+                                            class="page-row-check rounded border-gray-500 text-brand-dark focus:ring-brand-dark"
                                             aria-label="Zaznacz {{ $page->title }}">
                                     @else
                                         <span class="block h-4 w-4"></span>
@@ -199,7 +175,7 @@
                                         <span class="ml-1 text-xs text-muted">(w: {{ $page->parent->title }})</span>
                                     @endif
                                     <div class="mt-1 flex flex-wrap items-center gap-1.5">
-                                        <span class="rounded-full px-2 py-0.5 text-[11px] font-semibold {{ $badgeClass }}">
+                                        <span class="text-[11px] font-bold text-muted">
                                             {{ \App\Models\Page::types()[$page->type] ?? $page->type }}
                                         </span>
                                         <span class="font-mono text-xs text-muted">/{{ $page->slug }}</span>
@@ -210,38 +186,38 @@
                                 <td class="px-4 py-3">
                                     <div class="flex flex-wrap gap-1">
                                         @if ($page->is_published && ($page->publish_at === null || $page->publish_at->isPast()))
-                                            <span class="inline-flex items-center gap-1 rounded-full bg-green-100 px-2 py-0.5 text-[11px] font-bold text-green-700">
+                                            <span class="inline-flex items-center gap-1 text-[11px] font-bold text-ink"><i class="fa-solid fa-circle-check mr-1 text-brand-dark" aria-hidden="true"></i>
                                                 <span class="h-1.5 w-1.5 rounded-full bg-green-500" aria-hidden="true"></span>Opublikowana
                                             </span>
                                         @elseif ($page->is_published)
-                                            <span class="rounded-full bg-blue-100 px-2 py-0.5 text-[11px] font-bold text-blue-700"
+                                            <span class="text-[11px] font-bold text-ink"
                                                 title="Pojawi się {{ $page->publish_at?->format('d.m.Y H:i') }}">
                                                 <i class="fa-regular fa-clock" aria-hidden="true"></i> Zaplanowana
                                             </span>
                                         @else
-                                            <span class="rounded-full bg-gray-100 px-2 py-0.5 text-[11px] font-bold text-gray-500">Szkic</span>
+                                            <span class="text-[11px] font-bold text-muted">Szkic</span>
                                         @endif
 
                                         @if ($page->is_disabled)
-                                            <span class="rounded-full bg-red-100 px-2 py-0.5 text-[11px] font-bold text-red-700">
+                                            <span class="text-[11px] font-bold text-ink">
                                                 <i class="fa-solid fa-ban" aria-hidden="true"></i> Wyłączona
                                             </span>
                                         @endif
                                         @if ($page->isWip())
-                                            <span class="rounded-full bg-orange-100 px-2 py-0.5 text-[11px] font-bold text-orange-700">
+                                            <span class="text-[11px] font-bold text-ink">
                                                 <i class="fa-solid fa-person-digging" aria-hidden="true"></i> WIP
                                             </span>
                                         @endif
                                         @if ($page->is_featured)
-                                            <span class="rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-bold text-amber-700">
+                                            <span class="text-[11px] font-bold text-ink">
                                                 <i class="fa-solid fa-star" aria-hidden="true"></i> Wyróżniona
                                             </span>
                                         @endif
                                         @if (! $page->parent_id && $page->show_in_menu)
-                                            <span class="rounded-full bg-brand-light px-2 py-0.5 text-[11px] font-bold text-brand">W menu</span>
+                                            <span class="text-[11px] font-bold text-brand-dark">W menu</span>
                                         @endif
                                         @if ($page->is_system)
-                                            <span class="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-bold text-slate-600">
+                                            <span class="text-[11px] font-bold text-muted">
                                                 <i class="fa-solid fa-lock" aria-hidden="true"></i> Systemowa
                                             </span>
                                         @endif
@@ -255,9 +231,9 @@
                                         @csrf @method('PATCH')
                                         <input type="number" name="order" min="0" value="{{ $page->order }}"
                                             aria-label="Kolejność strony {{ $page->title }}"
-                                            class="w-16 rounded border-gray-300 py-1 text-sm focus:border-brand focus:ring-brand">
+                                            class="w-16 rounded border-gray-500 py-1 text-sm focus:border-brand-dark focus:ring-brand-dark">
                                         <button type="submit"
-                                            class="rounded p-1.5 text-muted hover:bg-gray-100 hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+                                            class="rounded p-1.5 text-muted hover:bg-gray-100 hover:text-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark"
                                             title="Zapisz kolejność" aria-label="Zapisz kolejność">
                                             <i class="fa-solid fa-check text-xs" aria-hidden="true"></i>
                                         </button>
@@ -274,14 +250,14 @@
 
                                         {{-- Edytuj --}}
                                         <a href="{{ route('admin.podstrony.edit', $page) }}"
-                                            class="inline-flex items-center gap-1.5 rounded border border-gray-200 bg-white px-3 py-1.5 text-xs font-bold text-ink hover:border-brand hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                                            class="inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-bold text-ink hover:text-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark bg-gray-100 hover:bg-brand-light">
                                             <i class="fa-solid fa-pen text-xs" aria-hidden="true"></i> Edytuj
                                         </a>
 
                                         {{-- Podgląd --}}
                                         @if ($page->is_published && ($page->publish_at === null || $page->publish_at->isPast()))
                                             <a href="{{ $page->publicUrl() }}" target="_blank" rel="noopener"
-                                                class="inline-flex h-[30px] w-[30px] items-center justify-center rounded border border-gray-200 bg-white text-muted hover:border-brand hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+                                                class="inline-flex h-[30px] w-[30px] items-center justify-center rounded-md text-muted hover:text-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark bg-gray-100 hover:bg-brand-light"
                                                 title="Podgląd publiczny" aria-label="Podgląd publiczny {{ $page->title }}">
                                                 <i class="fa-solid fa-eye text-xs" aria-hidden="true"></i>
                                             </a>
@@ -296,7 +272,7 @@
                                         {{-- Dropdown: pozostałe akcje --}}
                                         <div class="relative" x-data="{ open: false }">
                                             <button type="button" @click="open = !open" :aria-expanded="open"
-                                                class="inline-flex h-[30px] w-[30px] items-center justify-center rounded border border-gray-200 bg-white text-muted hover:border-gray-300 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+                                                class="inline-flex h-[30px] w-[30px] items-center justify-center rounded-md text-muted hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark bg-gray-100 hover:bg-brand-light"
                                                 aria-label="Więcej akcji dla {{ $page->title }}">
                                                 <i class="fa-solid fa-ellipsis-vertical text-xs" aria-hidden="true"></i>
                                             </button>
@@ -327,7 +303,7 @@
                                                 @endunless
 
                                                 <form method="POST" action="{{ route('admin.podstrony.clone', $page) }}"
-                                                    data-confirm="Zduplikować stronę „{{ $page->title }}"? Kopia zostanie zapisana jako szkic.">
+                                                    data-confirm="Zduplikować stronę „{{ $page->title }}”? Kopia zostanie zapisana jako szkic.">
                                                     @csrf
                                                     <button type="submit"
                                                         class="flex w-full items-center gap-3 px-4 py-2 text-sm text-ink hover:bg-gray-50">
@@ -364,7 +340,7 @@
                                                 @unless ($page->is_system)
                                                     <hr class="my-1 border-gray-100">
                                                     <form method="POST" action="{{ route('admin.podstrony.destroy', $page) }}"
-                                                        data-confirm="Usunąć stronę „{{ $page->title }}"?">
+                                                        data-confirm="Usunąć stronę „{{ $page->title }}”?">
                                                         @csrf @method('DELETE')
                                                         <button type="submit"
                                                             class="flex w-full items-center gap-3 px-4 py-2 text-sm text-red-600 hover:bg-red-50">
@@ -386,7 +362,7 @@
                                         <p class="mt-3 font-semibold text-muted">Brak stron</p>
                                         <p class="mt-1 text-sm text-muted">Żadna strona nie pasuje do filtrów lub lista jest pusta.</p>
                                         <a href="{{ route('admin.podstrony.create') }}"
-                                            class="mt-4 inline-flex items-center gap-1.5 rounded bg-brand px-4 py-2 text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
+                                            class="mt-4 inline-flex items-center gap-1.5 rounded bg-brand-dark px-4 py-2 text-sm font-bold text-white hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2">
                                             <i class="fa-solid fa-plus" aria-hidden="true"></i> Dodaj pierwszą stronę
                                         </a>
                                     </div>

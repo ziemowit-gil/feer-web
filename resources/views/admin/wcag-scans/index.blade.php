@@ -3,7 +3,7 @@
 @section('title', 'Skaner WCAG')
 
 @section('content')
-    <div class="mb-6 rounded-lg border border-gray-200 bg-white p-4">
+    <div class="mb-6 p-4 rounded-md bg-white">
         <h2 class="mb-3 text-sm font-semibold">Skanuj stronę pod kątem dostępności WCAG</h2>
         <form method="POST" action="{{ route('admin.wcag-scans.scan') }}" class="flex gap-2">
             @csrf
@@ -11,7 +11,7 @@
             <input type="url" id="scan-url" name="url"
                    placeholder="https://feer.org.pl/przykladowa-strona"
                    value="{{ old('url') }}"
-                   class="flex-1 rounded border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 @error('url') border-red-500 @enderror"
+                   class="flex-1 rounded border border-gray-500 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 @error('url') border-red-500 @enderror"
                    required>
             <button type="submit"
                     class="rounded bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1">
@@ -25,19 +25,19 @@
     </div>
 
     @if (session('success'))
-        <div class="mb-4 rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800" role="alert">
+        <div class="mb-4 rounded-md bg-brand-light px-4 py-3 text-sm text-ink" role="alert">
             {{ session('success') }}
         </div>
     @endif
 
     @if ($scans->isEmpty())
-        <p class="rounded-lg border border-gray-200 bg-white px-6 py-8 text-center text-muted">
+        <p class="px-6 py-8 text-center text-muted rounded-md bg-white">
             Brak wyników skanowania. Wpisz adres URL powyżej, aby rozpocząć.
         </p>
     @else
-        <div class="overflow-hidden rounded-lg border border-gray-200 bg-white">
+        <div class="overflow-hidden rounded-md bg-white">
             <table class="w-full text-left text-sm">
-                <thead class="bg-gray-50 text-xs font-bold uppercase text-muted">
+                <thead class="bg-gray-100 text-xs font-bold uppercase text-muted">
                     <tr>
                         <th class="px-4 py-3">Strona</th>
                         <th class="px-4 py-3 text-center">Błędy</th>
@@ -60,14 +60,14 @@
                             </td>
                             <td class="px-4 py-3 text-center">
                                 @if ($errorCount > 0)
-                                    <span class="inline-flex items-center rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700">{{ $errorCount }}</span>
+                                    <span class="inline-flex items-center text-xs font-bold text-ink"><i class="fa-solid fa-circle-xmark mr-1 text-red-700" aria-hidden="true"></i>{{ $errorCount }}</span>
                                 @else
                                     <span class="text-muted">—</span>
                                 @endif
                             </td>
                             <td class="px-4 py-3 text-center">
                                 @if ($warnCount > 0)
-                                    <span class="inline-flex items-center rounded-full bg-yellow-100 px-2 py-0.5 text-xs font-medium text-yellow-700">{{ $warnCount }}</span>
+                                    <span class="inline-flex items-center text-xs font-bold text-ink"><i class="fa-solid fa-circle-exclamation mr-1 text-ink" aria-hidden="true"></i>{{ $warnCount }}</span>
                                 @else
                                     <span class="text-muted">—</span>
                                 @endif

@@ -4,22 +4,22 @@
 
 @section('content')
     <div class="mb-4 flex items-center justify-between gap-3">
-        <a href="{{ route('admin.sklep.orders.index') }}" class="text-sm text-muted hover:text-brand">
+        <a href="{{ route('admin.sklep.orders.index') }}" class="text-sm text-muted hover:text-brand-dark">
             <i class="fa-solid fa-arrow-left" aria-hidden="true"></i> Wróć do zamówień
         </a>
         <a href="{{ route('admin.sklep.kody-rabatowe.create') }}"
-            class="rounded bg-brand px-4 py-2 text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
+            class="rounded bg-brand-dark px-4 py-2 text-sm font-bold text-white hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2">
             <i class="fa-solid fa-plus" aria-hidden="true"></i> Dodaj kod
         </a>
     </div>
 
     @if (session('status'))
-        <p class="mb-4 rounded-lg bg-green-50 px-4 py-2 text-sm font-bold text-green-700">{{ session('status') }}</p>
+        <p class="mb-4 rounded-md bg-brand-light px-4 py-2 text-sm font-bold text-ink">{{ session('status') }}</p>
     @endif
 
-    <div class="overflow-hidden rounded-lg border border-gray-200 bg-white">
+    <div class="overflow-hidden rounded-md bg-white">
         <table class="w-full text-left text-sm">
-            <thead class="bg-gray-50 text-xs font-bold uppercase text-muted">
+            <thead class="bg-gray-100 text-xs font-bold uppercase text-muted">
                 <tr>
                     <th class="px-4 py-3">Kod</th>
                     <th class="px-4 py-3">Rabat</th>
@@ -46,14 +46,14 @@
                         <td class="px-4 py-3 text-muted">{{ $code->used_count }}{{ $code->max_uses ? ' / ' . $code->max_uses : '' }}</td>
                         <td class="px-4 py-3">
                             @if ($code->is_active)
-                                <span class="rounded-full bg-green-100 px-2 py-0.5 text-xs font-bold text-green-700">Aktywny</span>
+                                <span class="text-xs font-bold text-ink"><i class="fa-solid fa-circle-check mr-1 text-brand-dark" aria-hidden="true"></i>Aktywny</span>
                             @else
-                                <span class="rounded-full bg-gray-100 px-2 py-0.5 text-xs font-bold text-gray-500">Nieaktywny</span>
+                                <span class="text-xs font-bold text-muted">Nieaktywny</span>
                             @endif
                         </td>
                         <td class="px-4 py-3">
                             <div class="flex justify-end gap-3">
-                                <a href="{{ route('admin.sklep.kody-rabatowe.edit', $code) }}" class="text-muted hover:text-brand" title="Edytuj"><i class="fa-solid fa-pen" aria-hidden="true"></i></a>
+                                <a href="{{ route('admin.sklep.kody-rabatowe.edit', $code) }}" class="text-muted hover:text-brand-dark" title="Edytuj"><i class="fa-solid fa-pen" aria-hidden="true"></i></a>
                                 <form method="POST" action="{{ route('admin.sklep.kody-rabatowe.destroy', $code) }}" onsubmit="return confirm('Usunąć kod &quot;{{ $code->code }}&quot;?');">
                                     @csrf
                                     @method('DELETE')

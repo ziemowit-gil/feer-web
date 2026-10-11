@@ -15,26 +15,26 @@
          @keydown.arrow-right.prevent="$event.target.nextElementSibling?.focus()" @keydown.arrow-left.prevent="$event.target.previousElementSibling?.focus()">
         <button type="button" role="tab" id="nav-tab-basic" aria-controls="nav-panel-basic" x-show="true" x-cloak
             @click="tab = 'basic'" :aria-selected="(tab === 'basic').toString()" :tabindex="tab === 'basic' ? 0 : -1"
-            class="-mb-px inline-flex items-center gap-2 border-b-2 px-3 py-2 text-sm font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
-            :class="tab === 'basic' ? 'border-brand text-brand' : 'border-transparent text-muted hover:text-ink'">
+            class="-mb-px inline-flex items-center gap-2 border-b-2 px-3 py-2 text-sm font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark"
+            :class="tab === 'basic' ? 'border-brand-dark text-brand-dark' : 'border-transparent text-muted hover:text-ink'">
             <i class="fa-solid fa-pen" aria-hidden="true"></i> Podstawowe
         </button>
         <button type="button" role="tab" id="nav-tab-look" aria-controls="nav-panel-look" x-show="form.location === 'main'" x-cloak
             @click="tab = 'look'" :aria-selected="(tab === 'look').toString()" :tabindex="tab === 'look' ? 0 : -1"
-            class="-mb-px inline-flex items-center gap-2 border-b-2 px-3 py-2 text-sm font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
-            :class="tab === 'look' ? 'border-brand text-brand' : 'border-transparent text-muted hover:text-ink'">
+            class="-mb-px inline-flex items-center gap-2 border-b-2 px-3 py-2 text-sm font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark"
+            :class="tab === 'look' ? 'border-brand-dark text-brand-dark' : 'border-transparent text-muted hover:text-ink'">
             <i class="fa-solid fa-palette" aria-hidden="true"></i> Wygląd
         </button>
         <button type="button" role="tab" id="nav-tab-drop" aria-controls="nav-panel-drop" x-show="form.location === 'main' && form.parentId === '' && (form.isMega || ['dropdown', 'projects', 'pages', 'link'].includes(form.type))" x-cloak
             @click="tab = 'drop'" :aria-selected="(tab === 'drop').toString()" :tabindex="tab === 'drop' ? 0 : -1"
-            class="-mb-px inline-flex items-center gap-2 border-b-2 px-3 py-2 text-sm font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
-            :class="tab === 'drop' ? 'border-brand text-brand' : 'border-transparent text-muted hover:text-ink'">
+            class="-mb-px inline-flex items-center gap-2 border-b-2 px-3 py-2 text-sm font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark"
+            :class="tab === 'drop' ? 'border-brand-dark text-brand-dark' : 'border-transparent text-muted hover:text-ink'">
             <i class="fa-solid fa-square-caret-down" aria-hidden="true"></i> Menu rozwijane i przyciski
         </button>
         <button type="button" role="tab" id="nav-tab-media" aria-controls="nav-panel-media" x-show="form.location === 'main' && form.parentId === '' && form.isMega" x-cloak
             @click="tab = 'media'" :aria-selected="(tab === 'media').toString()" :tabindex="tab === 'media' ? 0 : -1"
-            class="-mb-px inline-flex items-center gap-2 border-b-2 px-3 py-2 text-sm font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
-            :class="tab === 'media' ? 'border-brand text-brand' : 'border-transparent text-muted hover:text-ink'">
+            class="-mb-px inline-flex items-center gap-2 border-b-2 px-3 py-2 text-sm font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark"
+            :class="tab === 'media' ? 'border-brand-dark text-brand-dark' : 'border-transparent text-muted hover:text-ink'">
             <i class="fa-solid fa-image" aria-hidden="true"></i> Grafika
         </button>
     </div>
@@ -43,7 +43,7 @@
 <div>
     <label for="nav-location" class="mb-1 block text-sm font-bold">Lokalizacja</label>
     <select id="nav-location" name="location" x-model="form.location"
-        class="w-full rounded border-gray-300 focus-visible:border-brand focus-visible:ring-2 focus-visible:ring-brand">
+        class="w-full rounded border-gray-500 focus-visible:border-brand-dark focus-visible:ring-2 focus-visible:ring-brand-dark">
         @foreach (\App\Models\NavItem::LOCATIONS as $value => $option)
             <option value="{{ $value }}">{{ $option }}</option>
         @endforeach
@@ -55,22 +55,22 @@
 <div>
     <label for="nav-label" class="mb-1 block text-sm font-bold">Etykieta</label>
     <input type="text" id="nav-label" name="label" x-model="form.label" required
-        class="w-full rounded border-gray-300 focus-visible:border-brand focus-visible:ring-2 focus-visible:ring-brand">
+        class="w-full rounded border-gray-500 focus-visible:border-brand-dark focus-visible:ring-2 focus-visible:ring-brand-dark">
     @error('label') <p class="mt-1 text-sm text-red-700">{{ $message }}</p> @enderror
 </div>
 
 <div x-show="form.location === 'main'" x-cloak>
     <label for="nav-icon" class="mb-1 block text-sm font-bold">Ikona <span class="font-normal text-muted">(opcjonalnie — używana w stylu nav „Ikony + etykiety")</span></label>
     <input type="text" id="nav-icon" name="icon" x-model="form.icon" placeholder="np. bi-house-door" data-icon-picker data-icon-format="name"
-        class="w-full rounded border-gray-300 font-mono text-sm focus-visible:border-brand focus-visible:ring-2 focus-visible:ring-brand">
-    <p class="mt-1 text-xs text-muted">Klasa Bootstrap Icons bez prefiksu <code>bi</code> — np. <code>bi-people</code>, <code>bi-envelope</code>. Pełna lista: <a href="https://icons.getbootstrap.com/" target="_blank" rel="noopener" class="text-brand underline">icons.getbootstrap.com</a></p>
+        class="w-full rounded border-gray-500 font-mono text-sm focus-visible:border-brand-dark focus-visible:ring-2 focus-visible:ring-brand-dark">
+    <p class="mt-1 text-xs text-muted">Klasa Bootstrap Icons bez prefiksu <code>bi</code> — np. <code>bi-people</code>, <code>bi-envelope</code>. Pełna lista: <a href="https://icons.getbootstrap.com/" target="_blank" rel="noopener" class="text-brand-dark underline">icons.getbootstrap.com</a></p>
     @error('icon') <p class="mt-1 text-sm text-red-700">{{ $message }}</p> @enderror
 </div>
 
 <div x-show="form.location === 'main'" x-cloak>
     <label for="nav-type" class="mb-1 block text-sm font-bold">Typ pozycji</label>
     <select id="nav-type" name="type" x-model="form.type"
-        class="w-full rounded border-gray-300 focus-visible:border-brand focus-visible:ring-2 focus-visible:ring-brand">
+        class="w-full rounded border-gray-500 focus-visible:border-brand-dark focus-visible:ring-2 focus-visible:ring-brand-dark">
         @foreach (\App\Models\NavItem::TYPES as $value => $option)
             <option value="{{ $value }}">{{ $option }}</option>
         @endforeach
@@ -86,7 +86,7 @@
     @if (!empty($bipDocuments) && $bipDocuments->isNotEmpty())
         <div x-show="form.location === 'bip'" x-cloak>
             <label for="nav-bip-picker" class="mb-1 block text-sm font-bold">Wybierz dokument BIP <span class="font-normal text-muted">(opcjonalnie)</span></label>
-            <select id="nav-bip-picker" class="mb-2 w-full rounded border-gray-300 focus-visible:border-brand focus-visible:ring-2 focus-visible:ring-brand"
+            <select id="nav-bip-picker" class="mb-2 w-full rounded border-gray-500 focus-visible:border-brand-dark focus-visible:ring-2 focus-visible:ring-brand-dark"
                 @change="
                     let opt = $event.target.options[$event.target.selectedIndex];
                     if (opt.value) {
@@ -106,7 +106,7 @@
     @if ($pages->isNotEmpty())
         <div x-show="form.location !== 'bip'" x-cloak>
             <label for="nav-page-picker" class="mb-1 block text-sm font-bold">Wybierz stronę <span class="font-normal text-muted">(opcjonalnie)</span></label>
-            <select id="nav-page-picker" class="mb-2 w-full rounded border-gray-300 focus-visible:border-brand focus-visible:ring-2 focus-visible:ring-brand"
+            <select id="nav-page-picker" class="mb-2 w-full rounded border-gray-500 focus-visible:border-brand-dark focus-visible:ring-2 focus-visible:ring-brand-dark"
                 @change="if ($event.target.value) { form.url = $event.target.value; } $event.target.selectedIndex = 0;">
                 <option value="">— wybierz z listy stron —</option>
                 @foreach ($pages as $page)
@@ -118,7 +118,7 @@
 
     <label for="nav-url" class="mb-1 block text-sm font-bold">Link</label>
     <input type="text" id="nav-url" name="url" x-model="form.url" placeholder="np. /polityka-prywatnosci, #kontakt lub https://..."
-        class="w-full rounded border-gray-300 focus-visible:border-brand focus-visible:ring-2 focus-visible:ring-brand">
+        class="w-full rounded border-gray-500 focus-visible:border-brand-dark focus-visible:ring-2 focus-visible:ring-brand-dark">
     <p class="mt-1 text-xs text-muted">Wybór dokumentu lub strony powyżej uzupełni to pole — możesz też wpisać dowolny adres ręcznie.</p>
     @error('url') <p class="mt-1 text-sm text-red-700">{{ $message }}</p> @enderror
 </div>
@@ -126,7 +126,7 @@
 <div x-show="form.type === 'link' && form.location === 'main'" x-cloak>
     <label for="nav-parent" class="mb-1 block text-sm font-bold">Podpozycja w menu (pod „Rozwijanym menu", linkiem albo „Menu działań")</label>
     <select id="nav-parent" name="parent_id" x-model="form.parentId"
-        class="w-full rounded border-gray-300 focus-visible:border-brand focus-visible:ring-2 focus-visible:ring-brand">
+        class="w-full rounded border-gray-500 focus-visible:border-brand-dark focus-visible:ring-2 focus-visible:ring-brand-dark">
         <option value="">— pozycja główna (na pasku menu) —</option>
         @foreach ($parentOptions as $option)
             {{-- Pozycja nie może być własnym rodzicem — chowamy ją z listy podczas edycji. --}}
@@ -141,7 +141,7 @@
 <div>
     <label for="nav-module" class="mb-1 block text-sm font-bold">Widoczna tylko gdy moduł włączony</label>
     <select id="nav-module" name="module" x-model="form.module"
-        class="w-full rounded border-gray-300 focus-visible:border-brand focus-visible:ring-2 focus-visible:ring-brand">
+        class="w-full rounded border-gray-500 focus-visible:border-brand-dark focus-visible:ring-2 focus-visible:ring-brand-dark">
         <option value="">— zawsze widoczna —</option>
         @foreach (\App\Models\SiteSetting::MODULES as $value => $option)
             <option value="{{ $value }}">{{ $option }}</option>
@@ -153,7 +153,7 @@
 
 <label class="flex items-center gap-2">
     <input type="checkbox" name="is_active" value="1" x-model="form.isActive"
-        class="rounded border-gray-300 text-brand focus-visible:ring-2 focus-visible:ring-brand">
+        class="rounded border-gray-500 text-brand-dark focus-visible:ring-2 focus-visible:ring-brand-dark">
     <span class="text-sm font-bold">Widoczna w menu</span>
 </label>
 
@@ -162,7 +162,7 @@
     <div id="nav-panel-look" role="tabpanel" aria-labelledby="nav-tab-look" x-show="tab === 'look'" x-cloak class="space-y-5">
 <label class="flex items-center gap-2" x-show="(form.type === 'link' || form.type === 'volunteering') && form.parentId === ''" x-cloak>
     <input type="checkbox" name="is_button" value="1" x-model="form.isButton"
-        class="rounded border-gray-300 text-brand focus-visible:ring-2 focus-visible:ring-brand">
+        class="rounded border-gray-500 text-brand-dark focus-visible:ring-2 focus-visible:ring-brand-dark">
     <span class="text-sm font-bold">Wyróżnij jako przycisk (CTA)</span>
 </label>
 
@@ -172,9 +172,9 @@
         <input type="hidden" name="button_color" :value="form.buttonColorEnabled ? form.buttonColor : ''">
         <input type="text" x-model="form.buttonColor" :disabled="!form.buttonColorEnabled" aria-label="Kod koloru (hex)" data-color-picker
             placeholder="#2563eb" pattern="#[0-9a-fA-F]{6}"
-            class="w-40 rounded border-gray-300 font-mono text-sm focus-visible:border-brand focus-visible:ring-2 focus-visible:ring-brand disabled:bg-gray-100 disabled:text-muted">
+            class="w-40 rounded border-gray-500 font-mono text-sm focus-visible:border-brand-dark focus-visible:ring-2 focus-visible:ring-brand-dark disabled:bg-gray-100 disabled:text-muted">
         <label class="flex items-center gap-2 text-sm text-muted">
-            <input type="checkbox" x-model="form.buttonColorEnabled" class="rounded border-gray-300 text-brand focus-visible:ring-2 focus-visible:ring-brand">
+            <input type="checkbox" x-model="form.buttonColorEnabled" class="rounded border-gray-500 text-brand-dark focus-visible:ring-2 focus-visible:ring-brand-dark">
             Własny kolor
         </label>
     </div>
@@ -188,9 +188,9 @@
         <input type="hidden" name="accent_color" :value="form.accentEnabled ? form.accentColor : ''">
         <input type="text" x-model="form.accentColor" :disabled="!form.accentEnabled" aria-label="Kolor pozycji menu (hex)" data-color-picker
             placeholder="#1e6dff" pattern="#[0-9a-fA-F]{6}"
-            class="w-40 rounded border-gray-300 font-mono text-sm focus-visible:border-brand focus-visible:ring-2 focus-visible:ring-brand disabled:bg-gray-100 disabled:text-muted">
+            class="w-40 rounded border-gray-500 font-mono text-sm focus-visible:border-brand-dark focus-visible:ring-2 focus-visible:ring-brand-dark disabled:bg-gray-100 disabled:text-muted">
         <label class="flex items-center gap-2 text-sm text-muted">
-            <input type="checkbox" x-model="form.accentEnabled" class="rounded border-gray-300 text-brand focus-visible:ring-2 focus-visible:ring-brand">
+            <input type="checkbox" x-model="form.accentEnabled" class="rounded border-gray-500 text-brand-dark focus-visible:ring-2 focus-visible:ring-brand-dark">
             Własny kolor
         </label>
     </div>
@@ -198,7 +198,7 @@
         <span class="text-xs font-bold text-muted">Kolory motywu:</span>
         @foreach (\App\Support\ThemePalette::swatches() as $bbHex => $bbName)
             <button type="button" @click="form.accentColor = '{{ $bbHex }}'; form.accentEnabled = true"
-                class="inline-flex min-h-9 items-center gap-2 rounded-md border border-gray-300 px-2.5 text-xs font-bold text-ink hover:border-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                class="inline-flex min-h-9 items-center gap-2 rounded-md px-2.5 text-xs font-bold text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark bg-white hover:bg-brand-light">
                 <span class="h-4 w-4 rounded-sm border border-gray-300" style="background: {{ $bbHex }}" aria-hidden="true"></span>{{ $bbName }}<span class="sr-only"> ({{ $bbHex }})</span>
             </button>
         @endforeach
@@ -210,14 +210,14 @@
 <div x-show="form.location === 'main' && form.parentId !== ''" x-cloak>
     <label for="nav-description" class="mb-1 block text-sm font-bold">Krótki opis <span class="font-normal text-muted">(opcjonalnie — widoczny w mega menu)</span></label>
     <input type="text" id="nav-description" name="description" x-model="form.description" maxlength="255" placeholder="np. Szkolenia i audyty dostępności cyfrowej"
-        class="w-full rounded border-gray-300 focus-visible:border-brand focus-visible:ring-2 focus-visible:ring-brand">
+        class="w-full rounded border-gray-500 focus-visible:border-brand-dark focus-visible:ring-2 focus-visible:ring-brand-dark">
     @error('description') <p class="mt-1 text-sm text-red-700">{{ $message }}</p> @enderror
 </div>
 
 <label class="flex items-start gap-2" x-show="form.location === 'main' && form.parentId !== ''" x-cloak>
     <input type="checkbox" name="is_column_heading" value="1" x-model="form.isHeading"
         aria-describedby="nav-heading-help"
-        class="mt-0.5 rounded border-gray-300 text-brand focus-visible:ring-2 focus-visible:ring-brand">
+        class="mt-0.5 rounded border-gray-500 text-brand-dark focus-visible:ring-2 focus-visible:ring-brand-dark">
     <span>
         <span class="block text-sm font-bold">Nagłówek kolumny w mega menu</span>
         <span id="nav-heading-help" class="block text-xs text-muted">Ta pozycja otwiera nową kolumnę, a kolejne podpozycje (do następnego nagłówka) trafiają pod nią. Adres jest opcjonalny — bez niego nagłówek jest samym tekstem. W zwykłym i mobilnym menu wygląda jak etykieta grupy.</span>
@@ -229,7 +229,7 @@
     <div id="nav-panel-drop" role="tabpanel" aria-labelledby="nav-tab-drop" x-show="tab === 'drop'" x-cloak class="space-y-5">
 <label class="flex items-start gap-2" x-show="form.location === 'main' && form.parentId === '' && (form.type === 'dropdown' || form.type === 'link' || form.type === 'projects')" x-cloak>
     <input type="checkbox" name="is_mega" value="1" x-model="form.isMega"
-        class="mt-0.5 rounded border-gray-300 text-brand focus-visible:ring-2 focus-visible:ring-brand">
+        class="mt-0.5 rounded border-gray-500 text-brand-dark focus-visible:ring-2 focus-visible:ring-brand-dark">
     <span>
         <span class="block text-sm font-bold">Mega menu (panel na całą szerokość)</span>
         <span class="block text-xs text-muted">Podpozycje (podstrony powiązanej strony albo kategorie działań z ich działaniami) układają się w kolumny z ikoną i opisem. Bez podpozycji działa jak zwykła pozycja.</span>
@@ -239,20 +239,20 @@
 <div x-show="form.type === 'projects' && form.location === 'main' && form.parentId === ''" x-cloak>
     <label for="nav-mega-extra-title" class="mb-1 block text-sm font-bold">Nagłówek dodatkowej kolumny <span class="font-normal text-muted">(opcjonalnie)</span></label>
     <input type="text" id="nav-mega-extra-title" name="mega_extra_title" x-model="form.megaExtraTitle" maxlength="80" placeholder="To już zrobiliśmy"
-        class="w-full rounded border-gray-300 focus-visible:border-brand focus-visible:ring-2 focus-visible:ring-brand">
+        class="w-full rounded border-gray-500 focus-visible:border-brand-dark focus-visible:ring-2 focus-visible:ring-brand-dark">
     <p class="mt-1 text-xs text-muted">Podpozycje dodane pod tą pozycją (przycisk „Dodaj podpozycję") tworzą dodatkową kolumnę z tym nagłówkiem. Adres każdej ustawiasz sam — może prowadzić dowolną stroną, także zewnętrzną.</p>
     @error('mega_extra_title') <p class="mt-1 text-sm text-red-700">{{ $message }}</p> @enderror
 </div>
 
-<fieldset x-show="form.type === 'projects' && form.location === 'main' && form.parentId === ''" x-cloak class="space-y-2 rounded-lg border border-gray-100 bg-gray-50 p-4">
+<fieldset x-show="form.type === 'projects' && form.location === 'main' && form.parentId === ''" x-cloak class="space-y-2 p-4 rounded-md bg-white">
     <legend class="px-1 text-xs font-bold uppercase tracking-wide text-muted">Domyślne przyciski menu działań</legend>
     <p class="text-xs text-muted">Domyślnie widoczne w kolumnie z przyciskami. Zaznacz, aby ukryć.</p>
     <label class="flex items-center gap-2 text-sm">
-        <input type="checkbox" name="hide_all_projects_btn" value="1" x-model="form.hideAllBtn" class="rounded border-gray-300 text-brand focus-visible:ring-2 focus-visible:ring-brand">
+        <input type="checkbox" name="hide_all_projects_btn" value="1" x-model="form.hideAllBtn" class="rounded border-gray-500 text-brand-dark focus-visible:ring-2 focus-visible:ring-brand-dark">
         <span>Ukryj przycisk „Wszystkie działania”</span>
     </label>
     <label class="flex items-center gap-2 text-sm">
-        <input type="checkbox" name="hide_archive_btn" value="1" x-model="form.hideArchiveBtn" class="rounded border-gray-300 text-brand focus-visible:ring-2 focus-visible:ring-brand">
+        <input type="checkbox" name="hide_archive_btn" value="1" x-model="form.hideArchiveBtn" class="rounded border-gray-500 text-brand-dark focus-visible:ring-2 focus-visible:ring-brand-dark">
         <span>Ukryj przycisk „To już zrobiliśmy”</span>
     </label>
 </fieldset>
@@ -260,7 +260,7 @@
 <div x-show="form.isMega && form.location === 'main' && form.parentId === ''" x-cloak>
     <label for="nav-mega-size" class="mb-1 block text-sm font-bold">Wielkość pozycji w mega menu</label>
     <select id="nav-mega-size" name="mega_size" x-model="form.megaSize"
-        class="w-full rounded border-gray-300 focus-visible:border-brand focus-visible:ring-2 focus-visible:ring-brand">
+        class="w-full rounded border-gray-500 focus-visible:border-brand-dark focus-visible:ring-2 focus-visible:ring-brand-dark">
         @foreach (\App\Models\NavItem::MEGA_SIZES as $msValue => $msLabel)
             <option value="{{ $msValue }}">{{ $msLabel }}</option>
         @endforeach
@@ -269,29 +269,29 @@
     @error('mega_size') <p class="mt-1 text-sm text-red-700">{{ $message }}</p> @enderror
 </div>
 
-<div x-show="(form.isMega || ['dropdown', 'projects', 'pages'].includes(form.type)) && form.location === 'main' && form.parentId === ''" x-cloak class="space-y-3 rounded-lg border border-gray-100 bg-gray-50 p-4">
+<div x-show="(form.isMega || ['dropdown', 'projects', 'pages'].includes(form.type)) && form.location === 'main' && form.parentId === ''" x-cloak class="space-y-3 p-4 rounded-md bg-white">
     <p class="text-xs font-bold uppercase tracking-wide text-muted">Własne linki i przyciski w menu rozwijanym (karta boczna mega menu / pod listą)</p>
     <div>
         <label for="nav-mega-side-title" class="mb-1 block text-xs font-bold text-muted">Tytuł karty <span class="font-normal">(opcjonalnie — puste = bez tytułu)</span></label>
         <input type="text" id="nav-mega-side-title" name="mega_side_title" x-model="form.megaSideTitle" maxlength="80" placeholder="np. Działania na starej stronie"
-            class="w-full rounded border-gray-300 text-sm focus-visible:border-brand focus-visible:ring-2 focus-visible:ring-brand">
+            class="w-full rounded border-gray-500 text-sm focus-visible:border-brand-dark focus-visible:ring-2 focus-visible:ring-brand-dark">
     </div>
     <template x-for="(link, i) in form.megaSideLinks" :key="i">
-        <div class="grid gap-2 rounded border border-gray-200 bg-white p-3 sm:grid-cols-2">
+        <div class="grid gap-2 p-3 sm:grid-cols-2 rounded-md bg-gray-50">
             <div>
                 <label :for="'side-label-' + i" class="mb-0.5 block text-xs font-bold text-muted">Etykieta</label>
                 <input type="text" :id="'side-label-' + i" :name="`mega_side_links[${i}][label]`" x-model="link.label" maxlength="80" placeholder="np. Działania (stara strona)"
-                    class="w-full rounded border-gray-300 text-sm focus-visible:border-brand focus-visible:ring-2 focus-visible:ring-brand">
+                    class="w-full rounded border-gray-500 text-sm focus-visible:border-brand-dark focus-visible:ring-2 focus-visible:ring-brand-dark">
             </div>
             <div>
                 <label :for="'side-url-' + i" class="mb-0.5 block text-xs font-bold text-muted">Adres</label>
                 <input type="text" :id="'side-url-' + i" :name="`mega_side_links[${i}][url]`" x-model="link.url" maxlength="500" placeholder="https://… albo /strona"
-                    class="w-full rounded border-gray-300 text-sm focus-visible:border-brand focus-visible:ring-2 focus-visible:ring-brand">
+                    class="w-full rounded border-gray-500 text-sm focus-visible:border-brand-dark focus-visible:ring-2 focus-visible:ring-brand-dark">
             </div>
             <div>
                 <label :for="'side-style-' + i" class="mb-0.5 block text-xs font-bold text-muted">Wygląd</label>
                 <select :id="'side-style-' + i" :name="`mega_side_links[${i}][style]`" x-model="link.style"
-                    class="w-full rounded border-gray-300 text-sm focus-visible:border-brand focus-visible:ring-2 focus-visible:ring-brand">
+                    class="w-full rounded border-gray-500 text-sm focus-visible:border-brand-dark focus-visible:ring-2 focus-visible:ring-brand-dark">
                     <option value="tile">Przycisk jak w „Na skróty” (obwódka)</option>
                     <option value="tile_filled">Przycisk jak w „Na skróty” (wypełniony)</option>
                     <option value="button">Przycisk (pigułka)</option>
@@ -300,7 +300,7 @@
             </div>
             <div class="flex items-end justify-between gap-3">
                 <label class="flex items-center gap-2 pb-2 text-sm">
-                    <input type="checkbox" :name="`mega_side_links[${i}][new_tab]`" value="1" x-model="link.new_tab" class="rounded border-gray-300 text-brand focus-visible:ring-2 focus-visible:ring-brand">
+                    <input type="checkbox" :name="`mega_side_links[${i}][new_tab]`" value="1" x-model="link.new_tab" class="rounded border-gray-500 text-brand-dark focus-visible:ring-2 focus-visible:ring-brand-dark">
                     Nowa karta
                 </label>
                 <button type="button" @click="form.megaSideLinks.splice(i, 1)"
@@ -311,7 +311,7 @@
         </div>
     </template>
     <button type="button" x-show="form.megaSideLinks.length < 8" @click="form.megaSideLinks.push({ label: '', url: '', style: 'tile', new_tab: false })"
-        class="inline-flex items-center gap-2 rounded border border-dashed border-gray-300 px-3 py-1.5 text-sm font-bold text-brand hover:border-brand hover:bg-brand-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+        class="inline-flex items-center gap-2 rounded border border-dashed border-gray-300 px-3 py-1.5 text-sm font-bold text-brand-dark hover:border-brand-dark hover:bg-brand-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">
         <i class="fa-solid fa-plus" aria-hidden="true"></i> Dodaj link lub przycisk
     </button>
     <p class="text-xs text-muted">Gdy dodasz choć jeden link, zastępują domyślne przyciski karty („Wszystkie działania", „Zobacz wszystko"). Nazwa pozycji menu nie jest powtarzana w karcie. Linki widać też w menu mobilnym.</p>
@@ -320,7 +320,7 @@
 
 <label class="flex items-center gap-2" x-show="form.type === 'dropdown' || form.type === 'projects' || form.type === 'pages'" x-cloak>
     <input type="checkbox" name="is_transparent_dropdown" value="1" x-model="form.isTransparent"
-        class="rounded border-gray-300 text-brand focus-visible:ring-2 focus-visible:ring-brand">
+        class="rounded border-gray-500 text-brand-dark focus-visible:ring-2 focus-visible:ring-brand-dark">
     <span class="text-sm font-bold">Przezroczyste tło rozwijanego panelu</span>
 </label>
 
@@ -328,7 +328,7 @@
 
     <div id="nav-panel-media" role="tabpanel" aria-labelledby="nav-tab-media" x-show="tab === 'media'" x-cloak class="space-y-5">
         <p class="text-sm text-muted" x-show="! form.isMega">Grafika promocyjna jest dostępna po włączeniu mega menu (zakładka „Menu rozwijane i przyciski”).</p>
-<div x-show="form.isMega && form.location === 'main' && form.parentId === ''" x-cloak class="space-y-3 rounded-lg border border-gray-100 bg-gray-50 p-4">
+<div x-show="form.isMega && form.location === 'main' && form.parentId === ''" x-cloak class="space-y-3 p-4 rounded-md bg-white">
     <p class="text-xs font-bold uppercase tracking-wide text-muted">Grafika promocyjna w mega menu <span class="font-normal normal-case">(opcjonalnie — kolumna boczna nad opisem)</span></p>
     <template x-if="form.megaImage">
         <img :src="form.megaImage" alt="" class="h-24 w-full rounded-md border border-gray-200 object-cover">
@@ -336,22 +336,22 @@
     <div>
         <label for="nav-mega-image-url" class="mb-1 block text-xs font-bold text-muted">Adres grafiki</label>
         <input type="text" id="nav-mega-image-url" name="mega_image_url" x-model="form.megaImage" placeholder="/storage/… albo https://…"
-            class="w-full rounded border-gray-300 text-sm focus-visible:border-brand focus-visible:ring-2 focus-visible:ring-brand">
-        <p class="mt-1 text-xs text-muted">Skopiuj adres z biblioteki <a href="{{ route('admin.multimedia.index') }}" target="_blank" rel="noopener" class="text-brand underline">Multimedia</a> albo wgraj plik poniżej (zalecane 640×360 px).</p>
+            class="w-full rounded border-gray-500 text-sm focus-visible:border-brand-dark focus-visible:ring-2 focus-visible:ring-brand-dark">
+        <p class="mt-1 text-xs text-muted">Skopiuj adres z biblioteki <a href="{{ route('admin.multimedia.index') }}" target="_blank" rel="noopener" class="text-brand-dark underline">Multimedia</a> albo wgraj plik poniżej (zalecane 640×360 px).</p>
     </div>
     <div>
         <label for="nav-mega-image-file" class="mb-1 block text-xs font-bold text-muted">Wgraj plik</label>
         <input type="file" id="nav-mega-image-file" name="mega_image_file" accept="image/*"
-            class="block w-full text-sm text-muted file:mr-3 file:rounded file:border-0 file:bg-brand-light file:px-3 file:py-1.5 file:text-sm file:font-bold file:text-brand">
+            class="block w-full text-sm text-muted file:mr-3 file:rounded file:border-0 file:bg-brand-light file:px-3 file:py-1.5 file:text-sm file:font-bold file:text-brand-dark">
         @error('mega_image_file') <p class="mt-1 text-sm text-red-700">{{ $message }}</p> @enderror
     </div>
     <div>
         <label for="nav-mega-image-alt" class="mb-1 block text-xs font-bold text-muted">Tekst alternatywny grafiki</label>
         <input type="text" id="nav-mega-image-alt" name="mega_image_alt" x-model="form.megaImageAlt" maxlength="255" placeholder="Co przedstawia grafika (puste = dekoracyjna)"
-            class="w-full rounded border-gray-300 text-sm focus-visible:border-brand focus-visible:ring-2 focus-visible:ring-brand">
+            class="w-full rounded border-gray-500 text-sm focus-visible:border-brand-dark focus-visible:ring-2 focus-visible:ring-brand-dark">
     </div>
     <label class="flex items-center gap-2 text-sm" x-show="form.megaImage">
-        <input type="checkbox" name="remove_mega_image" value="1" class="rounded border-gray-300 text-brand focus-visible:ring-2 focus-visible:ring-brand">
+        <input type="checkbox" name="remove_mega_image" value="1" class="rounded border-gray-500 text-brand-dark focus-visible:ring-2 focus-visible:ring-brand-dark">
         <span>Usuń grafikę</span>
     </label>
 </div>

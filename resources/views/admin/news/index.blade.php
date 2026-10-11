@@ -5,14 +5,14 @@
 @section('content')
     <div class="mb-4 flex items-center justify-end gap-2">
         <a href="{{ route('admin.kategorie-newsow.index') }}"
-            class="inline-flex items-center gap-1.5 rounded border border-gray-300 bg-white px-3 py-2 text-sm font-bold text-ink hover:border-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
+            class="inline-flex items-center gap-1.5 rounded-md px-3 py-2 text-sm font-bold text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2 bg-white hover:bg-brand-light">
             <i class="fa-solid fa-tags" aria-hidden="true"></i> Kategorie ({{ $categories->count() }})
         </a>
         <a href="{{ route('admin.newsy.eksport') }}"
-            class="inline-flex items-center gap-1.5 rounded border border-gray-300 bg-white px-3 py-2 text-sm font-bold text-muted hover:border-gray-400 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+            class="inline-flex items-center gap-1.5 rounded-md px-3 py-2 text-sm font-bold text-muted hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark bg-white hover:bg-brand-light">
             <i class="fa-solid fa-file-csv" aria-hidden="true"></i> Eksportuj CSV
         </a>
-        <a href="{{ route('admin.newsy.create') }}" class="rounded bg-brand px-4 py-2 text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
+        <a href="{{ route('admin.newsy.create') }}" class="rounded bg-brand-dark px-4 py-2 text-sm font-bold text-white hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2">
             <i class="fa-solid fa-plus" aria-hidden="true"></i> Dodaj news
         </a>
     </div>
@@ -31,9 +31,9 @@
     <form id="bulk-form" method="POST" action="{{ route('admin.newsy.bulk') }}">
         @csrf
 
-        <div id="bulk-bar" class="mb-3 hidden items-center gap-3 rounded-lg border border-blue-200 bg-blue-50 px-4 py-2">
+        <div id="bulk-bar" class="mb-3 hidden items-center gap-3 rounded-md bg-brand-light px-4 py-2">
             <span id="bulk-count" class="text-sm font-bold text-blue-800"></span>
-            <select name="action" class="rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+            <select name="action" class="rounded border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark">
                 <option value="publish">Opublikuj</option>
                 <option value="unpublish">Cofnij publikację (szkic)</option>
                 <option value="archive">Zarchiwizuj</option>
@@ -41,7 +41,7 @@
             </select>
             <button type="button"
                 @click="Alpine.store('confirm').ask('Wykonać tę operację na zaznaczonych pozycjach?').then(ok => { if (ok) $el.closest('form').submit() })"
-                class="rounded bg-brand px-3 py-1.5 text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
+                class="rounded bg-brand-dark px-3 py-1.5 text-sm font-bold text-white hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2">
                 Wykonaj
             </button>
         </div>
@@ -62,7 +62,7 @@
         <div class="mb-2 flex justify-end">
             <div class="relative">
                 <button type="button" @click="open = !open" :aria-expanded="open"
-                    class="inline-flex items-center gap-1.5 rounded border border-gray-300 bg-white px-3 py-1.5 text-xs font-bold text-muted hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                    class="inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-bold text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark bg-white hover:bg-brand-light">
                     <i class="fa-solid fa-sliders" aria-hidden="true"></i> Kolumny
                     <i class="fa-solid fa-chevron-down text-[10px] transition" :class="open ? 'rotate-180' : ''" aria-hidden="true"></i>
                 </button>
@@ -71,7 +71,7 @@
                     <p class="mb-1 px-3 text-[10px] font-bold uppercase tracking-wide text-muted">Pokaż kolumny</p>
                     @foreach (['thumb' => 'Miniatura', 'cat' => 'Kategoria', 'tags' => 'Tagi', 'date' => 'Data'] as $key => $label)
                         <label class="flex cursor-pointer items-center gap-2 px-3 py-1.5 hover:bg-gray-50">
-                            <input type="checkbox" x-model="cols.{{ $key }}" class="rounded border-gray-300 text-brand focus:ring-brand">
+                            <input type="checkbox" x-model="cols.{{ $key }}" class="rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
                             <span class="text-sm">{{ $label }}</span>
                         </label>
                     @endforeach
@@ -79,12 +79,12 @@
             </div>
         </div>
 
-        <div class="overflow-hidden rounded-lg border border-gray-200 bg-white">
+        <div class="overflow-hidden rounded-md bg-white">
             <table class="w-full text-left text-sm">
-                <thead class="bg-gray-50 text-xs font-bold uppercase text-muted">
+                <thead class="bg-gray-100 text-xs font-bold uppercase text-muted">
                     <tr>
                         <th class="w-8 px-4 py-3">
-                            <input type="checkbox" id="select-all" class="rounded border-gray-300" aria-label="Zaznacz wszystkie">
+                            <input type="checkbox" id="select-all" class="rounded border-gray-500" aria-label="Zaznacz wszystkie">
                         </th>
                         <th x-show="cols.thumb" class="w-16 px-4 py-3">Foto</th>
                         <th class="px-4 py-3">Tytuł</th>
@@ -100,7 +100,7 @@
                         @php $img = $item->imageUrlOrDefault(); @endphp
                         <tr class="{{ $item->is_clone ? 'bg-amber-50' : '' }}">
                             <td class="px-4 py-3">
-                                <input type="checkbox" name="ids[]" value="{{ $item->id }}" class="row-check rounded border-gray-300" aria-label="Zaznacz {{ $item->title }}">
+                                <input type="checkbox" name="ids[]" value="{{ $item->id }}" class="row-check rounded border-gray-500" aria-label="Zaznacz {{ $item->title }}">
                             </td>
                             <td x-show="cols.thumb" class="px-4 py-2">
                                 @if ($img)
@@ -114,7 +114,7 @@
                             </td>
                             <td class="px-4 py-3 font-medium">
                                 @if ($item->is_clone)
-                                    <span class="mr-1 inline-flex items-center gap-1 rounded bg-amber-100 px-1.5 py-0.5 text-xs font-bold text-amber-700">
+                                    <span class="mr-1 inline-flex items-center gap-1 text-xs font-bold text-ink">
                                         <i class="fa-solid fa-copy" aria-hidden="true"></i> Kopia
                                     </span>
                                 @endif
@@ -125,27 +125,27 @@
                             <td x-show="cols.date" class="px-4 py-3 text-muted">{{ $item->published_at?->format('d.m.Y') }}</td>
                             <td class="px-4 py-3">
                                 @if ($item->is_published && $item->published_at?->isPast())
-                                    <span class="rounded-full bg-green-100 px-2 py-0.5 text-xs font-bold text-green-700">Opublikowany</span>
+                                    <span class="text-xs font-bold text-ink"><i class="fa-solid fa-circle-check mr-1 text-brand-dark" aria-hidden="true"></i>Opublikowany</span>
                                 @elseif ($item->is_published)
-                                    <span class="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-bold text-amber-700">Zaplanowany</span>
+                                    <span class="text-xs font-bold text-ink"><i class="fa-solid fa-clock mr-1 text-brand-dark" aria-hidden="true"></i>Zaplanowany</span>
                                 @else
-                                    <span class="rounded-full bg-gray-100 px-2 py-0.5 text-xs font-bold text-gray-500">Szkic</span>
+                                    <span class="text-xs font-bold text-muted">Szkic</span>
                                 @endif
                             </td>
                             <td class="px-4 py-3">
                                 <div class="flex justify-end gap-3">
                                     @if ($item->is_published && $item->published_at <= now())
-                                        <a href="{{ route('news.show', $item) }}" target="_blank" class="text-muted hover:text-brand" title="Podgląd"><i class="fa-solid fa-eye" aria-hidden="true"></i></a>
+                                        <a href="{{ route('news.show', $item) }}" target="_blank" class="text-muted hover:text-brand-dark" title="Podgląd"><i class="fa-solid fa-eye" aria-hidden="true"></i></a>
                                     @else
                                         <a href="{{ $item->previewUrl() }}" target="_blank" rel="noopener" class="text-amber-600 hover:text-amber-700" title="Podgląd wersji roboczej (link ważny 14 dni)"><i class="fa-solid fa-eye" aria-hidden="true"></i></a>
                                     @endif
-                                    <a href="{{ route('admin.newsy.edit', $item) }}" class="text-muted hover:text-brand" title="Edytuj"><i class="fa-solid fa-pen" aria-hidden="true"></i></a>
+                                    <a href="{{ route('admin.newsy.edit', $item) }}" class="text-muted hover:text-brand-dark" title="Edytuj"><i class="fa-solid fa-pen" aria-hidden="true"></i></a>
                                     <form method="POST" action="{{ route('admin.newsy.klonuj', $item) }}">
                                         @csrf
-                                        <button type="submit" class="text-muted hover:text-brand" title="Klonuj" aria-label="Klonuj"><i class="fa-solid fa-copy"></i></button>
+                                        <button type="submit" class="text-muted hover:text-brand-dark" title="Klonuj" aria-label="Klonuj"><i class="fa-solid fa-copy"></i></button>
                                     </form>
                                     <form method="POST" action="{{ route('admin.newsy.destroy', $item) }}"
-                                        data-confirm="Usunąć news „{{ $item->title }}"?"
+                                        data-confirm="Usunąć news „{{ $item->title }}”?"
                                         @if ($item->clones_count > 0) data-clone-count="{{ $item->clones_count }}" @endif>
                                         @csrf
                                         @method('DELETE')

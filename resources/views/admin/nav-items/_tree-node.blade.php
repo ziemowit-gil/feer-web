@@ -10,18 +10,18 @@
     $icon = $item->is_button ? 'fa-bullhorn' : ($item->is_column_heading ? 'fa-table-columns' : ($typeIcons[$item->type] ?? 'fa-link'));
 @endphp
 <li id="nav-item-{{ $item->id }}" data-id="{{ $item->id }}" role="treeitem" aria-level="{{ $level }}" aria-selected="{{ $isSel ? 'true' : 'false' }}" class="list-none">
-    <div class="flex items-stretch overflow-hidden rounded-lg border {{ $isSel ? 'border-brand bg-brand-light' : 'border-gray-200 bg-white hover:bg-gray-50' }} {{ $item->is_active ? '' : 'opacity-60' }}">
+    <div class="flex items-stretch overflow-hidden rounded-lg border {{ $isSel ? 'border-brand-dark bg-brand-light' : 'border-gray-200 bg-white hover:bg-gray-50' }} {{ $item->is_active ? '' : 'opacity-60' }}">
         <span class="drag-handle flex cursor-grab select-none items-center bg-gray-50/70 px-2 text-gray-300 hover:text-gray-500 active:cursor-grabbing" aria-hidden="true" title="Przeciągnij, aby zmienić kolejność">
             <i class="fa-solid fa-grip-vertical text-xs"></i>
         </span>
         <a href="{{ route('admin.pozycje-menu.index', ['location' => $location, 'pozycja' => $item->id]) }}" data-nav-first-action
             @if ($isSel) aria-current="true" @endif
-            class="flex min-w-0 flex-1 items-center gap-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand {{ $isSel ? 'font-bold text-brand' : 'text-ink' }}"
+            class="flex min-w-0 flex-1 items-center gap-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-dark {{ $isSel ? 'font-bold text-brand-dark' : 'text-ink' }}"
             style="min-height: 2.5rem; padding: .375rem .625rem">
-            <i class="fa-solid {{ $icon }} w-4 flex-none text-center text-xs {{ $isSel ? 'text-brand' : 'text-gray-400' }}" aria-hidden="true"></i>
+            <i class="fa-solid {{ $icon }} w-4 flex-none text-center text-xs {{ $isSel ? 'text-brand-dark' : 'text-gray-400' }}" aria-hidden="true"></i>
             <span class="min-w-0 flex-1 truncate">{{ $item->label }}</span>
-            @unless ($item->is_active)<span class="flex-none rounded-full bg-amber-100 px-1.5 text-[10px] font-bold text-amber-700">ukryta</span>@endunless
-            @if ($item->is_mega && $level === 1)<span class="flex-none rounded-full bg-indigo-50 px-1.5 text-[10px] font-bold text-indigo-700" title="Mega menu">mega</span>@endif
+            @unless ($item->is_active)<span class="flex-none text-[10px] font-bold text-ink"><i class="fa-solid fa-eye-slash mr-1 text-muted" aria-hidden="true"></i>ukryta</span>@endunless
+            @if ($item->is_mega && $level === 1)<span class="flex-none text-[10px] font-bold text-ink" title="Mega menu"><i class="fa-solid fa-circle-info mr-1 text-brand-dark" aria-hidden="true"></i>mega</span>@endif
             @if ($kids->isNotEmpty())<span class="flex-none rounded-full bg-gray-100 px-1.5 text-[10px] font-bold text-muted"><span class="sr-only">podpozycji: </span>{{ $kids->count() }}</span>@endif
         </a>
     </div>

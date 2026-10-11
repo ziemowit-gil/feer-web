@@ -13,21 +13,21 @@
         <form method="POST" action="{{ route('admin.martwe-linki.scan') }}"
             x-data @submit="$el.querySelector('button').disabled = true; $el.querySelector('[data-label]').textContent = 'Skanuję…'">
             @csrf
-            <button type="submit" class="rounded bg-brand px-4 py-2 text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
+            <button type="submit" class="rounded bg-brand-dark px-4 py-2 text-sm font-bold text-white hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2">
                 <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i> <span data-label>Skanuj teraz</span>
             </button>
         </form>
     </div>
 
     @if ($capped)
-        <div role="status" class="mb-4 rounded border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+        <div role="status" class="mb-4 rounded-md bg-amber-50 px-4 py-3 text-sm text-amber-800">
             Sprawdzono maksymalną liczbę linków zewnętrznych w jednym skanie — część mogła nie zostać zweryfikowana.
         </div>
     @endif
 
-    <div class="overflow-x-auto rounded-lg border border-gray-200 bg-white">
+    <div class="overflow-x-auto rounded-md bg-white">
         <table class="w-full text-left text-sm">
-            <thead class="bg-gray-50 text-xs font-bold uppercase text-muted">
+            <thead class="bg-gray-100 text-xs font-bold uppercase text-muted">
                 <tr>
                     <th class="px-4 py-3">Źródło</th>
                     <th class="px-4 py-3">Link</th>
@@ -38,13 +38,13 @@
                 @forelse ($results as $row)
                     <tr>
                         <td class="px-4 py-3">
-                            <a href="{{ $row['edit_url'] }}" class="font-medium text-brand hover:text-brand-dark">{{ $row['label'] }}</a>
+                            <a href="{{ $row['edit_url'] }}" class="font-medium text-brand-dark hover:text-ink">{{ $row['label'] }}</a>
                         </td>
                         <td class="px-4 py-3">
                             <span class="break-all font-mono text-xs text-muted">{{ $row['url'] }}</span>
                         </td>
                         <td class="px-4 py-3">
-                            <span class="rounded-full bg-red-100 px-2 py-0.5 text-xs font-bold text-red-700">{{ $row['error'] }}</span>
+                            <span class="text-xs font-bold text-ink"><i class="fa-solid fa-circle-xmark mr-1 text-red-700" aria-hidden="true"></i>{{ $row['error'] }}</span>
                         </td>
                     </tr>
                 @empty

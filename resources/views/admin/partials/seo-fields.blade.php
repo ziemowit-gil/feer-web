@@ -14,7 +14,7 @@
     $seoHost = parse_url($seoUrl ?: config('app.url'), PHP_URL_HOST) ?: request()->getHost();
     $seoPath = $seoUrl ? ltrim((string) parse_url($seoUrl, PHP_URL_PATH), '/') : (string) ($model->slug ?? '');
 @endphp
-<div class="space-y-6 rounded-xl border border-gray-200 bg-white p-6 sm:p-8" x-data="{
+<div class="space-y-6 p-6 sm:p-8 rounded-md bg-white" x-data="{
     metaTitle: @js((string) old('meta_title', $model->meta_title ?? '')),
     metaDesc:  @js((string) old('meta_description', $model->meta_description ?? '')),
     fallbackTitle: @js($seoTitleFallback),
@@ -48,7 +48,7 @@
             </div>
             <input type="text" id="meta_title" name="meta_title" maxlength="255" value="{{ old('meta_title', $model->meta_title ?? '') }}" x-model="metaTitle"
                 @if ($seoTitleFallback !== '') placeholder="{{ $seoTitleFallback }}" @endif aria-describedby="meta_title_hint"
-                class="w-full rounded-lg border-gray-300 focus:border-brand focus:ring-brand">
+                class="w-full rounded-lg border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
             <div class="mt-2 h-1.5 overflow-hidden rounded-full bg-gray-200" aria-hidden="true">
                 <div class="h-full rounded-full transition-all" :class="bar(rate(metaTitle.length, 45, 60))" :style="'width:' + Math.min(100, Math.round(metaTitle.length / 60 * 100)) + '%'"></div>
             </div>
@@ -65,7 +65,7 @@
                 <span class="text-xs font-bold tabular-nums text-ink"><span x-text="metaDesc.length"></span>/160</span>
             </div>
             <textarea id="meta_description" name="meta_description" rows="3" maxlength="300" x-model="metaDesc" aria-describedby="meta_desc_hint"
-                class="w-full rounded-lg border-gray-300 focus:border-brand focus:ring-brand">{{ old('meta_description', $model->meta_description ?? '') }}</textarea>
+                class="w-full rounded-lg border-gray-500 focus:border-brand-dark focus:ring-brand-dark">{{ old('meta_description', $model->meta_description ?? '') }}</textarea>
             <div class="mt-2 h-1.5 overflow-hidden rounded-full bg-gray-200" aria-hidden="true">
                 <div class="h-full rounded-full transition-all" :class="bar(rate(metaDesc.length, 120, 160))" :style="'width:' + Math.min(100, Math.round(metaDesc.length / 160 * 100)) + '%'"></div>
             </div>

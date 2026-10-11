@@ -11,7 +11,7 @@
         <p class="text-xs font-bold uppercase text-muted">Hasła (na stronie sortowane alfabetycznie, z indeksem liter i wyszukiwarką)</p>
         <div data-td-rows class="space-y-3">
             @foreach ($tdRows('terms') as $i => $row)
-                <div data-td-row class="rounded border border-gray-200 bg-white p-3">
+                <div data-td-row class="p-3 rounded-md bg-white">
                     <div class="flex gap-2">
                         <input type="text" name="type_data[terms][{{ $i }}][term]" value="{{ $row['term'] ?? '' }}" placeholder="Hasło, np. WCAG" aria-label="Hasło" class="{{ $inp }} font-bold">
                         <button type="button" data-td-remove class="{{ $rmBtn }}" aria-label="Usuń hasło"><i class="fa-solid fa-trash" aria-hidden="true"></i></button>
@@ -23,7 +23,7 @@
         </div>
         <button type="button" data-td-add class="{{ $addBtn }}"><i class="fa-solid fa-plus" aria-hidden="true"></i> Dodaj hasło</button>
         <template data-td-template>
-            <div data-td-row class="rounded border border-gray-200 bg-white p-3">
+            <div data-td-row class="p-3 rounded-md bg-white">
                 <div class="flex gap-2">
                     <input type="text" name="type_data[terms][__INDEX__][term]" placeholder="Hasło, np. WCAG" aria-label="Hasło" class="{{ $inp }} font-bold">
                     <button type="button" data-td-remove class="{{ $rmBtn }}" aria-label="Usuń hasło"><i class="fa-solid fa-trash" aria-hidden="true"></i></button>

@@ -21,7 +21,7 @@
                 <option value="cards" @selected(($td['partners_layout'] ?? '') === 'cards')>Karty (logo, nazwa, opis roli)</option>
             </select>
         </div>
-        <label class="flex items-start gap-2 pt-5 text-sm"><input type="hidden" name="type_data[partners_all]" value="0"><input type="checkbox" name="type_data[partners_all]" value="1" @checked(! empty($td['partners_all'])) class="mt-0.5 rounded border-gray-300 text-brand focus:ring-brand"> <span><span class="font-bold">Pokaż też wszystkich partnerów z modułu</span><span class="block text-xs text-muted">Ci, których nie przypiszesz do grupy, trafią do grupy „Pozostali partnerzy”.</span></span></label>
+        <label class="flex items-start gap-2 pt-5 text-sm"><input type="hidden" name="type_data[partners_all]" value="0"><input type="checkbox" name="type_data[partners_all]" value="1" @checked(! empty($td['partners_all'])) class="mt-0.5 rounded border-gray-500 text-brand-dark focus:ring-brand-dark"> <span><span class="font-bold">Pokaż też wszystkich partnerów z modułu</span><span class="block text-xs text-muted">Ci, których nie przypiszesz do grupy, trafią do grupy „Pozostali partnerzy”.</span></span></label>
     </div>
     <div class="{{ $box }}" data-td-repeater>
         <p class="text-xs font-bold uppercase text-muted">Grupy (np. Partnerzy strategiczni, Sponsorzy, Patroni medialni) — nazwa i krótki opis</p>

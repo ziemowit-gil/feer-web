@@ -6,19 +6,19 @@
     <div class="mb-4 flex items-center justify-between gap-4">
         <div>
             <a href="{{ route('admin.formularze.index') }}"
-                class="text-sm text-muted hover:text-brand focus-visible:rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                class="text-sm text-muted hover:text-brand-dark focus-visible:rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">
                 <i class="fa-solid fa-arrow-left mr-1" aria-hidden="true"></i> Formularze
             </a>
             <h1 class="mt-1 text-lg font-bold text-ink">Zgłoszenia: {{ $form->title }}</h1>
         </div>
         <div class="flex items-center gap-2">
             <a href="{{ route('admin.formularze.edit', $form) }}"
-                class="rounded border border-gray-200 bg-white px-3 py-2 text-sm hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                class="rounded-md px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark bg-white hover:bg-brand-light text-ink">
                 <i class="fa-solid fa-pen mr-1" aria-hidden="true"></i> Edytuj formularz
             </a>
             @if ($submissions->total() > 0)
                 <a href="{{ route('admin.formularze.zgloszenia.eksport', $form) }}"
-                    class="rounded bg-brand px-4 py-2 text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
+                    class="rounded bg-brand-dark px-4 py-2 text-sm font-bold text-white hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2">
                     <i class="fa-solid fa-file-csv mr-1" aria-hidden="true"></i> Eksport CSV
                 </a>
             @endif
@@ -26,16 +26,16 @@
     </div>
 
     @if (session('status'))
-        <div class="mb-4 rounded border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700" role="status">
+        <div class="mb-4 rounded-md bg-brand-light px-4 py-3 text-sm text-ink" role="status">
             {{ session('status') }}
         </div>
     @endif
 
     @php $fields = $form->normalizedFields(); @endphp
 
-    <div class="overflow-x-auto rounded-lg border border-gray-200 bg-white">
+    <div class="overflow-x-auto rounded-md bg-white">
         <table class="w-full text-left text-sm">
-            <thead class="bg-gray-50 text-xs font-bold uppercase tracking-wide text-muted">
+            <thead class="bg-gray-100 text-xs font-bold uppercase tracking-wide text-muted">
                 <tr>
                     <th class="px-4 py-3">#</th>
                     <th class="px-4 py-3">Data</th>

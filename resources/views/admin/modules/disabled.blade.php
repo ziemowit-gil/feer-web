@@ -15,7 +15,7 @@
         </p>
 
         <a href="{{ route('admin.moduly.index') }}"
-           class="inline-flex items-center gap-2 rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-white shadow-sm hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
+           class="inline-flex items-center gap-2 rounded-lg bg-brand-dark px-4 py-2 text-sm font-semibold text-white hover:bg-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-dark">
             <i class="fa-solid fa-puzzle-piece" aria-hidden="true"></i>
             Przejdź do modułów
         </a>

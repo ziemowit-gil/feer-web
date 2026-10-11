@@ -6,27 +6,27 @@
     <form method="POST" action="{{ $material->exists ? route('admin.materialy-edukacyjne.update', $material) : route('admin.materialy-edukacyjne.store') }}"
         enctype="multipart/form-data"
         x-data="{ type: '{{ old('type', $material->type ?: 'video') }}' }"
-        class="max-w-xl space-y-5 rounded-lg border border-gray-200 bg-white p-6">
+        class="max-w-xl space-y-5 p-6 rounded-md bg-white">
         @csrf
         @if ($material->exists) @method('PUT') @endif
 
         <div>
             <label for="title" class="mb-1 block text-sm font-bold">Tytuł</label>
             <input type="text" id="title" name="title" value="{{ old('title', $material->title) }}" required
-                class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
             @error('title') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
         </div>
 
         <div>
             <label for="description" class="mb-1 block text-sm font-bold">Opis</label>
             <textarea id="description" name="description" rows="4" required
-                class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">{{ old('description', $material->description) }}</textarea>
+                class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">{{ old('description', $material->description) }}</textarea>
             @error('description') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
         </div>
 
         <div>
             <label for="target_group" class="mb-1 block text-sm font-bold">Dla kogo</label>
-            <select id="target_group" name="target_group" required class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+            <select id="target_group" name="target_group" required class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
                 @foreach (\App\Models\EducationalMaterial::TARGET_GROUPS as $value => $label)
                     <option value="{{ $value }}" {{ old('target_group', $material->target_group) === $value ? 'selected' : '' }}>{{ $label }}</option>
                 @endforeach
@@ -36,7 +36,7 @@
 
         <div>
             <label for="category" class="mb-1 block text-sm font-bold">Kategoria <span class="font-normal text-muted">(opcjonalnie)</span></label>
-            <select id="category" name="category" class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+            <select id="category" name="category" class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
                 <option value="">— bez kategorii —</option>
                 @foreach (\App\Models\EducationalMaterial::CATEGORIES as $value => $label)
                     <option value="{{ $value }}" {{ old('category', $material->category) === $value ? 'selected' : '' }}>{{ $label }}</option>
@@ -47,7 +47,7 @@
 
         <div>
             <label for="type" class="mb-1 block text-sm font-bold">Typ materiału</label>
-            <select id="type" name="type" x-model="type" class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+            <select id="type" name="type" x-model="type" class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
                 @foreach (\App\Models\EducationalMaterial::TYPES as $value => $label)
                     <option value="{{ $value }}" {{ old('type', $material->type ?: 'video') === $value ? 'selected' : '' }}>{{ $label }}</option>
                 @endforeach
@@ -59,27 +59,27 @@
             <label for="video_url" class="mb-1 block text-sm font-bold">Link do nagrania</label>
             <input type="url" id="video_url" name="video_url" value="{{ old('video_url', $material->video_url) }}"
                 placeholder="https://youtube.com/..."
-                class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
             @error('video_url') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
         </div>
 
         <div x-show="type === 'pdf' || type === 'scenariusz'" x-cloak>
             @if ($material->exists && $material->fileUrl)
                 <p class="mb-1 text-sm font-bold">Obecny plik</p>
-                <a href="{{ $material->fileUrl }}" target="_blank" class="mb-2 inline-block text-sm text-brand hover:text-brand-dark">
+                <a href="{{ $material->fileUrl }}" target="_blank" class="mb-2 inline-block text-sm text-brand-dark hover:text-ink">
                     <i class="fa-solid fa-file-pdf"></i> Pobierz obecny plik
                 </a>
             @endif
             <label for="file" class="mb-1 block text-sm font-bold">{{ $material->exists && $material->fileUrl ? 'Zmień plik PDF' : 'Plik PDF' }}</label>
             <input type="file" id="file" name="file" accept="application/pdf"
-                class="block w-full cursor-pointer text-sm text-muted file:mr-3 file:cursor-pointer file:rounded file:border-0 file:bg-brand file:px-4 file:py-2 file:text-sm file:font-bold file:text-white hover:file:bg-brand-dark">
+                class="block w-full cursor-pointer text-sm text-muted file:mr-3 file:cursor-pointer file:rounded file:border-0 file:bg-brand-dark file:px-4 file:py-2 file:text-sm file:font-bold file:text-white hover:file:bg-brand-dark">
             @error('file') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
         </div>
 
         <div>
             <label for="order" class="mb-1 block text-sm font-bold">Kolejność</label>
             <input type="number" id="order" name="order" min="0" value="{{ old('order', $material->order) }}"
-                class="w-28 rounded border-gray-300 focus:border-brand focus:ring-brand">
+                class="w-28 rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
         </div>
 
         <div>
@@ -87,20 +87,20 @@
             <input type="number" id="price_pln" name="price_pln" min="0" step="0.01"
                 value="{{ old('price_pln', $material->price_grosze !== null ? number_format($material->price_grosze / 100, 2, '.', '') : '') }}"
                 placeholder="np. 19.99"
-                class="w-40 rounded border-gray-300 focus:border-brand focus:ring-brand">
+                class="w-40 rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
             @error('price_pln') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
-            <p class="mt-1 text-xs text-muted">Puste = materiał nie jest sprzedawany w <a href="{{ route('sklep.index') }}" class="text-brand hover:underline" target="_blank">sklepie</a> (płatność Przelewy24).</p>
+            <p class="mt-1 text-xs text-muted">Puste = materiał nie jest sprzedawany w <a href="{{ route('sklep.index') }}" class="text-brand-dark hover:underline" target="_blank">sklepie</a> (płatność Przelewy24).</p>
         </div>
 
         <label class="flex items-center gap-2">
             <input type="checkbox" name="is_published" value="1" {{ old('is_published', $material->is_published ?? true) ? 'checked' : '' }}
-                class="rounded border-gray-300 text-brand focus:ring-brand">
+                class="rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
             <span class="text-sm font-bold">Opublikowany</span>
         </label>
 
         <label class="flex items-start gap-2">
             <input type="checkbox" name="is_archival" value="1" {{ old('is_archival', $material->is_archival ?? false) ? 'checked' : '' }}
-                class="mt-0.5 rounded border-gray-300 text-brand focus:ring-brand">
+                class="mt-0.5 rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
             <span class="text-sm font-bold">Materiał archiwalny
                 <span class="block font-normal text-muted">Oznaczony na liście plakietką „z dawien dawna".</span>
             </span>
@@ -108,15 +108,15 @@
 
         <label class="flex items-start gap-2">
             <input type="checkbox" name="is_premium" value="1" {{ old('is_premium', $material->is_premium ?? false) ? 'checked' : '' }}
-                class="mt-0.5 rounded border-gray-300 text-brand focus:ring-brand">
+                class="mt-0.5 rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
             <span class="text-sm font-bold">Materiał premium (płatny)
                 <span class="block font-normal text-muted">Dostępny tylko dla subskrybentów lub po jednorazowym zakupie.</span>
             </span>
         </label>
 
         <div class="flex items-center gap-3 border-t border-gray-100 pt-5">
-            <button type="submit" class="rounded bg-brand px-5 py-2 text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">Zapisz</button>
-            <a href="{{ route('admin.materialy-edukacyjne.index') }}" class="text-sm text-muted hover:text-brand">Anuluj</a>
+            <button type="submit" class="rounded bg-brand-dark px-5 py-2 text-sm font-bold text-white hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2">Zapisz</button>
+            <a href="{{ route('admin.materialy-edukacyjne.index') }}" class="text-sm text-muted hover:text-brand-dark">Anuluj</a>
         </div>
     </form>
 @endsection

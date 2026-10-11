@@ -9,20 +9,20 @@
             <p class="text-sm text-muted">Indywidualne e-maile spoza dozwolonej domeny lub zalogowanie bez konta MS365.</p>
         </div>
         <a href="{{ route('admin.zaproszenia-strefy.create') }}"
-            class="rounded bg-brand px-4 py-2 text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
+            class="rounded bg-brand-dark px-4 py-2 text-sm font-bold text-white hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2">
             <i class="fa-solid fa-plus" aria-hidden="true"></i> Nowe zaproszenie
         </a>
     </div>
 
     @if (session('success'))
-        <div role="alert" class="mb-4 rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
+        <div role="alert" class="mb-4 rounded-md bg-brand-light px-4 py-3 text-sm text-ink">
             {{ session('success') }}
         </div>
     @endif
 
-    <div class="overflow-hidden rounded-lg border border-gray-200 bg-white">
+    <div class="overflow-hidden rounded-md bg-white">
         <table class="w-full text-left text-sm">
-            <thead class="bg-gray-50 text-xs font-bold uppercase text-muted">
+            <thead class="bg-gray-100 text-xs font-bold uppercase text-muted">
                 <tr>
                     <th class="px-4 py-3">E-mail</th>
                     <th class="px-4 py-3">Notatka</th>
@@ -52,11 +52,11 @@
                         </td>
                         <td class="px-4 py-3">
                             @if ($used)
-                                <span class="rounded-full bg-gray-100 px-2 py-0.5 text-xs font-bold text-gray-500">Użyte</span>
+                                <span class="text-xs font-bold text-muted">Użyte</span>
                             @elseif ($expired)
-                                <span class="rounded-full bg-red-50 px-2 py-0.5 text-xs font-bold text-red-600">Wygasłe</span>
+                                <span class="text-xs font-bold text-ink"><i class="fa-solid fa-circle-xmark mr-1 text-red-700" aria-hidden="true"></i>Wygasłe</span>
                             @else
-                                <span class="rounded-full bg-green-50 px-2 py-0.5 text-xs font-bold text-green-700">Aktywne</span>
+                                <span class="text-xs font-bold text-ink"><i class="fa-solid fa-circle-check mr-1 text-brand-dark" aria-hidden="true"></i>Aktywne</span>
                             @endif
                         </td>
                         <td class="px-4 py-3 text-muted">{{ $inv->invitedBy->name ?? '—' }}</td>
@@ -66,7 +66,7 @@
                                     <button type="button"
                                         onclick="navigator.clipboard.writeText('{{ $link }}').then(() => this.textContent = 'Skopiowano!')"
                                         title="Kopiuj link"
-                                        class="text-xs font-medium text-brand hover:text-brand-dark">
+                                        class="text-xs font-medium text-brand-dark hover:text-ink">
                                         Kopiuj link
                                     </button>
                                 @endif

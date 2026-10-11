@@ -27,7 +27,7 @@
             $html = '';
             foreach ($pagesByParent->get($parentId, collect()) as $p) {
                 $html .= '<li><label class="flex min-h-9 items-center gap-2 rounded px-1 text-sm hover:bg-gray-50" style="padding-left:'.(0.25 + $depth * 1.25).'rem">'
-                    .'<input type="checkbox" name="page_ids[]" value="'.$p->id.'" x-model.number="pages" class="rounded border-gray-300 text-brand focus:ring-brand">'
+                    .'<input type="checkbox" name="page_ids[]" value="'.$p->id.'" x-model.number="pages" class="rounded border-gray-500 text-brand-dark focus:ring-brand-dark">'
                     .'<span>'.e($p->title).'</span>'
                     .($pagesByParent->has($p->id) ? '<span class="text-xs text-muted">(+ '.$pagesByParent->get($p->id)->count().' podstron)</span>' : '')
                     .'</label></li>';
@@ -70,16 +70,16 @@
 
         <div class="space-y-6">
             {{-- ── Podstawy ── --}}
-            <section class="rounded-lg border border-gray-200 bg-white p-6" aria-labelledby="g-basic">
+            <section class="p-6 rounded-md bg-white" aria-labelledby="g-basic">
                 <h2 id="g-basic" class="mb-4 text-base font-bold text-ink">Grupa</h2>
                 <label for="name" class="mb-1 block text-sm font-bold">Nazwa grupy</label>
                 <input type="text" id="name" name="name" x-model="name" required placeholder="np. Redaktorzy bloga"
-                    class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                    class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
                 @error('name') <p class="mt-1 text-sm text-red-700">{{ $message }}</p> @enderror
             </section>
 
             {{-- ── Moduły ── --}}
-            <section class="rounded-lg border border-gray-200 bg-white p-6" aria-labelledby="g-modules">
+            <section class="p-6 rounded-md bg-white" aria-labelledby="g-modules">
                 <div class="mb-4 flex flex-wrap items-start justify-between gap-3">
                     <div>
                         <h2 id="g-modules" class="text-base font-bold text-ink">Dostępne moduły</h2>
@@ -88,7 +88,7 @@
                     <div class="flex flex-wrap gap-1.5" role="group" aria-label="Gotowe zestawy modułów">
                         @foreach ($presets as $label => $keys)
                             <button type="button" @click="preset(@js($keys))"
-                                class="rounded border border-gray-300 bg-white px-3 py-1.5 text-xs font-bold text-ink hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">{{ $label }}</button>
+                                class="rounded-md px-3 py-1.5 text-xs font-bold text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark bg-gray-100 hover:bg-brand-light">{{ $label }}</button>
                         @endforeach
                     </div>
                 </div>
@@ -96,11 +96,11 @@
                 <div class="space-y-4">
                     @foreach ($sections as $title => $items)
                         @php $keys = array_keys($items); @endphp
-                        <fieldset class="rounded-lg border border-gray-200">
+                        <fieldset class="rounded-md bg-gray-50">
                             <legend class="sr-only">{{ $title }}</legend>
                             <div class="flex items-center justify-between gap-3 rounded-t-lg bg-gray-50 px-4 py-2.5">
                                 <label class="flex items-center gap-2 text-sm font-bold text-ink">
-                                    <input type="checkbox" class="rounded border-gray-300 text-brand focus:ring-brand"
+                                    <input type="checkbox" class="rounded border-gray-500 text-brand-dark focus:ring-brand-dark"
                                         :checked="sectionState(@js($keys)) === 'all'"
                                         x-effect="$el.indeterminate = sectionState(@js($keys)) === 'some'"
                                         @change="toggleSection(@js($keys), $event.target.checked)"
@@ -113,7 +113,7 @@
                                 @foreach ($items as $key => $label)
                                     <label class="flex items-start gap-2 text-sm">
                                         <input type="checkbox" name="modules[]" value="{{ $key }}" x-model="modules"
-                                            class="mt-0.5 rounded border-gray-300 text-brand focus:ring-brand">
+                                            class="mt-0.5 rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
                                         <span>{{ $label }}</span>
                                     </label>
                                 @endforeach
@@ -125,12 +125,12 @@
             </section>
 
             {{-- ── Zakres treści ── --}}
-            <section class="rounded-lg border border-gray-200 bg-white p-6" aria-labelledby="g-scope">
+            <section class="p-6 rounded-md bg-white" aria-labelledby="g-scope">
                 <h2 id="g-scope" class="text-base font-bold text-ink">Zakres treści</h2>
                 <p class="mb-4 text-sm text-muted">Dodatkowo zawęża moduły zaznaczone wyżej.</p>
 
                 <label class="flex items-start gap-2">
-                    <input type="checkbox" name="own_content_only" value="1" x-model="own" class="mt-0.5 rounded border-gray-300 text-brand focus:ring-brand">
+                    <input type="checkbox" name="own_content_only" value="1" x-model="own" class="mt-0.5 rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
                     <span class="text-sm font-bold">Tylko własne wpisy
                         <span class="block font-normal text-muted">Edytor widzi i edytuje tylko aktualności, strony, wydarzenia i działania, które sam utworzył. Treści dodane wcześniej (bez autora) są dla niego niewidoczne.</span>
                     </span>
@@ -143,7 +143,7 @@
                         @foreach ($categories as $cat)
                             <label class="cursor-pointer">
                                 <input type="checkbox" name="project_category_ids[]" value="{{ $cat->id }}" x-model.number="cats" class="peer sr-only">
-                                <span class="inline-flex min-h-9 items-center rounded-full border border-gray-300 bg-white px-3 text-sm font-medium text-ink transition peer-checked:border-brand peer-checked:bg-brand peer-checked:text-white peer-focus-visible:ring-2 peer-focus-visible:ring-brand peer-focus-visible:ring-offset-2">{{ $cat->name }}</span>
+                                <span class="inline-flex min-h-9 items-center rounded-full border border-gray-300 bg-white px-3 text-sm font-medium text-ink transition peer-checked:border-brand-dark peer-checked:bg-brand-dark peer-checked:text-white peer-focus-visible:ring-2 peer-focus-visible:ring-brand-dark peer-focus-visible:ring-offset-2">{{ $cat->name }}</span>
                             </label>
                         @endforeach
                     </div>
@@ -156,20 +156,20 @@
                     @if ($pagesAll->isEmpty())
                         <p class="text-xs text-muted">Brak stron w serwisie.</p>
                     @else
-                        <div class="max-h-80 overflow-y-auto rounded border border-gray-200 p-2">
+                        <div class="max-h-80 overflow-y-auto p-2 rounded-md bg-gray-50">
                             <ul role="list">{!! $renderPages(0, 0) !!}</ul>
                         </div>
-                        <p class="mt-2 text-xs"><button type="button" @click="pages = []" class="font-bold text-brand underline hover:text-ink">Wyczyść wybór</button></p>
+                        <p class="mt-2 text-xs"><button type="button" @click="pages = []" class="font-bold text-brand-dark underline hover:text-ink">Wyczyść wybór</button></p>
                     @endif
                     @error('page_ids.*') <p class="mt-1 text-sm text-red-700">{{ $message }}</p> @enderror
                 </div>
             </section>
 
             {{-- ── Zatwierdzanie ── --}}
-            <section class="rounded-lg border border-gray-200 bg-white p-6" aria-labelledby="g-approve">
+            <section class="p-6 rounded-md bg-white" aria-labelledby="g-approve">
                 <h2 id="g-approve" class="mb-3 text-base font-bold text-ink">Publikowanie</h2>
                 <label class="flex items-start gap-2">
-                    <input type="checkbox" name="can_approve" value="1" x-model="approve" class="mt-0.5 rounded border-gray-300 text-brand focus:ring-brand">
+                    <input type="checkbox" name="can_approve" value="1" x-model="approve" class="mt-0.5 rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
                     <span class="text-sm font-bold">Moderator / akceptant treści
                         <span class="block font-normal text-muted">Może zatwierdzać i publikować treści. Bez tego uprawnienia treści zgłoszone przez tę grupę trafiają do kolejki „Do zatwierdzenia” i czekają na publikację.</span>
                     </span>
@@ -179,7 +179,7 @@
 
         {{-- ── Podsumowanie (przyklejone) ── --}}
         <aside class="space-y-4 lg:sticky lg:top-6" aria-label="Podsumowanie grupy">
-            <div class="rounded-lg border border-gray-200 bg-white p-5">
+            <div class="p-5 rounded-md bg-white">
                 <p class="text-xs font-bold uppercase tracking-wide text-muted">Podsumowanie</p>
                 <p class="mt-1 truncate text-lg font-bold text-ink" x-text="name || 'Nowa grupa'"></p>
 
@@ -189,7 +189,7 @@
                         <dd class="text-muted"><span x-text="modules.length"></span> z <span x-text="total"></span></dd>
                         <dd class="mt-2 flex flex-wrap gap-1" x-show="modules.length" x-cloak>
                             <template x-for="k in modules" :key="k">
-                                <span class="rounded bg-gray-100 px-2 py-0.5 text-xs font-medium text-ink" x-text="(labels[k] || k).split(' (')[0]"></span>
+                                <span class="text-xs font-bold text-ink" x-text="(labels[k] || k).split(' (')[0]"></span>
                             </template>
                         </dd>
                         <dd class="text-xs text-amber-800" x-show="! modules.length" x-cloak>Brak modułów — użytkownicy tej grupy nie zobaczą nic w panelu.</dd>
@@ -208,8 +208,8 @@
             </div>
 
             <div class="flex items-center gap-3">
-                <button type="submit" class="rounded bg-brand px-5 py-2.5 text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">Zapisz grupę</button>
-                <a href="{{ route('admin.grupy.index') }}" class="text-sm text-muted hover:text-brand">Anuluj</a>
+                <button type="submit" class="rounded bg-brand-dark px-5 py-2.5 text-sm font-bold text-white hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2">Zapisz grupę</button>
+                <a href="{{ route('admin.grupy.index') }}" class="text-sm text-muted hover:text-brand-dark">Anuluj</a>
             </div>
         </aside>
     </form>

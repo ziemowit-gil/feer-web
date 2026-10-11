@@ -48,7 +48,7 @@
                 Kolejność zmieniasz przeciągając pozycje w drzewie albo przyciskami w panelu szczegółów (dostępne z klawiatury).
             </p>
             <button type="button" @click="openCreate($event)" data-location="{{ $location }}"
-                class="inline-flex items-center rounded bg-brand text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2"
+                class="inline-flex items-center rounded bg-brand-dark text-sm font-bold text-white hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2"
                 style="min-height:2.25rem;padding:.375rem 1rem;gap:.375rem">
                 <i class="fa-solid fa-plus" aria-hidden="true"></i> Dodaj pozycję menu
             </button>
@@ -57,15 +57,15 @@
         @include('admin.partials.content-nav-tabs')
 
         {{-- Wskaźnik zapisu po drag & drop (ukryty do czasu użycia) --}}
-        <div id="nav-dnd-status" role="status" aria-live="polite" class="mb-3 hidden rounded border px-3 py-2 text-sm"></div>
+        <div id="nav-dnd-status" role="status" aria-live="polite" class="mb-3 hidden px-3 py-2 text-sm rounded-md bg-white"></div>
 
         {{-- Układ jak w module „Strona” TYPO3: drzewo pozycji | szczegóły wybranej pozycji. --}}
         <style>@media (max-width: 767px) { .nav-split { grid-template-columns: 1fr !important; } }</style>
         <div class="nav-split" style="display:grid;grid-template-columns:minmax(16rem,23rem) minmax(0,1fr);gap:1rem;align-items:start">
-            <nav aria-label="Struktura menu — {{ \App\Models\NavItem::LOCATIONS[$location] ?? $location }}" class="rounded-lg border border-gray-200 bg-white" style="min-width:0">
+            <nav aria-label="Struktura menu — {{ \App\Models\NavItem::LOCATIONS[$location] ?? $location }}" class="rounded-md bg-white" style="min-width:0">
                 <div class="border-b border-gray-100" style="padding:.75rem">
-                    <h2 class="text-sm font-bold text-ink"><i class="fa-solid fa-bars mr-1 text-brand" aria-hidden="true"></i> {{ \App\Models\NavItem::LOCATIONS[$location] ?? $location }}</h2>
-                    <p class="mt-0.5 text-xs text-muted">Pozycje wyświetlane na stronie. „Menu działań” pobiera zawartość z <a href="{{ route('admin.kategorie.index') }}" class="text-brand hover:underline">kategorii działań</a>.</p>
+                    <h2 class="text-sm font-bold text-ink"><i class="fa-solid fa-bars mr-1 text-brand-dark" aria-hidden="true"></i> {{ \App\Models\NavItem::LOCATIONS[$location] ?? $location }}</h2>
+                    <p class="mt-0.5 text-xs text-muted">Pozycje wyświetlane na stronie. „Menu działań” pobiera zawartość z <a href="{{ route('admin.kategorie.index') }}" class="text-brand-dark hover:underline">kategorii działań</a>.</p>
                 </div>
                 <div style="padding:.5rem">
                     @forelse ($navItems as $index => $item)
@@ -102,7 +102,7 @@
                 <div class="flex items-center justify-between border-b border-gray-100 px-6 py-4">
                     <h2 class="text-lg font-bold" x-text="form.editingId ? 'Edytuj pozycję menu' : 'Nowa pozycja menu'"></h2>
                     <button type="button" @click="close()"
-                        class="rounded p-2 text-muted hover:bg-gray-100 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                        class="rounded p-2 text-muted hover:bg-gray-100 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">
                         <i class="fa-solid fa-xmark" aria-hidden="true"></i>
                         <span class="sr-only">Zamknij okno bez zapisywania</span>
                     </button>
@@ -117,11 +117,11 @@
 
                     <div class="flex items-center gap-3 border-t border-gray-100 pt-5">
                         <button type="submit"
-                            class="rounded bg-brand px-5 py-2 text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
+                            class="rounded bg-brand-dark px-5 py-2 text-sm font-bold text-white hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2">
                             Zapisz
                         </button>
                         <button type="button" @click="close()"
-                            class="rounded px-2 py-2 text-sm text-muted hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                            class="rounded px-2 py-2 text-sm text-muted hover:text-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">
                             Anuluj
                         </button>
                     </div>
@@ -157,8 +157,8 @@
 
             function showStatus(msg, isError) {
                 statusEl.textContent = msg;
-                statusEl.className = 'mb-3 rounded border px-3 py-2 text-sm '
-                    + (isError ? 'border-red-200 bg-red-50 text-red-700' : 'border-green-200 bg-green-50 text-green-700');
+                statusEl.className = 'mb-3 rounded-md px-3 py-2 text-sm font-bold '
+                    + (isError ? 'bg-red-50 text-red-800' : 'bg-brand-light text-ink');
                 statusEl.classList.remove('hidden');
                 clearTimeout(saveTimer);
                 saveTimer = setTimeout(() => statusEl.classList.add('hidden'), 3000);

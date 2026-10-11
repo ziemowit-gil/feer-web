@@ -4,22 +4,22 @@
 
 @section('content')
     <div class="mb-4">
-        <a href="{{ route('admin.sklep.orders.index') }}" class="text-sm text-muted hover:text-brand">
+        <a href="{{ route('admin.sklep.orders.index') }}" class="text-sm text-muted hover:text-brand-dark">
             <i class="fa-solid fa-arrow-left" aria-hidden="true"></i> Wróć do listy
         </a>
     </div>
 
     @if (session('status'))
-        <p class="mb-4 rounded-lg bg-green-50 px-4 py-2 text-sm font-bold text-green-700">{{ session('status') }}</p>
+        <p class="mb-4 rounded-md bg-brand-light px-4 py-2 text-sm font-bold text-ink">{{ session('status') }}</p>
     @endif
     @if (session('error'))
-        <p class="mb-4 rounded-lg bg-red-50 px-4 py-2 text-sm font-bold text-red-700">{{ session('error') }}</p>
+        <p class="mb-4 rounded-md bg-red-50 px-4 py-2 text-sm font-bold text-red-700">{{ session('error') }}</p>
     @endif
 
-    <div class="max-w-2xl space-y-5 rounded-lg border border-gray-200 bg-white p-6">
+    <div class="max-w-2xl space-y-5 p-6 rounded-md bg-white">
         <div>
             <p class="mb-1 text-sm font-bold text-muted">Pozycje zamówienia</p>
-            <ul class="divide-y divide-gray-100 rounded border border-gray-200">
+            <ul class="divide-y divide-gray-100 rounded-md bg-gray-50">
                 @foreach ($order->items as $item)
                     <li class="flex justify-between px-3 py-2 text-sm">
                         <span>{{ $item->title }}</span>
@@ -73,7 +73,7 @@
         @if ($order->isPaid())
             <form method="POST" action="{{ route('admin.sklep.orders.resend', $order) }}">
                 @csrf
-                <button type="submit" class="rounded border border-gray-300 bg-white px-4 py-2 text-sm font-bold text-muted hover:border-brand hover:text-brand">
+                <button type="submit" class="rounded-md px-4 py-2 text-sm font-bold text-muted hover:text-brand-dark bg-gray-100 hover:bg-brand-light">
                     <i class="fa-solid fa-paper-plane" aria-hidden="true"></i> Wyślij ponownie e-mail z dostępem
                 </button>
             </form>

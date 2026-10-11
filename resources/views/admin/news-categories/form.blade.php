@@ -5,47 +5,47 @@
 @section('content')
     <form method="POST" action="{{ $newsCategory->exists ? route('admin.kategorie-newsow.update', $newsCategory) : route('admin.kategorie-newsow.store') }}"
         x-data="{ useBrandColor: {{ old('color', $newsCategory->color) ? 'false' : 'true' }} }"
-        class="max-w-xl space-y-5 rounded-lg border border-gray-200 bg-white p-6">
+        class="max-w-xl space-y-5 p-6 rounded-md bg-white">
         @csrf
         @if ($newsCategory->exists) @method('PUT') @endif
 
         <div>
             <label for="name" class="mb-1 block text-sm font-bold">Nazwa</label>
             <input type="text" id="name" name="name" value="{{ old('name', $newsCategory->name) }}" required
-                class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
             @error('name') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
         </div>
 
         <div>
             <label for="slug" class="mb-1 block text-sm font-bold">Slug</label>
             <input type="text" id="slug" name="slug" value="{{ old('slug', $newsCategory->slug) }}" placeholder="zostanie wygenerowany z nazwy"
-                class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
             @error('slug') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
         </div>
 
         <div>
             <label for="order" class="mb-1 block text-sm font-bold">Kolejność</label>
             <input type="number" id="order" name="order" min="0" value="{{ old('order', $newsCategory->order) }}"
-                class="w-28 rounded border-gray-300 focus:border-brand focus:ring-brand">
+                class="w-28 rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
         </div>
 
         <div>
             <label class="mb-1 block text-sm font-bold">Kolor odznaki</label>
             <label class="mb-2 flex items-center gap-2 text-sm">
-                <input type="checkbox" x-model="useBrandColor" class="rounded border-gray-300 text-brand focus:ring-brand">
+                <input type="checkbox" x-model="useBrandColor" class="rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
                 Użyj domyślnego koloru marki (z Ustawień strony)
             </label>
 
             <div x-show="!useBrandColor" x-cloak class="flex items-center gap-3">
                 <input type="color" id="color" name="color" :disabled="useBrandColor" value="{{ old('color', $newsCategory->color ?: $newsCategory->badgeColor()) }}"
-                    class="h-10 w-16 rounded border-gray-300">
+                    class="h-10 w-16 rounded border-gray-500">
                 <input type="text" value="{{ old('color', $newsCategory->color ?: $newsCategory->badgeColor()) }}"
                     oninput="document.getElementById('color').value = this.value"
-                    class="w-32 rounded border-gray-300 font-mono text-sm focus:border-brand focus:ring-brand">
+                    class="w-32 rounded border-gray-500 font-mono text-sm focus:border-brand-dark focus:ring-brand-dark">
             </div>
             <div x-show="!useBrandColor" x-cloak class="mt-2 flex flex-wrap items-center gap-2" role="group" aria-label="Kolory motywu">
                 @foreach (\App\Support\ThemePalette::swatches() as $hex => $name)
-                    <button type="button" title="{{ $name }}" onclick="document.getElementById('color').value='{{ $hex }}'; document.getElementById('color').nextElementSibling.value='{{ $hex }}'" class="flex h-8 items-center gap-2 rounded border border-gray-200 bg-white px-2 text-xs font-bold text-ink hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"><span class="h-4 w-4 rounded-sm border border-gray-300" style="background: {{ $hex }}" aria-hidden="true"></span>{{ $name }}</button>
+                    <button type="button" title="{{ $name }}" onclick="document.getElementById('color').value='{{ $hex }}'; document.getElementById('color').nextElementSibling.value='{{ $hex }}'" class="flex h-8 items-center gap-2 rounded-md px-2 text-xs font-bold text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark bg-gray-100 hover:bg-brand-light"><span class="h-4 w-4 rounded-sm border border-gray-300" style="background: {{ $hex }}" aria-hidden="true"></span>{{ $name }}</button>
                 @endforeach
             </div>
             <p class="mt-1 text-xs text-muted">Widoczny jako tło odznaki kategorii na kartach aktualności.</p>
@@ -53,8 +53,8 @@
         </div>
 
         <div class="flex items-center gap-3 border-t border-gray-100 pt-5">
-            <button type="submit" class="rounded bg-brand px-5 py-2 text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">Zapisz</button>
-            <a href="{{ route('admin.kategorie-newsow.index') }}" class="text-sm text-muted hover:text-brand">Anuluj</a>
+            <button type="submit" class="rounded bg-brand-dark px-5 py-2 text-sm font-bold text-white hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2">Zapisz</button>
+            <a href="{{ route('admin.kategorie-newsow.index') }}" class="text-sm text-muted hover:text-brand-dark">Anuluj</a>
         </div>
     </form>
 @endsection

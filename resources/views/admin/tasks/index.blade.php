@@ -6,26 +6,26 @@
     <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
         <div class="flex flex-wrap items-center gap-2">
             <a href="{{ route('admin.zadania.index', ['status' => 'open'] + ($mine ? ['moje' => 1] : [])) }}"
-                class="rounded-full px-3 py-1 text-sm font-semibold {{ $filter === 'open' ? 'bg-brand text-white' : 'bg-gray-100 text-muted hover:bg-gray-200' }}">
+                class="rounded-full px-3 py-1 text-sm font-semibold {{ $filter === 'open' ? 'bg-brand-dark text-white' : 'bg-gray-100 text-muted hover:bg-gray-200' }}">
                 Otwarte ({{ $openCount }})
             </a>
             <a href="{{ route('admin.zadania.index', ['status' => 'done'] + ($mine ? ['moje' => 1] : [])) }}"
-                class="rounded-full px-3 py-1 text-sm font-semibold {{ $filter === 'done' ? 'bg-brand text-white' : 'bg-gray-100 text-muted hover:bg-gray-200' }}">
+                class="rounded-full px-3 py-1 text-sm font-semibold {{ $filter === 'done' ? 'bg-brand-dark text-white' : 'bg-gray-100 text-muted hover:bg-gray-200' }}">
                 Zrobione ({{ $doneCount }})
             </a>
             <a href="{{ route('admin.zadania.index', ['status' => $filter, 'moje' => $mine ? null : 1]) }}"
-                class="rounded-full px-3 py-1 text-sm font-semibold {{ $mine ? 'bg-brand-light text-brand' : 'bg-gray-100 text-muted hover:bg-gray-200' }}">
+                class="rounded-full px-3 py-1 text-sm font-semibold {{ $mine ? 'bg-brand-light text-brand-dark' : 'bg-gray-100 text-muted hover:bg-gray-200' }}">
                 <i class="fa-solid fa-user" aria-hidden="true"></i> Moje
             </a>
         </div>
-        <a href="{{ route('admin.zadania.create') }}" class="rounded bg-brand px-4 py-2 text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
+        <a href="{{ route('admin.zadania.create') }}" class="rounded bg-brand-dark px-4 py-2 text-sm font-bold text-white hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2">
             <i class="fa-solid fa-plus" aria-hidden="true"></i> Dodaj zadanie
         </a>
     </div>
 
-    <div class="overflow-x-auto rounded-lg border border-gray-200 bg-white">
+    <div class="overflow-x-auto rounded-md bg-white">
         <table class="w-full text-left text-sm">
-            <thead class="bg-gray-50 text-xs font-bold uppercase text-muted">
+            <thead class="bg-gray-100 text-xs font-bold uppercase text-muted">
                 <tr>
                     <th class="px-4 py-3">Zadanie</th>
                     <th class="px-4 py-3">Priorytet</th>
@@ -48,14 +48,14 @@
                             @endif
                         </td>
                         <td class="px-4 py-3">
-                            <span class="rounded-full px-2 py-0.5 text-xs font-bold
-                                {{ $task->priority === 'high' ? 'bg-red-100 text-red-700' : ($task->priority === 'low' ? 'bg-gray-100 text-gray-600' : 'bg-blue-100 text-blue-700') }}">
+                            <span class="text-xs font-bold
+ {{ $task->priority === 'high' ? ' text-ink' : ($task->priority === 'low' ? ' text-muted' : ' text-ink') }}">
                                 {{ $task->priorityLabel() }}
                             </span>
                         </td>
                         <td class="px-4 py-3">
-                            <span class="rounded-full px-2 py-0.5 text-xs font-bold
-                                {{ $task->status === 'done' ? 'bg-green-100 text-green-700' : ($task->status === 'in_progress' ? 'bg-amber-100 text-amber-700' : 'bg-gray-100 text-gray-600') }}">
+                            <span class="text-xs font-bold
+ {{ $task->status === 'done' ? ' text-ink' : ($task->status === 'in_progress' ? ' text-ink' : ' text-muted') }}">
                                 {{ $task->statusLabel() }}
                             </span>
                         </td>
@@ -82,7 +82,7 @@
                                         </button>
                                     </form>
                                 @endif
-                                <a href="{{ route('admin.zadania.edit', $task) }}" class="text-brand hover:text-brand-dark" title="Edytuj">
+                                <a href="{{ route('admin.zadania.edit', $task) }}" class="text-brand-dark hover:text-ink" title="Edytuj">
                                     <i class="fa-solid fa-pen" aria-hidden="true"></i>
                                 </a>
                                 <form method="POST" action="{{ route('admin.zadania.destroy', $task) }}"
@@ -101,7 +101,7 @@
                         <td colspan="6" class="px-4 py-8 text-center text-muted">
                             Brak zadań.
                             @if ($filter === 'open')
-                                <a href="{{ route('admin.zadania.create') }}" class="text-brand underline">Dodaj pierwsze</a>.
+                                <a href="{{ route('admin.zadania.create') }}" class="text-brand-dark underline">Dodaj pierwsze</a>.
                             @endif
                         </td>
                     </tr>
@@ -111,6 +111,6 @@
     </div>
 
     @if (session('status'))
-        <p class="mt-4 rounded-lg border border-green-200 bg-green-50 px-4 py-2 text-sm text-green-800">{{ session('status') }}</p>
+        <p class="mt-4 rounded-md bg-brand-light px-4 py-2 text-sm text-ink">{{ session('status') }}</p>
     @endif
 @endsection

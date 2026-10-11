@@ -4,21 +4,21 @@
 
 @section('content')
     <div class="mb-4 flex justify-end">
-        <a href="{{ route('admin.galeria.create') }}" class="rounded bg-brand px-4 py-2 text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
+        <a href="{{ route('admin.galeria.create') }}" class="rounded bg-brand-dark px-4 py-2 text-sm font-bold text-white hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2">
             <i class="fa-solid fa-plus" aria-hidden="true"></i> Dodaj zdjęcie
         </a>
     </div>
 
     <div class="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
         @forelse ($galleryImages as $image)
-            <div class="overflow-hidden rounded-lg border border-gray-200 bg-white">
+            <div class="overflow-hidden rounded-md bg-white">
                 <img src="{{ $image->image_url }}" alt="" class="h-32 w-full object-cover">
                 <div class="p-3">
                     <div class="text-xs font-bold uppercase text-muted">Kolejność: {{ $image->order }}</div>
                     <p class="mt-1 truncate text-sm">{{ $image->caption ?: '—' }}</p>
 
                     <div class="mt-3 flex items-center gap-3 border-t border-gray-100 pt-3">
-                        <a href="{{ route('admin.galeria.edit', $image) }}" class="text-sm font-bold text-brand hover:text-brand-dark">Edytuj</a>
+                        <a href="{{ route('admin.galeria.edit', $image) }}" class="text-sm font-bold text-brand-dark hover:text-ink">Edytuj</a>
                         <form method="POST" action="{{ route('admin.galeria.destroy', $image) }}" onsubmit="return confirm('Usunąć to zdjęcie?');">
                             @csrf
                             @method('DELETE')

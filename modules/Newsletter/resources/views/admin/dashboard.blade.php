@@ -5,9 +5,9 @@
     <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
         <p class="text-sm text-muted">Kampanie e-mail, push i SMS · subskrybenci z double opt-in</p>
         <div class="flex gap-2">
-            <a href="{{ route('admin.newsletter.kampanie.create') }}" class="rounded bg-brand px-4 py-2 text-sm font-bold text-white hover:bg-brand-dark"><i class="fa-solid fa-plus" aria-hidden="true"></i> Nowa kampania</a>
-            <a href="{{ route('admin.newsletter.mosaico') }}" class="rounded border border-gray-300 bg-white px-4 py-2 text-sm font-bold text-gray-700 hover:bg-gray-50"><i class="fa-solid fa-pen-ruler" aria-hidden="true"></i> Edytor Mosaico</a>
-            <a href="{{ route('newsletter.show') }}" target="_blank" rel="noopener" class="rounded border border-gray-300 bg-white px-4 py-2 text-sm font-bold text-gray-700 hover:bg-gray-50">Strona /newsletter <span class="sr-only">(nowe okno)</span></a>
+            <a href="{{ route('admin.newsletter.kampanie.create') }}" class="rounded bg-brand-dark px-4 py-2 text-sm font-bold text-white hover:bg-ink"><i class="fa-solid fa-plus" aria-hidden="true"></i> Nowa kampania</a>
+            <a href="{{ route('admin.newsletter.mosaico') }}" class="rounded-md px-4 py-2 text-sm font-bold text-gray-700 bg-white hover:bg-brand-light"><i class="fa-solid fa-pen-ruler" aria-hidden="true"></i> Edytor Mosaico</a>
+            <a href="{{ route('newsletter.show') }}" target="_blank" rel="noopener" class="rounded-md px-4 py-2 text-sm font-bold text-gray-700 bg-white hover:bg-brand-light">Strona /newsletter <span class="sr-only">(nowe okno)</span></a>
         </div>
     </div>
 
@@ -25,7 +25,7 @@
                 ['Ustawienia', 'admin.newsletter.ustawienia.edit', 'fa-gear', 'Nadawca, zgody i integracje'],
             ] as [$title, $route, $icon, $desc])
                 <li>
-                    <a href="{{ route($route) }}" class="flex h-full items-start gap-3 rounded-lg border border-gray-200 bg-white p-4 hover:border-brand hover:bg-gray-50 focus-visible:outline focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-brand">
+                    <a href="{{ route($route) }}" class="flex h-full items-start gap-3 rounded-md bg-white p-4 hover:bg-gray-50 focus-visible:outline focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-brand-dark">
                         <i class="fa-solid {{ $icon }} mt-1 text-brand-dark" aria-hidden="true"></i>
                         <span>
                             <span class="block text-sm font-bold text-ink">{{ $title }}</span>
@@ -45,7 +45,7 @@
             ['Śr. otwarcia (90 dni)', $avgOpen !== null ? $avgOpen . ' %' : '—', 'fa-envelope-open', null],
             ['Śr. kliknięcia (90 dni)', $avgClick !== null ? $avgClick . ' %' : '—', 'fa-arrow-pointer', null],
         ] as [$label, $value, $icon, $href])
-            <div class="rounded-lg border border-gray-200 bg-white p-4">
+            <div class="p-4 rounded-md bg-white">
                 <dt class="flex items-center gap-2 text-xs font-bold uppercase text-muted"><i class="fa-solid {{ $icon }}" aria-hidden="true"></i> {{ $label }}</dt>
                 <dd class="mt-1 text-2xl font-extrabold text-ink">@if($href)<a href="{{ $href }}" class="hover:underline">{{ $value }}</a>@else{{ $value }}@endif</dd>
             </div>
@@ -53,13 +53,13 @@
     </dl>
 
     <div class="grid gap-6 lg:grid-cols-3">
-        <section class="lg:col-span-2 rounded-lg border border-gray-200 bg-white" aria-labelledby="recent-h">
+        <section class="lg:col-span-2 rounded-md bg-white" aria-labelledby="recent-h">
             <h2 id="recent-h" class="border-b border-gray-200 px-4 py-3 text-sm font-bold uppercase text-muted">Ostatnie kampanie</h2>
             @if ($recent->isEmpty())
                 <p class="px-4 py-6 text-sm text-muted">Jeszcze nic nie wysłano. <a href="{{ route('admin.newsletter.kampanie.create') }}" class="font-bold text-brand-dark underline">Utwórz pierwszą kampanię</a>.</p>
             @else
             <table class="w-full text-left text-sm">
-                <thead class="bg-gray-50 text-xs font-bold uppercase text-muted"><tr><th class="px-4 py-2">Nazwa</th><th class="px-4 py-2">Wysłano</th><th class="px-4 py-2 text-right">Dost.</th><th class="px-4 py-2 text-right">Otw.</th><th class="px-4 py-2 text-right">Klik.</th><th class="px-4 py-2">Stan</th></tr></thead>
+                <thead class="bg-gray-100 text-xs font-bold uppercase text-muted"><tr><th class="px-4 py-2">Nazwa</th><th class="px-4 py-2">Wysłano</th><th class="px-4 py-2 text-right">Dost.</th><th class="px-4 py-2 text-right">Otw.</th><th class="px-4 py-2 text-right">Klik.</th><th class="px-4 py-2">Stan</th></tr></thead>
                 <tbody>
                 @foreach ($recent as $c)
                     <tr class="border-t border-gray-100">
@@ -77,7 +77,7 @@
         </section>
 
         <div class="space-y-6">
-            <section class="rounded-lg border border-gray-200 bg-white" aria-labelledby="sched-h">
+            <section class="rounded-md bg-white" aria-labelledby="sched-h">
                 <h2 id="sched-h" class="border-b border-gray-200 px-4 py-3 text-sm font-bold uppercase text-muted">Zaplanowane</h2>
                 @forelse ($scheduled as $c)
                     <p class="border-t border-gray-100 px-4 py-2 text-sm first:border-0"><span class="font-bold text-ink">{{ $c->scheduled_at?->format('d.m H:i') }}</span> · <a href="{{ route('admin.newsletter.kampanie.show', $c) }}" class="text-brand-dark hover:underline">{{ $c->title }}</a></p>
@@ -85,7 +85,7 @@
                     <p class="px-4 py-4 text-sm text-muted">Brak zaplanowanych kampanii.</p>
                 @endforelse
             </section>
-            <section class="rounded-lg border border-gray-200 bg-white p-4" aria-labelledby="queue-h">
+            <section class="p-4 rounded-md bg-white" aria-labelledby="queue-h">
                 <h2 id="queue-h" class="mb-2 text-sm font-bold uppercase text-muted">Kolejka i dostarczalność</h2>
                 <ul class="space-y-1 text-sm text-ink">
                     <li><i class="fa-solid fa-layer-group text-muted" aria-hidden="true"></i> Jobów w kolejce <code>newsletter</code>: <strong>{{ $queue }}</strong>@if($failedJobs) · <span class="font-bold text-red-700">nieudanych: {{ $failedJobs }}</span>@endif</li>
@@ -102,7 +102,7 @@
         </div>
     </div>
 
-    <section class="mt-6 rounded-lg border border-gray-200 bg-white p-4" aria-labelledby="growth-h">
+    <section class="mt-6 p-4 rounded-md bg-white" aria-labelledby="growth-h">
         <h2 id="growth-h" class="mb-3 text-sm font-bold uppercase text-muted">Wzrost bazy (12 tygodni)</h2>
         @php $max = max(1, max(array_column($growth, 'value'))); @endphp
         <svg viewBox="0 0 600 160" class="w-full" role="img" aria-labelledby="growth-title growth-desc"><title id="growth-title">Liczba aktywnych subskrybentów tygodniowo</title><desc id="growth-desc">Od {{ $growth[0]['value'] }} do {{ end($growth)['value'] }} subskrybentów.</desc>

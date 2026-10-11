@@ -4,7 +4,7 @@
 
 @section('content')
     <form method="POST" action="{{ $galleryImage->exists ? route('admin.galeria.update', $galleryImage) : route('admin.galeria.store') }}"
-        enctype="multipart/form-data" class="max-w-2xl space-y-5 rounded-lg border border-gray-200 bg-white p-6">
+        enctype="multipart/form-data" class="max-w-2xl space-y-5 p-6 rounded-md bg-white">
         @csrf
         @if ($galleryImage->exists) @method('PUT') @endif
 
@@ -18,26 +18,26 @@
         <div>
             <label for="image" class="mb-1 block text-sm font-bold">{{ $galleryImage->exists ? 'Zmień zdjęcie' : 'Zdjęcie' }}</label>
             <input type="file" id="image" name="image" accept="image/*" {{ $galleryImage->exists ? '' : 'required' }}
-                class="block w-full cursor-pointer text-sm text-muted file:mr-3 file:cursor-pointer file:rounded file:border-0 file:bg-brand file:px-4 file:py-2 file:text-sm file:font-bold file:text-white hover:file:bg-brand-dark">
+                class="block w-full cursor-pointer text-sm text-muted file:mr-3 file:cursor-pointer file:rounded file:border-0 file:bg-brand-dark file:px-4 file:py-2 file:text-sm file:font-bold file:text-white hover:file:bg-brand-dark">
             @error('image') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
         </div>
 
         <div>
             <label for="caption" class="mb-1 block text-sm font-bold">Podpis</label>
             <input type="text" id="caption" name="caption" value="{{ old('caption', $galleryImage->caption) }}"
-                class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
             @error('caption') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
         </div>
 
         <div>
             <label for="order" class="mb-1 block text-sm font-bold">Kolejność</label>
             <input type="number" id="order" name="order" min="0" value="{{ old('order', $galleryImage->order) }}"
-                class="w-28 rounded border-gray-300 focus:border-brand focus:ring-brand">
+                class="w-28 rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
         </div>
 
         <div class="flex items-center gap-3 border-t border-gray-100 pt-5">
-            <button type="submit" class="rounded bg-brand px-5 py-2 text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">Zapisz</button>
-            <a href="{{ route('admin.galeria.index') }}" class="text-sm text-muted hover:text-brand">Anuluj</a>
+            <button type="submit" class="rounded bg-brand-dark px-5 py-2 text-sm font-bold text-white hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2">Zapisz</button>
+            <a href="{{ route('admin.galeria.index') }}" class="text-sm text-muted hover:text-brand-dark">Anuluj</a>
         </div>
     </form>
 @endsection

@@ -5,37 +5,37 @@
 @section('content')
     <div class="mb-4 flex justify-end">
         <a href="{{ route('admin.sklep.kody-rabatowe.index') }}"
-            class="inline-flex items-center gap-2 rounded border-2 border-brand px-4 py-2 text-sm font-bold text-brand hover:bg-brand-light">
+            class="inline-flex items-center gap-2 rounded border-2 border-brand-dark px-4 py-2 text-sm font-bold text-brand-dark hover:bg-brand-light">
             <i class="fa-solid fa-tags" aria-hidden="true"></i> Kody rabatowe
         </a>
     </div>
 
-    <form method="GET" action="{{ route('admin.sklep.orders.index') }}" class="mb-4 flex flex-wrap items-end gap-3 rounded-lg border border-gray-200 bg-white p-3">
+    <form method="GET" action="{{ route('admin.sklep.orders.index') }}" class="mb-4 flex flex-wrap items-end gap-3 p-3 rounded-md bg-white">
         <div class="min-w-48 flex-1">
             <label for="filter-q" class="mb-1 block text-xs font-bold uppercase tracking-wide text-muted">Szukaj</label>
             <input type="text" id="filter-q" name="q" value="{{ $q }}" placeholder="E-mail kupującego…"
-                class="w-full rounded border-gray-300 py-1.5 text-sm focus:border-brand focus-visible:ring-2 focus-visible:ring-brand">
+                class="w-full rounded border-gray-500 py-1.5 text-sm focus:border-brand-dark focus-visible:ring-2 focus-visible:ring-brand-dark">
         </div>
         <div>
             <label for="filter-status" class="mb-1 block text-xs font-bold uppercase tracking-wide text-muted">Status</label>
             <select id="filter-status" name="status" onchange="this.form.submit()"
-                class="rounded border-gray-300 py-1.5 text-sm focus:border-brand focus-visible:ring-2 focus-visible:ring-brand">
+                class="rounded border-gray-500 py-1.5 text-sm focus:border-brand-dark focus-visible:ring-2 focus-visible:ring-brand-dark">
                 <option value="">Wszystkie</option>
                 @foreach (\App\Models\SklepOrder::STATUSES as $value => $label)
                     <option value="{{ $value }}" @selected($status === $value)>{{ $label }}</option>
                 @endforeach
             </select>
         </div>
-        <button type="submit" class="rounded bg-brand px-3 py-1.5 text-sm font-bold text-white hover:bg-brand-dark">Filtruj</button>
+        <button type="submit" class="rounded bg-brand-dark px-3 py-1.5 text-sm font-bold text-white hover:bg-ink">Filtruj</button>
         @if ($q || $status)
-            <a href="{{ route('admin.sklep.orders.index') }}" class="rounded px-2 py-1.5 text-sm text-muted hover:text-brand">Wyczyść</a>
+            <a href="{{ route('admin.sklep.orders.index') }}" class="rounded px-2 py-1.5 text-sm text-muted hover:text-brand-dark">Wyczyść</a>
         @endif
         <span class="ml-auto text-sm text-muted">{{ $orders->total() }} zamówień</span>
     </form>
 
-    <div class="overflow-hidden rounded-lg border border-gray-200 bg-white">
+    <div class="overflow-hidden rounded-md bg-white">
         <table class="w-full text-left text-sm">
-            <thead class="bg-gray-50 text-xs font-bold uppercase text-muted">
+            <thead class="bg-gray-100 text-xs font-bold uppercase text-muted">
                 <tr>
                     <th class="px-4 py-3">Data</th>
                     <th class="px-4 py-3">Materiał</th>
@@ -60,16 +60,16 @@
                         <td class="px-4 py-3">
                             @php
                                 $badge = match ($order->status) {
-                                    'paid' => 'bg-green-100 text-green-700',
-                                    'failed' => 'bg-red-100 text-red-600',
-                                    'refunded' => 'bg-amber-100 text-amber-700',
-                                    default => 'bg-gray-100 text-gray-500',
+                                    'paid' => 'text-ink',
+                                    'failed' => 'text-ink',
+                                    'refunded' => 'text-ink',
+                                    default => 'text-muted',
                                 };
                             @endphp
-                            <span class="rounded-full {{ $badge }} px-2 py-0.5 text-xs font-bold">{{ \App\Models\SklepOrder::STATUSES[$order->status] ?? $order->status }}</span>
+                            <span class="text-xs font-bold {{ $badge }}">{{ \App\Models\SklepOrder::STATUSES[$order->status] ?? $order->status }}</span>
                         </td>
                         <td class="px-4 py-3 text-right">
-                            <a href="{{ route('admin.sklep.orders.show', $order) }}" class="text-muted hover:text-brand" title="Szczegóły"><i class="fa-solid fa-eye" aria-hidden="true"></i></a>
+                            <a href="{{ route('admin.sklep.orders.show', $order) }}" class="text-muted hover:text-brand-dark" title="Szczegóły"><i class="fa-solid fa-eye" aria-hidden="true"></i></a>
                         </td>
                     </tr>
                 @empty

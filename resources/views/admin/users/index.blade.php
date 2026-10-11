@@ -4,17 +4,17 @@
 
 @section('content')
     <div class="mb-4 flex flex-wrap justify-end gap-2">
-        <a href="{{ route('admin.uzytkownicy.uprawnienia') }}" class="rounded border border-gray-300 bg-white px-4 py-2 text-sm font-bold text-ink hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
+        <a href="{{ route('admin.uzytkownicy.uprawnienia') }}" class="rounded-md px-4 py-2 text-sm font-bold text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2 bg-white hover:bg-brand-light">
             <i class="fa-solid fa-table-cells" aria-hidden="true"></i> Macierz uprawnień
         </a>
-        <a href="{{ route('admin.uzytkownicy.create') }}" class="rounded bg-brand px-4 py-2 text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
+        <a href="{{ route('admin.uzytkownicy.create') }}" class="rounded bg-brand-dark px-4 py-2 text-sm font-bold text-white hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2">
             <i class="fa-solid fa-plus" aria-hidden="true"></i> Dodaj użytkownika
         </a>
     </div>
 
-    <div class="overflow-hidden rounded-lg border border-gray-200 bg-white">
+    <div class="overflow-hidden rounded-md bg-white">
         <table class="w-full text-left text-sm">
-            <thead class="bg-gray-50 text-xs font-bold uppercase text-muted">
+            <thead class="bg-gray-100 text-xs font-bold uppercase text-muted">
                 <tr>
                     <th class="px-4 py-3">Nazwa</th>
                     <th class="px-4 py-3">E-mail</th>
@@ -36,8 +36,8 @@
                         </td>
                         <td class="px-4 py-3 text-muted">{{ $user->email }}</td>
                         <td class="px-4 py-3">
-                            <span class="rounded-full px-2 py-1 text-xs font-bold
-                                {{ $user->isAdmin() ? 'bg-brand-light text-brand' : ($user->isBipEditor() ? 'bg-blue-50 text-blue-700' : 'bg-gray-100 text-muted') }}">
+                            <span class="text-xs font-bold
+ {{ $user->isAdmin() ? 'text-brand-dark' : ($user->isBipEditor() ? 'text-ink' : 'text-muted') }}">
                                 {{ \App\Models\User::ROLES[$user->role] ?? $user->role }}
                             </span>
                         </td>
@@ -46,7 +46,7 @@
                         </td>
                         <td class="px-4 py-3">
                             <div class="flex justify-end gap-3">
-                                <a href="{{ route('admin.uzytkownicy.edit', $user) }}" class="text-muted hover:text-brand" title="Edytuj"><i class="fa-solid fa-pen" aria-hidden="true"></i></a>
+                                <a href="{{ route('admin.uzytkownicy.edit', $user) }}" class="text-muted hover:text-brand-dark" title="Edytuj"><i class="fa-solid fa-pen" aria-hidden="true"></i></a>
                                 @if ($user->microsoft_id)
                                     <form method="POST" action="{{ route('admin.uzytkownicy.microsoft.unlink', $user) }}" onsubmit="return confirm('Odłączyć konto Microsoft 365 od użytkownika &quot;{{ $user->name }}&quot;?');">
                                         @csrf

@@ -7,7 +7,7 @@
 
     <div class="mb-6 flex items-center gap-3">
         <a href="{{ route('admin.osoby.index') }}"
-            class="text-sm text-muted hover:text-brand focus-visible:rounded focus-visible:outline-2 focus-visible:outline-brand">
+            class="text-sm text-muted hover:text-brand-dark focus-visible:rounded focus-visible:outline-2 focus-visible:outline-brand-dark">
             <i class="fa-solid fa-arrow-left" aria-hidden="true"></i> Wróć do listy osób
         </a>
         <span class="text-gray-300">/</span>
@@ -21,13 +21,13 @@
 
     {{-- ══════════════════════ KROK 1: wybór drugiej osoby ══════════════════════ --}}
     @if (! $target)
-        <div class="rounded-lg border border-gray-200 bg-white p-6 sm:max-w-md">
-            <p class="mb-4 text-sm font-bold text-ink">Scalasz: <span class="text-brand">{{ $page->title }}</span></p>
+        <div class="p-6 sm:max-w-md rounded-md bg-white">
+            <p class="mb-4 text-sm font-bold text-ink">Scalasz: <span class="text-brand-dark">{{ $page->title }}</span></p>
 
             <form method="GET" action="{{ route('admin.osoby.scal', $page) }}">
                 <label for="with" class="mb-1 block text-sm font-bold">Wybierz drugą osobę do scalenia</label>
                 <select id="with" name="with"
-                    class="mb-4 w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand"
+                    class="mb-4 w-full rounded border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark"
                     required>
                     <option value="">— wybierz —</option>
                     @foreach ($candidates as $c)
@@ -35,7 +35,7 @@
                     @endforeach
                 </select>
                 <button type="submit"
-                    class="rounded bg-brand px-4 py-2 text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
+                    class="rounded bg-brand-dark px-4 py-2 text-sm font-bold text-white hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2">
                     Dalej <i class="fa-solid fa-arrow-right ml-1" aria-hidden="true"></i>
                 </button>
             </form>
@@ -65,15 +65,15 @@
 
             {{-- Nagłówki kolumn --}}
             <div class="mb-4 grid grid-cols-[1fr_auto_1fr] items-center gap-4">
-                <div class="rounded-lg border-2 border-brand bg-brand-light px-4 py-3">
-                    <p class="text-xs font-bold uppercase tracking-wide text-brand">Zachowaj (baza)</p>
+                <div class="rounded-lg border-2 border-brand-dark bg-brand-light px-4 py-3">
+                    <p class="text-xs font-bold uppercase tracking-wide text-brand-dark">Zachowaj (baza)</p>
                     <p class="mt-0.5 font-bold text-ink">{{ $page->title }}</p>
                     @if ($page->person_role)
                         <p class="text-xs text-muted">{{ $page->person_role }}</p>
                     @endif
                 </div>
                 <div class="text-center text-sm font-bold text-muted">vs</div>
-                <div class="rounded-lg border-2 border-red-200 bg-red-50 px-4 py-3">
+                <div class="rounded-md bg-red-50 px-4 py-3">
                     <p class="text-xs font-bold uppercase tracking-wide text-red-500">Duplikat (do usunięcia)</p>
                     <p class="mt-0.5 font-bold text-ink">{{ $target->title }}</p>
                     @if ($target->person_role)
@@ -106,14 +106,14 @@
                             <input type="hidden" name="keep[{{ $field }}]" value="base">
                         @else
                             <div class="grid grid-cols-2 gap-3">
-                                <label class="flex cursor-pointer items-start gap-2 rounded border border-gray-200 p-3 hover:border-brand has-[:checked]:border-brand has-[:checked]:bg-brand-light/30">
+                                <label class="flex cursor-pointer items-start gap-2 rounded border border-gray-200 p-3 hover:border-brand-dark has-[:checked]:border-brand-dark has-[:checked]:bg-brand-light/30">
                                     <input type="radio" name="keep[{{ $field }}]" value="base" checked
-                                        class="mt-0.5 border-gray-300 text-brand focus:ring-brand">
+                                        class="mt-0.5 border-gray-500 text-brand-dark focus:ring-brand-dark">
                                     <span class="text-xs text-ink">{{ filled($baseText) ? $baseText : '(puste)' }}</span>
                                 </label>
-                                <label class="flex cursor-pointer items-start gap-2 rounded border border-gray-200 p-3 hover:border-brand has-[:checked]:border-brand has-[:checked]:bg-brand-light/30">
+                                <label class="flex cursor-pointer items-start gap-2 rounded border border-gray-200 p-3 hover:border-brand-dark has-[:checked]:border-brand-dark has-[:checked]:bg-brand-light/30">
                                     <input type="radio" name="keep[{{ $field }}]" value="target"
-                                        class="mt-0.5 border-gray-300 text-brand focus:ring-brand">
+                                        class="mt-0.5 border-gray-500 text-brand-dark focus:ring-brand-dark">
                                     <span class="text-xs text-ink">{{ filled($targetText) ? $targetText : '(puste)' }}</span>
                                 </label>
                             </div>
@@ -127,7 +127,7 @@
                     <label class="flex cursor-pointer items-center gap-2.5 text-sm">
                         <input type="checkbox" name="is_featured" value="1"
                             {{ ($page->is_featured || $target->is_featured) ? 'checked' : '' }}
-                            class="rounded border-gray-300 text-brand focus:ring-brand">
+                            class="rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
                         <span class="font-semibold text-ink">Zaznacz scalony rekord jako fundatora</span>
                     </label>
                     @if ($page->is_featured || $target->is_featured)

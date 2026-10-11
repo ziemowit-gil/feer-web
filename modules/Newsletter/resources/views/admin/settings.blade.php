@@ -2,16 +2,16 @@
 @section('title', 'Ustawienia newslettera')
 @section('content')
     @include('newsletter::admin.partials.flash')
-    @php $s = $settings; $inp = 'w-full rounded border-gray-300 focus:border-brand focus:ring-brand'; @endphp
+    @php $s = $settings; $inp = 'w-full rounded border-gray-300 focus:border-brand-dark focus:ring-brand-dark'; @endphp
     <form method="POST" action="{{ route('admin.newsletter.ustawienia.update') }}" class="space-y-6" x-data="{ tab: 'wysylka', mailer: '{{ old('newsletter_mailer', $s->newsletter_mailer ?? '') }}' }">
         @csrf @method('PUT')
         <nav class="flex flex-wrap gap-1 border-b border-gray-200" aria-label="Sekcje ustawień">
             @foreach (['wysylka' => 'Wysyłka e-mail', 'kanaly' => 'Push i SMS', 'zapisy' => 'Zapisy i RODO', 'integracje' => 'SZO i CRM', 'webhooki' => 'Webhooki', 'osadzenie' => 'Kod zewnętrzny'] as $k => $l)
-                <button type="button" @click="tab = '{{ $k }}'" :class="tab === '{{ $k }}' ? 'border-brand text-brand-dark' : 'border-transparent text-gray-700 hover:text-ink'" class="-mb-px border-b-2 px-4 py-2 text-sm font-bold" :aria-current="tab === '{{ $k }}' ? 'page' : null">{{ $l }}</button>
+                <button type="button" @click="tab = '{{ $k }}'" :class="tab === '{{ $k }}' ? 'border-brand-dark text-brand-dark' : 'border-transparent text-gray-700 hover:text-ink'" class="-mb-px border-b-2 px-4 py-2 text-sm font-bold" :aria-current="tab === '{{ $k }}' ? 'page' : null">{{ $l }}</button>
             @endforeach
         </nav>
 
-        <section x-show="tab === 'wysylka'" class="space-y-4 rounded-lg border border-gray-200 bg-white p-6">
+        <section x-show="tab === 'wysylka'" class="space-y-4 p-6 rounded-md bg-white">
             <div class="grid gap-4 sm:grid-cols-3">
                 <div><label for="newsletter_from_name" class="mb-1 block text-sm font-bold">Nadawca — nazwa</label><input id="newsletter_from_name" name="newsletter_from_name" value="{{ old('newsletter_from_name', $s->newsletter_from_name) }}" class="{{ $inp }}"></div>
                 <div><label for="newsletter_from_address" class="mb-1 block text-sm font-bold">Nadawca — adres</label><input id="newsletter_from_address" name="newsletter_from_address" type="email" value="{{ old('newsletter_from_address', $s->newsletter_from_address) }}" placeholder="{{ config('mail.from.address') }}" class="{{ $inp }}"></div>
@@ -27,15 +27,15 @@
                 <div><label for="newsletter_rate_per_minute" class="mb-1 block text-sm font-bold">Limit wysyłki / minutę</label><input id="newsletter_rate_per_minute" name="newsletter_rate_per_minute" type="number" min="1" value="{{ old('newsletter_rate_per_minute', $s->newsletter_rate_per_minute ?: 60) }}" class="{{ $inp }}"><p class="mt-1 text-xs text-muted">SES ~600, Mailgun ~300, Graph ~30, SMTP współdzielony 10–30.</p></div>
                 <div><label for="newsletter_rate_per_day" class="mb-1 block text-sm font-bold">Limit dzienny (opcjonalnie)</label><input id="newsletter_rate_per_day" name="newsletter_rate_per_day" type="number" min="1" value="{{ old('newsletter_rate_per_day', $s->newsletter_rate_per_day) }}" class="{{ $inp }}"></div>
                 <div class="space-y-2 pt-6 text-sm">
-                    <label class="flex items-center gap-2"><input type="hidden" name="newsletter_track_opens" value="0"><input type="checkbox" name="newsletter_track_opens" value="1" class="rounded border-gray-300 text-brand focus:ring-brand" @checked(old('newsletter_track_opens', $s->newsletter_track_opens ?? true))> Śledź otwarcia (piksel)</label>
-                    <label class="flex items-center gap-2"><input type="hidden" name="newsletter_track_clicks" value="0"><input type="checkbox" name="newsletter_track_clicks" value="1" class="rounded border-gray-300 text-brand focus:ring-brand" @checked(old('newsletter_track_clicks', $s->newsletter_track_clicks ?? true))> Śledź kliknięcia</label>
-                    <label class="flex items-center gap-2"><input type="hidden" name="newsletter_require_approval" value="0"><input type="checkbox" name="newsletter_require_approval" value="1" class="rounded border-gray-300 text-brand focus:ring-brand" @checked(old('newsletter_require_approval', $s->newsletter_require_approval))> Zapisuj, kto zatwierdził wysyłkę</label>
+                    <label class="flex items-center gap-2"><input type="hidden" name="newsletter_track_opens" value="0"><input type="checkbox" name="newsletter_track_opens" value="1" class="rounded border-gray-500 text-brand-dark focus:ring-brand-dark" @checked(old('newsletter_track_opens', $s->newsletter_track_opens ?? true))> Śledź otwarcia (piksel)</label>
+                    <label class="flex items-center gap-2"><input type="hidden" name="newsletter_track_clicks" value="0"><input type="checkbox" name="newsletter_track_clicks" value="1" class="rounded border-gray-500 text-brand-dark focus:ring-brand-dark" @checked(old('newsletter_track_clicks', $s->newsletter_track_clicks ?? true))> Śledź kliknięcia</label>
+                    <label class="flex items-center gap-2"><input type="hidden" name="newsletter_require_approval" value="0"><input type="checkbox" name="newsletter_require_approval" value="1" class="rounded border-gray-500 text-brand-dark focus:ring-brand-dark" @checked(old('newsletter_require_approval', $s->newsletter_require_approval))> Zapisuj, kto zatwierdził wysyłkę</label>
                 </div>
             </div>
         </section>
 
-        <section x-show="tab === 'kanaly'" class="space-y-4 rounded-lg border border-gray-200 bg-white p-6">
-            <label class="flex items-center gap-2 text-sm"><input type="hidden" name="newsletter_webpush_enabled" value="0"><input type="checkbox" name="newsletter_webpush_enabled" value="1" class="rounded border-gray-300 text-brand focus:ring-brand" @checked(old('newsletter_webpush_enabled', $s->newsletter_webpush_enabled)) @disabled(! $vapidConfigured)> Kanał Web Push {{ $vapidConfigured ? '' : '(brak kluczy VAPID w .env)' }}</label>
+        <section x-show="tab === 'kanaly'" class="space-y-4 p-6 rounded-md bg-white">
+            <label class="flex items-center gap-2 text-sm"><input type="hidden" name="newsletter_webpush_enabled" value="0"><input type="checkbox" name="newsletter_webpush_enabled" value="1" class="rounded border-gray-500 text-brand-dark focus:ring-brand-dark" @checked(old('newsletter_webpush_enabled', $s->newsletter_webpush_enabled)) @disabled(! $vapidConfigured)> Kanał Web Push {{ $vapidConfigured ? '' : '(brak kluczy VAPID w .env)' }}</label>
             <div class="grid gap-4 sm:grid-cols-3">
                 <div><label for="newsletter_sms_provider" class="mb-1 block text-sm font-bold">Dostawca SMS</label><input id="newsletter_sms_provider" name="newsletter_sms_provider" value="{{ old('newsletter_sms_provider', $s->newsletter_sms_provider) }}" placeholder="smsapi lub URL webhooka" class="{{ $inp }}"><p class="mt-1 text-xs text-muted">„smsapi” = SMSAPI.pl (token OAuth). Inny adres https = generyczny POST JSON {to, from, text}. Puste = kanał wyłączony.</p></div>
                 <div><label for="newsletter_sms_token" class="mb-1 block text-sm font-bold">Token</label><input id="newsletter_sms_token" name="newsletter_sms_token" type="password" value="" placeholder="{{ $s->newsletter_sms_token ? '•••• zapisany' : '' }}" class="{{ $inp }}" autocomplete="new-password"></div>
@@ -44,7 +44,7 @@
             <p class="text-xs text-muted">SMS wymaga osobnej, potwierdzonej zgody subskrybenta (formularz z polem telefonu i checkboxem SMS).</p>
         </section>
 
-        <section x-show="tab === 'zapisy'" class="space-y-4 rounded-lg border border-gray-200 bg-white p-6">
+        <section x-show="tab === 'zapisy'" class="space-y-4 p-6 rounded-md bg-white">
             <div class="grid gap-4 sm:grid-cols-2">
                 <div><label for="newsletter_doi_ttl_days" class="mb-1 block text-sm font-bold">Ważność linku potwierdzającego (dni)</label><input id="newsletter_doi_ttl_days" name="newsletter_doi_ttl_days" type="number" min="1" max="60" value="{{ old('newsletter_doi_ttl_days', $s->newsletter_doi_ttl_days ?: 7) }}" class="{{ $inp }}"></div>
                 <div><label for="newsletter_retention_days" class="mb-1 block text-sm font-bold">Retencja logów otwarć/kliknięć (dni)</label><input id="newsletter_retention_days" name="newsletter_retention_days" type="number" min="30" max="3650" value="{{ old('newsletter_retention_days', $s->newsletter_retention_days ?: 730) }}" class="{{ $inp }}"><p class="mt-1 text-xs text-muted">Starsze wpisy usuwa <code>newsletter:prune</code>; liczniki w raportach zostają.</p></div>
@@ -56,12 +56,12 @@
             <p class="text-xs text-muted">Domyślna ochrona formularza: honeypot + żeton czasowy + zadanie tekstowe (dostępne dla czytników ekranu) + limity. Bez obrazkowej CAPTCHY.</p>
         </section>
 
-        <section x-show="tab === 'integracje'" class="space-y-4 rounded-lg border border-gray-200 bg-white p-6">
+        <section x-show="tab === 'integracje'" class="space-y-4 p-6 rounded-md bg-white">
             <h2 class="text-sm font-bold uppercase text-muted">SZO (feerSZO)</h2>
-            <label class="flex items-center gap-2 text-sm"><input type="hidden" name="newsletter_szo_sync" value="0"><input type="checkbox" name="newsletter_szo_sync" value="1" class="rounded border-gray-300 text-brand focus:ring-brand" @checked(old('newsletter_szo_sync', $s->newsletter_szo_sync))> Przekazuj potwierdzonych subskrybentów do SZO jako zgłoszenie formularza {{ $szoConfigured ? '' : '— SZO nie jest skonfigurowane (Ustawienia → Integracje → SZO)' }}</label>
+            <label class="flex items-center gap-2 text-sm"><input type="hidden" name="newsletter_szo_sync" value="0"><input type="checkbox" name="newsletter_szo_sync" value="1" class="rounded border-gray-500 text-brand-dark focus:ring-brand-dark" @checked(old('newsletter_szo_sync', $s->newsletter_szo_sync))> Przekazuj potwierdzonych subskrybentów do SZO jako zgłoszenie formularza {{ $szoConfigured ? '' : '— SZO nie jest skonfigurowane (Ustawienia → Integracje → SZO)' }}</label>
             <div><label for="newsletter_szo_form" class="mb-1 block text-sm font-bold">Domyślny slug formularza w SZO</label><input id="newsletter_szo_form" name="newsletter_szo_form" value="{{ old('newsletter_szo_form', $s->newsletter_szo_form) }}" placeholder="newsletter" class="{{ $inp }}"><p class="mt-1 text-xs text-muted">Formularz w SZO powinien mieć zgody o id „rodo” i „newsletter”. Poszczególne formularze zapisu mogą wskazać inny slug. Ponowienia: <code>php84 artisan newsletter:sync-crm</code>.</p></div>
             <h2 class="pt-4 text-sm font-bold uppercase text-muted">CRM (webhook)</h2>
-            <label class="flex items-center gap-2 text-sm"><input type="hidden" name="newsletter_crm_sync" value="0"><input type="checkbox" name="newsletter_crm_sync" value="1" class="rounded border-gray-300 text-brand focus:ring-brand" @checked(old('newsletter_crm_sync', $s->newsletter_crm_sync))> Wysyłaj zdarzenia subskrybenta (subscribed, confirmed, preferences_changed, unsubscribed, anonymized) do CRM</label>
+            <label class="flex items-center gap-2 text-sm"><input type="hidden" name="newsletter_crm_sync" value="0"><input type="checkbox" name="newsletter_crm_sync" value="1" class="rounded border-gray-500 text-brand-dark focus:ring-brand-dark" @checked(old('newsletter_crm_sync', $s->newsletter_crm_sync))> Wysyłaj zdarzenia subskrybenta (subscribed, confirmed, preferences_changed, unsubscribed, anonymized) do CRM</label>
             <div class="grid gap-4 sm:grid-cols-2">
                 <div><label for="newsletter_crm_webhook_url" class="mb-1 block text-sm font-bold">Adres webhooka CRM</label><input id="newsletter_crm_webhook_url" name="newsletter_crm_webhook_url" type="url" value="{{ old('newsletter_crm_webhook_url', $s->newsletter_crm_webhook_url) }}" class="{{ $inp }}"></div>
                 <div><label for="newsletter_crm_webhook_secret" class="mb-1 block text-sm font-bold">Sekret podpisu (HMAC-SHA256, nagłówek X-Signature)</label><input id="newsletter_crm_webhook_secret" name="newsletter_crm_webhook_secret" type="password" value="" placeholder="{{ $s->newsletter_crm_webhook_secret ? '•••• zapisany' : '' }}" class="{{ $inp }}" autocomplete="new-password"></div>
@@ -69,27 +69,27 @@
             <p class="text-xs text-muted">Ładunek JSON: <code>{event, occurred_at, subscriber{id,email,name,phone,status,topics,channels,tags,source,…}, consents[]}</code>. HubSpot, Pipedrive czy Zapier przyjmą go przez „Webhook → Create contact”.</p>
         </section>
 
-        <section x-show="tab === 'webhooki'" class="space-y-4 rounded-lg border border-gray-200 bg-white p-6">
+        <section x-show="tab === 'webhooki'" class="space-y-4 p-6 rounded-md bg-white">
             <p class="text-sm">Adresy do wpisania u dostawcy (odbicia, skargi, dostarczenia):</p>
             <ul class="space-y-1 text-sm">@foreach ($webhookUrls as $p => $url)<li><strong class="inline-block w-20">{{ $p }}</strong> <code class="break-all">{{ $url }}</code></li>@endforeach</ul>
             <div><label for="newsletter_webhook_secret" class="mb-1 block text-sm font-bold">Sekret webhooków (Postmark: nagłówek X-Webhook-Secret; generic: HMAC w X-Signature)</label><input id="newsletter_webhook_secret" name="newsletter_webhook_secret" type="password" value="" placeholder="{{ $s->newsletter_webhook_secret ? '•••• zapisany' : '' }}" class="{{ $inp }}" autocomplete="new-password"></div>
             <p class="text-xs text-muted">SES: podpis SNS (potwierdzenie subskrypcji automatyczne). Mailgun: podpis HMAC kluczem API. Dla Microsoft Graph odbicia obsługuje worker (błędy transportu) — brak webhooka.</p>
         </section>
 
-        <section x-show="tab === 'osadzenie'" class="space-y-4 rounded-lg border border-gray-200 bg-white p-6">
+        <section x-show="tab === 'osadzenie'" class="space-y-4 p-6 rounded-md bg-white">
             <label for="newsletter_code" class="mb-1 block text-sm font-bold">Kod osadzenia zewnętrznego narzędzia (fallback)</label>
             <textarea id="newsletter_code" name="newsletter_code" rows="8" class="{{ $inp }} font-mono text-xs">{{ old('newsletter_code', $s->newsletter_code) }}</textarea>
             <p class="text-xs text-muted">Używany tylko wtedy, gdy nie ma żadnego aktywnego formularza zapisu modułu (np. Mailchimp/Freshmail). Zalecamy formularz systemowy — zgody i DOI są wtedy w naszej bazie.</p>
         </section>
 
         <div class="flex flex-wrap items-center gap-3">
-            <button type="submit" class="rounded bg-brand px-5 py-2 text-sm font-bold text-white hover:bg-brand-dark">Zapisz ustawienia</button>
+            <button type="submit" class="rounded bg-brand-dark px-5 py-2 text-sm font-bold text-white hover:bg-ink">Zapisz ustawienia</button>
             <span class="text-xs text-muted">Pola sekretów: puste = bez zmian.</span>
         </div>
     </form>
-    <form method="POST" action="{{ route('admin.newsletter.ustawienia.test') }}" class="mt-4 flex flex-wrap items-end gap-3 rounded-lg border border-gray-200 bg-white p-4">
+    <form method="POST" action="{{ route('admin.newsletter.ustawienia.test') }}" class="mt-4 flex flex-wrap items-end gap-3 p-4 rounded-md bg-white">
         @csrf
-        <div><label for="test_email" class="mb-1 block text-sm font-bold">Wyślij wiadomość testową (zapisanym dostawcą)</label><input id="test_email" name="email" type="email" required value="{{ auth()->user()->email }}" class="rounded border-gray-300 focus:border-brand focus:ring-brand"></div>
-        <button type="submit" class="rounded border border-gray-300 bg-white px-4 py-2 text-sm font-bold text-gray-700 hover:bg-gray-50">Wyślij test</button>
+        <div><label for="test_email" class="mb-1 block text-sm font-bold">Wyślij wiadomość testową (zapisanym dostawcą)</label><input id="test_email" name="email" type="email" required value="{{ auth()->user()->email }}" class="rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark"></div>
+        <button type="submit" class="rounded-md px-4 py-2 text-sm font-bold text-gray-700 bg-gray-100 hover:bg-brand-light">Wyślij test</button>
     </form>
 @endsection
