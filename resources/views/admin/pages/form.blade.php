@@ -30,7 +30,7 @@
 
     @unless ($isPersonForm)
         {{-- Nagłówek formularza: tytuł, status, typ i adres strony — od razu widać, co się edytuje. --}}
-        <header class="mb-5 flex flex-wrap items-start justify-between gap-4">
+        <header class="flex flex-wrap items-start justify-between gap-4 rounded-t-md bg-white px-5 pb-4 pt-5 sm:px-6" data-pe-head>
             <div class="min-w-0">
                 <p class="text-xs font-bold uppercase tracking-widest text-muted">{{ $page->exists ? 'Edycja strony' : 'Nowa strona' }}</p>
                 <h1 class="mt-1 truncate text-2xl font-bold text-ink">{{ $page->exists ? $page->title : 'Nowa strona' }}</h1>
@@ -74,6 +74,9 @@
         /* Czytelniejszy formularz strony: większe pola i etykiety, więcej oddechu, zakładki jako pasek z linią pod aktywną. */
         /* Zakładki jak w formularzu działania: pigułki — aktywna w kolorze marki z białym tekstem, pozostałe jasnoszare. */
         [data-page-form-tabs] [role="tablist"] { background: transparent; padding: 0; border: 0; border-radius: 0; gap: .5rem; margin-bottom: 1.5rem; }
+        /* Nagłówek edycji i zakładki — jeden biały pasek (pod nim zawartość zakładki na tle panelu). */
+        [data-pe-head] ~ [data-page-form-tabs] > [role="tablist"] { background: #fff; padding: .25rem 1.25rem 1rem; border-bottom: 1px solid #e5e7eb; border-radius: 0 0 .375rem .375rem; }
+        @media (min-width: 640px) { [data-pe-head] ~ [data-page-form-tabs] > [role="tablist"] { padding-left: 1.5rem; padding-right: 1.5rem; } }
         [data-page-form-tabs] [data-ftab-btn] { border-radius: .375rem; padding: .5rem 1rem; font-size: .875rem; font-weight: 700; margin: 0; border: 0; box-shadow: none !important; background: #f3f4f6 !important; color: #1a1a1a !important; transition: background-color .15s; }
         [data-page-form-tabs] [data-ftab-btn]:hover { background: #e5e7eb !important; }
         [data-page-form-tabs] [data-ftab-btn][aria-selected="true"] { background: var(--color-brand-dark) !important; color: #fff !important; }
