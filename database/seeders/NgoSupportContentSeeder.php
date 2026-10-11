@@ -10,7 +10,7 @@ use Illuminate\Database\Seeder;
 /**
  * Treść działania „Wsparcie technologiczne dla NGO” (/dzialania/wsparcie-ngo): podstrony w zakładkach /
  * menu bocznym — „Zakres wsparcia”, „Jak wygląda współpraca”, „Najczęstsze pytania”.
- * „Zakres wsparcia”, „Jak wygląda współpraca”, „Ile to kosztuje?” i „Kontakt” (dane z Ustawienia → Kontakt) są zbudowane z bloków (edytor blokowy): kafle obszarów z ikonami
+ * „Zakres wsparcia”, „Jak wygląda współpraca”, „Ile to kosztuje?” i „Kontakt” (osoba kontaktowa działania) są zbudowane z bloków (edytor blokowy): kafle obszarów z ikonami
  * i numerowane kroki — płasko, kolory marki. Wcześniejszą, tekstową wersję tych dwóch stron z tego seedera
  * podmienia, o ile nikt jej nie edytował w panelu (updated_at = created_at). „Ile to kosztuje?” wpisaną ręcznie
  * (trzy zasady, bez bloków) przebudowuje raz — dopisuje kalkulację i informację o wykonawcy (ziemowitgil.pl).
@@ -31,6 +31,19 @@ class NgoSupportContentSeeder extends Seeder
             $this->command?->warn('Brak działania /dzialania/'.self::PROJECT_SLUG.' — pominięto.');
 
             return;
+        }
+
+        // Kontakt i opis dla wyszukiwarek — tylko gdy puste (albo zastępczy „x”), żeby nie nadpisać zmian z panelu.
+        $updates = [];
+        if (blank($project->coordinator_email)) {
+            $updates += ['coordinator_name' => $project->coordinator_name ?: 'Ziemowit Gil', 'coordinator_email' => 'ziemowit.gil@feer.org.pl', 'show_coordinator' => true];
+        }
+        if (mb_strlen(trim((string) $project->meta_description)) < 20) {
+            $updates['meta_description'] = 'Wsparcie technologiczne dla NGO: Microsoft 365 i Google Workspace, strony WWW, bezpieczeństwo, hosting i dostępność WCAG — w stałym, miesięcznym abonamencie.';
+        }
+        if ($updates) {
+            $project->forceFill($updates)->save();
+            $this->command?->info('Uzupełniono działanie: '.implode(', ', array_keys($updates)).'.');
         }
 
         foreach ($this->blockPages() as $slug => [$title, $order, $blocks]) {
@@ -151,25 +164,23 @@ class NgoSupportContentSeeder extends Seeder
             .'.prose .ngo-step h3{margin-top:.3rem}'
             .'</style>';
 
-        // Kontakt: dane z ustawień witryny (Ustawienia → Kontakt) w chwili uruchomienia — potem strona jest zwykłą, edytowalną treścią.
-        $site = \App\Models\SiteSetting::current();
-        $email = trim((string) ($site->contact_email ?? ''));
-        $phone = trim((string) ($site->contact_phone ?? ''));
-        $address = trim(implode(', ', array_filter([$site->contact_address ?? null, $site->contact_city ?? null])));
-        $hours = trim((string) ($site->contact_office_hours ?? ''));
+        // Kontakt: wyłącznie dane tego działania (osoba kontaktowa z ustawień działania), nie ogólne dane fundacji.
+        $project = Project::where('slug', self::PROJECT_SLUG)->first();
+        $name = trim((string) ($project?->coordinator_name ?? ''));
+        $email = trim((string) ($project?->coordinator_email ?? ''));
+        $phone = trim((string) ($project?->coordinator_phone ?? ''));
         $contactCards = array_filter([
+            $name !== '' ? ['person', 'Osoba kontaktowa', e($name)] : null,
             $email !== '' ? ['mail', 'E-mail', '<a href="mailto:'.e($email).'">'.e($email).'</a>'] : null,
             $phone !== '' ? ['call', 'Telefon', '<a href="tel:'.e(preg_replace('/[^0-9+]/', '', $phone)).'">'.e($phone).'</a>'] : null,
-            $address !== '' ? ['location_on', 'Adres', e($address)] : null,
-            $hours !== '' ? ['schedule', 'Godziny pracy biura', nl2br(e($hours))] : null,
         ]);
         $contactHtml = implode('', array_map(fn ($c) => '<li class="ngo-card"><span class="ngo-ico material-symbols-outlined" aria-hidden="true">'.$c[0].'</span><h3>'.$c[1].'</h3><p>'.$c[2].'</p></li>', $contactCards));
 
         return [
             'wsparcie-ngo-kontakt' => ['Kontakt', 80, array_values(array_filter([
-                $p('Masz pytanie o wsparcie technologiczne, zanim wypełnisz zgłoszenie? Napisz albo zadzwoń — chętnie doradzimy, od czego zacząć.', true),
+                $p('Masz pytanie o wsparcie technologiczne dla NGO, zanim wypełnisz zgłoszenie? Napisz — chętnie doradzimy, od czego zacząć.', true),
                 $contactHtml !== '' ? $html($css.'<ul class="ngo-cards" role="list">'.$contactHtml.'</ul>') : null,
-                $p('Jeśli wiesz już, czego potrzebujesz, najszybciej będzie przez formularz — trafi od razu do osoby, która zajmuje się wsparciem NGO.'),
+                $p('Jeśli wiesz już, czego potrzebujesz, najszybciej będzie przez formularz zgłoszeniowy.'),
                 $formButton,
             ]))],
             'wsparcie-ngo-ile-to-kosztuje' => ['Ile to kosztuje?', 30, [
