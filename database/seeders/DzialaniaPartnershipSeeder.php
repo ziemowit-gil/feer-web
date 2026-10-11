@@ -41,7 +41,8 @@ class DzialaniaPartnershipSeeder extends Seeder
 
         $content = $p('Tworzenie otwartego, włączającego środowiska to fundament naszej codziennej pracy. W FEER skupiamy się na realnej praktyce — rozwijamy wewnętrzne standardy i procedury, a wypracowaną wiedzę przekuwamy we współpracę z instytucjami i organizacjami.')
             .$p('Po prostu współdziałamy z różnymi instytucjami, organizacjami i partnerami społecznymi — na różnych zasadach i w różnym zakresie, zależnie od potrzeb i kontekstu. Nie ma tu jednego szablonu: raz to wspólny projekt, raz doradztwo, raz audyt.')
-            .$p('Wierzymy, że budowanie dostępności: cyfrowej, architektonicznej oraz informacyjno-komunikacyjnej, przynosi najlepsze efekty wtedy, gdy opiera się na zaufaniu i solidnej pracy u podstaw. Nie ogłaszamy naborów — partnerstwa nawiązujemy stopniowo, w oparciu o relacje i wspólne wartości.');
+            .$p('Wierzymy, że budowanie dostępności: cyfrowej, architektonicznej oraz informacyjno-komunikacyjnej, przynosi najlepsze efekty wtedy, gdy opiera się na zaufaniu i solidnej pracy u podstaw. Nie ogłaszamy naborów — partnerstwa nawiązujemy stopniowo, w oparciu o relacje i wspólne wartości.')
+            .$p('Wspieramy też inne podmioty w ich działaniach — o ile są zbieżne z celami naszej fundacji i widzimy w nich interes społeczny.');
 
         $scope = [
             ['title' => 'Współpraca wdrożeniowa', 'body' => 'Pomoc w praktycznym wprowadzaniu standardów dostępności i procedur u partnerów oraz zaprzyjaźnionych instytucjach.'],
@@ -49,6 +50,7 @@ class DzialaniaPartnershipSeeder extends Seeder
             ['title' => 'Wewnętrzne standardy i konsulting', 'body' => 'Dzielimy się naszym doświadczeniem z zakresu dostępności (WCAG) oraz dobrych praktyk organizacyjnych.'],
             ['title' => 'Dostępność informacyjno-komunikacyjna', 'body' => 'Wsparcie przy tworzeniu dokumentów, procedur i materiałów w formacie łatwym do czytania i rozumienia (ETR).'],
             ['title' => 'Konsulting w zakresie nowoczesnych technologii w NGO', 'body' => 'Doradzamy organizacjom pozarządowym w wyborze i wdrażaniu nowoczesnych narzędzi cyfrowych — od pracy zespołowej w chmurze i bezpieczeństwa danych po rozwiązania wspierające dostępność — tak, by technologia realnie wspierała misję, a nie ją komplikowała.'],
+            ['title' => 'Wspieranie działań innych podmiotów', 'body' => 'Wspieramy inicjatywy innych organizacji i instytucji, jeśli są zbieżne z celami naszej fundacji i służą interesowi społecznemu.'],
             ['title' => 'Rzetelne doradztwo', 'body' => 'Oparte na zaufaniu konsultacje, bez zbędnej teorii i medialnego rozgłosu.'],
         ];
 

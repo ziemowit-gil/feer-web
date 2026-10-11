@@ -32,7 +32,7 @@ class DzialaniaPartnershipSeederTest extends TestCase
 
         $html = $this->get(route('projects.show', $project))->assertOk()->getContent();
         $this->assertStringContainsString('aria-label="Sekcje działania"', $html);
-        foreach (['Współpraca tylko w ramach partnerstw', 'Zakres współpracy', 'Zasady współpracy', 'Dla kogo', 'Tajemniczy klient', 'Konsulting w zakresie nowoczesnych technologii w NGO', 'Bez niespodzianek', 'Organizacje pozarządowe'] as $text) {
+        foreach (['Współpraca tylko w ramach partnerstw', 'Zakres współpracy', 'Zasady współpracy', 'Dla kogo', 'Tajemniczy klient', 'Konsulting w zakresie nowoczesnych technologii w NGO', 'Bez niespodzianek', 'Organizacje pozarządowe', 'Wspieranie działań innych podmiotów', 'widzimy w nich interes społeczny'] as $text) {
             $this->assertStringContainsString($text, $html);
         }
     }
