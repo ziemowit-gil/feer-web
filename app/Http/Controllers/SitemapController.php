@@ -72,7 +72,7 @@ class SitemapController extends Controller
         }
 
         if ($settings->isModuleEnabled('pages')) {
-            Page::query()->where('is_published', true)->get()
+            Page::query()->where('is_published', true)->where(fn ($q) => $q->whereNull('hide_in_sitemap')->orWhere('hide_in_sitemap', false))->get()
                 ->each(fn (Page $page) => $sitemap->add(
                     Url::create(route('page.show', $page))->setLastModificationDate($page->updated_at)
                 ));
@@ -118,7 +118,7 @@ class SitemapController extends Controller
                 ->orderBy('order')->orderBy('title')
                 ->get();
             $disabledByAncestor = Page::inheritedDisabledMap(Page::query()->forCurrentSite()->get(['id', 'parent_id', 'is_disabled']));
-            $visible = $all->reject(fn (Page $p) => $p->is_disabled || isset($disabledByAncestor[$p->id]) || $p->requiresAccess());
+            $visible = $all->reject(fn (Page $p) => $p->hide_in_sitemap || $p->is_disabled || isset($disabledByAncestor[$p->id]) || $p->requiresAccess());
 
             [$people, $pages] = $visible->partition(fn (Page $p) => $p->isAboutPerson());
             $people = $people->sortBy('title', SORT_NATURAL | SORT_FLAG_CASE)->values();

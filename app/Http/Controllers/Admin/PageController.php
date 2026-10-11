@@ -985,6 +985,7 @@ class PageController extends Controller
         $data['publish_at'] = $request->filled('publish_at') ? $request->input('publish_at') : null;
         $data['is_archived'] = $request->boolean('is_archived');
         $data['show_in_menu'] = $request->boolean('show_in_menu');
+        $data['hide_in_sitemap'] = $request->boolean('hide_in_sitemap');
         $data['show_side_nav'] = $request->boolean('show_side_nav');
         $data['side_nav_style'] = array_key_exists((string) $request->input('side_nav_style'), Page::SIDE_NAV_STYLES)
             ? $request->input('side_nav_style')

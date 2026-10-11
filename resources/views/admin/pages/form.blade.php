@@ -566,6 +566,10 @@
                                 <input type="checkbox" name="show_in_menu" value="1" {{ old('show_in_menu', $page->show_in_menu ?? true) ? 'checked' : '' }}>
                                 <span><span class="{{ $rowTitle }}">Dodaj do menu</span><span class="{{ $rowHint }}">Tylko strony główne (bez rodzica i działania) trafiają do nawigacji.</span></span>
                             </label>
+                            <label class="{{ $row }}">
+                                <input type="checkbox" name="hide_in_sitemap" value="1" {{ old('hide_in_sitemap', $page->hide_in_sitemap ?? false) ? 'checked' : '' }}>
+                                <span><span class="{{ $rowTitle }}">Ukryj na mapie strony</span><span class="{{ $rowHint }}">Strona działa pod swoim adresem, ale nie pojawia się na mapie strony ani w sitemap.xml (np. strony testowe).</span></span>
+                            </label>
                         </div>
                     </section>
 
