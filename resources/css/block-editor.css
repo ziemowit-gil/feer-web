@@ -474,6 +474,49 @@ ul.be-rich, ol.be-rich { min-height: 1.75em; }
     background: var(--be-bg); font-family: inherit; font-size: 0.8125rem; white-space: nowrap;
 }
 
+/* Okna dialogowe są poza #block-editor — własny wyraźny fokus. */
+.be-dialog :focus-visible { outline: 2px solid var(--be-ui); outline-offset: 2px; }
+
+/* Wybór odnośnika wewnętrznego (combobox) */
+.be-combo-list {
+    margin: 0.25rem 0 0; padding: 0.25rem; list-style: none;
+    max-height: 16rem; overflow-y: auto;
+    background: #fff; border: 1px solid var(--be-ink); border-radius: 0.375rem;
+}
+.be-combo-list[hidden] { display: none; }
+.be-combo-option {
+    display: flex; flex-direction: column; gap: 0.1rem;
+    padding: 0.45rem 0.6rem; border-radius: 0.25rem; cursor: pointer; color: var(--be-ink);
+}
+.be-combo-option:hover { background: var(--be-ui-soft); }
+.be-combo-title { font-size: 0.875rem; font-weight: 700; }
+.be-combo-meta { font-size: 0.75rem; color: var(--be-muted); overflow-wrap: anywhere; }
+/* Aktywna podpowiedź: biały tekst na --be-ui (6,9:1). */
+.be-combo-option[aria-selected="true"] { background: var(--be-ui); color: #fff; }
+.be-combo-option[aria-selected="true"] .be-combo-meta { color: #fff; }
+.be-link-chosen { color: var(--be-ink); font-weight: 600; }
+.be-pick-link { margin: -0.4rem 0 0.85rem; }
+
+/* Podgląd shortcode'u */
+.be-placeholder .be-sc-status { margin: 0.5rem 0 0; color: var(--be-muted); }
+.be-placeholder .be-sc-status.be-error { color: var(--be-danger); }
+.be-placeholder .be-sc-status:empty { display: none; }
+.be-sc-preview { margin-top: 0.75rem; border: 1px dashed var(--be-line-strong); border-radius: 0.375rem; background: #fff; }
+.be-sc-preview[hidden] { display: none; }
+.be-placeholder .be-sc-preview-label {
+    margin: 0; padding: 0.25rem 0.6rem; border-bottom: 1px dashed var(--be-line-strong);
+    font-size: 0.75rem; font-weight: 700; color: var(--be-muted); background: var(--be-bg);
+}
+.be-sc-preview-body { padding: 0.75rem 1rem; }
+.be-sc-preview-body > :first-child { margin-top: 0; }
+
+/* Okno tekstu alternatywnego */
+.be-alt-thumb {
+    display: block; max-width: 100%; max-height: 12rem; margin: 0 auto 1rem;
+    object-fit: contain; border: 1px solid var(--be-line); border-radius: 0.375rem; background: var(--be-bg);
+}
+.be-dialog .be-input:disabled { background: var(--be-bg); color: var(--be-muted); }
+
 @media (prefers-reduced-motion: reduce) {
     .be-block, .be-appender { transition: none; }
 }

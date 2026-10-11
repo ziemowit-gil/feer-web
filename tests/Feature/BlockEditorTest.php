@@ -2,7 +2,9 @@
 
 namespace Tests\Feature;
 
+use App\Models\News;
 use App\Models\Page;
+use App\Models\Project;
 use App\Models\SiteSetting;
 use App\Models\User;
 use App\Support\BlockRenderer;
@@ -147,5 +149,151 @@ class BlockEditorTest extends TestCase
         $this->actingAs($this->admin())
             ->putJson(route('admin.podstrony.bloki.update', $page), ['title' => 'x', 'blocks' => []])
             ->assertOk();
+    }
+
+    private function news(array $attributes = []): News
+    {
+        return News::create($attributes + ['title' => 'Aktualność', 'slug' => 'aktualnosc', 'content' => '<p>Stara treść</p>', 'is_published' => true, 'published_at' => now()->subDay()]);
+    }
+
+    private function project(array $attributes = []): Project
+    {
+        $category = \App\Models\Category::firstOrCreate(['slug' => 'kategoria'], ['name' => 'Kategoria']);
+
+        return Project::create($attributes + ['title' => 'Działanie', 'slug' => 'dzialanie', 'category_id' => $category->id, 'content' => '<p>Stary opis</p>', 'is_published' => true]);
+    }
+
+    public function test_link_search_returns_published_pages_news_and_projects(): void
+    {
+        $this->page(['title' => 'Rehabilitacja ruchowa', 'slug' => 'rehabilitacja']);
+        $this->page(['title' => 'Rehabilitacja szkic', 'slug' => 'rehabilitacja-szkic', 'is_published' => false]);
+        $this->news(['title' => 'Rehabilitacja w Lublinie', 'slug' => 'rehabilitacja-lublin']);
+        $this->news(['title' => 'Rehabilitacja jutro', 'slug' => 'rehabilitacja-jutro', 'published_at' => now()->addWeek()]);
+        $this->project(['title' => 'Rehabilitacja dzieci', 'slug' => 'rehabilitacja-dzieci']);
+        $this->project(['title' => 'Rehabilitacja ukryta', 'slug' => 'rehabilitacja-ukryta', 'is_published' => false]);
+        $this->page(['title' => 'Kontakt', 'slug' => 'kontakt']);
+
+        $response = $this->actingAs($this->admin())
+            ->getJson(route('admin.edytor-blokowy.links', ['q' => 'rehabilitacja']))
+            ->assertOk();
+
+        $items = collect($response->json());
+        $this->assertEqualsCanonicalizing(['Rehabilitacja ruchowa', 'Rehabilitacja w Lublinie', 'Rehabilitacja dzieci'], $items->pluck('title')->all());
+        $this->assertEqualsCanonicalizing(['Strona', 'Aktualność', 'Działanie'], $items->pluck('kind')->all());
+        $this->assertSame('/rehabilitacja', $items->firstWhere('kind', 'Strona')['url']);
+        $this->assertSame('/aktualnosci/rehabilitacja-lublin', $items->firstWhere('kind', 'Aktualność')['url']);
+        $this->assertSame('/dzialania/rehabilitacja-dzieci', $items->firstWhere('kind', 'Działanie')['url']);
+
+        $this->getJson(route('admin.edytor-blokowy.links'))->assertOk()->assertJsonFragment(['title' => 'Kontakt']);
+    }
+
+    public function test_shortcode_preview_validates_and_renders(): void
+    {
+        $admin = $this->admin();
+
+        $this->actingAs($admin)
+            ->postJson(route('admin.edytor-blokowy.shortcode'), ['code' => 'to nie jest shortcode'])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('code');
+
+        $this->actingAs($admin)
+            ->postJson(route('admin.edytor-blokowy.shortcode'), ['code' => '[nieznany:kod]'])
+            ->assertOk()
+            ->assertJson(['html' => '<p>[nieznany:kod]</p>']);
+
+        $html = $this->actingAs($admin)
+            ->postJson(route('admin.edytor-blokowy.shortcode'), ['html' => '<p>Tekst</p><script>alert(1)</script>[pasek:999999]'])
+            ->assertOk()
+            ->json('html');
+        $this->assertStringContainsString('<p>Tekst</p>', $html);
+        $this->assertStringNotContainsString('<script', $html);
+        $this->assertStringNotContainsString('[pasek:999999]', $html);
+
+        $this->actingAs(User::factory()->create(['role' => User::ROLE_BIP_EDITOR]))
+            ->postJson(route('admin.edytor-blokowy.shortcode'), ['code' => '[blok:1]'])
+            ->assertForbidden();
+    }
+
+    public function test_admin_saves_news_and_project_blocks(): void
+    {
+        $news = $this->news();
+        $project = $this->project();
+        $admin = $this->admin();
+        $blocks = [
+            ['id' => 'b1', 'type' => 'heading', 'attrs' => ['text' => 'Witaj', 'level' => 2]],
+            ['id' => 'b2', 'type' => 'paragraph', 'attrs' => ['text' => 'Treść']],
+        ];
+
+        $this->actingAs($admin)
+            ->get(route('admin.edytor-blokowy.edit', ['news', $news->id]))
+            ->assertOk()
+            ->assertSee('"type":"news"', false)
+            ->assertSee('"imported":true', false)
+            ->assertSee('Przejdź do klasycznego formularza aktualności', false);
+
+        $this->actingAs($admin)
+            ->get(route('admin.edytor-blokowy.edit', ['project', $project->id]))
+            ->assertOk()
+            ->assertSee('Przejdź do klasycznego formularza działania', false);
+
+        foreach (['news' => $news, 'project' => $project] as $type => $record) {
+            $this->actingAs($admin)
+                ->putJson(route('admin.edytor-blokowy.update', [$type, $record->id]), [
+                    'title' => 'Nowy tytuł '.$type,
+                    'meta_description' => 'Opis',
+                    'blocks' => $blocks,
+                ])
+                ->assertOk()
+                ->assertJson(['ok' => true]);
+
+            $record->refresh();
+            $this->assertSame('Nowy tytuł '.$type, $record->title);
+            $this->assertSame("<h2>Witaj</h2>\n<p>Treść</p>", $record->content);
+            $this->assertSame('paragraph', $record->blocks[1]['type']);
+        }
+
+        $this->get('/aktualnosci/aktualnosc')->assertOk()->assertSee('Witaj');
+
+        // Pasek edycji na stronie działania prowadzi do edytora blokowego.
+        $this->actingAs($admin)->get('/dzialania/dzialanie')->assertOk()
+            ->assertSee(route('admin.edytor-blokowy.edit', ['project', $project->id]), false);
+
+        // Błąd walidacji wraca jako JSON (edytor pokazuje komunikat), nie jako przekierowanie.
+        $this->actingAs($admin)
+            ->putJson(route('admin.edytor-blokowy.update', ['news', $news->id]), ['title' => '', 'blocks' => []])
+            ->assertStatus(422)
+            ->assertJsonValidationErrors('title');
+    }
+
+    public function test_news_and_project_content_changed_elsewhere_drops_stale_blocks(): void
+    {
+        $blocks = [['type' => 'paragraph', 'attrs' => ['text' => 'x']]];
+        $news = $this->news(['blocks' => $blocks, 'content' => '<p>x</p>']);
+        $project = $this->project(['blocks' => $blocks, 'content' => '<p>x</p>']);
+
+        foreach ([$news, $project] as $record) {
+            $record->update(['title' => 'Inny tytuł']);
+            $this->assertNotNull($record->fresh()->blocks);
+
+            $record->update(['content' => '<p>Zmienione w klasycznym edytorze</p>']);
+            $this->assertNull($record->fresh()->blocks);
+        }
+    }
+
+    public function test_user_without_module_access_is_forbidden(): void
+    {
+        $news = $this->news();
+        $project = $this->project();
+        $bip = User::factory()->create(['role' => User::ROLE_BIP_EDITOR]);
+
+        $this->actingAs($bip)->get(route('admin.edytor-blokowy.edit', ['news', $news->id]))->assertForbidden();
+        $this->actingAs($bip)->putJson(route('admin.edytor-blokowy.update', ['project', $project->id]), ['title' => 'x', 'blocks' => []])->assertForbidden();
+        $this->actingAs($bip)->getJson(route('admin.edytor-blokowy.links'))->assertForbidden();
+
+        // Redaktor PR ma aktualności i działania, ale nie strony.
+        $pr = User::factory()->create(['role' => User::ROLE_PR_EDITOR]);
+        $this->actingAs($pr)->get(route('admin.edytor-blokowy.edit', ['news', $news->id]))->assertOk();
+        $this->actingAs($pr)->get(route('admin.edytor-blokowy.edit', ['page', $this->page()->id]))->assertForbidden();
+        $this->assertSame('Aktualność', $news->fresh()->title);
     }
 }

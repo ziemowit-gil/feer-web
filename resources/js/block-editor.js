@@ -1,9 +1,9 @@
-// Edytor blokowy stron w stylu Gutenberga.
+// Edytor blokowy w stylu Gutenberga — strony, aktualności i działania.
 //
 // Treść to drzewo bloków { id, type, attrs, inner? }. Edycja odbywa się na
 // stylach frontu (.prose), więc redakcja widzi stronę tak, jak zobaczy ją
 // odwiedzający. Zapis wysyła bloki (bez id) do BlockEditorController, który
-// je czyści (App\Support\BlockRenderer) i renderuje HTML do `pages.content`.
+// je czyści (App\Support\BlockRenderer) i renderuje HTML do kolumny `content`.
 //
 // Układ: górny pasek (wstawianie, cofnij/ponów, widok listy, dostępność, zapis),
 // lewy panel (bloki i wzorce / widok listy / uwagi dostępności), płótno
@@ -16,7 +16,17 @@ if (mount) {
 
 function start(config) {
     const CSRF = document.querySelector('meta[name="csrf-token"]')?.content || '';
-    const DRAFT_KEY = 'block-editor-draft-' + config.page.id;
+    // Rodzaj edytowanej treści (strona / aktualność / działanie) i etykiety interfejsu.
+    const TARGET = config.target || { type: 'page', id: config.page.id };
+    const L = {
+        kind: 'Strona', title: 'Tytuł strony', back: 'Wróć do strony', view: 'Zobacz stronę', form: 'Otwórz formularz strony',
+        typeLabel: 'Typ strony', published: 'opublikowana', publishedLong: 'Opublikowana', draftLong: 'Szkic (niewidoczna publicznie)',
+        contentLabel: 'Treść strony', more: 'Adres, menu, publikacja, dostęp, szablon i pola typu strony są w klasycznym formularzu.',
+        imported: 'Ta strona była edytowana w klasycznym edytorze', empty: 'Strona nie ma jeszcze bloków.', titleRequired: 'Tytuł strony nie może być pusty.',
+        ...(config.labels || {}),
+    };
+    // Klucz stron bez prefiksu typu — zgodność z kopiami roboczymi sprzed obsługi aktualności i działań.
+    const DRAFT_KEY = 'block-editor-draft-' + (TARGET.type === 'page' ? '' : TARGET.type + '-') + config.page.id;
 
     // ── Pomocnicze ─────────────────────────────────────────────────────────
     let uidCounter = 0;
@@ -46,6 +56,37 @@ function start(config) {
     const textOf = (html) => { const d = document.createElement('div'); d.innerHTML = html || ''; return d.textContent.replace(/ /g, ' ').trim(); };
     const safeUrl = (url) => /^(https?:\/\/|mailto:|tel:|\/(?!\/)|#|\?)/i.test((url || '').trim());
     const clone = (v) => JSON.parse(JSON.stringify(v));
+    const debounce = (fn, ms) => { let t = null; return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), ms); }; };
+    const SHORTCODE_RE = /^\[[a-z0-9_-]+(?::[^\]\r\n]{1,200})?\]$/i;
+    // Jak App\Support\ShortcodeParser::DETECT_PATTERN — czy HTML zawiera shortcode do wyrenderowania.
+    const SHORTCODE_DETECT = /\[(?:(?:formularz|kafelki):[a-z0-9_-]+|kafelki-zestaw:\d+|blok:\d+|pasek:\d+|klauzule-rodo(?::[a-z]{2})?)\]/i;
+
+    async function postJson(url, data) {
+        const res = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Accept: 'application/json', 'X-CSRF-TOKEN': CSRF, 'X-Requested-With': 'XMLHttpRequest' },
+            body: JSON.stringify(data),
+        });
+        const json = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(Object.values(json.errors || {})[0]?.[0] || json.message || 'Błąd serwera (' + res.status + ').');
+        return json;
+    }
+
+    // Podgląd HTML z serwera (shortcode'y): bez skryptów, obsługi zdarzeń i adresów javascript:.
+    // <template> parsuje treść bez wczytywania obrazów i bez wykonywania czegokolwiek.
+    function sanitizePreview(html) {
+        const tpl = document.createElement('template');
+        tpl.innerHTML = html || '';
+        tpl.content.querySelectorAll('script, noscript, object, embed, base, meta, link').forEach((el) => el.remove());
+        tpl.content.querySelectorAll('*').forEach((el) => {
+            for (const a of [...el.attributes]) {
+                const name = a.name.toLowerCase();
+                if (name.startsWith('on') || name === 'autofocus') el.removeAttribute(a.name);
+                else if (['href', 'src', 'action', 'formaction', 'xlink:href'].includes(name) && /^\s*javascript:/i.test(a.value)) el.removeAttribute(a.name);
+            }
+        });
+        return tpl.content;
+    }
 
     function embedSrc(url) {
         let m = (url || '').match(/(?:youtube\.com\/(?:watch\?(?:.*&)?v=|embed\/|shorts\/|live\/)|youtu\.be\/)([A-Za-z0-9_-]{11})/);
@@ -549,9 +590,9 @@ function start(config) {
     const topbar = h('header', { class: 'be-topbar', role: 'banner' });
     const leftPanel = h('aside', { class: 'be-panel be-panel--left', hidden: true });
     const canvas = h('div', { class: 'be-canvas-inner prose max-w-none text-ink' });
-    const titleEl = h('h1', { class: 'be-title', contenteditable: 'true', role: 'textbox', 'aria-label': 'Tytuł strony', 'data-placeholder': 'Dodaj tytuł', spellcheck: 'true' });
+    const titleEl = h('h1', { class: 'be-title', contenteditable: 'true', role: 'textbox', 'aria-label': L.title, 'data-placeholder': 'Dodaj tytuł', spellcheck: 'true' });
     const notices = h('div', { class: 'be-notices' });
-    const canvasWrap = h('main', { class: 'be-canvas', id: 'be-canvas', 'aria-label': 'Treść strony' }, h('div', { class: 'be-canvas-page' }, notices, titleEl, canvas));
+    const canvasWrap = h('main', { class: 'be-canvas', id: 'be-canvas', 'aria-label': L.contentLabel }, h('div', { class: 'be-canvas-page' }, notices, titleEl, canvas));
     const sidebar = h('aside', { class: 'be-panel be-panel--right', 'aria-label': 'Ustawienia' });
     const toolbar = h('div', { class: 'be-toolbar', role: 'toolbar', 'aria-label': 'Narzędzia bloku' });
     const slashMenu = h('div', { class: 'be-slash', role: 'listbox', id: 'be-slash', 'aria-label': 'Wybierz blok', hidden: true });
@@ -598,7 +639,7 @@ function start(config) {
             : h('span', { class: 'be-status' }, S.dirty ? 'Niezapisane zmiany' : (S.savedAt ? 'Zapisano o ' + S.savedAt : ''));
         topbar.replaceChildren(
             h('div', { class: 'be-topbar-start' },
-                h('a', { href: config.urls.view, class: 'be-btn be-btn--icon be-back', 'aria-label': 'Wróć do strony', title: 'Wróć do strony' }, icon('arrow-left')),
+                h('a', { href: config.urls.view, class: 'be-btn be-btn--icon be-back', 'aria-label': L.back, title: L.back }, icon('arrow-left')),
                 tbButton('Dodaj blok', 'plus', () => togglePanel('inserter'), { shortcut: '/', attrs: { 'aria-pressed': String(S.panel === 'inserter'), class: 'be-btn be-btn--icon be-btn--primary-soft' } }),
                 tbButton('Cofnij', 'rotate-left', undo, { shortcut: mod + '+Z', attrs: { 'aria-disabled': String(!S.past.length) } }),
                 tbButton('Ponów', 'rotate-right', redo, { shortcut: mod + '+Shift+Z', attrs: { 'aria-disabled': String(!S.future.length) } }),
@@ -608,11 +649,11 @@ function start(config) {
             ),
             h('div', { class: 'be-topbar-center' },
                 h('span', { class: 'be-doc-title' }, S.title || 'Bez tytułu'),
-                h('span', { class: 'be-doc-meta' }, config.page.type + ' · ' + (config.page.is_published ? 'opublikowana' : 'szkic')),
+                h('span', { class: 'be-doc-meta' }, config.page.type + ' · ' + (config.page.is_published ? L.published : 'szkic')),
             ),
             h('div', { class: 'be-topbar-end' },
                 status,
-                h('a', { href: config.urls.view, target: '_blank', rel: 'noopener', class: 'be-btn be-btn--ghost' }, 'Zobacz stronę', h('span', { class: 'be-sr-only' }, ' (otwiera się w nowej karcie)'), ' ', icon('arrow-up-right-from-square')),
+                h('a', { href: config.urls.view, target: '_blank', rel: 'noopener', class: 'be-btn be-btn--ghost' }, L.view, h('span', { class: 'be-sr-only' }, ' (otwiera się w nowej karcie)'), ' ', icon('arrow-up-right-from-square')),
                 h('button', { type: 'button', 'data-key': 'save', class: 'be-btn be-btn--primary', onClick: save, 'aria-disabled': String(S.saving), title: `Zapisz (${mod}+S)` }, saveLabel),
                 tbButton('Ustawienia', 'gear', () => { S.sidebarOpen = !S.sidebarOpen; renderSidebar(); updateTopbar(); }, { attrs: { 'aria-pressed': String(S.sidebarOpen), 'aria-controls': 'be-sidebar' } }),
                 tbButton('Skróty klawiszowe', 'keyboard', openShortcuts),
@@ -713,7 +754,7 @@ function start(config) {
     }
 
     function renderListView(close) {
-        const build = (list, depth) => h('ul', { 'aria-label': depth ? null : 'Bloki strony' }, ...list.map((b) => {
+        const build = (list, depth) => h('ul', { 'aria-label': depth ? null : 'Bloki: ' + L.contentLabel.toLowerCase() }, ...list.map((b) => {
             const d = BLOCKS[b.type];
             const label = blockLabel(b);
             return h('li', {},
@@ -725,7 +766,7 @@ function start(config) {
         }));
         leftPanel.setAttribute('aria-label', 'Widok listy');
         leftPanel.replaceChildren(h('div', { class: 'be-panel-head' }, h('h2', {}, 'Widok listy'), close),
-            h('div', { class: 'be-panel-body be-list' }, S.blocks.length ? build(S.blocks, 0) : h('p', { class: 'be-muted' }, 'Strona nie ma jeszcze bloków.')));
+            h('div', { class: 'be-panel-body be-list' }, S.blocks.length ? build(S.blocks, 0) : h('p', { class: 'be-muted' }, L.empty)));
     }
     function blockLabel(b) {
         const a = b.attrs;
@@ -896,7 +937,7 @@ function start(config) {
             const htmlBlock = S.blocks[0];
             items.push(h('div', { class: 'be-notice', role: 'note' },
                 icon('circle-info'),
-                h('p', {}, 'Ta strona była edytowana w klasycznym edytorze, więc jej treść jest teraz w bloku „Własny HTML”. Przekształć ją w bloki, aby edytować wygodnie akapitami, nagłówkami i obrazami.'),
+                h('p', {}, L.imported + ', więc treść jest teraz w bloku „Własny HTML”. Przekształć ją w bloki, aby edytować wygodnie akapitami, nagłówkami i obrazami.'),
                 h('button', { type: 'button', class: 'be-btn be-btn--primary', onClick: () => { S.imported = false; convertHtmlBlock(htmlBlock); } }, icon('wand-magic-sparkles'), ' Przekształć w bloki'),
                 h('button', { type: 'button', class: 'be-btn be-btn--ghost', onClick: () => { S.imported = false; renderNotices(); } }, 'Nie teraz')));
         }
@@ -1205,9 +1246,9 @@ function start(config) {
         if (!a.url) {
             return mediaPlaceholder({
                 iconName: 'image', title: 'Obraz', desc: 'Prześlij plik, wybierz z biblioteki albo przeciągnij go tutaj.', accept: 'image/*',
-                onFiles: async (files) => { const up = await uploadFiles(files.slice(0, 1)); if (up[0]) updateAttrs(b, { url: up[0].url }); },
-                onLibrary: async () => { const picked = await openMediaLibrary(); if (picked[0]) updateAttrs(b, { url: picked[0].url, alt: a.alt || picked[0].alt || '' }); },
-                onUrl: (url) => { if (safeUrl(url)) updateAttrs(b, { url }); else announce('Nieprawidłowy adres obrazu'); },
+                onFiles: async (files) => { const up = await uploadFiles(files.slice(0, 1)); if (up[0]) await setImageWithAlt(b, up[0].url, { alt: a.alt, decorative: a.decorative }); },
+                onLibrary: async () => { const picked = await openMediaLibrary(); if (picked[0]) await setImageWithAlt(b, picked[0].url, { alt: a.alt || picked[0].alt || '', decorative: a.decorative }); },
+                onUrl: async (url) => { if (safeUrl(url)) await setImageWithAlt(b, url, { alt: a.alt, decorative: a.decorative }); else announce('Nieprawidłowy adres obrazu'); },
             });
         }
         return h('figure', { class: `content-figure content-figure--${a.width}` },
@@ -1217,7 +1258,7 @@ function start(config) {
 
     function galleryEditor(b) {
         const a = b.attrs;
-        const add = async (images) => updateAttrs(b, { images: [...a.images, ...images.map((i) => ({ url: i.url, alt: i.alt || '', caption: '' }))] });
+        const add = (images) => addGalleryImages(b, images);
         if (!a.images.length) {
             return mediaPlaceholder({
                 iconName: 'images', title: 'Galeria', desc: 'Wybierz kilka zdjęć z biblioteki albo prześlij nowe.', accept: 'image/*', multiple: true,
@@ -1334,19 +1375,86 @@ function start(config) {
                         h('button', { type: 'button', role: 'tab', class: 'be-tab', 'aria-selected': String(!preview), onClick: () => { preview = false; draw(); } }, 'Kod'),
                         h('button', { type: 'button', role: 'tab', class: 'be-tab', 'aria-selected': String(preview), onClick: () => { preview = true; draw(); } }, 'Podgląd')),
                     h('button', { type: 'button', class: 'be-btn be-btn--secondary', onClick: () => convertHtmlBlock(b) }, icon('wand-magic-sparkles'), ' Przekształć w bloki')),
-                preview ? h('div', { class: 'be-html-preview', html: b.attrs.html.replace(/<script[\s\S]*?<\/script>/gi, '') }) : code);
+                preview ? htmlPreview(b.attrs.html) : code);
         };
         draw();
         return box;
     }
 
+    // Podgląd HTML-a bloku „Własny HTML”. Gdy zawiera shortcode'y, renderuje je
+    // serwer (ten sam ShortcodeParser co na stronie). Skrypty i obsługa zdarzeń są
+    // usuwane, a odnośniki i formularze w podglądzie nie działają.
+    let htmlPreviewCache = { html: null, promise: null };
+    function htmlPreview(html) {
+        const box = h('div', { class: 'be-html-preview', role: 'region', 'aria-label': 'Podgląd HTML' });
+        box.addEventListener('click', (e) => { if (e.target.closest('a, button')) e.preventDefault(); });
+        box.addEventListener('submit', (e) => e.preventDefault(), true);
+        if (!SHORTCODE_DETECT.test(html || '')) { box.append(sanitizePreview(html)); return box; }
+        box.append(h('p', { class: 'be-muted' }, 'Wczytywanie podglądu modułów…'));
+        if (htmlPreviewCache.html !== html) {
+            htmlPreviewCache = { html, promise: postJson(config.urls.shortcode, { html }).then((j) => j.html || '') };
+            htmlPreviewCache.promise.catch(() => { htmlPreviewCache = { html: null, promise: null }; });
+        }
+        htmlPreviewCache.promise
+            .then((out) => box.replaceChildren(sanitizePreview(out)))
+            .catch((e) => box.replaceChildren(h('p', { class: 'be-error', role: 'alert' }, 'Nie udało się wyrenderować shortcode’ów: ' + e.message), sanitizePreview(html)));
+        return box;
+    }
+
+    // Blok „Shortcode” z podglądem na żywo (nieaktywnym — tylko do oglądania).
+    const shortcodePreviewCache = new Map();
+    function fetchShortcodePreview(code) {
+        if (!shortcodePreviewCache.has(code)) {
+            const p = postJson(config.urls.shortcode, { code }).then((j) => j.html || '');
+            p.catch(() => shortcodePreviewCache.delete(code));
+            shortcodePreviewCache.set(code, p);
+        }
+        return shortcodePreviewCache.get(code);
+    }
     function shortcodeEditor(b) {
-        const input = h('input', { type: 'text', class: 'be-input be-mono', value: b.attrs.code, placeholder: '[formularz:nazwa-formularza]', 'aria-label': 'Shortcode', 'aria-describedby': 'sc-help-' + b.id });
-        input.addEventListener('input', () => { typingHistory(); b.attrs.code = input.value.trim(); markDirty(); input.setAttribute('aria-invalid', String(!!b.attrs.code && !/^\[[a-z0-9_-]+(?::[^\]\r\n]{1,200})?\]$/i.test(b.attrs.code))); });
+        const input = h('input', { type: 'text', class: 'be-input be-mono', value: b.attrs.code, placeholder: '[formularz:nazwa-formularza]', 'aria-label': 'Shortcode', 'aria-describedby': `sc-help-${b.id} sc-status-${b.id}` });
+        const status = h('p', { id: 'sc-status-' + b.id, class: 'be-small be-sc-status', 'aria-live': 'polite' });
+        const body = h('div', { class: 'be-sc-preview-body' });
+        // inert: podgląd nie przyjmuje fokusu ani kliknięć i jest pomijany przez czytniki
+        // ekranu — stan podglądu opisuje komunikat powyżej.
+        const preview = h('div', { class: 'be-sc-preview', hidden: true },
+            h('p', { class: 'be-sc-preview-label', 'aria-hidden': 'true' }, icon('eye'), ' Podgląd'),
+            h('div', { inert: true, 'aria-hidden': 'true' }, body));
+        const showStatus = (msg, isError = false) => { status.textContent = msg; status.classList.toggle('be-error', isError); };
+        const load = async () => {
+            const code = input.value.trim();
+            if (!code) { preview.hidden = true; showStatus(''); return; }
+            if (!SHORTCODE_RE.test(code)) { preview.hidden = true; showStatus('Nieprawidłowy shortcode — wpisz go w nawiasach kwadratowych, np. [formularz:nazwa].', true); return; }
+            showStatus('Wczytywanie podglądu…');
+            let html;
+            try { html = await fetchShortcodePreview(code); } catch (e) {
+                if (input.value.trim() === code) { preview.hidden = true; showStatus('Nie udało się wczytać podglądu: ' + e.message, true); }
+                return;
+            }
+            if (input.value.trim() !== code) return;
+            const frag = sanitizePreview(html);
+            const text = frag.textContent.replace(/\s+/g, ' ').trim();
+            if (text === code) { preview.hidden = true; showStatus('Ten shortcode nie jest rozpoznawany — sprawdź jego nazwę.', true); return; }
+            if (!text && !frag.querySelector('img, iframe, form, svg, video')) { preview.hidden = true; showStatus('Shortcode nic nie wyświetla — sprawdź, czy wskazany element istnieje i jest opublikowany.', true); return; }
+            body.replaceChildren(frag);
+            preview.hidden = false;
+            showStatus('Podgląd poniżej pokazuje, jak moduł wygląda na stronie.');
+        };
+        const loadSoon = debounce(load, 500);
+        input.addEventListener('input', () => {
+            typingHistory();
+            b.attrs.code = input.value.trim();
+            markDirty();
+            input.setAttribute('aria-invalid', String(!!b.attrs.code && !SHORTCODE_RE.test(b.attrs.code)));
+            loadSoon();
+        });
+        load();
         return h('div', { class: 'be-placeholder be-placeholder--compact' },
             h('label', { class: 'be-placeholder-title' }, icon('code'), ' Shortcode'),
             input,
-            h('p', { id: 'sc-help-' + b.id, class: 'be-small' }, 'Np. [formularz:slug], [kafelki:slug], [kafelki-zestaw:ID], [blok:ID]. Moduł pojawi się na opublikowanej stronie.'));
+            h('p', { id: 'sc-help-' + b.id, class: 'be-small' }, 'Np. [formularz:slug], [kafelki:slug], [kafelki-zestaw:ID], [blok:ID], [pasek:ID].'),
+            status,
+            preview);
     }
 
     // Ostatnie zaznaczenie w polu tekstowym — przyciski formatowania użyte
@@ -1435,7 +1543,7 @@ function start(config) {
                 btn('Przekreślenie', 'strikethrough', () => withSelection(() => document.execCommand('strikeThrough')))));
         }
         if (b.type === 'image' && b.attrs.url) {
-            groups.push(h('div', { class: 'be-tool-group' }, btn('Zamień obraz', 'arrows-rotate', async () => { const p = await openMediaLibrary(); if (p[0]) updateAttrs(b, { url: p[0].url, alt: p[0].alt || b.attrs.alt }); })));
+            groups.push(h('div', { class: 'be-tool-group' }, btn('Zamień obraz', 'arrows-rotate', async () => { const p = await openMediaLibrary(); if (p[0]) await setImageWithAlt(b, p[0].url, { alt: p[0].alt || b.attrs.alt, decorative: b.attrs.decorative }); })));
         }
         if (b.type === 'embed' && b.attrs.url) {
             groups.push(h('div', { class: 'be-tool-group' }, btn('Zmień adres filmu', 'pen', () => updateAttrs(b, { url: '' }))));
@@ -1603,7 +1711,7 @@ function start(config) {
         const tab = (key, label) => h('button', { type: 'button', role: 'tab', class: 'be-tab', 'aria-selected': String(S.sidebarTab === key), onClick: () => { S.sidebarTab = key; renderSidebar(); sidebar.querySelector('[role=tab][aria-selected=true]')?.focus(); } }, label);
         sidebar.replaceChildren(
             h('div', { class: 'be-panel-head' },
-                h('div', { class: 'be-tabs', role: 'tablist', 'aria-label': 'Ustawienia' }, tab('page', 'Strona'), tab('block', 'Blok')),
+                h('div', { class: 'be-tabs', role: 'tablist', 'aria-label': 'Ustawienia' }, tab('page', L.kind), tab('block', 'Blok')),
                 h('button', { type: 'button', class: 'be-btn be-btn--icon', 'aria-label': 'Zamknij ustawienia', onClick: () => { S.sidebarOpen = false; renderSidebar(); updateTopbar(); } }, icon('xmark'))),
             h('div', { class: 'be-panel-body', role: 'tabpanel' }, S.sidebarTab === 'page' ? pageSettings() : (b ? blockSettings(b) : h('p', { class: 'be-muted' }, 'Zaznacz blok, aby zobaczyć jego ustawienia.'))));
     }
@@ -1617,19 +1725,33 @@ function start(config) {
         metaCount();
         return h('div', {},
             panelSection(null,
-                field('Tytuł strony', title),
-                field('Opis dla wyszukiwarek', meta, 'Jedno, dwa zdania o tym, co jest na stronie. Najlepiej do 160 znaków.'),
+                field(L.title, title),
+                field('Opis dla wyszukiwarek', meta, 'Jedno, dwa zdania o tym, czego dotyczy treść. Najlepiej do 160 znaków.'),
                 counter),
             panelSection('Informacje',
                 h('dl', { class: 'be-dl' },
-                    h('dt', {}, 'Typ strony'), h('dd', {}, config.page.type),
-                    h('dt', {}, 'Status'), h('dd', {}, config.page.is_published ? 'Opublikowana' : 'Szkic (niewidoczna publicznie)'),
+                    h('dt', {}, L.typeLabel), h('dd', {}, config.page.type),
+                    h('dt', {}, 'Status'), h('dd', {}, config.page.is_published ? L.publishedLong : L.draftLong),
                     h('dt', {}, 'Bloków'), h('dd', {}, String(countBlocks())))),
             panelSection('Więcej ustawień',
-                h('p', { class: 'be-help' }, 'Adres, menu, publikacja, dostęp, szablon i pola typu strony są w klasycznym formularzu.'),
-                h('a', { href: config.urls.admin, class: 'be-btn be-btn--secondary be-w-full' }, icon('sliders'), ' Otwórz formularz strony')));
+                h('p', { class: 'be-help' }, L.more),
+                h('a', { href: config.urls.admin, class: 'be-btn be-btn--secondary be-w-full' }, icon('sliders'), ' ' + L.form)));
     }
     const countBlocks = () => { let n = 0; walk(S.blocks, () => n++); return n; };
+
+    // Przycisk „Wybierz stronę” przy polu adresu w inspektorze — otwiera okno
+    // wyboru odnośnika wewnętrznego; po zamknięciu fokus wraca na ten przycisk.
+    function pickLinkButton(key, srSuffix, getCurrent, onPick) {
+        return h('button', {
+            type: 'button', class: 'be-btn be-btn--secondary be-pick-link', 'data-pick': key,
+            onClick: async () => {
+                const v = await openLinkPickerDialog(getCurrent() || '');
+                if (v !== null) { onPick(v); announce('Ustawiono adres: ' + v); }
+                renderSidebar();
+                sidebar.querySelector(`[data-pick="${key}"]`)?.focus();
+            },
+        }, icon('link'), ' Wybierz stronę', h('span', { class: 'be-sr-only' }, srSuffix));
+    }
 
     function blockSettings(b) {
         const def = BLOCKS[b.type];
@@ -1662,6 +1784,7 @@ function start(config) {
                     panelSection('Wygląd i odnośnik',
                         field('Szerokość', select(a.width, [['full', 'Pełna szerokość treści'], ['wide', 'Szeroki'], ['medium', 'Średni (2/3)'], ['small', 'Mały (1/3)']], (v) => set({ width: v }))),
                         field('Odnośnik po kliknięciu', textInput(a.href, (v) => updateAttrs(b, { href: v.trim() }, { typing: true, rerender: false }), { type: 'url', placeholder: 'https://… lub /strona' })),
+                        pickLinkButton(`img-${b.id}`, ' jako odnośnik obrazu', () => find(b.id)?.block.attrs.href, (v) => updateAttrs(b, { href: v }, { rerender: false })),
                         h('button', { type: 'button', class: 'be-btn be-btn--ghost be-danger', onClick: () => set({ url: '', alt: '', caption: '' }) }, icon('trash'), ' Usuń obraz')));
                 }
                 break;
@@ -1681,6 +1804,7 @@ function start(config) {
                 parts.push(...a.items.map((btn, i) => panelSection('Przycisk ' + (i + 1),
                     field('Tekst', textInput(btn.label, (v) => { typingHistory(); btn.label = v; markDirty(); rerenderBlock(b.id); }), 'Powiedz, co się stanie: „Zapisz się na szkolenie”, nie „Kliknij tutaj”.'),
                     field('Adres', textInput(btn.url, (v) => { typingHistory(); btn.url = v.trim(); markDirty(); scheduleWarnings(); }, { type: 'url', placeholder: 'https://… lub /strona' })),
+                    pickLinkButton(`btn-${b.id}-${i}`, ' dla przycisku ' + (i + 1), () => btn.url, (v) => { pushHistory(); btn.url = v; markDirty(); scheduleWarnings(); }),
                     field('Kolor', select(btn.variant, [['brand', 'Niebieski (główny)'], ['red', 'Czerwony'], ['green', 'Zielony']], (v) => { pushHistory(); btn.variant = v; markDirty(); rerenderBlock(b.id); })),
                     checkbox('Otwieraj w nowej karcie', btn.newTab, (v) => { pushHistory(); btn.newTab = v; markDirty(); }, 'Używaj oszczędnie. Czytnik ekranu usłyszy informację o nowej karcie.'),
                     a.items.length > 1 ? h('button', { type: 'button', class: 'be-btn be-btn--ghost be-danger', onClick: () => { set({ items: a.items.filter((_, j) => j !== i) }); renderSidebar(); } }, icon('trash'), ' Usuń przycisk') : null)));
@@ -1747,13 +1871,128 @@ function start(config) {
     }
 
     // ── Odnośniki ──────────────────────────────────────────────────────────
+    // Wybór odnośnika wewnętrznego — wzorzec ARIA „combobox z listą”: pole adresu
+    // podpowiada opublikowane strony, aktualności i działania (szukanie po tytule
+    // lub adresie), a wpisany ręcznie adres działa jak dotąd.
+    const linkCache = new Map();
+    let dialogSeq = 0;
+    function fetchLinks(q) {
+        const key = q.toLowerCase();
+        if (!linkCache.has(key)) {
+            const url = config.urls.links + (config.urls.links.includes('?') ? '&' : '?') + 'q=' + encodeURIComponent(q);
+            linkCache.set(key, fetch(url, { headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' } })
+                .then((r) => (r.ok ? r.json() : Promise.reject(new Error('HTTP ' + r.status))))
+                .catch((e) => { linkCache.delete(key); throw e; }));
+        }
+        return linkCache.get(key);
+    }
+
+    function linkPicker({ value = '', id, label = 'Adres' }) {
+        const listId = id + '-list';
+        const helpId = id + '-help';
+        const status = h('p', { class: 'be-sr-only', role: 'status', 'aria-live': 'polite' });
+        const chosen = h('p', { class: 'be-help be-link-chosen', hidden: true });
+        const input = h('input', {
+            type: 'text', class: 'be-input', id, value, placeholder: 'https://…, /strona albo tytuł', role: 'combobox',
+            'aria-autocomplete': 'list', 'aria-expanded': 'false', 'aria-controls': listId, 'aria-describedby': helpId,
+            autocomplete: 'off', spellcheck: 'false',
+        });
+        const list = h('ul', { class: 'be-combo-list', id: listId, role: 'listbox', 'aria-label': 'Strony, aktualności i działania', hidden: true });
+        let items = [];
+        let active = -1;
+        let seq = 0;
+        let escapedAt = 0;
+        const isOpen = () => !list.hidden;
+        const open = () => { list.hidden = false; input.setAttribute('aria-expanded', 'true'); };
+        const close = () => { list.hidden = true; input.setAttribute('aria-expanded', 'false'); input.removeAttribute('aria-activedescendant'); active = -1; };
+        const setActive = (i) => {
+            active = i;
+            [...list.children].forEach((li, j) => li.setAttribute('aria-selected', String(j === i)));
+            if (i >= 0) {
+                input.setAttribute('aria-activedescendant', `${listId}-${i}`);
+                list.children[i]?.scrollIntoView({ block: 'nearest' });
+            } else input.removeAttribute('aria-activedescendant');
+        };
+        const choose = (i) => {
+            const it = items[i];
+            if (!it) return;
+            input.value = it.url;
+            input.removeAttribute('aria-invalid');
+            close();
+            chosen.hidden = false;
+            chosen.textContent = `Wybrano: ${it.title} (${it.kind.toLowerCase()})`;
+            status.textContent = `Wybrano: ${it.title}, ${it.kind}.`;
+            input.focus();
+        };
+        const search = async () => {
+            const raw = input.value.trim();
+            // Pełny adres (https://, mailto:, tel:, #) wpisany ręcznie — bez podpowiedzi.
+            if (/^(https?:|mailto:|tel:|#|www\.)/i.test(raw)) { items = []; close(); return; }
+            // Ścieżka (/aktualnosci/nazwa) — szukamy po ostatnim członie adresu.
+            const q = raw.startsWith('/') ? (raw.split(/[/?#]/).filter(Boolean).pop() || '') : raw;
+            const my = ++seq;
+            let data;
+            try { data = await fetchLinks(q); } catch (e) {
+                if (my === seq) { items = []; close(); status.textContent = 'Nie udało się wczytać podpowiedzi. Możesz wpisać adres ręcznie.'; }
+                return;
+            }
+            if (my !== seq || document.activeElement !== input) return;
+            items = Array.isArray(data) ? data : [];
+            list.replaceChildren(...items.map((it, i) => h('li', {
+                id: `${listId}-${i}`, role: 'option', class: 'be-combo-option', 'aria-selected': 'false',
+                onMousedown: (e) => { e.preventDefault(); choose(i); },
+            }, h('span', { class: 'be-combo-title' }, it.title), h('span', { class: 'be-combo-meta' }, `${it.kind} · ${it.url}`))));
+            if (!items.length) {
+                close();
+                status.textContent = q ? 'Brak pasujących stron. Możesz wpisać adres ręcznie.' : '';
+                return;
+            }
+            open();
+            setActive(-1);
+            status.textContent = `${items.length} ${plural(items.length, 'podpowiedź', 'podpowiedzi', 'podpowiedzi')}. Strzałka w dół wybiera, Enter zatwierdza.`;
+        };
+        const searchSoon = debounce(search, 250);
+        input.addEventListener('input', () => { chosen.hidden = true; input.removeAttribute('aria-invalid'); searchSoon(); });
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                if (!isOpen()) { search().then(() => { if (isOpen()) setActive(0); }); return; }
+                setActive((active + 1) % items.length);
+            } else if (e.key === 'ArrowUp' && isOpen()) {
+                e.preventDefault();
+                setActive(active <= 0 ? items.length - 1 : active - 1);
+            } else if (e.key === 'Enter' && isOpen() && active >= 0) {
+                e.preventDefault();
+                choose(active);
+            } else if (e.key === 'Escape' && isOpen()) {
+                // Esc zamyka najpierw listę, dopiero kolejny — okno dialogowe.
+                e.preventDefault();
+                e.stopPropagation();
+                escapedAt = Date.now();
+                close();
+            } else if (e.key === 'Tab') close();
+        });
+        input.addEventListener('blur', close);
+        const root = h('div', { class: 'be-field be-combo' },
+            h('label', { for: id }, label),
+            input,
+            list,
+            h('p', { id: helpId, class: 'be-help' }, 'Wpisz adres (https://…, /strona, mailto:…) albo zacznij pisać tytuł, aby wybrać stronę, aktualność lub działanie z listy (strzałka w dół).'),
+            chosen,
+            status);
+        return { root, input, escapedRecently: () => Date.now() - escapedAt < 400 };
+    }
+    const normalizeHref = (v) => (/^www\./i.test(v) ? 'https://' + v : v);
+    const validHref = (v) => safeUrl(v) || /^www\./i.test(v);
+
     function openLinkDialog(el) {
         const sel = window.getSelection();
         if (!sel.rangeCount || !el.contains(sel.anchorNode)) { el.focus(); return; }
         const range = sel.getRangeAt(0).cloneRange();
         const existing = (sel.anchorNode.nodeType === 1 ? sel.anchorNode : sel.anchorNode.parentElement).closest('a');
         if (range.collapsed && !existing) { announce('Zaznacz tekst, który ma być odnośnikiem'); return; }
-        const url = h('input', { type: 'text', class: 'be-input', id: 'be-link-url', value: existing?.getAttribute('href') || '', placeholder: 'https://… , /strona, mailto:…', required: true });
+        const picker = linkPicker({ value: existing?.getAttribute('href') || '', id: 'be-link-url' });
+        const url = picker.input;
         const newTab = h('input', { type: 'checkbox', id: 'be-link-tab', checked: existing?.target === '_blank' });
         const error = h('p', { class: 'be-error', role: 'alert' });
         const dlg = h('dialog', { class: 'be-dialog be-dialog--small', 'aria-labelledby': 'be-link-title' });
@@ -1762,8 +2001,8 @@ function start(config) {
         dlg.append(h('form', { method: 'dialog', onSubmit: (e) => {
             e.preventDefault();
             const v = url.value.trim();
-            if (!safeUrl(v) && !/^www\./i.test(v)) { error.textContent = 'Podaj adres zaczynający się od https://, / , mailto: lub tel:'; url.setAttribute('aria-invalid', 'true'); url.focus(); return; }
-            const href = /^www\./i.test(v) ? 'https://' + v : v;
+            if (!validHref(v)) { error.textContent = 'Podaj adres zaczynający się od https://, / , mailto: lub tel: albo wybierz stronę z listy.'; url.setAttribute('aria-invalid', 'true'); url.focus(); return; }
+            const href = normalizeHref(v);
             finish();
             restoreSel();
             if (existing) { pushHistory(); existing.setAttribute('href', href); } else document.execCommand('createLink', false, href);
@@ -1772,18 +2011,130 @@ function start(config) {
             el.dispatchEvent(new Event('input', { bubbles: true }));
         } },
         h('h2', { id: 'be-link-title' }, existing ? 'Edytuj odnośnik' : 'Wstaw odnośnik'),
-        field('Adres', url),
+        picker.root,
         h('div', { class: 'be-check' }, newTab, h('label', { for: 'be-link-tab' }, 'Otwórz w nowej karcie')),
         error,
         h('div', { class: 'be-dialog-actions' },
             existing ? h('button', { type: 'button', class: 'be-btn be-btn--ghost be-danger', onClick: () => { finish(); restoreSel(); const r = document.createRange(); r.selectNodeContents(existing); sel.removeAllRanges(); sel.addRange(r); document.execCommand('unlink'); el.dispatchEvent(new Event('input', { bubbles: true })); } }, icon('link-slash'), ' Usuń odnośnik') : null,
             h('button', { type: 'button', class: 'be-btn be-btn--ghost', onClick: () => { finish(); restoreSel(); } }, 'Anuluj'),
             h('button', { type: 'submit', class: 'be-btn be-btn--primary' }, 'Zastosuj'))));
-        dlg.addEventListener('cancel', (e) => { e.preventDefault(); finish(); restoreSel(); });
+        dlg.addEventListener('cancel', (e) => { e.preventDefault(); if (picker.escapedRecently()) return; finish(); restoreSel(); });
         document.body.append(dlg);
         dlg.showModal();
         url.focus();
         url.select();
+    }
+
+    // Okno wyboru adresu dla pól inspektora (przyciski, odnośnik obrazu).
+    // Zwraca wybrany adres albo null (anulowano). Fokus wraca do wywołującego.
+    function openLinkPickerDialog(current, title = 'Wybierz stronę') {
+        return new Promise((resolve) => {
+            const n = ++dialogSeq;
+            const picker = linkPicker({ value: current || '', id: `be-pick-url-${n}` });
+            const error = h('p', { class: 'be-error', role: 'alert' });
+            const dlg = h('dialog', { class: 'be-dialog be-dialog--small', 'aria-labelledby': `be-pick-title-${n}` });
+            const done = (v) => { dlg.close(); dlg.remove(); resolve(v); };
+            dlg.append(h('form', { onSubmit: (e) => {
+                e.preventDefault();
+                const v = picker.input.value.trim();
+                if (!validHref(v)) { error.textContent = 'Wybierz stronę z listy albo podaj adres zaczynający się od https://, / , mailto: lub tel:'; picker.input.setAttribute('aria-invalid', 'true'); picker.input.focus(); return; }
+                done(normalizeHref(v));
+            } },
+            h('h2', { id: `be-pick-title-${n}` }, title),
+            picker.root,
+            error,
+            h('div', { class: 'be-dialog-actions' },
+                h('button', { type: 'button', class: 'be-btn be-btn--ghost', onClick: () => done(null) }, 'Anuluj'),
+                h('button', { type: 'submit', class: 'be-btn be-btn--primary' }, 'Zastosuj'))));
+            dlg.addEventListener('cancel', (e) => { e.preventDefault(); if (picker.escapedRecently()) return; done(null); });
+            document.body.append(dlg);
+            dlg.showModal();
+            picker.input.focus();
+            picker.input.select();
+        });
+    }
+
+    // ── Tekst alternatywny po wstawieniu obrazu ────────────────────────────
+    // Okno pojawia się od razu po przesłaniu / wybraniu obrazu. „Pomiń” zostawia
+    // obraz bez opisu (uwaga dostępności pozostaje na liście). Zwraca
+    // { alt, decorative }, null (pominięto) albo 'skip-all' (galeria).
+    function promptAltText({ url, alt = '', decorative = false, allowDecorative = true, position = null }) {
+        return new Promise((resolve) => {
+            const n = ++dialogSeq;
+            const ids = { title: `be-alt-title-${n}`, intro: `be-alt-intro-${n}`, ta: `be-alt-${n}`, help: `be-alt-${n}-help`, deco: `be-alt-deco-${n}` };
+            const ta = h('textarea', { class: 'be-input', id: ids.ta, rows: '3', 'aria-describedby': ids.help });
+            ta.value = alt || '';
+            const deco = allowDecorative ? h('input', { type: 'checkbox', id: ids.deco, checked: decorative, 'aria-describedby': ids.deco + '-help' }) : null;
+            const error = h('p', { class: 'be-error', role: 'alert' });
+            const dlg = h('dialog', { class: 'be-dialog be-dialog--small', 'aria-labelledby': ids.title, 'aria-describedby': ids.intro });
+            const done = (v) => { dlg.close(); dlg.remove(); resolve(v); };
+            const sync = () => { if (deco) ta.disabled = deco.checked; };
+            deco?.addEventListener('change', () => { sync(); error.textContent = ''; });
+            dlg.append(h('form', { onSubmit: (e) => {
+                e.preventDefault();
+                const isDeco = !!deco?.checked;
+                const v = ta.value.trim();
+                if (!isDeco && !v) {
+                    error.textContent = allowDecorative ? 'Wpisz opis, zaznacz „Obraz dekoracyjny” albo wybierz „Pomiń”.' : 'Wpisz opis albo wybierz „Pomiń”.';
+                    ta.setAttribute('aria-invalid', 'true');
+                    ta.focus();
+                    return;
+                }
+                done({ alt: isDeco ? '' : v, decorative: isDeco });
+            } },
+            h('h2', { id: ids.title }, position ? `Opisz zdjęcie ${position[0]} z ${position[1]}` : 'Opisz obraz'),
+            h('p', { id: ids.intro, class: 'be-help' }, 'Tekst alternatywny odczyta czytnik ekranu osobom, które nie widzą obrazu. Pojawi się też, gdy obraz się nie wczyta.'),
+            h('img', { src: url, alt: '', class: 'be-alt-thumb' }),
+            h('div', { class: 'be-field' },
+                h('label', { for: ids.ta }, 'Tekst alternatywny'),
+                ta,
+                h('p', { id: ids.help, class: 'be-help' }, 'Opisz, co widać i dlaczego to ważne w tym miejscu — zwykle wystarczy jedno zdanie. Nie zaczynaj od „Zdjęcie…”. Tekst widoczny na grafice przepisz w całości.')),
+            deco ? h('div', { class: 'be-check' }, deco, h('label', { for: ids.deco }, 'Obraz dekoracyjny'),
+                h('p', { id: ids.deco + '-help', class: 'be-help' }, 'Zaznacz, jeśli obraz nic nie wnosi do treści (ozdobnik, tło) — czytnik ekranu go pominie.')) : null,
+            error,
+            h('div', { class: 'be-dialog-actions' },
+                position && position[1] > 1 ? h('button', { type: 'button', class: 'be-btn be-btn--ghost', onClick: () => done('skip-all') }, 'Pomiń wszystkie') : null,
+                h('button', { type: 'button', class: 'be-btn be-btn--ghost', onClick: () => done(null) }, 'Pomiń'),
+                h('button', { type: 'submit', class: 'be-btn be-btn--primary' }, 'Zapisz opis'))));
+            dlg.addEventListener('cancel', (e) => { e.preventDefault(); done(null); });
+            document.body.append(dlg);
+            dlg.showModal();
+            sync();
+            (ta.disabled ? deco : ta).focus();
+        });
+    }
+
+    // Obraz w bloku „Obraz”: ustaw adres, zapytaj o opis, wróć fokusem do bloku.
+    async function setImageWithAlt(b, url, { alt = '', decorative = false } = {}) {
+        let cur = find(b.id)?.block;
+        if (!cur) return;
+        updateAttrs(cur, { url, alt: alt || '', decorative });
+        const r = await promptAltText({ url, alt, decorative });
+        cur = find(b.id)?.block;
+        if (!cur) return;
+        if (r && typeof r === 'object') { updateAttrs(cur, { alt: r.alt, decorative: r.decorative }); announce('Zapisano opis obrazu'); } else if (!alt && !decorative) announce('Pominięto opis obrazu — uwaga dostępności pozostaje na liście.');
+        selectBlock(cur.id, { focusWrapper: true });
+    }
+
+    // Zdjęcia do galerii: opis każdego po kolei (z możliwością pominięcia wszystkich).
+    async function addGalleryImages(b, images) {
+        if (!images.length) return;
+        const out = [];
+        let skipAll = false;
+        for (let i = 0; i < images.length; i++) {
+            const img = { url: images[i].url, alt: images[i].alt || '', caption: '' };
+            if (!skipAll) {
+                const r = await promptAltText({ url: img.url, alt: img.alt, allowDecorative: false, position: [i + 1, images.length] });
+                if (r === 'skip-all') skipAll = true;
+                else if (r) img.alt = r.alt;
+            }
+            out.push(img);
+        }
+        const cur = find(b.id)?.block;
+        if (!cur) return;
+        updateAttrs(cur, { images: [...cur.attrs.images, ...out] });
+        announce(`Dodano ${out.length} ${plural(out.length, 'zdjęcie', 'zdjęcia', 'zdjęć')} do galerii`);
+        selectBlock(cur.id, { focusWrapper: true });
     }
 
     // ── Multimedia ─────────────────────────────────────────────────────────
@@ -1906,7 +2257,7 @@ function start(config) {
     // ── Zapis ──────────────────────────────────────────────────────────────
     async function save() {
         if (S.saving) return;
-        if (!S.title.trim()) { S.error = 'Tytuł strony nie może być pusty.'; updateTopbar(); titleEl.focus(); return; }
+        if (!S.title.trim()) { S.error = L.titleRequired; updateTopbar(); titleEl.focus(); return; }
         S.saving = true;
         S.error = null;
         updateTopbar();

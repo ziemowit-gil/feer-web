@@ -314,6 +314,12 @@ Route::middleware(['auth', 'verified', '2fa', 'admin-site'])->prefix(config('app
     Route::get('historia/{type}/{id}/json', [AdminRevisionController::class, 'json'])->name('historia.json');
     Route::post('historia/{type}/{id}/przywroc/{revision}', [AdminRevisionController::class, 'restore'])->name('historia.restore');
 
+    // Edytor blokowy — strony, aktualności i działania (dostęp do modułu weryfikowany w kontrolerze).
+    Route::get('edytor-blokowy/linki', [\App\Http\Controllers\Admin\BlockEditorController::class, 'links'])->name('edytor-blokowy.links');
+    Route::post('edytor-blokowy/podglad-shortcode', [\App\Http\Controllers\Admin\BlockEditorController::class, 'shortcodePreview'])->name('edytor-blokowy.shortcode');
+    Route::get('edytor-blokowy/{type}/{id}', [\App\Http\Controllers\Admin\BlockEditorController::class, 'edit'])->whereIn('type', ['page', 'news', 'project'])->whereNumber('id')->name('edytor-blokowy.edit');
+    Route::put('edytor-blokowy/{type}/{id}', [\App\Http\Controllers\Admin\BlockEditorController::class, 'update'])->whereIn('type', ['page', 'news', 'project'])->whereNumber('id')->name('edytor-blokowy.update');
+
     // Globalna wyszukiwarka panelu (paleta poleceń).
     Route::get('szukaj', AdminSearchController::class)->name('search');
     // Lista nazw Bootstrap Icons dla selektora ikon w formularzach (resources/data).
@@ -362,8 +368,8 @@ Route::middleware(['auth', 'verified', '2fa', 'admin-site'])->prefix(config('app
         Route::resource('podstrony', AdminPageController::class)->parameters(['podstrony' => 'page']);
         Route::put('edycja-na-zywo', [\App\Http\Controllers\Admin\InlineEditController::class, 'update'])->name('inline-edit.update');
         // Edytor blokowy (styl Gutenberga) — pełnoekranowy, na stylach frontu.
-        Route::get('podstrony/{page}/edytor-blokowy', [\App\Http\Controllers\Admin\BlockEditorController::class, 'edit'])->name('podstrony.bloki.edit');
-        Route::put('podstrony/{page}/edytor-blokowy', [\App\Http\Controllers\Admin\BlockEditorController::class, 'update'])->name('podstrony.bloki.update');
+        Route::get('podstrony/{page}/edytor-blokowy', [\App\Http\Controllers\Admin\BlockEditorController::class, 'editPage'])->name('podstrony.bloki.edit');
+        Route::put('podstrony/{page}/edytor-blokowy', [\App\Http\Controllers\Admin\BlockEditorController::class, 'updatePage'])->name('podstrony.bloki.update');
         Route::post('podstrony/{page}/pliki', [AdminAttachmentController::class, 'storeForPage'])->name('podstrony.pliki.store');
         Route::get('podstrony/{page}/dostep/eksport', [AdminBrandAccessUserController::class, 'export'])->name('podstrony.dostep.eksport');
         Route::get('podstrony/{page}/dostep', [AdminBrandAccessUserController::class, 'index'])->name('podstrony.dostep.index');

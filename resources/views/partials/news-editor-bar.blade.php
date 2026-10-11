@@ -71,6 +71,15 @@
                     <i class="fa-solid fa-gauge mr-1" aria-hidden="true"></i>Panel
                 </a>
 
+                {{-- Edytor blokowy aktualności (pełnoekranowy). --}}
+                <a
+                    x-show="!editMode"
+                    href="{{ route('admin.edytor-blokowy.edit', ['news', $news->id]) }}"
+                    class="rounded-lg border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+                >
+                    <i class="fa-solid fa-cubes mr-1" aria-hidden="true"></i>Bloki<span class="sr-only"> — edytuj aktualność w edytorze blokowym</span>
+                </a>
+
                 <button
                     x-show="editMode"
                     x-cloak

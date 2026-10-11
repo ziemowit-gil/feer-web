@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="robots" content="noindex, nofollow">
-    <title>Edytor blokowy: {{ $page->title }} — {{ $siteSettings->site_name }}</title>
+    <title>Edytor blokowy: {{ $editorConfig['page']['title'] }} — {{ $siteSettings->site_name }}</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;700&family=Montserrat:wght@400;600;700&display=swap">
@@ -27,7 +27,7 @@
 </head>
 <body class="be-body">
     <noscript>
-        <p class="be-noscript">Edytor blokowy wymaga JavaScriptu. <a href="{{ route('admin.podstrony.edit', $page) }}">Przejdź do klasycznego formularza strony</a>.</p>
+        <p class="be-noscript">Edytor blokowy wymaga JavaScriptu. <a href="{{ $editorConfig['urls']['admin'] }}">{{ $editorConfig['labels']['noscript'] }}</a>.</p>
     </noscript>
     <div id="block-editor" data-config='@json($editorConfig, JSON_HEX_APOS | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_QUOT)'></div>
 </body>

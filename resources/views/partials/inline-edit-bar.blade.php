@@ -49,11 +49,25 @@
                 </button>
             </template>
 
-            {{-- Edytor blokowy (styl Gutenberga) — tylko dla podstron. --}}
-            @if (isset($page) && $page instanceof \App\Models\Page && $page->exists && auth('web')->user()?->canAccessModule('pages'))
-                <a x-show="!editMode" href="{{ route('admin.podstrony.bloki.edit', $page) }}"
+            {{-- Edytor blokowy (styl Gutenberga) — strony, działania i aktualności. --}}
+            @php
+                $blockEditorUrl = null;
+                $blockEditorUser = auth('web')->user();
+                if (isset($page) && $page instanceof \App\Models\Page && $page->exists && $blockEditorUser?->canAccessModule('pages')) {
+                    $blockEditorUrl = route('admin.podstrony.bloki.edit', $page);
+                    $blockEditorNoun = 'tę stronę';
+                } elseif (isset($project) && $project instanceof \App\Models\Project && $project->exists && $blockEditorUser?->canAccessModule('projects')) {
+                    $blockEditorUrl = route('admin.edytor-blokowy.edit', ['project', $project->id]);
+                    $blockEditorNoun = 'opis tego działania';
+                } elseif (isset($news) && $news instanceof \App\Models\News && $news->exists && $blockEditorUser?->canAccessModule('news')) {
+                    $blockEditorUrl = route('admin.edytor-blokowy.edit', ['news', $news->id]);
+                    $blockEditorNoun = 'tę aktualność';
+                }
+            @endphp
+            @if ($blockEditorUrl)
+                <a x-show="!editMode" href="{{ $blockEditorUrl }}"
                     class="inline-flex min-h-12 items-center gap-1.5 rounded-full bg-white px-5 text-sm font-bold text-ink shadow-[0_6px_20px_rgba(0,0,0,.18)] ring-1 ring-gray-300 transition hover:-translate-y-0.5 hover:bg-brand-light hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
-                    <i class="fa-solid fa-cubes mr-1" aria-hidden="true"></i>Bloki<span class="sr-only"> — edytuj tę stronę w edytorze blokowym</span>
+                    <i class="fa-solid fa-cubes mr-1" aria-hidden="true"></i>Bloki<span class="sr-only"> — edytuj {{ $blockEditorNoun }} w edytorze blokowym</span>
                 </a>
             @endif
 

@@ -60,7 +60,7 @@ class News extends Model implements HasMedia
     }
 
     protected $fillable = [
-        'site_id', 'created_by', 'news_category_id', 'project_id', 'title', 'slug', 'excerpt', 'audience', 'accent_color', 'image_alt', 'image_focal_x', 'image_focal_y', 'article_layout', 'content', 'published_at', 'is_published', 'is_archived', 'is_legacy', 'is_clone', 'cloned_from_id',
+        'site_id', 'created_by', 'news_category_id', 'project_id', 'title', 'slug', 'excerpt', 'audience', 'accent_color', 'image_alt', 'image_focal_x', 'image_focal_y', 'article_layout', 'content', 'blocks', 'published_at', 'is_published', 'is_archived', 'is_legacy', 'is_clone', 'cloned_from_id',
         'meta_title', 'meta_description', 'pending_approval', 'submitted_by_id',
     ];
 
@@ -71,7 +71,22 @@ class News extends Model implements HasMedia
         'is_legacy' => 'boolean',
         'is_clone' => 'boolean',
         'pending_approval' => 'boolean',
+        'blocks' => 'array',
     ];
+
+    /**
+     * Bloki edytora blokowego są aktualne tylko razem z `content`, który z nich
+     * wyrenderowano — zmiana treści gdzie indziej (formularz, edycja na żywo,
+     * przywrócenie wersji) unieważnia je, a edytor wczyta wtedy treść jako blok HTML.
+     */
+    protected static function booted(): void
+    {
+        static::saving(function (News $news) {
+            if ($news->exists && $news->isDirty('content') && ! $news->isDirty('blocks') && $news->blocks !== null) {
+                $news->blocks = null;
+            }
+        });
+    }
 
     public function category(): BelongsTo
     {
