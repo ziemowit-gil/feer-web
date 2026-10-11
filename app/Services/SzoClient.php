@@ -127,6 +127,7 @@ class SzoClient
                 'form'     => $slug,
                 'data'     => $this->mapData($form, $submission),
                 'consents' => $this->consents($form, $submission),
+                'fields'   => $this->fieldsMeta($form),
                 'meta'     => [
                     'ip'          => $submission->ip_address,
                     'external_id' => (string) $submission->id,
@@ -223,18 +224,10 @@ class SzoClient
         ));
     }
 
-    /**
-     * Mapuje pola zgłoszenia na klucze, których oczekuje CRM.
-     *
-     * Klucze pól w CMS pochodzą z etykiet (Str::slug), więc „Imię i nazwisko"
-     * daje `imie_i_nazwisko`, a CRM oczekuje `imie_nazwisko`. Tabela poniżej
-     * łapie typowe warianty; czego nie rozpozna, leci pod własnym kluczem —
-     * CRM odrzuci nieznane pola, ale zgłoszenie i tak trafi do Skrzynki
-     * z pełną treścią, więc nic nie ginie.
-     */
-    protected function mapData(FormDefinition $form, FormSubmission $submission): array
+    /** Klucze pól CMS → klucze kartoteki CRM w SZO (typowe warianty etykiet). */
+    protected function aliases(): array
     {
-        $aliases = [
+        return [
             'imie_i_nazwisko' => 'imie_nazwisko',
             'imie_nazwisko'   => 'imie_nazwisko',
             'imie'            => 'imie_nazwisko',
@@ -254,6 +247,54 @@ class SzoClient
             'opis'            => 'notatka',
             'pytanie'         => 'notatka',
         ];
+    }
+
+    /**
+     * Opis pól wysyłany razem ze zgłoszeniem: klucz (po mapowaniu jak w mapData), etykieta,
+     * typ i opcje. SZO dopisuje do swojego formularza pola, których jeszcze nie ma
+     * (pole kartoteki albo pole dodatkowe CRM), żeby wartości nie przepadały.
+     */
+    protected function fieldsMeta(FormDefinition $form): array
+    {
+        $aliases = $this->aliases();
+        $out = [];
+
+        foreach ($form->inputFields() as $field) {
+            $type = $field['type'] ?? 'text';
+            // Zgody idą osobno (consents); załącznik — jako tekst (nazwa pliku).
+            if (in_array($type, ['checkbox', 'consent'], true)) {
+                continue;
+            }
+            if ($type === 'file') {
+                $type = 'text';
+            }
+            $key = $aliases[$field['key']] ?? $field['key'];
+            if (isset($out[$key])) {
+                continue;
+            }
+            $out[$key] = array_filter([
+                'name'    => $key,
+                'label'   => $key === 'notatka' ? 'Wiadomość / Notatka' : (string) ($field['label'] ?? $key),
+                'type'    => $type,
+                'options' => FormDefinition::fieldOptions($field) ?: null,
+            ], fn ($v) => $v !== null);
+        }
+
+        return array_values($out);
+    }
+
+    /**
+     * Mapuje pola zgłoszenia na klucze, których oczekuje CRM.
+     *
+     * Klucze pól w CMS pochodzą z etykiet (Str::slug), więc „Imię i nazwisko"
+     * daje `imie_i_nazwisko`, a CRM oczekuje `imie_nazwisko`. Tabela poniżej
+     * łapie typowe warianty; czego nie rozpozna, leci pod własnym kluczem —
+     * CRM odrzuci nieznane pola, ale zgłoszenie i tak trafi do Skrzynki
+     * z pełną treścią, więc nic nie ginie.
+     */
+    protected function mapData(FormDefinition $form, FormSubmission $submission): array
+    {
+        $aliases = $this->aliases();
 
         $out  = [];
         $data = $submission->data ?? [];
@@ -262,9 +303,12 @@ class SzoClient
             $key   = $field['key'] ?? '';
             $value = $data[$key] ?? null;
 
-            // Załączniki zostają w CMS-ie (pobieranie z panelu) — do SZO nie wysyłamy plików ani ścieżek.
+            // Załączniki: sam plik zostaje w CMS-ie (pobieranie z panelu) — do CRM idzie nazwa i rozmiar, bez ścieżki.
             if (($field['type'] ?? '') === 'file') {
-                continue;
+                $value = is_array($value) ? FormDefinition::displayValue($field, $value) . ' — plik w panelu CMS' : null;
+                if (! $value) {
+                    continue;
+                }
             }
 
             if ($value === null || $value === '' || $value === []) {
