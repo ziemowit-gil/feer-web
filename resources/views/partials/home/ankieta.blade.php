@@ -3,7 +3,7 @@
     $quickLinksHere = ($sidebarActive && $quickLinks->isNotEmpty()) ? collect() : $quickLinks;
 @endphp
 @if ($poll || $quickLinksHere->isNotEmpty())
-<section class="border-t border-gray-100 {{ ($siteSettings->quick_actions_panel_negative ?? false) ? 'bg-white' : 'bg-gray-50' }}">
+<section class="{{ ($siteSettings->quick_actions_panel_negative ?? false) ? 'bg-white' : 'bg-gray-50' }}">
     <div class="mx-auto max-w-6xl px-4 py-12 {{ $poll ? 'grid gap-10 md:grid-cols-2' : '' }}">
         @if ($poll)
             <div id="ankieta">
@@ -27,16 +27,16 @@
                                     class="accent-brand">
                                 <span class="text-sm text-ink">{{ $option->label }} ({{ $option->percent($totalVotes) }}%)</span>
                             </div>
-                            <div class="ml-6 mt-1 h-2 w-full max-w-xs overflow-hidden rounded-full bg-gray-200">
-                                <div class="h-full rounded-full bg-brand" style="width: {{ $option->percent($totalVotes) }}%"></div>
+                            <div class="ml-6 mt-1 h-2 w-full max-w-xs overflow-hidden bg-gray-200" aria-hidden="true">
+                                <div class="h-full bg-brand-dark" style="width: {{ $option->percent($totalVotes) }}%"></div>
                             </div>
                         </label>
                     @endforeach
 
                     @if ($votedOptionId)
-                        <p class="text-xs font-bold text-muted">Dziękujemy za oddanie głosu.</p>
+                        <p class="text-sm font-bold text-ink">Dziękujemy za oddanie głosu.</p>
                     @else
-                        <button type="submit" class="mt-2 rounded bg-brand px-6 py-2 text-xs font-bold uppercase tracking-wide text-white hover:bg-brand-dark">Głosuj</button>
+                        <button type="submit" class="mt-2 inline-flex min-h-11 items-center rounded-md bg-brand-dark px-6 text-sm font-bold text-white transition-colors hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2">Głosuj</button>
                     @endif
                 </form>
             </div>

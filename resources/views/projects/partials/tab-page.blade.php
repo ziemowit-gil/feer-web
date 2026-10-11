@@ -1,6 +1,6 @@
 {{--
     Zawartość zakładki będącej podstroną projektu. Gdy podstrona ma potomków, po lewej pojawia się menu boczne
-    (szare pole, tytuł zakładki, pozycje z kreską i strzałką) — dowolna głębokość; każda pozycja otwiera
+    (szare pole, tytuł zakładki, pozycje ze strzałką — bez kresek) — dowolna głębokość; każda pozycja otwiera
     treść swojej podstrony. Zmienna: $root (Page z relacją tree_children).
 --}}
 <style>@media (min-width: 1024px) { .proj-tab-cols { grid-template-columns: minmax(0, 1fr) 16rem; } .proj-tab-cols > .proj-tab-side { grid-column: 2; grid-row: 1; } }</style>
@@ -19,14 +19,13 @@
         {{-- Zakładka bez podstron: tylko elementy dodatkowe (przyciski, notka) w prawej kolumnie --}}
         <div class="proj-tab-side -mt-5">@include('projects.partials.sidebar-extras', ['project' => $project])</div>
     @elseif ($localMenu)
-        <nav aria-label="Menu: {{ $root->title }}" class="proj-tab-side relative bg-gray-100 p-6 lg:sticky lg:top-6">
-            <span class="absolute block bg-brand" style="left:0;top:0;height:.25rem;width:4rem" aria-hidden="true"></span>
-            <p class="mb-4 border-b border-gray-900 pb-3 text-lg font-bold text-ink">{{ $root->title }}</p>
+        <nav aria-label="Menu: {{ $root->title }}" class="proj-tab-side rounded-md bg-gray-50 p-6 lg:sticky lg:top-24">
+            <p class="mb-2 text-lg font-bold text-ink">{{ $root->title }}</p>
             <ul role="list" class="text-ink">
-                <li class="border-b border-gray-300 last:border-0">
+                <li>
                     <button type="button" @click="node = {{ $root->id }}" :aria-current="node === {{ $root->id }} ? 'page' : null"
-                        class="flex w-full items-center justify-between py-3 text-left text-base font-normal hover:text-brand focus-visible:outline-2 focus-visible:outline-brand"
-                        :class="node === {{ $root->id }} ? 'text-brand' : ''">Przegląd</button>
+                        class="flex w-full items-center justify-between py-3 text-left text-base hover:text-brand-dark hover:underline hover:underline-offset-4 focus-visible:outline-2 focus-visible:outline-brand-dark"
+                        :class="node === {{ $root->id }} ? 'font-bold text-brand-dark' : ''">Przegląd</button>
                 </li>
                 @foreach ($root->tree_children as $child)
                     @include('projects.partials.tab-page-nav', ['item' => $child, 'depth' => 0])

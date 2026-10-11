@@ -11,7 +11,7 @@
 {{--
     Lista działań w układzie kafelkowym (opcja „Nawigacja kafelkowa" w Ustawienia → Treści): działania jako duże,
     kolorowe kafelki pogrupowane w kategorie. Kolor kafelka: własny kolor akcentu działania albo kolejne kolory marki;
-    kolor tekstu dobiera Color::button (kontrast ≥ 4,5:1). Działa w każdym szablonie.
+    kolor tekstu dobiera Color::button (kontrast ≥ 4,5:1). Płasko: bez przezroczystości i unoszenia; po najechaniu podkreślony tytuł. Działa w każdym szablonie.
 --}}
 @section('content')
     @php
@@ -38,7 +38,7 @@
                     <section aria-labelledby="kat-t-{{ $category->id }}">
                         <div class="mb-5 flex items-end justify-between gap-4">
                             <h2 id="kat-t-{{ $category->id }}" class="text-2xl font-bold text-ink">{{ $category->name }}</h2>
-                            <a href="{{ route('categories.show', $category) }}" class="shrink-0 text-sm font-bold text-brand-dark underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">Zobacz kategorię →</a>
+                            <a href="{{ route('categories.show', $category) }}" class="shrink-0 text-sm font-bold text-brand-dark underline underline-offset-4 hover:no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">Zobacz kategorię →</a>
                         </div>
                         <ul class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3" role="list">
                             @foreach ($category->publishedProjects as $project)
@@ -49,13 +49,13 @@
                                 @endphp
                                 <li>
                                     <a href="{{ route('projects.show', $project) }}"
-                                       class="feer-card group flex h-full min-h-40 flex-col justify-between rounded-md p-6 transition hover:-translate-y-0.5 hover:opacity-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2"
+                                       class="group flex h-full min-h-40 flex-col justify-between rounded-md p-6 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2"
                                        style="background-color: {{ $pal['bg'] }}; color: {{ $pal['text'] }}">
-                                        <span class="text-xl font-bold leading-snug">{{ $project->title }}</span>
+                                        <span class="text-xl font-bold leading-snug group-hover:underline group-hover:underline-offset-4">{{ $project->title }}</span>
                                         <span class="block">@include('projects.partials.form-badge', ['project' => $project])</span>
                                         <span class="mt-4 flex items-end justify-between gap-3">
                                             <span class="text-sm leading-snug">{{ \Illuminate\Support\Str::limit((string) $project->excerpt, 90) }}</span>
-                                            <span class="flex-none text-2xl transition group-hover:translate-x-1" aria-hidden="true">→</span>
+                                            <span class="flex-none text-2xl transition group-hover:translate-x-1 motion-reduce:transition-none" aria-hidden="true">→</span>
                                         </span>
                                     </a>
                                 </li>
@@ -67,7 +67,7 @@
         @endif
 
         @if ($hasArchive)
-            <p class="mt-14"><a href="{{ route('projects.archive') }}" class="text-sm font-bold text-brand-dark underline underline-offset-4 hover:no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">To już zrobiliśmy — zrealizowane działania →</a></p>
+            <p class="mt-14"><a href="{{ route('projects.archive') }}" class="text-sm font-bold text-brand-dark underline underline-offset-4 hover:no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">To już zrobiliśmy — zrealizowane działania →</a></p>
         @endif
     </div>
 @endsection

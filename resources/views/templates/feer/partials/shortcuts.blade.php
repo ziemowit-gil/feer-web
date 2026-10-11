@@ -36,7 +36,7 @@
             <div class="mb-6 flex items-end justify-between gap-4">
                 <h2 id="feer-shortcuts-heading" class="text-2xl font-bold text-ink md:text-3xl">Na skróty</h2>
                 @if (auth()->check() && auth()->user()->isAdmin())
-                    <a href="{{ route('admin.szybkie-akcje.index') }}" class="shrink-0 inline-flex min-h-9 items-center gap-1.5 text-sm font-bold text-ink underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                    <a href="{{ route('admin.szybkie-akcje.index') }}" class="shrink-0 inline-flex min-h-9 items-center gap-1.5 text-sm font-bold text-ink underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">
                         <i class="fa-solid fa-gear" aria-hidden="true"></i>Zarządzaj skrótami
                     </a>
                 @endif
@@ -56,7 +56,7 @@
                         @endphp
                         <li class="{{ $qaSpan((int) ($qa->cols ?? 1)) }}">
                             <a href="{{ $qa->url }}" @if ($external) target="_blank" rel="noopener" @endif
-                               class="feer-card group flex {{ $single ? 'min-h-32 gap-6 px-8 py-6' : ($strip ? 'min-h-14 gap-3 px-4 py-2' : 'min-h-20 gap-4 px-5 py-4') }} items-center rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2 {{ $filled ? 'hover:opacity-90' : ($panelWhite ? 'bg-white' : 'bg-white').' hover:bg-gray-100' }}"
+                               class="group flex {{ $single ? 'min-h-32 gap-6 px-8 py-6' : ($strip ? 'min-h-14 gap-3 px-4 py-2' : 'min-h-20 gap-4 px-5 py-4') }} items-center rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2 {{ $filled ? '' : 'bg-white hover:bg-gray-100' }}"
                                @if ($filled)
                                    style="background-color: {{ $pal['bg'] }}; color: {{ $pal['text'] }}"
                                @else
@@ -64,9 +64,9 @@
                                @endif>
                                 {!! icon_html($qa->icon, 'flex-none text-center '.($single ? 'w-12 text-5xl' : ($strip ? 'w-6 text-xl' : 'w-7 text-2xl')), $filled ? '' : 'color: '.$safe) !!}
                                 <span class="min-w-0 flex-1">
-                                    <span class="block font-bold leading-snug {{ $single ? 'text-2xl md:text-3xl' : ($strip ? 'text-base' : 'text-lg') }}">{{ $qa->label }}</span>
+                                    <span class="block font-bold leading-snug group-hover:underline group-hover:underline-offset-4 {{ $single ? 'text-2xl md:text-3xl' : ($strip ? 'text-base' : 'text-lg') }}">{{ $qa->label }}</span>
                                     @if (! $strip && ($qa->description ?? null))
-                                        <span class="mt-0.5 block text-sm font-medium leading-snug {{ $filled ? '' : 'text-muted' }}" @if ($filled) style="opacity: .92" @endif>{{ $qa->description }}</span>
+                                        <span class="mt-0.5 block text-sm font-medium leading-snug {{ $filled ? '' : 'text-muted' }}">{{ $qa->description }}</span>
                                     @endif
                                 </span>
                                 @if ($external)<span class="sr-only">(otwiera się w nowej karcie)</span>@endif
@@ -79,7 +79,7 @@
           </div>
           @endif
 
-          {{-- Ankieta (moduł polls): płaska karta z paskami wyników; po oddaniu głosu — procenty i podziękowanie. --}}
+          {{-- Ankieta (moduł polls): płaskie pole (bez ramki) z paskami wyników; po oddaniu głosu — procenty i podziękowanie. --}}
           @if ($poll)
               @php
                   $votedOptionId = session("voted_polls.{$poll->id}");
@@ -87,7 +87,7 @@
               @endphp
               <div id="ankieta" class="min-w-0">
                   <h2 id="feer-poll-heading" class="mb-6 text-2xl font-bold text-ink md:text-3xl">Ankieta</h2>
-                  <form action="{{ route('polls.vote', $poll) }}" method="POST" class="rounded-md bg-white p-6" style="border: 2px solid #1d1d1a">
+                  <form action="{{ route('polls.vote', $poll) }}" method="POST" class="rounded-md {{ $panelWhite ? 'bg-gray-50' : 'bg-white' }} p-6">
                       @csrf
                       <fieldset>
                           <legend class="mb-4 text-lg font-bold leading-snug text-ink">{{ $poll->question }}</legend>
@@ -101,7 +101,7 @@
                                           <span class="text-sm font-medium text-ink">{{ $option->label }} ({{ $option->percent($totalVotes) }}%)</span>
                                       </span>
                                       <span class="mt-1 ml-6 block h-2 max-w-xs overflow-hidden bg-gray-200" aria-hidden="true">
-                                          <span class="block h-full bg-brand" style="width: {{ $option->percent($totalVotes) }}%"></span>
+                                          <span class="block h-full bg-brand-dark" style="width: {{ $option->percent($totalVotes) }}%"></span>
                                       </span>
                                   </label>
                               @endforeach
@@ -110,7 +110,7 @@
                       @if ($votedOptionId)
                           <p class="mt-4 text-sm font-bold text-ink">Dziękujemy za oddanie głosu.</p>
                       @else
-                          <button type="submit" class="mt-5 inline-flex min-h-11 items-center rounded-md bg-brand px-6 text-sm font-bold text-white transition hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2">Głosuj</button>
+                          <button type="submit" class="mt-5 inline-flex min-h-11 items-center rounded-md bg-brand-dark px-6 text-sm font-bold text-white transition-colors hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2">Głosuj</button>
                       @endif
                   </form>
               </div>

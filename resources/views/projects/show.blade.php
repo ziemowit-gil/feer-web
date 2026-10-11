@@ -66,40 +66,42 @@
                 && mb_strtolower($forWhom) !== mb_strtolower(trim(\Illuminate\Support\Str::after($catName, 'Dla ')));
         @endphp
 
-    {{-- ══ HERO: kategoria, tytuł, status, zajawka, kluczowe fakty i zdjęcie ══ --}}
-    <section class="border-b border-gray-100 bg-gray-50">
-        <div class="relative mx-auto grid max-w-6xl items-center gap-8 px-4 py-8 sm:py-10 {{ $project->image_url ? 'lg:grid-cols-[minmax(0,1fr)_26rem]' : '' }}">
+    {{-- ══ NAGŁÓWEK (układ portalu): kategoria, tytuł, status i termin zwykłym tekstem, zajawka, zdjęcie — płasko, na białym ══ --}}
+    <section>
+        <div class="mx-auto grid max-w-6xl items-center gap-8 px-4 pb-4 pt-8 sm:pt-10 {{ $project->image_url ? 'lg:grid-cols-[minmax(0,1fr)_26rem]' : '' }}">
             <div class="min-w-0">
-                <a href="{{ route('categories.show', $project->category) }}" class="inline-block text-xs font-bold uppercase tracking-widest text-brand hover:text-brand-dark">
+                <a href="{{ route('categories.show', $project->category) }}" class="inline-block text-sm font-bold uppercase tracking-widest text-brand-dark hover:underline hover:underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">
                     {{ $project->category->name }}
                 </a>
-                <h1 class="mt-3 text-3xl font-extrabold leading-tight tracking-tight text-ink sm:text-5xl" @if ($canInlineEdit) data-inline-field="title" data-inline-kind="text" @endif>{{ $project->title }}</h1>
+                <h1 class="mt-3 text-3xl font-extrabold leading-tight tracking-tight text-ink md:text-4xl" @if ($canInlineEdit) data-inline-field="title" data-inline-kind="text" @endif>{{ $project->title }}</h1>
+                @if (($siteSettings->site_template ?? 'default') === 'feer')<span class="mt-4 block h-1 w-14 bg-brand" aria-hidden="true"></span>@endif
                 @if ($siteSettings->projects_stages_enabled && ($project->status || $project->starts_on))
-                    <p class="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-ink">
-                        @if ($project->status)<span class="proj-status is-{{ $project->status }}">{{ \App\Models\Project::STATUSES[$project->status] ?? '' }}</span>@endif
-                        @if ($project->starts_on)<span><i class="fa-solid fa-calendar-days mr-1.5 text-brand" aria-hidden="true"></i>{{ $project->starts_on->locale('pl')->isoFormat('D MMMM YYYY') }}@if ($project->ends_on) – {{ $project->ends_on->locale('pl')->isoFormat('D MMMM YYYY') }}@endif</span>@endif
-                    </p>
+                    {{-- Status i termin jako zwykły tekst (bez plakietek). --}}
+                    <dl class="proj-meta">
+                        @if ($project->status)<div><dt>Status:</dt> <dd>{{ \App\Models\Project::STATUSES[$project->status] ?? '' }}</dd></div>@endif
+                        @if ($project->starts_on)<div><dt>Termin:</dt> <dd>{{ $project->starts_on->locale('pl')->isoFormat('D MMMM YYYY') }}@if ($project->ends_on) – {{ $project->ends_on->locale('pl')->isoFormat('D MMMM YYYY') }}@endif</dd></div>@endif
+                    </dl>
                 @endif
                 @php $extrasOn = $siteSettings->projects_extras_enabled; $mainCta = $extrasOn ? (array) ($project->main_cta ?? []) : []; @endphp
                 @if ($project->excerpt)
-                    <p class="mt-4 max-w-2xl text-lg leading-relaxed text-ink/80">{{ $project->excerpt }}</p>
+                    <p class="mt-4 max-w-2xl text-lg leading-relaxed text-ink">{{ $project->excerpt }}</p>
                 @endif
                 <p class="mt-4 no-print">@include('partials.print-button')</p>
                 @if (! empty($mainCta['label']) && ! empty($mainCta['url']))
                     <p class="mt-5"><a href="{{ $mainCta['url'] }}" class="proj-cta">{{ $mainCta['label'] }} <span aria-hidden="true">→</span></a></p>
                 @endif
                 @if ($showForWhom || $project->since)
-                    <p class="mt-4 text-sm text-muted">
-                        @if ($showForWhom)<span @if ($canInlineEdit) data-inline-field="for_whom" data-inline-kind="text" data-inline-multiline @endif><i class="fa-solid fa-users mr-1.5 text-brand" aria-hidden="true"></i>Dla kogo: <span class="font-medium text-ink">{{ $project->for_whom }}</span></span>@endif
+                    <p class="mt-4 text-base text-ink">
+                        @if ($showForWhom)<span @if ($canInlineEdit) data-inline-field="for_whom" data-inline-kind="text" data-inline-multiline @endif><i class="fa-solid fa-users mr-1.5 text-brand-dark" aria-hidden="true"></i>Dla kogo: <span class="font-bold">{{ $project->for_whom }}</span></span>@endif
                         @if ($showForWhom && $project->since)<span aria-hidden="true"> · </span>@endif
-                        @if ($project->since)<span><i class="fa-solid fa-calendar-days mr-1.5 text-brand" aria-hidden="true"></i>Od kiedy: <span class="font-medium text-ink">{{ $project->since }}</span></span>@endif
+                        @if ($project->since)<span><i class="fa-solid fa-calendar-days mr-1.5 text-brand-dark" aria-hidden="true"></i>Od kiedy: <span class="font-bold">{{ $project->since }}</span></span>@endif
                     </p>
                 @endif
             </div>
 
             @if ($project->image_url)
                 <img src="{{ $project->image_url }}" alt="{{ $project->image_alt ?: 'Zdjęcie ilustracyjne: '.$project->title }}" data-lightbox
-                    class="aspect-[4/3] w-full rounded-lg object-cover shadow-sm ring-1 ring-gray-200">
+                    class="aspect-[4/3] w-full rounded-md object-cover">
             @endif
         </div>
     </section>
@@ -126,7 +128,8 @@
         @endphp
         {{-- Układ kolumn w zwykłym CSS (nie zależy od zbudowanych klas Tailwinda): menu boczne zawsze po lewej od lg. --}}
         <style>
-            /* Czytelność: krótsza linia (ok. 70 znaków), ciemniejszy i grubszy tekst, spójne nagłówki, wyróżnione komunikaty. */
+            /* Płasko (jak strona w układzie portalu): bez ramek, kresek, pigułek i gradientów — grupowanie tłem (szare / jasnoniebieskie),
+               linki i akcenty w kolorze brand-dark (≥ 4,5:1 na bieli i na tłach), treść ink. Układ kolumn w zwykłym CSS (nie zależy od zbudowanych klas Tailwinda). */
             .proj-measure { max-width: 46rem; }
             .proj-measure.proj-flow > * + * { margin-top: 2.5rem; } /* wyższa swoistość: nagłówki .proj-h2 mają własny margines i nie mogą go zerować */
             .proj-prose { color: #1d1d1a; font-size: 1.0625rem; line-height: 1.75; font-weight: 500; }
@@ -135,74 +138,65 @@
             .proj-prose strong { font-weight: 700; }
             .proj-prose ul, .proj-prose ol { padding-left: 1.4rem; }
             .proj-prose li { margin-top: .5rem; padding-left: .25rem; }
-            .proj-prose li::marker { color: var(--color-brand); font-weight: 700; }
-            .proj-prose a { color: var(--color-brand); text-decoration: underline; text-underline-offset: 3px; }
+            .proj-prose li::marker { color: var(--color-brand-dark); font-weight: 700; }
+            .proj-prose a { color: var(--color-brand-dark); font-weight: 700; text-decoration: underline; text-underline-offset: 4px; }
+            .proj-prose a:hover { text-decoration: none; }
             .proj-prose h2, .proj-prose h3 { color: #1d1d1a; font-weight: 800; line-height: 1.3; }
-            .proj-prose h2 { margin: 2.5rem 0 1rem; padding-left: .75rem; border-left: 4px solid var(--color-brand); font-size: 1.5rem; }
+            .proj-prose h2 { margin: 2.5rem 0 1rem; font-size: 1.5rem; }
             .proj-prose h3 { margin: 1.75rem 0 .5rem; font-size: 1.2rem; }
-            .proj-h2 { margin: 0 0 1rem; padding-left: .75rem; border-left: 4px solid var(--color-brand); font-size: 1.5rem; font-weight: 800; line-height: 1.3; color: #1d1d1a; }
+            .proj-h2 { margin: 0 0 1rem; font-size: 1.5rem; font-weight: 800; line-height: 1.3; color: #1d1d1a; }
+            /* Komunikaty („Ważne:", „Uwaga:", wyśrodkowane akapity z edytora) — jasnoniebieskie tło zamiast ramki. */
             .proj-callout, .proj-prose p[style*="text-align: center"], .proj-prose p[style*="text-align:center"] {
-                position: relative; margin: 1.5rem 0; padding: 1rem 4.5rem 1rem 1.25rem; border: 2px solid var(--color-brand); border-radius: .5rem;
-                background: #fff; text-align: left !important; font-weight: 600;
+                margin: 1.5rem 0; padding: 1rem 1.25rem; border-radius: .375rem; background: var(--color-brand-light); color: #1d1d1a; text-align: left !important; font-weight: 600;
             }
-            /* Ozdobny wykrzyknik w obwiedzionym kółku z prawej strony ramki (dekoracja — nie jest czytany). */
-            .proj-callout::after, .proj-prose p[style*="text-align: center"]::after, .proj-prose p[style*="text-align:center"]::after {
-                content: "!"; position: absolute; top: 50%; right: 1rem; transform: translateY(-50%);
-                display: flex; align-items: center; justify-content: center; width: 2.25rem; height: 2.25rem;
-                border: 2px solid var(--color-brand); border-radius: 9999px; color: var(--color-brand); background: #fff;
-                font-size: 1.25rem; font-weight: 800; line-height: 1;
-            }
-            .proj-news a { display: block; padding: .6rem 0; }
-            .proj-note { position: relative; margin: 0 0 1rem; padding: 1rem 4.5rem 1rem 1.25rem; border: 2px solid var(--color-brand); border-radius: .5rem; background: #fff; color: #1d1d1a; font-size: 1.0625rem; line-height: 1.6; font-weight: 600; }
-                                    /* Sekcje informacyjne bez ramek: zwykły nagłówek z paskiem marki (jak „Opis działania"); ramki zostają tylko dla komunikatów (.proj-note, .proj-callout). */
-            .proj-frame { margin-top: 2.5rem; padding: 0; border: 0; background: transparent; }
-            .proj-frame-side { margin-top: 0; margin-bottom: 1.5rem; }
+            .proj-note { position: relative; margin: 0 0 1rem; padding: 1rem 4rem 1rem 1.25rem; border-radius: .375rem; background: var(--color-brand-light); color: #1d1d1a; font-size: 1.0625rem; line-height: 1.6; font-weight: 600; }
+            .proj-note-links { display: flex; flex-wrap: wrap; gap: .5rem 1.25rem; margin-top: .75rem; }
+            .proj-note-links a { font-weight: 800; color: var(--color-brand-dark); text-decoration: underline; text-underline-offset: 4px; }
+            .proj-note-links a:hover { text-decoration: none; }
+            .proj-note-links a:focus-visible { outline: 2px solid var(--color-brand-dark); outline-offset: 3px; border-radius: .25rem; }
+            .proj-note-ico { position: absolute; top: 1rem; right: 1.25rem; color: var(--color-brand-dark); font-size: 1.25rem; }
+            /* Sekcje informacyjne: zwykły nagłówek bez paska i ramki (ikona w nagłówku ukryta). */
+            .proj-frame { margin-top: 2.5rem; padding: 0; }
+            .proj-frame-side { margin-top: 0; padding: 1.25rem; border-radius: .375rem; background: #f9fafb; }
             .proj-frame-side .proj-frame-h { font-size: 1.125rem; }
-            .proj-frame-h { display: block; margin: 0 0 1rem; padding-left: .75rem; border-left: 4px solid var(--color-brand); font-size: 1.5rem; font-weight: 800; line-height: 1.3; color: #1d1d1a; }
+            .proj-frame-h { display: block; margin: 0 0 1rem; font-size: 1.5rem; font-weight: 800; line-height: 1.3; color: #1d1d1a; }
             .proj-frame-h i { display: none; }
             .proj-stages { list-style: none; margin: 0; padding: 0; display: grid; gap: .9rem; }
             .proj-stage { display: flex; gap: .85rem; }
-            .proj-stage-dot { display: inline-flex; flex: none; width: 1.75rem; height: 1.75rem; align-items: center; justify-content: center; border-radius: 9999px; border: 2px solid #6b7280; background: #fff; color: #4b5563; font-size: .7rem; }
-            .proj-stage.is-done .proj-stage-dot { background: #166534; border-color: #166534; color: #fff; }
-            .proj-stage.is-current .proj-stage-dot { background: var(--color-brand); border-color: var(--color-brand); color: #fff; }
+            .proj-stage-dot { display: inline-flex; flex: none; width: 1.75rem; height: 1.75rem; align-items: center; justify-content: center; border-radius: .25rem; background: #e5e7eb; color: #1d1d1a; font-size: .7rem; }
+            .proj-stage.is-done .proj-stage-dot { background: #166534; color: #fff; }
+            .proj-stage.is-current .proj-stage-dot { background: var(--color-brand-dark); color: #fff; }
             .proj-stage-body { display: grid; gap: .1rem; }
             .proj-stage-title { font-weight: 800; color: #1d1d1a; } .proj-stage-state { font-weight: 600; color: #4b5563; font-size: .85em; }
             .proj-stage-date { font-size: .85rem; color: #374151; } .proj-stage-text { font-size: .95rem; line-height: 1.5; color: #1d1d1a; }
             .proj-team { list-style: none; margin: 0; padding: 0; display: grid; gap: .9rem 1.5rem; grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr)); }
-            .proj-team li { display: grid; gap: .1rem; } .proj-team-name { font-weight: 800; } .proj-team-role { font-size: .9rem; font-weight: 700; color: var(--color-brand); } .proj-team-text { font-size: .9rem; line-height: 1.45; }
+            .proj-team li { display: grid; gap: .1rem; } .proj-team-name { font-weight: 800; } .proj-team-role { font-size: .9rem; font-weight: 700; color: var(--color-brand-dark); } .proj-team-text { font-size: .9rem; line-height: 1.45; }
             .proj-partners { list-style: none; margin: 0; padding: 0; display: grid; gap: .75rem; grid-template-columns: repeat(auto-fit, minmax(7rem, 1fr)); align-items: center; }
             .proj-partners img { display: block; max-height: 3.5rem; max-width: 100%; object-fit: contain; } .proj-partners a { display: block; } .proj-partners span { font-weight: 700; font-size: .9rem; }
-            .proj-fund { list-style: none; margin: 0 0 .75rem; padding: 0; display: grid; gap: .6rem; } .proj-fund-name { display: block; font-weight: 800; } .proj-fund-name a { color: var(--color-brand); text-decoration: underline; text-underline-offset: 2px; } .proj-fund-text { display: block; font-size: .9rem; line-height: 1.45; }
-            .proj-fund-budget { margin: 0 0 .5rem; font-size: .95rem; } .proj-fund-notice { margin: 0; padding-top: .6rem; border-top: 1px solid #e5e7eb; font-size: .85rem; line-height: 1.5; color: #1d1d1a; }
-            .proj-status { display: inline-flex; align-items: center; border-radius: 9999px; padding: .15rem .75rem; font-size: .8rem; font-weight: 800; border: 2px solid #1d1d1a; background: #fff; color: #1d1d1a; }
-            .proj-status.is-paid-offer { border-color: #92400e; color: #92400e; }
-            .proj-status.is-active { border-color: var(--color-brand); color: var(--color-brand); } .proj-status.is-completed { border-color: #166534; color: #166534; } .proj-status.is-planned { border-color: #92400e; color: #92400e; }
-                        .proj-menu-box { position: relative; padding: 1.5rem; background: #f3f4f6; }
-            .proj-menu-line { position: absolute; top: 0; left: 0; display: block; width: 4rem; height: .25rem; background: var(--color-brand); }
-            .proj-menu-title { margin: 0 0 1rem; padding-bottom: .75rem; border-bottom: 1px solid #111827; font-size: 1.125rem; font-weight: 700; color: #1d1d1a; }
+            .proj-partners a:focus-visible { outline: 2px solid var(--color-brand-dark); outline-offset: 2px; }
+            .proj-fund { list-style: none; margin: 0 0 .75rem; padding: 0; display: grid; gap: .6rem; } .proj-fund-name { display: block; font-weight: 800; } .proj-fund-name a { color: var(--color-brand-dark); text-decoration: underline; text-underline-offset: 4px; } .proj-fund-name a:hover { text-decoration: none; } .proj-fund-text { display: block; font-size: .9rem; line-height: 1.45; }
+            .proj-fund-budget { margin: 0 0 .5rem; font-size: .95rem; } .proj-fund-notice { margin: .75rem 0 0; font-size: .85rem; line-height: 1.5; color: #1d1d1a; }
+            .proj-menu-box { padding: 1.25rem; border-radius: .375rem; background: #f9fafb; }
+            .proj-menu-title { margin: 0 0 .5rem; font-size: 1.125rem; font-weight: 800; color: #1d1d1a; }
             .proj-menu-list { list-style: none; margin: 0; padding: 0; }
-            .proj-menu-list li { border-bottom: 1px solid #d1d5db; } .proj-menu-list li:last-child { border-bottom: 0; }
-            .proj-menu-list a { display: block; padding: .75rem 0; color: #1d1d1a; text-decoration: none; }
-            .proj-menu-list a:hover .proj-menu-item { color: var(--color-brand); }
-            .proj-menu-list a:focus-visible { outline: 2px solid var(--color-brand); outline-offset: 2px; }
+            .proj-menu-list a { display: block; padding: .6rem 0; color: #1d1d1a; text-decoration: none; }
+            .proj-menu-list a:hover .proj-menu-item { color: var(--color-brand-dark); text-decoration: underline; text-underline-offset: 4px; }
+            .proj-menu-list a:focus-visible { outline: 2px solid var(--color-brand-dark); outline-offset: 2px; border-radius: .25rem; }
             .proj-menu-date { display: block; font-size: .75rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: #374151; }
-            .proj-menu-item { display: block; font-size: 1rem; font-weight: 400; line-height: 1.4; }
-                        .proj-ref-list { list-style: none; margin: 0; padding: 0; display: grid; gap: .5rem; }
-            .proj-ref-link { display: inline-flex; flex-wrap: wrap; align-items: baseline; gap: .15rem; padding: .15rem 0; border: 0; background: none; font: inherit; font-weight: 800; color: var(--color-brand); text-align: left; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
-            .proj-ref-link:hover { color: #1d1d1a; } .proj-ref-link:focus-visible { outline: 2px solid var(--color-brand); outline-offset: 3px; border-radius: .25rem; }
-            .proj-ref-kind { font-weight: 500; color: #374151; text-decoration: none; display: inline-block; margin-left: .35rem; }
-                        .proj-paid-info { font-weight: 500; }
-            .proj-paid-info summary { cursor: pointer; font-weight: 800; color: var(--color-brand); text-decoration: underline; text-underline-offset: 3px; }
-            .proj-paid-info summary:hover { color: #1d1d1a; } .proj-paid-info summary:focus-visible { outline: 2px solid var(--color-brand); outline-offset: 3px; border-radius: .25rem; }
-            .proj-paid-link { font-weight: 800; color: var(--color-brand); text-decoration: underline; text-underline-offset: 3px; }
-            .proj-paid-link:hover { color: #1d1d1a; } .proj-paid-link:focus-visible { outline: 2px solid var(--color-brand); outline-offset: 3px; border-radius: .25rem; }
-            .proj-paid-body { margin-top: .6rem; padding-left: .85rem; border-left: 3px solid var(--color-brand); font-size: .95rem; line-height: 1.6; font-weight: 500; }
+            .proj-menu-item { display: block; font-size: 1rem; font-weight: 600; line-height: 1.4; }
+            .proj-paid-info { font-weight: 500; }
+            .proj-paid-info summary { cursor: pointer; font-weight: 800; color: var(--color-brand-dark); text-decoration: underline; text-underline-offset: 4px; }
+            .proj-paid-info summary:hover { text-decoration: none; } .proj-paid-info summary:focus-visible { outline: 2px solid var(--color-brand-dark); outline-offset: 3px; border-radius: .25rem; }
+            .proj-paid-link { font-weight: 800; color: var(--color-brand-dark); text-decoration: underline; text-underline-offset: 4px; }
+            .proj-paid-link:hover { text-decoration: none; } .proj-paid-link:focus-visible { outline: 2px solid var(--color-brand-dark); outline-offset: 3px; border-radius: .25rem; }
+            .proj-paid-body { margin-top: .6rem; padding: 1rem 1.25rem; border-radius: .375rem; background: #f9fafb; font-size: .95rem; line-height: 1.6; font-weight: 500; }
             .proj-paid-body p { margin: 0 0 .6rem; } .proj-paid-body p:last-child { margin-bottom: 0; }
-            .proj-price-wrap { overflow-x: auto; border: 2px solid #d1d5db; border-radius: .5rem; background: #fff; }
+            /* Cennik: wiersze rozdzielone tłem (pasy), nagłówek na jasnoniebieskim — bez linii. */
+            .proj-price-wrap { overflow-x: auto; border-radius: .375rem; background: #fff; }
             .proj-price-table { width: 100%; border-collapse: collapse; font-size: 1rem; color: #1d1d1a; }
-            .proj-price-table th, .proj-price-table td { padding: .7rem .9rem; text-align: left; vertical-align: top; border-bottom: 1px solid #d1d5db; }
-            .proj-price-table thead th { background: #f9fafb; font-weight: 800; border-bottom: 2px solid var(--color-brand); }
-            .proj-price-table tbody tr:last-child > * { border-bottom: 0; }
+            .proj-price-table th, .proj-price-table td { padding: .7rem .9rem; text-align: left; vertical-align: top; }
+            .proj-price-table thead th { background: var(--color-brand-light); font-weight: 800; }
+            .proj-price-table tbody tr:nth-child(even) > * { background: #f9fafb; }
             .proj-price-item { font-weight: 700; }
             .proj-price-note { font-size: .92rem; line-height: 1.45; }
             .proj-price-amount { font-weight: 800; white-space: nowrap; }
@@ -214,56 +208,41 @@
                 .proj-price-table tr, .proj-price-table td, .proj-price-table th { break-inside: avoid; }
                 .proj-price-amount { white-space: normal; }
             }
-                        .proj-terms { margin: 0; display: grid; gap: .6rem; }
-            .proj-terms-row { display: grid; gap: .15rem 1rem; grid-template-columns: minmax(8rem, 12rem) 1fr; padding-bottom: .6rem; border-bottom: 1px solid #e5e7eb; }
-            .proj-terms-row:last-child { padding-bottom: 0; border-bottom: 0; }
+            .proj-terms { margin: 0; display: grid; gap: .5rem; }
+            .proj-terms-row { display: grid; gap: .15rem 1rem; grid-template-columns: minmax(8rem, 12rem) 1fr; padding: .75rem 1rem; border-radius: .375rem; background: #f9fafb; }
             .proj-terms-row dt { font-weight: 800; color: #1d1d1a; } .proj-terms-row dd { margin: 0; line-height: 1.5; color: #1d1d1a; }
             @media (max-width: 40rem) { .proj-terms-row { grid-template-columns: 1fr; } }
-                        .proj-cta { display: inline-flex; align-items: center; gap: .6rem; min-height: 3rem; padding: .6rem 1.4rem; border: 2px solid var(--color-brand); border-radius: .375rem; background: var(--color-brand); color: #fff; font-size: 1.05rem; font-weight: 800; text-decoration: none; }
-            .proj-cta:hover { background: #1d1d1a; border-color: #1d1d1a; } .proj-cta:focus-visible { outline: 3px solid #1d1d1a; outline-offset: 3px; }
-            .proj-easy-text { margin: 0; font-size: 1.15rem; line-height: 1.7; font-weight: 600; color: #1d1d1a; }
+            .proj-cta { display: inline-flex; align-items: center; gap: .6rem; min-height: 3rem; padding: .6rem 1.4rem; border-radius: .375rem; background: var(--color-brand-dark); color: #fff; font-size: 1.05rem; font-weight: 800; text-decoration: none; }
+            .proj-cta:hover { background: #1d1d1a; } .proj-cta:focus-visible { outline: 2px solid var(--color-brand-dark); outline-offset: 3px; }
+            .proj-easy-text { margin: 0; padding: 1rem 1.25rem; border-radius: .375rem; background: #f9fafb; font-size: 1.15rem; line-height: 1.7; font-weight: 600; color: #1d1d1a; }
             .proj-metrics { list-style: none; margin: 0; padding: 0; display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr)); }
-            .proj-metrics li { display: grid; gap: .15rem; text-align: center; padding: .75rem .5rem; border: 2px solid #d1d5db; border-radius: .5rem; background: #f9fafb; }
-            .proj-metric-value { font-size: 2rem; font-weight: 800; line-height: 1.1; color: var(--color-brand); } .proj-metric-label { font-size: .9rem; line-height: 1.35; color: #1d1d1a; }
+            .proj-metrics li { display: grid; gap: .15rem; text-align: center; padding: .75rem .5rem; border-radius: .375rem; background: #f9fafb; }
+            .proj-metric-value { font-size: 2rem; font-weight: 800; line-height: 1.1; color: var(--color-brand-dark); } .proj-metric-label { font-size: .9rem; line-height: 1.35; color: #1d1d1a; }
             .proj-tests { list-style: none; margin: 0; padding: 0; display: grid; gap: 1rem; }
-            .proj-tests blockquote { margin: 0; padding: .25rem 0 .25rem 1rem; border-left: 4px solid var(--color-brand); } .proj-tests blockquote p { margin: 0; font-size: 1.05rem; line-height: 1.6; font-style: italic; color: #1d1d1a; } .proj-tests footer { margin-top: .35rem; font-size: .9rem; font-weight: 700; color: #374151; }
-            .proj-faq details { border-bottom: 1px solid #d1d5db; } .proj-faq details:last-child { border-bottom: 0; }
-            .proj-faq summary { display: flex; align-items: center; justify-content: space-between; gap: 1rem; min-height: 3rem; padding: .5rem 0; cursor: pointer; list-style: none; font-weight: 800; color: #1d1d1a; } .proj-faq summary::-webkit-details-marker { display: none; }
-            .proj-faq summary:hover { color: var(--color-brand); } .proj-faq summary:focus-visible { outline: 2px solid var(--color-brand); outline-offset: 2px; border-radius: .25rem; }
+            .proj-tests blockquote { margin: 0; padding: 1rem 1.25rem; border-radius: .375rem; background: #f9fafb; } .proj-tests blockquote p { margin: 0; font-size: 1.05rem; line-height: 1.6; font-style: italic; color: #1d1d1a; } .proj-tests footer { margin-top: .35rem; font-size: .9rem; font-weight: 700; color: #374151; }
+            .proj-faq { display: grid; gap: .5rem; }
+            .proj-faq details { border-radius: .375rem; background: #f9fafb; }
+            .proj-faq summary { display: flex; align-items: center; justify-content: space-between; gap: 1rem; min-height: 3rem; padding: .5rem 1rem; cursor: pointer; list-style: none; font-weight: 800; color: #1d1d1a; } .proj-faq summary::-webkit-details-marker { display: none; }
+            .proj-faq summary:hover { color: var(--color-brand-dark); } .proj-faq summary:focus-visible { outline: 2px solid var(--color-brand-dark); outline-offset: 2px; border-radius: .375rem; }
             .proj-faq details[open] summary i { transform: rotate(180deg); } .proj-faq summary i { flex: none; font-size: .8rem; transition: transform .15s; }
-            .proj-faq-a { padding: 0 2rem .9rem 0; line-height: 1.6; color: #1d1d1a; }
+            .proj-faq-a { padding: 0 2rem .9rem 1rem; line-height: 1.6; color: #1d1d1a; }
             @media (prefers-reduced-motion: reduce) { .proj-faq summary i { transition: none; } }
-            .proj-note-links { display: flex; flex-wrap: wrap; gap: .5rem 1.25rem; margin-top: .75rem; }
-            .proj-note-links a { font-weight: 800; color: var(--color-brand); text-decoration: underline; text-underline-offset: 3px; }
-            .proj-note-links a:hover { color: #1d1d1a; }
-            .proj-note-links a:focus-visible { outline: 2px solid var(--color-brand); outline-offset: 3px; border-radius: .25rem; }
-            .proj-note-ico { position: absolute; top: 50%; right: 1rem; transform: translateY(-50%); display: flex; align-items: center; justify-content: center; width: 2.5rem; height: 2.5rem; border: 2px solid var(--color-brand); border-radius: 9999px; background: #fff; color: var(--color-brand); font-size: 1.1rem; }
-            .proj-choice { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr)); margin: 0; padding: 0; list-style: none; }
-            .proj-choice > li { display: flex; }
-            .proj-choice-tile { display: flex; flex: 1; flex-direction: column; gap: .5rem; padding: 1.25rem; border: 2px solid #1d1d1a; border-top-width: 6px; border-radius: .75rem; background: #fff; color: #1d1d1a; text-decoration: none; transition: transform .15s, box-shadow .15s; }
-            .proj-choice-tile.is-free { border-top-color: #166534; }
-            .proj-choice-tile.is-paid { border-top-color: var(--color-brand); }
-            .proj-choice-tile.is-off { border-color: #6b7280; border-top-color: #6b7280; background: #f3f4f6; }
-            .proj-choice-tile.is-off .proj-choice-kind { color: #374151; }
-            .proj-choice-tile.is-off .proj-choice-cta { color: #1d1d1a; }
-            .proj-choice-tile:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(0,0,0,.12); }
-            .proj-choice-tile:focus-visible { outline: 3px solid #1d1d1a; outline-offset: 3px; }
-            .proj-choice-kind { font-size: .75rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
-            .is-free .proj-choice-kind { color: #166534; } .is-paid .proj-choice-kind { color: #1d4ed8; }
-            .proj-choice-title { font-size: 1.15rem; font-weight: 800; line-height: 1.3; }
-            .proj-choice-text { font-size: .95rem; line-height: 1.5; }
-            .proj-choice-price { font-size: 1rem; font-weight: 700; }
-            .proj-choice-cta { margin-top: auto; padding-top: .5rem; display: inline-flex; align-items: center; gap: .5rem; font-weight: 800; color: var(--color-brand); }
-            .proj-choice-tile:hover .proj-choice-cta { text-decoration: underline; }
-            @media (prefers-reduced-motion: reduce) { .proj-choice-tile { transition: none; } .proj-choice-tile:hover { transform: none; } }
-            .proj-part { display: inline-flex; align-items: center; gap: .6rem; max-width: 100%; padding: .4rem .9rem .4rem .45rem; border: 2px solid var(--color-brand); border-radius: 9999px; background: #fff; font-size: .9rem; line-height: 1.3; color: #1d1d1a; }
-            .proj-part-ico { display: inline-flex; flex: none; align-items: center; justify-content: center; width: 1.75rem; height: 1.75rem; border-radius: 9999px; background: var(--color-brand); color: #fff; font-size: .8rem; }
-            .proj-part a { font-weight: 700; color: var(--color-brand); text-decoration: underline; text-underline-offset: 2px; }
-            .proj-part a:hover { color: #1d1d1a; }
+            /* Grupy w kolumnie bocznej i proste odnośniki (zamiast kafli z ramką). */
+            .proj-box { padding: 1.25rem; border-radius: .375rem; background: #f9fafb; }
+            .proj-box.is-brand { background: var(--color-brand-light); }
+            .proj-box-h { display: flex; align-items: center; gap: .5rem; margin: 0 0 .75rem; font-size: 1.125rem; font-weight: 800; color: #1d1d1a; }
+            .proj-box-h i { color: var(--color-brand-dark); }
+            .proj-link { font-weight: 700; color: var(--color-brand-dark); text-decoration: underline; text-underline-offset: 4px; }
+            .proj-link:hover { text-decoration: none; } .proj-link:focus-visible { outline: 2px solid var(--color-brand-dark); outline-offset: 2px; border-radius: .25rem; }
+            .proj-btn { display: inline-flex; align-items: center; justify-content: center; gap: .5rem; min-height: 2.75rem; padding: .5rem 1.25rem; border-radius: .375rem; background: var(--color-brand-dark); color: #fff; font-weight: 800; text-decoration: none; }
+            .proj-btn:hover { background: #1d1d1a; } .proj-btn:focus-visible { outline: 2px solid var(--color-brand-dark); outline-offset: 2px; }
+            .proj-meta { display: flex; flex-wrap: wrap; gap: .25rem 1.25rem; margin: .75rem 0 0; color: #1d1d1a; font-size: .95rem; }
+            .proj-meta dt { display: inline; font-weight: 400; color: #4b5563; } .proj-meta dd { display: inline; margin: 0; font-weight: 700; }
             @media (min-width: 1024px) {
-                .proj-cols { grid-template-columns: minmax(0, 1fr) 18rem; }
+                .proj-cols { grid-template-columns: minmax(0, 1fr) 20rem; }
                 .proj-cols > .proj-main { grid-column: 1; grid-row: 1 / span 3; }
                 .proj-cols > .proj-nav, .proj-cols > .proj-aside { grid-column: 2; }
+                .proj-aside { position: sticky; top: 6rem; }
             }
         </style>
         <div @class(['grid items-start gap-10', 'proj-cols' => $hasAside || $navSidebar])>
@@ -345,7 +324,7 @@
                     {{-- Sekcje własne są w zakładkach (pasek pod nagłówkiem) --}}
                 @else
                     @foreach ($featuredSections as $section)
-                        <div class="mb-8 rounded-lg border border-brand/20 border-l-4 border-l-brand bg-brand-light/50 p-6">
+                        <div class="mb-8 rounded-md bg-brand-light p-6">
                             @if (! empty($section['title']))
                                 <h2 class="mb-3 text-xl font-bold text-ink">{{ $section['title'] }}</h2>
                             @endif
@@ -357,14 +336,14 @@
                 @endif
 
                 @if ($project->show_legacy_box)
-                    <div class="mb-8 rounded-lg border-l-4 border-brand bg-brand-light p-5">
+                    <div class="mb-8 rounded-md bg-brand-light p-5">
                         <div class="flex items-start gap-4">
-                            <i class="fa-solid fa-clock-rotate-left mt-1 text-xl text-brand" aria-hidden="true"></i>
+                            <i class="fa-solid fa-clock-rotate-left mt-1 text-xl text-brand-dark" aria-hidden="true"></i>
                             <div>
                                 <p class="text-base font-bold text-ink">To działanie realizowaliśmy przed uruchomieniem nowej strony.</p>
                                 @if ($project->legacy_url)
                                     <a href="{{ $project->legacy_url }}" target="_blank" rel="noopener"
-                                        class="mt-3 inline-flex items-center gap-2 rounded bg-brand px-4 py-2 text-sm font-bold text-white transition hover:bg-brand-dark">
+                                        class="proj-btn mt-3">
                                         <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i> Zobacz informacje o projekcie
                                     </a>
                                 @endif
@@ -515,7 +494,7 @@
                         $anchor = $subpage->isSchedule() ? 'harmonogram-'.$subpage->id : ($subpage->isFaq() ? 'faq-'.$subpage->id : null);
                         $subIcon = $subpage->isSchedule() ? 'fa-calendar-days' : ($subpage->isFaq() ? 'fa-circle-question' : 'fa-file-lines');
                     @endphp
-                    <section id="{{ $anchor ?: 'podstrona-sekcja-'.$subpage->id }}" class="mt-8 scroll-mt-24 rounded-lg border border-gray-200 p-6">
+                    <section id="{{ $anchor ?: 'podstrona-sekcja-'.$subpage->id }}" class="mt-8 scroll-mt-24 rounded-md bg-gray-50 p-6">
                         <h2 class="proj-h2">{{ $subpage->title }}</h2>
                         @if ($subpage->content)
                             <div class="prose max-w-none text-ink">{!! $subpage->content !!}</div>
@@ -536,7 +515,7 @@
 
                 {{-- Project subpages shown as tabs --}}
                 @if ($project->outcomes)
-                    <div class="mt-8 rounded-lg border border-emerald-200 bg-emerald-50/60 p-6">
+                    <div class="mt-8 rounded-md bg-gray-50 p-6">
                         <h2 class="proj-h2">Co udało się osiągnąć</h2>
                         <div class="prose proj-prose max-w-none">{!! $project->outcomes !!}</div>
                     </div>
@@ -575,14 +554,14 @@
             {{-- Panele pozostałych zakładek --}}
             @foreach ($sectionTabs as $i => $section)
                 <div id="panel-sekcja-{{ $i }}" role="tabpanel" aria-labelledby="tab-sekcja-{{ $i }}" tabindex="0" x-cloak
-                     x-show="tab === 'sekcja-{{ $i }}'" class="prose proj-prose max-w-none focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand">
+                     x-show="tab === 'sekcja-{{ $i }}'" class="prose proj-prose max-w-none focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand-dark">
                     @if (! empty($section['title']))<h2 class="mb-3 text-xl font-bold text-ink">{{ $section['title'] }}</h2>@endif
                     {!! $section['content'] ?? '' !!}
                 </div>
             @endforeach
             @foreach ($tabPages as $i => $subpage)
                 <div id="panel-podstrona-{{ $i }}" role="tabpanel" aria-labelledby="tab-podstrona-{{ $i }}" tabindex="0" x-cloak
-                     x-show="tab === 'podstrona-{{ $i }}'" class="focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand">
+                     x-show="tab === 'podstrona-{{ $i }}'" class="focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand-dark">
                     @include('projects.partials.tab-page', ['root' => $subpage, 'sidebarMode' => $navSidebar])
                 </div>
             @endforeach
@@ -593,39 +572,33 @@
                 @include('projects.partials.sidebar-nav', ['sectionTabs' => $sectionTabs, 'tabPages' => $tabPages])
             @endif
             @if ($hasAside)
-            <aside class="proj-aside space-y-5 lg:sticky lg:top-6" aria-label="Informacje o projekcie">
+            <aside class="proj-aside space-y-5" aria-label="Informacje o projekcie">
         @if ($schedulePage)
-            <div class="flex flex-col gap-3 rounded-lg border border-brand/20 bg-brand-light p-5">
-                <div class="flex items-start gap-3">
-                                        <div>
-                        <p class="flex items-center gap-2 font-bold text-ink"><i class="fa-solid fa-calendar-days text-brand" aria-hidden="true"></i> {{ $schedulePage->title }}</p>
-                        <p class="text-sm text-muted">Sprawdź terminy zajęć i spotkań w ramach tego projektu.</p>
-                    </div>
-                </div>
-                <a href="{{ $scheduleHref }}"
-                    class="inline-flex flex-none items-center justify-center gap-2 rounded-lg bg-brand px-4 py-2.5 font-bold text-white transition hover:bg-brand-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
+            <div class="proj-box is-brand">
+                <h2 class="proj-box-h"><i class="fa-solid fa-calendar-days" aria-hidden="true"></i> {{ $schedulePage->title }}</h2>
+                <p class="mb-4 text-ink">Sprawdź terminy zajęć i spotkań w ramach tego projektu.</p>
+                <a href="{{ $scheduleHref }}" class="proj-btn w-full">
                     Zobacz harmonogram <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
                 </a>
             </div>
         @endif
 
-                {{-- Kontakt w sprawie działania — jako zwykła sekcja treści (jak „Opis
-                     działania"), w głównym nurcie i pełną szerokością, nie jako kafelek z boku. --}}
+                {{-- Kontakt w sprawie działania — szare pole w kolumnie bocznej, dane zwykłym tekstem i odnośnikami. --}}
                 @if (! $project->is_completed && $project->showsCoordinator())
-                    <div class="rounded-lg border border-gray-200 bg-white p-5">
-                        <h2 class="mb-3 flex items-center gap-2 text-base font-bold text-ink">
-                            <i class="fa-solid fa-envelope text-brand" aria-hidden="true"></i> Kontakt w sprawie działania
+                    <div class="proj-box">
+                        <h2 class="proj-box-h">
+                            <i class="fa-solid fa-envelope" aria-hidden="true"></i> Kontakt w sprawie działania
                         </h2>
                         <div class="space-y-1.5 text-ink">
                             @if ($project->coordinator_name)
-                                <p class="font-medium">{{ $project->coordinator_name }}</p>
+                                <p class="font-bold">{{ $project->coordinator_name }}</p>
                             @endif
                             <p>
-                                <i class="fa-solid fa-envelope mr-1.5 text-brand" aria-hidden="true"></i><a href="mailto:{{ $project->contactEmail() }}" class="break-all font-medium text-brand hover:text-brand-dark">{{ $project->contactEmail() }}</a>
+                                <a href="mailto:{{ $project->contactEmail() }}" class="proj-link break-all">{{ $project->contactEmail() }}</a>
                             </p>
                             @if ($project->coordinator_phone)
                                 <p>
-                                    <i class="fa-solid fa-phone mr-1.5 text-brand" aria-hidden="true"></i><a href="tel:{{ $project->coordinator_phone }}" class="font-medium text-brand hover:text-brand-dark">{{ $project->coordinator_phone }}</a>
+                                    <a href="tel:{{ $project->coordinator_phone }}" class="proj-link">{{ $project->coordinator_phone }}</a>
                                 </p>
                             @endif
                         </div>
@@ -633,31 +606,26 @@
                 @endif
 
                 @if ($linkPages->isNotEmpty())
-                    <div class="rounded-lg border border-gray-200 bg-white p-5">
-                        <h2 class="mb-3 flex items-center gap-2 text-base font-bold text-ink">
-                            <i class="fa-solid fa-file-lines text-brand" aria-hidden="true"></i> Strony działania
+                    <div class="proj-box">
+                        <h2 class="proj-box-h">
+                            <i class="fa-solid fa-file-lines" aria-hidden="true"></i> Strony działania
                         </h2>
-                        <ul class="flex flex-col gap-2 text-sm">
+                        <ul class="flex flex-col gap-3">
                             @foreach ($linkPages as $projectPage)
                                 <li>
                                     @if ($projectPage->isSchedule())
                                         {{-- Harmonogram wyróżnia się jako przycisk-wezwanie do działania. --}}
-                                        <a href="{{ route('page.show', $projectPage) }}"
-                                            class="inline-flex items-center gap-2 rounded-lg bg-brand px-4 py-2 font-bold text-white transition hover:bg-brand-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
+                                        <a href="{{ route('page.show', $projectPage) }}" class="proj-btn">
                                             <i class="fa-solid fa-calendar-days" aria-hidden="true"></i> {{ $projectPage->title }}
                                         </a>
                                     @else
-                                        <a href="{{ route('page.show', $projectPage) }}"
-                                            class="inline-flex items-center gap-2 rounded-lg border border-gray-200 px-4 py-2 font-medium text-ink transition hover:border-brand/40 hover:text-brand">
-                                            {{ $projectPage->title }}
-                                        </a>
+                                        <a href="{{ route('page.show', $projectPage) }}" class="proj-link">{{ $projectPage->title }}</a>
                                     @endif
                                 </li>
                             @endforeach
                         </ul>
                     </div>
                 @endif
-
                 @if ($projPartners->isNotEmpty())
                     <section class="proj-frame proj-frame-side" aria-labelledby="proj-partners-h">
                         <h2 id="proj-partners-h" class="proj-frame-h"><i class="fa-solid fa-handshake" aria-hidden="true"></i> Partnerzy</h2>
@@ -696,9 +664,8 @@
                 @endif
 
                 @if ($showNews)
-                    {{-- Aktualności działania w stylu menu sekcji: szare pole, kreska marki, tytuł i pozycje oddzielone liniami. --}}
+                    {{-- Aktualności działania: szare pole, tytuł i lista wpisów (bez kresek i linii). --}}
                     <nav class="proj-menu-box" aria-labelledby="proj-news-h">
-                        <span class="proj-menu-line" aria-hidden="true"></span>
                         <p id="proj-news-h" class="proj-menu-title">Aktualności działania</p>
                         <ul role="list" class="proj-menu-list">
                             @foreach ($project->publishedNews as $item)

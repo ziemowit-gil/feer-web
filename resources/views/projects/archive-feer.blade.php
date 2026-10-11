@@ -12,7 +12,7 @@
 
 {{--
     Archiwum działań w układzie FEER: spokojny tytuł z niebieskim akcentem, działania pogrupowane rocznikami jako lekkie wiersze
-    (pasek koloru po lewej, miniatura, mikropis, data zakończenia, strzałka) — jak lista projektów. Kontrast: ink/muted na bieli.
+    (płaskie szare wiersze: miniatura, mikropis, data zakończenia, strzałka; bez ramek i pasków koloru) — jak lista projektów. Kontrast: ink/muted na gray-50/100.
 --}}
 @section('content')
     @php $byYear = $projects->groupBy(fn ($p) => $p->completed_at ? $p->completed_at->format('Y') : 'Wcześniej'); @endphp
@@ -24,7 +24,7 @@
             <span class="mt-3 block h-1 w-14 bg-brand" aria-hidden="true"></span>
             @if ($archiveFilter ?? null)
                 <p class="mt-4 max-w-2xl text-lg text-ink">Działania {{ $archiveFilter }}.</p>
-                <p class="mt-2"><a href="{{ route('projects.archive') }}" class="inline-flex min-h-9 items-center text-sm font-bold text-brand-dark underline underline-offset-4 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">Pokaż wszystkie zrealizowane działania</a></p>
+                <p class="mt-2"><a href="{{ route('projects.archive') }}" class="inline-flex min-h-9 items-center text-sm font-bold text-brand-dark underline underline-offset-4 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">Pokaż wszystkie zrealizowane działania</a></p>
             @else
                 <p class="mt-4 max-w-2xl text-lg text-ink">Działania, które już zrealizowaliśmy.</p>
             @endif
@@ -42,7 +42,7 @@
                         <ul class="feer-pills-row flex gap-2 overflow-x-auto pb-2 lg:flex-col lg:gap-1 lg:overflow-visible lg:pb-0" role="list">
                             @foreach ($byYear as $year => $items)
                                 <li class="shrink-0">
-                                    <a href="#rok-{{ \Illuminate\Support\Str::slug((string) $year) }}" class="flex min-h-11 items-center justify-between gap-3 rounded-md bg-gray-50 px-4 py-2 text-sm font-bold text-ink transition hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand lg:bg-transparent lg:px-3">
+                                    <a href="#rok-{{ \Illuminate\Support\Str::slug((string) $year) }}" class="flex min-h-11 items-center justify-between gap-3 rounded-md bg-gray-50 px-4 py-2 text-sm font-bold text-ink transition hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark lg:bg-transparent lg:px-3">
                                         <span>{{ $year }}</span><span class="text-muted">{{ $items->count() }}</span>
                                     </a>
                                 </li>
@@ -57,24 +57,19 @@
                             <h2 id="rok-h-{{ \Illuminate\Support\Str::slug((string) $year) }}" class="mb-4 text-2xl font-bold text-ink">{{ $year }}</h2>
                             <ul class="space-y-1" role="list">
                                 @foreach ($items as $project)
-                                    @php
-                                        $accent = \App\Support\Color::isValid($project->accent_color ?? null)
-                                            ? $project->accent_color
-                                            : (($project->audience ?? 'brand') === 'ngo' ? $siteSettings->audienceColor('ngo') : 'var(--color-brand)');
-                                    @endphp
                                     <li>
-                                        <a href="{{ route('projects.show', $project) }}" class="feer-card group flex items-center gap-4 rounded-md py-4 pl-4 pr-3 transition hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand" style="border-left: 4px solid {{ $accent }}">
+                                        <a href="{{ route('projects.show', $project) }}" class="group flex items-center gap-4 rounded-md bg-gray-50 px-4 py-4 transition-colors hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">
                                             @if ($project->image_url)
                                                 <img src="{{ $project->image_url }}" alt="" loading="lazy" class="h-14 w-20 flex-none rounded-md object-cover sm:h-16 sm:w-24">
                                             @endif
                                             <span class="min-w-0 flex-1">
                                                 <span class="block text-xs font-bold uppercase tracking-widest text-muted">{{ $project->category->name ?? 'Działanie' }}@if ($project->completed_at) · zakończono {{ $project->completed_at->translatedFormat('F Y') }}@endif</span>
-                                                <span class="mt-0.5 block text-lg font-bold leading-snug text-ink group-hover:text-brand-dark">{{ $project->title }}</span>
+                                                <span class="mt-0.5 block text-lg font-bold leading-snug text-ink group-hover:text-brand-dark group-hover:underline group-hover:underline-offset-4">{{ $project->title }}</span>
                                                 @if ($teaser = $project->teaser())
                                                     <span class="mt-1 line-clamp-2 block text-sm leading-relaxed text-muted">{{ $teaser }}</span>
                                                 @endif
                                             </span>
-                                            <span class="flex-none text-lg text-brand-dark transition group-hover:translate-x-1" aria-hidden="true">→</span>
+                                            <span class="flex-none text-lg text-brand-dark transition group-hover:translate-x-1 motion-reduce:transition-none" aria-hidden="true">→</span>
                                         </a>
                                     </li>
                                 @endforeach
@@ -85,8 +80,8 @@
             </div>
         @endif
 
-        <p class="mt-12 border-t border-gray-200 pt-6">
-            <a href="{{ route('projects.index') }}" class="inline-flex min-h-11 items-center text-sm font-bold text-brand-dark underline underline-offset-4 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">← Wróć do działań</a>
+        <p class="mt-12">
+            <a href="{{ route('projects.index') }}" class="inline-flex min-h-11 items-center text-sm font-bold text-brand-dark underline underline-offset-4 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">← Wróć do działań</a>
         </p>
     </div>
 @endsection

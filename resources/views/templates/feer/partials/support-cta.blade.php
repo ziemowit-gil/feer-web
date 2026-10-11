@@ -1,6 +1,6 @@
 {{--
     Szablon FEER — blok wsparcia: płaski, jednolity pas (bez wzoru i przezroczystości).
-    Kontrast: biały tekst na bg-brand-dark (#1456CC) 6,5:1; przycisk główny ink na bieli 16,9:1; drugi — biała ramka i tekst.
+    Kontrast: biały tekst na bg-brand-dark (#1456CC) 6,5:1; przycisk główny ink na bieli 16,9:1; drugi — biały tekst na ink (bez ramki). Bez kresek między blokami.
 --}}
 @php
     $ctaTitle = $siteSettings->support_hero_title ?? 'Twoje wsparcie tworzy zmianę';
@@ -39,7 +39,7 @@
                 </a>
                 @if ($isPrimary)
                     <a href="{{ route('support.show') }}"
-                       class="inline-flex min-h-11 items-center gap-2 rounded-md border-2 border-white px-6 text-sm font-bold text-white transition hover:bg-white hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-brand-dark">
+                       class="inline-flex min-h-11 items-center gap-2 rounded-md bg-ink px-6 text-sm font-bold text-white transition-colors hover:bg-white hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-brand-dark">
                         Inne formy wsparcia
                     </a>
                 @endif
@@ -47,7 +47,7 @@
         </div>
 
         @if (count($benefits) > 0)
-            <ul class="mt-10 grid gap-6 border-t border-white pt-8 sm:grid-cols-{{ count($benefits) }}" role="list">
+            <ul class="mt-10 grid gap-6 sm:grid-cols-{{ count($benefits) }}" role="list">
                 @foreach ($benefits as $benefit)
                     <li class="flex items-start gap-3">
                         <i class="{{ $benefit['icon'] }} mt-1 text-xl" aria-hidden="true"></i>

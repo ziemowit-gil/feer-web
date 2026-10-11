@@ -1,6 +1,6 @@
 {{--
     Szablon FEER — slajder na stronie głównej w jasnym, płaskim stylu: tekst po lewej na białym tle,
-    zdjęcie slajdu po prawej w ramce (bez przesłony, więc kontrast tekstu nie zależy od zdjęcia).
+    zdjęcie slajdu po prawej (bez ramki i przesłony, więc kontrast tekstu nie zależy od zdjęcia).
     Slajdy leżą jeden na drugim (siatka); zmiana jest sekwencyjna i delikatna (lekkie przesunięcie o 1 rem i spokojne „doskalowanie" zdjęcia 105% → 100%; wyłączone przy „ogranicz ruch") (poprzedni znika w 0,3 s, następny pojawia się po 0,3 s opóźnienia), żeby dwa slajdy nie prześwitywały naraz — to dawało efekt „mrugania". Obrazy slajdów ładują się od razu (bez lazy), by nie migotały przy zmianie; ukryte są wyłączone z czytania i fokusu (inert).
 
     Dostępność (WCAG 2.2.2): automatyczna zmiana slajdów zatrzymuje się po najechaniu i fokusie oraz
@@ -45,7 +45,7 @@
                         <div class="flex flex-wrap items-center gap-3">
                             @if ($sBtnUrl && $sBtnLabel)
                                 <a href="{{ $sBtnUrl }}"
-                                   class="inline-flex min-h-11 items-center gap-2 rounded-md bg-brand px-6 text-sm font-bold text-white transition hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
+                                   class="inline-flex min-h-11 items-center gap-2 rounded-md bg-brand-dark px-6 text-sm font-bold text-white transition-colors hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2">
                                     {{ $sBtnLabel }}
                                     <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
                                 </a>
@@ -55,7 +55,7 @@
                     @if ($sImage)
                         <img src="{{ $sImage }}" alt="{{ $sAlt }}" decoding="async" @if ($i === 0) fetchpriority="high" @endif
                              :class="current === {{ $i }} ? 'scale-100' : 'scale-105'"
-                             class="aspect-[4/3] w-full rounded-lg object-cover ring-1 ring-gray-200 transition-transform duration-1000 ease-out motion-reduce:transition-none motion-reduce:transform-none">
+                             class="aspect-[4/3] w-full rounded-md object-cover transition-transform duration-1000 ease-out motion-reduce:transition-none motion-reduce:transform-none">
                     @endif
                 </div>
             @endforeach
@@ -66,13 +66,13 @@
                 <div class="flex items-center gap-2" role="tablist" aria-label="Wybór slajdu">
                     @foreach ($slides as $i => $slide)
                         <button type="button" role="tab" :aria-selected="current === {{ $i }}"
-                                :class="current === {{ $i }} ? 'w-8 bg-brand' : 'w-3 bg-gray-400 hover:bg-gray-500'"
-                                class="h-3 rounded-sm transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2"
+                                :class="current === {{ $i }} ? 'w-8 bg-brand-dark' : 'w-3 bg-gray-500 hover:bg-ink'"
+                                class="h-3 rounded-sm transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2"
                                 @click="go({{ $i }})" aria-label="Slajd {{ $i + 1 }}"></button>
                     @endforeach
                 </div>
                 <button type="button" @click="toggle()" :aria-pressed="paused"
-                        class="inline-flex min-h-9 items-center gap-2 rounded-md border border-gray-300 px-3 text-sm font-bold text-ink hover:border-brand hover:text-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                        class="inline-flex min-h-11 items-center gap-2 rounded-md bg-gray-50 px-4 text-sm font-bold text-ink transition-colors hover:bg-gray-100 hover:text-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">
                     <i class="fa-solid" :class="paused ? 'fa-play' : 'fa-pause'" aria-hidden="true"></i>
                     <span x-text="paused ? 'Wznów' : 'Zatrzymaj'">Zatrzymaj</span>
                 </button>

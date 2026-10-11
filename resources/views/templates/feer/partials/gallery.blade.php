@@ -13,7 +13,7 @@
             @foreach ($shots as $i => $photo)
                 <li class="{{ $i === 0 ? 'sm:col-span-2 lg:col-span-2 lg:row-span-2' : '' }}">
                     <img src="{{ $photo->image_url }}" alt="{{ $photo->caption }}" data-lightbox loading="lazy" decoding="async"
-                         class="feer-card w-full cursor-zoom-in rounded-md object-cover {{ $i === 0 ? 'aspect-[4/3] lg:h-full lg:aspect-auto' : 'aspect-[4/3]' }}">
+                         class="w-full cursor-zoom-in rounded-md object-cover {{ $i === 0 ? 'aspect-[4/3] lg:h-full lg:aspect-auto' : 'aspect-[4/3]' }}">
                 </li>
             @endforeach
         </ul>

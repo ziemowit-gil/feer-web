@@ -38,7 +38,7 @@
             <div
                 class="absolute inset-0 flex items-center justify-center transition-opacity duration-700 motion-reduce:transition-none {{ $index === 0 ? 'opacity-100' : 'opacity-0 pointer-events-none' }}"
                 @if ($useImage)
-                    style="background-image: linear-gradient(rgba(0,0,0,.45), rgba(0,0,0,.45)), url('{{ $missionImg }}'); background-size: cover; background-position: center;"
+                    style="background-image: url('{{ $missionImg }}'); background-size: cover; background-position: center;"
                 @else
                     style="background-color: var(--color-brand);"
                 @endif
@@ -48,8 +48,9 @@
                 aria-label="Co nas napędza"
                 @if ($index !== 0) aria-hidden="true" @endif
             >
-                <div class="w-full px-8 py-6 text-center {{ $hasSidebar ? 'max-w-xs' : 'max-w-lg' }}">
-                    <p class="mb-3 text-xs font-bold uppercase tracking-widest text-white/70">Co nas napędza</p>
+                {{-- Tekst na pełnym (nieprzezroczystym) tle: na zdjęciu — ciemne pole, by kontrast nie zależał od obrazu. --}}
+                <div class="w-full px-8 py-6 text-center {{ $hasSidebar ? 'max-w-xs' : 'max-w-lg' }} {{ $useImage ? 'rounded-md bg-ink' : '' }}">
+                    <p class="mb-3 text-xs font-bold uppercase tracking-widest text-white">Co nas napędza</p>
                     <p class="{{ $hasSidebar ? 'text-base md:text-lg' : 'text-xl md:text-3xl' }} font-bold leading-snug text-white">{{ $slide->mission_text }}</p>
                 </div>
             </div>
@@ -57,7 +58,7 @@
             {{-- Standardowy slajd z obrazem --}}
             <div
                 class="absolute inset-0 flex items-end bg-cover bg-center transition-opacity duration-700 motion-reduce:transition-none {{ $index === 0 ? 'opacity-100' : 'opacity-0 pointer-events-none' }}"
-                style="background-image: linear-gradient(0deg, rgba(0,0,0,.75), rgba(0,0,0,.35)), url('{{ $slide->image_url }}')"
+                style="background-image: url('{{ $slide->image_url }}')"
                 data-hero-slide
                 role="group"
                 aria-roledescription="slajd"
@@ -65,29 +66,32 @@
                 @if ($slide->duration) data-hero-duration="{{ $slide->duration }}" @endif
                 @if ($index !== 0) aria-hidden="true" @endif
             >
+                {{-- Pole tekstu slajdu: pełne, ciemne tło (bez gradientu i przezroczystości) — biały tekst ma kontrast niezależny od zdjęcia. --}}
                 <div class="mx-auto w-full {{ $hasSidebar ? '' : 'max-w-6xl' }} px-4 py-6 text-white">
+                    <div class="inline-block max-w-full rounded-md bg-ink px-5 py-4">
                     <h1 class="{{ $hasSidebar ? 'text-xl md:text-2xl' : 'max-w-xl text-2xl md:text-4xl' }} font-bold leading-tight">{{ $slide->title }}</h1>
-                    <p class="mt-1.5 {{ $hasSidebar ? 'text-xs md:text-sm' : 'max-w-lg text-sm md:text-base' }} text-white/90">{{ $slide->text }}</p>
+                    <p class="mt-1.5 {{ $hasSidebar ? 'text-xs md:text-sm' : 'max-w-lg text-sm md:text-base' }} text-white">{{ $slide->text }}</p>
                     @if ($slide->button_label && $slide->button_url)
                         <a href="{{ $slide->button_url }}" data-hero-cta {{ $index !== 0 ? 'tabindex=-1' : '' }}
-                            class="mt-4 inline-block rounded bg-brand px-5 py-2 text-sm font-bold text-white hover:bg-brand-dark">
+                            class="mt-4 inline-block rounded-md bg-white px-5 py-2 text-sm font-bold text-ink hover:bg-brand-light focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2">
                             {{ $slide->button_label }}
                         </a>
                     @endif
+                    </div>
                 </div>
             </div>
             @endif
         @endforeach
     </div>
 
-    <button type="button" data-hero-prev class="absolute left-3 top-1/2 flex min-h-[44px] min-w-[44px] -translate-y-1/2 items-center justify-center rounded-full bg-black/30 text-white hover:bg-black/50 focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2" aria-label="Poprzedni slajd">
+    <button type="button" data-hero-prev class="absolute left-3 top-1/2 flex min-h-[44px] min-w-[44px] -translate-y-1/2 items-center justify-center rounded-md bg-ink text-white hover:bg-brand-dark focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2" aria-label="Poprzedni slajd">
         <i class="fa-solid fa-chevron-left" aria-hidden="true"></i>
     </button>
-    <button type="button" data-hero-next class="absolute right-3 top-1/2 flex min-h-[44px] min-w-[44px] -translate-y-1/2 items-center justify-center rounded-full bg-black/30 text-white hover:bg-black/50 focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2" aria-label="Następny slajd">
+    <button type="button" data-hero-next class="absolute right-3 top-1/2 flex min-h-[44px] min-w-[44px] -translate-y-1/2 items-center justify-center rounded-md bg-ink text-white hover:bg-brand-dark focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2" aria-label="Następny slajd">
         <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
     </button>
 
-    <div class="absolute bottom-3 right-4 flex items-center gap-2 rounded-full bg-black/30 px-3 text-xs text-white">
+    <div class="absolute bottom-3 right-4 flex items-center gap-2 rounded-md bg-ink px-3 text-xs text-white">
         <button type="button" data-hero-toggle class="flex min-h-[44px] min-w-[44px] items-center justify-center focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-[-2px]" aria-label="Wstrzymaj automatyczną zmianę slajdów" aria-pressed="false">
             <i class="fa-solid fa-pause" data-hero-toggle-icon aria-hidden="true"></i>
         </button>
@@ -100,12 +104,12 @@
 {{-- Styl: misja organizacji --}}
 <aside aria-label="Misja organizacji" class="hidden w-56 flex-none flex-col items-center justify-center gap-4 bg-white px-6 py-8 md:flex lg:w-72">
     @if ($siteSettings->logoUrl())
-        <img src="{{ $siteSettings->logoUrl() }}" alt="{{ $siteSettings->site_name }}" class="h-12 w-auto max-w-[8rem] object-contain opacity-80">
+        <img src="{{ $siteSettings->logoUrl() }}" alt="{{ $siteSettings->site_name }}" class="h-12 w-auto max-w-[8rem] object-contain">
     @endif
     <p class="text-center text-sm font-medium leading-relaxed text-gray-700">{{ $missionText }}</p>
     @php $wmCtaLabel = trim($siteSettings->wide_mission_cta_label ?? ''); $wmCtaUrl = trim($siteSettings->wide_mission_cta_url ?? ''); @endphp
     @if ($wmCtaLabel && $wmCtaUrl)
-        <a href="{{ $wmCtaUrl }}" class="mt-1 inline-flex items-center gap-2 rounded-full bg-brand px-4 py-2 text-xs font-bold text-white hover:bg-brand-dark">
+        <a href="{{ $wmCtaUrl }}" class="mt-1 inline-flex min-h-11 items-center gap-2 rounded-md bg-brand-dark px-4 text-sm font-bold text-white hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2">
             {{ $wmCtaLabel }}
         </a>
     @endif
@@ -120,9 +124,9 @@
                 $qa = \App\Support\Color::button($tileHex);
             @endphp
             <a href="{{ $link->url }}"
-                class="flex flex-1 flex-col items-center justify-center gap-2 border border-gray-200 bg-white px-3 py-4 text-center text-ink transition hover:border-brand hover:shadow-inner focus-visible:outline-2 focus-visible:outline-brand">
+                class="flex flex-1 flex-col items-center justify-center gap-2 bg-gray-50 px-3 py-4 text-center text-ink transition-colors hover:bg-gray-100 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-brand-dark">
                 @if ($link->icon)
-                    <span class="flex h-12 w-12 flex-none items-center justify-center rounded-full text-2xl"
+                    <span class="flex h-12 w-12 flex-none items-center justify-center rounded-md text-2xl"
                         style="background-color: {{ $tileHex }}; color: {{ $qa['text'] }};">
                         {!! icon_html($link->icon, '') !!}
                     </span>

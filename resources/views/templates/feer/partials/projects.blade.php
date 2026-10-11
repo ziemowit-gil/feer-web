@@ -1,7 +1,7 @@
 {{--
     Szablon FEER — „Nasze działania": widok listy (wiersze), inny niż karty na liście projektów.
-    Każdy wiersz: kolor akcentu po lewej, kategoria, tytuł, zajawka i strzałka; miniatura zdjęcia, gdy jest.
-    Cały wiersz jest linkiem; bez ramek i kresek — białe wiersze na jasnoszarym tle sekcji; tekst ciemny (kontrast ≥ 4,5:1).
+    Każdy wiersz: kategoria, tytuł, zajawka i strzałka; miniatura zdjęcia, gdy jest.
+    Cały wiersz jest linkiem; bez ramek, kresek i pasków koloru — białe wiersze na jasnoszarym tle sekcji; tekst ciemny (kontrast ≥ 4,5:1).
 --}}
 @if ($projects->isNotEmpty())
 <section class="bg-gray-50 py-12" aria-labelledby="ngo-projects-heading">
@@ -10,34 +10,28 @@
             <h2 id="ngo-projects-heading" class="text-2xl font-bold text-ink md:text-3xl">Nasze działania</h2>
             <div class="flex shrink-0 flex-wrap items-center justify-end gap-x-5 gap-y-1">
                 @include('partials.admin-manage-link', ['route' => 'admin.projekty.index', 'label' => 'Zarządzaj działaniami'])
-                <a href="{{ route('projects.index') }}" class="shrink-0 text-sm font-bold text-brand-dark underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+                <a href="{{ route('projects.index') }}" class="shrink-0 text-sm font-bold text-brand-dark underline underline-offset-4 hover:no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark"
                    aria-label="Wszystkie działania">Wszystkie działania →</a>
             </div>
         </div>
 
         <ul class="space-y-2" role="list">
             @foreach ($projects as $project)
-                @php
-                    $rowAccent = \App\Support\Color::isValid($project->accent_color ?? null)
-                        ? $project->accent_color
-                        : (($project->audience ?? 'brand') === 'ngo' ? $siteSettings->audienceColor('ngo') : 'var(--color-brand)');
-                @endphp
                 <li>
                     <a href="{{ route('projects.show', $project) }}"
-                       class="feer-card group flex items-center gap-4 rounded-md bg-white px-5 py-4 hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
-                       style="border-left: 4px solid {{ $rowAccent }}">
+                       class="group flex items-center gap-4 rounded-md bg-white px-5 py-4 transition-colors hover:bg-brand-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">
                         @if ($project->image_url)
                             <img src="{{ $project->image_url }}" alt="" loading="lazy" class="h-14 w-20 flex-none rounded-md object-cover sm:h-16 sm:w-24">
                         @endif
                         <span class="min-w-0 flex-1">
                             <span class="block text-xs font-bold uppercase tracking-widest text-muted">{{ $project->category->name ?? 'Działanie' }}</span>
-                            <span class="mt-0.5 block text-lg font-bold leading-snug text-ink group-hover:text-brand-dark">{{ $project->title }}</span>
-                            <span class="block">@include('projects.partials.form-badge', ['project' => $project])</span>
+                            <span class="mt-0.5 block text-lg font-bold leading-snug text-ink group-hover:text-brand-dark group-hover:underline group-hover:underline-offset-4">{{ $project->title }}</span>
+                            <span class="block text-ink">@include('projects.partials.form-badge', ['project' => $project])</span>
                             @if ($teaser = $project->teaser())
                                 <span class="mt-1 line-clamp-2 block text-sm leading-relaxed text-muted">{{ $teaser }}</span>
                             @endif
                         </span>
-                        <span class="flex-none text-lg text-brand-dark transition group-hover:translate-x-1" aria-hidden="true">→</span>
+                        <span class="flex-none text-lg text-brand-dark transition group-hover:translate-x-1 motion-reduce:transition-none" aria-hidden="true">→</span>
                     </a>
                 </li>
             @endforeach

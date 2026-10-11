@@ -11,15 +11,15 @@
 @endsection
 
 @section('content')
-    <div class="border-b border-gray-100 bg-gray-50">
-        <div class="mx-auto max-w-6xl px-4 py-12 sm:py-14">
-            <p class="text-xs font-bold uppercase tracking-widest text-brand">Archiwum</p>
+    <div>
+        <div class="mx-auto max-w-6xl px-4 pb-4 pt-10 sm:pt-12">
+            <p class="text-sm font-bold uppercase tracking-widest text-brand-dark">Archiwum</p>
             <h1 class="mt-3 text-3xl font-extrabold leading-tight tracking-tight text-ink sm:text-4xl">To już zrobiliśmy</h1>
             @if ($archiveFilter ?? null)
-                <p class="mt-3 max-w-2xl text-ink/80">Działania {{ $archiveFilter }}.</p>
-                <p class="mt-3 text-sm"><a href="{{ route('projects.archive') }}" class="font-bold text-brand underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">Pokaż wszystkie zrealizowane działania</a></p>
+                <p class="mt-3 max-w-2xl text-ink">Działania {{ $archiveFilter }}.</p>
+                <p class="mt-3 text-sm"><a href="{{ route('projects.archive') }}" class="font-bold text-brand-dark underline underline-offset-4 hover:no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">Pokaż wszystkie zrealizowane działania</a></p>
             @else
-                <p class="mt-3 max-w-2xl text-ink/80">Działania, które już zrealizowaliśmy.</p>
+                <p class="mt-3 max-w-2xl text-ink">Działania, które już zrealizowaliśmy.</p>
             @endif
         </div>
     </div>
@@ -35,8 +35,8 @@
             <p class="text-muted">{{ ($archiveFilter ?? null) ? 'Brak działań w tym okresie.' : 'Nie mamy jeszcze zrealizowanych działań do pokazania.' }}</p>
         @endif
 
-        <p class="mt-10 border-t border-gray-200 pt-6">
-            <a href="{{ route('projects.index') }}" class="text-sm font-bold text-brand underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">← Wróć do działań</a>
+        <p class="mt-10">
+            <a href="{{ route('projects.index') }}" class="text-sm font-bold text-brand-dark underline underline-offset-4 hover:no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">← Wróć do działań</a>
         </p>
     </section>
 @endsection
