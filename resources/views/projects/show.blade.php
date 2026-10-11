@@ -66,6 +66,8 @@
         }
         // Zdania-ostrzeżenia („Ważne:", „Uwaga:") zamieniamy na wyróżnioną ramkę (callout), niezależnie od tego, jak wyrównał je edytor.
         $projectContentHtml = preg_replace('~<p((?![^>]*\bclass=)[^>]*)>(\s*(?:<(?:strong|b)[^>]*>)?\s*(?:Ważne|Ważna informacja|Uwaga)\b)~iu', '<p class="proj-callout"$1>$2', (string) $project->content);
+        // Puste akapity na końcu treści (pozostałość z edytora: <p>&nbsp;</p>, <p><br></p>) nie robią dziury przed kolejną sekcją.
+        $projectContentHtml = preg_replace('~(?:\s*<p[^>]*>(?:\s|&nbsp;|\x{00A0}|<br\s*/?>)*</p>)+\s*$~iu', '', $projectContentHtml);
         // Tryb nawigacji: pasek zakładek albo menu boczne (ustawienie serwisu lub własny wybór działania).
         $navSidebar = $hasTabs && $project->sectionsNavMode() === 'sidebar';
         $linkPages = $pageRoots->whereNotIn('project_display', ['inline', 'tab', 'accordion'])->values();
