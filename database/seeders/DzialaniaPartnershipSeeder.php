@@ -14,7 +14,8 @@ use Illuminate\Database\Seeder;
  *  - description, why → „O projekcie” (treść + „Dlaczego to robimy”),
  *  - recruitment_note → wyróżniona ramka w „O projekcie” (bez naboru, kontakt bezpośredni),
  *  - scope / principles / for_whom → podstrony w menu bocznym działania:
- *    „Zakres współpracy”, „Inne formy współpracy” (wsparcie innych podmiotów), „Zasady współpracy”, „Dla kogo”,
+ *    „Zakres współpracy”, „Inne formy współpracy” (wsparcie innych podmiotów), „Wsparcie dla osób fizycznych”,
+ *    „Zasady współpracy”, „Dla kogo”,
  *  - kategoria „Wsparcie dla organizacji” (podział według formy, jak ProjectCategoriesByFormSeeder);
  *    pusta kategoria „Dla instytucji i organizacji” z pierwszej wersji seedera jest usuwana,
  *  - is_free = null (partnerstwo) → działanie, nie usługa odpłatna; bez informacji o płatności.
@@ -37,6 +38,7 @@ class DzialaniaPartnershipSeeder extends Seeder
         $forWhom = [
             ['title' => 'Instytucje i partnerzy społeczni', 'body' => 'Podmioty szukające zaufanego, dyskretnego partnera do praktycznego wdrażania standardów dostępności.'],
             ['title' => 'Organizacje pozarządowe', 'body' => 'Fundacje i stowarzyszenia potrzebujące wsparcia przy dostosowywaniu działań i infrastruktury do potrzeb wszystkich odbiorców.'],
+            ['title' => 'Osoby fizyczne', 'body' => 'Osoby prywatne z własną inicjatywą na rzecz dostępności, włączenia społecznego osób z niepełnosprawnościami i wzajemnego zrozumienia.'],
         ];
 
         $content = $p('Tworzenie otwartego, włączającego środowiska to fundament naszej codziennej pracy. W FEER skupiamy się na realnej praktyce — rozwijamy wewnętrzne standardy i procedury, a wypracowaną wiedzę przekuwamy we współpracę z instytucjami i organizacjami.')
@@ -65,7 +67,7 @@ class DzialaniaPartnershipSeeder extends Seeder
                 'title' => 'Dostępność w praktyce — współpraca i partnerstwa',
                 'category_id' => $category->id,
                 'excerpt' => 'Współpracujemy z instytucjami i organizacjami na różnych zasadach — od audytów i doradztwa po wsparcie inicjatyw zbieżnych z naszą misją. Wyłącznie w ramach partnerstw.',
-                'for_whom' => 'Instytucje, partnerzy społeczni i organizacje pozarządowe',
+                'for_whom' => 'Instytucje, partnerzy społeczni, organizacje pozarządowe i osoby fizyczne',
                 'content' => $content,
                 'why' => 'Dostępność wciąż jest traktowana jak obowiązek formalny, a nie realna wartość. Tymczasem najtrwalsze zmiany zachodzą wtedy, gdy organizacje przechodzą przez ten proces z kimś, kto rozumie zarówno przepisy, jak i ludzką perspektywę. My to rozumiemy — bo sami jesteśmy fundacją i sami wdrażamy to, o czym mówimy.',
                 'kind' => 'project',
@@ -105,6 +107,17 @@ class DzialaniaPartnershipSeeder extends Seeder
                     'promowanie wartościowych inicjatyw w naszych kanałach.',
                 ])->map(fn ($item) => '<li>'.e($item).'</li>')->implode('').'</ul>'
                 .$p('Każdą prośbę rozpatrujemy indywidualnie. Jeśli Twoja inicjatywa jest bliska naszej misji, napisz do nas.')],
+            'osoby-fizyczne' => ['Wsparcie dla osób fizycznych',
+                $p('W różny sposób wspieramy także inicjatywy osób fizycznych — na rzecz dostępności, włączenia społecznego osób z niepełnosprawnościami (OzN) oraz lepszego wzajemnego zrozumienia. Nie trzeba być organizacją, żeby zmieniać otoczenie — często wszystko zaczyna się od jednej osoby.')
+                .$p('Możemy pomóc na przykład przy:')
+                .'<ul>'.collect([
+                    'lokalnych inicjatywach na rzecz dostępności przestrzeni, usług lub informacji,',
+                    'akcjach i wydarzeniach przybliżających codzienność osób z niepełnosprawnościami,',
+                    'przygotowaniu materiałów w formie dostępnej lub łatwej do czytania i rozumienia (ETR),',
+                    'poszukiwaniu rozwiązań, wiedzy i kontaktów potrzebnych do realizacji pomysłu.',
+                ])->map(fn ($item) => '<li>'.e($item).'</li>')->implode('').'</ul>'
+                .$p('Wsparcie dopasowujemy do pomysłu i naszych możliwości — tak jak w przypadku instytucji, kierujemy się zbieżnością z misją fundacji i interesem społecznym. Napisz do nas i opowiedz o swojej inicjatywie.')
+                .'<p><strong>Ważne:</strong> nie prowadzimy subkont dla osób indywidualnych ani zbiórek na cele zdrowotne — leczenie, rehabilitację czy zakup sprzętu medycznego. Takich próśb nie jesteśmy w stanie zrealizować.</p>'],
             'zasady' => ['Zasady współpracy', '<ol>'.collect($principles)->map(fn ($r) => '<li><strong>'.e($r['title']).'</strong> — '.e($r['body']).'</li>')->implode('').'</ol>'],
             'dla-kogo' => ['Dla kogo', $items($forWhom)],
         ];
