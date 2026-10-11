@@ -46,6 +46,19 @@ class SitemapController extends Controller
                 ));
         }
 
+        // Wiem FEER (blog na osobnej bazie) — tylko gdy moduł aktywny i baza dostępna.
+        if ($settings->isModuleEnabled('blog') && class_exists(\Modules\Blog\Models\BlogArticle::class)) {
+            try {
+                $sitemap->add(Url::create(route('blog.index')));
+                \Modules\Blog\Models\BlogArticle::query()->listed()->get()
+                    ->each(fn ($article) => $sitemap->add(
+                        Url::create(route('blog.show', $article))->setLastModificationDate($article->updated_at)
+                    ));
+            } catch (\Throwable) {
+                // Baza bloga niedostępna — pomijamy jego adresy.
+            }
+        }
+
         if ($settings->isModuleEnabled('projects')) {
             $sitemap->add(Url::create(route('projects.index')));
 

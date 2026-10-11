@@ -98,8 +98,10 @@ final class AdminMenu
                         $this->child('Tagi', 'admin.tagi.index', 'admin.tagi.*'),
                     ]) : null,
                 $this->can('blog') ? $this->item('blog', 'Wiem FEER (blog)', 'admin.wiem-feer.index', 'fa-feather-pointed',
-                    active: ['admin.wiem-feer.*', 'admin.komentarze-bloga.*'],
+                    active: ['admin.wiem-feer.*', 'admin.komentarze-bloga.*', 'admin.kategorie-bloga.*', 'admin.autorzy-bloga.*'],
                     children: [
+                        $this->child('Kategorie', 'admin.kategorie-bloga.index', 'admin.kategorie-bloga.*'),
+                        $this->child('Autorzy', 'admin.autorzy-bloga.index', 'admin.autorzy-bloga.*'),
                         $this->child('Komentarze', 'admin.komentarze-bloga.index', 'admin.komentarze-bloga.*'),
                     ]) : null,
                 $this->can('podcasts') ? $this->item('podcasts', 'Podcasty', 'admin.podcasty.index', 'fa-podcast', active: 'admin.podcasty.*') : null,

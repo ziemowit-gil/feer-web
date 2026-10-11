@@ -53,6 +53,7 @@
                                 </button>
                             </form>
                         </div>
+                        @include('blog::admin.comments.reply-form', ['comment' => $comment])
                     </li>
                 @endforeach
             </ul>
@@ -84,6 +85,19 @@
                             @endif
                         </p>
                         <p class="whitespace-pre-line text-sm text-ink">{{ $comment->body }}</p>
+
+                        @foreach ($comment->replies as $reply)
+                            <div class="mt-3 rounded-md bg-gray-50 p-3 sm:ml-6">
+                                <p class="text-xs font-bold text-ink">{{ $reply->is_staff_reply ? \Modules\Blog\Models\BlogComment::STAFF_LABEL . ' — ' . $reply->author_name : $reply->author_name }} · {{ $reply->created_at->format('Y-m-d H:i') }}</p>
+                                <p class="whitespace-pre-line text-sm text-ink">{{ $reply->body }}</p>
+                                <form method="POST" action="{{ route('admin.komentarze-bloga.destroy', $reply) }}" onsubmit="return confirm('Usunąć tę odpowiedź?');" class="mt-1">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="text-xs font-bold text-muted hover:text-red-600">Usuń odpowiedź</button>
+                                </form>
+                            </div>
+                        @endforeach
+                        @include('blog::admin.comments.reply-form', ['comment' => $comment])
 
                         <div class="mt-3">
                             <form method="POST" action="{{ route('admin.komentarze-bloga.destroy', $comment) }}" onsubmit="return confirm('Usunąć ten komentarz?');">

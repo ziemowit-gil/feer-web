@@ -1,97 +1,135 @@
 @extends('layouts.site')
 
-@section('title', 'Wiem FEER — ' . $siteSettings->site_name)
+{{--
+    Lista Wiem FEER w układzie portalu (jak szablon „Strona działu"): lewa, szeroka
+    kolumna — tytuł, wstęp, wpis wyróżniony (zdjęcie po lewej, tekst po prawej),
+    siatka po trzy, stronicowanie; prawa — przyklejona kolumna boczna (wyszukiwarka,
+    kategorie, tagi, newsletter). Na telefonie jedna kolumna, kolumna boczna pod
+    listą, a nad listą skrócona wyszukiwarka. Płasko: bez ramek i plakietek.
+    Dane: BlogController::index().
+--}}
+
+@php
+    $blogSite = (bool) request()->attributes->get('blog_site');
+    $blogName = $blogSite ? $siteSettings->site_name : 'Wiem FEER';
+    $filterParts = array_filter([
+        $q !== '' ? '„' . $q . '”' : null,
+        $category ? 'kategoria: ' . $category->name : null,
+        $tag ? 'tag: ' . $tag->name : null,
+        $author ? 'autor: ' . $author->name : null,
+    ]);
+    $pageTitle = $filtered ? 'Wyniki dla ' . implode(', ', $filterParts) . ' — ' . $blogName : $blogName;
+    if ($articles->currentPage() > 1) {
+        $pageTitle .= ' (strona ' . $articles->currentPage() . ')';
+    }
+    $link = 'font-bold text-brand-dark underline underline-offset-4 hover:no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark';
+    $date = fn ($d) => $d?->locale('pl')->translatedFormat('j F Y');
+    $showFeatured = $featured && $articles->onFirstPage();
+    // Odmiana: 1 wpis, 2–4 wpisy (poza 12–14), pozostałe — wpisów.
+    $plural = fn (int $n) => $n === 1 ? 'wpis' : (in_array($n % 10, [2, 3, 4], true) && ! in_array($n % 100, [12, 13, 14], true) ? 'wpisy' : 'wpisów');
+@endphp
+
+@section('title', $blogSite ? $pageTitle : $pageTitle . ' — ' . $siteSettings->site_name)
 @section('meta_description', 'Wiem FEER — blog fundacji ' . $siteSettings->site_name . ': artykuły o dostępności, edukacji i empatii.')
+@if ($showFeatured && $featured->imageUrl())
+    @section('og_image', url($featured->imageUrl()))
+@endif
+
+@include('blog::partials.feed-link')
 
 @section('breadcrumbs')
-    @include('partials.breadcrumbs', ['items' => [
-        ['label' => 'Wiem FEER', 'url' => null],
-    ]])
+    @include('partials.breadcrumbs', ['items' => $filtered
+        ? [['label' => $blogName, 'url' => route('blog.index')], ['label' => 'Wyniki', 'url' => null]]
+        : [['label' => $blogName, 'url' => null]]])
 @endsection
 
 @section('content')
-    @php $feer = ($siteSettings->site_template ?? 'default') === 'feer'; @endphp
-    <section class="mx-auto max-w-5xl px-4 py-12">
-        <header class="mb-10">
-            <p class="text-xs font-bold uppercase tracking-wider {{ $feer ? 'text-muted' : 'text-brand' }}">Blog</p>
-            <h1 class="mt-1 font-bold text-ink {{ $feer ? 'text-2xl md:text-3xl' : 'text-3xl sm:text-4xl' }}">Wiem FEER</h1>
-            @if ($feer)<span class="mt-3 block h-1 w-14 bg-brand" aria-hidden="true"></span>@endif
-            <p class="mt-2 max-w-2xl text-muted">Artykuły o dostępności cyfrowej, edukacji i empatii — miejsce, w którym dzielimy się wiedzą i doświadczeniem.</p>
-        </header>
+    <div class="mx-auto max-w-6xl px-4 py-10">
+        <div class="grid gap-10 lg:grid-cols-[minmax(0,1fr)_20rem]">
+            <div class="min-w-0">
+                <header class="mb-8">
+                    <h1 class="text-3xl font-bold text-ink md:text-4xl">Wiem FEER</h1>
+                    <span class="mt-3 block h-1 w-14 bg-brand" aria-hidden="true"></span>
+                    <p class="mt-4 max-w-2xl text-lg leading-relaxed text-ink">Artykuły o dostępności cyfrowej, edukacji i empatii — miejsce, w którym dzielimy się wiedzą i doświadczeniem.</p>
+                </header>
 
-        @if (! $featured)
-            <p class="text-muted">Nie ma jeszcze żadnych artykułów. Zajrzyj wkrótce!</p>
-        @else
-            {{-- ==================== HERO — NAJNOWSZY WPIS (tylko strona 1) ==================== --}}
-            @if ($articles->onFirstPage())
-                <article class="group relative mb-12 overflow-hidden text-white {{ $feer ? 'rounded-md bg-ink' : 'rounded-2xl bg-gradient-to-br from-brand to-brand-dark shadow-lg' }}">
-                    <div class="relative z-10 p-8 sm:p-10 lg:p-12">
-                        <p class="inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-xs font-bold uppercase tracking-wider">
-                            <i class="fa-solid fa-star" aria-hidden="true"></i>
-                            Najnowszy wpis
-                        </p>
-                        <h2 class="mt-4 text-2xl font-bold leading-tight sm:text-3xl lg:text-4xl">
-                            <a href="{{ route('blog.show', $featured) }}"
-                               class="rounded outline-none after:absolute after:inset-0 focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-brand">
-                                {{ $featured->title }}
-                            </a>
-                        </h2>
-                        <p class="mt-3 text-sm text-white/80">
-                            @if ($featured->author_name){{ $featured->author_name }} · @endif
-                            {{ optional($featured->published_at ?? $featured->created_at)->translatedFormat('j F Y') }}
-                        </p>
-                        @if ($featured->excerpt)
-                            <p class="mt-5 max-w-2xl text-base leading-relaxed text-white/90">{{ $featured->excerpt }}</p>
+                {{-- Na telefonie wyszukiwarka nad listą (kolumna boczna jest dopiero pod nią). --}}
+                <div class="mb-8 lg:hidden">
+                    @include('blog::partials.search-form', ['formId' => 'blog-search-mobile', 'q' => $q])
+                </div>
+
+                @if ($filtered)
+                    <section class="mb-8 rounded-md bg-gray-50 p-4" aria-labelledby="blog-results-heading">
+                        <h2 id="blog-results-heading" class="text-xl font-bold text-ink">Wyniki dla {{ implode(', ', $filterParts) }}</h2>
+                        @if ($category && $category->description)
+                            <p class="mt-2 text-ink">{{ $category->description }}</p>
                         @endif
-                        <span class="mt-7 inline-flex items-center gap-2 text-sm font-bold">
-                            Czytaj artykuł
-                            <i class="fa-solid fa-arrow-right transition-transform duration-200 group-hover:translate-x-1" aria-hidden="true"></i>
-                        </span>
-                    </div>
-                    <i class="fa-solid fa-feather-pointed pointer-events-none {{ $feer ? 'hidden' : '' }} absolute -bottom-6 -right-4 text-[9rem] text-white/10 sm:text-[12rem]" aria-hidden="true"></i>
-                </article>
-            @endif
-
-            {{-- ==================== POZOSTAŁE WPISY — LISTA REDAKCYJNA ==================== --}}
-            @if ($articles->isNotEmpty())
-                @if ($articles->onFirstPage())
-                    <h2 class="mb-2 text-xl font-bold text-ink">Pozostałe wpisy</h2>
+                        <p class="mt-1 text-sm text-ink" role="status">
+                            {{ $articles->total() }} {{ $plural($articles->total()) }}
+                            · <a href="{{ route('blog.index') }}" class="{{ $link }}">Wyczyść filtr</a>
+                        </p>
+                    </section>
                 @endif
 
-                <ul class="divide-y divide-gray-200 border-t border-gray-200">
-                    @foreach ($articles as $article)
-                        <li class="group relative py-6 transition duration-200 sm:flex sm:gap-8">
-                            <p class="mb-2 shrink-0 text-xs font-bold uppercase tracking-wider text-muted sm:mb-0 sm:w-40 sm:pt-1">
-                                <time datetime="{{ optional($article->published_at ?? $article->created_at)->toDateString() }}">
-                                    {{ optional($article->published_at ?? $article->created_at)->translatedFormat('j F Y') }}
-                                </time>
-                            </p>
-                            <div class="min-w-0 flex-1">
-                                <h3 class="text-lg font-bold text-ink">
-                                    <a href="{{ route('blog.show', $article) }}"
-                                       class="rounded outline-none transition-colors group-hover:text-brand after:absolute after:inset-0 focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
-                                        {{ $article->title }}
-                                    </a>
+                {{-- ===== WPIS WYRÓŻNIONY ===== --}}
+                @if ($showFeatured)
+                    @php $fImg = $featured->imageUrl(); $fDate = $featured->publishedDate(); @endphp
+                    <section class="mb-10" aria-labelledby="blog-featured-heading">
+                        <h2 id="blog-featured-heading" class="mb-4 text-2xl font-bold text-ink">
+                            Wyróżniony wpis
+                            <span class="mt-2 block h-1 w-14 bg-brand" aria-hidden="true"></span>
+                        </h2>
+                        <article class="grid gap-6 rounded-md bg-gray-50 p-4 md:p-6 {{ $fImg ? 'md:grid-cols-[minmax(0,5fr)_minmax(0,6fr)]' : '' }}">
+                            @if ($fImg)
+                                <img src="{{ $fImg }}" alt="{{ $featured->imageAlt() }}" class="aspect-[4/3] w-full rounded-md object-cover">
+                            @endif
+                            <div>
+                                <p class="text-sm text-muted">
+                                    @if ($fDate)<time datetime="{{ $fDate->toDateString() }}">{{ $date($fDate) }}</time>@endif
+                                    @if ($featured->category) · {{ $featured->category->name }}@endif
+                                </p>
+                                <h3 class="mt-2 text-2xl font-bold leading-tight text-ink">
+                                    <a href="{{ route('blog.show', $featured) }}" class="hover:underline hover:underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">{{ $featured->title }}</a>
                                 </h3>
-                                @if ($article->author_name)
-                                    <p class="mt-1 text-xs text-muted">{{ $article->author_name }}</p>
+                                @if ($featured->authorProfiles()->isNotEmpty() || filled($featured->author_name))
+                                    <p class="mt-2 text-sm text-ink"><span class="sr-only">Autor: </span>@include('blog::partials.authors-inline', ['article' => $featured])</p>
                                 @endif
-                                @if ($article->excerpt)
-                                    <p class="mt-2 text-sm text-muted">{{ $article->excerpt }}</p>
+                                @if ($featured->excerpt)
+                                    <p class="mt-3 leading-relaxed text-ink">{{ $featured->excerpt }}</p>
                                 @endif
-                                <span class="mt-3 inline-flex items-center gap-2 text-sm font-bold {{ $feer ? 'text-brand-dark underline underline-offset-4' : 'text-brand' }}">
-                                    Czytaj dalej
-                                    <i class="fa-solid fa-arrow-right transition-transform duration-200 group-hover:translate-x-1" aria-hidden="true"></i>
-                                </span>
+                                <p class="mt-4"><a href="{{ route('blog.show', $featured) }}" class="{{ $link }}">Pełna treść<span class="sr-only">: {{ $featured->title }}</span></a></p>
                             </div>
-                        </li>
-                    @endforeach
-                </ul>
+                        </article>
+                    </section>
+                @endif
 
-                <div class="mt-10">
-                    {{ $articles->links() }}
-                </div>
-            @endif
-        @endif
-    </section>
+                {{-- ===== SIATKA WPISÓW ===== --}}
+                @if ($articles->isNotEmpty())
+                    <section aria-labelledby="blog-list-heading">
+                        <h2 id="blog-list-heading" class="{{ $filtered ? 'sr-only' : 'mb-6 text-2xl font-bold text-ink' }}">
+                            {{ $filtered ? 'Znalezione wpisy' : 'Najnowsze wpisy' }}
+                            @unless ($filtered)<span class="mt-2 block h-1 w-14 bg-brand" aria-hidden="true"></span>@endunless
+                        </h2>
+                        <ul class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                            @foreach ($articles as $article)
+                                <li>@include('blog::partials.card', ['article' => $article])</li>
+                            @endforeach
+                        </ul>
+
+                        {{ $articles->links('blog::partials.pagination') }}
+                    </section>
+                @elseif (! $showFeatured)
+                    <p class="rounded-md bg-gray-50 p-4 text-ink">
+                        @if ($filtered)
+                            Nie znaleźliśmy wpisów pasujących do wybranych kryteriów. <a href="{{ route('blog.index') }}" class="{{ $link }}">Zobacz wszystkie wpisy</a>.
+                        @else
+                            Nie ma jeszcze żadnych artykułów. Zajrzyj wkrótce!
+                        @endif
+                    </p>
+                @endif
+            </div>
+
+            @include('blog::partials.sidebar')
+        </div>
+    </div>
 @endsection

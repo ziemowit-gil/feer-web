@@ -3,14 +3,32 @@
 @section('title', 'Wiem FEER — artykuły')
 
 @section('content')
-    <div class="mb-4 flex items-center justify-between gap-3">
-        <a href="{{ route('admin.komentarze-bloga.index') }}" class="text-sm font-bold text-muted hover:text-brand">
-            <i class="fa-solid fa-comments"></i> Moderacja komentarzy
-        </a>
+    <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
+        <div class="flex flex-wrap gap-4 text-sm font-bold">
+            <a href="{{ route('admin.komentarze-bloga.index') }}" class="text-muted hover:text-brand"><i class="fa-solid fa-comments" aria-hidden="true"></i> Moderacja komentarzy</a>
+            <a href="{{ route('admin.kategorie-bloga.index') }}" class="text-muted hover:text-brand"><i class="fa-solid fa-folder" aria-hidden="true"></i> Kategorie</a>
+            <a href="{{ route('admin.autorzy-bloga.index') }}" class="text-muted hover:text-brand"><i class="fa-solid fa-user-pen" aria-hidden="true"></i> Autorzy</a>
+        </div>
         <a href="{{ route('admin.wiem-feer.create') }}" class="rounded bg-brand px-4 py-2 text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
             <i class="fa-solid fa-plus" aria-hidden="true"></i> Dodaj artykuł
         </a>
     </div>
+
+    <form method="GET" action="{{ route('admin.wiem-feer.index') }}" class="mb-4 flex flex-wrap items-end gap-3">
+        <div>
+            <label for="status" class="mb-1 block text-sm font-bold">Status</label>
+            <select id="status" name="status" class="rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                <option value="">Wszystkie</option>
+                @foreach (\Modules\Blog\Models\BlogArticle::STATUSES as $value => $label)
+                    <option value="{{ $value }}" @selected($status === $value)>{{ $label }}</option>
+                @endforeach
+            </select>
+        </div>
+        <button type="submit" class="rounded bg-gray-100 px-4 py-2 text-sm font-bold text-ink hover:bg-gray-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">Filtruj</button>
+        @if ($status !== '')
+            <a href="{{ route('admin.wiem-feer.index') }}" class="py-2 text-sm font-bold text-brand-dark underline">Pokaż wszystkie</a>
+        @endif
+    </form>
 
     <div class="overflow-hidden rounded-lg border border-gray-200 bg-white">
         <table class="w-full text-left text-sm">
@@ -27,26 +45,28 @@
             <tbody class="divide-y divide-gray-100">
                 @forelse ($articles as $article)
                     <tr>
-                        <td class="px-4 py-3 font-medium">{{ $article->title }}</td>
-                        <td class="px-4 py-3 text-muted">{{ $article->author_name ?: '—' }}</td>
+                        <td class="px-4 py-3 font-medium">
+                            {{ $article->title }}
+                            @if ($article->category)<span class="block text-xs text-muted">{{ $article->category->name }}</span>@endif
+                        </td>
+                        <td class="px-4 py-3 text-muted">{{ $article->authorLine() ?: '—' }}</td>
                         <td class="px-4 py-3 text-muted">{{ optional($article->published_at ?? $article->created_at)->format('Y-m-d') }}</td>
                         <td class="px-4 py-3 text-muted">
                             {{ $article->comments_count }}
                             @if ($article->pending_comments_count)
-                                <span class="ml-1 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-bold text-amber-800">{{ $article->pending_comments_count }} do moderacji</span>
+                                <span class="block text-xs font-bold text-ink">{{ $article->pending_comments_count }} do moderacji</span>
                             @endif
                         </td>
                         <td class="px-4 py-3">
-                            @if ($article->isVisible())
-                                <span class="rounded-full bg-green-100 px-2 py-0.5 text-xs font-bold text-green-700">Opublikowany</span>
-                            @else
-                                <span class="rounded-full bg-gray-100 px-2 py-0.5 text-xs font-bold text-gray-500">Szkic</span>
-                            @endif
-                            @if ($article->is_disabled)
-                                <span class="rounded-full bg-red-100 px-2 py-0.5 text-xs font-bold text-red-700"><i class="fa-solid fa-ban"></i> Wyłączony</span>
+                            <span class="font-bold text-ink">{{ $article->statusLabel() }}</span>
+                            @if ($article->status() === 'scheduled')
+                                <span class="block text-xs text-muted">od {{ $article->published_at->format('Y-m-d H:i') }}</span>
                             @endif
                             @if ($article->isWip())
-                                <span class="rounded-full bg-orange-100 px-2 py-0.5 text-xs font-bold text-orange-700"><i class="fa-solid fa-person-digging"></i> W przygotowaniu</span>
+                                <span class="block text-xs text-muted">W przygotowaniu</span>
+                            @endif
+                            @if ($article->is_featured)
+                                <span class="block text-xs text-muted">Wyróżniony</span>
                             @endif
                         </td>
                         <td class="px-4 py-3">

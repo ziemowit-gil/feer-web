@@ -65,6 +65,8 @@ class Page extends Model
     public const RESERVED_SLUGS = [
         'strona', 'dzialania', 'projekty', 'aktualnosci', 'newsletter', 'wsparcie', 'materialy', 'kontakt',
         'bip', 'instagram', 'fb', 'facebook', 'li', 'linkedin',
+        // Blog Wiem FEER (witryna sieci) i jego stare adresy przekierowujące.
+        'wiem', 'blog', 'wiem-feer',
         'dashboard', 'profile', 'admin', 'login', 'logout', 'ankieta', 'strefa',
         'forgot-password', 'reset-password', 'verify-email', 'confirm-password',
     ];

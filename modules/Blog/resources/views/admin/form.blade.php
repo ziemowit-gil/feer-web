@@ -3,7 +3,7 @@
 @section('title', $article->exists ? 'Edytuj artykuł' : 'Nowy artykuł')
 
 @section('content')
-    <form method="POST" action="{{ $article->exists ? route('admin.wiem-feer.update', $article) : route('admin.wiem-feer.store') }}"
+    <form method="POST" action="{{ $article->exists ? route('admin.wiem-feer.update', $article) : route('admin.wiem-feer.store') }}" enctype="multipart/form-data"
         class="max-w-3xl space-y-5 rounded-lg border border-gray-200 bg-white p-6">
         @csrf
         @if ($article->exists) @method('PUT') @endif
@@ -15,22 +15,95 @@
             @error('title') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
         </div>
 
-        <div class="grid gap-4 sm:grid-cols-2">
+        <div>
+            <label for="slug" class="mb-1 block text-sm font-bold">Adres URL (slug) <span class="font-normal text-muted">(opcjonalnie)</span></label>
+            <input type="text" id="slug" name="slug" value="{{ old('slug', $article->slug) }}" placeholder="zostanie wygenerowany z tytułu"
+                class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+            @error('slug') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+        </div>
+
+        {{-- ==================== AUTORZY ==================== --}}
+        @php $selectedCo = array_map('intval', (array) old('co_authors', $coAuthorIds)); @endphp
+        <fieldset class="space-y-4 rounded-lg bg-gray-50 p-4">
+            <legend class="px-1 text-sm font-bold">Autorzy</legend>
             <div>
-                <label for="author_name" class="mb-1 block text-sm font-bold">Autor <span class="font-normal text-muted">(opcjonalnie)</span></label>
-                <input type="text" id="author_name" name="author_name" value="{{ old('author_name', $article->author_name) }}"
-                    placeholder="np. Zespół FEER"
-                    class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
-                @error('author_name') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                <label for="author_id" class="mb-1 block text-sm font-bold">Autor główny</label>
+                <select id="author_id" name="author_id" class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                    <option value="">— bez profilu autora —</option>
+                    @foreach ($authors as $a)
+                        <option value="{{ $a->id }}" @selected((int) old('author_id', $article->author_id) === $a->id)>{{ $a->name }}{{ $a->is_active ? '' : ' (nieaktywny)' }}</option>
+                    @endforeach
+                </select>
+                <p class="mt-1 text-xs text-muted">Profile autorów dodasz w <a href="{{ route('admin.autorzy-bloga.index') }}" class="font-bold text-brand-dark underline">Autorzy</a>. Nowy wpis ma domyślnie autora powiązanego z Twoim kontem.</p>
+                @error('author_id') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
             </div>
 
+            @if ($authors->count() > 1)
+                <div role="group" aria-labelledby="co-authors-label">
+                    <p id="co-authors-label" class="mb-1 text-sm font-bold">Współautorzy <span class="font-normal text-muted">(opcjonalnie)</span></p>
+                    <div class="grid gap-1 sm:grid-cols-2">
+                        @foreach ($authors as $a)
+                            <label class="flex items-center gap-2 text-sm">
+                                <input type="checkbox" name="co_authors[]" value="{{ $a->id }}" @checked(in_array($a->id, $selectedCo, true))
+                                    class="rounded border-gray-300 text-brand focus:ring-brand"> {{ $a->name }}
+                            </label>
+                        @endforeach
+                    </div>
+                    @error('co_authors') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    @error('co_authors.*') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                </div>
+            @endif
+
+            <div class="grid gap-4 sm:grid-cols-2">
+                <div>
+                    <label for="author_name" class="mb-1 block text-sm font-bold">Podpis tekstowy <span class="font-normal text-muted">(gdy brak profilu)</span></label>
+                    <input type="text" id="author_name" name="author_name" value="{{ old('author_name', $article->author_name) }}"
+                        placeholder="np. Zespół FEER" class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                    @error('author_name') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                </div>
+                <div>
+                    <label for="author_bio" class="mb-1 block text-sm font-bold">Nota o autorze <span class="font-normal text-muted">(gdy brak profilu)</span></label>
+                    <textarea id="author_bio" name="author_bio" rows="2" maxlength="600"
+                        class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">{{ old('author_bio', $article->author_bio) }}</textarea>
+                    @error('author_bio') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                </div>
+            </div>
+        </fieldset>
+
+        {{-- ==================== KATEGORIA I TAGI ==================== --}}
+        <div class="grid gap-4 sm:grid-cols-2">
             <div>
-                <label for="slug" class="mb-1 block text-sm font-bold">Adres URL (slug) <span class="font-normal text-muted">(opcjonalnie)</span></label>
-                <input type="text" id="slug" name="slug" value="{{ old('slug', $article->slug) }}" placeholder="zostanie wygenerowany z tytułu"
-                    class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
-                @error('slug') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                <label for="category_id" class="mb-1 block text-sm font-bold">Kategoria</label>
+                <select id="category_id" name="category_id" class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                    <option value="">— bez kategorii —</option>
+                    @foreach ($categories as $c)
+                        <option value="{{ $c->id }}" @selected((int) old('category_id', $article->category_id) === $c->id)>{{ $c->name }}</option>
+                    @endforeach
+                </select>
+                <p class="mt-1 text-xs text-muted"><a href="{{ route('admin.kategorie-bloga.index') }}" class="font-bold text-brand-dark underline">Zarządzaj kategoriami</a></p>
+                @error('category_id') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+            </div>
+            <div>
+                <label for="tags" class="mb-1 block text-sm font-bold">Tagi <span class="font-normal text-muted">(po przecinku)</span></label>
+                <input type="text" id="tags" name="tags" value="{{ old('tags', $tagsValue) }}" placeholder="np. dostępność, WCAG, edukacja"
+                    aria-describedby="tags-help" class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                <p id="tags-help" class="mt-1 text-xs text-muted">
+                    Nowe tagi utworzą się same.
+                    @if ($tagsAll->isNotEmpty()) Istniejące: {{ $tagsAll->take(30)->join(', ') }}@endif
+                </p>
+                @error('tags') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
             </div>
         </div>
+
+        {{-- ==================== ZDJĘCIE WYRÓŻNIAJĄCE ==================== --}}
+        @include('blog::admin.partials.image-field', [
+            'prefix' => 'image', 'legend' => 'Zdjęcie wyróżniające (opcjonalnie — na liście, we wpisie i przy udostępnianiu)',
+            'fileName' => 'image', 'currentUrl' => $article->imageUrl(), 'currentAlt' => $article->image_alt,
+            'removeName' => 'remove_image', 'altName' => 'image_alt', 'altValue' => old('image_alt', $article->image_alt),
+            'altLabel' => 'Tekst alternatywny zdjęcia',
+            'altHelp' => 'Opisz, co przedstawia zdjęcie — czytają to osoby korzystające z czytników ekranu. Wymagany, chyba że zdjęcie jest dekoracyjne.',
+            'decorativeName' => 'image_decorative', 'decorativeValue' => (bool) old('image_decorative', $article->image_decorative),
+        ])
 
         <div>
             <label for="excerpt" class="mb-1 block text-sm font-bold">Zajawka <span class="font-normal text-muted">(opcjonalnie, na liście artykułów)</span></label>
@@ -54,11 +127,38 @@
             @error('published_at') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
         </div>
 
+        <label class="flex items-start gap-2">
+            <input type="checkbox" name="is_featured" value="1" {{ old('is_featured', $article->is_featured ?? false) ? 'checked' : '' }}
+                class="mt-0.5 rounded border-gray-300 text-brand focus:ring-brand">
+            <span>
+                <span class="block text-sm font-bold">Wyróżniony wpis</span>
+                <span class="block text-xs text-muted">Pokazywany na górze listy Wiem FEER w dużej karcie (gdy wyróżnionych jest kilka — najnowszy).</span>
+            </span>
+        </label>
+
         <label class="flex items-center gap-2">
             <input type="checkbox" name="is_published" value="1" {{ old('is_published', $article->is_published ?? false) ? 'checked' : '' }}
                 class="rounded border-gray-300 text-brand focus:ring-brand">
             <span class="text-sm font-bold">Opublikowany</span>
         </label>
+
+        {{-- ==================== SEO ==================== --}}
+        <fieldset class="space-y-4 rounded-lg bg-gray-50 p-4">
+            <legend class="px-1 text-sm font-bold">SEO <span class="font-normal text-muted">(opcjonalnie)</span></legend>
+            <div>
+                <label for="meta_title" class="mb-1 block text-sm font-bold">Tytuł w wyszukiwarkach</label>
+                <input type="text" id="meta_title" name="meta_title" maxlength="255" value="{{ old('meta_title', $article->meta_title) }}"
+                    placeholder="pusto = tytuł artykułu" class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">
+                @error('meta_title') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+            </div>
+            <div>
+                <label for="meta_description" class="mb-1 block text-sm font-bold">Opis w wyszukiwarkach</label>
+                <textarea id="meta_description" name="meta_description" rows="2" maxlength="320" placeholder="pusto = zajawka"
+                    class="w-full rounded border-gray-300 focus:border-brand focus:ring-brand">{{ old('meta_description', $article->meta_description) }}</textarea>
+                <p class="mt-1 text-xs text-muted">Najlepiej 120–160 znaków.</p>
+                @error('meta_description') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+            </div>
+        </fieldset>
 
         {{-- ==================== DOSTĘPNOŚĆ ARTYKUŁU ==================== --}}
         @php $currentWip = old('wip_mode', $article->wip_mode); @endphp
