@@ -92,7 +92,7 @@ class MenuLinkPageTypesTest extends TestCase
         $this->assertSame('Zakładka', Page::where('slug', 'zakres')->first()->projectDisplayInfo()['label']);
         $this->assertSame(['label' => 'Link', 'link' => true, 'target' => 'https://facebook.com/feer'], Page::where('slug', 'profil-fb')->first()->projectDisplayInfo());
 
-        $this->get(route('admin.projects.index', ['wybrana' => $project->id]))->assertOk()
+        $this->get(route('admin.projekty.index', ['wybrana' => $project->id]))->assertOk()
             ->assertSee('Zakładka')
             ->assertSee('→ https://facebook.com/feer')
             ->assertSee('Dodaj link');
