@@ -31,7 +31,7 @@
         </div>
     @endif
 
-    @php $fields = $form->normalizedFields(); @endphp
+    @php $fields = $form->inputFields(); @endphp
 
     <div class="overflow-x-auto rounded-md bg-white">
         <table class="w-full text-left text-sm">
@@ -55,10 +55,14 @@
                                 @php $value = $sub->data[$field['key']] ?? null; @endphp
                                 @if (is_null($value) || $value === '')
                                     <span class="text-gray-300">—</span>
-                                @elseif ($field['type'] === 'checkbox')
+                                @elseif (in_array($field['type'], ['checkbox', 'consent'], true))
                                     <i class="fa-solid fa-circle-check text-green-500" aria-label="Zaznaczone"></i>
+                                @elseif ($field['type'] === 'file' && is_array($value))
+                                    <a href="{{ route('admin.formularze.zgloszenia.plik', [$form, $sub, $field['key']]) }}" class="inline-flex items-center gap-1 text-brand-dark underline underline-offset-2 hover:no-underline">
+                                        <i class="fa-solid fa-paperclip" aria-hidden="true"></i><span class="break-all">{{ \App\Models\FormDefinition::displayValue($field, $value) }}</span>
+                                    </a>
                                 @else
-                                    <span class="break-words">{{ $value }}</span>
+                                    <span class="break-words">{{ \App\Models\FormDefinition::displayValue($field, $value) }}</span>
                                 @endif
                             </td>
                         @endforeach

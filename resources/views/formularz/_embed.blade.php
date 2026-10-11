@@ -7,6 +7,9 @@
     $errorSummaryId = 'form-errors-' . $fs;
     // Szablon FEER: formularz bez obwódek — pola wypełnione jasnym szarym tłem z grubszą linią u dołu (kontrast krawędzi pola ≥ 3:1).
     $feerForm    = ($siteSettings->site_template ?? 'default') === 'feer';
+    $hasFile     = collect($fields)->contains(fn ($f) => ($f['type'] ?? '') === 'file');
+    $hasInputs   = collect($fields)->contains(fn ($f) => \App\Models\FormDefinition::isInput($f['type'] ?? 'text'));
+    $privacyUrl  = \Illuminate\Support\Facades\Route::has('page.show') ? url('/polityka-prywatnosci') : null;
 @endphp
 
 <section id="formularz-{{ $fs }}"
@@ -62,12 +65,13 @@
     <form method="POST"
         action="{{ route('formularz.store', $fs) }}"
         aria-label="{{ $form->title }}"
+        @if ($hasFile) enctype="multipart/form-data" @endif
         @if ($showErrors) aria-describedby="{{ $errorSummaryId }}" @endif
         novalidate
         class="space-y-5">
         @csrf
 
-        @if (count($fields) > 0)
+        @if ($hasInputs)
             <p class="text-xs text-muted">
                 Pola oznaczone <span aria-hidden="true" class="font-bold text-red-500">*</span>
                 <span class="sr-only">gwiazdką</span> są wymagane.
@@ -169,6 +173,134 @@
 
                     @if ($hasError)
                         <p id="{{ $errorId }}" class="flex items-center gap-1 pl-6 text-sm font-medium text-red-700" role="alert">
+                            <i class="fa-solid fa-circle-exclamation shrink-0" aria-hidden="true"></i>
+                            @error("data.{$field['key']}") {{ $message }} @enderror
+                        </p>
+                    @endif
+                </div>
+
+            @elseif ($type === 'heading')
+                {{-- ── Nagłówek / opis sekcji (bez wartości) ─────────────────── --}}
+                <div class="border-t border-solid border-gray-200 pt-5 first:border-t-0 first:pt-0">
+                    <h3 class="text-lg font-bold text-ink">{{ $field['label'] }}</h3>
+                    @if ($field['help_text'] ?? null)
+                        <p class="mt-1 text-sm text-muted">{{ $field['help_text'] }}</p>
+                    @endif
+                </div>
+
+            @elseif ($type === 'checkboxes' || $type === 'rating')
+                {{-- ── Wielokrotny wybór / ocena 1–5 (fieldset + legend) ─────── --}}
+                @php
+                    $isRating = $type === 'rating';
+                    $choices  = $isRating ? ['1', '2', '3', '4', '5'] : \App\Models\FormDefinition::fieldOptions($field);
+                    $oldArr   = $isRating ? [(string) $oldVal] : array_map('strval', (array) ($oldVal ?? []));
+                @endphp
+                <fieldset class="space-y-1.5" @if ($describedByStr) aria-describedby="{{ $describedByStr }}" @endif>
+                    <legend class="text-sm font-semibold text-ink">
+                        {{ $field['label'] }}
+                        @if ($required)
+                            <span aria-hidden="true" class="ml-0.5 font-bold text-red-500">*</span>
+                            <span class="sr-only">(wymagane)</span>
+                        @endif
+                    </legend>
+
+                    @if ($field['help_text'] ?? null)
+                        <p id="{{ $helpId }}" class="text-xs text-muted">{{ $field['help_text'] }}</p>
+                    @endif
+
+                    <div class="{{ $isRating ? 'flex flex-wrap gap-2 pt-1' : 'space-y-1.5' }}">
+                        @foreach ($choices as $opt)
+                            @php $optId = $fid . '-' . \Illuminate\Support\Str::slug($opt, '_'); @endphp
+                            @if ($isRating)
+                                <label for="{{ $optId }}" class="flex h-11 w-11 cursor-pointer items-center justify-center rounded-md border-2 border-solid border-gray-300 bg-white text-base font-bold text-ink transition hover:border-brand has-[:checked]:border-brand has-[:checked]:bg-brand has-[:checked]:text-white has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-brand has-[:focus-visible]:ring-offset-2">
+                                    <input id="{{ $optId }}" type="radio" name="{{ $fname }}" value="{{ $opt }}" class="sr-only"
+                                        {{ $required ? 'required' : '' }} {{ in_array($opt, $oldArr, true) ? 'checked' : '' }}
+                                        @if ($hasError) aria-invalid="true" @endif>
+                                    {{ $opt }}<span class="sr-only"> z 5</span>
+                                </label>
+                            @else
+                                <label for="{{ $optId }}" class="flex cursor-pointer items-center gap-2 text-sm">
+                                    <input id="{{ $optId }}" type="checkbox" name="{{ $fname }}[]" value="{{ $opt }}"
+                                        {{ in_array($opt, $oldArr, true) ? 'checked' : '' }}
+                                        @if ($hasError) aria-invalid="true" @endif
+                                        class="h-4 w-4 shrink-0 rounded border-gray-300 text-brand focus:ring-brand {{ $hasError ? 'border-red-400' : '' }}">
+                                    {{ $opt }}
+                                </label>
+                            @endif
+                        @endforeach
+                    </div>
+                    @if ($isRating)
+                        <p class="text-xs text-muted" aria-hidden="true">1 — najniżej, 5 — najwyżej</p>
+                    @endif
+
+                    @if ($hasError)
+                        <p id="{{ $errorId }}" class="flex items-center gap-1 text-sm font-medium text-red-700" role="alert">
+                            <i class="fa-solid fa-circle-exclamation shrink-0" aria-hidden="true"></i>
+                            @error("data.{$field['key']}") {{ $message }} @enderror
+                        </p>
+                    @endif
+                </fieldset>
+
+            @elseif ($type === 'consent')
+                {{-- ── Zgoda RODO z linkiem do polityki prywatności ──────────── --}}
+                <div class="space-y-1">
+                    <div class="flex items-start gap-2">
+                        <input id="{{ $fid }}" type="checkbox" name="{{ $fname }}" value="1"
+                            {{ $required ? 'required aria-required="true"' : '' }}
+                            {{ $oldVal ? 'checked' : '' }}
+                            @if ($hasError) aria-invalid="true" @endif
+                            @if ($describedByStr) aria-describedby="{{ $describedByStr }}" @endif
+                            class="mt-0.5 h-4 w-4 shrink-0 cursor-pointer rounded border-gray-300 text-brand focus:ring-brand {{ $hasError ? 'border-red-400' : '' }}">
+                        <label for="{{ $fid }}" class="cursor-pointer text-sm text-ink">
+                            {{ $field['label'] }}
+                            @if ($privacyUrl)
+                                Szczegóły w <a href="{{ $privacyUrl }}" class="font-bold text-brand-dark underline underline-offset-2 hover:no-underline" target="_blank" rel="noopener">Polityce prywatności<span class="sr-only"> (otwiera się w nowej karcie)</span></a>.
+                            @endif
+                            @if ($required)
+                                <span aria-hidden="true" class="ml-0.5 font-bold text-red-500">*</span>
+                                <span class="sr-only">(wymagane)</span>
+                            @endif
+                        </label>
+                    </div>
+                    @if ($field['help_text'] ?? null)
+                        <p id="{{ $helpId }}" class="pl-6 text-xs text-muted">{{ $field['help_text'] }}</p>
+                    @endif
+                    @if ($hasError)
+                        <p id="{{ $errorId }}" class="flex items-center gap-1 pl-6 text-sm font-medium text-red-700" role="alert">
+                            <i class="fa-solid fa-circle-exclamation shrink-0" aria-hidden="true"></i>
+                            @error("data.{$field['key']}") {{ $message }} @enderror
+                        </p>
+                    @endif
+                </div>
+
+            @elseif ($type === 'file')
+                {{-- ── Załącznik ─────────────────────────────────────────────── --}}
+                @php
+                    $accept = \App\Models\FormDefinition::fileAccept($field);
+                    $maxMb  = \App\Models\FormDefinition::fileMaxMb($field);
+                    $fileHintId = $fid . '-limits';
+                    $fileDescribed = trim($describedByStr . ' ' . $fileHintId);
+                @endphp
+                <div class="space-y-1">
+                    <label for="{{ $fid }}" class="block text-sm font-semibold text-ink">
+                        {{ $field['label'] }}
+                        @if ($required)
+                            <span aria-hidden="true" class="ml-0.5 font-bold text-red-500">*</span>
+                            <span class="sr-only">(wymagane)</span>
+                        @endif
+                    </label>
+                    @if ($field['help_text'] ?? null)
+                        <p id="{{ $helpId }}" class="text-xs text-muted">{{ $field['help_text'] }}</p>
+                    @endif
+                    <input id="{{ $fid }}" name="{{ $fname }}" type="file"
+                        accept="{{ collect($accept)->map(fn ($e) => '.' . $e)->implode(',') }}"
+                        {{ $required ? 'required aria-required="true"' : '' }}
+                        @if ($hasError) aria-invalid="true" @endif
+                        aria-describedby="{{ $fileDescribed }}"
+                        class="{{ $baseInputClass }} px-3 py-2 file:mr-3 file:rounded-md file:border-0 file:bg-brand-light file:px-3 file:py-1.5 file:font-bold file:text-brand-dark">
+                    <p id="{{ $fileHintId }}" class="text-xs text-muted">Dozwolone: {{ strtoupper(implode(', ', $accept)) }}. Maksymalnie {{ $maxMb }} MB.@if ($showErrors) Po błędzie plik trzeba wybrać ponownie.@endif</p>
+                    @if ($hasError)
+                        <p id="{{ $errorId }}" class="flex items-center gap-1 text-sm font-medium text-red-700" role="alert">
                             <i class="fa-solid fa-circle-exclamation shrink-0" aria-hidden="true"></i>
                             @error("data.{$field['key']}") {{ $message }} @enderror
                         </p>
@@ -280,7 +412,7 @@
             @endif
         @endforeach
 
-        @if (count($fields) > 0)
+        @if ($hasInputs)
             @include('partials.spam-protection', ['spamScope' => $fs, 'cleantalk' => empty($form->settings['cleantalk_disabled'] ?? null)])
 
             <div class="pt-2">

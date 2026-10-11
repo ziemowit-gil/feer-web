@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 
 class FormDefinition extends Model
 {
@@ -36,7 +37,26 @@ class FormDefinition extends Model
         'radio'    => 'Wybór jednokrotny (radio)',
         'checkbox' => 'Zgoda / checkbox',
         'date'     => 'Data',
+        'checkboxes' => 'Wybór wielokrotny',
+        'rating'   => 'Ocena w skali 1–5',
+        'url'      => 'Adres strony (www)',
+        'time'     => 'Godzina',
+        'file'     => 'Załącznik (plik)',
+        'consent'  => 'Zgoda RODO (z linkiem do polityki prywatności)',
+        'heading'  => 'Nagłówek / opis sekcji',
     ];
+
+    /** Elementy układu — bez wartości (nie walidowane, nie zapisywane, nie w eksporcie). */
+    const LAYOUT_TYPES = ['heading'];
+
+    /** Domyślne typy plików i rozmiar (MB) dla pola „Załącznik”. */
+    const FILE_DEFAULT_ACCEPT = 'pdf,doc,docx,odt,jpg,jpeg,png';
+    const FILE_MAX_MB = 20;
+
+    public static function isInput(string $type): bool
+    {
+        return ! in_array($type, self::LAYOUT_TYPES, true);
+    }
 
     public function submissions(): HasMany
     {
@@ -54,7 +74,14 @@ class FormDefinition extends Model
         $seen   = [];
         $result = [];
 
-        foreach ($this->fields ?? [] as $field) {
+        foreach ($this->fields ?? [] as $i => $field) {
+            // Elementy układu dostają własny klucz poza puli — nie przesuwają kluczy pól z danymi.
+            if (! self::isInput($field['type'] ?? 'text')) {
+                $result[] = array_merge($field, ['key' => '_layout_'.$i]);
+
+                continue;
+            }
+
             $key = Str::slug($field['label'] ?? '', '_') ?: 'pole';
 
             if (isset($seen[$key])) {
@@ -70,14 +97,41 @@ class FormDefinition extends Model
         return $result;
     }
 
+    /** Pola z wartościami (bez nagłówków i innych elementów układu). */
+    public function inputFields(): array
+    {
+        return array_values(array_filter($this->normalizedFields(), fn ($f) => self::isInput($f['type'] ?? 'text')));
+    }
+
+    /** Opcje pola wyboru (lista, radio, wielokrotny wybór) — rozdzielone przecinkami. */
+    public static function fieldOptions(array $field): array
+    {
+        return array_values(array_filter(array_map('trim', explode(',', (string) ($field['options'] ?? ''))), 'filled'));
+    }
+
+    /** Dozwolone rozszerzenia pola „Załącznik”. */
+    public static function fileAccept(array $field): array
+    {
+        $list = array_filter(array_map(fn ($e) => strtolower(trim($e, " .\t")), explode(',', (string) ($field['accept'] ?? ''))));
+
+        return $list ?: explode(',', self::FILE_DEFAULT_ACCEPT);
+    }
+
+    /** Maksymalny rozmiar pliku (MB) pola „Załącznik”. */
+    public static function fileMaxMb(array $field): int
+    {
+        return max(1, min(self::FILE_MAX_MB, (int) ($field['max_mb'] ?? 0) ?: 10));
+    }
+
     /** Dynamiczne reguły walidacji dla zgłoszenia. */
     public function validationRules(): array
     {
         $rules = [];
 
-        foreach ($this->normalizedFields() as $field) {
+        foreach ($this->inputFields() as $field) {
             $required = ($field['required'] ?? false) ? 'required' : 'nullable';
             $type     = $field['type'] ?? 'text';
+            $options  = self::fieldOptions($field);
 
             $fieldRules = match ($type) {
                 'email'    => [$required, 'email', 'max:255'],
@@ -85,23 +139,79 @@ class FormDefinition extends Model
                 'number'   => [$required, 'numeric'],
                 'date'     => [$required, 'date'],
                 'select',
-                'radio'    => [$required, 'string', 'max:255'],
-                'checkbox' => [$required, 'accepted'],
+                'radio'    => array_merge([$required, 'string', 'max:255'], $options ? [Rule::in($options)] : []),
+                'checkbox',
+                'consent'  => [$required, 'accepted'],
+                'checkboxes' => [$required, 'array'],
+                'rating'   => [$required, 'integer', 'between:1,5'],
+                'url'      => [$required, 'url', 'max:500'],
+                'time'     => [$required, 'date_format:H:i'],
+                'file'     => [$required, 'file', 'max:'.(self::fileMaxMb($field) * 1024), 'extensions:'.implode(',', self::fileAccept($field)), 'mimes:'.implode(',', self::fileAccept($field))],
                 default    => [$required, 'string', 'max:5000'],
             };
 
             $rules['data.' . $field['key']] = $fieldRules;
+
+            if ($type === 'checkboxes') {
+                $rules['data.' . $field['key'] . '.*'] = array_merge(['string'], $options ? [Rule::in($options)] : []);
+            }
         }
 
         return $rules;
+    }
+
+    /**
+     * Wartość pola jako tekst (e-mail, eksport, panel): listy po przecinku, zgody „Tak”,
+     * ocena „4/5”, plik — nazwa i rozmiar.
+     */
+    public static function displayValue(array $field, mixed $value): string
+    {
+        $type = $field['type'] ?? 'text';
+
+        if ($value === null || $value === '' || $value === []) {
+            return '';
+        }
+
+        return match (true) {
+            $type === 'file' && is_array($value) => trim(($value['name'] ?? 'plik').(isset($value['size']) ? ' ('.self::humanSize((int) $value['size']).')' : '')),
+            in_array($type, ['checkbox', 'consent'], true) => 'Tak',
+            $type === 'rating' => $value.'/5',
+            is_array($value) => implode(', ', array_map('strval', $value)),
+            default => (string) $value,
+        };
+    }
+
+    public static function humanSize(int $bytes): string
+    {
+        return $bytes >= 1048576 ? round($bytes / 1048576, 1).' MB' : max(1, (int) round($bytes / 1024)).' kB';
+    }
+
+    /** Komunikaty walidacji zrozumiałe dla osoby wypełniającej (zamiast technicznych formatów). */
+    public function validationMessages(): array
+    {
+        $messages = [];
+
+        foreach ($this->inputFields() as $field) {
+            $k = 'data.' . $field['key'];
+            match ($field['type'] ?? 'text') {
+                'time' => $messages[$k . '.date_format'] = 'Podaj godzinę w formacie GG:MM, np. 09:30.',
+                'url' => $messages[$k . '.url'] = 'Podaj pełny adres strony, np. https://przyklad.pl.',
+                'checkboxes' => $messages[$k . '.*.in'] = 'Wybierz odpowiedzi z listy w polu „' . ($field['label'] ?? '') . '”.',
+                'rating' => $messages[$k . '.between'] = 'Wybierz ocenę od 1 do 5.',
+                default => null,
+            };
+        }
+
+        return $messages;
     }
 
     public function validationAttributes(): array
     {
         $attrs = [];
 
-        foreach ($this->normalizedFields() as $field) {
+        foreach ($this->inputFields() as $field) {
             $attrs['data.' . $field['key']] = $field['label'] ?? $field['key'];
+            $attrs['data.' . $field['key'] . '.*'] = $field['label'] ?? $field['key'];
         }
 
         return $attrs;

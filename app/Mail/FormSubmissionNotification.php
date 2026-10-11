@@ -60,15 +60,12 @@ class FormSubmissionNotification extends Mailable
     {
         $data = $this->submission->data ?? [];
 
-        return collect($this->form->normalizedFields())->map(function (array $field) use ($data) {
-            $value = $data[$field['key']] ?? null;
-            if (is_array($value)) {
-                $value = implode(', ', array_map('strval', $value));
-            }
+        return collect($this->form->inputFields())->map(function (array $field) use ($data) {
+            $value = trim(\App\Models\FormDefinition::displayValue($field, $data[$field['key']] ?? null));
 
             return [
                 'label' => (string) ($field['label'] ?? $field['key']),
-                'value' => trim((string) ($value ?? '')) === '' ? '—' : (string) $value,
+                'value' => $value === '' ? '—' : $value,
             ];
         })->all();
     }

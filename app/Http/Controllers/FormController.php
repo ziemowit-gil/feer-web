@@ -52,13 +52,21 @@ class FormController extends Controller
         $validator = Validator::make(
             $request->all(),
             $formularz->validationRules(),
-            [],
+            $formularz->validationMessages(),
             $formularz->validationAttributes(),
         );
 
         if ($validator->fails()) {
+            // Błędy elementów list (data.pole.0) przypisujemy do całego pola — wtedy trafiają pod nie i do podsumowania.
+            $bag = new \Illuminate\Support\MessageBag;
+            foreach ($validator->errors()->messages() as $key => $messages) {
+                foreach (array_unique($messages) as $message) {
+                    $bag->add(preg_replace('/^(data\.[^.]+)\..+$/', '$1', $key), $message);
+                }
+            }
+
             return back()
-                ->withErrors($validator)
+                ->withErrors($bag)
                 ->withInput()
                 ->with('_form_slug', $formularz->slug);
         }
@@ -66,7 +74,7 @@ class FormController extends Controller
         // CleanTalk (opcjonalnie, wg ustawień): ocena treści i zachowania nadawcy po stronie usługi.
         // Dopiero po poprawnej walidacji — nie wysyłamy tam niepełnych danych. Awaria usługi = przepuszczamy.
         if (CleanTalkGuard::enabled() && empty($formularz->settings['cleantalk_disabled'])) {
-            $verdict = app(CleanTalkGuard::class)->check($request, $formularz->normalizedFields(), (array) $request->input('data', []));
+            $verdict = app(CleanTalkGuard::class)->check($request, $formularz->inputFields(), (array) $request->input('data', []));
 
             if (! $verdict['allow']) {
                 Log::warning('Zablokowano zgłoszenie formularza (CleanTalk)', [
@@ -86,7 +94,7 @@ class FormController extends Controller
 
         $submission = FormSubmission::create([
             'form_definition_id' => $formularz->id,
-            'data'               => $request->input('data', []),
+            'data'               => $this->submittedData($request, $formularz),
             'ip_address'         => $request->ip(),
         ]);
 
@@ -101,6 +109,41 @@ class FormController extends Controller
         return back()
             ->with('success', $this->confirmationMessage($formularz))
             ->with('_form_slug', $formularz->slug);
+    }
+
+    /**
+     * Dane zgłoszenia: tylko znane pola formularza. Załączniki trafiają na prywatny dysk
+     * (`local`, poza katalogiem publicznym) — w danych zostaje nazwa, ścieżka, rozmiar i typ;
+     * pobranie wyłącznie z panelu.
+     */
+    private function submittedData(Request $request, FormDefinition $formularz): array
+    {
+        $input = (array) $request->input('data', []);
+        $data = [];
+
+        foreach ($formularz->inputFields() as $field) {
+            $key = $field['key'];
+
+            if (($field['type'] ?? '') === 'file') {
+                $file = $request->file('data.'.$key);
+                if ($file && $file->isValid()) {
+                    $data[$key] = [
+                        'name' => mb_substr($file->getClientOriginalName(), 0, 200),
+                        'path' => $file->store('form-uploads/'.$formularz->id, 'local'),
+                        'size' => $file->getSize(),
+                        'mime' => $file->getMimeType(),
+                    ];
+                }
+
+                continue;
+            }
+
+            if (array_key_exists($key, $input)) {
+                $data[$key] = is_array($input[$key]) ? array_values(array_map('strval', $input[$key])) : $input[$key];
+            }
+        }
+
+        return $data;
     }
 
     /** Komunikat potwierdzenia: własny z ustawień formularza albo domyślny. */
@@ -167,7 +210,7 @@ class FormController extends Controller
     /** Adres e-mail osoby zgłaszającej: wartość pierwszego pola typu „e-mail”. */
     private function submitterEmail(FormDefinition $formularz, FormSubmission $submission): ?string
     {
-        foreach ($formularz->normalizedFields() as $field) {
+        foreach ($formularz->inputFields() as $field) {
             if (($field['type'] ?? null) !== 'email') {
                 continue;
             }

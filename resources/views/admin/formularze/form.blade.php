@@ -119,7 +119,7 @@
                                 </div>
 
                                 <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                                    <div>
+                                    <div x-show="! ['heading', 'checkbox', 'consent', 'radio', 'checkboxes', 'rating', 'file'].includes(field.type)">
                                         <label :for="'field-placeholder-' + index" class="mb-1 block text-xs font-bold text-muted uppercase tracking-wide">Placeholder</label>
                                         <input :id="'field-placeholder-' + index"
                                             :name="'fields[' + index + '][placeholder]'"
@@ -128,7 +128,7 @@
                                             class="w-full rounded border-gray-500 text-sm focus:border-brand-dark focus-visible:ring-2 focus-visible:ring-brand-dark">
                                     </div>
                                     <div>
-                                        <label :for="'field-help-' + index" class="mb-1 block text-xs font-bold text-muted uppercase tracking-wide">Tekst pomocy</label>
+                                        <label :for="'field-help-' + index" class="mb-1 block text-xs font-bold text-muted uppercase tracking-wide" x-text="field.type === 'heading' ? 'Opis sekcji (pod nagłówkiem)' : 'Tekst pomocy'">Tekst pomocy</label>
                                         <input :id="'field-help-' + index"
                                             :name="'fields[' + index + '][help_text]'"
                                             type="text" x-model="field.help_text"
@@ -137,8 +137,8 @@
                                     </div>
                                 </div>
 
-                                {{-- Opcje (dla select/radio) --}}
-                                <div x-show="field.type === 'select' || field.type === 'radio'">
+                                {{-- Opcje (dla select/radio/wielokrotnego wyboru) --}}
+                                <div x-show="['select', 'radio', 'checkboxes'].includes(field.type)">
                                     <label :for="'field-options-' + index" class="mb-1 block text-xs font-bold text-muted uppercase tracking-wide">
                                         Opcje (oddzielone przecinkiem)
                                     </label>
@@ -149,7 +149,30 @@
                                         class="w-full rounded border-gray-500 text-sm focus:border-brand-dark focus-visible:ring-2 focus-visible:ring-brand-dark">
                                 </div>
 
-                                <div class="flex items-center gap-3">
+                                {{-- Załącznik: dozwolone typy i rozmiar --}}
+                                <div x-show="field.type === 'file'" class="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                                    <div class="sm:col-span-2">
+                                        <label :for="'field-accept-' + index" class="mb-1 block text-xs font-bold text-muted uppercase tracking-wide">Dozwolone typy plików</label>
+                                        <input :id="'field-accept-' + index" :name="'fields[' + index + '][accept]'" type="text" x-model="field.accept"
+                                            placeholder="{{ \App\Models\FormDefinition::FILE_DEFAULT_ACCEPT }}"
+                                            class="w-full rounded border-gray-500 font-mono text-sm focus:border-brand-dark focus-visible:ring-2 focus-visible:ring-brand-dark">
+                                        <p class="mt-1 text-xs text-muted">Rozszerzenia po przecinku. Puste = dokumenty i zdjęcia. Pliki są dostępne tylko w panelu.</p>
+                                    </div>
+                                    <div>
+                                        <label :for="'field-maxmb-' + index" class="mb-1 block text-xs font-bold text-muted uppercase tracking-wide">Maks. rozmiar (MB)</label>
+                                        <input :id="'field-maxmb-' + index" :name="'fields[' + index + '][max_mb]'" type="number" min="1" max="{{ \App\Models\FormDefinition::FILE_MAX_MB }}" x-model="field.max_mb" placeholder="10"
+                                            class="w-full rounded border-gray-500 text-sm focus:border-brand-dark focus-visible:ring-2 focus-visible:ring-brand-dark">
+                                    </div>
+                                </div>
+
+                                <p x-show="field.type === 'consent'" class="rounded bg-white px-3 py-2 text-xs text-muted">
+                                    Etykieta to treść zgody. Na końcu automatycznie pojawi się link do Polityki prywatności.
+                                </p>
+                                <p x-show="field.type === 'rating'" class="rounded bg-white px-3 py-2 text-xs text-muted">
+                                    Odpowiedź: 1–5 (przyciski). W „Opcjach” nie trzeba nic wpisywać.
+                                </p>
+
+                                <div class="flex items-center gap-3" x-show="field.type !== 'heading'">
                                     <input :id="'field-required-' + index"
                                         type="checkbox" x-model="field.required"
                                         class="rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
@@ -408,10 +431,12 @@
                         _id:         this._nextId++,
                         label:       '',
                         type:        type,
-                        required:    false,
                         placeholder: '',
                         options:     '',
                         help_text:   '',
+                        accept:      '',
+                        max_mb:      '',
+                        required:    type === 'consent',
                     });
                     this.$nextTick(() => {
                         const inputs = document.querySelectorAll('#fields-list [name$="[label]"]');

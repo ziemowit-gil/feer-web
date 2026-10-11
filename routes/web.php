@@ -551,6 +551,7 @@ Route::middleware(['auth', 'verified', '2fa', 'admin-site'])->prefix(config('app
         Route::get('formularze/{formularz}/zgloszenia', [AdminFormularzeController::class, 'zgloszenia'])->name('formularze.zgloszenia');
         Route::get('formularze/{formularz}/zgloszenia/eksport', [AdminFormularzeController::class, 'eksportZgloszen'])->name('formularze.zgloszenia.eksport');
         Route::delete('formularze/{formularz}/zgloszenia/{submission}', [AdminFormularzeController::class, 'destroyZgloszenie'])->name('formularze.zgloszenia.destroy');
+        Route::get('formularze/{formularz}/zgloszenia/{submission}/plik/{key}', [AdminFormularzeController::class, 'plik'])->name('formularze.zgloszenia.plik');
     });
 
     // Blog „Wiem FEER" — gdy moduł włączony, dostępny dla każdego użytkownika

@@ -7,6 +7,7 @@ use App\Models\FormDefinition;
 use App\Models\FormSubmission;
 use App\Services\SzoClient;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class FormularzeController extends Controller
@@ -106,7 +107,7 @@ class FormularzeController extends Controller
     /** Eksport zgłoszeń do CSV. */
     public function eksportZgloszen(FormDefinition $formularz)
     {
-        $fields      = $formularz->normalizedFields();
+        $fields      = $formularz->inputFields();
         $submissions = $formularz->submissions()->orderByDesc('created_at')->get();
         $filename    = 'formularz-' . $formularz->slug . '-zgloszenia.csv';
 
@@ -125,7 +126,7 @@ class FormularzeController extends Controller
             foreach ($submissions as $sub) {
                 $row = [$sub->id, $sub->created_at->format('Y-m-d H:i')];
                 foreach ($fields as $field) {
-                    $row[] = $sub->data[$field['key']] ?? '';
+                    $row[] = FormDefinition::displayValue($field, $sub->data[$field['key']] ?? null);
                 }
                 fputcsv($handle, $row, ';');
             }
@@ -138,6 +139,7 @@ class FormularzeController extends Controller
     public function destroyZgloszenie(FormDefinition $formularz, FormSubmission $submission)
     {
         abort_unless($submission->form_definition_id === $formularz->id, 404);
+        $this->deleteFiles($formularz, $submission);
         $submission->delete();
 
         return redirect()
@@ -145,7 +147,28 @@ class FormularzeController extends Controller
             ->with('status', 'Zgłoszenie usunięte.');
     }
 
+    /** Pobranie załącznika ze zgłoszenia (prywatny dysk — tylko z panelu). */
+    public function plik(FormDefinition $formularz, FormSubmission $submission, string $key)
+    {
+        abort_unless($submission->form_definition_id === $formularz->id, 404);
+        $file = $submission->data[$key] ?? null;
+        abort_unless(is_array($file) && filled($file['path'] ?? null) && Storage::disk('local')->exists($file['path']), 404);
+
+        return Storage::disk('local')->download($file['path'], $file['name'] ?? basename($file['path']));
+    }
+
     // ── Helpers ──────────────────────────────────────────────────────────────
+
+    /** Usuwa z dysku załączniki zgłoszenia. */
+    private function deleteFiles(FormDefinition $formularz, FormSubmission $submission): void
+    {
+        foreach ($formularz->inputFields() as $field) {
+            $file = $submission->data[$field['key']] ?? null;
+            if (($field['type'] ?? '') === 'file' && is_array($file) && filled($file['path'] ?? null)) {
+                Storage::disk('local')->delete($file['path']);
+            }
+        }
+    }
 
     private function validated(Request $request, ?FormDefinition $existing = null): array
     {
@@ -166,6 +189,8 @@ class FormularzeController extends Controller
             'fields.*.placeholder'           => 'nullable|string|max:255',
             'fields.*.options'               => 'nullable|string|max:2000',
             'fields.*.help_text'             => 'nullable|string|max:500',
+            'fields.*.accept'                => 'nullable|string|max:200',
+            'fields.*.max_mb'                => 'nullable|integer|min:1|max:' . FormDefinition::FILE_MAX_MB,
             'settings.confirmation_message'  => 'nullable|string|max:1000',
             'settings.notification_email'    => 'nullable|string|max:500',
             'settings.notification_cc'       => 'nullable|string|max:500',
@@ -205,6 +230,8 @@ class FormularzeController extends Controller
                 'placeholder' => $f['placeholder'] ?? null,
                 'options'     => $f['options'] ?? null,
                 'help_text'   => $f['help_text'] ?? null,
+                'accept'      => ($f['type'] ?? '') === 'file' ? (trim((string) ($f['accept'] ?? '')) ?: null) : null,
+                'max_mb'      => ($f['type'] ?? '') === 'file' && filled($f['max_mb'] ?? null) ? (int) $f['max_mb'] : null,
             ])
             ->values()
             ->all();

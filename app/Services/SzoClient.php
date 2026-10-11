@@ -256,9 +256,14 @@ class SzoClient
         $out  = [];
         $data = $submission->data ?? [];
 
-        foreach ($form->normalizedFields() as $field) {
+        foreach ($form->inputFields() as $field) {
             $key   = $field['key'] ?? '';
             $value = $data[$key] ?? null;
+
+            // Załączniki zostają w CMS-ie (pobieranie z panelu) — do SZO nie wysyłamy plików ani ścieżek.
+            if (($field['type'] ?? '') === 'file') {
+                continue;
+            }
 
             if ($value === null || $value === '' || $value === []) {
                 continue;
@@ -268,7 +273,7 @@ class SzoClient
             }
 
             // Zgody obsługiwane osobno — nie są danymi kontaktu.
-            if (($field['type'] ?? '') === 'checkbox') {
+            if (in_array($field['type'] ?? '', ['checkbox', 'consent'], true)) {
                 continue;
             }
 
@@ -292,8 +297,8 @@ class SzoClient
         $data = $submission->data ?? [];
         $out  = [];
 
-        foreach ($form->normalizedFields() as $field) {
-            if (($field['type'] ?? '') !== 'checkbox') {
+        foreach ($form->inputFields() as $field) {
+            if (! in_array($field['type'] ?? '', ['checkbox', 'consent'], true)) {
                 continue;
             }
             if (! empty($data[$field['key'] ?? ''])) {
