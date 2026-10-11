@@ -113,4 +113,19 @@ class FormKrsFieldTest extends TestCase
         $this->assertSame('nazwa', $fields[1]['krs_fill']);
         $this->assertNull($fields[2]['krs_fill'], 'Pola typu zgoda nie uzupełniamy z KRS.');
     }
+
+    public function test_edytor_wizualny_ma_palete_podglad_i_panel_wlasciwosci(): void
+    {
+        $admin = User::factory()->create(['role' => User::ROLE_ADMIN]);
+        $form = FormDefinition::create(['title' => 'Wizualny', 'slug' => 'wizualny', 'is_active' => true,
+            'fields' => [['label' => 'Imię', 'type' => 'text', 'uid' => 'abcd1234']]]);
+
+        $this->actingAs($admin)->get(route('admin.formularze.edit', $form))->assertOk()
+            ->assertSee('Pola formularza — edytor wizualny')
+            ->assertSee('aria-label="Dodaj pole"', false)
+            ->assertSee('aria-label="Podgląd formularza"', false)
+            ->assertSee('id="field-props-heading"', false)
+            ->assertSee("addField('krs')", false)
+            ->assertSee("'fields[' + i + '][krs_fill]'", false);
+    }
 }

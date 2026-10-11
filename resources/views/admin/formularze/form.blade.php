@@ -75,208 +75,268 @@
             </div>
         </fieldset>
 
-        {{-- Builder pól --}}
-        <fieldset class="p-6 rounded-md bg-white">
-            <legend class="px-2 text-sm font-bold text-ink">Pola formularza</legend>
+        {{-- Edytor wizualny pól: paleta | podgląd formularza (płótno) | właściwości wybranego pola.
+             Dane pól wysyłają ukryte pola na dole — panel właściwości nie ma atrybutów name. --}}
+        @php
+            $paletteGroups = [
+                'Podstawowe' => ['text' => 'fa-font', 'textarea' => 'fa-align-left', 'email' => 'fa-at', 'tel' => 'fa-phone', 'number' => 'fa-hashtag', 'date' => 'fa-calendar', 'time' => 'fa-clock', 'url' => 'fa-link'],
+                'Wybór' => ['select' => 'fa-caret-down', 'radio' => 'fa-circle-dot', 'checkboxes' => 'fa-list-check', 'checkbox' => 'fa-square-check', 'rating' => 'fa-star'],
+                'Specjalne' => ['file' => 'fa-paperclip', 'consent' => 'fa-shield-halved', 'krs' => 'fa-building-columns'],
+                'Układ' => ['heading' => 'fa-heading', 'step' => 'fa-shoe-prints'],
+            ];
+            $fieldInput = 'w-full rounded border-gray-500 text-sm focus:border-brand-dark focus-visible:ring-2 focus-visible:ring-brand-dark';
+            $propLabel = 'mb-1 block text-xs font-bold uppercase tracking-wide text-muted';
+        @endphp
+        <fieldset class="rounded-md bg-white p-4 sm:p-6">
+            <legend class="px-2 text-sm font-bold text-ink">Pola formularza — edytor wizualny</legend>
+            <p class="mb-4 text-sm text-muted">
+                Kliknij typ pola w palecie (albo przeciągnij go na podgląd), potem kliknij pole w podglądzie, aby zmienić jego ustawienia po prawej.
+                Kolejność zmienisz przeciągając pola albo strzałkami.
+            </p>
 
-            <p class="mb-4 text-sm text-muted">Dodaj pola, które użytkownicy będą wypełniać. Przeciągnij wiersze, aby zmienić kolejność.</p>
+            <div class="grid gap-5 lg:grid-cols-[13rem_minmax(0,1fr)_21rem]">
+                {{-- ── Paleta ─────────────────────────────────────────── --}}
+                <nav aria-label="Dodaj pole" class="space-y-4 lg:sticky lg:top-20 lg:self-start">
+                    @foreach ($paletteGroups as $groupLabel => $groupTypes)
+                        <div>
+                            <p class="mb-1.5 text-xs font-bold uppercase tracking-wide text-muted">{{ $groupLabel }}</p>
+                            <ul class="grid grid-cols-2 gap-1.5 lg:grid-cols-1" role="list">
+                                @foreach ($groupTypes as $type => $icon)
+                                    @continue(! isset($types[$type]))
+                                    <li>
+                                        <button type="button" draggable="true"
+                                            @click="addField('{{ $type }}')"
+                                            @dragstart="dragStart($event, 'new:{{ $type }}')" @dragend="dragEnd()"
+                                            title="{{ $types[$type] }}"
+                                            class="flex min-h-10 w-full cursor-grab items-center gap-2 rounded-md bg-gray-100 px-3 py-1.5 text-left text-sm font-medium text-ink hover:bg-brand-light hover:text-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">
+                                            <i class="fa-solid {{ $icon }} w-4 shrink-0 text-center text-brand-dark" aria-hidden="true"></i>
+                                            <span class="truncate">{{ \Illuminate\Support\Str::before($types[$type], ' (') }}</span>
+                                            <span class="sr-only">— dodaj pole</span>
+                                        </button>
+                                    </li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    @endforeach
+                </nav>
 
-            <div class="space-y-3" id="fields-list">
-                <template x-for="(field, index) in fields" :key="field._id">
-                    <div class="group relative p-4 rounded-md bg-gray-50"
-                        :data-index="index">
+                {{-- ── Płótno: podgląd formularza ─────────────────────── --}}
+                <div class="min-w-0">
+                    <div id="fields-list" class="min-h-48 space-y-1 rounded-md bg-gray-50 p-3 sm:p-5"
+                        @dragover.prevent="dragOverEnd($event)" @drop.prevent="drop()"
+                        aria-label="Podgląd formularza" role="region">
+                        <template x-for="(field, index) in fields" :key="field._id">
+                            <div>
+                                <div x-show="dropIndex === index" class="my-1 h-1 rounded bg-brand-dark" aria-hidden="true"></div>
+                                <div class="group relative rounded-md p-3 transition"
+                                    :class="selectedId === field._id ? 'bg-brand-light ring-2 ring-brand-dark' : 'bg-white hover:bg-brand-light/60'"
+                                    draggable="true"
+                                    @dragstart="dragStart($event, 'move:' + field._id)" @dragend="dragEnd()"
+                                    @dragover.prevent.stop="dragOverItem($event, index)" @drop.prevent.stop="drop()">
 
-                        <input type="hidden" :name="'fields[' + index + '][type]'" x-model="field.type">
-                        <input type="hidden" :name="'fields[' + index + '][uid]'" :value="field.uid">
-                        <input type="hidden" :name="'fields[' + index + '][required]'" :value="field.required ? '1' : '0'">
+                                    {{-- Przycisk wyboru pola zakrywa podgląd (podgląd jest tylko obrazkiem — inert) --}}
+                                    <button type="button" class="absolute inset-0 z-10 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark"
+                                        @click="select(field._id)" :aria-pressed="selectedId === field._id"
+                                        :aria-label="'Edytuj pole ' + (index + 1) + ': ' + (field.label || '(bez etykiety)') + ' — ' + typeName(field.type)"></button>
 
-                        <div class="flex items-start gap-3">
-                            {{-- Uchwyt drag (wizualny, sortowanie przez przyciski) --}}
-                            <div class="mt-2 cursor-grab text-gray-300 hover:text-gray-500" aria-hidden="true">
-                                <i class="fa-solid fa-grip-vertical"></i>
+                                    <div inert aria-hidden="true" class="pointer-events-none pr-24">
+                                        {{-- Nagłówek sekcji / nowy krok --}}
+                                        <template x-if="field.type === 'heading'">
+                                            <div><p class="text-lg font-bold text-ink" x-text="field.label || 'Nagłówek sekcji'"></p><p class="text-sm text-muted" x-show="field.help_text" x-text="field.help_text"></p></div>
+                                        </template>
+                                        <template x-if="field.type === 'step'">
+                                            <div class="flex items-center gap-2 text-sm font-bold text-brand-dark"><i class="fa-solid fa-shoe-prints"></i> <span x-text="'Krok: ' + (field.label || 'bez tytułu')"></span><span class="h-0.5 flex-1 bg-brand-dark/40"></span></div>
+                                        </template>
+
+                                        {{-- Zgoda / checkbox --}}
+                                        <template x-if="['checkbox', 'consent'].includes(field.type)">
+                                            <label class="flex items-start gap-2 text-sm text-ink"><input type="checkbox" class="mt-0.5 rounded border-gray-400"><span><span x-text="field.label || 'Treść zgody'"></span><span x-show="field.type === 'consent'"> Szczegóły w <u>Polityce prywatności</u>.</span><span x-show="field.required" class="ml-0.5 font-bold text-red-600">*</span></span></label>
+                                        </template>
+
+                                        {{-- Pozostałe: etykieta + kontrolka --}}
+                                        <template x-if="! ['heading', 'step', 'checkbox', 'consent'].includes(field.type)">
+                                            <div>
+                                                <p class="text-sm font-semibold text-ink"><span x-text="field.label || '(bez etykiety)'"></span><span x-show="field.required" class="ml-0.5 font-bold text-red-600">*</span></p>
+                                                <p class="text-xs text-muted" x-show="field.help_text" x-text="field.help_text"></p>
+                                                <div class="mt-1.5">
+                                                    <template x-if="field.type === 'textarea'"><div class="h-16 rounded border border-gray-300 bg-white px-2 py-1 text-sm text-gray-400" x-text="field.placeholder"></div></template>
+                                                    <template x-if="field.type === 'select'"><div class="flex h-9 items-center justify-between rounded border border-gray-300 bg-white px-2 text-sm text-gray-500"><span x-text="optionList(field)[0] || '— wybierz —'"></span><i class="fa-solid fa-caret-down"></i></div></template>
+                                                    <template x-if="['radio', 'checkboxes'].includes(field.type)">
+                                                        <div class="space-y-1">
+                                                            <template x-for="opt in (optionList(field).length ? optionList(field) : ['Opcja 1', 'Opcja 2'])" :key="opt">
+                                                                <p class="flex items-center gap-2 text-sm text-ink"><span class="inline-block h-4 w-4 border border-gray-400 bg-white" :class="field.type === 'radio' ? 'rounded-full' : 'rounded-sm'"></span><span x-text="opt"></span></p>
+                                                            </template>
+                                                        </div>
+                                                    </template>
+                                                    <template x-if="field.type === 'rating'"><div class="flex gap-1.5"><template x-for="n in 5" :key="n"><span class="flex h-8 w-8 items-center justify-center rounded border-2 border-gray-300 bg-white text-sm font-bold text-ink" x-text="n"></span></template></div></template>
+                                                    <template x-if="field.type === 'file'"><div class="flex h-9 items-center gap-2 rounded border border-dashed border-gray-400 bg-white px-2 text-sm text-gray-500"><i class="fa-solid fa-paperclip"></i> <span x-text="'Wybierz plik (' + (field.accept || '{{ \App\Models\FormDefinition::FILE_DEFAULT_ACCEPT }}') + ')'"></span></div></template>
+                                                    <template x-if="field.type === 'krs'"><div class="flex gap-2"><div class="flex h-9 w-40 items-center rounded border border-gray-300 bg-white px-2 font-mono text-sm text-gray-400">0000123456</div><span class="flex h-9 items-center rounded bg-ink px-3 text-xs font-bold text-white">Pobierz dane z KRS</span></div></template>
+                                                    <template x-if="['text', 'email', 'tel', 'number', 'date', 'time', 'url'].includes(field.type)"><div class="flex h-9 items-center rounded border border-gray-300 bg-white px-2 text-sm text-gray-400" x-text="field.placeholder || sampleFor(field.type)"></div></template>
+                                                </div>
+                                            </div>
+                                        </template>
+
+                                        <p class="mt-1.5 flex flex-wrap gap-x-3 text-xs text-muted">
+                                            <span x-show="field.show_if_uid"><i class="fa-solid fa-code-branch mr-1"></i>pokazywane warunkowo</span>
+                                            <span x-show="field.krs_fill"><i class="fa-solid fa-building-columns mr-1"></i>uzupełniane z KRS</span>
+                                        </p>
+                                    </div>
+
+                                    {{-- Narzędzia pola (nad przyciskiem wyboru) --}}
+                                    <div class="absolute right-2 top-2 z-20 flex gap-0.5">
+                                        <button type="button" @click="moveUp(index)" :disabled="index === 0" :aria-label="'Przesuń pole „' + field.label + '” w górę'"
+                                            class="rounded p-1.5 text-muted hover:bg-white hover:text-brand-dark disabled:opacity-30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark"><i class="fa-solid fa-arrow-up text-xs" aria-hidden="true"></i></button>
+                                        <button type="button" @click="moveDown(index)" :disabled="index === fields.length - 1" :aria-label="'Przesuń pole „' + field.label + '” w dół'"
+                                            class="rounded p-1.5 text-muted hover:bg-white hover:text-brand-dark disabled:opacity-30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark"><i class="fa-solid fa-arrow-down text-xs" aria-hidden="true"></i></button>
+                                        <button type="button" @click="duplicateField(index)" :aria-label="'Powiel pole „' + field.label + '”'"
+                                            class="rounded p-1.5 text-muted hover:bg-white hover:text-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark"><i class="fa-regular fa-copy text-xs" aria-hidden="true"></i></button>
+                                        <button type="button" @click="removeField(index)" :aria-label="'Usuń pole „' + field.label + '”'"
+                                            class="rounded p-1.5 text-muted hover:bg-white hover:text-red-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600"><i class="fa-solid fa-trash-can text-xs" aria-hidden="true"></i></button>
+                                    </div>
+                                </div>
                             </div>
+                        </template>
+                        <div x-show="dropIndex === fields.length && fields.length" class="my-1 h-1 rounded bg-brand-dark" aria-hidden="true"></div>
 
-                            <div class="flex-1 space-y-3">
-                                <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
-                                    <div class="sm:col-span-2">
-                                        <label :for="'field-label-' + index" class="mb-1 block text-xs font-bold text-muted uppercase tracking-wide">Etykieta pola</label>
-                                        <input :id="'field-label-' + index"
-                                            :name="'fields[' + index + '][label]'"
-                                            type="text" x-model="field.label" required
-                                            placeholder="np. Imię i nazwisko"
-                                            class="w-full rounded border-gray-500 text-sm focus:border-brand-dark focus-visible:ring-2 focus-visible:ring-brand-dark">
+                        <template x-if="fields.length === 0">
+                            <p class="rounded-md border-2 border-dashed border-gray-300 py-10 text-center text-sm text-muted">
+                                Formularz jest pusty — kliknij typ pola w palecie albo przeciągnij go tutaj.
+                            </p>
+                        </template>
+                        <div class="mt-3 flex justify-end" x-show="fields.some(f => ! ['heading', 'step'].includes(f.type))" aria-hidden="true">
+                            <span class="inline-flex min-h-10 items-center gap-2 rounded-md bg-brand-dark px-5 text-sm font-bold text-white">Wyślij zgłoszenie <i class="fa-solid fa-paper-plane"></i></span>
+                        </div>
+                    </div>
+                    <p class="sr-only" role="status" aria-live="polite" x-text="announce"></p>
+                </div>
+
+                {{-- ── Właściwości wybranego pola ─────────────────────── --}}
+                <aside aria-labelledby="field-props-heading" class="lg:sticky lg:top-20 lg:self-start">
+                    <div class="rounded-md bg-gray-50 p-4">
+                        <h3 id="field-props-heading" class="mb-3 text-sm font-bold text-ink">
+                            <i class="fa-solid fa-sliders mr-1 text-brand-dark" aria-hidden="true"></i>
+                            <span x-text="sel ? 'Ustawienia pola ' + (selIndex + 1) : 'Ustawienia pola'"></span>
+                        </h3>
+                        <p x-show="! sel" class="text-sm text-muted">Kliknij pole w podglądzie, aby je edytować.</p>
+
+                        <template x-if="sel">
+                            <div class="space-y-3">
+                                <div>
+                                    <label for="prop-label" class="{{ $propLabel }}" x-text="sel.type === 'consent' || sel.type === 'checkbox' ? 'Treść zgody / etykieta' : (sel.type === 'step' ? 'Tytuł kroku' : (sel.type === 'heading' ? 'Nagłówek' : 'Etykieta pola'))">Etykieta pola</label>
+                                    <textarea x-show="['consent', 'checkbox'].includes(sel.type)" id="prop-label-long" rows="3" x-model="sel.label" class="{{ $fieldInput }}" aria-label="Treść zgody"></textarea>
+                                    <input x-show="! ['consent', 'checkbox'].includes(sel.type)" id="prop-label" type="text" x-model="sel.label" placeholder="np. Imię i nazwisko" class="{{ $fieldInput }}">
+                                </div>
+                                <div>
+                                    <label for="prop-type" class="{{ $propLabel }}">Typ pola</label>
+                                    <select id="prop-type" x-model="sel.type" class="{{ $fieldInput }}">
+                                        @foreach ($types as $value => $label)
+                                            <option value="{{ $value }}">{{ $label }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <div x-show="! ['heading', 'step', 'checkbox', 'consent', 'radio', 'checkboxes', 'rating', 'file'].includes(sel.type)">
+                                    <label for="prop-placeholder" class="{{ $propLabel }}">Tekst w pustym polu</label>
+                                    <input id="prop-placeholder" type="text" x-model="sel.placeholder" class="{{ $fieldInput }}">
+                                </div>
+                                <div>
+                                    <label for="prop-help" class="{{ $propLabel }}" x-text="sel.type === 'heading' ? 'Opis sekcji' : (sel.type === 'step' ? 'Opis kroku' : 'Tekst pomocy pod etykietą')">Tekst pomocy</label>
+                                    <input id="prop-help" type="text" x-model="sel.help_text" class="{{ $fieldInput }}">
+                                </div>
+                                <div x-show="['select', 'radio', 'checkboxes'].includes(sel.type)">
+                                    <label for="prop-options" class="{{ $propLabel }}">Odpowiedzi — każda w osobnym wierszu</label>
+                                    <textarea id="prop-options" rows="4" :value="optionList(sel).join('\n')" @input="sel.options = $event.target.value.split('\n').map(o => o.replace(/\s*,\s*/g, ' ').trim()).filter(Boolean).join(', ')"
+                                        placeholder="Tak&#10;Nie&#10;Nie wiem" class="{{ $fieldInput }}"></textarea>
+                                </div>
+                                <div x-show="sel.type === 'file'" class="grid grid-cols-3 gap-2">
+                                    <div class="col-span-2">
+                                        <label for="prop-accept" class="{{ $propLabel }}">Typy plików</label>
+                                        <input id="prop-accept" type="text" x-model="sel.accept" placeholder="{{ \App\Models\FormDefinition::FILE_DEFAULT_ACCEPT }}" class="{{ $fieldInput }} font-mono">
                                     </div>
                                     <div>
-                                        <label :for="'field-type-' + index" class="mb-1 block text-xs font-bold text-muted uppercase tracking-wide">Typ pola</label>
-                                        <select :id="'field-type-' + index"
-                                            :name="'fields[' + index + '][type]'"
-                                            x-model="field.type"
-                                            class="w-full rounded border-gray-500 text-sm focus:border-brand-dark focus-visible:ring-2 focus-visible:ring-brand-dark">
-                                            @foreach ($types as $value => $label)
-                                                <option value="{{ $value }}">{{ $label }}</option>
-                                            @endforeach
-                                        </select>
+                                        <label for="prop-maxmb" class="{{ $propLabel }}">Maks. MB</label>
+                                        <input id="prop-maxmb" type="number" min="1" max="{{ \App\Models\FormDefinition::FILE_MAX_MB }}" x-model="sel.max_mb" placeholder="10" class="{{ $fieldInput }}">
                                     </div>
                                 </div>
+                                <p x-show="sel.type === 'rating'" class="text-xs text-muted">Odpowiedź: przyciski 1–5.</p>
+                                <p x-show="sel.type === 'step'" class="text-xs text-muted">Od tego miejsca zaczyna się kolejny krok — tytuł widać na pasku postępu.</p>
+                                <p x-show="sel.type === 'krs'" class="text-xs text-muted">Dane pobierają się z rejestru KRS. W innych polach wybierz „Uzupełnij z KRS”.</p>
 
-                                <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                                    <div x-show="! ['heading', 'step', 'checkbox', 'consent', 'radio', 'checkboxes', 'rating', 'file'].includes(field.type)">
-                                        <label :for="'field-placeholder-' + index" class="mb-1 block text-xs font-bold text-muted uppercase tracking-wide">Placeholder</label>
-                                        <input :id="'field-placeholder-' + index"
-                                            :name="'fields[' + index + '][placeholder]'"
-                                            type="text" x-model="field.placeholder"
-                                            placeholder="Tekst pomocniczy w pustym polu"
-                                            class="w-full rounded border-gray-500 text-sm focus:border-brand-dark focus-visible:ring-2 focus-visible:ring-brand-dark">
-                                    </div>
-                                    <div>
-                                        <label :for="'field-help-' + index" class="mb-1 block text-xs font-bold text-muted uppercase tracking-wide" x-text="field.type === 'heading' ? 'Opis sekcji (pod nagłówkiem)' : (field.type === 'step' ? 'Opis kroku' : 'Tekst pomocy')">Tekst pomocy</label>
-                                        <input :id="'field-help-' + index"
-                                            :name="'fields[' + index + '][help_text]'"
-                                            type="text" x-model="field.help_text"
-                                            placeholder="Dodatkowy opis pod polem"
-                                            class="w-full rounded border-gray-500 text-sm focus:border-brand-dark focus-visible:ring-2 focus-visible:ring-brand-dark">
-                                    </div>
+                                <label x-show="! ['heading', 'step'].includes(sel.type)" class="flex items-center gap-2 text-sm font-medium text-ink">
+                                    <input type="checkbox" x-model="sel.required" class="rounded border-gray-500 text-brand-dark focus:ring-brand-dark"> Pole wymagane
+                                </label>
+
+                                <div x-show="hasKrs && krsFillable.includes(sel.type)">
+                                    <label for="prop-krs" class="{{ $propLabel }}">Uzupełnij z KRS</label>
+                                    <select id="prop-krs" x-model="sel.krs_fill" class="{{ $fieldInput }}">
+                                        <option value="">— nie uzupełniaj —</option>
+                                        @foreach (\App\Services\KrsClient::FILL_KEYS as $krsKey => $krsLabel)
+                                            <option value="{{ $krsKey }}">{{ $krsLabel }}</option>
+                                        @endforeach
+                                    </select>
                                 </div>
 
-                                {{-- Opcje (dla select/radio/wielokrotnego wyboru) --}}
-                                <div x-show="['select', 'radio', 'checkboxes'].includes(field.type)">
-                                    <label :for="'field-options-' + index" class="mb-1 block text-xs font-bold text-muted uppercase tracking-wide">
-                                        Opcje (oddzielone przecinkiem)
-                                    </label>
-                                    <input :id="'field-options-' + index"
-                                        :name="'fields[' + index + '][options]'"
-                                        type="text" x-model="field.options"
-                                        placeholder="np. Tak, Nie, Nie wiem"
-                                        class="w-full rounded border-gray-500 text-sm focus:border-brand-dark focus-visible:ring-2 focus-visible:ring-brand-dark">
-                                </div>
-
-                                {{-- Załącznik: dozwolone typy i rozmiar --}}
-                                <div x-show="field.type === 'file'" class="grid grid-cols-1 gap-3 sm:grid-cols-3">
-                                    <div class="sm:col-span-2">
-                                        <label :for="'field-accept-' + index" class="mb-1 block text-xs font-bold text-muted uppercase tracking-wide">Dozwolone typy plików</label>
-                                        <input :id="'field-accept-' + index" :name="'fields[' + index + '][accept]'" type="text" x-model="field.accept"
-                                            placeholder="{{ \App\Models\FormDefinition::FILE_DEFAULT_ACCEPT }}"
-                                            class="w-full rounded border-gray-500 font-mono text-sm focus:border-brand-dark focus-visible:ring-2 focus-visible:ring-brand-dark">
-                                        <p class="mt-1 text-xs text-muted">Rozszerzenia po przecinku. Puste = dokumenty i zdjęcia. Pliki są dostępne tylko w panelu.</p>
-                                    </div>
-                                    <div>
-                                        <label :for="'field-maxmb-' + index" class="mb-1 block text-xs font-bold text-muted uppercase tracking-wide">Maks. rozmiar (MB)</label>
-                                        <input :id="'field-maxmb-' + index" :name="'fields[' + index + '][max_mb]'" type="number" min="1" max="{{ \App\Models\FormDefinition::FILE_MAX_MB }}" x-model="field.max_mb" placeholder="10"
-                                            class="w-full rounded border-gray-500 text-sm focus:border-brand-dark focus-visible:ring-2 focus-visible:ring-brand-dark">
-                                    </div>
-                                </div>
-
-                                <p x-show="field.type === 'consent'" class="rounded bg-white px-3 py-2 text-xs text-muted">
-                                    Etykieta to treść zgody. Na końcu automatycznie pojawi się link do Polityki prywatności.
-                                </p>
-                                <p x-show="field.type === 'rating'" class="rounded bg-white px-3 py-2 text-xs text-muted">
-                                    Odpowiedź: 1–5 (przyciski). W „Opcjach” nie trzeba nic wpisywać.
-                                </p>
-
-                                {{-- Logika warunkowa: pokaż pole tylko przy określonej odpowiedzi we wcześniejszym polu --}}
-                                <div x-show="field.type !== 'step' && conditionSources(index).length" class="rounded bg-white p-3">
-                                    <label class="flex items-center gap-2 text-sm font-medium">
+                                {{-- Logika warunkowa --}}
+                                <div x-show="sel.type !== 'step' && conditionSources(selIndex).length" class="rounded bg-white p-3">
+                                    <label class="flex items-center gap-2 text-sm font-medium text-ink">
                                         <input type="checkbox" class="rounded border-gray-500 text-brand-dark focus:ring-brand-dark"
-                                            :checked="!! field.show_if_uid"
-                                            @change="field.show_if_uid = $event.target.checked ? (conditionSources(index)[0]?.uid || '') : ''; field.show_if_value = ''">
+                                            :checked="!! sel.show_if_uid"
+                                            @change="sel.show_if_uid = $event.target.checked ? (conditionSources(selIndex)[0]?.uid || '') : ''; sel.show_if_value = ''">
                                         Pokaż tylko, gdy…
                                     </label>
-                                    <div x-show="field.show_if_uid" class="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2">
+                                    <div x-show="sel.show_if_uid" class="mt-2 space-y-2">
                                         <div>
-                                            <label :for="'field-cond-' + index" class="mb-1 block text-xs font-bold uppercase tracking-wide text-muted">pole</label>
-                                            <select :id="'field-cond-' + index" :name="'fields[' + index + '][show_if_uid]'" x-model="field.show_if_uid" @change="field.show_if_value = ''"
-                                                :disabled="! field.show_if_uid"
-                                                class="w-full rounded border-gray-500 text-sm focus:border-brand-dark focus-visible:ring-2 focus-visible:ring-brand-dark">
-                                                <template x-for="src in conditionSources(index)" :key="src.uid">
-                                                    <option :value="src.uid" x-text="src.label || '(bez etykiety)'" :selected="src.uid === field.show_if_uid"></option>
+                                            <label for="prop-cond" class="{{ $propLabel }}">pole</label>
+                                            <select id="prop-cond" x-model="sel.show_if_uid" @change="sel.show_if_value = ''" class="{{ $fieldInput }}">
+                                                <template x-for="src in conditionSources(selIndex)" :key="src.uid">
+                                                    <option :value="src.uid" x-text="src.label || '(bez etykiety)'" :selected="src.uid === sel.show_if_uid"></option>
                                                 </template>
                                             </select>
                                         </div>
                                         <div>
-                                            <label :for="'field-condv-' + index" class="mb-1 block text-xs font-bold uppercase tracking-wide text-muted">ma odpowiedź</label>
-                                            <template x-if="conditionChoices(field.show_if_uid) !== null">
-                                                <select :id="'field-condv-' + index" :name="'fields[' + index + '][show_if_value]'" x-model="field.show_if_value"
-                                                    class="w-full rounded border-gray-500 text-sm focus:border-brand-dark focus-visible:ring-2 focus-visible:ring-brand-dark">
+                                            <label for="prop-condv" class="{{ $propLabel }}">ma odpowiedź</label>
+                                            <template x-if="conditionChoices(sel.show_if_uid) !== null">
+                                                <select id="prop-condv" x-model="sel.show_if_value" class="{{ $fieldInput }}">
                                                     <option value="">— dowolną (pole wypełnione) —</option>
-                                                    <template x-for="opt in conditionChoices(field.show_if_uid)" :key="opt.value">
-                                                        <option :value="opt.value" x-text="opt.label" :selected="opt.value === field.show_if_value"></option>
+                                                    <template x-for="opt in conditionChoices(sel.show_if_uid)" :key="opt.value">
+                                                        <option :value="opt.value" x-text="opt.label" :selected="opt.value === sel.show_if_value"></option>
                                                     </template>
                                                 </select>
                                             </template>
-                                            <template x-if="conditionChoices(field.show_if_uid) === null">
-                                                <input :id="'field-condv-' + index" :name="'fields[' + index + '][show_if_value]'" type="text" x-model="field.show_if_value"
-                                                    placeholder="puste = gdy pole jest wypełnione"
-                                                    class="w-full rounded border-gray-500 text-sm focus:border-brand-dark focus-visible:ring-2 focus-visible:ring-brand-dark">
+                                            <template x-if="conditionChoices(sel.show_if_uid) === null">
+                                                <input id="prop-condv" type="text" x-model="sel.show_if_value" placeholder="puste = gdy pole jest wypełnione" class="{{ $fieldInput }}">
                                             </template>
                                         </div>
                                     </div>
                                 </div>
 
-                                <p x-show="field.type === 'step'" class="rounded bg-white px-3 py-2 text-xs text-muted">
-                                    Od tego miejsca zaczyna się kolejny krok formularza. Etykieta to tytuł kroku (widoczny na pasku postępu), tekst pomocy — opis kroku.
-                                </p>
-
-                                {{-- Pole „Numer KRS”: wyjaśnienie; pozostałe pola: co uzupełnić danymi z rejestru --}}
-                                <p x-show="field.type === 'krs'" class="rounded bg-white px-3 py-2 text-xs text-muted">
-                                    Po wpisaniu numeru dane podmiotu są pobierane z rejestru KRS (API Ministerstwa Sprawiedliwości).
-                                    W innych polach wybierz w „Uzupełnij z KRS”, które dane mają się w nie wpisać.
-                                </p>
-                                <div x-show="hasKrs && krsFillable.includes(field.type)" class="rounded bg-white p-3">
-                                    <label :for="'field-krs-' + index" class="mb-1 block text-xs font-bold text-muted uppercase tracking-wide">Uzupełnij z KRS</label>
-                                    <select :id="'field-krs-' + index" :name="'fields[' + index + '][krs_fill]'" x-model="field.krs_fill"
-                                        class="w-full rounded border-gray-500 text-sm focus:border-brand-dark focus-visible:ring-2 focus-visible:ring-brand-dark sm:w-80">
-                                        <option value="">— nie uzupełniaj —</option>
-                                        @foreach (\App\Services\KrsClient::FILL_KEYS as $krsKey => $krsLabel)
-                                            <option value="{{ $krsKey }}" :selected="field.krs_fill === '{{ $krsKey }}'">{{ $krsLabel }}</option>
-                                        @endforeach
-                                    </select>
-                                    <p class="mt-1 text-xs text-muted">Osoba wypełniająca może poprawić wpisane dane.</p>
-                                </div>
-
-                                <div class="flex items-center gap-3" x-show="! ['heading', 'step'].includes(field.type)">
-                                    <input :id="'field-required-' + index"
-                                        type="checkbox" x-model="field.required"
-                                        class="rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
-                                    <label :for="'field-required-' + index" class="text-sm font-medium">Pole wymagane</label>
+                                <div class="flex gap-2 pt-1">
+                                    <button type="button" @click="duplicateField(selIndex)" class="inline-flex min-h-9 items-center gap-1.5 rounded-md bg-white px-3 text-xs font-bold text-ink hover:bg-brand-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark"><i class="fa-regular fa-copy" aria-hidden="true"></i> Powiel</button>
+                                    <button type="button" @click="removeField(selIndex)" class="inline-flex min-h-9 items-center gap-1.5 rounded-md bg-white px-3 text-xs font-bold text-red-700 hover:bg-red-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600"><i class="fa-solid fa-trash-can" aria-hidden="true"></i> Usuń pole</button>
                                 </div>
                             </div>
-
-                            {{-- Przyciski operacji --}}
-                            <div class="flex shrink-0 flex-col gap-1">
-                                <button type="button" @click="moveUp(index)" :disabled="index === 0"
-                                    class="rounded p-1.5 text-gray-400 hover:text-brand-dark disabled:opacity-30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark"
-                                    :aria-label="'Przesuń pole „' + field.label + '” w górę'">
-                                    <i class="fa-solid fa-arrow-up text-xs" aria-hidden="true"></i>
-                                </button>
-                                <button type="button" @click="moveDown(index)" :disabled="index === fields.length - 1"
-                                    class="rounded p-1.5 text-gray-400 hover:text-brand-dark disabled:opacity-30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark"
-                                    :aria-label="'Przesuń pole „' + field.label + '” w dół'">
-                                    <i class="fa-solid fa-arrow-down text-xs" aria-hidden="true"></i>
-                                </button>
-                                <button type="button" @click="removeField(index)"
-                                    class="rounded p-1.5 text-gray-400 hover:text-red-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
-                                    :aria-label="'Usuń pole „' + field.label + '”'">
-                                    <i class="fa-solid fa-xmark text-xs" aria-hidden="true"></i>
-                                </button>
-                            </div>
-                        </div>
+                        </template>
                     </div>
-                </template>
-
-                <template x-if="fields.length === 0">
-                    <p class="rounded-lg border border-dashed border-gray-300 py-6 text-center text-sm text-muted">
-                        Brak pól — dodaj pierwsze poniżej.
-                    </p>
-                </template>
+                </aside>
             </div>
 
-            <div class="mt-4 flex flex-wrap gap-2">
-                @foreach ($types as $value => $label)
-                    <button type="button" @click="addField('{{ $value }}')"
-                        class="rounded-md px-3 py-1.5 text-xs font-medium text-ink hover:text-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark bg-gray-100 hover:bg-brand-light">
-                        <i class="fa-solid fa-plus mr-1" aria-hidden="true"></i>{{ $label }}
-                    </button>
-                @endforeach
+            {{-- Dane pól do zapisu (kolejność = kolejność w podglądzie) --}}
+            <div hidden>
+                <template x-for="(f, i) in fields" :key="'h' + f._id">
+                    <div>
+                        <input type="hidden" :name="'fields[' + i + '][label]'" :value="f.label">
+                        <input type="hidden" :name="'fields[' + i + '][type]'" :value="f.type">
+                        <input type="hidden" :name="'fields[' + i + '][uid]'" :value="f.uid">
+                        <input type="hidden" :name="'fields[' + i + '][required]'" :value="f.required ? '1' : '0'">
+                        <input type="hidden" :name="'fields[' + i + '][placeholder]'" :value="f.placeholder || ''">
+                        <input type="hidden" :name="'fields[' + i + '][help_text]'" :value="f.help_text || ''">
+                        <input type="hidden" :name="'fields[' + i + '][options]'" :value="f.options || ''">
+                        <input type="hidden" :name="'fields[' + i + '][accept]'" :value="f.accept || ''">
+                        <input type="hidden" :name="'fields[' + i + '][max_mb]'" :value="f.max_mb || ''">
+                        <input type="hidden" :name="'fields[' + i + '][show_if_uid]'" :value="f.show_if_uid || ''">
+                        <input type="hidden" :name="'fields[' + i + '][show_if_value]'" :value="f.show_if_value || ''">
+                        <input type="hidden" :name="'fields[' + i + '][krs_fill]'" :value="krsFillable.includes(f.type) ? (f.krs_fill || '') : ''">
+                    </div>
+                </template>
             </div>
         </fieldset>
 
@@ -585,40 +645,99 @@
                     return null;
                 },
 
-                addField(type) {
-                    this.fields.push({
-                        _id:         this._nextId++,
-                        uid:         Math.random().toString(36).slice(2, 10),
-                        show_if_uid: '',
-                        show_if_value: '',
-                        label:       '',
-                        type:        type,
-                        placeholder: '',
-                        options:     '',
-                        help_text:   '',
-                        accept:      '',
-                        max_mb:      '',
-                        krs_fill:    '',
-                        required:    type === 'consent',
-                    });
-                    this.$nextTick(() => {
-                        const inputs = document.querySelectorAll('#fields-list [name$="[label]"]');
-                        if (inputs.length) inputs[inputs.length - 1].focus();
-                    });
+                selectedId: null,
+                dragData: null,
+                dropIndex: null,
+                announce: '',
+                typeNames: @json(collect($types)->map(fn ($l) => \Illuminate\Support\Str::before($l, ' ('))),
+                defaultLabels: {
+                    text: 'Pytanie', textarea: 'Twoja wiadomość', email: 'Adres e-mail', tel: 'Numer telefonu', number: 'Liczba',
+                    date: 'Data', time: 'Godzina', url: 'Adres strony internetowej', select: 'Wybierz z listy', radio: 'Wybierz jedną odpowiedź',
+                    checkboxes: 'Zaznacz odpowiedzi', checkbox: 'Potwierdzam', rating: 'Jak oceniasz…?', file: 'Załącznik', krs: 'Numer KRS',
+                    consent: 'Wyrażam zgodę na przetwarzanie moich danych osobowych w celu obsługi zgłoszenia.', heading: 'Nowa sekcja', step: 'Nowy krok',
+                },
+
+                get selIndex() { return this.fields.findIndex(f => f._id === this.selectedId); },
+                get sel() { return this.fields[this.selIndex] || null; },
+                typeName(type) { return this.typeNames[type] || type; },
+                optionList(f) { return String(f.options || '').split(',').map(o => o.trim()).filter(Boolean); },
+                sampleFor(type) {
+                    return { email: 'jan.kowalski@example.org', tel: '500 000 000', number: '0', date: 'dd.mm.rrrr', time: 'gg:mm', url: 'https://' }[type] || '';
+                },
+
+                newField(type) {
+                    return {
+                        _id: this._nextId++, uid: Math.random().toString(36).slice(2, 10),
+                        show_if_uid: '', show_if_value: '', label: this.defaultLabels[type] || '', type: type,
+                        placeholder: '', options: ['select', 'radio', 'checkboxes'].includes(type) ? 'Opcja 1, Opcja 2' : '',
+                        help_text: '', accept: '', max_mb: '', krs_fill: '', required: type === 'consent',
+                    };
+                },
+
+                // Nowe pole trafia pod zaznaczone (albo na koniec) i od razu jest zaznaczone do edycji.
+                addField(type, at = null) {
+                    const field = this.newField(type);
+                    const pos = at !== null ? at : (this.selIndex >= 0 ? this.selIndex + 1 : this.fields.length);
+                    this.fields.splice(pos, 0, field);
+                    this.select(field._id, true);
+                    this.announce = 'Dodano pole: ' + this.typeName(type) + ' (pozycja ' + (pos + 1) + ').';
+                },
+
+                select(id, focus = false) {
+                    this.selectedId = id;
+                    if (focus) this.$nextTick(() => document.getElementById(['consent', 'checkbox'].includes(this.sel?.type) ? 'prop-label-long' : 'prop-label')?.focus());
+                },
+
+                duplicateField(index) {
+                    const copy = { ...JSON.parse(JSON.stringify(this.fields[index])), _id: this._nextId++, uid: Math.random().toString(36).slice(2, 10) };
+                    copy.label = copy.label ? copy.label + ' (kopia)' : '';
+                    this.fields.splice(index + 1, 0, copy);
+                    this.select(copy._id);
+                    this.announce = 'Powielono pole.';
                 },
 
                 removeField(index) {
+                    const f = this.fields[index];
+                    if (! f || ! confirm('Usunąć pole „' + (f.label || 'bez etykiety') + '”?')) return;
                     this.fields.splice(index, 1);
+                    // Warunki wskazujące na usunięte pole przestają obowiązywać.
+                    this.fields.forEach(x => { if (x.show_if_uid === f.uid) { x.show_if_uid = ''; x.show_if_value = ''; } });
+                    if (this.selectedId === f._id) this.selectedId = (this.fields[index] || this.fields[index - 1] || {})._id ?? null;
+                    this.announce = 'Usunięto pole.';
                 },
 
-                moveUp(index) {
-                    if (index === 0) return;
-                    [this.fields[index - 1], this.fields[index]] = [this.fields[index], this.fields[index - 1]];
+                move(from, to) {
+                    if (to < 0 || to >= this.fields.length || from === to) return;
+                    const [f] = this.fields.splice(from, 1);
+                    this.fields.splice(to, 0, f);
+                    this.announce = 'Pole „' + (f.label || 'bez etykiety') + '” na pozycji ' + (to + 1) + ' z ' + this.fields.length + '.';
                 },
+                moveUp(index) { this.move(index, index - 1); },
+                moveDown(index) { this.move(index, index + 1); },
 
-                moveDown(index) {
-                    if (index >= this.fields.length - 1) return;
-                    [this.fields[index], this.fields[index + 1]] = [this.fields[index + 1], this.fields[index]];
+                // ── Przeciąganie: z palety (new:typ) albo w obrębie podglądu (move:_id) ──
+                dragStart(e, data) {
+                    this.dragData = data;
+                    e.dataTransfer.effectAllowed = data.startsWith('new:') ? 'copy' : 'move';
+                    e.dataTransfer.setData('text/plain', data);
+                },
+                dragEnd() { this.dragData = null; this.dropIndex = null; },
+                dragOverItem(e, index) {
+                    if (! this.dragData) return;
+                    const r = e.currentTarget.getBoundingClientRect();
+                    this.dropIndex = e.clientY > r.top + r.height / 2 ? index + 1 : index;
+                },
+                dragOverEnd(e) {
+                    if (this.dragData && this.dropIndex === null) this.dropIndex = this.fields.length;
+                },
+                drop() {
+                    const data = this.dragData, at = this.dropIndex ?? this.fields.length;
+                    this.dragEnd();
+                    if (! data) return;
+                    if (data.startsWith('new:')) { this.addField(data.slice(4), at); return; }
+                    const from = this.fields.findIndex(f => String(f._id) === data.slice(5));
+                    if (from < 0) return;
+                    this.move(from, from < at ? at - 1 : at);
                 },
 
                 syncSlug(title) {
