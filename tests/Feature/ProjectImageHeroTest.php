@@ -26,7 +26,8 @@ class ProjectImageHeroTest extends TestCase
     {
         $html = $this->get(route('projects.show', $this->project(true)))->assertOk()->getContent();
 
-        $this->assertStringContainsString('sm:aspect-[21/8]', $html);
+        $this->assertStringContainsString('lg:h-[24rem]', $html);
+        $this->assertStringContainsString('max-w-3xl rounded-md bg-white p-6 sm:p-8', $html);
         $this->assertStringNotContainsString('aspect-[4/3] w-full rounded-md object-cover', $html);
         $this->assertLessThan(strpos($html, '<h1'), strpos($html, 'alt="Telefon w dłoni"'));
     }
@@ -36,6 +37,6 @@ class ProjectImageHeroTest extends TestCase
         $html = $this->get(route('projects.show', $this->project(false)))->assertOk()->getContent();
 
         $this->assertStringContainsString('aspect-[4/3] w-full rounded-md object-cover', $html);
-        $this->assertStringNotContainsString('sm:aspect-[21/8]', $html);
+        $this->assertStringNotContainsString('lg:h-[24rem]', $html);
     }
 }

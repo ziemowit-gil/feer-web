@@ -96,15 +96,21 @@
     {{-- ══ NAGŁÓWEK (układ portalu): kategoria, tytuł, status i termin zwykłym tekstem, zajawka, zdjęcie — płasko, na białym ══ --}}
     @php $imageHero = $project->image_hero && $project->image_url; @endphp
     @if ($imageHero)
-        {{-- Zdjęcie jako hero: szeroki baner nad nagłówkiem; tytuł pod nim na białym (kontrast nie zależy od zdjęcia). --}}
-        <div class="mx-auto max-w-6xl px-4 pt-6 sm:pt-8">
+        {{-- Zdjęcie jako hero: baner na całą szerokość ekranu; nagłówek na białym polu nachodzącym na dolną krawędź zdjęcia
+             (tytuł nigdy nie leży na samym zdjęciu — kontrast nie zależy od jego treści). --}}
+        <div class="mt-4">
             <img src="{{ $project->image_url }}" alt="{{ $project->image_alt ?: 'Zdjęcie ilustracyjne: '.$project->title }}" data-lightbox
-                class="aspect-[16/9] max-h-[28rem] w-full rounded-md object-cover sm:aspect-[21/8]">
+                class="h-56 w-full object-cover sm:h-72 lg:h-[24rem]">
         </div>
     @endif
     <section>
-        <div class="mx-auto grid max-w-6xl items-center gap-8 px-4 pb-4 {{ $imageHero ? 'pt-6 sm:pt-8' : 'pt-8 sm:pt-10' }} {{ $project->image_url && ! $imageHero ? 'lg:grid-cols-[minmax(0,1fr)_26rem]' : '' }}">
-            <div class="min-w-0">
+        <div @class([
+            'mx-auto grid max-w-6xl items-center gap-8 px-4 pb-4',
+            'relative -mt-16 sm:-mt-24' => $imageHero,
+            'pt-8 sm:pt-10' => ! $imageHero,
+            'lg:grid-cols-[minmax(0,1fr)_26rem]' => $project->image_url && ! $imageHero,
+        ])>
+            <div @class(['min-w-0', 'max-w-3xl rounded-md bg-white p-6 sm:p-8' => $imageHero])>
                 <a href="{{ route('categories.show', $project->category) }}" class="inline-block text-sm font-bold uppercase tracking-widest text-brand-dark hover:underline hover:underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">
                     {{ $project->category->name }}
                 </a>
