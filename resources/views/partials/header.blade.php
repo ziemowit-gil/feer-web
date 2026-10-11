@@ -4,10 +4,14 @@
     $wideMission   = $headerLayout === 'wide_mission';
     $wmLayout      = $siteSettings->wideMissionLayoutValue();
     $officeBar     = $headerLayout === 'office_bar';
-    // Witryna bloga Wiem FEER: nazwa w nagłówku odręczną czcionką (Pacifico ładowane w layoutach).
+    // Witryna bloga Wiem FEER: nazwa w nagłówku odręczną czcionką (Caveat — dołączana niżej, tylko na blogu).
     $handBrand      = (bool) request()->attributes->get('blog_site');
-    $handBrandStyle = $handBrand ? "font-family:'Pacifico',cursive;font-weight:400;line-height:1.35" : '';
+    $handBrandStyle = $handBrand ? "font-family:'Caveat',cursive;font-weight:700;line-height:1.1" : '';
 @endphp
+
+@if ($handBrand)
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&display=swap">
+@endif
 
 @if ($officeBar)
 @include('partials.header-office')
@@ -218,7 +222,7 @@
                     {{-- Blog Wiem FEER: cienka kreska między logo a nazwą, nazwa odręcznie w kolorze marki. --}}
                     <span class="hidden h-10 w-px flex-none {{ $inlineOnBrand ? 'bg-white/40' : 'bg-gray-200' }} sm:block" aria-hidden="true"></span>
                     <span class="min-w-0 leading-tight">
-                        <span class="block truncate text-2xl sm:text-3xl {{ $inlineOnBrand ? 'text-white' : 'text-brand-dark' }}" style="{{ $handBrandStyle }}">{{ $siteSettings->site_name }}</span>
+                        <span class="block truncate text-3xl sm:text-4xl {{ $inlineOnBrand ? 'text-white' : 'text-brand-dark' }}" style="{{ $handBrandStyle }}">{{ $siteSettings->site_name }}</span>
                         @if ($siteSettings->tagline)
                             <span class="mt-0.5 block truncate text-sm {{ $inlineOnBrand ? 'text-white/90' : 'text-muted' }}">{{ $siteSettings->tagline }}</span>
                         @endif
