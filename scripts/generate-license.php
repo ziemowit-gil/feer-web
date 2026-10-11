@@ -13,7 +13,10 @@
  * Opcje:
  *   --domain    Domena klienta lub * (dla środowisk dev/demo)
  *   --expires   Data wygaśnięcia YYYY-MM-DD (domyślnie: bez limitu)
- *   --edition   standard | premium | municipality (domyślnie: standard)
+ *   --edition   free | standard | premium | municipality (domyślnie: standard)
+ *
+ * Klucze zwykle wystawia panel licencji (osobna aplikacja) — ten skrypt to zapas
+ * na wypadek pracy bez panelu. Format klucza: patrz App\Support\LicenseValidator.
  *   --note      Opcjonalna notatka (np. nazwa klienta)
  */
 
@@ -37,8 +40,8 @@ if (! $domain) {
     exit(1);
 }
 
-if (! in_array($edition, ['standard', 'premium', 'municipality'], true)) {
-    echo "Błąd: --edition musi być: standard, premium, municipality\n";
+if (! in_array($edition, ['free', 'standard', 'premium', 'municipality'], true)) {
+    echo "Błąd: --edition musi być: free, standard, premium, municipality\n";
     exit(1);
 }
 
@@ -77,19 +80,28 @@ $payload = json_encode([
 openssl_sign($payload, $signature, $privateKey, OPENSSL_ALGO_SHA256);
 
 // ── Kodowanie klucza ─────────────────────────────────────────────────────────
-// Format: base64url(payload) . "." . base64url(signature)
-// Sformatowane jako WCMS-XXXXXX-XXXXXX-XXXXXX-XXXXXX-XXXXXX
+// Format: WCMS-<base32(payload)>.<base32(podpis)>, oba w blokach po 8 znaków.
+// Base32 nie rozróżnia wielkości liter — patrz App\Support\LicenseValidator.
 
-function base64url_encode(string $data): string
+function base32_encode_raw(string $data): string
 {
-    return rtrim(strtr(base64_encode($data), '+/', '-_'), '=');
+    $alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
+    $bits = '';
+    foreach (str_split($data) as $char) {
+        $bits .= str_pad(decbin(ord($char)), 8, '0', STR_PAD_LEFT);
+    }
+    $out = '';
+    foreach (str_split($bits, 5) as $chunk) {
+        $out .= $alphabet[bindec(str_pad($chunk, 5, '0', STR_PAD_RIGHT))];
+    }
+
+    return $out;
 }
 
-$raw = base64url_encode($payload) . '.' . base64url_encode($signature);
-
-// Dodaj prefiks i poformattuj w bloki po 8 znaków
-$body    = strtoupper(preg_replace('/[^A-Za-z0-9\-_]/', '', $raw));
-$license = 'WCMS-' . implode('-', str_split($body, 8));
+$license = 'WCMS-'
+    . implode('-', str_split(base32_encode_raw($payload), 8))
+    . '.'
+    . implode('-', str_split(base32_encode_raw($signature), 8));
 
 // ── Output ────────────────────────────────────────────────────────────────────
 

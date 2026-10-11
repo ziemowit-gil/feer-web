@@ -71,6 +71,45 @@ class EditionTest extends TestCase
         $this->assertFalse(Edition::isPro());
     }
 
+    public function test_signed_license_key_gives_pro_and_free_key_gives_free(): void
+    {
+        $private = openssl_pkey_new(['private_key_bits' => 2048, 'private_key_type' => OPENSSL_KEYTYPE_RSA]);
+        config(['license.public_key' => openssl_pkey_get_details($private)['key']]);
+
+        $this->useEdition(null, 'https://www.klient.example.org',
+            strtolower($this->licenseKey($private, ['d' => 'klient.example.org', 'e' => '2099-12-31', 'x' => 'premium'])));
+        $this->assertTrue(Edition::isPro());
+
+        $this->useEdition(null, 'https://klient.example.org',
+            $this->licenseKey($private, ['d' => 'klient.example.org', 'e' => null, 'x' => 'free']));
+        $this->assertFalse(Edition::isPro());
+
+        $this->useEdition(null, 'https://klient.example.org',
+            $this->licenseKey($private, ['d' => 'klient.example.org', 'e' => '2020-01-01', 'x' => 'premium']));
+        $this->assertFalse(Edition::isPro(), 'wygasły klucz');
+    }
+
+    /** Klucz w formacie panelu licencji / scripts/generate-license.php. */
+    private function licenseKey(\OpenSSLAsymmetricKey $private, array $data): string
+    {
+        $payload = json_encode($data + ['n' => '', 'i' => date('Y-m-d')]);
+        openssl_sign($payload, $signature, $private, OPENSSL_ALGO_SHA256);
+
+        $base32 = function (string $raw): string {
+            $bits = '';
+            foreach (str_split($raw) as $char) {
+                $bits .= str_pad(decbin(ord($char)), 8, '0', STR_PAD_LEFT);
+            }
+
+            return implode('', array_map(
+                fn ($chunk) => 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567'[bindec(str_pad($chunk, 5, '0'))],
+                str_split($bits, 5),
+            ));
+        };
+
+        return 'WCMS-'.implode('-', str_split($base32($payload), 8)).'.'.implode('-', str_split($base32($signature), 8));
+    }
+
     /** Darowizny (edition:donations) — strona widoczna, wysłanie formularza zablokowane. */
     public function test_free_edition_keeps_paid_feature_readable_but_blocks_writes(): void
     {
