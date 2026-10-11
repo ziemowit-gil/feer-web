@@ -2,10 +2,10 @@
     $feerSide = (($siteSettings ?? \App\Models\SiteSetting::current())->site_template ?? 'default') === 'feer';
     $bipSettings   = $siteSettings ?? \App\Models\SiteSetting::current();
     $isExternalMode = ($bipSettings->bip_mode ?? 'internal') === 'external';
-    $onBip          = request()->routeIs('bip') && ! request()->routeIs('bip.*');
-    $onChangelog    = request()->routeIs('bip.changelog');
+    $onBip          = (bool) request()->attributes->get('bip_home');
+    $onChangelog    = bip_route_is('bip.changelog');
 
-    $bipNavItems = \App\Models\NavItem::where('location', 'bip')
+    $bipNavItems = \App\Models\NavItem::forCurrentSite()->where('location', 'bip')
         ->where('is_active', true)
         ->orderBy('order')
         ->get();
@@ -16,7 +16,7 @@
         return compact('url', 'label', 'icon', 'current', 'external');
     };
     $groups = [];
-    $main = [$bmLink(route('bip'), 'Strona główna BIP', 'fa-solid fa-landmark', $onBip)];
+    $main = [$bmLink(bip_route('bip'), 'Strona główna BIP', 'fa-solid fa-landmark', $onBip)];
     foreach ($bipNavItems as $item) {
         $main[] = $bmLink(
             (string) $item->url,
@@ -30,15 +30,15 @@
 
     $reg = [];
     if (! $isExternalMode && ($bipSettings->bip_show_reports ?? true) && $bipSettings->isModuleEnabled('reports')) {
-        $reg[] = $bmLink(route('bip').'#sprawozdania', 'Sprawozdania roczne', 'fa-solid fa-file-invoice');
+        $reg[] = $bmLink(bip_route('bip').'#sprawozdania', 'Sprawozdania roczne', 'fa-solid fa-file-invoice');
     }
     if (! $isExternalMode) {
-        $reg[] = $bmLink(route('bip.changelog'), 'Rejestr zmian', 'fa-solid fa-clock-rotate-left', $onChangelog);
+        $reg[] = $bmLink(bip_route('bip.changelog'), 'Rejestr zmian', 'fa-solid fa-clock-rotate-left', $onChangelog);
     }
     if ($reg) { $groups['Rejestry i sprawozdania'] = $reg; }
 
     $groups['Pomoc'] = [
-        $bmLink(route('bip.instructions'), 'Instrukcja korzystania z BIP', 'fa-solid fa-circle-info', request()->routeIs('bip.instructions')),
+        $bmLink(bip_route('bip.instructions'), 'Instrukcja korzystania z BIP', 'fa-solid fa-circle-info', bip_route_is('bip.instructions')),
         $bmLink(route('accessibility.show'), 'Deklaracja dostępności', 'fa-solid fa-universal-access'),
     ];
 @endphp

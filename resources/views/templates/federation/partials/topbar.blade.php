@@ -92,9 +92,9 @@
                 @endforeach
             </div>
 
-            @if ($siteSettings->show_topbar_bip && $siteSettings->bip_url)
-                @php $bipIsExternal = ($siteSettings->bip_mode ?? 'internal') === 'external'; @endphp
-                <a href="{{ $bipIsExternal ? $siteSettings->bip_url : route('bip') }}"
+            @if ($siteSettings->show_topbar_bip && ($siteSettings->bip_url || $siteSettings->bipSite()) && filled($siteSettings->bipHref()))
+                @php $bipIsExternal = $siteSettings->bipIsExternal(); @endphp
+                <a href="{{ $siteSettings->bipHref() }}"
                     @if ($bipIsExternal) target="_blank" rel="noopener" @endif
                     class="hidden items-center gap-1 font-bold text-muted hover:text-brand sm:flex focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
                     aria-label="Biuletyn Informacji Publicznej">

@@ -259,7 +259,7 @@ Route::middleware('module:bip')->group(function () {
     Route::get('/bip', [BipController::class, 'index'])->name('bip');
     Route::get('/bip/rejestr-zmian', [BipController::class, 'changeLog'])->name('bip.changelog');
     Route::get('/bip/instrukcja', [BipController::class, 'instructions'])->name('bip.instructions');
-    Route::get('/bip/{bipDocument:slug}', [BipController::class, 'show'])->name('bip.document');
+    Route::get('/bip/{bipSlug}', [BipController::class, 'show'])->name('bip.document');
 });
 Route::get('/instagram', [ShortcutController::class, 'instagram'])->name('shortcut.instagram');
 Route::get('/fb', [ShortcutController::class, 'facebook'])->name('shortcut.fb');
@@ -845,6 +845,14 @@ $registerSiteContentRoutes = function () {
 
     Route::get('/kontakt', [ContactController::class, 'index'])->name('contact.show');
     Route::post('/kontakt', [ContactController::class, 'store'])->name('contact.store')->middleware('throttle:5,1');
+
+    // BIP sub-witryny — także witryny rodzaju „bip", której stroną główną jest BIP.
+    Route::middleware('module:bip')->group(function () {
+        Route::get('/bip', [BipController::class, 'index'])->name('bip');
+        Route::get('/bip/rejestr-zmian', [BipController::class, 'changeLog'])->name('bip.changelog');
+        Route::get('/bip/instrukcja', [BipController::class, 'instructions'])->name('bip.instructions');
+        Route::get('/bip/{bipSlug}', [BipController::class, 'show'])->name('bip.document');
+    });
 
     // Catch-all podstron tej sub-witryny — musi zostać ostatni w grupie.
     Route::get('/{page:slug}', [PageController::class, 'show'])->name('page.show')->middleware('module:pages');

@@ -3,7 +3,7 @@
     $bipLogo = $siteSettings->bipLogoUrl() ?: asset('img/bip-logo.svg');
     $bipTitle = $bipTitle ?? 'Biuletyn Informacji Publicznej';
     $bipSub = $bipSub ?? $siteSettings->siteNameGenitive();
-    $bipIsHome = request()->routeIs('bip');
+    $bipIsHome = (bool) request()->attributes->get('bip_home');
 @endphp
 @if (! request()->attributes->get('bip_css'))
     @php request()->attributes->set('bip_css', true); @endphp
@@ -53,7 +53,7 @@
                     <h1 class="bip-head-t">Biuletyn Informacji Publicznej</h1>
                     <p class="bip-head-s">Dokumenty i informacje publiczne {{ $siteSettings->siteNameGenitive() }}</p>
                 @else
-                    <p class="bip-head-k"><a href="{{ route('bip') }}" class="underline hover:text-ink focus-visible:outline-2 focus-visible:outline-ink">Biuletyn Informacji Publicznej</a> › {{ $siteSettings->site_name }}</p>
+                    <p class="bip-head-k"><a href="{{ bip_route('bip') }}" class="underline hover:text-ink focus-visible:outline-2 focus-visible:outline-ink">Biuletyn Informacji Publicznej</a> › {{ $siteSettings->site_name }}</p>
                     <p class="bip-head-t">{{ $bipTitle }}</p>
                     @if ($bipSub)<p class="bip-head-s">{{ $bipSub }}</p>@endif
                 @endif

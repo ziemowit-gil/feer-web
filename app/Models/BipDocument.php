@@ -24,6 +24,7 @@ class BipDocument extends Model implements HasMedia
     use InteractsWithMedia;
     use \App\Models\Concerns\HasRevisions;
     use \App\Models\Concerns\LogsActivity;
+    use \App\Models\Concerns\BelongsToSite;
 
     /**
      * Kategorie dokumentów BIP zgodne z art. 6 ustawy o dostępie do informacji
@@ -80,6 +81,24 @@ class BipDocument extends Model implements HasMedia
     public function scopePublished(Builder $query): Builder
     {
         return $query->where('is_published', true);
+    }
+
+    /** Dokument z innej witryny sieci nie jest osiągalny pod adresem tej witryny (także w panelu). */
+    public function resolveRouteBindingQuery($query, $value, $field = null)
+    {
+        return parent::resolveRouteBindingQuery($query, $value, $field)->forCurrentSite();
+    }
+
+    /** Publiczny adres dokumentu — na witrynie, do której należy (np. sub-witrynie BIP). */
+    public function publicUrl(): string
+    {
+        $site = $this->site ?? SiteSetting::current();
+
+        if ($site->isSubsite()) {
+            return rtrim(current_site_url($site), '/').'/bip/'.$this->slug;
+        }
+
+        return route('bip.document', $this->slug);
     }
 
     public function registerMediaCollections(): void

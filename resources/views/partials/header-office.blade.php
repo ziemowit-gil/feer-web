@@ -6,9 +6,9 @@
 @php
     $officeSocials  = $siteSettings->socialLinks(3);
     $officeAccount  = $siteSettings->office_show_account ? trim((string) $siteSettings->bank_account_number) : '';
-    $officeBipMode  = ($siteSettings->bip_mode ?? 'internal') === 'external';
-    $officeBipHref  = $officeBipMode ? $siteSettings->bip_url : route('bip');
-    $officeShowBip  = $siteSettings->isModuleEnabled('bip') && ($officeBipMode ? filled($siteSettings->bip_url) : true);
+    $officeBipMode  = $siteSettings->bipIsExternal();
+    $officeBipHref  = $siteSettings->bipHref();
+    $officeShowBip  = ($siteSettings->bipSite() || $siteSettings->isModuleEnabled('bip')) && filled($officeBipHref);
 @endphp
 
 <div x-data="siteMobileNav(768)" @keydown.escape.window="closeMenu()">

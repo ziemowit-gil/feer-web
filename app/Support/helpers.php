@@ -38,6 +38,29 @@ if (! function_exists('site_route')) {
     }
 }
 
+if (! function_exists('bip_route')) {
+    /**
+     * Adres strony BIP w obrębie bieżącej witryny. Na witrynie rodzaju „bip”
+     * stroną główną BIP jest strona główna witryny, więc „bip” wskazuje na nią.
+     */
+    function bip_route(string $name, mixed $parameters = []): string
+    {
+        if ($name === 'bip' && SiteSetting::current()->isBipSite()) {
+            return site_route('home');
+        }
+
+        return site_route($name, $parameters);
+    }
+}
+
+if (! function_exists('bip_route_is')) {
+    /** Czy bieżące żądanie to dana trasa BIP — na głównej witrynie albo w obrębie sub-witryny. */
+    function bip_route_is(string $name): bool
+    {
+        return request()->routeIs($name, 'site.'.$name, 'site-long.'.$name);
+    }
+}
+
 if (! function_exists('current_site_url')) {
     /** Public base URL for a given site — its own domain, or the main site's URL with the sub-site's path prefix. */
     function current_site_url(SiteSetting $site): string

@@ -5,7 +5,7 @@
 @section('content')
     <div class="mb-4 flex items-center justify-between">
         <p class="max-w-2xl text-sm text-muted">
-            Główna witryna i jej sub-witryny (np. „Ośrodek") — każda ma własną nazwę, branding i treść, ale korzysta
+            Główna witryna i jej sub-witryny (np. „Ośrodek" albo osobny BIP) — każda ma własną nazwę, branding i treść, ale korzysta
             z tego samego szablonu. Przełącz się na wybraną witrynę w pasku bocznym, żeby edytować jej ustawienia
             i treść w dotychczasowych ekranach panelu.
         </p>
@@ -46,7 +46,11 @@
                                     <span class="flex h-8 w-8 flex-none items-center justify-center rounded bg-gray-200 text-xs font-bold text-muted">{{ mb_substr($sub->site_name, 0, 1) }}</span>
                                 @endif
                                 <div class="min-w-0 flex-1">
-                                    <p class="truncate text-sm font-bold text-ink">{{ $sub->site_name }}</p>
+                                    <p class="truncate text-sm font-bold text-ink">{{ $sub->site_name }}
+                                        @if ($sub->isBipSite())
+                                            <span class="ml-1 text-[10px] font-bold uppercase tracking-wide text-muted">BIP</span>
+                                        @endif
+                                    </p>
                                     <p class="truncate text-xs text-muted">
                                         @if ($sub->domain || $sub->slug)
                                             {{ current_site_url($sub) }}

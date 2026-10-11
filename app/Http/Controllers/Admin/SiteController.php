@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\BipDocument;
+use App\Models\NavItem;
 use App\Models\Page;
 use App\Models\SiteSetting;
 use Illuminate\Http\Request;
@@ -42,10 +44,25 @@ class SiteController extends Controller
         // „dziedzicz od witryny nadrzędnej” (a gdy i ona go nie ma — kolor domyślny), nie NULL.
         $data['brand_color'] = $data['brand_color'] ?? (SiteSetting::current()->brand_color ?: SiteSetting::DEFAULT_BRAND_COLOR);
 
+        $parent = SiteSetting::current();
+
+        // Witryna BIP startuje z ustawieniami BIP witryny nadrzędnej (wstęp, redakcja, logo BIP).
+        if (($data['site_kind'] ?? 'standard') === 'bip') {
+            foreach (['bip_intro', 'bip_editor_name', 'bip_editor_email', 'bip_gov_url', 'bip_show_reports'] as $field) {
+                $data[$field] = $parent->{$field};
+            }
+            $data['bip_mode'] = 'internal';
+        }
+
         $site = SiteSetting::create($data);
 
         if ($request->hasFile('logo')) {
             $site->addMediaFromRequest('logo')->toMediaCollection('logo');
+        }
+
+        if ($site->isBipSite()) {
+            $parent->getFirstMedia('bip_logo')?->copy($site, 'bip_logo');
+            $this->moveBipContent($request, $site);
         }
 
         return redirect()->route('admin.witryny.index')->with('status', 'Witryna „'.$site->site_name.'" została założona.');
@@ -63,10 +80,18 @@ class SiteController extends Controller
         if (blank($data['brand_color'] ?? null)) {
             unset($data['brand_color']);
         }
+        // Główna witryna zostaje zwykłą witryną — rodzaj „BIP" mają tylko sub-witryny.
+        if ($site->parent_site_id === null) {
+            unset($data['site_kind']);
+        }
         $site->update($data);
 
         if ($request->hasFile('logo')) {
             $site->addMediaFromRequest('logo')->toMediaCollection('logo');
+        }
+
+        if ($site->isBipSite()) {
+            $this->moveBipContent($request, $site);
         }
 
         return redirect()->route('admin.witryny.index')->with('status', 'Zapisano zmiany witryny „'.$site->site_name.'".');
@@ -76,7 +101,7 @@ class SiteController extends Controller
     {
         abort_if($site->parent_site_id === null, 403, 'Nie można usunąć głównej witryny.');
 
-        $tables = ['news', 'pages', 'gallery_images', 'events', 'partners', 'quick_actions', 'polls', 'hero_slides'];
+        $tables = ['news', 'pages', 'gallery_images', 'events', 'partners', 'quick_actions', 'polls', 'hero_slides', 'bip_documents'];
         foreach ($tables as $table) {
             if (\Illuminate\Support\Facades\DB::table($table)->where('site_id', $site->id)->exists()) {
                 return back()->with('error', 'Nie można usunąć witryny „'.$site->site_name.'" — ma jeszcze przypisaną treść. Przenieś lub usuń ją najpierw.');
@@ -88,11 +113,36 @@ class SiteController extends Controller
         return redirect()->route('admin.witryny.index')->with('status', 'Witryna została usunięta.');
     }
 
+    /**
+     * Na życzenie przenosi dokumenty BIP i menu boczne BIP z witryny nadrzędnej
+     * do witryny BIP — dotychczasowy BIP głównej witryny staje się jej treścią.
+     */
+    private function moveBipContent(Request $request, SiteSetting $site): void
+    {
+        if (! $request->boolean('move_bip_content') || ! $site->parent_site_id) {
+            return;
+        }
+
+        BipDocument::withTrashed()->where('site_id', $site->parent_site_id)->update(['site_id' => $site->id]);
+        NavItem::where('site_id', $site->parent_site_id)->where('location', 'bip')->update(['site_id' => $site->id]);
+    }
+
     private function validated(Request $request, ?SiteSetting $site = null): array
     {
         $reserved = array_merge(Page::RESERVED_SLUGS, ['site']);
+        $parentId = $site?->parent_site_id ?? SiteSetting::current()->id;
 
         return $request->validate([
+            'site_kind' => [
+                'sometimes', Rule::in(array_keys(SiteSetting::SITE_KINDS)),
+                // Jedna witryna BIP na witrynę nadrzędną — to ją wskazują linki „BIP" w nagłówkach.
+                function ($attribute, $value, $fail) use ($site, $parentId) {
+                    if ($value === 'bip' && SiteSetting::where('parent_site_id', $parentId)->where('site_kind', 'bip')
+                        ->when($site, fn ($q) => $q->whereKeyNot($site->id))->exists()) {
+                        $fail('Ta witryna ma już w sieci witrynę BIP.');
+                    }
+                },
+            ],
             'site_name' => ['required', 'string', 'max:255'],
             'tagline' => ['nullable', 'string', 'max:255'],
             'brand_color' => ['nullable', 'regex:/^#[0-9a-fA-F]{6}$/'],

@@ -50,6 +50,45 @@
             @error('brand_color') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
         </div>
 
+        @if (! $site->exists || $site->parent_site_id)
+            @php
+                $siteKind = old('site_kind', $site->site_kind ?? 'standard');
+                $parentForBip = $site->exists ? $site->parentSite : \App\Models\SiteSetting::current();
+                $parentBipCount = $parentForBip ? \App\Models\BipDocument::withTrashed()->where('site_id', $parentForBip->id)->count() : 0;
+            @endphp
+            <fieldset x-data="{ kind: @js($siteKind) }">
+                <legend class="mb-1 block text-sm font-bold">Rodzaj witryny</legend>
+                <div class="space-y-2">
+                    @foreach (\App\Models\SiteSetting::SITE_KINDS as $kindKey => $kindLabel)
+                        <label class="flex items-start gap-2 text-sm">
+                            <input type="radio" name="site_kind" value="{{ $kindKey }}" x-model="kind" @checked($siteKind === $kindKey)
+                                aria-describedby="site_kind_{{ $kindKey }}_desc"
+                                class="mt-0.5 border-gray-500 text-brand-dark focus:ring-brand-dark">
+                            <span>
+                                <span class="font-bold text-ink">{{ $kindLabel }}</span>
+                                <span id="site_kind_{{ $kindKey }}_desc" class="block text-muted">
+                                    @if ($kindKey === 'bip')
+                                        Stroną główną jest Biuletyn Informacji Publicznej z własnymi dokumentami, logo i nagłówkiem (np. bip.przyklad.pl). Linki „BIP" na witrynie nadrzędnej prowadzą tutaj, a dotychczasowe adresy /bip przekierowują na tę witrynę.
+                                    @else
+                                        Własne aktualności, strony i wydarzenia, np. ośrodek prowadzony przez organizację.
+                                    @endif
+                                </span>
+                            </span>
+                        </label>
+                    @endforeach
+                </div>
+                @error('site_kind') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+
+                @if ($parentBipCount > 0)
+                    <label x-show="kind === 'bip'" x-cloak class="mt-3 flex items-start gap-2 rounded bg-brand-light px-3 py-2 text-sm text-ink">
+                        <input type="checkbox" name="move_bip_content" value="1" @checked(old('move_bip_content', ! $site->exists))
+                            class="mt-0.5 rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
+                        <span>Przenieś do tej witryny dokumenty BIP witryny „{{ $parentForBip->site_name }}" ({{ $parentBipCount }}) i jej menu boczne BIP.</span>
+                    </label>
+                @endif
+            </fieldset>
+        @endif
+
         <div class="grid gap-4 sm:grid-cols-2">
             <div>
                 <label for="slug" class="mb-1 block text-sm font-bold">Adres skrócony (slug)</label>

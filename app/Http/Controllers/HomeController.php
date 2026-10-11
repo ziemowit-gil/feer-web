@@ -135,6 +135,13 @@ class HomeController extends Controller
     /** Wyświetla stronę główną z danymi wszystkich włączonych modułów (hero, aktualności, ankieta itp.). */
     public function index()
     {
+        // Witryna sieci rodzaju „bip" (np. bip.feer.org.pl): stroną główną jest BIP.
+        if (SiteSetting::current()->isBipSite()) {
+            abort_unless(SiteSetting::current()->isModuleEnabled('bip'), 404);
+
+            return app(\App\Http\Controllers\Bip\BipController::class)->index(request());
+        }
+
         // Własna domena bloga Wiem FEER (np. wiem.feer.org.pl): strona główna to lista wpisów.
         // Na domenie głównej i innych witrynach nic się nie zmienia.
         if (class_exists(\Modules\Blog\Support\BlogSite::class) && \Modules\Blog\Support\BlogSite::servesOwnDomain(request())) {

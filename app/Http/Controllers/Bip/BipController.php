@@ -23,6 +23,14 @@ class BipController extends Controller
     public function index(Request $request)
     {
         $settings = SiteSetting::current();
+
+        if ($redirect = $this->redirectToBipSite($settings, '', $request->getQueryString())) {
+            return $redirect;
+        }
+
+        // Nagłówek i menu boczne BIP zaznaczają „Stronę główną BIP" — także wtedy,
+        // gdy to strona główna witryny BIP (HomeController), a nie trasa /bip.
+        $request->attributes->set('bip_home', true);
         $isExternal = ($settings->bip_mode ?? 'internal') === 'external';
 
         $documents = collect();
@@ -32,7 +40,7 @@ class BipController extends Controller
         $lastUpdate = null;
 
         if (! $isExternal) {
-            $lastUpdate = BipDocument::published()->max('updated_at');
+            $lastUpdate = BipDocument::published()->forCurrentSite()->max('updated_at');
 
             // Opcja: sprawozdania roczne z modułu „Sprawozdania" w BIP (wyszukiwane po roku i słowach „sprawozdanie", „finansowe", „merytoryczne").
             if (($settings->bip_show_reports ?? true) && $settings->isModuleEnabled('reports')) {
@@ -47,6 +55,7 @@ class BipController extends Controller
 
             // Wyszukiwarka BIP (wymóg rozporządzenia): tytuł, streszczenie i treść dokumentów.
             $documents = BipDocument::published()
+                ->forCurrentSite()
                 ->when($q !== '', function ($query) use ($q) {
                     $like = '%'.addcslashes($q, '%_\\').'%';
                     $query->where(fn ($w) => $w->where('title', 'like', $like)->orWhere('summary', 'like', $like)->orWhere('content', 'like', $like));
@@ -61,6 +70,7 @@ class BipController extends Controller
             $recentChangeIds = $documents->flatten()->pluck('id');
 
             $recentChanges = Activity::where('subject_type', BipDocument::class)
+                ->whereIn('subject_id', $this->siteDocumentIds())
                 ->where('log_name', 'cms')
                 ->with('causer')
                 ->latest()
@@ -76,17 +86,27 @@ class BipController extends Controller
     /** Instrukcja korzystania z BIP (wymóg rozporządzenia w sprawie BIP). */
     public function instructions()
     {
+        if ($redirect = $this->redirectToBipSite(SiteSetting::current(), 'bip/instrukcja')) {
+            return $redirect;
+        }
+
         return view('bip.instructions', ['isExternal' => (SiteSetting::current()->bip_mode ?? 'internal') === 'external']);
     }
 
     /** Wyświetla treść pojedynczego dokumentu BIP z historią edycji. */
-    public function show(BipDocument $bipDocument)
+    public function show(string $bipSlug)
     {
         $settings = SiteSetting::current();
 
-        if (($settings->bip_mode ?? 'internal') === 'external') {
-            return redirect()->route('bip');
+        if ($redirect = $this->redirectToBipSite($settings, 'bip/'.$bipSlug)) {
+            return $redirect;
         }
+
+        if (($settings->bip_mode ?? 'internal') === 'external') {
+            return redirect()->to(bip_route('bip'));
+        }
+
+        $bipDocument = BipDocument::forCurrentSite()->where('slug', $bipSlug)->firstOrFail();
 
         abort_unless($bipDocument->is_published, 404);
 
@@ -103,15 +123,20 @@ class BipController extends Controller
     }
 
     /** Publiczny rejestr zmian BIP (tylko w trybie wbudowanym). */
-    public function changeLog()
+    public function changeLog(Request $request)
     {
         $settings = SiteSetting::current();
 
+        if ($redirect = $this->redirectToBipSite($settings, 'bip/rejestr-zmian', $request->getQueryString())) {
+            return $redirect;
+        }
+
         if (($settings->bip_mode ?? 'internal') === 'external') {
-            return redirect()->route('bip');
+            return redirect()->to(bip_route('bip'));
         }
 
         $entries = Activity::where('subject_type', BipDocument::class)
+            ->whereIn('subject_id', $this->siteDocumentIds())
             ->where('log_name', 'cms')
             ->with('causer')
             ->latest()
@@ -122,5 +147,28 @@ class BipController extends Controller
             ->pluck('slug', 'id');
 
         return view('bip.changelog', compact('entries', 'documentMap'));
+    }
+
+    /**
+     * Gdy witryna ma w sieci osobną witrynę BIP (np. bip.feer.org.pl), jej
+     * dotychczasowe adresy /bip… przekierowują tam na stałe.
+     */
+    private function redirectToBipSite(SiteSetting $settings, string $path, ?string $query = null)
+    {
+        $bipSite = $settings->bipSite();
+
+        if (! $bipSite || $bipSite->is($settings)) {
+            return null;
+        }
+
+        $url = rtrim(current_site_url($bipSite), '/').($path !== '' ? '/'.$path : '');
+
+        return redirect()->away($url.($query ? '?'.$query : ''), 301);
+    }
+
+    /** Identyfikatory dokumentów BIP bieżącej witryny (także usuniętych) — do rejestru zmian. */
+    private function siteDocumentIds()
+    {
+        return BipDocument::withTrashed()->forCurrentSite()->select('id');
     }
 }

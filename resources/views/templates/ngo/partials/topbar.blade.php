@@ -63,9 +63,9 @@
                 </a>
             @endif
 
-            @if ($siteSettings->show_topbar_bip && $siteSettings->bip_url)
-                @php $bipIsExternal = ($siteSettings->bip_mode ?? 'internal') === 'external'; @endphp
-                <a href="{{ $bipIsExternal ? $siteSettings->bip_url : route('bip') }}"
+            @if ($siteSettings->show_topbar_bip && ($siteSettings->bip_url || $siteSettings->bipSite()) && filled($siteSettings->bipHref()))
+                @php $bipIsExternal = $siteSettings->bipIsExternal(); @endphp
+                <a href="{{ $siteSettings->bipHref() }}"
                     @if ($bipIsExternal) target="_blank" rel="noopener" @endif
                     class="flex items-center gap-1 font-bold text-muted hover:text-brand"
                     aria-label="BIP">

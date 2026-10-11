@@ -19,7 +19,7 @@ class BipDocumentController extends Controller
     /** Lista wszystkich dokumentów BIP. */
     public function index()
     {
-        $documents = BipDocument::orderBy('category')->orderBy('order')->orderBy('title')
+        $documents = BipDocument::forCurrentSite()->orderBy('category')->orderBy('order')->orderBy('title')
             ->with(['creator', 'updater', 'media'])
             ->get();
 

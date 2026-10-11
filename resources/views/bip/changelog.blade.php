@@ -69,7 +69,7 @@
                                         </td>
                                         <td class="px-4 py-3 font-medium text-ink">
                                             @if ($documentMap[$entry->subject_id] ?? null)
-                                                <a href="{{ route('bip.document', $documentMap[$entry->subject_id]) }}"
+                                                <a href="{{ bip_route('bip.document', $documentMap[$entry->subject_id]) }}"
                                                     class="text-brand-dark hover:text-brand-dark hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
                                                     {{ $entry->subject_label }}
                                                 </a>

@@ -23,10 +23,10 @@
 
                 @unless ($isExternal)
                     <h2>Wyszukiwarka</h2>
-                    <p>Na <a href="{{ route('bip') }}">stronie głównej BIP</a> wpisz słowo lub fragment tytułu w pole „Szukaj w BIP” i wybierz „Szukaj”. Wyszukiwarka sprawdza tytuły, streszczenia i treść dokumentów.</p>
+                    <p>Na <a href="{{ bip_route('bip') }}">stronie głównej BIP</a> wpisz słowo lub fragment tytułu w pole „Szukaj w BIP” i wybierz „Szukaj”. Wyszukiwarka sprawdza tytuły, streszczenia i treść dokumentów.</p>
 
                     <h2>Informacje przy każdym dokumencie</h2>
-                    <p>Przy dokumencie podajemy: kto go wytworzył i udostępnił, datę udostępnienia i datę ostatniej zmiany. Pełną historię zmian znajdziesz w <a href="{{ route('bip.changelog') }}">rejestrze zmian</a>.</p>
+                    <p>Przy dokumencie podajemy: kto go wytworzył i udostępnił, datę udostępnienia i datę ostatniej zmiany. Pełną historię zmian znajdziesz w <a href="{{ bip_route('bip.changelog') }}">rejestrze zmian</a>.</p>
                 @endunless
 
                 <h2>Dostępność</h2>
@@ -37,7 +37,7 @@
                     @if ($siteSettings->bip_editor_name || $siteSettings->bip_editor_email)
                         Za publikację w BIP odpowiada: <strong>{{ $siteSettings->bip_editor_name ?: 'redakcja BIP' }}</strong>@if ($siteSettings->bip_editor_email), e-mail: <a href="mailto:{{ $siteSettings->bip_editor_email }}">{{ $siteSettings->bip_editor_email }}</a>@endif.
                     @else
-                        W sprawach związanych z BIP skorzystaj ze strony <a href="{{ route('contact.show') }}">Kontakt</a>.
+                        W sprawach związanych z BIP skorzystaj ze strony <a href="{{ site_route('contact.show') }}">Kontakt</a>.
                     @endif
                     Jeśli nie możesz znaleźć informacji lub potrzebujesz dokumentu w innej formie, napisz do nas — udzielimy pomocy.
                 </p>

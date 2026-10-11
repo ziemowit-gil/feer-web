@@ -50,13 +50,13 @@ HTML;
                         .bip-search-btn:focus-visible { outline: 3px solid #1d1d1a; outline-offset: 2px; }
                         .bip-search-hint { margin: .6rem 0 0; font-size: .9rem; color: #374151; }
                     </style>
-                    <form method="GET" action="{{ route('bip') }}" role="search" aria-label="Szukaj w BIP" class="bip-search">
+                    <form method="GET" action="{{ bip_route('bip') }}" role="search" aria-label="Szukaj w BIP" class="bip-search">
                         <label for="bip-q" class="bip-search-label">Szukaj w BIP</label>
                         <div class="bip-search-row">
                             <input type="search" id="bip-q" name="q" value="{{ $q }}" placeholder="np. statut, sprawozdanie 2025, KRS" class="bip-search-input" autocomplete="off">
                             <button type="submit" class="bip-search-btn"><i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>Szukaj</button>
                         </div>
-                        <p class="bip-search-hint">Wyszukiwarka sprawdza tytuły, streszczenia i treść dokumentów.@if ($q !== '') <a href="{{ route('bip') }}" class="font-bold text-brand-dark underline hover:text-ink">Wyczyść wyszukiwanie</a>@endif</p>
+                        <p class="bip-search-hint">Wyszukiwarka sprawdza tytuły, streszczenia i treść dokumentów.@if ($q !== '') <a href="{{ bip_route('bip') }}" class="font-bold text-brand-dark underline hover:text-ink">Wyczyść wyszukiwanie</a>@endif</p>
                     </form>
                     @if ($q !== '')
                         <p class="mb-6 text-sm text-ink" role="status">
@@ -81,9 +81,9 @@ HTML;
                         $catIcons = ['subject_status' => 'fa-scale-balanced', 'subject_scope' => 'fa-bullseye', 'subject_persons' => 'fa-user-tie', 'subject_structure' => 'fa-sitemap', 'property' => 'fa-building', 'public_projects' => 'fa-diagram-project', 'operations' => 'fa-list-check', 'registers' => 'fa-book', 'official_docs' => 'fa-file-signature', 'procurement' => 'fa-file-contract', 'finance' => 'fa-coins', 'other' => 'fa-folder-open'];
                         $catTiles = collect(\App\Models\BipDocument::CATEGORIES)->filter(fn ($l, $k) => $documents->has($k));
                         $quick = array_values(array_filter([
-                            ($siteSettings->bip_show_reports ?? true) && $siteSettings->isModuleEnabled('reports') && $reports->isNotEmpty() ? ['Sprawozdania roczne', 'Merytoryczne i finansowe, do pobrania', route('bip').'#sprawozdania', 'fa-file-invoice'] : null,
-                            ['Rejestr zmian', 'Co i kiedy zmieniliśmy w BIP', route('bip.changelog'), 'fa-clock-rotate-left'],
-                            ['Instrukcja korzystania', 'Jak poruszać się po BIP', route('bip.instructions'), 'fa-circle-info'],
+                            ($siteSettings->bip_show_reports ?? true) && $siteSettings->isModuleEnabled('reports') && $reports->isNotEmpty() ? ['Sprawozdania roczne', 'Merytoryczne i finansowe, do pobrania', bip_route('bip').'#sprawozdania', 'fa-file-invoice'] : null,
+                            ['Rejestr zmian', 'Co i kiedy zmieniliśmy w BIP', bip_route('bip.changelog'), 'fa-clock-rotate-left'],
+                            ['Instrukcja korzystania', 'Jak poruszać się po BIP', bip_route('bip.instructions'), 'fa-circle-info'],
                             ['Deklaracja dostępności', 'Dostępność serwisu', route('accessibility.show'), 'fa-universal-access'],
                         ]));
                         $pal = \App\Support\ThemePalette::tiles();
@@ -144,7 +144,7 @@ HTML;
                         @endif
                     </div>
                 @elseif ($documents->isEmpty() && $reports->isEmpty() && $q !== '')
-                    <p class="mt-4 text-ink">Nie znaleziono dokumentów pasujących do wyszukiwanej frazy. Spróbuj innych słów lub <a href="{{ route('bip.instructions') }}" class="font-bold text-brand-dark underline">zajrzyj do instrukcji korzystania z BIP</a>.</p>
+                    <p class="mt-4 text-ink">Nie znaleziono dokumentów pasujących do wyszukiwanej frazy. Spróbuj innych słów lub <a href="{{ bip_route('bip.instructions') }}" class="font-bold text-brand-dark underline">zajrzyj do instrukcji korzystania z BIP</a>.</p>
                 @elseif ($documents->isNotEmpty())
                     {{-- Tryb wbudowany: lista dokumentów --}}
                     <div class="mt-10">
@@ -159,7 +159,7 @@ HTML;
                                         @foreach ($documents[$catKey] as $doc)
                                             @php $files = $doc->getMedia('files'); @endphp
                                             <li class="bip-doc">
-                                                <a href="{{ route('bip.document', $doc->slug) }}" class="bip-doc-t">{{ $doc->title }}</a>
+                                                <a href="{{ bip_route('bip.document', $doc->slug) }}" class="bip-doc-t">{{ $doc->title }}</a>
                                                 @if ($files->isNotEmpty())
                                                     <span class="bip-doc-files"><i class="fa-solid fa-paperclip" aria-hidden="true"></i>{{ $files->count() }} {{ trans_choice('plik|pliki|plików', $files->count()) }}</span>
                                                 @endif
@@ -256,7 +256,7 @@ HTML;
                                             </td>
                                             <td class="px-4 py-2.5 font-medium">
                                                 @if ($docSlugs[$entry->subject_id] ?? null)
-                                                    <a href="{{ route('bip.document', $docSlugs[$entry->subject_id]) }}"
+                                                    <a href="{{ bip_route('bip.document', $docSlugs[$entry->subject_id]) }}"
                                                         class="text-brand-dark hover:text-brand-dark hover:underline focus-visible:outline-2 focus-visible:outline-brand">
                                                         {{ $entry->subject_label }}
                                                     </a>
@@ -277,7 +277,7 @@ HTML;
                             </table>
                         </div>
                         <div class="mt-3 text-right">
-                            <a href="{{ route('bip.changelog') }}"
+                            <a href="{{ bip_route('bip.changelog') }}"
                                 class="text-xs font-bold text-brand-dark hover:text-brand-dark hover:underline focus-visible:outline-2 focus-visible:outline-brand">
                                 Pełny rejestr zmian →
                             </a>

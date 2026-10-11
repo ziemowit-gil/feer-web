@@ -571,7 +571,7 @@
                         @if (filled($page->about_documents_intro))
                             {!! nl2br(e($page->about_documents_intro)) !!}
                         @endif
-                        <p class="mt-4 text-sm text-muted">{{ $page->aboutLabel('documents_bip') }} <a href="{{ route('bip') }}" class="font-bold text-brand hover:text-brand-dark">Biuletynie Informacji Publicznej</a>.</p>
+                        <p class="mt-4 text-sm text-muted">{{ $page->aboutLabel('documents_bip') }} <a href="{{ $siteSettings->bipHref() ?? route('bip') }}" class="font-bold text-brand hover:text-brand-dark">Biuletynie Informacji Publicznej</a>.</p>
                     </div>
                     <div>
                         @if ($page->attachments->isNotEmpty())
@@ -589,7 +589,7 @@
                         @else
                             <p class="text-sm text-muted">Nie dodano jeszcze dokumentów. Wgraj je w zakładce „Pliki do pobrania".</p>
                         @endif
-                        <a href="{{ route('bip') }}"
+                        <a href="{{ $siteSettings->bipHref() ?? route('bip') }}"
                             class="mt-6 flex items-center justify-center gap-2 rounded-full border-2 border-ink px-6 py-3 font-bold text-ink transition hover:border-brand hover:text-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
                             {{ $page->aboutLabel('documents_more') }} <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
                         </a>

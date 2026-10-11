@@ -5,7 +5,7 @@
 @section('content')
     <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
         <p class="text-sm text-muted">
-            Dokumenty Biuletynu Informacji Publicznej (strona <a href="{{ route('bip') }}" target="_blank" rel="noopener" class="text-brand-dark underline">/bip</a>).
+            Dokumenty Biuletynu Informacji Publicznej (strona <a href="{{ \App\Models\SiteSetting::current()->bipHref() ?? route('bip') }}" target="_blank" rel="noopener" class="text-brand-dark underline">{{ \App\Models\SiteSetting::current()->isBipSite() ? 'BIP' : '/bip' }}</a>).
         </p>
         <a href="{{ route('admin.bip-dokumenty.create') }}"
             class="rounded bg-brand-dark px-4 py-2 text-sm font-bold text-white hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2">
@@ -65,7 +65,7 @@
                             <div class="flex items-center justify-end gap-3">
                                 {{-- Podgląd publiczny --}}
                                 @if ($document->is_published)
-                                    <a href="{{ route('bip.document', $document->slug) }}" target="_blank" rel="noopener"
+                                    <a href="{{ $document->publicUrl() }}" target="_blank" rel="noopener"
                                         class="text-muted hover:text-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark rounded"
                                         title="Podgląd na stronie">
                                         <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i>

@@ -105,7 +105,7 @@ class SitemapController extends Controller
             $on('jobs') && $has('praca.index') ? ['Praca', route('praca.index'), 'fa-briefcase', 'Oferty pracy i współpracy'] : null,
             $on('support') && $has('support.show') ? ['Wesprzyj nas', route('support.show'), 'fa-hand-holding-heart', 'Darowizny i 1,5% podatku'] : null,
             $on('faq') && $has('faq.index') ? ['Pytania i odpowiedzi', route('faq.index'), 'fa-circle-question', 'FAQ'] : null,
-            $on('bip') && $has('bip') ? ['BIP', route('bip'), 'fa-landmark', 'Biuletyn Informacji Publicznej'] : null,
+            $on('bip') && $has('bip') ? ['BIP', $settings->bipHref() ?? route('bip'), 'fa-landmark', 'Biuletyn Informacji Publicznej'] : null,
             $has('newsletter.show') ? ['Newsletter', route('newsletter.show'), 'fa-envelope-open-text', 'Zapisz się na wiadomości'] : null,
             $has('contact.show') ? ['Kontakt', route('contact.show'), 'fa-address-book', 'Adres, telefon, formularz'] : null,
         ]));

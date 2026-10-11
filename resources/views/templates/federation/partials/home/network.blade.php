@@ -1,4 +1,7 @@
-@php $subsites ??= \App\Models\SiteSetting::current()->subsites()->orderBy('id')->get(); @endphp
+@php
+    // Witryna BIP nie jest ośrodkiem — prowadzą do niej linki „BIP" w nagłówku, nie lista sieci.
+    $subsites ??= \App\Models\SiteSetting::current()->subsites()->orderBy('id')->get()->reject->isBipSite()->values();
+@endphp
 @if ($subsites->isNotEmpty())
 <section class="bg-gray-50 py-14" aria-labelledby="federation-network-heading">
     <div class="mx-auto max-w-[1400px] px-4">

@@ -45,9 +45,9 @@
             {{-- Prawa strona: BIP, EU, social --}}
             <div class="ml-auto flex shrink-0 items-center gap-3">
                 @php
-                    $bipIsExternal = ($siteSettings->bip_mode ?? 'internal') === 'external';
-                    $bipHref = $bipIsExternal ? $siteSettings->bip_url : route('bip');
-                    $showBip = $bipIsExternal ? $siteSettings->bip_url : true;
+                    $bipIsExternal = $siteSettings->bipIsExternal();
+                    $bipHref = $siteSettings->bipHref();
+                    $showBip = filled($bipHref);
                 @endphp
                 @if ($showBip)
                     <a href="{{ $bipHref }}"

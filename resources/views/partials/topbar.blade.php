@@ -12,9 +12,9 @@
 --}}
 @php
     $feerBar = ($siteSettings->site_template ?? 'default') === 'feer';
-    $bipIsExternal = ($siteSettings->bip_mode ?? 'internal') === 'external';
-    $bipHref       = $bipIsExternal ? $siteSettings->bip_url : route('bip');
-    $showBip       = $siteSettings->show_topbar_bip && ($bipIsExternal ? filled($siteSettings->bip_url) : true);
+    $bipIsExternal = $siteSettings->bipIsExternal();
+    $bipHref       = $siteSettings->bipHref();
+    $showBip       = $siteSettings->show_topbar_bip && filled($bipHref);
     $topSocials    = $siteSettings->show_topbar_social ? $siteSettings->socialLinks() : [];
     $searchInNav   = $siteSettings->header_layout === 'wide_mission' && ($siteSettings->wide_mission_search_in_nav ?? false);
 

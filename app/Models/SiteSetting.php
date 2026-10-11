@@ -311,6 +311,16 @@ class SiteSetting extends Model implements HasMedia
     ];
 
     /**
+     * Rodzaje witryn sieci: zwykła sub-witryna albo Biuletyn Informacji
+     * Publicznej — witryna, której stroną główną jest BIP (np. bip.feer.org.pl),
+     * z własnymi dokumentami, logo i nagłówkiem.
+     */
+    public const SITE_KINDS = [
+        'standard' => 'Zwykła witryna',
+        'bip' => 'Biuletyn Informacji Publicznej (BIP)',
+    ];
+
+    /**
      * Mail gateway modes selectable in the admin panel. "default" keeps the
      * .env configuration; "smtp" uses the panel-provided SMTP settings.
      */
@@ -340,7 +350,7 @@ class SiteSetting extends Model implements HasMedia
     ];
 
     protected $fillable = [
-        'slug', 'domain', 'parent_site_id',
+        'slug', 'domain', 'parent_site_id', 'site_kind',
         'site_name', 'site_name_genitive', 'tagline', 'brand_color', 'brand_color_2', 'brand_color_3', 'brand_color_4', 'brand_skip_contrast', 'nav_dark_text', 'ngo_skip_contrast', 'meta_description', 'allow_indexing', 'ga_measurement_id', 'disabled_modules', 'homepage_section_order', 'homepage_sections_hidden', 'events_home_color', 'quick_actions_panel_negative',
         'bip_url', 'bip_intro', 'bip_editor_name', 'bip_editor_email', 'bip_gov_url', 'bip_mode', 'bip_show_reports', 'home_search_enabled', 'join_us_texts', 'facebook_url', 'facebook_group_url', 'twitter_url', 'instagram_url', 'linkedin_url', 'youtube_url', 'substack_url',
         'contact_address', 'contact_city', 'contact_email', 'contact_phone', 'contact_office_hours', 'contact_intro', 'contact_bank_accounts', 'contact_bank_accounts_note', 'contact_bank_accounts_layout',
@@ -1607,6 +1617,63 @@ class SiteSetting extends Model implements HasMedia
     public function isSubsite(): bool
     {
         return $this->parent_site_id !== null;
+    }
+
+    /** Witryna sieci, której stroną główną jest BIP. */
+    public function isBipSite(): bool
+    {
+        return ($this->site_kind ?? 'standard') === 'bip';
+    }
+
+    /** Witryna BIP tej witryny: ona sama (rodzaj „bip”) albo jej sub-witryna rodzaju „bip”. */
+    public function bipSite(): ?self
+    {
+        if ($this->isBipSite()) {
+            return $this;
+        }
+
+        static $hasKindColumn = null;
+        $hasKindColumn ??= \Illuminate\Support\Facades\Schema::hasColumn($this->getTable(), 'site_kind');
+
+        if (! $this->exists || ! $hasKindColumn) {
+            return null;
+        }
+
+        if (! array_key_exists('bipSite', $this->relations)) {
+            $this->setRelation('bipSite', $this->subsites()->where('site_kind', 'bip')->orderBy('id')->first());
+        }
+
+        return $this->getRelation('bipSite');
+    }
+
+    /** Czy link do BIP prowadzi poza sieć (tryb „external” bez witryny BIP w sieci). */
+    public function bipIsExternal(): bool
+    {
+        return ! $this->bipSite() && ($this->bip_mode ?? 'internal') === 'external';
+    }
+
+    /**
+     * Adres BIP do linków w nagłówkach i stopkach: witryna BIP sieci (gdy jest),
+     * zewnętrzny BIP (tryb „external”) albo wbudowana strona /bip tej witryny.
+     * Null, gdy tryb zewnętrzny nie ma podanego adresu.
+     */
+    public function bipHref(): ?string
+    {
+        $bipSite = $this->bipSite();
+
+        if ($bipSite?->is($this)) {
+            return site_route('home');
+        }
+
+        if ($bipSite) {
+            return current_site_url($bipSite);
+        }
+
+        if (($this->bip_mode ?? 'internal') === 'external') {
+            return filled($this->bip_url) ? $this->bip_url : null;
+        }
+
+        return site_route('bip');
     }
 
     public function registerMediaCollections(): void
