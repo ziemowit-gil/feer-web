@@ -1,4 +1,8 @@
-{{-- Typ „Partnerzy i sponsorzy": logotypy lub karty w grupach — partnerzy z modułu Partnerzy albo własne wpisy; przycisk „Zostań partnerem" i podziękowanie. --}}
+{{--
+    Typ „Partnerzy i sponsorzy": logotypy lub karty w grupach — partnerzy z modułu Partnerzy
+    albo własne wpisy; przycisk „Zostań partnerem" i podziękowanie.
+    Płasko: kafle na szarym tle bez obramowań, tylko kolory firmowe. Menu działu w kolumnie bocznej, gdy jest.
+--}}
 @php
     $td = $page->typeData();
     $layout = ($td['partners_layout'] ?? 'logos') === 'cards' ? 'cards' : 'logos';
@@ -29,73 +33,76 @@
     $order = array_values(array_unique(array_merge([''], $groupMeta->keys()->all(), $entries->pluck('group')->all())));
     $grouped = collect($order)->mapWithKeys(fn ($g) => [$g => $entries->where('group', $g)->values()])->filter(fn ($rows) => $rows->isNotEmpty());
     $ctaLabel = trim((string) ($td['partners_cta_label'] ?? '')); $ctaUrl = trim((string) ($td['partners_cta_url'] ?? ''));
+    $ctaExternal = \Illuminate\Support\Str::startsWith($ctaUrl, 'http');
+    $localNav = ($menuSiblings ?? collect())->isNotEmpty();
+    $link = 'font-bold text-brand-dark underline underline-offset-4 hover:no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark';
 @endphp
-<style>
-    .pn-group { margin-top: 2.5rem; }
-    .pn-h { margin: 0 0 .25rem; padding-left: .75rem; border-left: 4px solid var(--color-brand-dark); font-size: 1.5rem; font-weight: 800; color: #1d1d1a; }
-    .pn-desc { margin: 0 0 1rem .75rem; color: #374151; }
-    .pn-logos { list-style: none; margin: 0; padding: 0; display: grid; gap: 1rem; grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr)); }
-    .pn-logo { display: flex; min-height: 7rem; align-items: center; justify-content: center; padding: 1rem; border: 2px solid #d1d5db; border-radius: .5rem; background: #fff; color: #1d1d1a; text-decoration: none; text-align: center; font-weight: 800; }
-    .pn-logo img { max-height: 4.5rem; max-width: 100%; width: auto; object-fit: contain; }
-    a.pn-logo:hover { border-color: var(--color-brand-dark); } a.pn-logo:focus-visible { outline: 3px solid #1d1d1a; outline-offset: 3px; }
-    .pn-cards { list-style: none; margin: 0; padding: 0; display: grid; gap: 1rem; grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr)); }
-    .pn-card { display: flex; flex-direction: column; gap: .75rem; padding: 1.25rem; border: 2px solid #d1d5db; border-radius: .5rem; background: #fff; }
-    .pn-card-logo { display: flex; height: 4.5rem; align-items: center; } .pn-card-logo img { max-height: 4.5rem; max-width: 12rem; object-fit: contain; }
-    .pn-card-name { margin: 0; font-size: 1.1rem; font-weight: 800; color: #1d1d1a; } .pn-card-note { margin: 0; color: #374151; }
-    .pn-card a { font-weight: 800; color: var(--color-brand-dark); text-decoration: underline; text-underline-offset: 3px; } .pn-card a:hover { color: #1d1d1a; }
-    .pn-cta { margin-top: 3rem; padding: 1.5rem; border-radius: .5rem; background: var(--color-brand-light); display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem; }
-    .pn-cta p { margin: 0; font-size: 1.1rem; font-weight: 700; color: #1d1d1a; max-width: 40rem; }
-    .pn-btn { display: inline-flex; min-height: 3rem; align-items: center; gap: .5rem; padding: 0 1.5rem; border-radius: .375rem; background: var(--color-brand-dark); color: #fff; font-weight: 800; text-decoration: none; }
-    .pn-btn:hover { background: #1d1d1a; } .pn-btn:focus-visible { outline: 3px solid #1d1d1a; outline-offset: 3px; }
-</style>
-<section class="mx-auto max-w-6xl px-4 py-8">
+<section class="mx-auto max-w-6xl px-4 py-12" data-page-type="partners">
     @include('page.partials.typed._head')
 
-    @if ($grouped->isEmpty())
-        <p class="text-muted">Lista partnerów zostanie wkrótce uzupełniona.</p>
-    @endif
+    <div class="grid gap-10 {{ $localNav ? 'lg:grid-cols-[minmax(0,1fr)_22rem]' : '' }}">
+        @if ($localNav)
+            <aside class="lg:order-last" aria-label="Menu działu">
+                <div class="lg:sticky lg:top-24">@include('partials.page-local-nav', ['menuSiblings' => $menuSiblings])</div>
+            </aside>
+        @endif
 
-    @foreach ($grouped as $gName => $rows)
-        @php $gid = 'pn-g-'.$loop->index; $meta = $groupMeta->get($gName); @endphp
-        <section class="pn-group" @if ($gName !== '') aria-labelledby="{{ $gid }}" @else aria-label="Partnerzy" @endif>
-            @if ($gName !== '')
-                <h2 id="{{ $gid }}" class="pn-h">{{ $gName }}</h2>
-                @if (filled($meta['text'] ?? null))<p class="pn-desc">{{ $meta['text'] }}</p>@endif
+        <div class="min-w-0">
+            @if ($page->content)
+                <div class="prose mb-8 max-w-none text-ink">{!! \App\Support\ShortcodeParser::render($page->content) !!}</div>
             @endif
-            @if ($layout === 'logos')
-                <ul class="pn-logos" role="list">
-                    @foreach ($rows as $e)
-                        @php $inner = $e['logo'] ? '<img src="'.e($e['logo']).'" alt="'.e($e['name']).'" loading="lazy">' : e($e['name']); @endphp
-                        <li>
-                            @if ($e['url'])
-                                <a href="{{ $e['url'] }}" class="pn-logo" target="_blank" rel="noopener">{!! $inner !!}<span class="sr-only"> (otwiera się w nowej karcie)</span></a>
-                            @else
-                                <span class="pn-logo">{!! $inner !!}</span>
-                            @endif
-                        </li>
-                    @endforeach
-                </ul>
-            @else
-                <ul class="pn-cards" role="list">
-                    @foreach ($rows as $e)
-                        <li class="pn-card">
-                            @if ($e['logo'])<div class="pn-card-logo"><img src="{{ $e['logo'] }}" alt="" loading="lazy"></div>@endif
-                            <h3 class="pn-card-name">{{ $e['name'] }}</h3>
-                            @if ($e['note'] !== '')<p class="pn-card-note">{{ $e['note'] }}</p>@endif
-                            @if ($e['url'])<p style="margin:auto 0 0"><a href="{{ $e['url'] }}" target="_blank" rel="noopener">Strona partnera<span class="sr-only">: {{ $e['name'] }} (otwiera się w nowej karcie)</span> →</a></p>@endif
-                        </li>
-                    @endforeach
-                </ul>
-            @endif
-        </section>
-    @endforeach
 
-    @if ($ctaLabel !== '' && $ctaUrl !== '' || filled($td['partners_thanks'] ?? null))
-        <div class="pn-cta">
-            <p>{{ filled($td['partners_thanks'] ?? null) ? $td['partners_thanks'] : 'Chcesz wesprzeć nasze działania jako partner lub sponsor?' }}</p>
-            @if ($ctaLabel !== '' && $ctaUrl !== '')<a href="{{ $ctaUrl }}" class="pn-btn">{{ $ctaLabel }}<i class="fa-solid fa-arrow-right" aria-hidden="true"></i></a>@endif
+            @if ($grouped->isEmpty())
+                <p class="text-muted">Lista partnerów zostanie wkrótce uzupełniona.</p>
+            @endif
+
+            @foreach ($grouped as $gName => $rows)
+                @php $gid = 'pn-g-'.$loop->index; $meta = $groupMeta->get($gName); @endphp
+                <section class="{{ $loop->first ? '' : 'mt-10' }}" @if ($gName !== '') aria-labelledby="{{ $gid }}" @else aria-label="Partnerzy" @endif>
+                    @if ($gName !== '')
+                        <h2 id="{{ $gid }}" class="mb-2 text-2xl font-bold text-ink">{{ $gName }}</h2>
+                        @if (filled($meta['text'] ?? null))<p class="mb-4 max-w-3xl text-ink">{{ $meta['text'] }}</p>@endif
+                    @endif
+                    @if ($layout === 'logos')
+                        <ul class="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-[repeat(auto-fill,minmax(11rem,1fr))]" role="list">
+                            @foreach ($rows as $e)
+                                @php $inner = $e['logo'] ? '<img src="'.e($e['logo']).'" alt="'.e($e['name']).'" loading="lazy" class="max-h-[4.5rem] w-auto max-w-full object-contain">' : e($e['name']); @endphp
+                                <li>
+                                    @if ($e['url'])
+                                        <a href="{{ $e['url'] }}" class="flex h-full min-h-28 items-center justify-center rounded-md bg-gray-50 p-4 text-center font-bold text-ink transition hover:bg-brand-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2" target="_blank" rel="noopener">{!! $inner !!}<span class="sr-only"> (otwiera się w nowej karcie)</span></a>
+                                    @else
+                                        <span class="flex h-full min-h-28 items-center justify-center rounded-md bg-gray-50 p-4 text-center font-bold text-ink">{!! $inner !!}</span>
+                                    @endif
+                                </li>
+                            @endforeach
+                        </ul>
+                    @else
+                        <ul class="mt-4 grid gap-4 sm:grid-cols-2 {{ $localNav ? '' : 'lg:grid-cols-3' }}" role="list">
+                            @foreach ($rows as $e)
+                                <li class="flex flex-col gap-3 rounded-md bg-gray-50 p-5">
+                                    @if ($e['logo'])<div class="flex h-[4.5rem] items-center"><img src="{{ $e['logo'] }}" alt="" loading="lazy" class="max-h-[4.5rem] max-w-48 object-contain"></div>@endif
+                                    <h3 class="text-lg font-bold text-ink">{{ $e['name'] }}</h3>
+                                    @if ($e['note'] !== '')<p class="text-ink">{{ $e['note'] }}</p>@endif
+                                    @if ($e['url'])<p class="mt-auto"><a href="{{ $e['url'] }}" class="{{ $link }}" target="_blank" rel="noopener">Strona partnera<span class="sr-only">: {{ $e['name'] }} (otwiera się w nowej karcie)</span> <i class="fa-solid fa-arrow-up-right-from-square text-sm" aria-hidden="true"></i></a></p>@endif
+                                </li>
+                            @endforeach
+                        </ul>
+                    @endif
+                </section>
+            @endforeach
+
+            @if ($ctaLabel !== '' && $ctaUrl !== '' || filled($td['partners_thanks'] ?? null))
+                <div class="mt-12 flex flex-wrap items-center justify-between gap-4 rounded-md bg-brand-light p-6">
+                    <p class="max-w-2xl text-lg font-bold text-ink">{{ filled($td['partners_thanks'] ?? null) ? $td['partners_thanks'] : 'Chcesz wesprzeć nasze działania jako partner lub sponsor?' }}</p>
+                    @if ($ctaLabel !== '' && $ctaUrl !== '')
+                        <a href="{{ $ctaUrl }}" class="inline-flex min-h-12 items-center gap-2 rounded-md bg-brand-dark px-6 text-base font-bold text-white transition hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2" @if ($ctaExternal) target="_blank" rel="noopener" @endif>
+                            {{ $ctaLabel }}<i class="fa-solid fa-arrow-right text-sm" aria-hidden="true"></i>@if ($ctaExternal)<span class="sr-only"> (otwiera się w nowej karcie)</span>@endif
+                        </a>
+                    @endif
+                </div>
+            @endif
+
+            @include('partials.attachments-list', ['attachments' => $page->attachments])
         </div>
-    @endif
-
-    @include('partials.attachments-list', ['attachments' => $page->attachments])
+    </div>
 </section>

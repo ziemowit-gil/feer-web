@@ -2,8 +2,9 @@
     Typ „Słownik pojęć": hasła sortowane alfabetycznie, indeks liter (kotwice),
     filtr tekstowy (Alpine, bez przeładowania), definicje jako <dl>.
     Hasła powiązane linkują do własnych kotwic, jeśli istnieją w słowniku.
+    Dwie kolumny: hasła | wyszukiwarka i indeks liter, menu działu (na telefonie
+    wyszukiwarka pierwsza). Płasko: bez etykiet i obramowań, tylko kolory firmowe.
 --}}
-@php $feer = ($siteSettings->site_template ?? 'default') === 'feer'; @endphp
 @php
     $td = $page->typeData();
     $terms = collect($td['terms'])
@@ -19,6 +20,10 @@
         ->values();
     $letters = $terms->pluck('letter')->unique()->values();
     $bySlug  = $terms->keyBy('slug');
+    $localNav = ($menuSiblings ?? collect())->isNotEmpty();
+    $hasAside = $terms->isNotEmpty() || $localNav;
+
+    $link = 'font-bold text-brand-dark underline underline-offset-4 hover:no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark';
 @endphp
 
 @push('structured_data')
@@ -39,77 +44,88 @@
     </script>
 @endpush
 
-<section class="mx-auto max-w-5xl px-4 py-12" x-data="{ q: '' }">
-    <span class="mb-4 inline-flex items-center gap-1.5 {{ $feer ? 'rounded bg-gray-100 text-ink' : 'rounded-full bg-brand-light text-brand' }} px-3 py-1 text-sm font-bold">
-        <i class="fa-solid fa-book" aria-hidden="true"></i> Słownik
-    </span>
-    <h1 class="mb-4 text-3xl font-bold text-ink md:text-4xl">{{ $page->title }}</h1>
-    @if ($feer)<span class="mb-5 block h-1 w-14 bg-brand" aria-hidden="true"></span>@endif
-    @if (filled($td['lead'] ?? null))
-        <p class="mb-6 max-w-3xl text-lg leading-relaxed text-muted">{{ $td['lead'] }}</p>
-    @endif
+<section class="mx-auto max-w-6xl px-4 py-12" data-page-type="glossary" data-glossary x-data="{ q: '' }">
+    @include('page.partials.typed._head', ['print' => false])
 
-    @if ($page->content)
-        <div class="prose mb-8 max-w-none text-ink">@shortcodes($page->content)</div>
-    @endif
+    <div class="grid gap-10 {{ $hasAside ? 'lg:grid-cols-[minmax(0,1fr)_22rem]' : '' }}">
+        @if ($hasAside)
+            <aside class="lg:order-last" aria-label="Słownik — wyszukiwanie i indeks">
+                <div class="lg:sticky lg:top-24">
+                    @if ($terms->isNotEmpty())
+                        <div class="rounded-md bg-brand-light p-6">
+                            <label for="glossary-q" class="mb-2 block font-bold text-ink">Szukaj hasła</label>
+                            <div class="relative">
+                                <i class="fa-solid fa-magnifying-glass pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-ink" aria-hidden="true"></i>
+                                {{-- Obrys pola daje wtyczka @tailwindcss/forms (szary #6b7280, kontrast ≥ 3:1 — WCAG 1.4.11). --}}
+                                <input id="glossary-q" type="search" x-model.debounce.150ms="q" placeholder="np. dostępność" autocomplete="off"
+                                       class="min-h-11 w-full rounded-md bg-white pl-9 text-base text-ink placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-brand-dark">
+                            </div>
 
-    @if ($terms->isEmpty())
-        <p class="text-muted">Słownik nie ma jeszcze haseł. Dodaj je w panelu (edycja strony → Słownik pojęć).</p>
-    @else
-        <div class="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-            <div class="relative md:w-80">
-                <label for="glossary-q" class="sr-only">Szukaj hasła</label>
-                <i class="fa-solid fa-magnifying-glass pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" aria-hidden="true"></i>
-                <input id="glossary-q" type="search" x-model.debounce.150ms="q" placeholder="Szukaj hasła…" autocomplete="off"
-                       class="min-h-11 w-full rounded-lg border-gray-300 pl-9 text-sm focus:border-brand focus:ring-2 focus:ring-brand">
-            </div>
-            <nav aria-label="Indeks liter" x-show="q.trim() === ''">
-                <ul class="flex flex-wrap gap-1">
-                    @foreach ($letters as $letter)
-                        <li><a href="#litera-{{ \Illuminate\Support\Str::slug($letter) }}" class="flex h-9 w-9 items-center justify-center rounded-md border border-gray-200 text-sm font-bold text-ink hover:border-brand hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">{{ $letter }}</a></li>
-                    @endforeach
-                </ul>
-            </nav>
-        </div>
-
-        <p class="sr-only" aria-live="polite" x-text="q.trim() ? ('Wyniki filtrowania: ' + $el.closest('section').querySelectorAll('[data-term]:not([hidden])').length) : ''"></p>
-
-        @foreach ($letters as $letter)
-            <section id="litera-{{ \Illuminate\Support\Str::slug($letter) }}" class="scroll-mt-24" aria-labelledby="glossary-letter-{{ $loop->index }}"
-                     x-show="q.trim() === '' || [...$el.querySelectorAll('[data-term]')].some(el => el.dataset.term.includes(q.trim().toLowerCase()))">
-                <h2 id="glossary-letter-{{ $loop->index }}" class="mb-3 mt-8 border-b border-gray-200 pb-1 text-2xl font-bold text-brand">{{ $letter }}</h2>
-                <dl class="divide-y divide-gray-100">
-                    @foreach ($terms->where('letter', $letter) as $t)
-                        <div id="{{ $t['slug'] }}" class="scroll-mt-24 py-4" data-term="{{ mb_strtolower($t['term'] . ' ' . $t['definition']) }}"
-                             x-show="q.trim() === '' || $el.dataset.term.includes(q.trim().toLowerCase())">
-                            <dt class="text-lg font-bold text-ink">{{ $t['term'] }}</dt>
-                            @if ($t['definition'] !== '')
-                                <dd class="mt-1 max-w-3xl leading-relaxed text-ink">{!! nl2br(e($t['definition'])) !!}</dd>
-                            @endif
-                            @if ($t['related'])
-                                <dd class="mt-2 text-sm text-muted">
-                                    Zobacz też:
-                                    @foreach ($t['related'] as $rel)
-                                        @php $relSlug = \Illuminate\Support\Str::slug($rel); @endphp
-                                        @if ($bySlug->has($relSlug))
-                                            <a href="#{{ $relSlug }}" class="font-semibold text-brand underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">{{ $rel }}</a>@if (! $loop->last), @endif
-                                        @else
-                                            <span class="font-semibold">{{ $rel }}</span>@if (! $loop->last), @endif
-                                        @endif
+                            <nav class="mt-5" aria-labelledby="glossary-index" x-show="q.trim() === ''">
+                                <h2 id="glossary-index" class="mb-2 font-bold text-ink">Indeks liter</h2>
+                                <ul class="flex flex-wrap gap-1">
+                                    @foreach ($letters as $letter)
+                                        <li><a href="#litera-{{ \Illuminate\Support\Str::slug($letter) }}" class="flex h-10 w-10 items-center justify-center rounded-md text-lg font-bold text-brand-dark underline underline-offset-4 hover:bg-white hover:no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark"><span class="sr-only">Litera </span>{{ $letter }}</a></li>
                                     @endforeach
-                                </dd>
-                            @endif
+                                </ul>
+                            </nav>
                         </div>
-                    @endforeach
-                </dl>
-            </section>
-        @endforeach
+                    @endif
+                    @if ($localNav)
+                        <div class="{{ $terms->isNotEmpty() ? 'mt-6' : '' }}">@include('partials.page-local-nav', ['menuSiblings' => $menuSiblings])</div>
+                    @endif
+                </div>
+            </aside>
+        @endif
 
-        <p class="mt-8 text-sm text-muted" x-show="q.trim() !== '' && [...$el.closest('section').querySelectorAll('[data-term]')].every(el => !el.dataset.term.includes(q.trim().toLowerCase()))" x-cloak>
-            Brak haseł pasujących do „<span x-text="q"></span>".
-        </p>
-    @endif
+        <div class="min-w-0">
+            @if ($page->content)
+                <div class="prose mb-8 max-w-none text-ink">@shortcodes($page->content)</div>
+            @endif
 
-    @include('partials.attachments-list', ['attachments' => $page->attachments])
-    @include('partials.page-section-nav', ['page' => $page])
+            @if ($terms->isEmpty())
+                <p class="text-muted">Słownik nie ma jeszcze haseł. Dodaj je w panelu (edycja strony → Słownik pojęć).</p>
+            @else
+                <p class="sr-only" aria-live="polite" x-text="q.trim() ? ('Wyniki filtrowania: ' + [...$el.closest('[data-glossary]').querySelectorAll('[data-term]')].filter(el => el.dataset.term.includes(q.trim().toLowerCase())).length) : ''"></p>
+
+                @foreach ($letters as $letter)
+                    <section id="litera-{{ \Illuminate\Support\Str::slug($letter) }}" class="scroll-mt-24 {{ $loop->first ? '' : 'mt-10' }}" aria-labelledby="glossary-letter-{{ $loop->index }}"
+                             x-show="q.trim() === '' || [...$el.querySelectorAll('[data-term]')].some(el => el.dataset.term.includes(q.trim().toLowerCase()))">
+                        <h2 id="glossary-letter-{{ $loop->index }}" class="mb-4 rounded-md bg-gray-50 px-4 py-2 text-2xl font-bold text-ink">{{ $letter }}</h2>
+                        <dl class="space-y-6">
+                            @foreach ($terms->where('letter', $letter) as $t)
+                                <div id="{{ $t['slug'] }}" class="scroll-mt-24 px-4" data-term="{{ mb_strtolower($t['term'] . ' ' . $t['definition']) }}"
+                                     x-show="q.trim() === '' || $el.dataset.term.includes(q.trim().toLowerCase())">
+                                    <dt class="text-lg font-bold text-ink">{{ $t['term'] }}</dt>
+                                    @if ($t['definition'] !== '')
+                                        <dd class="mt-1 max-w-3xl leading-relaxed text-ink">{!! nl2br(e($t['definition'])) !!}</dd>
+                                    @endif
+                                    @if ($t['related'])
+                                        <dd class="mt-2 text-ink">
+                                            Zobacz też:
+                                            @foreach ($t['related'] as $rel)
+                                                @php $relSlug = \Illuminate\Support\Str::slug($rel); @endphp
+                                                @if ($bySlug->has($relSlug))
+                                                    <a href="#{{ $relSlug }}" class="{{ $link }}">{{ $rel }}</a>@if (! $loop->last), @endif
+                                                @else
+                                                    <span class="font-semibold">{{ $rel }}</span>@if (! $loop->last), @endif
+                                                @endif
+                                            @endforeach
+                                        </dd>
+                                    @endif
+                                </div>
+                            @endforeach
+                        </dl>
+                    </section>
+                @endforeach
+
+                <p class="mt-8 text-ink" x-show="q.trim() !== '' && [...$el.closest('[data-glossary]').querySelectorAll('[data-term]')].every(el => !el.dataset.term.includes(q.trim().toLowerCase()))" x-cloak>
+                    Brak haseł pasujących do „<span x-text="q"></span>".
+                </p>
+            @endif
+
+            @include('partials.attachments-list', ['attachments' => $page->attachments])
+            @include('partials.page-section-nav', ['page' => $page])
+        </div>
+    </div>
 </section>

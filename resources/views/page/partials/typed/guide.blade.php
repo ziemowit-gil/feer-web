@@ -1,13 +1,24 @@
 {{--
-    Typ „Poradnik krok po kroku": metryka (czas, poziom) → wymagania → numerowane
-    kroki z możliwością odhaczania (stan w localStorage) → podsumowanie.
-    Spis kroków po prawej (desktop) prowadzi kotwicami do kroków.
+    Typ „Poradnik krok po kroku". Dwie kolumny: treść (treść główna → zanim zaczniesz
+    → numerowane kroki z odhaczaniem, stan w localStorage → podsumowanie) | karta
+    poradnika (czas, poziom, liczba kroków, postęp), spis kroków i menu działu.
+    Płasko: bez etykiet i obramowań, tylko kolory firmowe.
 --}}
-@php $feer = ($siteSettings->site_template ?? 'default') === 'feer'; @endphp
 @php
     $td = $page->typeData();
     $level = \App\Models\Page::GUIDE_LEVELS[$td['level'] ?? ''] ?? null;
     $storageKey = 'guide-progress-' . $page->id;
+    $stepCount = count($td['steps']);
+    $facts = array_filter([
+        'Czas' => $td['time_estimate'] ?? null,
+        'Poziom' => $level,
+        'Liczba kroków' => $stepCount ?: null,
+    ], fn ($v) => filled($v));
+    $factIcons = ['Czas' => 'fa-clock', 'Poziom' => 'fa-signal', 'Liczba kroków' => 'fa-list-check'];
+    $localNav = ($menuSiblings ?? collect())->isNotEmpty();
+    $hasAside = $facts || $stepCount || $localNav;
+
+    $link = 'font-bold text-brand-dark underline underline-offset-4 hover:no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark';
 @endphp
 
 @push('structured_data')
@@ -30,34 +41,65 @@
     </script>
 @endpush
 
-<section class="mx-auto max-w-5xl px-4 py-12"
+<section class="mx-auto max-w-6xl px-4 py-12" data-page-type="guide"
          x-data="{ done: (function () { try { return JSON.parse(localStorage.getItem('{{ $storageKey }}') || '[]') } catch (e) { return [] } })(),
                    toggle(i) { this.done = this.done.includes(i) ? this.done.filter(d => d !== i) : [...this.done, i]; try { localStorage.setItem('{{ $storageKey }}', JSON.stringify(this.done)) } catch (e) {} } }">
-    <div class="grid gap-10 {{ $td['steps'] ? 'lg:grid-cols-[1fr_16rem]' : '' }}">
+    @include('page.partials.typed._head', ['print' => false])
+
+    {{-- Dwie kolumny: treść | karta poradnika, spis kroków, menu działu (na telefonie karta pierwsza). --}}
+    <div class="grid gap-10 {{ $hasAside ? 'lg:grid-cols-[minmax(0,1fr)_22rem]' : '' }}">
+        @if ($hasAside)
+            <aside class="lg:order-last" aria-label="Poradnik — najważniejsze informacje">
+                <div class="lg:sticky lg:top-24">
+                    @if ($facts || $stepCount)
+                        <section class="rounded-md bg-brand-light p-6" aria-labelledby="guide-summary-card">
+                            <h2 id="guide-summary-card" class="sr-only">Informacje o poradniku</h2>
+                            @if ($facts)
+                                <dl class="grid gap-y-4">
+                                    @foreach ($facts as $label => $value)
+                                        <div class="flex gap-3">
+                                            <i class="fa-solid {{ $factIcons[$label] }} mt-1 w-5 text-center text-brand-dark" aria-hidden="true"></i>
+                                            <div>
+                                                <dt class="text-xs font-bold uppercase tracking-wide text-muted">{{ $label }}</dt>
+                                                <dd class="font-semibold text-ink">{{ $value }}</dd>
+                                            </div>
+                                        </div>
+                                    @endforeach
+                                </dl>
+                            @endif
+                            @if ($stepCount)
+                                <div class="{{ $facts ? 'mt-6' : '' }}">
+                                    <p class="font-bold text-ink" aria-live="polite">Twój postęp: <span x-text="done.length">0</span> z {{ $stepCount }} kroków</p>
+                                    <div class="mt-2 h-2 overflow-hidden rounded-md bg-white" aria-hidden="true"><div class="h-full bg-brand-dark transition-all" style="width:0" :style="'width:' + Math.round(done.length / {{ max(1, $stepCount) }} * 100) + '%'"></div></div>
+                                </div>
+                            @endif
+                        </section>
+                    @endif
+
+                    @if ($stepCount)
+                        <nav class="{{ $facts || $stepCount ? 'mt-6' : '' }} rounded-md bg-gray-50 p-6" aria-labelledby="guide-toc">
+                            <h2 id="guide-toc" class="mb-3 text-lg font-bold text-ink">Spis kroków</h2>
+                            <ol class="space-y-2">
+                                @foreach ($td['steps'] as $i => $row)
+                                    <li class="flex items-start gap-2">
+                                        <span class="w-6 flex-none pt-0.5 text-right font-bold text-ink" aria-hidden="true">{{ $i + 1 }}.</span>
+                                        <a href="#krok-{{ $i + 1 }}" class="{{ $link }}">{{ $row['title'] ?? 'Krok ' . ($i + 1) }}</a>
+                                        <i class="fa-solid fa-check mt-1 flex-none text-brand-dark" x-show="done.includes({{ $i }})" x-cloak aria-hidden="true"></i>
+                                        <span class="sr-only" x-show="done.includes({{ $i }})" x-cloak>(zrobione)</span>
+                                    </li>
+                                @endforeach
+                            </ol>
+                        </nav>
+                    @endif
+
+                    @if ($localNav)
+                        <div class="{{ $facts || $stepCount ? 'mt-6' : '' }}">@include('partials.page-local-nav', ['menuSiblings' => $menuSiblings])</div>
+                    @endif
+                </div>
+            </aside>
+        @endif
+
         <div class="min-w-0">
-            <span class="mb-4 inline-flex items-center gap-1.5 {{ $feer ? 'rounded bg-gray-100 text-ink' : 'rounded-full bg-brand-light text-brand' }} px-3 py-1 text-sm font-bold">
-                <i class="fa-solid fa-list-ol" aria-hidden="true"></i> Poradnik
-            </span>
-            <h1 class="mb-4 text-3xl font-bold text-ink md:text-4xl">{{ $page->title }}</h1>
-    @if ($feer)<span class="mb-5 block h-1 w-14 bg-brand" aria-hidden="true"></span>@endif
-            @if (filled($td['lead'] ?? null))
-                <p class="mb-6 max-w-3xl text-lg leading-relaxed text-muted">{{ $td['lead'] }}</p>
-            @endif
-
-            @if (filled($td['time_estimate'] ?? null) || $level || $td['steps'])
-                <dl class="mb-8 flex flex-wrap gap-x-8 gap-y-2 {{ $feer ? 'rounded-md bg-gray-50' : 'rounded-xl border border-gray-200 bg-gray-50' }} px-5 py-4 text-sm">
-                    @if (filled($td['time_estimate'] ?? null))
-                        <div><dt class="text-xs font-bold uppercase tracking-wide text-muted">Czas</dt><dd class="font-semibold text-ink"><i class="fa-regular fa-clock mr-1 text-brand" aria-hidden="true"></i>{{ $td['time_estimate'] }}</dd></div>
-                    @endif
-                    @if ($level)
-                        <div><dt class="text-xs font-bold uppercase tracking-wide text-muted">Poziom</dt><dd class="font-semibold text-ink"><i class="fa-solid fa-signal mr-1 text-brand" aria-hidden="true"></i>{{ $level }}</dd></div>
-                    @endif
-                    @if ($td['steps'])
-                        <div><dt class="text-xs font-bold uppercase tracking-wide text-muted">Kroki</dt><dd class="font-semibold text-ink"><i class="fa-solid fa-list-check mr-1 text-brand" aria-hidden="true"></i>{{ count($td['steps']) }}</dd></div>
-                    @endif
-                </dl>
-            @endif
-
             @include('partials.page-content-image')
 
             @if ($page->content)
@@ -65,48 +107,44 @@
             @endif
 
             @if ($td['requirements'])
-                <section class="mb-10 rounded-xl border border-amber-200 bg-amber-50 p-5" aria-labelledby="guide-req">
-                    <h2 id="guide-req" class="mb-2 text-base font-bold text-ink"><i class="fa-solid fa-clipboard-check mr-1.5 text-amber-600" aria-hidden="true"></i>Zanim zaczniesz</h2>
-                    <ul class="list-disc space-y-1 pl-5 text-sm text-ink">
+                <section class="mb-10 rounded-md bg-brand-light p-6" aria-labelledby="guide-req">
+                    <h2 id="guide-req" class="mb-3 flex items-center gap-2 text-lg font-bold text-ink"><i class="fa-solid fa-clipboard-check text-brand-dark" aria-hidden="true"></i>Zanim zaczniesz</h2>
+                    <ul class="space-y-2">
                         @foreach ($td['requirements'] as $row)
-                            <li>{{ $row['text'] }}</li>
+                            <li class="flex items-start gap-3"><i class="fa-solid fa-check mt-1 text-brand-dark" aria-hidden="true"></i><span class="text-ink">{{ $row['text'] }}</span></li>
                         @endforeach
                     </ul>
                 </section>
             @endif
 
-            @if ($td['steps'])
+            @if ($stepCount)
                 <ol class="space-y-6" aria-label="Kroki poradnika">
                     @foreach ($td['steps'] as $i => $row)
-                        <li id="krok-{{ $i + 1 }}" class="scroll-mt-24 {{ $feer ? 'rounded-md bg-gray-50' : 'rounded-2xl border border-gray-200 bg-white' }} p-5 transition md:p-6"
-                            :class="done.includes({{ $i }}) ? 'border-green-300 bg-green-50/40' : ''">
-                            <div class="flex items-start gap-4">
-                                <span class="flex h-10 w-10 flex-none items-center justify-center rounded-full text-base font-bold" :class="done.includes({{ $i }}) ? 'bg-green-600 text-white' : 'bg-brand text-white'" aria-hidden="true">
-                                    <span x-show="!done.includes({{ $i }})">{{ $i + 1 }}</span>
-                                    <i class="fa-solid fa-check" x-show="done.includes({{ $i }})" x-cloak></i>
-                                </span>
-                                <div class="min-w-0 flex-1">
-                                    <h2 class="text-xl font-bold text-ink"><span class="sr-only">Krok {{ $i + 1 }}: </span>{{ $row['title'] ?? 'Krok ' . ($i + 1) }}</h2>
-                                    @if (filled($row['text'] ?? null))
-                                        <div class="prose prose-sm mt-2 max-w-none text-ink">{!! nl2br(e($row['text'])) !!}</div>
-                                    @endif
-                                    @if (filled($row['tip'] ?? null))
-                                        <p class="mt-3 flex items-start gap-2 rounded-lg bg-brand-light px-3 py-2 text-sm text-ink"><i class="fa-solid fa-lightbulb mt-0.5 text-brand" aria-hidden="true"></i><span><span class="font-bold">Wskazówka:</span> {{ $row['tip'] }}</span></p>
-                                    @endif
-                                    <button type="button" @click="toggle({{ $i }})" :aria-pressed="done.includes({{ $i }}).toString()"
-                                            class="mt-4 inline-flex min-h-9 items-center gap-2 rounded-md border border-gray-300 px-3 text-sm font-medium text-ink transition hover:border-brand hover:text-brand aria-pressed:border-green-600 aria-pressed:bg-green-600 aria-pressed:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
-                                        <i class="fa-solid fa-check" aria-hidden="true"></i>
-                                        <span x-text="done.includes({{ $i }}) ? 'Zrobione' : 'Oznacz jako zrobione'">Oznacz jako zrobione</span>
-                                    </button>
-                                </div>
-                            </div>
+                        <li id="krok-{{ $i + 1 }}" class="scroll-mt-24 rounded-md p-5 transition md:p-6"
+                            :class="done.includes({{ $i }}) ? 'bg-brand-light' : 'bg-gray-50'">
+                            <h2 class="flex items-start gap-2 text-xl font-bold text-ink">
+                                <span><span class="sr-only">Krok </span>{{ $i + 1 }}. {{ $row['title'] ?? 'Krok ' . ($i + 1) }}</span>
+                                <i class="fa-solid fa-circle-check mt-1 text-brand-dark" x-show="done.includes({{ $i }})" x-cloak aria-hidden="true"></i>
+                            </h2>
+                            @if (filled($row['text'] ?? null))
+                                <div class="prose mt-2 max-w-none text-ink">{!! nl2br(e($row['text'])) !!}</div>
+                            @endif
+                            @if (filled($row['tip'] ?? null))
+                                <p class="mt-3 flex items-start gap-2 text-ink"><i class="fa-solid fa-lightbulb mt-1 text-brand-dark" aria-hidden="true"></i><span><span class="font-bold">Wskazówka:</span> {{ $row['tip'] }}</span></p>
+                            @endif
+                            <button type="button" @click="toggle({{ $i }})" aria-pressed="false" :aria-pressed="done.includes({{ $i }}).toString()"
+                                    class="mt-4 inline-flex min-h-11 items-center gap-2 rounded-md bg-brand-dark px-4 text-sm font-bold text-white transition hover:bg-ink aria-pressed:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2">
+                                <i class="fa-solid fa-check" aria-hidden="true"></i>
+                                <span x-text="done.includes({{ $i }}) ? 'Zrobione' : 'Oznacz jako zrobione'">Oznacz jako zrobione</span>
+                                <span class="sr-only">: krok {{ $i + 1 }}</span>
+                            </button>
                         </li>
                     @endforeach
                 </ol>
             @endif
 
             @if (filled($td['summary'] ?? null))
-                <section class="mt-10 {{ $feer ? 'rounded-md' : 'rounded-2xl' }} bg-brand-light p-6" aria-labelledby="guide-summary">
+                <section class="mt-10 rounded-md bg-brand-light p-6" aria-labelledby="guide-summary">
                     <h2 id="guide-summary" class="mb-2 text-xl font-bold text-ink">Podsumowanie</h2>
                     <p class="text-ink">{!! nl2br(e($td['summary'])) !!}</p>
                 </section>
@@ -114,27 +152,7 @@
 
             @include('partials.page-gallery', ['page' => $page])
             @include('partials.attachments-list', ['attachments' => $page->attachments])
-    @include('partials.page-section-nav', ['page' => $page])
+            @include('partials.page-section-nav', ['page' => $page])
         </div>
-
-        @if ($td['steps'])
-            <nav class="hidden lg:block" aria-label="Spis kroków">
-                <div class="sticky top-24 {{ $feer ? 'rounded-md bg-gray-50' : 'rounded-xl border border-gray-200 bg-white' }} p-4">
-                    <p class="mb-2 text-xs font-bold uppercase tracking-wide text-muted">Postęp</p>
-                    <p class="mb-3 text-sm font-semibold text-ink" aria-live="polite"><span x-text="done.length">0</span> z {{ count($td['steps']) }} kroków</p>
-                    <div class="mb-4 h-1.5 overflow-hidden rounded-full bg-gray-200" aria-hidden="true"><div class="h-full bg-green-600 transition-all" :style="'width:' + Math.round(done.length / {{ max(1, count($td['steps'])) }} * 100) + '%'"></div></div>
-                    <ol class="space-y-1 text-sm">
-                        @foreach ($td['steps'] as $i => $row)
-                            <li>
-                                <a href="#krok-{{ $i + 1 }}" class="flex items-start gap-2 rounded px-2 py-1 text-ink hover:bg-gray-50 hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
-                                    <span class="w-5 flex-none text-right text-xs font-bold" :class="done.includes({{ $i }}) ? 'text-green-600' : 'text-muted'" aria-hidden="true">{{ $i + 1 }}.</span>
-                                    <span :class="done.includes({{ $i }}) ? 'line-through text-muted' : ''">{{ $row['title'] ?? 'Krok ' . ($i + 1) }}</span>
-                                </a>
-                            </li>
-                        @endforeach
-                    </ol>
-                </div>
-            </nav>
-        @endif
     </div>
 </section>

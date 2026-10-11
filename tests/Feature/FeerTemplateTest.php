@@ -1025,7 +1025,8 @@ class FeerTemplateTest extends TestCase
             \App\Models\Page::create(['title' => 'Strona '.$type, 'slug' => $slug, 'type' => $type, 'is_published' => true]);
             $html = $this->get('/'.$slug)->assertOk()->getContent();
             $this->assertStringContainsString('h-1 w-14 bg-brand', $html, $type);
-            $this->assertStringContainsString('rounded bg-gray-100 text-ink', $html, $type);
+            // Płaski styl: bez etykiety typu nad tytułem.
+            $this->assertStringNotContainsString('rounded bg-gray-100 text-ink', $html, $type);
         }
     }
 
