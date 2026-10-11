@@ -121,6 +121,11 @@ class FormController extends Controller
             app(\App\Services\FormWebhook::class)->send($formularz, $submission);
         }
 
+        // Ustawienie „Po wysłaniu przejdź na adres” — np. strona podziękowania albo zewnętrzna płatność.
+        if ($redirect = FormDefinition::safeUrl($formularz->settings['redirect_url'] ?? null)) {
+            return redirect()->to($redirect)->with('success', $this->confirmationMessage($formularz));
+        }
+
         return back()
             ->with('success', $this->confirmationMessage($formularz))
             ->with('_form_slug', $formularz->slug);

@@ -259,6 +259,22 @@
                     @endif
                 </div>
 
+            @elseif ($type === 'link')
+                {{-- ── Tekst z przyciskiem: przejście na inny adres (bez wartości) ── --}}
+                @php $linkUrl = \App\Models\FormDefinition::safeUrl($field['url'] ?? null); $linkNewTab = ! empty($field['new_tab']); @endphp
+                <div class="rounded-md bg-brand-light p-5">
+                    @if ($field['help_text'] ?? null)
+                        <p class="whitespace-pre-line text-ink">{{ $field['help_text'] }}</p>
+                    @endif
+                    @if ($linkUrl)
+                        <a href="{{ $linkUrl }}" @if ($linkNewTab) target="_blank" rel="noopener" @endif
+                            class="{{ ($field['help_text'] ?? null) ? 'mt-3' : '' }} inline-flex min-h-11 items-center gap-2 rounded-md bg-brand-dark px-5 text-sm font-bold text-white hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2">
+                            {{ $field['label'] }} <i class="fa-solid {{ $linkNewTab ? 'fa-arrow-up-right-from-square' : 'fa-arrow-right' }}" aria-hidden="true"></i>
+                            @if ($linkNewTab)<span class="sr-only"> (otwiera się w nowej karcie)</span>@endif
+                        </a>
+                    @endif
+                </div>
+
             @elseif ($type === 'checkboxes' || $type === 'rating')
                 {{-- ── Wielokrotny wybór / ocena 1–5 (fieldset + legend) ─────── --}}
                 @php

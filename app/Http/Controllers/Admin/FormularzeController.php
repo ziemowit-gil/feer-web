@@ -194,6 +194,9 @@ class FormularzeController extends Controller
             'fields.*.show_if_uid'           => 'nullable|string|max:20',
             'fields.*.show_if_value'         => 'nullable|string|max:255',
             'fields.*.max_mb'                => 'nullable|integer|min:1|max:' . FormDefinition::FILE_MAX_MB,
+            'fields.*.url'                   => ['nullable', 'string', 'max:500', 'regex:~^(https?://\S+|/(?!/)\S*)$~i'],
+            'fields.*.new_tab'               => 'nullable|boolean',
+            'settings.redirect_url'          => ['nullable', 'string', 'max:500', 'regex:~^(https?://\S+|/(?!/)\S*)$~i'],
             'fields.*.krs_fill'              => 'nullable|in:' . implode(',', array_keys(\App\Services\KrsClient::FILL_KEYS)),
             'settings.confirmation_message'  => 'nullable|string|max:1000',
             'settings.notification_email'    => 'nullable|string|max:500',
@@ -223,6 +226,8 @@ class FormularzeController extends Controller
             'settings.open_until'         => 'koniec zbierania zgłoszeń',
             'settings.max_submissions'    => 'limit zgłoszeń',
             'settings.webhook_url'        => 'adres API',
+            'settings.redirect_url'       => 'adres przekierowania po wysłaniu',
+            'fields.*.url'                => 'adres przycisku',
         ]);
 
         // Listy adresów rozdzielone przecinkami: każdy musi być poprawnym e-mailem.
@@ -248,6 +253,9 @@ class FormularzeController extends Controller
                 'help_text'   => $f['help_text'] ?? null,
                 'accept'      => ($f['type'] ?? '') === 'file' ? (trim((string) ($f['accept'] ?? '')) ?: null) : null,
                 'max_mb'      => ($f['type'] ?? '') === 'file' && filled($f['max_mb'] ?? null) ? (int) $f['max_mb'] : null,
+                // „Tekst z przyciskiem”: adres przejścia i czy w nowej karcie.
+                'url'         => ($f['type'] ?? '') === 'link' ? FormDefinition::safeUrl($f['url'] ?? null) : null,
+                'new_tab'     => ($f['type'] ?? '') === 'link' && ! empty($f['new_tab']),
                 // Pole uzupełniane danymi z pola „Numer KRS” (np. nazwa, NIP, adres).
                 'krs_fill'    => in_array($f['type'] ?? 'text', FormDefinition::KRS_FILLABLE_TYPES, true) && array_key_exists((string) ($f['krs_fill'] ?? ''), \App\Services\KrsClient::FILL_KEYS) ? $f['krs_fill'] : null,
                 // Stały identyfikator pola — warunki „Pokaż tylko, gdy…” przetrwają zmianę etykiety.
@@ -291,6 +299,8 @@ class FormularzeController extends Controller
                 'max_submissions'      => $request->filled('settings.max_submissions') ? (int) $request->input('settings.max_submissions') : null,
                 'show_remaining'       => $request->boolean('settings.show_remaining'),
                 'closed_message'       => $request->input('settings.closed_message'),
+                // Po wysłaniu: przejście na inny adres zamiast komunikatu na tej samej stronie.
+                'redirect_url'         => FormDefinition::safeUrl($request->input('settings.redirect_url')),
             ],
         ];
     }

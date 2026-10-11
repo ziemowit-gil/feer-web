@@ -45,6 +45,7 @@ class FormDefinition extends Model
         'file'     => 'Załącznik (plik)',
         'consent'  => 'Zgoda RODO (z linkiem do polityki prywatności)',
         'heading'  => 'Nagłówek / opis sekcji',
+        'link'     => 'Tekst z przyciskiem (przejście na inny adres)',
         'step'     => 'Nowy krok (podział na etapy)',
     ];
 
@@ -63,7 +64,7 @@ class FormDefinition extends Model
     }
 
     /** Elementy układu — bez wartości (nie walidowane, nie zapisywane, nie w eksporcie). */
-    const LAYOUT_TYPES = ['heading', 'step'];
+    const LAYOUT_TYPES = ['heading', 'step', 'link'];
 
     /** Domyślne typy plików i rozmiar (MB) dla pola „Załącznik”. */
     const FILE_DEFAULT_ACCEPT = 'pdf,doc,docx,odt,jpg,jpeg,png';
@@ -71,6 +72,14 @@ class FormDefinition extends Model
 
     /** Typy pól, które może uzupełnić pole „Numer KRS” (Ustawienie pola → „Uzupełnij z KRS”). */
     const KRS_FILLABLE_TYPES = ['text', 'textarea', 'email', 'tel', 'url', 'number', 'date', 'select', 'radio'];
+
+    /** Bezpieczny adres przycisku / przekierowania: http(s) albo ścieżka w serwisie; inaczej null. */
+    public static function safeUrl(?string $url): ?string
+    {
+        $url = trim((string) $url);
+
+        return preg_match('~^(https?://[^\s]+|/(?!/)[^\s]*)$~i', $url) ? $url : null;
+    }
 
     public static function isInput(string $type): bool
     {

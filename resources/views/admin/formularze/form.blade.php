@@ -22,59 +22,70 @@
 
     <form method="POST"
         action="{{ $form->exists ? route('admin.formularze.update', $form) : route('admin.formularze.store') }}"
-        class="space-y-6"
-        x-data="formBuilder({{ Js::from($form->fields ?? []) }})">
+        class="space-y-5"
+        x-data="formBuilder({{ Js::from($form->fields ?? []) }}, @js($errors->keys() && collect($errors->keys())->contains(fn ($k) => ! str_starts_with($k, 'fields')) ? 'settings' : 'fields'))"
+        @input="dirty = true" @change="dirty = true" @submit="dirty = false"
+        @keydown.window="globalKey($event)">
 
         @csrf
         @if ($form->exists) @method('PUT') @endif
 
-        {{-- Podstawowe dane --}}
-        <fieldset class="space-y-5 p-6 rounded-md bg-white">
-            <legend class="px-2 text-sm font-bold text-ink">Podstawowe informacje</legend>
-
-            <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
-                <div>
-                    <label for="title" class="mb-1 block text-sm font-bold">
-                        Nazwa formularza <span class="text-red-500" aria-hidden="true">*</span>
-                    </label>
+        {{-- ── Pasek edytora: nazwa, stan, zakładki i zapis (przyklejony u góry) ── --}}
+        <div class="sticky top-0 z-30 -mx-4 -mt-4 bg-white px-4 pb-0 pt-3 shadow-sm sm:-mx-6 sm:-mt-6 sm:px-6">
+            <div class="flex flex-wrap items-center gap-x-4 gap-y-2">
+                <div class="min-w-0 flex-1">
+                    <label for="title" class="sr-only">Nazwa formularza (wymagana)</label>
                     <input id="title" name="title" type="text" required
                         value="{{ old('title', $form->title) }}"
                         @input="syncSlug($el.value)"
-                        class="w-full rounded border-gray-500 text-sm focus:border-brand-dark focus-visible:ring-2 focus-visible:ring-brand-dark">
-                    @error('title') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                        placeholder="Nazwa formularza"
+                        class="w-full rounded-md border-0 bg-transparent px-2 py-1 text-xl font-bold text-ink hover:bg-gray-50 focus:bg-gray-50 focus:ring-2 focus:ring-brand-dark">
+                    <p class="px-2 text-xs text-muted">
+                        <span x-text="inputCount + ' ' + (inputCount === 1 ? 'pole' : ([2,3,4].includes(inputCount % 10) && ! [12,13,14].includes(inputCount % 100) ? 'pola' : 'pól'))"></span>
+                        <span x-show="stepCount > 0" x-text="' · ' + (stepCount + 1) + ' kroki'"></span>
+                        · <span x-text="dirty ? 'niezapisane zmiany' : 'zapisano'" :class="dirty ? 'font-bold text-ink' : ''"></span>
+                    </p>
+                    @error('title') <p class="px-2 text-sm text-red-700">{{ $message }}</p> @enderror
                 </div>
-
-                <div>
-                    <label for="slug" class="mb-1 block text-sm font-bold">
-                        Identyfikator URL <span class="text-red-500" aria-hidden="true">*</span>
-                    </label>
-                    <div class="flex items-center gap-1">
-                        <span class="shrink-0 text-xs text-muted">/formularz/</span>
-                        <input id="slug" name="slug" type="text" required
-                            value="{{ old('slug', $form->slug) }}"
-                            x-ref="slug"
-                            pattern="[a-z0-9\-]+"
-                            class="w-full rounded border-gray-500 font-mono text-sm focus:border-brand-dark focus-visible:ring-2 focus-visible:ring-brand-dark">
-                    </div>
-                    @error('slug') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                <div class="flex flex-wrap items-center gap-2">
+                    <button type="button" @click="undo()" :disabled="! history.length" title="Cofnij (Ctrl+Z)"
+                        class="inline-flex min-h-10 items-center gap-1.5 rounded-md bg-gray-100 px-3 text-sm font-bold text-ink hover:bg-brand-light disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">
+                        <i class="fa-solid fa-rotate-left" aria-hidden="true"></i> Cofnij
+                    </button>
+                    @if ($form->exists)
+                        <a href="{{ route('formularz.show', $form->slug) }}" target="_blank" rel="noopener"
+                            class="inline-flex min-h-10 items-center gap-1.5 rounded-md bg-gray-100 px-3 text-sm font-bold text-ink hover:bg-brand-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">
+                            <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i> Na stronie<span class="sr-only"> (otwiera się w nowej karcie, pokazuje zapisaną wersję)</span>
+                        </a>
+                        <a href="{{ route('admin.formularze.zgloszenia', $form) }}"
+                            class="inline-flex min-h-10 items-center gap-1.5 rounded-md bg-gray-100 px-3 text-sm font-bold text-ink hover:bg-brand-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">
+                            <i class="fa-solid fa-inbox" aria-hidden="true"></i> Zgłoszenia ({{ $form->submissions()->count() }})
+                        </a>
+                    @endif
+                    <a href="{{ route('admin.formularze.index') }}" class="inline-flex min-h-10 items-center px-2 text-sm text-muted hover:text-brand-dark focus-visible:rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">Anuluj</a>
+                    <button type="submit"
+                        class="inline-flex min-h-10 items-center gap-1.5 rounded-md bg-brand-dark px-5 text-sm font-bold text-white hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2">
+                        <i class="fa-solid fa-floppy-disk" aria-hidden="true"></i> Zapisz
+                    </button>
                 </div>
             </div>
 
-            <div>
-                <label for="description" class="mb-1 block text-sm font-bold">Opis (widoczny dla edytorów)</label>
-                <textarea id="description" name="description" rows="2"
-                    class="w-full rounded border-gray-500 text-sm focus:border-brand-dark focus-visible:ring-2 focus-visible:ring-brand-dark">{{ old('description', $form->description) }}</textarea>
+            <div role="tablist" aria-label="Sekcje formularza" class="mt-2 flex gap-1" @keydown.arrow-right.prevent="nextTab(1)" @keydown.arrow-left.prevent="nextTab(-1)">
+                @foreach (['fields' => ['Pola', 'fa-table-list'], 'settings' => ['Ustawienia', 'fa-sliders'], 'share' => ['Udostępnianie', 'fa-share-nodes']] as $tabKey => [$tabLabel, $tabIcon])
+                    @continue($tabKey === 'share' && ! $form->exists)
+                    <button type="button" role="tab" id="tab-{{ $tabKey }}" aria-controls="panel-{{ $tabKey }}"
+                        :aria-selected="tab === '{{ $tabKey }}'" :tabindex="tab === '{{ $tabKey }}' ? 0 : -1"
+                        @click="tab = '{{ $tabKey }}'"
+                        class="-mb-px inline-flex min-h-11 items-center gap-2 border-b-4 px-4 text-sm font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-dark"
+                        :class="tab === '{{ $tabKey }}' ? 'border-brand-dark text-ink' : 'border-transparent text-muted hover:text-ink'">
+                        <i class="fa-solid {{ $tabIcon }}" aria-hidden="true"></i> {{ $tabLabel }}
+                    </button>
+                @endforeach
             </div>
+        </div>
 
-            <div class="flex items-center gap-3">
-                <input type="hidden" name="is_active" value="0">
-                <input id="is_active" name="is_active" type="checkbox" value="1"
-                    {{ old('is_active', $form->is_active ?? true) ? 'checked' : '' }}
-                    class="rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
-                <label for="is_active" class="text-sm font-medium">Formularz aktywny (publiczny)</label>
-            </div>
-        </fieldset>
 
+        <div role="tabpanel" id="panel-fields" aria-labelledby="tab-fields" x-show="tab === 'fields'">
         {{-- Edytor wizualny pól: paleta | podgląd formularza (płótno) | właściwości wybranego pola.
              Dane pól wysyłają ukryte pola na dole — panel właściwości nie ma atrybutów name. --}}
         @php
@@ -82,25 +93,26 @@
                 'Podstawowe' => ['text' => 'fa-font', 'textarea' => 'fa-align-left', 'email' => 'fa-at', 'tel' => 'fa-phone', 'number' => 'fa-hashtag', 'date' => 'fa-calendar', 'time' => 'fa-clock', 'url' => 'fa-link'],
                 'Wybór' => ['select' => 'fa-caret-down', 'radio' => 'fa-circle-dot', 'checkboxes' => 'fa-list-check', 'checkbox' => 'fa-square-check', 'rating' => 'fa-star'],
                 'Specjalne' => ['file' => 'fa-paperclip', 'consent' => 'fa-shield-halved', 'krs' => 'fa-building-columns'],
-                'Układ' => ['heading' => 'fa-heading', 'step' => 'fa-shoe-prints'],
+                'Układ' => ['heading' => 'fa-heading', 'link' => 'fa-arrow-up-right-from-square', 'step' => 'fa-shoe-prints'],
             ];
             $fieldInput = 'w-full rounded border-gray-500 text-sm focus:border-brand-dark focus-visible:ring-2 focus-visible:ring-brand-dark';
             $propLabel = 'mb-1 block text-xs font-bold uppercase tracking-wide text-muted';
         @endphp
-        <fieldset class="rounded-md bg-white p-4 sm:p-6">
-            <legend class="px-2 text-sm font-bold text-ink">Pola formularza — edytor wizualny</legend>
+        <div class="rounded-md bg-white p-4 sm:p-5">
+            <h2 class="sr-only">Pola formularza</h2>
             <p class="mb-4 text-sm text-muted">
-                Kliknij typ pola w palecie (albo przeciągnij go na podgląd), potem kliknij pole w podglądzie, aby zmienić jego ustawienia po prawej.
-                Kolejność zmienisz przeciągając pola albo strzałkami.
+                Kliknij typ pola po lewej (albo przeciągnij go na podgląd), potem kliknij pole w podglądzie, aby je ustawić po prawej.
+                Skróty na zaznaczonym polu: <kbd class="rounded bg-gray-100 px-1">Alt</kbd>+<kbd class="rounded bg-gray-100 px-1">↑</kbd>/<kbd class="rounded bg-gray-100 px-1">↓</kbd> przesuwa,
+                <kbd class="rounded bg-gray-100 px-1">Ctrl</kbd>+<kbd class="rounded bg-gray-100 px-1">D</kbd> powiela, <kbd class="rounded bg-gray-100 px-1">Delete</kbd> usuwa, <kbd class="rounded bg-gray-100 px-1">Ctrl</kbd>+<kbd class="rounded bg-gray-100 px-1">Z</kbd> cofa.
             </p>
 
-            <div class="grid gap-5 lg:grid-cols-[13rem_minmax(0,1fr)_21rem]">
+            <div class="grid gap-5 lg:grid-cols-[12rem_minmax(0,1fr)_20rem] xl:grid-cols-[13rem_minmax(0,1fr)_22rem]">
                 {{-- ── Paleta ─────────────────────────────────────────── --}}
-                <nav aria-label="Dodaj pole" class="space-y-4 lg:sticky lg:top-20 lg:self-start">
+                <nav aria-label="Dodaj pole" class="space-y-4 lg:sticky lg:top-36 lg:max-h-[calc(100vh-10rem)] lg:self-start lg:overflow-y-auto">
                     @foreach ($paletteGroups as $groupLabel => $groupTypes)
                         <div>
                             <p class="mb-1.5 text-xs font-bold uppercase tracking-wide text-muted">{{ $groupLabel }}</p>
-                            <ul class="grid grid-cols-2 gap-1.5 lg:grid-cols-1" role="list">
+                            <ul class="grid grid-cols-2 gap-1.5 sm:grid-cols-4 lg:grid-cols-1" role="list">
                                 @foreach ($groupTypes as $type => $icon)
                                     @continue(! isset($types[$type]))
                                     <li>
@@ -123,6 +135,7 @@
                 {{-- ── Płótno: podgląd formularza ─────────────────────── --}}
                 <div class="min-w-0">
                     <div id="fields-list" class="min-h-48 space-y-1 rounded-md bg-gray-50 p-3 sm:p-5"
+                        @keydown="canvasKey($event)"
                         @dragover.prevent="dragOverEnd($event)" @drop.prevent="drop()"
                         aria-label="Podgląd formularza" role="region">
                         <template x-for="(field, index) in fields" :key="field._id">
@@ -148,13 +161,21 @@
                                             <div class="flex items-center gap-2 text-sm font-bold text-brand-dark"><i class="fa-solid fa-shoe-prints"></i> <span x-text="'Krok: ' + (field.label || 'bez tytułu')"></span><span class="h-0.5 flex-1 bg-brand-dark/40"></span></div>
                                         </template>
 
+                                        <template x-if="field.type === 'link'">
+                                            <div class="rounded-md bg-brand-light p-3">
+                                                <p class="whitespace-pre-line text-sm text-ink" x-show="field.help_text" x-text="field.help_text"></p>
+                                                <span class="mt-2 inline-flex min-h-9 items-center gap-2 rounded-md bg-brand-dark px-4 text-sm font-bold text-white"><span x-text="field.label || 'Przejdź dalej'"></span> <i class="fa-solid" :class="field.new_tab ? 'fa-arrow-up-right-from-square' : 'fa-arrow-right'"></i></span>
+                                                <p class="mt-1 break-all text-xs text-muted" x-text="field.url ? '→ ' + field.url : '→ (ustaw adres)'"></p>
+                                            </div>
+                                        </template>
+
                                         {{-- Zgoda / checkbox --}}
                                         <template x-if="['checkbox', 'consent'].includes(field.type)">
                                             <label class="flex items-start gap-2 text-sm text-ink"><input type="checkbox" class="mt-0.5 rounded border-gray-400"><span><span x-text="field.label || 'Treść zgody'"></span><span x-show="field.type === 'consent'"> Szczegóły w <u>Polityce prywatności</u>.</span><span x-show="field.required" class="ml-0.5 font-bold text-red-600">*</span></span></label>
                                         </template>
 
                                         {{-- Pozostałe: etykieta + kontrolka --}}
-                                        <template x-if="! ['heading', 'step', 'checkbox', 'consent'].includes(field.type)">
+                                        <template x-if="! ['heading', 'step', 'link', 'checkbox', 'consent'].includes(field.type)">
                                             <div>
                                                 <p class="text-sm font-semibold text-ink"><span x-text="field.label || '(bez etykiety)'"></span><span x-show="field.required" class="ml-0.5 font-bold text-red-600">*</span></p>
                                                 <p class="text-xs text-muted" x-show="field.help_text" x-text="field.help_text"></p>
@@ -203,7 +224,7 @@
                                 Formularz jest pusty — kliknij typ pola w palecie albo przeciągnij go tutaj.
                             </p>
                         </template>
-                        <div class="mt-3 flex justify-end" x-show="fields.some(f => ! ['heading', 'step'].includes(f.type))" aria-hidden="true">
+                        <div class="mt-3 flex justify-end" x-show="fields.some(f => ! ['heading', 'step', 'link'].includes(f.type))" aria-hidden="true">
                             <span class="inline-flex min-h-10 items-center gap-2 rounded-md bg-brand-dark px-5 text-sm font-bold text-white">Wyślij zgłoszenie <i class="fa-solid fa-paper-plane"></i></span>
                         </div>
                     </div>
@@ -211,7 +232,7 @@
                 </div>
 
                 {{-- ── Właściwości wybranego pola ─────────────────────── --}}
-                <aside aria-labelledby="field-props-heading" class="lg:sticky lg:top-20 lg:self-start">
+                <aside aria-labelledby="field-props-heading" class="lg:sticky lg:top-36 lg:max-h-[calc(100vh-10rem)] lg:self-start lg:overflow-y-auto">
                     <div class="rounded-md bg-gray-50 p-4">
                         <h3 id="field-props-heading" class="mb-3 text-sm font-bold text-ink">
                             <i class="fa-solid fa-sliders mr-1 text-brand-dark" aria-hidden="true"></i>
@@ -222,7 +243,7 @@
                         <template x-if="sel">
                             <div class="space-y-3">
                                 <div>
-                                    <label for="prop-label" class="{{ $propLabel }}" x-text="sel.type === 'consent' || sel.type === 'checkbox' ? 'Treść zgody / etykieta' : (sel.type === 'step' ? 'Tytuł kroku' : (sel.type === 'heading' ? 'Nagłówek' : 'Etykieta pola'))">Etykieta pola</label>
+                                    <label for="prop-label" class="{{ $propLabel }}" x-text="sel.type === 'consent' || sel.type === 'checkbox' ? 'Treść zgody / etykieta' : (sel.type === 'step' ? 'Tytuł kroku' : (sel.type === 'heading' ? 'Nagłówek' : (sel.type === 'link' ? 'Napis na przycisku' : 'Etykieta pola')))">Etykieta pola</label>
                                     <textarea x-show="['consent', 'checkbox'].includes(sel.type)" id="prop-label-long" rows="3" x-model="sel.label" class="{{ $fieldInput }}" aria-label="Treść zgody"></textarea>
                                     <input x-show="! ['consent', 'checkbox'].includes(sel.type)" id="prop-label" type="text" x-model="sel.label" placeholder="np. Imię i nazwisko" class="{{ $fieldInput }}">
                                 </div>
@@ -234,13 +255,14 @@
                                         @endforeach
                                     </select>
                                 </div>
-                                <div x-show="! ['heading', 'step', 'checkbox', 'consent', 'radio', 'checkboxes', 'rating', 'file'].includes(sel.type)">
+                                <div x-show="! ['heading', 'step', 'link', 'checkbox', 'consent', 'radio', 'checkboxes', 'rating', 'file'].includes(sel.type)">
                                     <label for="prop-placeholder" class="{{ $propLabel }}">Tekst w pustym polu</label>
                                     <input id="prop-placeholder" type="text" x-model="sel.placeholder" class="{{ $fieldInput }}">
                                 </div>
                                 <div>
-                                    <label for="prop-help" class="{{ $propLabel }}" x-text="sel.type === 'heading' ? 'Opis sekcji' : (sel.type === 'step' ? 'Opis kroku' : 'Tekst pomocy pod etykietą')">Tekst pomocy</label>
-                                    <input id="prop-help" type="text" x-model="sel.help_text" class="{{ $fieldInput }}">
+                                    <label for="prop-help" class="{{ $propLabel }}" x-text="sel.type === 'heading' ? 'Opis sekcji' : (sel.type === 'step' ? 'Opis kroku' : (sel.type === 'link' ? 'Tekst nad przyciskiem' : 'Tekst pomocy pod etykietą'))">Tekst pomocy</label>
+                                    <textarea x-show="sel.type === 'link'" id="prop-help-long" rows="4" x-model="sel.help_text" class="{{ $fieldInput }}" aria-label="Tekst nad przyciskiem"></textarea>
+                                    <input x-show="sel.type !== 'link'" id="prop-help" type="text" x-model="sel.help_text" class="{{ $fieldInput }}">
                                 </div>
                                 <div x-show="['select', 'radio', 'checkboxes'].includes(sel.type)">
                                     <label for="prop-options" class="{{ $propLabel }}">Odpowiedzi — każda w osobnym wierszu</label>
@@ -257,11 +279,22 @@
                                         <input id="prop-maxmb" type="number" min="1" max="{{ \App\Models\FormDefinition::FILE_MAX_MB }}" x-model="sel.max_mb" placeholder="10" class="{{ $fieldInput }}">
                                     </div>
                                 </div>
+                                <div x-show="sel.type === 'link'" class="space-y-2">
+                                    <div>
+                                        <label for="prop-url" class="{{ $propLabel }}">Adres po kliknięciu</label>
+                                        <input id="prop-url" type="text" inputmode="url" x-model="sel.url" placeholder="https://… lub /strona" class="{{ $fieldInput }}"
+                                            :aria-invalid="sel.url && ! /^(https?:\/\/\S+|\/(?!\/)\S*)$/i.test(sel.url)">
+                                        <p class="mt-1 text-xs" :class="sel.url && ! /^(https?:\/\/\S+|\/(?!\/)\S*)$/i.test(sel.url) ? 'font-bold text-red-700' : 'text-muted'">Pełny adres (https://…) albo ścieżka w serwisie (/kontakt).</p>
+                                    </div>
+                                    <label class="flex items-center gap-2 text-sm font-medium text-ink">
+                                        <input type="checkbox" x-model="sel.new_tab" class="rounded border-gray-500 text-brand-dark focus:ring-brand-dark"> Otwórz w nowej karcie
+                                    </label>
+                                </div>
                                 <p x-show="sel.type === 'rating'" class="text-xs text-muted">Odpowiedź: przyciski 1–5.</p>
                                 <p x-show="sel.type === 'step'" class="text-xs text-muted">Od tego miejsca zaczyna się kolejny krok — tytuł widać na pasku postępu.</p>
                                 <p x-show="sel.type === 'krs'" class="text-xs text-muted">Dane pobierają się z rejestru KRS. W innych polach wybierz „Uzupełnij z KRS”.</p>
 
-                                <label x-show="! ['heading', 'step'].includes(sel.type)" class="flex items-center gap-2 text-sm font-medium text-ink">
+                                <label x-show="! ['heading', 'step', 'link'].includes(sel.type)" class="flex items-center gap-2 text-sm font-medium text-ink">
                                     <input type="checkbox" x-model="sel.required" class="rounded border-gray-500 text-brand-dark focus:ring-brand-dark"> Pole wymagane
                                 </label>
 
@@ -334,9 +367,49 @@
                         <input type="hidden" :name="'fields[' + i + '][max_mb]'" :value="f.max_mb || ''">
                         <input type="hidden" :name="'fields[' + i + '][show_if_uid]'" :value="f.show_if_uid || ''">
                         <input type="hidden" :name="'fields[' + i + '][show_if_value]'" :value="f.show_if_value || ''">
+                        <input type="hidden" :name="'fields[' + i + '][url]'" :value="f.type === 'link' ? (f.url || '') : ''">
+                        <input type="hidden" :name="'fields[' + i + '][new_tab]'" :value="f.type === 'link' && f.new_tab ? '1' : '0'">
                         <input type="hidden" :name="'fields[' + i + '][krs_fill]'" :value="krsFillable.includes(f.type) ? (f.krs_fill || '') : ''">
                     </div>
                 </template>
+            </div>
+        </div>
+        </div>
+
+        <div role="tabpanel" id="panel-settings" aria-labelledby="tab-settings" x-show="tab === 'settings'" x-cloak class="space-y-5">
+        {{-- Podstawowe dane --}}
+        <fieldset class="space-y-5 p-6 rounded-md bg-white">
+            <legend class="px-2 text-sm font-bold text-ink">Podstawowe informacje</legend>
+
+            <div class="grid grid-cols-1 gap-5">
+                <div>
+                    <label for="slug" class="mb-1 block text-sm font-bold">
+                        Identyfikator URL <span class="text-red-500" aria-hidden="true">*</span>
+                    </label>
+                    <div class="flex items-center gap-1">
+                        <span class="shrink-0 text-xs text-muted">/formularz/</span>
+                        <input id="slug" name="slug" type="text" required
+                            value="{{ old('slug', $form->slug) }}"
+                            x-ref="slug"
+                            pattern="[a-z0-9\-]+"
+                            class="w-full rounded border-gray-500 font-mono text-sm focus:border-brand-dark focus-visible:ring-2 focus-visible:ring-brand-dark">
+                    </div>
+                    @error('slug') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                </div>
+            </div>
+
+            <div>
+                <label for="description" class="mb-1 block text-sm font-bold">Opis (widoczny dla edytorów)</label>
+                <textarea id="description" name="description" rows="2"
+                    class="w-full rounded border-gray-500 text-sm focus:border-brand-dark focus-visible:ring-2 focus-visible:ring-brand-dark">{{ old('description', $form->description) }}</textarea>
+            </div>
+
+            <div class="flex items-center gap-3">
+                <input type="hidden" name="is_active" value="0">
+                <input id="is_active" name="is_active" type="checkbox" value="1"
+                    {{ old('is_active', $form->is_active ?? true) ? 'checked' : '' }}
+                    class="rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
+                <label for="is_active" class="text-sm font-medium">Formularz aktywny (publiczny)</label>
             </div>
         </fieldset>
 
@@ -351,6 +424,16 @@
                 <textarea id="confirmation_message" name="settings[confirmation_message]" rows="2"
                     placeholder="Dziękujemy! Twoje zgłoszenie zostało przyjęte."
                     class="w-full rounded border-gray-500 text-sm focus:border-brand-dark focus-visible:ring-2 focus-visible:ring-brand-dark">{{ old('settings.confirmation_message', $form->settings['confirmation_message'] ?? '') }}</textarea>
+            </div>
+
+            <div>
+                <label for="redirect_url" class="mb-1 block text-sm font-bold">Po wysłaniu przejdź na adres <span class="font-normal text-muted">(opcjonalnie)</span></label>
+                <input id="redirect_url" name="settings[redirect_url]" type="text" inputmode="url"
+                    value="{{ old('settings.redirect_url', $form->settings['redirect_url'] ?? '') }}"
+                    placeholder="np. /dziekujemy albo https://…" aria-describedby="redirect_url_help"
+                    class="w-full rounded border-gray-500 text-sm focus:border-brand-dark focus-visible:ring-2 focus-visible:ring-brand-dark">
+                <p id="redirect_url_help" class="mt-1 text-xs text-muted">Puste = po wysłaniu osoba zostaje na stronie i widzi wiadomość powyżej. Ustawiony adres = przejście na inną stronę (np. podziękowanie, płatność).</p>
+                @error('settings.redirect_url') <p class="mt-1 text-sm text-red-700">{{ $message }}</p> @enderror
             </div>
 
             {{-- Doręczenie zgłoszeń: e-mail / API / oba --}}
@@ -579,58 +662,97 @@
             </div>
         </fieldset>
 
-        {{-- Osadzanie formularza --}}
+        </div>
+
         @if ($form->exists)
+        <div role="tabpanel" id="panel-share" aria-labelledby="tab-share" x-show="tab === 'share'" x-cloak>
+        {{-- Osadzanie formularza --}}
             <div class="rounded-md bg-brand-light p-4 text-sm">
-                <p class="mb-2 font-bold text-blue-800">
+                <p class="mb-2 font-bold text-ink">
                     <i class="fa-solid fa-code mr-1" aria-hidden="true"></i>
                     Osadzanie formularza
                 </p>
-                <p class="mb-2 text-blue-700">Wklej shortcode w dowolne miejsce treści strony lub aktualności:</p>
+                <p class="mb-2 text-ink">Wklej shortcode w dowolne miejsce treści strony lub aktualności:</p>
                 <div class="flex items-center gap-2">
-                    <code id="form-shortcode" class="flex-1 rounded bg-white px-3 py-1.5 font-mono text-blue-800 ring-1 ring-blue-200">[formularz:{{ $form->slug }}]</code>
+                    <code id="form-shortcode" class="flex-1 rounded bg-white px-3 py-1.5 font-mono text-ink ">[formularz:{{ $form->slug }}]</code>
                     <button type="button"
                         onclick="navigator.clipboard.writeText('[formularz:{{ $form->slug }}]').then(() => { this.textContent='Skopiowano!'; setTimeout(() => this.textContent='Kopiuj', 2000) })"
-                        class="rounded bg-blue-700 px-3 py-1.5 text-xs font-bold text-white hover:bg-blue-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600">
+                        class="rounded bg-brand-dark px-3 py-1.5 text-xs font-bold text-white hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">
                         Kopiuj
                     </button>
                 </div>
-                <p class="mt-2 text-xs text-blue-600">
+                <p class="mt-2 text-xs text-ink">
                     Bezpośredni link: <a href="{{ route('formularz.show', $form->slug) }}" target="_blank" rel="noopener" class="underline hover:no-underline">{{ route('formularz.show', $form->slug) }}</a>
                 </p>
             </div>
+
+        </div>
         @endif
 
-        <div class="flex items-center gap-3">
-            <button type="submit"
-                class="rounded bg-brand-dark px-5 py-2 text-sm font-bold text-white hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2">
-                Zapisz formularz
-            </button>
-            <a href="{{ route('admin.formularze.index') }}"
-                class="text-sm text-muted hover:text-brand-dark focus-visible:rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">
-                Anuluj
-            </a>
-            @if ($form->exists)
-                <a href="{{ route('admin.formularze.zgloszenia', $form) }}"
-                    class="ml-auto text-sm text-muted hover:text-brand-dark focus-visible:rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">
-                    <i class="fa-solid fa-inbox mr-1" aria-hidden="true"></i>
-                    Zgłoszenia ({{ $form->submissions()->count() }})
-                </a>
-            @endif
-        </div>
     </form>
 
     <script>
         document.addEventListener('alpine:init', () => {
-            Alpine.data('formBuilder', (initialFields) => ({
+            Alpine.data('formBuilder', (initialFields, initialTab = 'fields') => ({
+                tab: initialTab,
+                dirty: false,
+                history: [],
+                get inputCount() { return this.fields.filter(f => ! ['heading', 'step', 'link'].includes(f.type)).length; },
+                get stepCount() { return this.fields.filter(f => f.type === 'step').length; },
+
+                init() {
+                    // Ostrzeżenie przy wyjściu ze strony z niezapisanymi zmianami.
+                    window.addEventListener('beforeunload', e => { if (this.dirty) { e.preventDefault(); e.returnValue = ''; } });
+                },
+
+                nextTab(dir) {
+                    const tabs = [...this.$root.querySelectorAll('[role=tab]')];
+                    const i = tabs.findIndex(t => t.getAttribute('aria-selected') === 'true');
+                    const next = tabs[(i + dir + tabs.length) % tabs.length];
+                    next.click(); next.focus();
+                },
+
+                // Historia do „Cofnij” — zapis stanu przed każdą zmianą struktury (dodanie, usunięcie, przesunięcie).
+                snapshot() {
+                    this.history.push(JSON.stringify(this.fields));
+                    if (this.history.length > 40) this.history.shift();
+                    this.dirty = true;
+                },
+                undo() {
+                    if (! this.history.length) return;
+                    this.fields = JSON.parse(this.history.pop());
+                    if (! this.fields.some(f => f._id === this.selectedId)) this.selectedId = null;
+                    this.announce = 'Cofnięto ostatnią zmianę.';
+                },
+
+                // Skróty na zaznaczonym polu (fokus w podglądzie).
+                canvasKey(e) {
+                    if (this.selIndex < 0) return;
+                    const i = this.selIndex;
+                    if (e.altKey && e.key === 'ArrowUp') { e.preventDefault(); this.moveUp(i); this.refocus(); }
+                    else if (e.altKey && e.key === 'ArrowDown') { e.preventDefault(); this.moveDown(i); this.refocus(); }
+                    else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'd') { e.preventDefault(); this.duplicateField(i); this.refocus(); }
+                    else if (e.key === 'Delete') { e.preventDefault(); this.removeField(i); }
+                    else if (e.key === 'Escape') { this.selectedId = null; }
+                },
+                refocus() {
+                    this.$nextTick(() => document.querySelector('#fields-list [aria-pressed=true]')?.focus());
+                },
+                globalKey(e) {
+                    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z' && ! e.shiftKey && this.tab === 'fields'
+                        && ! ['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement?.tagName)) {
+                        e.preventDefault(); this.undo();
+                    }
+                },
+
                 krsFillable: @json(\App\Models\FormDefinition::KRS_FILLABLE_TYPES),
                 get hasKrs() { return this.fields.some(f => f.type === 'krs'); },
-                fields: (initialFields || []).map((f, i) => ({ show_if_uid: '', show_if_value: '', krs_fill: '', ...f, krs_fill: f.krs_fill || '', uid: f.uid || Math.random().toString(36).slice(2, 10), _id: i })),
+                fields: (initialFields || []).map((f, i) => ({ show_if_uid: '', show_if_value: '', krs_fill: '', url: '', new_tab: false, ...f, krs_fill: f.krs_fill || '', uid: f.uid || Math.random().toString(36).slice(2, 10), _id: i })),
                 _nextId: (initialFields || []).length,
 
                 // Pola, od których może zależeć pole nr index: wcześniejsze pola z wartością.
                 conditionSources(index) {
-                    return this.fields.slice(0, index).filter(f => ! ['heading', 'step', 'file'].includes(f.type));
+                    return this.fields.slice(0, index).filter(f => ! ['heading', 'step', 'link', 'file'].includes(f.type));
                 },
 
                 // Lista możliwych odpowiedzi pola źródłowego; null = dowolny tekst.
@@ -654,7 +776,7 @@
                     text: 'Pytanie', textarea: 'Twoja wiadomość', email: 'Adres e-mail', tel: 'Numer telefonu', number: 'Liczba',
                     date: 'Data', time: 'Godzina', url: 'Adres strony internetowej', select: 'Wybierz z listy', radio: 'Wybierz jedną odpowiedź',
                     checkboxes: 'Zaznacz odpowiedzi', checkbox: 'Potwierdzam', rating: 'Jak oceniasz…?', file: 'Załącznik', krs: 'Numer KRS',
-                    consent: 'Wyrażam zgodę na przetwarzanie moich danych osobowych w celu obsługi zgłoszenia.', heading: 'Nowa sekcja', step: 'Nowy krok',
+                    consent: 'Wyrażam zgodę na przetwarzanie moich danych osobowych w celu obsługi zgłoszenia.', heading: 'Nowa sekcja', step: 'Nowy krok', link: 'Przejdź dalej',
                 },
 
                 get selIndex() { return this.fields.findIndex(f => f._id === this.selectedId); },
@@ -670,12 +792,13 @@
                         _id: this._nextId++, uid: Math.random().toString(36).slice(2, 10),
                         show_if_uid: '', show_if_value: '', label: this.defaultLabels[type] || '', type: type,
                         placeholder: '', options: ['select', 'radio', 'checkboxes'].includes(type) ? 'Opcja 1, Opcja 2' : '',
-                        help_text: '', accept: '', max_mb: '', krs_fill: '', required: type === 'consent',
+                        help_text: type === 'link' ? 'Krótki opis, dokąd prowadzi przycisk.' : '', accept: '', max_mb: '', krs_fill: '', url: '', new_tab: false, required: type === 'consent',
                     };
                 },
 
                 // Nowe pole trafia pod zaznaczone (albo na koniec) i od razu jest zaznaczone do edycji.
                 addField(type, at = null) {
+                    this.snapshot();
                     const field = this.newField(type);
                     const pos = at !== null ? at : (this.selIndex >= 0 ? this.selIndex + 1 : this.fields.length);
                     this.fields.splice(pos, 0, field);
@@ -685,10 +808,12 @@
 
                 select(id, focus = false) {
                     this.selectedId = id;
+                    if (! focus && window.innerWidth < 1024) this.$nextTick(() => document.getElementById('field-props-heading')?.scrollIntoView({ block: 'start' }));
                     if (focus) this.$nextTick(() => document.getElementById(['consent', 'checkbox'].includes(this.sel?.type) ? 'prop-label-long' : 'prop-label')?.focus());
                 },
 
                 duplicateField(index) {
+                    this.snapshot();
                     const copy = { ...JSON.parse(JSON.stringify(this.fields[index])), _id: this._nextId++, uid: Math.random().toString(36).slice(2, 10) };
                     copy.label = copy.label ? copy.label + ' (kopia)' : '';
                     this.fields.splice(index + 1, 0, copy);
@@ -698,16 +823,18 @@
 
                 removeField(index) {
                     const f = this.fields[index];
-                    if (! f || ! confirm('Usunąć pole „' + (f.label || 'bez etykiety') + '”?')) return;
+                    if (! f) return;
+                    this.snapshot();
                     this.fields.splice(index, 1);
                     // Warunki wskazujące na usunięte pole przestają obowiązywać.
                     this.fields.forEach(x => { if (x.show_if_uid === f.uid) { x.show_if_uid = ''; x.show_if_value = ''; } });
                     if (this.selectedId === f._id) this.selectedId = (this.fields[index] || this.fields[index - 1] || {})._id ?? null;
-                    this.announce = 'Usunięto pole.';
+                    this.announce = 'Usunięto pole „' + (f.label || 'bez etykiety') + '”. Ctrl+Z cofa.';
                 },
 
                 move(from, to) {
                     if (to < 0 || to >= this.fields.length || from === to) return;
+                    this.snapshot();
                     const [f] = this.fields.splice(from, 1);
                     this.fields.splice(to, 0, f);
                     this.announce = 'Pole „' + (f.label || 'bez etykiety') + '” na pozycji ' + (to + 1) + ' z ' + this.fields.length + '.';

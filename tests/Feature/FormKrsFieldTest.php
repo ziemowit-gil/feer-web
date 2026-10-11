@@ -121,7 +121,9 @@ class FormKrsFieldTest extends TestCase
             'fields' => [['label' => 'Imię', 'type' => 'text', 'uid' => 'abcd1234']]]);
 
         $this->actingAs($admin)->get(route('admin.formularze.edit', $form))->assertOk()
-            ->assertSee('Pola formularza — edytor wizualny')
+            ->assertSee('role="tablist" aria-label="Sekcje formularza"', false)
+            ->assertSee('id="panel-settings"', false)
+            ->assertSee("addField('link')", false)
             ->assertSee('aria-label="Dodaj pole"', false)
             ->assertSee('aria-label="Podgląd formularza"', false)
             ->assertSee('id="field-props-heading"', false)
