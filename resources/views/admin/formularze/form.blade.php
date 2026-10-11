@@ -276,6 +276,51 @@
                     class="w-full rounded border-gray-500 text-sm focus:border-brand-dark focus-visible:ring-2 focus-visible:ring-brand-dark">{{ old('settings.confirmation_message', $form->settings['confirmation_message'] ?? '') }}</textarea>
             </div>
 
+            {{-- Terminy i limity --}}
+            @php
+                $fs = $form->settings ?? [];
+                $dtl = fn ($v) => filled($v) ? \Illuminate\Support\Carbon::parse($v)->format('Y-m-d\\TH:i') : '';
+                $avail = $form->exists ? $form->availability() : null;
+            @endphp
+            <fieldset class="space-y-4 rounded-md bg-gray-50 p-4">
+                <legend class="px-1 text-sm font-bold text-ink"><i class="fa-solid fa-calendar-check mr-1 text-brand-dark" aria-hidden="true"></i> Terminy i limity</legend>
+                @if ($avail)
+                    <p class="text-sm {{ $avail['open'] ? 'text-ink' : 'font-bold text-red-700' }}" role="status">
+                        {{ $avail['open'] ? 'Formularz przyjmuje zgłoszenia.' : 'Zamknięty: '.$avail['message'] }}
+                        @if ($avail['remaining'] !== null) Pozostało miejsc: {{ $avail['remaining'] }}. @endif
+                    </p>
+                @endif
+                <div class="grid gap-4 sm:grid-cols-3">
+                    <div>
+                        <label for="open_from" class="mb-1 block text-sm font-bold">Zbieranie od</label>
+                        <input id="open_from" name="settings[open_from]" type="datetime-local" value="{{ old('settings.open_from', $dtl($fs['open_from'] ?? null)) }}"
+                            class="w-full rounded border-gray-500 text-sm focus:border-brand-dark focus-visible:ring-2 focus-visible:ring-brand-dark">
+                    </div>
+                    <div>
+                        <label for="open_until" class="mb-1 block text-sm font-bold">Zbieranie do</label>
+                        <input id="open_until" name="settings[open_until]" type="datetime-local" value="{{ old('settings.open_until', $dtl($fs['open_until'] ?? null)) }}"
+                            class="w-full rounded border-gray-500 text-sm focus:border-brand-dark focus-visible:ring-2 focus-visible:ring-brand-dark">
+                    </div>
+                    <div>
+                        <label for="max_submissions" class="mb-1 block text-sm font-bold">Limit zgłoszeń</label>
+                        <input id="max_submissions" name="settings[max_submissions]" type="number" min="1" value="{{ old('settings.max_submissions', $fs['max_submissions'] ?? '') }}" placeholder="bez limitu"
+                            class="w-full rounded border-gray-500 text-sm focus:border-brand-dark focus-visible:ring-2 focus-visible:ring-brand-dark">
+                    </div>
+                </div>
+                <label class="flex items-center gap-2 text-sm">
+                    <input type="hidden" name="settings[show_remaining]" value="0">
+                    <input type="checkbox" name="settings[show_remaining]" value="1" @checked(old('settings.show_remaining', $fs['show_remaining'] ?? false))
+                        class="rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
+                    Pokazuj nad formularzem liczbę wolnych miejsc (przy ustawionym limicie) i termin końca
+                </label>
+                <div>
+                    <label for="closed_message" class="mb-1 block text-sm font-bold">Komunikat po zamknięciu</label>
+                    <textarea id="closed_message" name="settings[closed_message]" rows="2" placeholder="np. Zapisy zakończone. Kolejna edycja szkolenia jesienią — zapisz się na newsletter."
+                        class="w-full rounded border-gray-500 text-sm focus:border-brand-dark focus-visible:ring-2 focus-visible:ring-brand-dark">{{ old('settings.closed_message', $fs['closed_message'] ?? '') }}</textarea>
+                    <p class="mt-1 text-xs text-muted">Pokazywany zamiast formularza po terminie albo po wyczerpaniu limitu. Puste = komunikat domyślny.</p>
+                </div>
+            </fieldset>
+
             {{-- Powiadomienia e-mail o zgłoszeniach --}}
             @php
                 $siteCfg = \App\Models\SiteSetting::current();

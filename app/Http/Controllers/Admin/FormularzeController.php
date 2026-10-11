@@ -204,12 +204,20 @@ class FormularzeController extends Controller
             'settings.submitter_copy_message' => 'nullable|string|max:1000',
             'settings.cleantalk_disabled'    => 'nullable|boolean',
             'settings.szo_form_slug'         => 'nullable|string|max:120',
+            'settings.open_from'             => 'nullable|date',
+            'settings.open_until'            => 'nullable|date|after:settings.open_from',
+            'settings.max_submissions'       => 'nullable|integer|min:1|max:100000',
+            'settings.show_remaining'        => 'nullable|boolean',
+            'settings.closed_message'        => 'nullable|string|max:1000',
         ], [], [
             'title'       => 'nazwa formularza',
             'slug'        => 'identyfikator URL',
             'description' => 'opis',
             'settings.notification_email' => 'e-mail do powiadomień',
             'settings.notification_cc'    => 'kopia (DW)',
+            'settings.open_from'          => 'początek zbierania zgłoszeń',
+            'settings.open_until'         => 'koniec zbierania zgłoszeń',
+            'settings.max_submissions'    => 'limit zgłoszeń',
         ]);
 
         // Listy adresów rozdzielone przecinkami: każdy musi być poprawnym e-mailem.
@@ -266,6 +274,12 @@ class FormularzeController extends Controller
                 'szo_form_slug'        => $request->input('settings.szo_form_slug'),
                 // true = ten formularz nie jest sprawdzany w CleanTalk (np. formularz wewnętrzny, bez ryzyka spamu).
                 'cleantalk_disabled'   => $request->boolean('settings.cleantalk_disabled'),
+                // Terminy i limity: zbieranie od–do, limit zgłoszeń (np. zapisy z ograniczoną liczbą miejsc).
+                'open_from'            => $request->input('settings.open_from') ?: null,
+                'open_until'           => $request->input('settings.open_until') ?: null,
+                'max_submissions'      => $request->filled('settings.max_submissions') ? (int) $request->input('settings.max_submissions') : null,
+                'show_remaining'       => $request->boolean('settings.show_remaining'),
+                'closed_message'       => $request->input('settings.closed_message'),
             ],
         ];
     }

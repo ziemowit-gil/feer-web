@@ -34,6 +34,11 @@
         <div class="mb-5"></div>
     @endif
 
+    @php
+        $availability = $form->availability();
+        $closedNow = ! $availability['open'];
+    @endphp
+
     {{-- ── Potwierdzenie wysłania ─────────────────────────────────────────── --}}
     @if ($showSuccess)
         <div role="status" aria-live="polite" aria-atomic="true"
@@ -41,7 +46,24 @@
             <i class="fa-solid fa-circle-check mt-0.5 shrink-0 text-green-600" aria-hidden="true"></i>
             <p>{{ session('success') }}</p>
         </div>
+    @elseif ($closedNow)
+        {{-- Termin minął, jeszcze nie ruszył albo limit wyczerpany — zamiast formularza. --}}
+        <div role="status" class="flex items-start gap-3 rounded-lg bg-gray-100 px-5 py-4 text-sm text-ink">
+            <i class="fa-solid {{ $availability['reason'] === 'not_yet' ? 'fa-hourglass-start' : 'fa-lock' }} mt-0.5 shrink-0 text-muted" aria-hidden="true"></i>
+            <p>{{ $availability['message'] }}</p>
+        </div>
     @else
+
+    @if (! empty($form->settings['show_remaining']) && ($availability['remaining'] !== null || $availability['until']))
+        <p class="mb-5 flex flex-wrap gap-x-5 gap-y-1 rounded-md bg-brand-light px-4 py-3 text-sm text-ink">
+            @if ($availability['remaining'] !== null)
+                <span><i class="fa-solid fa-user-check mr-1 text-brand-dark" aria-hidden="true"></i>Wolne miejsca: <strong>{{ $availability['remaining'] }}</strong></span>
+            @endif
+            @if ($availability['until'])
+                <span><i class="fa-solid fa-clock mr-1 text-brand-dark" aria-hidden="true"></i>Zgłoszenia do: <strong>{{ $availability['until']->locale('pl')->translatedFormat('j F Y, H:i') }}</strong></span>
+            @endif
+        </p>
+    @endif
 
     {{-- ── Podsumowanie błędów (WCAG 3.3.1 / 3.3.3) ──────────────────────── --}}
     @if ($showErrors)
@@ -54,6 +76,9 @@
             </p>
             <ul class="mt-2 list-inside list-disc space-y-1">
                 @error('spam')
+                    <li>{{ $message }}</li>
+                @enderror
+                @error('closed')
                     <li>{{ $message }}</li>
                 @enderror
                 @foreach ($fields as $field)

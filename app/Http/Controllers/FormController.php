@@ -30,6 +30,15 @@ class FormController extends Controller
     {
         abort_unless($formularz->is_active, 404);
 
+        // Termin od–do i limit zgłoszeń — sprawdzane też przy zapisie (formularz mógł zostać otwarty wcześniej).
+        $availability = $formularz->availability();
+        if (! $availability['open']) {
+            return back()
+                ->withErrors(['closed' => $availability['message']])
+                ->withInput()
+                ->with('_form_slug', $formularz->slug);
+        }
+
         if ($spam = SpamGuard::inspect($request, $request->input('data', []), 'formularz:' . $formularz->slug)) {
             Log::warning('Zablokowano zgłoszenie formularza jako spam', [
                 'formularz' => $formularz->slug,

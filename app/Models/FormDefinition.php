@@ -231,6 +231,39 @@ class FormDefinition extends Model
         };
     }
 
+    /**
+     * Czy formularz przyjmuje zgłoszenia: termin od–do i limit zgłoszeń (Ustawienia → Terminy i limity).
+     *
+     * @return array{open: bool, reason: ?string, message: string, remaining: ?int}
+     */
+    public function availability(): array
+    {
+        $s = $this->settings ?? [];
+        $tz = config('app.timezone');
+        $from = filled($s['open_from'] ?? null) ? \Illuminate\Support\Carbon::parse($s['open_from'], $tz) : null;
+        $until = filled($s['open_until'] ?? null) ? \Illuminate\Support\Carbon::parse($s['open_until'], $tz) : null;
+        $max = (int) ($s['max_submissions'] ?? 0);
+        $remaining = $max > 0 ? max(0, $max - $this->submissions()->count()) : null;
+        $custom = trim((string) ($s['closed_message'] ?? ''));
+        $fmt = fn ($d) => $d->locale('pl')->translatedFormat('j F Y, H:i');
+
+        [$reason, $default] = match (true) {
+            $from && now()->lt($from) => ['not_yet', 'Zgłoszenia ruszają '.$fmt($from).'. Zapraszamy!'],
+            $until && now()->gt($until) => ['ended', 'Zbieranie zgłoszeń zakończyło się '.$fmt($until).'.'],
+            $remaining === 0 => ['full', 'Limit zgłoszeń został wyczerpany. Dziękujemy za zainteresowanie!'],
+            default => [null, ''],
+        };
+
+        return [
+            'open' => $reason === null,
+            'reason' => $reason,
+            // Własny komunikat dotyczy zakończenia i wyczerpania limitu; „jeszcze nie ruszyło” zawsze podaje datę.
+            'message' => $reason && $reason !== 'not_yet' && $custom !== '' ? $custom : $default,
+            'remaining' => $remaining,
+            'until' => $until,
+        ];
+    }
+
     public static function humanSize(int $bytes): string
     {
         return $bytes >= 1048576 ? round($bytes / 1048576, 1).' MB' : max(1, (int) round($bytes / 1024)).' kB';
