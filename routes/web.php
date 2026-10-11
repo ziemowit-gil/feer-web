@@ -804,6 +804,8 @@ Route::post('/{page:slug}/formularz', [CooperationFormController::class, 'store'
 Route::middleware('module:forms')->group(function () {
     Route::get('/formularz/{formularz:slug}', [FormController::class, 'show'])->name('formularz.show');
     Route::post('/formularz/{formularz:slug}', [FormController::class, 'store'])->name('formularz.store')->middleware('throttle:5,10');
+    // Pole „Numer KRS”: dane podmiotu z API KRS do automatycznego uzupełnienia formularza.
+    Route::get('/krs/{numer}', \App\Http\Controllers\KrsLookupController::class)->where('numer', '[0-9]{1,10}')->name('krs.lookup')->middleware('throttle:30,1');
 });
 
 // ── Sub-witryny sieci (federacja + Ośrodki) ─────────────────────────────────

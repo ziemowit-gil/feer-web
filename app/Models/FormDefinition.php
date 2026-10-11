@@ -40,6 +40,7 @@ class FormDefinition extends Model
         'checkboxes' => 'Wybór wielokrotny',
         'rating'   => 'Ocena w skali 1–5',
         'url'      => 'Adres strony (www)',
+        'krs'      => 'Numer KRS (dane podmiotu z rejestru)',
         'time'     => 'Godzina',
         'file'     => 'Załącznik (plik)',
         'consent'  => 'Zgoda RODO (z linkiem do polityki prywatności)',
@@ -67,6 +68,9 @@ class FormDefinition extends Model
     /** Domyślne typy plików i rozmiar (MB) dla pola „Załącznik”. */
     const FILE_DEFAULT_ACCEPT = 'pdf,doc,docx,odt,jpg,jpeg,png';
     const FILE_MAX_MB = 20;
+
+    /** Typy pól, które może uzupełnić pole „Numer KRS” (Ustawienie pola → „Uzupełnij z KRS”). */
+    const KRS_FILLABLE_TYPES = ['text', 'textarea', 'email', 'tel', 'url', 'number', 'date', 'select', 'radio'];
 
     public static function isInput(string $type): bool
     {
@@ -209,6 +213,7 @@ class FormDefinition extends Model
                 'checkboxes' => [$required, 'array'],
                 'rating'   => [$required, 'integer', 'between:1,5'],
                 'url'      => [$required, 'url', 'max:500'],
+                'krs'      => [$required, 'string', 'regex:/^\d{1,10}$/'],
                 'time'     => [$required, 'date_format:H:i'],
                 'file'     => [$required, 'file', 'max:'.(self::fileMaxMb($field) * 1024), 'extensions:'.implode(',', self::fileAccept($field)), 'mimes:'.implode(',', self::fileAccept($field))],
                 default    => [$required, 'string', 'max:5000'],
@@ -293,6 +298,7 @@ class FormDefinition extends Model
             match ($field['type'] ?? 'text') {
                 'time' => $messages[$k . '.date_format'] = 'Podaj godzinę w formacie GG:MM, np. 09:30.',
                 'url' => $messages[$k . '.url'] = 'Podaj pełny adres strony, np. https://przyklad.pl.',
+                'krs' => $messages[$k . '.regex'] = 'Numer KRS to do 10 cyfr, np. 0000123456.',
                 'checkboxes' => $messages[$k . '.*.in'] = 'Wybierz odpowiedzi z listy w polu „' . ($field['label'] ?? '') . '”.',
                 'rating' => $messages[$k . '.between'] = 'Wybierz ocenę od 1 do 5.',
                 default => null,

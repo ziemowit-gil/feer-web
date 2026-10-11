@@ -216,6 +216,23 @@
                                     Od tego miejsca zaczyna się kolejny krok formularza. Etykieta to tytuł kroku (widoczny na pasku postępu), tekst pomocy — opis kroku.
                                 </p>
 
+                                {{-- Pole „Numer KRS”: wyjaśnienie; pozostałe pola: co uzupełnić danymi z rejestru --}}
+                                <p x-show="field.type === 'krs'" class="rounded bg-white px-3 py-2 text-xs text-muted">
+                                    Po wpisaniu numeru dane podmiotu są pobierane z rejestru KRS (API Ministerstwa Sprawiedliwości).
+                                    W innych polach wybierz w „Uzupełnij z KRS”, które dane mają się w nie wpisać.
+                                </p>
+                                <div x-show="hasKrs && krsFillable.includes(field.type)" class="rounded bg-white p-3">
+                                    <label :for="'field-krs-' + index" class="mb-1 block text-xs font-bold text-muted uppercase tracking-wide">Uzupełnij z KRS</label>
+                                    <select :id="'field-krs-' + index" :name="'fields[' + index + '][krs_fill]'" x-model="field.krs_fill"
+                                        class="w-full rounded border-gray-500 text-sm focus:border-brand-dark focus-visible:ring-2 focus-visible:ring-brand-dark sm:w-80">
+                                        <option value="">— nie uzupełniaj —</option>
+                                        @foreach (\App\Services\KrsClient::FILL_KEYS as $krsKey => $krsLabel)
+                                            <option value="{{ $krsKey }}" :selected="field.krs_fill === '{{ $krsKey }}'">{{ $krsLabel }}</option>
+                                        @endforeach
+                                    </select>
+                                    <p class="mt-1 text-xs text-muted">Osoba wypełniająca może poprawić wpisane dane.</p>
+                                </div>
+
                                 <div class="flex items-center gap-3" x-show="! ['heading', 'step'].includes(field.type)">
                                     <input :id="'field-required-' + index"
                                         type="checkbox" x-model="field.required"
@@ -546,7 +563,9 @@
     <script>
         document.addEventListener('alpine:init', () => {
             Alpine.data('formBuilder', (initialFields) => ({
-                fields: (initialFields || []).map((f, i) => ({ show_if_uid: '', show_if_value: '', ...f, uid: f.uid || Math.random().toString(36).slice(2, 10), _id: i })),
+                krsFillable: @json(\App\Models\FormDefinition::KRS_FILLABLE_TYPES),
+                get hasKrs() { return this.fields.some(f => f.type === 'krs'); },
+                fields: (initialFields || []).map((f, i) => ({ show_if_uid: '', show_if_value: '', krs_fill: '', ...f, krs_fill: f.krs_fill || '', uid: f.uid || Math.random().toString(36).slice(2, 10), _id: i })),
                 _nextId: (initialFields || []).length,
 
                 // Pola, od których może zależeć pole nr index: wcześniejsze pola z wartością.
@@ -579,6 +598,7 @@
                         help_text:   '',
                         accept:      '',
                         max_mb:      '',
+                        krs_fill:    '',
                         required:    type === 'consent',
                     });
                     this.$nextTick(() => {

@@ -148,7 +148,7 @@
             @php
                 $ffIf = $uidToKey[$field['show_if_uid'] ?? ''] ?? null;
             @endphp
-            <div data-ff-field="{{ $field['key'] }}" @if ($ffIf && $ffIf !== $field['key']) data-ff-if="{{ $ffIf }}" data-ff-val="{{ $field['show_if_value'] ?? '' }}" @endif>
+            <div data-ff-field="{{ $field['key'] }}" @if ($ffIf && $ffIf !== $field['key']) data-ff-if="{{ $ffIf }}" data-ff-val="{{ $field['show_if_value'] ?? '' }}" @endif @if (filled($field['krs_fill'] ?? null)) data-krs-fill="{{ $field['krs_fill'] }}" @endif>
             @php
                 $fid       = "field-{$fs}-{$field['key']}";
                 $fname     = "data[{$field['key']}]";
@@ -446,6 +446,50 @@
                     @endif
                 </div>
 
+            @elseif ($type === 'krs')
+                {{-- ── Numer KRS: pobiera dane podmiotu i uzupełnia pola oznaczone w kreatorze ── --}}
+                @php $krsStatusId = $fid . '-status'; @endphp
+                <div class="space-y-1" data-krs-field data-krs-url="{{ url('/krs') }}">
+                    <label for="{{ $fid }}" class="block text-sm font-semibold text-ink">
+                        {{ $field['label'] }}
+                        @if ($required)
+                            <span aria-hidden="true" class="ml-0.5 font-bold text-red-500">*</span>
+                            <span class="sr-only">(wymagane)</span>
+                        @endif
+                    </label>
+
+                    <p id="{{ $helpId }}" class="text-xs text-muted">{{ ($field['help_text'] ?? null) ?: 'Wpisz 10 cyfr numeru KRS — dane organizacji uzupełnimy z rejestru. Możesz je potem poprawić.' }}</p>
+
+                    <div class="flex flex-wrap items-stretch gap-2">
+                        <input id="{{ $fid }}"
+                            name="{{ $fname }}"
+                            type="text"
+                            inputmode="numeric"
+                            autocomplete="off"
+                            maxlength="10"
+                            pattern="[0-9]{1,10}"
+                            value="{{ $oldVal }}"
+                            {{ $required ? 'required aria-required="true"' : '' }}
+                            placeholder="{{ ($field['placeholder'] ?? null) ?: '0000123456' }}"
+                            @if ($hasError) aria-invalid="true" @endif
+                            aria-describedby="{{ trim($helpId.' '.$krsStatusId.($hasError ? ' '.$errorId : '')) }}"
+                            data-krs-input
+                            class="{{ $baseInputClass }} max-w-xs px-3 py-2 font-mono tracking-wider">
+                        <button type="button" data-krs-button
+                            class="inline-flex min-h-11 items-center gap-2 rounded-md bg-ink px-4 text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
+                            <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i> Pobierz dane z KRS
+                        </button>
+                    </div>
+                    <p id="{{ $krsStatusId }}" class="text-sm text-ink" role="status" aria-live="polite" data-krs-status></p>
+
+                    @if ($hasError)
+                        <p id="{{ $errorId }}" class="flex items-center gap-1 text-sm font-medium text-red-700" role="alert">
+                            <i class="fa-solid fa-circle-exclamation shrink-0" aria-hidden="true"></i>
+                            @error("data.{$field['key']}") {{ $message }} @enderror
+                        </p>
+                    @endif
+                </div>
+
             @else
                 {{-- ── Wszystkie inne pola: text, email, tel, number, date ───── --}}
                 <div class="space-y-1">
@@ -629,6 +673,87 @@
             var bad = form.querySelector('[aria-invalid="true"]');
             var start = bad && bad.closest('[data-ff-step]') ? steps.indexOf(bad.closest('[data-ff-step]')) : 0;
             show(Math.max(0, start), false);
+        })();
+    </script>
+@endif
+
+@if (! $showSuccess && collect($fields)->contains(fn ($f) => ($f['type'] ?? '') === 'krs'))
+    <script>
+        (function () {
+            var root = document.getElementById('formularz-{{ $fs }}');
+            var form = root && root.querySelector('form');
+            if (!form) return;
+
+            form.querySelectorAll('[data-krs-field]').forEach(function (box) {
+                var input = box.querySelector('[data-krs-input]');
+                var button = box.querySelector('[data-krs-button]');
+                var status = box.querySelector('[data-krs-status]');
+                var last = null, timer = null;
+
+                function setStatus(text, isError) {
+                    status.textContent = text;
+                    status.classList.toggle('text-red-700', !!isError);
+                    status.classList.toggle('font-medium', !!isError);
+                }
+
+                // Uzupełnia pola oznaczone „Uzupełnij z KRS”, nie nadpisując tego, co osoba wpisała sama.
+                function fill(data) {
+                    var filled = 0;
+                    form.querySelectorAll('[data-krs-fill]').forEach(function (wrap) {
+                        var value = data[wrap.getAttribute('data-krs-fill')] || '';
+                        if (!value) return;
+                        var radios = wrap.querySelectorAll('input[type=radio]');
+                        if (radios.length) {
+                            radios.forEach(function (r) { if (r.value.toLowerCase() === value.toLowerCase()) { r.checked = true; filled++; } });
+                            return;
+                        }
+                        var el = wrap.querySelector('input, textarea, select');
+                        if (!el || el.disabled) return;
+                        if (el.value !== '' && el.value !== el.getAttribute('data-krs-value')) return;
+                        if (el.tagName === 'SELECT') {
+                            var opt = Array.prototype.find.call(el.options, function (o) { return o.value.toLowerCase() === value.toLowerCase(); });
+                            if (!opt) return;
+                            value = opt.value;
+                        }
+                        el.value = value;
+                        el.setAttribute('data-krs-value', value);
+                        el.dispatchEvent(new Event('input', { bubbles: true }));
+                        el.dispatchEvent(new Event('change', { bubbles: true }));
+                        filled++;
+                    });
+                    return filled;
+                }
+
+                function lookup(force) {
+                    var digits = input.value.replace(/\D/g, '');
+                    if (!digits || digits.length > 10 || /^0+$/.test(digits)) {
+                        if (force) setStatus('Wpisz numer KRS — do 10 cyfr.', true);
+                        return;
+                    }
+                    var krs = ('0000000000' + digits).slice(-10);
+                    if (krs === last && !force) return;
+                    last = krs;
+                    button.disabled = true;
+                    setStatus('Szukam w rejestrze KRS…');
+                    fetch(box.getAttribute('data-krs-url') + '/' + krs, { headers: { 'Accept': 'application/json' } })
+                        .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, body: j }; }); })
+                        .then(function (res) {
+                            if (!res.ok) { setStatus(res.body.message || 'Nie udało się pobrać danych z KRS.', true); return; }
+                            input.value = krs;
+                            var n = fill(res.body.data);
+                            setStatus('Znaleziono: ' + res.body.data.nazwa + (n ? '. Uzupełniono pola: ' + n + ' — sprawdź je przed wysłaniem.' : '.'));
+                        })
+                        .catch(function () { setStatus('Rejestr KRS chwilowo nie odpowiada. Uzupełnij dane ręcznie.', true); last = null; })
+                        .then(function () { button.disabled = false; });
+                }
+
+                button.addEventListener('click', function () { lookup(true); });
+                input.addEventListener('input', function () {
+                    clearTimeout(timer);
+                    if (input.value.replace(/\D/g, '').length === 10) timer = setTimeout(function () { lookup(false); }, 400);
+                });
+                input.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); lookup(true); } });
+            });
         })();
     </script>
 @endif

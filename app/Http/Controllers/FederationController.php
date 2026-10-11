@@ -7,7 +7,6 @@ use App\Models\Organization;
 use App\Models\Page;
 use App\Models\SiteSetting;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
 
 /**
@@ -32,45 +31,23 @@ class FederationController extends Controller
      * (https://prs.ms.gov.pl/krs/openApi), by ułatwić wypełnienie formularza zgłoszeniowego.
      * Próbuje najpierw rejestru stowarzyszeń, potem przedsiębiorców.
      */
-    public function lookupKrs(string $krs)
+    public function lookupKrs(string $krs, \App\Services\KrsClient $client)
     {
-        $krs = str_pad(preg_replace('/\D/', '', $krs), 10, '0', STR_PAD_LEFT);
-
-        if (strlen($krs) !== 10) {
+        if (! \App\Services\KrsClient::normalize($krs)) {
             return response()->json(['ok' => false, 'message' => 'Numer KRS musi składać się z cyfr (do 10 znaków).'], 422);
         }
 
-        foreach (['S', 'P'] as $rejestr) {
-            try {
-                $response = Http::timeout(6)->get("https://api-krs.ms.gov.pl/api/krs/OdpisAktualny/{$krs}", [
-                    'rejestr' => $rejestr,
-                    'format' => 'json',
-                ]);
-            } catch (\Throwable $e) {
-                continue;
-            }
-
-            if (! $response->ok()) {
-                continue;
-            }
-
-            $dzial1 = $response->json('odpis.dane.dzial1');
-            $adres = $dzial1['siedzibaIAdres']['adres'] ?? [];
-            $addressParts = array_filter([
-                trim(($adres['ulica'] ?? '').' '.($adres['nrDomu'] ?? '')),
-                $adres['kodPocztowy'] ?? null,
-                $adres['miejscowosc'] ?? null,
-            ]);
-
-            return response()->json([
-                'ok' => true,
-                'name' => $dzial1['danePodmiotu']['nazwa'] ?? null,
-                'address' => implode(', ', $addressParts) ?: null,
-                'website' => $dzial1['siedzibaIAdres']['adresStronyInternetowej'] ?? null,
-            ]);
+        $result = $client->lookup($krs);
+        if ($result['status'] !== 'found') {
+            return response()->json(['ok' => false, 'message' => 'Nie znaleziono podmiotu o podanym numerze KRS.'], 404);
         }
 
-        return response()->json(['ok' => false, 'message' => 'Nie znaleziono podmiotu o podanym numerze KRS.'], 404);
+        return response()->json([
+            'ok' => true,
+            'name' => $result['data']['nazwa'] ?: null,
+            'address' => $result['data']['adres'] ?: null,
+            'website' => $result['data']['www'] ?: null,
+        ]);
     }
 
     /** Przyjmuje zgłoszenie przystąpienia do federacji wraz ze skanami dokumentów. */

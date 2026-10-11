@@ -194,6 +194,7 @@ class FormularzeController extends Controller
             'fields.*.show_if_uid'           => 'nullable|string|max:20',
             'fields.*.show_if_value'         => 'nullable|string|max:255',
             'fields.*.max_mb'                => 'nullable|integer|min:1|max:' . FormDefinition::FILE_MAX_MB,
+            'fields.*.krs_fill'              => 'nullable|in:' . implode(',', array_keys(\App\Services\KrsClient::FILL_KEYS)),
             'settings.confirmation_message'  => 'nullable|string|max:1000',
             'settings.notification_email'    => 'nullable|string|max:500',
             'settings.notification_cc'       => 'nullable|string|max:500',
@@ -247,6 +248,8 @@ class FormularzeController extends Controller
                 'help_text'   => $f['help_text'] ?? null,
                 'accept'      => ($f['type'] ?? '') === 'file' ? (trim((string) ($f['accept'] ?? '')) ?: null) : null,
                 'max_mb'      => ($f['type'] ?? '') === 'file' && filled($f['max_mb'] ?? null) ? (int) $f['max_mb'] : null,
+                // Pole uzupełniane danymi z pola „Numer KRS” (np. nazwa, NIP, adres).
+                'krs_fill'    => in_array($f['type'] ?? 'text', FormDefinition::KRS_FILLABLE_TYPES, true) && array_key_exists((string) ($f['krs_fill'] ?? ''), \App\Services\KrsClient::FILL_KEYS) ? $f['krs_fill'] : null,
                 // Stały identyfikator pola — warunki „Pokaż tylko, gdy…” przetrwają zmianę etykiety.
                 'uid'         => preg_match('/^[a-z0-9]{4,20}$/i', (string) ($f['uid'] ?? '')) ? $f['uid'] : Str::lower(Str::random(8)),
                 'show_if_uid'   => ($f['type'] ?? '') !== 'step' && filled($f['show_if_uid'] ?? null) ? (string) $f['show_if_uid'] : null,
