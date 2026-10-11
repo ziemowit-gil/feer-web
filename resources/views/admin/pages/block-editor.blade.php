@@ -9,7 +9,12 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;700&family=Montserrat:wght@400;600;700&display=swap">
-    @vite(['resources/css/app.css', 'resources/css/block-editor.css', 'resources/js/block-editor.js'])
+    @php
+        // Po wdrożeniu bez `npm run build` manifest nie zna nowych plików — zamiast błędu 500 ładujemy to, co jest, i pokazujemy komunikat.
+        $beEntries = ['resources/css/app.css', 'resources/css/block-editor.css', 'resources/js/block-editor.js'];
+        $beMissing = \App\Support\ViteSafe::missing($beEntries);
+    @endphp
+    @vite(array_values(array_diff($beEntries, $beMissing)))
     @php $brandPalette = $siteSettings->brandPalette(); @endphp
     <style>
         :root {
@@ -26,6 +31,13 @@
     @endif
 </head>
 <body class="be-body">
+    @if ($beMissing)
+        <div role="alert" style="margin:1rem;padding:1rem 1.25rem;border:2px solid #991b1b;border-radius:.375rem;background:#fef2f2;color:#1d1d1a;font:600 15px/1.5 system-ui,sans-serif">
+            Edytor blokowy nie może się uruchomić: na serwerze brakuje zbudowanych plików ({{ implode(', ', array_map('basename', $beMissing)) }}).
+            Administrator powinien uruchomić wdrożenie (<code>./deploy.sh</code>) albo <code>npm ci &amp;&amp; npm run build</code>.
+            <a href="{{ $editorConfig['urls']['admin'] }}" style="color:#1d1d1a;text-decoration:underline">Wróć do zwykłego edytora</a>.
+        </div>
+    @endif
     <noscript>
         <p class="be-noscript">Edytor blokowy wymaga JavaScriptu. <a href="{{ $editorConfig['urls']['admin'] }}">{{ $editorConfig['labels']['noscript'] }}</a>.</p>
     </noscript>
