@@ -67,11 +67,12 @@
             img.setAttribute('tabindex', '0');
             img.setAttribute('role', 'button');
             img.setAttribute('aria-label', 'Powiększ grafikę' + (img.alt ? ': ' + img.alt : ''));
-            img.addEventListener('click', function () { open(img); });
+            // detail === 0: „klik” z klawiatury/czytnika ekranu — wtedy po zamknięciu obramowanie fokusu zostaje.
+            img.addEventListener('click', function (event) { open(img, event.detail === 0); });
             img.addEventListener('keydown', function (event) {
                 if (event.key === 'Enter' || event.key === ' ') {
                     event.preventDefault();
-                    open(img);
+                    open(img, true);
                 }
             });
         }
@@ -91,6 +92,7 @@
         let group = [];
         let index = 0;
         let lastFocused = null;
+        let openedWithKeyboard = false;
 
         function groupFor(img) {
             // Prev/next grouping scope: a gallery track, a container opted-in with
@@ -126,8 +128,9 @@
             render();
         }
 
-        function open(img) {
+        function open(img, viaKeyboard) {
             lastFocused = document.activeElement;
+            openedWithKeyboard = !! viaKeyboard;
             group = groupFor(img);
             index = Math.max(0, group.indexOf(img));
             render();
@@ -142,7 +145,22 @@
             overlay.classList.remove('flex');
             document.body.style.overflow = '';
             imgEl.src = '';
-            if (lastFocused && typeof lastFocused.focus === 'function') lastFocused.focus();
+            if (lastFocused && typeof lastFocused.focus === 'function') {
+                // Po otwarciu myszą fokus wraca bez obramowania (to ono dawało niebieską ramkę wokół zdjęcia);
+                // z klawiatury obramowanie zostaje (WCAG 2.4.7). Pierwszy klawisz albo opuszczenie przywraca styl.
+                if (! openedWithKeyboard) {
+                    var el = lastFocused;
+                    el.style.outline = 'none';
+                    var restore = function () {
+                        el.style.outline = '';
+                        el.removeEventListener('blur', restore);
+                        el.removeEventListener('keydown', restore);
+                    };
+                    el.addEventListener('blur', restore);
+                    el.addEventListener('keydown', restore);
+                }
+                lastFocused.focus({ preventScroll: true, focusVisible: openedWithKeyboard });
+            }
         }
 
         closeBtn.addEventListener('click', close);
