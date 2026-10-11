@@ -136,7 +136,8 @@ class FlatTemplatesTest extends TestCase
         return [['default'], ['feer']];
     }
 
-    #[\PHPUnit\Framework\Attributes\DataProvider('siteTemplates')]
+    /** Szablon FEER wrócił do własnej listy (news/index-feer: wyróżniony wpis + karty) — układ portalu tylko w pozostałych. */
+    #[\PHPUnit\Framework\Attributes\TestWith(['default'])]
     public function test_lista_aktualnosci_w_ukladzie_portalu(string $siteTemplate): void
     {
         SiteSetting::current()->update(['site_template' => $siteTemplate]);
