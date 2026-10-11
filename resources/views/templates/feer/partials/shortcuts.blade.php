@@ -1,11 +1,12 @@
 {{--
     Szablon FEER — „Na skróty" (moduł quick_actions; „Szybkie akcje" to tylko nazwa administracyjna).
     Wyraźne kafle w jednym rzędzie. Wygląd zależy od ustawień:
-      • akcja zwykła  → obramówka 2 px w kolorze akcji (domyślnie kolor FEER), białe tło, ciemny tekst,
+      • akcja zwykła  → płaski kafel bez obramówki: tło odcina się od tła sekcji (białe na szarej sekcji,
+                        jasnoszare na białej), ikona w kolorze akcji, ciemny tekst,
       • akcja „Negatyw" (is_negative) → wypełnione tłem w kolorze akcji, tekst dobrany pod kontrast ≥ 4,5:1,
       • tło sekcji: białe, gdy włączono „Białe tło sekcji" (Ustawienia → Strona główna), w przeciwnym razie jasnoszare.
     Ankieta (moduł polls) stoi obok kafli, gdy jest aktywna. Obsługiwane: „Negatyw”, „Pasek” (niski kafel), „Kolumny” (szerokość 2–3 kolumn), „Białe tło sekcji”.
-    Kolor obramówki jest przyciemniany do kontrastu ≥ 4,5:1 na bieli (WCAG 1.4.11).
+    Kolor ikony jest przyciemniany do kontrastu ≥ 4,5:1 na bieli (WCAG 1.4.11).
 --}}
 @php
     // Kolory nazwane → paleta brandbooka (niebieski #1E6DFF, grafit #1D1D1A, pomarańcz #EA8F00); fioletowy zastąpiony firmowym niebieskim; zielony/czerwony zostają dla starszych wpisów.
@@ -56,11 +57,11 @@
                         @endphp
                         <li class="{{ $qaSpan((int) ($qa->cols ?? 1)) }}">
                             <a href="{{ $qa->url }}" @if ($external) target="_blank" rel="noopener" @endif
-                               class="group flex {{ $single ? 'min-h-32 gap-6 px-8 py-6' : ($strip ? 'min-h-14 gap-3 px-4 py-2' : 'min-h-20 gap-4 px-5 py-4') }} items-center rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2 {{ $filled ? '' : 'bg-white hover:bg-gray-100' }}"
+                               class="group flex {{ $single ? 'min-h-32 gap-6 px-8 py-6' : ($strip ? 'min-h-14 gap-3 px-4 py-2' : 'min-h-20 gap-4 px-5 py-4') }} items-center rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2 {{ $filled ? '' : ($panelWhite ? 'bg-gray-50 hover:bg-brand-light' : 'bg-white hover:bg-brand-light') }}"
                                @if ($filled)
                                    style="background-color: {{ $pal['bg'] }}; color: {{ $pal['text'] }}"
                                @else
-                                   style="border: 2px solid {{ $safe }}; color: #1d1d1a"
+                                   style="color: #1d1d1a"
                                @endif>
                                 {!! icon_html($qa->icon, 'flex-none text-center '.($single ? 'w-12 text-5xl' : ($strip ? 'w-6 text-xl' : 'w-7 text-2xl')), $filled ? '' : 'color: '.$safe) !!}
                                 <span class="min-w-0 flex-1">

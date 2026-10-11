@@ -371,7 +371,7 @@ class FeerTemplateTest extends TestCase
         $this->get(route('news.show', $news))->assertOk()->assertDontSee('min czytania');
     }
 
-    public function test_na_skroty_maja_obramowke_albo_wypelnienie_zaleznie_od_ustawien(): void
+    public function test_na_skroty_sa_plaskie_albo_wypelnione_zaleznie_od_ustawien(): void
     {
         \App\Models\QuickAction::create(['label' => 'Zwykła', 'url' => '/a', 'icon' => 'fa-solid fa-link', 'color' => '#1b66f5', 'is_negative' => false, 'order' => 1]);
         \App\Models\QuickAction::create(['label' => 'Negatyw', 'url' => '/b', 'icon' => 'fa-solid fa-link', 'color' => '#1456cc', 'is_negative' => true, 'order' => 2]);
@@ -379,13 +379,15 @@ class FeerTemplateTest extends TestCase
         \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();
 
         $html = $this->get('/')->assertOk()->getContent();
-        $this->assertStringContainsString('border: 2px solid #1b66f5', $html);          // zwykła: obramówka w kolorze akcji
+        $this->assertStringNotContainsString('border: 2px solid #1b66f5', $html);       // zwykła: płasko, bez obramówki w kolorze akcji
+        $this->assertStringContainsString('bg-white hover:bg-brand-light', $html);      // biały kafel na szarej sekcji
         $this->assertStringContainsString('background-color: #1456cc', $html);          // negatyw: wypełnienie
         $this->assertMatchesRegularExpression('/<section class="bg-gray-50 py-10" aria-labelledby="feer-shortcuts-heading"/', $html);
 
         SiteSetting::current()->update(['quick_actions_panel_negative' => true]);
         \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();
-        $this->get('/')->assertOk()->assertSee('<section class="bg-white py-10" aria-labelledby="feer-shortcuts-heading"', false);
+        $this->get('/')->assertOk()->assertSee('<section class="bg-white py-10" aria-labelledby="feer-shortcuts-heading"', false)
+            ->assertSee('bg-gray-50 hover:bg-brand-light', false);                        // szary kafel na białej sekcji
     }
 
     public function test_sekcja_w_liczbach_feer_to_kolorowe_kafle_bez_kart(): void
