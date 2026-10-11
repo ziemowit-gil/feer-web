@@ -126,6 +126,7 @@ class Page extends Model
         'reports'       => 'Sprawozdania roczne (tabela z modułu Sprawozdania — np. do BIP)',
         'partners'      => 'Partnerzy i sponsorzy (logotypy w grupach, z modułu Partnerzy lub własne)',
         'recruitment'   => 'Rekrutacja do projektu (status naboru, terminy, kryteria, dokumenty, zgłoszenie)',
+        'tender'        => 'Zapytanie ofertowe (zasada konkurencyjności: termin ofert, warunki, kryteria, zmiany, wynik)',
     ];
 
     /** Ikony Font Awesome typów stron (karty podstron, kafelki działu). */
@@ -133,7 +134,7 @@ class Page extends Model
     public const TYPE_GROUPS = [
         'Treść i informacja' => ['standard', 'faq', 'glossary', 'guide', 'documents', 'regulation'],
         'Oferta i edukacja' => ['service', 'pricing', 'case_study', 'training_institution', 'recruitment'],
-        'Organizacja' => ['about', 'about_person', 'team', 'wspolpraca', 'legacy', 'brand_assets', 'reports', 'partners'],
+        'Organizacja' => ['about', 'about_person', 'team', 'wspolpraca', 'legacy', 'brand_assets', 'reports', 'partners', 'tender'],
         'Kafelki i nawigacja' => ['links_hub', 'tiles_grid'],
         'Kontakt i wydarzenia' => ['contact', 'event', 'schedule'],
         'Wewnętrzne i przekierowania' => ['internal', 'internal_hub', 'bip_move', 'redirect'],
@@ -141,14 +142,26 @@ class Page extends Model
 
     public const TYPE_ICONS = [
         'pricing' => 'fa-coins', 'team' => 'fa-people-group', 'documents' => 'fa-folder-open', 'regulation' => 'fa-scale-balanced', 'redirect' => 'fa-share', 'reports' => 'fa-file-invoice', 'partners' => 'fa-handshake',
-        'recruitment' => 'fa-user-plus', 'service' => 'fa-briefcase', 'guide' => 'fa-list-ol', 'glossary' => 'fa-book', 'case_study' => 'fa-chart-line',
+        'recruitment' => 'fa-user-plus', 'tender' => 'fa-file-signature', 'service' => 'fa-briefcase', 'guide' => 'fa-list-ol', 'glossary' => 'fa-book', 'case_study' => 'fa-chart-line',
         'faq' => 'fa-circle-question', 'event' => 'fa-calendar', 'schedule' => 'fa-calendar-days', 'links_hub' => 'fa-table-cells-large',
         'tiles_grid' => 'fa-table-cells', 'internal' => 'fa-lock', 'internal_hub' => 'fa-user-lock', 'bip_move' => 'fa-landmark',
         'about' => 'fa-building', 'contact' => 'fa-envelope', 'wspolpraca' => 'fa-handshake', 'brand_assets' => 'fa-palette', 'legacy' => 'fa-clock-rotate-left',
     ];
 
     /** Typy, których dane trzymamy we wspólnej kolumnie JSON `type_data`. */
-    public const TYPE_DATA_TYPES = ['service', 'guide', 'glossary', 'case_study', 'pricing', 'team', 'documents', 'regulation', 'redirect', 'reports', 'partners', 'recruitment'];
+    public const TYPE_DATA_TYPES = ['service', 'guide', 'glossary', 'case_study', 'pricing', 'team', 'documents', 'regulation', 'redirect', 'reports', 'partners', 'recruitment', 'tender'];
+
+    /**
+     * Statusy zapytania ofertowego. „auto": do terminu składania ofert „Przyjmowanie
+     * ofert", po terminie „Ocena ofert", po wpisaniu wyniku „Rozstrzygnięte".
+     */
+    public const TENDER_STATUSES = [
+        'auto'       => 'Automatycznie z terminu i wyniku',
+        'open'       => 'Przyjmowanie ofert',
+        'evaluation' => 'Ocena ofert',
+        'awarded'    => 'Rozstrzygnięte',
+        'cancelled'  => 'Unieważnione',
+    ];
 
     /**
      * Statusy naboru (typ „Rekrutacja do projektu"). „auto" wylicza status z dat
@@ -600,6 +613,43 @@ class Page extends Model
         return $this->type === 'recruitment';
     }
 
+    public function isTender(): bool
+    {
+        return $this->type === 'tender';
+    }
+
+    /** Termin składania ofert (type_data.tender_deadline); sama data obowiązuje do końca dnia. */
+    public function tenderDeadline(): ?\Illuminate\Support\Carbon
+    {
+        $raw = trim((string) ($this->typeData()['tender_deadline'] ?? ''));
+        if ($raw === '') {
+            return null;
+        }
+        try {
+            $date = \Illuminate\Support\Carbon::parse($raw);
+        } catch (\Throwable) {
+            return null;
+        }
+
+        return str_contains($raw, 'T') || str_contains($raw, ':') ? $date : $date->endOfDay();
+    }
+
+    /** Bieżący status zapytania: ręczny z panelu albo wyliczony z terminu i wyniku. */
+    public function tenderStatus(): string
+    {
+        $td = $this->typeData();
+        $manual = $td['tender_status'] ?? 'auto';
+        if ($manual !== 'auto' && array_key_exists($manual, self::TENDER_STATUSES)) {
+            return $manual;
+        }
+        if (filled($td['tender_result'] ?? null)) {
+            return 'awarded';
+        }
+        $deadline = $this->tenderDeadline();
+
+        return $deadline && $deadline->isPast() ? 'evaluation' : 'open';
+    }
+
     /** Początek / koniec naboru (pola rec_starts_at / rec_ends_at w type_data) albo null. */
     public function recruitmentDate(string $which): ?\Illuminate\Support\Carbon
     {
@@ -654,7 +704,7 @@ class Page extends Model
     {
         $data = is_array($this->type_data) ? $this->type_data : [];
 
-        foreach (['benefits', 'audience', 'steps', 'requirements', 'terms', 'results', 'price_rows', 'members', 'docs', 'versions', 'partners', 'partner_groups', 'bonus', 'rec_faq'] as $list) {
+        foreach (['benefits', 'audience', 'steps', 'requirements', 'terms', 'results', 'price_rows', 'members', 'docs', 'versions', 'partners', 'partner_groups', 'bonus', 'rec_faq', 'criteria', 'notices'] as $list) {
             $data[$list] = array_values(array_filter(
                 is_array($data[$list] ?? null) ? $data[$list] : [],
                 fn ($row) => is_array($row) && array_filter($row, fn ($v) => is_string($v) && trim($v) !== ''),
@@ -671,7 +721,7 @@ class Page extends Model
             'event', 'schedule', 'about', 'faq', 'bip_move',
             'internal_hub', 'links_hub', 'wspolpraca', 'training_institution', 'brand_assets',
             'legacy', 'about_person', 'contact', 'service', 'guide', 'glossary', 'case_study', 'tiles_grid', 'pricing', 'team', 'documents', 'regulation', 'redirect', 'reports', 'partners',
-            'recruitment',
+            'recruitment', 'tender',
         ], true);
     }
 
