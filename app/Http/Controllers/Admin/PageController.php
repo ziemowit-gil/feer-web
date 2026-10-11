@@ -802,6 +802,8 @@ class PageController extends Controller
             'layout_data.news_category_id' => ['nullable', 'integer', 'exists:news_categories,id'],
             'layout_data.news_count' => ['nullable', 'integer', 'min:0', 'max:13'],
             'layout_data.slider' => ['nullable', 'boolean'],
+            'layout_data.source' => ['nullable', Rule::in(['news', 'blog'])],
+            'layout_data.newsletter' => ['nullable', 'boolean'],
             'access_mode' => ['nullable', Rule::in(array_keys(Page::ACCESS_MODES))],
             'access_password' => ['nullable', 'string', 'max:255'],
             'access_level' => ['nullable', Rule::in(array_keys(Page::ACCESS_LEVELS))],

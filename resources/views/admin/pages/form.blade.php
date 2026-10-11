@@ -323,8 +323,15 @@
                         <fieldset data-template-fields="section" class="mt-4 space-y-3 rounded-lg bg-gray-50 p-4 {{ $tplCurrent === 'section' ? '' : 'hidden' }}">
                             <legend class="text-xs font-bold uppercase text-muted">Strona działu</legend>
                             <div class="grid gap-3 sm:grid-cols-2">
+                                <div class="sm:col-span-2">
+                                    <label for="ld-source" class="mb-1 block text-xs font-bold text-muted">Wpisy pod sliderem</label>
+                                    <select id="ld-source" name="layout_data[source]" class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
+                                        <option value="news" @selected(($ld['source'] ?? 'news') === 'news')>Aktualności</option>
+                                        <option value="blog" @selected(($ld['source'] ?? 'news') === 'blog')>Wiem FEER (blog)</option>
+                                    </select>
+                                </div>
                                 <div>
-                                    <label for="ld-news-category" class="mb-1 block text-xs font-bold text-muted">Aktualności z kategorii</label>
+                                    <label for="ld-news-category" class="mb-1 block text-xs font-bold text-muted">Aktualności z kategorii (tylko dla aktualności)</label>
                                     <select id="ld-news-category" name="layout_data[news_category_id]" class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand">
                                         <option value="">— wszystkie kategorie —</option>
                                         @foreach ($newsCategories as $cat)
@@ -333,9 +340,9 @@
                                     </select>
                                 </div>
                                 <div>
-                                    <label for="ld-news-count" class="mb-1 block text-xs font-bold text-muted">Liczba aktualności</label>
+                                    <label for="ld-news-count" class="mb-1 block text-xs font-bold text-muted">Liczba wpisów</label>
                                     <select id="ld-news-count" name="layout_data[news_count]" class="w-full rounded border-gray-300 text-sm focus:border-brand focus:ring-brand" aria-describedby="ld-news-count-help">
-                                        @foreach ([0 => 'Bez aktualności', 1 => '1 (tylko wyróżniona)', 4 => '4 (wyróżniona + 3)', 7 => '7 (wyróżniona + 6)', 10 => '10 (wyróżniona + 9)', 13 => '13 (wyróżniona + 12)'] as $n => $label)
+                                        @foreach ([0 => 'Bez wpisów', 1 => '1 (tylko wyróżniona)', 4 => '4 (wyróżniona + 3)', 7 => '7 (wyróżniona + 6)', 10 => '10 (wyróżniona + 9)', 13 => '13 (wyróżniona + 12)'] as $n => $label)
                                             <option value="{{ $n }}" @selected((int) ($ld['news_count'] ?? 4) === $n)>{{ $label }}</option>
                                         @endforeach
                                     </select>
@@ -347,7 +354,12 @@
                                 <input type="checkbox" name="layout_data[slider]" value="1" class="mt-0.5 rounded border-gray-300 text-brand focus:ring-brand" @checked($ld['slider'] ?? true)>
                                 <span>Slider ze zdjęć strony (zakładka „Galeria”) nad aktualnościami. Można go zatrzymać, a przy ograniczonym ruchu nie przewija się sam.</span>
                             </label>
-                            <p class="text-xs text-muted">Menu w prawej kolumnie to podstrony działu. Treść strony wyświetla się pod aktualnościami.</p>
+                            <label class="flex items-start gap-2 text-sm">
+                                <input type="hidden" name="layout_data[newsletter]" value="0">
+                                <input type="checkbox" name="layout_data[newsletter]" value="1" class="mt-0.5 rounded border-gray-300 text-brand focus:ring-brand" @checked($ld['newsletter'] ?? true)>
+                                <span>Przycisk „Zapisz się na newsletter” w prawej kolumnie (prowadzi do strony zapisu).</span>
+                            </label>
+                            <p class="text-xs text-muted">Menu w prawej kolumnie to podstrony działu. Treść strony wyświetla się pod wpisami.</p>
                         </fieldset>
                         <script>
                             document.getElementById('page_template')?.addEventListener('change', function (e) {

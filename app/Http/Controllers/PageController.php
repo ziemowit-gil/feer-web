@@ -94,7 +94,7 @@ class PageController extends Controller
 
         // Szablon „Strona działu": aktualności (opcjonalnie z jednej kategorii) do sekcji pod sliderem.
         if ($page->page_template === 'section' && $page->usesStandardLayout()) {
-            $data['sectionNews'] = $this->sectionNews($page);
+            $data['sectionPosts'] = $this->sectionPosts($page);
         }
 
         $view = match ($page->page_template) {
@@ -111,23 +111,64 @@ class PageController extends Controller
         return response()->view($view, $data);
     }
 
-    /** Aktualności dla szablonu „Strona działu" (layout_data: news_category_id, news_count). */
-    private function sectionNews(Page $page): \Illuminate\Support\Collection
+    /**
+     * Wpisy dla szablonu „Strona działu" (layout_data): źródło `news` (aktualności,
+     * opcjonalnie z kategorii) albo `blog` (Wiem FEER — osobna baza, bez zdjęć).
+     * Zwraca ujednolicone wiersze, żeby widok nie zależał od źródła.
+     *
+     * @return array{items: \Illuminate\Support\Collection, heading: string, allUrl: ?string, allLabel: string}
+     */
+    private function sectionPosts(Page $page): array
     {
         $settings = $page->layout_data ?? [];
-        $count = (int) ($settings['news_count'] ?? 4);
-        if ($count <= 0 || ! SiteSetting::current()->isModuleEnabled('news')) {
-            return collect();
+        $count = min((int) ($settings['news_count'] ?? 4), 13);
+        $source = ($settings['source'] ?? 'news') === 'blog' ? 'blog' : 'news';
+        $site = SiteSetting::current();
+        $empty = ['items' => collect(), 'heading' => '', 'allUrl' => null, 'allLabel' => ''];
+
+        if ($count <= 0) {
+            return $empty;
         }
 
-        return \App\Models\News::query()
-            ->published()
-            ->forCurrentSite()
-            ->when($settings['news_category_id'] ?? null, fn ($q, $id) => $q->where('news_category_id', $id))
-            ->with('category')
-            ->latest('published_at')
-            ->limit(min($count, 13))
-            ->get();
+        if ($source === 'blog') {
+            if (! $site->isModuleEnabled('blog') || ! class_exists(\Modules\Blog\Models\BlogArticle::class)) {
+                return $empty;
+            }
+            try {
+                $articles = \Modules\Blog\Models\BlogArticle::query()->published()->where('is_disabled', false)
+                    ->latest('published_at')->limit($count)->get();
+            } catch (\Illuminate\Database\QueryException) {
+                // Baza bloga (osobny plik SQLite) może nie istnieć w danym środowisku.
+                return $empty;
+            }
+
+            return [
+                'items' => $articles->map(fn ($a) => [
+                    'title' => $a->title, 'url' => route('blog.show', $a), 'excerpt' => $a->excerpt,
+                    'date' => $a->published_at ?? $a->created_at, 'image' => null, 'meta' => $a->author_name,
+                ]),
+                'heading' => 'Wiem FEER', 'allUrl' => route('blog.index'), 'allLabel' => 'Wszystkie wpisy Wiem FEER',
+            ];
+        }
+
+        if (! $site->isModuleEnabled('news')) {
+            return $empty;
+        }
+        $categoryId = $settings['news_category_id'] ?? null;
+        $news = \App\Models\News::query()->published()->forCurrentSite()
+            ->when($categoryId, fn ($q, $id) => $q->where('news_category_id', $id))
+            ->with('category')->latest('published_at')->limit($count)->get();
+        $category = $categoryId ? \App\Models\NewsCategory::find($categoryId) : null;
+
+        return [
+            'items' => $news->map(fn ($n) => [
+                'title' => $n->title, 'url' => route('news.show', $n), 'excerpt' => $n->excerpt,
+                'date' => $n->published_at, 'image' => $n->imageUrlOrDefault(), 'meta' => $n->category?->name,
+            ]),
+            'heading' => 'Aktualności',
+            'allUrl' => route('news.index', $category ? ['kategoria' => $category->slug] : []),
+            'allLabel' => 'Wszystkie aktualności'.($category ? ': '.$category->name : ''),
+        ];
     }
 
     /** Formularz logowania dla strony z zasobami marki (indywidualny login+hasło). */

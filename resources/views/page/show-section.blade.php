@@ -6,7 +6,8 @@
     prawa kolumna — menu działu (podstrony). Płasko: bez ramek i etykiet, kolory
     firmowe. Slider: przycisk wstrzymania (WCAG 2.2.2), strzałki, kropki,
     zatrzymanie przy najechaniu/fokusie, bez autoodtwarzania przy ograniczonym ruchu.
-    Dane: $page, $sectionNews (PageController::sectionNews).
+    Dane: $page, $sectionPosts (PageController::sectionPosts — aktualności albo Wiem FEER).
+    W prawej kolumnie opcjonalnie przycisk zapisu na newsletter (strona zapisu modułu Newsletter).
 --}}
 
 @section('title', ($page->meta_title ?: $page->title) . ' — ' . $siteSettings->site_name)
@@ -33,11 +34,10 @@
         $slides = ($settings['slider'] ?? true)
             ? $page->images->filter(fn ($i) => $i->image_url)->sortBy('order')->values()
             : collect();
-        $sectionNews = $sectionNews ?? collect();
-        $featured = $sectionNews->first();
-        $restNews = $sectionNews->slice(1)->values();
-        $newsCategory = ($settings['news_category_id'] ?? null) ? $featured?->category : null;
-        $allNewsUrl = route('news.index', $newsCategory ? ['kategoria' => $newsCategory->slug] : []);
+        $posts = $sectionPosts ?? ['items' => collect(), 'heading' => '', 'allUrl' => null, 'allLabel' => ''];
+        $featured = $posts['items']->first();
+        $restNews = $posts['items']->slice(1)->values();
+        $showNewsletter = ($settings['newsletter'] ?? true) && $siteSettings->isModuleEnabled('newsletter');
         $contentHtml = \App\Support\ShortcodeParser::render($page->content);
         $canInlineEdit = auth('web')->check() && auth('web')->user()->canAccessModule('pages');
         $link = 'font-bold text-brand-dark underline underline-offset-4 hover:no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark';
@@ -108,27 +108,27 @@
                     </section>
                 @endif
 
-                {{-- ===== AKTUALNOŚCI ===== --}}
+                {{-- ===== WPISY (aktualności albo Wiem FEER) ===== --}}
                 @if ($featured)
                     <section class="mb-10" aria-labelledby="section-news-heading">
                         <h2 id="section-news-heading" class="mb-6 text-2xl font-bold text-ink">
-                            Aktualności
+                            {{ $posts['heading'] }}
                             <span class="mt-2 block h-1 w-14 bg-brand" aria-hidden="true"></span>
                         </h2>
 
-                        <article class="grid gap-6 rounded-md bg-gray-50 p-4 md:grid-cols-[minmax(0,5fr)_minmax(0,6fr)] md:p-6">
-                            @if ($img = $featured->imageUrlOrDefault())
-                                <img src="{{ $img }}" alt="" class="aspect-[4/3] w-full rounded-md object-cover">
+                        <article class="grid gap-6 rounded-md bg-gray-50 p-4 md:p-6 {{ $featured['image'] ? 'md:grid-cols-[minmax(0,5fr)_minmax(0,6fr)]' : '' }}">
+                            @if ($featured['image'])
+                                <img src="{{ $featured['image'] }}" alt="" class="aspect-[4/3] w-full rounded-md object-cover">
                             @endif
                             <div>
-                                <p class="text-sm text-muted"><time datetime="{{ $featured->published_at?->toDateString() }}">{{ $date($featured->published_at) }}</time>@if ($featured->category) · {{ $featured->category->name }}@endif</p>
+                                <p class="text-sm text-muted"><time datetime="{{ $featured['date']?->toDateString() }}">{{ $date($featured['date']) }}</time>@if ($featured['meta']) · {{ $featured['meta'] }}@endif</p>
                                 <h3 class="mt-2 text-2xl font-bold leading-tight text-ink">
-                                    <a href="{{ route('news.show', $featured) }}" class="hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">{{ $featured->title }}</a>
+                                    <a href="{{ $featured['url'] }}" class="hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">{{ $featured['title'] }}</a>
                                 </h3>
-                                @if ($featured->excerpt)
-                                    <p class="mt-3 leading-relaxed text-ink">{{ $featured->excerpt }}</p>
+                                @if ($featured['excerpt'])
+                                    <p class="mt-3 leading-relaxed text-ink">{{ $featured['excerpt'] }}</p>
                                 @endif
-                                <p class="mt-4"><a href="{{ route('news.show', $featured) }}" class="{{ $link }}">Pełna treść<span class="sr-only">: {{ $featured->title }}</span></a></p>
+                                <p class="mt-4"><a href="{{ $featured['url'] }}" class="{{ $link }}">Pełna treść<span class="sr-only">: {{ $featured['title'] }}</span></a></p>
                             </div>
                         </article>
 
@@ -136,21 +136,26 @@
                             <ul class="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
                                 @foreach ($restNews as $item)
                                     <li>
-                                        <article>
-                                            @if ($img = $item->imageUrlOrDefault())
-                                                <img src="{{ $img }}" alt="" loading="lazy" class="mb-3 aspect-[3/2] w-full rounded-md object-cover">
+                                        <article class="{{ $item['image'] ? '' : 'h-full rounded-md bg-gray-50 p-4' }}">
+                                            @if ($item['image'])
+                                                <img src="{{ $item['image'] }}" alt="" loading="lazy" class="mb-3 aspect-[3/2] w-full rounded-md object-cover">
                                             @endif
                                             <h3 class="font-bold leading-snug text-ink">
-                                                <a href="{{ route('news.show', $item) }}" class="hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">{{ $item->title }}</a>
+                                                <a href="{{ $item['url'] }}" class="hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">{{ $item['title'] }}</a>
                                             </h3>
-                                            <p class="mt-1 text-sm text-muted"><time datetime="{{ $item->published_at?->toDateString() }}">{{ $date($item->published_at) }}</time></p>
+                                            <p class="mt-1 text-sm text-muted"><time datetime="{{ $item['date']?->toDateString() }}">{{ $date($item['date']) }}</time>@if (! $item['image'] && $item['meta']) · {{ $item['meta'] }}@endif</p>
+                                            @if (! $item['image'] && $item['excerpt'])
+                                                <p class="mt-2 text-sm leading-relaxed text-ink">{{ \Illuminate\Support\Str::limit($item['excerpt'], 140) }}</p>
+                                            @endif
                                         </article>
                                     </li>
                                 @endforeach
                             </ul>
                         @endif
 
-                        <p class="mt-6"><a href="{{ $allNewsUrl }}" class="{{ $link }}">Wszystkie aktualności{{ $newsCategory ? ': '.$newsCategory->name : '' }}</a></p>
+                        @if ($posts['allUrl'])
+                            <p class="mt-6"><a href="{{ $posts['allUrl'] }}" class="{{ $link }}">{{ $posts['allLabel'] }}</a></p>
+                        @endif
                     </section>
                 @endif
 
@@ -162,10 +167,24 @@
                 @include('partials.attachments-list', ['attachments' => $page->attachments])
             </div>
 
-            {{-- ===== MENU DZIAŁU ===== --}}
-            @if ($menuSiblings->isNotEmpty())
-                <aside class="lg:sticky lg:top-24 lg:self-start" aria-label="Menu działu">
+            {{-- ===== MENU DZIAŁU + NEWSLETTER ===== --}}
+            @if ($menuSiblings->isNotEmpty() || $showNewsletter)
+                <aside class="space-y-6 lg:sticky lg:top-24 lg:self-start" aria-label="Kolumna boczna działu">
                     @include('partials.section-nav', ['page' => $page, 'menuSiblings' => $menuSiblings, 'sectionRoot' => $sectionRoot])
+                    @if ($showNewsletter)
+                        {{-- Zapis na newsletter: przycisk z ikoną prowadzący do formularza zapisu. --}}
+                        <section class="rounded-md bg-brand-light p-5" aria-labelledby="section-newsletter-heading">
+                            <h2 id="section-newsletter-heading" class="flex items-center gap-2 text-lg font-bold text-ink">
+                                <i class="fa-solid fa-envelope-open-text text-brand-dark" aria-hidden="true"></i> Newsletter
+                            </h2>
+                            <p class="mt-2 text-sm text-ink">Nowości z działu prosto na Twoją skrzynkę.</p>
+                            <a href="{{ route('newsletter.show') }}"
+                                class="mt-4 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-md bg-brand-dark px-4 py-2.5 font-bold text-white transition hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2">
+                                <i class="fa-solid fa-paper-plane" aria-hidden="true"></i>
+                                Zapisz się na newsletter
+                            </a>
+                        </section>
+                    @endif
                 </aside>
             @endif
         </div>

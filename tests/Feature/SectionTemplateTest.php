@@ -59,7 +59,7 @@ class SectionTemplateTest extends TestCase
             ->assertDontSee('Spoza kategorii')
             ->assertSee('Pełna treść')
             ->assertSee('Wszystkie aktualności: Edukacja')
-            ->assertSee('aria-label="Menu działu"', false)
+            ->assertSee('aria-label="Kolumna boczna działu"', false)
             ->assertSee('Audyty')
             ->assertSee('Szkolenia')
             ->assertSee('O dziale')
@@ -77,7 +77,19 @@ class SectionTemplateTest extends TestCase
 
         // Typ z własnym układem (np. FAQ) ignoruje szablon działu.
         Page::create(['title' => 'FAQ działu', 'slug' => 'faq-dzialu', 'type' => 'faq', 'is_published' => true, 'page_template' => 'section', 'faq_items' => [['question' => 'Pytanie?', 'answer' => '<p>Tak.</p>']]]);
-        $this->get('/faq-dzialu')->assertOk()->assertSee('Pytanie?')->assertDontSee('aria-label="Menu działu"', false);
+        $this->get('/faq-dzialu')->assertOk()->assertSee('Pytanie?')->assertDontSee('aria-label="Kolumna boczna działu"', false);
+    }
+
+    public function test_blog_source_and_newsletter_options(): void
+    {
+        $this->news('Aktualność, której nie powinno być');
+
+        // Źródło „Wiem FEER" przy wyłączonym module bloga: brak sekcji wpisów, bez błędu.
+        Page::create(['title' => 'Dział bloga', 'slug' => 'dzial-bloga', 'type' => 'standard', 'is_published' => true, 'page_template' => 'section',
+            'layout_data' => ['source' => 'blog', 'news_count' => 4, 'newsletter' => false]]);
+        $this->get('/dzial-bloga')->assertOk()
+            ->assertDontSee('Aktualność, której nie powinno być')
+            ->assertDontSee('Zapisz się na newsletter');
     }
 
     public function test_admin_saves_section_settings(): void
@@ -91,7 +103,7 @@ class SectionTemplateTest extends TestCase
         $this->actingAs($admin)->put(route('admin.podstrony.update', $page), [
             'title' => 'Dział', 'slug' => 'dzial-admin', 'type' => 'standard', 'parent_id' => '', 'is_published' => '1',
             'page_template' => 'section',
-            'layout_data' => ['news_category_id' => $edu->id, 'news_count' => 7, 'slider' => '0'],
+            'layout_data' => ['news_category_id' => $edu->id, 'news_count' => 7, 'slider' => '0', 'source' => 'blog', 'newsletter' => '0'],
         ])->assertRedirect()->assertSessionHasNoErrors();
 
         $page->refresh();
@@ -99,5 +111,7 @@ class SectionTemplateTest extends TestCase
         $this->assertSame(7, (int) $page->layout_data['news_count']);
         $this->assertSame($edu->id, (int) $page->layout_data['news_category_id']);
         $this->assertFalse((bool) $page->layout_data['slider']);
+        $this->assertSame('blog', $page->layout_data['source']);
+        $this->assertFalse((bool) $page->layout_data['newsletter']);
     }
 }
