@@ -15,7 +15,8 @@ use Illuminate\Database\Seeder;
  *  - recruitment_note → wyróżniona ramka w „O projekcie” (bez naboru, kontakt bezpośredni),
  *  - scope / principles / for_whom → podstrony w menu bocznym działania:
  *    „Zakres współpracy”, „Zasady współpracy”, „Dla kogo”,
- *  - kategoria „Wsparcie dla organizacji” (podział według formy, jak ProjectCategoriesByFormSeeder),
+ *  - kategoria „Wsparcie dla organizacji” (podział według formy, jak ProjectCategoriesByFormSeeder);
+ *    pusta kategoria „Dla instytucji i organizacji” z pierwszej wersji seedera jest usuwana,
  *  - is_free = null (partnerstwo) → działanie, nie usługa odpłatna; bez informacji o płatności.
  *
  * Idempotentny (updateOrCreate po slugu). Uruchomienie:
@@ -82,6 +83,13 @@ class DzialaniaPartnershipSeeder extends Seeder
         );
 
         $project = Project::where('slug', 'dostepnosc-w-praktyce')->firstOrFail();
+
+        // Pierwsza wersja seedera tworzyła kategorię „Dla instytucji i organizacji” — po przeniesieniu
+        // działania usuwamy ją, ale tylko gdy jest pusta (żadne działanie, także archiwalne, jej nie używa).
+        Category::where('slug', 'dla-instytucji')
+            ->whereDoesntHave('projects', fn ($q) => $q->withoutGlobalScopes())
+            ->get()
+            ->each(fn (Category $empty) => $empty->delete());
 
         // Podstrony działania w menu bocznym (tryb „zakładka”), w tej kolejności.
         $subpages = [

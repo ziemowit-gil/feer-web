@@ -13,8 +13,15 @@ class DzialaniaPartnershipSeederTest extends TestCase
 
     public function test_tworzy_dzialanie_partnerskie_i_strona_sie_wyswietla(): void
     {
+        // Stan po pierwszej wersji seedera: działanie w kategorii „Dla instytucji i organizacji”.
+        $old = \App\Models\Category::create(['name' => 'Dla instytucji i organizacji', 'slug' => 'dla-instytucji']);
+        $keep = \App\Models\Category::create(['name' => 'Inna pusta', 'slug' => 'inna-pusta']);
+
         $this->seed(DzialaniaPartnershipSeeder::class);
         $this->seed(DzialaniaPartnershipSeeder::class);
+
+        $this->assertModelMissing($old);
+        $this->assertModelExists($keep);
 
         $project = Project::where('slug', 'dostepnosc-w-praktyce')->sole();
         $this->assertSame('wsparcie-dla-organizacji', $project->category->slug);
