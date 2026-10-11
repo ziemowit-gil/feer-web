@@ -2,7 +2,7 @@
     Slider ze zdjęć strony (zakładka „Galeria”): przycisk wstrzymania (WCAG 2.2.2), strzałki, kropki,
     zatrzymanie przy najechaniu/fokusie, bez autoodtwarzania przy ograniczonym ruchu.
     Używany w szablonie „Strona działu” i — po włączeniu „Slider ze zdjęć strony” — na każdej innej stronie.
-    Dane: $slides (kolekcja zdjęć z image_url, alt, caption), $label (nazwa do aria-label).
+    Dane: $slides (kolekcja zdjęć z image_url, alt, caption oraz opcjonalnie title, text, button_label, button_url), $label (nazwa do aria-label).
 --}}
 @if ($slides->isNotEmpty())
     <section class="mb-10" aria-roledescription="karuzela" aria-label="Zdjęcia: {{ $label }}"
@@ -23,8 +23,26 @@
                     role="group" aria-roledescription="slajd" aria-label="{{ $k + 1 }} z {{ $slides->count() }}"
                     :aria-hidden="(i !== {{ $k }}).toString()">
                     <img src="{{ $slide->image_url }}" alt="{{ $slide->alt }}" class="aspect-[16/7] w-full object-cover" @if ($k > 0) loading="lazy" @endif>
-                    @if ($slide->caption)
-                        <figcaption class="bg-ink px-4 py-3 text-white">{{ $slide->caption }}</figcaption>
+                    @php $hasContent = method_exists($slide, 'hasSlideContent') && $slide->hasSlideContent(); @endphp
+                    @if ($hasContent || $slide->caption)
+                        {{-- Treść slajdu pod zdjęciem (nie na nim) — kontrast nie zależy od zdjęcia. --}}
+                        <figcaption class="bg-ink px-5 py-4 text-white">
+                            @if (filled($slide->title ?? null))
+                                <p class="text-xl font-bold leading-snug">{{ $slide->title }}</p>
+                            @endif
+                            @if (filled($slide->text ?? null))
+                                <p class="mt-1">{{ $slide->text }}</p>
+                            @endif
+                            @if ($slide->caption)
+                                <p @class(['text-sm', 'mt-2' => $hasContent])>{{ $slide->caption }}</p>
+                            @endif
+                            @if (filled($slide->button_label ?? null) && filled($slide->button_url ?? null))
+                                <a href="{{ $slide->button_url }}"
+                                    class="mt-3 inline-flex min-h-11 items-center gap-2 rounded-md bg-white px-4 py-2 font-bold text-ink hover:bg-brand-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-ink">
+                                    {{ $slide->button_label }} <span aria-hidden="true">→</span>
+                                </a>
+                            @endif
+                        </figcaption>
                     @endif
                 </figure>
             @endforeach
