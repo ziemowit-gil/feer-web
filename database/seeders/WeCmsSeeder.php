@@ -38,6 +38,7 @@ class WeCmsSeeder extends Seeder
                 'for_whom' => 'Fundacje, stowarzyszenia, federacje i samorządy',
                 'content' => $p('<strong>Ta strona — feer.org.pl — działa na weCMS.</strong>')
                     .$p('Stworzyliśmy weCMS, bo mieliśmy dość WordPressa: ciągłych aktualizacji wtyczek, płatnych dodatków i motywów, które trzeba łatać, żeby były dostępne. To nasze własne narzędzie, rozwijane w Fundacji FEER.')
+                    .$p('weCMS to <strong>system do zarządzania treścią</strong> — panel, w którym redakcja prowadzi stronę, razem z modułami i całą logiką pod spodem. Nie chodzi o sam wygląd, który widzi odwiedzający: szablon strony każdej organizacji piszemy indywidualnie.')
                     .$p('Stawiamy na <strong>czysty, płaski design</strong>, w którym treść jest najważniejsza, <strong>dostępność wbudowaną w system</strong> (projektowaną pod WCAG 2.2 AA) oraz <strong>prawie zerowe koszty</strong>: wersja darmowa wystarcza do prowadzenia strony i działa na zwykłym, tanim hostingu.')
                     .$p('Darowizny online, newsletter, formularze, BIP czy sprawozdania są częścią systemu, a nie dodatkami z różnych źródeł.'),
                 'kind' => 'project',
@@ -61,6 +62,9 @@ class WeCmsSeeder extends Seeder
             'o-cms' => ['O CMS',
                 $p('<strong>Ta strona działa na weCMS</strong> — wszystko, co tu widzisz: działania, aktualności, darowizny, materiały i formularze, prowadzimy w naszym własnym systemie.')
                 .$p('weCMS powstał w Fundacji Edukacji Empatii Rozwoju „FEER”, która na co dzień pracuje na rzecz dostępności i osób z niepełnosprawnościami. Zbudowaliśmy go, bo mieliśmy dość WordPressa i jego wtyczek.')
+                .'<h2>System do zarządzania treścią, nie gotowy wygląd</h2>'
+                .$p('weCMS to <strong>CMS — system do zarządzania treścią</strong>: panel redakcji, moduły (działania, aktualności, darowizny, formularze, BIP i inne), uprawnienia, historia zmian, dostępność i integracje. To, co widzi odwiedzający — <strong>szablon strony — piszemy indywidualnie dla każdej organizacji</strong>, zgodnie z jej identyfikacją wizualną.')
+                .$p('Dzięki temu dwie strony na weCMS nie wyglądają tak samo, a każda korzysta z tego samego, sprawdzonego zaplecza.')
                 .'<h2>Na czym nam zależało</h2>'
                 .$list([
                     '<strong>Czysty design</strong> — płaski, czytelny układ w kolorach marki, bez ozdobników utrudniających czytanie.',
@@ -93,7 +97,7 @@ class WeCmsSeeder extends Seeder
                     'Skaner WCAG całego serwisu, wyszukiwanie martwych linków, pilnowanie opisów zdjęć',
                 ])
                 .'<h2>Wygląd, skala i integracje</h2>'.$list([
-                    '9 szablonów witryny — m.in. dla fundacji, federacji i urzędów; zmiana bez utraty treści',
+                    'Szablon strony pisany indywidualnie dla każdej organizacji; na start są szablony bazowe, m.in. dla fundacji, federacji i urzędów',
                     'Wiele witryn w jednej instalacji (np. ośrodki lub organizacje członkowskie)',
                     'Logowanie przez Microsoft 365 i Google, poczta przez Microsoft 365, integracja z SZO, Unsplash, OneDrive',
                 ])],
