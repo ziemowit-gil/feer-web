@@ -15,6 +15,8 @@
         "laravel/scout": "^11.5",
         "laravel/socialite": "^5.29",
         "laravel/tinker": "^3.0",
+        "league/flysystem-ftp": "^3.0",
+        "league/flysystem-sftp-v3": "^3.0",
         "minishlink/web-push": "^8.0",
         "phpoffice/phpword": "^1.4",
         "pragmarx/google2fa-qrcode": "^4.0",

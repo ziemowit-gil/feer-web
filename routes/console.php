@@ -51,3 +51,18 @@ Schedule::call(fn () => \App\Support\DeployHealth::recordHeartbeat())
     ->everyMinute()
     ->name('system:heartbeat')
     ->evenInMaintenanceMode();
+
+// Kopie zapasowe — harmonogram ustawiany w panelu (Narzędzia → Kopie zapasowe),
+// zapisany w pliku obok kopii (BackupSettings), więc czytamy go przy każdym schedule:run.
+try {
+    $backupSettings = \App\Support\Backup\BackupSettings::load();
+    $backupSchedule = $backupSettings->get('schedule');
+
+    if (in_array($backupSchedule, ['daily', 'weekly'], true)) {
+        $backupTime = preg_match('/^\d{2}:\d{2}$/', (string) $backupSettings->get('time')) ? $backupSettings->get('time') : '02:30';
+        $backupEvent = Schedule::command('backup:run --auto')->withoutOverlapping(180)->name('backup:run');
+        $backupSchedule === 'weekly' ? $backupEvent->weeklyOn(1, $backupTime) : $backupEvent->dailyAt($backupTime);
+    }
+} catch (\Throwable) {
+    // Brak katalogu/uszkodzony plik ustawień nie może zatrzymać reszty harmonogramu.
+}

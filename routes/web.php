@@ -715,6 +715,15 @@ Route::middleware(['auth', 'verified', '2fa', 'admin-site'])->prefix(config('app
         Route::post('cache/{group}/flush', [AdminCacheController::class, 'flush'])->name('cache.flush');
         Route::post('cache/flush-all', [AdminCacheController::class, 'flushAll'])->name('cache.flush-all');
 
+        Route::get('kopie-zapasowe', [\App\Http\Controllers\Admin\BackupController::class, 'index'])->name('kopie.index');
+        Route::post('kopie-zapasowe', [\App\Http\Controllers\Admin\BackupController::class, 'store'])->name('kopie.store');
+        Route::post('kopie-zapasowe/wgraj', [\App\Http\Controllers\Admin\BackupController::class, 'upload'])->name('kopie.upload');
+        Route::put('kopie-zapasowe/ustawienia', [\App\Http\Controllers\Admin\BackupController::class, 'updateSettings'])->name('kopie.settings');
+        Route::post('kopie-zapasowe/test-zdalny', [\App\Http\Controllers\Admin\BackupController::class, 'testRemote'])->name('kopie.test-remote');
+        Route::get('kopie-zapasowe/{name}', [\App\Http\Controllers\Admin\BackupController::class, 'download'])->name('kopie.download');
+        Route::post('kopie-zapasowe/{name}/przywroc', [\App\Http\Controllers\Admin\BackupController::class, 'restore'])->name('kopie.restore');
+        Route::delete('kopie-zapasowe/{name}', [\App\Http\Controllers\Admin\BackupController::class, 'destroy'])->name('kopie.destroy');
+
         Route::get('dziennik', [AdminActivityController::class, 'index'])->name('dziennik.index');
         Route::get('martwe-linki', [AdminLinkCheckController::class, 'index'])->name('martwe-linki.index');
         Route::post('martwe-linki/skanuj', [AdminLinkCheckController::class, 'scan'])->name('martwe-linki.scan')->middleware('edition:link_check');
