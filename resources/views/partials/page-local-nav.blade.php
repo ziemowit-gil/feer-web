@@ -57,7 +57,7 @@
                 </a>
                 @endif
                 @if ($kids->isNotEmpty() && ($sibling->isMenuHeading() || $sibling->is($page) || $kids->contains(fn ($k) => $k->is($page))))
-                    <ul role="list" class="mt-1 space-y-1 pl-4">
+                    <ul role="list" class="side-sub mt-1 space-y-1">
                         @foreach ($kids as $child)
                             <li>
                                 <a href="{{ $child->navUrl() }}" {!! $child->navLinkAttributes() !!} @if ($child->is($page)) aria-current="page" @endif
@@ -104,7 +104,7 @@
                 {{-- Drzewo: opublikowane podstrony rodzeństwa jako zagnieżdżona gałąź (wcięcie zamiast linii). --}}
                 @php $childBranch = $sibling->publishedChildren; @endphp
                 @if ($childBranch->isNotEmpty())
-                    <ul role="list" class="mt-1 space-y-1 pl-4">
+                    <ul role="list" class="side-sub mt-1 space-y-1">
                         @foreach ($childBranch as $child)
                             <li>
                                 <a href="{{ $child->navUrl() }}" {!! $child->navLinkAttributes() !!}

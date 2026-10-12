@@ -26,7 +26,7 @@
             @if ($kids->isNotEmpty()) :class="openIds.includes({{ $item->id }}) ? 'rotate-90' : ''" @endif aria-hidden="true"></i>
     </button>
     @if ($kids->isNotEmpty())
-        <ul role="list" class="mt-1 space-y-1 pl-4" x-show="openIds.includes({{ $item->id }})" x-cloak>
+        <ul role="list" class="side-sub mt-1 space-y-1" x-show="openIds.includes({{ $item->id }})" x-cloak>
             @foreach ($kids as $kid)
                 @include('projects.partials.tab-page-nav', ['item' => $kid, 'depth' => $depth + 1, 'tabId' => $tabId ?? null])
             @endforeach

@@ -12,7 +12,7 @@
     $branchIndent = ['', 'pl-3', 'pl-6', 'pl-9', 'pl-12', 'pl-14'][min($depth, 5)];
 @endphp
 
-<ul role="list" class="mt-0.5 space-y-0.5 {{ $depth === 1 ? 'ml-3' : 'ml-2' }}">
+<ul role="list" class="side-sub mt-0.5 space-y-0.5">
     @foreach ($nodes as $node)
         @php
             $isCurrent = $node->is($page);

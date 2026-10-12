@@ -35,6 +35,9 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @php $brandPalette = $siteSettings->brandPalette($brandColor ?? null); @endphp
     <style>
+        /* Podpozycje w każdym menu bocznym (strony działu, drzewo działu, sekcje działania) wcięte o 1,5 rem na poziom —
+           w zwykłym CSS, żeby nie zależało od zbudowanych klas. */
+        .side-sub { margin-left: 1.5rem; padding-left: 0; }
         :root {
             --color-brand: {{ $brandPalette['color'] }};
             --color-brand-dark: {{ $brandPalette['dark'] }};
