@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Category;
+use App\Models\FormDefinition;
 use App\Models\Page;
 use App\Models\Project;
 use Illuminate\Database\Seeder;
@@ -13,12 +14,16 @@ use Illuminate\Database\Seeder;
  * i warunki wdrożenia dojdą niebawem (wyróżniona ramka „Szczegóły już wkrótce”).
  *
  * Podstrony w menu bocznym: „O CMS”, „Funkcjonalności”, „Wersje” (darmowa i płatna, wg config/editions.php),
- * „Demo” (zapowiedź), „Wymagania” (zgodne z instalatorem i deploy.sh).
+ * „Demo” (zapowiedź), „Wymagania” (zgodne z instalatorem i deploy.sh), „Zamówienie” z formularzem
+ * zamówienia (kreator formularzy, powiadomienia na ziemowit.gil@feer.org.pl; formularz zakładany raz —
+ * zmiany z panelu nie są nadpisywane).
  * Kategoria „Wsparcie dla organizacji” (podział według formy). Idempotentny (updateOrCreate po slugu).
  * Uruchomienie: php artisan db:seed --class=WeCmsSeeder --force
  */
 class WeCmsSeeder extends Seeder
 {
+    public const FORM_SLUG = 'zamowienie-wecms';
+
     public function run(): void
     {
         $category = Category::firstOrCreate(
@@ -34,8 +39,9 @@ class WeCmsSeeder extends Seeder
                 'title' => 'weCMS — system do stron organizacji społecznych',
                 'nav_title' => 'weCMS',
                 'category_id' => $category->id,
-                'excerpt' => 'Nasze własne narzędzie do prowadzenia stron: czysty design, dostępność od pierwszego dnia i prawie zerowe koszty. Szczegóły już wkrótce.',
-                'for_whom' => 'Fundacje, stowarzyszenia, federacje i samorządy',
+                // Bez zajawki i „Dla kogo” — powtarzały się w nagłówku każdej podstrony.
+                'excerpt' => null,
+                'for_whom' => null,
                 'content' => $p('<strong>Ta strona — feer.org.pl — działa na weCMS.</strong>')
                     .$p('Stworzyliśmy weCMS, bo mieliśmy dość WordPressa: ciągłych aktualizacji wtyczek, płatnych dodatków i motywów, które trzeba łatać, żeby były dostępne. To nasze własne narzędzie, rozwijane w Fundacji FEER.')
                     .$p('weCMS to <strong>system do zarządzania treścią</strong> — panel, w którym redakcja prowadzi stronę, razem z modułami i całą logiką pod spodem. Nie chodzi o sam wygląd, który widzi odwiedzający: szablon strony każdej organizacji piszemy indywidualnie.')
@@ -57,6 +63,7 @@ class WeCmsSeeder extends Seeder
         );
 
         $project = Project::where('slug', 'wecms')->firstOrFail();
+        $this->orderForm();
         $list = fn (array $items) => '<ul>'.collect($items)->map(fn ($i) => '<li>'.$i.'</li>')->implode('').'</ul>';
 
         $subpages = [
@@ -114,6 +121,9 @@ class WeCmsSeeder extends Seeder
                     'Aktualna przeglądarka — Chrome, Edge, Firefox lub Safari',
                     'Nie trzeba instalować żadnych programów ani znać HTML',
                 ])],
+            'zamowienie' => ['Zamówienie',
+                $p('Chcesz prowadzić stronę swojej organizacji na weCMS? Wypełnij formularz — odezwiemy się, żeby omówić potrzeby, wersję i szablon. Wysłanie formularza niczego jeszcze nie zamawia ani nie zobowiązuje do zapłaty.')
+                .'[formularz:'.self::FORM_SLUG.']'],
         ];
 
         $order = 1;
@@ -284,5 +294,55 @@ class WeCmsSeeder extends Seeder
                 ],
             );
         }
+    }
+
+    /** Formularz zamówienia weCMS (kreator formularzy). Zakładany raz — zmiany z panelu zostają. */
+    private function orderForm(): void
+    {
+        if (FormDefinition::withTrashed()->where('slug', self::FORM_SLUG)->exists()) {
+            return;
+        }
+
+        $field = fn (string $uid, string $label, string $type, array $extra = []) => $extra + [
+            'uid' => $uid, 'label' => $label, 'type' => $type, 'required' => false,
+            'placeholder' => null, 'options' => null, 'help_text' => null,
+        ];
+
+        FormDefinition::create([
+            'title' => 'Zamówienie weCMS',
+            'slug' => self::FORM_SLUG,
+            'description' => 'Zgłoszenie chęci wdrożenia weCMS w organizacji.',
+            'is_active' => true,
+            'fields' => [
+                $field('wcmsstp1', 'Organizacja i kontakt', 'step', ['help_text' => 'Kto zamawia i jak się z Tobą skontaktować?']),
+                $field('wcmsname', 'Imię i nazwisko', 'text', ['required' => true, 'placeholder' => 'np. Anna Kowalska']),
+                $field('wcmskrs0', 'Numer KRS organizacji', 'krs', ['help_text' => 'Opcjonalnie — po wpisaniu uzupełnimy nazwę i stronę organizacji z rejestru.']),
+                $field('wcmsorg0', 'Nazwa organizacji', 'text', ['required' => true, 'placeholder' => 'np. Fundacja Otwarte Drzwi', 'krs_fill' => 'nazwa']),
+                $field('wcmstype', 'Rodzaj organizacji', 'select', ['required' => true, 'options' => 'Fundacja, Stowarzyszenie, Federacja lub sieć organizacji, Gmina lub urząd, Inna']),
+                $field('wcmsmail', 'Adres e-mail', 'email', ['required' => true, 'placeholder' => 'np. anna@fundacja.org.pl']),
+                $field('wcmstel0', 'Numer telefonu', 'tel', ['help_text' => 'Opcjonalnie.']),
+                $field('wcmswww0', 'Obecna strona organizacji', 'text', ['placeholder' => 'np. https://fundacja.org.pl', 'krs_fill' => 'www', 'help_text' => 'Jeśli macie stronę — pomożemy przenieść treści.']),
+
+                $field('wcmsstp2', 'Zamówienie', 'step', ['help_text' => 'Czego potrzebujecie? Jeśli nie wiesz — zaznacz „Nie wiem”, doradzimy.']),
+                $field('wcmsver0', 'Wersja weCMS', 'radio', ['required' => true, 'options' => 'Darmowa, Płatna, Nie wiem — prosimy o doradzenie']),
+                $field('wcmsmods', 'Których modułów potrzebujecie?', 'checkboxes', ['options' => 'BIP, Newsletter, Darowizny online, Sklep, Wolontariat, Kreator formularzy, Wiele witryn (np. ośrodki)', 'help_text' => 'Zaznacz wszystkie, które Was interesują.']),
+                $field('wcmstpl0', 'Szablon strony', 'radio', ['required' => true, 'options' => 'Mamy identyfikację wizualną (logo, kolory), Potrzebujemy pomocy z wyglądem, Nie wiem', 'help_text' => 'Szablon piszemy indywidualnie dla każdej organizacji.']),
+                $field('wcmsmove', 'Przeniesienie treści ze starej strony', 'radio', ['options' => 'Tak, Nie, Nie mamy jeszcze strony']),
+                $field('wcmswhen', 'Kiedy strona powinna ruszyć?', 'text', ['placeholder' => 'np. do końca stycznia']),
+                $field('wcmsnote', 'Dodatkowe informacje', 'textarea', ['placeholder' => 'Czego oczekujecie od strony? Ile osób będzie ją prowadzić?']),
+
+                $field('wcmsstp3', 'Zgoda', 'step'),
+                $field('wcmsrodo', 'Wyrażam zgodę na przetwarzanie moich danych osobowych w celu obsługi zamówienia weCMS i kontaktu w tej sprawie.', 'consent', ['required' => true]),
+            ],
+            'settings' => [
+                'notification_email' => 'ziemowit.gil@feer.org.pl',
+                'notification_subject' => 'Nowe zamówienie weCMS',
+                'confirmation_message' => 'Dziękujemy! Otrzymaliśmy zgłoszenie — odezwiemy się w ciągu 3 dni roboczych, żeby omówić wdrożenie weCMS.',
+                'delivery' => 'email',
+                'reply_to_submitter' => true,
+                'send_copy_to_submitter' => true,
+                'submitter_copy_message' => 'Dziękujemy za zgłoszenie. Poniżej kopia przesłanych informacji.',
+            ],
+        ]);
     }
 }
