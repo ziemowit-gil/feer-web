@@ -333,15 +333,20 @@ class WeCmsSeeder extends Seeder
                 ['panel-newsletter.jpg', 'Pulpit newslettera z kampaniami, subskrybentami i statystykami', 'Newsletter — kampanie e-mail, push i SMS'],
                 ['panel-kreator-formularzy.jpg', 'Kreator formularzy z typami pól i podglądem', 'Kreator formularzy — pole KRS uzupełnia dane organizacji'],
                 ['darowizny.jpg', 'Strona darowizny online z kwotami i danymi do przelewu', 'Darowizny online (Przelewy24)'],
+                ['formularz.jpg', 'Wieloetapowy formularz zgłoszenia z krokami i polem numeru KRS z przyciskiem Pobierz dane z KRS', 'Formularz z kreatora na stronie — kroki i pobieranie danych z KRS'],
+                ['bip.jpg', 'Strona główna Biuletynu Informacji Publicznej z wyszukiwarką i menu dokumentów', 'BIP — osobna witryna w tej samej instalacji'],
             ],
             'wecms-funkcje-dostepnosc' => [
                 ['panel-skaner-wcag.jpg', 'Skaner WCAG w panelu', 'Skaner WCAG wskazanej strony'],
                 ['panel-audyt-alt.jpg', 'Audyt opisów alternatywnych zdjęć w bibliotece mediów', 'Audyt opisów zdjęć'],
+                ['pasek-dostepnosci.jpg', 'Rozwinięty pasek dostępności z wielkością tekstu, odstępami, kontrastem, trybem czarno-żółtym i szarością', 'Pasek dostępności dla odwiedzających'],
+                ['deklaracja-dostepnosci.jpg', 'Deklaracja dostępności generowana z ustawień serwisu', 'Deklaracja dostępności'],
             ],
             'wecms-funkcje-wyglad' => [
                 ['mega-menu.jpg', 'Rozwinięte mega menu z kategoriami i przyciskami', 'Mega menu na stronie'],
                 ['panel-menu.jpg', 'Edycja menu nawigacji w panelu', 'Menu nawigacji w panelu'],
                 ['panel-moduly.jpg', 'Ustawienia strony w panelu z sekcjami ustawień', 'Ustawienia strony'],
+                ['wyszukiwarka.jpg', 'Wyniki wyszukiwania z filtrami zakresu i wynikami pogrupowanymi według typu treści', 'Wyszukiwarka serwisu'],
             ],
         ];
 

@@ -25,7 +25,7 @@ class WeCmsSeederTest extends TestCase
         $this->assertSame(2, $about->images()->count());
         $this->assertSame(1, substr_count($about->content, '<h2>Jak to wygląda</h2>'));
         $this->assertStringContainsString('Panel redakcji — pulpit', $about->content);
-        $this->assertSame(3, \App\Models\Page::where('slug', 'wecms-funkcje-moduly')->sole()->images()->count());
+        $this->assertSame(5, \App\Models\Page::where('slug', 'wecms-funkcje-moduly')->sole()->images()->count());
         $form = \App\Models\FormDefinition::where('slug', WeCmsSeeder::FORM_SLUG)->sole();
         $this->assertSame('ziemowit.gil@feer.org.pl', $form->settings['notification_email']);
         $this->assertTrue($form->is_active);
