@@ -75,13 +75,12 @@
                     @if ($siteSettings->cookie_banner_enabled ?? true)
                         <li><button type="button" data-cookie-settings class="{{ $footLink }}">Ustawienia cookies</button></li>
                     @endif
-                    <li><a href="{{ url('/strefa-wspolpracownika-feer') }}" class="{{ $footLink }}">Strefa współpracownika</a></li>
                 </ul>
             </nav>
 
             {{-- Social --}}
             <div>
-                <ul class="flex flex-wrap items-center gap-2" role="list" aria-label="Media społecznościowe">
+                <ul class="flex flex-wrap items-center gap-2" role="list" aria-label="Media społecznościowe i skróty">
                     @foreach ($footerSocials as [$sUrl, $sIcon, $sLabel])
                         @if (filled($sUrl))
                             <li>
@@ -100,6 +99,12 @@
                             </a>
                         </li>
                     @endif
+                    <li>
+                        <a href="{{ url('/strefa-wspolpracownika-feer') }}" aria-label="Strefa współpracownika" title="Strefa współpracownika"
+                           class="flex h-9 w-9 items-center justify-center rounded-md border border-white text-white transition hover:bg-white hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-ink">
+                            <i class="bi bi-person-badge" aria-hidden="true"></i>
+                        </a>
+                    </li>
                 </ul>
             </div>
         </div>
