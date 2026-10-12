@@ -13,7 +13,7 @@ use Illuminate\Database\Seeder;
  * i warunki wdrożenia dojdą niebawem (wyróżniona ramka „Szczegóły już wkrótce”).
  *
  * Podstrony w menu bocznym: „O CMS”, „Funkcjonalności”, „Wersje” (darmowa i płatna, wg config/editions.php),
- * „Wymagania” (zgodne z instalatorem i deploy.sh).
+ * „Demo” (zapowiedź), „Wymagania” (zgodne z instalatorem i deploy.sh).
  * Kategoria „Wsparcie dla organizacji” (podział według formy). Idempotentny (updateOrCreate po slugu).
  * Uruchomienie: php artisan db:seed --class=WeCmsSeeder --force
  */
@@ -92,6 +92,10 @@ class WeCmsSeeder extends Seeder
                 .'<table><caption>Porównanie wersji weCMS</caption><thead><tr><th scope="col">Obszar</th><th scope="col">Darmowa</th><th scope="col">Płatna</th></tr></thead><tbody><tr><th scope="row">Strony, aktualności, menu, biblioteka mediów, galeria, FAQ</th><td>Tak</td><td>Tak</td></tr><tr><th scope="row">Wszystkie funkcje dostępności, logowanie dwuetapowe, eksport treści</th><td>Tak</td><td>Tak</td></tr><tr><th scope="row">Szablony witryny</th><td>Domyślny i NGO</td><td>Wszystkie</td></tr><tr><th scope="row">Darowizny i sklep (Przelewy24)</th><td>—</td><td>Tak</td></tr><tr><th scope="row">Newsletter, kreator formularzy, ankiety, kampanie</th><td>—</td><td>Tak</td></tr><tr><th scope="row">BIP, wolontariat, zgłoszenia współpracy</th><td>—</td><td>Tak</td></tr><tr><th scope="row">Wiele witryn, grupy użytkowników, zadania, szablony treści, import DOCX</th><td>—</td><td>Tak</td></tr><tr><th scope="row">Skaner WCAG stron, wyszukiwanie martwych linków</th><td>—</td><td>Tak</td></tr><tr><th scope="row">Pomoc techniczna</th><td>Dokumentacja</td><td>Zgłoszenia przez Helpdesk</td></tr></tbody></table>'
                 .'<h2>Gdy licencja wygaśnie</h2>'
                 .$p('Strona działa dalej. Treści z modułów płatnych zostają widoczne dla odwiedzających, a w panelu można je przeglądać — wyłączają się tylko nowe wpisy i akcje, takie jak wysyłka newslettera czy przyjmowanie płatności.')],
+            'demo' => ['Demo',
+                $p('<strong>Wersja demonstracyjna weCMS będzie dostępna niebawem.</strong>')
+                .$p('Przygotowujemy instalację, w której będzie można zajrzeć do panelu redakcji i zobaczyć, jak prowadzi się stronę w weCMS — bez instalowania czegokolwiek. Gdy demo będzie gotowe, link pojawi się w tym miejscu.')
+                .$p('Jeśli chcesz zobaczyć system wcześniej, napisz do nas — pokażemy go na spotkaniu online.')],
             'wymagania' => ['Wymagania',
                 $p('weCMS działa na zwykłym hostingu współdzielonym albo na własnym serwerze. Instalator w przeglądarce sam sprawdza, czy serwer spełnia wymagania.')
                 .'<h2>Serwer</h2>'.$list([
