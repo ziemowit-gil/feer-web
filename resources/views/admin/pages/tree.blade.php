@@ -132,10 +132,11 @@
                     </div>
                 </div>
             </div>
-            <p id="tree-dnd-help" class="border-b border-gray-100 px-3 py-2 text-xs text-muted">
-                <i class="fa-solid fa-hand" aria-hidden="true"></i>
+            {{-- Instrukcja przeciągania tylko dla czytników ekranu (wizualnie zbędna — przeciąganie widać po kursorze);
+                 skróty klawiszowe muszą zostać dostępne dla osób bez myszy. --}}
+            <p id="tree-dnd-help" class="sr-only">
                 Przeciągnij stronę: na górną lub dolną krawędź innej — zmienia kolejność, na środek — wkłada ją jako podstronę.
-                Z klawiatury: zaznacz stronę i użyj <kbd class="rounded border border-gray-300 bg-gray-50 px-1">Alt</kbd>+<kbd class="rounded border border-gray-300 bg-gray-50 px-1">Shift</kbd>+strzałek
+                Z klawiatury: zaznacz stronę i użyj Alt+Shift+strzałek
                 (góra/dół — kolejność, w prawo — w głąb poprzedniej, w lewo — poziom wyżej).
             </p>
             <div id="tree-dnd-status" role="status" aria-live="polite" class="sr-only"></div>
