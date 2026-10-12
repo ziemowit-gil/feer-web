@@ -145,6 +145,9 @@
                 <ul class="flex flex-wrap gap-x-4 gap-y-1">
                     <li><a href="{{ route('accessibility.show') }}" class="hover:text-white transition">Deklaracja dostępności</a></li>
                     <li><a href="{{ route('sitemap.page') }}" class="hover:text-white transition">Mapa strony</a></li>
+                    @if ($siteSettings->cookie_banner_enabled ?? true)
+                        <li><button type="button" data-cookie-settings class="hover:text-white transition">Ustawienia cookies</button></li>
+                    @endif
                     @foreach ($footerNavItems->take(3) as $item)
                         <li><a href="{{ $item->url }}" class="hover:text-white transition">{{ $item->label }}</a></li>
                     @endforeach

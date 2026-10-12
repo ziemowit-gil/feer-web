@@ -26,7 +26,7 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         // Newsletter: wypis one-click z klienta poczty (RFC 8058) i webhooki dostawców nie mają tokenu CSRF.
-        $middleware->validateCsrfTokens(except: ['n/u/*', 'n/webhook/*']);
+        $middleware->validateCsrfTokens(except: ['n/u/*', 'n/webhook/*', 'cookie-consent']);
 
         $middleware->alias([
             'admin' => EnsureUserIsAdmin::class,

@@ -193,9 +193,21 @@
                 <textarea id="cookie_banner_text" name="cookie_banner_text" rows="2"
                     placeholder="{{ \App\Models\SiteSetting::DEFAULT_COOKIE_BANNER_TEXT }}"
                     class="w-full rounded border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark">{{ old('cookie_banner_text', $settings->cookie_banner_text) }}</textarea>
-                <p class="mt-1 text-xs text-muted">Baner z przyciskiem „Akceptuję" i linkiem do polityki prywatności. Puste = tekst domyślny.</p>
+                <p class="mt-1 text-xs text-muted">Baner z równorzędnymi przyciskami „Akceptuję" i „Odrzucam" oraz linkiem do polityki prywatności. Decyzję można zmienić linkiem „Ustawienia cookies" w stopce. Puste = tekst domyślny.</p>
                 @error('cookie_banner_text') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
             </div>
+            @php
+                $consentStats = \App\Models\CookieConsent::forCurrentSite()
+                    ->where('created_at', '>=', now()->subDays(30))
+                    ->selectRaw('decision, count(*) as total')->groupBy('decision')
+                    ->pluck('total', 'decision');
+            @endphp
+            <p class="text-xs text-muted">
+                Rejestr zgód, ostatnie 30 dni:
+                <strong class="text-ink">{{ $consentStats['accepted'] ?? 0 }}</strong> zgód,
+                <strong class="text-ink">{{ $consentStats['rejected'] ?? 0 }}</strong> odmów.
+                Każda decyzja jest zapisywana z datą i zanonimizowanym IP (dowód zgody wg RODO).
+            </p>
         </div>
 
         @php $isFeerInstall = str_contains(request()->getHost(), 'feer.org.pl'); @endphp

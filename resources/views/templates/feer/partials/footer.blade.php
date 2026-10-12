@@ -72,6 +72,9 @@
                     @endforeach
                     <li><a href="{{ route('accessibility.show') }}" class="{{ $footLink }}">Deklaracja dostępności</a></li>
                     <li><a href="{{ route('sitemap.page') }}" class="{{ $footLink }}">Mapa strony</a></li>
+                    @if ($siteSettings->cookie_banner_enabled ?? true)
+                        <li><button type="button" data-cookie-settings class="{{ $footLink }}">Ustawienia cookies</button></li>
+                    @endif
                     <li><a href="{{ url('/strefa-wspolpracownika-feer') }}" class="{{ $footLink }}">Strefa współpracownika</a></li>
                 </ul>
             </nav>

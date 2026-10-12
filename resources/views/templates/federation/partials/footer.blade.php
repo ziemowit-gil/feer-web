@@ -109,6 +109,9 @@
                 <ul class="flex flex-wrap gap-x-4 gap-y-1">
                     <li><a href="{{ route('accessibility.show') }}" class="rounded hover:text-white transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white">Deklaracja dostępności</a></li>
                     <li><a href="{{ route('sitemap.page') }}" class="rounded hover:text-white transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white">Mapa strony</a></li>
+                    @if ($siteSettings->cookie_banner_enabled ?? true)
+                        <li><button type="button" data-cookie-settings class="rounded hover:text-white transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white">Ustawienia cookies</button></li>
+                    @endif
                     @foreach ($footerNavItems->take(3) as $item)
                         <li><a href="{{ $item->url }}" class="rounded hover:text-white transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white">{{ $item->label }}</a></li>
                     @endforeach

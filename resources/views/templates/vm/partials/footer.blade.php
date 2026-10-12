@@ -61,6 +61,9 @@
                     @endforeach
                     <li><a href="{{ route('accessibility.show') }}" class="{{ $vmFooterLink }}">Deklaracja dostępności</a></li>
                     <li><a href="{{ route('sitemap.page') }}" class="{{ $vmFooterLink }}">Mapa witryny</a></li>
+                    @if ($siteSettings->cookie_banner_enabled ?? true)
+                        <li><button type="button" data-cookie-settings class="{{ $vmFooterLink }}">Ustawienia cookies</button></li>
+                    @endif
                 </ul>
             </nav>
 

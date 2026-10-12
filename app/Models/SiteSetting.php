@@ -1524,7 +1524,7 @@ class SiteSetting extends Model implements HasMedia
     }
 
     /** Domyślny tekst banera cookies, gdy admin nie podał własnego. */
-    public const DEFAULT_COOKIE_BANNER_TEXT = 'Ta strona używa plików cookies, aby zapewnić najlepsze działanie serwisu. Korzystając z witryny, zgadzasz się na ich użycie.';
+    public const DEFAULT_COOKIE_BANNER_TEXT = 'Używamy niezbędnych plików cookies, aby strona działała. Za Twoją zgodą użyjemy też plików cookies statystycznych, które pomagają nam ulepszać serwis. Decyzję możesz zmienić w każdej chwili w stopce (Ustawienia cookies).';
 
     /** Treść banera cookies (własna lub domyślna). */
     public function cookieBannerText(): string

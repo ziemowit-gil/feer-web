@@ -107,6 +107,9 @@
                 <ul class="flex flex-wrap gap-x-4 gap-y-1">
                     <li><a href="{{ route('accessibility.show') }}" class="rounded transition hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white">Deklaracja dostępności</a></li>
                     <li><a href="{{ route('sitemap.page') }}" class="rounded transition hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white">Mapa strony</a></li>
+                    @if ($siteSettings->cookie_banner_enabled ?? true)
+                        <li><button type="button" data-cookie-settings class="rounded transition hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white">Ustawienia cookies</button></li>
+                    @endif
                 </ul>
             </nav>
             <a href="{{ route('admin.dashboard') }}" class="rounded text-white/20 transition hover:text-white/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"

@@ -743,6 +743,9 @@ Route::middleware(['auth', 'verified', '2fa', 'admin-site'])->prefix(config('app
     })->middleware('admin')->name('dokumentacja');
 });
 
+// Rejestr decyzji z banera cookies (akceptacja / odmowa) — bez CSRF, patrz kontroler.
+Route::post('/cookie-consent', [\App\Http\Controllers\CookieConsentController::class, 'store'])->name('cookie-consent.store')->middleware('throttle:20,1');
+
 // Subskrypcje Web Push — rejestracja i wyrejestrowanie.
 Route::post('/push/subscribe',   [\App\Http\Controllers\PushController::class, 'subscribe'])->name('push.subscribe');
 Route::post('/push/unsubscribe', [\App\Http\Controllers\PushController::class, 'unsubscribe'])->name('push.unsubscribe');

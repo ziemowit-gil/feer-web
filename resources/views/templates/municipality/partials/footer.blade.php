@@ -116,6 +116,9 @@
                     @foreach ($footerNavItems->take(5) as $item)
                         <li><a href="{{ $item->url }}" class="hover:text-white transition">{{ $item->label }}</a></li>
                     @endforeach
+                    @if ($siteSettings->cookie_banner_enabled ?? true)
+                        <li><button type="button" data-cookie-settings class="hover:text-white transition">Ustawienia cookies</button></li>
+                    @endif
                 </ul>
             </nav>
         </div>
