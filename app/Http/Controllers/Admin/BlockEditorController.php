@@ -263,6 +263,8 @@ class BlockEditorController extends Controller
                     'is_published' => (bool) $record->is_published,
                 ],
                 'blocks' => BlockRenderer::normalize($blocks),
+                // Działanie: płótno w układzie strony działania (kategoria, „Opis działania”, podgląd menu bocznego).
+                'layout' => $record instanceof Project ? $this->projectLayout($record) : null,
                 'imported' => $imported,
                 'urls' => [
                     'save' => $updateUrl,
@@ -318,6 +320,23 @@ class BlockEditorController extends Controller
         }
 
         return $validator->validated();
+    }
+
+    /** @return array{kind: string, kicker: string, heading: string, navTitle: string, nav: array<int, string>} */
+    private function projectLayout(Project $project): array
+    {
+        $sections = $project->sections_as_tabs
+            ? collect($project->custom_sections ?? [])->filter(fn ($s) => ! empty($s['title']))->pluck('title')
+            : collect();
+        $tabPages = $project->pageTree(true)->where('project_display', 'tab')->pluck('title');
+
+        return [
+            'kind' => 'project',
+            'kicker' => (string) ($project->category?->name ?? ''),
+            'heading' => 'Opis działania',
+            'navTitle' => (string) ($project->nav_title ?: $project->title),
+            'nav' => collect(['O projekcie'])->merge($sections)->merge($tabPages)->values()->all(),
+        ];
     }
 
     private function typeLabel(string $type, Model $record): string

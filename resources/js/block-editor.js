@@ -592,7 +592,22 @@ function start(config) {
     const canvas = h('div', { class: 'be-canvas-inner prose max-w-none text-ink' });
     const titleEl = h('h1', { class: 'be-title', contenteditable: 'true', role: 'textbox', 'aria-label': L.title, 'data-placeholder': 'Dodaj tytuł', spellcheck: 'true' });
     const notices = h('div', { class: 'be-notices' });
-    const canvasWrap = h('main', { class: 'be-canvas', id: 'be-canvas', 'aria-label': L.contentLabel }, h('div', { class: 'be-canvas-page' }, notices, titleEl, canvas));
+    // Działanie: płótno w układzie strony działania — kategoria, tytuł z kreską, „Opis działania”
+    // i obok podgląd menu bocznego (tylko podgląd; menu ustawia się w formularzu działania).
+    const projLayout = config.layout && config.layout.kind === 'project' ? config.layout : null;
+    const canvasPage = h('div', { class: 'be-canvas-page' + (projLayout ? ' be-canvas-page--project' : '') },
+        notices,
+        projLayout && projLayout.kicker ? h('p', { class: 'be-proj-kicker' }, projLayout.kicker) : null,
+        titleEl,
+        projLayout ? [h('span', { class: 'be-proj-bar', 'aria-hidden': 'true' }), h('h2', { class: 'be-proj-h2' }, projLayout.heading)] : null,
+        canvas);
+    const projNav = projLayout ? h('aside', { class: 'be-proj-nav', 'aria-label': 'Podgląd menu bocznego działania' },
+        h('p', { class: 'be-proj-nav-title' }, projLayout.navTitle),
+        h('span', { class: 'be-proj-bar', 'aria-hidden': 'true' }),
+        h('ul', { class: 'be-proj-nav-list' }, (projLayout.nav || []).map((t, i) => h('li', { class: i === 0 ? 'is-current' : null }, t))),
+        h('p', { class: 'be-proj-nav-note' }, 'Podgląd. Sekcje i podstrony ustawiasz w formularzu działania.')) : null;
+    const canvasWrap = h('main', { class: 'be-canvas', id: 'be-canvas', 'aria-label': L.contentLabel },
+        projLayout ? h('div', { class: 'be-proj' }, canvasPage, projNav) : canvasPage);
     const sidebar = h('aside', { class: 'be-panel be-panel--right', 'aria-label': 'Ustawienia' });
     const toolbar = h('div', { class: 'be-toolbar', role: 'toolbar', 'aria-label': 'Narzędzia bloku' });
     const slashMenu = h('div', { class: 'be-slash', role: 'listbox', id: 'be-slash', 'aria-label': 'Wybierz blok', hidden: true });

@@ -234,7 +234,15 @@ class BlockEditorTest extends TestCase
         $this->actingAs($admin)
             ->get(route('admin.edytor-blokowy.edit', ['project', $project->id]))
             ->assertOk()
-            ->assertSee('Przejdź do klasycznego formularza działania', false);
+            ->assertSee('Przejdź do klasycznego formularza działania', false)
+            // Płótno w układzie strony działania: kategoria, „Opis działania”, menu boczne od „O projekcie”.
+            ->assertSee('"kind":"project"', false)
+            ->assertSee('"heading":"Opis dzia', false)
+            ->assertSee('"nav":["O projekcie"', false);
+
+        $this->actingAs($admin)
+            ->get(route('admin.edytor-blokowy.edit', ['news', $news->id]))
+            ->assertSee('"layout":null', false);
 
         foreach (['news' => $news, 'project' => $project] as $type => $record) {
             $this->actingAs($admin)
