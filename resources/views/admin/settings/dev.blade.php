@@ -89,6 +89,9 @@
                         ['meta_description',   'text',     'string?',  'Domyślny opis meta dla SEO'],
                         ['allow_indexing',     'boolean',  'bool',     'Czy zezwalać robotom (true = indeksuj, false = noindex)'],
                         ['ga_measurement_id',  'text',     'string?',  'ID Google Analytics 4 (G-XXXXXXXX)'],
+                        ['matomo_url',         'text',     'string?',  'Adres instancji Matomo (https://…/)'],
+                        ['matomo_site_id',     'text',     'string?',  'ID witryny w Matomo'],
+                        ['matomo_cookieless',  'boolean',  'bool',     'Matomo bez cookies (działa bez zgody); false = po akceptacji cookies'],
                         // Wygląd i kolory
                         ['brand_color',        'text',     'string',   'Główny kolor marki (#hex, kontrast WCAG AA gwarantowany)'],
                         ['brand_color_2',      'text',     'string?',  'Drugi kolor marki (opcjonalny)'],

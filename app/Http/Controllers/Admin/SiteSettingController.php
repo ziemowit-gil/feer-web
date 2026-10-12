@@ -197,6 +197,9 @@ class SiteSettingController extends Controller
             'remove_og_image' => ['sometimes', 'boolean'],
             'allow_indexing' => ['sometimes', 'boolean'],
             'ga_measurement_id' => ['nullable', 'string', 'max:32', 'regex:/^G-[A-Za-z0-9]+$/'],
+            'matomo_url' => ['nullable', 'url:https', 'max:255', 'required_with:matomo_site_id'],
+            'matomo_site_id' => ['nullable', 'string', 'max:16', 'regex:/^\d+$/', 'required_with:matomo_url'],
+            'matomo_cookieless' => ['sometimes', 'boolean'],
             'bip_mode' => ['nullable', 'string', 'in:internal,external'],
             'bip_url' => ['nullable', 'string', 'max:255'],
             'bip_intro' => ['nullable', 'string', 'max:20000'],
@@ -472,6 +475,7 @@ class SiteSettingController extends Controller
         $data['contact_show_coordinators'] = $request->boolean('contact_show_coordinators');
         $data['support_show_partners'] = $request->boolean('support_show_partners');
         $data['cookie_banner_enabled'] = $request->boolean('cookie_banner_enabled');
+        $data['matomo_cookieless'] = $request->boolean('matomo_cookieless');
         // Poza domeną feer.org.pl kredyt CMS w stopce nie może zostać ukryty
         // (niezależnie od tego, co przyszło w żądaniu).
         $data['show_cms_credit'] = str_contains($request->getHost(), 'feer.org.pl')

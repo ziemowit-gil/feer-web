@@ -848,6 +848,40 @@
                 </p>
                 @error('ga_measurement_id') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
             </div>
+
+            <fieldset class="mt-5 border-t border-gray-100 pt-5">
+                <legend class="mb-1 text-sm font-bold">Matomo</legend>
+                <p class="mb-3 text-xs text-muted">Statystyki na własnym serwerze lub w Matomo Cloud. Zostaw oba pola puste, aby wyłączyć.</p>
+                <div class="grid gap-4 sm:grid-cols-[1fr_10rem]">
+                    <div>
+                        <label for="matomo_url" class="mb-1 block text-sm font-bold">Adres instancji Matomo</label>
+                        <input type="url" id="matomo_url" name="matomo_url" inputmode="url"
+                            value="{{ old('matomo_url', $settings->matomo_url) }}"
+                            placeholder="https://statystyki.example.org/" aria-describedby="matomo_url_help"
+                            class="w-full rounded border-gray-500 font-mono focus:border-brand-dark focus:ring-brand-dark">
+                        <p id="matomo_url_help" class="mt-1 text-xs text-muted">Adres https, pod którym działa Matomo (bez <code>matomo.php</code>).</p>
+                        @error('matomo_url') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </div>
+                    <div>
+                        <label for="matomo_site_id" class="mb-1 block text-sm font-bold">ID witryny</label>
+                        <input type="text" id="matomo_site_id" name="matomo_site_id" inputmode="numeric" pattern="[0-9]+"
+                            value="{{ old('matomo_site_id', $settings->matomo_site_id) }}"
+                            placeholder="1"
+                            class="w-full rounded border-gray-500 font-mono focus:border-brand-dark focus:ring-brand-dark">
+                        @error('matomo_site_id') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </div>
+                </div>
+                <label class="mt-3 flex items-start gap-2 text-sm">
+                    <input type="checkbox" name="matomo_cookieless" value="1" aria-describedby="matomo_cookieless_help"
+                        {{ old('matomo_cookieless', $settings->matomo_cookieless ?? true) ? 'checked' : '' }}
+                        class="mt-0.5 rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
+                    Pomiar bez plików cookies
+                </label>
+                <p id="matomo_cookieless_help" class="mt-1 text-xs text-muted">
+                    Zaznaczone: Matomo działa od razu, bez zgody na cookies (nie zapisuje nic w przeglądarce, IP anonimizujesz w panelu Matomo).
+                    Odznaczone: kod ładuje się dopiero po akceptacji cookies, tak jak Google Analytics.
+                </p>
+            </fieldset>
         </div>
 
         <div x-show="tab === 'registry'" x-cloak>

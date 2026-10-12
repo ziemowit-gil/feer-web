@@ -351,7 +351,7 @@ class SiteSetting extends Model implements HasMedia
 
     protected $fillable = [
         'slug', 'domain', 'parent_site_id', 'site_kind',
-        'site_name', 'site_name_genitive', 'tagline', 'brand_color', 'brand_color_2', 'brand_color_3', 'brand_color_4', 'brand_skip_contrast', 'nav_dark_text', 'ngo_skip_contrast', 'meta_description', 'allow_indexing', 'ga_measurement_id', 'disabled_modules', 'homepage_section_order', 'homepage_sections_hidden', 'events_home_color', 'quick_actions_panel_negative',
+        'site_name', 'site_name_genitive', 'tagline', 'brand_color', 'brand_color_2', 'brand_color_3', 'brand_color_4', 'brand_skip_contrast', 'nav_dark_text', 'ngo_skip_contrast', 'meta_description', 'allow_indexing', 'ga_measurement_id', 'matomo_url', 'matomo_site_id', 'matomo_cookieless', 'disabled_modules', 'homepage_section_order', 'homepage_sections_hidden', 'events_home_color', 'quick_actions_panel_negative',
         'bip_url', 'bip_intro', 'bip_editor_name', 'bip_editor_email', 'bip_gov_url', 'bip_mode', 'bip_show_reports', 'home_search_enabled', 'join_us_texts', 'facebook_url', 'facebook_group_url', 'twitter_url', 'instagram_url', 'linkedin_url', 'youtube_url', 'substack_url',
         'contact_address', 'contact_city', 'contact_email', 'contact_phone', 'contact_office_hours', 'contact_intro', 'contact_bank_accounts', 'contact_bank_accounts_note', 'contact_bank_accounts_layout',
         'contact_correspondence_title', 'contact_correspondence_note',
@@ -569,6 +569,7 @@ class SiteSetting extends Model implements HasMedia
         'contact_show_coordinators' => 'boolean',
         'contact_shipping_visible' => 'boolean',
         'cookie_banner_enabled' => 'boolean',
+        'matomo_cookieless' => 'boolean',
         'show_cms_credit' => 'boolean',
         'support_show_partners' => 'boolean',
         'support_fundraiser_goal' => 'integer',
@@ -1498,6 +1499,28 @@ class SiteSetting extends Model implements HasMedia
     public function showLogoOnly(): bool
     {
         return $this->logo_only && $this->logoUrl() !== null;
+    }
+
+    /**
+     * Konfiguracja Matomo dla kodu śledzenia albo null, gdy nie skonfigurowano.
+     * Adres zawsze z ukośnikiem na końcu (do niego dopisujemy matomo.php / matomo.js).
+     *
+     * @return array{url: string, site_id: string, cookieless: bool}|null
+     */
+    public function matomoConfig(): ?array
+    {
+        $url = trim((string) $this->matomo_url);
+        $siteId = trim((string) $this->matomo_site_id);
+
+        if ($url === '' || $siteId === '') {
+            return null;
+        }
+
+        return [
+            'url' => rtrim($url, '/').'/',
+            'site_id' => $siteId,
+            'cookieless' => (bool) ($this->matomo_cookieless ?? true),
+        ];
     }
 
     /** Domyślny tekst banera cookies, gdy admin nie podał własnego. */

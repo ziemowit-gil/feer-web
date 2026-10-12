@@ -31,6 +31,8 @@
             banner.querySelector('[data-cookie-accept]').addEventListener('click', function () {
                 try { localStorage.setItem(KEY, '1'); } catch (e) {}
                 banner.hidden = true;
+                // Sygnał dla kodów statystyk (partials/analytics), że można je załadować.
+                document.dispatchEvent(new CustomEvent('feer:cookie-consent'));
             });
         })();
     </script>
