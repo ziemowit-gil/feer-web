@@ -294,6 +294,80 @@ class WeCmsSeeder extends Seeder
                 ],
             );
         }
+
+        $this->screenshots();
+    }
+
+    /**
+     * Zrzuty ekranu feer.org.pl (strona działa na weCMS) pod treścią podstron — pliki w
+     * database/seeders/assets/wecms/, podpinane jako zdjęcia podstrony (z opisem alternatywnym
+     * i podpisem). Przy każdym uruchomieniu zrzuty są podmieniane, bez duplikatów.
+     */
+    private function screenshots(): void
+    {
+        $dir = database_path('seeders/assets/wecms');
+        $map = [
+            'wecms-o-cms' => [
+                ['panel-pulpit.jpg', 'Pulpit panelu weCMS z podsumowaniem treści serwisu', 'Panel redakcji — pulpit'],
+                ['strona-glowna.jpg', 'Strona główna feer.org.pl z sliderem i skrótami', 'Strona główna feer.org.pl — działa na weCMS'],
+            ],
+            'wecms-funkcje-strony' => [
+                ['panel-drzewo-stron.jpg', 'Drzewo stron w panelu z kartą wybranej strony i listą podstron', 'Drzewo stron — przeciąganie, podstrony, szybkie akcje'],
+                ['panel-edycja-strony.jpg', 'Formularz edycji strony z zakładkami Treść, Typ i układ, Publikacja, SEO, Pliki, Galeria i ETR', 'Edycja strony'],
+                ['strona-z-menu-bocznym.jpg', 'Strona z menu bocznym podstron', 'Menu boczne podstron na stronie'],
+            ],
+            'wecms-funkcje-edytory' => [
+                ['panel-edycja-strony.jpg', 'Edytor klasyczny z menu Wstaw, Wstaw link, Import i sprawdzaniem dostępności', 'Edytor klasyczny i przejście do edytora blokowego'],
+                ['panel-biblioteka-mediow.jpg', 'Biblioteka mediów z folderami i operacjami zbiorczymi', 'Biblioteka mediów'],
+            ],
+            'wecms-funkcje-zespol' => [
+                ['panel-kalendarz.jpg', 'Kalendarz redakcyjny w panelu', 'Kalendarz redakcyjny'],
+                ['panel-dziennik.jpg', 'Dziennik zdarzeń z filtrami', 'Dziennik zdarzeń — kto i kiedy co zmienił'],
+            ],
+            'wecms-funkcje-aktualnosci' => [
+                ['panel-edycja-aktualnosci.jpg', 'Formularz edycji aktualności z zakładkami', 'Edycja aktualności w panelu'],
+                ['aktualnosci.jpg', 'Lista aktualności z wyróżnionym wpisem i kategoriami', 'Lista aktualności na stronie'],
+                ['artykul.jpg', 'Pojedyncza aktualność', 'Strona wpisu'],
+            ],
+            'wecms-funkcje-moduly' => [
+                ['panel-newsletter.jpg', 'Pulpit newslettera z kampaniami, subskrybentami i statystykami', 'Newsletter — kampanie e-mail, push i SMS'],
+                ['panel-kreator-formularzy.jpg', 'Kreator formularzy z typami pól i podglądem', 'Kreator formularzy — pole KRS uzupełnia dane organizacji'],
+                ['darowizny.jpg', 'Strona darowizny online z kwotami i danymi do przelewu', 'Darowizny online (Przelewy24)'],
+            ],
+            'wecms-funkcje-dostepnosc' => [
+                ['panel-skaner-wcag.jpg', 'Skaner WCAG w panelu', 'Skaner WCAG wskazanej strony'],
+                ['panel-audyt-alt.jpg', 'Audyt opisów alternatywnych zdjęć w bibliotece mediów', 'Audyt opisów zdjęć'],
+            ],
+            'wecms-funkcje-wyglad' => [
+                ['mega-menu.jpg', 'Rozwinięte mega menu z kategoriami i przyciskami', 'Mega menu na stronie'],
+                ['panel-menu.jpg', 'Edycja menu nawigacji w panelu', 'Menu nawigacji w panelu'],
+                ['panel-moduly.jpg', 'Ustawienia strony w panelu z sekcjami ustawień', 'Ustawienia strony'],
+            ],
+        ];
+
+        foreach ($map as $slug => $shots) {
+            $page = Page::where('slug', $slug)->first();
+            if (! $page) {
+                continue;
+            }
+
+            $page->images()->get()->each->delete();
+            $figures = '';
+            foreach ($shots as $i => [$file, $alt, $caption]) {
+                if (! is_file("{$dir}/{$file}")) {
+                    continue;
+                }
+                $image = $page->images()->create(['alt' => $alt, 'caption' => $caption, 'order' => $i + 1]);
+                $image->addMedia("{$dir}/{$file}")->preservingOriginal()->toMediaCollection('image');
+                // Ścieżka względna (/storage/...), niezależna od domeny i portu instalacji.
+                $src = parse_url((string) $image->fresh()->image_url, PHP_URL_PATH);
+                $figures .= '<figure><img src="'.e($src).'" alt="'.e($alt).'" loading="lazy"><figcaption>'.e($caption).'</figcaption></figure>';
+            }
+
+            $base = preg_replace('~<h2>Jak to wygląda</h2>.*$~s', '', (string) $page->content);
+            $page->update(['content' => $figures !== '' ? $base.'<h2>Jak to wygląda</h2>'.$figures : $base]);
+        }
+
     }
 
     /** Formularz zamówienia weCMS (kreator formularzy). Zakładany raz — zmiany z panelu zostają. */

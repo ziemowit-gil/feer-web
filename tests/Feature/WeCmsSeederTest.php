@@ -13,12 +13,19 @@ class WeCmsSeederTest extends TestCase
 
     public function test_tworzy_zapowiedz_dzialania_wecms(): void
     {
+        \Illuminate\Support\Facades\Storage::fake('public');
         $this->seed(WeCmsSeeder::class);
         $this->seed(WeCmsSeeder::class);
 
         $project = Project::where('slug', 'wecms')->sole();
         $this->assertSame('wsparcie-dla-organizacji', $project->category->slug);
         $this->assertFalse($project->is_paid);
+        // Zrzuty ekranu pod treścią podstron, bez duplikatów po ponownym uruchomieniu.
+        $about = \App\Models\Page::where('slug', 'wecms-o-cms')->sole();
+        $this->assertSame(2, $about->images()->count());
+        $this->assertSame(1, substr_count($about->content, '<h2>Jak to wygląda</h2>'));
+        $this->assertStringContainsString('Panel redakcji — pulpit', $about->content);
+        $this->assertSame(3, \App\Models\Page::where('slug', 'wecms-funkcje-moduly')->sole()->images()->count());
         $form = \App\Models\FormDefinition::where('slug', WeCmsSeeder::FORM_SLUG)->sole();
         $this->assertSame('ziemowit.gil@feer.org.pl', $form->settings['notification_email']);
         $this->assertTrue($form->is_active);
@@ -33,7 +40,7 @@ class WeCmsSeederTest extends TestCase
         $this->assertStringNotContainsString('Szczegóły już wkrótce.</p>', $html, 'bez zajawki w nagłówku');
         $this->assertStringNotContainsString('Dla kogo:', $html);
         // Elementy tylko dla FEER nie są opisywane jako część weCMS.
-        foreach (['Oferty pracy:', 'Mapa pomocy', 'Sprawozdania:', 'Wydarzenia:', 'Materiały edukacyjne:', 'Działania i projekty', 'storage/'] as $feerOnly) {
+        foreach (['Oferty pracy:', 'Mapa pomocy', 'Sprawozdania:', 'Wydarzenia:', 'Materiały edukacyjne:', 'Działania i projekty', 'bootstrap/cache'] as $feerOnly) {
             $this->assertStringNotContainsString($feerOnly, $html);
         }
         foreach (['weCMS — system do stron organizacji społecznych', 'mieliśmy dość WordPressa', 'czysty, płaski design', 'prawie zerowe koszty', 'Szczegóły już wkrótce', 'Ta strona — feer.org.pl — działa na weCMS', 'Ta strona działa na weCMS', 'PHP 8.4', 'Porównanie wersji weCMS', 'od maja do października 2026', 'Wersja demonstracyjna weCMS będzie dostępna niebawem', 'Wersja weCMS', 'Szablon piszemy indywidualnie dla każdej organizacji.', 'będziemy go dalej rozwijać', 'Zapytanie ofertowe:', 'YubiKey', 'Kreator formularzy:', 'tryb czarno-żółty', 'system do zarządzania treścią', 'piszemy indywidualnie dla każdej organizacji', 'Gdy licencja wygaśnie', 'Przelewy24', 'aria-label="Sekcje działania"'] as $text) {
