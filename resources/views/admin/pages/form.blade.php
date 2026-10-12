@@ -20,6 +20,8 @@
         // Typy-pozycje menu (przekierowanie, własny link, nagłówek) nie mają treści — w formularzu tylko niezbędne pola.
         $linkTypes = ['redirect', 'menu_link', 'menu_heading'];
         $isLinkType = in_array($currentType, $linkTypes, true);
+        // Pola bez znaczenia w danym układzie strony (widok układu ich nie używa) — ukrywane, patrz data-hide-for-templates.
+        $tplHides = fn (string $list) => in_array(old('page_template', $page->page_template ?? 'default'), explode(' ', $list), true) ? 'hidden' : '';
         $scheduleItems = old('schedule_items', $page->schedule_items ?? []);
         $scheduleItems = is_array($scheduleItems) ? array_values($scheduleItems) : [];
         $hasProject = (bool) old('project_id', $page->project_id);
@@ -207,7 +209,8 @@
                     </div>
 
                     {{-- Zdjęcie w treści --}}
-                    <div data-hide-for="contact" data-hide-for-link class="{{ $currentType === 'contact' || $isLinkType ? 'hidden' : '' }}">
+                    <div data-hide-for-templates="section" class="{{ $tplHides('section') }}">
+<div data-hide-for="contact" data-hide-for-link class="{{ $currentType === 'contact' || $isLinkType ? 'hidden' : '' }}">
                         <p class="mb-1 text-sm font-bold">Zdjęcie w treści <span class="font-normal text-muted">(opcjonalne)</span></p>
                         <p class="mb-3 text-xs text-muted">Pojawia się poniżej tytułu, przed główną treścią strony. Ustaw szerokość, by dopasować do układu.</p>
                         <div class="flex items-start gap-4">
@@ -253,6 +256,7 @@
                                 </div>
                             </div>
                         </div>
+                    </div>
                     </div>
                 </div>
             </div>
@@ -386,6 +390,7 @@
                         <script>
                             document.getElementById('page_template')?.addEventListener('change', function (e) {
                                 document.querySelectorAll('[data-template-fields]').forEach(function (el) { el.classList.toggle('hidden', el.dataset.templateFields !== e.target.value); });
+                                document.querySelectorAll('[data-hide-for-templates]').forEach(function (el) { el.classList.toggle('hidden', el.dataset.hideForTemplates.split(' ').includes(e.target.value)); });
                             });
                         </script>
                     </div>
@@ -396,7 +401,8 @@
                         $rowTitle = 'block text-[15px] font-bold text-ink';
                         $rowHint = 'mt-0.5 block text-sm leading-snug text-muted';
                     @endphp
-                    <div data-hide-for-link class="space-y-1 border-t border-gray-100 pt-5 {{ $isLinkType ? 'hidden' : '' }}" x-data="{ sideNav: {{ old('show_side_nav', $page->show_side_nav ?? true) ? 'true' : 'false' }} }">
+                    <div data-hide-for-templates="wide hero landing minimal" class="{{ $tplHides('wide hero landing minimal') }}">
+<div data-hide-for-link class="space-y-1 border-t border-gray-100 pt-5 {{ $isLinkType ? 'hidden' : '' }}" x-data="{ sideNav: {{ old('show_side_nav', $page->show_side_nav ?? true) ? 'true' : 'false' }} }">
                         <h3 class="text-xs font-bold uppercase tracking-widest text-muted">Nawigacja po podstronach</h3>
                             <div>
                                 <label class="{{ $row }}">
@@ -443,6 +449,7 @@
                                     @endforeach
                                 </div>
                             </div>
+                    </div>
                     </div>
 
                     @include('admin.pages.partials.types.event')
@@ -582,11 +589,13 @@
                     <section aria-labelledby="grp-dodatki" class="mt-8 {{ in_array($currentType, ['about', 'contact'], true) || $isLinkType ? 'hidden' : '' }}" data-gallery-toggle data-hide-for-link>
                         <h3 id="grp-dodatki" class="{{ $groupTitle }}">Dodatki</h3>
                         <div class="mt-2 divide-y divide-gray-100">
+                            <div data-hide-for-templates="section" class="{{ $tplHides('section') }}">
                             <label class="{{ $row }}">
                                 <input type="hidden" name="show_gallery" value="0">
                                 <input type="checkbox" name="show_gallery" value="1" {{ old('show_gallery', $page->show_gallery ?? false) ? 'checked' : '' }}>
                                 <span><span class="{{ $rowTitle }}">Pokaż galerię zdjęć</span><span class="{{ $rowHint }}">Wyświetla zdjęcia z zakładki „Galeria".</span></span>
                             </label>
+                            </div>
                             @php $ldSlider = old('layout_data.slider', ($page->layout_data ?? [])['slider'] ?? (($page->page_template ?? 'default') === 'section')); @endphp
                             <label class="{{ $row }}">
                                 <input type="hidden" name="layout_data[slider]" value="0">
