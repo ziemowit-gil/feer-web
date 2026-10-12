@@ -31,7 +31,7 @@ class WeCmsSeederTest extends TestCase
         foreach (['Oferty pracy:', 'Mapa pomocy', 'Sprawozdania:', 'Wydarzenia:', 'Materiały edukacyjne:', 'Działania i projekty', 'storage/'] as $feerOnly) {
             $this->assertStringNotContainsString($feerOnly, $html);
         }
-        foreach (['weCMS — system do stron organizacji społecznych', 'mieliśmy dość WordPressa', 'czysty, płaski design', 'prawie zerowe koszty', 'Szczegóły już wkrótce', 'Ta strona — feer.org.pl — działa na weCMS', 'Ta strona działa na weCMS', 'PHP 8.4', 'Porównanie wersji weCMS', 'od maja do października 2026', 'Zapytanie ofertowe:', 'YubiKey', 'Kreator formularzy:', 'tryb czarno-żółty', 'system do zarządzania treścią', 'piszemy indywidualnie dla każdej organizacji', 'Gdy licencja wygaśnie', 'Przelewy24', 'aria-label="Sekcje działania"'] as $text) {
+        foreach (['weCMS — system do stron organizacji społecznych', 'mieliśmy dość WordPressa', 'czysty, płaski design', 'prawie zerowe koszty', 'Szczegóły już wkrótce', 'Ta strona — feer.org.pl — działa na weCMS', 'Ta strona działa na weCMS', 'PHP 8.4', 'Porównanie wersji weCMS', 'od maja do października 2026', 'będziemy go dalej rozwijać', 'Zapytanie ofertowe:', 'YubiKey', 'Kreator formularzy:', 'tryb czarno-żółty', 'system do zarządzania treścią', 'piszemy indywidualnie dla każdej organizacji', 'Gdy licencja wygaśnie', 'Przelewy24', 'aria-label="Sekcje działania"'] as $text) {
             $this->assertStringContainsString($text, $html);
         }
     }

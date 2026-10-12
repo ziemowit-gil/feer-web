@@ -62,7 +62,7 @@ class WeCmsSeeder extends Seeder
         $subpages = [
             'o-cms' => ['O CMS',
                 $p('<strong>Ta strona działa na weCMS</strong> — wszystko, co tu widzisz, prowadzimy w naszym własnym systemie.')
-                .$p('weCMS powstał w Fundacji Edukacji Empatii Rozwoju „FEER”, która na co dzień pracuje na rzecz dostępności i osób z niepełnosprawnościami. Zbudowaliśmy go, bo mieliśmy dość WordPressa i jego wtyczek. Wersję podstawową pisaliśmy od maja do października 2026 roku.')
+                .$p('weCMS powstał w Fundacji Edukacji Empatii Rozwoju „FEER”, która na co dzień pracuje na rzecz dostępności i osób z niepełnosprawnościami. Zbudowaliśmy go, bo mieliśmy dość WordPressa i jego wtyczek. Wersję podstawową pisaliśmy od maja do października 2026 roku — i będziemy go dalej rozwijać.')
                 .'<h2>System do zarządzania treścią, nie gotowy wygląd</h2>'
                 .$p('weCMS to <strong>CMS — system do zarządzania treścią</strong>: panel redakcji, moduły (aktualności, darowizny, formularze, BIP i inne), uprawnienia, historia zmian, dostępność i integracje. To, co widzi odwiedzający — <strong>szablon strony — piszemy indywidualnie dla każdej organizacji</strong>, zgodnie z jej identyfikacją wizualną.')
                 .$p('Dzięki temu dwie strony na weCMS nie wyglądają tak samo, a każda korzysta z tego samego, sprawdzonego zaplecza.')
