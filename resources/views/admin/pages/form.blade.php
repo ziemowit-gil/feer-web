@@ -185,7 +185,7 @@
 
                     {{-- Główny edytor treści — ukryty dla typów bez swobodnej treści
                          („O organizacji" i „Przeniesiono do BIP" mają własne pola). --}}
-                    <div data-content-field data-hide-for-link class="{{ in_array($currentType, ['about', 'bip_move', 'wspolpraca', 'contact'], true) || $isLinkType ? 'hidden' : '' }}">
+                    <div data-content-field class="{{ in_array($currentType, ['about', 'bip_move', 'wspolpraca', 'contact'], true) || $isLinkType ? 'hidden' : '' }}" data-hide-for-link>
                         <div class="mb-1 flex flex-wrap items-center justify-between gap-2">
                             <label class="block text-sm font-bold">Treść</label>
                             @if ($page->exists)

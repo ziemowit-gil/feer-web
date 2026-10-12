@@ -71,13 +71,13 @@ class MenuLinkPageTypesTest extends TestCase
         $standard = Page::create(['title' => 'Zwykła', 'slug' => 'zwykla-2', 'type' => 'standard', 'is_published' => true]);
 
         $linkHtml = $this->get(route('admin.podstrony.edit', $link))->assertOk()->getContent();
-        $this->assertMatchesRegularExpression('~data-content-field data-hide-for-link class="hidden"~', $linkHtml);
+        $this->assertMatchesRegularExpression('~data-content-field class="hidden" data-hide-for-link~', $linkHtml);
         $this->assertMatchesRegularExpression('~data-ftab-btn="seo" data-hide-for-link[^>]*class="hidden ~', $linkHtml);
         $this->assertStringContainsString('name="type_data[target_url]"', $linkHtml);
         $this->assertStringContainsString('name="title"', $linkHtml);
 
         $standardHtml = $this->get(route('admin.podstrony.edit', $standard))->assertOk()->getContent();
-        $this->assertMatchesRegularExpression('~data-content-field data-hide-for-link class=""~', $standardHtml);
+        $this->assertMatchesRegularExpression('~data-content-field class="" data-hide-for-link~', $standardHtml);
     }
 
     public function test_drzewo_dzialan_w_panelu_odroznia_link_od_zakladki(): void

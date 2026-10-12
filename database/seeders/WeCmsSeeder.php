@@ -50,7 +50,8 @@ class WeCmsSeeder extends Seeder
                 ]],
                 'sections_as_tabs' => false,
                 'sections_nav' => 'sidebar',
-                'main_cta' => ['label' => 'Napisz do nas', 'url' => '/kontakt'],
+                // Bez przycisku w nagłówku — zaproszenie do kontaktu jest w treści.
+                'main_cta' => null,
                 'is_published' => true,
             ],
         );
