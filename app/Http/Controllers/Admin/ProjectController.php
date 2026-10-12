@@ -347,6 +347,7 @@ class ProjectController extends Controller
             'inherit.*' => ['string', Rule::in(array_keys(Project::INHERITABLE))],
             'category_id' => array_filter(['required', 'exists:categories,id', ($ids = auth()->user()?->allowedProjectCategoryIds()) !== null ? Rule::in($ids) : null]),
             'title' => ['required', 'string', 'max:255'],
+            'nav_title' => ['nullable', 'string', 'max:80'],
             'slug' => ['nullable', 'string', 'max:255'],
             'meta_title' => ['nullable', 'string', 'max:255'],
             'meta_description' => ['nullable', 'string', 'max:300'],
@@ -471,6 +472,10 @@ class ProjectController extends Controller
         $data['show_coordinator'] = $request->boolean('show_coordinator');
         $data['show_legacy_box'] = $request->boolean('show_legacy_box');
         $data['image_hero'] = $request->boolean('image_hero');
+        // Krótka nazwa do menu bocznego — pomijana, dopóki na serwerze nie wykonano migracji (wdrożenie samym `git pull`).
+        if (! \Illuminate\Support\Facades\Schema::hasColumn('projects', 'nav_title')) {
+            unset($data['nav_title']);
+        }
         $data['sections_as_tabs'] = $request->boolean('sections_as_tabs');
 
         // Przyciski pod menu sekcji: pomijamy puste wiersze i adresy spoza http(s)/mailto/tel/ścieżek względnych.

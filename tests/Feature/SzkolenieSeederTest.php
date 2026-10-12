@@ -23,6 +23,7 @@ class SzkolenieSeederTest extends TestCase
         $this->assertSame(2, \App\Models\Page::where('project_id', $project->id)->count());
 
         $html = $this->get(route('projects.show', $project))->assertOk()->getContent();
+        $this->assertMatchesRegularExpression('~<p class="font-bold leading-snug text-ink text-lg">Szkolenia z informatyki</p>~', $html);
         foreach (['za opłatą', 'Cennik', 'Szkolenie zdalne', '85 zł', 'do ustalenia', 'Python', 'VoiceOver', 'Ziemowit Gil', 'aria-label="Sekcje działania"'] as $text) {
             $this->assertStringContainsString($text, $html);
         }

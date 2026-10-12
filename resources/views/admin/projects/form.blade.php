@@ -73,6 +73,14 @@
                         </div>
 
                         <div>
+                            <label for="nav_title" class="mb-1 block text-sm font-bold">Krótka nazwa <span class="font-normal text-muted">(menu boczne, opcjonalnie)</span></label>
+                            <input type="text" id="nav_title" name="nav_title" value="{{ old('nav_title', $project->nav_title) }}" maxlength="80" aria-describedby="nav_title_hint"
+                                placeholder="np. Szkolenia z informatyki" class="w-full rounded-lg border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
+                            <p id="nav_title_hint" class="mt-1 text-xs text-muted">Nagłówek menu bocznego na stronie działania. Puste = pełny tytuł.</p>
+                            @error('nav_title') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                        </div>
+
+                        <div>
                             <label for="slug" class="mb-1 block text-sm font-bold">Slug (adres URL)</label>
                             <div class="flex items-center gap-2">
                                 <span class="text-sm text-muted">/projekty/</span>

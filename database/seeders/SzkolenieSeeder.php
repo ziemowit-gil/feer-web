@@ -36,6 +36,7 @@ class SzkolenieSeeder extends Seeder
             ['slug' => 'szkolenia-informatyka-programowanie-tyfloinformatyka'],
             [
                 'title' => 'Szkolenia z informatyki, programowania i tyfloinformatyki dla dzieci i młodzieży',
+                'nav_title' => 'Szkolenia z informatyki',
                 'category_id' => $category->id,
                 'excerpt' => 'Indywidualne i kameralne zajęcia z informatyki, programowania (Python, PHP) i tyfloinformatyki dla dzieci i młodzieży — także niewidomych i słabowidzących.',
                 'for_whom' => 'Dzieci i młodzież, w tym osoby niewidome i słabowidzące',

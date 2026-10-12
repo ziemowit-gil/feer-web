@@ -11,11 +11,13 @@
     $projNavCurrent = 'bg-brand-light font-bold text-brand-dark';
 @endphp
 <nav aria-label="Sekcje działania" class="proj-nav rounded-md bg-gray-50 p-5">
-    <p class="text-lg font-bold leading-snug text-ink">{{ $project->title }}</p>
+    @php $navHeading = $project->nav_title ?: $project->title; @endphp
+    {{-- Krótka nazwa z pola „Krótka nazwa (menu boczne)”; długi pełny tytuł mniejszą czcionką. --}}
+    <p @class(['font-bold leading-snug text-ink', 'text-lg' => mb_strlen($navHeading) <= 40, 'text-base' => mb_strlen($navHeading) > 40])>{{ $navHeading }}</p>
     <span class="mb-4 mt-2 block h-1 w-14 bg-brand" aria-hidden="true"></span>
     <ul role="list" class="space-y-1">
         <li>
-            <button type="button" @click="tab = 'opis'; node = null" :aria-current="tab === 'opis' ? 'page' : null"
+            <button type="button" @click="tab = 'opis'; node = null; $event.detail && $el.blur()" :aria-current="tab === 'opis' ? 'page' : null"
                 class="{{ $projNavItem }}" :class="tab === 'opis' ? @js($projNavCurrent) : @js($projNavIdle)">
                 <span class="min-w-0">O projekcie</span>
                 <i class="fa-solid fa-chevron-right flex-none text-xs" aria-hidden="true"></i>
@@ -23,7 +25,7 @@
         </li>
         @foreach ($sectionTabs as $i => $section)
             <li>
-                <button type="button" @click="tab = 'sekcja-{{ $i }}'; node = null" :aria-current="tab === 'sekcja-{{ $i }}' ? 'page' : null"
+                <button type="button" @click="tab = 'sekcja-{{ $i }}'; node = null; $event.detail && $el.blur()" :aria-current="tab === 'sekcja-{{ $i }}' ? 'page' : null"
                     class="{{ $projNavItem }}" :class="tab === 'sekcja-{{ $i }}' ? @js($projNavCurrent) : @js($projNavIdle)">
                     <span class="min-w-0">{{ $section['title'] ?: 'Sekcja '.($i + 1) }}</span>
                     <i class="fa-solid fa-chevron-right flex-none text-xs" aria-hidden="true"></i>
