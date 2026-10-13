@@ -169,6 +169,9 @@ final class AdminMenu
                         $this->child('Nowe działanie', 'admin.projekty.create', 'admin.projekty.create', icon: 'fa-plus', group: 'Zarządzanie'),
                         $this->child('Kategorie działań', 'admin.kategorie.index', 'admin.kategorie.*', icon: 'fa-tags', group: 'Zarządzanie'),
                     ]) : null,
+                $this->can('projects') && \Illuminate\Support\Facades\Schema::hasTable('coordinators')
+                    ? $this->item('coordinators', 'Koordynatorzy', 'admin.koordynatorzy.index', 'fa-user-tie', active: 'admin.koordynatorzy.*')
+                    : null,
                 $this->can('faq')      ? $this->item('faq', 'FAQ', 'admin.faq.index', 'fa-circle-question', active: 'admin.faq.*') : null,
                 $this->can('reports')  ? $this->item('reports', 'Sprawozdania', 'admin.sprawozdania.index', 'fa-file-invoice', active: 'admin.sprawozdania.*') : null,
                 $this->can('landing')  ? $this->item('landing', 'Landing pages', 'admin.lp.index', 'fa-bullhorn', active: 'admin.lp.*') : null,
@@ -289,7 +292,7 @@ final class AdminMenu
             ]),
             // „Działalność” — to, co organizacja robi i oferuje.
             $this->group($byKey, 'activity', 'Działalność', 'fa-diagram-project', [
-                ['Działania', 'content', ['projects', 'help-map', 'organizations']],
+                ['Działania', 'content', ['projects', 'coordinators', 'help-map', 'organizations']],
                 ['Oferta', 'content', ['events', 'materials', 'shop']],
                 ['Zaangażowanie', 'content', ['volunteering', 'jobs']],
             ]),

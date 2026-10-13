@@ -53,26 +53,27 @@
     </ul>
 </nav>
 
-    {{-- Kontakt z koordynatorem — osobny blok pod menu (poza jego szarym polem): zdjęcie/avatar, imię, e-mail i telefon. --}}
+    {{-- Kontakt z koordynatorem — osobny blok pod menu (poza jego szarym polem): zdjęcie (jeśli jest), imię, e-mail i telefon. --}}
     @if (! $project->is_completed && $project->showsCoordinator())
         <section class="rounded-md bg-gray-50 p-5" aria-labelledby="proj-contact-h">
             <h2 id="proj-contact-h" class="text-base font-bold text-ink">Masz pytania? Chętnie odpowiemy</h2>
-            <div class="mt-3 flex items-start gap-3">
-                {{-- Zdjęcie koordynatora (ze strony osoby w zespole); bez zdjęcia — avatar z ludzikiem; bez imienia — ikona koperty. --}}
-                @if ($coordPhoto = $project->coordinatorPhoto())
-                    <img src="{{ $coordPhoto }}" alt="" loading="lazy" class="h-16 w-16 flex-none rounded-md object-cover">
-                @else
-                    <span class="flex h-16 w-16 flex-none items-center justify-center rounded-md bg-brand-light text-3xl text-brand-dark" aria-hidden="true"><i class="fa-solid {{ filled($project->coordinator_name) ? 'fa-user' : 'fa-envelope' }}"></i></span>
-                @endif
-                <div class="min-w-0 text-sm text-ink">
-                    @if ($project->coordinator_name)<p class="font-bold">{{ $project->coordinator_name }}</p>@endif
-                    <p><span class="font-bold">E-mail:</span> <a href="mailto:{{ $project->contactEmail() }}" class="break-all font-bold text-brand-dark underline underline-offset-2 hover:no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">{{ $project->contactEmail() }}</a></p>
-                    @if ($project->coordinator_phone)
-                        <p><span class="font-bold">Tel.:</span> <a href="tel:{{ preg_replace('/[^0-9+]/', '', $project->coordinator_phone) }}" class="font-bold text-brand-dark underline underline-offset-2 hover:no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">{{ $project->coordinator_phone }}</a></p>
-                        @if (filled($project->coordinator_phone_hours))<p class="text-xs">Telefon czynny {{ $project->coordinator_phone_hours }}</p>@endif
+            @php $coordPhoto = $project->coordinatorPhoto(); @endphp
+            {{-- Zdjęcie tylko, gdy jest (a gdy się nie wczyta — znika); bez zdjęcia sam tekst. --}}
+            @if ($coordPhoto || $project->coordinator_name)
+                <div class="mt-3 flex items-center gap-3">
+                    @if ($coordPhoto)
+                        <img src="{{ $coordPhoto }}" alt="" loading="lazy" class="h-16 w-16 flex-none rounded-md object-cover" onerror="this.remove()">
                     @endif
+                    @if ($project->coordinator_name)<p class="text-base font-bold text-ink">{{ $project->coordinator_name }}</p>@endif
                 </div>
-            </div>
+            @endif
+            <dl class="mt-3 space-y-1 text-sm text-ink">
+                <div><dt class="inline font-bold">E-mail:</dt> <dd class="inline"><a href="mailto:{{ $project->contactEmail() }}" class="font-bold text-brand-dark underline underline-offset-2 hover:no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">{{ $project->contactEmail() }}</a></dd></div>
+                @if ($project->coordinator_phone)
+                    <div><dt class="inline font-bold">Tel.:</dt> <dd class="inline"><a href="tel:{{ preg_replace('/[^0-9+]/', '', $project->coordinator_phone) }}" class="whitespace-nowrap font-bold text-brand-dark underline underline-offset-2 hover:no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">{{ $project->coordinator_phone }}</a></dd></div>
+                    @if (filled($project->coordinator_phone_hours))<p class="text-xs">Telefon czynny {{ $project->coordinator_phone_hours }}</p>@endif
+                @endif
+            </dl>
         </section>
     @endif
 </div>

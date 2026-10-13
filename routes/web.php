@@ -688,6 +688,7 @@ Route::middleware(['auth', 'verified', '2fa', 'admin-site'])->prefix(config('app
         Route::patch('pozycje-menu/{navItem}/przenies', [NavItemController::class, 'move'])->name('pozycje-menu.przenies');
         Route::post('pozycje-menu/kolejnosc', [NavItemController::class, 'reorder'])->name('pozycje-menu.reorder');
         Route::post('pozycje-menu/ze-stron', [NavItemController::class, 'storeFromPages'])->name('pozycje-menu.ze-stron');
+        Route::resource('koordynatorzy', \App\Http\Controllers\Admin\CoordinatorController::class)->except('show');
         Route::patch('pozycje-menu/{navItem}/aktywna', [NavItemController::class, 'toggleActive'])->name('pozycje-menu.aktywna');
 
         Route::resource('grupy', AdminUserGroupController::class)->parameters(['grupy' => 'group'])->except('show')->middleware('edition:user_groups');

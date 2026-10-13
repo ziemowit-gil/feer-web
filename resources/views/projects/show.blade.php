@@ -639,13 +639,12 @@
                                     $asidePhoto = $project->coordinatorPhoto();
                                 @endphp
                                 <p class="flex items-center gap-3 font-bold">
-                                    @if ($asidePhoto)<img src="{{ $asidePhoto }}" alt="" loading="lazy" class="h-16 w-16 flex-none rounded-md object-cover">
-                                    @else<span class="flex h-16 w-16 flex-none items-center justify-center rounded-md bg-white text-3xl text-brand-dark" aria-hidden="true"><i class="fa-solid fa-user"></i></span>@endif
+                                    @if ($asidePhoto)<img src="{{ $asidePhoto }}" alt="" loading="lazy" class="h-16 w-16 flex-none rounded-md object-cover" onerror="this.remove()">@endif
                                     <span>{{ $project->coordinator_name }}</span>
                                 </p>
                             @endif
                             <p>
-                                <span class="font-bold">E-mail:</span> <a href="mailto:{{ $project->contactEmail() }}" class="proj-link break-all">{{ $project->contactEmail() }}</a>
+                                <span class="font-bold">E-mail:</span> <a href="mailto:{{ $project->contactEmail() }}" class="proj-link">{{ $project->contactEmail() }}</a>
                             </p>
                             @if ($project->coordinator_phone)
                                 <p>

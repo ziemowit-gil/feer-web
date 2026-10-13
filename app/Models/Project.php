@@ -44,7 +44,7 @@ class Project extends Model implements HasMedia
 
     protected $fillable = [
         'unpublish_at', 'reviewed_at',
-        'site_id', 'created_by', 'category_id', 'title', 'nav_title', 'slug', 'excerpt', 'for_whom', 'audience', 'accent_color', 'since', 'image_alt', 'image_hero', 'content', 'blocks', 'why', 'outcomes', 'is_published', 'show_on_home', 'hero_style', 'is_completed', 'completed_at', 'is_paid', 'pricing', 'order',
+        'site_id', 'created_by', 'category_id', 'title', 'nav_title', 'slug', 'excerpt', 'for_whom', 'audience', 'accent_color', 'since', 'image_alt', 'image_hero', 'content', 'blocks', 'why', 'outcomes', 'is_published', 'show_on_home', 'hero_style', 'coordinator_id', 'is_completed', 'completed_at', 'is_paid', 'pricing', 'order',
         'meta_title', 'meta_description', 'pending_approval', 'submitted_by_id',
         'coordinator_name', 'coordinator_email', 'coordinator_phone', 'coordinator_phone_hours', 'is_featured_contact', 'show_coordinator',
         'custom_sections', 'sections_as_tabs', 'sections_nav', 'sidebar_buttons', 'sidebar_note', 'parent_id', 'inherit', 'is_offered', 'paid_info_show', 'paid_info_text', 'terms', 'kind', 'quick_facts', 'easy_summary', 'main_cta', 'metrics', 'testimonials', 'faq', 'status', 'starts_on', 'ends_on', 'stages', 'team', 'funding', 'funding_notice', 'show_legacy_box', 'legacy_url',
@@ -61,7 +61,7 @@ class Project extends Model implements HasMedia
         'for_whom'   => ['Dla kogo i od kiedy', ['for_whom', 'since']],
         'image'      => ['Zdjęcie', ['image_alt']],
         'look'       => ['Kolorystyka (grupa docelowa i akcent)', ['audience', 'accent_color']],
-        'coordinator' => ['Koordynator i kontakt', ['coordinator_name', 'coordinator_email', 'coordinator_phone', 'coordinator_phone_hours', 'show_coordinator', 'is_featured_contact']],
+        'coordinator' => ['Koordynator i kontakt', ['coordinator_id', 'coordinator_name', 'coordinator_email', 'coordinator_phone', 'coordinator_phone_hours', 'show_coordinator', 'is_featured_contact']],
         'pricing'    => ['Płatność i cennik', ['is_paid', 'pricing']],
         'terms'      => ['Kto może wziąć udział', ['terms']],
         'extras'     => ['W skrócie, wskaźniki, opinie i FAQ', ['quick_facts', 'easy_summary', 'main_cta', 'metrics', 'testimonials', 'faq']],
@@ -89,8 +89,16 @@ class Project extends Model implements HasMedia
      * Zdjęcie koordynatora z jego strony w zespole (osoba „O organizacji”): dopasowanie po e-mailu,
      * a gdy go brak — po imieniu i nazwisku. Null, gdy nie ma osoby ze zdjęciem (wtedy avatar z inicjałami).
      */
+    public function coordinator(): BelongsTo
+    {
+        return $this->belongsTo(Coordinator::class);
+    }
+
     public function coordinatorPhoto(): ?string
     {
+        if ($this->coordinator_id && ($c = once(fn () => Coordinator::withoutGlobalScopes()->with('personPage')->find($this->coordinator_id)))) {
+            return $c->photoUrl();
+        }
         $email = mb_strtolower(trim((string) $this->coordinator_email));
         $name = trim((string) $this->coordinator_name);
         if ($email === '' && $name === '') {
@@ -228,29 +236,49 @@ class Project extends Model implements HasMedia
     protected static function booted(): void
     {
         static::retrieved(function (Project $project) {
-            // Koordynator: działanie podrzędne bez własnego (bez imienia i e-maila) ma tego samego co nadrzędne.
-            $groups = (array) $project->inherit;
-            if ($project->parent_id && blank($project->getAttributes()['coordinator_name'] ?? null) && blank($project->getAttributes()['coordinator_email'] ?? null)) {
-                $groups[] = 'coordinator';
-            }
-            $groups = array_values(array_unique($groups));
-            if (! $project->parent_id || empty($groups) || (app()->bound('request') && request()->routeIs('admin.*'))) {
-                return;
-            }
-            $parent = Project::withoutGlobalScopes()->find($project->parent_id);
-            if (! $parent || $parent->id === $project->id) {
+            // Panel pokazuje i zapisuje własne wartości działania — podstawienia tylko w odczycie publicznym.
+            if (app()->bound('request') && request()->routeIs('admin.*')) {
                 return;
             }
             $raw = $project->getAttributes();
-            $parentRaw = $parent->getAttributes();
-            foreach ($groups as $group) {
-                foreach (self::INHERITABLE[$group][1] ?? [] as $field) {
-                    if (array_key_exists($field, $parentRaw)) {
-                        $raw[$field] = $parentRaw[$field];
+            $changed = false;
+
+            // Dziedziczenie z działania nadrzędnego; koordynator — także bez zaznaczenia, gdy działanie nie ma własnego.
+            $groups = (array) $project->inherit;
+            if ($project->parent_id && blank($raw['coordinator_id'] ?? null) && blank($raw['coordinator_name'] ?? null) && blank($raw['coordinator_email'] ?? null)) {
+                $groups[] = 'coordinator';
+            }
+            $groups = array_values(array_unique($groups));
+            if ($project->parent_id && $groups !== []) {
+                $parent = Project::withoutGlobalScopes()->find($project->parent_id);
+                if ($parent && $parent->id !== $project->id) {
+                    $parentRaw = $parent->getAttributes();
+                    foreach ($groups as $group) {
+                        foreach (self::INHERITABLE[$group][1] ?? [] as $field) {
+                            if (array_key_exists($field, $parentRaw)) {
+                                $raw[$field] = $parentRaw[$field];
+                                $changed = true;
+                            }
+                        }
                     }
                 }
             }
-            $project->setRawAttributes($raw, true);
+
+            // Koordynator z modułu „Koordynatorzy”: jego dane zastępują pola wpisane w działaniu.
+            if (! empty($raw['coordinator_id'])) {
+                $coordinator = once(fn () => Coordinator::withoutGlobalScopes()->get()->keyBy('id'))->get((int) $raw['coordinator_id']);
+                if ($coordinator) {
+                    $raw['coordinator_name'] = $coordinator->name;
+                    $raw['coordinator_email'] = $coordinator->email;
+                    $raw['coordinator_phone'] = $coordinator->phone;
+                    $raw['coordinator_phone_hours'] = $coordinator->phone_hours;
+                    $changed = true;
+                }
+            }
+
+            if ($changed) {
+                $project->setRawAttributes($raw, true);
+            }
         });
 
         // Bloki edytora blokowego są aktualne tylko razem z `content` — zmiana treści gdzie indziej je unieważnia.
