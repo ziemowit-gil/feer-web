@@ -30,6 +30,7 @@ use App\Http\Controllers\Admin\GalleryImageController;
 use App\Http\Controllers\Admin\HeroSlideController;
 use App\Http\Controllers\Admin\MaterialSubscriberController as AdminMaterialSubscriberController;
 use App\Http\Controllers\Admin\MediaLibraryController;
+use App\Http\Controllers\Admin\MediaToolsController;
 use App\Http\Controllers\Admin\MeetingSignupController as AdminMeetingSignupController;
 use App\Http\Controllers\Admin\NavItemController;
 use App\Http\Controllers\Admin\NewsCategoryController as AdminNewsCategoryController;
@@ -561,6 +562,13 @@ Route::middleware(['auth', 'verified', '2fa', 'admin-site'])->prefix(config('app
     Route::get('multimedia', [MediaLibraryController::class, 'index'])->name('multimedia.index');
     Route::get('multimedia/obrazy', [MediaLibraryController::class, 'imagesJson'])->name('multimedia.images');
     Route::get('multimedia/audyt-alt', [MediaLibraryController::class, 'altAudit'])->name('multimedia.alt-audit');
+    Route::get('multimedia/dostepnosc-dokumentow', [MediaToolsController::class, 'documents'])->name('multimedia.documents');
+    Route::get('multimedia/porzadki', [MediaToolsController::class, 'cleanup'])->name('multimedia.cleanup');
+    Route::get('multimedia/{media}/szczegoly', [MediaToolsController::class, 'panel'])->name('multimedia.panel');
+    Route::post('multimedia/{media}/podmien', [MediaToolsController::class, 'replace'])->name('multimedia.replace');
+    Route::post('multimedia/{media}/sprawdz-dostepnosc', [MediaToolsController::class, 'recheck'])->name('multimedia.recheck');
+    Route::get('multimedia/{media}/wersje/{version}', [MediaToolsController::class, 'versionDownload'])->name('multimedia.versions.download');
+    Route::post('multimedia/{media}/wersje/{version}/przywroc', [MediaToolsController::class, 'versionRestore'])->name('multimedia.versions.restore');
     Route::get('multimedia/unsplash', [MediaLibraryController::class, 'unsplashSearch'])->name('multimedia.unsplash.search');
     Route::post('multimedia/unsplash', [MediaLibraryController::class, 'unsplashImport'])->name('multimedia.unsplash.import');
     Route::post('editor/importuj-docx', [DocxImportController::class, 'import'])->name('editor.docx.import')->middleware('edition:docx_import');
@@ -592,6 +600,7 @@ Route::middleware(['auth', 'verified', '2fa', 'admin-site'])->prefix(config('app
     Route::post('multimedia/foldery', [MediaLibraryController::class, 'storeFolder'])->name('multimedia.foldery.store');
     Route::put('multimedia/foldery/{folder}', [MediaLibraryController::class, 'updateFolder'])->name('multimedia.foldery.update');
     Route::delete('multimedia/foldery/{folder}', [MediaLibraryController::class, 'destroyFolder'])->name('multimedia.foldery.destroy');
+    Route::put('multimedia/foldery/{folder}/uprawnienia', [MediaToolsController::class, 'folderPermissions'])->name('multimedia.foldery.permissions');
 
     Route::get('pliki/lista', [AdminAttachmentController::class, 'lista'])->name('pliki.lista');
     Route::delete('pliki/{attachment}', [AdminAttachmentController::class, 'destroy'])->name('pliki.destroy');

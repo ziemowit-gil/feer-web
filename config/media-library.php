@@ -36,6 +36,12 @@ return [
     'disk_name' => env('MEDIA_DISK', 'public'),
 
     /*
+     * Limit miejsca na pliki biblioteki w MB (licznik w Multimediach i w „Porządkach”).
+     * 0 = bez limitu — licznik pokazuje wtedy samo zajęte miejsce.
+     */
+    'quota_mb' => (int) env('MEDIA_QUOTA_MB', 0),
+
+    /*
      * The disk on which to store conversions (thumbnails, etc.) and responsive images
      * when no disk is specified explicitly on the media collection or via
      * `storingConversionsOnDisk()`. When left null, conversions are stored on the

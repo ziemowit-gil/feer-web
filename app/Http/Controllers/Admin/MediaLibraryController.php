@@ -2,7 +2,10 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Admin\Concerns\AuthorizesMedia;
 use App\Http\Controllers\Controller;
+use App\Services\Media\MediaCleanup;
+use App\Services\Media\MediaUsage;
 use App\Models\GalleryImage;
 use App\Models\HeroSlide;
 use App\Models\MediaFolder;
@@ -33,6 +36,8 @@ use ZipArchive;
  */
 class MediaLibraryController extends Controller
 {
+    use AuthorizesMedia;
+
     /**
      * Maps a morphed model class to how it should be labelled and linked
      * back to from the media browser, and which module governs access to
@@ -63,10 +68,15 @@ class MediaLibraryController extends Controller
         MediaLibrary::class => null,
     ];
 
+    /** Rodzaje plików w filtrze (klucz → etykieta). */
+    public const KINDS = ['image' => 'Obrazy', 'document' => 'Dokumenty', 'other' => 'Inne'];
+
     /** Wyświetla bibliotekę multimediów z filtrowaniem, tagami i drzewem folderów. */
     public function index(Request $request)
     {
         $folder = $request->filled('folder') ? MediaFolder::findOrFail($request->integer('folder')) : null;
+        $this->authorizeFolder($folder?->id);
+
         $showArchived = $request->boolean('archived');
         $search = $request->input('q');
         $tag = $request->input('tag');
@@ -74,11 +84,15 @@ class MediaLibraryController extends Controller
         $dateTo = $request->input('date_to');
         $authorSearch = $request->input('author');
         $withArchived = $request->boolean('with_archived');
+        $kind = array_key_exists((string) $request->input('kind'), self::KINDS) ? $request->input('kind') : null;
 
-        $media = Media::query()
-            ->with('uploadedBy:id,name')
-            ->whereIn('model_type', $this->accessibleModelTypes())
-            ->where('media_folder_id', $folder?->id)
+        $usage = app(MediaUsage::class)->counts();
+
+        $media = $this->visibleMedia()
+            ->with(['uploadedBy:id,name'])
+            ->withCount('versions')
+            // Przy wyszukiwaniu i filtrach szukamy w całej bibliotece, nie tylko w bieżącym folderze.
+            ->when(! ($search || $tag || $kind || $authorSearch || $dateFrom || $dateTo), fn ($q) => $q->where('media_folder_id', $folder?->id))
             ->when(
                 ! $withArchived,
                 fn ($query) => $showArchived
@@ -90,6 +104,23 @@ class MediaLibraryController extends Controller
                 ->orWhere('custom_properties', 'like', '%"display_name":"'.addcslashes($search, '%_').'%')
             ))
             ->when($tag, fn ($query) => $query->where('custom_properties', 'like', '%"'.addslashes($tag).'"%'))
+            ->when($kind === 'image', fn ($q) => $q->where('mime_type', 'like', 'image/%'))
+            ->when($kind === 'document', fn ($q) => $q->where('mime_type', 'not like', 'image/%')->where(fn ($w) => $w
+                ->where('mime_type', 'like', 'application/pdf')
+                ->orWhere('mime_type', 'like', '%officedocument%')
+                ->orWhere('mime_type', 'like', '%opendocument%')
+                ->orWhere('mime_type', 'like', '%msword%')
+                ->orWhere('mime_type', 'like', '%ms-excel%')
+                ->orWhere('mime_type', 'like', '%ms-powerpoint%')
+                ->orWhere('mime_type', 'like', 'text/%')))
+            ->when($kind === 'other', fn ($q) => $q->where('mime_type', 'not like', 'image/%')
+                ->where('mime_type', 'not like', 'application/pdf')
+                ->where('mime_type', 'not like', '%officedocument%')
+                ->where('mime_type', 'not like', '%opendocument%')
+                ->where('mime_type', 'not like', '%msword%')
+                ->where('mime_type', 'not like', '%ms-excel%')
+                ->where('mime_type', 'not like', '%ms-powerpoint%')
+                ->where('mime_type', 'not like', 'text/%'))
             ->when($dateFrom, fn ($query) => $query->whereDate('created_at', '>=', $dateFrom))
             ->when($dateTo, fn ($query) => $query->whereDate('created_at', '<=', $dateTo))
             ->when($authorSearch, function ($query) use ($authorSearch) {
@@ -100,29 +131,16 @@ class MediaLibraryController extends Controller
                 });
             })
             ->latest()
-            ->paginate(36)
+            ->paginate(40)
             ->withQueryString()
-            ->through(function (Media $media) {
+            ->through(function (Media $media) use ($usage) {
                 $model = $media->model_type::find($media->model_id);
-
-                $isImage = str_starts_with($media->mime_type, 'image/');
-                $isWebp  = $media->mime_type === 'image/webp';
-
-                $hasWebpConversion = false;
-                if ($isImage && ! $isWebp) {
-                    try {
-                        $hasWebpConversion = file_exists($media->getPath('webp'));
-                    } catch (\Throwable) {
-                        // model nie ma zarejestrowanej konwersji 'webp'
-                    }
-                }
+                $isImage = $media->isImage();
 
                 $thumbUrl = null;
                 if ($isImage) {
                     try {
-                        $thumbUrl = $media->hasGeneratedConversion('thumb')
-                            ? $media->getUrl('thumb')
-                            : $media->getUrl();
+                        $thumbUrl = $media->hasGeneratedConversion('thumb') ? $media->getUrl('thumb') : $media->getUrl();
                     } catch (\Throwable) {
                         $thumbUrl = $media->getUrl();
                     }
@@ -133,27 +151,24 @@ class MediaLibraryController extends Controller
                     'url' => $media->getUrl(),
                     'thumb_url' => $thumbUrl,
                     'is_image' => $isImage,
-                    'is_webp' => $isWebp,
-                    'has_webp_conversion' => $hasWebpConversion,
+                    'kind' => $media->kind(),
+                    'ext' => strtoupper(pathinfo($media->file_name, PATHINFO_EXTENSION)),
                     'file_name' => $media->getCustomProperty('display_name') ?: $media->file_name,
-                    'file_name_real' => $media->file_name,
-                    'display_name_custom' => $media->getCustomProperty('display_name') ?? '',
                     'size' => $media->human_readable_size,
                     'mime_type' => $media->mime_type,
-                    'collection' => $media->collection_name,
                     'created_at' => $media->created_at,
                     'archived' => $media->archived_at !== null,
                     'owner' => $this->describeOwner($media, $model),
                     'alt' => $this->describeAlt($media, $model),
-                    'alt_editable' => $media->getCustomProperty('alt', ''),
-                    'tags' => $media->getCustomProperty('tags', []),
+                    'has_alt' => filled($media->getCustomProperty('alt')),
                     'author' => $media->getCustomProperty('author') ?: ($media->uploadedBy?->name ?? 'System'),
-                    'author_editable' => $media->getCustomProperty('author', ''),
+                    'usage' => (int) ($usage[$media->id] ?? 0),
+                    'versions' => (int) $media->versions_count,
+                    'a11y' => $media->isCheckableDocument() ? ($media->a11y_report['status'] ?? 'unchecked') : null,
                 ];
             });
 
-        $allTags = Media::query()
-            ->whereIn('model_type', $this->accessibleModelTypes())
+        $allTags = $this->visibleMedia()
             ->whereNot('custom_properties', '[]')
             ->whereNotNull('custom_properties')
             ->get(['custom_properties'])
@@ -163,32 +178,45 @@ class MediaLibraryController extends Controller
             ->sort()
             ->values();
 
+        $folderIds = MediaFolder::accessibleIdsFor(auth()->user());
+        $quotaMb = (int) config('media-library.quota_mb', 0);
+
         return view('admin.media.index', [
             'media' => $media,
             'folder' => $folder,
             'showArchived' => $showArchived,
             'breadcrumbs' => $folder ? $folder->path() : [],
-            'allFolders' => MediaFolder::orderBy('name')->get(),
+            'allFolders' => MediaFolder::orderBy('name')->get()->when($folderIds !== null, fn ($c) => $c->whereIn('id', $folderIds))->values(),
             'folderTree' => $this->folderTree(),
             'allTags' => $allTags,
             'currentSearch' => $search,
             'currentTag' => $tag,
+            'currentKind' => $kind,
             'currentDateFrom' => $dateFrom,
             'currentDateTo' => $dateTo,
             'currentAuthor' => $authorSearch,
             'withArchived' => $withArchived,
+            'isFiltered' => (bool) ($search || $tag || $kind || $authorSearch || $dateFrom || $dateTo),
+            'storageUsed' => MediaCleanup::quickTotal(),
+            'storageQuota' => $quotaMb > 0 ? $quotaMb * 1024 * 1024 : null,
+            'userGroups' => auth()->user()->isAdmin() ? \App\Models\UserGroup::orderBy('name')->get(['id', 'name']) : collect(),
         ]);
     }
 
     /** Zapisuje tagi pliku (zastępuje dotychczasową listę). */
     public function updateTags(Request $request, Media $media)
     {
-        abort_unless(in_array($media->model_type, $this->accessibleModelTypes()), 403);
+        $this->authorizeMedia($media);
 
         $data = $request->validate([
             'tags' => ['nullable', 'array'],
             'tags.*' => ['string', 'max:60'],
+            'tags_text' => ['nullable', 'string', 'max:1000'],
         ]);
+        // Panel szczegółów wysyła tagi jako jeden tekst, rozdzielone przecinkami.
+        if ($request->has('tags_text')) {
+            $data['tags'] = array_map(fn ($t) => mb_substr($t, 0, 60), explode(',', (string) $request->input('tags_text')));
+        }
 
         $tags = array_values(array_filter(
             array_unique(array_map('trim', $data['tags'] ?? [])),
@@ -203,13 +231,13 @@ class MediaLibraryController extends Controller
 
         $media->save();
 
-        return redirect()->back()->with('status', 'Tagi zostały zaktualizowane.');
+        return redirect()->back()->with('status', 'Tagi zostały zaktualizowane.')->with('media_panel', $media->id);
     }
 
     /** Zmienia wyświetlaną nazwę pliku (display_name) bez dotykania fizycznej nazwy. */
     public function rename(Request $request, Media $media)
     {
-        abort_unless(in_array($media->model_type, $this->accessibleModelTypes()), 403);
+        $this->authorizeMedia($media);
 
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
@@ -223,13 +251,13 @@ class MediaLibraryController extends Controller
         }
         $media->save();
 
-        return redirect()->back()->with('status', 'Nazwa pliku została zmieniona.');
+        return redirect()->back()->with('status', 'Nazwa pliku została zmieniona.')->with('media_panel', $media->id);
     }
 
     /** Zapisuje autora/fotografa pliku jako właściwość niestandardową. */
     public function updateAuthor(Request $request, Media $media)
     {
-        abort_unless(in_array($media->model_type, $this->accessibleModelTypes()), 403);
+        $this->authorizeMedia($media);
 
         $data = $request->validate([
             'author' => ['nullable', 'string', 'max:255'],
@@ -243,7 +271,7 @@ class MediaLibraryController extends Controller
         }
         $media->save();
 
-        return redirect()->back()->with('status', 'Autor został zaktualizowany.');
+        return redirect()->back()->with('status', 'Autor został zaktualizowany.')->with('media_panel', $media->id);
     }
 
     /**
@@ -254,8 +282,12 @@ class MediaLibraryController extends Controller
      */
     private function folderTree()
     {
+        $ids = MediaFolder::accessibleIdsFor(auth()->user());
+
         return MediaFolder::query()
+            ->with('userGroups:id,name')
             ->withCount(['media' => fn ($query) => $query->whereNull('archived_at')])
+            ->when($ids !== null, fn ($q) => $q->whereIn('id', $ids))
             ->orderBy('name')
             ->get()
             ->groupBy('parent_id');
@@ -268,8 +300,7 @@ class MediaLibraryController extends Controller
      */
     public function imagesJson()
     {
-        $images = Media::query()
-            ->whereIn('model_type', $this->accessibleModelTypes())
+        $images = $this->visibleMedia()
             ->where('mime_type', 'like', 'image/%')
             ->whereNull('archived_at')
             ->latest()
@@ -491,6 +522,7 @@ class MediaLibraryController extends Controller
         ], [], ['files.*' => 'plik']);
 
         $folderId = $request->input('folder_id') ?: null;
+        $this->authorizeFolder($folderId ? (int) $folderId : null);
         $library = MediaLibrary::instance();
         $count = 0;
         $userId = auth()->id();
@@ -529,15 +561,35 @@ class MediaLibraryController extends Controller
             'ids' => ['required', 'array', 'min:1'],
             'ids.*' => ['integer'],
             'folder_id' => ['nullable', 'exists:media_folders,id'],
+            'force' => ['nullable', 'boolean'],
         ]);
 
-        $items = Media::query()
+        $items = $this->visibleMedia()
             ->whereIn('id', $data['ids'])
-            ->whereIn('model_type', $this->accessibleModelTypes())
             ->get();
 
         if ($items->isEmpty()) {
             return redirect()->back()->with('error', 'Nie znaleziono plików do przetworzenia.');
+        }
+
+        if ($data['action'] === 'move') {
+            $this->authorizeFolder(isset($data['folder_id']) ? (int) $data['folder_id'] : null);
+        }
+
+        // Usuwanie plików w użyciu wymaga potwierdzenia (lista miejsc w komunikacie).
+        if ($data['action'] === 'delete' && ! $request->boolean('force')) {
+            $usage = app(MediaUsage::class);
+            $counts = $usage->counts(true);
+            $used = $items->filter(fn ($m) => ! empty($counts[$m->id]));
+            if ($used->isNotEmpty()) {
+                return redirect()->back()->with('usage_confirm', [
+                    'ids' => $items->pluck('id')->all(),
+                    'files' => $used->map(fn ($m) => [
+                        'name' => $m->getCustomProperty('display_name') ?: $m->file_name,
+                        'places' => $usage->forMedia($m),
+                    ])->values()->all(),
+                ]);
+            }
         }
 
         $count = $items->count();
@@ -549,6 +601,10 @@ class MediaLibraryController extends Controller
             'restore' => Media::whereIn('id', $ids)->update(['archived_at' => null]),
             'move' => Media::whereIn('id', $ids)->update(['media_folder_id' => $data['folder_id'] ?? null]),
         };
+
+        if ($data['action'] === 'delete') {
+            app(MediaUsage::class)->forget();
+        }
 
         $message = match ($data['action']) {
             'delete' => "Usunięto plików: {$count}.",
@@ -570,11 +626,11 @@ class MediaLibraryController extends Controller
     public function export(Request $request): BinaryFileResponse
     {
         $folder = $request->filled('folder') ? MediaFolder::findOrFail($request->integer('folder')) : null;
+        $this->authorizeFolder($folder?->id);
 
         $scopedFolderIds = $folder ? $this->descendantFolderIds($folder) : null;
 
-        $query = Media::query()
-            ->whereIn('model_type', $this->accessibleModelTypes())
+        $query = $this->visibleMedia()
             ->whereNull('archived_at')
             ->when($scopedFolderIds !== null, fn ($q) => $q->whereIn('media_folder_id', $scopedFolderIds));
 
@@ -610,9 +666,8 @@ class MediaLibraryController extends Controller
             'ids.*' => ['integer'],
         ]);
 
-        $media = Media::query()
+        $media = $this->visibleMedia()
             ->whereIn('id', $data['ids'])
-            ->whereIn('model_type', $this->accessibleModelTypes())
             ->orderBy('id')
             ->get();
 
@@ -691,7 +746,8 @@ class MediaLibraryController extends Controller
         }
 
         $library = MediaLibrary::instance();
-        $baseFolderId = $data['folder_id'] ?? null;
+        $baseFolderId = isset($data['folder_id']) ? (int) $data['folder_id'] : null;
+        $this->authorizeFolder($baseFolderId);
         $folderCache = [];
         $imported = 0;
         $skipped = 0;
@@ -770,15 +826,16 @@ class MediaLibraryController extends Controller
     /** Przenosi plik do wskazanego folderu (lub do katalogu głównego, gdy brak folder_id). */
     public function move(Request $request, Media $media)
     {
-        abort_unless(in_array($media->model_type, $this->accessibleModelTypes()), 403);
+        $this->authorizeMedia($media);
 
         $data = $request->validate([
             'folder_id' => ['nullable', 'exists:media_folders,id'],
         ]);
 
+        $this->authorizeFolder(isset($data['folder_id']) ? (int) $data['folder_id'] : null);
         $media->update(['media_folder_id' => $data['folder_id'] ?? null]);
 
-        return redirect()->back()->with('status', 'Plik został przeniesiony.');
+        return redirect()->back()->with('status', 'Plik został przeniesiony.')->with('media_panel', $media->id);
     }
 
     /**
@@ -787,11 +844,11 @@ class MediaLibraryController extends Controller
      */
     public function archive(Media $media)
     {
-        abort_unless(in_array($media->model_type, $this->accessibleModelTypes()), 403);
+        $this->authorizeMedia($media);
 
         $media->update(['archived_at' => now()]);
 
-        return redirect()->back()->with('status', 'Plik został schowany do archiwum.');
+        return redirect()->back()->with('status', 'Plik został schowany do archiwum.')->with('media_panel', $media->id);
     }
 
     /**
@@ -799,30 +856,43 @@ class MediaLibraryController extends Controller
      */
     public function restore(Media $media)
     {
-        abort_unless(in_array($media->model_type, $this->accessibleModelTypes()), 403);
+        $this->authorizeMedia($media);
 
         $media->update(['archived_at' => null]);
 
-        return redirect()->back()->with('status', 'Plik został przywrócony z archiwum.');
+        return redirect()->back()->with('status', 'Plik został przywrócony z archiwum.')->with('media_panel', $media->id);
     }
 
     /** Trwale usuwa plik z biblioteki i dysku. */
-    public function destroy(Media $media)
+    public function destroy(Request $request, Media $media)
     {
-        abort_unless(in_array($media->model_type, $this->accessibleModelTypes()), 403);
+        $this->authorizeMedia($media);
 
+        // Plik w użyciu: najpierw pokazujemy, gdzie się wyświetla, i prosimy o potwierdzenie.
+        if (! $request->boolean('force')) {
+            $places = app(MediaUsage::class)->forMedia($media);
+            if ($places) {
+                return redirect()->back()->with('usage_confirm', [
+                    'ids' => [$media->id],
+                    'files' => [['name' => $media->getCustomProperty('display_name') ?: $media->file_name, 'places' => $places]],
+                ]);
+            }
+        }
+
+        $folderId = $media->media_folder_id;
         $media->delete();
+        app(MediaUsage::class)->forget();
 
-        return redirect()->route('admin.multimedia.index')->with('status', 'Plik został usunięty.');
+        return redirect()->route('admin.multimedia.index', array_filter(['folder' => $folderId]))->with('status', 'Plik został usunięty.');
     }
 
     /** Trwale usuwa wszystkie zarchiwizowane pliki (opróżnia kosz biblioteki). */
     public function emptyArchive(Request $request)
     {
         $folderId = $request->filled('folder') ? $request->integer('folder') : null;
+        $this->authorizeFolder($folderId);
 
-        $items = Media::query()
-            ->whereIn('model_type', $this->accessibleModelTypes())
+        $items = $this->visibleMedia()
             ->whereNotNull('archived_at')
             ->when($folderId, fn ($q) => $q->where('media_folder_id', $folderId))
             ->get();
@@ -846,6 +916,7 @@ class MediaLibraryController extends Controller
             'parent_id' => ['nullable', 'exists:media_folders,id'],
         ]);
 
+        $this->authorizeFolder(isset($data['parent_id']) ? (int) $data['parent_id'] : null);
         $folder = MediaFolder::create($data);
 
         return redirect()->route('admin.multimedia.index', ['folder' => $data['parent_id'] ?? null])
@@ -855,6 +926,7 @@ class MediaLibraryController extends Controller
     /** Zmienia nazwę folderu w bibliotece multimediów. */
     public function updateFolder(Request $request, MediaFolder $folder)
     {
+        $this->authorizeFolder($folder->id);
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
         ]);
@@ -872,6 +944,7 @@ class MediaLibraryController extends Controller
      */
     public function destroyFolder(MediaFolder $folder)
     {
+        $this->authorizeFolder($folder->id);
         $parentId = $folder->parent_id;
         $name = $folder->name;
         $hadContent = $folder->media()->exists() || $folder->children()->exists();
@@ -1027,7 +1100,7 @@ class MediaLibraryController extends Controller
      * library's own standalone uploads are always visible — they aren't
      * gated behind a toggleable content module.
      */
-    private function accessibleModelTypes(): array
+    protected function accessibleModelTypes(): array
     {
         $user = auth()->user();
 
@@ -1039,7 +1112,7 @@ class MediaLibraryController extends Controller
             ->all();
     }
 
-    private function describeOwner(Media $media, $model): array
+    protected function describeOwner(Media $media, $model): array
     {
         $owner = self::OWNERS[$media->model_type] ?? null;
 
@@ -1061,7 +1134,7 @@ class MediaLibraryController extends Controller
      * to the owner label ("Zdjęcie w galerii") only when there is no real
      * description anywhere, so a file still has *something* in the picker.
      */
-    private function describeAlt(Media $media, $model): string
+    protected function describeAlt(Media $media, $model): string
     {
         $owner = self::OWNERS[$media->model_type] ?? null;
         $fallback = $owner['label'] ?? class_basename($media->model_type);
@@ -1144,7 +1217,7 @@ class MediaLibraryController extends Controller
      */
     public function updateAlt(Request $request, Media $media)
     {
-        abort_unless(in_array($media->model_type, $this->accessibleModelTypes()), 403);
+        $this->authorizeMedia($media);
 
         $data = $request->validate([
             'alt' => ['nullable', 'string', 'max:255'],
@@ -1160,7 +1233,7 @@ class MediaLibraryController extends Controller
 
         $media->save();
 
-        return redirect()->back()->with('status', 'Opis alternatywny został zapisany.');
+        return redirect()->back()->with('status', 'Opis alternatywny został zapisany.')->with('media_panel', $media->id);
     }
 
     /**
@@ -1171,8 +1244,7 @@ class MediaLibraryController extends Controller
      */
     private function missingAltMedia()
     {
-        $media = Media::query()
-            ->whereIn('model_type', $this->accessibleModelTypes())
+        $media = $this->visibleMedia()
             ->where('mime_type', 'like', 'image/%')
             ->whereNull('archived_at')
             ->latest()

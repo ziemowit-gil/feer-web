@@ -48,8 +48,14 @@ class MediaLibraryTest extends TestCase
         $response->assertOk();
         $response->assertSee('Foldery');
         $response->assertSee('Zdjęcia z wydarzeń');
-        $response->assertSee('Pokaż archiwum');
-        $response->assertSee('Schowaj / archiwizuj');
+        $response->assertSee('Archiwum');
+        $response->assertSee('Porządki');
+
+        // Akcje pliku są w szufladzie szczegółów.
+        $media = \App\Models\Media::latest('id')->first();
+        $this->actingAs($this->admin())->get(route('admin.multimedia.panel', $media))
+            ->assertOk()
+            ->assertSee('Schowaj do archiwum');
     }
 
     public function test_a_file_can_be_archived_and_hidden_from_the_active_view(): void
@@ -70,6 +76,9 @@ class MediaLibraryTest extends TestCase
         // ...but visible in the archive view.
         $this->actingAs($admin)->get(route('admin.multimedia.index', ['archived' => 1]))
             ->assertSee($media->file_name)
+            ->assertSee('Opróżnij archiwum');
+
+        $this->actingAs($admin)->get(route('admin.multimedia.panel', $media))
             ->assertSee('Przywróć z archiwum');
     }
 
@@ -106,8 +115,8 @@ class MediaLibraryTest extends TestCase
 
         $this->actingAs($this->admin())->get(route('admin.multimedia.index'))
             ->assertOk()
-            ->assertSee('Widok kafelków')
-            ->assertSee('Widok listy');
+            ->assertSee('Kafelki')
+            ->assertSee('Lista');
     }
 
     public function test_deleting_a_folder_moves_its_contents_up_to_the_parent(): void
