@@ -31,15 +31,13 @@
     ]));
 @endphp
 @if ($keyFacts)
-    {{-- Pasek „Najważniejsze informacje”: zwarty rząd faktów z ikonami (jasnoszare tło, bez ramek). --}}
-    <dl class="mt-5 flex flex-wrap gap-2" aria-label="Najważniejsze informacje">
+    {{-- Najważniejsze informacje: jeden spokojny wiersz tekstu z ikonami (bez tła i ramek), zawija się na wąskich ekranach. --}}
+    <dl class="mt-5 flex flex-wrap gap-x-6 gap-y-2 text-base text-ink" aria-label="Najważniejsze informacje">
         @foreach ($keyFacts as $f)
-            <div class="flex items-center gap-2.5 rounded-md bg-gray-50 px-3.5 py-2">
-                <i class="fa-solid {{ $f['icon'] }} text-brand-dark" aria-hidden="true"></i>
-                <div class="leading-tight">
-                    <dt class="text-[11px] font-bold uppercase tracking-widest text-ink">{{ $f['label'] }}</dt>
-                    <dd class="text-sm font-bold text-ink" @if ($canInlineEdit && ! empty($f['inline'])) data-inline-field="{{ $f['inline'] }}" data-inline-kind="text" data-inline-multiline @endif>{{ $f['value'] }}</dd>
-                </div>
+            <div class="flex items-baseline gap-2">
+                <i class="fa-solid {{ $f['icon'] }} w-4 flex-none text-center text-brand-dark" aria-hidden="true"></i>
+                <dt>{{ $f['label'] }}:</dt>
+                <dd class="font-bold" @if ($canInlineEdit && ! empty($f['inline'])) data-inline-field="{{ $f['inline'] }}" data-inline-kind="text" data-inline-multiline @endif>{{ $f['value'] }}</dd>
             </div>
         @endforeach
     </dl>
