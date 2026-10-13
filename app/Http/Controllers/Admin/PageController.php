@@ -921,6 +921,7 @@ class PageController extends Controller
             'layout_data.about_mission' => ['nullable', 'string', 'max:300'],
             'layout_data.about_stats_asof' => ['nullable', 'string', 'max:60'],
             'layout_data.about_registry' => ['nullable', 'boolean'],
+            'layout_data.about_help_tax' => ['nullable', 'boolean'],
             'faq_intro' => ['nullable', 'string', 'max:2000'],
             'faq_items' => ['nullable', 'array'],
             'faq_items.*.question' => ['nullable', 'string', 'max:255'],

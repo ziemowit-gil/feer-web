@@ -160,7 +160,8 @@
         $aboutCoopPage = \App\Models\Page::query()->forCurrentSite()->where('type', 'wspolpraca')->where('is_published', true)->first();
         $aboutHelp = array_values(array_filter([
             $siteSettings->isModuleEnabled('support') && Route::has('donation.show') ? ['icon' => 'bi-heart', 'title' => 'Darowizna', 'text' => 'Wesprzyj nasze działania jednorazowo albo regularnie.', 'url' => route('donation.show'), 'cta' => 'Przekaż darowiznę'] : null,
-            filled($siteSettings->krs_number) ? ['icon' => 'bi-percent', 'title' => '1,5% podatku', 'text' => 'W zeznaniu podatkowym wpisz nasz numer KRS: '.$siteSettings->krs_number.'. To nic nie kosztuje.', 'url' => $aboutSupportUrl, 'cta' => 'Jak przekazać 1,5%'] : null,
+            // 1,5% podatku tylko dla organizacji pożytku publicznego (zaznaczone w edycji strony).
+            ! empty($aboutLd['about_help_tax']) && filled($siteSettings->krs_number) ? ['icon' => 'bi-percent', 'title' => '1,5% podatku', 'text' => 'W zeznaniu podatkowym wpisz nasz numer KRS: '.$siteSettings->krs_number.'. To nic nie kosztuje.', 'url' => $aboutSupportUrl, 'cta' => 'Jak przekazać 1,5%'] : null,
             $siteSettings->isModuleEnabled('volunteering') && Route::has('volunteer.index') ? ['icon' => 'bi-people', 'title' => 'Wolontariat', 'text' => 'Podziel się czasem i umiejętnościami.', 'url' => route('volunteer.index'), 'cta' => 'Zobacz oferty'] : null,
             ($aboutCoopPage || $aboutContactUrl) ? ['icon' => 'bi-briefcase', 'title' => 'Współpraca', 'text' => 'Dla firm, instytucji, szkół i organizacji.', 'url' => $aboutCoopPage?->publicUrl() ?? $aboutContactUrl, 'cta' => 'Porozmawiajmy'] : null,
         ]));

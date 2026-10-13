@@ -38,6 +38,6 @@ class AboutPageProposalsTest extends TestCase
         $this->assertStringContainsString('Dane organizacji', $html);
         $this->assertStringContainsString('0000123456', $html);
         $this->assertStringContainsString('Jak możesz pomóc', $html);
-        $this->assertStringContainsString('1,5% podatku', $html);
+        $this->assertStringNotContainsString('1,5% podatku', $html, 'Bez statusu OPP karty 1,5% nie ma.');
     }
 }

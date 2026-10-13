@@ -134,6 +134,21 @@
     </details>
 
     <details class="rounded-md bg-white">
+        <summary class="cursor-pointer rounded-lg px-4 py-3 text-sm font-bold text-ink hover:bg-gray-50">Jak możesz pomóc</summary>
+        <div class="space-y-3 border-t border-gray-100 px-4 py-4">
+            <p class="text-xs text-muted">Sekcja na końcu strony pokazuje formy wsparcia, które serwis obsługuje: darowiznę (moduł „Wesprzyj nas”), wolontariat (moduł „Wolontariat”) i współpracę (strona typu „Współpraca” albo kontakt).</p>
+            <div>
+                <input type="hidden" name="layout_data[about_help_tax]" value="0">
+                <label class="flex cursor-pointer items-start gap-3 text-sm text-ink">
+                    <input type="checkbox" name="layout_data[about_help_tax]" value="1" @checked(old('layout_data.about_help_tax', ($page->layout_data ?? [])['about_help_tax'] ?? false))
+                        class="mt-0.5 h-4 w-4 rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
+                    <span><span class="font-bold">Mamy status OPP — pokaż kartę „1,5% podatku”</span><span class="block text-xs text-muted">Tylko organizacje pożytku publicznego mogą zbierać 1,5% podatku. Karta pokazuje numer KRS z Ustawienia → Dane rejestrowe.</span></span>
+                </label>
+            </div>
+        </div>
+    </details>
+
+    <details class="rounded-md bg-white">
         <summary class="cursor-pointer rounded-lg px-4 py-3 text-sm font-bold text-ink hover:bg-gray-50">Statystyki (liczby)</summary>
         <div class="border-t border-gray-100 px-4 py-4">
     <div data-repeater>
