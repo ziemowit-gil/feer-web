@@ -86,7 +86,7 @@ class FlatProjectsHomeTest extends TestCase
         $this->resetSettings();
 
         Project::create([
-            'category_id' => $this->category()->id, 'title' => 'Warsztaty WCAG', 'slug' => 'warsztaty-wcag', 'is_published' => true,
+            'category_id' => $this->category()->id, 'title' => 'Warsztaty WCAG', 'slug' => 'warsztaty-wcag', 'is_published' => true, 'show_on_home' => true,
             'excerpt' => 'Praktyczne warsztaty z dostępności.', 'for_whom' => 'Pracownicy urzędów', 'since' => '2024',
             'content' => '<p>Opis warsztatów.</p><p><strong>Ważne:</strong> liczba miejsc ograniczona.</p>', 'why' => 'Bo dostępność to prawo.',
             'outcomes' => '<p>Przeszkoliliśmy 300 osób.</p>',
@@ -127,8 +127,8 @@ class FlatProjectsHomeTest extends TestCase
     public function test_listy_dzialan_sa_plaskie(): void
     {
         $category = $this->category();
-        Project::create(['category_id' => $category->id, 'title' => 'Wsparcie IT', 'slug' => 'wsparcie-it', 'excerpt' => 'Pomagamy', 'is_published' => true, 'accent_color' => '#e6006f']);
-        Project::create(['category_id' => $category->id, 'title' => 'Doradztwo', 'slug' => 'doradztwo', 'excerpt' => 'Radzimy', 'is_published' => true, 'is_paid' => true]);
+        Project::create(['category_id' => $category->id, 'title' => 'Wsparcie IT', 'slug' => 'wsparcie-it', 'excerpt' => 'Pomagamy', 'is_published' => true, 'show_on_home' => true, 'accent_color' => '#e6006f']);
+        Project::create(['category_id' => $category->id, 'title' => 'Doradztwo', 'slug' => 'doradztwo', 'excerpt' => 'Radzimy', 'is_published' => true, 'show_on_home' => true, 'is_paid' => true]);
         Project::create(['category_id' => $category->id, 'title' => 'Stary projekt', 'slug' => 'stary', 'is_published' => true, 'is_completed' => true, 'completed_at' => now()->subYear()]);
 
         foreach (['default', 'feer'] as $template) {
@@ -154,7 +154,7 @@ class FlatProjectsHomeTest extends TestCase
     public function test_strona_glowna_domyslna_i_feer_sa_plaskie_z_zachowaniem_sekcji(): void
     {
         $category = $this->category();
-        Project::create(['category_id' => $category->id, 'title' => 'Wsparcie IT', 'slug' => 'wsparcie-it', 'excerpt' => 'Pomagamy', 'is_published' => true]);
+        Project::create(['category_id' => $category->id, 'title' => 'Wsparcie IT', 'slug' => 'wsparcie-it', 'excerpt' => 'Pomagamy', 'is_published' => true, 'show_on_home' => true]);
         News::create(['title' => 'Ważna wiadomość', 'slug' => 'wazna', 'content' => 'x', 'excerpt' => 'Zajawka wiadomości', 'is_published' => true, 'published_at' => now()->subDay()]);
         QuickAction::create(['label' => 'Zgłoś barierę', 'url' => '/zgloszenia', 'icon' => 'fa-solid fa-flag', 'order' => 1]);
         \App\Models\HeroSlide::create(['title' => 'Zwykły slajd', 'text' => 'Opis slajdu', 'order' => 1]);

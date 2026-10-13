@@ -169,7 +169,7 @@ class FeerTemplateTest extends TestCase
             \App\Models\QuickAction::create(['label' => $label, 'url' => '/'.$i, 'icon' => 'fa-solid fa-link', 'order' => $i]);
         }
         $category = \App\Models\Category::create(['name' => 'Dla NGO', 'slug' => 'dla-ngo']);
-        \App\Models\Project::create(['title' => 'Wsparcie IT', 'slug' => 'wsparcie-it', 'excerpt' => 'Pomagamy', 'is_published' => true, 'category_id' => $category->id]);
+        \App\Models\Project::create(['title' => 'Wsparcie IT', 'slug' => 'wsparcie-it', 'excerpt' => 'Pomagamy', 'is_published' => true, 'show_on_home' => true, 'category_id' => $category->id]);
         SiteSetting::current()->update(['site_template' => 'feer']);
         \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();
 
@@ -291,7 +291,7 @@ class FeerTemplateTest extends TestCase
     public function test_lista_projektow_feer_ma_nawigacje_kategorii_i_wiersze_bez_ramek(): void
     {
         $category = \App\Models\Category::create(['name' => 'Dla NGO', 'slug' => 'dla-ngo']);
-        \App\Models\Project::create(['title' => 'Wsparcie IT', 'slug' => 'wsparcie-it', 'excerpt' => 'Pomagamy', 'is_published' => true, 'category_id' => $category->id]);
+        \App\Models\Project::create(['title' => 'Wsparcie IT', 'slug' => 'wsparcie-it', 'excerpt' => 'Pomagamy', 'is_published' => true, 'show_on_home' => true, 'category_id' => $category->id]);
         SiteSetting::current()->update(['site_template' => 'feer']);
         \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();
 
@@ -573,7 +573,7 @@ class FeerTemplateTest extends TestCase
     public function test_lista_projektow_moze_byc_kafelkowa_w_dowolnym_szablonie(): void
     {
         $category = \App\Models\Category::create(['name' => 'Dla NGO', 'slug' => 'dla-ngo']);
-        \App\Models\Project::create(['title' => 'Wsparcie IT', 'slug' => 'wsparcie-it', 'excerpt' => 'Pomagamy', 'is_published' => true, 'category_id' => $category->id]);
+        \App\Models\Project::create(['title' => 'Wsparcie IT', 'slug' => 'wsparcie-it', 'excerpt' => 'Pomagamy', 'is_published' => true, 'show_on_home' => true, 'category_id' => $category->id]);
 
         foreach (['default', 'feer'] as $template) {
             SiteSetting::current()->update(['site_template' => $template, 'projects_layout' => 'tiles']);
@@ -649,7 +649,7 @@ class FeerTemplateTest extends TestCase
         \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();
         \Illuminate\Support\Facades\Cache::flush();
         $cat = \App\Models\Category::create(['name' => 'Dla każdego', 'slug' => 'dla-kazdego', 'order' => 1]);
-        \App\Models\Project::create(['category_id' => $cat->id, 'title' => 'Projekt X', 'slug' => 'projekt-x', 'content' => '<p>Opis zajęć dla wolontariuszy.</p>', 'is_published' => true, 'order' => 1]);
+        \App\Models\Project::create(['category_id' => $cat->id, 'title' => 'Projekt X', 'slug' => 'projekt-x', 'content' => '<p>Opis zajęć dla wolontariuszy.</p>', 'is_published' => true, 'show_on_home' => true, 'order' => 1]);
 
         $this->get('/dzialania')->assertOk()->assertSee('Opis zajęć dla wolontariuszy.');
     }
@@ -938,7 +938,7 @@ class FeerTemplateTest extends TestCase
     public function test_kategoria_projektow_feer_ma_wiersze_zamiast_kart(): void
     {
         $cat = \App\Models\Category::create(['name' => 'Dla wzroku', 'slug' => 'dla-wzroku-t', 'order' => 1]);
-        \App\Models\Project::create(['category_id' => $cat->id, 'title' => 'Projekt wzroku', 'slug' => 'projekt-wzroku', 'content' => '<p>Opis.</p>', 'is_published' => true, 'order' => 1]);
+        \App\Models\Project::create(['category_id' => $cat->id, 'title' => 'Projekt wzroku', 'slug' => 'projekt-wzroku', 'content' => '<p>Opis.</p>', 'is_published' => true, 'show_on_home' => true, 'order' => 1]);
         $this->useFeer();
 
         $html = $this->get(route('categories.show', $cat))->assertOk()->assertSee('Projekt wzroku')->getContent();

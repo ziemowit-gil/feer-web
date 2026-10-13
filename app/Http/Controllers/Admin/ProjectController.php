@@ -455,6 +455,9 @@ class ProjectController extends Controller
             : null;
         // „Zapisz wersję roboczą” zapisuje bez publikacji, niezależnie od przełącznika.
         $data['is_published'] = $request->boolean('draft') ? false : $request->boolean('is_published');
+        if (\Illuminate\Support\Facades\Schema::hasColumn('projects', 'show_on_home')) {
+            $data['show_on_home'] = $request->boolean('show_on_home');
+        }
         // „Zdejmij z publikacji” (content:unpublish-due); do czasu migracji kolumny nie ma — pomijamy.
         if (\Illuminate\Support\Facades\Schema::hasColumn('projects', 'unpublish_at')) {
             $data['unpublish_at'] = $request->filled('unpublish_at') ? $request->input('unpublish_at') : null;

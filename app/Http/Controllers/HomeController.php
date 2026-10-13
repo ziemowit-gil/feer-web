@@ -61,7 +61,7 @@ class HomeController extends Controller
         // Tylko aktywne (nie zakończone) działania — teaser na stronie głównej ma
         // pokazywać bieżącą działalność, nie zamknięte/zarchiwizowane projekty.
         $projects = $settings->isModuleEnabled('projects')
-            ? Project::forCurrentSite()->where('is_published', true)->where('is_completed', false)->orderBy('order')->limit(3)->get()
+            ? Project::forCurrentSite()->where('is_published', true)->where('is_completed', false)->onHome()->orderBy('order')->limit(6)->get()
             : collect();
 
         $events = $settings->isModuleEnabled('events')
@@ -85,7 +85,7 @@ class HomeController extends Controller
 
         // Tylko aktywne (nie zakończone) działania — ngo_3 pokazuje bieżącą działalność, nie archiwum.
         $projects = $settings->isModuleEnabled('projects')
-            ? Project::forCurrentSite()->with('category')->where('is_published', true)->where('is_completed', false)->orderBy('order')->limit(3)->get()
+            ? Project::forCurrentSite()->with('category')->where('is_published', true)->where('is_completed', false)->onHome()->orderBy('order')->limit(6)->get()
             : collect();
 
         $events = $settings->isModuleEnabled('events')
@@ -121,7 +121,7 @@ class HomeController extends Controller
 
         // Tylko aktywne (nie zakończone) działania — jak w pozostałych szablonach NGO.
         $projects = $settings->isModuleEnabled('projects')
-            ? Project::forCurrentSite()->where('is_published', true)->where('is_completed', false)->orderBy('order')->limit(3)->get()
+            ? Project::forCurrentSite()->where('is_published', true)->where('is_completed', false)->onHome()->orderBy('order')->limit(6)->get()
             : collect();
 
         // Sekcja „Wiedza": wybrana w panelu strona i jej opublikowane podstrony.

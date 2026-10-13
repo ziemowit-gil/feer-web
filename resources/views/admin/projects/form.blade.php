@@ -889,6 +889,13 @@
                         class="rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
                     <span class="text-sm font-bold">Opublikowany</span>
                 </label>
+                @if (\Illuminate\Support\Facades\Schema::hasColumn('projects', 'show_on_home'))
+                    <label class="flex items-start gap-2">
+                        <input type="checkbox" name="show_on_home" value="1" @checked(old('show_on_home', $project->show_on_home ?? false))
+                            class="mt-0.5 rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
+                        <span><span class="block text-sm font-bold">Pokaż na stronie głównej</span><span class="block text-xs text-muted">W sekcji „Nasze działania” są tylko zaznaczone działania (opublikowane, w toku).</span></span>
+                    </label>
+                @endif
                 @include('admin.partials.unpublish-field', ['model' => $project])
                 <div class="space-y-2 border-t border-gray-100 pt-4">
                     <button type="submit" class="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-md bg-brand-dark px-4 text-sm font-bold text-white hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2"><i class="fa-solid fa-floppy-disk" aria-hidden="true"></i> Zapisz</button>
