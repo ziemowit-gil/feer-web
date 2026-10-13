@@ -124,7 +124,7 @@
     {{-- novalidate: przy walidacji przeglądarki puste pole wymagane w ukrytej
          zakładce blokuje wysyłkę bez żadnego komunikatu („klikam i nic się nie
          dzieje"). Walidację robi serwer, a błędy pokazuje lista powyżej. --}}
-    <form method="POST" action="{{ route('admin.ustawienia.update') }}" enctype="multipart/form-data" novalidate
+    <form id="settings-form" method="POST" action="{{ route('admin.ustawienia.update') }}" enctype="multipart/form-data" novalidate
         @input="dirty = true" @change="dirty = true" @submit="dirty = false"
         class="rounded-md bg-white p-6 sm:p-8">
         @csrf
@@ -3529,7 +3529,7 @@
                 <i class="fa-solid fa-floppy-disk" aria-hidden="true"></i> Zapisz zmiany</button>
             <p class="text-sm text-ink" aria-live="polite">
                 <span x-show="dirty" x-cloak class="font-bold"><i class="fa-solid fa-circle-exclamation mr-1" aria-hidden="true"></i>Masz niezapisane zmiany.</span>
-                <span x-show="! dirty">Zapis obejmuje wszystkie sekcje ustawień.</span>
+                <span x-show="! dirty">Zapisujesz tylko tę sekcję — pozostałe zostają bez zmian.</span>
             </p>
             <nav class="ml-auto flex flex-wrap gap-x-4 gap-y-1 text-sm" aria-label="Sąsiednie sekcje ustawień">
                 @if ($settingsPrev)
@@ -3582,6 +3582,32 @@
     </div>
 
     <script>
+        (function () {
+            // Zapis jednej sekcji: dołączamy nazwy pól z widocznej zakładki (_section_fields[]),
+            // a serwer waliduje i zapisuje tylko je. Bez JS formularz zapisuje wszystko jak dawniej.
+            const form = document.getElementById('settings-form');
+            if (!form) return;
+            form.addEventListener('submit', function () {
+                form.querySelectorAll('input[data-section-field]').forEach(function (el) { el.remove(); });
+                const tab = (form.querySelector('input[name="_redirect_tab"]') || {}).value;
+                const container = Array.from(form.querySelectorAll('[x-show]'))
+                    .find(function (node) { return node.getAttribute('x-show').trim() === "tab === '" + tab + "'"; });
+                if (!container) return;
+                const names = new Set();
+                container.querySelectorAll('[name]').forEach(function (el) {
+                    if (el.form === form && el.name && !el.disabled) names.add(el.name);
+                });
+                names.forEach(function (name) {
+                    const input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = '_section_fields[]';
+                    input.value = name;
+                    input.dataset.sectionField = '1';
+                    form.appendChild(input);
+                });
+            });
+        })();
+
         (function () {
             // Błąd walidacji może dotyczyć pola z zakładki, która akurat jest
             // ukryta. Zakładkę odczytujemy z najbliższego przodka z x-show,

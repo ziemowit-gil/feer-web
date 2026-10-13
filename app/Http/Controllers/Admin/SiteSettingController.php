@@ -118,7 +118,12 @@ class SiteSettingController extends Controller
     /** Zapisuje wszystkie ustawienia serwisu (wygląd, moduły, kontakt, SEO, poczta, WCAG). */
     public function update(Request $request)
     {
-        $data = $request->validate([
+        // Zapis jednej sekcji: przeglądarka przysyła nazwy pól aktywnej sekcji (_section_fields[]),
+        // walidujemy i zapisujemy tylko je — błąd lub puste wymagane pole w innej sekcji nie blokuje zapisu.
+        // Bez listy (stary formularz, testy) zapisujemy wszystko jak dotąd.
+        $only = $this->sectionFields($request);
+
+        $rules = [
             'site_name' => ['required', 'string', 'max:255'],
             'site_name_genitive' => ['nullable', 'string', 'max:255'],
             'tagline' => ['nullable', 'string', 'max:255'],
@@ -397,7 +402,13 @@ class SiteSettingController extends Controller
             'vm_footer_note' => ['nullable', 'string', 'max:1000'],
             'vm_header_badge' => ['nullable', 'image', 'max:2048'],
             'vm_knowledge_image' => ['nullable', 'image', 'max:4096'],
-        ]);
+        ];
+
+        if ($only !== null) {
+            $rules = array_filter($rules, fn ($key) => in_array(Str::before($key, '.'), $only, true), ARRAY_FILTER_USE_KEY);
+        }
+
+        $data = $request->validate($rules);
 
         $data['allow_indexing'] = $request->boolean('allow_indexing');
         $data['logo_only'] = $request->boolean('logo_only');
@@ -503,7 +514,7 @@ class SiteSettingController extends Controller
 
         $settings = SiteSetting::current();
 
-        if ($data['header_layout'] === 'wide_mission' && $settings->header_layout !== 'wide_mission') {
+        if (($data['header_layout'] ?? $settings->header_layout) === 'wide_mission' && $settings->header_layout !== 'wide_mission') {
             if ($request->input('wide_activation_code') !== $settings->wide_code) {
                 return back()
                     ->withErrors(['wide_activation_code' => 'Nieprawidłowy kod aktywacyjny stylu Wide.'])
@@ -511,11 +522,14 @@ class SiteSettingController extends Controller
             }
         }
 
-        $skipContrast = (bool) ($data['brand_skip_contrast'] ?? false);
+        $skipContrast = (bool) (array_key_exists('brand_skip_contrast', $data) || $only === null
+            ? ($data['brand_skip_contrast'] ?? false)
+            : $settings->brand_skip_contrast);
 
+        $brandColorInput = $data['brand_color'] ?? $settings->brand_color;
         $data['brand_color'] = $skipContrast
-            ? $data['brand_color']
-            : $settings->contrastSafeColor($data['brand_color']);
+            ? $brandColorInput
+            : $settings->contrastSafeColor($brandColorInput);
 
         // Dodatkowe kolory marki: puste = null, w przeciwnym razie kontrast AA na białym.
         foreach (['brand_color_2', 'brand_color_3', 'brand_color_4'] as $key) {
@@ -646,7 +660,12 @@ class SiteSettingController extends Controller
             $data['projects_team_funding_enabled'] = $request->boolean('projects_team_funding_enabled');
         }
 
-        $colorWasAdjusted = ! $skipContrast && $data['brand_color'] !== $request->input('brand_color');
+        $colorWasAdjusted = ($only === null || in_array('brand_color', $only, true))
+            && ! $skipContrast && $data['brand_color'] !== $request->input('brand_color');
+
+        if ($only !== null) {
+            $data = $this->onlySectionColumns($data, $only);
+        }
 
         $settings->update($data);
 
@@ -657,56 +676,23 @@ class SiteSettingController extends Controller
             ->event('settings_updated')
             ->log('SiteSetting settings_updated');
 
-        if ($request->hasFile('logo')) {
-            $settings->addMediaFromRequest('logo')->toMediaCollection('logo');
-        } elseif ($request->boolean('remove_logo')) {
-            $settings->clearMediaCollection('logo');
-        }
-
-        if ($request->hasFile('og_image')) {
-            $settings->addMediaFromRequest('og_image')->toMediaCollection('og_image');
-        } elseif ($request->boolean('remove_og_image')) {
-            $settings->clearMediaCollection('og_image');
-        }
-
-        if ($request->hasFile('support_image')) {
-            $settings->addMediaFromRequest('support_image')->toMediaCollection('support_image');
-        } elseif ($request->boolean('remove_support_image')) {
-            $settings->clearMediaCollection('support_image');
-        }
-
-        if ($request->hasFile('news_default_image')) {
-            $settings->addMediaFromRequest('news_default_image')->toMediaCollection('news_default_image');
-        } elseif ($request->boolean('remove_news_default_image')) {
-            $settings->clearMediaCollection('news_default_image');
-        }
-
-        if ($request->hasFile('bip_logo')) {
-            $settings->addMediaFromRequest('bip_logo')->toMediaCollection('bip_logo');
-        } elseif ($request->boolean('remove_bip_logo')) {
-            $settings->clearMediaCollection('bip_logo');
-        }
-
-        foreach (['vm_header_badge', 'vm_knowledge_image'] as $vmCollection) {
-            if ($request->hasFile($vmCollection)) {
-                $settings->addMediaFromRequest($vmCollection)->toMediaCollection($vmCollection);
-            } elseif ($request->boolean('remove_' . $vmCollection)) {
-                $settings->clearMediaCollection($vmCollection);
-            }
+        foreach (['logo', 'og_image', 'support_image', 'news_default_image', 'bip_logo', 'vm_header_badge', 'vm_knowledge_image'] as $collection) {
+            $this->syncSingleImage($settings, $request, $only, $collection);
         }
 
         // Osobna galeria strony „Wesprzyj nas": najpierw usuwamy odznaczone
         // zdjęcia, potem dokładamy nowo wgrane (kolekcja wielozdjęciowa).
-        foreach ((array) $request->input('remove_support_gallery', []) as $mediaId) {
+        foreach ($this->inSection($only, 'support_gallery') ? (array) $request->input('remove_support_gallery', []) : [] as $mediaId) {
             $settings->media()->where('collection_name', 'support_gallery')->where('id', (int) $mediaId)->each->delete();
         }
-        foreach ((array) $request->file('support_gallery', []) as $file) {
+        foreach ($this->inSection($only, 'support_gallery') ? (array) $request->file('support_gallery', []) : [] as $file) {
             $settings->addMedia($file)->toMediaCollection('support_gallery');
         }
 
+        $sectionLabel = SiteSetting::SETTINGS_TABS[$request->input('_redirect_tab')] ?? null;
         $status = ($colorWasAdjusted
             ? "Ustawienia zostały zapisane. Kolor przewodni był zbyt jasny dla kontrastu WCAG, więc został automatycznie przyciemniony do {$data['brand_color']}."
-            : 'Ustawienia zostały zapisane.');
+            : ($only !== null && $sectionLabel ? "Zapisano sekcję „{$sectionLabel}”." : 'Ustawienia zostały zapisane.'));
 
         $redirectTab = $request->input('_redirect_tab');
         $redirectTab = in_array($redirectTab, array_keys(SiteSetting::SETTINGS_TABS), true)
@@ -714,6 +700,67 @@ class SiteSettingController extends Controller
             : 'general';
 
         return redirect()->route('admin.ustawienia.edit', ['tab' => $redirectTab])->with('status', $status);
+    }
+
+    /**
+     * Nazwy pól aktywnej sekcji (bez nawiasów tablic: sub_brands[0][name] → sub_brands)
+     * albo null, gdy formularz zapisuje wszystko naraz.
+     *
+     * @return array<int, string>|null
+     */
+    private function sectionFields(Request $request): ?array
+    {
+        if (! $request->has('_section_fields')) {
+            return null;
+        }
+
+        return collect((array) $request->input('_section_fields'))
+            ->map(fn ($name) => Str::before((string) $name, '['))
+            ->filter(fn ($name) => $name !== '' && ! str_starts_with($name, '_'))
+            ->unique()
+            ->values()
+            ->all();
+    }
+
+    /** Pojedynczy obraz ustawień (logo, OG…): nowy plik albo usunięcie — tylko gdy pole jest w zapisywanej sekcji. */
+    private function syncSingleImage(SiteSetting $settings, Request $request, ?array $only, string $collection): void
+    {
+        if (! $this->inSection($only, $collection)) {
+            return;
+        }
+        if ($request->hasFile($collection)) {
+            $settings->addMediaFromRequest($collection)->toMediaCollection($collection);
+        } elseif ($request->boolean('remove_'.$collection)) {
+            $settings->clearMediaCollection($collection);
+        }
+    }
+
+    private function inSection(?array $only, string $field): bool
+    {
+        return $only === null || in_array($field, $only, true);
+    }
+
+    /**
+     * Zostawia w danych tylko kolumny z zapisywanej sekcji — wraz z kolumnami
+     * wyliczanymi z jej pól (np. lista modułów → disabled_modules).
+     */
+    private function onlySectionColumns(array $data, array $only): array
+    {
+        $derived = [
+            'enabled_modules' => ['disabled_modules'],
+            'section_order_json' => ['homepage_section_order', 'homepage_sections_hidden'],
+            'homepage_sections_enabled' => ['homepage_section_order', 'homepage_sections_hidden'],
+            'blocked_options_form' => ['blocked_options'],
+        ];
+
+        $allowed = $only;
+        foreach ($derived as $field => $columns) {
+            if (in_array($field, $only, true)) {
+                $allowed = array_merge($allowed, $columns);
+            }
+        }
+
+        return array_intersect_key($data, array_flip($allowed));
     }
 
     /**
