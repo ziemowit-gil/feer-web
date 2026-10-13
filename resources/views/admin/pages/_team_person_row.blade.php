@@ -74,7 +74,7 @@
             {{-- Zdjęcie --}}
             <div>
                 <label class="mb-1 block text-xs font-bold text-muted">Zdjęcie — URL</label>
-                <input type="url" name="team[{{ $ti }}][content_image]" value="{{ $pImage }}"
+                <input type="url" name="team[{{ $ti }}][content_image]" data-library-url value="{{ $pImage }}"
                     placeholder="https://…"
                     class="w-full rounded border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark">
             </div>

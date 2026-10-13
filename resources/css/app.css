@@ -705,6 +705,11 @@ html.no-animations .nav-mega-panel { transition: none !important; }
 .picker-icon { display: inline-flex; align-items: center; justify-content: center; height: 2.25rem; border-radius: .375rem; border: 1px solid transparent; font-size: 1.15rem; color: #1a1a1a; }
 .picker-icon:hover { background: var(--color-brand-light); color: var(--color-brand-dark); border-color: var(--color-brand-dark); }
 .picker-icon:focus-visible { outline: 2px solid var(--color-brand-dark); outline-offset: 1px; }
+.picker-grid-thumbs { grid-template-columns: repeat(auto-fill, minmax(5.5rem, 1fr)); max-height: 20rem; overflow-y: auto; }
+.picker-thumb { display: block; aspect-ratio: 4 / 3; overflow: hidden; border-radius: .375rem; background: #f3f4f6; border: 2px solid transparent; }
+.picker-thumb img { width: 100%; height: 100%; object-fit: cover; }
+.picker-thumb:hover { border-color: var(--color-brand-dark); }
+.picker-thumb:focus-visible { outline: 2px solid var(--color-brand-dark); outline-offset: 2px; }
 .picker-foot { display: flex; align-items: center; justify-content: space-between; gap: .75rem; margin-top: .75rem; padding-top: .5rem; border-top: 1px solid #f3f4f6; font-size: .8rem; }
 .picker-clear { color: #4b5563; font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
 .picker-clear:hover, .picker-link:hover { color: var(--color-brand-dark); }

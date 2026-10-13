@@ -293,7 +293,7 @@
                                 <input type="text" name="about_press[{{ $i }}][title]" value="{{ $row['title'] ?? '' }}" placeholder="Tytuł (pobierze się automatycznie)" aria-label="Tytuł wzmianki {{ $i + 1 }}" class="w-full rounded border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark">
                                 <input type="text" name="about_press[{{ $i }}][source]" value="{{ $row['source'] ?? '' }}" placeholder="Źródło, np. Gazeta Wyborcza" aria-label="Źródło wzmianki {{ $i + 1 }}" class="w-full rounded border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark">
                             </div>
-                            <input type="text" name="about_press[{{ $i }}][image]" value="{{ $row['image'] ?? '' }}" placeholder="URL obrazka (pobierze się automatycznie)" aria-label="Obrazek wzmianki {{ $i + 1 }}" class="w-full rounded border-gray-500 text-xs focus:border-brand-dark focus:ring-brand-dark">
+                            <input type="text" name="about_press[{{ $i }}][image]" data-library-url value="{{ $row['image'] ?? '' }}" placeholder="URL obrazka (pobierze się automatycznie)" aria-label="Obrazek wzmianki {{ $i + 1 }}" class="w-full rounded border-gray-500 text-xs focus:border-brand-dark focus:ring-brand-dark">
                             <div class="text-right">
                                 <button type="button" data-repeater-remove class="inline-flex items-center gap-1.5 rounded p-1.5 text-xs font-bold text-muted hover:bg-red-50 hover:text-red-600" aria-label="Usuń wzmiankę"><i class="fa-solid fa-trash" aria-hidden="true"></i> Usuń</button>
                             </div>
@@ -308,7 +308,7 @@
                             <input type="text" name="about_press[__INDEX__][title]" placeholder="Tytuł (pobierze się automatycznie)" aria-label="Tytuł wzmianki" class="w-full rounded border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark">
                             <input type="text" name="about_press[__INDEX__][source]" placeholder="Źródło, np. Gazeta Wyborcza" aria-label="Źródło wzmianki" class="w-full rounded border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark">
                         </div>
-                        <input type="text" name="about_press[__INDEX__][image]" placeholder="URL obrazka (pobierze się automatycznie)" aria-label="Obrazek wzmianki" class="w-full rounded border-gray-500 text-xs focus:border-brand-dark focus:ring-brand-dark">
+                        <input type="text" name="about_press[__INDEX__][image]" data-library-url placeholder="URL obrazka (pobierze się automatycznie)" aria-label="Obrazek wzmianki" class="w-full rounded border-gray-500 text-xs focus:border-brand-dark focus:ring-brand-dark">
                         <div class="text-right">
                             <button type="button" data-repeater-remove class="inline-flex items-center gap-1.5 rounded p-1.5 text-xs font-bold text-muted hover:bg-red-50 hover:text-red-600" aria-label="Usuń wzmiankę"><i class="fa-solid fa-trash" aria-hidden="true"></i> Usuń</button>
                         </div>

@@ -145,7 +145,7 @@
                             <input type="file" name="content_image_file" accept="image/*"
                                 aria-label="Wgraj zdjęcie profilowe"
                                 class="block w-full text-sm text-muted file:mr-3 file:rounded file:border-0 file:bg-brand-light file:px-3 file:py-1.5 file:text-sm file:font-bold file:text-brand-dark">
-                            <input type="text" name="content_image"
+                            <input type="text" name="content_image" data-library-url data-library-alt="content_image_alt"
                                 value="{{ old('content_image', $page->content_image ?? '') }}"
                                 placeholder="…albo wklej URL zdjęcia"
                                 class="w-full rounded border-gray-500 text-xs focus:border-brand-dark focus:ring-brand-dark">

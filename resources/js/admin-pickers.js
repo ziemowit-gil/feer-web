@@ -377,11 +377,75 @@ function enhanceColor(input) {
     });
 }
 
+// ── Obraz z biblioteki (pola z adresem URL obrazka) ─────────────────
+//   <input data-library-url data-library-alt="nazwa_pola_alt">
+// Wstawia adres wybranego obrazu z Multimediów; opis alternatywny trafia do pola alt (jeśli jest i jest puste).
+const LIBRARY_URL = document.querySelector('meta[name="admin-library-images-url"]')?.content || '';
+let libraryPromise = null;
+function loadLibrary() {
+    if (! libraryPromise) {
+        libraryPromise = fetch(LIBRARY_URL, { headers: { Accept: 'application/json' } })
+            .then((r) => (r.ok ? r.json() : Promise.reject(new Error('HTTP ' + r.status))))
+            .catch((e) => { libraryPromise = null; throw e; });
+    }
+    return libraryPromise;
+}
+
+function enhanceLibraryUrl(input) {
+    if (input.dataset.pickerReady || ! LIBRARY_URL) return;
+    input.dataset.pickerReady = '1';
+    const wrap = wrapInput(input);
+    const button = el('button', { type: 'button', class: 'picker-button picker-button-text', 'aria-haspopup': 'dialog', 'aria-expanded': 'false', title: 'Wybierz obraz z biblioteki plików' },
+        [el('i', { class: 'bi bi-images', 'aria-hidden': 'true' }), el('span', { text: 'Z biblioteki' })]);
+    wrap.appendChild(button);
+
+    let pop = null, search = null, grid = null, hint = null, items = [];
+    const altField = () => {
+        const name = input.dataset.libraryAlt;
+        return name ? (input.form || document).querySelector('[name="' + CSS.escape(name) + '"]') : null;
+    };
+    const render = () => {
+        const q = normalizePl(search.value);
+        const found = q ? items.filter((i) => normalizePl(i.file_name + ' ' + (i.alt || '')).includes(q)) : items;
+        grid.innerHTML = '';
+        for (const item of found.slice(0, 120)) {
+            const b = el('button', { type: 'button', class: 'picker-thumb', 'aria-label': item.alt || item.file_name, title: item.file_name },
+                [el('img', { src: item.url, alt: '', loading: 'lazy' })]);
+            b.addEventListener('click', () => {
+                setValue(input, item.url);
+                const alt = altField();
+                if (alt && ! alt.value.trim() && item.alt) setValue(alt, item.alt);
+                pop.close(true);
+            });
+            grid.appendChild(b);
+        }
+        hint.textContent = found.length ? found.length + ' obrazów' : 'Brak obrazów' + (q ? ' dla „' + search.value.trim() + '”.' : ' w bibliotece.');
+    };
+    const build = () => {
+        pop = createPopover(button, 'Wybierz obraz z biblioteki');
+        search = el('input', { type: 'search', class: 'picker-search', placeholder: 'Szukaj po nazwie pliku lub opisie…', 'aria-label': 'Szukaj obrazu', autocomplete: 'off' });
+        hint = el('p', { class: 'picker-hint', 'aria-live': 'polite' });
+        grid = el('div', { class: 'picker-grid picker-grid-thumbs', role: 'group', 'aria-label': 'Obrazy' });
+        pop.el.append(search, hint, grid);
+        search.addEventListener('input', render);
+    };
+    button.addEventListener('click', async () => {
+        if (! pop) build();
+        if (pop.isOpen()) { pop.close(true); return; }
+        pop.open();
+        search.focus();
+        hint.textContent = 'Ładowanie biblioteki…';
+        try { items = await loadLibrary(); render(); }
+        catch (e) { hint.textContent = 'Nie udało się wczytać biblioteki. Wgraj plik albo wklej adres.'; }
+    });
+}
+
 // ── Start + obserwacja nowych pól ────────────────────────────────
 function scan(root) {
     if (! root.querySelectorAll) return;
     root.querySelectorAll('input[data-icon-picker]').forEach(enhanceIcon);
     root.querySelectorAll('input[data-color-picker]').forEach(enhanceColor);
+    root.querySelectorAll('input[data-library-url]').forEach(enhanceLibraryUrl);
 }
 
 scan(document);
@@ -391,6 +455,7 @@ new MutationObserver((mutations) => {
             if (n.nodeType !== 1) continue;
             if (n.matches('input[data-icon-picker]')) enhanceIcon(n);
             else if (n.matches('input[data-color-picker]')) enhanceColor(n);
+            else if (n.matches('input[data-library-url]')) enhanceLibraryUrl(n);
             else scan(n);
         }
     }

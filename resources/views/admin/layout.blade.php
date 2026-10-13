@@ -97,6 +97,7 @@
     <style>html:not(.admin-ready) .admin-sidebar, html:not(.admin-ready) .admin-sidebar * { transition: none !important; animation: none !important; }</style>
     <meta name="admin-brand-colors" content="{{ $pickerBrandColors->toJson() }}">
     <meta name="admin-icons-url" content="{{ route('admin.ikony') }}">
+    @if (Route::has('admin.multimedia.images'))<meta name="admin-library-images-url" content="{{ route('admin.multimedia.images') }}">@endif
     <meta name="admin-material-icons-url" content="{{ route('admin.ikony-material') }}">
     <style>
         :root {
