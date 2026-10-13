@@ -70,7 +70,7 @@
         {{ $formTitle }}
     </{{ $headingTag }}>
     @if ($form->description)
-        <p class="mb-6 text-muted {{ $feerForm ? 'max-w-2xl text-base' : 'text-sm' }}">{{ $form->description }}</p>
+        <p class="mb-6 whitespace-pre-line text-muted {{ $feerForm ? 'max-w-2xl text-base' : 'text-sm' }}">{{ $form->description }}</p>
     @else
         <div class="mb-5"></div>
     @endif

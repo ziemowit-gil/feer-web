@@ -75,7 +75,16 @@ class SzoFormMirror
             }
             $label = trim((string) ($f['label'] ?? '')) ?: Str::ucfirst(str_replace('_', ' ', $name));
 
-            $fields[] = $this->field($szoName, $label, $this->type($name, (string) ($f['type'] ?? 'text')), ! empty($f['required']), $uids);
+            $options = array_values(array_filter(array_map('trim', (array) ($f['options'] ?? [])), 'strlen'));
+            $type = $this->type($name, (string) ($f['type'] ?? 'text'));
+            if ($type === 'select' && ! $options) {
+                $type = 'text'; // lista wyboru bez opcji w SZO — pole tekstowe zamiast pustej listy
+            }
+
+            $fields[] = $this->field($szoName, $label, $type, ! empty($f['required']), $uids) + array_filter([
+                'options'     => $type === 'select' ? implode(', ', $options) : null,
+                'placeholder' => trim((string) ($f['placeholder'] ?? '')) ?: null,
+            ]);
         }
 
         foreach ((array) ($remote['consents'] ?? []) as $c) {
@@ -103,7 +112,7 @@ class SzoFormMirror
     /** Typ pola CMS: z typu w SZO, a dla pól wbudowanych kartoteki — z ich klucza. */
     private function type(string $name, string $type): string
     {
-        $byType = ['email' => 'email', 'tel' => 'tel', 'url' => 'url', 'number' => 'number', 'date' => 'date', 'textarea' => 'textarea'];
+        $byType = ['email' => 'email', 'tel' => 'tel', 'url' => 'url', 'number' => 'number', 'date' => 'date', 'textarea' => 'textarea', 'select' => 'select'];
         if (isset($byType[$type])) {
             return $byType[$type];
         }
