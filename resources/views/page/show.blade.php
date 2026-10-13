@@ -128,6 +128,7 @@
                         }"
                         :class="'pp-size-' + size">
                         @include('partials.etr-toggle', ['etr' => $page->etr, 'title' => $page->title])
+                        @include('partials.pjm-video', ['url' => $page->pjm_video_url, 'title' => $page->title])
 
                         <div x-show="!etr" x-cloak>
                         <header class="mb-8">

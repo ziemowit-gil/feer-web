@@ -58,8 +58,8 @@
                     @endif
                 </div>
             </header>
-
             <article class="mx-auto max-w-5xl px-4 py-12" aria-label="{{ $page->title }}">
+                @include('partials.pjm-video', ['url' => $page->pjm_video_url, 'title' => $page->title])
                 @include('partials.page-content-image')
 
                 @if ($canInlineEdit && ! $contentHasShortcode)

@@ -836,6 +836,7 @@
                 </form>
                 </div>
             </details>
+            @include('admin.partials.pjm-section', ['model' => $page, 'type' => 'podstrona', 'hidden' => $isLinkType || $currentType === 'wspolpraca', 'attrs' => 'data-hide-for-link data-wspolpraca-tab'])
             </div>
         @endif
     </div>{{-- /page-form-tabs --}}

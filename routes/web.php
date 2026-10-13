@@ -710,6 +710,7 @@ Route::middleware(['auth', 'verified', '2fa', 'admin-site'])->prefix(config('app
         // ETR — wersja łatwa do czytania (polimorficzna, dotyczy newsów i podstron).
         Route::put('etr/{type}/{id}', [AdminEtrController::class, 'update'])->name('etr.update');
         Route::delete('etr/{type}/{id}', [AdminEtrController::class, 'destroy'])->name('etr.destroy');
+        Route::put('pjm/{type}/{id}', [\App\Http\Controllers\Admin\PjmController::class, 'update'])->name('pjm.update');
 
         // Bannery i strefy wyświetlania.
         Route::resource('banery', AdminBannerController::class)

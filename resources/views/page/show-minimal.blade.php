@@ -38,6 +38,7 @@
                     <h1 class="text-3xl font-extrabold leading-tight tracking-tight text-ink md:text-4xl">{{ $page->title }}</h1>
                 @endif
             </header>
+            @include('partials.pjm-video', ['url' => $page->pjm_video_url, 'title' => $page->title])
 
             @include('partials.page-content-image')
 

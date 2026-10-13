@@ -88,6 +88,7 @@
         @endif
 
         @include('partials.etr-toggle', ['etr' => $news->etr, 'title' => $news->title])
+        @include('partials.pjm-video', ['url' => $news->pjm_video_url, 'title' => $news->title])
 
         <div x-show="!etr" x-cloak>
             <a href="{{ site_route('news.index') }}" class="mb-6 inline-flex min-h-11 items-center text-sm font-bold text-brand-dark underline underline-offset-4 hover:no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">← Wszystkie aktualności</a>

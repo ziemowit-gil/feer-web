@@ -47,6 +47,7 @@
     @endif
 
     @include('partials.etr-toggle', ['etr' => $news->etr, 'title' => $news->title])
+    @include('partials.pjm-video', ['url' => $news->pjm_video_url, 'title' => $news->title])
 
     <div x-show="!etr" x-cloak>
         <div class="grid gap-10 lg:grid-cols-4">

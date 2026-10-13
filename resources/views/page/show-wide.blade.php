@@ -57,6 +57,7 @@
                         <div class="no-print print:hidden">@include('partials.print-button')</div>
                     </div>
                 </header>
+                @include('partials.pjm-video', ['url' => $page->pjm_video_url, 'title' => $page->title])
 
                 @include('partials.page-content-image')
 

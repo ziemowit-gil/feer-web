@@ -45,9 +45,9 @@
                 @endif
             </div>
         </header>
-
         {{-- ===== TREŚĆ ===== --}}
         <article class="mx-auto max-w-4xl px-4 py-16" aria-label="{{ $page->title }}">
+            @include('partials.pjm-video', ['url' => $page->pjm_video_url, 'title' => $page->title])
             @include('partials.page-content-image')
 
             @if ($canInlineEdit && ! $contentHasShortcode)

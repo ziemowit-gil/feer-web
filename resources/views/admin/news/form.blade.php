@@ -908,6 +908,7 @@
                 </form>
                 </div>
             </details>
+            @include('admin.partials.pjm-section', ['model' => $news, 'type' => 'news'])
             <details class="pe-section rounded-md bg-white" data-pe-section="pliki">
                 <summary class="flex cursor-pointer list-none items-center justify-between gap-3 px-6 py-4 text-base font-bold text-ink [&::-webkit-details-marker]:hidden">
                     <span>Pliki do pobrania @if ($news->attachments->isNotEmpty())<span class="font-normal text-muted">({{ $news->attachments->count() }})</span>@endif</span>
