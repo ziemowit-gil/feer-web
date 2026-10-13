@@ -12,6 +12,12 @@
 
 @php $accent = $siteSettings->contrastSafeColor($siteSettings->audienceColor($ad->audience)); @endphp
 
+@php
+    // Formularz z SZO na tej stronie ma pierwszeństwo przed zewnętrznym linkiem.
+    $applyForm = $ad->applicationForm();
+    $external = filled($ad->application_url) && ! $applyForm;
+@endphp
+
 @section('content')
     <article class="mx-auto max-w-3xl px-4 py-12" style="--accent: {{ $accent }}">
         <header class="mb-8">
@@ -40,7 +46,7 @@
             </dl>
 
             @if ($ad->applyHref())
-                <a href="{{ $ad->applyHref() }}" @if($ad->application_url) target="_blank" rel="noopener" @endif
+                <a href="{{ $ad->applyHref() }}" @if ($external) target="_blank" rel="noopener" @endif
                    class="mt-6 inline-flex items-center gap-2 rounded-lg px-6 py-3 font-bold text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
                    style="background: var(--accent); outline-color: var(--accent)">
                     {{ $ad->application_cta_label }} <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
@@ -109,13 +115,20 @@
                     </p>
                 @endif
                 @if ($ad->applyHref())
-                    <a href="{{ $ad->applyHref() }}" @if($ad->application_url) target="_blank" rel="noopener" @endif
+                    <a href="{{ $ad->applyHref() }}" @if ($external) target="_blank" rel="noopener" @endif
                        class="mt-4 inline-flex items-center gap-2 rounded-lg px-6 py-3 font-bold text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
                        style="background: var(--accent); outline-color: var(--accent)">
                         {{ $ad->application_cta_label }} <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
                     </a>
                 @endif
             </section>
+
+            @if ($applyForm)
+                {{-- Formularz zgłoszeniowy z SZO (lustro w CMS) — cel przycisku „Zgłoś się”. --}}
+                <section id="zgloszenie" class="scroll-mt-6">
+                    @include('formularz._embed', ['form' => $applyForm, 'title' => 'Zgłoś się na wolontariat'])
+                </section>
+            @endif
         </div>
     </article>
 @endsection

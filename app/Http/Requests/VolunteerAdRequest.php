@@ -61,6 +61,7 @@ class VolunteerAdRequest extends FormRequest
             'q_how_to_apply' => ['required', 'string', 'max:1000'],
             'application_url' => ['nullable', 'url', 'max:500'],
             'application_cta_label' => ['nullable', 'string', 'max:60'],
+            'szo_form_slug' => ['nullable', 'string', 'max:120'],
             'contact_name' => ['nullable', 'string', 'max:255'],
             'contact_email' => ['nullable', 'email', 'max:255'],
             'audience' => ['required', 'string', 'max:60'],

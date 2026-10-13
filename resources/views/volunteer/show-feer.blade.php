@@ -19,6 +19,12 @@
     $apply = 'inline-flex min-h-12 items-center gap-2 rounded-md bg-brand px-6 text-sm font-bold text-white transition hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2';
 @endphp
 
+@php
+    // Formularz z SZO na tej stronie ma pierwszeństwo przed zewnętrznym linkiem.
+    $applyForm = $ad->applicationForm();
+    $external = filled($ad->application_url) && ! $applyForm;
+@endphp
+
 @section('content')
     <section class="bg-gray-50" style="border-left: 6px solid {{ $accent }}">
         <div class="mx-auto max-w-6xl px-4 py-12 md:py-16">
@@ -75,6 +81,13 @@
                         @endforeach
                     </ul>
                 </section>
+
+                @if ($applyForm)
+                    {{-- Formularz zgłoszeniowy z SZO (lustro w CMS) — cel przycisku „Zgłoś się”. --}}
+                    <section id="zgloszenie" class="scroll-mt-6">
+                        @include('formularz._embed', ['form' => $applyForm, 'title' => 'Zgłoś się na wolontariat'])
+                    </section>
+                @endif
             </div>
 
             <aside aria-labelledby="q6" class="rounded-lg bg-brand-light p-6 lg:sticky lg:top-6">
@@ -88,8 +101,8 @@
                     </p>
                 @endif
                 @if ($ad->applyHref())
-                    <a href="{{ $ad->applyHref() }}" @if ($ad->application_url) target="_blank" rel="noopener" @endif class="{{ $apply }} mt-5">
-                        {{ $ad->application_cta_label }}@if ($ad->application_url)<span class="sr-only"> (otwiera się w nowej karcie)</span>@endif
+                    <a href="{{ $ad->applyHref() }}" @if ($external) target="_blank" rel="noopener" @endif class="{{ $apply }} mt-5">
+                        {{ $ad->application_cta_label }}@if ($external)<span class="sr-only"> (otwiera się w nowej karcie)</span>@endif
                     </a>
                 @endif
             </aside>

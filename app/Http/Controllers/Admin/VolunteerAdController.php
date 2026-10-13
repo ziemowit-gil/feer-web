@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\VolunteerAdRequest;
 use App\Models\VolunteerAd;
+use App\Services\SzoClient;
+use App\Services\SzoFormMirror;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
@@ -55,7 +57,10 @@ class VolunteerAdController extends Controller
     /** Wyświetla formularz tworzenia nowej oferty. */
     public function create()
     {
-        return view('admin.volunteer-ads.form', ['ad' => new VolunteerAd(['application_cta_label' => 'Zgłoś się', 'q_mode' => 'stacjonarnie'])]);
+        return view('admin.volunteer-ads.form', [
+            'ad' => new VolunteerAd(['application_cta_label' => 'Zgłoś się', 'q_mode' => 'stacjonarnie']),
+            'szoForms' => app(SzoClient::class)->forms(),
+        ]);
     }
 
     /** Zapisuje nową ofertę wolontariatu z unikalnym slugiem. */
@@ -72,7 +77,7 @@ class VolunteerAdController extends Controller
     /** Wyświetla formularz edycji oferty. */
     public function edit(VolunteerAd $wolontariat)
     {
-        return view('admin.volunteer-ads.form', ['ad' => $wolontariat]);
+        return view('admin.volunteer-ads.form', ['ad' => $wolontariat, 'szoForms' => app(SzoClient::class)->forms()]);
     }
 
     /** Aktualizuje ofertę wolontariatu. */
@@ -148,6 +153,12 @@ class VolunteerAdController extends Controller
         $data['is_published'] = $request->boolean('is_published');
         $data['order'] = $data['order'] ?? 0;
         $data['application_cta_label'] = trim((string) ($data['application_cta_label'] ?? '')) ?: 'Zgłoś się';
+
+        // Formularz z SZO: odświeżamy jego lustro w CMS-ie przy każdym zapisie oferty (pola mogły się zmienić w SZO).
+        $data['szo_form_slug'] = trim((string) ($data['szo_form_slug'] ?? '')) ?: null;
+        $data['form_definition_id'] = $data['szo_form_slug']
+            ? app(SzoFormMirror::class)->sync($data['szo_form_slug'], $data['contact_email'] ?? null)?->id
+            : null;
 
         return $data;
     }

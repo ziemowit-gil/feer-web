@@ -242,6 +242,10 @@ class FormularzeController extends Controller
             }
         }
 
+        // Klucze SZO pól lustrzanych (SzoFormMirror) nie są edytowalne w panelu — przenosimy je po uid.
+        $szoNames = collect($existing?->fields ?? [])->filter(fn ($f) => filled($f['szo_name'] ?? null) && filled($f['uid'] ?? null))
+            ->mapWithKeys(fn ($f) => [$f['uid'] => $f['szo_name']])->all();
+
         $fields = collect($request->input('fields', []))
             ->filter(fn ($f) => ! empty($f['label']))
             ->map(fn ($f) => [
@@ -263,6 +267,7 @@ class FormularzeController extends Controller
                 'show_if_uid'   => ($f['type'] ?? '') !== 'step' && filled($f['show_if_uid'] ?? null) ? (string) $f['show_if_uid'] : null,
                 'show_if_value' => ($f['type'] ?? '') !== 'step' && filled($f['show_if_uid'] ?? null) ? trim((string) ($f['show_if_value'] ?? '')) : null,
             ])
+            ->map(fn ($f) => isset($szoNames[$f['uid']]) ? $f + ['szo_name' => $szoNames[$f['uid']]] : $f)
             ->values()
             ->all();
 

@@ -1,5 +1,7 @@
 @php
     $fs          = $form->slug;
+    // Tytuł widoczny na stronie — osadzający może go nadpisać (np. lustro formularza SZO w ofercie wolontariatu).
+    $formTitle   = $title ?? $form->title;
     $fields      = $form->normalizedFields();
     $isThisForm  = session('_form_slug') === $fs;
     $showSuccess = $isThisForm && session('success');
@@ -65,7 +67,7 @@
 
     @php $headingTag = in_array($headingTag ?? 'h2', ['h2', 'h3'], true) ? ($headingTag ?? 'h2') : 'h2'; @endphp
     <{{ $headingTag }} id="form-heading-{{ $fs }}" class="mb-1 font-bold text-ink {{ $feerForm ? 'text-2xl sm:text-3xl' : 'text-xl' }}">
-        {{ $form->title }}
+        {{ $formTitle }}
     </{{ $headingTag }}>
     @if ($form->description)
         <p class="mb-6 text-muted {{ $feerForm ? 'max-w-2xl text-base' : 'text-sm' }}">{{ $form->description }}</p>
@@ -137,7 +139,7 @@
     {{-- ── Formularz ───────────────────────────────────────────────────────── --}}
     <form method="POST"
         action="{{ route('formularz.store', $fs) }}"
-        aria-label="{{ $form->title }}"
+        aria-label="{{ $formTitle }}"
         @if ($hasFile) enctype="multipart/form-data" @endif
         @if ($showErrors) aria-describedby="{{ $errorSummaryId }}" @endif
         novalidate

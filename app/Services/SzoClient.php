@@ -102,6 +102,24 @@ class SzoClient
         }
     }
 
+    /** Jeden formularz SZO ze szczegółami (pola, zgody) albo null, gdy go nie ma lub SZO nie odpowiada. */
+    public function form(string $slug): ?array
+    {
+        if (! $this->enabled() || trim($slug) === '') {
+            return null;
+        }
+
+        try {
+            $res = $this->request()->get($this->endpoint(), ['slug' => trim($slug)]);
+
+            return $res->successful() && is_array($res->json('form')) ? $res->json('form') : null;
+        } catch (Throwable $e) {
+            Log::warning('[SZO] Nie udało się pobrać formularza ' . $slug . ': ' . $e->getMessage());
+
+            return null;
+        }
+    }
+
     /**
      * Wysyła zgłoszenie do SZO i zapisuje wynik na rekordzie zgłoszenia.
      *
@@ -127,6 +145,7 @@ class SzoClient
                 'form'     => $slug,
                 'data'     => $this->mapData($form, $submission),
                 'consents' => $this->consents($form, $submission),
+                'custom'   => (object) $this->customData($form, $submission),
                 'fields'   => $this->fieldsMeta($form),
                 'meta'     => [
                     'ip'          => $submission->ip_address,
@@ -268,7 +287,11 @@ class SzoClient
             if ($type === 'file') {
                 $type = 'text';
             }
-            $key = $aliases[$field['key']] ?? $field['key'];
+            // Pola lustrzane formularza SZO znają swój klucz w SZO — pola dodatkowe CRM idą osobno (custom).
+            if (str_starts_with((string) ($field['szo_name'] ?? ''), 'custom:')) {
+                continue;
+            }
+            $key = $field['szo_name'] ?? $aliases[$field['key']] ?? $field['key'];
             if (isset($out[$key])) {
                 continue;
             }
@@ -323,7 +346,10 @@ class SzoClient
                 continue;
             }
 
-            $target = $aliases[$key] ?? $key;
+            if (str_starts_with((string) ($field['szo_name'] ?? ''), 'custom:')) {
+                continue;
+            }
+            $target = $field['szo_name'] ?? $aliases[$key] ?? $key;
 
             // Kilka pól tekstowych zmapowanych na notatkę sklejamy, zamiast
             // pozwolić ostatniemu nadpisać poprzednie.
@@ -348,7 +374,29 @@ class SzoClient
                 continue;
             }
             if (! empty($data[$field['key'] ?? ''])) {
-                $out[] = $field['key'];
+                $out[] = $field['szo_name'] ?? $field['key'];
+            }
+        }
+
+        return $out;
+    }
+
+    /** Pola dodatkowe CRM (lustro formularza SZO: szo_name = „custom:{id definicji}”) — po id definicji. */
+    protected function customData(FormDefinition $form, FormSubmission $submission): array
+    {
+        $data = $submission->data ?? [];
+        $out  = [];
+
+        foreach ($form->inputFields() as $field) {
+            if (! preg_match('/^custom:(\d+)$/', (string) ($field['szo_name'] ?? ''), $m)) {
+                continue;
+            }
+            $value = $data[$field['key']] ?? null;
+            if (is_array($value)) {
+                $value = implode(', ', $value);
+            }
+            if (filled($value)) {
+                $out[$m[1]] = (string) $value;
             }
         }
 
