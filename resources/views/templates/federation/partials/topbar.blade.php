@@ -75,6 +75,10 @@
                 <i class="fa-solid fa-rotate-left" aria-hidden="true"></i>
                 <span class="hidden md:inline">Resetuj</span>
             </button>
+            <button type="button" @click="a11yOpen = false" aria-label="Schowaj pasek dostępności"
+                class="flex min-h-6 items-center gap-1 rounded bg-white px-2 font-bold text-ink hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-1">
+                <i class="fa-solid fa-xmark" aria-hidden="true"></i> Schowaj
+            </button>
         </div>
 
         {{-- Prawa: social + BIP --}}

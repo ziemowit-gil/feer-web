@@ -102,6 +102,10 @@
             <button type="button" data-a11y-reset class="flex min-h-6 items-center gap-1 text-muted hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-1" aria-label="Przywróć domyślne ustawienia dostępności">
                 <i class="fa-solid fa-rotate-left" aria-hidden="true"></i> Resetuj
             </button>
+            <button type="button" @click="open = false" aria-label="Schowaj pasek dostępności"
+                class="flex min-h-6 items-center gap-1 rounded bg-white px-2 font-bold text-ink hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-1">
+                <i class="fa-solid fa-xmark" aria-hidden="true"></i> Schowaj
+            </button>
 
             @if ($siteSettings->municipality_show_google_translate ?? false)
                 <button type="button" id="mun-translate-btn"

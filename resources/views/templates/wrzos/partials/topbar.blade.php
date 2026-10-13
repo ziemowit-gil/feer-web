@@ -1,5 +1,15 @@
-{{-- Pasek dostępności — zawsze widoczny (bez zwijania), zgodnie z układem WRZOS. --}}
-<div class="border-b border-gray-200 bg-gray-50 text-xs text-gray-600" role="region" aria-label="Ustawienia dostępności">
+{{-- Pasek dostępności WRZOS — domyślnie widoczny; można go schować (stan zapamiętany) i przywrócić przyciskiem „Dostępność”. --}}
+<div x-data="{ hidden: (function () { try { return localStorage.getItem('a11y-bar-hidden') === '1' } catch (e) { return false } })() }"
+     x-effect="(() => { try { localStorage.setItem('a11y-bar-hidden', hidden ? '1' : '0') } catch (e) {} })()">
+<div x-show="hidden" x-cloak class="border-b border-gray-200 bg-gray-50 text-xs">
+    <div class="mx-auto flex max-w-[1400px] px-4 py-1">
+        <button type="button" x-ref="a11yShow" @click="hidden = false" aria-label="Pokaż pasek dostępności"
+            class="flex min-h-6 items-center gap-1 rounded px-1 font-bold text-ink hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+            <i class="fa-solid fa-universal-access" aria-hidden="true"></i> Dostępność
+        </button>
+    </div>
+</div>
+<div x-show="! hidden" class="border-b border-gray-200 bg-gray-50 text-xs text-gray-600" role="region" aria-label="Ustawienia dostępności">
     <div class="mx-auto flex max-w-[1400px] items-center gap-4 overflow-x-auto px-4 py-1.5">
 
         <div role="group" aria-label="Tryb kontrastowy" class="flex shrink-0 items-center gap-2">
@@ -57,5 +67,10 @@
             aria-label="Przywróć domyślne ustawienia dostępności">
             <i class="fa-solid fa-rotate-left text-[11px]" aria-hidden="true"></i>
         </button>
+        <button type="button" @click="hidden = true; $nextTick(() => $refs.a11yShow?.focus())" aria-label="Schowaj pasek dostępności"
+            class="flex min-h-6 shrink-0 items-center gap-1 rounded bg-white px-2 font-bold text-ink hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+            <i class="fa-solid fa-xmark text-[11px]" aria-hidden="true"></i> Schowaj
+        </button>
     </div>
+</div>
 </div>
