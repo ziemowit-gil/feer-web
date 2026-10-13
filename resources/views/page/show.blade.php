@@ -152,6 +152,14 @@
                                     {{ $ppReadMin }} min czytania
                                 </p>
                                 <div class="flex flex-wrap items-center gap-3 no-print print:hidden">
+                                    {{-- Odczyt treści na głos (Web Speech API, bez zewnętrznej usługi) — tylko gdy przeglądarka to obsługuje. --}}
+                                    <button type="button" x-data="audioPlayer('page-text')" x-show="supported" x-cloak
+                                        @click="play()" :aria-pressed="playing.toString()"
+                                        :class="playing ? 'bg-ink text-white hover:bg-ink' : 'bg-white text-ink hover:bg-gray-200'"
+                                        class="inline-flex h-11 items-center gap-2 rounded-md px-4 text-sm font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2" title="Posłuchaj treści strony">
+                                        <i class="fa-solid" :class="playing ? 'fa-stop' : 'fa-volume-high'" aria-hidden="true"></i>
+                                        <span x-text="playing ? 'Zatrzymaj' : 'Posłuchaj'">Posłuchaj</span>
+                                    </button>
                                     @include('partials.print-button')
                                     <div class="flex items-center gap-1" x-cloak role="group" aria-label="Rozmiar tekstu strony">
                                         @foreach ($ppSizes as $key => $opt)
@@ -185,9 +193,9 @@
                         @if ($canInlineEdit && ! $contentHasShortcode)
                             <div data-inline-field="content" data-inline-kind="rich"
                                 :class="editMode ? 'outline-dashed outline-2 outline-offset-4 outline-brand rounded' : ''"
-                                class="page-portal-body prose max-w-none text-ink">{!! $contentHtml !!}</div>
+                                id="page-text" class="page-portal-body prose max-w-none text-ink">{!! $contentHtml !!}</div>
                         @else
-                            <div class="page-portal-body prose max-w-none text-ink">{!! $contentHtml !!}</div>
+                            <div id="page-text" class="page-portal-body prose max-w-none text-ink">{!! $contentHtml !!}</div>
                         @endif
 
                         @include('partials.page-gallery', ['page' => $page])

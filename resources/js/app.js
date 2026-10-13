@@ -613,44 +613,82 @@ Alpine.data('siteMobileNav', (breakpoint = 1024) => ({
     },
 }));
 
-// Odtwarzacz audio (TTS) — czyta treść artykułu przez SpeechSynthesis.
-// Używany w news/show.blade.php i page/show.blade.php.
-Alpine.data('audioPlayer', () => ({
+// Odtwarzacz audio (TTS) — czyta treść przez SpeechSynthesis (bez zewnętrznej usługi).
+// Aktualności: x-data="audioPlayer()" (element #article-text), strony: audioPlayer('page-text').
+// Tekst czytany po kawałkach (zdania łączone do ~220 znaków): Chrome urywa jedną długą
+// wypowiedź po ok. 15 s. Polski głos, gdy przeglądarka go ma; zatrzymanie przy wyjściu ze strony.
+Alpine.data('audioPlayer', (targetId = 'article-text') => ({
     etr: false,
     playing: false,
     supported: typeof window !== 'undefined' && 'speechSynthesis' in window,
-    _utterance: null,
+    _queue: [],
+
+    init() {
+        if (!this.supported) return;
+        window.addEventListener('pagehide', () => this.stop());
+    },
+
+    chunks(text) {
+        const sentences = text.replace(/\s+/g, ' ').match(/[^.!?…]+[.!?…]+["”»)]*\s*|[^.!?…]+$/g) || [];
+        const out = [];
+        let current = '';
+        for (const sentence of sentences) {
+            if ((current + sentence).length > 220 && current) {
+                out.push(current.trim());
+                current = '';
+            }
+            current += sentence;
+        }
+        if (current.trim()) out.push(current.trim());
+        return out;
+    },
+
+    polishVoice() {
+        const voices = window.speechSynthesis.getVoices() || [];
+        return voices.find((v) => v.lang?.toLowerCase().startsWith('pl') && v.localService)
+            || voices.find((v) => v.lang?.toLowerCase().startsWith('pl'))
+            || null;
+    },
+
+    speakNext() {
+        if (!this.playing) return;
+        const part = this._queue.shift();
+        if (!part) {
+            this.playing = false;
+            return;
+        }
+        const utterance = new SpeechSynthesisUtterance(part);
+        utterance.lang = 'pl-PL';
+        utterance.rate = 0.95;
+        const voice = this.polishVoice();
+        if (voice) utterance.voice = voice;
+        utterance.onend = () => this.speakNext();
+        utterance.onerror = () => { this.playing = false; };
+        window.speechSynthesis.speak(utterance);
+    },
 
     play() {
         if (!this.supported) return;
 
-        const el = document.getElementById('article-text');
-        if (!el) return;
-
         if (this.playing) {
-            window.speechSynthesis.cancel();
-            this.playing = false;
+            this.stop();
             return;
         }
 
-        const text = el.innerText?.trim() || '';
+        const el = document.getElementById(targetId);
+        const text = el?.innerText?.trim() || '';
         if (!text) return;
 
-        this._utterance = new SpeechSynthesisUtterance(text);
-        this._utterance.lang = 'pl-PL';
-        this._utterance.rate = 0.95;
-
-        this._utterance.onend = () => { this.playing = false; };
-        this._utterance.onerror = () => { this.playing = false; };
-
         window.speechSynthesis.cancel();
-        window.speechSynthesis.speak(this._utterance);
+        this._queue = this.chunks(text);
         this.playing = true;
+        this.speakNext();
     },
 
     stop() {
-        window.speechSynthesis.cancel();
         this.playing = false;
+        this._queue = [];
+        if (this.supported) window.speechSynthesis.cancel();
     },
 }));
 
