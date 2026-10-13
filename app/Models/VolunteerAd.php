@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class VolunteerAd extends Model
 {
     use \App\Models\Concerns\HasSzoForm;
+    use \App\Models\Concerns\RedirectsOldSlug;
     use \App\Models\Concerns\LogsActivity;
 
     /** Tryb działań wolontariatu (pytanie 3: gdzie/jak). */
@@ -76,5 +77,11 @@ class VolunteerAd extends Model
     public function isClosed(): bool
     {
         return $this->closes_at !== null && $this->closes_at->isPast();
+    }
+
+    /** Publiczny adres — cel przekierowania 301 ze starego adresu po zmianie sluga (RedirectsOldSlug). */
+    public function redirectTargetUrl(): ?string
+    {
+        return \Illuminate\Support\Facades\Route::has('volunteer.show') ? route('volunteer.show', $this) : null;
     }
 }

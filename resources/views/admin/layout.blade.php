@@ -326,6 +326,12 @@
                     <span>{{ session('status') }}</span>
                 </div>
             @endif
+            @if (session('slug_redirect'))
+                <div role="status" class="mb-4 flex items-start gap-2 rounded-md bg-gray-100 px-4 py-3 text-sm text-ink">
+                    <i class="fa-solid fa-signs-post mt-0.5 text-brand-dark" aria-hidden="true"></i>
+                    <span>{{ session('slug_redirect') }}</span>
+                </div>
+            @endif
             @if (session('reload_url'))
                 <script>try{localStorage.setItem('feer_reload',JSON.stringify({url:@json(session('reload_url')),at:Date.now()}))}catch(e){}</script>
             @endif

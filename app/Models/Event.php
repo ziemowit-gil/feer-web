@@ -15,6 +15,7 @@ use Spatie\MediaLibrary\InteractsWithMedia;
 class Event extends Model implements HasMedia
 {
     use InteractsWithMedia;
+    use \App\Models\Concerns\RedirectsOldSlug;
     use \App\Models\Concerns\BelongsToSite;
     use \App\Models\Concerns\ScopedByEditor;
     use \App\Models\Concerns\LogsActivity;
@@ -354,5 +355,11 @@ class Event extends Model implements HasMedia
     public function registrationIsExternal(): bool
     {
         return filled($this->registration_url) && ! $this->registrationForm();
+    }
+
+    /** Publiczny adres — cel przekierowania 301 ze starego adresu po zmianie sluga (RedirectsOldSlug). */
+    public function redirectTargetUrl(): ?string
+    {
+        return route('events.show', $this);
     }
 }

@@ -10,6 +10,7 @@ use App\Models\Attachment;
 class JobOffer extends Model
 {
     use \App\Models\Concerns\LogsActivity;
+    use \App\Models\Concerns\RedirectsOldSlug;
     use \App\Models\Concerns\HasSzoForm;
 
     public const TYPES = [
@@ -127,5 +128,11 @@ class JobOffer extends Model
     public function isClosed(): bool
     {
         return $this->closes_at !== null && $this->closes_at->isPast();
+    }
+
+    /** Publiczny adres — cel przekierowania 301 ze starego adresu po zmianie sluga (RedirectsOldSlug). */
+    public function redirectTargetUrl(): ?string
+    {
+        return \Illuminate\Support\Facades\Route::has('praca.show') ? route('praca.show', $this) : null;
     }
 }

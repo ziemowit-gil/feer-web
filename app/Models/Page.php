@@ -20,6 +20,7 @@ use Illuminate\Support\Str;
 class Page extends Model
 {
     use Approvable;
+    use \App\Models\Concerns\RedirectsOldSlug;
     use BelongsToSite;
     use \App\Models\Concerns\ScopedByEditor;
     use \App\Models\Concerns\HasEtr;
@@ -1184,5 +1185,11 @@ class Page extends Model
         }
 
         return $this->publishedChildren()->get();
+    }
+
+    /** Publiczny adres — cel przekierowania 301 ze starego adresu po zmianie sluga (RedirectsOldSlug). */
+    public function redirectTargetUrl(): ?string
+    {
+        return $this->publicUrl();
     }
 }

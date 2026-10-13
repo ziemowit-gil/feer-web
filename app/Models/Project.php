@@ -13,6 +13,7 @@ use Spatie\MediaLibrary\InteractsWithMedia;
 class Project extends Model implements HasMedia
 {
     use \App\Models\Concerns\Approvable;
+    use \App\Models\Concerns\RedirectsOldSlug;
     use \App\Models\Concerns\BelongsToSite;
     use \App\Models\Concerns\ScopedByEditor;
     use \App\Models\Concerns\HasRevisions;
@@ -299,5 +300,11 @@ class Project extends Model implements HasMedia
     public function showsCoordinator(): bool
     {
         return $this->show_coordinator && SiteSetting::current()->show_coordinators;
+    }
+
+    /** Publiczny adres — cel przekierowania 301 ze starego adresu po zmianie sluga (RedirectsOldSlug). */
+    public function redirectTargetUrl(): ?string
+    {
+        return route('projects.show', $this);
     }
 }

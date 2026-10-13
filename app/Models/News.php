@@ -18,6 +18,7 @@ use Spatie\MediaLibrary\InteractsWithMedia;
 class News extends Model implements HasMedia
 {
     use \App\Models\Concerns\Approvable;
+    use \App\Models\Concerns\RedirectsOldSlug;
     use \App\Models\Concerns\BelongsToSite;
     use \App\Models\Concerns\ScopedByEditor;
     use \App\Models\Concerns\HasEtr;
@@ -270,5 +271,11 @@ class News extends Model implements HasMedia
             $media->setCustomProperty('height', $size[1]);
             $media->save();
         }
+    }
+
+    /** Publiczny adres — cel przekierowania 301 ze starego adresu po zmianie sluga (RedirectsOldSlug). */
+    public function redirectTargetUrl(): ?string
+    {
+        return route('news.show', $this);
     }
 }

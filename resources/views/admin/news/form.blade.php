@@ -301,6 +301,7 @@
                             class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
                     </div>
                     @error('slug') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                            @include('admin.partials.slug-redirect-note', ['model' => $news])
                 </div>
             </div>
 
