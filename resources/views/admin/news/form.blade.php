@@ -4,8 +4,13 @@
 
 @section('content')
     @include('admin.partials.readable-form-css')
+    <style>
+        .pe-section[open] > summary .fa-chevron-down { transform: rotate(180deg); }
+        .pe-section > summary:focus-visible { outline: 3px solid #1d1d1a; outline-offset: -3px; border-radius: .375rem; }
+        .pe-section > summary:hover { background: #f9fafb; }
+    </style>
     @php
-        // Zakładka, w której leży błąd walidacji — kropka na zakładce i automatyczne otwarcie po nieudanym zapisie.
+        // Sekcja z błędem walidacji (np. SEO) otwiera się po nieudanym zapisie.
         $tabFields = [
             'ogolne' => ['title', 'slug', 'content', 'post_type', 'expires_at', 'type_data.cta_url', 'type_data.tool_name', 'type_data.tool_url', 'type_data.score', 'type_data.tested_at'],
             'obraz' => ['image', 'image_alt', 'article_layout', 'image_focal_x', 'image_focal_y', 'audience', 'accent_color'],
@@ -14,14 +19,6 @@
             'seo' => ['meta_title', 'meta_description'],
         ];
         $tabErrors = collect($tabFields)->map(fn ($fields) => $errors->hasAny($fields))->all();
-        $firstErrorTab = collect($tabErrors)->filter()->keys()->first();
-        $tabs = [
-            'ogolne' => ['Ogólne', 'fa-pen'],
-            'obraz' => ['Zdjęcie i wygląd', 'fa-image'],
-            'kategorie' => ['Kategoryzacja', 'fa-tags'],
-            'publikacja' => ['Publikacja', 'fa-calendar-check'],
-            'seo' => ['SEO', 'fa-magnifying-glass'],
-        ];
         $btnSecondary = 'inline-flex items-center rounded-lg border border-gray-300 bg-white text-xs font-bold text-ink hover:border-brand-dark hover:text-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark';
         $btnStyle = 'min-height:2.25rem;padding:.375rem .75rem;gap:.375rem';
     @endphp
@@ -90,34 +87,6 @@
                 </div>
             </div>
 
-            {{-- Zakładki rekordu --}}
-            <div role="tablist" aria-label="Sekcje aktualności" style="display:flex;flex-wrap:wrap;gap:.125rem">
-                @foreach ($tabs as $key => [$label, $icon])
-                    <button type="button" role="tab" id="tab-{{ $key }}" data-tab-btn="{{ $key }}" aria-controls="panel-{{ $key }}"
-                        aria-selected="{{ $loop->first ? 'true' : 'false' }}" tabindex="{{ $loop->first ? '0' : '-1' }}"
-                        class="relative text-sm font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-dark {{ $loop->first ? 'border-brand-dark text-brand-dark' : 'border-transparent text-muted hover:text-ink' }}"
-                        style="display:inline-flex;align-items:center;gap:.375rem;min-height:2.5rem;padding:.5rem .875rem;margin-bottom:-1px;border-bottom-width:2px;border-bottom-style:solid">
-                        <i class="fa-solid {{ $icon }} text-xs" aria-hidden="true"></i>{{ $label }}
-                        @if ($tabErrors[$key] ?? false)
-                            <span class="inline-block h-2 w-2 rounded-full bg-red-600" aria-hidden="true"></span><span class="sr-only">(są błędy w tej zakładce)</span>
-                        @endif
-                    </button>
-                @endforeach
-                @if ($news->exists)
-                    <button type="button" role="tab" id="tab-etr" data-tab-btn="etr" aria-controls="panel-etr" aria-selected="false" tabindex="-1"
-                        class="border-transparent text-sm font-bold text-muted hover:text-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-dark"
-                        style="display:inline-flex;align-items:center;gap:.375rem;min-height:2.5rem;padding:.5rem .875rem;margin-bottom:-1px;border-bottom-width:2px;border-bottom-style:solid">
-                        <i class="fa-solid fa-book-open-reader text-xs" aria-hidden="true"></i>ETR
-                        @if ($news->etr?->is_enabled)<span class="text-xs text-ink font-bold"><i class="fa-solid fa-circle-info mr-1 text-brand-dark" aria-hidden="true"></i>aktywna</span>@endif
-                    </button>
-                    <button type="button" role="tab" id="tab-files" data-tab-btn="files" aria-controls="panel-files" aria-selected="false" tabindex="-1"
-                        class="border-transparent text-sm font-bold text-muted hover:text-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-dark"
-                        style="display:inline-flex;align-items:center;gap:.375rem;min-height:2.5rem;padding:.5rem .875rem;margin-bottom:-1px;border-bottom-width:2px;border-bottom-style:solid">
-                        <i class="fa-solid fa-paperclip text-xs" aria-hidden="true"></i>Pliki do pobrania
-                        @if ($news->attachments->isNotEmpty())<span class="text-xs font-bold">{{ $news->attachments->count() }}</span>@endif
-                    </button>
-                @endif
-            </div>
         </div>
 
         <div>
@@ -140,12 +109,12 @@
     @endif
 
     <form id="news-form" method="POST" action="{{ $news->exists ? route('admin.newsy.update', $news) : route('admin.newsy.store') }}"
-        enctype="multipart/form-data" class="mt-4 space-y-6" data-readable>
+        enctype="multipart/form-data" class="mt-4 grid gap-6 lg:grid-cols-[minmax(0,1fr)_21rem] lg:items-start" data-readable>
         @csrf
         @if ($news->exists) @method('PUT') @endif
-        {{-- ═══ Zakładki rekordu (jak w TYPO3): Ogólne | Zdjęcie i wygląd | Kategoryzacja | Publikacja | SEO ═══ --}}
 
-        <div data-tab-panel="ogolne" role="tabpanel" id="panel-ogolne" aria-labelledby="tab-ogolne" class="space-y-5">
+        {{-- ============ LEWA KOLUMNA: treść, zdjęcie, SEO ============ --}}
+        <div class="min-w-0 space-y-6">
             {{-- ═══ Typ wpisu: zwykły / komunikat (z datą ważności) / test narzędzia ═══ --}}
             @php
                 $td = old('type_data', $news->type_data ?? []);
@@ -359,9 +328,7 @@
                 @error('content') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
             </div>
             </div>
-        </div>
 
-        <div data-tab-panel="obraz" role="tabpanel" id="panel-obraz" aria-labelledby="tab-obraz" class="hidden space-y-5">
             <div class="space-y-5 p-6 rounded-md bg-white">
                 <h2 class="text-sm font-bold uppercase tracking-wide text-muted">Zdjęcie</h2>
             @php $hasUnsplash = (bool) config('services.unsplash.access_key'); @endphp
@@ -752,13 +719,67 @@
                         </div>
                     </div>
             </div>
+
+            <details class="pe-section rounded-md bg-white" data-pe-section="seo" @if ($tabErrors['seo'] ?? false) open @endif>
+                <summary class="flex cursor-pointer list-none items-center justify-between gap-3 px-6 py-4 text-base font-bold text-ink [&::-webkit-details-marker]:hidden">
+                    <span>SEO i udostępnianie</span>
+                    <i class="fa-solid fa-chevron-down text-sm text-muted transition-transform" aria-hidden="true"></i>
+                </summary>
+                <div class="border-t border-gray-100 p-4">
+        @include('admin.partials.seo-fields', ['model' => $news])
+                </div>
+            </details>
         </div>
 
-        <div data-tab-panel="kategorie" role="tabpanel" id="panel-kategorie" aria-labelledby="tab-kategorie" class="hidden space-y-5">
-            <div class="space-y-5 p-6 rounded-md bg-white">
+        {{-- ============ PRAWA KOLUMNA: publikacja, dostępność treści, kategoryzacja ============ --}}
+        <aside class="space-y-4 lg:sticky lg:top-20 lg:max-h-[calc(100vh-6rem)] lg:overflow-y-auto lg:pb-1" aria-label="Publikacja i kategoryzacja aktualności">
+            <div class="space-y-4 rounded-md bg-white p-5">
+                <h2 class="text-sm font-bold uppercase tracking-widest text-muted">Publikacja</h2>
+                <div>
+                <div>
+                    <label for="published_at" class="mb-1 block text-sm font-bold">Opublikowano od</label>
+                    <input type="datetime-local" id="published_at" name="published_at"
+                        value="{{ old('published_at', optional($news->published_at ?? now())->format('Y-m-d\TH:i')) }}" required
+                        class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
+                    @error('published_at') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                </div>
+                </div>
+            <fieldset class="p-4 rounded-md bg-gray-50">
+                <legend class="px-1 text-sm font-bold text-ink">Status publikacji</legend>
+                <div class="space-y-3">
+                    <label class="flex items-center gap-2">
+                        <input type="checkbox" name="is_published" value="1" {{ old('is_published', $news->is_published ?? true) ? 'checked' : '' }}
+                            class="rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
+                        <span class="text-sm font-bold">Opublikowany</span>
+                    </label>
+                    <label class="flex items-center gap-2">
+                        <input type="checkbox" name="is_archived" value="1" {{ old('is_archived', $news->is_archived ?? false) ? 'checked' : '' }}
+                            class="rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
+                        <span class="flex items-center gap-1 text-sm font-bold"><i class="fa-solid fa-clock-rotate-left text-muted" aria-hidden="true"></i> Treść archiwalna</span>
+                    </label>
+                    @if ($news->exists)
+                        <label class="flex items-center gap-2">
+                            <input type="hidden" name="is_clone" value="0">
+                            <input type="checkbox" name="is_clone" value="1" {{ old('is_clone', $news->is_clone ?? false) ? 'checked' : '' }}
+                                class="rounded border-gray-500 text-amber-500 focus:ring-amber-400">
+                            <span class="flex items-center gap-1 text-sm font-bold"><i class="fa-solid fa-copy text-amber-500" aria-hidden="true"></i> Kopia</span>
+                        </label>
+                    @endif
+                </div>
+            </fieldset>
+
+                <div class="space-y-2 border-t border-gray-100 pt-4">
+                    <button type="submit" name="after" value="stay" class="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-md bg-brand-dark px-4 text-sm font-bold text-white hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2"><i class="fa-solid fa-floppy-disk" aria-hidden="true"></i> Zapisz</button>
+                    <button type="submit" name="after" value="close" class="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-md bg-gray-100 px-4 text-sm font-bold text-ink hover:bg-brand-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark"><i class="fa-solid fa-check" aria-hidden="true"></i> Zapisz i zamknij</button>
+                </div>
+            </div>
+
+            @include('admin.content-a11y.panel', ['html' => old('content', $news->content), 'formId' => 'news-form'])
+
+            <div class="space-y-5 rounded-md bg-white p-5">
                 <h2 class="text-sm font-bold uppercase tracking-wide text-muted">Kategoria i działanie</h2>
             @php $categoryColor = optional($newsCategories->firstWhere('id', old('news_category_id', $news->news_category_id)))->badgeColor(); @endphp
-            <div class="grid gap-5 sm:grid-cols-2">
+            <div class="space-y-5">
                 <div>
                     <label for="news_category_id" class="mb-1 block text-sm font-bold">Kategoria</label>
                     <div class="flex items-center gap-2">
@@ -796,9 +817,9 @@
 
             </div>
             </div>
-            <div class="space-y-5 p-6 rounded-md bg-white">
+            <div class="space-y-5 rounded-md bg-white p-5">
                 <h2 class="text-sm font-bold uppercase tracking-wide text-muted">Opis i tagi</h2>
-                    <div class="mb-5 grid gap-5 sm:grid-cols-2">
+                    <div class="space-y-5">
                         <div>
                             <label for="excerpt" class="mb-1 block text-sm font-bold">Krótki opis</label>
                             <input type="text" id="excerpt" name="excerpt" value="{{ old('excerpt', $news->excerpt) }}"
@@ -817,56 +838,18 @@
                     </div>
 
             </div>
-        </div>
-
-        <div data-tab-panel="publikacja" role="tabpanel" id="panel-publikacja" aria-labelledby="tab-publikacja" class="hidden space-y-5">
-            <div class="space-y-5 p-6 rounded-md bg-white">
-                <h2 class="text-sm font-bold uppercase tracking-wide text-muted">Termin i status</h2>
-                <div class="max-w-xs">
-                <div>
-                    <label for="published_at" class="mb-1 block text-sm font-bold">Opublikowano od</label>
-                    <input type="datetime-local" id="published_at" name="published_at"
-                        value="{{ old('published_at', optional($news->published_at ?? now())->format('Y-m-d\TH:i')) }}" required
-                        class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
-                    @error('published_at') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
-                </div>
-                </div>
-            <fieldset class="p-4 rounded-md bg-gray-50">
-                <legend class="px-1 text-sm font-bold text-ink">Status publikacji</legend>
-                <div class="flex flex-wrap gap-x-6 gap-y-3">
-                    <label class="flex items-center gap-2">
-                        <input type="checkbox" name="is_published" value="1" {{ old('is_published', $news->is_published ?? true) ? 'checked' : '' }}
-                            class="rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
-                        <span class="text-sm font-bold">Opublikowany</span>
-                    </label>
-                    <label class="flex items-center gap-2">
-                        <input type="checkbox" name="is_archived" value="1" {{ old('is_archived', $news->is_archived ?? false) ? 'checked' : '' }}
-                            class="rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
-                        <span class="flex items-center gap-1 text-sm font-bold"><i class="fa-solid fa-clock-rotate-left text-muted" aria-hidden="true"></i> Treść archiwalna</span>
-                    </label>
-                    @if ($news->exists)
-                        <label class="flex items-center gap-2">
-                            <input type="hidden" name="is_clone" value="0">
-                            <input type="checkbox" name="is_clone" value="1" {{ old('is_clone', $news->is_clone ?? false) ? 'checked' : '' }}
-                                class="rounded border-gray-500 text-amber-500 focus:ring-amber-400">
-                            <span class="flex items-center gap-1 text-sm font-bold"><i class="fa-solid fa-copy text-amber-500" aria-hidden="true"></i> Kopia</span>
-                        </label>
-                    @endif
-                </div>
-            </fieldset>
-
-            </div>
-        </div>
-
-        <div data-tab-panel="seo" role="tabpanel" id="panel-seo" aria-labelledby="tab-seo" class="hidden">
-        @include('admin.partials.seo-fields', ['model' => $news])
-
-        </div>
+        </aside>
     </form>
-        </div>{{-- /tab-panel: edit --}}
+        </div>
 
         @if ($news->exists)
-            <div data-tab-panel="etr" role="tabpanel" id="panel-etr" aria-labelledby="tab-etr" class="hidden">
+            <div class="mt-6 space-y-6 lg:pr-[22.5rem]">
+            <details class="pe-section rounded-md bg-white" data-pe-section="etr">
+                <summary class="flex cursor-pointer list-none items-center justify-between gap-3 px-6 py-4 text-base font-bold text-ink [&::-webkit-details-marker]:hidden">
+                    <span>Wersja łatwa do czytania (ETR) @if ($news->etr?->is_enabled)<span class="font-normal text-muted">— włączona</span>@endif</span>
+                    <i class="fa-solid fa-chevron-down text-sm text-muted transition-transform" aria-hidden="true"></i>
+                </summary>
+                <div class="border-t border-gray-100 p-4">
                 @php $etrModel = $news->etr; @endphp
                 <div class="mb-4 rounded-md bg-brand-light p-4 text-sm text-ink">
                     <strong>Wersja ETR (łatwa do czytania)</strong> — uproszczony tekst dla osób z trudnościami w czytaniu.
@@ -875,7 +858,7 @@
                 </div>
 
                 <form method="POST" action="{{ route('admin.etr.update', ['type' => 'news', 'id' => $news->id]) }}"
-                    class="space-y-5 p-6 rounded-md bg-white">
+                    class="space-y-5">
                     @csrf @method('PUT')
 
                     <label class="flex items-center gap-2">
@@ -919,56 +902,31 @@
                         @endif
                     </div>
                 </form>
-            </div>
-
-            <div data-tab-panel="files" role="tabpanel" id="panel-files" aria-labelledby="tab-files" class="hidden">
+                </div>
+            </details>
+            <details class="pe-section rounded-md bg-white" data-pe-section="pliki">
+                <summary class="flex cursor-pointer list-none items-center justify-between gap-3 px-6 py-4 text-base font-bold text-ink [&::-webkit-details-marker]:hidden">
+                    <span>Pliki do pobrania @if ($news->attachments->isNotEmpty())<span class="font-normal text-muted">({{ $news->attachments->count() }})</span>@endif</span>
+                    <i class="fa-solid fa-chevron-down text-sm text-muted transition-transform" aria-hidden="true"></i>
+                </summary>
+                <div class="border-t border-gray-100 p-4">
                 @include('admin.partials.attachments', [
                     'attachments' => $news->attachments,
                     'storeRoute' => route('admin.newsy.pliki.store', $news),
                 ])
+                </div>
+            </details>
             </div>
         @endif
-    </div>{{-- /editor-tabs --}}
+    </div>
 
     <script>
         (function () {
-            const tabs = document.querySelector('[data-editor-tabs]');
-            if (!tabs) return;
-            const buttons = [...tabs.querySelectorAll('[data-tab-btn]')];
-            const panels = tabs.querySelectorAll('[data-tab-panel]');
-
-            function activate(btn, focus) {
-                buttons.forEach(function (b) {
-                    const active = b === btn;
-                    b.classList.toggle('border-brand-dark', active);
-                    b.classList.toggle('text-brand-dark', active);
-                    b.classList.toggle('border-transparent', !active);
-                    b.classList.toggle('text-muted', !active);
-                    b.setAttribute('aria-selected', active ? 'true' : 'false');
-                    b.tabIndex = active ? 0 : -1;
-                });
-                panels.forEach(function (panel) {
-                    panel.classList.toggle('hidden', panel.dataset.tabPanel !== btn.dataset.tabBtn);
-                });
-                if (focus) btn.focus();
-                try { history.replaceState(null, '', '#' + btn.dataset.tabBtn); } catch (e) {}
-            }
-
-            buttons.forEach(function (btn, i) {
-                btn.addEventListener('click', function () { activate(btn, false); });
-                // Strzałki, Home, End — wzorzec WAI-ARIA dla zakładek.
-                btn.addEventListener('keydown', function (e) {
-                    const map = { ArrowRight: i + 1, ArrowLeft: i - 1, Home: 0, End: buttons.length - 1 };
-                    if (!(e.key in map)) return;
-                    e.preventDefault();
-                    activate(buttons[(map[e.key] + buttons.length) % buttons.length], true);
-                });
+            // Zwijane sekcje (SEO, ETR, pliki): przy błędzie walidacji sekcja z błędem otwiera się sama.
+            const hasErrors = @json($errors->any());
+            document.querySelectorAll('.pe-section').forEach(function (section) {
+                if (hasErrors && section.querySelector('p.text-red-600, p.text-red-700')) section.open = true;
             });
-
-            // Po nieudanym zapisie otwieramy pierwszą zakładkę z błędem; inaczej — zakładkę z adresu (#obraz).
-            const wanted = @js($firstErrorTab) || location.hash.replace('#', '');
-            const start = buttons.find(function (b) { return b.dataset.tabBtn === wanted; });
-            if (start) activate(start, false);
         })();
 
         document.getElementById('news_category_id').addEventListener('change', function (event) {

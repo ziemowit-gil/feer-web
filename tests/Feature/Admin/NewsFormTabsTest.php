@@ -28,17 +28,16 @@ class NewsFormTabsTest extends TestCase
         return News::create(['title' => 'Pierwsza aktualność', 'slug' => 'pierwsza', 'content' => '<p>Treść</p>', 'is_published' => true, 'published_at' => now()]);
     }
 
-    public function test_formularz_ma_zakladki_i_przypiety_pasek_zapisu(): void
+    public function test_formularz_ma_tresc_i_panel_boczny_oraz_przypiety_pasek_zapisu(): void
     {
         $html = $this->actingAs($this->admin())->get(route('admin.newsy.create'))->assertOk()->getContent();
 
-        foreach (['Ogólne', 'Zdjęcie i wygląd', 'Kategoryzacja', 'Publikacja', 'SEO'] as $label) {
+        foreach (['Nagłówek i adres', 'Zdjęcie', 'Publikacja', 'Dostępność treści', 'Kategoria i działanie', 'SEO i udostępnianie'] as $label) {
             $this->assertStringContainsString($label, $html);
         }
-        $this->assertStringContainsString('role="tablist"', $html);
-        foreach (['ogolne', 'obraz', 'kategorie', 'publikacja', 'seo'] as $key) {
-            $this->assertStringContainsString('data-tab-panel="'.$key.'"', $html);
-        }
+        $this->assertStringNotContainsString('aria-label="Sekcje aktualności"', $html, 'Zakładki rekordu zastąpił panel boczny.');
+        $this->assertStringContainsString('data-pe-section="seo"', $html);
+        $this->assertStringContainsString('name="after" value="stay"', $html);
         $this->assertStringContainsString('form="news-form" name="after" value="stay"', $html);
         $this->assertStringContainsString('form="news-form" name="after" value="close"', $html);
         $this->assertStringContainsString('position:sticky', $html);
@@ -57,7 +56,12 @@ class NewsFormTabsTest extends TestCase
         $this->assertStringNotContainsString('<form', $mainForm, 'W głównym formularzu nie może być zagnieżdżonych <form>.');
         $this->assertStringContainsString(route('admin.newsy.klonuj', $news), $html);
         $this->assertStringContainsString(route('admin.newsy.destroy', $news), $html);
-        $this->assertStringContainsString('id="tab-etr"', $html);
+        $this->assertStringContainsString('data-pe-section="etr"', $html);
+        $this->assertStringContainsString('data-pe-section="pliki"', $html);
+        // Pola publikacji i kategoryzacji leżą w panelu bocznym, ale nadal w głównym formularzu.
+        foreach (['name="is_published"', 'name="news_category_id"', 'name="meta_description"', 'name="content"'] as $field) {
+            $this->assertStringContainsString($field, $mainForm);
+        }
     }
 
     public function test_zapisz_zostaje_na_rekordzie_a_zapisz_i_zamknij_wraca_do_listy(): void
@@ -77,7 +81,7 @@ class NewsFormTabsTest extends TestCase
             ->assertRedirect(route('admin.newsy.index'));
     }
 
-    public function test_blad_walidacji_oznacza_zakladke_z_bledem(): void
+    public function test_bledy_walidacji_sa_widoczne_przy_polach(): void
     {
         $admin = $this->admin();
 
@@ -85,7 +89,7 @@ class NewsFormTabsTest extends TestCase
             ->post(route('admin.newsy.store'), ['title' => '', 'published_at' => 'nie-data'])
             ->getContent();
 
-        $this->assertStringContainsString('(są błędy w tej zakładce)', $html);
-        $this->assertSame(2, substr_count($html, '(są błędy w tej zakładce)'), 'Błąd w „Ogólne” (tytuł) i „Publikacja” (data).');
+        // Tytuł (treść) i data (panel publikacji) są zawsze widoczne — bez zakładek błąd nie może się schować.
+        $this->assertGreaterThanOrEqual(2, substr_count($html, '<p class="mt-1 text-sm text-red-600">'));
     }
 }
