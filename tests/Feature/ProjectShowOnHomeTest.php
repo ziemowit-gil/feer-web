@@ -18,8 +18,9 @@ class ProjectShowOnHomeTest extends TestCase
         SiteSetting::current()->update(['site_template' => 'feer']);
         \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();
 
-        Project::create(['title' => 'Na głównej', 'slug' => 'na-glownej', 'is_published' => true, 'show_on_home' => true]);
-        Project::create(['title' => 'Tylko na liście', 'slug' => 'tylko-lista', 'is_published' => true]);
+        $cat = \App\Models\Category::create(['name' => 'Szkolenia', 'slug' => 'szkolenia']);
+        Project::create(['category_id' => $cat->id, 'title' => 'Na głównej', 'slug' => 'na-glownej', 'is_published' => true, 'show_on_home' => true]);
+        Project::create(['category_id' => $cat->id, 'title' => 'Tylko na liście', 'slug' => 'tylko-lista', 'is_published' => true]);
 
         $this->get('/')->assertOk()->assertSee('Na głównej')->assertDontSee('Tylko na liście');
     }
