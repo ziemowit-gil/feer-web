@@ -153,6 +153,10 @@ class VolunteerAdController extends Controller
         $data['is_published'] = $request->boolean('is_published');
         $data['order'] = $data['order'] ?? 0;
         $data['application_cta_label'] = trim((string) ($data['application_cta_label'] ?? '')) ?: 'Zgłoś się';
+        $data['meeting_url'] = trim((string) ($data['meeting_url'] ?? '')) ?: null;
+        $data['meeting_cta_label'] = $data['meeting_url']
+            ? (trim((string) ($data['meeting_cta_label'] ?? '')) ?: 'Umów się na spotkanie online')
+            : null;
 
         // Formularz z SZO: odświeżamy jego lustro w CMS-ie przy każdym zapisie oferty (pola mogły się zmienić w SZO).
         $data['szo_form_slug'] = trim((string) ($data['szo_form_slug'] ?? '')) ?: null;

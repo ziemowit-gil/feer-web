@@ -121,6 +121,14 @@
                         {{ $ad->application_cta_label }} <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
                     </a>
                 @endif
+                @if ($ad->meeting_url)
+                    <a href="{{ $ad->meeting_url }}" target="_blank" rel="noopener"
+                       class="mt-4 inline-flex items-center gap-2 rounded-lg border-2 bg-white px-6 py-3 font-bold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+                       style="border-color: var(--accent); color: var(--accent); outline-color: var(--accent)">
+                        <i class="fa-solid fa-video" aria-hidden="true"></i>
+                        {{ $ad->meeting_cta_label ?: 'Umów się na spotkanie online' }}<span class="sr-only"> (otwiera się w nowej karcie)</span>
+                    </a>
+                @endif
             </section>
 
             @if ($applyForm)

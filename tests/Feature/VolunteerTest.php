@@ -102,6 +102,28 @@ class VolunteerTest extends TestCase
         $this->assertSame('wolontariuszka-w-klubie-cyfrowym', $ad->slug);
     }
 
+    public function test_meeting_button_is_optional_and_rendered_with_default_label(): void
+    {
+        $this->actingAs($this->admin())
+            ->post(route('admin.wolontariat.store'), $this->payload(['meeting_url' => 'https://tidycal.com/feer/rozmowa', 'meeting_cta_label' => '']))
+            ->assertRedirect(route('admin.wolontariat.index'));
+
+        $ad = VolunteerAd::firstWhere('title', 'Wolontariusz/ka w Klubie Cyfrowym');
+        $this->assertSame('https://tidycal.com/feer/rozmowa', $ad->meeting_url);
+        $this->assertSame('Umów się na spotkanie online', $ad->meeting_cta_label);
+
+        $this->get(route('volunteer.show', $ad))->assertOk()
+            ->assertSee('https://tidycal.com/feer/rozmowa', false)
+            ->assertSee('Umów się na spotkanie online');
+
+        $this->get(route('volunteer.show', $this->ad(['slug' => 'bez-spotkania', 'title' => 'Bez spotkania'])))
+            ->assertOk()->assertDontSee('Umów się na spotkanie online');
+
+        $this->actingAs($this->admin())
+            ->post(route('admin.wolontariat.store'), $this->payload(['title' => 'Inna', 'meeting_url' => 'http://niebezpieczny.example']))
+            ->assertSessionHasErrors('meeting_url');
+    }
+
     public function test_each_of_the_six_questions_is_required(): void
     {
         $this->actingAs($this->admin())

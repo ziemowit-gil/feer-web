@@ -106,6 +106,12 @@
                         {{ $ad->application_cta_label }}@if ($external)<span class="sr-only"> (otwiera się w nowej karcie)</span>@endif
                     </a>
                 @endif
+                @if ($ad->meeting_url)
+                    <a href="{{ $ad->meeting_url }}" target="_blank" rel="noopener"
+                       class="mt-3 inline-flex min-h-12 items-center gap-2 rounded-md border-2 border-brand bg-white px-6 text-sm font-bold text-brand-dark transition hover:bg-brand-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
+                        {{ $ad->meeting_cta_label ?: 'Umów się na spotkanie online' }}<span class="sr-only"> (otwiera się w nowej karcie)</span>
+                    </a>
+                @endif
             </aside>
         </div>
     </div>

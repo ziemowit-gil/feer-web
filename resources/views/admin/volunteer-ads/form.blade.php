@@ -188,6 +188,22 @@
             </div>
             <div class="grid gap-4 sm:grid-cols-2">
                 <div>
+                    <label for="meeting_url" class="mb-1 block text-sm font-bold">Link do umówienia spotkania online <span class="font-normal text-muted">(opcjonalnie)</span></label>
+                    <input type="url" id="meeting_url" name="meeting_url" value="{{ old('meeting_url', $ad->meeting_url) }}" placeholder="https://tidycal.com/..." aria-describedby="meeting_url_help"
+                        class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
+                    <p id="meeting_url_help" class="mt-1 text-xs text-muted">Kalendarz rezerwacji (TidyCal, Calendly, Bookings). Gdy wpiszesz link, pod przyciskiem zgłoszenia pojawi się drugi przycisk.</p>
+                    @error('meeting_url')
+                        <p class="mt-1 text-sm text-red-700">{{ $message }}</p>
+                    @enderror
+                </div>
+                <div>
+                    <label for="meeting_cta_label" class="mb-1 block text-sm font-bold">Napis na przycisku spotkania</label>
+                    <input type="text" id="meeting_cta_label" name="meeting_cta_label" value="{{ old('meeting_cta_label', $ad->meeting_cta_label ?: 'Umów się na spotkanie online') }}" maxlength="60"
+                        class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
+                </div>
+            </div>
+            <div class="grid gap-4 sm:grid-cols-2">
+                <div>
                     <label for="contact_name" class="mb-1 block text-sm font-bold">Osoba kontaktowa <span class="font-normal text-muted">(opcjonalnie)</span></label>
                     <input type="text" id="contact_name" name="contact_name" value="{{ old('contact_name', $ad->contact_name) }}" placeholder="np. Anna Kowalska, koordynatorka wolontariatu"
                         class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">

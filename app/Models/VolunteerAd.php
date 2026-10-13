@@ -22,7 +22,7 @@ class VolunteerAd extends Model
         'title', 'slug', 'lead',
         'q_beneficiaries', 'q_tasks', 'q_mode', 'q_location', 'q_schedule',
         'q_time_commitment', 'q_benefits', 'q_how_to_apply',
-        'application_url', 'application_cta_label', 'szo_form_slug', 'form_definition_id', 'contact_name', 'contact_email',
+        'application_url', 'application_cta_label', 'szo_form_slug', 'form_definition_id', 'meeting_url', 'meeting_cta_label', 'contact_name', 'contact_email',
         'audience', 'is_published', 'closes_at', 'order', 'archived_at',
     ];
 
