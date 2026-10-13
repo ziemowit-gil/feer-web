@@ -811,6 +811,9 @@
                 <div class="space-y-5 p-6 rounded-md bg-white">
                     <p class="text-sm font-bold uppercase tracking-wide text-muted">Koordynator działania</p>
                     <p class="-mt-3 text-xs text-muted">Widoczny jako kontakt do działania na jego stronie. Jeśli nie podasz e-maila koordynatora, wyświetli się ogólny e-mail kontaktowy fundacji.</p>
+                    @if ($project->parent_id)
+                        <p class="-mt-2 rounded-md bg-brand-light px-3 py-2 text-xs text-ink">To działanie podrzędne: gdy zostawisz imię i e-mail puste, na stronie pokaże się koordynator działania nadrzędnego.</p>
+                    @endif
 
                     <div class="grid gap-5 sm:grid-cols-3">
                         <div>

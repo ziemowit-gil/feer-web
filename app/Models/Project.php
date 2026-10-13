@@ -228,7 +228,13 @@ class Project extends Model implements HasMedia
     protected static function booted(): void
     {
         static::retrieved(function (Project $project) {
-            if (! $project->parent_id || empty($project->inherit) || (app()->bound('request') && request()->routeIs('admin.*'))) {
+            // Koordynator: działanie podrzędne bez własnego (bez imienia i e-maila) ma tego samego co nadrzędne.
+            $groups = (array) $project->inherit;
+            if ($project->parent_id && blank($project->getAttributes()['coordinator_name'] ?? null) && blank($project->getAttributes()['coordinator_email'] ?? null)) {
+                $groups[] = 'coordinator';
+            }
+            $groups = array_values(array_unique($groups));
+            if (! $project->parent_id || empty($groups) || (app()->bound('request') && request()->routeIs('admin.*'))) {
                 return;
             }
             $parent = Project::withoutGlobalScopes()->find($project->parent_id);
@@ -237,7 +243,7 @@ class Project extends Model implements HasMedia
             }
             $raw = $project->getAttributes();
             $parentRaw = $parent->getAttributes();
-            foreach ((array) $project->inherit as $group) {
+            foreach ($groups as $group) {
                 foreach (self::INHERITABLE[$group][1] ?? [] as $field) {
                     if (array_key_exists($field, $parentRaw)) {
                         $raw[$field] = $parentRaw[$field];

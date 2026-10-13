@@ -637,11 +637,10 @@
                             @if ($project->coordinator_name)
                                 @php
                                     $asidePhoto = $project->coordinatorPhoto();
-                                    $asideInitials = \Illuminate\Support\Str::of((string) $project->coordinator_name)->explode(' ')->filter()->map(fn ($w) => mb_strtoupper(mb_substr($w, 0, 1)))->take(2)->implode('');
                                 @endphp
                                 <p class="flex items-center gap-3 font-bold">
-                                    @if ($asidePhoto)<img src="{{ $asidePhoto }}" alt="" loading="lazy" class="h-11 w-11 flex-none rounded-md object-cover">
-                                    @else<span class="flex h-11 w-11 flex-none items-center justify-center rounded-md bg-white text-sm font-extrabold text-brand-dark" aria-hidden="true">{{ $asideInitials }}</span>@endif
+                                    @if ($asidePhoto)<img src="{{ $asidePhoto }}" alt="" loading="lazy" class="h-16 w-16 flex-none rounded-md object-cover">
+                                    @else<span class="flex h-16 w-16 flex-none items-center justify-center rounded-md bg-white text-3xl text-brand-dark" aria-hidden="true"><i class="fa-solid fa-user"></i></span>@endif
                                     <span>{{ $project->coordinator_name }}</span>
                                 </p>
                             @endif

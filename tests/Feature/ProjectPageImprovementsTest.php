@@ -38,7 +38,7 @@ class ProjectPageImprovementsTest extends TestCase
         $nav = substr($html, strpos($html, 'aria-label="Sekcje działania"'));
         $nav = substr($nav, 0, strpos($nav, '</nav>'));
         $this->assertStringContainsString('Masz pytania? Chętnie odpowiemy', $nav);
-        $this->assertStringContainsString('JK', $nav);
+        $this->assertStringContainsString('fa-user', $nav);
         $this->assertStringContainsString('Wszystkie działania', $nav);
         $this->assertStringContainsString(route('categories.show', $p->category), $nav);
         $this->assertSame(1, substr_count($html, 'Masz pytania? Chętnie odpowiemy'), 'Kontakt tylko raz (w menu bocznym).');
@@ -63,5 +63,17 @@ class ProjectPageImprovementsTest extends TestCase
         $html = $this->get(route('projects.show', $p))->assertOk()->getContent();
         $nav = substr($html, strpos($html, 'aria-label="Sekcje działania"'));
         $this->assertStringContainsString('src="https://example.test/jan.jpg"', substr($nav, 0, strpos($nav, '</nav>')));
+    }
+
+    public function test_child_project_uses_parent_coordinator_when_own_empty(): void
+    {
+        $parent = $this->project();
+        $child = Project::create(['category_id' => $parent->category_id, 'parent_id' => $parent->id, 'title' => 'Moduł 1', 'slug' => 'modul-1',
+            'content' => '<p>Moduł</p>', 'is_published' => true]);
+
+        $this->assertSame('Jan Kowalski', Project::find($child->id)->coordinator_name);
+
+        $child->update(['coordinator_name' => 'Anna Nowak', 'coordinator_email' => 'anna@example.org']);
+        $this->assertSame('Anna Nowak', Project::find($child->id)->coordinator_name, 'Własny koordynator ma pierwszeństwo.');
     }
 }
