@@ -151,8 +151,11 @@ html.a11y-underline-links a {
 /* Dostępność: wyraźny wskaźnik fokusu (WCAG 2.4.7 Focus Visible / 2.4.11 Focus Not Obscured). */
 /* Czerwona, przerywana ramka (#e60023: 4,8:1 na bieli, 3,5:1 na grafitowym tle — WCAG 1.4.11 ≥ 3:1)
    z białą obwódką pod spodem, żeby była widoczna także na niebieskich i ciemnych przyciskach. */
-html.a11y-focus *:focus {
+html.a11y-focus *:focus,
+html.a11y-focus *:focus-visible {
     outline: 3px dashed #e60023 !important;
+    outline-color: #e60023 !important;
+    outline-style: dashed !important;
     outline-offset: 3px !important;
     box-shadow: 0 0 0 3px #fff !important;
     border-radius: 2px;
