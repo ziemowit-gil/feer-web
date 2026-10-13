@@ -8,61 +8,15 @@
         @include('admin.partials.edit-lock', ['lockType' => 'project', 'lockId' => $project->id])
     @endif
 
-    <form method="POST" action="{{ $project->exists ? route('admin.projekty.update', $project) : route('admin.projekty.store') }}"
-        enctype="multipart/form-data" class="space-y-6" data-readable>
+    <form id="project-form" method="POST" action="{{ $project->exists ? route('admin.projekty.update', $project) : route('admin.projekty.store') }}"
+        enctype="multipart/form-data" data-readable>
         @csrf
         @if ($project->exists) @method('PUT') @endif
 
-        <div data-project-form-tabs>
-            <div class="mb-6 flex flex-wrap items-center gap-2" role="tablist">
-                <button type="button" data-ftab-btn="podstawowe" role="tab" aria-selected="true"
-                    class="rounded-md px-4 py-2 text-sm font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2 bg-brand-dark text-white">
-                    <i class="fa-solid fa-circle-info" aria-hidden="true"></i> Podstawowe
-                </button>
-                <button type="button" data-ftab-btn="tresc" role="tab" aria-selected="false"
-                    class="rounded-md px-4 py-2 text-sm font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2 bg-gray-100 text-ink hover:bg-gray-200">
-                    <i class="fa-solid fa-align-left" aria-hidden="true"></i> Treść
-                </button>
-                @if ($siteSettings->projects_extras_enabled)
-                    <button type="button" data-ftab-btn="dodatki" role="tab" aria-selected="false" class="rounded-md px-4 py-2 text-sm font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2 bg-gray-100 text-ink hover:bg-gray-200">
-                        <i class="fa-solid fa-circle-plus" aria-hidden="true"></i> Dodatkowe informacje
-                    </button>
-                @endif
-                @if ($siteSettings->projects_terms_enabled)<button type="button" data-ftab-btn="warunki" role="tab" aria-selected="false" class="rounded-md px-4 py-2 text-sm font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2 bg-gray-100 text-ink hover:bg-gray-200">
-                    <i class="fa-solid fa-user-check" aria-hidden="true"></i> Kto może wziąć udział
-                </button>@endif
-                <button type="button" data-ftab-btn="sekcje" role="tab" aria-selected="false"
-                    class="rounded-md px-4 py-2 text-sm font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2 bg-gray-100 text-ink hover:bg-gray-200">
-                    <i class="fa-solid fa-layer-group" aria-hidden="true"></i> Sekcje
-                </button>
-                @if ($siteSettings->projects_stages_enabled)
-                    <button type="button" data-ftab-btn="etapy" role="tab" aria-selected="false" class="rounded-md px-4 py-2 text-sm font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2 bg-gray-100 text-ink hover:bg-gray-200">
-                        <i class="fa-solid fa-timeline" aria-hidden="true"></i> Etapy i harmonogram
-                    </button>
-                @endif
-                @if ($siteSettings->projects_team_funding_enabled)
-                    <button type="button" data-ftab-btn="zespol" role="tab" aria-selected="false" class="rounded-md px-4 py-2 text-sm font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2 bg-gray-100 text-ink hover:bg-gray-200">
-                        <i class="fa-solid fa-people-group" aria-hidden="true"></i> Zespół i finansowanie
-                    </button>
-                @endif
-                <button type="button" data-ftab-btn="dodatkowe" role="tab" aria-selected="false"
-                    class="rounded-md px-4 py-2 text-sm font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2 bg-gray-100 text-ink hover:bg-gray-200">
-                    <i class="fa-solid fa-address-card" aria-hidden="true"></i> Koordynator i archiwum
-                </button>
-                <button type="button" data-ftab-btn="seo" role="tab" aria-selected="false"
-                    class="rounded-md px-4 py-2 text-sm font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2 bg-gray-100 text-ink hover:bg-gray-200">
-                    <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i> SEO
-                </button>
-                @if ($project->exists)
-                    <a href="{{ route('admin.historia.index', ['type' => 'project', 'id' => $project->id]) }}"
-                        class="ml-auto rounded-md px-4 py-2 text-sm font-bold text-muted transition hover:bg-gray-100 hover:text-brand-dark">
-                        <i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i> Historia zmian
-                    </a>
-                @endif
-            </div>
-
+        <div data-project-form-tabs class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_21rem] lg:items-start">
+        <div class="min-w-0 space-y-6">
             {{-- ============================ PODSTAWOWE ============================ --}}
-            <div data-ftab-panel="podstawowe" class="space-y-6">
+            <div class="space-y-6">
                 <div class="space-y-5 p-6 rounded-md bg-white">
                     <div class="grid gap-5 sm:grid-cols-2">
                         <div>
@@ -216,11 +170,6 @@
                     </div>
 
                     <div class="flex flex-wrap gap-x-6 gap-y-3 border-t border-gray-100 pt-4">
-                        <label class="flex items-center gap-2">
-                            <input type="checkbox" name="is_published" value="1" {{ old('is_published', $project->is_published ?? true) ? 'checked' : '' }}
-                                class="rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
-                            <span class="text-sm font-bold">Opublikowany</span>
-                        </label>
 
                         <label class="flex items-center gap-2">
                             <input type="checkbox" name="is_completed" value="1" {{ old('is_completed', $project->is_completed ?? false) ? 'checked' : '' }}
@@ -456,7 +405,7 @@
             </div>
 
             {{-- ============================ TREŚĆ ============================ --}}
-            <div data-ftab-panel="tresc" class="hidden space-y-6">
+            <div class="space-y-6">
                 <div class="space-y-5 p-6 rounded-md bg-white">
                     <div>
                         <div class="mb-1 flex flex-wrap items-center justify-between gap-2">
@@ -496,7 +445,9 @@
             </div>
 
             {{-- ============================ WARUNKI UDZIAŁU ============================ --}}
-            <div data-ftab-panel="warunki" class="hidden space-y-6"
+            <details class="pe-section rounded-md bg-white" data-pe-section="warunki">
+                <summary class="flex cursor-pointer list-none items-center justify-between gap-3 px-6 py-4 text-base font-bold text-ink [&::-webkit-details-marker]:hidden"><span>Kto może wziąć udział</span><i class="fa-solid fa-chevron-down text-sm text-muted transition-transform" aria-hidden="true"></i></summary>
+                <div class="space-y-6 border-t border-gray-100 p-4"
                 x-data="{ rows: @js(array_values((array) old('terms', $project->terms ?? []))), presets: ['Wiek', 'Miejsce', 'Wymagany sprzęt', 'Dostępność sali', 'Termin', 'Zapisy'],
                     move(i, d) { const j = i + d; if (j < 0 || j >= this.rows.length) return; const [x] = this.rows.splice(i, 1); this.rows.splice(j, 0, x); } }">
                 <div class="space-y-4 p-6 rounded-md bg-white">
@@ -526,11 +477,14 @@
                     <button type="button" @click="rows.push({ label: '', text: '' })" class="inline-flex min-h-10 items-center gap-2 rounded-lg border-2 border-dashed border-brand-dark px-4 text-sm font-bold text-brand-dark hover:bg-brand-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark"><i class="fa-solid fa-plus" aria-hidden="true"></i> Dodaj własny warunek</button>
                 </div>
             </div>
+            </details>
 
             {{-- ============================ DODATKOWE INFORMACJE ============================ --}}
             @if ($siteSettings->projects_extras_enabled)
             @php $qf = (array) ($project->quick_facts ?? []); $mc = (array) ($project->main_cta ?? []); @endphp
-            <div data-ftab-panel="dodatki" class="hidden space-y-6"
+            <details class="pe-section rounded-md bg-white" data-pe-section="dodatki">
+                <summary class="flex cursor-pointer list-none items-center justify-between gap-3 px-6 py-4 text-base font-bold text-ink [&::-webkit-details-marker]:hidden"><span>Dodatkowe informacje</span><i class="fa-solid fa-chevron-down text-sm text-muted transition-transform" aria-hidden="true"></i></summary>
+                <div class="space-y-6 border-t border-gray-100 p-4"
                 x-data="{ metrics: @js(array_values((array) old('metrics', $project->metrics ?? []))), tests: @js(array_values((array) old('testimonials', $project->testimonials ?? []))), faq: @js(array_values((array) old('faq', $project->faq ?? []))),
                     move(list, i, d) { const j = i + d; if (j < 0 || j >= list.length) return; const [x] = list.splice(i, 1); list.splice(j, 0, x); } }">
                 <div class="space-y-4 p-6 rounded-md bg-white">
@@ -618,10 +572,13 @@
                     <button type="button" @click="faq.push({ q: '', a: '' })" class="inline-flex min-h-10 items-center gap-2 rounded-lg border-2 border-dashed border-brand-dark px-4 text-sm font-bold text-brand-dark hover:bg-brand-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark"><i class="fa-solid fa-plus" aria-hidden="true"></i> Dodaj pytanie</button>
                 </div>
             </div>
+            </details>
             @endif
 
             {{-- ============================ SEKCJE ============================ --}}
-            <div data-ftab-panel="sekcje" class="hidden space-y-6">
+            <details class="pe-section rounded-md bg-white" data-pe-section="sekcje">
+                <summary class="flex cursor-pointer list-none items-center justify-between gap-3 px-6 py-4 text-base font-bold text-ink [&::-webkit-details-marker]:hidden"><span>Sekcje</span><i class="fa-solid fa-chevron-down text-sm text-muted transition-transform" aria-hidden="true"></i></summary>
+                <div class="space-y-6 border-t border-gray-100 p-4">
                 {{-- Struktura podstron działania: drzewo jak w Stronach, dowolna głębokość. Każda podstrona to pełnoprawna strona (typ, treść, SEO). --}}
                 <div class="space-y-3 p-6 rounded-md bg-white">
                     <div class="flex flex-wrap items-start justify-between gap-3">
@@ -702,10 +659,13 @@
                     </div>
                 </div>
             </div>
+            </details>
 
             {{-- ==================== ETAPY I HARMONOGRAM ==================== --}}
             @if ($siteSettings->projects_stages_enabled)
-            <div data-ftab-panel="etapy" class="hidden space-y-6"
+            <details class="pe-section rounded-md bg-white" data-pe-section="etapy">
+                <summary class="flex cursor-pointer list-none items-center justify-between gap-3 px-6 py-4 text-base font-bold text-ink [&::-webkit-details-marker]:hidden"><span>Etapy i harmonogram</span><i class="fa-solid fa-chevron-down text-sm text-muted transition-transform" aria-hidden="true"></i></summary>
+                <div class="space-y-6 border-t border-gray-100 p-4"
                 x-data="{ rows: @js(array_values((array) old('stages', $project->stages ?? []))), move(list, i, d) { const j = i + d; if (j < 0 || j >= list.length) return; const [x] = list.splice(i, 1); list.splice(j, 0, x); } }">
                 <div class="space-y-4 p-6 rounded-md bg-white">
                     <p class="text-sm font-bold uppercase tracking-wide text-muted">Status i terminy</p>
@@ -757,12 +717,15 @@
                     <button type="button" @click="rows.push({ title: '', from: '', to: '', state: 'upcoming', text: '' })" class="inline-flex min-h-10 items-center gap-2 rounded-lg border-2 border-dashed border-brand-dark px-4 text-sm font-bold text-brand-dark hover:bg-brand-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark"><i class="fa-solid fa-plus" aria-hidden="true"></i> Dodaj etap</button>
                 </div>
             </div>
+            </details>
             @endif
 
             {{-- ==================== ZESPÓŁ, PARTNERZY, FINANSOWANIE ==================== --}}
             @if ($siteSettings->projects_team_funding_enabled)
             @php $allPartners = \App\Models\Partner::orderBy('order')->orderBy('name')->get(); $selPartners = array_map('intval', (array) old('partner_ids', $project->exists ? $project->partners->pluck('id')->all() : [])); $fund = (array) ($project->funding ?? []); @endphp
-            <div data-ftab-panel="zespol" class="hidden space-y-6"
+            <details class="pe-section rounded-md bg-white" data-pe-section="zespol">
+                <summary class="flex cursor-pointer list-none items-center justify-between gap-3 px-6 py-4 text-base font-bold text-ink [&::-webkit-details-marker]:hidden"><span>Zespół i finansowanie</span><i class="fa-solid fa-chevron-down text-sm text-muted transition-transform" aria-hidden="true"></i></summary>
+                <div class="space-y-6 border-t border-gray-100 p-4"
                 x-data="{ rows: @js(array_values((array) old('team', $project->team ?? []))), srcs: @js(array_values((array) old('funding.sources', $fund['sources'] ?? []))), move(list, i, d) { const j = i + d; if (j < 0 || j >= list.length) return; const [x] = list.splice(i, 1); list.splice(j, 0, x); } }">
                 <div class="space-y-4 p-6 rounded-md bg-white">
                     <p class="text-sm font-bold uppercase tracking-wide text-muted">Zespół działania</p>
@@ -828,10 +791,13 @@
                     </div>
                 </div>
             </div>
+            </details>
             @endif
 
             {{-- ==================== KOORDYNATOR I ARCHIWUM ==================== --}}
-            <div data-ftab-panel="dodatkowe" class="hidden space-y-6">
+            <details class="pe-section rounded-md bg-white" data-pe-section="dodatkowe">
+                <summary class="flex cursor-pointer list-none items-center justify-between gap-3 px-6 py-4 text-base font-bold text-ink [&::-webkit-details-marker]:hidden"><span>Koordynator i archiwum</span><i class="fa-solid fa-chevron-down text-sm text-muted transition-transform" aria-hidden="true"></i></summary>
+                <div class="space-y-6 border-t border-gray-100 p-4">
                 <div class="space-y-5 p-6 rounded-md bg-white">
                     <p class="text-sm font-bold uppercase tracking-wide text-muted">Koordynator działania</p>
                     <p class="-mt-3 text-xs text-muted">Widoczny jako kontakt do działania na jego stronie. Jeśli nie podasz e-maila koordynatora, wyświetli się ogólny e-mail kontaktowy fundacji.</p>
@@ -903,67 +869,62 @@
                     </div>
                 </div>
             </div>
+            </details>
 
             {{-- ==================== SEO ==================== --}}
-            <div data-ftab-panel="seo" class="hidden space-y-6">
+            <details class="pe-section rounded-md bg-white" data-pe-section="seo">
+                <summary class="flex cursor-pointer list-none items-center justify-between gap-3 px-6 py-4 text-base font-bold text-ink [&::-webkit-details-marker]:hidden"><span>SEO</span><i class="fa-solid fa-chevron-down text-sm text-muted transition-transform" aria-hidden="true"></i></summary>
+                <div class="space-y-6 border-t border-gray-100 p-4">
                 @include('admin.partials.seo-fields', ['model' => $project])
             </div>
+            </details>
         </div>
 
-        <div class="sticky bottom-0 z-10 -mx-1 flex items-center gap-3 rounded-lg border border-gray-200 bg-white/95 px-4 py-3 shadow-lg backdrop-blur">
-            <button type="submit" class="rounded-lg bg-brand-dark px-5 py-2.5 text-sm font-bold text-white hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2">Zapisz</button>
-            <a href="{{ route('admin.projekty.index') }}" class="text-sm text-muted hover:text-brand-dark">Anuluj</a>
+        {{-- ============ PRAWA KOLUMNA: publikacja, dostępność treści ============ --}}
+        <aside class="space-y-4 lg:sticky lg:top-4 lg:max-h-[calc(100vh-2rem)] lg:overflow-y-auto lg:pb-1" aria-label="Publikacja działania">
+            <div class="space-y-4 rounded-md bg-white p-5">
+                <h2 class="text-sm font-bold uppercase tracking-widest text-muted">Publikacja</h2>
+                <label class="flex items-center gap-2">
+                    <input type="checkbox" name="is_published" value="1" {{ old('is_published', $project->is_published ?? true) ? 'checked' : '' }}
+                        class="rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
+                    <span class="text-sm font-bold">Opublikowany</span>
+                </label>
+                @include('admin.partials.unpublish-field', ['model' => $project])
+                <div class="space-y-2 border-t border-gray-100 pt-4">
+                    <button type="submit" class="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-md bg-brand-dark px-4 text-sm font-bold text-white hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2"><i class="fa-solid fa-floppy-disk" aria-hidden="true"></i> Zapisz</button>
+                    <button type="submit" name="draft" value="1" class="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-md px-4 text-sm font-bold text-ink underline underline-offset-4 hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark"><i class="fa-solid fa-pen-ruler" aria-hidden="true"></i> Zapisz wersję roboczą</button>
+                    <p class="text-xs text-muted">Wersja robocza nie jest widoczna publicznie — opublikujesz ją później.</p>
+                    <div class="flex flex-wrap justify-between gap-2 pt-1 text-sm">
+                        <a href="{{ route('admin.projekty.index') }}" class="font-bold text-ink underline underline-offset-4 hover:no-underline"><i class="fa-solid fa-arrow-left mr-1" aria-hidden="true"></i>Anuluj</a>
+                        @if ($project->exists)
+                            <a href="{{ route('admin.historia.index', ['type' => 'project', 'id' => $project->id]) }}" class="font-bold text-ink underline underline-offset-4 hover:no-underline"><i class="fa-solid fa-clock-rotate-left mr-1" aria-hidden="true"></i>Historia zmian</a>
+                        @endif
+                    </div>
+                </div>
+            </div>
+
+            @include('admin.content-a11y.panel', ['html' => old('content', $project->content), 'formId' => 'project-form'])
+        </aside>
         </div>
     </form>
 
+    <style>
+        .pe-section[open] > summary .fa-chevron-down { transform: rotate(180deg); }
+        .pe-section > summary:focus-visible { outline: 3px solid #1d1d1a; outline-offset: -3px; border-radius: .375rem; }
+        .pe-section > summary:hover { background: #f9fafb; }
+    </style>
     <script>
         (function () {
-            const wrap = document.querySelector('[data-project-form-tabs]');
-            if (!wrap) return;
-            const buttons = Array.prototype.slice.call(wrap.querySelectorAll('[data-ftab-btn]'));
-            const panels = Array.prototype.slice.call(wrap.querySelectorAll('[data-ftab-panel]'));
-
-            function activate(key) {
-                buttons.forEach(function (b) {
-                    const active = b.dataset.ftabBtn === key;
-                    ['bg-brand-dark', 'text-white'].forEach(function (c) { b.classList.toggle(c, active); });
-                    ['bg-gray-100', 'text-ink', 'hover:bg-gray-200'].forEach(function (c) { b.classList.toggle(c, !active); });
-                    b.setAttribute('aria-selected', active ? 'true' : 'false');
+            // Zwijane sekcje: z błędem walidacji otwierają się same; edytor w zwiniętej sekcji przerysowujemy po otwarciu.
+            const hasErrors = @json($errors->any());
+            document.querySelectorAll('.pe-section').forEach(function (section) {
+                if (hasErrors && section.querySelector('p.text-red-600, p.text-red-700')) section.open = true;
+                section.addEventListener('toggle', function () {
+                    if (! section.open || ! window.tinymce) return;
+                    section.querySelectorAll('textarea').forEach(function (ta) { const ed = window.tinymce.get(ta.id); if (ed) { ed.hide(); ed.show(); } });
+                    window.dispatchEvent(new Event('resize'));
                 });
-                panels.forEach(function (p) {
-                    p.classList.toggle('hidden', p.dataset.ftabPanel !== key);
-                });
-                // A rich editor initialised inside a hidden panel can render blank;
-                // toggling it re-lays it out once its tab becomes visible.
-                const shown = panels.find(function (p) { return p.dataset.ftabPanel === key; });
-                if (shown && window.tinymce) {
-                    shown.querySelectorAll('textarea').forEach(function (ta) {
-                        const ed = window.tinymce.get(ta.id);
-                        if (ed) { ed.hide(); ed.show(); }
-                    });
-                }
-                window.dispatchEvent(new Event('resize'));
-            }
-
-            buttons.forEach(function (btn) {
-                btn.addEventListener('click', function () { activate(btn.dataset.ftabBtn); });
             });
-
-            // Flag tabs that contain validation errors and jump to the first one.
-            let firstErrorKey = null;
-            panels.forEach(function (p) {
-                if (!p.querySelector('.text-red-600')) return;
-                const key = p.dataset.ftabPanel;
-                const btn = buttons.find(function (b) { return b.dataset.ftabBtn === key; });
-                if (btn && !btn.querySelector('[data-ftab-error]')) {
-                    const dot = document.createElement('span');
-                    dot.setAttribute('data-ftab-error', '');
-                    dot.className = 'ml-1.5 inline-block h-2 w-2 rounded-md bg-red-500 align-middle';
-                    btn.appendChild(dot);
-                }
-                if (!firstErrorKey) firstErrorKey = key;
-            });
-            if (firstErrorKey) activate(firstErrorKey);
         })();
     </script>
 @endsection

@@ -41,7 +41,7 @@ class ProjectsIndexRenderTest extends TestCase
 
         $this->actingAs(User::factory()->create(['role' => User::ROLE_ADMIN]))
             ->get(route('admin.projekty.edit', $project))->assertOk()
-            ->assertSee('data-ftab-btn="sekcje"', false)->assertSee('Anuluj');
+            ->assertSee('data-pe-section="sekcje"', false)->assertSee('Anuluj')->assertSee('Zapisz wersję roboczą')->assertSee('Dostępność treści');
     }
 
     public function test_publiczna_lista_projektow_ma_skroty_do_kategorii(): void

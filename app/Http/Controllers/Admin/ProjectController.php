@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Services\Content\ContentA11yChecker;
 use App\Http\Controllers\Concerns\HandlesContentApproval;
 use App\Http\Controllers\Controller;
 use App\Models\Category;
@@ -180,7 +181,7 @@ class ProjectController extends Controller
 
         $this->handleImage($request, $project);
 
-        return redirect()->route('admin.projekty.index')->with('status', 'Działanie zostało utworzony.');
+        return redirect()->route('admin.projekty.index')->with('status', ($request->boolean('draft') ? 'Działanie zostało zapisane jako wersja robocza.' : 'Działanie zostało utworzone.') . ContentA11yChecker::saveNotice($project->content));
     }
 
     /** Wyświetla formularz edycji projektu. */
@@ -204,7 +205,12 @@ class ProjectController extends Controller
 
         $this->handleImage($request, $project);
 
-        return redirect()->route('admin.projekty.index')->with('status', 'Działanie zostało zaktualizowany.');
+        // Wersja robocza zostaje w edycji — redaktor zwykle wraca do niej od razu.
+        if ($request->boolean('draft')) {
+            return redirect()->route('admin.projekty.edit', $project)->with('status', 'Zapisano wersję roboczą — działanie nie jest opublikowane.');
+        }
+
+        return redirect()->route('admin.projekty.index')->with('status', 'Działanie zostało zaktualizowane.' . ContentA11yChecker::saveNotice($project->content));
     }
 
     /**
@@ -357,6 +363,7 @@ class ProjectController extends Controller
             'accent_color' => ['nullable', 'regex:/^#[0-9a-fA-F]{6}$/'],
             'since' => ['nullable', 'string', 'max:255'],
             'completed_at' => ['nullable', 'date'],
+            'unpublish_at' => ['nullable', 'date'],
             'image_alt' => ['nullable', 'string', 'max:255'],
             'content' => ['nullable', 'string'],
             'why' => ['nullable', 'string'],
@@ -446,7 +453,14 @@ class ProjectController extends Controller
         $data['accent_color'] = filled($data['accent_color'] ?? null)
             ? SiteSetting::current()->contrastSafeColor($data['accent_color'])
             : null;
-        $data['is_published'] = $request->boolean('is_published');
+        // „Zapisz wersję roboczą” zapisuje bez publikacji, niezależnie od przełącznika.
+        $data['is_published'] = $request->boolean('draft') ? false : $request->boolean('is_published');
+        // „Zdejmij z publikacji” (content:unpublish-due); do czasu migracji kolumny nie ma — pomijamy.
+        if (\Illuminate\Support\Facades\Schema::hasColumn('projects', 'unpublish_at')) {
+            $data['unpublish_at'] = $request->filled('unpublish_at') ? $request->input('unpublish_at') : null;
+        } else {
+            unset($data['unpublish_at']);
+        }
         // Status „Zakończony" oznacza też działanie zrealizowane (archiwum).
         $data['is_completed'] = $request->boolean('is_completed') || ($data['status'] ?? null) === 'completed';
         // Data zakończenia ma sens tylko dla działań zrealizowanych (filtry archiwum ?przed= / ?po=).
