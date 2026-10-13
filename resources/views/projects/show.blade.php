@@ -608,6 +608,13 @@
                     @include('projects.partials.tab-page', ['root' => $subpage, 'sidebarMode' => $navSidebar, 'openNodeId' => $openNodeId])
                 </div>
             @endforeach
+    {{-- Powrót: do kategorii i do wszystkich działań (pod treścią działania). --}}
+    <ul role="list" class="mt-12 space-y-2 text-sm">
+        @if ($project->category)
+            <li><a href="{{ route('categories.show', $project->category) }}" class="inline-flex min-h-9 items-center gap-2 font-bold text-ink hover:text-brand-dark hover:underline hover:underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark"><span aria-hidden="true">←</span> {{ $project->category->name }}</a></li>
+        @endif
+        <li><a href="{{ route('projects.index') }}" class="inline-flex min-h-9 items-center gap-2 font-bold text-ink hover:text-brand-dark hover:underline hover:underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark"><span aria-hidden="true">←</span> Wszystkie działania</a></li>
+    </ul>
             </div>
 
             {{-- ══ PANEL BOCZNY: harmonogram, kontakt, strony działania, powrót ══ --}}

@@ -42,8 +42,8 @@ class ProjectPageImprovementsTest extends TestCase
         $this->assertStringContainsString('Masz pytania? Chętnie odpowiemy', $after);
         $this->assertStringContainsString('Jan Kowalski', $after);
         $this->assertStringNotContainsString('fa-user', $after, 'Bez zdjęcia nie ma zastępczej ikony.');
-        $this->assertStringContainsString('Wszystkie działania', $nav);
-        $this->assertStringContainsString(route('categories.show', $p->category), $nav);
+        $this->assertStringContainsString(route('categories.show', $p->category), $html);
+        $this->assertStringContainsString('Wszystkie działania', $html);
         $this->assertSame(1, substr_count($html, 'Masz pytania? Chętnie odpowiemy'), 'Kontakt tylko raz (w menu bocznym).');
     }
 
