@@ -231,13 +231,8 @@ class HomeController extends Controller
             if ($heroSingle) {
                 $slides = $slides->take(1)->values();
             }
-            // Aktualności: jedna wyróżniona + trzy mniejsze.
-            $feerNews = $settings->isModuleEnabled('news')
-                ? News::published()->forCurrentSite()->with('category')->orderByDesc('published_at')->limit(4)->get()
-                : collect();
-
             return $this->ngoHome($settings, $slides, $partners, 'templates.feer.home', $quickLinks)
-                ->with('gallery', $gallery)->with('heroSingle', $heroSingle)->with('newsItems', $feerNews);
+                ->with('gallery', $gallery)->with('heroSingle', $heroSingle);
         }
         if ($template === 'federation') {
             return $this->ngoHome($settings, $slides, $partners, 'templates.federation.home');
