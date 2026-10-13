@@ -174,6 +174,19 @@ class DashboardController extends Controller
 
         // „Wymaga uwagi": zatwierdzanie, zadania, komentarze, zgłoszenia — z uwzględnieniem uprawnień użytkownika.
         $attention = collect(AdminNotifications::items($user));
+        // Na pulpicie dodatkowo: treści do przeglądu (12 miesięcy bez zmian) i nieprzeczytane zgłoszenia z formularzy.
+        if (($can('pages') || $can('news') || $can('projects')) && \App\Support\ContentReview::available() && \Illuminate\Support\Facades\Route::has('admin.przeglad-tresci.index')) {
+            $stale = \App\Support\ContentReview::staleCount(fn ($m) => $user->canAccessModule($m));
+            if ($stale > 0) {
+                $attention->push(['label' => 'Treści do przeglądu', 'count' => $stale, 'url' => route('admin.przeglad-tresci.index'), 'icon' => 'fa-calendar-check']);
+            }
+        }
+        if ($can('forms') && \Illuminate\Support\Facades\Route::has('admin.formularze.index')) {
+            $unread = \App\Models\FormSubmission::whereNull('read_at')->count();
+            if ($unread > 0) {
+                $attention->push(['label' => 'Nowe zgłoszenia z formularzy', 'count' => $unread, 'url' => route('admin.formularze.index'), 'icon' => 'fa-inbox']);
+            }
+        }
 
         // Aktywność: ostatnio zmieniane treści z kilku modułów w jednej osi czasu (zakres edytora stosuje model).
         $sources = [
@@ -184,14 +197,19 @@ class DashboardController extends Controller
         ];
         $activity = collect();
         $draftCounts = [];
+        $drafts = collect();
         foreach ($sources as $src) {
             if (! $can($src['module'])) {
                 continue;
             }
             $model = $src['model'];
-            $drafts = $model::where('is_published', false)->count();
-            if ($drafts > 0) {
-                $draftCounts[] = ['label' => $src['label'], 'count' => $drafts];
+            $draftCount = $model::where('is_published', false)->count();
+            if ($draftCount > 0) {
+                $draftCounts[] = ['label' => $src['label'], 'count' => $draftCount];
+            }
+            // Konkretne szkice do dokończenia (najświeższe), z linkiem do edycji.
+            foreach ($model::where('is_published', false)->orderByDesc('updated_at')->limit(6)->get() as $row) {
+                $drafts->push(['label' => $src['label'], 'icon' => $src['icon'], 'title' => $row->title, 'url' => route($src['edit'], $row), 'at' => $row->updated_at]);
             }
             foreach ($model::orderByDesc('updated_at')->limit(8)->get() as $row) {
                 $activity->push([
@@ -201,6 +219,7 @@ class DashboardController extends Controller
                 ]);
             }
         }
+        $drafts = $drafts->sortByDesc('at')->take(6)->values();
         $authors = User::whereIn('id', $activity->pluck('author_id')->filter()->unique())->pluck('name', 'id');
         $activity = $activity->sortByDesc('at')->take(14)->values()->map(function ($a) use ($authors) {
             $a['author'] = $a['author_id'] ? $authors->get($a['author_id']) : null;
@@ -212,6 +231,6 @@ class DashboardController extends Controller
             ? Event::where('is_published', true)->where('starts_at', '>=', now())->orderBy('starts_at')->limit(4)->get()
             : collect();
 
-        return view('admin.dashboard', compact('stats', 'recentNews', 'recentPages', 'activePoll', 'attention', 'activity', 'draftCounts', 'upcoming'));
+        return view('admin.dashboard', compact('stats', 'recentNews', 'recentPages', 'activePoll', 'attention', 'activity', 'draftCounts', 'drafts', 'upcoming'));
     }
 }

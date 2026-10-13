@@ -27,7 +27,7 @@
         $attentionTotal = $attention->sum('count');
     @endphp
 
-    {{-- ── Nagłówek ───────────────────────────────────────────────── --}}
+    {{-- ── Nagłówek: powitanie + „Utwórz” ───────────────────────────── --}}
     <header class="mb-6 flex flex-wrap items-end justify-between gap-4">
         <div>
             <p class="text-xs font-bold uppercase tracking-widest text-muted">{{ now()->locale('pl')->isoFormat('dddd, D MMMM YYYY') }}</p>
@@ -35,77 +35,78 @@
             <p class="mt-1 text-sm text-muted">{{ $siteSettings->site_name }}</p>
         </div>
         <div class="flex flex-wrap items-center gap-2">
+            @if ($shortcuts)
+                <div class="relative" x-data="{ open: false }" @keydown.escape.stop="open = false; $refs.btn.focus()" @click.outside="open = false">
+                    <button type="button" x-ref="btn" @click="open = ! open" :aria-expanded="open.toString()" aria-haspopup="true" aria-controls="dash-create-menu"
+                        class="inline-flex min-h-10 items-center gap-2 rounded-md bg-brand-dark px-4 text-sm font-bold text-white hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2">
+                        <i class="fa-solid fa-plus" aria-hidden="true"></i> Utwórz
+                        <i class="fa-solid fa-chevron-down text-[0.6rem]" :class="open && 'rotate-180'" aria-hidden="true"></i>
+                    </button>
+                    <ul id="dash-create-menu" x-show="open" x-cloak role="list" class="absolute right-0 top-full z-20 mt-1 w-56 rounded-md bg-white py-1 shadow-xl ring-1 ring-gray-200">
+                        @foreach ($shortcuts as $s)
+                            <li><a href="{{ $s['route'] }}" class="flex items-center gap-3 px-4 py-2 text-sm font-bold text-ink hover:bg-brand-light focus-visible:bg-brand-light focus-visible:outline-none">
+                                <i class="fa-solid {{ $s['icon'] }} w-4 text-center text-brand-dark" aria-hidden="true"></i>{{ $s['label'] }}</a></li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
             <a href="{{ route('home') }}" target="_blank" rel="noopener"
-                class="inline-flex min-h-10 items-center gap-2 rounded-md px-4 text-sm font-bold text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2 bg-white hover:bg-brand-light">
+                class="inline-flex min-h-10 items-center gap-2 rounded-md bg-white px-4 text-sm font-bold text-ink hover:bg-brand-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2">
                 <i class="fa-solid fa-arrow-up-right-from-square text-xs" aria-hidden="true"></i> Podgląd strony<span class="sr-only"> (nowa karta)</span>
             </a>
-            @if ($user->isAdmin())
-                <a href="{{ route('admin.ustawienia.edit') }}"
-                    class="inline-flex min-h-10 items-center gap-2 rounded-md px-4 text-sm font-bold text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2 bg-white hover:bg-brand-light">
-                    <i class="fa-solid fa-gear text-xs" aria-hidden="true"></i> Ustawienia
-                </a>
-            @endif
         </div>
     </header>
 
-    {{-- ── Wymaga uwagi ───────────────────────────────────────────── --}}
-    <section aria-labelledby="dash-attention" class="mb-8">
-        <h2 id="dash-attention" class="mb-3 text-sm font-bold uppercase tracking-wide text-muted">Wymaga uwagi</h2>
-        @if ($attention->isEmpty() && empty($draftCounts))
-            <p class="flex items-center gap-3 rounded-md bg-brand-light px-5 py-4 text-sm font-medium text-ink">
-                <i class="fa-solid fa-circle-check text-lg" aria-hidden="true"></i> Wszystko załatwione — nic nie czeka na Twoją decyzję.
+    {{-- ── Na dziś: sprawy czekające na decyzję (tylko niezerowe) ────── --}}
+    <section aria-labelledby="dash-attention" class="mb-6">
+        <h2 id="dash-attention" class="mb-2 text-sm font-bold uppercase tracking-wide text-muted">Na dziś</h2>
+        @if ($attention->isEmpty())
+            <p class="flex items-center gap-3 rounded-md bg-brand-light px-5 py-3 text-sm font-medium text-ink">
+                <i class="fa-solid fa-circle-check text-lg text-brand-dark" aria-hidden="true"></i> Wszystko załatwione — nic nie czeka na Twoją decyzję.
             </p>
         @else
-            <ul role="list" class="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+            <ul role="list" class="flex flex-wrap gap-2">
                 @foreach ($attention as $item)
                     <li>
-                        <a href="{{ $item['url'] }}" class="group flex h-full items-center gap-4 rounded-md bg-white p-4 transition hover:bg-brand-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2">
-                            <span class="flex h-12 w-12 flex-none items-center justify-center rounded-lg bg-brand-dark text-lg text-white" aria-hidden="true"><i class="fa-solid {{ $item['icon'] }}"></i></span>
-                            <span class="min-w-0">
-                                <span class="block text-2xl font-extrabold leading-none text-ink">{{ $item['count'] }}</span>
-                                <span class="mt-1 block text-sm font-bold text-ink">{{ $item['label'] }}</span>
-                            </span>
+                        <a href="{{ $item['url'] }}" class="inline-flex min-h-11 items-center gap-3 rounded-md bg-white py-2 pl-2 pr-4 text-sm font-bold text-ink hover:bg-brand-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2">
+                            <span class="flex h-8 min-w-8 items-center justify-center rounded-md bg-brand-dark px-2 text-sm font-extrabold text-white">{{ $item['count'] }}</span>
+                            <i class="fa-solid {{ $item['icon'] }} text-brand-dark" aria-hidden="true"></i>{{ $item['label'] }}
                         </a>
                     </li>
                 @endforeach
-                @if (! empty($draftCounts))
-                    <li class="p-4 rounded-md bg-white">
-                        <p class="text-sm font-bold text-ink"><i class="fa-solid fa-pen-ruler mr-1.5 text-gray-500" aria-hidden="true"></i>Szkice do dokończenia</p>
-                        <ul role="list" class="mt-2 space-y-1 text-sm text-ink">
-                            @foreach ($draftCounts as $d)
-                                <li class="flex justify-between gap-2"><span>{{ $d['label'] }}</span><span class="font-bold">{{ $d['count'] }}</span></li>
-                            @endforeach
-                        </ul>
-                    </li>
-                @endif
             </ul>
         @endif
     </section>
 
-    {{-- ── Liczniki modułów ───────────────────────────────────────── --}}
-    <section aria-labelledby="dash-stats" class="mb-8">
-        <h2 id="dash-stats" class="mb-3 text-sm font-bold uppercase tracking-wide text-muted">Zawartość serwisu</h2>
-        <ul role="list" class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            @foreach ($stats as $stat)
-                <li>
-                    <a href="{{ $stat['route'] }}" class="flex h-full items-center gap-4 rounded-md bg-white p-4 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2 hover:bg-brand-light">
-                        <span class="flex h-11 w-11 flex-none items-center justify-center rounded-lg bg-gray-100 text-base text-gray-700" aria-hidden="true"><i class="fa-solid {{ $stat['icon'] }}"></i></span>
-                        <span class="min-w-0">
-                            <span class="block text-2xl font-extrabold leading-none text-ink">{{ $stat['count'] }}</span>
-                            <span class="mt-1 block truncate text-sm font-bold text-ink">{{ $stat['label'] }}</span>
-                            @if ($stat['sub'])<span class="block truncate text-xs text-muted">{{ $stat['sub'] }}</span>@endif
-                        </span>
-                    </a>
-                </li>
-            @endforeach
-        </ul>
-    </section>
-
-    {{-- ── Główna siatka: aktywność + panel boczny ────────────────── --}}
+    {{-- ── Główna siatka ─────────────────────────────────────────────── --}}
     <div class="grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_22rem]">
+        <div class="min-w-0 space-y-6">
+            {{-- Szkice do dokończenia: konkretne treści, nie same liczby --}}
+            @if ($drafts->isNotEmpty())
+                <section aria-labelledby="dash-drafts" class="rounded-md bg-white">
+                    <div class="flex flex-wrap items-center justify-between gap-2 border-b border-gray-100 px-5 py-4">
+                        <h2 id="dash-drafts" class="text-base font-bold text-ink">Do dokończenia</h2>
+                        <p class="text-xs text-ink">Szkice: {{ collect($draftCounts)->map(fn ($d) => $d['label'].' '.$d['count'])->implode(' · ') }}</p>
+                    </div>
+                    <ul role="list" class="divide-y divide-gray-100">
+                        @foreach ($drafts as $d)
+                            <li>
+                                <a href="{{ $d['url'] }}" class="group flex items-center gap-4 px-5 py-3 hover:bg-gray-50 focus-visible:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-dark">
+                                    <i class="fa-solid {{ $d['icon'] }} w-4 flex-none text-center text-gray-500" aria-hidden="true"></i>
+                                    <span class="min-w-0 flex-1">
+                                        <span class="block truncate text-sm font-bold text-ink">{{ $d['title'] }}</span>
+                                        <span class="block text-xs text-muted">{{ $d['label'] }} · zmieniono {{ $d['at']->diffForHumans() }}</span>
+                                    </span>
+                                    <span class="flex-none text-sm font-bold text-brand-dark group-hover:underline">Dokończ<span class="sr-only">: {{ $d['title'] }}</span> →</span>
+                                </a>
+                            </li>
+                        @endforeach
+                    </ul>
+                </section>
+            @endif
 
-        {{-- Aktywność ---------------------------------------------------------- --}}
-        <section aria-labelledby="dash-activity" class="rounded-md bg-white"
+            {{-- Aktywność ---------------------------------------------------------- --}}
+            <section aria-labelledby="dash-activity" class="rounded-md bg-white"
             x-data="{ f: 'all' }">
             <div class="flex flex-wrap items-center justify-between gap-3 border-b border-gray-100 px-5 py-4">
                 <h2 id="dash-activity" class="text-base font-bold text-ink">Ostatnia aktywność</h2>
@@ -151,23 +152,28 @@
             @endif
         </section>
 
+        </div>
+
         {{-- Panel boczny ------------------------------------------------------- --}}
         <div class="space-y-6">
-
-            @if ($shortcuts)
-                <section aria-labelledby="dash-create" class="p-5 rounded-md bg-white">
-                    <h2 id="dash-create" class="mb-3 text-base font-bold text-ink">Utwórz nowe</h2>
-                    <ul role="list" class="grid grid-cols-2 gap-2">
-                        @foreach ($shortcuts as $s)
-                            <li>
-                                <a href="{{ $s['route'] }}" class="flex min-h-12 items-center gap-2.5 rounded-lg border-2 border-gray-200 bg-white px-3 text-sm font-bold text-ink transition hover:border-brand-dark hover:bg-brand-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2">
-                                    <i class="fa-solid {{ $s['icon'] }} w-4 flex-none text-center text-brand-dark" aria-hidden="true"></i>{{ $s['label'] }}
-                                </a>
-                            </li>
-                        @endforeach
-                    </ul>
-                </section>
-            @endif
+            {{-- Zawartość serwisu: zwarta lista zamiast dużych kafli --}}
+            <section aria-labelledby="dash-stats" class="rounded-md bg-white">
+                <h2 id="dash-stats" class="border-b border-gray-100 px-5 py-4 text-base font-bold text-ink">Zawartość serwisu</h2>
+                <ul role="list" class="divide-y divide-gray-100">
+                    @foreach ($stats as $stat)
+                        <li>
+                            <a href="{{ $stat['route'] }}" class="flex items-center gap-3 px-5 py-2.5 hover:bg-gray-50 focus-visible:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-dark">
+                                <i class="fa-solid {{ $stat['icon'] }} w-4 flex-none text-center text-gray-500" aria-hidden="true"></i>
+                                <span class="min-w-0 flex-1">
+                                    <span class="block truncate text-sm font-bold text-ink">{{ $stat['label'] }}</span>
+                                    @if ($stat['sub'])<span class="block truncate text-xs text-muted">{{ $stat['sub'] }}</span>@endif
+                                </span>
+                                <span class="flex-none text-base font-extrabold text-ink">{{ $stat['count'] }}</span>
+                            </a>
+                        </li>
+                    @endforeach
+                </ul>
+            </section>
 
             @if ($upcoming->isNotEmpty())
                 <section aria-labelledby="dash-events" class="p-5 rounded-md bg-white">
