@@ -91,13 +91,15 @@ class AdminMenuGroupsTest extends TestCase
         $this->assertEqualsCanonicalizing(array_keys(SiteSetting::SETTINGS_TABS), $keys->all());
     }
 
-    public function test_strona_ustawien_ma_dodatkowe_boczne_menu_z_pelna_lista_sekcji(): void
+    public function test_sekcje_ustawien_sa_w_menu_panelu_bez_dodatkowego_menu(): void
     {
         $admin = User::factory()->create(['role' => User::ROLE_ADMIN]);
 
         $html = $this->actingAs($admin)->get(route('admin.ustawienia.edit', ['tab' => 'mail']))->assertOk()->getContent();
 
-        $this->assertStringContainsString('aria-label="Sekcje ustawień"', $html);
+        // Dodatkowe menu sekcji usunięte (nawigacja tylko w menu panelu); na stronie jest nagłówek sekcji.
+        $this->assertStringNotContainsString('aria-label="Sekcje ustawień"', $html);
+        $this->assertStringContainsString('Ustawienia · Funkcje i integracje', $html);
         foreach (SiteSetting::SETTINGS_TABS as $key => $label) {
             $this->assertStringContainsString(route('admin.ustawienia.edit', ['tab' => $key]), $html, "Brak linku do sekcji {$label}.");
         }

@@ -43,6 +43,7 @@ class Project extends Model implements HasMedia
     }
 
     protected $fillable = [
+        'unpublish_at', 'reviewed_at',
         'site_id', 'created_by', 'category_id', 'title', 'nav_title', 'slug', 'excerpt', 'for_whom', 'audience', 'accent_color', 'since', 'image_alt', 'image_hero', 'content', 'blocks', 'why', 'outcomes', 'is_published', 'is_completed', 'completed_at', 'is_paid', 'pricing', 'order',
         'meta_title', 'meta_description', 'pending_approval', 'submitted_by_id',
         'coordinator_name', 'coordinator_email', 'coordinator_phone', 'coordinator_phone_hours', 'is_featured_contact', 'show_coordinator',
@@ -68,6 +69,8 @@ class Project extends Model implements HasMedia
     ];
 
     protected $casts = [
+        'unpublish_at' => 'datetime',
+        'reviewed_at' => 'datetime',
         'is_published' => 'boolean',
         'pending_approval' => 'boolean',
         'is_completed' => 'boolean',

@@ -745,6 +745,7 @@
                     @error('published_at') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                 </div>
                 </div>
+                @include('admin.partials.unpublish-field', ['model' => $news])
             <fieldset class="p-4 rounded-md bg-gray-50">
                 <legend class="px-1 text-sm font-bold text-ink">Status publikacji</legend>
                 <div class="space-y-3">

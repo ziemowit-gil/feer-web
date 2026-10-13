@@ -26,6 +26,10 @@ Schedule::command('approvals:notify-pending')->hourly();
 // Dosyłanie do SZO zgłoszeń formularzy, których nie udało się przekazać przy
 // zapisie (niedostępne SZO, timeout). Co 15 minut, żeby zaległość nie rosła.
 Schedule::command('szo:push-submissions')->everyFifteenMinutes()->withoutOverlapping();
+// Strony, aktualności i działania z ustawionym „Zdejmij z publikacji” — po terminie przestają być publiczne.
+Schedule::command('content:unpublish-due')->everyFifteenMinutes()->withoutOverlapping();
+// Przegląd treści: w poniedziałek rano lista treści nieaktualizowanych od 12 miesięcy (tylko gdy jakieś są).
+Schedule::command('content:review-reminder')->weeklyOn(1, '08:30')->withoutOverlapping();
 // Komunikaty w Aktualnościach po dacie ważności → archiwum.
 Schedule::command('news:archiwizuj-komunikaty')->everyFifteenMinutes()->withoutOverlapping();
 

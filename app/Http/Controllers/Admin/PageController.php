@@ -788,6 +788,7 @@ class PageController extends Controller
             'content_image_width' => ['nullable', 'string', 'max:30'],
             'remove_content_image' => ['sometimes', 'boolean'],
             'order' => ['nullable', 'integer', 'min:0'],
+            'unpublish_at' => ['nullable', 'date'],
             'disabled_message' => ['nullable', 'string', 'max:2000'],
             'wip_mode' => ['nullable', Rule::in(array_keys(Page::WIP_MODES))],
             'wip_message' => ['nullable', 'string', 'max:2000'],
@@ -985,6 +986,8 @@ class PageController extends Controller
         // „Zapisz wersję roboczą” (draft=1) zapisuje bez publikacji, niezależnie od przełącznika.
         $data['is_published'] = $request->boolean('draft') ? false : $request->boolean('is_published');
         $data['publish_at'] = $request->filled('publish_at') ? $request->input('publish_at') : null;
+        // „Zdejmij z publikacji” — content:unpublish-due wyłącza publikację po terminie.
+        $data['unpublish_at'] = $request->filled('unpublish_at') ? $request->input('unpublish_at') : null;
         $data['is_archived'] = $request->boolean('is_archived');
         $data['show_in_menu'] = $request->boolean('show_in_menu');
         $data['hide_in_sitemap'] = $request->boolean('hide_in_sitemap');

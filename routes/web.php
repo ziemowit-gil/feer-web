@@ -561,6 +561,9 @@ Route::middleware(['auth', 'verified', '2fa', 'admin-site'])->prefix(config('app
 
     // Blog „Wiem FEER" — gdy moduł włączony, dostępny dla każdego użytkownika
     // panelu (jak multimedia); wyłączenie modułu chowa całą sekcję.
+    // Przegląd treści: opublikowane treści bez zmian od wielu miesięcy.
+    Route::get('przeglad-tresci', [\App\Http\Controllers\Admin\ContentReviewController::class, 'index'])->name('przeglad-tresci.index');
+    Route::post('przeglad-tresci/sprawdzone', [\App\Http\Controllers\Admin\ContentReviewController::class, 'reviewed'])->name('przeglad-tresci.reviewed');
     // Dostępność treści: raport dla serwisu i sprawdzanie na żywo z edytora (strony, aktualności, działania).
     Route::get('dostepnosc-tresci', [ContentA11yController::class, 'index'])->name('content-a11y.index');
     Route::post('dostepnosc-tresci/sprawdz', [ContentA11yController::class, 'check'])->name('content-a11y.check')->middleware('throttle:60,1');

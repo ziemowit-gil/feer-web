@@ -177,6 +177,10 @@ final class AdminMenu
                     ? $this->item('organizations', 'Organizacje członkowskie', 'admin.organizacje.index', 'fa-people-roof', active: 'admin.organizacje.*')
                     : null,
                 ($this->can('pages') || $this->can('news') || $this->can('projects'))
+                    ? $this->item('content-review', 'Przegląd treści', 'admin.przeglad-tresci.index', 'fa-calendar-check', active: 'admin.przeglad-tresci.*',
+                        badge: fn () => ContentReview::available() ? ContentReview::staleCount(fn ($m) => $this->user->canAccessModule($m)) : 0, badgeTone: 'muted')
+                    : null,
+                ($this->can('pages') || $this->can('news') || $this->can('projects'))
                     ? $this->item('content-a11y', 'Dostępność treści', 'admin.content-a11y.index', 'fa-universal-access', active: 'admin.content-a11y.*')
                     : null,
                 $this->can('polls') ? $this->item('polls', 'Ankiety', 'admin.ankiety.index', 'fa-square-poll-vertical', active: 'admin.ankiety.*') : null,

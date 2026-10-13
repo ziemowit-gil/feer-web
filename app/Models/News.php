@@ -88,11 +88,14 @@ class News extends Model implements HasMedia
     }
 
     protected $fillable = [
+        'unpublish_at', 'reviewed_at',
         'site_id', 'created_by', 'news_category_id', 'project_id', 'title', 'slug', 'excerpt', 'audience', 'accent_color', 'image_alt', 'image_focal_x', 'image_focal_y', 'article_layout', 'post_type', 'type_data', 'expires_at', 'content', 'blocks', 'published_at', 'is_published', 'is_archived', 'is_legacy', 'is_clone', 'cloned_from_id',
         'meta_title', 'meta_description', 'pending_approval', 'submitted_by_id',
     ];
 
     protected $casts = [
+        'unpublish_at' => 'datetime',
+        'reviewed_at' => 'datetime',
         'published_at' => 'datetime',
         'expires_at' => 'datetime',
         'type_data' => 'array',

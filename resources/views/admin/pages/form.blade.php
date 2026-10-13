@@ -633,6 +633,7 @@
                                     @error('publish_at') <p class="mt-1 text-sm text-red-700">{{ $message }}</p> @enderror
                                     <p class="mt-2 text-xs text-muted">Puste = widoczna natychmiast. Podaj datę, aby strona pojawiła się publicznie dopiero od tej chwili.</p>
                                 </div>
+                                @include('admin.partials.unpublish-field', ['model' => $page])
                             </div>
                             <label class="{{ $row }}">
                                 <input type="checkbox" name="is_archived" value="1" {{ old('is_archived', $page->is_archived ?? false) ? 'checked' : '' }}>

@@ -289,6 +289,7 @@ class NewsController extends Controller
             'post_type' => ['nullable', Rule::in(array_keys(News::POST_TYPES)),
                 Rule::notIn(SiteSetting::current()->blockedOptionsExcept('news_post_types', $news?->post_type ?? 'standard'))],
             'expires_at' => ['nullable', 'date', 'after:published_at', 'required_if:post_type,announcement'],
+            'unpublish_at' => ['nullable', 'date'],
             'type_data.cta_label' => ['nullable', 'string', 'max:80'],
             'type_data.cta_url' => ['nullable', 'string', 'max:500', 'regex:~^(https?://\S+|/(?!/)\S*|#\S*)$~i'],
             'type_data.important' => ['nullable', 'boolean'],
@@ -354,6 +355,12 @@ class NewsController extends Controller
         $data['is_published'] = $request->input('after') === 'draft' ? false : $request->boolean('is_published');
         $data['is_archived'] = $request->boolean('is_archived');
         $data['is_clone'] = $request->boolean('is_clone');
+        // „Zdejmij z publikacji” (content:unpublish-due); do czasu migracji kolumny nie ma — pomijamy.
+        if (\Illuminate\Support\Facades\Schema::hasColumn('news', 'unpublish_at')) {
+            $data['unpublish_at'] = $request->filled('unpublish_at') ? $request->input('unpublish_at') : null;
+        } else {
+            unset($data['unpublish_at']);
+        }
         unset($data['image']);
 
         return $this->applyApprovalWorkflow($data);
