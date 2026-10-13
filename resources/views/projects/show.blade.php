@@ -101,10 +101,10 @@
         // Hero z kolumną boczną: nagłówek trafia do lewej kolumny siatki treści, a siatka nachodzi na zdjęcie —
         // menu boczne zaczyna się wtedy obok nagłówka, nie pod nim. Przy poziomym pasku zakładek zostaje zwykły układ.
         // Układ nagłówka przy zdjęciu-hero (wybór w edycji działania):
-        //  • band (nowy)    — zdjęcie jako niski pasek, nagłówek pod nim, menu i treść niżej,
-        //  • overlay (klasyczny) — duże zdjęcie, nagłówek na karcie nachodzącej na zdjęcie; z kolumną boczną nagłówek
-        //    trafia do lewej kolumny siatki, więc menu zaczyna się obok nagłówka.
-        $heroOverlay = $imageHero && ($project->hero_style ?? 'band') === 'overlay';
+        //  • overlay (klasyczny, domyślny) — duże zdjęcie, nagłówek na karcie nachodzącej na zdjęcie; z kolumną boczną nagłówek
+        //    trafia do lewej kolumny siatki, więc menu zaczyna się obok nagłówka,
+        //  • band (nowy) — zdjęcie jako niski pasek, nagłówek pod nim, menu i treść niżej.
+        $heroOverlay = $imageHero && ($project->hero_style ?? 'overlay') !== 'band';
         $heroInGrid = $heroOverlay && ! ($hasTabs && ! $navSidebar);
         $extrasOn = $siteSettings->projects_extras_enabled;
         $mainCta = $extrasOn ? (array) ($project->main_cta ?? []) : [];

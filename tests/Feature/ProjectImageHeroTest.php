@@ -24,7 +24,9 @@ class ProjectImageHeroTest extends TestCase
 
     public function test_zdjecie_jako_hero_to_szeroki_baner_nad_tytulem(): void
     {
-        $html = $this->get(route('projects.show', $this->project(true)))->assertOk()->getContent();
+        $p = $this->project(true);
+        $p->update(['hero_style' => 'band']);
+        $html = $this->get(route('projects.show', $p))->assertOk()->getContent();
 
         // Zdjęcie jako niski pasek na całą szerokość, tytuł pod nim (bez karty nachodzącej na zdjęcie).
         $this->assertStringContainsString('h-40 w-full object-cover sm:h-48 lg:h-56', $html);
@@ -44,7 +46,7 @@ class ProjectImageHeroTest extends TestCase
     public function test_przy_hero_naglowek_nad_menu_i_trescia(): void
     {
         $project = $this->project(true);
-        $project->update(['sections_nav' => 'sidebar']);
+        $project->update(['sections_nav' => 'sidebar', 'hero_style' => 'band']);
         \App\Models\Page::create(['title' => 'Zakres', 'slug' => 'zakres', 'type' => 'standard', 'is_published' => true, 'project_id' => $project->id, 'project_display' => 'tab', 'content' => '<p>Zakres</p>']);
 
         $html = $this->get(route('projects.show', $project))->assertOk()->getContent();
@@ -57,7 +59,7 @@ class ProjectImageHeroTest extends TestCase
     public function test_klasyczny_uklad_karta_na_zdjeciu_do_wyboru(): void
     {
         $project = $this->project(true);
-        $project->update(['hero_style' => 'overlay', 'sections_nav' => 'sidebar']);
+        $project->update(['sections_nav' => 'sidebar']); // bez wyboru — domyślnie klasyczny
         \App\Models\Page::create(['title' => 'Zakres', 'slug' => 'zakres', 'type' => 'standard', 'is_published' => true, 'project_id' => $project->id, 'project_display' => 'tab', 'content' => '<p>Zakres</p>']);
 
         $html = $this->get(route('projects.show', $project))->assertOk()->getContent();
