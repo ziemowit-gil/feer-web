@@ -505,7 +505,7 @@ class PageController extends Controller
         $route = $page->isAboutPerson() ? 'admin.osoby.index' : 'admin.podstrony.index';
 
         return redirect()->route($route)
-            ->with('status', $page->isAboutPerson() ? 'Osoba „' . $page->title . '” została dodana.' : 'Strona „' . $page->title . '” została utworzona.' . $notice . ContentA11yChecker::saveNotice($page->content))
+            ->with('status', $page->isAboutPerson() ? 'Osoba „' . $page->title . '” została dodana.' : 'Strona „' . $page->title . '” została utworzona' . ($request->boolean('draft') ? ' jako wersja robocza.' : '.') . $notice . ContentA11yChecker::saveNotice($page->content))
             ->with('reload_url', $page->publicUrl());
     }
 
@@ -578,10 +578,10 @@ class PageController extends Controller
 
         $route = $page->isAboutPerson() ? 'admin.osoby.index' : 'admin.podstrony.index';
         // „Zapisz” (stay=1) zostaje w edytorze; „Zapisz i zamknij” wraca do listy.
-        $target = $request->boolean('stay') ? redirect()->route($page->isAboutPerson() ? 'admin.podstrony.edit' : 'admin.podstrony.edit', $page) : redirect()->route($route);
+        $target = ($request->boolean('stay') || $request->boolean('draft')) ? redirect()->route($page->isAboutPerson() ? 'admin.podstrony.edit' : 'admin.podstrony.edit', $page) : redirect()->route($route);
 
         return $target
-            ->with('status', $page->isAboutPerson() ? 'Osoba „' . $page->title . '" została zaktualizowana.' : 'Strona została zaktualizowana.' . $notice . ContentA11yChecker::saveNotice($page->content))
+            ->with('status', $page->isAboutPerson() ? 'Osoba „' . $page->title . '" została zaktualizowana.' : ($request->boolean('draft') ? 'Zapisano wersję roboczą — strona nie jest opublikowana.' : 'Strona została zaktualizowana.') . $notice . ContentA11yChecker::saveNotice($page->content))
             ->with('reload_url', $page->publicUrl());
     }
 
@@ -982,7 +982,8 @@ class PageController extends Controller
         $data['project_id'] = ($data['project_id'] ?? null) ?: null;
         $data['project_display'] = $data['project_id'] ? ($data['project_display'] ?? 'link') : 'link';
         $data['slug'] = trim($data['slug'] ?? '');
-        $data['is_published'] = $request->boolean('is_published');
+        // „Zapisz wersję roboczą” (draft=1) zapisuje bez publikacji, niezależnie od przełącznika.
+        $data['is_published'] = $request->boolean('draft') ? false : $request->boolean('is_published');
         $data['publish_at'] = $request->filled('publish_at') ? $request->input('publish_at') : null;
         $data['is_archived'] = $request->boolean('is_archived');
         $data['show_in_menu'] = $request->boolean('show_in_menu');

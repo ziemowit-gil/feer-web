@@ -646,6 +646,8 @@
                         @else
                             <button type="submit" class="pe-btn pe-btn-primary w-full justify-center"><i class="fa-solid fa-floppy-disk" aria-hidden="true"></i>Zapisz</button>
                         @endif
+                        <button type="submit" name="draft" value="1" class="pe-btn pe-btn-ghost w-full justify-center"><i class="fa-solid fa-pen-ruler" aria-hidden="true"></i>Zapisz wersję roboczą</button>
+                        <p class="text-xs text-muted">Wersja robocza nie jest widoczna publicznie — opublikujesz ją później.</p>
                         <div class="flex flex-wrap justify-between gap-2 pt-1">
                             <a href="{{ $isPersonForm ? route('admin.osoby.index') : route('admin.podstrony.index') }}" class="pe-btn pe-btn-ghost"><i class="fa-solid fa-arrow-left" aria-hidden="true"></i>Anuluj</a>
                             @if ($page->exists && ! $page->is_system && ! $page->is_locked)

@@ -771,6 +771,8 @@
                 <div class="space-y-2 border-t border-gray-100 pt-4">
                     <button type="submit" name="after" value="stay" class="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-md bg-brand-dark px-4 text-sm font-bold text-white hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2"><i class="fa-solid fa-floppy-disk" aria-hidden="true"></i> Zapisz</button>
                     <button type="submit" name="after" value="close" class="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-md bg-gray-100 px-4 text-sm font-bold text-ink hover:bg-brand-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark"><i class="fa-solid fa-check" aria-hidden="true"></i> Zapisz i zamknij</button>
+                    <button type="submit" name="after" value="draft" class="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-md px-4 text-sm font-bold text-ink underline underline-offset-4 hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark"><i class="fa-solid fa-pen-ruler" aria-hidden="true"></i> Zapisz wersję roboczą</button>
+                    <p class="text-xs text-muted">Wersja robocza nie jest widoczna publicznie — opublikujesz ją później.</p>
                 </div>
             </div>
 

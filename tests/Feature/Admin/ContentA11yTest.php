@@ -93,4 +93,19 @@ class ContentA11yTest extends TestCase
             ->assertSee('Dostępność treści')
             ->assertSee('Po H2 jest od razu H4', false);
     }
+
+    public function test_saving_a_page_as_draft_unpublishes_it(): void
+    {
+        $page = Page::create(['title' => 'Strona', 'slug' => 'strona-szkic', 'type' => 'standard', 'is_published' => true, 'content' => '<p>x</p>']);
+
+        $this->actingAs($this->admin())
+            ->put(route('admin.podstrony.update', $page), [
+                'title' => 'Strona', 'slug' => 'strona-szkic', 'type' => 'standard', 'is_published' => 1, 'draft' => 1,
+                'parent_id' => '', 'project_id' => '', 'order' => 0, 'content' => '<p>x</p>',
+            ])
+            ->assertRedirect(route('admin.podstrony.edit', $page))
+            ->assertSessionHas('status', fn ($status) => str_starts_with($status, 'Zapisano wersję roboczą'));
+
+        $this->assertFalse((bool) $page->fresh()->is_published);
+    }
 }

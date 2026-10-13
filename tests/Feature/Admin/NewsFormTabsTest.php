@@ -92,4 +92,16 @@ class NewsFormTabsTest extends TestCase
         // Tytuł (treść) i data (panel publikacji) są zawsze widoczne — bez zakładek błąd nie może się schować.
         $this->assertGreaterThanOrEqual(2, substr_count($html, '<p class="mt-1 text-sm text-red-600">'));
     }
+
+    public function test_zapisz_wersje_robocza_zapisuje_bez_publikacji_i_zostaje_na_rekordzie(): void
+    {
+        $news = $this->news();
+
+        $this->actingAs($this->admin())
+            ->put(route('admin.newsy.update', $news), ['title' => 'Szkic', 'published_at' => now()->format('Y-m-d\TH:i'), 'is_published' => '1', 'after' => 'draft'])
+            ->assertRedirect(route('admin.newsy.edit', $news))
+            ->assertSessionHas('status', fn ($status) => str_starts_with($status, 'Zapisano wersję roboczą'));
+
+        $this->assertFalse((bool) $news->fresh()->is_published);
+    }
 }

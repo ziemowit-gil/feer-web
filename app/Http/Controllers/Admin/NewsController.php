@@ -136,16 +136,17 @@ class NewsController extends Controller
 
         $news->tags()->sync($this->resolveTagIds($request->input('tags', '')));
 
-        return $this->afterSave($request, $news)->with('status', 'News został utworzony.' . ContentA11yChecker::saveNotice($news->content));
+        return $this->afterSave($request, $news)->with('status', ($request->input('after') === 'draft' ? 'Zapisano wersję roboczą — aktualność nie jest opublikowana.' : 'News został utworzony.') . ContentA11yChecker::saveNotice($news->content));
     }
 
     /**
      * Dokąd po zapisie — jak w TYPO3: „Zapisz” (after=stay) zostawia redaktora na edytowanym rekordzie,
      * „Zapisz i zamknij” (after=close, a także brak parametru) wraca do listy.
+     * „Zapisz wersję roboczą” (after=draft) zapisuje bez publikacji i też zostaje na rekordzie.
      */
     private function afterSave(Request $request, News $news): \Illuminate\Http\RedirectResponse
     {
-        return $request->input('after') === 'stay'
+        return in_array($request->input('after'), ['stay', 'draft'], true)
             ? redirect()->route('admin.newsy.edit', $news)
             : redirect()->route('admin.newsy.index');
     }
@@ -173,7 +174,7 @@ class NewsController extends Controller
 
         $news->tags()->sync($this->resolveTagIds($request->input('tags', '')));
 
-        return $this->afterSave($request, $news)->with('status', 'News został zaktualizowany.' . ContentA11yChecker::saveNotice($news->content));
+        return $this->afterSave($request, $news)->with('status', ($request->input('after') === 'draft' ? 'Zapisano wersję roboczą — aktualność nie jest opublikowana.' : 'News został zaktualizowany.') . ContentA11yChecker::saveNotice($news->content));
     }
 
     /**
@@ -349,7 +350,8 @@ class NewsController extends Controller
             default => null,
         };
         $data['expires_at'] = $data['post_type'] === 'announcement' ? ($data['expires_at'] ?? null) : null;
-        $data['is_published'] = $request->boolean('is_published');
+        // „Zapisz wersję roboczą” zapisuje bez publikacji, niezależnie od przełącznika.
+        $data['is_published'] = $request->input('after') === 'draft' ? false : $request->boolean('is_published');
         $data['is_archived'] = $request->boolean('is_archived');
         $data['is_clone'] = $request->boolean('is_clone');
         unset($data['image']);
