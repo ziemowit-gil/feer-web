@@ -31,11 +31,11 @@
         {{-- ═══ Pasek dokumentu (jak w TYPO3): tytuł rekordu + zapis, zamknięcie, podgląd; przypięty u góry ═══
              Przyciski zapisu wskazują formularz atrybutem form="news-form", więc „Klonuj” i „Usuń” mogą być
              osobnymi formularzami obok (zagnieżdżone <form> jest w HTML niedozwolone). --}}
-        <div class="border-b border-gray-200 bg-white" style="position:sticky;top:0;z-index:30;margin-bottom:1.25rem">
-            <div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:.75rem;padding:.75rem 0">
-                <div style="min-width:0">
+        <div class="rounded-md bg-white shadow-sm" style="position:sticky;top:0;z-index:30;margin-bottom:1.25rem">
+            <div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:.75rem 1.5rem;padding:1rem 1.25rem">
+                <div style="min-width:0;flex:1 1 16rem">
                     <p class="text-muted" style="font-size:.6875rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase">{{ $news->exists ? 'Edycja aktualności' : 'Nowa aktualność' }}</p>
-                    <h1 class="flex flex-wrap items-center gap-2 text-lg font-bold text-ink">
+                    <h1 class="mt-0.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-xl font-bold leading-tight text-ink">
                         <span class="truncate">{{ $news->exists ? $news->title : 'Nowa aktualność' }}</span>
                         @if ($news->exists)
                             @if ($news->is_published)
