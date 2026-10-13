@@ -88,10 +88,11 @@ final class AdminMenu
             // Witryna = struktura serwisu: drzewo stron, menu nawigacji i osoby (strony typu „osoba”).
             $this->can('pages') ? $this->section('pages', 'Strony', [
                 $this->item('pages', 'Strony', 'admin.podstrony.index', 'fa-file-lines',
-                    active: 'admin.podstrony.*'),
+                    active: fn () => request()->routeIs('admin.podstrony.*') && ! request()->routeIs('admin.podstrony.mapa')),
                 $isAdmin ? $this->item('nav', 'Menu nawigacji', 'admin.pozycje-menu.index', 'fa-bars',
                     active: fn () => request()->routeIs('admin.pozycje-menu.*') && request('location') !== 'bip') : null,
                 $this->item('persons', 'Osoby', 'admin.osoby.index', 'fa-address-card', active: 'admin.osoby.*'),
+                $this->item('page-graph', 'Mapa zależności', 'admin.podstrony.mapa', 'fa-diagram-project', active: 'admin.podstrony.mapa'),
             ], defaultOpen: true) : null,
 
             // Pozycje bloga jako osobna sekcja — używana w menu witryny „Wiem FEER”.

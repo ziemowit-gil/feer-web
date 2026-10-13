@@ -370,6 +370,7 @@ Route::middleware(['auth', 'verified', '2fa', 'admin-site'])->prefix(config('app
         Route::post('osoby/{page}/scal', [AdminPageController::class, 'performMergePerson'])->name('osoby.scal.wykonaj');
         Route::delete('osoby/{page}', [AdminPageController::class, 'destroy'])->name('osoby.destroy');
         Route::get('podstrony/eksport', [AdminPageController::class, 'export'])->name('podstrony.eksport');
+        Route::get('mapa-zaleznosci-stron', [\App\Http\Controllers\Admin\PageGraphController::class, 'index'])->name('podstrony.mapa');
         Route::get('raporty/brakujace-alt', [AdminPageController::class, 'missingAltReport'])->name('raporty.brakujace-alt');
         Route::resource('podstrony', AdminPageController::class)->parameters(['podstrony' => 'page']);
         Route::put('edycja-na-zywo', [\App\Http\Controllers\Admin\InlineEditController::class, 'update'])->name('inline-edit.update');
