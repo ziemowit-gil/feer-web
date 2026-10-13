@@ -415,6 +415,12 @@
                                         'current' => $sideNavStyle, 'carrier' => ['radio' => 'side_nav_style'],
                                     ])
                                 </span>
+                                @if ($page->exists && $page->children()->exists())
+                                    <button type="submit" form="page-nav-copy-form" class="mt-2 inline-flex min-h-10 items-center gap-2 rounded-md bg-gray-100 px-3 text-sm font-bold text-ink hover:bg-brand-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark"
+                                        onclick="return confirm(@js('Przenieść ten styl menu na wszystkie podstrony „'.$page->title.'”? Zmieni się tylko styl nawigacji tych podstron.'));">
+                                        <i class="fa-solid fa-share-nodes" aria-hidden="true"></i> Przenieś typ menu na podstrony
+                                    </button>
+                                @endif
                                     @foreach (\App\Models\Page::SIDE_NAV_STYLES as $styleKey => $styleLabel)
                                         <span id="side-nav-hint-{{ $styleKey }}" class="sr-only">{{ $sideNavHints[$styleKey] }}</span>
                                     @endforeach
@@ -749,6 +755,9 @@
         </form>
         @if ($page->exists && ! $page->is_system && ! $page->is_locked)
             <form id="page-delete-form" method="POST" action="{{ route('admin.podstrony.destroy', $page) }}" class="hidden">@csrf @method('DELETE')</form>
+            @if ($page->exists && $page->children()->exists())
+                <form id="page-nav-copy-form" method="POST" action="{{ route('admin.podstrony.styl-na-podstrony', $page) }}" class="hidden">@csrf</form>
+            @endif
         @endif
 
         @if ($page->exists)

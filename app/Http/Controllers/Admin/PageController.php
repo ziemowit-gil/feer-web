@@ -550,6 +550,33 @@ class PageController extends Controller
         ]);
     }
 
+    /**
+     * „Przenieś typ menu na podstrony”: kopiuje styl nawigacji tej strony (boczne drzewo, akordeon, zakładki…)
+     * na wszystkie jej podstrony, także zagnieżdżone. Nic poza stylem nie zmienia.
+     */
+    public function copyNavStyleToChildren(Page $page)
+    {
+        if ($response = $this->denyIfLocked($page)) {
+            return $response;
+        }
+
+        $style = array_key_exists((string) $page->side_nav_style, Page::SIDE_NAV_STYLES) ? $page->side_nav_style : 'sidebar';
+        $ids = [];
+        $level = [$page->id];
+        for ($depth = 0; $depth < 10 && $level !== []; $depth++) {
+            $level = Page::forCurrentSite()->whereIn('parent_id', $level)->pluck('id')->all();
+            $ids = array_merge($ids, $level);
+        }
+
+        if ($ids !== []) {
+            Page::whereIn('id', $ids)->update(['side_nav_style' => $style]);
+        }
+
+        return back()->with('status', $ids === []
+            ? 'Ta strona nie ma podstron.'
+            : 'Styl menu („'.Page::SIDE_NAV_STYLES[$style].'”) przeniesiono na '.count($ids).' '.(count($ids) === 1 ? 'podstronę' : 'podstron').'.');
+    }
+
     /** Zapisuje zmiany podstrony z walidacją i blokowaniem dostępu do zablokowanych stron. */
     public function update(Request $request, Page $page)
     {

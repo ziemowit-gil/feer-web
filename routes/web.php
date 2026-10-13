@@ -380,6 +380,7 @@ Route::middleware(['auth', 'verified', '2fa', 'admin-site'])->prefix(config('app
         // Edytor blokowy (styl Gutenberga) — pełnoekranowy, na stylach frontu.
         Route::get('podstrony/{page}/edytor-blokowy', [\App\Http\Controllers\Admin\BlockEditorController::class, 'editPage'])->name('podstrony.bloki.edit');
         Route::put('podstrony/{page}/edytor-blokowy', [\App\Http\Controllers\Admin\BlockEditorController::class, 'updatePage'])->name('podstrony.bloki.update');
+        Route::post('podstrony/{page}/styl-menu-na-podstrony', [AdminPageController::class, 'copyNavStyleToChildren'])->name('podstrony.styl-na-podstrony');
         Route::post('podstrony/{page}/pliki', [AdminAttachmentController::class, 'storeForPage'])->name('podstrony.pliki.store');
         Route::get('podstrony/{page}/dostep/eksport', [AdminBrandAccessUserController::class, 'export'])->name('podstrony.dostep.eksport');
         Route::get('podstrony/{page}/dostep', [AdminBrandAccessUserController::class, 'index'])->name('podstrony.dostep.index');
