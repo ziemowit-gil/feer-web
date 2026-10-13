@@ -361,6 +361,7 @@ Route::middleware(['auth', 'verified', '2fa', 'admin-site'])->prefix(config('app
     // Kosz — miękkie usuwanie treści (dostęp per moduł w kontrolerze).
     Route::get('kosz', [AdminTrashController::class, 'index'])->name('kosz.index');
     Route::post('kosz/{type}/{id}/przywroc', [AdminTrashController::class, 'restore'])->name('kosz.restore');
+    Route::delete('kosz', [AdminTrashController::class, 'empty'])->name('kosz.empty');
     Route::delete('kosz/{type}/{id}', [AdminTrashController::class, 'forceDelete'])->name('kosz.force');
 
     Route::middleware(['module:pages', 'module-access:pages'])->group(function () {

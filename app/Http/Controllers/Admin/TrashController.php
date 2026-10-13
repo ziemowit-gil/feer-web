@@ -13,7 +13,7 @@ use Illuminate\Database\Eloquent\Model;
  * Panel admin: kosz usuniętych treści — przywracanie soft-deleted rekordów
  * i trwałe kasowanie wraz z plikami mediów.
  *
- * Metody: index(), restore(), forceDelete(), count().
+ * Metody: index(), restore(), forceDelete(), empty(), count().
  *
  * @author Ziemowit Gil <ziemowit.gil@feer.org.pl>
  */
@@ -83,6 +83,29 @@ class TrashController extends Controller
         $model->forceDelete();
 
         return back()->with('status', 'Treść została trwale usunięta.');
+    }
+
+    /** Opróżnia kosz: trwale usuwa wszystkie elementy z modułów, do których użytkownik ma dostęp. */
+    public function empty()
+    {
+        $count = 0;
+        foreach (self::TYPES as [$class, $module]) {
+            if (! auth()->user()->canAccessModule($module)) {
+                continue;
+            }
+            foreach ($class::onlyTrashed()->get() as $model) {
+                activity('cms')
+                    ->causedBy(auth()->user())
+                    ->performedOn($model)
+                    ->withProperty('label', $model->title)
+                    ->event('force_deleted')
+                    ->log(class_basename($model) . ' force_deleted');
+                $model->forceDelete(); // przez model — razem z plikami mediów
+                $count++;
+            }
+        }
+
+        return back()->with('status', $count ? "Kosz opróżniony — trwale usunięto: {$count}." : 'Kosz jest już pusty.');
     }
 
     private function resolve(string $type, int $id): Model

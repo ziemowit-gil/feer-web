@@ -3,9 +3,21 @@
 @section('title', 'Kosz')
 
 @section('content')
-    <div class="mb-6">
-        <h1 class="text-xl font-bold text-ink">Kosz</h1>
-        <p class="text-sm text-muted">Usunięte treści. Możesz je przywrócić albo skasować trwale. Trwałego usunięcia nie da się cofnąć.</p>
+    <div class="mb-6 flex flex-wrap items-end justify-between gap-4">
+        <div>
+            <h1 class="text-xl font-bold text-ink">Kosz</h1>
+            <p class="text-sm text-muted">Usunięte treści. Możesz je przywrócić albo skasować trwale. Trwałego usunięcia nie da się cofnąć.</p>
+        </div>
+        @if ($items->isNotEmpty() && \Illuminate\Support\Facades\Route::has('admin.kosz.empty'))
+            <form method="POST" action="{{ route('admin.kosz.empty') }}"
+                onsubmit="return confirm(@js('Trwale usunąć wszystkie elementy z kosza ('.$items->count().')? Tego nie da się cofnąć.'))">
+                @csrf
+                @method('DELETE')
+                <button type="submit" class="inline-flex min-h-10 items-center gap-2 rounded-md bg-red-800 px-4 text-sm font-bold text-white hover:bg-red-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-800 focus-visible:ring-offset-2">
+                    <i class="fa-solid fa-trash-can" aria-hidden="true"></i> Usuń wszystkie ({{ $items->count() }})
+                </button>
+            </form>
+        @endif
     </div>
 
     <div class="overflow-x-auto rounded-md bg-white">
