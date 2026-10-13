@@ -22,14 +22,14 @@
 @endphp
 @if ($mkRows)
 <div class="page-metka mx-auto w-full max-w-5xl px-4 pb-10 sm:px-6 lg:px-8">
-    <details class="group rounded-md bg-gray-50">
-        <summary class="flex cursor-pointer list-none items-center gap-2 px-5 py-3 text-sm font-bold text-brand-dark underline underline-offset-2 hover:no-underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-dark [&::-webkit-details-marker]:hidden">
+    <details class="group ml-auto w-fit max-w-full">
+        <summary class="ml-auto flex w-fit cursor-pointer list-none items-center gap-2 py-2 text-sm font-bold text-brand-dark underline underline-offset-2 hover:no-underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-dark [&::-webkit-details-marker]:hidden">
             <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
             <span class="group-open:hidden">Pokaż metkę</span>
             <span class="hidden group-open:inline">Ukryj metkę</span>
             <span class="sr-only">— informacje o publikacji strony</span>
         </summary>
-        <dl class="grid gap-x-6 gap-y-2 px-5 pb-4 text-sm text-ink sm:grid-cols-[max-content_1fr]">
+        <dl class="grid gap-x-6 gap-y-2 pb-2 pt-1 text-sm text-ink sm:grid-cols-[max-content_1fr]">
             @foreach ($mkRows as $label => $value)
                 <dt class="font-bold">{{ $label }}</dt>
                 <dd>{!! $value !!}</dd>
