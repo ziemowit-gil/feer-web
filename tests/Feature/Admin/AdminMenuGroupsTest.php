@@ -18,14 +18,16 @@ class AdminMenuGroupsTest extends TestCase
         \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();
     }
 
-    public function test_menu_ma_najwyzej_szesc_grup_glownych_w_stalej_kolejnosci(): void
+    public function test_menu_ma_grupy_glowne_w_stalej_kolejnosci(): void
     {
         $this->actingAs(User::factory()->create(['role' => User::ROLE_ADMIN]));
 
         $groups = AdminMenu::for(auth()->user());
 
-        $this->assertLessThanOrEqual(6, count($groups));
-        $this->assertSame(['start', 'pages', 'content', 'comms', 'users', 'system'], array_column($groups, 'key'));
+        $this->assertSame(['start', 'pages', 'content', 'activity', 'docs', 'comms', 'settings', 'system'], array_column($groups, 'key'));
+        // Żadna pozycja nie powtarza się w dwóch miejscach menu.
+        $keys = collect($groups)->flatMap(fn ($g) => $g['blocks'])->flatMap(fn ($b) => $b['items'])->pluck('key');
+        $this->assertSame($keys->count(), $keys->unique()->count());
         foreach ($groups as $group) {
             $this->assertNotEmpty($group['icon']);
             $this->assertNotEmpty($group['blocks']);
@@ -43,7 +45,7 @@ class AdminMenuGroupsTest extends TestCase
         $this->assertContains('start', $keys);
         $this->assertContains('content', $keys);
         $this->assertNotContains('system', $keys);
-        $this->assertNotContains('users', $keys);
+        $this->assertNotContains('settings', $keys);
         // W „Komunikacji” redaktor może widzieć najwyżej newsletter — marketing i skrzynka są tylko dla administratora.
         foreach (['banners', 'campaigns', 'contact', 'meetings', 'barriers'] as $adminOnly) {
             $this->assertNotContains($adminOnly, $items);
@@ -58,31 +60,29 @@ class AdminMenuGroupsTest extends TestCase
 
         $this->assertMatchesRegularExpression('/class="tm-group relative is-active"/', $html);
         $this->assertStringContainsString('Witryna', $html);
-        $this->assertSame(6, substr_count($html, 'class="tm-head nav-link relative"'));
+        $this->assertSame(8, substr_count($html, 'class="tm-head nav-link relative"'));
         $this->assertStringContainsString('aria-label="Menu panelu"', $html);
     }
 
-    public function test_przelaczniki_ustawien_trafiaja_do_grupy_system(): void
+    public function test_system_ma_bloki_narzedzi(): void
     {
         $admin = User::factory()->create(['role' => User::ROLE_ADMIN]);
         $groups = collect(AdminMenu::for($admin))->keyBy('key');
 
-        $systemItems = $groups['system']['blocks'][0]['items'];
-        $this->assertContains('settings', array_column($systemItems, 'key'));
-        $this->assertSame(['Konfiguracja', 'Narzędzia'], array_column($groups['system']['blocks'], 'heading'));
+        $this->assertSame(['Użytkownicy i dostęp', 'Dane i bezpieczeństwo', 'Diagnostyka', 'Sieć witryn'], array_column($groups['system']['blocks'], 'heading'));
     }
 
     public function test_ustawienia_strony_sa_podzielone_na_kategorie_i_zawieraja_wszystkie_zakladki(): void
     {
         $admin = User::factory()->create(['role' => User::ROLE_ADMIN]);
         $groups = collect(AdminMenu::for($admin))->keyBy('key');
-        $settings = collect($groups['system']['blocks'][0]['items'])->firstWhere('key', 'settings');
+        $settings = $groups['settings'];
 
-        $tabChildren = collect($settings['children'])->filter(fn ($c) => $c['group'] !== 'Zaawansowane');
-        $this->assertCount(count(SiteSetting::SETTINGS_TABS), $tabChildren, 'Każda zakładka ustawień trafia do menu dokładnie raz.');
+        $tabItems = collect($settings['blocks'])->flatMap(fn ($b) => $b['items'])->filter(fn ($i) => str_contains($i['url'], 'tab='));
+        $this->assertCount(count(SiteSetting::SETTINGS_TABS), $tabItems, 'Każda zakładka ustawień trafia do menu dokładnie raz.');
         $this->assertSame(
             ['Wygląd', 'Treści i dane', 'Funkcje i integracje', 'SEO i dostępność', 'Zaawansowane'],
-            collect($settings['children'])->pluck('group')->unique()->values()->all()
+            array_column($settings['blocks'], 'heading')
         );
 
         // Podział obejmuje wszystkie klucze zakładek bez powtórzeń.

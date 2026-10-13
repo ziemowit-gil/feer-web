@@ -31,7 +31,8 @@ class NavRenderTest extends TestCase
             ->assertSee('Wolontariat')
             ->assertSee('Multimedia')
             ->assertSee('Użytkownicy')
-            ->assertSee('Ustawienia strony');
+            ->assertSee('Ustawienia')
+            ->assertSee('Instalacja modułów');
     }
 
     public function test_editor_does_not_see_admin_only_sections(): void

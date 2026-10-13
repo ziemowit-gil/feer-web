@@ -45,13 +45,13 @@ class MenuAndBipAdminTest extends TestCase
             ->assertSee('<title>BIP — menu boczne', false);
     }
 
-    public function test_bip_jest_osobnym_blokiem_w_grupie_witryna(): void
+    public function test_bip_jest_osobnym_blokiem_w_grupie_dokumenty(): void
     {
         $this->actingAs($admin = $this->admin());
         request()->query->set('location', 'bip');
-        $witryna = collect(AdminMenu::for($admin))->firstWhere('key', 'pages');
+        $docs = collect(AdminMenu::for($admin))->firstWhere('key', 'docs');
 
-        $bip = collect($witryna['blocks'])->firstWhere('heading', 'BIP');
+        $bip = collect($docs['blocks'])->firstWhere('heading', 'Biuletyn (BIP)');
         $this->assertNotNull($bip);
         $this->assertContains('bip-menu', array_column($bip['items'], 'key'));
         $this->assertStringContainsString('location=bip', $bip['items'][0]['url']);

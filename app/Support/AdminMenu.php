@@ -19,8 +19,8 @@ use Illuminate\Support\Facades\Route;
 /**
  * Definicja menu bocznego panelu administracyjnego.
  *
- * Układ jak w module menu TYPO3: najwyżej SZEŚĆ grup głównych (Pulpit, Witryna, Treści,
- * Komunikacja, Użytkownicy, System), a w grupie bloki z podtytułami → pozycje → podpozycje.
+ * Układ jak w module menu TYPO3: grupy główne (Pulpit, Witryna, Treści, Działalność, Dokumenty i BIP,
+ * Komunikacja, Ustawienia, System), a w grupie bloki z podtytułami → pozycje → podpozycje.
  * Widok `admin.partials.sidebar` tylko to renderuje. Dzięki temu:
  *  - widoczność pozycji (moduły, role) jest rozstrzygana w jednym miejscu,
  *  - pozycje wskazujące na nieistniejącą trasę są pomijane zamiast wywalać
@@ -225,6 +225,9 @@ final class AdminMenu
                 $this->item('invitations', 'Zaproszenia do strefy', 'admin.zaproszenia-strefy.index', 'fa-envelope-open-text', active: 'admin.zaproszenia-strefy.*'),
             ]) : null,
 
+            // Zakładki ustawień jako zwykłe pozycje — w grupie „Ustawienia” podzielone na bloki (SETTINGS_TAB_GROUPS).
+            $isAdmin ? $this->section('settings', 'Ustawienia', $this->settingsItems()) : null,
+
             $isAdmin ? $this->section('system', 'System', [
                 $this->item('settings', 'Ustawienia strony', 'admin.ustawienia.edit', 'fa-sliders',
                     active: 'admin.ustawienia.*',
@@ -246,7 +249,7 @@ final class AdminMenu
                 $this->item('activity', 'Dziennik zdarzeń', 'admin.dziennik.index', 'fa-clock-rotate-left', active: 'admin.dziennik.*'),
                 $this->item('wcag', 'Skaner WCAG', 'admin.wcag-scans.index', 'fa-universal-access', active: 'admin.wcag-scans.*'),
                 $this->item('gdpr', 'Klauzule RODO', 'admin.klauzule-rodo.index', 'fa-shield-halved', active: 'admin.klauzule-rodo.*'),
-                $this->item('modules', 'Moduły', 'admin.moduly.index', 'fa-puzzle-piece', active: 'admin.moduly.*'),
+                $this->item('modules', 'Instalacja modułów', 'admin.moduly.index', 'fa-puzzle-piece', active: 'admin.moduly.*'),
                 $this->item('health', 'Health Check', 'admin.health.index', 'fa-heart-pulse', active: 'admin.health.*'),
                 $this->item('cache', 'Cache', 'admin.cache.index', 'fa-bolt', active: 'admin.cache.*'),
                 $this->item('backups', 'Kopie zapasowe', 'admin.kopie.index', 'fa-box-archive', active: 'admin.kopie.*'),
@@ -262,24 +265,49 @@ final class AdminMenu
             return $this->blogSiteGroups($byKey);
         }
 
+        // Bloki „Ustawień” = kategorie zakładek; do „SEO i dostępność” dochodzą narzędzia SEO i skaner WCAG.
+        $settingsBlocks = collect(SiteSetting::SETTINGS_TAB_GROUPS)
+            ->map(fn ($tabs, $heading) => [$heading, ['settings', 'system'], array_merge(
+                array_map(fn ($t) => 'settings-'.$t, $tabs),
+                $heading === 'SEO i dostępność' ? ['seo', 'wcag'] : [],
+            )])
+            ->values()->all();
+        $settingsBlocks[] = ['Zaawansowane', ['settings', 'system'], ['settings-other', 'templates', 'modules', 'settings-env']];
+
         return array_values(array_filter([
-            $this->group($byKey, 'start', 'Pulpit', 'fa-gauge', [[null, 'start']]),
-            // „Witryna” — jak serwis jest zbudowany (strony, menu, strona główna);
-            // „Treści” — wpisy publikowane w modułach (aktualności, działania, wydarzenia…), bez stron.
-            $this->group($byKey, 'pages', 'Witryna', 'fa-sitemap', [['Strony i nawigacja', 'pages'], ['BIP', 'bipsite'], ['Strona główna', 'homepage']]),
+            $this->group($byKey, 'start', 'Pulpit', 'fa-gauge', [
+                [null, 'start'],
+                ['Jakość treści', 'content', ['content-review', 'content-a11y']],
+            ]),
+            // „Witryna” — jak serwis jest zbudowany (strony, menu, strona główna).
+            $this->group($byKey, 'pages', 'Witryna', 'fa-sitemap', [['Strony i nawigacja', 'pages'], ['Strona główna', 'homepage']]),
+            // „Treści” — wpisy publikowane na bieżąco i pliki.
             $this->group($byKey, 'content', 'Treści', 'fa-newspaper', [
-                ['Publikacje', 'content', ['news', 'blog', 'podcasts', 'faq', 'landing', 'timeline']],
-                ['Działalność', 'content', ['projects', 'events', 'materials', 'volunteering', 'jobs', 'help-map', 'organizations']],
-                ['Dokumenty', 'content', ['reports']],
-                ['Formularze i ankiety', 'content', ['forms', 'polls', 'cooperation']],
-                ['Sklep', 'content', ['shop']],
+                ['Publikacje', 'content', ['news', 'blog', 'podcasts', 'faq', 'timeline']],
+                ['Kampanie', 'content', ['landing']],
                 ['Biblioteka', 'library'],
             ]),
-            $this->group($byKey, 'comms', 'Komunikacja', 'fa-comments', [['Newsletter', 'newsletter'], ['Marketing', 'marketing'], ['Skrzynka', 'inbox']]),
-            $this->group($byKey, 'users', 'Użytkownicy', 'fa-users', [[null, 'users']]),
+            // „Działalność” — to, co organizacja robi i oferuje.
+            $this->group($byKey, 'activity', 'Działalność', 'fa-diagram-project', [
+                ['Działania', 'content', ['projects', 'help-map', 'organizations']],
+                ['Oferta', 'content', ['events', 'materials', 'shop']],
+                ['Zaangażowanie', 'content', ['volunteering', 'jobs']],
+            ]),
+            $this->group($byKey, 'docs', 'Dokumenty i BIP', 'fa-landmark', [
+                ['Biuletyn (BIP)', 'bipsite'],
+                ['Sprawozdawczość', 'content', ['reports']],
+            ]),
+            $this->group($byKey, 'comms', 'Komunikacja', 'fa-comments', [
+                ['Skrzynka', ['inbox', 'content'], ['contact', 'meetings', 'barriers', 'cooperation']],
+                ['Formularze i ankiety', 'content', ['forms', 'polls']],
+                ['Newsletter i marketing', ['newsletter', 'marketing']],
+            ]),
+            $this->group($byKey, 'settings', 'Ustawienia', 'fa-sliders', $settingsBlocks),
             $this->group($byKey, 'system', 'System', 'fa-gear', [
-                ['Konfiguracja', 'system', ['settings', 'templates', 'seo']],
-                ['Narzędzia', 'system', ['activity', 'wcag', 'gdpr', 'modules', 'health', 'cache', 'backups', 'sites']],
+                ['Użytkownicy i dostęp', 'users'],
+                ['Dane i bezpieczeństwo', 'system', ['activity', 'gdpr', 'backups']],
+                ['Diagnostyka', 'system', ['health', 'cache']],
+                ['Sieć witryn', 'system', ['sites']],
             ]),
         ]));
     }
@@ -321,9 +349,11 @@ final class AdminMenu
     {
         $blocks = [];
         foreach ($blockSpecs as $spec) {
-            $items = $sections->get($spec[1])['items'] ?? [];
+            $items = collect((array) $spec[1])->flatMap(fn (string $k) => $sections->get($k)['items'] ?? [])->all();
             if (isset($spec[2])) {
-                $items = array_values(array_filter($items, fn (array $i) => in_array($i['key'], $spec[2], true)));
+                // Kolejność pozycji jak w specyfikacji bloku.
+                $byItemKey = collect($items)->keyBy('key');
+                $items = collect($spec[2])->map(fn ($k) => $byItemKey->get($k))->filter()->values()->all();
             }
             if ($items !== []) {
                 $blocks[] = ['heading' => $spec[0], 'items' => $items];
@@ -373,6 +403,40 @@ final class AdminMenu
         $children[] = $this->child('Plik .env', 'admin.ustawienia.env', 'admin.ustawienia.env*', icon: 'fa-file-code', group: 'Zaawansowane');
 
         return $children;
+    }
+
+    /** Ikony zakładek ustawień w grupie „Ustawienia”. */
+    private const SETTINGS_ICONS = [
+        'general' => 'fa-circle-info', 'header' => 'fa-window-maximize', 'colors' => 'fa-palette', 'template' => 'fa-swatchbook',
+        'homepage' => 'fa-house', 'content' => 'fa-align-left', 'contact' => 'fa-address-book', 'social' => 'fa-share-nodes',
+        'support' => 'fa-hand-holding-heart', 'join' => 'fa-user-plus', 'registry' => 'fa-building-columns', 'modules' => 'fa-puzzle-piece',
+        'login' => 'fa-right-to-bracket', 'mail' => 'fa-envelope', 'szo' => 'fa-plug', 'maintenance' => 'fa-screwdriver-wrench',
+        'seo' => 'fa-magnifying-glass-chart', 'accessibility' => 'fa-universal-access',
+    ];
+
+    /**
+     * Zakładki „Ustawień strony” jako pozycje menu (klucz `settings-<zakładka>`), plus zakładki spoza
+     * podziału (`settings-other` — pierwsza z nich) i plik .env (`settings-env`).
+     *
+     * @return array<int, ?array<string, mixed>>
+     */
+    private function settingsItems(): array
+    {
+        $items = [];
+        $placed = collect(SiteSetting::SETTINGS_TAB_GROUPS)->flatten()->all();
+        foreach (SiteSetting::SETTINGS_TABS as $key => $label) {
+            $items[] = $this->item(
+                in_array($key, $placed, true) ? 'settings-'.$key : 'settings-other',
+                $label,
+                'admin.ustawienia.edit',
+                self::SETTINGS_ICONS[$key] ?? 'fa-sliders',
+                active: fn () => request()->routeIs('admin.ustawienia.edit', 'admin.ustawienia.update') && request('tab', 'general') === $key,
+                params: ['tab' => $key],
+            );
+        }
+        $items[] = $this->item('settings-env', 'Plik .env', 'admin.ustawienia.env', 'fa-file-code', active: 'admin.ustawienia.env*');
+
+        return $items;
     }
 
     private function settingsTab(string $key, string $label, string $group): ?array
