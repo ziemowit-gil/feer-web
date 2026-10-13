@@ -80,6 +80,12 @@
                     <i class="fa-solid fa-file-lines w-3.5 text-center" aria-hidden="true"></i> Deklaracja
                 </a>
             @endif
+            {{-- Schowaj pasek (stan zapamiętany); fokus wraca na przycisk „Dostępność”. --}}
+            <button type="button" @click="open = false; $nextTick(() => $refs.a11yToggle?.focus())" aria-label="Schowaj pasek dostępności"
+                class="inline-flex items-center rounded-md bg-gray-100 text-xs font-bold text-ink hover:bg-gray-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-1"
+                style="min-height:2rem;padding:.25rem .625rem;gap:.375rem;white-space:nowrap">
+                <i class="fa-solid fa-xmark w-3.5 text-center" aria-hidden="true"></i> Schowaj
+            </button>
         </div>
     </div>
 </div>
