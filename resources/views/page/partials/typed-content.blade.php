@@ -562,37 +562,78 @@
         @break
 
         @case('documents')
-        {{-- Dokumenty i sprawozdania: wybrane pliki + odnośnik do BIP po resztę --}}
+        {{-- Dokumenty i sprawozdania: wybrane pliki (rodzaj, rozmiar, data, grupy) + odnośnik do BIP po resztę --}}
         @if ($page->attachments->isNotEmpty() || filled($page->about_documents_intro))
-            <section id="sekcja-documents" class="mx-auto max-w-6xl px-4 py-16" aria-label="{{ $page->aboutLabel('documents_title') }}">
-                <h2 class="mb-10 text-center text-2xl font-extrabold text-ink md:text-3xl">{{ $page->aboutLabel('documents_title') }}</h2>
-                <div class="grid gap-10 lg:grid-cols-2">
-                    <div class="prose max-w-none text-ink">
-                        @if (filled($page->about_documents_intro))
-                            {!! nl2br(e($page->about_documents_intro)) !!}
-                        @endif
-                        <p class="mt-4 text-sm text-muted">{{ $page->aboutLabel('documents_bip') }} <a href="{{ $siteSettings->bipHref() ?? route('bip') }}" class="font-bold text-brand hover:text-brand-dark">Biuletynie Informacji Publicznej</a>.</p>
-                    </div>
+            @php
+                $docGroups = $page->attachments->groupBy(fn ($d) => trim((string) $d->group));
+                $docIcon = fn (string $ext) => match (true) {
+                    $ext === 'pdf' => 'fa-file-pdf',
+                    in_array($ext, ['doc', 'docx', 'odt', 'rtf'], true) => 'fa-file-word',
+                    in_array($ext, ['xls', 'xlsx', 'ods', 'csv'], true) => 'fa-file-excel',
+                    in_array($ext, ['ppt', 'pptx', 'odp'], true) => 'fa-file-powerpoint',
+                    in_array($ext, ['zip', 'rar', '7z'], true) => 'fa-file-zipper',
+                    default => 'fa-file-lines',
+                };
+                $bipHref = $page->about_documents_bip_url ?: ($siteSettings->bipHref() ?? route('bip'));
+            @endphp
+            <section id="sekcja-documents" class="mx-auto max-w-6xl px-4 py-16" aria-labelledby="sekcja-documents-h">
+                <div class="grid gap-10 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
                     <div>
-                        @if ($page->attachments->isNotEmpty())
-                            <ul class="divide-y divide-gray-100">
-                                @foreach ($page->attachments as $doc)
-                                    <li class="flex items-center justify-between gap-4 py-4">
-                                        <span class="min-w-0 font-medium text-ink">{{ $doc->label }}</span>
-                                        <a href="{{ $doc->file_url }}" download aria-label="Pobierz: {{ $doc->label }}"
-                                            class="inline-flex flex-none items-center gap-2 font-bold text-brand hover:text-brand-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
-                                            {{ $page->aboutLabel('documents_download') }} <i class="fa-solid fa-download" aria-hidden="true"></i>
-                                        </a>
-                                    </li>
-                                @endforeach
-                            </ul>
-                        @else
-                            <p class="text-sm text-muted">Nie dodano jeszcze dokumentów. Wgraj je w zakładce „Pliki do pobrania".</p>
+                        <h2 id="sekcja-documents-h" class="text-2xl font-extrabold text-ink md:text-3xl">{{ $page->aboutLabel('documents_title') }}</h2>
+                        @if (filled($page->about_documents_intro))
+                            <div class="mt-4 leading-relaxed text-ink">{!! nl2br(e($page->about_documents_intro)) !!}</div>
                         @endif
-                        <a href="{{ $siteSettings->bipHref() ?? route('bip') }}"
-                            class="mt-6 flex items-center justify-center gap-2 rounded-full border-2 border-ink px-6 py-3 font-bold text-ink transition hover:border-brand hover:text-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
-                            {{ $page->aboutLabel('documents_more') }} <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
-                        </a>
+                        <div class="mt-6 rounded-md bg-brand-light p-5">
+                            <p class="flex items-start gap-3 text-sm text-ink">
+                                <i class="fa-solid fa-landmark mt-0.5 text-brand-dark" aria-hidden="true"></i>
+                                <span>{{ $page->aboutLabel('documents_bip') }} <a href="{{ $bipHref }}" class="font-bold text-brand-dark underline underline-offset-2 hover:no-underline">Biuletynie Informacji Publicznej</a>.</span>
+                            </p>
+                            <a href="{{ $bipHref }}" class="mt-4 inline-flex min-h-11 items-center gap-2 rounded-md bg-brand-dark px-5 font-bold text-white hover:bg-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-dark">
+                                {{ $page->aboutLabel('documents_more') }}<span class="sr-only"> dokumenty w BIP</span> <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="space-y-8">
+                        @forelse ($docGroups as $groupName => $docs)
+                            <div>
+                                @if ($groupName !== '' && $docGroups->count() > 1)
+                                    <h3 class="mb-3 text-sm font-bold uppercase tracking-widest text-ink">{{ $groupName }}</h3>
+                                @endif
+                                <ul class="space-y-2" role="list">
+                                    @foreach ($docs as $doc)
+                                        @php
+                                            $docMedia = $doc->getFirstMedia('file');
+                                            $docExt = strtolower($doc->file_extension ?? '');
+                                            $docMeta = collect([strtoupper($docExt), $doc->file_size])->filter()->implode(' · ');
+                                            $docDate = $docMedia?->created_at;
+                                        @endphp
+                                        @if ($doc->file_url)
+                                            <li>
+                                                <a href="{{ $doc->file_url }}" download
+                                                    class="group flex items-center gap-4 rounded-md bg-gray-50 p-4 text-ink transition hover:bg-brand-light focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-dark">
+                                                    <i class="fa-solid {{ $docIcon($docExt) }} flex-none text-2xl text-brand-dark" aria-hidden="true"></i>
+                                                    <span class="min-w-0 flex-1">
+                                                        <span class="block font-bold">{{ $doc->label }}</span>
+                                                        @if ($docMeta !== '' || $docDate)
+                                                            <span class="mt-0.5 block text-sm text-ink">
+                                                                {{ $docMeta }}@if ($docMeta !== '' && $docDate) · @endif
+                                                                @if ($docDate)dodano <time datetime="{{ $docDate->toDateString() }}">{{ $docDate->locale('pl')->translatedFormat('j F Y') }}</time>@endif
+                                                            </span>
+                                                        @endif
+                                                    </span>
+                                                    <span class="inline-flex flex-none items-center gap-2 font-bold text-brand-dark underline underline-offset-2 group-hover:no-underline">
+                                                        {{ $page->aboutLabel('documents_download') }}<span class="sr-only">: {{ $doc->label }}@if ($docMeta !== '') ({{ $docMeta }})@endif</span>
+                                                        <i class="fa-solid fa-download" aria-hidden="true"></i>
+                                                    </span>
+                                                </a>
+                                            </li>
+                                        @endif
+                                    @endforeach
+                                </ul>
+                            </div>
+                        @empty
+                            <p class="rounded-md bg-gray-50 p-4 text-sm text-ink">Dokumenty znajdziesz w Biuletynie Informacji Publicznej.</p>
+                        @endforelse
                     </div>
                 </div>
             </section>
