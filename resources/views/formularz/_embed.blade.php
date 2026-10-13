@@ -466,7 +466,7 @@
                         class="{{ $baseInputClass }} {{ $feerForm ? '' : 'py-2 pl-3 pr-8' }}">
                         <option value="">{{ $required ? '— wybierz —' : '— ogólny kontakt —' }}</option>
                         @foreach ($coordinatorOptions as $c)
-                            <option value="{{ $c['email'] }}" {{ $oldVal === $c['email'] ? 'selected' : '' }}>{{ $c['name'] }}{{ $c['project'] !== $c['name'] ? ' — '.$c['project'] : '' }}</option>
+                            <option value="{{ $c['email'] }}" {{ ($oldVal ?: request('do')) === $c['email'] ? 'selected' : '' }}>{{ $c['name'] }}{{ $c['project'] !== $c['name'] ? ' — '.$c['project'] : '' }}</option>
                         @endforeach
                     </select>
 

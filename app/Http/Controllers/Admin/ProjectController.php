@@ -264,7 +264,8 @@ class ProjectController extends Controller
     public function bulk(Request $request)
     {
         $data = $request->validate([
-            'action' => ['required', 'in:publish,unpublish,trash'],
+            'action' => ['required', 'in:publish,unpublish,trash,sections_nav'],
+            'sections_nav' => ['nullable', 'in:tabs,sidebar'],
             'ids'    => ['required', 'array', 'min:1'],
             'ids.*'  => ['integer'],
         ]);
@@ -276,6 +277,13 @@ class ProjectController extends Controller
         }
 
         $count = $projects->count();
+
+        if ($data['action'] === 'sections_nav') {
+            // Nawigacja po sekcjach działań: zakładki, menu boczne albo „jak w ustawieniach” (pusty wybór).
+            Project::whereIn('id', $projects->pluck('id'))->update(['sections_nav' => $data['sections_nav'] ?: null]);
+
+            return back()->with('status', 'Zmieniono nawigację po sekcjach działań: '.$count.'.');
+        }
 
         match ($data['action']) {
             'trash'     => $projects->each->delete(),

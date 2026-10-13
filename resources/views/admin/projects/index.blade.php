@@ -12,6 +12,13 @@
                 <span id="bulk-count" class="text-sm font-bold text-blue-800"></span>
                 <button type="button" onclick="bulkSubmit('publish')" class="rounded-md px-3 py-1 text-xs font-bold text-ink bg-white hover:bg-brand-light">Opublikuj</button>
                 <button type="button" onclick="bulkSubmit('unpublish')" class="rounded-md px-3 py-1 text-xs font-bold text-gray-700 bg-white hover:bg-brand-light">Cofnij publikację</button>
+                <select id="bulk-sections-nav" aria-label="Nawigacja po sekcjach" class="rounded border-gray-500 text-xs focus:border-brand-dark focus:ring-brand-dark">
+                    <option value="">Nawigacja: jak w ustawieniach</option>
+                    <option value="tabs">Nawigacja: zakładki</option>
+                    <option value="sidebar">Nawigacja: menu boczne</option>
+                </select>
+                <button type="button" onclick="document.getElementById('bulk-sections-nav-value').value = document.getElementById('bulk-sections-nav').value; bulkSubmit('sections_nav')" class="rounded-md px-3 py-1 text-xs font-bold text-ink bg-white hover:bg-brand-light">Zmień nawigację</button>
+                <input type="hidden" name="sections_nav" id="bulk-sections-nav-value">
                 <button type="button" onclick="if(confirm('Przenieść zaznaczone do kosza?')) bulkSubmit('trash')" class="rounded-md px-3 py-1 text-xs font-bold text-red-800 bg-red-50 hover:bg-red-100">Do kosza</button>
             </div>
             <div class="ml-auto">

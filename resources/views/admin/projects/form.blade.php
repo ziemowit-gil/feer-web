@@ -626,6 +626,12 @@
                                 <button type="button" onclick="document.querySelectorAll('input[form=project-pages-bulk]').forEach(c => c.checked = false)" class="inline-flex min-h-9 items-center rounded-md bg-white px-3 text-xs font-bold text-ink hover:bg-brand-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">Odznacz</button>
                                 <button type="submit" form="project-pages-bulk" name="action" value="publish" class="inline-flex min-h-9 items-center gap-1.5 rounded-md bg-brand-dark px-3 text-xs font-bold text-white hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark"><i class="fa-solid fa-eye" aria-hidden="true"></i> Opublikuj zaznaczone</button>
                                 <button type="submit" form="project-pages-bulk" name="action" value="unpublish" class="inline-flex min-h-9 items-center gap-1.5 rounded-md bg-white px-3 text-xs font-bold text-ink hover:bg-brand-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark"><i class="fa-solid fa-eye-slash" aria-hidden="true"></i> Ukryj zaznaczone</button>
+                                <select form="project-pages-bulk" name="nav_style" aria-label="Nowy styl menu podstron" class="rounded border-gray-500 text-xs focus:border-brand-dark focus:ring-brand-dark">
+                                    @foreach (\App\Models\Page::SIDE_NAV_STYLES as $nsKey => $nsLabel)
+                                        <option value="{{ $nsKey }}">{{ \Illuminate\Support\Str::before($nsLabel, ' (') }}</option>
+                                    @endforeach
+                                </select>
+                                <button type="submit" form="project-pages-bulk" name="action" value="nav_style" class="inline-flex min-h-9 items-center gap-1.5 rounded-md bg-white px-3 text-xs font-bold text-ink hover:bg-brand-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark"><i class="fa-solid fa-bars" aria-hidden="true"></i> Zmień styl menu zaznaczonych</button>
                             </div>
                             <ul class="space-y-1.5" role="list">
                                 @foreach ($pageTree as $node)

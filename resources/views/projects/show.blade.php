@@ -646,6 +646,9 @@
                             <p>
                                 <span class="font-bold">E-mail:</span> <a href="mailto:{{ $project->contactEmail() }}" class="proj-link">{{ $project->contactEmail() }}</a>
                             </p>
+                            <p>
+                                <a href="{{ route('contact.show', ['do' => $project->contactEmail()]) }}#formularz" class="inline-flex min-h-11 items-center gap-2 font-bold text-brand-dark underline underline-offset-2 hover:no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark"><i class="fa-solid fa-paper-plane" aria-hidden="true"></i> Zadaj pytanie przez formularz</a>
+                            </p>
                             @if ($project->coordinator_phone)
                                 <p>
                                     <span class="font-bold">Tel.:</span> <a href="tel:{{ preg_replace('/[^0-9+]/', '', $project->coordinator_phone) }}" class="proj-link">{{ $project->coordinator_phone }}</a>

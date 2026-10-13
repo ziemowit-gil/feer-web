@@ -74,6 +74,7 @@
                     @if (filled($project->coordinator_phone_hours))<p class="text-xs">Telefon czynny {{ $project->coordinator_phone_hours }}</p>@endif
                 @endif
             </dl>
+            <a href="{{ route('contact.show', ['do' => $project->contactEmail()]) }}#formularz" class="mt-3 inline-flex min-h-11 items-center gap-2 rounded-md bg-brand-dark px-4 text-sm font-bold text-white hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2"><i class="fa-solid fa-paper-plane" aria-hidden="true"></i> Zadaj pytanie przez formularz</a>
         </section>
     @endif
 </div>

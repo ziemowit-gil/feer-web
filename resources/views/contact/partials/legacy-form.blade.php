@@ -45,7 +45,7 @@
                         class="w-full {{ $fieldClass }} {{ $errors->has('coordinator_email') ? 'border-red-400' : '' }}">
                     <option value="">— Ogólny kontakt —</option>
                     @foreach ($coordinators as $c)
-                        <option value="{{ $c['email'] }}" {{ old('coordinator_email') === $c['email'] ? 'selected' : '' }}>
+                        <option value="{{ $c['email'] }}" {{ (old('coordinator_email') ?: request('do')) === $c['email'] ? 'selected' : '' }}>
                             {{ $c['name'] }} (Działanie: {{ $c['project'] }})
                         </option>
                     @endforeach
