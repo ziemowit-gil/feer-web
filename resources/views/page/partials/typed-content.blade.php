@@ -195,21 +195,16 @@
             <header>
                 <div class="mx-auto max-w-6xl px-4">
                     <h1 class="text-3xl font-extrabold leading-tight tracking-tight text-ink md:text-5xl">{{ $page->title }}</h1>
-                    @if ($aboutMission !== '' || $aboutSupportUrl || $aboutContactUrl)
-                        @if ($aboutMission !== '')<p class="mt-4 max-w-3xl text-lg font-bold leading-snug text-ink md:text-xl">{{ $aboutMission }}</p>@endif
-                        <div class="mt-5 flex flex-wrap gap-3">
-                            @if ($aboutSupportUrl)<a href="{{ $aboutSupportUrl }}" class="inline-flex min-h-11 items-center gap-2 rounded-md bg-brand-dark px-5 font-bold text-white hover:bg-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-dark"><i class="fa-solid fa-heart" aria-hidden="true"></i> {{ $page->aboutLabel('mission_support') }}</a>@endif
-                            @if ($aboutContactUrl)<a href="{{ $aboutContactUrl }}" class="inline-flex min-h-11 items-center gap-2 rounded-md bg-gray-100 px-5 font-bold text-ink hover:bg-gray-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-dark"><i class="fa-solid fa-envelope" aria-hidden="true"></i> {{ $page->aboutLabel('mission_contact') }}</a>@endif
-                        </div>
-                    @endif
                     @if ($page->about_motto)
-                        <blockquote class="mt-5 max-w-3xl pb-2">
-                            <p class="text-base italic leading-relaxed text-ink md:text-lg">„{{ $page->about_motto }}"</p>
+                        {{-- Hasło organizacji: duże, pogrubione, cudzysłowy w kolorze marki (bez kursywy — czytelniej). --}}
+                        <blockquote class="mt-6 max-w-4xl">
+                            <p class="text-2xl font-extrabold leading-snug tracking-tight text-ink md:text-4xl"><span class="text-brand-dark">„</span>{{ $page->about_motto }}<span class="text-brand-dark">”</span></p>
                             @if ($page->about_motto_author)
-                                <cite class="mt-2 block text-sm font-bold not-italic uppercase tracking-widest text-muted">— {{ $page->about_motto_author }}</cite>
+                                <cite class="mt-3 block text-sm font-bold not-italic uppercase tracking-widest text-ink">— {{ $page->about_motto_author }}</cite>
                             @endif
                         </blockquote>
                     @endif
+                    @if ($aboutMission !== '')<p class="mt-5 max-w-3xl text-lg leading-relaxed text-ink md:text-xl">{{ $aboutMission }}</p>@endif
                 </div>
             </header>
         @else
@@ -220,15 +215,9 @@
             <div class="relative mx-auto max-w-4xl">
                 <h1 class="text-3xl font-extrabold leading-tight md:text-5xl">{{ $page->title }}</h1>
                 @if ($aboutMission !== '')<p class="mx-auto mt-4 max-w-3xl text-lg font-bold leading-snug text-white md:text-xl">{{ $aboutMission }}</p>@endif
-                @if ($aboutSupportUrl || $aboutContactUrl)
-                    <div class="mt-6 flex flex-wrap justify-center gap-3">
-                        @if ($aboutSupportUrl)<a href="{{ $aboutSupportUrl }}" class="inline-flex min-h-11 items-center gap-2 rounded-md bg-white px-5 font-bold text-brand-dark hover:bg-brand-light focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"><i class="fa-solid fa-heart" aria-hidden="true"></i> {{ $page->aboutLabel('mission_support') }}</a>@endif
-                        @if ($aboutContactUrl)<a href="{{ $aboutContactUrl }}" class="inline-flex min-h-11 items-center gap-2 rounded-md bg-ink px-5 font-bold text-white hover:bg-black focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"><i class="fa-solid fa-envelope" aria-hidden="true"></i> {{ $page->aboutLabel('mission_contact') }}</a>@endif
-                    </div>
-                @endif
                 @if ($page->about_motto)
                     <blockquote class="mx-auto mt-8 max-w-3xl rounded-xl border border-white/20 bg-white/10 px-6 py-4 text-left backdrop-blur-sm">
-                        <p class="text-lg italic leading-relaxed text-white md:text-xl">„{{ $page->about_motto }}"</p>
+                        <p class="text-xl font-extrabold leading-snug text-white md:text-3xl">„{{ $page->about_motto }}”</p>
                         @if ($page->about_motto_author)
                             <cite class="mt-3 block text-sm font-bold not-italic uppercase tracking-widest text-white/70">— {{ $page->about_motto_author }}</cite>
                         @endif

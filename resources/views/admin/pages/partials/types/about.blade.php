@@ -33,7 +33,7 @@
         <summary class="cursor-pointer rounded-lg px-4 py-3 text-sm font-bold text-ink hover:bg-gray-50">Misja, motto i wstęp</summary>
         <div class="space-y-4 border-t border-gray-100 px-4 py-4">
     <div>
-        <div class="mb-1 flex items-center"><label for="about_mission" class="text-sm font-bold">Misja jednym zdaniem <span class="font-normal text-muted">(opcjonalnie)</span></label>@include('admin.partials.help', ['topic' => 'misja', 'text' => 'Pokazuje się pod tytułem strony, razem z przyciskami „Wesprzyj nas” i „Kontakt”. Jedno proste zdanie: kim jesteście i po co.'])</div>
+        <div class="mb-1 flex items-center"><label for="about_mission" class="text-sm font-bold">Misja jednym zdaniem <span class="font-normal text-muted">(opcjonalnie)</span></label>@include('admin.partials.help', ['topic' => 'misja', 'text' => 'Pokazuje się pod tytułem i hasłem strony. Jedno proste zdanie: kim jesteście i po co.'])</div>
         <input type="text" id="about_mission" name="layout_data[about_mission]" maxlength="300" value="{{ old('layout_data.about_mission', (($page->layout_data ?? [])['about_mission'] ?? '')) }}" placeholder="np. Pomagamy osobom z niepełnosprawnościami korzystać z cyfrowego świata."
             class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
     </div>

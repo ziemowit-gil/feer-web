@@ -249,8 +249,6 @@ class Page extends Model
         'nav_documents' => ['Menu sekcji: dokumenty', 'Dokumenty'],
         'nav_faq' => ['Menu sekcji: FAQ', 'FAQ'],
         'nav_help' => ['Menu sekcji: jak pomóc', 'Jak pomóc'],
-        'mission_support' => ['Misja — przycisk wsparcia', 'Wesprzyj nas'],
-        'mission_contact' => ['Misja — przycisk kontaktu', 'Kontakt'],
         'stats_asof' => ['Statystyki — napis przed datą', 'Stan na'],
         'timeline_all' => ['Historia — przycisk rozwinięcia', 'Cała historia'],
         'timeline_less' => ['Historia — przycisk zwinięcia', 'Pokaż mniej'],
