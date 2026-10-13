@@ -72,7 +72,11 @@ class CategoryController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'slug' => ['nullable', 'string', 'max:255'],
             'order' => ['nullable', 'integer', 'min:0'],
+            'icon' => ['nullable', 'string', 'max:80', 'regex:/^[a-z0-9 _-]+$/i'],
         ]);
+        if (! \Illuminate\Support\Facades\Schema::hasColumn('categories', 'icon')) {
+            unset($data['icon']); // do czasu migracji
+        }
 
         $data['slug'] = trim($data['slug'] ?? '');
         $data['order'] = $data['order'] ?? 0;

@@ -24,6 +24,15 @@
             @error('slug') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
         </div>
 
+        @if (\Illuminate\Support\Facades\Schema::hasColumn('categories', 'icon'))
+            <div>
+                <div class="mb-1 flex items-center"><label for="icon" class="text-sm font-bold">Ikona <span class="font-normal text-muted">(opcjonalnie)</span></label>@include('admin.partials.help', ['topic' => 'ikona kategorii', 'text' => 'Ikona stoi przy nazwie kategorii na liście działań. Puste pole = ikona dobrana automatycznie do nazwy.'])</div>
+                <input type="text" id="icon" name="icon" value="{{ old('icon', $category->icon) }}" data-icon-picker data-icon-format="name" placeholder="{{ $category->exists ? $category->iconValue() : 'np. bi-easel' }}"
+                    class="w-full rounded border-gray-500 font-mono text-sm focus:border-brand-dark focus:ring-brand-dark">
+                @error('icon') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+            </div>
+        @endif
+
         <div>
             <label for="order" class="mb-1 block text-sm font-bold">Kolejność</label>
             <input type="number" id="order" name="order" min="0" value="{{ old('order', $category->order) }}"

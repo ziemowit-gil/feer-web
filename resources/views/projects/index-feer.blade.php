@@ -56,12 +56,22 @@
                 <div class="min-w-0 space-y-14">
                     @foreach ($filled as $category)
                         <section id="kategoria-{{ $category->id }}" class="scroll-mt-24" aria-labelledby="kat-h-{{ $category->id }}">
-                            <h2 id="kat-h-{{ $category->id }}" class="mb-4 text-2xl font-bold text-ink">
-                                <a href="{{ route('categories.show', $category) }}" class="group inline-flex items-center gap-2 rounded-sm hover:text-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">
-                                    {{ $category->name }}
-                                    <span class="text-lg text-brand-dark transition group-hover:translate-x-1 motion-reduce:transition-none" aria-hidden="true">→</span>
-                                </a>
-                            </h2>
+                            {{-- Nagłówek kategorii: ikona w kolorze marki, pasek pod tytułem i duża jasna ikona w tle (ozdobnik, ukryty przed czytnikami). --}}
+                            <div class="relative mb-5 overflow-hidden">
+                                <span class="pointer-events-none absolute -top-3 right-0 select-none text-[5.5rem] leading-none text-gray-100" aria-hidden="true">{!! icon_html($category->iconValue()) !!}</span>
+                                <div class="relative flex items-center gap-4">
+                                    <span class="flex h-12 w-12 flex-none items-center justify-center rounded-md bg-brand-light text-xl text-brand-dark" aria-hidden="true">{!! icon_html($category->iconValue()) !!}</span>
+                                    <div class="min-w-0">
+                                        <h2 id="kat-h-{{ $category->id }}" class="text-2xl font-bold text-ink">
+                                            <a href="{{ route('categories.show', $category) }}" class="group inline-flex items-center gap-2 rounded-sm hover:text-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">
+                                                {{ $category->name }}
+                                                <span class="text-lg text-brand-dark transition group-hover:translate-x-1 motion-reduce:transition-none" aria-hidden="true">→</span>
+                                            </a>
+                                        </h2>
+                                        <span class="mt-2 block h-1 w-10 bg-brand" aria-hidden="true"></span>
+                                    </div>
+                                </div>
+                            </div>
 
                             <ul class="space-y-1" role="list">
                                 @foreach ($category->publishedProjects as $project)
