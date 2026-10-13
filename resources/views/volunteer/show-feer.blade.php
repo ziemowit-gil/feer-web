@@ -94,10 +94,11 @@
                 <h2 id="q6" class="text-xl font-bold text-ink">Jak się zgłosić?</h2>
                 <p class="mt-3 whitespace-pre-line leading-relaxed text-ink">{{ $ad->q_how_to_apply }}</p>
                 @if ($ad->contact_name || $ad->contact_email)
-                    <p class="mt-4 text-sm text-ink">
+                    {{-- Imię i e-mail w osobnych wierszach — w wąskiej kolumnie sklejały się w jeden ciąg. --}}
+                    <p class="mt-4 text-sm leading-relaxed text-ink">
                         Osoba kontaktowa:
-                        @if ($ad->contact_name)<strong>{{ $ad->contact_name }}</strong>@endif
-                        @if ($ad->contact_email)<a href="mailto:{{ $ad->contact_email }}" class="font-bold text-brand-dark underline underline-offset-4 hover:no-underline">{{ $ad->contact_email }}</a>@endif
+                        @if ($ad->contact_name)<strong class="block">{{ $ad->contact_name }}</strong>@endif
+                        @if ($ad->contact_email)<a href="mailto:{{ $ad->contact_email }}" class="block break-all font-bold text-brand-dark underline underline-offset-4 hover:no-underline">{{ $ad->contact_email }}</a>@endif
                     </p>
                 @endif
                 @if ($ad->applyHref())
