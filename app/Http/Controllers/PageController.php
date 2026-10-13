@@ -48,7 +48,7 @@ class PageController extends Controller
 
         // Strona typu „Kontakt” ma stały układ i własny kontroler.
         if ($page->type === 'contact') {
-            return app(ContactController::class)->render();
+            return app(ContactController::class)->render($page);
         }
 
         // Strona z ograniczonym dostępem (typ wewnętrzny albo poziom dostępu ustawiony na stronie lub jej przodku).

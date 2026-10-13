@@ -45,7 +45,7 @@ class ContactController extends Controller
     }
 
     /** Wyświetla stronę kontaktową bez przekierowania (używane też przez stronę typu „Kontakt”). */
-    public function render()
+    public function render(?\App\Models\Page $page = null)
     {
         $settings = SiteSetting::current();
 
@@ -88,6 +88,7 @@ class ContactController extends Controller
             'shipPhone'     => $shipPhone,
             'showShipping'  => $showShipping,
             'locations'     => $locations,
+            'metkaPage'     => $page, // metryczka pod treścią (layouts.site)
         ]);
     }
 

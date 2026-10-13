@@ -116,4 +116,14 @@ class PageMetkaTest extends TestCase
         $settings->update(['metka_shared_accounts' => null]);
         $this->assertContains('webmaster@ziemowitgil.pl', $settings->metkaSharedEmails());
     }
+
+    public function test_metka_in_feer_template_also_on_contact_page(): void
+    {
+        SiteSetting::current()->update(['site_template' => 'feer', 'metka_mode' => 'all']);
+        $this->resetSettings();
+        foreach (['standard', 'about', 'contact'] as $type) {
+            $page = Page::create(['title' => 'T '.$type, 'slug' => 'metka-'.$type, 'type' => $type, 'is_published' => true, 'content' => '<p>Treść</p>']);
+            $this->get($page->publicUrl())->assertOk()->assertSee('Pokaż metkę');
+        }
+    }
 }

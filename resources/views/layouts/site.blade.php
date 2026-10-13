@@ -143,8 +143,9 @@
 
         @yield('content')
 
-        @if (isset($page) && $page instanceof \App\Models\Page && $page->exists && $page->showsMetka())
-            @include('partials.page-metka', ['page' => $page])
+        @php $metkaFor = $metkaPage ?? ($page ?? null); @endphp
+        @if ($metkaFor instanceof \App\Models\Page && $metkaFor->exists && $metkaFor->showsMetka())
+            @include('partials.page-metka', ['page' => $metkaFor])
         @endif
 
         @include('partials.feer-bands-sitewide', ['where' => 'site_bottom'])
