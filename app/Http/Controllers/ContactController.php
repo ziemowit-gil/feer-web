@@ -29,7 +29,10 @@ class ContactController extends Controller
         // Gdy redakcja utworzyła stronę typu „Kontakt” (albo stronę o adresie „kontakt-2”),
         // adres /kontakt kieruje na nią; sama ta strona renderuje widok przez show().
         if ($target = $this->contactPageTarget()) {
-            return redirect()->to($target->publicUrl());
+            // Zachowujemy parametry adresu (np. ?do=… z przycisku „Zadaj pytanie” na działaniu).
+            $query = request()->getQueryString();
+
+            return redirect()->to($target->publicUrl().($query ? '?'.$query : ''));
         }
 
         return $this->render();

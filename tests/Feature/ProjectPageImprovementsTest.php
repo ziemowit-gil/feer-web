@@ -78,4 +78,12 @@ class ProjectPageImprovementsTest extends TestCase
         $child->update(['coordinator_name' => 'Anna Nowak', 'coordinator_email' => 'anna@example.org']);
         $this->assertSame('Anna Nowak', Project::find($child->id)->coordinator_name, 'Własny koordynator ma pierwszeństwo.');
     }
+
+    public function test_contact_redirect_keeps_query_string(): void
+    {
+        \App\Models\Page::create(['title' => 'Kontakt', 'slug' => 'kontakt-2', 'type' => 'standard', 'is_published' => true]);
+        \App\Models\Page::where('slug', 'kontakt-2')->update(['type' => 'contact']);
+        $this->get('/kontakt?do=ewelina.fraczek%40feer.org.pl')->assertRedirect();
+        $this->assertStringContainsString('do=ewelina.fraczek', (string) $this->get('/kontakt?do=ewelina.fraczek%40feer.org.pl')->headers->get('Location'));
+    }
 }
