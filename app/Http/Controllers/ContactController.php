@@ -191,27 +191,9 @@ class ContactController extends Controller
             ->with('status', 'Wiadomość została wysłana. Odpowiemy najszybciej, jak to możliwe.');
     }
 
-    /** Zwraca kolekcję koordynatorów z aktywnych działań jako tablice [name, email, project]. */
+    /** Koordynatorzy aktywnych działań (wspólna lista z polem „Osoba kontaktowa” kreatora formularzy). */
     private function loadCoordinators(): \Illuminate\Support\Collection
     {
-        $settings = SiteSetting::current();
-
-        if (! $settings->isModuleEnabled('projects')) {
-            return collect();
-        }
-
-        return Project::forCurrentSite()->where('is_published', true)
-            ->where('is_completed', false)
-            ->where('show_coordinator', true)
-            ->orderByDesc('is_featured_contact')
-            ->orderBy('title')
-            ->get()
-            ->map(fn ($p) => [
-                'name'    => $p->coordinator_name ?: $p->title,
-                'email'   => $p->contactEmail(),
-                'project' => $p->title,
-            ])
-            ->filter(fn ($c) => filled($c['email']))
-            ->values();
+        return \App\Support\ContactCoordinators::all();
     }
 }

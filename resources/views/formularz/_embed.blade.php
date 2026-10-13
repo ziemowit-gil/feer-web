@@ -61,17 +61,23 @@
         </style>
     @endonce
 @endif
+@php
+    // hideHeading: osadzający ma już własny nagłówek nad formularzem (np. „Napisz do nas” na stronie kontaktu).
+    $hideHeading = $hideHeading ?? false;
+@endphp
 <section id="formularz-{{ $fs }}"
-    aria-labelledby="form-heading-{{ $fs }}"
-    class="not-prose my-10 {{ $feerForm ? '' : 'rounded-xl border border-gray-200 bg-white p-6 shadow-sm' }}">
+    @if ($hideHeading) aria-label="{{ $formTitle }}" @else aria-labelledby="form-heading-{{ $fs }}" @endif
+    class="not-prose {{ $hideHeading ? 'mt-4' : 'my-10' }} {{ $feerForm || $hideHeading ? '' : 'rounded-xl border border-gray-200 bg-white p-6 shadow-sm' }}">
 
-    @php $headingTag = in_array($headingTag ?? 'h2', ['h2', 'h3'], true) ? ($headingTag ?? 'h2') : 'h2'; @endphp
-    <{{ $headingTag }} id="form-heading-{{ $fs }}" class="mb-1 font-bold text-ink {{ $feerForm ? 'text-2xl sm:text-3xl' : 'text-xl' }}">
-        {{ $formTitle }}
-    </{{ $headingTag }}>
+    @unless ($hideHeading)
+        @php $headingTag = in_array($headingTag ?? 'h2', ['h2', 'h3'], true) ? ($headingTag ?? 'h2') : 'h2'; @endphp
+        <{{ $headingTag }} id="form-heading-{{ $fs }}" class="mb-1 font-bold text-ink {{ $feerForm ? 'text-2xl sm:text-3xl' : 'text-xl' }}">
+            {{ $formTitle }}
+        </{{ $headingTag }}>
+    @endunless
     @if ($form->description)
         <p class="mb-6 whitespace-pre-line text-muted {{ $feerForm ? 'max-w-2xl text-base' : 'text-sm' }}">{{ $form->description }}</p>
-    @else
+    @elseif (! $hideHeading)
         <div class="mb-5"></div>
     @endif
 
@@ -134,6 +140,8 @@
                 @endforeach
             </ul>
         </div>
+        {{-- Fokus na podsumowaniu: czytnik ekranu odczyta je od razu, a linki prowadzą do pól z błędami. --}}
+        <script>(function () { var el = document.getElementById(@js($errorSummaryId)); if (el) { el.focus(); el.scrollIntoView({ block: 'center' }); } })();</script>
     @endif
 
     {{-- ── Formularz ───────────────────────────────────────────────────────── --}}
@@ -248,7 +256,7 @@
                     </div>
 
                     @if ($hasError)
-                        <p id="{{ $errorId }}" class="flex items-center gap-1 text-sm font-medium text-red-700" role="alert">
+                        <p id="{{ $errorId }}" class="flex items-center gap-1 text-sm font-medium text-red-700">
                             <i class="fa-solid fa-circle-exclamation shrink-0" aria-hidden="true"></i>
                             @error("data.{$field['key']}") {{ $message }} @enderror
                         </p>
@@ -282,7 +290,7 @@
                     @endif
 
                     @if ($hasError)
-                        <p id="{{ $errorId }}" class="flex items-center gap-1 {{ $feerForm ? 'ff-indent' : 'pl-6' }} text-sm font-medium text-red-700" role="alert">
+                        <p id="{{ $errorId }}" class="flex items-center gap-1 {{ $feerForm ? 'ff-indent' : 'pl-6' }} text-sm font-medium text-red-700">
                             <i class="fa-solid fa-circle-exclamation shrink-0" aria-hidden="true"></i>
                             @error("data.{$field['key']}") {{ $message }} @enderror
                         </p>
@@ -360,7 +368,7 @@
                     @endif
 
                     @if ($hasError)
-                        <p id="{{ $errorId }}" class="flex items-center gap-1 text-sm font-medium text-red-700" role="alert">
+                        <p id="{{ $errorId }}" class="flex items-center gap-1 text-sm font-medium text-red-700">
                             <i class="fa-solid fa-circle-exclamation shrink-0" aria-hidden="true"></i>
                             @error("data.{$field['key']}") {{ $message }} @enderror
                         </p>
@@ -392,7 +400,7 @@
                         <p id="{{ $helpId }}" class="{{ $feerForm ? 'ff-indent' : 'pl-6' }} text-xs text-muted">{{ $field['help_text'] }}</p>
                     @endif
                     @if ($hasError)
-                        <p id="{{ $errorId }}" class="flex items-center gap-1 {{ $feerForm ? 'ff-indent' : 'pl-6' }} text-sm font-medium text-red-700" role="alert">
+                        <p id="{{ $errorId }}" class="flex items-center gap-1 {{ $feerForm ? 'ff-indent' : 'pl-6' }} text-sm font-medium text-red-700">
                             <i class="fa-solid fa-circle-exclamation shrink-0" aria-hidden="true"></i>
                             @error("data.{$field['key']}") {{ $message }} @enderror
                         </p>
@@ -426,12 +434,50 @@
                         class="{{ $baseInputClass }} {{ $fPad }} file:mr-3 file:rounded-md file:border-0 file:bg-brand-light file:px-3 file:py-1.5 file:font-bold file:text-brand-dark">
                     <p id="{{ $fileHintId }}" class="text-xs text-muted">Dozwolone: {{ strtoupper(implode(', ', $accept)) }}. Maksymalnie {{ $maxMb }} MB.@if ($showErrors) Po błędzie plik trzeba wybrać ponownie.@endif</p>
                     @if ($hasError)
-                        <p id="{{ $errorId }}" class="flex items-center gap-1 text-sm font-medium text-red-700" role="alert">
+                        <p id="{{ $errorId }}" class="flex items-center gap-1 text-sm font-medium text-red-700">
                             <i class="fa-solid fa-circle-exclamation shrink-0" aria-hidden="true"></i>
                             @error("data.{$field['key']}") {{ $message }} @enderror
                         </p>
                     @endif
                 </div>
+
+            @elseif ($type === 'coordinator')
+                {{-- ── Osoba kontaktowa: zwykła lista wyboru koordynatorów działań (wiadomość trafia do wybranej osoby) ── --}}
+                @php $coordinatorOptions = \App\Support\ContactCoordinators::all(); @endphp
+                @if ($coordinatorOptions->isNotEmpty())
+                <div class="space-y-1">
+                    <label for="{{ $fid }}" class="{{ $fLabel }}">
+                        {{ $field['label'] }}
+                        @if ($required)
+                            <span aria-hidden="true" class="ml-0.5 font-bold text-red-500">*</span>
+                            <span class="sr-only">(wymagane)</span>
+                        @endif
+                    </label>
+
+                    @if ($field['help_text'] ?? null)
+                        <p id="{{ $helpId }}" class="text-xs text-muted">{{ $field['help_text'] }}</p>
+                    @endif
+
+                    <select id="{{ $fid }}"
+                        name="{{ $fname }}"
+                        {{ $required ? 'required aria-required="true"' : '' }}
+                        @if ($hasError) aria-invalid="true" @endif
+                        @if ($describedByStr) aria-describedby="{{ $describedByStr }}" @endif
+                        class="{{ $baseInputClass }} {{ $feerForm ? '' : 'py-2 pl-3 pr-8' }}">
+                        <option value="">{{ $required ? '— wybierz —' : '— ogólny kontakt —' }}</option>
+                        @foreach ($coordinatorOptions as $c)
+                            <option value="{{ $c['email'] }}" {{ $oldVal === $c['email'] ? 'selected' : '' }}>{{ $c['name'] }}{{ $c['project'] !== $c['name'] ? ' — '.$c['project'] : '' }}</option>
+                        @endforeach
+                    </select>
+
+                    @if ($hasError)
+                        <p id="{{ $errorId }}" class="flex items-center gap-1.5 text-sm text-red-700">
+                            <i class="fa-solid fa-circle-exclamation shrink-0" aria-hidden="true"></i>
+                            {{ $errors->first("data.{$field['key']}") }}
+                        </p>
+                    @endif
+                </div>
+                @endif
 
             @elseif ($type === 'select')
                 {{-- ── Select ───────────────────────────────────────────────── --}}
@@ -463,7 +509,7 @@
                     </select>
 
                     @if ($hasError)
-                        <p id="{{ $errorId }}" class="flex items-center gap-1 text-sm font-medium text-red-700" role="alert">
+                        <p id="{{ $errorId }}" class="flex items-center gap-1 text-sm font-medium text-red-700">
                             <i class="fa-solid fa-circle-exclamation shrink-0" aria-hidden="true"></i>
                             @error("data.{$field['key']}") {{ $message }} @enderror
                         </p>
@@ -495,7 +541,7 @@
                         class="{{ $baseInputClass }} {{ $fPad }}">{{ $oldVal }}</textarea>
 
                     @if ($hasError)
-                        <p id="{{ $errorId }}" class="flex items-center gap-1 text-sm font-medium text-red-700" role="alert">
+                        <p id="{{ $errorId }}" class="flex items-center gap-1 text-sm font-medium text-red-700">
                             <i class="fa-solid fa-circle-exclamation shrink-0" aria-hidden="true"></i>
                             @error("data.{$field['key']}") {{ $message }} @enderror
                         </p>
@@ -539,7 +585,7 @@
                     <p id="{{ $krsStatusId }}" class="text-sm text-ink" role="status" aria-live="polite" data-krs-status></p>
 
                     @if ($hasError)
-                        <p id="{{ $errorId }}" class="flex items-center gap-1 text-sm font-medium text-red-700" role="alert">
+                        <p id="{{ $errorId }}" class="flex items-center gap-1 text-sm font-medium text-red-700">
                             <i class="fa-solid fa-circle-exclamation shrink-0" aria-hidden="true"></i>
                             @error("data.{$field['key']}") {{ $message }} @enderror
                         </p>
@@ -573,7 +619,7 @@
                         class="{{ $baseInputClass }} {{ $fPad }}">
 
                     @if ($hasError)
-                        <p id="{{ $errorId }}" class="flex items-center gap-1 text-sm font-medium text-red-700" role="alert">
+                        <p id="{{ $errorId }}" class="flex items-center gap-1 text-sm font-medium text-red-700">
                             <i class="fa-solid fa-circle-exclamation shrink-0" aria-hidden="true"></i>
                             @error("data.{$field['key']}") {{ $message }} @enderror
                         </p>
@@ -603,7 +649,7 @@
                 @endif
                 <button type="submit" data-ff-submit
                     class="{{ $feerForm ? 'ff-btn ff-btn-primary' : 'inline-flex items-center gap-2 rounded-lg bg-brand px-6 py-2.5 text-sm font-bold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2' }}">
-                    Wyślij zgłoszenie
+                    {{ filled($form->settings['submit_label'] ?? null) ? $form->settings['submit_label'] : 'Wyślij zgłoszenie' }}
                     <i class="fa-solid fa-paper-plane" aria-hidden="true"></i>
                 </button>
             </div>

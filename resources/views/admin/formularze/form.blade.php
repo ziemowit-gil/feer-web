@@ -427,6 +427,13 @@
             </div>
 
             <div>
+                <label for="submit_label" class="mb-1 block text-sm font-bold">Napis na przycisku wysyłania <span class="font-normal text-muted">(opcjonalnie)</span></label>
+                <input id="submit_label" name="settings[submit_label]" type="text" maxlength="60"
+                    value="{{ old('settings.submit_label', $form->settings['submit_label'] ?? '') }}" placeholder="Wyślij zgłoszenie"
+                    class="w-full rounded border-gray-500 text-sm focus:border-brand-dark focus-visible:ring-2 focus-visible:ring-brand-dark">
+            </div>
+
+            <div>
                 <label for="redirect_url" class="mb-1 block text-sm font-bold">Po wysłaniu przejdź na adres <span class="font-normal text-muted">(opcjonalnie)</span></label>
                 <input id="redirect_url" name="settings[redirect_url]" type="text" inputmode="url"
                     value="{{ old('settings.redirect_url', $form->settings['redirect_url'] ?? '') }}"

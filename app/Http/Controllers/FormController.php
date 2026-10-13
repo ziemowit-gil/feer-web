@@ -203,6 +203,11 @@ class FormController extends Controller
         $submitterEmail = $this->submitterEmail($formularz, $submission);
 
         $to = array_values(array_filter(array_map('trim', explode(',', (string) ($settings['notification_email'] ?? ''))), fn ($e) => filter_var($e, FILTER_VALIDATE_EMAIL)));
+
+        // Pole „Osoba kontaktowa”: wiadomość trafia do wybranego koordynatora zamiast na adres ogólny.
+        if ($coordinator = $this->chosenCoordinator($formularz, $submission)) {
+            $to = [$coordinator];
+        }
         $cc = array_values(array_filter(array_map('trim', explode(',', (string) ($settings['notification_cc'] ?? ''))), fn ($e) => filter_var($e, FILTER_VALIDATE_EMAIL)));
 
         if ($to !== []) {
@@ -231,6 +236,22 @@ class FormController extends Controller
                 ]);
             }
         }
+    }
+
+    /** Adres wybranego koordynatora (pole „Osoba kontaktowa”) — tylko z aktualnej listy koordynatorów. */
+    private function chosenCoordinator(FormDefinition $formularz, FormSubmission $submission): ?string
+    {
+        foreach ($formularz->inputFields() as $field) {
+            if (($field['type'] ?? null) !== 'coordinator') {
+                continue;
+            }
+            $email = trim((string) ($submission->data[$field['key']] ?? ''));
+            if ($email !== '' && \App\Support\ContactCoordinators::all()->contains('email', $email)) {
+                return $email;
+            }
+        }
+
+        return null;
     }
 
     /** Adres e-mail osoby zgłaszającej: wartość pierwszego pola typu „e-mail”. */

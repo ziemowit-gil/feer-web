@@ -8,6 +8,7 @@ use App\Http\Controllers\Admin\ApprovalController;
 use App\Http\Controllers\Admin\TrashController;
 use App\Models\ContactMessage;
 use App\Models\CooperationRequest;
+use App\Models\FormDefinition;
 use App\Models\FormSubmission;
 use App\Models\SiteSetting;
 use App\Models\User;
@@ -208,11 +209,7 @@ final class AdminMenu
             ], defaultOpen: true) : null,
 
             $isAdmin ? $this->section('inbox', 'Skrzynka', [
-                $this->item('contact', 'Wiadomości z formularza', 'admin.wiadomosci-kontaktowe.index', 'fa-envelope-open',
-                    active: 'admin.wiadomosci-kontaktowe.*',
-                    badge: function () {
-                        try { return ContactMessage::unreadCount(); } catch (\Throwable) { return 0; }
-                    }),
+                $this->contactInboxItem(),
                 $this->item('meetings', 'Zgłoszenia (spotkania)', 'admin.zgloszenia-spotkania.index', 'fa-handshake-angle', active: 'admin.zgloszenia-spotkania.*'),
                 $this->item('barriers', 'Zgłoszenia barier', 'admin.zgloszenia-barier.index', 'fa-universal-access', active: 'admin.zgloszenia-barier.*'),
             ]) : null,
@@ -464,6 +461,41 @@ final class AdminMenu
     }
 
     /** Moduł włączony (menedżer modułów lub ustawienia witryny) i dostępny dla roli użytkownika. */
+    /**
+     * „Wiadomości z formularza”: formularz kontaktowy jest w kreatorze (Formularze → Kontakt), więc pozycja
+     * prowadzi do jego zgłoszeń; wiadomości z dawnego formularza zostają jako archiwum (podpozycja), o ile są.
+     */
+    private function contactInboxItem(): ?array
+    {
+        try {
+            $form = FormDefinition::where('slug', ContactForm::SLUG)->first(['id']);
+            $hasArchive = ContactMessage::query()->exists();
+        } catch (\Throwable) {
+            $form = null;
+            $hasArchive = true;
+        }
+
+        $legacyUnread = function () {
+            try { return ContactMessage::unreadCount(); } catch (\Throwable) { return 0; }
+        };
+
+        if (! $form) {
+            return $this->item('contact', 'Wiadomości z formularza', 'admin.wiadomosci-kontaktowe.index', 'fa-envelope-open',
+                active: 'admin.wiadomosci-kontaktowe.*', badge: $legacyUnread);
+        }
+
+        return $this->item('contact', 'Wiadomości z formularza', 'admin.formularze.zgloszenia', 'fa-envelope-open',
+            active: fn () => request()->routeIs('admin.wiadomosci-kontaktowe.*')
+                || (request()->routeIs('admin.formularze.zgloszenia*') && (int) (request()->route('formularz')?->id ?? request()->route('formularz')) === $form->id),
+            badge: fn () => $form->unreadSubmissions()->count() + $legacyUnread(),
+            children: $hasArchive ? [
+                $this->child('Nowe wiadomości', 'admin.formularze.zgloszenia', fn () => request()->routeIs('admin.formularze.zgloszenia*'), params: ['formularz' => $form->id]),
+                $this->child('Archiwum (dawny formularz)', 'admin.wiadomosci-kontaktowe.index', 'admin.wiadomosci-kontaktowe.*'),
+            ] : [],
+            params: ['formularz' => $form->id],
+        );
+    }
+
     private function can(string $module): bool
     {
         $enabled = $this->modules->get($module) !== null

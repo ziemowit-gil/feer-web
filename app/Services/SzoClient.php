@@ -337,6 +337,10 @@ class SzoClient
             if ($value === null || $value === '' || $value === []) {
                 continue;
             }
+            // Osoba kontaktowa: do CRM idzie imię i działanie, nie sam adres koordynatora.
+            if (($field['type'] ?? '') === 'coordinator') {
+                $value = FormDefinition::displayValue($field, $value);
+            }
             if (is_array($value)) {
                 $value = implode(', ', $value);
             }

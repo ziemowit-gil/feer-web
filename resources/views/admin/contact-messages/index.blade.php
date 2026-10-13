@@ -3,6 +3,17 @@
 @section('title', 'Wiadomości z formularza')
 
 @section('content')
+    @php $contactForm = \App\Models\FormDefinition::where('slug', \App\Support\ContactForm::SLUG)->first(); @endphp
+    @if ($contactForm)
+        {{-- Formularz kontaktowy jest teraz w kreatorze — tu zostaje archiwum wiadomości z dawnego formularza. --}}
+        <div class="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-md bg-brand-light px-4 py-3 text-sm text-ink" role="note">
+            <p><strong>To archiwum dawnego formularza.</strong> Nowe wiadomości z /kontakt trafiają do zgłoszeń formularza „{{ $contactForm->title }}”, a jego pola, zgodę i powiadomienia zmieniasz w kreatorze.</p>
+            <span class="flex flex-wrap gap-2">
+                <a href="{{ route('admin.formularze.zgloszenia', $contactForm) }}" class="inline-flex min-h-10 items-center rounded-md bg-brand-dark px-4 font-bold text-white hover:bg-ink">Nowe wiadomości</a>
+                <a href="{{ route('admin.formularze.edit', $contactForm) }}" class="inline-flex min-h-10 items-center rounded-md bg-white px-4 font-bold text-ink hover:bg-gray-100">Edytuj formularz</a>
+            </span>
+        </div>
+    @endif
     <div class="mb-6 flex flex-wrap items-center justify-between gap-4">
         <div>
             <h1 class="text-lg font-bold text-ink">Wiadomości z formularza</h1>

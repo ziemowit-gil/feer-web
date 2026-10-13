@@ -44,6 +44,7 @@ class FormDefinition extends Model
         'time'     => 'Godzina',
         'file'     => 'Załącznik (plik)',
         'consent'  => 'Zgoda RODO (z linkiem do polityki prywatności)',
+        'coordinator' => 'Osoba kontaktowa (koordynator działania — wiadomość trafia do niej)',
         'heading'  => 'Nagłówek / opis sekcji',
         'link'     => 'Tekst z przyciskiem (przejście na inny adres)',
         'step'     => 'Nowy krok (podział na etapy)',
@@ -210,6 +211,14 @@ class FormDefinition extends Model
             $type     = $field['type'] ?? 'text';
             $options  = self::fieldOptions($field);
 
+            // Osoba kontaktowa: wybór z koordynatorów działań; gdy nikogo nie ma, pola nie ma na stronie.
+            if ($type === 'coordinator') {
+                $emails = \App\Support\ContactCoordinators::all()->pluck('email')->all();
+                $rules['data.' . $field['key']] = $emails ? [$required, 'string', Rule::in($emails)] : ['nullable', 'prohibited'];
+
+                continue;
+            }
+
             $fieldRules = match ($type) {
                 'email'    => [$required, 'email', 'max:255'],
                 'tel'      => [$required, 'string', 'max:30'],
@@ -253,6 +262,7 @@ class FormDefinition extends Model
         return match (true) {
             $type === 'file' && is_array($value) => trim(($value['name'] ?? 'plik').(isset($value['size']) ? ' ('.self::humanSize((int) $value['size']).')' : '')),
             in_array($type, ['checkbox', 'consent'], true) => 'Tak',
+            $type === 'coordinator' => \App\Support\ContactCoordinators::label((string) $value).' <'.$value.'>',
             $type === 'rating' => $value.'/5',
             is_array($value) => implode(', ', array_map('strval', $value)),
             default => (string) $value,
@@ -310,6 +320,7 @@ class FormDefinition extends Model
                 'krs' => $messages[$k . '.regex'] = 'Numer KRS to do 10 cyfr, np. 0000123456.',
                 'checkboxes' => $messages[$k . '.*.in'] = 'Wybierz odpowiedzi z listy w polu „' . ($field['label'] ?? '') . '”.',
                 'rating' => $messages[$k . '.between'] = 'Wybierz ocenę od 1 do 5.',
+                'coordinator' => $messages[$k . '.in'] = 'Wybierz osobę z listy.',
                 default => null,
             };
         }

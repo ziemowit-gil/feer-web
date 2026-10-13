@@ -199,6 +199,7 @@ class FormularzeController extends Controller
             'settings.redirect_url'          => ['nullable', 'string', 'max:500', 'regex:~^(https?://\S+|/(?!/)\S*)$~i'],
             'fields.*.krs_fill'              => 'nullable|in:' . implode(',', array_keys(\App\Services\KrsClient::FILL_KEYS)),
             'settings.confirmation_message'  => 'nullable|string|max:1000',
+            'settings.submit_label'          => 'nullable|string|max:60',
             'settings.notification_email'    => 'nullable|string|max:500',
             'settings.notification_cc'       => 'nullable|string|max:500',
             'settings.notification_subject'  => 'nullable|string|max:200',
@@ -279,6 +280,7 @@ class FormularzeController extends Controller
             'fields'      => $fields,
             'settings'    => [
                 'confirmation_message' => $request->input('settings.confirmation_message'),
+                'submit_label'         => trim((string) $request->input('settings.submit_label')) ?: null,
                 'notification_email'   => $request->input('settings.notification_email'),
                 'notification_cc'      => $request->input('settings.notification_cc'),
                 'notification_subject' => $request->input('settings.notification_subject'),

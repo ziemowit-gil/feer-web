@@ -57,7 +57,7 @@
         class="{{ $spamFlat ? 'ff-input' : 'w-24 rounded-lg border px-3 py-2 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-1 ' . ($spamHasError ? 'border-red-400 bg-red-50' : 'border-gray-300 bg-white') }}">
 
     @error('spam')
-        <p class="flex items-center gap-1 text-sm font-medium text-red-700" role="alert">
+        <p class="flex items-center gap-1 text-sm font-medium text-red-700">
             <i class="fa-solid fa-circle-exclamation shrink-0" aria-hidden="true"></i>
             {{ $message }}
         </p>
