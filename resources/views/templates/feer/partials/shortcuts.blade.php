@@ -44,7 +44,7 @@
             </div>
 
             <nav aria-label="Na skróty">
-                <ul class="grid gap-4 {{ $qaCols }}" role="list">
+                <ul class="grid auto-rows-fr gap-4 {{ $qaCols }}" role="list">
                     @foreach ($quickLinks as $qa)
                         @php
                             $base = \App\Support\Color::isValid($qa->color) ? $qa->color : ($feerNamed[$qa->color] ?? $feerNamed['blue']);
@@ -55,23 +55,24 @@
                             $iconClass = (str_contains((string) $qa->icon, 'fa-') || str_starts_with((string) $qa->icon, 'bi ')) ? $qa->icon : 'bi '.($qa->icon ?: 'bi-lightning');
                             $external = \Illuminate\Support\Str::startsWith($qa->url, ['http://', 'https://']) && ! \Illuminate\Support\Str::contains($qa->url, request()->getHost());
                         @endphp
-                        <li class="{{ $qaSpan((int) ($qa->cols ?? 1)) }}">
+                        @php $card = ! $single && ! $strip; // zwykły kafel: układ pionowy, wszystkie kafle w rzędzie równej wysokości @endphp
+                        <li class="flex {{ $qaSpan((int) ($qa->cols ?? 1)) }}">
                             <a href="{{ $qa->url }}" @if ($external) target="_blank" rel="noopener" @endif
-                               class="group flex {{ $single ? 'min-h-32 gap-6 px-8 py-6' : ($strip ? 'min-h-14 gap-3 px-4 py-2' : 'min-h-20 gap-4 px-5 py-4') }} items-center rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2 {{ $filled ? '' : ($panelWhite ? 'bg-gray-50 hover:bg-brand-light' : 'bg-white hover:bg-brand-light') }}"
+                               class="group flex w-full {{ $single ? 'min-h-32 items-center gap-6 px-8 py-6' : ($strip ? 'min-h-14 items-center gap-3 px-4 py-2' : 'h-full min-h-44 flex-col gap-3 p-5') }} rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2 {{ $filled ? '' : ($panelWhite ? 'bg-gray-50 hover:bg-brand-light' : 'bg-white hover:bg-brand-light') }}"
                                @if ($filled)
                                    style="background-color: {{ $pal['bg'] }}; color: {{ $pal['text'] }}"
                                @else
                                    style="color: #1d1d1a"
                                @endif>
-                                {!! icon_html($qa->icon, 'flex-none text-center '.($single ? 'w-12 text-5xl' : ($strip ? 'w-6 text-xl' : 'w-7 text-2xl')), $filled ? '' : 'color: '.$safe) !!}
-                                <span class="min-w-0 flex-1">
+                                {!! icon_html($qa->icon, 'flex-none '.($single ? 'w-12 text-center text-5xl' : ($strip ? 'w-6 text-center text-xl' : 'text-3xl')), $filled ? '' : 'color: '.$safe) !!}
+                                <span class="min-w-0 {{ $card ? '' : 'flex-1' }}">
                                     <span class="block font-bold leading-snug group-hover:underline group-hover:underline-offset-4 {{ $single ? 'text-2xl md:text-3xl' : ($strip ? 'text-base' : 'text-lg') }}">{{ $qa->label }}</span>
                                     @if (! $strip && ($qa->description ?? null))
                                         <span class="mt-0.5 block text-sm font-medium leading-snug {{ $filled ? '' : 'text-muted' }}">{{ $qa->description }}</span>
                                     @endif
                                 </span>
                                 @if ($external)<span class="sr-only">(otwiera się w nowej karcie)</span>@endif
-                                <span class="flex-none transition {{ $single ? 'text-3xl' : 'text-xl' }} group-hover:translate-x-1" aria-hidden="true">→</span>
+                                <span class="flex-none transition {{ $single ? 'text-3xl' : 'text-xl' }} {{ $card ? 'mt-auto self-end' : '' }} group-hover:translate-x-1 motion-reduce:transition-none" aria-hidden="true">→</span>
                             </a>
                         </li>
                     @endforeach
