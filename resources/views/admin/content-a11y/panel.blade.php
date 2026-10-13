@@ -6,6 +6,8 @@
     Expects: $html (zapisana treść), $field (nazwa pola treści, domyślnie content), $formId.
 --}}
 @php
+    // Do czasu odświeżenia cache tras po wdrożeniu trasy może nie być — panel działa wtedy bez sprawdzania na żywo.
+    $checkUrl = \Illuminate\Support\Facades\Route::has('admin.content-a11y.check') ? route('admin.content-a11y.check') : null;
     $issues = app(\App\Services\Content\ContentA11yChecker::class)->check($html ?? '');
     $summary = \App\Services\Content\ContentA11yChecker::summary($issues);
     $summaryText = fn ($s) => (! $s['errors'] && ! $s['warnings'])
@@ -25,11 +27,11 @@
         },
         async run(force = false) {
             const html = this.content();
-            if (! force && html === this.last) return;
+            if (! @js($checkUrl) || (! force && html === this.last)) return;
             this.last = html;
             this.loading = true; this.failed = false;
             try {
-                const r = await fetch(@js(route('admin.content-a11y.check')), {
+                const r = await fetch(@js($checkUrl), {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content },
                     body: JSON.stringify({ html }),
@@ -52,10 +54,12 @@
         @include('admin.content-a11y.issues', ['issues' => $issues])
     </div>
     <p x-show="failed" x-cloak class="mt-2 text-sm text-red-800" role="alert">Nie udało się sprawdzić treści — spróbuj ponownie.</p>
+    @if ($checkUrl)
     <button type="button" @click="run(true)" :disabled="loading"
         class="mt-3 inline-flex min-h-10 items-center gap-2 rounded-md bg-gray-100 px-4 text-sm font-bold text-ink hover:bg-brand-light disabled:opacity-60">
         <i class="fa-solid" :class="loading ? 'fa-spinner fa-spin' : 'fa-rotate'" aria-hidden="true"></i>
         <span x-text="loading ? 'Sprawdzam…' : 'Sprawdź teraz'">Sprawdź teraz</span>
     </button>
-    <p class="mt-2 text-xs text-muted">Uwagi nie blokują zapisu. Lista odświeża się sama po zmianach w treści.</p>
+    @endif
+    <p class="mt-2 text-xs text-muted">Uwagi nie blokują zapisu.@if ($checkUrl) Lista odświeża się sama po zmianach w treści.@endif</p>
 </section>
