@@ -113,7 +113,11 @@
                 @if($offer->contact_email) — {{ $offer->contact_email }}@endif
             </p>
         @endif
-        @if($offer->application_url)
+        @if($offer->applicationForm())
+            <p style="margin-top:4px; font-size:11px">
+                Formularz zgłoszeniowy: <strong>{{ route('praca.show', $offer) }}</strong>
+            </p>
+        @elseif($offer->application_url)
             <p style="margin-top:4px; font-size:11px">
                 Formularz zgłoszeniowy: <strong>{{ $offer->application_url }}</strong>
             </p>

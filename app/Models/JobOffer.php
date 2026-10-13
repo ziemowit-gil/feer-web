@@ -10,6 +10,7 @@ use App\Models\Attachment;
 class JobOffer extends Model
 {
     use \App\Models\Concerns\LogsActivity;
+    use \App\Models\Concerns\HasSzoForm;
 
     public const TYPES = [
         'pelny_etat'  => 'Pełny etat',
@@ -38,7 +39,7 @@ class JobOffer extends Model
         'contract_duration_type', 'contract_duration', 'start_date',
         'duties', 'requirements', 'nice_to_have', 'benefits',
         'contact_name', 'contact_email',
-        'application_url', 'application_cta_label', 'apply_note', 'grant_condition',
+        'application_url', 'application_cta_label', 'szo_form_slug', 'form_definition_id', 'apply_note', 'grant_condition',
         'offer_deadline', 'task_period',
         'audience', 'is_published', 'closes_at', 'order', 'archived_at',
     ];
@@ -97,8 +98,25 @@ class JobOffer extends Model
         return self::MODES[$this->mode] ?? $this->mode;
     }
 
+    /** Formularz zgłoszeń z SZO osadzony na stronie — dopóki nabór trwa. */
+    public function applicationForm(): ?FormDefinition
+    {
+        return $this->isClosed() ? null : $this->szoForm();
+    }
+
+    /** Czy przycisk aplikowania prowadzi poza serwis (zewnętrzny formularz w nowej karcie). */
+    public function applyIsExternal(): bool
+    {
+        return filled($this->application_url) && ! $this->applicationForm();
+    }
+
+    /** Dokąd prowadzi przycisk: formularz z SZO na tej stronie, zewnętrzny formularz albo e-mail kontaktowy. */
     public function applyHref(): ?string
     {
+        if ($this->applicationForm()) {
+            return '#aplikuj-formularz';
+        }
+
         if (filled($this->application_url)) {
             return $this->application_url;
         }

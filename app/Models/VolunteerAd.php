@@ -4,11 +4,10 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Support\Facades\Route;
 
 class VolunteerAd extends Model
 {
+    use \App\Models\Concerns\HasSzoForm;
     use \App\Models\Concerns\LogsActivity;
 
     /** Tryb działań wolontariatu (pytanie 3: gdzie/jak). */
@@ -56,31 +55,13 @@ class VolunteerAd extends Model
         return self::MODES[$this->q_mode] ?? $this->q_mode;
     }
 
-    /** Lustrzany formularz CMS formularza SZO wybranego w ogłoszeniu. */
-    public function formDefinition(): BelongsTo
-    {
-        return $this->belongsTo(FormDefinition::class);
-    }
-
-    /** Formularz zgłoszeniowy z SZO do osadzenia na stronie ogłoszenia (aktywny) albo null. */
-    public function applicationForm(): ?FormDefinition
-    {
-        if (blank($this->szo_form_slug) || ! Route::has('formularz.store')) {
-            return null;
-        }
-
-        $form = $this->formDefinition;
-
-        return $form?->is_active ? $form : null;
-    }
-
     /**
      * Dokąd prowadzi przycisk „Zgłoś się": formularz z SZO na tej stronie,
      * zewnętrzny formularz, a gdy go nie podano — e-mail kontaktowy oferty.
      */
     public function applyHref(): ?string
     {
-        if ($this->applicationForm()) {
+        if ($this->szoForm()) {
             return '#zgloszenie';
         }
 

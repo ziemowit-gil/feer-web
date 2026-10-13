@@ -159,10 +159,7 @@ class VolunteerAdController extends Controller
             : null;
 
         // Formularz z SZO: odświeżamy jego lustro w CMS-ie przy każdym zapisie oferty (pola mogły się zmienić w SZO).
-        $data['szo_form_slug'] = trim((string) ($data['szo_form_slug'] ?? '')) ?: null;
-        $data['form_definition_id'] = $data['szo_form_slug']
-            ? app(SzoFormMirror::class)->sync($data['szo_form_slug'], $data['contact_email'] ?? null)?->id
-            : null;
+        $data = app(SzoFormMirror::class)->attach($data, $data['contact_email'] ?? null);
 
         return $data;
     }

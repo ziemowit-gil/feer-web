@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\JobOfferRequest;
 use App\Models\JobOffer;
+use App\Services\SzoClient;
+use App\Services\SzoFormMirror;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
@@ -39,6 +41,7 @@ class JobOfferController extends Controller
     {
         return view('admin.job-offers.form', [
             'offer' => new JobOffer(['application_cta_label' => 'Aplikuj', 'mode' => 'stacjonarnie', 'job_type' => 'pelny_etat']),
+            'szoForms' => app(SzoClient::class)->forms(),
         ]);
     }
 
@@ -54,7 +57,7 @@ class JobOfferController extends Controller
 
     public function edit(JobOffer $praca)
     {
-        return view('admin.job-offers.form', ['offer' => $praca]);
+        return view('admin.job-offers.form', ['offer' => $praca, 'szoForms' => app(SzoClient::class)->forms()]);
     }
 
     public function update(JobOfferRequest $request, JobOffer $praca)
@@ -140,7 +143,8 @@ class JobOfferController extends Controller
         $data['order'] = $data['order'] ?? 0;
         $data['application_cta_label'] = trim((string) ($data['application_cta_label'] ?? '')) ?: 'Aplikuj';
 
-        return $data;
+        // Formularz zgłoszeń z SZO: odświeżamy jego lustro w CMS-ie przy każdym zapisie ogłoszenia.
+        return app(SzoFormMirror::class)->attach($data, $data['contact_email'] ?? null);
     }
 
     private function uniqueSlug(string $base, ?int $ignoreId = null): string

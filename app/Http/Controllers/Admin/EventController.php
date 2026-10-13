@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\EventRequest;
 use App\Models\Event;
+use App\Services\SzoClient;
+use App\Services\SzoFormMirror;
 use App\Models\Facilitator;
 use App\Models\Faq;
 use App\Models\LandingPage;
@@ -119,6 +121,7 @@ class EventController extends Controller
             ]),
             'allFaqs' => $this->faqOptions(),
             'facilitatorCatalog' => $this->facilitatorCatalog(),
+            'szoForms' => app(SzoClient::class)->forms(),
         ]);
     }
 
@@ -148,6 +151,7 @@ class EventController extends Controller
             'event' => $event,
             'allFaqs' => $this->faqOptions(),
             'facilitatorCatalog' => $this->facilitatorCatalog(),
+            'szoForms' => app(SzoClient::class)->forms(),
         ]);
     }
 
@@ -408,6 +412,9 @@ class EventController extends Controller
         $data['hide_registration'] = $request->boolean('hide_registration');
         $data['order'] = $data['order'] ?? 0;
         $data['registration_cta_label'] = trim((string) ($data['registration_cta_label'] ?? '')) ?: 'Zapisz się';
+
+        // Formularz zapisów z SZO: odświeżamy jego lustro w CMS-ie przy każdym zapisie wydarzenia.
+        $data = app(SzoFormMirror::class)->attach($data, $data['contact_email'] ?? null);
 
         // Pliki, FAQ i pomocnicze pola obsługujemy osobno.
         unset($data['facilitator_photo'], $data['remove_facilitator_photo'], $data['faqs'], $data['global_faqs'], $data['delete_series']);

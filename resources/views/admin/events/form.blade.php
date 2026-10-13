@@ -290,6 +290,12 @@
                             class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
                     </div>
                 </div>
+                @include('admin.partials.szo-form-select', [
+                    'model' => $event,
+                    'label' => 'Formularz zapisów z SZO',
+                    'emptyLabel' => '— bez formularza (przycisk z linkiem lub e-mailem) —',
+                    'help' => 'Formularz pojawi się na stronie wydarzenia w sekcji „Zapisy i kontakt”, a przycisk zapisu będzie do niego prowadził (ma pierwszeństwo przed linkiem do zapisów). Po terminie wydarzenia formularz znika.',
+                ])
                 <div>
                     <label for="contact_email" class="mb-1 block text-sm font-bold">E-mail kontaktowy <span class="font-normal text-muted">(zapasowo, gdy brak linku)</span></label>
                     <input type="email" id="contact_email" name="contact_email" value="{{ old('contact_email', $event->contact_email) }}" maxlength="255" placeholder="np. szkolenia@feer.org.pl"

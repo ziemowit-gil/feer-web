@@ -73,7 +73,7 @@
 
             @if (! $event->isPast() && $event->registrationHref())
                 <a href="{{ $event->registrationHref() }}"
-                   @if($event->registration_url) target="_blank" rel="noopener" @endif
+                   @if ($event->registrationIsExternal()) target="_blank" rel="noopener" @endif
                    class="mt-4 inline-flex items-center gap-2 rounded-lg px-6 py-3 font-bold text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
                    style="background: var(--accent); outline-color: var(--accent)">
                     {{ $event->registration_cta_label }} <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
@@ -272,13 +272,20 @@
                 </p>
             @endif
 
-            @if (! $event->isPast() && $event->registrationHref())
+            @if (! $event->isPast() && $event->registrationHref() && ! $event->registrationForm())
                 <a href="{{ $event->registrationHref() }}"
-                   @if($event->registration_url) target="_blank" rel="noopener" @endif
+                   @if ($event->registrationIsExternal()) target="_blank" rel="noopener" @endif
                    class="mt-4 inline-flex items-center gap-2 rounded-lg px-6 py-3 font-bold text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
                    style="background: var(--accent); outline-color: var(--accent)">
                     {{ $event->registration_cta_label }} <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
                 </a>
+            @endif
+
+            @if ($regForm = $event->registrationForm())
+                {{-- Formularz zapisów z SZO (lustro w CMS) — cel przycisku zapisu. --}}
+                <div id="zapisy-formularz" class="mt-6 scroll-mt-6">
+                    @include('formularz._embed', ['form' => $regForm, 'title' => 'Formularz zapisów', 'headingTag' => 'h3'])
+                </div>
             @endif
         </section>
     </article>

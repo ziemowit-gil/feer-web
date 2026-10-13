@@ -21,7 +21,7 @@
 
 @php
     // Formularz z SZO na tej stronie ma pierwszeństwo przed zewnętrznym linkiem.
-    $applyForm = $ad->applicationForm();
+    $applyForm = $ad->szoForm();
     $external = filled($ad->application_url) && ! $applyForm;
 @endphp
 

@@ -144,35 +144,10 @@
                     class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">{{ old('q_how_to_apply', $ad->q_how_to_apply) }}</textarea>
             </div>
             {{-- Formularz zgłoszeniowy z SZO — osadzany na stronie oferty, zgłoszenia trafiają do CRM. --}}
-            <div>
-                <label for="szo_form_slug" class="mb-1 block text-sm font-bold">Formularz zgłoszeniowy z SZO <span class="font-normal text-muted">(opcjonalnie)</span></label>
-                @if (empty($szoForms))
-                    <p class="text-sm text-muted">
-                        Lista formularzy z SZO jest niedostępna — integracja jest wyłączona albo SZO nie odpowiada
-                        (Ustawienia → Integracje → SZO).
-                        @if ($ad->szo_form_slug) Zostaje dotychczasowy formularz: <code>{{ $ad->szo_form_slug }}</code>.@endif
-                    </p>
-                    <input type="hidden" name="szo_form_slug" value="{{ old('szo_form_slug', $ad->szo_form_slug) }}">
-                @else
-                    <select id="szo_form_slug" name="szo_form_slug" aria-describedby="szo_form_slug_help"
-                        class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark sm:max-w-md">
-                        <option value="">— bez formularza (przycisk z linkiem lub e-mailem) —</option>
-                        @foreach ($szoForms as $szoForm)
-                            <option value="{{ $szoForm['slug'] }}" @selected(old('szo_form_slug', $ad->szo_form_slug) === $szoForm['slug'])>
-                                {{ $szoForm['title'] }} ({{ $szoForm['slug'] }})
-                            </option>
-                        @endforeach
-                    </select>
-                    <p id="szo_form_slug_help" class="mt-1 text-xs text-muted">
-                        Formularz pojawi się na stronie oferty w sekcji „Zgłoś się”, a przycisk będzie do niego prowadził
-                        (ma pierwszeństwo przed linkiem poniżej). Zgłoszenie założy kontakt w CRM i trafi do Skrzynki SZO;
-                        kopia zostaje w Formularze → „SZO: …”. Pola i zgody odświeżają się z SZO przy każdym zapisie oferty.
-                    </p>
-                @endif
-                @error('szo_form_slug')
-                    <p class="mt-1 text-sm text-red-700">{{ $message }}</p>
-                @enderror
-            </div>
+            @include('admin.partials.szo-form-select', [
+                'model' => $ad,
+                'help' => 'Formularz pojawi się na stronie oferty w sekcji „Zgłoś się”, a przycisk będzie do niego prowadził (ma pierwszeństwo przed linkiem poniżej).',
+            ])
             <div class="grid gap-4 sm:grid-cols-2">
                 <div>
                     <label for="application_url" class="mb-1 block text-sm font-bold">Link do formularza zgłoszeniowego</label>

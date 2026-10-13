@@ -68,7 +68,7 @@
             </dl>
 
             @if ($offer->applyHref())
-                <a href="{{ $offer->applyHref() }}" @if($offer->application_url) target="_blank" rel="noopener" @endif
+                <a href="{{ $offer->applyHref() }}" @if ($offer->applyIsExternal()) target="_blank" rel="noopener" @endif
                    class="mt-6 inline-flex items-center gap-2 rounded-lg px-6 py-3 font-bold text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
                    style="background: var(--accent); outline-color: var(--accent)">
                     {{ $offer->application_cta_label }} <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
@@ -160,12 +160,19 @@
                         @endif
                     </p>
                 @endif
-                @if ($offer->applyHref())
-                    <a href="{{ $offer->applyHref() }}" @if($offer->application_url) target="_blank" rel="noopener" @endif
+                @if ($offer->applyHref() && ! $offer->applicationForm())
+                    <a href="{{ $offer->applyHref() }}" @if ($offer->applyIsExternal()) target="_blank" rel="noopener" @endif
                        class="mt-4 inline-flex items-center gap-2 rounded-lg px-6 py-3 font-bold text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
                        style="background: var(--accent); outline-color: var(--accent)">
                         {{ $offer->application_cta_label }} <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
                     </a>
+                @endif
+
+                @if ($applyForm = $offer->applicationForm())
+                    {{-- Formularz zgłoszeń z SZO (lustro w CMS) — cel przycisku „Aplikuj”. --}}
+                    <div id="aplikuj-formularz" class="mt-6 scroll-mt-6">
+                        @include('formularz._embed', ['form' => $applyForm, 'title' => 'Formularz zgłoszeniowy', 'headingTag' => 'h3'])
+                    </div>
                 @endif
             </section>
 

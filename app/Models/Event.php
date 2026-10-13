@@ -18,6 +18,7 @@ class Event extends Model implements HasMedia
     use \App\Models\Concerns\BelongsToSite;
     use \App\Models\Concerns\ScopedByEditor;
     use \App\Models\Concerns\LogsActivity;
+    use \App\Models\Concerns\HasSzoForm;
 
     /** Rodzaj wydarzenia (z dedykowaną ikoną w widoku). */
     public const TYPES = [
@@ -51,7 +52,7 @@ class Event extends Model implements HasMedia
         'facilitator_instagram', 'facilitator_twitter',
         'type', 'mode', 'location', 'latitude', 'longitude', 'online_url',
         'starts_at', 'ends_at', 'published_at',
-        'registration_url', 'registration_cta_label', 'hide_registration',
+        'registration_url', 'registration_cta_label', 'hide_registration', 'szo_form_slug', 'form_definition_id',
         'capacity', 'capacity_note',
         'contact_email', 'price_info',
         'audience', 'is_published', 'is_featured', 'order', 'archived_at',
@@ -323,8 +324,8 @@ class Event extends Model implements HasMedia
     }
 
     /**
-     * Dokąd prowadzi przycisk zapisu: zewnętrzny formularz, a gdy go nie
-     * podano — e-mail kontaktowy wydarzenia.
+     * Dokąd prowadzi przycisk zapisu: formularz z SZO na tej stronie, zewnętrzny
+     * formularz, a gdy go nie podano — e-mail kontaktowy wydarzenia.
      */
     public function registrationHref(): ?string
     {
@@ -332,10 +333,26 @@ class Event extends Model implements HasMedia
             return null;
         }
 
+        if ($this->registrationForm()) {
+            return '#zapisy-formularz';
+        }
+
         if (filled($this->registration_url)) {
             return $this->registration_url;
         }
 
         return filled($this->contact_email) ? 'mailto:'.$this->contact_email : null;
+    }
+
+    /** Formularz zapisów z SZO osadzony na stronie — gdy zapisy są otwarte i widoczne. */
+    public function registrationForm(): ?FormDefinition
+    {
+        return $this->hide_registration || $this->isPast() ? null : $this->szoForm();
+    }
+
+    /** Czy przycisk zapisu prowadzi poza serwis (zewnętrzny formularz w nowej karcie). */
+    public function registrationIsExternal(): bool
+    {
+        return filled($this->registration_url) && ! $this->registrationForm();
     }
 }

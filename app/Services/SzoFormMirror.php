@@ -26,6 +26,20 @@ class SzoFormMirror
     }
 
     /**
+     * Dane zapisu treści z formularzem SZO (HasSzoForm): normalizuje `szo_form_slug`
+     * i ustawia `form_definition_id` na odświeżone lustro (albo null, gdy bez formularza).
+     */
+    public function attach(array $data, ?string $notificationEmail = null): array
+    {
+        $data['szo_form_slug'] = trim((string) ($data['szo_form_slug'] ?? '')) ?: null;
+        $data['form_definition_id'] = $data['szo_form_slug']
+            ? $this->sync($data['szo_form_slug'], $notificationEmail)?->id
+            : null;
+
+        return $data;
+    }
+
+    /**
      * Tworzy albo odświeża lustro formularza SZO. Gdy SZO nie odpowiada, zwraca
      * istniejące lustro (jeśli jest) — strona dalej ma działający formularz.
      */

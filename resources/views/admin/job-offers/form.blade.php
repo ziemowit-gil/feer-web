@@ -184,6 +184,10 @@
                         class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
                 </div>
             </div>
+            @include('admin.partials.szo-form-select', [
+                'model' => $offer,
+                'help' => 'Formularz pojawi się na stronie ogłoszenia w sekcji „Jak aplikować?”, a przycisk będzie do niego prowadził (ma pierwszeństwo przed linkiem powyżej). Po terminie naboru formularz znika.',
+            ])
         </div>
 
         {{-- Instrukcja aplikowania --}}

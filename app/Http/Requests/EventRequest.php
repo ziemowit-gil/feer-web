@@ -46,6 +46,7 @@ class EventRequest extends FormRequest
             'ends_at' => ['nullable', 'date', 'after_or_equal:starts_at'],
             'registration_url' => ['nullable', 'url', 'max:500'],
             'registration_cta_label' => ['nullable', 'string', 'max:60'],
+            'szo_form_slug' => ['nullable', 'string', 'max:120'],
             'hide_registration' => ['sometimes', 'boolean'],
             'capacity' => ['nullable', 'integer', 'min:1', 'max:9999'],
             'capacity_note' => ['nullable', 'string', 'max:255'],
