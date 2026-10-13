@@ -68,6 +68,29 @@
             @error('about_documents_intro') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
         </div>
 
+        <div>
+            <input type="hidden" name="layout_data[documents_hide_bip]" value="0">
+            <label class="flex cursor-pointer items-start gap-3 text-sm text-ink">
+                <input type="checkbox" name="layout_data[documents_hide_bip]" value="1" @checked(old('layout_data.documents_hide_bip', ($page->layout_data ?? [])['documents_hide_bip'] ?? false))
+                    class="mt-0.5 h-4 w-4 rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
+                <span><span class="font-bold">Wyłącz BIP</span><span class="block text-xs text-muted">Ukrywa pole „Pozostałe dokumenty publikujemy w Biuletynie Informacji Publicznej” z przyciskiem „Zobacz wszystkie”.</span></span>
+            </label>
+        </div>
+
+        <div class="grid gap-3 sm:grid-cols-2">
+            <div>
+                <label for="documents_more_url" class="mb-1 block text-sm font-bold">Dodatkowe dokumenty — adres <span class="font-normal text-muted">(opcjonalnie)</span></label>
+                <input id="documents_more_url" name="layout_data[documents_more_url]" type="text" maxlength="500" value="{{ old('layout_data.documents_more_url', ($page->layout_data ?? [])['documents_more_url'] ?? '') }}" placeholder="/dokumenty" aria-describedby="documents_more_hint"
+                    class="w-full rounded border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark">
+            </div>
+            <div>
+                <label for="documents_more_label" class="mb-1 block text-sm font-bold">Napis przycisku</label>
+                <input id="documents_more_label" name="layout_data[documents_more_label]" type="text" maxlength="80" value="{{ old('layout_data.documents_more_label', ($page->layout_data ?? [])['documents_more_label'] ?? '') }}" placeholder="Dodatkowe dokumenty"
+                    class="w-full rounded border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark">
+            </div>
+            <p id="documents_more_hint" class="text-xs text-muted sm:col-span-2">Przycisk pod listą plików, np. do strony z archiwum sprawozdań. Działa też przy wyłączonym BIP.</p>
+        </div>
+
         <div class="border-t border-gray-200 pt-3">
             <p class="text-sm font-bold text-ink">Pliki do pokazania na liście</p>
             <p class="mt-0.5 text-xs text-muted">Wgraj tu tylko wybrane dokumenty (np. najnowsze sprawozdanie, Standardy Ochrony Małoletnich, statut) — reszta zostaje w BIP pod przyciskiem powyżej.</p>

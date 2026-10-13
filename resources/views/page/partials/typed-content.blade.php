@@ -164,7 +164,7 @@
                 'team'      => $aboutTeam->isNotEmpty(),
                 'gallery'   => $galleryPhotos->isNotEmpty(),
                 'partners'  => ! empty($page->about_partner_ids),
-                'documents' => $page->attachments->isNotEmpty() || filled($page->about_documents_intro),
+                'documents' => $page->attachments->isNotEmpty() || filled($page->about_documents_intro) || filled(($page->layout_data ?? [])['documents_more_url'] ?? null),
                 'press'     => $aboutPressItems->isNotEmpty() || filled($page->about_press_intro),
                 'faq'       => (bool) $page->about_faq_visible,
                 default     => false,
@@ -562,8 +562,8 @@
         @break
 
         @case('documents')
-        {{-- Dokumenty i sprawozdania: wybrane pliki (rodzaj, rozmiar, data, grupy) + odnośnik do BIP po resztę --}}
-        @if ($page->attachments->isNotEmpty() || filled($page->about_documents_intro))
+        {{-- Dokumenty i sprawozdania: wybrane pliki (rodzaj, rozmiar, data, grupy), dodatkowe dokumenty, odnośnik do BIP (można wyłączyć) --}}
+        @if ($page->attachments->isNotEmpty() || filled($page->about_documents_intro) || filled(($page->layout_data ?? [])['documents_more_url'] ?? null))
             @php
                 $docGroups = $page->attachments->groupBy(fn ($d) => trim((string) $d->group));
                 $docIcon = fn (string $ext) => match (true) {
@@ -583,6 +583,7 @@
                         @if (filled($page->about_documents_intro))
                             <div class="mt-4 leading-relaxed text-ink">{!! nl2br(e($page->about_documents_intro)) !!}</div>
                         @endif
+                        @unless (($page->layout_data ?? [])['documents_hide_bip'] ?? false)
                         <div class="mt-6 rounded-md bg-brand-light p-5">
                             <p class="flex items-start gap-3 text-sm text-ink">
                                 <i class="fa-solid fa-landmark mt-0.5 text-brand-dark" aria-hidden="true"></i>
@@ -592,6 +593,7 @@
                                 {{ $page->aboutLabel('documents_more') }}<span class="sr-only"> dokumenty w BIP</span> <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
                             </a>
                         </div>
+                        @endunless
                     </div>
                     <div class="space-y-8">
                         @forelse ($docGroups as $groupName => $docs)
@@ -632,8 +634,18 @@
                                 </ul>
                             </div>
                         @empty
-                            <p class="rounded-md bg-gray-50 p-4 text-sm text-ink">Dokumenty znajdziesz w Biuletynie Informacji Publicznej.</p>
+                            @unless (($page->layout_data ?? [])['documents_hide_bip'] ?? false)
+                                <p class="rounded-md bg-gray-50 p-4 text-sm text-ink">Dokumenty znajdziesz w Biuletynie Informacji Publicznej.</p>
+                            @endunless
                         @endforelse
+                        @php $docMoreUrl = ($page->layout_data ?? [])['documents_more_url'] ?? null; @endphp
+                        @if (filled($docMoreUrl))
+                            <a href="{{ $docMoreUrl }}" class="inline-flex min-h-11 items-center gap-2 rounded-md bg-gray-100 px-5 font-bold text-ink hover:bg-brand-light focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-dark">
+                                <i class="fa-solid fa-folder-open text-brand-dark" aria-hidden="true"></i>
+                                {{ (($page->layout_data ?? [])['documents_more_label'] ?? null) ?: 'Dodatkowe dokumenty' }}
+                                <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+                            </a>
+                        @endif
                     </div>
                 </div>
             </section>

@@ -814,6 +814,9 @@ class PageController extends Controller
             // Metryczka: pokaż/ukryj na tej stronie (inherit = wg ustawień serwisu), podmiot publikujący.
             'layout_data.metka' => ['nullable', Rule::in(['inherit', 'show', 'hide'])],
             'layout_data.metka_entity' => ['nullable', 'boolean'],
+            'layout_data.documents_hide_bip' => ['nullable', 'boolean'],
+            'layout_data.documents_more_url' => ['nullable', 'string', 'max:500', 'regex:#^(https?://|/)#'],
+            'layout_data.documents_more_label' => ['nullable', 'string', 'max:80'],
             'metka_author' => ['nullable', 'string', 'max:160'],
             'published_by_id' => ['nullable', 'integer', 'exists:users,id'],
             'layout_data.source' => ['nullable', Rule::in(['news', 'blog'])],
