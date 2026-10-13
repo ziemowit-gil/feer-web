@@ -8,19 +8,13 @@
         @csrf
         @if ($partner->exists) @method('PUT') @endif
 
-        @if ($partner->exists && $partner->logo_url)
-            <div>
-                <p class="mb-1 text-sm font-bold">Obecne logo</p>
-                <img src="{{ $partner->logo_url }}" alt="{{ $partner->name ?: 'Aktualne logo partnera' }}" class="h-16 max-w-[12rem] rounded border border-gray-100 object-contain p-2">
-            </div>
-        @endif
-
-        <div>
-            <label for="logo" class="mb-1 block text-sm font-bold">{{ $partner->exists ? 'Zmień logo' : 'Logo' }}</label>
-            <input type="file" id="logo" name="logo" accept="image/*" {{ $partner->exists ? '' : 'required' }}
-                class="block w-full cursor-pointer text-sm text-muted file:mr-3 file:cursor-pointer file:rounded file:border-0 file:bg-brand-dark file:px-4 file:py-2 file:text-sm file:font-bold file:text-white hover:file:bg-brand-dark">
-            @error('logo') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
-        </div>
+        @include('admin.partials.library-image-picker', [
+            'name' => 'logo',
+            'label' => $partner->exists ? 'Logo' : 'Logo',
+            'current' => $partner->exists ? $partner->logo_url : null,
+            'required' => ! $partner->exists,
+            'help' => 'Wgraj plik z dysku albo wybierz logo wgrane wcześniej do biblioteki plików.',
+        ])
 
         <div>
             <label for="name" class="mb-1 block text-sm font-bold">Nazwa</label>

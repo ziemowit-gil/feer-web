@@ -18,6 +18,8 @@ use Illuminate\Http\Request;
  */
 class HeroSlideController extends Controller
 {
+    use \App\Http\Controllers\Concerns\AttachesLibraryMedia;
+
     /** Wyświetla listę slajdów sekcji hero. */
     public function index()
     {
@@ -42,16 +44,17 @@ class HeroSlideController extends Controller
             'button_url' => ['nullable', 'required_with:button_label', 'string', 'max:255'],
             'order' => ['nullable', 'integer', 'min:0'],
             'duration' => ['nullable', 'integer', 'min:1', 'max:60'],
-            'image' => ['required_without:unsplash_full_url', 'nullable', 'image', 'max:4096'],
-        ] + UnsplashImport::rules());
+            'image' => ['required_without_all:unsplash_full_url,image_library_id', 'nullable', 'image', 'max:4096'],
+            'image_library_id' => $this->libraryMediaRule(),
+        ] + UnsplashImport::rules(), ['image.required_without_all' => 'Wgraj zdjęcie, wybierz je z biblioteki albo z Unsplash.']);
 
         $data['order'] = $data['order'] ?? 0;
-        unset($data['image'], $data['unsplash_full_url'], $data['unsplash_download_location'], $data['unsplash_author']);
+        unset($data['image'], $data['image_library_id'], $data['unsplash_full_url'], $data['unsplash_download_location'], $data['unsplash_author']);
 
         $heroSlide = HeroSlide::create($data);
         if ($request->hasFile('image')) {
             $heroSlide->addMediaFromRequest('image')->toMediaCollection('image');
-        } else {
+        } elseif (! $this->attachFromLibrary($request, $heroSlide, 'image', 'image')) {
             UnsplashImport::attach($heroSlide, $request);
         }
 
@@ -75,16 +78,17 @@ class HeroSlideController extends Controller
             'order' => ['nullable', 'integer', 'min:0'],
             'duration' => ['nullable', 'integer', 'min:1', 'max:60'],
             'image' => ['nullable', 'image', 'max:4096'],
+            'image_library_id' => $this->libraryMediaRule(),
         ] + UnsplashImport::rules());
 
         $data['order'] = $data['order'] ?? 0;
-        unset($data['image'], $data['unsplash_full_url'], $data['unsplash_download_location'], $data['unsplash_author']);
+        unset($data['image'], $data['image_library_id'], $data['unsplash_full_url'], $data['unsplash_download_location'], $data['unsplash_author']);
 
         $heroSlide->update($data);
 
         if ($request->hasFile('image')) {
             $heroSlide->addMediaFromRequest('image')->toMediaCollection('image');
-        } else {
+        } elseif (! $this->attachFromLibrary($request, $heroSlide, 'image', 'image')) {
             UnsplashImport::attach($heroSlide, $request);
         }
 

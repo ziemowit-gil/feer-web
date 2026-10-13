@@ -15,6 +15,8 @@ use Illuminate\Http\Request;
  */
 class PartnerController extends Controller
 {
+    use \App\Http\Controllers\Concerns\AttachesLibraryMedia;
+
     /** Wyświetla listę partnerów posortowaną wg kolejności. */
     public function index()
     {
@@ -36,7 +38,9 @@ class PartnerController extends Controller
         unset($data['logo']);
 
         $partner = Partner::create($data);
-        $partner->addMediaFromRequest('logo')->toMediaCollection('logo');
+        if (! $this->attachFromLibrary($request, $partner, 'logo', 'logo')) {
+            $partner->addMediaFromRequest('logo')->toMediaCollection('logo');
+        }
 
         return redirect()->route('admin.partnerzy.index')->with('status', 'Partner został dodany.');
     }
@@ -57,6 +61,8 @@ class PartnerController extends Controller
 
         if ($request->hasFile('logo')) {
             $partner->addMediaFromRequest('logo')->toMediaCollection('logo');
+        } else {
+            $this->attachFromLibrary($request, $partner, 'logo', 'logo');
         }
 
         return redirect()->route('admin.partnerzy.index')->with('status', 'Partner został zaktualizowany.');
@@ -76,8 +82,10 @@ class PartnerController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'url' => ['nullable', 'string', 'max:255'],
             'order' => ['nullable', 'integer', 'min:0'],
-            'logo' => [$isCreate ? 'required' : 'nullable', 'image', 'max:2048'],
-        ]);
+            'logo' => [$isCreate ? 'required_without:logo_library_id' : 'nullable', 'nullable', 'image', 'max:2048'],
+            'logo_library_id' => $this->libraryMediaRule(),
+        ], ['logo.required_without' => 'Wgraj logo albo wybierz je z biblioteki.']);
+        unset($data['logo_library_id']);
 
         $data['order'] = $data['order'] ?? 0;
 

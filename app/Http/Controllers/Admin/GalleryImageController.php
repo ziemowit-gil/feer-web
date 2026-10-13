@@ -15,6 +15,8 @@ use Illuminate\Http\Request;
  */
 class GalleryImageController extends Controller
 {
+    use \App\Http\Controllers\Concerns\AttachesLibraryMedia;
+
     /** Wyświetla listę zdjęć w galerii publicznej. */
     public function index()
     {
@@ -35,14 +37,17 @@ class GalleryImageController extends Controller
         $data = $request->validate([
             'caption' => ['nullable', 'string', 'max:255'],
             'order' => ['nullable', 'integer', 'min:0'],
-            'image' => ['required', 'image', 'max:4096'],
-        ]);
+            'image' => ['required_without:image_library_id', 'nullable', 'image', 'max:4096'],
+            'image_library_id' => $this->libraryMediaRule(),
+        ], ['image.required_without' => 'Wgraj zdjęcie albo wybierz je z biblioteki.']);
 
         $data['order'] = $data['order'] ?? 0;
-        unset($data['image']);
+        unset($data['image'], $data['image_library_id']);
 
         $galleryImage = GalleryImage::create($data);
-        $galleryImage->addMediaFromRequest('image')->toMediaCollection('image');
+        if (! $this->attachFromLibrary($request, $galleryImage, 'image', 'image')) {
+            $galleryImage->addMediaFromRequest('image')->toMediaCollection('image');
+        }
 
         return redirect()->route('admin.galeria.index')->with('status', 'Zdjęcie zostało dodane.');
     }
@@ -60,15 +65,18 @@ class GalleryImageController extends Controller
             'caption' => ['nullable', 'string', 'max:255'],
             'order' => ['nullable', 'integer', 'min:0'],
             'image' => ['nullable', 'image', 'max:4096'],
+            'image_library_id' => $this->libraryMediaRule(),
         ]);
 
         $data['order'] = $data['order'] ?? 0;
-        unset($data['image']);
+        unset($data['image'], $data['image_library_id']);
 
         $galleryImage->update($data);
 
         if ($request->hasFile('image')) {
             $galleryImage->addMediaFromRequest('image')->toMediaCollection('image');
+        } else {
+            $this->attachFromLibrary($request, $galleryImage, 'image', 'image');
         }
 
         return redirect()->route('admin.galeria.index')->with('status', 'Zdjęcie zostało zaktualizowane.');

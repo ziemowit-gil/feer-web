@@ -8,19 +8,13 @@
         @csrf
         @if ($heroSlide->exists) @method('PUT') @endif
 
-        @if ($heroSlide->exists)
-            <div>
-                <p class="mb-1 text-sm font-bold">Obecne zdjęcie</p>
-                <img src="{{ $heroSlide->image_url }}" alt="{{ $heroSlide->title ?: 'Aktualne zdjęcie slajdu' }}" class="h-32 w-full max-w-xs rounded object-cover">
-            </div>
-        @endif
-
-        <div>
-            <label for="image" class="mb-1 block text-sm font-bold">{{ $heroSlide->exists ? 'Zmień zdjęcie' : 'Zdjęcie' }}</label>
-            <input type="file" id="image" name="image" accept="image/*" 
-                class="block w-full cursor-pointer text-sm text-muted file:mr-3 file:cursor-pointer file:rounded file:border-0 file:bg-brand-dark file:px-4 file:py-2 file:text-sm file:font-bold file:text-white hover:file:bg-brand-dark">
-            @error('image') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
-        </div>
+        @include('admin.partials.library-image-picker', [
+            'name' => 'image',
+            'label' => 'Zdjęcie slajdu',
+            'current' => $heroSlide->exists ? $heroSlide->image_url : null,
+            'required' => false,
+            'help' => 'Wgraj plik z dysku albo wybierz zdjęcie wgrane wcześniej do biblioteki plików.',
+        ])
 
         @include('admin.partials.unsplash-picker', ['initialQuery' => $heroSlide->title, 'titleFieldId' => 'title'])
 
