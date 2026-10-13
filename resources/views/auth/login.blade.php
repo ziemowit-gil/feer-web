@@ -20,10 +20,10 @@
         $notice = 'mb-5 flex items-start gap-2 rounded-md bg-brand-light px-4 py-3 text-sm text-ink';
     @endphp
 
-    <div class="mb-8">
-        <h1 class="text-2xl font-bold text-ink">Zaloguj się</h1>
+    <div class="mb-6">
+        <p class="text-xs font-bold uppercase tracking-widest text-muted">Panel administracyjny</p>
+        <h1 class="mt-1 text-2xl font-bold text-ink">Zaloguj się</h1>
         <span class="mt-3 block h-1 w-14 bg-brand" aria-hidden="true"></span>
-        <p class="mt-3 text-ink">Panel administracyjny serwisu {{ $siteSettings->site_name }}</p>
     </div>
 
     @if ($emergency)
@@ -44,9 +44,7 @@
 
     @if ($msOnly && ! $emergency)
         {{-- Tryb „tylko Microsoft": wyłącznie przycisk Microsoft 365 --}}
-        <div class="mb-6 space-y-2 text-ink">
-            <p>Do panelu logujesz się kontem organizacji — tymi samymi danymi, co do poczty elektronicznej.</p>
-        </div>
+        <p class="mb-6 text-ink">Zaloguj się kontem organizacji — tymi samymi danymi, co do poczty elektronicznej.</p>
         <a href="{{ route('auth.microsoft.redirect') }}" class="{{ $primary }}">
             @include('auth.partials.microsoft-logo')
             Zaloguj się przez Microsoft 365

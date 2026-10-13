@@ -26,48 +26,29 @@
         }
     </style>
 </head>
-<body class="min-h-screen bg-white text-ink antialiased">
-    <div class="flex min-h-screen flex-col lg:flex-row">
-        {{-- ===================== Panel marki (lewa strona) =====================
-             Płasko: jednolite tło w kolorze firmowym, bez gradientów i ozdobników.
-             Biały tekst na brand-dark ma kontrast ≥ 6:1. --}}
-        <aside class="flex flex-col justify-between bg-brand-dark px-8 py-10 text-white lg:w-1/2 lg:px-16 lg:py-16">
-            <div>
-                <a href="{{ route('home') }}" class="inline-flex items-center gap-3 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-brand-dark">
-                    @if ($siteSettings->logoUrl())
-                        <img src="{{ $siteSettings->logoUrl() }}" alt="" class="h-12 w-12 rounded-md bg-white object-contain p-1">
-                    @else
-                        <span class="flex h-12 w-12 items-center justify-center rounded-md bg-white text-xl font-bold text-brand-dark" aria-hidden="true">{{ mb_substr($siteSettings->site_name, 0, 1) }}</span>
-                    @endif
-                    <span class="text-lg font-bold">{{ $siteSettings->site_name }}</span>
-                </a>
-            </div>
+<body class="min-h-screen bg-gray-100 text-ink antialiased">
+    {{-- Logowanie i strony konta: jedna wyśrodkowana karta na jasnym tle, nad nią marka, pod nią powrót i stopka.
+         Płasko, w kolorach firmowych; nagłówek strony (h1) jest w treści karty. --}}
+    <div class="flex min-h-screen flex-col items-center justify-center px-4 py-10 sm:py-16">
+        <a href="{{ route('home') }}" class="mb-8 inline-flex items-center gap-3 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-4 focus-visible:ring-offset-gray-100">
+            @if ($siteSettings->logoUrl())
+                <img src="{{ $siteSettings->logoUrl() }}" alt="" class="h-12 w-12 rounded-md bg-white object-contain p-1 shadow-sm">
+            @else
+                <span class="flex h-12 w-12 items-center justify-center rounded-md bg-brand-dark text-xl font-bold text-white" aria-hidden="true">{{ mb_substr($siteSettings->site_name, 0, 1) }}</span>
+            @endif
+            <span class="max-w-xs text-lg font-bold leading-snug text-ink">{{ $siteSettings->site_name }}</span>
+        </a>
 
-            <div class="hidden lg:block">
-                <span class="mb-6 block h-1 w-14 bg-white" aria-hidden="true"></span>
-                <p class="max-w-md text-3xl font-bold leading-tight">@yield('brand_heading', 'Witaj ponownie')</p>
-                <p class="mt-4 max-w-md text-lg leading-relaxed text-white">@yield('brand_lead', 'Zaloguj się, aby kontynuować.')</p>
-            </div>
-
-            <p class="hidden text-sm text-white lg:block">
-                © {{ date('Y') }} {{ $siteSettings->site_name }} · <span style="font-family:'Pacifico',cursive">We</span>CMS
-            </p>
-        </aside>
-
-        {{-- ===================== Formularz (prawa strona) ===================== --}}
-        <main class="flex flex-1 items-center justify-center px-4 py-10 sm:px-8">
-            <div class="w-full max-w-md">
-                {{-- Logo widoczne na mobile (panel brandowy jest tam skrócony) --}}
-
-                {{ $slot }}
-
-                <p class="mt-8 text-center text-sm">
-                    <a href="{{ route('home') }}" class="inline-flex items-center gap-1.5 font-bold text-brand-dark underline underline-offset-4 hover:no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">
-                        <i class="fa-solid fa-arrow-left" aria-hidden="true"></i> Wróć do strony głównej
-                    </a>
-                </p>
-            </div>
+        <main class="w-full max-w-md rounded-md bg-white px-6 py-8 shadow-sm sm:px-10 sm:py-10">
+            {{ $slot }}
         </main>
+
+        <a href="{{ route('home') }}" class="mt-6 inline-flex items-center gap-1.5 text-sm font-bold text-brand-dark underline underline-offset-4 hover:no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">
+            <i class="fa-solid fa-arrow-left" aria-hidden="true"></i> Wróć do strony głównej
+        </a>
+        <p class="mt-8 text-xs text-muted">
+            © {{ date('Y') }} {{ $siteSettings->site_name }} · <span style="font-family:'Pacifico',cursive">We</span>CMS
+        </p>
     </div>
 </body>
 </html>
