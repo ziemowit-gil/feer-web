@@ -13,8 +13,7 @@
 <nav aria-label="Sekcje działania" class="proj-nav rounded-md bg-gray-50 p-5">
     @php $navHeading = $project->nav_title ?: $project->title; @endphp
     {{-- Krótka nazwa z pola „Krótka nazwa (menu boczne)”; długi pełny tytuł mniejszą czcionką. --}}
-    <p class="text-xs font-bold uppercase tracking-widest text-ink">W tym działaniu</p>
-    <p @class(['mt-1 font-bold leading-snug text-ink', 'text-base' => mb_strlen($navHeading) <= 40, 'text-[0.9375rem]' => mb_strlen($navHeading) > 40])>{{ $navHeading }}</p>
+    <p @class(['font-bold leading-snug text-ink', 'text-base' => mb_strlen($navHeading) <= 40, 'text-[0.9375rem]' => mb_strlen($navHeading) > 40])>{{ $navHeading }}</p>
     <span class="mb-3 mt-2 block h-1 w-10 bg-brand" aria-hidden="true"></span>
     <ul role="list" class="space-y-0.5">
         <li>
