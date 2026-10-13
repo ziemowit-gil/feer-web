@@ -620,6 +620,13 @@
                             <p class="text-sm text-muted">Działanie nie ma jeszcze podstron.</p>
                         @else
                             <p class="text-xs text-muted">Kliknięcie tytułu otwiera edycję podstrony — zapisz najpierw zmiany w projekcie.</p>
+                            {{-- Masowe akcje na zaznaczonych podstronach (formularz „project-pages-bulk” jest poza formularzem działania). --}}
+                            <div class="flex flex-wrap items-center gap-2 rounded-md bg-gray-50 p-2" role="group" aria-label="Masowe akcje na podstronach">
+                                <button type="button" onclick="document.querySelectorAll('input[form=project-pages-bulk]').forEach(c => c.checked = true)" class="inline-flex min-h-9 items-center rounded-md bg-white px-3 text-xs font-bold text-ink hover:bg-brand-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">Zaznacz wszystkie</button>
+                                <button type="button" onclick="document.querySelectorAll('input[form=project-pages-bulk]').forEach(c => c.checked = false)" class="inline-flex min-h-9 items-center rounded-md bg-white px-3 text-xs font-bold text-ink hover:bg-brand-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">Odznacz</button>
+                                <button type="submit" form="project-pages-bulk" name="action" value="publish" class="inline-flex min-h-9 items-center gap-1.5 rounded-md bg-brand-dark px-3 text-xs font-bold text-white hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark"><i class="fa-solid fa-eye" aria-hidden="true"></i> Opublikuj zaznaczone</button>
+                                <button type="submit" form="project-pages-bulk" name="action" value="unpublish" class="inline-flex min-h-9 items-center gap-1.5 rounded-md bg-white px-3 text-xs font-bold text-ink hover:bg-brand-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark"><i class="fa-solid fa-eye-slash" aria-hidden="true"></i> Ukryj zaznaczone</button>
+                            </div>
                             <ul class="space-y-1.5" role="list">
                                 @foreach ($pageTree as $node)
                                     @include('admin.projects.partials.page-tree-node', ['node' => $node, 'project' => $project, 'depth' => 0])
@@ -927,6 +934,11 @@
         </aside>
         </div>
     </form>
+
+{{-- Formularz masowych akcji na podstronach działania (poza formularzem działania — zagnieżdżone formularze są niedozwolone). --}}
+@if ($project->exists)
+    <form id="project-pages-bulk" method="POST" action="{{ route('admin.podstrony.bulk') }}" class="hidden">@csrf</form>
+@endif
 
     <style>
         .pe-section[open] > summary .fa-chevron-down { transform: rotate(180deg); }

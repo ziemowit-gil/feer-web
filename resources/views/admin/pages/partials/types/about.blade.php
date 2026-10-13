@@ -7,6 +7,12 @@
         <summary class="cursor-pointer rounded-lg px-4 py-3 text-sm font-bold text-ink hover:bg-gray-50">Kolejność sekcji</summary>
         <div class="border-t border-gray-100 px-4 py-4">
         <p class="mb-3 text-xs text-muted">Zmień kolejność wyświetlania sekcji. Nagłówek (tytuł i motto) zawsze pozostaje na górze; puste sekcje są automatycznie pomijane.</p>
+        {{-- Masowe akcje na sekcjach: zaznacz/odznacz wszystkie (włączenie) i przywrócenie domyślnej kolejności. --}}
+        <div class="mb-3 flex flex-wrap items-center gap-2 rounded-md bg-gray-50 p-2" role="group" aria-label="Masowe akcje na sekcjach">
+            <button type="button" data-about-bulk="all" class="inline-flex min-h-9 items-center rounded-md bg-white px-3 text-xs font-bold text-ink hover:bg-brand-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">Włącz wszystkie</button>
+            <button type="button" data-about-bulk="none" class="inline-flex min-h-9 items-center rounded-md bg-white px-3 text-xs font-bold text-ink hover:bg-brand-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">Wyłącz wszystkie</button>
+            <button type="button" data-about-bulk="default" class="inline-flex min-h-9 items-center gap-1.5 rounded-md bg-white px-3 text-xs font-bold text-ink hover:bg-brand-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark"><i class="fa-solid fa-rotate-left" aria-hidden="true"></i> Domyślna kolejność</button>
+        </div>
         <ul id="about-section-order-list" class="space-y-2 sm:max-w-md">
             @foreach ($page->orderedAboutSections() as $key)
                 <li data-section="{{ $key }}" class="flex items-center justify-between px-3 py-2 text-sm rounded-md bg-gray-50">
@@ -26,6 +32,28 @@
                 </li>
             @endforeach
         </ul>
+        <script>
+        (function () {
+            // Masowe akcje na sekcjach „O organizacji” (działają w przeglądarce, zapis z formularzem strony).
+            var list = document.getElementById('about-section-order-list');
+            if (!list || list.dataset.bulkReady) return;
+            list.dataset.bulkReady = '1';
+            var defaults = @js(array_keys(\App\Models\Page::ABOUT_SECTIONS));
+            document.querySelectorAll('[data-about-bulk]').forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    var mode = btn.dataset.aboutBulk;
+                    if (mode === 'all' || mode === 'none') {
+                        list.querySelectorAll('input[type=checkbox]').forEach(function (c) { c.checked = mode === 'all'; });
+                        return;
+                    }
+                    defaults.forEach(function (key) {
+                        var li = list.querySelector('li[data-section="' + key + '"]');
+                        if (li) list.appendChild(li);
+                    });
+                });
+            });
+        })();
+        </script>
         </div>
     </details>
 

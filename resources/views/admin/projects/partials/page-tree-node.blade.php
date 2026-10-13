@@ -2,6 +2,8 @@
 @php $kids = $node->tree_children ?? collect(); @endphp
 <li>
     <div class="flex flex-wrap items-center gap-2 px-3 py-2 rounded-md bg-white">
+        <input type="checkbox" name="ids[]" value="{{ $node->id }}" form="project-pages-bulk" aria-label="Zaznacz podstronę „{{ $node->title }}”"
+            class="h-4 w-4 flex-none rounded border-gray-500 text-brand-dark focus-visible:ring-2 focus-visible:ring-brand-dark">
         <i class="fa-solid {{ $kids->isNotEmpty() ? 'fa-folder-tree' : 'fa-file-lines' }} w-4 text-center text-gray-500" aria-hidden="true"></i>
         <a href="{{ route('admin.podstrony.edit', $node) }}" class="min-w-0 flex-1 truncate text-sm font-bold text-ink hover:text-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">{{ $node->title }}</a>
         @if (! $node->is_published)<span class="text-xs font-bold text-ink"><i class="fa-solid fa-pen-to-square mr-1 text-muted" aria-hidden="true"></i>Szkic</span>@endif
