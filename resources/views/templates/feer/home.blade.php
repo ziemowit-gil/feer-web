@@ -43,8 +43,7 @@
     @endif
     @include('templates.feer.partials.support-cta')
     @include('templates.feer.partials.bands-slot', ['slot' => 'end'])
-    {{-- Newsletter na samym dole: zapis na miejscu. --}}
-    @include('templates.feer.partials.newsletter')
+
 
     {{-- Administrator: lewitujący przycisk do edycji strony głównej (Ustawienia → Strona główna), jak „Edytuj" na podstronach. --}}
     @if (auth()->check() && auth()->user()->isAdmin())
