@@ -15,7 +15,7 @@ class ProjectQuestionController extends Controller
 {
     public function show(Project $project)
     {
-        abort_unless($project->is_published && ! $project->is_completed && $project->showsCoordinator(), 404);
+        abort_unless($project->is_published && ! $project->is_completed, 404);
 
         return view('projects.ask', [
             'project' => $project,
@@ -25,7 +25,7 @@ class ProjectQuestionController extends Controller
 
     public function store(Request $request, Project $project)
     {
-        abort_unless($project->is_published && ! $project->is_completed && $project->showsCoordinator(), 404);
+        abort_unless($project->is_published && ! $project->is_completed, 404);
 
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],

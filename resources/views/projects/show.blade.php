@@ -155,7 +155,7 @@
             $projFunding = $showTeamFunding ? (array) ($project->funding ?? []) : [];
             $hasFunding = $showTeamFunding && (! empty($projFunding['sources']) || (! empty($projFunding['budget']) && ! empty($projFunding['budget_public'])) || filled($project->funding_notice));
             $hasMainCta = ! empty($mainCta['label']) && ! empty($mainCta['url']);
-            $hasAside = $hasMainCta || $schedulePage || (! $navSidebar && ! $project->is_completed && $project->showsCoordinator()) || $linkPages->isNotEmpty() || $showNews || $projPartners->isNotEmpty() || $hasFunding;
+            $hasAside = $hasMainCta || $schedulePage || (! $navSidebar && ! $project->is_completed && ($project->showsCoordinator() || \Illuminate\Support\Facades\Route::has('projects.ask'))) || $linkPages->isNotEmpty() || $showNews || $projPartners->isNotEmpty() || $hasFunding;
         @endphp
         {{-- Układ kolumn w zwykłym CSS (nie zależy od zbudowanych klas Tailwinda): menu boczne zawsze po lewej od lg. --}}
         <style>
@@ -628,11 +628,12 @@
         @endif
 
                 {{-- Kontakt w sprawie działania — szare pole w kolumnie bocznej (gdy jest menu boczne, kontakt jest w nim). --}}
-                @if (! $navSidebar && ! $project->is_completed && $project->showsCoordinator())
+                @if (! $navSidebar && ! $project->is_completed && ($project->showsCoordinator() || \Illuminate\Support\Facades\Route::has('projects.ask')))
                     <div class="proj-box">
                         <h2 class="proj-box-h">
                             <i class="fa-solid fa-envelope" aria-hidden="true"></i> Masz pytania? Chętnie odpowiemy
                         </h2>
+                        @if ($project->showsCoordinator())
                         <div class="space-y-1.5 text-ink">
                             @if ($project->coordinator_name)
                                 @php
@@ -655,6 +656,7 @@
                                 @endif
                             @endif
                         </div>
+                        @endif
                         {{-- Pytanie przez formularz: zachęta i przycisk na całą szerokość na dole karty. --}}
                         @if (\Illuminate\Support\Facades\Route::has('projects.ask'))<p class="mt-5 text-sm text-ink">Najwygodniej napisz przez formularz: wiadomość trafi prosto do koordynatora tego działania.</p>@endif
                         @if (\Illuminate\Support\Facades\Route::has('projects.ask'))

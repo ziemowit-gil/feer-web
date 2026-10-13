@@ -42,4 +42,14 @@ class ProjectQuestionFormTest extends TestCase
         $this->assertSame('Pytanie o działanie: Akademia', $msg->subject);
         Mail::assertSent(ContactMessageMail::class, fn ($m) => $m->hasTo('ewelina.fraczek@feer.org.pl'));
     }
+
+    public function test_question_button_and_form_without_coordinator(): void
+    {
+        \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();
+        $cat = Category::create(['name' => 'Kat', 'slug' => 'kat']);
+        Project::create(['category_id' => $cat->id, 'title' => 'Bez osoby', 'slug' => 'bez-osoby', 'is_published' => true, 'show_coordinator' => false]);
+
+        $this->get('/dzialania/bez-osoby')->assertOk()->assertSee('Zadaj pytanie');
+        $this->get('/dzialania/bez-osoby/pytanie')->assertOk();
+    }
 }

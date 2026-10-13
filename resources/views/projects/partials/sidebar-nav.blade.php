@@ -54,7 +54,7 @@
 </nav>
 
     {{-- Kontakt z koordynatorem — osobny blok pod menu (poza jego szarym polem): zdjęcie (jeśli jest), imię, e-mail i telefon. --}}
-    @if (! $project->is_completed && $project->showsCoordinator())
+    @if (! $project->is_completed && ($project->showsCoordinator() || \Illuminate\Support\Facades\Route::has('projects.ask')))
         <section class="rounded-md bg-gray-50 p-5" aria-labelledby="proj-contact-h">
             <h2 id="proj-contact-h" class="text-base font-bold text-ink">Masz pytania? Chętnie odpowiemy</h2>
             @php $coordPhoto = $project->coordinatorPhoto(); @endphp
@@ -67,6 +67,7 @@
                     @if ($project->coordinator_name)<p class="text-base font-bold text-ink">{{ $project->coordinator_name }}</p>@endif
                 </div>
             @endif
+            @if ($project->showsCoordinator())
             <dl class="mt-3 space-y-1 text-sm text-ink">
                 <div><dt class="inline font-bold">E-mail:</dt> <dd class="inline"><a href="mailto:{{ $project->contactEmail() }}" class="font-bold text-brand-dark underline underline-offset-2 hover:no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">{{ $project->contactEmail() }}</a></dd></div>
                 @if ($project->coordinator_phone)
@@ -74,6 +75,7 @@
                     @if (filled($project->coordinator_phone_hours))<p class="text-xs">Telefon czynny {{ $project->coordinator_phone_hours }}</p>@endif
                 @endif
             </dl>
+            @endif
             @if (\Illuminate\Support\Facades\Route::has('projects.ask'))<p class="mt-4 text-sm text-ink">Najwygodniej napisz przez formularz: wiadomość trafi prosto do koordynatora tego działania.</p>@endif
             @if (\Illuminate\Support\Facades\Route::has('projects.ask'))
                 <a href="{{ route('projects.ask', ['project' => $project->slug]) }}" class="mt-2 flex min-h-12 w-full items-center justify-between gap-3 rounded-md bg-ink px-5 text-base font-bold text-white transition-colors hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2"><span>Zadaj pytanie</span><i class="fa-solid fa-arrow-right text-sm" aria-hidden="true"></i></a>
