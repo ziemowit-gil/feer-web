@@ -39,7 +39,6 @@
             @include('projects.partials.tab-page-nav', ['item' => $linkPage, 'depth' => 0, 'tabId' => null])
         @endforeach
     </ul>
-    @include('projects.partials.sidebar-extras', ['project' => $project])
 
     {{-- Kontakt z koordynatorem: mała karta z inicjałami, imieniem, e-mailem i telefonem. --}}
     @if (! $project->is_completed && $project->showsCoordinator())
@@ -63,6 +62,8 @@
             </div>
         </div>
     @endif
+
+    @include('projects.partials.sidebar-extras', ['project' => $project])
 
     {{-- Powrót: do kategorii i do wszystkich działań. --}}
     <ul role="list" class="mt-5 space-y-1 text-sm">
