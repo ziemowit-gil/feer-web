@@ -72,7 +72,7 @@ class MenuLinkPageTypesTest extends TestCase
 
         $linkHtml = $this->get(route('admin.podstrony.edit', $link))->assertOk()->getContent();
         $this->assertMatchesRegularExpression('~data-content-field class="hidden" data-hide-for-link~', $linkHtml);
-        $this->assertMatchesRegularExpression('~data-ftab-btn="seo" data-hide-for-link[^>]*class="hidden ~', $linkHtml);
+        $this->assertMatchesRegularExpression('~data-pe-section="seo" data-hide-for-link class="hidden"~', $linkHtml);
         $this->assertStringContainsString('name="type_data[target_url]"', $linkHtml);
         $this->assertStringContainsString('name="title"', $linkHtml);
 

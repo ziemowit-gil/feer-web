@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Services\Content\ContentA11yChecker;
 use App\Http\Controllers\Concerns\HandlesContentApproval;
 use App\Http\Controllers\Controller;
 use App\Models\Page;
@@ -504,7 +505,7 @@ class PageController extends Controller
         $route = $page->isAboutPerson() ? 'admin.osoby.index' : 'admin.podstrony.index';
 
         return redirect()->route($route)
-            ->with('status', $page->isAboutPerson() ? 'Osoba „' . $page->title . '” została dodana.' : 'Strona „' . $page->title . '” została utworzona.' . $notice)
+            ->with('status', $page->isAboutPerson() ? 'Osoba „' . $page->title . '” została dodana.' : 'Strona „' . $page->title . '” została utworzona.' . $notice . ContentA11yChecker::saveNotice($page->content))
             ->with('reload_url', $page->publicUrl());
     }
 
@@ -580,7 +581,7 @@ class PageController extends Controller
         $target = $request->boolean('stay') ? redirect()->route($page->isAboutPerson() ? 'admin.podstrony.edit' : 'admin.podstrony.edit', $page) : redirect()->route($route);
 
         return $target
-            ->with('status', $page->isAboutPerson() ? 'Osoba „' . $page->title . '" została zaktualizowana.' : 'Strona została zaktualizowana.' . $notice)
+            ->with('status', $page->isAboutPerson() ? 'Osoba „' . $page->title . '" została zaktualizowana.' : 'Strona została zaktualizowana.' . $notice . ContentA11yChecker::saveNotice($page->content))
             ->with('reload_url', $page->publicUrl());
     }
 

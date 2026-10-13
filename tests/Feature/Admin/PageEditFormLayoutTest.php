@@ -64,8 +64,9 @@ class PageEditFormLayoutTest extends TestCase
     }
 
     /**
-     * Regresja: nadmiarowy </div> w formularzu zamykał przeglądarce <form> przed panelami „Publikacja" i „SEO", więc ich pola
-     * nie trafiały do zapisu. Sprawdzamy, że znaczniki wewnątrz formularza zamykają się parami (div z div, form z form).
+     * Regresja: nadmiarowy </div> w formularzu zamykał przeglądarce <form> przed sekcjami „Publikacja" i „SEO", więc ich pola
+     * nie trafiały do zapisu. Sprawdzamy, że znaczniki wewnątrz formularza zamykają się parami (div z div, form z form)
+     * i że zwijane sekcje oraz panel publikacji leżą wewnątrz formularza.
      */
     public function test_znaczniki_wewnatrz_formularza_edycji_zamykaja_sie_parami(): void
     {
@@ -93,18 +94,19 @@ class PageEditFormLayoutTest extends TestCase
                 $pos = strpos($html, '</'.$tag, $pos) + strlen($tag) + 3;
                 continue;
             }
+            if (! $closing && preg_match('/name="(is_published|meta_description|parent_id)"/', $attrs, $fm)) {
+                $panelsSeen[] = 'pole:'.$fm[1];
+            }
             if (in_array($tag, $void, true) || str_ends_with(trim($attrs), '/')) {
                 continue;
             }
             if (! $closing) {
                 $stack[] = $tag;
                 $attrStack[] = substr($attrs, 0, 90);
-                if (preg_match('/data-ftab-panel="([a-z]+)"/', $attrs, $pm)) {
+                if (preg_match('/data-pe-section="([a-z]+)"/', $attrs, $pm)) {
                     $panelsSeen[] = $pm[1];
-                    if (count($stack) !== 2) {
-                        $this->fail("Panel {$pm[1]} nie jest bezpośrednim dzieckiem formularza; stos: ".implode(' > ', array_map(fn ($t, $a) => $t.'['.substr($a, 0, 50).']', $stack, $attrStack)));
-                    }
                 }
+
                 continue;
             }
             $top = array_pop($stack);
@@ -117,7 +119,9 @@ class PageEditFormLayoutTest extends TestCase
             }
         }
 
-        $this->assertSame(['tresc', 'typ', 'ustawienia', 'seo'], $panelsSeen);
+        foreach (['typ', 'seo', 'dostep', 'pole:is_published', 'pole:meta_description', 'pole:parent_id'] as $expected) {
+            $this->assertContains($expected, $panelsSeen, "„{$expected}” musi być wewnątrz formularza edycji.");
+        }
     }
 
     public function test_zakladka_seo_ma_podglad_wyszukiwarki_i_ocene_dlugosci(): void

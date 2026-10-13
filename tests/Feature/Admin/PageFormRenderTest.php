@@ -14,8 +14,8 @@ class PageFormRenderTest extends TestCase {
         $this->actingAs(User::factory()->create(['role' => User::ROLE_ADMIN]))
             ->get(route('admin.podstrony.create'))
             ->assertOk()
-            ->assertSee('Ustawienia strony')->assertSee('Menu i nawigacja')->assertSee('Dostęp i ochrona')
-            ->assertSee('Powiązania i kolejność')
+            ->assertSee('Publikacja')->assertSee('Miejsce w serwisie')->assertSee('Menu i nawigacja')->assertSee('Dostęp i ochrona')
+            ->assertSee('Dostęp i widoczność')->assertSee('Dostępność treści')
             ->assertSee('Wewnętrzna (dostęp ograniczony)')
             ->assertSee('Treść archiwalna');
     }

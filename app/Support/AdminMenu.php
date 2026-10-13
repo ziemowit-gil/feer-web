@@ -174,6 +174,9 @@ final class AdminMenu
                 $this->site->site_template === 'federation'
                     ? $this->item('organizations', 'Organizacje członkowskie', 'admin.organizacje.index', 'fa-people-roof', active: 'admin.organizacje.*')
                     : null,
+                ($this->can('pages') || $this->can('news') || $this->can('projects'))
+                    ? $this->item('content-a11y', 'Dostępność treści', 'admin.content-a11y.index', 'fa-universal-access', active: 'admin.content-a11y.*')
+                    : null,
                 $this->can('polls') ? $this->item('polls', 'Ankiety', 'admin.ankiety.index', 'fa-square-poll-vertical', active: 'admin.ankiety.*') : null,
                 $this->can('timeline')
                     ? $this->item('timeline', 'Oś czasu (historia)', 'admin.os-czasu.edit', 'fa-timeline', active: 'admin.os-czasu.*')

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Services\Content\ContentA11yChecker;
 use App\Http\Controllers\Concerns\HandlesContentApproval;
 use App\Http\Controllers\Controller;
 use App\Models\News;
@@ -135,7 +136,7 @@ class NewsController extends Controller
 
         $news->tags()->sync($this->resolveTagIds($request->input('tags', '')));
 
-        return $this->afterSave($request, $news)->with('status', 'News został utworzony.');
+        return $this->afterSave($request, $news)->with('status', 'News został utworzony.' . ContentA11yChecker::saveNotice($news->content));
     }
 
     /**
@@ -172,7 +173,7 @@ class NewsController extends Controller
 
         $news->tags()->sync($this->resolveTagIds($request->input('tags', '')));
 
-        return $this->afterSave($request, $news)->with('status', 'News został zaktualizowany.');
+        return $this->afterSave($request, $news)->with('status', 'News został zaktualizowany.' . ContentA11yChecker::saveNotice($news->content));
     }
 
     /**

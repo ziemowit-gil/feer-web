@@ -31,6 +31,7 @@ use App\Http\Controllers\Admin\HeroSlideController;
 use App\Http\Controllers\Admin\MaterialSubscriberController as AdminMaterialSubscriberController;
 use App\Http\Controllers\Admin\MediaLibraryController;
 use App\Http\Controllers\Admin\MediaToolsController;
+use App\Http\Controllers\Admin\ContentA11yController;
 use App\Http\Controllers\Admin\MeetingSignupController as AdminMeetingSignupController;
 use App\Http\Controllers\Admin\NavItemController;
 use App\Http\Controllers\Admin\NewsCategoryController as AdminNewsCategoryController;
@@ -559,6 +560,9 @@ Route::middleware(['auth', 'verified', '2fa', 'admin-site'])->prefix(config('app
 
     // Blog „Wiem FEER" — gdy moduł włączony, dostępny dla każdego użytkownika
     // panelu (jak multimedia); wyłączenie modułu chowa całą sekcję.
+    // Dostępność treści: raport dla serwisu i sprawdzanie na żywo z edytora (strony, aktualności, działania).
+    Route::get('dostepnosc-tresci', [ContentA11yController::class, 'index'])->name('content-a11y.index');
+    Route::post('dostepnosc-tresci/sprawdz', [ContentA11yController::class, 'check'])->name('content-a11y.check')->middleware('throttle:60,1');
     Route::get('multimedia', [MediaLibraryController::class, 'index'])->name('multimedia.index');
     Route::get('multimedia/obrazy', [MediaLibraryController::class, 'imagesJson'])->name('multimedia.images');
     Route::get('multimedia/audyt-alt', [MediaLibraryController::class, 'altAudit'])->name('multimedia.alt-audit');

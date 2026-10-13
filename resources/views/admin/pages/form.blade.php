@@ -35,7 +35,7 @@
 
     @unless ($isPersonForm)
         {{-- Nagłówek formularza: tytuł, status, typ i adres strony — od razu widać, co się edytuje. --}}
-        <header class="flex flex-wrap items-start justify-between gap-4 rounded-t-md bg-white px-5 pb-4 pt-5 sm:px-6" data-pe-head>
+        <header class="mb-6 flex flex-wrap items-start justify-between gap-4 rounded-md bg-white px-5 pb-4 pt-5 sm:px-6" data-pe-head>
             <div class="min-w-0">
                 <p class="text-xs font-bold uppercase tracking-widest text-muted">{{ $page->exists ? 'Edycja strony' : 'Nowa strona' }}</p>
                 <h1 class="mt-1 truncate text-2xl font-bold text-ink">{{ $page->exists ? $page->title : 'Nowa strona' }}</h1>
@@ -76,88 +76,39 @@
         .pe-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .75rem; }
         .pe-bar-left, .pe-bar-right { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; }
         .pe-bar-hint { font-size: .8rem; color: #4b5563; }
-        /* Czytelniejszy formularz strony: większe pola i etykiety, więcej oddechu, zakładki jako pasek z linią pod aktywną. */
-        /* Zakładki jak w formularzu działania: pigułki — aktywna w kolorze marki z białym tekstem, pozostałe jasnoszare. */
-        [data-page-form-tabs] [role="tablist"] { background: transparent; padding: 0; border: 0; border-radius: 0; gap: .5rem; margin-bottom: 1.5rem; }
-        /* Nagłówek edycji i zakładki — jeden biały pasek (pod nim zawartość zakładki na tle panelu). */
-        [data-pe-head] ~ [data-page-form-tabs] > [role="tablist"] { background: #fff; padding: .25rem 1.25rem 1rem; border-bottom: 1px solid #e5e7eb; border-radius: 0 0 .375rem .375rem; }
-        @media (min-width: 640px) { [data-pe-head] ~ [data-page-form-tabs] > [role="tablist"] { padding-left: 1.5rem; padding-right: 1.5rem; } }
-        [data-page-form-tabs] [data-ftab-btn] { border-radius: .375rem; padding: .5rem 1rem; font-size: .875rem; font-weight: 700; margin: 0; border: 0; box-shadow: none !important; background: #f3f4f6 !important; color: #1a1a1a !important; transition: background-color .15s; }
-        [data-page-form-tabs] [data-ftab-btn]:hover { background: #e5e7eb !important; }
-        [data-page-form-tabs] [data-ftab-btn][aria-selected="true"] { background: var(--color-brand-dark) !important; color: #fff !important; }
-        [data-page-form-tabs] [data-ftab-btn]:focus-visible { outline: 2px solid var(--color-brand-dark); outline-offset: 2px; }
-        [data-page-form-tabs] form > [data-ftab-panel] > div.rounded-md, [data-page-form-tabs] form > [data-ftab-panel] div.space-y-5.rounded-md { border-radius: .375rem; padding: 1.75rem; }
+        /* Czytelniejszy formularz strony: większe pola i etykiety, więcej oddechu. */
+        [data-page-form-tabs] form > div > div.space-y-5.rounded-md { border-radius: .375rem; padding: 1.75rem; }
+        /* Zwijane sekcje edycji (Typ i układ, SEO, Dostęp, Pliki…): strzałka obraca się po otwarciu. */
+        .pe-section[open] > summary .fa-chevron-down { transform: rotate(180deg); }
+        .pe-section > summary:focus-visible { outline: 3px solid #1d1d1a; outline-offset: -3px; border-radius: .375rem; }
+        .pe-section > summary:hover { background: #f9fafb; }
         [data-page-form-tabs] form .space-y-5 > * + * { margin-top: 1.75rem; }
         [data-page-form-tabs] form label.block.text-sm, [data-page-form-tabs] form label.mb-1.block { font-size: .95rem; color: #1a1a1a; margin-bottom: .4rem; }
         [data-page-form-tabs] form input[type="text"], [data-page-form-tabs] form input[type="url"], [data-page-form-tabs] form input[type="number"],
         [data-page-form-tabs] form input[type="date"], [data-page-form-tabs] form input[type="datetime-local"], [data-page-form-tabs] form select, [data-page-form-tabs] form textarea { font-size: .95rem; padding-top: .6rem; padding-bottom: .6rem; border-radius: .5rem; }
         [data-page-form-tabs] form p.text-xs.text-muted { font-size: .8125rem; line-height: 1.45; }
-        /* Panel „Publikacja": karty nie rozciągają się do wysokości sąsiada, a pola wyboru wyglądają jak przełączniki
+        /* Panele z przełącznikami (publikacja, miejsce, dostęp): karty nie rozciągają się do wysokości sąsiada, a pola wyboru wyglądają jak przełączniki
            (wyłączony: szary #6B7280 — granica ≥ 3:1; włączony: kolor marki). */
-        [data-page-form-tabs] [data-ftab-panel="ustawienia"] .grid { align-items: start; }
-        [data-page-form-tabs] [data-ftab-panel="ustawienia"] label.flex > input[type="checkbox"] { appearance: none; -webkit-appearance: none; flex: none; width: 2.75rem; height: 1.5rem; border-radius: 9999px; border: 0; background-color: #6b7280; position: relative; cursor: pointer; transition: background-color .2s; margin-top: .125rem; }
-        [data-page-form-tabs] [data-ftab-panel="ustawienia"] label.flex > input[type="checkbox"]::after { content: ""; position: absolute; top: .1875rem; left: .1875rem; width: 1.125rem; height: 1.125rem; border-radius: 9999px; background: #fff; transition: transform .2s; }
-        [data-page-form-tabs] [data-ftab-panel="ustawienia"] label.flex > input[type="checkbox"]:checked { background-color: var(--color-brand-dark); }
-        [data-page-form-tabs] [data-ftab-panel="ustawienia"] label.flex > input[type="checkbox"]:checked::after { transform: translateX(1.25rem); }
-        [data-page-form-tabs] [data-ftab-panel="ustawienia"] label.flex > input[type="checkbox"]:focus-visible { outline: 2px solid #1a1a1a; outline-offset: 2px; }
-        [data-page-form-tabs] [data-main-form-actions] { position: sticky; bottom: 0; z-index: 20; margin-top: 1.5rem; padding: .85rem 1.25rem; background: rgba(255,255,255,.96); border-top: 1px solid #e5e7eb; border-radius: .375rem .375rem 0 0; }
+        [data-page-form-tabs] [data-pe-toggles] .grid { align-items: start; }
+        [data-page-form-tabs] [data-pe-toggles] label.flex > input[type="checkbox"] { appearance: none; -webkit-appearance: none; flex: none; width: 2.75rem; height: 1.5rem; border-radius: 9999px; border: 0; background-color: #6b7280; position: relative; cursor: pointer; transition: background-color .2s; margin-top: .125rem; }
+        [data-page-form-tabs] [data-pe-toggles] label.flex > input[type="checkbox"]::after { content: ""; position: absolute; top: .1875rem; left: .1875rem; width: 1.125rem; height: 1.125rem; border-radius: 9999px; background: #fff; transition: transform .2s; }
+        [data-page-form-tabs] [data-pe-toggles] label.flex > input[type="checkbox"]:checked { background-color: var(--color-brand-dark); }
+        [data-page-form-tabs] [data-pe-toggles] label.flex > input[type="checkbox"]:checked::after { transform: translateX(1.25rem); }
+        [data-page-form-tabs] [data-pe-toggles] label.flex > input[type="checkbox"]:focus-visible { outline: 2px solid #1a1a1a; outline-offset: 2px; }
     </style>
 
     <div data-page-form-tabs>
-        <div class="mb-6 flex flex-wrap items-center gap-1.5 rounded-md p-1.5" role="tablist">
-            <button type="button" data-ftab-btn="tresc" role="tab" aria-selected="true"
-                class="rounded-lg bg-white px-4 py-2 text-sm font-semibold text-brand-dark shadow-sm transition-all">
-                <i class="fa-solid fa-align-left" aria-hidden="true"></i> Treść
-            </button>
-            <button type="button" data-ftab-btn="typ" role="tab" aria-selected="false"
-                class="rounded-lg px-4 py-2 text-sm font-semibold text-gray-500 transition-all hover:text-ink">
-                <i class="fa-solid fa-table-cells-large" aria-hidden="true"></i> Typ i układ
-            </button>
-            <button type="button" data-ftab-btn="ustawienia" role="tab" aria-selected="false"
-                class="rounded-lg px-4 py-2 text-sm font-semibold text-gray-500 transition-all hover:text-ink">
-                <i class="fa-solid fa-gear" aria-hidden="true"></i> Publikacja
-            </button>
-            <button type="button" data-ftab-btn="seo" data-hide-for-link role="tab" aria-selected="false"
-                class="{{ $isLinkType ? 'hidden' : '' }} rounded-lg px-4 py-2 text-sm font-semibold text-gray-500 transition-all hover:text-ink">
-                <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i> SEO
-            </button>
-            @if ($page->exists)
-                @if ($currentType !== 'wspolpraca')
-                <button type="button" data-ftab-btn="pliki" data-hide-for-link data-wspolpraca-tab role="tab" aria-selected="false"
-                    class="{{ $isLinkType ? 'hidden' : '' }} rounded-lg px-4 py-2 text-sm font-semibold text-gray-500 transition-all hover:text-ink">
-                    <i class="fa-solid fa-paperclip" aria-hidden="true"></i> Pliki
-                    @if ($page->attachments->isNotEmpty())
-                        <span class="ml-1 text-xs font-bold">{{ $page->attachments->count() }}</span>
-                    @endif
-                </button>
-                <button type="button" data-ftab-btn="galeria" data-hide-for-link data-wspolpraca-tab role="tab" aria-selected="false"
-                    class="{{ $isLinkType ? 'hidden' : '' }} rounded-lg px-4 py-2 text-sm font-semibold text-gray-500 transition-all hover:text-ink">
-                    <i class="fa-solid fa-images" aria-hidden="true"></i> Galeria
-                    @if ($page->images->isNotEmpty())
-                        <span class="ml-1 text-xs font-bold">{{ $page->images->count() }}</span>
-                    @endif
-                </button>
-                <button type="button" data-ftab-btn="etr" data-hide-for-link data-wspolpraca-tab role="tab" aria-selected="false"
-                    class="{{ $isLinkType ? 'hidden' : '' }} rounded-lg px-4 py-2 text-sm font-semibold text-gray-500 transition-all hover:text-ink">
-                    <i class="fa-solid fa-book-open-reader" aria-hidden="true"></i> ETR
-                    @if ($page->etr?->is_enabled)
-                        <span class="ml-1 text-xs text-ink font-bold"><i class="fa-solid fa-circle-info mr-1 text-brand-dark" aria-hidden="true"></i>aktywna</span>
-                    @endif
-                </button>
-                @endif
-            @endif
-        </div>
-
         @if ($page->exists)
             @include('admin.partials.edit-lock', ['lockType' => 'page', 'lockId' => $page->id])
         @endif
 
-        <form id="page-edit-form" method="POST" action="{{ $page->exists ? route('admin.podstrony.update', $page) : route('admin.podstrony.store') }}" enctype="multipart/form-data" class="space-y-6">
+        <form id="page-edit-form" method="POST" action="{{ $page->exists ? route('admin.podstrony.update', $page) : route('admin.podstrony.store') }}" enctype="multipart/form-data"
+            class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_21rem] lg:items-start">
             @csrf
             @if ($page->exists) @method('PUT') @endif
 
-            {{-- ============================ TREŚĆ ============================ --}}
-            <div data-ftab-panel="tresc" class="space-y-6">
+            {{-- ============ LEWA KOLUMNA: treść i zwijane sekcje ============ --}}
+            <div class="min-w-0 space-y-6">
                 <div data-hide-for-link class="{{ $isLinkType ? 'hidden' : '' }}">
                 @include('admin.partials.template-panel', [
                     'templateType'   => 'page',
@@ -259,11 +210,13 @@
                     </div>
                     </div>
                 </div>
-            </div>
 
-            {{-- ============================ TYP I UKŁAD ============================ --}}
-            <div data-ftab-panel="typ" class="hidden space-y-6">
-                <div class="space-y-5 p-6 rounded-md bg-white">
+                <details class="pe-section rounded-md bg-white" data-pe-section="typ" @if (! $page->exists || $isPersonForm) open @endif>
+                    <summary class="flex cursor-pointer list-none items-center justify-between gap-3 px-6 py-4 text-base font-bold text-ink [&::-webkit-details-marker]:hidden">
+                        <span>Typ i układ</span>
+                        <i class="fa-solid fa-chevron-down text-sm text-muted transition-transform" aria-hidden="true"></i>
+                    </summary>
+                    <div class="space-y-5 border-t border-gray-100 px-6 pb-6 pt-5">
                     <div class="{{ $isPersonForm ? 'sm:w-1/2' : '' }}">
                         @if ($isPersonForm)
                             <input type="hidden" name="type" value="about_person">
@@ -485,51 +438,31 @@
                     @include('admin.pages.partials.type-data-fields', ['currentType' => $currentType])
 
                     @include('admin.pages.partials.types.cooperation')
-                </div>
-            </div>
-
-            {{-- ==================== PUBLIKACJA I POWIĄZANIA ==================== --}}
-            <div data-ftab-panel="ustawienia" class="hidden space-y-6">
-                {{-- Karta: ustawienia strony — pogrupowane: publikacja, menu i nawigacja, dodatki, dostęp i ochrona --}}
+                    </div>
+                </details>
+                <details class="pe-section rounded-md bg-white" data-pe-section="seo" data-hide-for-link @class(['hidden' => $isLinkType])>
+                    <summary class="flex cursor-pointer list-none items-center justify-between gap-3 px-6 py-4 text-base font-bold text-ink [&::-webkit-details-marker]:hidden">
+                        <span>SEO i udostępnianie</span>
+                        <i class="fa-solid fa-chevron-down text-sm text-muted transition-transform" aria-hidden="true"></i>
+                    </summary>
+                    <div class="space-y-5 border-t border-gray-100 px-6 pb-6 pt-5">
+                        @include('admin.partials.seo-fields', ['model' => $page])
+                    </div>
+                </details>
+                <details class="pe-section rounded-md bg-white" data-pe-section="dostep" data-pe-toggles>
+                    <summary class="flex cursor-pointer list-none items-center justify-between gap-3 px-6 py-4 text-base font-bold text-ink [&::-webkit-details-marker]:hidden">
+                        <span>Dostęp i widoczność</span>
+                        <i class="fa-solid fa-chevron-down text-sm text-muted transition-transform" aria-hidden="true"></i>
+                    </summary>
+                    <div class="space-y-5 border-t border-gray-100 px-6 pb-6 pt-5">
                 @php
                     $row = 'flex cursor-pointer items-start gap-4 py-4';
                     $rowTitle = 'block text-[15px] font-bold text-ink';
                     $rowHint = 'mt-0.5 block text-sm leading-snug text-muted';
                     $groupTitle = 'text-xs font-bold uppercase tracking-widest text-muted';
                 @endphp
-                <div class="p-6 sm:p-8 rounded-md bg-white"
-                    x-data="{ pub: {{ old('is_published', $page->is_published ?? true) ? 'true' : 'false' }}, sideNav: {{ old('show_side_nav', $page->show_side_nav ?? true) ? 'true' : 'false' }} }">
-                    <div class="mb-2">
-                        <h2 class="text-lg font-bold text-ink">Ustawienia strony</h2>
-                        <p class="mt-1 text-sm text-muted">Widoczność, miejsce w menu i nawigacji oraz ochrona strony.</p>
-                    </div>
-
-                    {{-- 1. Publikacja --}}
-                    <section aria-labelledby="grp-publikacja" class="mt-6">
-                        <h3 id="grp-publikacja" class="{{ $groupTitle }}">Publikacja</h3>
-                        <div class="mt-2 divide-y divide-gray-100">
-                            <div>
-                                <label class="{{ $row }}">
-                                    <input type="checkbox" name="is_published" value="1" {{ old('is_published', $page->is_published ?? true) ? 'checked' : '' }} @change="pub = $event.target.checked">
-                                    <span><span class="{{ $rowTitle }}">Opublikowana</span><span class="{{ $rowHint }}">Strona jest dostępna publicznie.</span></span>
-                                </label>
-                                {{-- Harmonogram: data i godzina pierwszego pokazania strony --}}
-                                <div x-show="pub" x-cloak class="mb-4 ml-[3.75rem] rounded-lg bg-gray-50 p-4">
-                                    <label for="publish_at" class="mb-1.5 block text-sm font-bold text-ink"><i class="fa-regular fa-clock mr-1 text-brand-dark" aria-hidden="true"></i>Opublikuj dopiero od <span class="font-normal text-muted">(opcjonalnie)</span></label>
-                                    <input type="datetime-local" id="publish_at" name="publish_at" value="{{ old('publish_at', $page->publish_at?->format('Y-m-d\TH:i')) }}" class="rounded-lg border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark">
-                                    @error('publish_at') <p class="mt-1 text-sm text-red-700">{{ $message }}</p> @enderror
-                                    <p class="mt-2 text-xs text-muted">Puste = widoczna natychmiast. Podaj datę, aby strona pojawiła się publicznie dopiero od tej chwili.</p>
-                                </div>
-                            </div>
-                            <label class="{{ $row }}">
-                                <input type="checkbox" name="is_archived" value="1" {{ old('is_archived', $page->is_archived ?? false) ? 'checked' : '' }}>
-                                <span><span class="{{ $rowTitle }}"><i class="fa-solid fa-clock-rotate-left mr-1 text-muted" aria-hidden="true"></i>Treść archiwalna</span><span class="{{ $rowHint }}">Pokazuje baner, że treść może być nieaktualna (pozostaje w wyszukiwarce).</span></span>
-                            </label>
-                        </div>
-                    </section>
-
                     {{-- Dostęp do strony: poziomy widoczności (nie dotyczy typów wewnętrznych — te mają własny tryb w „Typ i układ") --}}
-                    <section aria-labelledby="grp-dostep" data-hide-for-link class="mt-8 {{ in_array($currentType, ['internal', 'internal_hub', 'brand_assets'], true) || $isLinkType ? 'hidden' : '' }}" data-access-level-section
+                    <section aria-labelledby="grp-dostep" data-hide-for-link class="{{ in_array($currentType, ['internal', 'internal_hub', 'brand_assets'], true) || $isLinkType ? 'hidden' : '' }}" data-access-level-section
                         x-data="{ level: '{{ old('access_level', $page->access_level ?: 'inherit') }}' }">
                         <h3 id="grp-dostep" class="{{ $groupTitle }}">Dostęp do strony</h3>
                         <div class="mt-3 space-y-4">
@@ -571,22 +504,6 @@
                             </fieldset>
                         </div>
                     </section>
-
-                    {{-- 2. Menu i nawigacja --}}
-                    <section aria-labelledby="grp-menu" class="mt-8">
-                        <h3 id="grp-menu" class="{{ $groupTitle }}">Menu i nawigacja</h3>
-                        <div class="mt-2 divide-y divide-gray-100">
-                            <label class="{{ $row }}">
-                                <input type="checkbox" name="show_in_menu" value="1" {{ old('show_in_menu', $page->show_in_menu ?? true) ? 'checked' : '' }}>
-                                <span><span class="{{ $rowTitle }}">Dodaj do menu</span><span class="{{ $rowHint }}">Tylko strony główne (bez rodzica i działania) trafiają do nawigacji.</span></span>
-                            </label>
-                            <label class="{{ $row }}">
-                                <input type="checkbox" name="hide_in_sitemap" value="1" {{ old('hide_in_sitemap', $page->hide_in_sitemap ?? false) ? 'checked' : '' }}>
-                                <span><span class="{{ $rowTitle }}">Ukryj na mapie strony</span><span class="{{ $rowHint }}">Strona działa pod swoim adresem, ale nie pojawia się na mapie strony ani w sitemap.xml (np. strony testowe).</span></span>
-                            </label>
-                        </div>
-                    </section>
-
                     {{-- 3. Dodatki --}}
                     <section aria-labelledby="grp-dodatki" class="mt-8 {{ in_array($currentType, ['about', 'contact'], true) || $isLinkType ? 'hidden' : '' }}" data-gallery-toggle data-hide-for-link>
                         <h3 id="grp-dodatki" class="{{ $groupTitle }}">Dodatki</h3>
@@ -606,7 +523,6 @@
                             </label>
                         </div>
                     </section>
-
                     {{-- 4. Dostęp i ochrona --}}
                     <section aria-labelledby="grp-ochrona" class="mt-8">
                         <h3 id="grp-ochrona" class="{{ $groupTitle }}">Dostęp i ochrona</h3>
@@ -629,67 +545,9 @@
                             @endif
                         </div>
                     </section>
-                </div>
-
-                {{-- Karta: powiązania i kolejność --}}
-                <div class="p-6 rounded-md bg-white">
-                    <div class="mb-4">
-                        <h2 class="text-base font-bold text-ink">Powiązania i kolejność</h2>
-                        <p class="mt-0.5 text-xs text-muted">Umiejscowienie strony w strukturze serwisu.</p>
-                    </div>
-
-                    <div class="grid gap-5 sm:grid-cols-2">
-                        <div>
-                            <label for="parent_id" class="mb-1 block text-sm font-bold">Nadrzędna strona</label>
-                            <select id="parent_id" name="parent_id" class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
-                                <option value="">— brak (strona główna) —</option>
-                                @foreach ($parentOptions as $option)
-                                    <option value="{{ $option->id }}" {{ (int) old('parent_id', $page->parent_id ?? request('parent_id')) === $option->id ? 'selected' : '' }}>
-                                        {{ $option->title }}
-                                    </option>
-                                @endforeach
-                            </select>
-                            <p class="mt-1 text-xs text-muted">Strony z tym samym rodzicem tworzą wspólne, osobne podmenu.</p>
-                            @error('parent_id') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
-                        </div>
-
-                        <div>
-                            <label for="project_id" class="mb-1 block text-sm font-bold">Powiąż z działaniem</label>
-                            <select id="project_id" name="project_id" data-project-select class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
-                                <option value="">— brak —</option>
-                                @foreach ($projectOptions as $option)
-                                    <option value="{{ $option->id }}" {{ (int) old('project_id', $page->project_id) === $option->id ? 'selected' : '' }}>
-                                        {{ $option->title }}
-                                    </option>
-                                @endforeach
-                            </select>
-                            <p class="mt-1 text-xs text-muted">Strona zachowa własny adres, a dodatkowo pojawi się na stronie projektu.</p>
-                            @error('project_id') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
-                        </div>
-
-                        <div class="sm:col-span-2 {{ $hasProject ? '' : 'hidden' }}" data-project-display-wrap>
-                            <label for="project_display" class="mb-1 block text-sm font-bold">Jak pokazać na stronie działania</label>
-                            <select id="project_display" name="project_display" class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark sm:w-2/3">
-                                @foreach (\App\Models\Page::PROJECT_DISPLAYS as $value => $label)
-                                    <option value="{{ $value }}" {{ old('project_display', $page->project_display ?? 'link') === $value ? 'selected' : '' }}>{{ $label }}</option>
-                                @endforeach
-                            </select>
-                            <p class="mt-1 text-xs text-muted">Jako sam odnośnik, jako zakładka albo jako sekcja w treści projektu.</p>
-                            @error('project_display') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
-                        </div>
-
-                        <div>
-                            <label for="order" class="mb-1 block text-sm font-bold">Kolejność</label>
-                            <input type="number" id="order" name="order" min="0" value="{{ old('order', $page->order) }}"
-                                class="w-28 rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
-                            <p class="mt-1 text-xs text-muted">Mniejsza liczba = wyżej.</p>
-                        </div>
-                    </div>
-                </div>
-
                 {{-- ==================== DOSTĘPNOŚĆ STRONY ==================== --}}
                 @php $currentWip = old('wip_mode', $page->wip_mode); @endphp
-                <div class="space-y-5 p-6 rounded-md bg-white">
+                <div class="space-y-5 border-t border-gray-100 pt-6">
                     <div>
                         <p class="text-sm font-bold uppercase tracking-wide text-muted">Dostępność strony</p>
                         <p class="mt-1 text-xs text-muted">Tymczasowo wyłącz stronę lub oznacz, że jest w przygotowaniu. Działa niezależnie od statusu publikacji.</p>
@@ -744,47 +602,166 @@
                         </div>
                     </div>
                 </div>
+                    </div>
+                </details>
             </div>
 
-            {{-- ============================ SEO ============================ --}}
-            <div data-ftab-panel="seo" class="hidden space-y-6">
-                @include('admin.partials.seo-fields', ['model' => $page])
-            </div>
+            {{-- ============ PRAWA KOLUMNA: publikacja, dostępność treści, miejsce w serwisie ============ --}}
+            <aside class="space-y-4 lg:sticky lg:top-4 lg:max-h-[calc(100vh-2rem)] lg:overflow-y-auto lg:pb-1" aria-label="Publikacja i miejsce strony">
+                @php
+                    $row = 'flex cursor-pointer items-start gap-4 py-3';
+                    $rowTitle = 'block text-[15px] font-bold text-ink';
+                    $rowHint = 'mt-0.5 block text-sm leading-snug text-muted';
+                    $groupTitle = 'text-sm font-bold uppercase tracking-widest text-muted';
+                @endphp
+                <div class="rounded-md bg-white p-5" data-pe-toggles
+                    x-data="{ pub: {{ old('is_published', $page->is_published ?? true) ? 'true' : 'false' }} }">
+                    {{-- 1. Publikacja --}}
+                    <section aria-labelledby="grp-publikacja">
+                        <h3 id="grp-publikacja" class="{{ $groupTitle }}">Publikacja</h3>
+                        <div class="mt-2 divide-y divide-gray-100">
+                            <div>
+                                <label class="{{ $row }}">
+                                    <input type="checkbox" name="is_published" value="1" {{ old('is_published', $page->is_published ?? true) ? 'checked' : '' }} @change="pub = $event.target.checked">
+                                    <span><span class="{{ $rowTitle }}">Opublikowana</span><span class="{{ $rowHint }}">Strona jest dostępna publicznie.</span></span>
+                                </label>
+                                {{-- Harmonogram: data i godzina pierwszego pokazania strony --}}
+                                <div x-show="pub" x-cloak class="mb-3 rounded-lg bg-gray-50 p-3">
+                                    <label for="publish_at" class="mb-1.5 block text-sm font-bold text-ink"><i class="fa-regular fa-clock mr-1 text-brand-dark" aria-hidden="true"></i>Opublikuj dopiero od <span class="font-normal text-muted">(opcjonalnie)</span></label>
+                                    <input type="datetime-local" id="publish_at" name="publish_at" value="{{ old('publish_at', $page->publish_at?->format('Y-m-d\TH:i')) }}" class="rounded-lg border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark">
+                                    @error('publish_at') <p class="mt-1 text-sm text-red-700">{{ $message }}</p> @enderror
+                                    <p class="mt-2 text-xs text-muted">Puste = widoczna natychmiast. Podaj datę, aby strona pojawiła się publicznie dopiero od tej chwili.</p>
+                                </div>
+                            </div>
+                            <label class="{{ $row }}">
+                                <input type="checkbox" name="is_archived" value="1" {{ old('is_archived', $page->is_archived ?? false) ? 'checked' : '' }}>
+                                <span><span class="{{ $rowTitle }}"><i class="fa-solid fa-clock-rotate-left mr-1 text-muted" aria-hidden="true"></i>Treść archiwalna</span><span class="{{ $rowHint }}">Pokazuje baner, że treść może być nieaktualna (pozostaje w wyszukiwarce).</span></span>
+                            </label>
+                        </div>
+                    </section>
+                    <div class="mt-4 space-y-2 border-t border-gray-100 pt-4">
+                        @if ($page->exists)
+                            <button type="submit" name="stay" value="1" class="pe-btn pe-btn-primary w-full justify-center"><i class="fa-solid fa-floppy-disk" aria-hidden="true"></i>Zapisz</button>
+                            <button type="submit" class="pe-btn w-full justify-center"><i class="fa-solid fa-check" aria-hidden="true"></i>Zapisz i zamknij</button>
+                        @else
+                            <button type="submit" class="pe-btn pe-btn-primary w-full justify-center"><i class="fa-solid fa-floppy-disk" aria-hidden="true"></i>Zapisz</button>
+                        @endif
+                        <div class="flex flex-wrap justify-between gap-2 pt-1">
+                            <a href="{{ $isPersonForm ? route('admin.osoby.index') : route('admin.podstrony.index') }}" class="pe-btn pe-btn-ghost"><i class="fa-solid fa-arrow-left" aria-hidden="true"></i>Anuluj</a>
+                            @if ($page->exists && ! $page->is_system && ! $page->is_locked)
+                                <button type="submit" form="page-delete-form" class="pe-btn pe-btn-ghost pe-btn-danger" onclick="return confirm(@js('Przenieść stronę „'.$page->title.'” do kosza?'));"><i class="fa-solid fa-trash-can" aria-hidden="true"></i>Do kosza</button>
+                            @endif
+                        </div>
+                    </div>
+                </div>
 
-            <div class="pe-bar" data-main-form-actions>
-                <div class="pe-bar-left">
-                    <a href="{{ $isPersonForm ? route('admin.osoby.index') : route('admin.podstrony.index') }}" class="pe-btn pe-btn-ghost"><i class="fa-solid fa-arrow-left" aria-hidden="true"></i>Anuluj</a>
-                    @if ($page->exists && ! $page->is_system && ! $page->is_locked)
-                        <button type="submit" form="page-delete-form" class="pe-btn pe-btn-ghost pe-btn-danger" onclick="return confirm('Przenieść stronę „{{ $page->title }}” do kosza?');"><i class="fa-solid fa-trash-can" aria-hidden="true"></i>Do kosza</button>
-                    @endif
+                <div data-hide-for-link @class(['hidden' => $isLinkType])>
+                    @include('admin.content-a11y.panel', ['html' => old('content', $page->content), 'formId' => 'page-edit-form'])
                 </div>
-                <div class="pe-bar-right">
-                    <span class="pe-bar-hint">{{ $page->exists ? 'Zapis zostaje w edytorze; „Zapisz i zamknij” wraca do listy.' : 'Po zapisie wrócisz do listy stron.' }}</span>
-                    @if ($page->exists)
-                        <button type="submit" name="stay" value="1" class="pe-btn"><i class="fa-solid fa-floppy-disk" aria-hidden="true"></i>Zapisz</button>
-                        <button type="submit" class="pe-btn pe-btn-primary"><i class="fa-solid fa-check" aria-hidden="true"></i>Zapisz i zamknij</button>
-                    @else
-                        <button type="submit" class="pe-btn pe-btn-primary"><i class="fa-solid fa-floppy-disk" aria-hidden="true"></i>Zapisz</button>
-                    @endif
-                </div>
-            </div>
+
+                <section class="rounded-md bg-white p-5" data-pe-toggles aria-labelledby="grp-miejsce">
+                    <h2 id="grp-miejsce" class="{{ $groupTitle }}">Miejsce w serwisie</h2>
+                    <div class="mt-3">
+                    <div class="space-y-4">
+                        <div>
+                            <label for="parent_id" class="mb-1 block text-sm font-bold">Nadrzędna strona</label>
+                            <select id="parent_id" name="parent_id" class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
+                                <option value="">— brak (strona główna) —</option>
+                                @foreach ($parentOptions as $option)
+                                    <option value="{{ $option->id }}" {{ (int) old('parent_id', $page->parent_id ?? request('parent_id')) === $option->id ? 'selected' : '' }}>
+                                        {{ $option->title }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            <p class="mt-1 text-xs text-muted">Strony z tym samym rodzicem tworzą wspólne, osobne podmenu.</p>
+                            @error('parent_id') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                        </div>
+
+                        <div>
+                            <label for="project_id" class="mb-1 block text-sm font-bold">Powiąż z działaniem</label>
+                            <select id="project_id" name="project_id" data-project-select class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
+                                <option value="">— brak —</option>
+                                @foreach ($projectOptions as $option)
+                                    <option value="{{ $option->id }}" {{ (int) old('project_id', $page->project_id) === $option->id ? 'selected' : '' }}>
+                                        {{ $option->title }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            <p class="mt-1 text-xs text-muted">Strona zachowa własny adres, a dodatkowo pojawi się na stronie projektu.</p>
+                            @error('project_id') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                        </div>
+
+                        <div class="{{ $hasProject ? '' : 'hidden' }}" data-project-display-wrap>
+                            <label for="project_display" class="mb-1 block text-sm font-bold">Jak pokazać na stronie działania</label>
+                            <select id="project_display" name="project_display" class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
+                                @foreach (\App\Models\Page::PROJECT_DISPLAYS as $value => $label)
+                                    <option value="{{ $value }}" {{ old('project_display', $page->project_display ?? 'link') === $value ? 'selected' : '' }}>{{ $label }}</option>
+                                @endforeach
+                            </select>
+                            <p class="mt-1 text-xs text-muted">Jako sam odnośnik, jako zakładka albo jako sekcja w treści projektu.</p>
+                            @error('project_display') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                        </div>
+
+                        <div>
+                            <label for="order" class="mb-1 block text-sm font-bold">Kolejność</label>
+                            <input type="number" id="order" name="order" min="0" value="{{ old('order', $page->order) }}"
+                                class="w-28 rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
+                            <p class="mt-1 text-xs text-muted">Mniejsza liczba = wyżej.</p>
+                        </div>
+                    </div>
+                    </div>
+                    {{-- 2. Menu i nawigacja --}}
+                    <section aria-labelledby="grp-menu" class="mt-4">
+                        <h3 id="grp-menu" class="{{ $groupTitle }}">Menu i nawigacja</h3>
+                        <div class="mt-2 divide-y divide-gray-100">
+                            <label class="{{ $row }}">
+                                <input type="checkbox" name="show_in_menu" value="1" {{ old('show_in_menu', $page->show_in_menu ?? true) ? 'checked' : '' }}>
+                                <span><span class="{{ $rowTitle }}">Dodaj do menu</span><span class="{{ $rowHint }}">Tylko strony główne (bez rodzica i działania) trafiają do nawigacji.</span></span>
+                            </label>
+                            <label class="{{ $row }}">
+                                <input type="checkbox" name="hide_in_sitemap" value="1" {{ old('hide_in_sitemap', $page->hide_in_sitemap ?? false) ? 'checked' : '' }}>
+                                <span><span class="{{ $rowTitle }}">Ukryj na mapie strony</span><span class="{{ $rowHint }}">Strona działa pod swoim adresem, ale nie pojawia się na mapie strony ani w sitemap.xml (np. strony testowe).</span></span>
+                            </label>
+                        </div>
+                    </section>
+                </section>
+            </aside>
         </form>
         @if ($page->exists && ! $page->is_system && ! $page->is_locked)
             <form id="page-delete-form" method="POST" action="{{ route('admin.podstrony.destroy', $page) }}" class="hidden">@csrf @method('DELETE')</form>
         @endif
 
         @if ($page->exists)
-            <div data-ftab-panel="pliki" class="hidden">
+            {{-- Pliki, galeria i ETR mają własne formularze (poza formularzem strony) — zwijane sekcje pod treścią. --}}
+            <div class="mt-6 space-y-6 lg:pr-[22.5rem]">
+            <details id="pe-files" class="pe-section rounded-md bg-white" data-pe-section="pliki" data-hide-for-link data-wspolpraca-tab @class(['hidden' => $isLinkType || $currentType === 'wspolpraca'])>
+                <summary class="flex cursor-pointer list-none items-center justify-between gap-3 px-6 py-4 text-base font-bold text-ink [&::-webkit-details-marker]:hidden">
+                    <span>Pliki do pobrania @if ($page->attachments->isNotEmpty())<span class="font-normal text-muted">({{ $page->attachments->count() }})</span>@endif</span>
+                    <i class="fa-solid fa-chevron-down text-sm text-muted transition-transform" aria-hidden="true"></i>
+                </summary>
+                <div class="border-t border-gray-100 p-4">
                 @include('admin.partials.attachments', [
                     'attachments' => $page->attachments,
                     'storeRoute' => route('admin.podstrony.pliki.store', $page),
                     'brandSections' => $page->isBrandAssets() ? ($page->brand_sections ?? []) : [],
                 ])
-            </div>
-            <div data-ftab-panel="galeria" class="hidden">
+                </div>
+            </details>
+            <details class="pe-section rounded-md bg-white" data-pe-section="galeria" data-hide-for-link data-wspolpraca-tab @class(['hidden' => $isLinkType || $currentType === 'wspolpraca'])>
+                <summary class="flex cursor-pointer list-none items-center justify-between gap-3 px-6 py-4 text-base font-bold text-ink [&::-webkit-details-marker]:hidden">
+                    <span>Galeria zdjęć @if ($page->images->isNotEmpty())<span class="font-normal text-muted">({{ $page->images->count() }})</span>@endif</span>
+                    <i class="fa-solid fa-chevron-down text-sm text-muted transition-transform" aria-hidden="true"></i>
+                </summary>
+                <div class="border-t border-gray-100 p-4">
                 @include('admin.partials.page-images', ['page' => $page])
-            </div>
-            <div data-ftab-panel="etr" class="hidden">
+                </div>
+            </details>
+            <details class="pe-section rounded-md bg-white" data-pe-section="etr" data-hide-for-link data-wspolpraca-tab @class(['hidden' => $isLinkType || $currentType === 'wspolpraca'])>
+                <summary class="flex cursor-pointer list-none items-center justify-between gap-3 px-6 py-4 text-base font-bold text-ink [&::-webkit-details-marker]:hidden">
+                    <span>Wersja łatwa do czytania (ETR) @if ($page->etr?->is_enabled)<span class="font-normal text-muted">— włączona</span>@endif</span>
+                    <i class="fa-solid fa-chevron-down text-sm text-muted transition-transform" aria-hidden="true"></i>
+                </summary>
+                <div class="border-t border-gray-100 p-4">
                 @php $etrModel = $page->etr; @endphp
                 <div class="mb-4 rounded-md bg-brand-light p-4 text-sm text-ink">
                     <strong>Wersja ETR (łatwa do czytania)</strong> — uproszczony tekst dla osób z trudnościami w czytaniu.
@@ -793,7 +770,7 @@
                 </div>
 
                 <form method="POST" action="{{ route('admin.etr.update', ['type' => 'podstrona', 'id' => $page->id]) }}"
-                    class="space-y-5 p-6 rounded-md bg-white">
+                    class="space-y-5">
                     @csrf @method('PUT')
 
                     <label class="flex items-center gap-2">
@@ -837,6 +814,8 @@
                         @endif
                     </div>
                 </form>
+                </div>
+            </details>
             </div>
         @endif
     </div>{{-- /page-form-tabs --}}
@@ -882,9 +861,6 @@
                     document.querySelectorAll('[data-wspolpraca-tab]').forEach(function (btn) {
                         const isWspolpraca = typeSelect.value === 'wspolpraca';
                         btn.classList.toggle('hidden', isWspolpraca);
-                        if (isWspolpraca && btn.getAttribute('aria-selected') === 'true') {
-                            document.querySelector('[data-ftab-btn="tresc"]')?.click();
-                        }
                     });
                     // Galeria „O organizacji" jest osobna — ukryj generyczny przełącznik dla tego typu.
                     document.querySelectorAll('[data-gallery-toggle]').forEach(function (el) {
@@ -897,9 +873,6 @@
                         else if (el.matches('[data-access-level-section]')) el.classList.toggle('hidden', ['internal', 'internal_hub', 'brand_assets'].includes(typeSelect.value));
                         else if (! el.matches('[data-content-field], [data-hide-for], [data-gallery-toggle]')) el.classList.remove('hidden');
                     });
-                    if (isLinkType && document.querySelector('[data-hide-for-link][aria-selected="true"]')) {
-                        document.querySelector('[data-ftab-btn="tresc"]')?.click();
-                    }
                 });
             }
 
@@ -961,12 +934,12 @@
                 });
             });
 
-            // --- "Dodaj / zarządzaj plikami" → przełącz na zakładkę Pliki ---
+            // --- "Dodaj / zarządzaj plikami" → otwórz sekcję Pliki ---
             const gotoFiles = document.querySelector('[data-goto-files]');
             if (gotoFiles) {
                 gotoFiles.addEventListener('click', function () {
-                    const btn = document.querySelector('[data-ftab-btn="pliki"]');
-                    if (btn) btn.click();
+                    const files = document.getElementById('pe-files');
+                    if (files) { files.open = true; files.scrollIntoView({ behavior: 'smooth', block: 'start' }); files.querySelector('summary')?.focus(); }
                 });
             }
 
@@ -1066,61 +1039,27 @@
                 });
             }
 
-            // --- Form tabs -------------------------------------------------
-            const wrap = document.querySelector('[data-page-form-tabs]');
-            if (!wrap) return;
-            const buttons = Array.prototype.slice.call(document.querySelectorAll('[data-ftab-btn]'));
-            const panels = Array.prototype.slice.call(document.querySelectorAll('[data-ftab-panel]'));
-
-            const mainFormActions = document.querySelector('[data-main-form-actions]');
-            const externalTabs = ['pliki', 'galeria', 'etr'];
-
-            function activate(key) {
-                buttons.forEach(function (b) {
-                    const active = b.dataset.ftabBtn === key;
-                    b.classList.toggle('bg-white', active);
-                    b.classList.toggle('shadow-sm', active);
-                    b.classList.toggle('text-brand-dark', active);
-                    b.classList.toggle('text-gray-500', !active);
-                    b.setAttribute('aria-selected', active ? 'true' : 'false');
-                });
-                panels.forEach(function (p) {
-                    p.classList.toggle('hidden', p.dataset.ftabPanel !== key);
-                });
-                if (mainFormActions) {
-                    mainFormActions.classList.toggle('hidden', externalTabs.includes(key));
+            // --- Zwijane sekcje --------------------------------------------
+            // Sekcja z błędem walidacji otwiera się sama (i dostaje kropkę w nagłówku).
+            const hasErrors = @json($errors->any());
+            document.querySelectorAll('.pe-section').forEach(function (section) {
+                if (hasErrors && section.querySelector('p.text-red-600, p.text-red-700')) {
+                    section.open = true;
+                    const summary = section.querySelector('summary > span');
+                    if (summary && ! summary.querySelector('[data-pe-error]')) {
+                        summary.insertAdjacentHTML('beforeend', ' <span data-pe-error class="ml-1 inline-block h-2 w-2 rounded-full bg-red-600 align-middle" aria-hidden="true"></span><span class="sr-only">(są błędy w tej sekcji)</span>');
+                    }
                 }
-                // A rich editor initialised inside a hidden panel can render
-                // blank; toggling it re-lays it out once its tab is visible.
-                const shown = panels.find(function (p) { return p.dataset.ftabPanel === key; });
-                if (shown && window.tinymce) {
-                    shown.querySelectorAll('textarea').forEach(function (ta) {
+                // Edytor uruchomiony w zwiniętej sekcji może się źle wyrysować — przerysuj po otwarciu.
+                section.addEventListener('toggle', function () {
+                    if (! section.open || ! window.tinymce) return;
+                    section.querySelectorAll('textarea').forEach(function (ta) {
                         const ed = window.tinymce.get(ta.id);
                         if (ed) { ed.hide(); ed.show(); }
                     });
-                }
-                window.dispatchEvent(new Event('resize'));
-            }
-
-            buttons.forEach(function (btn) {
-                btn.addEventListener('click', function () { activate(btn.dataset.ftabBtn); });
+                    window.dispatchEvent(new Event('resize'));
+                });
             });
-
-            // Flag tabs that contain validation errors and jump to the first one.
-            let firstErrorKey = null;
-            panels.forEach(function (p) {
-                if (!p.querySelector('.text-red-600')) return;
-                const key = p.dataset.ftabPanel;
-                const btn = buttons.find(function (b) { return b.dataset.ftabBtn === key; });
-                if (btn && !btn.querySelector('[data-ftab-error]')) {
-                    const dot = document.createElement('span');
-                    dot.setAttribute('data-ftab-error', '');
-                    dot.className = 'ml-1.5 inline-block h-2 w-2 rounded-full bg-red-500 align-middle';
-                    btn.appendChild(dot);
-                }
-                if (!firstErrorKey) firstErrorKey = key;
-            });
-            if (firstErrorKey) activate(firstErrorKey);
         })();
     </script>
 
