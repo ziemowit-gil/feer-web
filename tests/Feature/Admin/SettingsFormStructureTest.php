@@ -44,7 +44,7 @@ class SettingsFormStructureTest extends TestCase
 
         $start = $this->settingsFormStart($html);
 
-        $save = strpos($html, '>Zapisz</button>', $start);
+        $save = strpos($html, 'Zapisz zmiany</button>', $start);
         $this->assertNotFalse($save, 'Nie znaleziono przycisku „Zapisz".');
 
         $body = substr($html, $start, $save - $start);
@@ -131,7 +131,7 @@ class SettingsFormStructureTest extends TestCase
 
         $body = substr($html, $start, $end - $start);
 
-        $this->assertStringContainsString('>Zapisz</button>', $body,
+        $this->assertStringContainsString('Zapisz zmiany</button>', $body,
             'Przycisk „Zapisz" jest poza formularzem ustawień — kliknięcie nic nie wyśle.');
 
         foreach (['name="site_name"', 'name="mail_transport"'] as $field) {

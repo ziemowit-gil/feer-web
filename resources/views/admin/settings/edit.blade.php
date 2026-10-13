@@ -27,52 +27,52 @@
             }
         }
     @endphp
-    <div x-data="{ settingsNavCollapsed: (() => { try { return localStorage.getItem('admin-settings-nav') === '1'; } catch (e) { return false; } })(), toggleSettingsNav() { this.settingsNavCollapsed = ! this.settingsNavCollapsed; try { localStorage.setItem('admin-settings-nav', this.settingsNavCollapsed ? '1' : '0'); } catch (e) {} }, tab: '{{ $initialTab }}', wm_layout: '{{ old('header_layout', $settings->headerLayoutValue()) }}', wideModal: {{ $errors->has('wide_activation_code') && old('header_layout') === 'wide_mission' ? 'true' : 'false' }}, wideCode: '', wideCodeError: false, prevLayout: '{{ old('header_layout', $settings->headerLayoutValue()) }}' }"
-        x-init="$watch('tab', value => history.replaceState(null, '', '?tab=' + value))"
-        class="settings-split" style="display:grid;grid-template-columns:max-content minmax(0,1fr);gap:1.25rem;align-items:start">
-    <style>@media (max-width: 900px) { .settings-split { grid-template-columns: 1fr !important; } .settings-split > nav { position: static !important; width: auto !important; } }</style>
-
-    {{-- Dodatkowe menu boczne: pełna, płaska lista sekcji ustawień (jak dawne duże menu w panelu).
-         Linki działają bez JS (?tab=…), a z JS przełączają zakładkę bez przeładowania strony. --}}
     @php
-        $settingsIcons = ['general' => 'fa-sliders', 'header' => 'fa-window-maximize', 'colors' => 'fa-palette', 'maintenance' => 'fa-screwdriver-wrench',
-            'seo' => 'fa-magnifying-glass', 'contact' => 'fa-address-book', 'social' => 'fa-share-nodes', 'registry' => 'fa-file-signature',
-            'accessibility' => 'fa-universal-access', 'support' => 'fa-hand-holding-heart', 'join' => 'fa-people-group', 'content' => 'fa-file-lines', 'modules' => 'fa-puzzle-piece',
-            'homepage' => 'fa-house', 'template' => 'fa-clone', 'login' => 'fa-right-to-bracket', 'mail' => 'fa-envelope', 'szo' => 'fa-diagram-project'];
+        // Kolejność sekcji jak w menu bocznym panelu (grupy z SiteSetting::SETTINGS_TAB_GROUPS) — do nagłówka i „poprzednia / następna”.
+        $settingsTabs = \App\Models\SiteSetting::SETTINGS_TABS;
+        $settingsOrder = [];
+        $settingsGroupOf = [];
+        foreach (\App\Models\SiteSetting::SETTINGS_TAB_GROUPS as $groupName => $keys) {
+            foreach ($keys as $key) {
+                if (isset($settingsTabs[$key])) {
+                    $settingsOrder[] = $key;
+                    $settingsGroupOf[$key] = $groupName;
+                }
+            }
+        }
+        foreach (array_diff(array_keys($settingsTabs), $settingsOrder) as $key) {
+            $settingsOrder[] = $key;
+            $settingsGroupOf[$key] = 'Inne';
+        }
+        $settingsPos = array_search($initialTab, $settingsOrder, true);
+        $settingsPrev = $settingsPos > 0 ? $settingsOrder[$settingsPos - 1] : null;
+        $settingsNext = $settingsPos !== false && $settingsPos < count($settingsOrder) - 1 ? $settingsOrder[$settingsPos + 1] : null;
+        $settingsLeads = [
+            'general' => 'Nazwa strony, podtytuł, edytor treści i podstawowe zachowanie serwisu.',
+            'header' => 'Układ nagłówka, logo i elementy widoczne na górze każdej strony.',
+            'colors' => 'Kolor przewodni i kolory submarek. Kontrast z bielą sprawdzamy według WCAG AA.',
+            'template' => 'Szablon wyglądu strony publicznej i jego opcje.',
+            'homepage' => 'Sekcje strony głównej, ich kolejność i treści.',
+            'content' => 'Ustawienia treści: aktualności, działania i domyślne teksty.',
+            'contact' => 'Dane kontaktowe pokazywane w stopce i na stronie kontaktu.',
+            'social' => 'Profile w mediach społecznościowych i Biuletyn Informacji Publicznej.',
+            'support' => 'Strona „Wesprzyj nas”: nagłówek, treść, zbiórka i sposoby wpłat.',
+            'join' => 'Strona „Dołącz do nas”: teksty i kafelki z korzyściami.',
+            'registry' => 'KRS, NIP, REGON i inne dane rejestrowe organizacji.',
+            'modules' => 'Włączanie i wyłączanie modułów oraz typów treści.',
+            'login' => 'Logowanie do panelu: Microsoft 365, Google, konta członkowskie i dostęp awaryjny.',
+            'mail' => 'Sposób wysyłki poczty z serwisu i test połączenia.',
+            'szo' => 'Połączenie z systemem SZO: formularze, darowizny i klauzule RODO.',
+            'maintenance' => 'Tryb serwisowy i narzędzia techniczne.',
+            'seo' => 'Opisy dla wyszukiwarek, mapa strony i statystyki.',
+            'accessibility' => 'Deklaracja dostępności i ułatwienia dla odwiedzających.',
+        ];
     @endphp
-    <nav aria-label="Sekcje ustawień" class="rounded-md bg-white" style="position:sticky;top:1rem;padding:.375rem;width:max-content;max-width:100%">
-        <div class="flex items-center justify-between gap-2 pb-1 pt-0.5" :class="settingsNavCollapsed ? 'justify-center' : 'pl-2'">
-            <p class="whitespace-nowrap text-[10px] font-bold uppercase tracking-wider text-muted" x-show="! settingsNavCollapsed">Sekcje ustawień</p>
-            <button type="button" @click="toggleSettingsNav()" :aria-expanded="(! settingsNavCollapsed).toString()"
-                :aria-label="settingsNavCollapsed ? 'Rozwiń menu sekcji ustawień' : 'Zwiń menu sekcji ustawień do ikon'"
-                :title="settingsNavCollapsed ? 'Rozwiń menu' : 'Zwiń do ikon'"
-                class="flex h-6 w-6 flex-none items-center justify-center rounded text-gray-500 hover:bg-gray-100 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">
-                <i class="fa-solid text-[0.65rem]" :class="settingsNavCollapsed ? 'fa-angles-right' : 'fa-angles-left'" aria-hidden="true"></i>
-            </button>
-        </div>
-        <ul role="list" class="space-y-0.5">
-            @foreach (\App\Models\SiteSetting::SETTINGS_TABS as $tabKey => $tabLabel)
-                <li>
-                    <a href="{{ route('admin.ustawienia.edit', ['tab' => $tabKey]) }}" @click.prevent="tab = @js($tabKey)"
-                        :aria-current="tab === @js($tabKey) ? 'page' : null"
-                        :class="tab === @js($tabKey) ? 'bg-brand-light font-bold text-brand-dark' : 'text-ink hover:bg-gray-100 hover:text-ink'"
-                        class="flex items-center gap-2 whitespace-nowrap rounded-md px-2 text-[13px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark"
-                        :class="{ 'justify-center': settingsNavCollapsed }" title="{{ $tabLabel }}"
-                        style="min-height:2rem">
-                        <i class="fa-solid {{ $settingsIcons[$tabKey] ?? 'fa-gear' }} w-4 flex-none text-center text-[0.75rem] text-gray-400" aria-hidden="true"></i>
-                        <span :class="{ 'sr-only': settingsNavCollapsed }">{{ $tabLabel }}</span>
-                    </a>
-                </li>
-            @endforeach
-            <li class="mt-1 border-t border-gray-100 pt-1">
-                <a href="{{ route('admin.ustawienia.env') }}" class="flex items-center gap-2 whitespace-nowrap rounded-md px-2 text-[13px] text-muted hover:bg-gray-100 hover:text-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark" style="min-height:2rem" :class="{ 'justify-center': settingsNavCollapsed }" title="Plik .env">
-                    <i class="fa-solid fa-file-code w-4 flex-none text-center text-[0.75rem] text-gray-400" aria-hidden="true"></i> <span :class="{ 'sr-only': settingsNavCollapsed }">Plik .env</span>
-                </a>
-            </li>
-        </ul>
-    </nav>
+    <div x-data="{ tab: '{{ $initialTab }}', dirty: false, wm_layout: '{{ old('header_layout', $settings->headerLayoutValue()) }}', wideModal: {{ $errors->has('wide_activation_code') && old('header_layout') === 'wide_mission' ? 'true' : 'false' }}, wideCode: '', wideCodeError: false, prevLayout: '{{ old('header_layout', $settings->headerLayoutValue()) }}' }"
+        x-init="$watch('tab', value => history.replaceState(null, '', '?tab=' + value));
+            window.addEventListener('beforeunload', e => { if (dirty) { e.preventDefault(); e.returnValue = ''; } })">
 
-    <div class="max-w-3xl space-y-6" style="min-width:0">
+    <div class="mx-auto max-w-4xl space-y-6" style="min-width:0">
     @if (! empty($strefaConflict))
         <div role="alert" class="rounded-md bg-amber-50 p-4">
             <div class="flex items-start gap-3">
@@ -125,16 +125,20 @@
          zakładce blokuje wysyłkę bez żadnego komunikatu („klikam i nic się nie
          dzieje"). Walidację robi serwer, a błędy pokazuje lista powyżej. --}}
     <form method="POST" action="{{ route('admin.ustawienia.update') }}" enctype="multipart/form-data" novalidate
-        class="p-6 rounded-md bg-white">
+        @input="dirty = true" @change="dirty = true" @submit="dirty = false"
+        class="rounded-md bg-white p-6 sm:p-8">
         @csrf
         @method('PUT')
         <input type="hidden" name="_redirect_tab" :value="tab">
 
-        {{-- Zakładki ustawień są w bocznym menu panelu (Ustawienia → …).
-             Sekcje przełączamy przez ?tab=… ustawiane z menu bocznego. --}}
-        <p class="mb-6 text-sm text-muted">
-            Wybierz sekcję ustawień z menu po lewej. Zmiany zapisz przyciskiem na dole — dotyczą wszystkich sekcji.
-        </p>
+        {{-- Sekcje wybiera się w menu bocznym panelu (Ustawienia strony → …, adres ?tab=…). --}}
+        <header class="mb-8 border-b border-gray-100 pb-5">
+            <p class="text-xs font-bold uppercase tracking-widest text-muted">Ustawienia · {{ $settingsGroupOf[$initialTab] ?? '' }}</p>
+            <h2 class="mt-1 text-2xl font-bold text-ink">{{ $settingsTabs[$initialTab] ?? 'Ustawienia' }}</h2>
+            @if (! empty($settingsLeads[$initialTab]))
+                <p class="mt-1 text-sm text-ink">{{ $settingsLeads[$initialTab] }}</p>
+            @endif
+        </header>
 
         <div x-show="tab === 'general'" x-cloak class="space-y-6">
         <div>
@@ -3519,8 +3523,26 @@
             </div>
         </div>
 
-        <div class="flex items-center gap-3 border-t border-gray-100 pt-5">
-            <button type="submit" class="rounded bg-brand-dark px-5 py-2 text-sm font-bold text-white hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2">Zapisz</button>
+        {{-- Pasek zapisu przyklejony do dołu okna: zawsze pod ręką, z informacją o niezapisanych zmianach. --}}
+        <div class="sticky bottom-0 z-20 -mx-6 -mb-6 mt-10 flex flex-wrap items-center gap-x-4 gap-y-3 rounded-b-md bg-white px-6 py-4 shadow-[0_-6px_16px_-8px_rgba(0,0,0,0.18)] sm:-mx-8 sm:-mb-8 sm:px-8">
+            <button type="submit" class="inline-flex min-h-11 items-center gap-2 rounded-md bg-brand-dark px-6 text-sm font-bold text-white hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2">
+                <i class="fa-solid fa-floppy-disk" aria-hidden="true"></i> Zapisz zmiany</button>
+            <p class="text-sm text-ink" aria-live="polite">
+                <span x-show="dirty" x-cloak class="font-bold"><i class="fa-solid fa-circle-exclamation mr-1" aria-hidden="true"></i>Masz niezapisane zmiany.</span>
+                <span x-show="! dirty">Zapis obejmuje wszystkie sekcje ustawień.</span>
+            </p>
+            <nav class="ml-auto flex flex-wrap gap-x-4 gap-y-1 text-sm" aria-label="Sąsiednie sekcje ustawień">
+                @if ($settingsPrev)
+                    <a href="{{ route('admin.ustawienia.edit', ['tab' => $settingsPrev]) }}" class="font-bold text-brand-dark underline underline-offset-2 hover:no-underline">
+                        <i class="fa-solid fa-arrow-left mr-1" aria-hidden="true"></i><span class="sr-only">Poprzednia sekcja: </span>{{ $settingsTabs[$settingsPrev] }}
+                    </a>
+                @endif
+                @if ($settingsNext)
+                    <a href="{{ route('admin.ustawienia.edit', ['tab' => $settingsNext]) }}" class="font-bold text-brand-dark underline underline-offset-2 hover:no-underline">
+                        <span class="sr-only">Następna sekcja: </span>{{ $settingsTabs[$settingsNext] }}<i class="fa-solid fa-arrow-right ml-1" aria-hidden="true"></i>
+                    </a>
+                @endif
+            </nav>
         </div>
     </form>
 
