@@ -53,4 +53,20 @@ class ProjectImageHeroTest extends TestCase
         $this->assertLessThan(strpos($html, '<h1'), strpos($html, 'h-40 w-full object-cover'));
         $this->assertLessThan(strpos($html, 'aria-label="Sekcje działania"'), strpos($html, '<h1'));
     }
+
+    public function test_klasyczny_uklad_karta_na_zdjeciu_do_wyboru(): void
+    {
+        $project = $this->project(true);
+        $project->update(['hero_style' => 'overlay', 'sections_nav' => 'sidebar']);
+        \App\Models\Page::create(['title' => 'Zakres', 'slug' => 'zakres', 'type' => 'standard', 'is_published' => true, 'project_id' => $project->id, 'project_display' => 'tab', 'content' => '<p>Zakres</p>']);
+
+        $html = $this->get(route('projects.show', $project))->assertOk()->getContent();
+
+        $this->assertStringContainsString('lg:h-[24rem]', $html);
+        $this->assertStringContainsString('mb-8 rounded-md bg-white p-6 sm:p-8', $html);
+        // Nagłówek i menu sekcji w siatce nachodzącej na zdjęcie.
+        $grid = strpos($html, 'relative -mt-16 sm:-mt-24');
+        $this->assertNotFalse($grid);
+        $this->assertGreaterThan($grid, strpos($html, '<h1'));
+    }
 }

@@ -298,6 +298,16 @@
                                     class="mt-0.5 rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
                                 <span><span class="font-bold">Zdjęcie jako hero</span> — szeroki baner na całą szerokość nad tytułem zamiast zdjęcia obok tytułu.</span>
                             </label>
+                            @if (\Illuminate\Support\Facades\Schema::hasColumn('projects', 'hero_style'))
+                                @php $heroStyle = old('hero_style', $project->hero_style ?? 'band'); @endphp
+                                <fieldset class="ml-6 mt-2">
+                                    <legend class="mb-1 text-sm font-bold">Układ nagłówka przy zdjęciu-hero</legend>
+                                    <label class="flex items-start gap-2 text-sm"><input type="radio" name="hero_style" value="band" @checked($heroStyle !== 'overlay') class="mt-0.5 text-brand-dark focus:ring-brand-dark">
+                                        <span><span class="font-bold">Nowy</span> — zdjęcie jako niski pasek, tytuł pod nim, menu i treść niżej.</span></label>
+                                    <label class="mt-1 flex items-start gap-2 text-sm"><input type="radio" name="hero_style" value="overlay" @checked($heroStyle === 'overlay') class="mt-0.5 text-brand-dark focus:ring-brand-dark">
+                                        <span><span class="font-bold">Klasyczny</span> — duże zdjęcie, tytuł na białej karcie nachodzącej na zdjęcie, menu obok nagłówka.</span></label>
+                                </fieldset>
+                            @endif
                         </div>
                     </div>
 

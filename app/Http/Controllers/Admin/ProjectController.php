@@ -489,6 +489,9 @@ class ProjectController extends Controller
         $data['show_coordinator'] = $request->boolean('show_coordinator');
         $data['show_legacy_box'] = $request->boolean('show_legacy_box');
         $data['image_hero'] = $request->boolean('image_hero');
+        if (\Illuminate\Support\Facades\Schema::hasColumn('projects', 'hero_style')) {
+            $data['hero_style'] = $request->input('hero_style') === 'overlay' ? 'overlay' : 'band';
+        }
         // Krótka nazwa do menu bocznego — pomijana, dopóki na serwerze nie wykonano migracji (wdrożenie samym `git pull`).
         if (! \Illuminate\Support\Facades\Schema::hasColumn('projects', 'nav_title')) {
             unset($data['nav_title']);

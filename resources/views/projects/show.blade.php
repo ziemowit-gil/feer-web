@@ -100,8 +100,12 @@
         $imageHero = $project->image_hero && $project->image_url;
         // Hero z kolumną boczną: nagłówek trafia do lewej kolumny siatki treści, a siatka nachodzi na zdjęcie —
         // menu boczne zaczyna się wtedy obok nagłówka, nie pod nim. Przy poziomym pasku zakładek zostaje zwykły układ.
-        // Nagłówek zawsze nad siatką treści (bez karty nachodzącej na zdjęcie) — menu i treść zaczynają się pod nim.
-        $heroInGrid = false;
+        // Układ nagłówka przy zdjęciu-hero (wybór w edycji działania):
+        //  • band (nowy)    — zdjęcie jako niski pasek, nagłówek pod nim, menu i treść niżej,
+        //  • overlay (klasyczny) — duże zdjęcie, nagłówek na karcie nachodzącej na zdjęcie; z kolumną boczną nagłówek
+        //    trafia do lewej kolumny siatki, więc menu zaczyna się obok nagłówka.
+        $heroOverlay = $imageHero && ($project->hero_style ?? 'band') === 'overlay';
+        $heroInGrid = $heroOverlay && ! ($hasTabs && ! $navSidebar);
         $extrasOn = $siteSettings->projects_extras_enabled;
         $mainCta = $extrasOn ? (array) ($project->main_cta ?? []) : [];
     @endphp
@@ -109,16 +113,18 @@
         {{-- Zdjęcie jako niski pasek na całą szerokość; tytuł pod nim na białym tle (nigdy na zdjęciu — kontrast nie zależy od zdjęcia). --}}
         <div class="mt-4">
             <img src="{{ $project->image_url }}" alt="{{ $project->image_alt ?: 'Zdjęcie ilustracyjne: '.$project->title }}" data-lightbox
-                class="h-40 w-full object-cover sm:h-48 lg:h-56">
+                class="{{ $heroOverlay ? 'h-56 w-full object-cover sm:h-72 lg:h-[24rem]' : 'h-40 w-full object-cover sm:h-48 lg:h-56' }}">
         </div>
     @endif
     @unless ($heroInGrid)
     <section>
         <div @class([
-            'mx-auto grid max-w-6xl items-center gap-8 px-4 pb-4 pt-8 sm:pt-10',
+            'mx-auto grid max-w-6xl items-center gap-8 px-4 pb-4',
+            'relative -mt-16 sm:-mt-24' => $heroOverlay,
+            'pt-8 sm:pt-10' => ! $heroOverlay,
             'lg:grid-cols-[minmax(0,1fr)_26rem]' => $project->image_url && ! $imageHero,
         ])>
-            <div @class(['min-w-0', 'max-w-4xl' => $imageHero])>
+            <div @class(['min-w-0', 'max-w-3xl rounded-md bg-white p-6 sm:p-8' => $heroOverlay, 'max-w-4xl' => $imageHero && ! $heroOverlay])>
                 @include('projects.partials.header-content')
             </div>
 
