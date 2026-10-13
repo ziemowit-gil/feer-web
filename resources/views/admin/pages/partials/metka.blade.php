@@ -86,12 +86,13 @@
 @if ($metkaAsk)
     <dialog id="metka-dialog" aria-labelledby="metka-dialog-title" aria-describedby="metka-dialog-desc"
         class="w-[min(32rem,calc(100vw-2rem))] rounded-md bg-white p-0 text-ink backdrop:bg-black/50">
-        <form method="dialog" class="space-y-5 p-6" id="metka-dialog-form">
+        {{-- Bez <form>: okno leży wewnątrz formularza strony, a zagnieżdżony formularz by go przerwał. --}}
+        <div class="space-y-5 p-6">
             <h2 id="metka-dialog-title" class="text-lg font-bold">Kto publikuje tę stronę?</h2>
             <p id="metka-dialog-desc" class="text-sm">Publikujesz z konta wspólnego. W metryczce strony pokażemy osobę, którą wskażesz.</p>
             <div>
                 <label for="metka-dialog-user" class="mb-1 block text-sm font-bold">Osoba publikująca <span class="font-normal">(wymagane)</span></label>
-                <select id="metka-dialog-user" required aria-required="true"
+                <select id="metka-dialog-user" aria-required="true"
                     class="w-full rounded-md border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark">
                     <option value="">— wybierz —</option>
                     @foreach ($metkaUsers as $u)
@@ -106,10 +107,10 @@
                 <label class="mt-1 flex items-center gap-2 text-sm"><input type="radio" name="metka-dialog-entity" value="0" class="text-brand-dark focus:ring-brand-dark"> Nie</label>
             </fieldset>
             <div class="flex flex-wrap justify-end gap-2">
-                <button type="submit" value="cancel" class="pe-btn pe-btn-ghost">Anuluj</button>
-                <button type="submit" value="ok" class="pe-btn pe-btn-primary"><i class="fa-solid fa-check" aria-hidden="true"></i>Publikuj</button>
+                <button type="button" data-metka-cancel class="pe-btn pe-btn-ghost">Anuluj</button>
+                <button type="button" data-metka-ok class="pe-btn pe-btn-primary"><i class="fa-solid fa-check" aria-hidden="true"></i>Publikuj</button>
             </div>
-        </form>
+        </div>
     </dialog>
     <script>
         (() => {
@@ -135,10 +136,9 @@
                 userSel.focus();
             });
 
-            dlg.querySelector('form').addEventListener('submit', (e) => {
-                if (e.submitter?.value !== 'ok') return;
+            dlg.querySelector('[data-metka-cancel]').addEventListener('click', () => dlg.close());
+            dlg.querySelector('[data-metka-ok]').addEventListener('click', () => {
                 if (!userSel.value) {
-                    e.preventDefault();
                     err.classList.remove('hidden');
                     userSel.setAttribute('aria-invalid', 'true');
                     userSel.setAttribute('aria-describedby', 'metka-dialog-error');
@@ -149,7 +149,8 @@
                 const entity = dlg.querySelector('input[name="metka-dialog-entity"]:checked')?.value === '1';
                 document.getElementById('metka-entity').checked = entity;
                 confirmed = true;
-                setTimeout(() => pending ? form.requestSubmit(pending) : form.requestSubmit(), 0);
+                dlg.close();
+                pending ? form.requestSubmit(pending) : form.requestSubmit();
             });
         })();
     </script>
