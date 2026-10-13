@@ -143,6 +143,10 @@
 
         @yield('content')
 
+        @if (isset($page) && $page instanceof \App\Models\Page && $page->exists && $page->showsMetka())
+            @include('partials.page-metka', ['page' => $page])
+        @endif
+
         @include('partials.feer-bands-sitewide', ['where' => 'site_bottom'])
     </main>
 

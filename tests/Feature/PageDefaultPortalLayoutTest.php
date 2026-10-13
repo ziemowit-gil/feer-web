@@ -55,7 +55,7 @@ class PageDefaultPortalLayoutTest extends TestCase
 
         $this->assertSame(1, substr_count($html, '<h1'), 'Dokładnie jeden nagłówek h1.');
         $this->assertStringContainsString('page-portal-article', $html);
-        $this->assertStringContainsString('Zaktualizowano <time datetime="'.now()->toDateString().'"', $html);
+        $this->assertStringNotContainsString('Zaktualizowano', $html);
         $this->assertStringContainsString('min czytania', $html);
         $this->assertStringContainsString('aria-label="Rozmiar tekstu strony"', $html);
         $this->assertStringContainsString('feer-page-text-size', $html);

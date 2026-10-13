@@ -1685,6 +1685,44 @@
         </div>
 
         <div x-show="tab === 'content'" x-cloak class="space-y-6">
+            @if (\Illuminate\Support\Facades\Schema::hasColumn('site_settings', 'metka_mode'))
+            @php
+                $metkaMode = old('metka_mode', $settings->metka_mode ?? 'off');
+                $metkaTypes = (array) old('metka_types', $settings->metka_types ?? []);
+            @endphp
+            <fieldset x-data="{ mode: @js($metkaMode) }" class="space-y-4">
+                <legend class="mb-1 text-sm font-bold">Metryczka stron („Pokaż metkę”)</legend>
+                <p class="text-xs text-muted">Rozwijana metryczka pod treścią strony: autor, osoba publikująca, podmiot publikujący, data publikacji i aktualizacji. W edycji strony (sekcja „Metryczka”) można ją włączyć lub wyłączyć dla pojedynczej strony.</p>
+                <div class="flex flex-col gap-2">
+                    <label class="flex cursor-pointer items-center gap-2 text-sm"><input type="radio" name="metka_mode" value="off" x-model="mode" @checked($metkaMode === 'off') class="text-brand-dark focus:ring-brand-dark"> Wyłączona (tylko strony, na których ją włączysz)</label>
+                    <label class="flex cursor-pointer items-center gap-2 text-sm"><input type="radio" name="metka_mode" value="all" x-model="mode" @checked($metkaMode === 'all') class="text-brand-dark focus:ring-brand-dark"> Na wszystkich stronach serwisu</label>
+                    <label class="flex cursor-pointer items-center gap-2 text-sm"><input type="radio" name="metka_mode" value="types" x-model="mode" @checked($metkaMode === 'types') class="text-brand-dark focus:ring-brand-dark"> Na wybranych typach stron</label>
+                </div>
+                <div x-show="mode === 'types'" x-cloak>
+                    <input type="hidden" name="metka_types" value="">
+                    <p class="mb-2 text-sm font-bold" id="metka-types-label">Typy stron z metryczką</p>
+                    <div class="grid gap-1.5 sm:grid-cols-2" role="group" aria-labelledby="metka-types-label">
+                        @foreach (\App\Models\Page::types() as $typeKey => $typeLabel)
+                            <label class="flex cursor-pointer items-center gap-2 text-sm"><input type="checkbox" name="metka_types[]" value="{{ $typeKey }}" @checked(in_array($typeKey, $metkaTypes, true)) class="rounded border-gray-500 text-brand-dark focus:ring-brand-dark"> {{ $typeLabel }}</label>
+                        @endforeach
+                    </div>
+                </div>
+                <div>
+                    <label for="metka_entity" class="mb-1 block text-sm font-bold">Podmiot publikujący</label>
+                    <input id="metka_entity" name="metka_entity" type="text" maxlength="255" value="{{ old('metka_entity', $settings->metka_entity) }}" placeholder="{{ $settings->site_name }}"
+                        class="w-full rounded-lg border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark sm:w-2/3">
+                    <p class="mt-1 text-xs text-muted">Puste = nazwa serwisu.</p>
+                </div>
+                <div>
+                    <label for="metka_shared_accounts" class="mb-1 block text-sm font-bold">Konta wspólne <span class="font-normal text-muted">(adresy e-mail, każdy w nowej linii)</span></label>
+                    <textarea id="metka_shared_accounts" name="metka_shared_accounts" rows="3" aria-describedby="metka_shared_hint"
+                        placeholder="{{ implode("\n", \App\Models\SiteSetting::METKA_SHARED_DEFAULT) }}"
+                        class="w-full rounded-lg border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark sm:w-2/3">{{ old('metka_shared_accounts', $settings->metka_shared_accounts) }}</textarea>
+                    <p id="metka_shared_hint" class="mt-1 text-xs text-muted">Gdy strona jest publikowana z takiego konta, panel pyta, kogo wskazać jako osobę publikującą i czy pokazać podmiot publikujący. Puste = adresy podane w podpowiedzi.</p>
+                </div>
+            </fieldset>
+            @endif
+
             <div>
                 <label for="editor-projects_intro" class="mb-1 block text-sm font-bold">Tekst wprowadzający na stronie działań <span class="font-normal text-muted">(opcjonalnie)</span></label>
                 <p class="mb-2 text-xs text-muted">Wyświetlany pod nagłówkiem na stronie <a href="{{ route('projects.index') }}" target="_blank" rel="noopener" class="text-brand-dark underline">/projekty</a> i na stronach kategorii.</p>

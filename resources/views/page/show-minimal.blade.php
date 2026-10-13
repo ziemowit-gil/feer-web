@@ -37,11 +37,6 @@
                 @else
                     <h1 class="text-3xl font-extrabold leading-tight tracking-tight text-ink md:text-4xl">{{ $page->title }}</h1>
                 @endif
-                @if ($page->updated_at)
-                    <p class="mt-4 rounded-md bg-gray-50 px-4 py-3 text-sm text-muted">
-                        Zaktualizowano <time datetime="{{ $page->updated_at->toDateString() }}" class="font-bold text-ink">{{ $page->updated_at->locale('pl')->translatedFormat('j F Y') }}</time>
-                    </p>
-                @endif
             </header>
 
             @include('partials.page-content-image')

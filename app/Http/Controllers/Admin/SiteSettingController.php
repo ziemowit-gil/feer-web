@@ -252,6 +252,11 @@ class SiteSettingController extends Controller
             'accessibility_contact_phone' => ['nullable', 'string', 'max:50'],
             'accessibility_architectural' => ['nullable', 'string', 'max:5000'],
             'projects_intro' => ['nullable', 'string', 'max:5000'],
+            'metka_mode' => ['sometimes', Rule::in(['off', 'all', 'types'])],
+            'metka_types' => ['nullable', 'array'],
+            'metka_types.*' => ['string', Rule::in(array_keys(\App\Models\Page::types()))],
+            'metka_entity' => ['nullable', 'string', 'max:255'],
+            'metka_shared_accounts' => ['nullable', 'string', 'max:2000'],
             'materials_intro' => ['nullable', 'string', 'max:5000'],
             'materials_notice' => ['nullable', 'string', 'max:5000'],
             'bank_account_number' => ['nullable', 'string', 'max:50'],
@@ -456,6 +461,12 @@ class SiteSettingController extends Controller
             unset($data['cleantalk_access_key']);
         }
         $data['cleantalk_enabled'] = $request->boolean('cleantalk_enabled');
+        // Metryczka stron — do czasu migracji kolumn nie ma.
+        if (! Schema::hasColumn('site_settings', 'metka_mode')) {
+            unset($data['metka_mode'], $data['metka_types'], $data['metka_entity'], $data['metka_shared_accounts']);
+        } elseif ($request->has('metka_types')) {
+            $data['metka_types'] = array_values(array_filter((array) $request->input('metka_types')));
+        }
         // Logowanie: klucze dostępu i SSO (OIDC). Do czasu migracji kolumn nie ma — pomijamy.
         if (Schema::hasColumn('site_settings', 'sso_enabled')) {
             foreach (['passkey_login_enabled', 'sso_enabled', 'sso_only_login'] as $flag) {

@@ -313,6 +313,7 @@ class Page extends Model
 
     protected $fillable = [
         'unpublish_at', 'reviewed_at',
+        'metka_author', 'published_by_id',
         'site_id', 'created_by', 'parent_id', 'project_id', 'project_display', 'title', 'slug', 'content', 'is_published', 'publish_at', 'is_featured', 'is_archived', 'show_in_menu', 'hide_in_sitemap', 'show_side_nav', 'side_nav_style', 'is_system', 'is_locked', 'order',
         'meta_title', 'meta_description', 'pending_approval', 'submitted_by_id',
         'is_disabled', 'disabled_message', 'wip_mode', 'wip_message',
@@ -336,6 +337,7 @@ class Page extends Model
         'reviewed_at' => 'datetime',
         'is_published' => 'boolean',
         'publish_at' => 'datetime',
+        'first_published_at' => 'datetime',
         'is_featured' => 'boolean',
         'is_archived' => 'boolean',
         'pending_approval' => 'boolean',
@@ -384,7 +386,43 @@ class Page extends Model
             if ($page->exists && $page->isDirty('content') && ! $page->isDirty('blocks') && $page->blocks !== null) {
                 $page->blocks = null;
             }
+
+            // Metryczka: kto i kiedy pierwszy raz opublikował stronę — zapisujemy sami, bez edycji w formularzu.
+            if ($page->is_published && (! $page->exists || $page->isDirty('is_published') || ! $page->published_by_id)
+                && once(fn () => \Illuminate\Support\Facades\Schema::hasColumn('pages', 'published_by_id'))) {
+                $page->first_published_at ??= now();
+                $page->published_by_id ??= auth()->id() ?? $page->created_by;
+            }
         });
+    }
+
+    public function publishedBy(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(User::class, 'published_by_id');
+    }
+
+    public function creator(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
+
+    /**
+     * Czy pokazać metryczkę: ustawienie strony (layout_data.metka: show/hide) ma pierwszeństwo,
+     * potem typy stron i cały serwis (Ustawienia → Treści → Metryczka).
+     */
+    public function showsMetka(): bool
+    {
+        $own = ($this->layout_data ?? [])['metka'] ?? 'inherit';
+        if (in_array($own, ['show', 'hide'], true)) {
+            return $own === 'show';
+        }
+        $settings = SiteSetting::current();
+
+        return match ($settings->metka_mode ?? 'off') {
+            'all' => true,
+            'types' => in_array($this->type ?? 'standard', (array) ($settings->metka_types ?? []), true),
+            default => false,
+        };
     }
 
     public function resolveRouteBindingQuery($query, $value, $field = null)

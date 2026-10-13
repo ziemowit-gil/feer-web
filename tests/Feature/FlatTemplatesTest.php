@@ -91,7 +91,7 @@ class FlatTemplatesTest extends TestCase
             $this->assertStringNotContainsString('<main class=', $this->scoped($html, 'data-page-template="portal"'), 'Bez zagnieżdżonego <main>.');
         }
         if ($template === 'wide') {
-            $this->assertStringContainsString('Zaktualizowano <time', $html);
+            $this->assertStringNotContainsString('Zaktualizowano', $html, 'Data aktualizacji jest w metryczce, nie w nagłówku.');
         }
 
         // Edycja w miejscu dla redakcji.

@@ -373,7 +373,7 @@ class SiteSetting extends Model implements HasMedia
         'site_url', 'maintenance_mode', 'maintenance_message',
         'microsoft_login_enabled', 'microsoft_only_login', 'emergency_login_token', 'microsoft_client_id', 'microsoft_client_secret', 'microsoft_tenant_id',
         'google_login_enabled', 'google_client_id', 'google_client_secret',
-        'member_login_enabled', 'member_allowed_domains', 'sso_enabled', 'sso_only_login', 'passkey_login_enabled', 'sso_name', 'sso_issuer', 'sso_client_id', 'sso_client_secret', 'sso_scopes', 'szo_api_url', 'szo_enabled', 'szo_token', 'szo_default_form', 'szo_donation_form', 'szo_timeout', 'cleantalk_enabled', 'cleantalk_access_key', 'yubico_client_id', 'yubico_secret_key', 'two_factor_required_admins',
+        'member_login_enabled', 'member_allowed_domains', 'metka_mode', 'metka_types', 'metka_entity', 'metka_shared_accounts', 'sso_enabled', 'sso_only_login', 'passkey_login_enabled', 'sso_name', 'sso_issuer', 'sso_client_id', 'sso_client_secret', 'sso_scopes', 'szo_api_url', 'szo_enabled', 'szo_token', 'szo_default_form', 'szo_donation_form', 'szo_timeout', 'cleantalk_enabled', 'cleantalk_access_key', 'yubico_client_id', 'yubico_secret_key', 'two_factor_required_admins',
         'przelewy24_sandbox', 'przelewy24_merchant_id', 'przelewy24_pos_id', 'przelewy24_crc', 'przelewy24_api_key',
         'unsplash_access_key', 'cookie_banner_enabled', 'cookie_banner_text', 'show_cms_credit',
         'mail_transport', 'mail_from_address', 'mail_from_name', 'mail_host', 'mail_port', 'mail_username', 'mail_password', 'mail_encryption',
@@ -539,7 +539,26 @@ class SiteSetting extends Model implements HasMedia
         return (bool) ($this->krs_number || $this->nip_number || $this->regon_number);
     }
 
+    /** Konta wspólne, z których publikacja pyta o osobę publikującą (gdy w ustawieniach pusto). */
+    public const METKA_SHARED_DEFAULT = ['ziemowit.gil@feer.org.pl', 'strona@feer.org.pl', 'webmaster@ziemowitgil.pl'];
+
+    /** Adresy kont wspólnych (małe litery) — z ustawień albo domyślne. */
+    public function metkaSharedEmails(): array
+    {
+        $raw = trim((string) ($this->metka_shared_accounts ?? ''));
+        $list = $raw === '' ? self::METKA_SHARED_DEFAULT : preg_split('/[\s,;]+/', $raw, -1, PREG_SPLIT_NO_EMPTY);
+
+        return array_values(array_unique(array_map(fn ($e) => mb_strtolower(trim($e)), $list)));
+    }
+
+    /** Czy użytkownik publikuje z konta wspólnego — wtedy wskazuje, kto faktycznie publikuje. */
+    public function isMetkaSharedAccount(?User $user): bool
+    {
+        return $user !== null && in_array(mb_strtolower((string) $user->email), $this->metkaSharedEmails(), true);
+    }
+
     protected $casts = [
+        'metka_types' => 'array',
         'allow_indexing' => 'boolean',
         'quick_actions_panel_negative' => 'boolean',
         'bip_show_reports' => 'boolean',

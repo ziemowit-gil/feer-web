@@ -148,9 +148,6 @@
 
                             <div class="mt-4 flex flex-wrap items-center justify-between gap-4 rounded-md bg-gray-50 px-4 py-3">
                                 <p class="text-sm text-muted">
-                                    @if ($page->updated_at)
-                                        Zaktualizowano <time datetime="{{ $page->updated_at->toDateString() }}" class="font-bold text-ink">{{ $page->updated_at->locale('pl')->translatedFormat('j F Y') }}</time> ·
-                                    @endif
                                     {{ $ppReadMin }} min czytania
                                 </p>
                                 <div class="flex flex-wrap items-center gap-3 no-print print:hidden">

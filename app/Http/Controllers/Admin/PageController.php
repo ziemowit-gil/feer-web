@@ -512,7 +512,7 @@ class PageController extends Controller
     /** Do czasu migracji (nowe kolumny) zapis strony nie może padać — pomijamy kolumny, których jeszcze nie ma w bazie. */
     private function withoutMissingColumns(array $data): array
     {
-        foreach (['about_sections_hidden'] as $column) {
+        foreach (['about_sections_hidden', 'metka_author', 'published_by_id'] as $column) {
             if (array_key_exists($column, $data) && ! \Illuminate\Support\Facades\Schema::hasColumn('pages', $column)) {
                 unset($data[$column]);
             }
@@ -811,6 +811,11 @@ class PageController extends Controller
             'layout_data.slider' => ['nullable', 'boolean'],
             'layout_data.hero_slider_id' => ['nullable', 'integer'],
             'layout_data.hide_meta' => ['nullable', 'boolean'],
+            // Metryczka: pokaż/ukryj na tej stronie (inherit = wg ustawień serwisu), podmiot publikujący.
+            'layout_data.metka' => ['nullable', Rule::in(['inherit', 'show', 'hide'])],
+            'layout_data.metka_entity' => ['nullable', 'boolean'],
+            'metka_author' => ['nullable', 'string', 'max:160'],
+            'published_by_id' => ['nullable', 'integer', 'exists:users,id'],
             'layout_data.source' => ['nullable', Rule::in(['news', 'blog'])],
             'layout_data.newsletter' => ['nullable', 'boolean'],
             'layout_data.newsletter_title' => ['nullable', 'string', 'max:120'],
@@ -991,6 +996,11 @@ class PageController extends Controller
         // „Zdejmij z publikacji” — content:unpublish-due wyłącza publikację po terminie.
         $data['unpublish_at'] = $request->filled('unpublish_at') ? $request->input('unpublish_at') : null;
         $data['is_archived'] = $request->boolean('is_archived');
+        $data['metka_author'] = trim((string) ($data['metka_author'] ?? '')) ?: null;
+        // Osobę publikującą zapisuje system; wskazać ją może tylko konto wspólne (np. strona@…).
+        if (! $request->filled('published_by_id') || ! SiteSetting::current()->isMetkaSharedAccount($request->user())) {
+            unset($data['published_by_id']);
+        }
         $data['show_in_menu'] = $request->boolean('show_in_menu');
         $data['hide_in_sitemap'] = $request->boolean('hide_in_sitemap');
         $data['show_side_nav'] = $request->boolean('show_side_nav');
