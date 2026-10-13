@@ -8,16 +8,23 @@
 
 @section('content')
     @include('admin.partials.readable-form-css')
+    <style>
+        .pe-section[open] > summary .fa-chevron-down { transform: rotate(180deg); }
+        .pe-section > summary:focus-visible { outline: 3px solid #1d1d1a; outline-offset: -3px; border-radius: .375rem; }
+        .pe-section > summary:hover { background: #f9fafb; }
+    </style>
     @include('admin.partials.template-panel', [
         'templateType'   => 'event',
         'templateFields' => ['type', 'mode', 'location', 'online_url', 'audience', 'registration_cta_label', 'contact_email', 'price_info'],
     ])
 
-    <form method="POST" action="{{ $action }}" enctype="multipart/form-data" class="mt-4 max-w-3xl space-y-6" data-readable
+    <form id="event-form" method="POST" action="{{ $action }}" enctype="multipart/form-data" class="mt-4 grid gap-6 lg:grid-cols-[minmax(0,1fr)_21rem] lg:items-start" data-readable
         x-data="{ mode: @js(old('mode', $event->mode ?: 'stacjonarnie')) }">
         @csrf
         @if ($event->exists) @method('PUT') @endif
 
+        {{-- ============ LEWA KOLUMNA: treść i szczegóły ============ --}}
+        <div class="min-w-0 space-y-6">
         @if ($errors->any())
             <div class="rounded-md bg-red-50 px-4 py-3 text-sm text-red-700">
                 <p class="font-bold">Popraw poniższe pola:</p>
@@ -48,9 +55,12 @@
         </div>
 
         {{-- Korzyści --}}
-        <fieldset class="space-y-4 p-6 rounded-md bg-white"
+        <details class="pe-section rounded-md bg-white" data-pe-section="korzysci">
+            <summary class="flex cursor-pointer list-none items-center justify-between gap-3 px-6 py-4 text-base font-bold text-ink [&::-webkit-details-marker]:hidden"><span>Korzyści — co zyskasz? <span class="font-normal text-muted">(opcjonalnie)</span></span><i class="fa-solid fa-chevron-down text-sm text-muted transition-transform" aria-hidden="true"></i></summary>
+            <div class="border-t border-gray-100">
+        <fieldset class="space-y-4 p-4"
             x-data="{ enabled: @js(old('show_benefits', $event->show_benefits ?? false)) }">
-            <legend class="px-2 text-sm font-bold text-brand-dark">Korzyści — co zyskasz? <span class="font-normal text-muted">(opcjonalnie)</span></legend>
+            <legend class="sr-only">Korzyści — co zyskasz? <span class="font-normal text-muted">(opcjonalnie)</span></legend>
 
             <label class="flex items-center gap-2">
                 <input type="checkbox" name="show_benefits" value="1"
@@ -69,6 +79,8 @@
                 <p class="mt-1 text-xs text-muted">Każda linia tekstu wyświetli się jako osobny punkt na stronie.</p>
             </div>
         </fieldset>
+            </div>
+        </details>
 
         {{-- Rodzaj i termin --}}
         <fieldset class="space-y-4 p-6 rounded-md bg-white">
@@ -105,12 +117,15 @@
         </fieldset>
 
         {{-- Powtarzanie --}}
+        <details class="pe-section rounded-md bg-white" data-pe-section="powtarzanie">
+            <summary class="flex cursor-pointer list-none items-center justify-between gap-3 px-6 py-4 text-base font-bold text-ink [&::-webkit-details-marker]:hidden"><span>Powtarzanie <span class="font-normal text-muted">(opcjonalnie)</span></span><i class="fa-solid fa-chevron-down text-sm text-muted transition-transform" aria-hidden="true"></i></summary>
+            <div class="border-t border-gray-100">
         @if (! $event->isInstance())
-        <fieldset class="space-y-4 p-6 rounded-md bg-white"
+        <fieldset class="space-y-4 p-4"
             x-data="{
                 enabled: @js(old('recurrence_type', $event->recurrence_type) !== null),
             }">
-            <legend class="px-2 text-sm font-bold text-brand-dark">Powtarzanie <span class="font-normal text-muted">(opcjonalnie)</span></legend>
+            <legend class="sr-only">Powtarzanie <span class="font-normal text-muted">(opcjonalnie)</span></legend>
 
             @if ($event->isSeries())
                 <p class="rounded-md bg-brand-light px-3 py-2 text-xs text-ink">
@@ -159,6 +174,8 @@
                 </a>
             </div>
         @endif
+            </div>
+        </details>
 
         {{-- Miejsce / tryb --}}
         <fieldset class="space-y-4 p-6 rounded-md bg-white">
@@ -305,7 +322,10 @@
         </fieldset>
 
         {{-- Osoba prowadząca --}}
-        <fieldset class="space-y-4 p-6 rounded-md bg-white"
+        <details class="pe-section rounded-md bg-white" data-pe-section="prowadzacy">
+            <summary class="flex cursor-pointer list-none items-center justify-between gap-3 px-6 py-4 text-base font-bold text-ink [&::-webkit-details-marker]:hidden"><span>Osoba prowadząca <span class="font-normal text-muted">(opcjonalnie)</span></span><i class="fa-solid fa-chevron-down text-sm text-muted transition-transform" aria-hidden="true"></i></summary>
+            <div class="border-t border-gray-100">
+        <fieldset class="space-y-4 p-4"
             x-data="{
                 preview: @js($event->facilitatorPhotoUrl()),
                 catalog: @js($facilitatorCatalog ?? []),
@@ -333,7 +353,7 @@
                     this.pickerOpen = false;
                 }
             }" @click.outside="pickerOpen = false">
-            <legend class="px-2 text-sm font-bold text-brand-dark">Osoba prowadząca <span class="font-normal text-muted">(opcjonalnie)</span></legend>
+            <legend class="sr-only">Osoba prowadząca <span class="font-normal text-muted">(opcjonalnie)</span></legend>
 
             <input type="hidden" name="facilitator_id" :value="facilitatorId">
 
@@ -473,8 +493,13 @@
                 </div>
             </div>
         </fieldset>
+            </div>
+        </details>
 
         {{-- FAQ szkolenia --}}
+        <details class="pe-section rounded-md bg-white" data-pe-section="faq">
+            <summary class="flex cursor-pointer list-none items-center justify-between gap-3 px-6 py-4 text-base font-bold text-ink [&::-webkit-details-marker]:hidden"><span>FAQ — najczęstsze pytania <span class="font-normal text-muted">(opcjonalnie)</span></span><i class="fa-solid fa-chevron-down text-sm text-muted transition-transform" aria-hidden="true"></i></summary>
+            <div class="border-t border-gray-100">
         @php
             $faqsInit = old('faqs', $event->exists
                 ? $event->faqs->map(fn ($f) => ['question' => $f->question, 'answer' => $f->answer])->values()->all()
@@ -486,7 +511,7 @@
                 'is_published' => (bool) $f->is_published,
             ])->values()->all();
         @endphp
-        <fieldset class="space-y-4 p-6 rounded-md bg-white"
+        <fieldset class="space-y-4 p-4"
             x-data="{
                 faqs: {{ \Illuminate\Support\Js::from(array_values($faqsInit)) }},
                 globalFaqs: {{ \Illuminate\Support\Js::from($globalFaqOptions) }},
@@ -494,7 +519,7 @@
                 isAdded(f) { return this.faqs.some((x) => (x.question || '').trim() === f.question.trim()); },
                 addGlobal(f) { if (!this.isAdded(f)) this.faqs.push({ question: f.question, answer: f.answer }); },
             }">
-            <legend class="px-2 text-sm font-bold text-brand-dark">FAQ — najczęstsze pytania <span class="font-normal text-muted">(opcjonalnie)</span></legend>
+            <legend class="sr-only">FAQ — najczęstsze pytania <span class="font-normal text-muted">(opcjonalnie)</span></legend>
             <p class="text-xs text-muted">Pytania i odpowiedzi pojawią się jako rozwijana lista na stronie wydarzenia.</p>
 
             <template x-for="(faq, i) in faqs" :key="i">
@@ -550,14 +575,19 @@
                 </div>
             </template>
         </fieldset>
+            </div>
+        </details>
 
-        {{-- Publikacja --}}
-        <div class="p-6 rounded-md bg-white">
+        </div>
+
+        {{-- ============ PRAWA KOLUMNA: publikacja, dostępność treści ============ --}}
+        <aside class="space-y-4 lg:sticky lg:top-4 lg:max-h-[calc(100vh-2rem)] lg:overflow-y-auto lg:pb-1" aria-label="Publikacja wydarzenia">
+        <div class="space-y-4 rounded-md bg-white p-5">
             <div class="mb-4">
-                <h2 class="text-base font-bold text-ink">Publikacja</h2>
+                <h2 class="text-sm font-bold uppercase tracking-widest text-muted">Publikacja</h2>
                 <p class="mt-1 text-xs text-muted">Widoczność, schemat kolorów i kolejność. Wydarzenie znika z listy po upływie terminu.</p>
             </div>
-            <div class="grid gap-4 sm:grid-cols-2">
+            <div class="space-y-4">
                 <div>
                     <label for="audience" class="mb-1 block text-sm font-bold">Schemat kolorów</label>
                     <select id="audience" name="audience" class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
@@ -572,27 +602,39 @@
                         class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
                     <p class="mt-1 text-xs text-muted">Przy tym samym terminie — mniejsza liczba wyżej.</p>
                 </div>
-                <label class="flex items-center gap-2 sm:col-span-2">
+                <label class="flex items-center gap-2">
                     <input type="checkbox" name="is_published" value="1" {{ old('is_published', $event->is_published) ? 'checked' : '' }}
                         class="rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
                     <span class="text-sm font-bold">Opublikowane (widoczne na stronie)</span>
                 </label>
-                <label class="flex items-center gap-2 sm:col-span-2">
+                <label class="flex items-center gap-2">
                     <input type="checkbox" name="is_featured" value="1" {{ old('is_featured', $event->is_featured) ? 'checked' : '' }}
                         class="rounded border-gray-500 text-amber-500 focus:ring-amber-500">
                     <span class="text-sm font-bold"><i class="fa-solid fa-star text-amber-500" aria-hidden="true"></i> Wyróżnione (złota ramka na stronie)</span>
                 </label>
             </div>
+            <div class="space-y-2 border-t border-gray-100 pt-4">
+                <button type="submit" class="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-md bg-brand-dark px-4 text-sm font-bold text-white hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2"><i class="fa-solid fa-floppy-disk" aria-hidden="true"></i> Zapisz</button>
+                <button type="submit" name="draft" value="1" class="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-md px-4 text-sm font-bold text-ink underline underline-offset-4 hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark"><i class="fa-solid fa-pen-ruler" aria-hidden="true"></i> Zapisz wersję roboczą</button>
+                <p class="text-xs text-muted">Wersja robocza nie jest widoczna publicznie — opublikujesz ją później.</p>
+                <a href="{{ route('admin.wydarzenia.index') }}" class="inline-block pt-1 text-sm font-bold text-ink underline underline-offset-4 hover:no-underline"><i class="fa-solid fa-arrow-left mr-1" aria-hidden="true"></i>Anuluj</a>
+            </div>
         </div>
 
-        <div class="flex items-center gap-3" data-sticky-actions>
-            <button type="submit" class="rounded-lg bg-brand-dark px-5 py-2.5 text-sm font-bold text-white hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2">Zapisz</button>
-            <a href="{{ route('admin.wydarzenia.index') }}" class="text-sm text-muted hover:text-ink">Anuluj</a>
-        </div>
+            @include('admin.content-a11y.panel', ['html' => old('description', $event->description), 'formId' => 'event-form', 'field' => 'description'])
+        </aside>
     </form>
 @endsection
 
 @push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        if (! @json($errors->any())) return;
+        document.querySelectorAll('.pe-section').forEach(function (section) {
+            if (section.querySelector('p.text-red-600, p.text-red-700')) section.open = true;
+        });
+    });
+</script>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
     integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"

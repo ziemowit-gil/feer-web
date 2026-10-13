@@ -406,7 +406,8 @@ class EventController extends Controller
     private function prepared(EventRequest $request): array
     {
         $data = $request->validated();
-        $data['is_published'] = $request->boolean('is_published');
+        // „Zapisz wersję roboczą” zapisuje bez publikacji, niezależnie od przełącznika.
+        $data['is_published'] = $request->boolean('draft') ? false : $request->boolean('is_published');
         $data['is_featured'] = $request->boolean('is_featured');
         $data['show_benefits'] = $request->boolean('show_benefits');
         $data['hide_registration'] = $request->boolean('hide_registration');
