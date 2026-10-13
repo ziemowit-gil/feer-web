@@ -33,22 +33,20 @@
     </summary>
     <div class="space-y-5 border-t border-gray-100 px-6 pb-6 pt-5">
         <div>
-            <label for="metka-mode" class="mb-1 block text-sm font-bold text-ink">„Pokaż metkę” pod treścią</label>
-            <select id="metka-mode" name="layout_data[metka]" aria-describedby="metka-mode-hint"
+            <div class="mb-1 flex items-center"><label for="metka-mode" class="text-sm font-bold text-ink">„Pokaż metkę” pod treścią</label>@include('admin.partials.help', ['topic' => 'metryczka', 'text' => 'Rozwijana metryczka pod treścią: autor, osoba publikująca, podmiot, data publikacji i aktualizacji. Domyślne ustawienie dla serwisu i typów stron: Ustawienia → Treści → Metryczka.'])</div>
+            <select id="metka-mode" name="layout_data[metka]"
                 class="w-full rounded-md border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark sm:w-2/3">
                 <option value="inherit" @selected($metkaOwn === 'inherit')>Jak w ustawieniach serwisu ({{ $metkaDefault }})</option>
                 <option value="show" @selected($metkaOwn === 'show')>Pokazuj na tej stronie</option>
                 <option value="hide" @selected($metkaOwn === 'hide')>Nie pokazuj na tej stronie</option>
             </select>
-            <p id="metka-mode-hint" class="mt-1 text-xs text-muted">Domyślne ustawienie dla serwisu i typów stron: Ustawienia → Treści → Metryczka.</p>
         </div>
 
         <div>
-            <label for="metka-author" class="mb-1 block text-sm font-bold text-ink">Autor <span class="font-normal text-muted">(opcjonalnie)</span></label>
+            <div class="mb-1 flex items-center"><label for="metka-author" class="text-sm font-bold text-ink">Autor <span class="font-normal text-muted">(opcjonalnie)</span></label>@include('admin.partials.help', ['topic' => 'autor', 'text' => 'Osoba lub zespół, który przygotował treść. Puste = osoba, która utworzyła stronę.'])</div>
             <input id="metka-author" name="metka_author" type="text" maxlength="160" value="{{ old('metka_author', $page->metka_author) }}"
-                placeholder="{{ $page->creator?->name ?? auth()->user()?->name }}" aria-describedby="metka-author-hint"
+                placeholder="{{ $page->creator?->name ?? auth()->user()?->name }}"
                 class="w-full rounded-md border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark sm:w-2/3">
-            <p id="metka-author-hint" class="mt-1 text-xs text-muted">Osoba lub zespół, który przygotował treść. Puste = osoba, która utworzyła stronę.</p>
             @error('metka_author') <p class="mt-1 text-sm text-red-700">{{ $message }}</p> @enderror
         </div>
 
@@ -66,9 +64,8 @@
             </div>
         @else
             <div>
-                <p class="text-sm font-bold text-ink">Osoba publikująca</p>
+                <p class="flex items-center text-sm font-bold text-ink">Osoba publikująca @include('admin.partials.help', ['topic' => 'osoba publikująca', 'text' => 'Zapisuje ją system przy pierwszej publikacji — nie można jej zmienić.'])</p>
                 <p class="text-sm text-ink">{{ $metkaPublisher?->name ?? 'Zapisze się automatycznie przy publikacji' }}</p>
-                <p class="mt-1 text-xs text-muted">Ustawiana przez system — nie można jej zmienić.</p>
             </div>
         @endif
 
