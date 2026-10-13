@@ -65,3 +65,69 @@ document.addEventListener('keydown', (e) => {
     const button = all.find((b) => b.name === 'stay') || all[0] || null;
     button ? form.requestSubmit(button) : form.requestSubmit();
 });
+
+// ── Objaśnienia pod „?” ─────────────────────────────────────────────
+// Dłuższe podpowiedzi pod polami (<p class="text-xs text-muted">) są zwinięte; przy etykiecie pola
+// pojawia się przycisk „?”, który je rozwija w tym samym miejscu. Podpowiedź zostaje w DOM-ie,
+// więc aria-describedby pól dalej działa. Wyłączenie: data-keep-hint na podpowiedzi albo przodku.
+const HINT_MIN_LENGTH = 40;
+let hintSeq = 0;
+
+function labelFor(hint) {
+    // Etykieta pola: poprzedni brat-etykieta albo pierwsza etykieta w tym samym kontenerze przed podpowiedzią.
+    let el = hint.previousElementSibling;
+    while (el) {
+        if (el.matches('label, p.font-bold, span.font-bold')) return el;
+        const inner = el.querySelector?.(':scope > label');
+        if (inner) return inner;
+        el = el.previousElementSibling;
+    }
+    const first = hint.parentElement?.firstElementChild;
+    if (first && first !== hint && first.matches('label')) return first;
+    return null;
+}
+
+function enhanceHint(hint) {
+    if (hint.dataset.hintReady || hint.closest('[data-keep-hint], [role="alert"], dialog, .picker-popover')) return;
+    const text = hint.textContent.replace(/\s+/g, ' ').trim();
+    if (text.length < HINT_MIN_LENGTH) return;
+    const label = labelFor(hint);
+    if (! label || label.querySelector('[data-hint-toggle]') || label.nextElementSibling?.matches?.('[data-hint-toggle]')) return;
+    hint.dataset.hintReady = '1';
+
+    hint.id ||= 'hint-' + (++hintSeq);
+    hint.hidden = true;
+    hint.classList.add('admin-hint-open');
+
+    const topic = label.textContent.replace(/\s+/g, ' ').replace(/\(.*?\)/g, '').trim().slice(0, 60);
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'admin-hint-btn';
+    btn.dataset.hintToggle = '';
+    btn.setAttribute('aria-expanded', 'false');
+    btn.setAttribute('aria-controls', hint.id);
+    btn.innerHTML = '<span aria-hidden="true">?</span><span class="sr-only">Pomoc: ' + topic.replace(/[<>&"]/g, '') + '</span>';
+    btn.addEventListener('click', () => {
+        hint.hidden = ! hint.hidden;
+        btn.setAttribute('aria-expanded', String(! hint.hidden));
+    });
+
+    if (['block', 'flex', 'grid'].includes(getComputedStyle(label).display) || label.classList.contains('block')) {
+        // Etykieta blokowa albo z polem wyboru: etykieta i „?” w jednym wierszu.
+        const row = document.createElement('div');
+        row.className = 'admin-hint-row';
+        label.replaceWith(row);
+        row.append(label, btn);
+        label.classList.remove('block');
+        if (label.classList.contains('mb-1')) { label.classList.remove('mb-1'); row.classList.add('mb-1'); }
+    } else {
+        label.after(btn);
+    }
+}
+
+function enhanceHints(root = document) {
+    root.querySelectorAll?.('main p.text-xs.text-muted').forEach(enhanceHint);
+}
+
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', () => enhanceHints());
+else enhanceHints();
