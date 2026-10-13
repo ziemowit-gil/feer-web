@@ -150,7 +150,8 @@
             $projPartners = $showTeamFunding ? $project->partners()->orderBy('order')->orderBy('name')->get() : collect();
             $projFunding = $showTeamFunding ? (array) ($project->funding ?? []) : [];
             $hasFunding = $showTeamFunding && (! empty($projFunding['sources']) || (! empty($projFunding['budget']) && ! empty($projFunding['budget_public'])) || filled($project->funding_notice));
-            $hasAside = $schedulePage || (! $project->is_completed && $project->showsCoordinator()) || $linkPages->isNotEmpty() || $showNews || $projPartners->isNotEmpty() || $hasFunding;
+            $hasMainCta = ! empty($mainCta['label']) && ! empty($mainCta['url']);
+            $hasAside = $hasMainCta || $schedulePage || (! $project->is_completed && $project->showsCoordinator()) || $linkPages->isNotEmpty() || $showNews || $projPartners->isNotEmpty() || $hasFunding;
         @endphp
         {{-- Układ kolumn w zwykłym CSS (nie zależy od zbudowanych klas Tailwinda): menu boczne zawsze po lewej od lg. --}}
         <style>
@@ -608,6 +609,10 @@
             @endif
             @if ($hasAside)
             <aside class="proj-aside space-y-5" aria-label="Informacje o projekcie">
+        {{-- Główne wezwanie do działania (np. „Zapisz się”) — w kolumnie bocznej, nie w nagłówku. --}}
+        @if ($hasMainCta)
+            <a href="{{ $mainCta['url'] }}" class="proj-cta w-full justify-center">{{ $mainCta['label'] }} <span aria-hidden="true">→</span></a>
+        @endif
         @if ($schedulePage)
             <div class="proj-box is-brand">
                 <h2 class="proj-box-h"><i class="fa-solid fa-calendar-days" aria-hidden="true"></i> {{ $schedulePage->title }}</h2>
