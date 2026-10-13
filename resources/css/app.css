@@ -880,3 +880,10 @@ html.no-animations .nav-mega-panel { transition: none !important; }
 .prose .ngo-step { gap: 1.1rem; padding: 1.1rem 1.25rem; }
 .prose .ngo-num { width: 2.75rem; height: 2.75rem; border-radius: .6rem; background: #e8f0ff; color: #1752bf; font-size: 1.25rem; }
 .prose .ngo-step h3 { margin: .15rem 0 .3rem; }
+
+/* Menu boczne działania: bieżąca pozycja na białym tle z cienkim paskiem marki po lewej; szewrony szare,
+   w kolorze marki przy bieżącej pozycji i po najechaniu (ikony dekoracyjne, aria-hidden). */
+.proj-nav-item { position: relative; }
+.proj-nav-item[aria-current]::before { content: ""; position: absolute; left: 0; top: .45rem; bottom: .45rem; width: 3px; border-radius: 2px; background: var(--color-brand, #1e6dff); }
+.proj-nav-item > i { color: #6b7280; }
+.proj-nav-item[aria-current] > i, .proj-nav-item:hover > i { color: var(--color-brand-dark, #1752bf); }

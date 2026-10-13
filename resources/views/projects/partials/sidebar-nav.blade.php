@@ -5,17 +5,18 @@
     szerokość z szewronem, bieżąca tłem marki i pogrubieniem.
 --}}
 @php
-    $projNavItem = 'flex min-h-11 w-full items-center justify-between gap-3 rounded-md px-3 py-2 text-left text-base transition '
+    $projNavItem = 'proj-nav-item flex min-h-10 w-full items-center justify-between gap-3 rounded-md px-3 py-2 text-left text-[0.9375rem] transition '
         .'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark';
-    $projNavIdle = 'text-ink hover:bg-white hover:text-brand-dark hover:underline hover:underline-offset-4';
-    $projNavCurrent = 'bg-brand-light font-bold text-brand-dark';
+    $projNavIdle = 'text-ink hover:bg-white hover:text-brand-dark';
+    $projNavCurrent = 'bg-white font-bold text-brand-dark';
 @endphp
 <nav aria-label="Sekcje działania" class="proj-nav rounded-md bg-gray-50 p-5">
     @php $navHeading = $project->nav_title ?: $project->title; @endphp
     {{-- Krótka nazwa z pola „Krótka nazwa (menu boczne)”; długi pełny tytuł mniejszą czcionką. --}}
-    <p @class(['font-bold leading-snug text-ink', 'text-lg' => mb_strlen($navHeading) <= 40, 'text-base' => mb_strlen($navHeading) > 40])>{{ $navHeading }}</p>
-    <span class="mb-4 mt-2 block h-1 w-14 bg-brand" aria-hidden="true"></span>
-    <ul role="list" class="space-y-1">
+    <p class="text-xs font-bold uppercase tracking-widest text-ink">W tym działaniu</p>
+    <p @class(['mt-1 font-bold leading-snug text-ink', 'text-base' => mb_strlen($navHeading) <= 40, 'text-[0.9375rem]' => mb_strlen($navHeading) > 40])>{{ $navHeading }}</p>
+    <span class="mb-3 mt-2 block h-1 w-10 bg-brand" aria-hidden="true"></span>
+    <ul role="list" class="space-y-0.5">
         <li>
             <button type="button" @click="tab = 'opis'; node = null; $event.detail && $el.blur()" :aria-current="tab === 'opis' ? 'page' : null"
                 class="{{ $projNavItem }}" :class="tab === 'opis' ? @js($projNavCurrent) : @js($projNavIdle)">
