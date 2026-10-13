@@ -644,10 +644,7 @@
                                 </p>
                             @endif
                             <p>
-                                <span class="font-bold">E-mail:</span> <a href="mailto:{{ $project->contactEmail() }}" class="proj-link">{{ $project->contactEmail() }}</a>
-                            </p>
-                            <p>
-                                <a href="{{ route('contact.show', ['do' => $project->contactEmail()]) }}#formularz" class="inline-flex min-h-11 items-center gap-2 font-bold text-brand-dark underline underline-offset-2 hover:no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark"><i class="fa-solid fa-paper-plane" aria-hidden="true"></i> Zadaj pytanie przez formularz</a>
+                                <span class="font-bold">E-mail:</span> <a href="mailto:{{ $project->contactEmail() }}" class="proj-link break-all">{{ $project->contactEmail() }}</a>
                             </p>
                             @if ($project->coordinator_phone)
                                 <p>
@@ -658,6 +655,9 @@
                                 @endif
                             @endif
                         </div>
+                        {{-- Pytanie przez formularz: zachęta i przycisk na całą szerokość na dole karty. --}}
+                        <p class="mt-5 text-sm text-ink">Najwygodniej napisz przez formularz: wiadomość trafi prosto do koordynatora tego działania.</p>
+                        <a href="{{ route('contact.show', ['do' => $project->contactEmail()]) }}#formularz" class="mt-3 flex min-h-12 w-full items-center justify-center gap-2 rounded-md bg-brand-dark px-4 text-base font-bold text-white hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2"><i class="fa-solid fa-paper-plane" aria-hidden="true"></i> Zadaj pytanie przez formularz</a>
                     </div>
                 @endif
 
