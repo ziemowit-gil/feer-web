@@ -375,7 +375,7 @@ class SiteSetting extends Model implements HasMedia
         'site_url', 'maintenance_mode', 'maintenance_message',
         'microsoft_login_enabled', 'microsoft_only_login', 'emergency_login_token', 'microsoft_client_id', 'microsoft_client_secret', 'microsoft_tenant_id',
         'google_login_enabled', 'google_client_id', 'google_client_secret',
-        'member_login_enabled', 'member_allowed_domains', 'metka_mode', 'metka_types', 'metka_entity', 'metka_show_entity', 'metka_shared_accounts', 'sso_enabled', 'sso_only_login', 'passkey_login_enabled', 'sso_name', 'sso_issuer', 'sso_client_id', 'sso_client_secret', 'sso_scopes', 'szo_api_url', 'szo_enabled', 'szo_token', 'szo_default_form', 'szo_donation_form', 'szo_timeout', 'cleantalk_enabled', 'cleantalk_access_key', 'yubico_client_id', 'yubico_secret_key', 'two_factor_required_admins',
+        'member_login_enabled', 'member_allowed_domains', 'metka_mode', 'metka_types', 'metka_entity', 'metka_show_entity', 'metka_shared_accounts', 'sso_enabled', 'sso_only_login', 'passkey_login_enabled', 'sso_name', 'sso_issuer', 'sso_client_id', 'sso_client_secret', 'sso_scopes', 'ai_enabled', 'ai_api_key', 'ai_model', 'szo_api_url', 'szo_enabled', 'szo_token', 'szo_default_form', 'szo_donation_form', 'szo_timeout', 'cleantalk_enabled', 'cleantalk_access_key', 'yubico_client_id', 'yubico_secret_key', 'two_factor_required_admins',
         'przelewy24_sandbox', 'przelewy24_merchant_id', 'przelewy24_pos_id', 'przelewy24_crc', 'przelewy24_api_key',
         'unsplash_access_key', 'cookie_banner_enabled', 'cookie_banner_text', 'show_cms_credit',
         'mail_transport', 'mail_from_address', 'mail_from_name', 'mail_host', 'mail_port', 'mail_username', 'mail_password', 'mail_encryption',
@@ -541,6 +541,32 @@ class SiteSetting extends Model implements HasMedia
         return (bool) ($this->krs_number || $this->nip_number || $this->regon_number);
     }
 
+    /** Modele Claude do wyboru w ustawieniach asystenta AI (identyfikator => nazwa). */
+    public const AI_MODELS = [
+        'claude-sonnet-5-5' => 'Claude Sonnet 5.5 (zalecany — szybki i dokładny)',
+        'claude-opus-5-5' => 'Claude Opus 5.5 (najdokładniejszy, wolniejszy i droższy)',
+        'claude-haiku-5-5' => 'Claude Haiku 5.5 (najszybszy i najtańszy)',
+    ];
+
+    /** Klucz API asystenta: z ustawień, a gdy pusty — z .env (ANTHROPIC_API_KEY). */
+    public function aiApiKey(): ?string
+    {
+        $key = trim((string) ($this->ai_api_key ?? ''));
+
+        return $key !== '' ? $key : (config('services.anthropic.key') ?: null);
+    }
+
+    /** Czy asystent AI jest włączony i ma klucz (przed migracją kolumn — wyłączony). */
+    public function aiAssistantEnabled(): bool
+    {
+        return (bool) ($this->ai_enabled ?? false) && $this->aiApiKey() !== null;
+    }
+
+    public function aiModel(): string
+    {
+        return array_key_exists((string) $this->ai_model, self::AI_MODELS) ? $this->ai_model : 'claude-sonnet-5-5';
+    }
+
     /** Konta wspólne, z których publikacja pyta o osobę publikującą (gdy w ustawieniach pusto). */
     public const METKA_SHARED_DEFAULT = ['ziemowit.gil@feer.org.pl', 'strona@feer.org.pl', 'webmaster@ziemowitgil.pl'];
 
@@ -613,6 +639,8 @@ class SiteSetting extends Model implements HasMedia
         'passkey_login_enabled' => 'boolean',
         'sso_client_secret' => 'encrypted',
         'szo_token' => 'encrypted',
+        'ai_api_key' => 'encrypted',
+        'ai_enabled' => 'boolean',
         'newsletter_ses_key' => 'encrypted', 'newsletter_ses_secret' => 'encrypted', 'newsletter_mailgun_secret' => 'encrypted', 'newsletter_postmark_token' => 'encrypted',
         'newsletter_smtp_password' => 'encrypted', 'newsletter_webhook_secret' => 'encrypted', 'newsletter_sms_token' => 'encrypted', 'newsletter_turnstile_secret' => 'encrypted',
         'newsletter_crm_webhook_secret' => 'encrypted',

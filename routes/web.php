@@ -326,6 +326,8 @@ Route::middleware(['auth', 'verified', '2fa', 'admin-site'])->prefix(config('app
 
     // Globalna wyszukiwarka panelu (paleta poleceń).
     Route::get('szukaj', AdminSearchController::class)->name('search');
+    // Asystent AI przy pisaniu tekstów (Claude API) — klucz zostaje na serwerze.
+    Route::post('asystent-ai', \App\Http\Controllers\Admin\AiAssistantController::class)->name('asystent-ai')->middleware('throttle:20,1');
     // Lista nazw Bootstrap Icons dla selektora ikon w formularzach (resources/data).
     Route::get('ikony-material.json', fn () => response()->file(resource_path('data/material-symbols.json'), [
         'Content-Type' => 'application/json',

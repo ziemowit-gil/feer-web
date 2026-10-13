@@ -69,4 +69,10 @@ return [
         'sandbox'    => env('PAYU_SANDBOX', true),
     ],
 
+
+    // Asystent AI w panelu (Claude API) — klucz zapasowy, gdy nie podano go w Ustawienia → Treści.
+    'anthropic' => [
+        'key' => env('ANTHROPIC_API_KEY'),
+    ],
+
 ];

@@ -1685,6 +1685,36 @@
         </div>
 
         <div x-show="tab === 'content'" x-cloak class="space-y-6">
+            @if (\Illuminate\Support\Facades\Schema::hasColumn('site_settings', 'ai_enabled'))
+            <fieldset class="space-y-4 rounded-md bg-gray-50 p-5">
+                <legend class="sr-only">Asystent AI</legend>
+                <p class="text-sm font-bold"><i class="fa-solid fa-wand-magic-sparkles mr-1 text-brand-dark" aria-hidden="true"></i>Asystent AI przy pisaniu tekstów (Claude)</p>
+                <p class="text-xs text-muted">Przycisk „Asystent AI” przy edytorze treści: poprawa języka, prosty język, tekst łatwy do czytania (ETR), skracanie, rozwijanie, propozycje tytułu, zajawki i opisu SEO. Wynik zawsze najpierw widzisz w podglądzie. Tekst, na którym pracuje asystent, jest wysyłany do firmy Anthropic (USA) — nie używaj go do danych osobowych i poufnych.</p>
+                <input type="hidden" name="ai_enabled" value="0">
+                <label class="flex cursor-pointer items-center gap-2 text-sm">
+                    <input type="checkbox" name="ai_enabled" value="1" @checked(old('ai_enabled', $settings->ai_enabled ?? false)) class="rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
+                    <span class="font-bold">Włącz asystenta AI</span>
+                </label>
+                <div class="grid gap-4 sm:grid-cols-2">
+                    <div>
+                        <label for="ai_api_key" class="mb-1 block text-sm font-bold">Klucz API Anthropic</label>
+                        <input id="ai_api_key" name="ai_api_key" type="password" autocomplete="off" maxlength="500"
+                            placeholder="{{ filled($settings->ai_api_key) ? '•••••••• (zapisany — wpisz nowy, aby zmienić)' : (config('services.anthropic.key') ? 'używany klucz z .env' : 'sk-ant-…') }}"
+                            class="w-full rounded-lg border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark">
+                        <p class="mt-1 text-xs text-muted">Klucz z console.anthropic.com. Zapisywany zaszyfrowany; puste pole = bez zmian.</p>
+                    </div>
+                    <div>
+                        <label for="ai_model" class="mb-1 block text-sm font-bold">Model</label>
+                        <select id="ai_model" name="ai_model" class="w-full rounded-lg border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark">
+                            @foreach (\App\Models\SiteSetting::AI_MODELS as $mKey => $mLabel)
+                                <option value="{{ $mKey }}" @selected(old('ai_model', $settings->aiModel()) === $mKey)>{{ $mLabel }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                </div>
+            </fieldset>
+            @endif
+
             @if (\Illuminate\Support\Facades\Schema::hasColumn('site_settings', 'metka_mode'))
             @php
                 $metkaMode = old('metka_mode', $settings->metka_mode ?? 'off');

@@ -343,6 +343,10 @@
 
 <div id="{{ $editorId }}-stats" class="mt-1 min-h-[1.25rem] text-xs text-muted" aria-live="polite" aria-atomic="true"></div>
 
+@if (($siteSettings->aiAssistantEnabled() ?? false) && \Illuminate\Support\Facades\Route::has('admin.asystent-ai'))
+    @include('admin.partials.ai-assistant', ['editorId' => $editorId])
+@endif
+
 <div id="{{ $editorId }}-a11y-panel" class="mt-2 hidden rounded-md bg-brand-light p-3 text-sm" role="alert">
     <div class="flex items-start gap-2">
         <div id="{{ $editorId }}-a11y-content" class="flex-1"></div>
@@ -1570,6 +1574,9 @@
                 }).then(function (editor) {
                     var form = textarea.closest('form');
                     editor.ui.view.element.id = '{{ $editorId }}-ck-wrapper';
+                    // Rejestr instancji (asystent AI odczytuje i wstawia treść przez API edytora).
+                    window.__ckEditors = window.__ckEditors || {};
+                    window.__ckEditors['{{ $editorId }}'] = editor;
 
                     if (form) {
                         form.addEventListener('submit', function () {

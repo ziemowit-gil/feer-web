@@ -258,6 +258,9 @@ class SiteSettingController extends Controller
             'metka_entity' => ['nullable', 'string', 'max:255'],
             'metka_show_entity' => ['sometimes', 'boolean'],
             'metka_shared_accounts' => ['nullable', 'string', 'max:2000'],
+            'ai_enabled' => ['sometimes', 'boolean'],
+            'ai_api_key' => ['nullable', 'string', 'max:500'],
+            'ai_model' => ['nullable', Rule::in(array_keys(SiteSetting::AI_MODELS))],
             'materials_intro' => ['nullable', 'string', 'max:5000'],
             'materials_notice' => ['nullable', 'string', 'max:5000'],
             'bank_account_number' => ['nullable', 'string', 'max:50'],
@@ -468,6 +471,17 @@ class SiteSettingController extends Controller
             unset($data['metka_mode'], $data['metka_types'], $data['metka_entity'], $data['metka_shared_accounts']);
         } elseif ($request->has('metka_types')) {
             $data['metka_types'] = array_values(array_filter((array) $request->input('metka_types')));
+        }
+        // Asystent AI: do czasu migracji kolumn nie ma; pusty klucz = zostaw zapisany.
+        if (! Schema::hasColumn('site_settings', 'ai_enabled')) {
+            unset($data['ai_enabled'], $data['ai_api_key'], $data['ai_model']);
+        } else {
+            if ($request->has('ai_enabled')) {
+                $data['ai_enabled'] = $request->boolean('ai_enabled');
+            }
+            if (blank($data['ai_api_key'] ?? null)) {
+                unset($data['ai_api_key']);
+            }
         }
         if (! Schema::hasColumn('site_settings', 'hero_single')) {
             unset($data['hero_single']);
