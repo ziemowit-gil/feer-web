@@ -1707,6 +1707,16 @@
                         @endforeach
                     </div>
                 </div>
+                @if (\Illuminate\Support\Facades\Schema::hasColumn('site_settings', 'metka_show_entity'))
+                    <div>
+                        <input type="hidden" name="metka_show_entity" value="0">
+                        <label class="flex cursor-pointer items-center gap-2 text-sm">
+                            <input type="checkbox" name="metka_show_entity" value="1" @checked(old('metka_show_entity', $settings->metka_show_entity ?? true)) class="rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
+                            <span class="font-bold">Pokazuj podmiot publikujący w metce</span>
+                        </label>
+                        <p class="mt-1 text-xs text-muted">Wyłączone — w metryczce nie ma wiersza „Podmiot publikujący” na żadnej stronie (a przy publikacji z konta wspólnego panel o niego nie pyta).</p>
+                    </div>
+                @endif
                 <div>
                     <label for="metka_entity" class="mb-1 block text-sm font-bold">Podmiot publikujący</label>
                     <input id="metka_entity" name="metka_entity" type="text" maxlength="255" value="{{ old('metka_entity', $settings->metka_entity) }}" placeholder="{{ $settings->site_name }}"

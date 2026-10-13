@@ -256,6 +256,7 @@ class SiteSettingController extends Controller
             'metka_types' => ['nullable', 'array'],
             'metka_types.*' => ['string', Rule::in(array_keys(\App\Models\Page::types()))],
             'metka_entity' => ['nullable', 'string', 'max:255'],
+            'metka_show_entity' => ['sometimes', 'boolean'],
             'metka_shared_accounts' => ['nullable', 'string', 'max:2000'],
             'materials_intro' => ['nullable', 'string', 'max:5000'],
             'materials_notice' => ['nullable', 'string', 'max:5000'],
@@ -466,6 +467,11 @@ class SiteSettingController extends Controller
             unset($data['metka_mode'], $data['metka_types'], $data['metka_entity'], $data['metka_shared_accounts']);
         } elseif ($request->has('metka_types')) {
             $data['metka_types'] = array_values(array_filter((array) $request->input('metka_types')));
+        }
+        if (! Schema::hasColumn('site_settings', 'metka_show_entity')) {
+            unset($data['metka_show_entity']);
+        } elseif ($request->has('metka_show_entity')) {
+            $data['metka_show_entity'] = $request->boolean('metka_show_entity');
         }
         // Logowanie: klucze dostępu i SSO (OIDC). Do czasu migracji kolumn nie ma — pomijamy.
         if (Schema::hasColumn('site_settings', 'sso_enabled')) {

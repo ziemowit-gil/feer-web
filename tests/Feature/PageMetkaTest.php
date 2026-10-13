@@ -126,4 +126,14 @@ class PageMetkaTest extends TestCase
             $this->get($page->publicUrl())->assertOk()->assertSee('Pokaż metkę');
         }
     }
+
+    public function test_entity_can_be_hidden_for_whole_site(): void
+    {
+        SiteSetting::current()->update(['metka_entity' => 'Fundacja Testowa', 'metka_show_entity' => false]);
+        $this->resetSettings();
+        $page = Page::create(['title' => 'Bez podmiotu', 'slug' => 'bez-podmiotu', 'type' => 'standard', 'is_published' => true, 'layout_data' => ['metka' => 'show']]);
+
+        $this->get($page->publicUrl())->assertOk()->assertSee('Pokaż metkę')
+            ->assertDontSee('Podmiot publikujący')->assertDontSee('Fundacja Testowa');
+    }
 }

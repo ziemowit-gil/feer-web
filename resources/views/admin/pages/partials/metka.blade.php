@@ -9,6 +9,7 @@
     $metkaSettings = \App\Models\SiteSetting::current();
     $metkaReady = \Illuminate\Support\Facades\Schema::hasColumn('pages', 'published_by_id');
     $metkaOwn = old('layout_data.metka', ($page->layout_data ?? [])['metka'] ?? 'inherit');
+    $metkaEntityOn = (bool) ($metkaSettings->metka_show_entity ?? true);
     $metkaEntity = (bool) old('layout_data.metka_entity', ($page->layout_data ?? [])['metka_entity'] ?? true);
     $metkaShared = $metkaReady && $metkaSettings->isMetkaSharedAccount(auth()->user());
     $metkaPublisher = $metkaReady ? $page->publishedBy : null;
@@ -69,6 +70,7 @@
             </div>
         @endif
 
+        @if ($metkaEntityOn)
         <div>
             <input type="hidden" name="layout_data[metka_entity]" value="0">
             <label class="flex cursor-pointer items-start gap-3 text-sm text-ink">
@@ -77,6 +79,7 @@
                 <span><span class="font-bold">Pokaż podmiot publikujący</span> <span class="text-muted">— {{ $metkaSettings->metka_entity ?: $metkaSettings->site_name }}</span></span>
             </label>
         </div>
+        @endif
     </div>
 </details>
 
@@ -98,11 +101,13 @@
                 </select>
                 <p id="metka-dialog-error" class="mt-1 hidden text-sm text-red-700" role="alert">Wybierz osobę publikującą.</p>
             </div>
+            @if ($metkaEntityOn)
             <fieldset>
                 <legend class="mb-2 text-sm font-bold">Pokazać podmiot publikujący ({{ $metkaSettings->metka_entity ?: $metkaSettings->site_name }})?</legend>
                 <label class="flex items-center gap-2 text-sm"><input type="radio" name="metka-dialog-entity" value="1" checked class="text-brand-dark focus:ring-brand-dark"> Tak</label>
                 <label class="mt-1 flex items-center gap-2 text-sm"><input type="radio" name="metka-dialog-entity" value="0" class="text-brand-dark focus:ring-brand-dark"> Nie</label>
             </fieldset>
+            @endif
             <div class="flex flex-wrap justify-end gap-2">
                 <button type="button" data-metka-cancel class="pe-btn pe-btn-ghost">Anuluj</button>
                 <button type="button" data-metka-ok class="pe-btn pe-btn-primary"><i class="fa-solid fa-check" aria-hidden="true"></i>Publikuj</button>
@@ -143,8 +148,8 @@
                     return;
                 }
                 document.getElementById('metka-publisher').value = userSel.value;
-                const entity = dlg.querySelector('input[name="metka-dialog-entity"]:checked')?.value === '1';
-                document.getElementById('metka-entity').checked = entity;
+                const entityBox = document.getElementById('metka-entity');
+                if (entityBox) entityBox.checked = dlg.querySelector('input[name="metka-dialog-entity"]:checked')?.value === '1';
                 confirmed = true;
                 dlg.close();
                 pending ? form.requestSubmit(pending) : form.requestSubmit();
