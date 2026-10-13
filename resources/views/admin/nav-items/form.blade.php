@@ -22,6 +22,7 @@
             buttonColorEnabled: {{ Js::from((bool) old('button_color', $navItem->button_color)) }},
             accentColor: {{ Js::from(old('accent_color', $navItem->accent_color) ?: \App\Support\ThemePalette::colors()[0]) }},
             accentEnabled: {{ Js::from((bool) old('accent_color', $navItem->accent_color)) }},
+            highlight: {{ Js::from((bool) old('highlight', $navItem->highlight ?? false)) }},
             isTransparent: {{ Js::from((bool) old('is_transparent_dropdown', $navItem->is_transparent_dropdown ?? false)) }},
             isMega: {{ Js::from((bool) old('is_mega', $navItem->is_mega ?? false)) }},
             isHeading: {{ Js::from((bool) old('is_column_heading', $navItem->is_column_heading ?? false)) }},

@@ -44,11 +44,12 @@ class NavItem extends Model
 
     protected $fillable = [
         'site_id', 'parent_id', 'label', 'icon', 'description', 'mega_image', 'mega_image_alt', 'url', 'type', 'module', 'location',
-        'is_button', 'is_column_heading', 'is_transparent_dropdown', 'is_mega', 'mega_size', 'mega_extra_title', 'mega_side_title', 'mega_side_links', 'hide_all_projects_btn', 'hide_archive_btn', 'is_active', 'order', 'button_color', 'accent_color',
+        'is_button', 'is_column_heading', 'is_transparent_dropdown', 'is_mega', 'mega_size', 'mega_extra_title', 'mega_side_title', 'mega_side_links', 'hide_all_projects_btn', 'hide_archive_btn', 'is_active', 'order', 'button_color', 'accent_color', 'highlight',
     ];
 
     protected $casts = [
         'is_button' => 'boolean',
+        'highlight' => 'boolean',
         'is_column_heading' => 'boolean',
         'is_transparent_dropdown' => 'boolean',
         'is_mega' => 'boolean',

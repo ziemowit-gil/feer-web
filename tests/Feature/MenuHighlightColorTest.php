@@ -39,4 +39,15 @@ class MenuHighlightColorTest extends TestCase
         $this->assertSame('#0b5394', SiteSetting::current()->menuHighlightColor());
     }
 
+
+    public function test_single_item_is_highlighted_in_top_menu(): void
+    {
+        $this->reset();
+        NavItem::create(['label' => 'Zwykła', 'url' => '/zwykla', 'type' => 'link', 'location' => 'main', 'is_active' => true, 'order' => 1, 'highlight' => false]);
+        NavItem::create(['label' => 'Ważna sekcja', 'url' => '/wazna', 'type' => 'link', 'location' => 'main', 'is_active' => true, 'order' => 2, 'highlight' => true]);
+
+        $html = $this->get('/')->assertOk()->getContent();
+        $this->assertMatchesRegularExpression('~<span class="menu-hl font-bold"\s*>Ważna sekcja</span>~', $html);
+        $this->assertDoesNotMatchRegularExpression('~<span class="menu-hl font-bold"\s*>Zwykła</span>~', $html);
+    }
 }

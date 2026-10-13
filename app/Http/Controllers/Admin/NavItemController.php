@@ -548,6 +548,10 @@ class NavItemController extends Controller
             $data['mega_image'] = trim((string) $request->input('mega_image_url'));
         }
         $data['is_active'] = $request->boolean('is_active');
+        // Wyróżnienie pozycji (kolor z Ustawienia → Kolory) — tylko w menu głównym i gdy kolumna już istnieje.
+        if (\Illuminate\Support\Facades\Schema::hasColumn('nav_items', 'highlight')) {
+            $data['highlight'] = $request->boolean('highlight') && ($data['location'] ?? 'main') === 'main';
+        }
         $data['order'] = $data['order'] ?? 0;
 
         return $data;

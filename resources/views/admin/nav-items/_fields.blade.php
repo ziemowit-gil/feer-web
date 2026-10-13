@@ -1,7 +1,7 @@
 {{--
     Współdzielone pola formularza pozycji menu.
     Wymaga otaczającego zakresu Alpine z obiektem `form` (label, url, type,
-    location, parentId, module, isButton, buttonColor, buttonColorEnabled, accentColor, accentEnabled,
+    location, parentId, module, isButton, buttonColor, buttonColorEnabled, accentColor, accentEnabled, highlight,
     isTransparent, isActive, editingId) oraz zmiennych PHP $parentOptions, $pages.
     Wszystkie pola sterowane są przez Alpine (x-model), dzięki czemu ten sam
     partial obsługuje modal (dynamiczne dane) i zapasową stronę formularza.
@@ -189,6 +189,13 @@
 </div>
 
 <div x-show="form.location === 'main' && form.parentId === '' && !form.isButton" x-cloak>
+    @if (\Illuminate\Support\Facades\Schema::hasColumn('nav_items', 'highlight'))
+        <input type="hidden" name="highlight" value="0">
+        <label class="mb-4 flex cursor-pointer items-start gap-2 text-sm">
+            <input type="checkbox" name="highlight" value="1" x-model="form.highlight" class="mt-0.5 rounded border-gray-500 text-brand-dark focus-visible:ring-2 focus-visible:ring-brand-dark">
+            <span><span class="font-bold">Wyróżnij tę pozycję</span> <span class="block text-xs text-muted">Pozycja w górnym menu pogrubiona i w kolorze wyróżnienia (Ustawienia → Kolory). Wyróżnić można np. ważną sekcję albo „Wesprzyj nas”.</span></span>
+        </label>
+    @endif
     <span class="mb-1 block text-sm font-bold">Kolor pozycji <span class="font-normal text-muted">(opcjonalnie)</span></span>
     <div class="flex items-center gap-3">
         <input type="hidden" name="accent_color" :value="form.accentEnabled ? form.accentColor : ''">
