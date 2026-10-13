@@ -259,6 +259,7 @@ class SiteSettingController extends Controller
             'metka_show_entity' => ['sometimes', 'boolean'],
             'metka_shared_accounts' => ['nullable', 'string', 'max:2000'],
             'ai_enabled' => ['sometimes', 'boolean'],
+            'menu_highlight_color' => ['nullable', 'regex:/^#[0-9a-fA-F]{6}$/'],
             'ai_api_key' => ['nullable', 'string', 'max:500'],
             'ai_model' => ['nullable', Rule::in(array_keys(SiteSetting::AI_MODELS))],
             'materials_intro' => ['nullable', 'string', 'max:5000'],
@@ -471,6 +472,11 @@ class SiteSettingController extends Controller
             unset($data['metka_mode'], $data['metka_types'], $data['metka_entity'], $data['metka_shared_accounts']);
         } elseif ($request->has('metka_types')) {
             $data['metka_types'] = array_values(array_filter((array) $request->input('metka_types')));
+        }
+        if (\Illuminate\Support\Facades\Schema::hasColumn('site_settings', 'menu_highlight_color')) {
+            $data['menu_highlight_color'] = blank($data['menu_highlight_color'] ?? null) ? null : $data['menu_highlight_color'];
+        } else {
+            unset($data['menu_highlight_color']);
         }
         // Asystent AI: do czasu migracji kolumn nie ma; pusty klucz = zostaw zapisany.
         if (! Schema::hasColumn('site_settings', 'ai_enabled')) {

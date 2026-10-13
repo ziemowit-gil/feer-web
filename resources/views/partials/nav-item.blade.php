@@ -4,14 +4,14 @@
     {{-- Nagłówek grupy (z mega menu): w zwykłym i mobilnym rozwijanym menu to etykieta grupy. --}}
     @if (filled($item->url) && $item->url !== '#')
         <a href="{{ $item->url }}" @if ($item->isCurrent()) aria-current="page" @endif
-            class="block px-4 pb-1 pt-3 text-xs font-bold uppercase tracking-wide {{ $item->isCurrent() ? 'text-brand-dark' : 'text-ink' }} hover:text-brand-dark focus-visible:bg-gray-50">{{ $item->label }}</a>
+            class="block px-4 pb-1 pt-3 text-xs font-bold uppercase tracking-wide {{ $item->isCurrent() ? 'menu-hl' : 'text-ink' }} menu-hl-hover focus-visible:bg-gray-50">{{ $item->label }}</a>
     @else
         <p class="px-4 pb-1 pt-3 text-xs font-bold uppercase tracking-wide text-muted">{{ $item->label }}</p>
     @endif
 @elseif ($item->parent_id)
     {{-- Nested row inside a dropdown panel — the <li> wrapper lives in the parent partial. --}}
     <a href="{{ $item->url }}" @if ($item->isCurrent()) aria-current="page" @endif
-        class="block px-4 py-2 text-sm font-medium normal-case {{ $item->isCurrent() ? 'text-brand-dark' : 'text-ink' }} hover:bg-gray-50 hover:text-brand-dark focus-visible:bg-gray-50">
+        class="block px-4 py-2 text-sm font-medium normal-case {{ $item->isCurrent() ? 'menu-hl' : 'text-ink' }} hover:bg-gray-50 menu-hl-hover focus-visible:bg-gray-50">
         {{ $item->label }}
     </a>
 @elseif (! $item->is_button && (

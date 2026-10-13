@@ -22,10 +22,10 @@
     $panelStyle = ($variant ?? null) === 'project' || $page->sideNavStyle() === 'panel';
     $localItem = fn (bool $current) => 'flex min-h-11 w-full items-center justify-between gap-3 rounded-md px-3 py-2 text-base transition '
         . 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark '
-        . ($current ? 'bg-brand-light font-bold text-brand-dark' : 'text-ink hover:bg-white hover:text-brand-dark hover:underline hover:underline-offset-4');
+        . ($current ? 'bg-brand-light font-bold menu-hl' : 'text-ink hover:bg-white menu-hl-hover hover:underline hover:underline-offset-4');
     $localChild = fn (bool $current) => 'flex min-h-10 w-full items-center justify-between gap-3 rounded-md px-3 py-1.5 text-[0.9375rem] transition '
         . 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark '
-        . ($current ? 'bg-brand-light font-bold text-brand-dark' : 'text-ink hover:bg-white hover:text-brand-dark hover:underline hover:underline-offset-4');
+        . ($current ? 'bg-brand-light font-bold menu-hl' : 'text-ink hover:bg-white menu-hl-hover hover:underline hover:underline-offset-4');
 @endphp
 
 @if ($panelStyle)

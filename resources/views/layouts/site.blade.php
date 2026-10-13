@@ -45,7 +45,11 @@
             --color-brand-2: {{ $siteSettings->brandColorN(2) }};
             --color-brand-3: {{ $siteSettings->brandColorN(3) }};
             --color-brand-4: {{ $siteSettings->brandColorN(4) }};
+            --color-menu-highlight: {{ $siteSettings->menuHighlightColor() }};
         }
+        /* Wyróżnienie pozycji menu (górne i boczne): aktywna i najechana pozycja w kolorze z panelu (Ustawienia → Kolory). */
+        .menu-hl { color: var(--color-menu-highlight) !important; }
+        .menu-hl-hover:hover { color: var(--color-menu-highlight) !important; }
     </style>
     @if (($siteSettings->site_template ?? 'default') === 'feer')
         @include('partials.theme-feer')

@@ -634,6 +634,17 @@
         </div>
 
         <div x-show="tab === 'colors'" x-cloak class="space-y-6">
+            @if (\Illuminate\Support\Facades\Schema::hasColumn('site_settings', 'menu_highlight_color'))
+            <div class="rounded-md bg-gray-50 p-4">
+                <label for="menu_highlight_color" class="mb-1 block text-sm font-bold">Kolor wyróżnienia pozycji menu</label>
+                <p class="mb-2 text-xs text-muted">Aktywna i najechana pozycja w górnym i bocznym menu (np. menu działania, strony działu). Pusty = kolor główny marki. Kolor zostanie przyciemniony, jeśli jest za jasny na białym tle (WCAG).</p>
+                <div class="flex flex-wrap items-center gap-3">
+                    <input id="menu_highlight_color" name="menu_highlight_color" type="text" value="{{ old('menu_highlight_color', $settings->menu_highlight_color) }}" placeholder="np. #ea8f00" pattern="#[0-9a-fA-F]{6}" data-color-picker
+                        class="w-40 rounded border-gray-500 font-mono text-sm focus-visible:border-brand-dark focus-visible:ring-2 focus-visible:ring-brand-dark">
+                    @error('menu_highlight_color') <p class="text-sm text-red-700">{{ $message }}</p> @enderror
+                </div>
+            </div>
+            @endif
             @php $subBrands = array_values((array) old('sub_brands', $settings->sub_brands ?? [])); @endphp
             <p class="text-xs text-muted">Kolor przewodni strony oraz nazwane kolory submarek dla różnych treści (działań i aktualności). Każdy kolor jest przy zapisie przyciemniany do kontrastu WCAG AA wobec bieli.</p>
 
