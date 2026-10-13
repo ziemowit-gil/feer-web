@@ -869,6 +869,7 @@ class PageController extends Controller
             'about_stats' => ['nullable', 'array'],
             'about_stats.*.value' => ['nullable', 'string', 'max:50'],
             'about_stats.*.label' => ['nullable', 'string', 'max:120'],
+            'about_stats.*.icon' => ['nullable', 'string', 'max:80'],
             'about_timeline' => ['nullable', 'array'],
             'about_timeline.*.year' => ['nullable', 'string', 'max:20'],
             'about_timeline.*.text' => ['nullable', 'string', 'max:500'],
@@ -915,6 +916,11 @@ class PageController extends Controller
             'about_press.*.title' => ['nullable', 'string', 'max:255'],
             'about_press.*.source' => ['nullable', 'string', 'max:120'],
             'about_press.*.image' => ['nullable', 'string', 'max:1000'],
+            'about_press.*.date' => ['nullable', 'date'],
+            // „O organizacji”: misja, data statystyk, dane rejestrowe przy dokumentach.
+            'layout_data.about_mission' => ['nullable', 'string', 'max:300'],
+            'layout_data.about_stats_asof' => ['nullable', 'string', 'max:60'],
+            'layout_data.about_registry' => ['nullable', 'boolean'],
             'faq_intro' => ['nullable', 'string', 'max:2000'],
             'faq_items' => ['nullable', 'array'],
             'faq_items.*.question' => ['nullable', 'string', 'max:255'],
@@ -1081,7 +1087,7 @@ class PageController extends Controller
         // "O organizacji" details only apply to about pages. Build the repeater
         // sections (dropping fully-empty rows) and clear everything otherwise.
         if ($data['type'] === 'about') {
-            $data['about_stats'] = $this->compactRows($request->input('about_stats', []), ['value', 'label']);
+            $data['about_stats'] = $this->compactRows($request->input('about_stats', []), ['value', 'label', 'icon']);
             $data['about_timeline'] = $this->compactRows($request->input('about_timeline', []), ['year', 'text', 'url', 'label', 'url2', 'label2', 'url3', 'label3', 'color']);
             $data['about_values'] = $this->compactRows($request->input('about_values', []), ['icon', 'title', 'text']);
 
@@ -1101,7 +1107,7 @@ class PageController extends Controller
 
             // „Piszą o nas": wzmianki prasowe. Dla wpisów z linkiem, ale bez
             // obrazka/tytułu, pobieramy je ze strony (og:image / og:title).
-            $press = $this->compactRows($request->input('about_press', []), ['url', 'title', 'source', 'image']);
+            $press = $this->compactRows($request->input('about_press', []), ['url', 'title', 'source', 'image', 'date']);
             foreach (($press ?? []) as $i => $item) {
                 if (! empty($item['url']) && (empty($item['image']) || empty($item['title']))) {
                     $og = $this->scrapeOgData($item['url']);

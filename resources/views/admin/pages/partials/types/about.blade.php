@@ -30,8 +30,13 @@
     </details>
 
     <details class="rounded-md bg-white">
-        <summary class="cursor-pointer rounded-lg px-4 py-3 text-sm font-bold text-ink hover:bg-gray-50">Motto i wstęp</summary>
+        <summary class="cursor-pointer rounded-lg px-4 py-3 text-sm font-bold text-ink hover:bg-gray-50">Misja, motto i wstęp</summary>
         <div class="space-y-4 border-t border-gray-100 px-4 py-4">
+    <div>
+        <div class="mb-1 flex items-center"><label for="about_mission" class="text-sm font-bold">Misja jednym zdaniem <span class="font-normal text-muted">(opcjonalnie)</span></label>@include('admin.partials.help', ['topic' => 'misja', 'text' => 'Pokazuje się pod tytułem strony, razem z przyciskami „Wesprzyj nas” i „Kontakt”. Jedno proste zdanie: kim jesteście i po co.'])</div>
+        <input type="text" id="about_mission" name="layout_data[about_mission]" maxlength="300" value="{{ old('layout_data.about_mission', (($page->layout_data ?? [])['about_mission'] ?? '')) }}" placeholder="np. Pomagamy osobom z niepełnosprawnościami korzystać z cyfrowego świata."
+            class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
+    </div>
     <div>
         <label for="about_motto" class="mb-1 block text-sm font-bold">Motto <span class="font-normal text-muted">(opcjonalnie)</span></label>
         <textarea id="about_motto" name="about_motto" rows="2" placeholder="np. Tworzymy świat bez barier cyfrowych."
@@ -74,6 +79,15 @@
                 <input type="checkbox" name="layout_data[documents_hide_bip]" value="1" @checked(old('layout_data.documents_hide_bip', ($page->layout_data ?? [])['documents_hide_bip'] ?? false))
                     class="mt-0.5 h-4 w-4 rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
                 <span><span class="font-bold">Wyłącz BIP</span><span class="block text-xs text-muted">Ukrywa pole „Pozostałe dokumenty publikujemy w Biuletynie Informacji Publicznej” z przyciskiem „Zobacz wszystkie”.</span></span>
+            </label>
+        </div>
+
+        <div>
+            <input type="hidden" name="layout_data[about_registry]" value="0">
+            <label class="flex cursor-pointer items-start gap-3 text-sm text-ink">
+                <input type="checkbox" name="layout_data[about_registry]" value="1" @checked(old('layout_data.about_registry', (($page->layout_data ?? [])['about_registry'] ?? true)))
+                    class="mt-0.5 h-4 w-4 rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
+                <span><span class="font-bold">Pokaż dane organizacji</span><span class="block text-xs text-muted">KRS, NIP, REGON i numer konta z Ustawienia → Dane rejestrowe — obok dokumentów.</span></span>
             </label>
         </div>
 
@@ -123,21 +137,27 @@
         <summary class="cursor-pointer rounded-lg px-4 py-3 text-sm font-bold text-ink hover:bg-gray-50">Statystyki (liczby)</summary>
         <div class="border-t border-gray-100 px-4 py-4">
     <div data-repeater>
-        <p class="mb-3 text-xs text-muted">np. „12 lat" + „doświadczenia". Puste wiersze są pomijane.</p>
+        <p class="mb-3 text-xs text-muted">np. „12 lat" + „doświadczenia". Ikona jest opcjonalna. Puste wiersze są pomijane.</p>
+        <div class="mb-3 sm:w-1/2">
+            <label for="about_stats_asof" class="mb-1 block text-xs font-bold">Stan na <span class="font-normal text-muted">(np. grudzień 2025 — pokaże się pod liczbami)</span></label>
+            <input type="text" id="about_stats_asof" name="layout_data[about_stats_asof]" maxlength="60" value="{{ old('layout_data.about_stats_asof', (($page->layout_data ?? [])['about_stats_asof'] ?? '')) }}" class="w-full rounded border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark">
+        </div>
         <div data-repeater-rows class="space-y-2">
             @foreach ($aboutStats as $i => $row)
-                <div data-repeater-row class="grid gap-2 sm:grid-cols-[1fr_2fr_auto]">
+                <div data-repeater-row class="grid gap-2 sm:grid-cols-[1fr_2fr_1fr_auto]">
                     <input type="text" name="about_stats[{{ $i }}][value]" value="{{ $row['value'] ?? '' }}" placeholder="Wartość, np. 500+" aria-label="Wartość statystyki {{ $i + 1 }}" class="w-full rounded border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark">
                     <input type="text" name="about_stats[{{ $i }}][label]" value="{{ $row['label'] ?? '' }}" placeholder="Etykieta, np. przeszkolonych osób" aria-label="Etykieta statystyki {{ $i + 1 }}" class="w-full rounded border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark">
+                    <input type="text" name="about_stats[{{ $i }}][icon]" value="{{ $row['icon'] ?? '' }}" data-icon-picker data-icon-format="name" placeholder="Ikona" aria-label="Ikona statystyki {{ $i + 1 }}" class="w-full rounded border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark">
                     <button type="button" data-repeater-remove class="rounded p-2 text-muted hover:bg-red-50 hover:text-red-600" aria-label="Usuń statystykę"><i class="fa-solid fa-trash" aria-hidden="true"></i></button>
                 </div>
             @endforeach
         </div>
         <button type="button" data-repeater-add class="mt-2 inline-flex items-center gap-2 rounded border border-brand-dark px-3 py-1.5 text-sm font-bold text-brand-dark hover:bg-brand-light"><i class="fa-solid fa-plus" aria-hidden="true"></i> Dodaj statystykę</button>
         <template data-repeater-template>
-            <div data-repeater-row class="grid gap-2 sm:grid-cols-[1fr_2fr_auto]">
+            <div data-repeater-row class="grid gap-2 sm:grid-cols-[1fr_2fr_1fr_auto]">
                 <input type="text" name="about_stats[__INDEX__][value]" placeholder="Wartość, np. 500+" aria-label="Wartość statystyki" class="w-full rounded border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark">
                 <input type="text" name="about_stats[__INDEX__][label]" placeholder="Etykieta, np. przeszkolonych osób" aria-label="Etykieta statystyki" class="w-full rounded border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark">
+                <input type="text" name="about_stats[__INDEX__][icon]" data-icon-picker data-icon-format="name" placeholder="Ikona" aria-label="Ikona statystyki" class="w-full rounded border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark">
                 <button type="button" data-repeater-remove class="rounded p-2 text-muted hover:bg-red-50 hover:text-red-600" aria-label="Usuń statystykę"><i class="fa-solid fa-trash" aria-hidden="true"></i></button>
             </div>
         </template>
@@ -293,6 +313,8 @@
                                 <input type="text" name="about_press[{{ $i }}][title]" value="{{ $row['title'] ?? '' }}" placeholder="Tytuł (pobierze się automatycznie)" aria-label="Tytuł wzmianki {{ $i + 1 }}" class="w-full rounded border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark">
                                 <input type="text" name="about_press[{{ $i }}][source]" value="{{ $row['source'] ?? '' }}" placeholder="Źródło, np. Gazeta Wyborcza" aria-label="Źródło wzmianki {{ $i + 1 }}" class="w-full rounded border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark">
                             </div>
+                            <label class="flex items-center gap-2 text-xs font-bold">Data publikacji
+                                <input type="date" name="about_press[{{ $i }}][date]" value="{{ $row['date'] ?? '' }}" class="rounded border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark"></label>
                             <input type="text" name="about_press[{{ $i }}][image]" data-library-url value="{{ $row['image'] ?? '' }}" placeholder="URL obrazka (pobierze się automatycznie)" aria-label="Obrazek wzmianki {{ $i + 1 }}" class="w-full rounded border-gray-500 text-xs focus:border-brand-dark focus:ring-brand-dark">
                             <div class="text-right">
                                 <button type="button" data-repeater-remove class="inline-flex items-center gap-1.5 rounded p-1.5 text-xs font-bold text-muted hover:bg-red-50 hover:text-red-600" aria-label="Usuń wzmiankę"><i class="fa-solid fa-trash" aria-hidden="true"></i> Usuń</button>
@@ -308,6 +330,8 @@
                             <input type="text" name="about_press[__INDEX__][title]" placeholder="Tytuł (pobierze się automatycznie)" aria-label="Tytuł wzmianki" class="w-full rounded border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark">
                             <input type="text" name="about_press[__INDEX__][source]" placeholder="Źródło, np. Gazeta Wyborcza" aria-label="Źródło wzmianki" class="w-full rounded border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark">
                         </div>
+                        <label class="flex items-center gap-2 text-xs font-bold">Data publikacji
+                            <input type="date" name="about_press[__INDEX__][date]" class="rounded border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark"></label>
                         <input type="text" name="about_press[__INDEX__][image]" data-library-url placeholder="URL obrazka (pobierze się automatycznie)" aria-label="Obrazek wzmianki" class="w-full rounded border-gray-500 text-xs focus:border-brand-dark focus:ring-brand-dark">
                         <div class="text-right">
                             <button type="button" data-repeater-remove class="inline-flex items-center gap-1.5 rounded p-1.5 text-xs font-bold text-muted hover:bg-red-50 hover:text-red-600" aria-label="Usuń wzmiankę"><i class="fa-solid fa-trash" aria-hidden="true"></i> Usuń</button>

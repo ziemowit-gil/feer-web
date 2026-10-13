@@ -154,7 +154,7 @@ class FeerTemplateTest extends TestCase
         $html = $this->get('/o-fundacji-test')->assertOk()->assertSee('Razem bez barier')->getContent();
         $this->assertStringNotContainsString('<header class="relative overflow-hidden bg-brand', $html);
         $this->assertStringContainsString('<header>', $html);
-        $this->assertStringContainsString('<article class="about-feer">', $html);
+        $this->assertStringContainsString('<article class="about-feer"', $html);
         $this->assertStringNotContainsString('border-b-4 border-transparent', $html);
     }
 

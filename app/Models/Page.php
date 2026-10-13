@@ -248,6 +248,17 @@ class Page extends Model
         'nav_press' => ['Menu sekcji: media', 'Media'],
         'nav_documents' => ['Menu sekcji: dokumenty', 'Dokumenty'],
         'nav_faq' => ['Menu sekcji: FAQ', 'FAQ'],
+        'nav_help' => ['Menu sekcji: jak pomóc', 'Jak pomóc'],
+        'mission_support' => ['Misja — przycisk wsparcia', 'Wesprzyj nas'],
+        'mission_contact' => ['Misja — przycisk kontaktu', 'Kontakt'],
+        'stats_asof' => ['Statystyki — napis przed datą', 'Stan na'],
+        'timeline_all' => ['Historia — przycisk rozwinięcia', 'Cała historia'],
+        'timeline_less' => ['Historia — przycisk zwinięcia', 'Pokaż mniej'],
+        'team_join' => ['Zespół — kafel „Dołącz”', 'Dołącz do zespołu'],
+        'team_join_text' => ['Zespół — opis kafla „Dołącz”', 'Szukamy osób, które chcą zmieniać świat razem z nami.'],
+        'registry_title' => ['Dokumenty — nagłówek danych rejestrowych', 'Dane organizacji'],
+        'help_title' => ['Jak możesz pomóc — nagłówek', 'Jak możesz pomóc'],
+        'help_text' => ['Jak możesz pomóc — zdanie pod nagłówkiem', 'Każda forma wsparcia ma znaczenie. Wybierz tę, która pasuje do Ciebie.'],
         'founder_kicker' => ['Słowo od Fundatora — napis nad imieniem', 'Słowo od Fundatora'],
         'stats_title' => ['Statystyki — nagłówek', 'W liczbach'],
         'gallery_title' => ['Galeria — nagłówek', 'Galeria'],
@@ -288,6 +299,7 @@ class Page extends Model
         'press'     => 'My w mediach',
         'documents' => 'Dokumenty i sprawozdania',
         'faq'       => 'Odnośnik do FAQ',
+        'help'      => 'Jak możesz pomóc',
     ];
 
     /** How a page attached to a project is surfaced on that project's page. */

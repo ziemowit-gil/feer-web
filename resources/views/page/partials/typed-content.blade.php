@@ -152,7 +152,20 @@
         $galleryPhotos = $aboutImages->slice(3)->values();
 
         $aboutPressItems = collect($page->about_press ?? [])->filter(fn ($p) => ! empty($p['url']) || ! empty($p['title']));
-        $aboutSectionLabels = collect(['intro', 'founder', 'stats', 'values', 'timeline', 'team', 'gallery', 'partners', 'press', 'documents', 'faq'])->mapWithKeys(fn ($k) => [$k => $page->aboutLabel('nav_'.$k)])->all();
+        $aboutLd = $page->layout_data ?? [];
+        $aboutMission = trim((string) ($aboutLd['about_mission'] ?? ''));
+        $aboutSupportUrl = $siteSettings->isModuleEnabled('support') && Route::has('support.show') ? route('support.show') : null;
+        $aboutContactUrl = Route::has('contact.show') ? route('contact.show') : null;
+        // „Jak możesz pomóc”: tylko formy, które serwis naprawdę obsługuje.
+        $aboutCoopPage = \App\Models\Page::query()->forCurrentSite()->where('type', 'wspolpraca')->where('is_published', true)->first();
+        $aboutHelp = array_values(array_filter([
+            $siteSettings->isModuleEnabled('support') && Route::has('donation.show') ? ['icon' => 'bi-heart', 'title' => 'Darowizna', 'text' => 'Wesprzyj nasze działania jednorazowo albo regularnie.', 'url' => route('donation.show'), 'cta' => 'Przekaż darowiznę'] : null,
+            filled($siteSettings->krs_number) ? ['icon' => 'bi-percent', 'title' => '1,5% podatku', 'text' => 'W zeznaniu podatkowym wpisz nasz numer KRS: '.$siteSettings->krs_number.'. To nic nie kosztuje.', 'url' => $aboutSupportUrl, 'cta' => 'Jak przekazać 1,5%'] : null,
+            $siteSettings->isModuleEnabled('volunteering') && Route::has('volunteer.index') ? ['icon' => 'bi-people', 'title' => 'Wolontariat', 'text' => 'Podziel się czasem i umiejętnościami.', 'url' => route('volunteer.index'), 'cta' => 'Zobacz oferty'] : null,
+            ($aboutCoopPage || $aboutContactUrl) ? ['icon' => 'bi-briefcase', 'title' => 'Współpraca', 'text' => 'Dla firm, instytucji, szkół i organizacji.', 'url' => $aboutCoopPage?->publicUrl() ?? $aboutContactUrl, 'cta' => 'Porozmawiajmy'] : null,
+        ]));
+        $aboutJoinUrl = Route::has('join-us.index') ? route('join-us.index') : (Route::has('praca.index') && $siteSettings->isModuleEnabled('jobs') ? route('praca.index') : null);
+        $aboutSectionLabels = collect(['intro', 'founder', 'stats', 'values', 'timeline', 'team', 'gallery', 'partners', 'press', 'documents', 'faq', 'help'])->mapWithKeys(fn ($k) => [$k => $page->aboutLabel('nav_'.$k)])->all();
         $activeAboutSections = [];
         foreach ($page->orderedAboutSections(true) as $_s) {
             $has = match ($_s) {
@@ -167,19 +180,27 @@
                 'documents' => $page->attachments->isNotEmpty() || filled($page->about_documents_intro) || filled(($page->layout_data ?? [])['documents_more_url'] ?? null),
                 'press'     => $aboutPressItems->isNotEmpty() || filled($page->about_press_intro),
                 'faq'       => (bool) $page->about_faq_visible,
+                'help'      => $aboutHelp !== [],
                 default     => false,
             };
             if ($has) $activeAboutSections[$_s] = $aboutSectionLabels[$_s] ?? $_s;
         }
     @endphp
 
-    <article class="{{ ($siteSettings->site_template ?? 'default') === 'feer' ? 'about-feer' : '' }}">
+    <article class="{{ ($siteSettings->site_template ?? 'default') === 'feer' ? 'about-feer' : '' }}" x-data="{ etr: false }">
         {{-- Hero: pełnokolorowe tło marki z dekoracją, jak w sekcji "wspolpraca" (bg-brand + rozmyte koła) --}}
         @if (($siteSettings->site_template ?? 'default') === 'feer')
             {{-- Szablon FEER: jasny, płaski nagłówek; motto jako cytat z paskiem (kontrast ink na szarym 16:1) --}}
             <header>
                 <div class="mx-auto max-w-6xl px-4">
                     <h1 class="text-3xl font-extrabold leading-tight tracking-tight text-ink md:text-5xl">{{ $page->title }}</h1>
+                    @if ($aboutMission !== '' || $aboutSupportUrl || $aboutContactUrl)
+                        @if ($aboutMission !== '')<p class="mt-4 max-w-3xl text-lg font-bold leading-snug text-ink md:text-xl">{{ $aboutMission }}</p>@endif
+                        <div class="mt-5 flex flex-wrap gap-3">
+                            @if ($aboutSupportUrl)<a href="{{ $aboutSupportUrl }}" class="inline-flex min-h-11 items-center gap-2 rounded-md bg-brand-dark px-5 font-bold text-white hover:bg-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-dark"><i class="fa-solid fa-heart" aria-hidden="true"></i> {{ $page->aboutLabel('mission_support') }}</a>@endif
+                            @if ($aboutContactUrl)<a href="{{ $aboutContactUrl }}" class="inline-flex min-h-11 items-center gap-2 rounded-md bg-gray-100 px-5 font-bold text-ink hover:bg-gray-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-dark"><i class="fa-solid fa-envelope" aria-hidden="true"></i> {{ $page->aboutLabel('mission_contact') }}</a>@endif
+                        </div>
+                    @endif
                     @if ($page->about_motto)
                         <blockquote class="mt-5 max-w-3xl pb-2">
                             <p class="text-base italic leading-relaxed text-ink md:text-lg">„{{ $page->about_motto }}"</p>
@@ -197,6 +218,13 @@
 
             <div class="relative mx-auto max-w-4xl">
                 <h1 class="text-3xl font-extrabold leading-tight md:text-5xl">{{ $page->title }}</h1>
+                @if ($aboutMission !== '')<p class="mx-auto mt-4 max-w-3xl text-lg font-bold leading-snug text-white md:text-xl">{{ $aboutMission }}</p>@endif
+                @if ($aboutSupportUrl || $aboutContactUrl)
+                    <div class="mt-6 flex flex-wrap justify-center gap-3">
+                        @if ($aboutSupportUrl)<a href="{{ $aboutSupportUrl }}" class="inline-flex min-h-11 items-center gap-2 rounded-md bg-white px-5 font-bold text-brand-dark hover:bg-brand-light focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"><i class="fa-solid fa-heart" aria-hidden="true"></i> {{ $page->aboutLabel('mission_support') }}</a>@endif
+                        @if ($aboutContactUrl)<a href="{{ $aboutContactUrl }}" class="inline-flex min-h-11 items-center gap-2 rounded-md bg-ink px-5 font-bold text-white hover:bg-black focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"><i class="fa-solid fa-envelope" aria-hidden="true"></i> {{ $page->aboutLabel('mission_contact') }}</a>@endif
+                    </div>
+                @endif
                 @if ($page->about_motto)
                     <blockquote class="mx-auto mt-8 max-w-3xl rounded-xl border border-white/20 bg-white/10 px-6 py-4 text-left backdrop-blur-sm">
                         <p class="text-lg italic leading-relaxed text-white md:text-xl">„{{ $page->about_motto }}"</p>
@@ -209,6 +237,12 @@
         </header>
         @endif
 
+        {{-- Wersja łatwa do czytania (ETR) i film w PJM — na samej górze, przed sekcjami. --}}
+        @if (($page->etr?->is_enabled) || filled($page->pjm_video_url))
+            <div class="mx-auto max-w-6xl px-4 pt-6">@include('partials.etr-toggle', ['etr' => $page->etr, 'title' => $page->title])@include('partials.pjm-video', ['url' => $page->pjm_video_url, 'title' => $page->title])</div>
+        @endif
+
+        <div x-show="! etr">
         @if (count($activeAboutSections) > 1)
         @php $feerAboutNav = ($siteSettings->site_template ?? 'default') === 'feer'; @endphp
         {{-- FEER: menu sekcji jako wyraźne kwadratowe przyciski (jasnoszare, aktywny ciemny z białym tekstem 16,9:1 — jak kategorie aktualności); pozostałe szablony — pigułki. --}}
@@ -399,12 +433,14 @@
                             <div class="flex min-h-48 flex-col justify-between rounded-md p-6" style="background-color: {{ $bg }}; color: {{ $fg }}">
                                 <dt class="sr-only">{{ $stat['label'] ?? '' }}</dt>
                                 <dd class="flex h-full flex-col justify-between gap-6">
+                                    @if (! empty($stat['icon']))<span class="text-3xl" aria-hidden="true">{!! icon_html($stat['icon']) !!}</span>@endif
                                     <span class="block {{ $valCls }} font-extrabold leading-none tracking-tight" data-countup-value>{{ $val }}</span>
                                     <span class="block text-base font-bold leading-snug">{{ $stat['label'] ?? '' }}</span>
                                 </dd>
                             </div>
                         @endforeach
                     </dl>
+                    @if (filled($aboutLd['about_stats_asof'] ?? null))<p class="mt-3 text-sm text-ink">{{ $page->aboutLabel('stats_asof') }}: {{ $aboutLd['about_stats_asof'] }}</p>@endif
                 </div>
             </section>
         @elseif ($aboutStats->isNotEmpty())
@@ -414,12 +450,14 @@
                         <div class="flex min-w-[160px] flex-1 flex-col items-center rounded-2xl bg-white px-6 py-6 text-center shadow-sm ring-1 ring-gray-100">
                             <dt class="sr-only">{{ $stat['label'] ?? '' }}</dt>
                             <dd class="flex flex-col items-center">
+                                @if (! empty($stat['icon']))<span class="mb-2 text-2xl text-brand-dark" aria-hidden="true">{!! icon_html($stat['icon']) !!}</span>@endif
                                 <span class="block text-3xl font-extrabold leading-none tracking-tight text-brand md:text-4xl" data-countup-value>{{ $stat['value'] ?? '' }}</span>
                                 <span class="mt-3 block text-xs font-medium uppercase tracking-wider text-muted">{{ $stat['label'] ?? '' }}</span>
                             </dd>
                         </div>
                     @endforeach
                 </dl>
+                @if (filled($aboutLd['about_stats_asof'] ?? null))<p class="mt-4 text-center text-sm text-ink">{{ $page->aboutLabel('stats_asof') }}: {{ $aboutLd['about_stats_asof'] }}</p>@endif
             </section>
         @endif
         @break
@@ -477,7 +515,8 @@
         @case('timeline')
         {{-- Oś czasu --}}
         @if ($aboutTimeline->isNotEmpty())
-            <section id="sekcja-timeline" class="mx-auto max-w-3xl px-4 py-16" aria-label="{{ $page->aboutLabel('timeline_title') }}">
+            @php $tlLimit = 5; $tlHidden = max(0, $aboutTimeline->count() - $tlLimit); @endphp
+            <section id="sekcja-timeline" class="mx-auto max-w-3xl px-4 py-16" aria-label="{{ $page->aboutLabel('timeline_title') }}" x-data="{ all: false }">
                 <h2 class="mb-10 text-center text-2xl font-extrabold text-ink md:text-3xl">{{ $page->aboutLabel('timeline_title') }}</h2>
                 <ol class="relative ml-3 space-y-8 border-l-2 border-brand/30 pl-8">
                     @foreach ($aboutTimeline as $entry)
@@ -485,7 +524,7 @@
                             $tlColor = \App\Support\Color::isValid($entry['color'] ?? null) ? $entry['color'] : null;
                             $tlYearColor = $tlColor ? $siteSettings->contrastSafeColor($tlColor) : null;
                         @endphp
-                        <li class="relative">
+                        <li class="relative" @if ($loop->index >= $tlLimit) x-show="all" x-cloak @endif>
                             <span class="absolute -left-[41px] top-1 flex h-5 w-5 items-center justify-center rounded-full border-4 border-white {{ $tlColor ? '' : 'bg-brand' }}" aria-hidden="true" @if ($tlColor) style="background-color: {{ $tlColor }};" @endif></span>
                             @if (! empty($entry['year']))
                                 <p class="text-sm font-bold uppercase tracking-widest {{ $tlYearColor ? '' : 'text-brand' }}" @if ($tlYearColor) style="color: {{ $tlYearColor }};" @endif>{{ $entry['year'] }}</p>
@@ -514,6 +553,16 @@
                         </li>
                     @endforeach
                 </ol>
+                @if ($tlHidden > 0)
+                    <div class="mt-8 text-center">
+                        <button type="button" @click="all = ! all" :aria-expanded="all.toString()" aria-controls="sekcja-timeline"
+                            class="inline-flex min-h-11 items-center gap-2 rounded-md bg-gray-100 px-5 font-bold text-ink hover:bg-gray-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-dark">
+                            <span x-show="! all">{{ $page->aboutLabel('timeline_all') }} (+{{ $tlHidden }})</span>
+                            <span x-show="all" x-cloak>{{ $page->aboutLabel('timeline_less') }}</span>
+                            <i class="fa-solid fa-chevron-down text-xs" :class="all && 'rotate-180'" aria-hidden="true"></i>
+                        </button>
+                    </div>
+                @endif
             </section>
         @endif
         @break
@@ -524,7 +573,31 @@
             <section id="sekcja-team" class="bg-gray-50 px-4 py-16" aria-label="{{ $page->aboutLabel('team_title') }}">
                 <div class="mx-auto max-w-5xl">
                     <h2 class="mb-10 text-center text-2xl font-extrabold text-ink md:text-3xl">{{ $page->aboutLabel('team_title') }}</h2>
-                    @include('partials.team', ['members' => $aboutTeam])
+                    @php
+                        // Podział na działy, gdy osoby mają przypisany dział (pierwszy z listy).
+                        $teamGroups = $aboutTeam->groupBy(fn ($m) => trim((string) (((array) ($m->person_department ?? []))[0] ?? '')));
+                    @endphp
+                    @if ($teamGroups->count() > 1)
+                        <div class="space-y-12">
+                            @foreach ($teamGroups->sortKeysUsing(fn ($a, $b) => ($a === '') <=> ($b === '') ?: strcoll($a, $b)) as $dept => $members)
+                                <div>
+                                    <h3 class="mb-5 text-xl font-bold text-ink">{{ $dept !== '' ? $dept : 'Pozostałe osoby' }}</h3>
+                                    @include('partials.team', ['members' => $members])
+                                </div>
+                            @endforeach
+                        </div>
+                    @else
+                        @include('partials.team', ['members' => $aboutTeam])
+                    @endif
+                    @if ($aboutJoinUrl)
+                        <a href="{{ $aboutJoinUrl }}" class="group mt-8 flex flex-col items-start gap-3 rounded-md bg-brand-light p-6 sm:flex-row sm:items-center sm:justify-between focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-dark">
+                            <span class="flex items-center gap-4">
+                                <span class="flex h-12 w-12 flex-none items-center justify-center rounded-md bg-brand-dark text-xl text-white" aria-hidden="true"><i class="fa-solid fa-user-plus"></i></span>
+                                <span><span class="block text-lg font-bold text-ink">{{ $page->aboutLabel('team_join') }}</span><span class="block text-sm text-ink">{{ $page->aboutLabel('team_join_text') }}</span></span>
+                            </span>
+                            <span class="font-bold text-brand-dark underline underline-offset-4 group-hover:no-underline">Zobacz, jak dołączyć →</span>
+                        </a>
+                    @endif
                 </div>
             </section>
         @endif
@@ -601,6 +674,16 @@
                             </a>
                         </div>
                         @endunless
+                        @if (($aboutLd['about_registry'] ?? true) && $siteSettings->hasRegistryData())
+                            <div class="mt-6">
+                                <h3 class="mb-2 text-sm font-bold uppercase tracking-widest text-ink">{{ $page->aboutLabel('registry_title') }}</h3>
+                                <dl class="grid grid-cols-[max-content_1fr] gap-x-4 gap-y-1 text-sm text-ink">
+                                    @foreach (['KRS' => $siteSettings->krs_number, 'NIP' => $siteSettings->nip_number, 'REGON' => $siteSettings->regon_number, 'Konto' => $siteSettings->bank_account_number] as $rLabel => $rValue)
+                                        @if (filled($rValue))<dt class="font-bold">{{ $rLabel }}</dt><dd class="font-mono">{{ $rValue }}</dd>@endif
+                                    @endforeach
+                                </dl>
+                            </div>
+                        @endif
                     </div>
                     <div class="space-y-8">
                         @forelse ($docGroups as $groupName => $docs)
@@ -672,19 +755,25 @@
                     @if ($aboutPress->isNotEmpty())
                         <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
                             @foreach ($aboutPress as $item)
+                                @php
+                                    $pressDate = ! empty($item['date']) ? \Illuminate\Support\Carbon::make($item['date']) : null;
+                                    $pressHost = ! empty($item['url']) ? preg_replace('/^www\./', '', (string) parse_url($item['url'], PHP_URL_HOST)) : null;
+                                @endphp
                                 <a href="{{ $item['url'] ?: '#' }}" @if (! empty($item['url'])) target="_blank" rel="noopener" @endif
-                                    class="group flex flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
+                                    class="group flex flex-col overflow-hidden rounded-md bg-white transition hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-dark motion-reduce:transition-none">
                                     @if (! empty($item['image']))
                                         <img src="{{ $item['image'] }}" alt="" loading="lazy" class="h-40 w-full object-cover">
                                     @else
-                                        <span class="flex h-40 w-full items-center justify-center bg-brand-light text-3xl text-brand" aria-hidden="true"><i class="fa-solid fa-newspaper"></i></span>
+                                        <span class="flex h-40 w-full items-center justify-center bg-brand-light px-6 text-center text-xl font-extrabold text-brand-dark" aria-hidden="true">{{ $item['source'] ?: ($pressHost ?: '') }}</span>
                                     @endif
                                     <div class="flex flex-1 flex-col p-5">
-                                        @if (! empty($item['source']))
-                                            <span class="mb-1 text-xs font-bold uppercase tracking-widest text-brand">{{ $item['source'] }}</span>
-                                        @endif
-                                        <span class="font-bold text-ink group-hover:text-brand">{{ $item['title'] ?: $item['url'] }}</span>
-                                        <span class="mt-3 inline-flex items-center gap-1.5 text-sm font-bold text-brand">{{ $page->aboutLabel('press_read') }} <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i></span>
+                                        <p class="mb-2 flex flex-wrap items-center gap-x-2 text-xs font-bold uppercase tracking-widest text-ink">
+                                            <i class="fa-solid fa-newspaper text-brand-dark" aria-hidden="true"></i>
+                                            <span>{{ $item['source'] ?: $pressHost }}</span>
+                                            @if ($pressDate)<span aria-hidden="true">·</span><time datetime="{{ $pressDate->toDateString() }}" class="normal-case tracking-normal">{{ $pressDate->locale('pl')->translatedFormat('j F Y') }}</time>@endif
+                                        </p>
+                                        <span class="font-bold leading-snug text-ink group-hover:text-brand-dark group-hover:underline group-hover:underline-offset-4">{{ $item['title'] ?: $item['url'] }}</span>
+                                        <span class="mt-auto inline-flex items-center gap-1.5 pt-3 text-sm font-bold text-brand-dark">{{ $page->aboutLabel('press_read') }}<span class="sr-only"> (otwiera się w nowej karcie)</span> <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i></span>
                                     </div>
                                 </a>
                             @endforeach
@@ -715,8 +804,34 @@
         @endif
         @break
 
+        @case('help')
+        {{-- Jak możesz pomóc: darowizna, 1,5%, wolontariat, współpraca — tylko to, co serwis obsługuje --}}
+        @if ($aboutHelp !== [])
+            <section id="sekcja-help" class="px-4 py-16" aria-labelledby="sekcja-help-h">
+                <div class="mx-auto max-w-6xl">
+                    <h2 id="sekcja-help-h" class="text-2xl font-extrabold text-ink md:text-3xl">{{ $page->aboutLabel('help_title') }}</h2>
+                    <span class="mt-3 block h-1 w-14 bg-brand" aria-hidden="true"></span>
+                    <p class="mt-4 max-w-2xl text-ink">{{ $page->aboutLabel('help_text') }}</p>
+                    <ul role="list" class="mt-8 grid gap-4 sm:grid-cols-2 {{ count($aboutHelp) >= 4 ? 'lg:grid-cols-4' : 'lg:grid-cols-'.count($aboutHelp) }}">
+                        @foreach ($aboutHelp as $h)
+                            <li class="flex flex-col rounded-md bg-gray-50 p-6">
+                                <span class="flex h-12 w-12 items-center justify-center rounded-md bg-brand-light text-xl text-brand-dark" aria-hidden="true">{!! icon_html($h['icon']) !!}</span>
+                                <h3 class="mt-4 text-lg font-bold text-ink">{{ $h['title'] }}</h3>
+                                <p class="mt-1 flex-1 text-sm leading-relaxed text-ink">{{ $h['text'] }}</p>
+                                @if ($h['url'])
+                                    <a href="{{ $h['url'] }}" class="mt-4 inline-flex min-h-11 items-center gap-2 self-start rounded-md bg-brand-dark px-4 text-sm font-bold text-white hover:bg-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-dark">{{ $h['cta'] }}<span class="sr-only"> — {{ $h['title'] }}</span> <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></a>
+                                @endif
+                            </li>
+                        @endforeach
+                    </ul>
+                </div>
+            </section>
+        @endif
+        @break
+
         @endswitch
         @endforeach
+        </div>
     </article>
 
     <script>
