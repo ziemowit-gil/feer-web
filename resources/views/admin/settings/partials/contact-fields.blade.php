@@ -300,7 +300,7 @@
                     <p class="mb-2 text-sm font-bold">Układ listy rachunków</p>
                     @php $bankLayout = old('contact_bank_accounts_layout', $settings->contact_bank_accounts_layout ?: 'cards'); @endphp
                     <div class="grid gap-2 sm:grid-cols-2">
-                        @foreach (\App\Models\SiteSetting::BANK_ACCOUNTS_LAYOUTS as $blValue => $blLabel)
+                        @foreach ($settings->availableOptions('bank_accounts_layouts', \App\Models\SiteSetting::BANK_ACCOUNTS_LAYOUTS, $settings->contact_bank_accounts_layout ?: 'cards') as $blValue => $blLabel)
                             <label class="flex cursor-pointer items-start gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2.5 has-[:checked]:border-brand-dark has-[:checked]:bg-brand-light">
                                 <input type="radio" name="contact_bank_accounts_layout" value="{{ $blValue }}" {{ $bankLayout === $blValue ? 'checked' : '' }} class="mt-0.5 text-brand-dark focus:ring-brand-dark">
                                 <span class="text-sm"><span class="font-bold">{{ \Illuminate\Support\Str::before($blLabel, ' (') }}</span><span class="block text-xs text-muted">{{ \Illuminate\Support\Str::of($blLabel)->after('(')->before(')') }}</span></span>

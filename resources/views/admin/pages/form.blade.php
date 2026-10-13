@@ -416,6 +416,8 @@
                                     if (! array_key_exists($sideNavStyle, \App\Models\Page::SIDE_NAV_STYLES)) {
                                         $sideNavStyle = 'sidebar';
                                     }
+                                    // Style ukryte w Ustawienia → Moduły znikają z wyboru; bieżący styl strony zostaje.
+                                    $sideNavAvailable = $siteSettings->availableOptions('side_nav_styles', \App\Models\Page::SIDE_NAV_STYLES, $page->side_nav_style ?? $sideNavStyle);
                                     $sideNavIcons = ['sidebar' => 'fa-table-columns', 'panel' => 'fa-table-list', 'accordion' => 'fa-bars-staggered', 'tabs' => 'fa-window-maximize', 'tree' => 'fa-sitemap', 'tiles' => 'fa-table-cells-large'];
                                     $sideNavHints = [
                                         'sidebar' => 'Lista podstron tego poziomu w prawej kolumnie (z jedną zagnieżdżoną gałęzią).',
@@ -428,13 +430,13 @@
                                 @endphp
                                 {{-- Prawdziwe pola radio zostają (ukryte) jako nośnik wartości; wybór odbywa się w oknie dialogowym. --}}
                                 <span class="sr-only">
-                                    @foreach (\App\Models\Page::SIDE_NAV_STYLES as $styleKey => $styleLabel)
+                                    @foreach ($sideNavAvailable as $styleKey => $styleLabel)
                                         <input type="radio" name="side_nav_style" value="{{ $styleKey }}" {{ $sideNavStyle === $styleKey ? 'checked' : '' }} tabindex="-1" aria-hidden="true">
                                     @endforeach
                                 </span>
                                 @php
                                     $navCards = [];
-                                    foreach (\App\Models\Page::SIDE_NAV_STYLES as $styleKey => $styleLabel) {
+                                    foreach ($sideNavAvailable as $styleKey => $styleLabel) {
                                         $navCards[$styleKey] = ['name' => trim(\Illuminate\Support\Str::before($styleLabel, ' (')), 'desc' => $sideNavHints[$styleKey], 'icon' => $sideNavIcons[$styleKey]];
                                     }
                                 @endphp

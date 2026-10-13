@@ -990,6 +990,10 @@ class PageController extends Controller
         $data['side_nav_style'] = array_key_exists((string) $request->input('side_nav_style'), Page::SIDE_NAV_STYLES)
             ? $request->input('side_nav_style')
             : 'sidebar';
+        // Styl ukryty w Ustawienia → Moduły nie przejdzie — zostaje bieżący styl strony albo domyślny.
+        if (in_array($data['side_nav_style'], SiteSetting::current()->blockedOptionsExcept('side_nav_styles', $page?->side_nav_style), true)) {
+            $data['side_nav_style'] = $page?->side_nav_style ?: 'sidebar';
+        }
         $data['is_system'] = $request->boolean('is_system');
         $data['show_gallery'] = $request->boolean('show_gallery');
         // Dane typu (oferta, poradnik, słownik, studium) tylko dla tych typów —

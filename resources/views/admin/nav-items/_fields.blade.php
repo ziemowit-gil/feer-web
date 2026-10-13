@@ -72,7 +72,13 @@
     <select id="nav-type" name="type" x-model="form.type"
         class="w-full rounded border-gray-500 focus-visible:border-brand-dark focus-visible:ring-2 focus-visible:ring-brand-dark">
         @foreach (\App\Models\NavItem::TYPES as $value => $option)
-            <option value="{{ $value }}">{{ $option }}</option>
+            @if ($siteSettings->isOptionBlocked('nav_item_types', $value))
+                {{-- Typ ukryty w Ustawienia → Moduły: widoczny tylko w pozycji, która już go ma. --}}
+                {{-- Zawsze w DOM (x-model musi znaleźć wartość), ukryty i wyłączony w pozostałych. --}}
+                <option value="{{ $value }}" :hidden="form.type !== @js($value)" :disabled="form.type !== @js($value)">{{ $option }}</option>
+            @else
+                <option value="{{ $value }}">{{ $option }}</option>
+            @endif
         @endforeach
     </select>
     @error('type') <p class="mt-1 text-sm text-red-700">{{ $message }}</p> @enderror

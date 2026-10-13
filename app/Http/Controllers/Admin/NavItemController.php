@@ -96,7 +96,7 @@ class NavItemController extends Controller
     /** Aktualizuje pozycję menu z zabezpieczeniem przed niepoprawnym zagnieżdżaniem. */
     public function update(Request $request, NavItem $navItem)
     {
-        $data = $this->validated($request);
+        $data = $this->validated($request, $navItem);
 
         // Pozycja nie może być własnym rodzicem, a pozycja mająca własne
         // podpozycje nie może stać się podpozycją (menu ma tylko jeden poziom
@@ -347,7 +347,7 @@ class NavItemController extends Controller
             ->get();
     }
 
-    private function validated(Request $request): array
+    private function validated(Request $request, ?NavItem $item = null): array
     {
         $data = $request->validate([
             'label' => ['required', 'string', 'max:255'],
@@ -367,7 +367,9 @@ class NavItemController extends Controller
             'mega_side_links.*.style' => ['nullable', Rule::in(NavItem::SIDE_LINK_STYLES)],
             'mega_side_links.*.new_tab' => ['nullable', 'boolean'],
             'url' => ['nullable', 'string', 'max:255'],
-            'type' => ['required', Rule::in(array_keys(NavItem::TYPES))],
+            'type' => ['required', Rule::in(array_keys(NavItem::TYPES)),
+                // Typ ukryty w Ustawienia → Moduły — chyba że to bieżący typ edytowanej pozycji.
+                Rule::notIn(SiteSetting::current()->blockedOptionsExcept('nav_item_types', $item?->type))],
             'location' => ['required', Rule::in(array_keys(NavItem::LOCATIONS))],
             'module' => ['nullable', Rule::in(array_keys(SiteSetting::MODULES))],
             'parent_id' => [

@@ -77,7 +77,7 @@
                 <div>
                     <label for="type" class="mb-1 block text-sm font-bold">Rodzaj <span aria-hidden="true" class="text-red-600">*</span></label>
                     <select id="type" name="type" class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
-                        @foreach (\App\Models\Event::TYPES as $value => $label)
+                        @foreach ($siteSettings->availableOptions('event_types', \App\Models\Event::TYPES, $event->type) as $value => $label)
                             <option value="{{ $value }}" {{ old('type', $event->type) === $value ? 'selected' : '' }}>{{ $label }}</option>
                         @endforeach
                     </select>

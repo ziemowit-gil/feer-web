@@ -160,7 +160,7 @@
                 <fieldset>
                     <legend class="mb-2 text-sm font-bold uppercase tracking-wide text-muted">Typ wpisu</legend>
                     <div class="grid gap-2 sm:grid-cols-3">
-                        @foreach (\App\Models\News::POST_TYPES as $val => $opt)
+                        @foreach ($siteSettings->availableOptions('news_post_types', \App\Models\News::POST_TYPES, $postType) as $val => $opt)
                             <label class="flex cursor-pointer items-start gap-3 rounded-md bg-gray-50 p-3 hover:bg-brand-light has-[:checked]:bg-brand-light has-[:checked]:ring-2 has-[:checked]:ring-brand-dark has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-brand-dark">
                                 <input type="radio" name="post_type" value="{{ $val }}" x-model="type" @checked($postType === $val) class="mt-1 border-gray-500 text-brand-dark focus:ring-brand-dark">
                                 <span>

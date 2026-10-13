@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Models\Event;
+use App\Models\SiteSetting;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -32,7 +33,9 @@ class EventRequest extends FormRequest
             'facilitator_twitter' => ['nullable', 'url', 'max:500'],
             'facilitator_photo' => ['nullable', 'image', 'max:4096'],
             'remove_facilitator_photo' => ['sometimes', 'boolean'],
-            'type' => ['required', Rule::in(array_keys(Event::TYPES))],
+            'type' => ['required', Rule::in(array_keys(Event::TYPES)),
+                // Rodzaj ukryty w Ustawienia → Moduły — chyba że to bieżący rodzaj edytowanego wydarzenia.
+                Rule::notIn(SiteSetting::current()->blockedOptionsExcept('event_types', $this->route('event')?->type))],
             'mode' => ['required', Rule::in(array_keys(Event::MODES))],
             // Lokalizacja wymagana, gdy wydarzenie nie jest w pełni zdalne.
             'location' => ['nullable', 'required_unless:mode,zdalnie', 'string', 'max:255'],

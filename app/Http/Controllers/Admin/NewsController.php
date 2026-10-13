@@ -284,7 +284,8 @@ class NewsController extends Controller
             'published_at' => ['required', 'date'],
             'image' => ['nullable', 'image', 'max:4096'],
             // Typ wpisu i jego pola
-            'post_type' => ['nullable', Rule::in(array_keys(News::POST_TYPES))],
+            'post_type' => ['nullable', Rule::in(array_keys(News::POST_TYPES)),
+                Rule::notIn(SiteSetting::current()->blockedOptionsExcept('news_post_types', $news?->post_type ?? 'standard'))],
             'expires_at' => ['nullable', 'date', 'after:published_at', 'required_if:post_type,announcement'],
             'type_data.cta_label' => ['nullable', 'string', 'max:80'],
             'type_data.cta_url' => ['nullable', 'string', 'max:500', 'regex:~^(https?://\S+|/(?!/)\S*|#\S*)$~i'],

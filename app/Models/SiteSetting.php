@@ -813,6 +813,12 @@ class SiteSetting extends Model implements HasMedia
             'header_layouts' => self::HEADER_LAYOUTS,
             'contact_layouts' => self::CONTACT_LAYOUTS,
             'site_templates' => self::SITE_TEMPLATES,
+            'news_post_types' => array_map(fn (array $type) => $type['label'], News::POST_TYPES),
+            'event_types' => Event::TYPES,
+            'nav_item_types' => NavItem::TYPES,
+            'content_block_types' => ContentBlock::TYPES,
+            'side_nav_styles' => Page::SIDE_NAV_STYLES,
+            'bank_accounts_layouts' => self::BANK_ACCOUNTS_LAYOUTS,
         ];
     }
 
@@ -824,6 +830,12 @@ class SiteSetting extends Model implements HasMedia
         'header_layouts' => 'Układy nagłówka',
         'contact_layouts' => 'Układy strony kontaktu',
         'site_templates' => 'Szablony serwisu',
+        'news_post_types' => 'Typy wpisów (aktualności)',
+        'event_types' => 'Rodzaje wydarzeń',
+        'nav_item_types' => 'Typy pozycji menu',
+        'content_block_types' => 'Bloki treści w edytorze',
+        'side_nav_styles' => 'Style nawigacji po podstronach',
+        'bank_accounts_layouts' => 'Układy listy rachunków bankowych',
     ];
 
     /**
@@ -834,6 +846,10 @@ class SiteSetting extends Model implements HasMedia
         'page_types' => ['standard'],
         'page_templates' => ['default'],
         'news_layouts' => ['default'],
+        'news_post_types' => ['standard'],
+        'nav_item_types' => ['link'],
+        'side_nav_styles' => ['sidebar'],
+        'bank_accounts_layouts' => ['cards'],
     ];
 
     /**
@@ -843,6 +859,24 @@ class SiteSetting extends Model implements HasMedia
     public function isOptionBlocked(string $group, string $value): bool
     {
         return in_array($value, $this->blocked_options[$group] ?? [], true);
+    }
+
+    /**
+     * Opcje grupy do pokazania na liście wyboru: bez zablokowanych, ale z bieżącą
+     * wartością edytowanej treści (żeby zapis nie zmieniał jej po cichu).
+     *
+     * @param  array<string, mixed>  $options
+     * @return array<string, mixed>
+     */
+    public function availableOptions(string $group, array $options, ?string $keep = null): array
+    {
+        return array_filter($options, fn ($v, $k) => (string) $k === (string) $keep || ! $this->isOptionBlocked($group, (string) $k), ARRAY_FILTER_USE_BOTH);
+    }
+
+    /** Wartości zablokowane w grupie z pominięciem bieżącej — do reguły Rule::notIn przy zapisie. */
+    public function blockedOptionsExcept(string $group, ?string $keep = null): array
+    {
+        return array_values(array_diff($this->blocked_options[$group] ?? [], [(string) $keep]));
     }
 
     /**

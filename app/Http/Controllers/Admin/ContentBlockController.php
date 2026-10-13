@@ -29,6 +29,8 @@ class ContentBlockController extends Controller
 
     public function store(Request $request): JsonResponse
     {
+        // Typ bloku wyłączony w Ustawienia → Moduły — nowych takich bloków nie tworzymy (istniejące można edytować).
+        abort_if(SiteSetting::current()->isOptionBlocked('content_block_types', (string) $request->input('type')), 422, 'Ten typ bloku jest wyłączony w ustawieniach.');
         $block = ContentBlock::create($this->validated($request) + ['created_by' => $request->user()?->id]);
 
         return response()->json(['id' => $block->id, 'type' => $block->type, 'name' => $block->name], 201);

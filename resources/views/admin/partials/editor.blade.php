@@ -94,6 +94,8 @@
     // Bloki treści z kreatora (przyciski CTA, akordeon) — shortcode [blok:ID].
     $contentBlocks = \App\Models\ContentBlock::forCurrentSite()->orderBy('name')->get(['id', 'type', 'name']);
     $blockTypeLabels = \App\Models\ContentBlock::TYPES;
+    // Nowe bloki tylko z typów niewyłączonych w Ustawienia → Moduły; istniejące bloki dalej da się wstawić.
+    $newBlockTypes = array_keys($siteSettings->availableOptions('content_block_types', \App\Models\ContentBlock::TYPES));
 @endphp
 @include('admin.partials.tiles-builder')
 @include('admin.partials.content-block-builder')
@@ -153,10 +155,18 @@
             @endif
             <hr class="my-1 border-gray-100" role="separator">
             <p class="px-3 pb-1 pt-0.5 text-[0.65rem] font-bold uppercase tracking-wide text-muted">Bloki treści — kreator</p>
-            <button type="button" id="{{ $editorId }}-block-new-cta" @click="open = false" class="{{ $mi }}"><i class="fa-solid fa-arrow-pointer w-4 text-center" aria-hidden="true"></i> Nowe przyciski CTA…</button>
-            <button type="button" id="{{ $editorId }}-block-new-accordion" @click="open = false" class="{{ $mi }}"><i class="fa-solid fa-bars-staggered w-4 text-center" aria-hidden="true"></i> Nowy akordeon…</button>
-            <button type="button" id="{{ $editorId }}-block-new-callout" @click="open = false" class="{{ $mi }}"><i class="fa-solid fa-circle-exclamation w-4 text-center" aria-hidden="true"></i> Nowa ramka informacyjna…</button>
-            <button type="button" id="{{ $editorId }}-block-new-pricing" @click="open = false" class="{{ $mi }}"><i class="fa-solid fa-coins w-4 text-center" aria-hidden="true"></i> Nowy cennik…</button>
+            @if (in_array('cta', $newBlockTypes, true))
+                <button type="button" id="{{ $editorId }}-block-new-cta" @click="open = false" class="{{ $mi }}"><i class="fa-solid fa-arrow-pointer w-4 text-center" aria-hidden="true"></i> Nowe przyciski CTA…</button>
+            @endif
+            @if (in_array('accordion', $newBlockTypes, true))
+                <button type="button" id="{{ $editorId }}-block-new-accordion" @click="open = false" class="{{ $mi }}"><i class="fa-solid fa-bars-staggered w-4 text-center" aria-hidden="true"></i> Nowy akordeon…</button>
+            @endif
+            @if (in_array('callout', $newBlockTypes, true))
+                <button type="button" id="{{ $editorId }}-block-new-callout" @click="open = false" class="{{ $mi }}"><i class="fa-solid fa-circle-exclamation w-4 text-center" aria-hidden="true"></i> Nowa ramka informacyjna…</button>
+            @endif
+            @if (in_array('pricing', $newBlockTypes, true))
+                <button type="button" id="{{ $editorId }}-block-new-pricing" @click="open = false" class="{{ $mi }}"><i class="fa-solid fa-coins w-4 text-center" aria-hidden="true"></i> Nowy cennik…</button>
+            @endif
             <div id="{{ $editorId }}-block-wrap" class="{{ $contentBlocks->isEmpty() ? 'hidden' : '' }}">
                 <label for="{{ $editorId }}-block-pick" class="block px-3 pb-1 pt-1 text-[0.65rem] font-bold uppercase tracking-wide text-muted">Wstaw blok</label>
                 <select id="{{ $editorId }}-block-pick" @change="open = false" class="w-full rounded border-gray-500 px-2 py-1.5 text-xs font-bold text-ink focus:border-brand-dark focus:ring-brand-dark">
@@ -1768,7 +1778,7 @@
                         var edit = document.getElementById('{{ $editorId }}-block-edit');
                         var newCta = document.getElementById('{{ $editorId }}-block-new-cta');
                         var newAcc = document.getElementById('{{ $editorId }}-block-new-accordion');
-                        if (! pick || ! edit || ! newCta || ! newAcc) return;
+                        if (! pick || ! edit) return; // przyciski „Nowy …” mogą być wyłączone w ustawieniach
                         var labels = { cta: 'Przyciski CTA', accordion: 'Akordeon', callout: 'Ramka informacyjna', pricing: 'Cennik' };
                         var newPricing = document.getElementById('{{ $editorId }}-block-new-pricing');
                         var newCallout = document.getElementById('{{ $editorId }}-block-new-callout');
@@ -1785,14 +1795,14 @@
                             });
                             wrap.classList.remove('hidden');
                         }
-                        newCta.addEventListener('click', function () { window.BlockBuilder.open({ type: 'cta', id: null, trigger: newCta, onSave: function (b) { addOption(b); insertShortcode(b.id); } }); });
+                        if (newCta) newCta.addEventListener('click', function () { window.BlockBuilder.open({ type: 'cta', id: null, trigger: newCta, onSave: function (b) { addOption(b); insertShortcode(b.id); } }); });
                         if (newPricing) { newPricing.addEventListener('click', function () { window.BlockBuilder.open({ type: 'pricing', id: null, trigger: newPricing, onSave: function (b) { addOption(b); insertShortcode(b.id); } }); }); }
                         if (newCallout) { newCallout.addEventListener('click', function () { window.BlockBuilder.open({ type: 'callout', id: null, trigger: newCallout, onSave: function (b) { addOption(b); insertShortcode(b.id); } }); }); }
-                        newAcc.addEventListener('click', function () { window.BlockBuilder.open({ type: 'accordion', id: null, trigger: newAcc, onSave: function (b) { addOption(b); insertShortcode(b.id); } }); });
+                        if (newAcc) newAcc.addEventListener('click', function () { window.BlockBuilder.open({ type: 'accordion', id: null, trigger: newAcc, onSave: function (b) { addOption(b); insertShortcode(b.id); } }); });
                         pick.addEventListener('change', function () { if (this.value) { insertShortcode(this.value); } this.selectedIndex = 0; });
                         edit.addEventListener('change', function () {
                             var opt = this.options[this.selectedIndex]; var id = this.value, type = opt && opt.dataset.type; this.selectedIndex = 0;
-                            if (id && type) { window.BlockBuilder.open({ type: type, id: id, trigger: newCta, onSave: function (b) { addOption(b); } }); }
+                            if (id && type) { window.BlockBuilder.open({ type: type, id: id, trigger: edit, onSave: function (b) { addOption(b); } }); }
                         });
                     })();
 
@@ -2042,7 +2052,7 @@
                                     } });
                                 }
                                 items.push({ type: 'separator' });
-                                ['cta', 'accordion', 'callout', 'pricing'].forEach(function (bt) {
+                                @js($newBlockTypes).forEach(function (bt) {
                                     items.push({ type: 'menuitem', text: { cta: 'Nowe przyciski CTA…', accordion: 'Nowy akordeon…', callout: 'Nowa ramka informacyjna…', pricing: 'Nowy cennik…' }[bt], onAction: function () {
                                         window.BlockBuilder.open({ type: bt, id: null, trigger: document.activeElement, onSave: function (b) {
                                             if (! contentBlocks.some(function (x) { return x.id === b.id; })) { contentBlocks.push({ id: b.id, type: b.type, name: b.name }); }
