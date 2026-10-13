@@ -152,7 +152,14 @@ class HomeController extends Controller
 
         $settings = SiteSetting::current();
 
-        $slides = $settings->isModuleEnabled('hero') ? HeroSlide::forCurrentSite()->orderBy('order')->get() : collect();
+        // Slajdy slidera „Strona główna” (Slidery); przed migracją — wszystkie slajdy jak dotąd.
+        $slides = ! $settings->isModuleEnabled('hero') ? collect()
+            : (\Illuminate\Support\Facades\Schema::hasTable('sliders')
+                // Slajdy bez slidera (np. dodane przed wprowadzeniem sliderów albo importem) też są strony głównej.
+                ? HeroSlide::forCurrentSite()
+                    ->where(fn ($q) => $q->whereNull('slider_id')->orWhere('slider_id', \App\Models\Slider::forPlacement('home')?->id ?? 0))
+                    ->orderBy('order')->orderBy('id')->get()
+                : HeroSlide::forCurrentSite()->orderBy('order')->get());
 
         if ($settings->hero_mission_slide && $slides->isNotEmpty()) {
             $mottoTtl    = $settings->cacheEnabled('pages') ? $settings->cacheTtl('page_item', 3600) : 0;

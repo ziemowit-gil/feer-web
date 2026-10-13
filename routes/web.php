@@ -425,6 +425,12 @@ Route::middleware(['auth', 'verified', '2fa', 'admin-site'])->prefix(config('app
     Route::middleware(['module:hero', 'module-access:hero'])->group(function () {
         Route::resource('hero', HeroSlideController::class)->parameters(['hero' => 'heroSlide'])->except('show');
         Route::patch('hero-misja-slajd', [HeroSlideController::class, 'updateMissionSlide'])->name('hero.mission-slide');
+        // Slidery: zestawy slajdów dla strony głównej, bloga i wybranych stron.
+        Route::post('slidery', [\App\Http\Controllers\Admin\SliderController::class, 'store'])->name('slidery.store');
+        Route::get('slidery/{slider}', [\App\Http\Controllers\Admin\SliderController::class, 'show'])->name('slidery.show');
+        Route::put('slidery/{slider}', [\App\Http\Controllers\Admin\SliderController::class, 'update'])->name('slidery.update');
+        Route::delete('slidery/{slider}', [\App\Http\Controllers\Admin\SliderController::class, 'destroy'])->name('slidery.destroy');
+        Route::post('slidery/{slider}/slajdy/{heroSlide}/przesun', [\App\Http\Controllers\Admin\SliderController::class, 'move'])->name('slidery.move');
     });
 
     Route::middleware(['module:gallery', 'module-access:gallery'])->group(function () {

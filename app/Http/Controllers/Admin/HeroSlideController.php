@@ -23,6 +23,11 @@ class HeroSlideController extends Controller
     /** Wyświetla listę slajdów sekcji hero. */
     public function index()
     {
+        // Slidery (wiele zestawów slajdów); przed migracją — dawna lista slajdów.
+        if (\Illuminate\Support\Facades\Schema::hasTable('sliders')) {
+            return app(SliderController::class)->index();
+        }
+
         $heroSlides = HeroSlide::forCurrentSite()->orderBy('order')->get();
 
         return view('admin.hero.index', compact('heroSlides'));
@@ -31,7 +36,7 @@ class HeroSlideController extends Controller
     /** Wyświetla formularz tworzenia nowego slajdu hero. */
     public function create()
     {
-        return view('admin.hero.form', ['heroSlide' => new HeroSlide]);
+        return view('admin.hero.form', ['heroSlide' => new HeroSlide(['slider_id' => $this->targetSliderId(request())])]);
     }
 
     /** Zapisuje nowy slajd hero wraz z obrazem. */
@@ -46,11 +51,13 @@ class HeroSlideController extends Controller
             'duration' => ['nullable', 'integer', 'min:1', 'max:60'],
             'image' => ['required_without_all:unsplash_full_url,image_library_id', 'nullable', 'image', 'max:4096'],
             'image_library_id' => $this->libraryMediaRule(),
+            'slider_id' => ['nullable', 'integer'],
         ] + UnsplashImport::rules(), ['image.required_without_all' => 'Wgraj zdjęcie, wybierz je z biblioteki albo z Unsplash.']);
 
         $data['order'] = $data['order'] ?? 0;
         unset($data['image'], $data['image_library_id'], $data['unsplash_full_url'], $data['unsplash_download_location'], $data['unsplash_author']);
 
+        $data['slider_id'] = $this->targetSliderId($request);
         $heroSlide = HeroSlide::create($data);
         if ($request->hasFile('image')) {
             $heroSlide->addMediaFromRequest('image')->toMediaCollection('image');
@@ -58,7 +65,7 @@ class HeroSlideController extends Controller
             UnsplashImport::attach($heroSlide, $request);
         }
 
-        return redirect()->route('admin.hero.index')->with('status', 'Slajd został dodany.');
+        return $this->backToSlider($heroSlide)->with('status', 'Slajd został dodany.');
     }
 
     /** Wyświetla formularz edycji slajdu hero. */
@@ -79,11 +86,13 @@ class HeroSlideController extends Controller
             'duration' => ['nullable', 'integer', 'min:1', 'max:60'],
             'image' => ['nullable', 'image', 'max:4096'],
             'image_library_id' => $this->libraryMediaRule(),
+            'slider_id' => ['nullable', 'integer'],
         ] + UnsplashImport::rules());
 
         $data['order'] = $data['order'] ?? 0;
         unset($data['image'], $data['image_library_id'], $data['unsplash_full_url'], $data['unsplash_download_location'], $data['unsplash_author']);
 
+        $data['slider_id'] = $this->targetSliderId($request) ?? $heroSlide->slider_id;
         $heroSlide->update($data);
 
         if ($request->hasFile('image')) {
@@ -92,7 +101,7 @@ class HeroSlideController extends Controller
             UnsplashImport::attach($heroSlide, $request);
         }
 
-        return redirect()->route('admin.hero.index')->with('status', 'Slajd został zaktualizowany.');
+        return $this->backToSlider($heroSlide)->with('status', 'Slajd został zaktualizowany.');
     }
 
     /** Usuwa slajd hero. */
@@ -100,7 +109,7 @@ class HeroSlideController extends Controller
     {
         $heroSlide->delete();
 
-        return redirect()->route('admin.hero.index')->with('status', 'Slajd został usunięty.');
+        return $this->backToSlider($heroSlide)->with('status', 'Slajd został usunięty.');
     }
 
     /** Zapisuje ustawienia slajdu z misją organizacji (widoczność, tło, obraz). */
@@ -126,6 +135,25 @@ class HeroSlideController extends Controller
                 ->toMediaCollection('hero_mission_image');
         }
 
-        return redirect()->route('admin.hero.index')->with('status', 'Ustawienia slajdu z misją zostały zapisane.');
+        return back()->with('status', 'Ustawienia slajdu z misją zostały zapisane.');
+    }
+
+    /** Slider, do którego trafia slajd: z formularza/adresu (?slider=ID) albo slider strony głównej. Null przed migracją. */
+    private function targetSliderId(Request $request): ?int
+    {
+        if (! \Illuminate\Support\Facades\Schema::hasTable('sliders')) {
+            return null;
+        }
+        $id = $request->integer('slider_id') ?: $request->integer('slider');
+        $slider = $id ? \App\Models\Slider::query()->forCurrentSite()->find($id) : \App\Models\Slider::forPlacement('home');
+
+        return $slider?->id;
+    }
+
+    private function backToSlider(HeroSlide $heroSlide): \Illuminate\Http\RedirectResponse
+    {
+        return $heroSlide->slider_id && \Illuminate\Support\Facades\Route::has('admin.slidery.show')
+            ? redirect()->route('admin.slidery.show', $heroSlide->slider_id)
+            : redirect()->route('admin.hero.index');
     }
 }

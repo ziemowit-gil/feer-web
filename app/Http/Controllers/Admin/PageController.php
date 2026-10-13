@@ -809,6 +809,8 @@ class PageController extends Controller
             'layout_data.news_category_id' => ['nullable', 'integer', 'exists:news_categories,id'],
             'layout_data.news_count' => ['nullable', 'integer', 'min:0', 'max:13'],
             'layout_data.slider' => ['nullable', 'boolean'],
+            'layout_data.hero_slider_id' => ['nullable', 'integer'],
+            'layout_data.hide_meta' => ['nullable', 'boolean'],
             'layout_data.source' => ['nullable', Rule::in(['news', 'blog'])],
             'layout_data.newsletter' => ['nullable', 'boolean'],
             'layout_data.newsletter_title' => ['nullable', 'string', 'max:120'],

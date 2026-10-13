@@ -11,9 +11,14 @@ class HeroSlide extends Model implements HasMedia
     use InteractsWithMedia;
     use \App\Models\Concerns\BelongsToSite;
 
-    protected $fillable = ['site_id', 'title', 'text', 'button_label', 'button_url', 'order', 'duration'];
+    protected $fillable = ['site_id', 'slider_id', 'title', 'text', 'button_label', 'button_url', 'order', 'duration'];
 
     protected $casts = ['duration' => 'integer'];
+
+    public function slider(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(Slider::class);
+    }
 
     public function registerMediaCollections(): void
     {

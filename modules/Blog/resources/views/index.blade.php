@@ -53,6 +53,11 @@
                     <p class="mt-4 max-w-2xl text-lg leading-relaxed text-ink">Artykuły o dostępności cyfrowej, edukacji i empatii — miejsce, w którym dzielimy się wiedzą i doświadczeniem.</p>
                 </header>
 
+                {{-- Slider bloga (Slidery → „Blog”) — tylko na pierwszej stronie listy, bez filtrów. --}}
+                @if (! $filtered && $articles->onFirstPage() && \Illuminate\Support\Facades\Schema::hasTable('sliders'))
+                    @include('partials.content-slider', ['slider' => \App\Models\Slider::forPlacement('blog')?->load('slides.media')])
+                @endif
+
                 {{-- Na telefonie wyszukiwarka nad listą (kolumna boczna jest dopiero pod nią). --}}
                 <div class="mb-8 lg:hidden">
                     @include('blog::partials.search-form', ['formId' => 'blog-search-mobile', 'q' => $q])

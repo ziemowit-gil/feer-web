@@ -113,7 +113,7 @@ final class AdminMenu
             ]),
 
             $this->section('homepage', 'Strona główna', [
-                $this->can('hero')          ? $this->item('hero', 'Slajder (hero)', 'admin.hero.index', 'fa-images', active: 'admin.hero.*') : null,
+                $this->can('hero')          ? $this->item('hero', 'Slidery', 'admin.hero.index', 'fa-images', active: ['admin.hero.*', 'admin.slidery.*']) : null,
                 $this->can('gallery')       ? $this->item('gallery', 'Galeria', 'admin.galeria.index', 'fa-panorama', active: 'admin.galeria.*') : null,
                 $this->can('feer_bands')    ? $this->item('feer-bands', 'FEER Paski', 'admin.feer-paski.index', 'fa-grip-lines', active: 'admin.feer-paski.*') : null,
                 $this->can('quick_actions') ? $this->item('quick-actions', 'Szybkie akcje', 'admin.szybkie-akcje.index', 'fa-bolt', active: 'admin.szybkie-akcje.*') : null,

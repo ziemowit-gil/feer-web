@@ -1,3 +1,7 @@
+{{-- Slider z „Slidery” wybrany w edycji strony (Typ i układ → „Slider nad treścią”). --}}
+@if (filled(($page->layout_data ?? [])['hero_slider_id'] ?? null))
+    @include('partials.content-slider', ['sliderId' => $page->layout_data['hero_slider_id']])
+@endif
 {{-- Slider ze zdjęć strony — na każdej stronie po włączeniu „Slider ze zdjęć strony” (Dodatki). „Strona działu” ma własne miejsce na slider. --}}
 @if (($page->page_template ?? 'default') !== 'section' && (($page->layout_data ?? [])['slider'] ?? false))
     @include('partials.page-slider', [

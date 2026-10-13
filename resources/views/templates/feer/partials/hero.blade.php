@@ -9,8 +9,8 @@
 --}}
 @if ($slides->isNotEmpty())
 <section class="bg-white"
-    aria-roledescription="karuzela" aria-label="Slider strony głównej"
-    x-data="feerHeroSlider({{ $slides->count() }})" x-init="start()"
+    aria-roledescription="karuzela" aria-label="{{ $sliderLabel ?? 'Slider strony głównej' }}"
+    x-data="feerHeroSlider({{ $slides->count() }}, {{ (int) (($sliderDuration ?? null) ?: 6) * 1000 }})" x-init="start()"
     @mouseenter="hover = true" @mouseleave="hover = false"
     @focusin="focus = true" @focusout="focus = false">
 
@@ -81,19 +81,21 @@
     </div>
 </section>
 
+@once
 <script>
-function feerHeroSlider(total) {
+function feerHeroSlider(total, interval) {
     return {
-        current: 0, total, timer: null, paused: false, hover: false, focus: false,
+        current: 0, total, interval: interval || 6000, timer: null, paused: false, hover: false, focus: false,
         start() {
             // Przycisk „Animacje" z paska dostępności wstrzymuje automatyczną zmianę slajdów (klasa no-animations na <html>).
             window.addEventListener('a11y-animations-changed', (e) => { if (total > 1) { this.paused = !! (e.detail && e.detail.disabled); } });
             if (total < 2 || window.matchMedia('(prefers-reduced-motion: reduce)').matches || document.documentElement.classList.contains('no-animations')) { this.paused = total > 1; return; }
-            this.timer = setInterval(() => { if (! this.paused && ! this.hover && ! this.focus) this.current = (this.current + 1) % this.total; }, 6000);
+            this.timer = setInterval(() => { if (! this.paused && ! this.hover && ! this.focus) this.current = (this.current + 1) % this.total; }, this.interval);
         },
         go(i) { this.current = i; },
         toggle() { this.paused = ! this.paused; },
     };
 }
 </script>
+@endonce
 @endif

@@ -7,6 +7,7 @@
         enctype="multipart/form-data" class="max-w-2xl space-y-5 p-6 rounded-md bg-white">
         @csrf
         @if ($heroSlide->exists) @method('PUT') @endif
+        @if ($heroSlide->slider_id)<input type="hidden" name="slider_id" value="{{ $heroSlide->slider_id }}">@endif
 
         @include('admin.partials.library-image-picker', [
             'name' => 'image',
@@ -68,7 +69,7 @@
 
         <div class="flex items-center gap-3 border-t border-gray-100 pt-5">
             <button type="submit" class="rounded bg-brand-dark px-5 py-2 text-sm font-bold text-white hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2">Zapisz</button>
-            <a href="{{ route('admin.hero.index') }}" class="text-sm text-muted hover:text-brand-dark">Anuluj</a>
+            <a href="{{ $heroSlide->slider_id && Route::has('admin.slidery.show') ? route('admin.slidery.show', $heroSlide->slider_id) : route('admin.hero.index') }}" class="text-sm text-muted hover:text-brand-dark">Anuluj</a>
         </div>
     </form>
 @endsection

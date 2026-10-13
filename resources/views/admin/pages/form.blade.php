@@ -349,6 +349,21 @@
                         </script>
                     </div>
 
+                    {{-- Slider (zestaw slajdów z „Slidery”) nad treścią strony --}}
+                    @if (\Illuminate\Support\Facades\Schema::hasTable('sliders') && Route::has('admin.slidery.show'))
+                        @php $pageSliders = \App\Models\Slider::query()->forCurrentSite()->orderBy('name')->get(['id', 'name']); $ldSliderId = (int) old('layout_data.hero_slider_id', ($page->layout_data ?? [])['hero_slider_id'] ?? 0); @endphp
+                        <div data-hide-for-link class="border-t border-gray-100 pt-5 sm:w-1/2 {{ $isLinkType ? 'hidden' : '' }}">
+                            <label for="hero_slider_id" class="mb-1 block text-sm font-bold">Slider nad treścią <span class="font-normal text-muted">(opcjonalnie)</span></label>
+                            <select id="hero_slider_id" name="layout_data[hero_slider_id]" class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
+                                <option value="">— bez slidera —</option>
+                                @foreach ($pageSliders as $ps)
+                                    <option value="{{ $ps->id }}" @selected($ldSliderId === $ps->id)>{{ $ps->name }}</option>
+                                @endforeach
+                            </select>
+                            <p class="mt-1 text-xs text-muted">Slajdy (zdjęcie, tytuł, tekst, przycisk) z <a href="{{ route('admin.hero.index') }}" class="font-bold text-brand-dark underline">Slidery</a>. Pokazują się na górze treści strony.</p>
+                        </div>
+                    @endif
+
                     {{-- Układ: nawigacja po podstronach działu (lista podstron obok treści) --}}
                     @php
                         $row = 'flex cursor-pointer items-start gap-4 py-4';
