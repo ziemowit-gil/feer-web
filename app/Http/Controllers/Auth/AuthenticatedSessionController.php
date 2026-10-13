@@ -46,7 +46,8 @@ class AuthenticatedSessionController extends Controller
         // Tryb "tylko MS": sprawdzamy flagę PRZED authenticate(), żeby nie
         // ujawniać przez różnicę błędów, czy hasło jest poprawne dla kont
         // bez uprawnień awaryjnych. Obie gałęzie zwracają ten sam auth.failed.
-        if (SiteSetting::current()->microsoftOnlyLogin()) {
+        // Tak samo w trybie „tylko SSO” — hasło wyłącznie dla kont z dostępem awaryjnym.
+        if (SiteSetting::current()->microsoftOnlyLogin() || SiteSetting::current()->ssoOnlyLogin()) {
             $candidate = User::where('email', $request->string('email')->lower())->first();
 
             if (! $candidate?->local_login_allowed) {

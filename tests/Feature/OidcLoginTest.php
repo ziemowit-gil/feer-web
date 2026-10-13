@@ -60,4 +60,15 @@ class OidcLoginTest extends TestCase
         $this->get(route('auth.sso.callback', ['code' => 'abc', 'state' => $state]))->assertRedirect(route('login'))->assertSessionHas('error');
         $this->assertGuest();
     }
+
+    public function test_sso_only_mode_blocks_password_login_for_regular_accounts(): void
+    {
+        SiteSetting::current()->update(['sso_only_login' => true]);
+        \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();
+        User::factory()->create(['email' => 'ala@org.pl', 'password' => bcrypt('Haslo-123456'), 'local_login_allowed' => false]);
+
+        $this->get(route('login'))->assertSee('Zaloguj się przez Keycloak')->assertDontSee('name="password"', false);
+        $this->post(route('login'), ['email' => 'ala@org.pl', 'password' => 'Haslo-123456'])->assertSessionHasErrors('email');
+        $this->assertGuest();
+    }
 }
