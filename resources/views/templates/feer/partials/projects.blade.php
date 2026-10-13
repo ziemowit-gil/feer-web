@@ -1,7 +1,7 @@
 {{--
-    Szablon FEER — „Nasze działania": widok listy (wiersze), inny niż karty na liście projektów.
-    Każdy wiersz: kategoria, tytuł, zajawka i strzałka; miniatura zdjęcia, gdy jest.
-    Cały wiersz jest linkiem; bez ramek, kresek i pasków koloru — białe wiersze na jasnoszarym tle sekcji; tekst ciemny (kontrast ≥ 4,5:1).
+    Szablon FEER — „Nasze działania": kafle w 3 kolumnach (2 na tablecie, 1 na telefonie), inne niż karty na liście projektów.
+    Każdy kafel: numer, kategoria, tytuł, zajawka, a na dole forma udziału i strzałka. Cały kafel jest linkiem.
+    Płasko, bez ramek: tła na zmianę jasnoszary / brand-light / ink (sekcja bywa biała). Na ink cały tekst biały (bez opacity), na jasnych ciemny — kontrast ≥ 4,5:1.
 --}}
 @if ($projects->isNotEmpty())
 <section class="bg-gray-50 py-12" aria-labelledby="ngo-projects-heading">
@@ -15,20 +15,30 @@
             </div>
         </div>
 
-        <ul class="space-y-2" role="list">
+        @php
+            // Tła kafli na zmianę: [tło + hover, kolor tekstu, kolor numeru/strzałki, kolor zajawki].
+            $tileThemes = [
+                ['bg-gray-100 hover:bg-brand-light', 'text-ink', 'text-brand-dark', 'text-muted'],
+                ['bg-brand-light hover:bg-white', 'text-ink', 'text-brand-dark', 'text-ink'],
+                ['bg-ink hover:bg-brand-dark', 'text-white', 'text-white', 'text-white'],
+            ];
+        @endphp
+        <ul class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3" role="list">
             @foreach ($projects as $project)
-                <li>
+                @php [$tileBg, $tileText, $tileAccent, $tileTeaser] = $tileThemes[$loop->index % 3]; @endphp
+                <li class="flex">
                     <a href="{{ route('projects.show', $project) }}"
-                       class="group flex items-center gap-4 rounded-md bg-white px-5 py-4 transition-colors hover:bg-brand-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">
-                        <span class="min-w-0 flex-1">
-                            <span class="block text-xs font-bold uppercase tracking-widest text-muted">{{ $project->category->name ?? 'Działanie' }}</span>
-                            <span class="mt-0.5 block text-lg font-bold leading-snug text-ink group-hover:text-brand-dark group-hover:underline group-hover:underline-offset-4">{{ $project->title }}</span>
-                            <span class="block text-ink">@include('projects.partials.form-badge', ['project' => $project])</span>
-                            @if ($teaser = $project->teaser())
-                                <span class="mt-1 line-clamp-2 block text-sm leading-relaxed text-muted">{{ $teaser }}</span>
-                            @endif
+                       class="group flex w-full flex-col rounded-md p-6 transition-colors motion-reduce:transition-none {{ $tileBg }} {{ $tileText }} focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2">
+                        <span class="text-3xl font-bold leading-none {{ $tileAccent }}" aria-hidden="true">{{ str_pad($loop->iteration, 2, '0', STR_PAD_LEFT) }}</span>
+                        <span class="mt-5 block text-xs font-bold uppercase tracking-widest">{{ $project->category->name ?? 'Działanie' }}</span>
+                        <span class="mt-1 block text-xl font-bold leading-snug group-hover:underline group-hover:underline-offset-4">{{ $project->title }}</span>
+                        @if ($teaser = $project->teaser())
+                            <span class="mt-3 line-clamp-3 block text-sm leading-relaxed {{ $tileTeaser }}">{{ $teaser }}</span>
+                        @endif
+                        <span class="mt-auto flex items-center justify-between gap-3 pt-6">
+                            @include('projects.partials.form-badge', ['project' => $project])
+                            <span class="text-xl {{ $tileAccent }} transition group-hover:translate-x-1 motion-reduce:transition-none" aria-hidden="true">→</span>
                         </span>
-                        <span class="flex-none text-lg text-brand-dark transition group-hover:translate-x-1 motion-reduce:transition-none" aria-hidden="true">→</span>
                     </a>
                 </li>
             @endforeach
