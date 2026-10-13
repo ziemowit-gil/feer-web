@@ -840,7 +840,7 @@
                             <input type="text" id="coordinator_phone_hours" name="coordinator_phone_hours" value="{{ old('coordinator_phone_hours', $project->coordinator_phone_hours) }}"
                                 placeholder="np. w poniedziałki 15:00–17:00" aria-describedby="coordinator_phone_hours_help" maxlength="120"
                                 class="w-full rounded-lg border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
-                            <p id="coordinator_phone_hours_help" class="mt-1 text-xs text-muted">Pokazuje się pod numerem telefonu w ramce „Kontakt w sprawie działania”.</p>
+                            <p id="coordinator_phone_hours_help" class="mt-1 text-xs text-muted">Pokazuje się pod numerem telefonu w ramce „Masz pytania? Chętnie odpowiemy”.</p>
                             @error('coordinator_phone_hours') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                         </div>
                     </div>

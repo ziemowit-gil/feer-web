@@ -114,7 +114,7 @@ class FlatProjectsHomeTest extends TestCase
             foreach (['Warsztaty WCAG', 'Praktyczne warsztaty z dostępności.', 'Status:', 'W trakcie', 'Opis działania', 'Opis warsztatów.', 'Dlaczego to robimy',
                 'Prostym językiem', 'W skrócie', 'Kto może wziąć udział', 'Efekty w liczbach', 'Co mówią uczestnicy', 'Pytania i odpowiedzi', 'Etapy działania',
                 'Zespół działania', 'Jan Kowalski', 'Wyróżniona sekcja', 'Zwykła sekcja', 'Co udało się osiągnąć', 'Cennik', '1200 zł', 'Zapisz się',
-                'Kontakt w sprawie działania', 'ewa@example.org', 'Finansowanie', 'Fundusz XYZ', '50 000 zł', 'Projekt dofinansowany ze środków XYZ.', 'Pracownicy urzędów'] as $text) {
+                'Masz pytania? Chętnie odpowiemy', 'ewa@example.org', 'Finansowanie', 'Fundusz XYZ', '50 000 zł', 'Projekt dofinansowany ze środków XYZ.', 'Pracownicy urzędów'] as $text) {
                 $this->assertStringContainsString($text, $html, "[$template] brak: $text");
             }
             $this->assertStringContainsString('class="proj-callout"', $html);

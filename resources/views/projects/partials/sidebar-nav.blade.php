@@ -48,7 +48,7 @@
                 ->explode(' ')->filter()->map(fn ($w) => mb_strtoupper(mb_substr($w, 0, 1)))->take(2)->implode('');
         @endphp
         <div class="mt-5 rounded-md bg-white p-4">
-            <p class="text-xs font-bold uppercase tracking-widest text-ink">Kontakt w sprawie działania</p>
+            <p class="text-base font-bold text-ink">Masz pytania? Chętnie odpowiemy</p>
             <div class="mt-3 flex items-start gap-3">
                 <span class="flex h-11 w-11 flex-none items-center justify-center rounded-md bg-brand-light text-sm font-extrabold text-brand-dark" aria-hidden="true">{{ $coordInitials }}</span>
                 <div class="min-w-0 text-sm text-ink">

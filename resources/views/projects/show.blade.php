@@ -631,7 +631,7 @@
                 @if (! $navSidebar && ! $project->is_completed && $project->showsCoordinator())
                     <div class="proj-box">
                         <h2 class="proj-box-h">
-                            <i class="fa-solid fa-envelope" aria-hidden="true"></i> Kontakt w sprawie działania
+                            <i class="fa-solid fa-envelope" aria-hidden="true"></i> Masz pytania? Chętnie odpowiemy
                         </h2>
                         <div class="space-y-1.5 text-ink">
                             @if ($project->coordinator_name)

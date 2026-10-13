@@ -37,11 +37,11 @@ class ProjectPageImprovementsTest extends TestCase
 
         $nav = substr($html, strpos($html, 'aria-label="Sekcje działania"'));
         $nav = substr($nav, 0, strpos($nav, '</nav>'));
-        $this->assertStringContainsString('Kontakt w sprawie działania', $nav);
+        $this->assertStringContainsString('Masz pytania? Chętnie odpowiemy', $nav);
         $this->assertStringContainsString('JK', $nav);
         $this->assertStringContainsString('Wszystkie działania', $nav);
         $this->assertStringContainsString(route('categories.show', $p->category), $nav);
-        $this->assertSame(1, substr_count($html, 'Kontakt w sprawie działania'), 'Kontakt tylko raz (w menu bocznym).');
+        $this->assertSame(1, substr_count($html, 'Masz pytania? Chętnie odpowiemy'), 'Kontakt tylko raz (w menu bocznym).');
     }
 
     public function test_metka_on_project_when_enabled(): void
