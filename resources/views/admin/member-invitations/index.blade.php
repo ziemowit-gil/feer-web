@@ -82,9 +82,7 @@
                         </td>
                     </tr>
                 @empty
-                    <tr>
-                        <td colspan="6" class="px-4 py-8 text-center text-sm text-muted">Brak zaproszeń.</td>
-                    </tr>
+                        @include('admin.partials.empty-state', ['icon' => 'fa-envelope-open-text', 'title' => 'Nie ma jeszcze zaproszeń', 'colspan' => 6])
                 @endforelse
             </tbody>
         </table>

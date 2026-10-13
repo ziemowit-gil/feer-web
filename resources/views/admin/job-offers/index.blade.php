@@ -102,9 +102,7 @@
                             </td>
                         </tr>
                     @empty
-                        <tr>
-                            <td colspan="6" class="px-4 py-8 text-center text-muted">Brak ogłoszeń. <a href="{{ route('admin.praca.create') }}" class="text-brand-dark underline">Dodaj pierwsze</a>.</td>
-                        </tr>
+                            @include('admin.partials.empty-state', ['icon' => 'fa-briefcase', 'title' => 'Nie ma jeszcze ogłoszeń o pracę', 'text' => 'Ogłoszenie pokaże się na stronie „Praca” i w sekcji „Dołącz do nas”.', 'route' => 'admin.praca.create', 'action' => 'Dodaj ogłoszenie', 'colspan' => 6])
                     @endforelse
                 </tbody>
             </table>

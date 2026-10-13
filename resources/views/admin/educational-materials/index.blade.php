@@ -68,9 +68,7 @@
                             </td>
                         </tr>
                     @empty
-                        <tr>
-                            <td colspan="7" class="px-4 py-6 text-center text-muted">Brak materiałów. Dodaj pierwszy powyżej.</td>
-                        </tr>
+                            @include('admin.partials.empty-state', ['icon' => 'fa-graduation-cap', 'title' => 'Nie ma jeszcze materiałów', 'text' => 'Materiały edukacyjne można udostępnić do pobrania albo sprzedaży.', 'route' => 'admin.materialy-edukacyjne.create', 'action' => 'Dodaj materiał', 'colspan' => 7])
                     @endforelse
                 </tbody>
             </table>

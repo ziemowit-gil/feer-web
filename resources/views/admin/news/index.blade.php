@@ -155,9 +155,7 @@
                             </td>
                         </tr>
                     @empty
-                        <tr>
-                            <td colspan="8" class="px-4 py-6 text-center text-muted">Brak newsów. Dodaj pierwszy powyżej.</td>
-                        </tr>
+                            @include('admin.partials.empty-state', ['icon' => 'fa-newspaper', 'title' => 'Nie ma jeszcze aktualności', 'text' => 'Aktualności pojawiają się na stronie głównej i w archiwum. Zacznij od krótkiej informacji o tym, co u Was nowego.', 'route' => 'admin.newsy.create', 'action' => 'Dodaj aktualność', 'colspan' => 8])
                     @endforelse
                 </tbody>
             </table>

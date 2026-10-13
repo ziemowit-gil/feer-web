@@ -61,9 +61,7 @@
                         </td>
                     </tr>
                 @empty
-                    <tr>
-                        <td colspan="6" class="px-4 py-8 text-center text-muted">Brak sprawozdań. <a href="{{ route('admin.sprawozdania.create') }}" class="text-brand-dark underline">Dodaj pierwszy rok</a>.</td>
-                    </tr>
+                        @include('admin.partials.empty-state', ['icon' => 'fa-file-invoice', 'title' => 'Nie ma jeszcze sprawozdań', 'text' => 'Dodaj sprawozdania za kolejne lata — merytoryczne i finansowe.', 'route' => 'admin.sprawozdania.create', 'action' => 'Dodaj rok', 'colspan' => 6])
                 @endforelse
             </tbody>
         </table>

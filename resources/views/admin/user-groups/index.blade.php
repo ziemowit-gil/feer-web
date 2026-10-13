@@ -43,9 +43,7 @@
                         </td>
                     </tr>
                 @empty
-                    <tr>
-                        <td colspan="4" class="px-4 py-6 text-center text-muted">Brak grup. Dodaj pierwszą powyżej.</td>
-                    </tr>
+                        @include('admin.partials.empty-state', ['icon' => 'fa-user-group', 'title' => 'Nie ma jeszcze grup', 'text' => 'Grupy pozwalają nadać kilku osobom te same uprawnienia naraz.', 'route' => 'admin.grupy.create', 'action' => 'Dodaj grupę', 'colspan' => 4])
                 @endforelse
             </tbody>
         </table>

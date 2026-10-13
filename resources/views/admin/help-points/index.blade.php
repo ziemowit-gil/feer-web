@@ -49,9 +49,7 @@
                         </td>
                     </tr>
                 @empty
-                    <tr>
-                        <td colspan="6" class="px-4 py-6 text-center text-muted">Brak punktów pomocy. Dodaj pierwszy powyżej.</td>
-                    </tr>
+                        @include('admin.partials.empty-state', ['icon' => 'fa-map-location-dot', 'title' => 'Nie ma jeszcze punktów pomocy', 'text' => 'Punkty wsparcia pokażą się na mapie pomocy.', 'route' => 'admin.mapa-pomocy.create', 'action' => 'Dodaj punkt', 'colspan' => 6])
                 @endforelse
             </tbody>
         </table>

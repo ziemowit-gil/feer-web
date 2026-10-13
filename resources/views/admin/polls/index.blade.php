@@ -54,9 +54,7 @@
                         </td>
                     </tr>
                 @empty
-                    <tr>
-                        <td colspan="5" class="px-4 py-6 text-center text-muted">Brak ankiet. Dodaj pierwszą powyżej.</td>
-                    </tr>
+                        @include('admin.partials.empty-state', ['icon' => 'fa-square-poll-vertical', 'title' => 'Nie ma jeszcze ankiet', 'text' => 'Krótka ankieta pozwala zapytać odwiedzających o zdanie.', 'route' => 'admin.ankiety.create', 'action' => 'Dodaj ankietę', 'colspan' => 5])
                 @endforelse
             </tbody>
         </table>

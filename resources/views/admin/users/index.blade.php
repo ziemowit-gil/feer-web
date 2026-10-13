@@ -65,9 +65,7 @@
                         </td>
                     </tr>
                 @empty
-                    <tr>
-                        <td colspan="5" class="px-4 py-6 text-center text-muted">Brak użytkowników.</td>
-                    </tr>
+                        @include('admin.partials.empty-state', ['icon' => 'fa-users', 'title' => 'Brak użytkowników', 'route' => 'admin.uzytkownicy.create', 'action' => 'Dodaj użytkownika', 'colspan' => 5])
                 @endforelse
             </tbody>
         </table>

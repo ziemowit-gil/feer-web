@@ -73,9 +73,7 @@
                         </td>
                     </tr>
                 @empty
-                    <tr>
-                        <td colspan="6" class="px-4 py-6 text-center text-muted">Brak zamówień.</td>
-                    </tr>
+                        @include('admin.partials.empty-state', ['icon' => 'fa-cart-shopping', 'title' => 'Nie ma jeszcze zamówień', 'colspan' => 6])
                 @endforelse
             </tbody>
         </table>

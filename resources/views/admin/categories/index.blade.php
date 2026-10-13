@@ -40,9 +40,7 @@
                         </td>
                     </tr>
                 @empty
-                    <tr>
-                        <td colspan="5" class="px-4 py-6 text-center text-muted">Brak kategorii. Dodaj pierwszą powyżej.</td>
-                    </tr>
+                        @include('admin.partials.empty-state', ['icon' => 'fa-tags', 'title' => 'Nie ma jeszcze kategorii działań', 'text' => 'Kategorie porządkują działania na stronie.', 'route' => 'admin.kategorie.create', 'action' => 'Dodaj kategorię', 'colspan' => 5])
                 @endforelse
             </tbody>
         </table>

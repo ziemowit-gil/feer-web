@@ -105,9 +105,7 @@
                             </td>
                         </tr>
                     @empty
-                        <tr>
-                            <td colspan="6" class="px-4 py-8 text-center text-muted">Brak ofert. <a href="{{ route('admin.wolontariat.create') }}" class="text-brand-dark underline">Dodaj pierwsze</a>.</td>
-                        </tr>
+                            @include('admin.partials.empty-state', ['icon' => 'fa-hands-helping', 'title' => 'Nie ma jeszcze ofert wolontariatu', 'text' => 'Opisz, w czym wolontariusze mogą pomóc — oferta pokaże się na stronie wolontariatu.', 'route' => 'admin.wolontariat.create', 'action' => 'Dodaj ofertę', 'colspan' => 6])
                     @endforelse
                 </tbody>
             </table>

@@ -44,9 +44,7 @@
                         </td>
                     </tr>
                 @empty
-                    <tr>
-                        <td colspan="4" class="px-4 py-8 text-center text-muted">Brak pytań. <a href="{{ route('admin.faq.create') }}" class="text-brand-dark underline">Dodaj pierwsze</a>.</td>
-                    </tr>
+                        @include('admin.partials.empty-state', ['icon' => 'fa-circle-question', 'title' => 'Nie ma jeszcze pytań', 'text' => 'Zbierz pytania, które ludzie zadają najczęściej — oszczędzisz czas sobie i im.', 'route' => 'admin.faq.create', 'action' => 'Dodaj pytanie', 'colspan' => 4])
                 @endforelse
             </tbody>
         </table>

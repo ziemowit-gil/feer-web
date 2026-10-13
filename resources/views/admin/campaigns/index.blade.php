@@ -106,9 +106,7 @@
                             </td>
                         </tr>
                     @empty
-                        <tr>
-                            <td colspan="8" class="px-4 py-8 text-center text-muted">Brak kampanii.</td>
-                        </tr>
+                            @include('admin.partials.empty-state', ['icon' => 'fa-hand-holding-heart', 'title' => 'Nie ma jeszcze kampanii zbiórkowych', 'text' => 'Kampania ze zbiórką pokaże cel i postęp wpłat.', 'route' => 'admin.kampanie.create', 'action' => 'Dodaj kampanię', 'colspan' => 8])
                     @endforelse
                 </tbody>
             </table>

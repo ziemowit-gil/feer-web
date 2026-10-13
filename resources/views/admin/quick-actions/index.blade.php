@@ -131,9 +131,7 @@
                         </td>
                     </tr>
                 @empty
-                    <tr>
-                        <td colspan="5" class="px-4 py-6 text-center text-muted">Brak szybkich akcji. Dodaj pierwszą powyżej.</td>
-                    </tr>
+                        @include('admin.partials.empty-state', ['icon' => 'fa-bolt', 'title' => 'Nie ma jeszcze szybkich akcji', 'text' => 'Skróty do najważniejszych spraw na stronie głównej.', 'route' => 'admin.szybkie-akcje.create', 'action' => 'Dodaj szybką akcję', 'colspan' => 5])
                 @endforelse
             </tbody>
         </table>

@@ -63,9 +63,7 @@
                         </td>
                     </tr>
                 @empty
-                    <tr>
-                        <td colspan="6" class="px-4 py-6 text-center text-muted">Brak kodów rabatowych. Dodaj pierwszy powyżej.</td>
-                    </tr>
+                        @include('admin.partials.empty-state', ['icon' => 'fa-ticket', 'title' => 'Nie ma jeszcze kodów rabatowych', 'route' => 'admin.sklep.kody-rabatowe.create', 'action' => 'Dodaj kod', 'colspan' => 6])
                 @endforelse
             </tbody>
         </table>

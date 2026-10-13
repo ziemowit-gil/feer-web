@@ -168,9 +168,7 @@
                             </td>
                         </tr>
                     @empty
-                        <tr>
-                            <td colspan="6" class="px-4 py-8 text-center text-muted">Brak wydarzeń. <a href="{{ route('admin.wydarzenia.create') }}" class="text-brand-dark underline">Dodaj pierwsze</a>.</td>
-                        </tr>
+                            @include('admin.partials.empty-state', ['icon' => 'fa-calendar-days', 'title' => 'Nie ma jeszcze wydarzeń', 'text' => 'Szkolenia i wydarzenia pokażą się w kalendarzu na stronie, z zapisami.', 'route' => 'admin.wydarzenia.create', 'action' => 'Dodaj wydarzenie', 'colspan' => 6])
                     @endforelse
                 </tbody>
             </table>

@@ -48,9 +48,7 @@
                         </td>
                     </tr>
                 @empty
-                    <tr>
-                        <td colspan="5" class="px-4 py-6 text-center text-muted">Brak organizacji. Dodaj pierwszą powyżej.</td>
-                    </tr>
+                        @include('admin.partials.empty-state', ['icon' => 'fa-people-roof', 'title' => 'Nie ma jeszcze organizacji członkowskich', 'route' => 'admin.organizacje.create', 'action' => 'Dodaj organizację', 'colspan' => 5])
                 @endforelse
             </tbody>
         </table>

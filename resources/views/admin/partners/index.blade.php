@@ -45,9 +45,7 @@
                         </td>
                     </tr>
                 @empty
-                    <tr>
-                        <td colspan="5" class="px-4 py-6 text-center text-muted">Brak partnerów. Dodaj pierwszego powyżej.</td>
-                    </tr>
+                        @include('admin.partials.empty-state', ['icon' => 'fa-handshake', 'title' => 'Nie ma jeszcze partnerów', 'text' => 'Logotypy partnerów i sponsorów pokażą się na stronie w sekcji partnerów.', 'route' => 'admin.partnerzy.create', 'action' => 'Dodaj partnera', 'colspan' => 5])
                 @endforelse
             </tbody>
         </table>

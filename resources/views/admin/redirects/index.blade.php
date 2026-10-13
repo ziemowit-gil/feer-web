@@ -71,7 +71,7 @@
                             </td>
                         </tr>
                     @empty
-                        <tr><td colspan="5" class="px-4 py-8 text-center text-muted">Brak przekierowań.</td></tr>
+                        @include('admin.partials.empty-state', ['icon' => 'fa-signs-post', 'title' => 'Nie ma jeszcze przekierowań', 'text' => 'Przekierowania 301 tworzą się same, gdy zmienisz adres opublikowanej strony.', 'colspan' => 5])
                     @endforelse
                 </tbody>
             </table>
