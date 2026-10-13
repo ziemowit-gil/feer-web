@@ -64,9 +64,17 @@
                     <option value="feature">Wyróżnij</option>
                     <option value="unfeature">Cofnij wyróżnienie</option>
                     <option value="move_to_project">Przenieś do działania…</option>
+                    <option value="nav_style">Zmień styl menu…</option>
                     <option value="trash">Przenieś do kosza</option>
                 @endif
             </select>
+            <span id="bulk-nav-fields" class="hidden flex-wrap items-center gap-2">
+                <select name="nav_style" aria-label="Nowy styl menu" class="rounded border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark">
+                    @foreach (\App\Models\Page::SIDE_NAV_STYLES as $v => $l)
+                        <option value="{{ $v }}">{{ \Illuminate\Support\Str::before($l, ' (') }}</option>
+                    @endforeach
+                </select>
+            </span>
             <span id="bulk-project-fields" class="hidden flex-wrap items-center gap-2">
                 <select name="project_id" aria-label="Działanie docelowy" class="rounded border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark">
                     <option value="">— wybierz działanie —</option>
@@ -394,10 +402,14 @@
 
             const actionSel = bar.querySelector('select[name=action]');
             const projFields = document.getElementById('bulk-project-fields');
+            const navFields = document.getElementById('bulk-nav-fields');
             actionSel.addEventListener('change', function () {
                 const on = actionSel.value === 'move_to_project';
                 projFields.classList.toggle('hidden', ! on);
                 projFields.classList.toggle('flex', on);
+                const navOn = actionSel.value === 'nav_style';
+                navFields.classList.toggle('hidden', ! navOn);
+                navFields.classList.toggle('flex', navOn);
             });
 
             selectAll.addEventListener('change', function () {

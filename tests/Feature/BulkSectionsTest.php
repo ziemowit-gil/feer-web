@@ -23,4 +23,16 @@ class BulkSectionsTest extends TestCase
         $this->assertFalse($a->fresh()->is_published);
         $this->assertTrue($b->fresh()->is_published, 'Niezaznaczona podstrona bez zmian.');
     }
+
+    public function test_bulk_changes_nav_style_of_selected_pages(): void
+    {
+        $admin = User::factory()->create(['role' => User::ROLE_ADMIN]);
+        $a = Page::create(['title' => 'A', 'slug' => 'a-nav', 'type' => 'standard', 'is_published' => true, 'side_nav_style' => 'sidebar']);
+        $b = Page::create(['title' => 'B', 'slug' => 'b-nav', 'type' => 'standard', 'is_published' => true, 'side_nav_style' => 'sidebar']);
+
+        $this->actingAs($admin)->post(route('admin.podstrony.bulk'), ['action' => 'nav_style', 'nav_style' => 'tiles', 'ids' => [$a->id]])->assertRedirect();
+
+        $this->assertSame('tiles', $a->fresh()->side_nav_style);
+        $this->assertSame('sidebar', $b->fresh()->side_nav_style);
+    }
 }

@@ -708,7 +708,8 @@ class PageController extends Controller
     public function bulk(Request $request): \Illuminate\Http\RedirectResponse
     {
         $data = $request->validate([
-            'action' => ['required', 'in:publish,unpublish,disable,enable,feature,unfeature,trash,restore,move_to_project'],
+            'action' => ['required', 'in:publish,unpublish,disable,enable,feature,unfeature,trash,restore,move_to_project,nav_style'],
+            'nav_style' => ['required_if:action,nav_style', 'nullable', Rule::in(array_keys(Page::SIDE_NAV_STYLES))],
             'project_id' => ['required_if:action,move_to_project', 'nullable', 'integer', 'exists:projects,id'],
             'project_display' => ['nullable', Rule::in(array_keys(Page::PROJECT_DISPLAYS))],
             'hide_from_menu' => ['sometimes', 'boolean'],
@@ -738,6 +739,15 @@ class PageController extends Controller
             return redirect()->back()->with($moved ? 'status' : 'error', $moved
                 ? "Przeniesiono do działania „{$project->title}” stron: {$moved}."
                 : 'Nie przeniesiono żadnej strony (strony systemowe są pomijane).');
+        }
+
+        if ($data['action'] === 'nav_style') {
+            // Styl menu (boczne drzewo, akordeon, zakładki…) na zaznaczonych stronach; pomijamy zablokowane (is_locked).
+            $n = $pages->reject(fn (Page $p) => $p->is_locked)->each(fn (Page $p) => $p->update(['side_nav_style' => $data['nav_style']]))->count();
+
+            return redirect()->back()->with($n ? 'status' : 'error', $n
+                ? 'Zmieniono styl menu („'.Page::SIDE_NAV_STYLES[$data['nav_style']].'”) na '.$n.' '.($n === 1 ? 'stronie' : 'stronach').'.'
+                : 'Nie zmieniono stylu menu — wybrane strony są zablokowane.');
         }
 
         match ($data['action']) {
