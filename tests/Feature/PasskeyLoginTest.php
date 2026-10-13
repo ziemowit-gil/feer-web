@@ -130,4 +130,18 @@ class PasskeyLoginTest extends TestCase
     {
         $this->get(route('login'))->assertOk()->assertSee('Zaloguj się kluczem dostępu');
     }
+
+    public function test_passkey_button_also_in_microsoft_only_mode_and_profile_for_microsoft_users(): void
+    {
+        SiteSetting::current()->update(['microsoft_login_enabled' => true, 'microsoft_only_login' => true, 'microsoft_client_id' => 'x', 'microsoft_client_secret' => 'y', 'microsoft_tenant_id' => 'z']);
+        \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();
+
+        $this->get(route('login'))->assertOk()
+            ->assertSee('Zaloguj się przez Microsoft 365')
+            ->assertSee('Zaloguj się kluczem dostępu');
+
+        $user = User::factory()->create(['role' => User::ROLE_ADMIN, 'microsoft_id' => 'ms-1']);
+        $this->actingAs($user)->withSession(['login_method' => 'microsoft'])->get(route('profile.edit'))
+            ->assertOk()->assertSee('Klucze dostępu')->assertSee('Dodaj klucz dostępu');
+    }
 }
