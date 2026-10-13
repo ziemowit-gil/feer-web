@@ -40,4 +40,34 @@
         @endforeach
     </ul>
     @include('projects.partials.sidebar-extras', ['project' => $project])
+
+    {{-- Kontakt z koordynatorem: mała karta z inicjałami, imieniem, e-mailem i telefonem. --}}
+    @if (! $project->is_completed && $project->showsCoordinator())
+        @php
+            $coordInitials = \Illuminate\Support\Str::of((string) ($project->coordinator_name ?: 'Kontakt'))
+                ->explode(' ')->filter()->map(fn ($w) => mb_strtoupper(mb_substr($w, 0, 1)))->take(2)->implode('');
+        @endphp
+        <div class="mt-5 rounded-md bg-white p-4">
+            <p class="text-xs font-bold uppercase tracking-widest text-ink">Kontakt w sprawie działania</p>
+            <div class="mt-3 flex items-start gap-3">
+                <span class="flex h-11 w-11 flex-none items-center justify-center rounded-md bg-brand-light text-sm font-extrabold text-brand-dark" aria-hidden="true">{{ $coordInitials }}</span>
+                <div class="min-w-0 text-sm text-ink">
+                    @if ($project->coordinator_name)<p class="font-bold">{{ $project->coordinator_name }}</p>@endif
+                    <p><a href="mailto:{{ $project->contactEmail() }}" class="break-all font-bold text-brand-dark underline underline-offset-2 hover:no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">{{ $project->contactEmail() }}</a></p>
+                    @if ($project->coordinator_phone)
+                        <p><a href="tel:{{ preg_replace('/[^0-9+]/', '', $project->coordinator_phone) }}" class="font-bold text-brand-dark underline underline-offset-2 hover:no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">{{ $project->coordinator_phone }}</a></p>
+                        @if (filled($project->coordinator_phone_hours))<p class="text-xs">Telefon czynny {{ $project->coordinator_phone_hours }}</p>@endif
+                    @endif
+                </div>
+            </div>
+        </div>
+    @endif
+
+    {{-- Powrót: do kategorii i do wszystkich działań. --}}
+    <ul role="list" class="mt-5 space-y-1 text-sm">
+        @if ($project->category)
+            <li><a href="{{ route('categories.show', $project->category) }}" class="inline-flex min-h-9 items-center gap-2 font-bold text-ink hover:text-brand-dark hover:underline hover:underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark"><span aria-hidden="true">←</span> {{ $project->category->name }}</a></li>
+        @endif
+        <li><a href="{{ route('projects.index') }}" class="inline-flex min-h-9 items-center gap-2 font-bold text-ink hover:text-brand-dark hover:underline hover:underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark"><span aria-hidden="true">←</span> Wszystkie działania</a></li>
+    </ul>
 </nav>

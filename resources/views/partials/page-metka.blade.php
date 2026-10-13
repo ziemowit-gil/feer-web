@@ -5,12 +5,14 @@
 --}}
 @php
     $mkSettings = \App\Models\SiteSetting::current();
-    $mkData = $page->layout_data ?? [];
-    $mkAuthor = $page->metka_author ?: $page->creator?->name;
-    $mkPublisher = $page->publishedBy?->name;
+    // Działa dla stron i działań (działanie nie ma własnego autora metki ani osoby publikującej — bierzemy autora wpisu).
+    $mkIsPage = $page instanceof \App\Models\Page;
+    $mkData = $mkIsPage ? ($page->layout_data ?? []) : [];
+    $mkAuthor = ($mkIsPage ? $page->metka_author : null) ?: $page->creator?->name;
+    $mkPublisher = $mkIsPage ? $page->publishedBy?->name : null;
     // Podmiot: wyłączany dla całego serwisu (Ustawienia → Treści) albo na stronie.
     $mkEntity = ($mkSettings->metka_show_entity ?? true) && ($mkData['metka_entity'] ?? true) ? ($mkSettings->metka_entity ?: $mkSettings->site_name) : null;
-    $mkPublished = $page->first_published_at ?? $page->publish_at ?? $page->created_at;
+    $mkPublished = ($mkIsPage ? ($page->first_published_at ?? $page->publish_at) : null) ?? $page->created_at;
     $mkUpdated = $page->updated_at;
     $mkDate = fn ($d) => '<time datetime="'.e($d->toIso8601String()).'">'.e($d->locale('pl')->translatedFormat('j F Y, H:i')).'</time>';
     $mkRows = array_filter([

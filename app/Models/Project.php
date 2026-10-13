@@ -68,6 +68,26 @@ class Project extends Model implements HasMedia
         'buttons'    => ['Przyciski i notka pod menu sekcji', ['sidebar_buttons', 'sidebar_note']],
     ];
 
+    public function creator(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
+
+    /** Metryczka („Pokaż metkę”) na stronie działania: cały serwis albo pozycja „Strony działań” w ustawieniach metryczki. */
+    public function showsMetka(): bool
+    {
+        $settings = SiteSetting::current();
+
+        return match ($settings->metka_mode ?? 'off') {
+            'all' => true,
+            'types' => in_array(self::METKA_TYPE, (array) ($settings->metka_types ?? []), true),
+            default => false,
+        };
+    }
+
+    /** Klucz „Strony działań” w liście typów metryczki (obok typów stron). */
+    public const METKA_TYPE = '__projects';
+
     /** Tylko działania zaznaczone „Pokaż na stronie głównej” (przed migracją kolumny — bez filtra). */
     public function scopeOnHome($query)
     {

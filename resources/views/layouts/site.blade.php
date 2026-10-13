@@ -143,8 +143,8 @@
 
         @yield('content')
 
-        @php $metkaFor = $metkaPage ?? ($page ?? null); @endphp
-        @if ($metkaFor instanceof \App\Models\Page && $metkaFor->exists && $metkaFor->showsMetka())
+        @php $metkaFor = $metkaPage ?? ($page ?? (isset($project) && $project instanceof \App\Models\Project && request()->routeIs('projects.show', 'site.projects.show', 'site-long.projects.show') ? $project : null)); @endphp
+        @if (($metkaFor instanceof \App\Models\Page || $metkaFor instanceof \App\Models\Project) && $metkaFor->exists && $metkaFor->showsMetka())
             @include('partials.page-metka', ['page' => $metkaFor])
         @endif
 

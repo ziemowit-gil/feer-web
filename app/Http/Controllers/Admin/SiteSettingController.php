@@ -254,7 +254,7 @@ class SiteSettingController extends Controller
             'projects_intro' => ['nullable', 'string', 'max:5000'],
             'metka_mode' => ['sometimes', Rule::in(['off', 'all', 'types'])],
             'metka_types' => ['nullable', 'array'],
-            'metka_types.*' => ['string', Rule::in(array_keys(\App\Models\Page::types()))],
+            'metka_types.*' => ['string', Rule::in([...array_keys(\App\Models\Page::types()), \App\Models\Project::METKA_TYPE])],
             'metka_entity' => ['nullable', 'string', 'max:255'],
             'metka_show_entity' => ['sometimes', 'boolean'],
             'metka_shared_accounts' => ['nullable', 'string', 'max:2000'],

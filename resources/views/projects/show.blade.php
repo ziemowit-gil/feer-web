@@ -155,7 +155,7 @@
             $projFunding = $showTeamFunding ? (array) ($project->funding ?? []) : [];
             $hasFunding = $showTeamFunding && (! empty($projFunding['sources']) || (! empty($projFunding['budget']) && ! empty($projFunding['budget_public'])) || filled($project->funding_notice));
             $hasMainCta = ! empty($mainCta['label']) && ! empty($mainCta['url']);
-            $hasAside = $hasMainCta || $schedulePage || (! $project->is_completed && $project->showsCoordinator()) || $linkPages->isNotEmpty() || $showNews || $projPartners->isNotEmpty() || $hasFunding;
+            $hasAside = $hasMainCta || $schedulePage || (! $navSidebar && ! $project->is_completed && $project->showsCoordinator()) || $linkPages->isNotEmpty() || $showNews || $projPartners->isNotEmpty() || $hasFunding;
         @endphp
         {{-- Układ kolumn w zwykłym CSS (nie zależy od zbudowanych klas Tailwinda): menu boczne zawsze po lewej od lg. --}}
         <style>
@@ -627,8 +627,8 @@
             </div>
         @endif
 
-                {{-- Kontakt w sprawie działania — szare pole w kolumnie bocznej, dane zwykłym tekstem i odnośnikami. --}}
-                @if (! $project->is_completed && $project->showsCoordinator())
+                {{-- Kontakt w sprawie działania — szare pole w kolumnie bocznej (gdy jest menu boczne, kontakt jest w nim). --}}
+                @if (! $navSidebar && ! $project->is_completed && $project->showsCoordinator())
                     <div class="proj-box">
                         <h2 class="proj-box-h">
                             <i class="fa-solid fa-envelope" aria-hidden="true"></i> Kontakt w sprawie działania

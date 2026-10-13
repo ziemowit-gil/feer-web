@@ -1705,6 +1705,7 @@
                         @foreach (\App\Models\Page::types() as $typeKey => $typeLabel)
                             <label class="flex cursor-pointer items-center gap-2 text-sm"><input type="checkbox" name="metka_types[]" value="{{ $typeKey }}" @checked(in_array($typeKey, $metkaTypes, true)) class="rounded border-gray-500 text-brand-dark focus:ring-brand-dark"> {{ $typeLabel }}</label>
                         @endforeach
+                        <label class="flex cursor-pointer items-center gap-2 text-sm font-bold"><input type="checkbox" name="metka_types[]" value="{{ \App\Models\Project::METKA_TYPE }}" @checked(in_array(\App\Models\Project::METKA_TYPE, $metkaTypes, true)) class="rounded border-gray-500 text-brand-dark focus:ring-brand-dark"> Strony działań</label>
                     </div>
                 </div>
                 @if (\Illuminate\Support\Facades\Schema::hasColumn('site_settings', 'metka_show_entity'))
