@@ -52,7 +52,7 @@
         <style>@media (max-width: 767px) { .nav-split { grid-template-columns: 1fr !important; } }</style>
         <div class="nav-split" style="display:grid;grid-template-columns:minmax(17rem,24rem) minmax(0,1fr);gap:1.25rem;align-items:start">
             <nav aria-label="Struktura menu — {{ \App\Models\NavItem::LOCATIONS[$location] ?? $location }}" class="rounded-md bg-white" style="min-width:0">
-                <div style="display:flex;align-items:center;justify-content:space-between;gap:.5rem;padding:.875rem .875rem .5rem">
+                <div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:.5rem;padding:.875rem .875rem .5rem">
                     <h2 class="text-sm font-bold text-ink">
                         <i class="fa-solid fa-bars mr-1 text-brand-dark" aria-hidden="true"></i> {{ \App\Models\NavItem::LOCATIONS[$location] ?? $location }}
                         <span class="font-normal text-muted">({{ $navItems->count() }})</span>
@@ -62,6 +62,13 @@
                         style="min-height:2.25rem;padding:.375rem .875rem;gap:.375rem">
                         <i class="fa-solid fa-plus" aria-hidden="true"></i> Dodaj<span class="sr-only"> pozycję menu</span>
                     </button>
+                    @if (Route::has('admin.pozycje-menu.ze-stron'))
+                        <button type="button" onclick="document.getElementById('nav-from-pages').showModal()"
+                            class="inline-flex shrink-0 items-center rounded-md bg-gray-100 text-sm font-bold text-ink hover:bg-brand-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2"
+                            style="min-height:2.25rem;padding:.375rem .75rem;gap:.375rem">
+                            <i class="fa-solid fa-sitemap" aria-hidden="true"></i> Ze stron<span class="sr-only"> — dodaj strony z drzewa stron</span>
+                        </button>
+                    @endif
                 </div>
                 <div style="padding:.5rem">
                     @forelse ($navItems as $index => $item)
@@ -91,6 +98,75 @@
                 @endif
             </section>
         </div>
+
+        {{-- ── Podgląd menu na stronie: prawdziwa strona w ramce, odświeżana po zmianach ── --}}
+        @if (in_array($location, ['main', 'footer'], true))
+            <details class="mt-5 rounded-md bg-white" x-data @nav-preview-refresh.window="if ($refs.frame.src) $refs.frame.src = $refs.frame.dataset.src + '?podglad=' + Date.now()" @toggle="if ($el.open && ! $refs.frame.src) $refs.frame.src = $refs.frame.dataset.src">
+                <summary class="flex cursor-pointer list-none items-center justify-between gap-3 px-5 py-3 text-sm font-bold text-ink [&::-webkit-details-marker]:hidden">
+                    <span><i class="fa-solid fa-eye mr-1.5 text-brand-dark" aria-hidden="true"></i>Podgląd menu na stronie</span>
+                    <i class="fa-solid fa-chevron-down text-xs text-muted" aria-hidden="true"></i>
+                </summary>
+                <div class="border-t border-gray-100 p-3">
+                    <div class="mb-2 flex flex-wrap items-center justify-between gap-2">
+                        <p class="text-xs text-ink">Strona główna serwisu — tak menu widzą odwiedzający. Po przeciągnięciu pozycji podgląd odświeża się sam.</p>
+                        <button type="button" @click="$refs.frame.src = $refs.frame.dataset.src + (($refs.frame.dataset.src.includes('?') ? '&' : '?') + 'podglad=' + Date.now())"
+                            class="inline-flex min-h-9 items-center gap-1.5 rounded-md bg-gray-100 px-3 text-xs font-bold text-ink hover:bg-brand-light"><i class="fa-solid fa-rotate" aria-hidden="true"></i> Odśwież</button>
+                    </div>
+                    <iframe x-ref="frame" data-src="{{ route('home') }}" title="Podgląd strony głównej z menu"
+                        @load="@if ($location === 'footer') try { $el.contentWindow.scrollTo(0, $el.contentDocument.body.scrollHeight) } catch (e) {} @endif"
+                        class="h-[26rem] w-full rounded border border-gray-200 bg-white"></iframe>
+                </div>
+            </details>
+        @endif
+
+        {{-- ── Okno „Dodaj strony”: wybór kilku stron z drzewa ── --}}
+        @if (Route::has('admin.pozycje-menu.ze-stron'))
+            <dialog id="nav-from-pages" aria-labelledby="nav-from-pages-title" class="m-auto w-[min(40rem,calc(100vw-2rem))] overflow-hidden rounded-md bg-white p-0 text-ink backdrop:bg-black/50"
+                x-data="{ q: '', norm(s) { return (s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/ł/g, 'l'); } }">
+                <form method="POST" action="{{ route('admin.pozycje-menu.ze-stron') }}" class="flex max-h-[85vh] flex-col">
+                    @csrf
+                    <input type="hidden" name="location" value="{{ $location }}">
+                    <div class="flex items-center justify-between gap-3 border-b border-gray-100 px-5 py-4">
+                        <h2 id="nav-from-pages-title" class="text-lg font-bold">Dodaj strony do menu</h2>
+                        <button type="button" onclick="this.closest('dialog').close()" class="rounded p-2 text-muted hover:bg-gray-100 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark"><i class="fa-solid fa-xmark" aria-hidden="true"></i><span class="sr-only">Zamknij</span></button>
+                    </div>
+                    <div class="space-y-3 border-b border-gray-100 px-5 py-3">
+                        <label for="nav-pages-q" class="sr-only">Szukaj strony</label>
+                        <input id="nav-pages-q" type="search" x-model="q" placeholder="Szukaj strony…" autocomplete="off" class="w-full rounded-md border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark">
+                        @if ($location === 'main' && $parentOptions->isNotEmpty())
+                            <div>
+                                <label for="nav-pages-parent" class="mb-1 block text-sm font-bold">Gdzie dodać</label>
+                                <select id="nav-pages-parent" name="parent_id" class="w-full rounded-md border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark">
+                                    <option value="">Jako pozycje główne menu</option>
+                                    @foreach ($parentOptions as $po)
+                                        <option value="{{ $po->id }}">Pod „{{ $po->label }}”</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        @endif
+                    </div>
+                    <div class="min-h-0 flex-1 overflow-y-auto px-5 py-3" role="group" aria-label="Strony do dodania">
+                        @forelse ($pageTree as $node)
+                            <label class="flex cursor-pointer items-center gap-3 rounded py-1.5 pr-2 hover:bg-gray-50" style="padding-left: {{ 0.25 + $node['depth'] * 1.25 }}rem"
+                                x-show="q.trim() === '' || norm(@js($node['title'].' '.$node['path'])).includes(norm(q))">
+                                <input type="checkbox" name="page_ids[]" value="{{ $node['id'] }}" @disabled($node['in_menu']) class="h-4 w-4 flex-none rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
+                                <span class="min-w-0 flex-1">
+                                    <span class="block truncate text-sm font-bold {{ $node['in_menu'] ? 'text-muted' : 'text-ink' }}">{{ $node['title'] }}</span>
+                                    <span class="block truncate font-mono text-xs text-muted">{{ $node['path'] }}</span>
+                                </span>
+                                @if ($node['in_menu'])<span class="flex-none text-xs font-bold text-ink"><i class="fa-solid fa-check mr-1 text-brand-dark" aria-hidden="true"></i>już w menu</span>@endif
+                            </label>
+                        @empty
+                            <p class="py-6 text-center text-sm text-ink">Brak opublikowanych stron.</p>
+                        @endforelse
+                    </div>
+                    <div class="flex items-center gap-3 border-t border-gray-100 px-5 py-4">
+                        <button type="submit" class="rounded bg-brand-dark px-5 py-2 text-sm font-bold text-white hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2">Dodaj zaznaczone</button>
+                        <button type="button" onclick="this.closest('dialog').close()" class="rounded px-2 py-2 text-sm text-muted hover:text-brand-dark">Anuluj</button>
+                    </div>
+                </form>
+            </dialog>
+        @endif
 
         {{-- ============================ MODAL EDYCJI ============================ --}}
         <div x-show="open" x-cloak class="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto p-4 sm:p-6" style="display: none">
@@ -190,7 +266,7 @@
                 })
                 .then(function (r) { return r.json(); })
                 .then(function (data) {
-                    if (data.ok) showStatus('Kolejność zapisana.', false);
+                    if (data.ok) { showStatus('Kolejność zapisana.', false); window.dispatchEvent(new CustomEvent('nav-preview-refresh')); }
                     else showStatus('Błąd zapisu kolejności.', true);
                 })
                 .catch(function () { showStatus('Błąd sieci — kolejność niezapisana.', true); });

@@ -47,7 +47,79 @@ class NavItemController extends Controller
             'parentOptions' => $this->parentOptions(null, 'main'),
             'pages' => Page::orderBy('title')->get(),
             'bipDocuments' => BipDocument::published()->forCurrentSite()->orderBy('title')->get(),
+            'pageTree' => $this->pageTree($location),
         ]);
+    }
+
+    /**
+     * Drzewo opublikowanych stron do okna „Dodaj strony” (wcięcie wg poziomu); strony już obecne
+     * w tym menu (ten sam adres) są oznaczone.
+     *
+     * @return array<int, array{id: int, title: string, path: string, depth: int, in_menu: bool}>
+     */
+    private function pageTree(string $location): array
+    {
+        $pages = Page::query()->forCurrentSite()->where('is_published', true)
+            ->where('type', '!=', 'about_person')
+            ->orderBy('order')->orderBy('title')
+            ->get(['id', 'parent_id', 'title', 'slug', 'type']);
+        $inMenu = NavItem::forCurrentSite()->where('location', $location)->pluck('url')
+            ->map(fn ($u) => rtrim((string) parse_url((string) $u, PHP_URL_PATH), '/'))->filter()->flip();
+        $byParent = $pages->groupBy(fn ($p) => (int) $p->parent_id);
+        $ids = $pages->pluck('id')->flip();
+        $out = [];
+        $walk = function (int $parent, int $depth) use (&$walk, &$out, $byParent, $inMenu) {
+            foreach ($byParent->get($parent, collect()) as $page) {
+                $path = rtrim((string) parse_url($page->publicUrl(), PHP_URL_PATH), '/') ?: '/';
+                $out[] = ['id' => $page->id, 'title' => $page->title, 'path' => $path, 'depth' => $depth, 'in_menu' => $inMenu->has($path)];
+                if ($depth < 6) {
+                    $walk($page->id, $depth + 1);
+                }
+            }
+        };
+        $walk(0, 0);
+        // Strony, których rodzic nie jest opublikowany — na końcu, bez wcięcia.
+        foreach ($pages as $page) {
+            if ($page->parent_id && ! $ids->has($page->parent_id)) {
+                $path = rtrim((string) parse_url($page->publicUrl(), PHP_URL_PATH), '/') ?: '/';
+                $out[] = ['id' => $page->id, 'title' => $page->title, 'path' => $path, 'depth' => 0, 'in_menu' => $inMenu->has($path)];
+            }
+        }
+
+        return $out;
+    }
+
+    /** Dodaje do menu kilka stron naraz (okno „Dodaj strony” z drzewem stron). */
+    public function storeFromPages(Request $request)
+    {
+        $data = $request->validate([
+            'location' => ['required', Rule::in(array_keys(NavItem::LOCATIONS))],
+            'parent_id' => ['nullable', 'integer', 'exists:nav_items,id'],
+            'page_ids' => ['required', 'array', 'min:1'],
+            'page_ids.*' => ['integer', 'exists:pages,id'],
+        ], ['page_ids.required' => 'Zaznacz co najmniej jedną stronę.']);
+
+        $parentId = $data['location'] === 'main' ? ($data['parent_id'] ?? null) : null;
+        $order = (int) NavItem::where('location', $data['location'])->where('parent_id', $parentId)->max('order');
+        $existing = NavItem::forCurrentSite()->where('location', $data['location'])->pluck('url')
+            ->map(fn ($u) => rtrim((string) parse_url((string) $u, PHP_URL_PATH), '/'))->flip();
+
+        $added = 0;
+        $last = null;
+        foreach (Page::query()->forCurrentSite()->whereIn('id', $data['page_ids'])->get()->sortBy(fn ($p) => array_search($p->id, $data['page_ids'])) as $page) {
+            $path = rtrim((string) parse_url($page->publicUrl(), PHP_URL_PATH), '/') ?: '/';
+            if ($existing->has($path)) {
+                continue;
+            }
+            $last = NavItem::create([
+                'label' => $page->title, 'url' => $path, 'type' => 'link', 'location' => $data['location'],
+                'parent_id' => $parentId, 'is_active' => true, 'order' => ++$order,
+            ]);
+            $added++;
+        }
+
+        return redirect()->route('admin.pozycje-menu.index', array_filter(['location' => $data['location'], 'pozycja' => $last?->id]))
+            ->with('status', $added ? "Dodano do menu stron: {$added}." : 'Zaznaczone strony już są w menu.');
     }
 
     /** Wyświetla formularz tworzenia nowej pozycji menu. */
