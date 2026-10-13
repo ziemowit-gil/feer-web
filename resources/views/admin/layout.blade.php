@@ -372,18 +372,22 @@
                 <input x-ref="input" x-model="q" @input="onInput()" type="text"
                     @keydown.arrow-down.prevent="move(1)" @keydown.arrow-up.prevent="move(-1)"
                     @keydown.enter.prevent="go(results[active])" @keydown.escape.prevent="close()"
-                    placeholder="Szukaj stron, newsów, działań, sekcji…"
+                    placeholder="Szukaj stron, treści, plików, ustawień…"
                     aria-label="Szukaj w panelu" autocomplete="off"
+                    role="combobox" aria-autocomplete="list" aria-controls="cp-list"
+                    :aria-expanded="(results.length > 0).toString()"
+                    :aria-activedescendant="results.length ? 'cp-opt-' + active : null"
                     class="w-full border-0 py-3 text-sm focus:ring-0">
                 <span x-show="loading" class="text-xs text-muted">…</span>
             </div>
-            <ul class="max-h-96 overflow-y-auto py-1" role="listbox">
+            <p class="sr-only" role="status" aria-live="polite" x-text="q.trim().length >= 2 && ! loading ? (results.length ? 'Wyników: ' + results.length : 'Brak wyników') : ''"></p>
+            <ul id="cp-list" class="max-h-96 overflow-y-auto py-1" role="listbox" aria-label="Wyniki wyszukiwania">
                 <template x-for="(item, i) in grouped" :key="i">
                     <template x-if="item._header">
                         <li class="sticky top-0 bg-gray-50 px-4 py-1 text-[11px] font-bold uppercase tracking-widest text-muted" role="presentation" x-text="item._header"></li>
                     </template>
                     <template x-if="!item._header">
-                        <li role="option" :aria-selected="item._idx === active"
+                        <li role="option" :id="'cp-opt-' + item._idx" :aria-selected="(item._idx === active).toString()"
                             @click="go(item)" @mouseenter="active = item._idx"
                             :class="item._idx === active ? 'bg-brand/10' : ''"
                             class="flex cursor-pointer items-center gap-3 px-4 py-2.5 text-sm transition-colors">
@@ -402,7 +406,7 @@
                 </li>
                 <li x-show="q.trim().length < 2"
                     class="px-4 py-8 text-center text-sm text-muted">
-                    Zacznij pisać — strony, aktualności, osoby, sekcje…
+                    Zacznij pisać — strony i ich treść, aktualności, pliki, osoby, ustawienia…
                     <br><span class="mt-1 block text-xs text-muted">↑↓ nawigacja &nbsp;·&nbsp; Enter otwiera &nbsp;·&nbsp; Esc zamyka</span>
                 </li>
             </ul>
