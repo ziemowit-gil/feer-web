@@ -657,7 +657,7 @@
                         </div>
                         {{-- Pytanie przez formularz: zachęta i przycisk na całą szerokość na dole karty. --}}
                         <p class="mt-5 text-sm text-ink">Najwygodniej napisz przez formularz: wiadomość trafi prosto do koordynatora tego działania.</p>
-                        <a href="{{ route('contact.show', ['do' => $project->contactEmail()]) }}#formularz" class="mt-3 flex min-h-12 w-full items-center justify-center gap-2 rounded-md bg-brand-dark px-4 text-base font-bold text-white hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2"><i class="fa-solid fa-paper-plane" aria-hidden="true"></i> Zadaj pytanie przez formularz</a>
+                        <a href="{{ route('projects.ask', ['project' => $project->slug]) }}" class="mt-3 flex min-h-12 w-full items-center justify-center gap-2 rounded-md bg-brand-dark px-4 text-base font-bold text-white hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2"><i class="fa-solid fa-paper-plane" aria-hidden="true"></i> Zadaj pytanie przez formularz</a>
                     </div>
                 @endif
 

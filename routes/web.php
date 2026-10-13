@@ -137,6 +137,8 @@ Route::middleware('module:projects')->group(function () {
     Route::get('/dzialania', [ProjectController::class, 'index'])->name('projects.index');
     Route::get('/dzialania/archiwum', [ProjectController::class, 'archive'])->name('projects.archive');
     Route::get('/dzialania/{project:slug}', [ProjectController::class, 'show'])->name('projects.show');
+    Route::get('/dzialania/{project:slug}/pytanie', [\App\Http\Controllers\ProjectQuestionController::class, 'show'])->name('projects.ask');
+    Route::post('/dzialania/{project:slug}/pytanie', [\App\Http\Controllers\ProjectQuestionController::class, 'store'])->name('projects.ask.store')->middleware('throttle:10,1');
     // Dawne adresy „/projekty" → stałe przekierowania na „/dzialania" (zmiana nazwy sekcji).
     Route::get('/projekty', fn () => redirect()->to(url('/dzialania'), 301));
     Route::get('/projekty/archiwum', fn () => redirect()->to(url('/dzialania/archiwum'), 301));
